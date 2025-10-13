@@ -5,7 +5,7 @@ Acornima (BSD 3-Clause License)
 Copyright (c) Adam Simon
 
 The Acornima library is used for JavaScript parsing.
-Its source code is available at: [Acornima's original repository URL]
+Its source code is available at: [https://github.com/adams85/acornima]
 
 The full license text is as follows:
 Copyright (c) Adam Simon. All rights reserved.
@@ -36,4 +36,13 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -------------------------------------------------
-    
+This software also adopts ideas and solution invented by other free and open
+source software projects, including but not limited to:
+* WebRef(MIT license) - https://github.com/w3c/webref
+* WootzJs(MIT license) - https://github.com/kswoll/WootzJs
+* h5(Apache-2.0 license) - https://github.com/curiosity-ai/h5
+* SharpKit(MIT license) - https://github.com/SharpKit/SharpKit
+* SharpPromise(MIT license) - https://github.com/legacybass/SharpPromise
+* DenoHost(MIT license) - https://github.com/thomas3577/DenoHost
+* CSharpToJavaScript(MIT license) - https://github.com/TiLied/CSharpToJavaScript
+* TypeScript-DOM-lib-generator(Apache-2.0 license) - https://github.com/microsoft/TypeScript-DOM-lib-generator
