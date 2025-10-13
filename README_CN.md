@@ -1,3 +1,8 @@
+<div align="center">
+
+![今日诗词](https://v2.jinrishici.com/one.svg?font-size=20&spacing=2&color=Chocolate)
+</div>
+
 # Jazor - C# 到 JavaScript 编译器（支持模块系统）
 
 [![.NET](https://img.shields.io/badge/.NET-10.0-blue.svg)](https://dotnet.microsoft.com/)
@@ -477,3 +482,4 @@ dotnet tool install --global --add-source ./nupkg Jazor.CLI
 - [SharpPromise](https://github.com/legacybass/SharpPromise) - C# 的 Promise 实现
 - [DenoHost](https://github.com/thomas3577/DenoHost) - .NET 的 Deno 运行时主机
 - [CSharpToJavaScript](https://github.com/TiLied/CSharpToJavaScript) - C# 到 JavaScript 转译器
+- [TypeScript-DOM-lib-generator](https://github.com/microsoft/TypeScript-DOM-lib-generator) - 生成TypeScript DOM库
