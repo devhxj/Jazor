@@ -1,0 +1,437 @@
+﻿<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="netstandard" #>
+<#@ assembly name="System.Memory" #>
+<#@ assembly name="System.Runtime" #>
+<#@ assembly name="System.Threading.Tasks" #>
+<#@ assembly name="System.Collections.Immutable" #>
+<#@ import namespace="System" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Globalization" #>
+<#@ import namespace="System.Text.RegularExpressions" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Collections.Immutable" #>
+<#@ import namespace="System.Collections.Concurrent" #>
+<#@ import namespace="System.Collections.ObjectModel" #>
+<#@ import namespace="System.Reflection" #>
+<#@ import namespace="System.Runtime.CompilerServices" #>
+<#@ output extension=".cs" #>
+<#
+
+// 配置要生成的目标类型
+var targetTypes = new[] { 
+	typeof(System.Object),
+	typeof(System.Boolean),
+	typeof(System.Char),
+	typeof(System.SByte),
+	typeof(System.Byte),
+	typeof(System.Int16),
+	typeof(System.UInt16),
+	typeof(System.Int32),
+	typeof(System.UInt32),
+	typeof(System.Int64),
+	typeof(System.UInt64),
+	typeof(System.Single),
+	typeof(System.Double),
+	typeof(System.Decimal),
+	typeof(System.DateTime),
+	//typeof(System.DateOnly),
+	//typeof(System.TimeOnly),
+	typeof(System.DateTimeOffset),
+	typeof(System.TimeSpan),
+	typeof(System.String),
+	//typeof(System.Numerics.BigInteger),
+	typeof(System.Type),
+	typeof(System.Exception),
+	typeof(System.Reflection.MethodBase),
+	typeof(System.Text.StringBuilder),
+	typeof(System.Threading.WaitHandle),
+	typeof(System.Nullable),
+	typeof(System.ValueTuple),
+	typeof(System.WeakReference),
+	typeof(System.Collections.Generic.List<>),
+	typeof(System.Collections.Generic.Dictionary<,>),
+	typeof(System.Collections.Generic.HashSet<>),
+	typeof(System.Collections.ObjectModel.ReadOnlyCollection<>),
+	typeof(System.Collections.ObjectModel.ReadOnlyDictionary<,>),
+	//typeof(System.Collections.ObjectModel.ReadOnlySet<>),
+	typeof(System.Runtime.CompilerServices.ConditionalWeakTable<,>),
+};
+var bindingFlags = BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.DeclaredOnly;
+var aliases = new Dictionary<Type, string>()
+{
+    { typeof(byte), "byte" },
+    { typeof(sbyte), "sbyte" },
+    { typeof(short), "short" },
+    { typeof(ushort), "ushort" },
+    { typeof(int), "int" },
+    { typeof(uint), "uint" },
+    { typeof(long), "long" },
+    { typeof(ulong), "ulong" },
+    { typeof(float), "float" },
+    { typeof(double), "double" },
+    { typeof(decimal), "decimal" },
+    { typeof(object), "object" },
+    { typeof(bool), "bool" },
+    { typeof(char), "char" },
+    { typeof(string), "string" },
+    { typeof(void), "void" },
+	{ typeof(List<>), "Array" },
+	{ typeof(DateTime), "Date" }
+};
+var maps = new Dictionary<Type, string>()
+{
+    { typeof(byte), "Number" },
+    { typeof(sbyte), "Number" },
+    { typeof(short), "Number" },
+    { typeof(ushort), "Number" },
+    { typeof(int), "Number" },
+    { typeof(uint), "Number" },
+    { typeof(long), "Number" },
+    { typeof(ulong), "Number" },
+    { typeof(float), "Number" },
+    { typeof(double), "Number" },
+    { typeof(decimal), "Number" },
+    { typeof(object), "object" },
+    { typeof(bool), "Boolean" },
+    { typeof(char), "String" },
+    { typeof(string), "String" },
+    { typeof(void), "void" },
+	{ typeof(List<>), "Array<T>" },
+	{ typeof(DateTime), "Date" }
+};
+
+static string ToCamelCase(string text)
+{
+	if (string.IsNullOrEmpty(text) || !char.IsUpper(text[0]))
+	{
+		return text;
+	}
+
+	var chars = text.ToCharArray();
+	chars[0] = char.ToLowerInvariant(chars[0]);
+	return new string(chars);
+}
+
+static string GetFullyQualifiedName(Type type)
+{
+    if (type == null) throw new ArgumentNullException(nameof(type));
+
+    // 处理数组类型
+    if (type.IsArray)
+    {
+        var elementType = type.GetElementType();
+        var rank = type.GetArrayRank();
+        var arraySuffix = rank == 1 ? "[]" : "[" + new string(',', rank - 1) + "]";
+        return $"{GetFullyQualifiedName(elementType)}{arraySuffix}";
+    }
+
+    // 处理指针和引用
+    if (type.IsPointer) return $"{GetFullyQualifiedName(type.GetElementType())}*";
+    if (type.IsByRef) return GetFullyQualifiedName(type.GetElementType());
+
+    // 处理泛型参数
+    if (type.IsGenericParameter) return type.Name;
+
+    // 处理基础类型
+    if (!type.IsGenericType) return GetNonGenericTypeName(type);
+
+    // 处理泛型类型
+    return GetGenericTypeName(type);
+}
+
+static string GetNonGenericTypeName(Type type)
+{
+    // 处理嵌套类型
+    if (type.DeclaringType != null)
+    {
+        return $"{GetFullyQualifiedName(type.DeclaringType)}.{type.Name}";
+    }
+        
+    // 添加 global:: 前缀处理全局命名空间
+    return $"{(string.IsNullOrEmpty(type.Namespace) ? type.Name : $"{type.Namespace}.{type.Name}")}";
+}
+
+static string GetGenericTypeName(Type type)
+{
+    // 获取泛型类型定义
+    var genericDef = type.GetGenericTypeDefinition();
+    var typeName = genericDef.Name;
+        
+    // 移除反引号部分（如`1）
+    var index = typeName.IndexOf('`');
+    var baseName = index > 0 ? typeName.Substring(0, index) : typeName;
+        
+    // 处理嵌套泛型类型
+    string qualifiedName;
+    if (genericDef.DeclaringType != null)
+    {
+        qualifiedName = $"{GetFullyQualifiedName(genericDef.DeclaringType)}.{baseName}";
+    }
+    else
+    {
+        // 添加 global:: 前缀处理全局命名空间
+        qualifiedName = $"{(string.IsNullOrEmpty(genericDef.Namespace) ? baseName : $"{genericDef.Namespace}.{baseName}")}";
+    }
+
+    // 处理泛型参数
+    var sb = new StringBuilder();
+    var args = type.GetGenericArguments();
+        
+    sb.Append(qualifiedName);
+	/*
+    sb.Append('<');
+        
+    for (int i = 0; i < args.Length; i++)
+    {
+        if (i > 0) sb.Append(",");
+        sb.Append(GetFullyQualifiedName(args[i]));
+    }
+        
+    sb.Append('>');
+	*/
+    return sb.ToString();
+}
+
+void GenerateTypeModule(Type type)
+{
+	if (string.IsNullOrEmpty(type.FullName))
+		return;
+
+	var members = new List<string>();
+	var typeName =  type.Name.Split('`')[0];
+	var generics = new List<string>();
+	var isStatic = type.IsAbstract && type.IsSealed;
+
+	foreach (var item in type.GetGenericArguments())
+	{
+		generics.Add(item.Name);
+	}
+
+	var genericTxt = generics.Count > 0 ? $"<{string.Join(", ", generics)}>":"";
+
+	if (!maps.TryGetValue(type, out var mapName))
+	{
+		if (type.FullName is null || type.Namespace == "System")
+			mapName = (type.FullName is null || type.Namespace == "System")
+				? type.Name.Split('`')[0]
+				: type.FullName.Split('`')[0];
+	}
+#>
+using System.Collections;
+
+namespace ECMAScript;
+
+[ECMAScriptModule]
+[WhiteList(kind: "class", isStatic: <#=isStatic.ToString().ToLower() #>,key: "<#= GetFullyQualifiedName(type) #>")]
+public static class <#= typeName #>Module
+{
+<#
+	var index =1;
+
+	// 生成构造函数
+	foreach (ConstructorInfo ctor in type.GetConstructors(bindingFlags))
+	{
+		if (ctor.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false).Length == 0)
+		{
+			var parameters = ctor.GetParameters();
+			var parameterTypes = new List<string>();
+			var parameterNames = new List<string>();
+			foreach (var p in parameters)
+			{
+			    var dir = p.ParameterType.IsByRef ? p.IsOut ? "out " : "ref " : "";
+				if (!aliases.TryGetValue(p.ParameterType, out var pname))
+				{
+					if (p.ParameterType.FullName is null || p.ParameterType.Namespace == "System")
+						pname = p.ParameterType.Name.Split('`')[0];
+					else
+						pname = p.ParameterType.FullName.Split('`')[0];
+				}
+				parameterTypes.Add(dir + GetFullyQualifiedName(p.ParameterType));
+				parameterNames.Add($"{dir}{pname} {p.Name}");
+			}
+			var typesPart = string.Join(",", parameterTypes);
+			var namesPart = string.Join(", ", parameterNames);
+			var key = $"C0@{GetFullyQualifiedName(type)}..ctor({typesPart})";
+			members.Add(key);
+
+#>
+	[WhiteList(kind: "constructor", isStatic: false,key: "<#= key #>")]
+	public static <#= mapName #> New<#=typeName #><#=index #><#= genericTxt #>(<#=namesPart #>)
+	{
+		return default;
+	}
+
+<#
+		index++;
+		}
+	}
+
+	// 生成字段
+	foreach (FieldInfo field in type.GetFields(bindingFlags))
+	{
+		if (field.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false).Length == 0)
+		{
+			var plist = field.IsStatic ? "" : $"{mapName} instance";
+			var key = $"F{(field.IsStatic?"1":"0")}@{GetFullyQualifiedName(type)}.{field.Name}";
+			members.Add(key);
+#>
+	[WhiteList(kind: "field", isStatic: <#=field.IsStatic.ToString().ToLower() #>,key: "<#= key #>")]
+	public static <#= typeName #> <#=field.Name #><#= genericTxt #>(<#= plist #>)
+	{
+		return default;
+	}
+
+<#
+		}
+	}
+
+	// 生成属性
+	foreach (PropertyInfo property in type.GetProperties(bindingFlags))
+	{
+		if (property.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false).Length == 0)
+		{
+			var parameters = property.GetIndexParameters();
+			var parameterTypes = new List<string>();
+			var parameterNames = new List<string>();
+			foreach (var p in parameters)
+			{
+				var dir = p.ParameterType.IsByRef ? p.IsOut ? "out " : "ref " : "";
+				var pname = p.ParameterType.Name;
+				if (!aliases.TryGetValue(p.ParameterType, out pname))
+				{
+					if (p.ParameterType.FullName is null || p.ParameterType.Namespace == "System")
+						pname = p.ParameterType.Name.Split('`')[0];
+					else
+						pname = p.ParameterType.FullName.Split('`')[0];
+				}
+				pname = pname.Replace("&","");
+
+				parameterTypes.Add(dir + GetFullyQualifiedName(p.ParameterType));
+				parameterNames.Add($"{dir}{pname} {p.Name}");
+			}
+			
+			var typesPart = string.Join(",", parameterTypes);
+			var namesPart = string.Join(", ", parameterNames);
+			var key = $"P0@{GetFullyQualifiedName(type)}.{property.Name}({namesPart})";
+			members.Add(key);
+
+			if (!aliases.TryGetValue(property.PropertyType, out var tname))
+			{
+				if (property.PropertyType.FullName is null || property.PropertyType.Namespace == "System")
+					tname = (property.PropertyType.FullName is null || property.PropertyType.Namespace == "System")
+						? property.PropertyType.Name
+						: property.PropertyType.FullName;
+			}
+
+			if(property.CanRead)
+			{
+				var pname = (parameters.Length > 0 ? "IndexGet" : "Get")+property.Name;
+				var pname1 = parameters.Length > 0 ? ", "+namesPart : "";
+#>
+	[WhiteList(kind: "property", isStatic: false,key: "<#= key #>")]
+	public static <#= tname #> <#=pname #><#= genericTxt #>(<#= mapName #> instance<#= pname1 #>)
+	{
+		return default;
+	}
+
+<#
+			}
+
+			if(property.CanWrite)
+			{
+				var pname = (parameters.Length > 0?"IndexSet":"Set")+property.Name;
+#>
+	[WhiteList(kind: "property", isStatic: false,key: "<#= key #>")]
+	public static void <#=pname #><#= genericTxt #>(<#= mapName #> instance, <#= tname #> value)
+	{
+
+	}
+
+<#
+			}
+
+		}
+	}
+
+	// 生成方法
+	foreach (MethodInfo method in type.GetMethods(bindingFlags))
+	{
+		if (!method.IsSpecialName && method.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false).Length == 0)
+		{
+			var parameters = method.GetParameters();
+			var parameterTypes = new List<string>();
+			var parameterNames = new List<string>();
+
+			foreach (var p in parameters)
+			{
+				var dir = p.ParameterType.IsByRef ? p.IsOut ? "out " : "ref " : "";
+				var pname = p.ParameterType.Name;
+				if (!aliases.TryGetValue(p.ParameterType, out pname))
+				{
+					if (p.ParameterType.FullName is null || p.ParameterType.Namespace == "System")
+						pname = p.ParameterType.Name.Split('`')[0];
+					else
+						pname = p.ParameterType.FullName.Split('`')[0];
+				}
+				parameterTypes.Add(dir + GetFullyQualifiedName(p.ParameterType));
+				parameterNames.Add($"{dir}{pname.Replace("&", "")} {p.Name}");
+			}
+
+			var typesPart = string.Join(",", parameterTypes);
+			var namesPart = string.Join(", ", parameterNames);
+			var key = $"M{(method.IsStatic?"1":"0")}@{GetFullyQualifiedName(type)}.{method.Name}({typesPart})";
+
+			if (!aliases.TryGetValue(method.ReturnParameter.ParameterType, out var rname))
+			{
+				if (method.ReturnParameter.ParameterType.FullName is null || method.ReturnParameter.ParameterType.Namespace == "System")
+					rname = method.ReturnParameter.ParameterType.Name.Split('`')[0];
+				else
+					rname = method.ReturnParameter.ParameterType.FullName.Split('`')[0];
+			}
+
+			members.Add(key);
+
+			var code = rname == "void"?"":"return default;";
+#>
+	[WhiteList(kind: "method", isStatic: <#=method.IsStatic.ToString().ToLower() #>, key: "<#= key #>")]
+	public static <#= rname #> <#=method.Name #><#=index #><#= genericTxt #>(<#= namesPart #>)
+	{
+		<#= code #>
+	}
+
+<#
+		index++;
+		}
+	}
+
+
+#>
+	/// <summary>
+	/// <#=members.Count #> WhiteList Member
+	/// </summary>
+    public static readonly string[] MemberWhiteList = [
+<# foreach (var item in members) { #>
+		"<#= item #>",
+<# } #>
+	];
+}
+<#
+    // 结束当前文件的生成
+    //this.GenerationEnvironment.Clear();
+}
+#>
+
+<#
+// 为每个类型生成单独的文件
+foreach (var type in targetTypes)
+{
+    var fileName = $"{type.Name.Split('`')[0]}Module.cs";
+    this.GenerationEnvironment.Clear();
+    GenerateTypeModule(type);
+	string templateDirectory = Path.GetDirectoryName(Host.TemplateFile);
+	var outputFilePath = Path.Combine(templateDirectory,"generate", fileName);
+    File.WriteAllText(outputFilePath, this.GenerationEnvironment.ToString());
+}
+#>

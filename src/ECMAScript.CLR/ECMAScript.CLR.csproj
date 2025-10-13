@@ -1,0 +1,65 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
+    <NoWarn>CS0626,CS0824,IDE0130,CA1822,IDE0060</NoWarn>
+    <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- <WhiteListOutputPath>$(BaseIntermediateOutputPath)WhiteList.g.cs</WhiteListOutputPath> -->
+    <WhiteListOutputPath>$(SolutionDir)ECMAScript.Analyzer\WhiteList.cs</WhiteListOutputPath>
+  </PropertyGroup>
+
+  <Target Name="GenerateWhiteList" BeforeTargets="Build" Inputs="@(Compile)" Outputs="$(WhiteListOutputPath)">
+    <GenerateWhiteListTask SourceFiles="@(Compile)" OutputFile="$(WhiteListOutputPath)" Condition="'$(GenerateWhiteList)' != 'false'" />
+  </Target>
+
+  <Target Name="CleanWhiteList" AfterTargets="Clean">
+    <Delete Files="$(WhiteListOutputPath)" Condition="Exists('$(WhiteListOutputPath)')" />
+  </Target>
+
+  <!-- 引用任务程序集 -->
+  <UsingTask TaskName="GenerateWhiteListTask" AssemblyFile="$(SolutionDir)ECMASCript.MSBuild\bin\$(Configuration)\netstandard2.0\ECMASCript.MSBuild.dll" />
+
+  <ItemGroup>
+    <Compile Remove="ByteModule.cs" />
+    <Compile Remove="CharModule.cs" />
+    <Compile Remove="ConditionalWeakTableModule.cs" />
+    <Compile Remove="CultureInfoModule.cs" />
+    <Compile Remove="DateOnlyModule.cs" />
+    <Compile Remove="DateTimeModule.cs" />
+    <Compile Remove="DateTimeOffsetModule.cs" />
+    <Compile Remove="DecimalModule.cs" />
+    <Compile Remove="DictionaryModule.cs" />
+    <Compile Remove="DoubleModule.cs" />
+    <Compile Remove="ExceptionModule.cs" />
+    <Compile Remove="GregorianCalendarModule.cs" />
+    <Compile Remove="HashSetModule.cs" />
+    <Compile Remove="Int16Module.cs" />
+    <Compile Remove="Int32Module.cs" />
+    <Compile Remove="Int64Module.cs" />
+    <Compile Remove="ListModule.cs" />
+    <Compile Remove="NullableModule.cs" />
+    <Compile Remove="ReadOnlyCollectionModule.cs" />
+    <Compile Remove="ReadOnlyDictionaryModule.cs" />
+    <Compile Remove="ReadOnlySetModule.cs" />
+    <Compile Remove="SByteModule.cs" />
+    <Compile Remove="SingleModule.cs" />
+    <Compile Remove="StringBuilderModule.cs" />
+    <Compile Remove="TimeOnlyModule.cs" />
+    <Compile Remove="TimeSpanModule.cs" />
+    <Compile Remove="UInt16Module.cs" />
+    <Compile Remove="UInt32Module.cs" />
+    <Compile Remove="UInt64Module.cs" />
+    <Compile Remove="ValueTupleModule.cs" />
+    <Compile Remove="WeakReferenceModule.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
+  </ItemGroup>
+
+</Project>
