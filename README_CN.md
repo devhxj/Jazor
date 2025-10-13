@@ -20,7 +20,7 @@ Jazor 是一个高性能的 C# 到 JavaScript 编译器，旨在实现 C# 代码
 - **完整语法支持**：支持变量声明、控制流、函数、类、模式匹配等现代 C# 语法
 - **高级模式匹配**：完整支持 C# 8.0+ 的模式匹配功能，包括递归模式、关系模式等
 - **异步编程支持**：完整支持 async/await 异步编程模型
-- **Web API 绑定**：自动生成 Web API 的 C# 绑定，支持 DOM、CSS、WebGL 等
+- **Web IDL 绑定**：自动生成 Web IDL 的 C# 绑定，支持 DOM、CSS、WebGL 等
 - **编译时优化**：利用 C# 强类型系统的编译时信息，生成最优化的 JavaScript 代码
 - **可扩展架构**：模块化设计，支持自定义转换规则和扩展
 - **CLR 运行时**：为所有支持的原生类型提供 ES6+ 模块实现，支持 tree shaking
@@ -107,7 +107,7 @@ CLR 运行时支持，为所有支持的原生 C# 类型提供 ES6+ 模块实现
 | `Array<>`, `List<>`, `IList<>`, `ICollection<>` | `Array` |
 | `Dictionary<,>` | `Map` |
 | `HashSet<>`, `IEnumerable`（非 IDictionary） | `Set` |
-| `ReadOnlyCollection<>`, `ReadOnlyDictionary<,>`, `ReadOnlySet<>` | `只读变体` |
+| `ReadOnlyCollection<>`, `ReadOnlyDictionary<,>`, `ReadOnlySet<>` | `Map` |
 
 ### 特殊类型
 | C# 类型 | JavaScript 类型 |
