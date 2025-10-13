@@ -469,7 +469,7 @@ dotnet tool install --global --add-source ./nupkg Jazor.CLI
 
 特别感谢以下开源项目：
 - [Roslyn](https://github.com/dotnet/roslyn) - C# 编译器平台
-- [Acornima](https://github.com/terrytyrius/Acornima) - JavaScript 解析器
+- [Acornima](https://github.com/adams85/acornima) - JavaScript 解析器
 - [WebRef](https://github.com/w3c/webref) - Web 规范参考
 - [WootzJs](https://github.com/kswoll/WootzJs) - C# 到 JavaScript 编译器
 - [h5](https://github.com/curiosity-ai/h5) - C# 到 JavaScript 编译器
