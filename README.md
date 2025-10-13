@@ -469,7 +469,7 @@ Thanks to all developers and community members who have contributed to the Jazor
 
 Special thanks to the following open-source projects:
 - [Roslyn](https://github.com/dotnet/roslyn) - C# compiler platform
-- [Acornima](https://github.com/terrytyrius/Acornima) - JavaScript parser
+- [Acornima](https://github.com/adams85/acornima) - JavaScript parser
 - [WebRef](https://github.com/w3c/webref) - Web specification references
 - [WootzJs](https://github.com/kswoll/WootzJs) - C# to JavaScript compiler
 - [h5](https://github.com/curiosity-ai/h5) - The next generation C# to JavaScript compiler
