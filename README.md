@@ -1,4 +1,4 @@
-# Jazor - C# to JavaScript Compiler
+# Jazor - C# to JavaScript Compiler with Module System
 
 [![.NET](https://img.shields.io/badge/.NET-10.0-blue.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
@@ -7,6 +7,15 @@ Jazor is a high-performance C# to JavaScript compiler that aims to achieve seman
 
 ## Key Features
 
+- **ECMAScript Module System**: Support for `[ECMAScriptModule]` and `[ECMAScript]` attributes to mark classes for JavaScript conversion
+- **Static Analysis**: Roslyn analyzer automatically performs syntax validation for tagged classes
+- **Source Generator**: Automatically generates `ECMAScript.g.cs` files containing converted ES6+ module JavaScript content
+- **Web Project Integration**: Configure output targets to extract JavaScript code from `ECMAScript.g.cs` and generate JS files
+- **Bun Host Integration**: Bundle and compile JS files with other npm packages through bunhost
+- **CLI Proxy Generation**: Generate proxy classes for TypeScript-written npm packages (with `[ECMAScript]` attribute, no conversion but callable)
+- **Razor JSX Support**: Implement JSX-like capabilities based on `.razor` files
+- **Complete Type Mapping**: Comprehensive support for C# types with automatic JavaScript type conversion
+
 - **Semantic Equivalence**: Ensures complete semantic equivalence between C# and JavaScript, avoiding any form of simplification
 - **Complete Syntax Support**: Supports modern C# syntax including variable declarations, control flow, functions, classes, pattern matching, and more
 - **Advanced Pattern Matching**: Full support for C# 8.0+ pattern matching features, including recursive patterns, relational patterns, etc.
@@ -14,6 +23,7 @@ Jazor is a high-performance C# to JavaScript compiler that aims to achieve seman
 - **Web API Bindings**: Automatically generates C# bindings for Web APIs, supporting DOM, CSS, WebGL, and more
 - **Compile-time Optimization**: Leverages compile-time information from C#'s strong type system to generate optimized JavaScript code
 - **Extensible Architecture**: Modular design supporting custom transformation rules and extensions
+- **CLR Runtime**: ES6+ module implementation for all supported native types with tree shaking support
 
 ## Project Structure
 
@@ -22,12 +32,18 @@ Jazor/
 ├── src/
 │   ├── ECMAScript/                 # Core ECMAScript implementation
 │   │   ├── attribute/             # ECMAScript attribute definitions
+│   │   │   ├── ECMAScriptAttribute.cs
+│   │   │   └── ECMAScriptModuleAttribute.cs
 │   │   ├── generate/              # Auto-generated type bindings
 │   │   ├── internal/              # Internal type implementations
 │   │   └── Global.cs              # Global methods and properties
 │   ├── ECMAScript.CLR/            # CLR runtime support
+│   │   ├── StringModule.cs        # String type implementation
+│   │   ├── DateTimeModule.cs      # DateTime type implementation
+│   │   └── ...                    # Other CLR type modules
 │   ├── ECMAScript.Analyzer/       # Static code analyzer
 │   ├── ECMAScript.Compiler/       # C# to JavaScript compiler
+│   │   ├── ESGenerator.cs         # Source generator for ECMAScript.g.cs
 │   │   └── AstOperationWalker.cs # Core AST transformer
 │   ├── ECMAScript.Server/         # Compilation server
 │   ├── ECMAScript.Test/           # Unit tests
@@ -45,25 +61,68 @@ The core compiler component responsible for converting C# Roslyn operation trees
 - Direct AST construction, avoiding string parsing overhead
 - Semantic equivalence guarantee, ensuring consistent behavior before and after conversion
 - Complete error handling and exception reporting mechanisms
+- **ESGenerator**: Source generator that automatically creates `ECMAScript.g.cs` files with converted JavaScript content
 
-### 2. ECMAScript.WebIDL
+### 2. ECMAScript.Analyzer
+Static code analyzer that provides syntax validation for classes marked with `[ECMAScriptModule]` or `[ECMAScript]` attributes:
+- Validates type usage according to supported type mappings
+- Ensures only compatible members are used in ECMAScript-tagged classes
+- Provides compile-time error reporting for unsupported operations
+
+### 3. ECMAScript.WebIDL
 Web API binding generator that automatically generates C# type bindings from Web IDL specifications. Supports:
 - DOM API bindings
 - CSS API bindings
 - WebGL API bindings
 - Modern Web standard API bindings
 
-### 3. ECMAScript.CLRGenerate
-CLR type generator that creates JavaScript bindings for .NET base type libraries. Including:
-- Basic types (Object, String, Number, etc.)
-- Collection types (Array, Dictionary, Set, etc.)
-- Date and time type handling
+### 4. ECMAScript.CLR
+CLR runtime support providing ES6+ module implementations for all supported native C# types:
+- Type-safe conversion between C# and JavaScript
+- Complete method and property implementations
+- Tree shaking support for optimized bundles
 
-### 4. ECMAScript.Server
+### 5. ECMAScript.Server
 Compilation server providing named pipe-based compilation services:
 - Supports continuous compilation
 - Provides remote compilation interface
 - Integrates into development workflows
+
+## Supported C# Types and Type Mapping
+
+### Primitive Types
+| C# Type | JavaScript Type |
+|---------|-----------------|
+| `object` | `object` |
+| `string` | `string` |
+| `byte`, `sbyte`, `short`, `ushort`, `int`, `uint`, `decimal`, `double`, `float` | `Number` |
+| `long`, `int128`, `uint128`, `TimeSpan` | `BigInt` |
+| `DateOnly`, `TimeOnly`, `DateTime`, `DateTimeOffset` | `Date` |
+| `bool` | `boolean` |
+| `char` | `string` |
+
+### Collection Types
+| C# Type | JavaScript Type |
+|---------|-----------------|
+| `Array<>`, `List<>`, `IList<>`, `ICollection<>` | `Array` |
+| `Dictionary<,>` | `Map` |
+| `HashSet<>`, `IEnumerable` (non-IDictionary) | `Set` |
+| `ReadOnlyCollection<>`, `ReadOnlyDictionary<,>`, `ReadOnlySet<>` | `Readonly variants` |
+
+### Special Types
+| C# Type | JavaScript Type |
+|---------|-----------------|
+| `Exception` | `Error` |
+| `StringBuilder` | `StringBuilder` implementation |
+| `Nullable<T>` | `Nullable type handling` |
+| `ValueTuple` | `Array or Object` |
+| `WeakReference<T>` | `WeakRef` |
+| `ConditionalWeakTable<,>` | `WeakMap` |
+| `GregorianCalendar`, `CultureInfo` | `Internationalization API` |
+
+### Custom Types
+- Classes marked with `[ECMAScript]` or `[ECMAScriptModule]` attributes
+- Classes converted to JavaScript classes with preserved semantics
 
 ## Supported C# Syntax
 
@@ -151,6 +210,20 @@ async function fetchDataAsync(url) {
 
 ## Usage
 
+### Using ECMAScriptModule Attribute
+
+```csharp
+using ECMAScript;
+
+[ECMAScriptModule]
+public static class MyMathModule
+{
+    public static int Add(int a, int b) => a + b;
+    
+    public static string Greet(string name) => $"Hello, {name}!";
+}
+```
+
 ### Basic Compilation
 ```csharp
 using ECMAScript.Compiler;
@@ -160,9 +233,9 @@ using Microsoft.CodeAnalysis;
 var walker = new AstOperationWalker();
 
 // Compile C# code
-var compilation = CSharpCompilation.Create("TestAssembly", 
-    syntaxTrees, 
-    references, 
+var compilation = CSharpCompilation.Create("TestAssembly",
+    syntaxTrees,
+    references,
     options);
 
 // Get semantic model
@@ -195,11 +268,147 @@ var response = await client.RequestAsync(request);
 var jsCode = Encoding.UTF8.GetString(response.Body);
 ```
 
+### Web Project Configuration
+
+For web projects, configure the output target to extract JavaScript code from `ECMAScript.g.cs`:
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <JazorOutputDirectory>wwwroot\js</JazorOutputDirectory>
+    <JazorGenerateSourceFiles>true</JazorGenerateSourceFiles>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <JazorModule Include="MyModule" OutputFile="mymodule.js" />
+  </ItemGroup>
+</Project>
+```
+
+### Using Bun Host for Bundling
+
+```bash
+# Install bun
+curl -fsSL https://bun.sh/install | bash
+
+# Bundle your JavaScript modules
+bun build wwwroot/js/mymodule.js --outdir wwwroot/dist --target browser
+
+# Run with bun
+bun run wwwroot/dist/mymodule.js
+```
+
+### CLI Tool Usage
+
+```bash
+# Install Jazor CLI
+dotnet tool install --global Jazor.CLI
+
+# Generate proxy classes for npm packages
+jazor generate-proxy --package lodash --output ./Proxies/LodashProxy.cs
+
+# Convert C# project to JavaScript
+jazor convert --project ./MyProject.csproj --output ./dist
+
+# Bundle with npm packages
+jazor bundle --input ./dist --packages lodash,axios --output ./bundle.js
+```
+
+## Advanced Features
+
+### Razor JSX Support
+
+Jazor supports JSX-like syntax using Razor components:
+
+```razor
+@* MyComponent.razor *@
+@attribute [ECMAScriptModule]
+
+<div class="my-component">
+    <h3>@Title</h3>
+    @if (Items != null)
+    {
+        <ul>
+            @foreach (var item in Items)
+            {
+                <li>@item.Name</li>
+            }
+        </ul>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = string.Empty;
+    
+    [Parameter]
+    public List<Item>? Items { get; set; }
+}
+
+// Converts to JavaScript:
+export class MyComponent {
+    render() {
+        return `<div class="my-component">
+            <h3>${this.title}</h3>
+            ${this.items ? `<ul>${
+                this.items.map(item => `<li>${item.name}</li>`).join('')
+            }</ul>` : ''}
+        </div>`;
+    }
+}
+```
+
+### Tree Shaking Support
+
+The CLR modules are designed with tree shaking in mind:
+
+```javascript
+// Only used methods are included in the final bundle
+import { StringCompare, StringIndexOf } from './clr/string.mjs';
+
+// Unused methods like StringToUpper are eliminated during bundling
+```
+
+### Proxy Generation for NPM Packages
+
+Generate C# proxy classes for existing npm packages:
+
+```bash
+# Generate proxy for lodash
+jazor generate-proxy --package lodash --output ./Proxies/
+
+# Generated proxy:
+[ECMAScript]
+public static class LodashProxy
+{
+    public static T Get<T>(object obj, string path) => default!;
+    public static T[] Filter<T>(T[] collection, Func<T, bool> predicate) => default!;
+    // ... other lodash methods
+}
+```
+
+### Integration with Existing JavaScript Libraries
+
+```csharp
+[ECMAScriptModule]
+public static class ChartInterop
+{
+    public static void CreateChart(string elementId, object chartData)
+    {
+        // Direct JavaScript interop
+        // Generated as: import { Chart } from 'chart.js';
+    }
+}
+```
+
 ## Development and Build
 
 ### Prerequisites
 - .NET 10.0 SDK or higher
 - Visual Studio 2022 or Visual Studio Code
+- Node.js and npm (for web development)
+- Bun (optional, for bundling)
 - Windows, Linux, or macOS
 
 ### Build Steps
@@ -221,6 +430,10 @@ dotnet test
 cd src/ECMAScript.WebIDL
 npm install
 npm run build
+
+# Install CLI tool
+dotnet pack ./src/Jazor.CLI
+dotnet tool install --global --add-source ./nupkg Jazor.CLI
 ```
 
 ## Contributing
@@ -246,9 +459,9 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Contact
 
-- Project homepage: https://github.com/your-repo/Jazor
-- Issue tracker: https://github.com/your-repo/Jazor/issues
-- Email: your-email@example.com
+- Project homepage: https://github.com/devhxj/Jazor
+- Issue tracker: https://github.com/devhxj/Jazor/issues
+- Email: developerhan@msn.cn
 
 ## Acknowledgments
 
