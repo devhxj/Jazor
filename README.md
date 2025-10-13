@@ -1,3 +1,8 @@
+<div align="center">
+
+![Today’s Verse](https://v2.jinrishici.com/one.svg?font-size=20&spacing=2&color=Chocolate)
+</div>
+
 # Jazor - C# to JavaScript Compiler with Module System
 
 [![.NET](https://img.shields.io/badge/.NET-10.0-blue.svg)](https://dotnet.microsoft.com/)
@@ -477,3 +482,4 @@ Special thanks to the following open-source projects:
 - [SharpPromise](https://github.com/legacybass/SharpPromise) - Promise implementation for C#
 - [DenoHost](https://github.com/thomas3577/DenoHost) - Deno runtime host for .NET
 - [CSharpToJavaScript](https://github.com/TiLied/CSharpToJavaScript) - C# to JavaScript transpiler
+- [TypeScript-DOM-lib-generator](https://github.com/microsoft/TypeScript-DOM-lib-generator) - TypeScript DOM lib generator
