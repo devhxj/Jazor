@@ -258,3 +258,9 @@ npm run build
 - [Roslyn](https://github.com/dotnet/roslyn) - C# 编译器平台
 - [Acornima](https://github.com/terrytyrius/Acornima) - JavaScript 解析器
 - [WebRef](https://github.com/w3c/webref) - Web 规范参考
+- [WootzJs](https://github.com/kswoll/WootzJs) - C# 到 JavaScript 编译器
+- [h5](https://github.com/curiosity-ai/h5) - C# 到 JavaScript 编译器
+- [SharpKit](https://github.com/SharpKit/SharpKit) - C# 到 JavaScript 转换器
+- [SharpPromise](https://github.com/legacybass/SharpPromise) - C# 的 Promise 实现
+- [DenoHost](https://github.com/thomas3577/DenoHost) - .NET 的 Deno 运行时主机
+- [CSharpToJavaScript](https://github.com/TiLied/CSharpToJavaScript) - C# 到 JavaScript 转译器

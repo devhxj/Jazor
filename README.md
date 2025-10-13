@@ -258,3 +258,9 @@ Special thanks to the following open-source projects:
 - [Roslyn](https://github.com/dotnet/roslyn) - C# compiler platform
 - [Acornima](https://github.com/terrytyrius/Acornima) - JavaScript parser
 - [WebRef](https://github.com/w3c/webref) - Web specification references
+- [WootzJs](https://github.com/kswoll/WootzJs) - C# to JavaScript compiler
+- [h5](https://github.com/curiosity-ai/h5) - The next generation C# to JavaScript compiler
+- [SharpKit](https://github.com/SharpKit/SharpKit) - C# to JavaScript converter
+- [SharpPromise](https://github.com/legacybass/SharpPromise) - Promise implementation for C#
+- [DenoHost](https://github.com/thomas3577/DenoHost) - Deno runtime host for .NET
+- [CSharpToJavaScript](https://github.com/TiLied/CSharpToJavaScript) - C# to JavaScript transpiler
