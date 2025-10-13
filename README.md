@@ -20,7 +20,7 @@ Jazor is a high-performance C# to JavaScript compiler that aims to achieve seman
 - **Complete Syntax Support**: Supports modern C# syntax including variable declarations, control flow, functions, classes, pattern matching, and more
 - **Advanced Pattern Matching**: Full support for C# 8.0+ pattern matching features, including recursive patterns, relational patterns, etc.
 - **Async Programming Support**: Complete support for async/await asynchronous programming model
-- **Web API Bindings**: Automatically generates C# bindings for Web APIs, supporting DOM, CSS, WebGL, and more
+- **Web IDL Bindings**: Automatically generates C# bindings for Web APIs, supporting DOM, CSS, WebGL, and more
 - **Compile-time Optimization**: Leverages compile-time information from C#'s strong type system to generate optimized JavaScript code
 - **Extensible Architecture**: Modular design supporting custom transformation rules and extensions
 - **CLR Runtime**: ES6+ module implementation for all supported native types with tree shaking support
@@ -107,7 +107,7 @@ Compilation server providing named pipe-based compilation services:
 | `Array<>`, `List<>`, `IList<>`, `ICollection<>` | `Array` |
 | `Dictionary<,>` | `Map` |
 | `HashSet<>`, `IEnumerable` (non-IDictionary) | `Set` |
-| `ReadOnlyCollection<>`, `ReadOnlyDictionary<,>`, `ReadOnlySet<>` | `Readonly variants` |
+| `ReadOnlyCollection<>`, `ReadOnlyDictionary<,>`, `ReadOnlySet<>` | `Map` |
 
 ### Special Types
 | C# Type | JavaScript Type |
