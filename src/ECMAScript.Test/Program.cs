@@ -39,14 +39,8 @@ Console.WriteLine("Hello, World!");
 
 
 var script = @"
-let ___a = false;
-export let i =0;
-export function f() { return i; }
-export function s(value) { i=value; }
-
-if(___a === false){
- s(5);
-}
+let person = { Name : 'John', Age : 30 };
+let updated = {...person, Age : 31 };
 ";
 var parser = new Parser(new ParserOptions { 
 

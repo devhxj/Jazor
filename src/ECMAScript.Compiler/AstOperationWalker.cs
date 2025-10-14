@@ -3816,37 +3816,67 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
                 if (initializer is IMemberInitializerOperation memberInit)
                 {
                     // 获取成员名称
-                    string memberName = "property"; // 默认值
-
-                    if (memberInit.InitializedMember is IFieldSymbol field)
+                    var memberName = memberInit.InitializedMember switch
                     {
-                        memberName = field.Name ?? "property";
-                    }
-                    else if (memberInit.InitializedMember is IPropertySymbol property)
-                    {
-                        memberName = property.Name ?? "property";
-                    }
+                        IFieldSymbol f => f.Name,
+                        IPropertySymbol p => p.Name,
+                        _ => throw new OperationTransformationException(memberInit.InitializedMember,$"{nameof(IMemberInitializerOperation)}.")
+                    };
 
                     // 获取初始化值
                     if (Visit(memberInit.Initializer, argument) is Acornima.Ast.Expression initValue)
                     {
                         // 根据AST节点构造规范，使用PropertyDefinition创建对象属性
-                        properties.Add(new Acornima.Ast.PropertyDefinition(
+                        // 确保生成正确的属性语法：{ ...original, propertyName: value }
+                        properties.Add(new Acornima.Ast.ObjectProperty(
+                            kind:PropertyKind.Init,
                             key: new Acornima.Ast.Identifier(memberName),
                             value: initValue,
                             computed: false,
-                            isStatic: false,
-                            decorators: NodeList.Empty<Acornima.Ast.Decorator>()
+                            shorthand: false,
+                            method: false
                         ));
                     }
                 }
                 else
                 {
-                    // 对于其他类型的初始化器，直接访问
+                    // 对于其他类型的初始化器，需要确保生成正确的属性语法
                     var initNode = Visit(initializer, argument);
-                    if (initNode is Acornima.Ast.PropertyDefinition propDef)
+                    if (initNode is not null)
                     {
-                        properties.Add(propDef);
+                        // 如果初始化器不是PropertyDefinition，需要包装成PropertyDefinition
+                        // 这样可以确保生成正确的JavaScript对象属性语法
+                        if (initNode is PropertyDefinition)
+                        {
+                            properties.Add(initNode);
+                        }
+                        else if (initNode is AssignmentExpression assignment)
+                        {
+                            // 如果是赋值表达式，提取左侧作为属性名，右侧作为值
+                            var key = assignment.Left switch
+                            {
+                                Identifier i => i,
+                                MemberExpression m => m.Property as Identifier,
+                                _ => null
+                            };
+
+                            if (key is not null)
+                            {
+                                properties.Add(new Acornima.Ast.ObjectProperty(
+                                    kind:PropertyKind.Init,
+                                    key: key,
+                                    value: assignment.Right,
+                                    computed: false,
+                                    shorthand: false,
+                                    method: false
+                                ));
+                            }
+                        }
+                        else
+                        {
+                            // 其他情况，尝试将其转换为属性定义
+                            // 这里可能需要根据实际情况进一步处理
+                        }
                     }
                 }
             }
