@@ -2521,14 +2521,14 @@ public sealed class AstOperationWalkerTests
             """;
 
         // Act
-        var result = CompileAndVisitFirstVariableInitializer(code, 1); // 获取第二个变量声明
+        var result = CompileAndVisitOperationAt<IVariableDeclarationGroupOperation>(code, 1); // 获取第二个操作
+        var js = result.ToJavaScript();
 
         // Assert
-        Assert.IsInstanceOfType<ArrayExpression>(result);
-        if (result is ArrayExpression arrayExpression)
+        Assert.IsInstanceOfType<VariableDeclaration>(result);
+        if (result is VariableDeclaration variableDecl)
         {
-            Assert.AreEqual(5, arrayExpression.Elements.Count);
-            Assert.IsInstanceOfType<SpreadElement>(arrayExpression.Elements[0]);
+            Assert.AreEqual("let arr2=[...arr1,4,5]", js);
         }
         else
         {
@@ -2583,15 +2583,14 @@ public sealed class AstOperationWalkerTests
             """;
 
         // Act
-        var result = CompileAndVisitFirstVariableInitializer(code, 1); // 获取第二个变量声明
+        var result = CompileAndVisitOperationAt<IVariableDeclarationGroupOperation>(code, 1); // 获取第二个操作
+        var js = result.ToJavaScript();
 
         // Assert
-        Assert.IsInstanceOfType<ObjectExpression>(result);
-        if (result is ObjectExpression objectExpression)
+        Assert.IsInstanceOfType<VariableDeclaration>(result);
+        if (result is VariableDeclaration variableDecl)
         {
-            Assert.AreEqual(2, objectExpression.Properties.Count);
-            Assert.IsInstanceOfType<SpreadElement>(objectExpression.Properties[0]);
-            Assert.IsInstanceOfType<AssignmentExpression>(objectExpression.Properties[1]);
+            Assert.AreEqual("let updated={...person,Age:31}", js);
         }
         else
         {
