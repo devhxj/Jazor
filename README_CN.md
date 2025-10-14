@@ -109,10 +109,9 @@ CLR 运行时支持，为所有支持的原生 C# 类型提供 ES6+ 模块实现
 ### 集合类型
 | C# 类型 | JavaScript 类型 |
 |---------|-----------------|
-| `Array<>`, `List<>`, `IList<>`, `ICollection<>` | `Array` |
-| `Dictionary<,>` | `Map` |
-| `HashSet<>`, `IEnumerable`（非 IDictionary） | `Set` |
-| `ReadOnlyCollection<>`, `ReadOnlyDictionary<,>`, `ReadOnlySet<>` | `Map` |
+| `Array<>`, `List<>`, `IList<>`, `ICollection<>`，`ReadOnlyCollection<>` | `Array` |
+| `Dictionary<,>`, `ReadOnlyDictionary<,>` | `Map` |
+| `HashSet<>`, `ReadOnlySet<>`, `IEnumerable` (non-IDictionary) | `Set` |
 
 ### 特殊类型
 | C# 类型 | JavaScript 类型 |
