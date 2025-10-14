@@ -109,10 +109,9 @@ Compilation server providing named pipe-based compilation services:
 ### Collection Types
 | C# Type | JavaScript Type |
 |---------|-----------------|
-| `Array<>`, `List<>`, `IList<>`, `ICollection<>` | `Array` |
-| `Dictionary<,>` | `Map` |
-| `HashSet<>`, `IEnumerable` (non-IDictionary) | `Set` |
-| `ReadOnlyCollection<>`, `ReadOnlyDictionary<,>`, `ReadOnlySet<>` | `Map` |
+| `Array<>`, `List<>`, `IList<>`, `ICollection<>`，`ReadOnlyCollection<>` | `Array` |
+| `Dictionary<,>`, `ReadOnlyDictionary<,>` | `Map` |
+| `HashSet<>`, `ReadOnlySet<>`, `IEnumerable` (non-IDictionary) | `Set` |
 
 ### Special Types
 | C# Type | JavaScript Type |

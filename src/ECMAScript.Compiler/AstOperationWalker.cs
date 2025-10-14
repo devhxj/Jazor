@@ -371,10 +371,10 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     ///     int x = 5;
     ///     Console.WriteLine(x);
     /// }
-    /// 转换结果：JavaScript 函数体
+    /// 转换结果：根据上下文返回 NestedBlockStatement、FunctionBody 或 StaticBlock
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitBlock(IBlockOperation operation,IOperation? argument)
     {
@@ -387,7 +387,27 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
             else if (node is Acornima.Ast.Expression expr)
                 statements.Add(new NonSpecialExpressionStatement(expr));
         }
-        return new FunctionBody(NodeList.From(statements), strict: true);
+        
+        // 根据上下文判断返回不同类型的语句块
+        // 1. 如果父节点是方法或函数，返回 FunctionBody
+        if (operation.Parent is IMethodBodyOperation ||
+            operation.Parent is ILocalFunctionOperation ||
+            operation.Parent is IAnonymousFunctionOperation ||
+            operation.Parent is IConstructorBodyOperation)
+        {
+            return new FunctionBody(NodeList.From(statements), strict: true);
+        }
+        
+        // 2. 如果父节点是类型或类定义的静态初始化块，返回 StaticBlock
+        if (operation.Parent is IFieldInitializerOperation &&
+            operation.Parent is IFieldReferenceOperation fieldRef &&
+            fieldRef.Field?.IsStatic == true)
+        {
+            return new Acornima.Ast.StaticBlock(NodeList.From(statements));
+        }
+        
+        // 3. 默认情况返回 NestedBlockStatement
+        return new NestedBlockStatement(NodeList.From(statements));
     }
 
     /// <summary>
@@ -396,7 +416,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：let a = 1, b = 2, c;
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitVariableDeclarationGroup(IVariableDeclarationGroupOperation operation,IOperation? argument)
     {
@@ -435,7 +455,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：直接转换为 JavaScript 的 switch 语句
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitSwitch(ISwitchOperation operation,IOperation? argument)
     {
@@ -496,7 +516,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：for (let item of collection) { console.log(item); }
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitForEachLoop(IForEachLoopOperation operation,IOperation? argument)
     {
@@ -519,7 +539,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：for (let i = 0; i < 10; i++) { console.log(i); }
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitForLoop(IForLoopOperation operation,IOperation? argument)
     {
@@ -591,7 +611,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，请使用标准 for 循环
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitForToLoop(IForToLoopOperation operation,IOperation? argument)
     {
@@ -607,7 +627,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：while (condition) { doSomething(); }
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitWhileLoop(IWhileLoopOperation operation,IOperation? argument)
     {
@@ -628,7 +648,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：label1: console.log("Labeled statement");
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitLabeled(ILabeledOperation operation,IOperation? argument)
     {
@@ -650,7 +670,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：break; / continue; / break label1;
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitBranch(IBranchOperation operation,IOperation? argument)
     {
@@ -670,7 +690,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：; // JavaScript 空语句
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitEmpty(IEmptyOperation operation,IOperation? argument)
     {
@@ -685,7 +705,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：return; / return value;
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitReturn(IReturnOperation operation,IOperation? argument)
     {
@@ -702,7 +722,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，JavaScript 没有内置的锁机制
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitLock(ILockOperation operation,IOperation? argument)
     {
@@ -722,7 +742,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：try { riskyOperation(); } catch (ex) { handleError(ex); } finally { cleanup(); }
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitTry(ITryOperation operation,IOperation? argument)
     {
@@ -763,7 +783,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，JavaScript 没有内置的资源管理机制
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitUsing(IUsingOperation operation,IOperation? argument)
     {
@@ -778,7 +798,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：method(); / x++;
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitExpressionStatement(IExpressionStatementOperation operation,IOperation? argument)
     {
@@ -796,7 +816,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：function localFunction(param) { console.log(param); }
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitLocalFunction(ILocalFunctionOperation operation,IOperation? argument)
     {
@@ -847,7 +867,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitStop(IStopOperation operation,IOperation? argument)
     {
@@ -860,7 +880,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitEnd(IEndOperation operation,IOperation? argument)
     {
@@ -874,7 +894,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，JavaScript 事件模型不同
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitRaiseEvent(IRaiseEventOperation operation,IOperation? argument)
     {
@@ -892,7 +912,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：42 / "Hello" / true / "A" / null
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitLiteral(ILiteralOperation operation,IOperation? argument)
     {
@@ -930,7 +950,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：直接返回操作数（JavaScript 是动态类型）
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitConversion(IConversionOperation operation,IOperation? argument)
     {
@@ -946,7 +966,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：obj.method(arg1, arg2) / staticClass.method(arg) / obj.extensionMethod(arg)
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitInvocation(IInvocationOperation operation,IOperation? argument)
     {
@@ -1016,7 +1036,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：array[0] / 不支持多维数组
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitArrayElementReference(IArrayElementReferenceOperation operation,IOperation? argument)
     {
@@ -1047,7 +1067,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：localVar
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitLocalReference(ILocalReferenceOperation operation,IOperation? argument)
     {
@@ -1063,7 +1083,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：param
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitParameterReference(IParameterReferenceOperation operation,IOperation? argument)
     {
@@ -1078,7 +1098,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：obj.field / MyClass.field
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitFieldReference(IFieldReferenceOperation operation,IOperation? argument)
     {
@@ -1102,7 +1122,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：obj.method
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitMethodReference(IMethodReferenceOperation operation,IOperation? argument)
     {
@@ -1127,7 +1147,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：obj.property / MyClass.property
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitPropertyReference(IPropertyReferenceOperation operation,IOperation? argument)
     {
@@ -1152,7 +1172,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，JavaScript 事件模型不同
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitEventReference(IEventReferenceOperation operation,IOperation? argument)
     {
@@ -1169,7 +1189,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：+x / -x / !condition / ~value
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitUnaryOperator(IUnaryOperation operation,IOperation? argument)
     {
@@ -1178,15 +1198,15 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
 
         var @operator = operation.OperatorKind switch
         {
-            UnaryOperatorKind.Plus => Operator.Addition,
-            UnaryOperatorKind.Minus => Operator.Subtraction,
+            UnaryOperatorKind.Plus => Operator.UnaryPlus,
+            UnaryOperatorKind.Minus => Operator.UnaryNegation,
             UnaryOperatorKind.Not => Operator.LogicalNot,
             UnaryOperatorKind.BitwiseNegation => Operator.BitwiseNot,
             UnaryOperatorKind.Hat => Operator.BitwiseXor, // Hat 操作符 (^) 转换为异或
             _ => throw new OperationTransformationException(operation, $"Unsupported unary operator: {operation.OperatorKind}")
         };
 
-        return new Acornima.Ast.UpdateExpression(@operator, operand, prefix: true);
+        return new Acornima.Ast.NonUpdateUnaryExpression(@operator, operand);
     }
 
     /// <summary>
@@ -1208,7 +1228,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：相同的 JavaScript 运算符
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitBinaryOperator(IBinaryOperation operation,IOperation? argument)
     {
@@ -1249,17 +1269,33 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：condition ? trueValue : falseValue
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Node? VisitConditional(IConditionalOperation operation,IOperation? argument)
+    public override Node? VisitConditional(IConditionalOperation operation, IOperation? argument)
     {
-        var test = Visit(operation.Condition, argument) as Acornima.Ast.Expression;
-        var consequent = Visit(operation.WhenTrue, argument) as Acornima.Ast.Expression;
-        var alternate = Visit(operation.WhenFalse, argument) as Acornima.Ast.Expression;
+        var consequent = Visit(operation.WhenTrue, argument);
+        var alternate = Visit(operation.WhenFalse, argument);
 
-        if (test == null || consequent == null || alternate == null) return null;
+        if (Visit(operation.Condition, argument) is not Acornima.Ast.Expression test || consequent == null) 
+            return null;
 
-        return new Acornima.Ast.ConditionalExpression(test, consequent, alternate);
+        if (operation.Syntax is ConditionalExpressionSyntax &&
+            consequent is Acornima.Ast.Expression expConsequent &&
+            alternate is Acornima.Ast.Expression expAlternate)
+        {
+            // 这是三元表达式 a ? b : c
+            // 生成 JavaScript 的三元表达式
+            return new Acornima.Ast.ConditionalExpression(test, expConsequent, expAlternate);
+        }
+        else if (operation.Syntax is IfStatementSyntax &&
+            consequent is Acornima.Ast.Statement ifConsequent)
+        {
+            // 这是 if 语句
+            // 生成 JavaScript 的 if...else 语句
+            return new Acornima.Ast.IfStatement(test, ifConsequent, alternate as Acornima.Ast.Statement);
+        }
+
+        throw new OperationTransformationException(operation, $"Operation {operation.Syntax}");
     }
 
     /// <summary>
@@ -1269,7 +1305,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：value || defaultValue （使用 || 模拟 ?? 行为）
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitCoalesce(ICoalesceOperation operation,IOperation? argument)
     {
@@ -1293,7 +1329,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：(x, y) => { return x + y; } / x => { return x * 2; }
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitAnonymousFunction(IAnonymousFunctionOperation operation,IOperation? argument)
     {
@@ -1334,7 +1370,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：new MyClass() / new MyClass(arg1, arg2)
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitObjectCreation(IObjectCreationOperation operation,IOperation? argument)
     {
@@ -1359,7 +1395,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：忽略泛型参数，转换为普通对象创建 new T() / new List()
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitTypeParameterObjectCreation(ITypeParameterObjectCreationOperation operation,IOperation? argument)
     {
@@ -1380,7 +1416,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：[1, 2, 3] / new Array(5)
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitArrayCreation(IArrayCreationOperation operation,IOperation? argument)
     {
@@ -1431,7 +1467,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：this
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitInstanceReference(IInstanceReferenceOperation operation,IOperation? argument)
     {
@@ -1445,7 +1481,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// typeof obj === 'string'
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitIsType(IIsTypeOperation operation,IOperation? argument)
     {
@@ -1644,7 +1680,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：await someAsyncMethod()
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitAwait(IAwaitOperation operation,IOperation? argument)
     {
@@ -1664,7 +1700,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：x = 5 / obj.prop = val / arr[0] = item
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitSimpleAssignment(ISimpleAssignmentOperation operation,IOperation? argument)
     {
@@ -1687,7 +1723,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：x += 5 / x -= 3 / x *= 2 / x /= 4 / x %= 7
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitCompoundAssignment(ICompoundAssignmentOperation operation,IOperation? argument)
     {
@@ -1716,7 +1752,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：直接返回内部表达式（JavaScript 中括号由解析器处理）
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitParenthesized(IParenthesizedOperation operation,IOperation? argument)
     {
@@ -1731,7 +1767,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，JavaScript 事件模型不同
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitEventAssignment(IEventAssignmentOperation operation,IOperation? argument)
     {
@@ -1749,7 +1785,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：obj != null ? obj.property : null
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitConditionalAccess(IConditionalAccessOperation operation,IOperation? argument)
     {
@@ -1772,7 +1808,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：this（简化处理）
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitConditionalAccessInstance(IConditionalAccessInstanceOperation operation,IOperation? argument)
     {
@@ -1789,7 +1825,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果："Hello, " + name + "!" / "Value: " + (x + y)
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitInterpolatedString(IInterpolatedStringOperation operation,IOperation? argument)
     {
@@ -1825,7 +1861,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：{ name: "John", age: 25 }
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitAnonymousObjectCreation(IAnonymousObjectCreationOperation operation,IOperation? argument)
     {
@@ -1849,7 +1885,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：{ prop1: val1 } / [1, 2, 3]
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitObjectOrCollectionInitializer(IObjectOrCollectionInitializerOperation operation,IOperation? argument)
     {
@@ -1873,7 +1909,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：property = value
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitMemberInitializer(IMemberInitializerOperation operation,IOperation? argument)
     {
@@ -1905,7 +1941,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果："variable" / "Property"
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitNameOf(INameOfOperation operation, IOperation? argument)
     {
@@ -1933,7 +1969,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：{ Item1: 1, Item2: "hello", Item3: true } 或 { Sum: 4.5, Count: 3 } （使用对象模拟）
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitTuple(ITupleOperation operation,IOperation? argument)
     {
@@ -1996,7 +2032,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，JavaScript 的动态性与 C# dynamic 语义不同
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitDynamicObjectCreation(IDynamicObjectCreationOperation operation,IOperation? argument)
     {
@@ -2012,7 +2048,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，需要编译时确定成员信息
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitDynamicMemberReference(IDynamicMemberReferenceOperation operation,IOperation? argument)
     {
@@ -2028,7 +2064,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，需要编译时确定方法签名
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitDynamicInvocation(IDynamicInvocationOperation operation,IOperation? argument)
     {
@@ -2045,7 +2081,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，需要编译时确定索引器类型
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitDynamicIndexerAccess(IDynamicIndexerAccessOperation operation,IOperation? argument)
     {
@@ -2063,7 +2099,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，LINQ 语义复杂且 JavaScript 没有对应构造
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitTranslatedQuery(ITranslatedQueryOperation operation,IOperation? argument)
     {
@@ -2079,7 +2115,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：转换为函数引用或箭头函数
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitDelegateCreation(IDelegateCreationOperation operation,IOperation? argument)
     {
@@ -2105,7 +2141,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：0 / "" / false / null（根据类型）
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitDefaultValue(IDefaultValueOperation operation,IOperation? argument)
     {
@@ -2137,7 +2173,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，JavaScript typeof 语义与 C# 不同
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitTypeOf(ITypeOfOperation operation,IOperation? argument)
     {
@@ -2152,7 +2188,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，JavaScript 没有直接的内存大小概念
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitSizeOf(ISizeOfOperation operation,IOperation? argument)
     {
@@ -2169,7 +2205,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，JavaScript 是安全语言，不支持指针操作
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitAddressOf(IAddressOfOperation operation,IOperation? argument)
     {
@@ -2186,7 +2222,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：对于复杂模式，替换占位符并返回条件表达式
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitIsPattern(IIsPatternOperation operation,IOperation? argument)
     {
@@ -2216,7 +2252,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：x++ / ++x / x-- / --x
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitIncrementOrDecrement(IIncrementOrDecrementOperation operation,IOperation? argument)
     {
@@ -2242,7 +2278,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：throw new Error("Error message") / throw Error
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitThrow(IThrowOperation operation,IOperation? argument)
     {
@@ -2258,7 +2294,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：转换为普通赋值表达式（简化处理）
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitDeconstructionAssignment(IDeconstructionAssignmentOperation operation,IOperation? argument)
     {
@@ -2279,7 +2315,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：转换为 let 变量声明
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitDeclarationExpression(IDeclarationExpressionOperation operation,IOperation? argument)
     {
@@ -2302,7 +2338,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：undefined
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitOmittedArgument(IOmittedArgumentOperation operation,IOperation? argument)
     {
@@ -2318,7 +2354,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：[1, 2, 3, 4, 5] / ["apple", "banana", "cherry"]
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitArrayInitializer(IArrayInitializerOperation operation,IOperation? argument)
     {
@@ -2341,7 +2377,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：直接返回初始化值表达式
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitFieldInitializer(IFieldInitializerOperation operation,IOperation? argument)
     {
@@ -2356,7 +2392,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：直接返回初始化值表达式
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitVariableInitializer(IVariableInitializerOperation operation,IOperation? argument)
     {
@@ -2371,7 +2407,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：x = 5 / name
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitVariableDeclarator(IVariableDeclaratorOperation operation,IOperation? argument)
     {
@@ -2388,7 +2424,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：let x = 5, y = 10; / let name = "test", message;
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitVariableDeclaration(IVariableDeclarationOperation operation,IOperation? argument)
     {
@@ -2410,7 +2446,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：直接返回参数值表达式
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitArgument(IArgumentOperation operation,IOperation? argument)
     {
@@ -2426,13 +2462,41 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：catch (ex) { ... } / catch (error) { ... }
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitCatchClause(ICatchClauseOperation operation,IOperation? argument)
     {
-        // 修复空值引用警告：安全访问ExceptionType
-        var param = operation.ExceptionDeclarationOrExpression != null && operation.ExceptionType != null ?
-        new Acornima.Ast.Identifier(operation.ExceptionType?.Name ?? "exception") : null;
+        // 修复空值引用警告：从ExceptionDeclarationOrExpression中提取异常变量名
+        Acornima.Ast.Identifier? param = null;
+        
+        if (operation.ExceptionDeclarationOrExpression != null)
+        {
+            // 尝试从异常声明中提取变量名
+            switch (operation.ExceptionDeclarationOrExpression)
+            {
+                case ILocalReferenceOperation localRef when localRef.Local != null:
+                    param = new Acornima.Ast.Identifier(localRef.Local.Name);
+                    break;
+                case IParameterReferenceOperation paramRef when paramRef.Parameter != null:
+                    param = new Acornima.Ast.Identifier(paramRef.Parameter.Name);
+                    break;
+                case IVariableDeclaratorOperation varDeclarator when varDeclarator.Symbol != null:
+                    param = new Acornima.Ast.Identifier(varDeclarator.Symbol.Name);
+                    break;
+                default:
+                    // 如果无法提取变量名，但有异常类型，使用类型名作为默认值
+                    if (operation.ExceptionType != null)
+                        param = new Acornima.Ast.Identifier(operation.ExceptionType.Name.ToLowerInvariant());
+                    else
+                        param = new Acornima.Ast.Identifier("error");
+                    break;
+            }
+        }
+        else if (operation.ExceptionType != null)
+        {
+            // 如果只有异常类型没有变量声明，使用类型名的小写形式
+            param = new Acornima.Ast.Identifier(operation.ExceptionType.Name.ToLowerInvariant());
+        }
 
         var bodyStatements = new List<Statement>();
         foreach (var stmt in operation.Handler.Operations)
@@ -2460,7 +2524,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：转换为 if-else 链的一部分
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitSwitchCase(ISwitchCaseOperation operation,IOperation? argument)
     {
@@ -2500,7 +2564,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：true（作为最终的 else 条件）
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitDefaultCaseClause(IDefaultCaseClauseOperation operation,IOperation? argument)
     {
@@ -2519,7 +2583,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：转换为条件表达式
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitPatternCaseClause(IPatternCaseClauseOperation operation,IOperation? argument)
     {
@@ -2537,7 +2601,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，JavaScript 没有直接的范围比较语法
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitRangeCaseClause(IRangeCaseClauseOperation operation,IOperation? argument)
     {
@@ -2555,7 +2619,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：返回比较值，关系操作符在上级处理
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitRelationalCaseClause(IRelationalCaseClauseOperation operation,IOperation? argument)
     {
@@ -2578,7 +2642,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：返回比较值，在上级组合成 if-else 链
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitSingleValueCaseClause(ISingleValueCaseClauseOperation operation,IOperation? argument)
     {
@@ -2597,7 +2661,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：字符串字面量 "Hello " / ", welcome!"
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitInterpolatedStringText(IInterpolatedStringTextOperation operation,IOperation? argument)
     {
@@ -2614,7 +2678,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：返回插值表达式 name / (x + y)，并处理格式化
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitInterpolation(IInterpolationOperation operation,IOperation? argument)
     {
@@ -2637,7 +2701,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：返回常量字面量进行比较
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitConstantPattern(IConstantPatternOperation operation,IOperation? argument)
     {
@@ -2653,7 +2717,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：转换为变量声明 let value / let str
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitDeclarationPattern(IDeclarationPatternOperation operation,IOperation? argument)
     {
@@ -2770,7 +2834,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitMethodBodyOperation(IMethodBodyOperation operation,IOperation? argument)
     {
@@ -2784,7 +2848,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitConstructorBodyOperation(IConstructorBodyOperation operation,IOperation? argument)
     {
@@ -2800,7 +2864,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：undefined
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitDiscardOperation(IDiscardOperation operation,IOperation? argument)
     {
@@ -2814,7 +2878,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitFlowCapture(IFlowCaptureOperation operation,IOperation? argument)
     {
@@ -2828,7 +2892,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitFlowCaptureReference(IFlowCaptureReferenceOperation operation,IOperation? argument)
     {
@@ -2844,7 +2908,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：obj === null
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitIsNull(IIsNullOperation operation,IOperation? argument)
     {
@@ -2861,7 +2925,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitCaughtException(ICaughtExceptionOperation operation,IOperation? argument)
     {
@@ -2874,7 +2938,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitStaticLocalInitializationSemaphore(IStaticLocalInitializationSemaphoreOperation operation,IOperation? argument)
     {
@@ -2887,7 +2951,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitFlowAnonymousFunction(IFlowAnonymousFunctionOperation operation,IOperation? argument)
     {
@@ -2902,7 +2966,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：name = name || "Default" / value = value || 0
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitCoalesceAssignment(ICoalesceAssignmentOperation operation,IOperation? argument)
     {
@@ -2947,7 +3011,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，这是 VB.NET 特有功能
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitReDim(IReDimOperation operation,IOperation? argument)
     {
@@ -2961,7 +3025,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，这是 VB.NET 特有功能
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitReDimClause(IReDimClauseOperation operation,IOperation? argument)
     {
@@ -3118,7 +3182,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 非模式匹配switch转换为switch语句，模式匹配switch转换为IIFE
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitSwitchExpression(ISwitchExpressionOperation operation,IOperation? argument)
     {
@@ -3330,7 +3394,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 根据上下文返回SwitchCase（传统switch）或Statement（模式匹配）
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitSwitchExpressionArm(ISwitchExpressionArmOperation operation,IOperation? argument)
     {
@@ -3414,7 +3478,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// Name: "John" 转换为 obj.Name === "John"
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitPropertySubpattern(IPropertySubpatternOperation operation,IOperation? argument)
     {
@@ -3463,7 +3527,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，JavaScript 没有内置的资源管理机制
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitUsingDeclaration(IUsingDeclarationOperation operation,IOperation? argument)
     {
@@ -3479,7 +3543,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：转换为JavaScript的逻辑非操作符（!）
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitNegatedPattern(INegatedPatternOperation operation,IOperation? argument)
     {
@@ -3512,7 +3576,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// and 模式转换为 (left) &amp;&amp; (right)，or 模式转换为 (left) || (right)
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitBinaryPattern(IBinaryPatternOperation operation,IOperation? argument)
     {
@@ -3567,7 +3631,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：根据类型生成相应的JavaScript类型检查条件
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitTypePattern(ITypePatternOperation operation,IOperation? argument)
     {
@@ -3633,7 +3697,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// value > 0, age >= 18, score < 60
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitRelationalPattern(IRelationalPatternOperation operation,IOperation? argument)
     {
@@ -3723,7 +3787,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// { ...person, Name: "John" } / { ...point, X: 10 }
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitWith(IWithOperation operation,IOperation? argument)
     {
@@ -3801,7 +3865,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，JavaScript没有对应机制
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitInterpolatedStringHandlerCreation(IInterpolatedStringHandlerCreationOperation operation,IOperation? argument)
     {
@@ -3818,7 +3882,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：使用 + 操作符进行字符串连接
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitInterpolatedStringAddition(IInterpolatedStringAdditionOperation operation,IOperation? argument)
     {
@@ -3834,7 +3898,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：返回追加调用的表达式
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitInterpolatedStringAppend(IInterpolatedStringAppendOperation operation,IOperation? argument)
     {
@@ -3850,7 +3914,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，这是编译器内部实现细节
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitInterpolatedStringHandlerArgumentPlaceholder(IInterpolatedStringHandlerArgumentPlaceholderOperation operation,IOperation? argument)
     {
@@ -3869,7 +3933,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，JavaScript 是安全语言，不支持函数指针
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitFunctionPointerInvocation(IFunctionPointerInvocationOperation operation,IOperation? argument)
     {
@@ -3885,7 +3949,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：Array.isArray(array) &amp;&amp; array.length === expectedLength
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitListPattern(IListPatternOperation operation,IOperation? argument)
     {
@@ -3917,7 +3981,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 符合模式匹配语义：判断是否匹配，而不是提取数据
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitSlicePattern(ISlicePatternOperation operation,IOperation? argument)
     {
@@ -3948,7 +4012,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 利用C#强类型系统，避免不必要的运行时检测，生成高效简洁的代码
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitImplicitIndexerReference(IImplicitIndexerReferenceOperation operation,IOperation? argument)
     {
@@ -4000,7 +4064,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，JavaScript 字符串是 UTF-16 编码
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitUtf8String(IUtf8StringOperation operation,IOperation? argument)
     {
@@ -4016,7 +4080,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，JavaScript 没有特性系统
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitAttribute(IAttributeOperation operation,IOperation? argument)
     {
@@ -4031,7 +4095,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，JavaScript 没有堆栈分配数组概念
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitInlineArrayAccess(IInlineArrayAccessOperation operation,IOperation? argument)
     {
@@ -4046,7 +4110,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：[1, 2, 3, 4, 5] / ["a", "b", "c"]
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitCollectionExpression(ICollectionExpressionOperation operation,IOperation? argument)
     {
@@ -4069,7 +4133,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：...array1 / ...args（JavaScript 扩展运算符）
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的父operation</param>
+    /// <param name="argument">当前访问的operation的根operation</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitSpread(ISpreadOperation operation,IOperation? argument)
     {

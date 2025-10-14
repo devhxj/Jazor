@@ -249,12 +249,12 @@ public sealed class AstOperationWalkerTests
         var result = CompileAndVisitFirstVariableInitializer(code);
 
         // Assert
-        Assert.IsInstanceOfType<LogicalExpression>(result);
-        if (result is LogicalExpression logicalExpression)
+        Assert.IsInstanceOfType<BinaryExpression>(result);
+        if (result is BinaryExpression exp)
         {
-            Assert.AreEqual(Operator.Addition, logicalExpression.Operator);
-            Assert.IsInstanceOfType<NumericLiteral>(logicalExpression.Left);
-            Assert.IsInstanceOfType<NumericLiteral>(logicalExpression.Right);
+            Assert.AreEqual(Operator.Addition, exp.Operator);
+            Assert.IsInstanceOfType<NumericLiteral>(exp.Left);
+            Assert.IsInstanceOfType<NumericLiteral>(exp.Right);
         }
         else
         {
@@ -280,10 +280,10 @@ public sealed class AstOperationWalkerTests
         var result = CompileAndVisitFirstVariableInitializer(code);
 
         // Assert
-        Assert.IsInstanceOfType<LogicalExpression>(result);
-        if (result is LogicalExpression logicalExpression)
+        Assert.IsInstanceOfType<BinaryExpression>(result);
+        if (result is BinaryExpression exp)
         {
-            Assert.AreEqual(Operator.Subtraction, logicalExpression.Operator);
+            Assert.AreEqual(Operator.Subtraction, exp.Operator);
         }
         else
         {
@@ -309,10 +309,10 @@ public sealed class AstOperationWalkerTests
         var result = CompileAndVisitFirstVariableInitializer(code);
 
         // Assert
-        Assert.IsInstanceOfType<LogicalExpression>(result);
-        if (result is LogicalExpression logicalExpression)
+        Assert.IsInstanceOfType<BinaryExpression>(result);
+        if (result is BinaryExpression exp)
         {
-            Assert.AreEqual(Acornima.Operator.Equality, logicalExpression.Operator);
+            Assert.AreEqual(Acornima.Operator.Equality, exp.Operator);
         }
         else
         {
@@ -350,7 +350,7 @@ public sealed class AstOperationWalkerTests
     }
 
     [TestMethod]
-    public void VisitUnaryOperator_Plus_ReturnsUpdateExpression()
+    public void VisitUnaryOperator_Plus_ReturnsUnaryExpression()
     {
         // Arrange
         var code = """
@@ -367,11 +367,11 @@ public sealed class AstOperationWalkerTests
         var result = CompileAndVisitFirstVariableInitializer(code);
 
         // Assert
-        Assert.IsInstanceOfType<UpdateExpression>(result);
-        if (result is UpdateExpression updateExpression)
+        Assert.IsInstanceOfType<UnaryExpression>(result);
+        if (result is UnaryExpression exp)
         {
-            Assert.AreEqual(Acornima.Operator.Addition, updateExpression.Operator);
-            Assert.IsTrue(updateExpression.Prefix);
+            Assert.AreEqual(Acornima.Operator.UnaryPlus, exp.Operator);
+            Assert.IsTrue(exp.Prefix);
         }
         else
         {
@@ -380,7 +380,7 @@ public sealed class AstOperationWalkerTests
     }
 
     [TestMethod]
-    public void VisitUnaryOperator_Minus_ReturnsUpdateExpression()
+    public void VisitUnaryOperator_Minus_ReturnsUnaryExpression()
     {
         // Arrange
         var code = """
@@ -397,11 +397,11 @@ public sealed class AstOperationWalkerTests
         var result = CompileAndVisitFirstVariableInitializer(code);
 
         // Assert
-        Assert.IsInstanceOfType<UpdateExpression>(result);
-        if (result is UpdateExpression updateExpression)
+        Assert.IsInstanceOfType<UnaryExpression>(result);
+        if (result is UnaryExpression exp)
         {
-            Assert.AreEqual(Acornima.Operator.Subtraction, updateExpression.Operator);
-            Assert.IsTrue(updateExpression.Prefix);
+            Assert.AreEqual(Acornima.Operator.UnaryNegation, exp.Operator);
+            Assert.IsTrue(exp.Prefix);
         }
         else
         {
@@ -410,7 +410,7 @@ public sealed class AstOperationWalkerTests
     }
 
     [TestMethod]
-    public void VisitUnaryOperator_Not_ReturnsUpdateExpression()
+    public void VisitUnaryOperator_Not_ReturnsUnaryExpression()
     {
         // Arrange
         var code = """
@@ -427,11 +427,11 @@ public sealed class AstOperationWalkerTests
         var result = CompileAndVisitFirstVariableInitializer(code);
 
         // Assert
-        Assert.IsInstanceOfType<UpdateExpression>(result);
-        if (result is UpdateExpression updateExpression)
+        Assert.IsInstanceOfType<UnaryExpression>(result);
+        if (result is UnaryExpression exp)
         {
-            Assert.AreEqual(Operator.LogicalNot, updateExpression.Operator);
-            Assert.IsTrue(updateExpression.Prefix);
+            Assert.AreEqual(Operator.LogicalNot, exp.Operator);
+            Assert.IsTrue(exp.Prefix);
         }
         else
         {
@@ -2678,12 +2678,12 @@ public sealed class AstOperationWalkerTests
         var result = CompileAndVisitFirstVariableInitializer(code);
 
         // Assert
-        Assert.IsInstanceOfType<LogicalExpression>(result);
-        if (result is LogicalExpression logicalExpression)
+        Assert.IsInstanceOfType<BinaryExpression>(result);
+        if (result is BinaryExpression exp)
         {
-            Assert.AreEqual(Acornima.Operator.Addition, logicalExpression.Operator);
-            Assert.IsInstanceOfType<NumericLiteral>(logicalExpression.Left);
-            Assert.IsInstanceOfType<NumericLiteral>(logicalExpression.Right);
+            Assert.AreEqual(Acornima.Operator.Addition, exp.Operator);
+            Assert.IsInstanceOfType<NumericLiteral>(exp.Left);
+            Assert.IsInstanceOfType<NumericLiteral>(exp.Right);
         }
         else
         {
@@ -2700,20 +2700,24 @@ public sealed class AstOperationWalkerTests
             {
                 void TestMethod()
                 {
-                    System.Action action = new System.Action(TestMethod);
+                    System.Func<int, int> func = (int x) => x * 10;
                 }
             }
             """;
 
         // Act
-        var result = CompileAndVisitFirstVariableInitializer(code);
+        var variableDeclarationGroup = GetOperationAt<IVariableDeclarationGroupOperation>(code);
+        var declarator = variableDeclarationGroup!.Declarations.First().Declarators.First();
+        var result = VisitWithWalker(declarator);
 
         // Assert
         // 委托创建可能被转换为标识符或函数表达式
+        var j = result.ToJavaScript();
         Assert.IsNotNull(result);
-        if (!(result is Identifier) && !(result is FunctionExpression))
+        Assert.IsInstanceOfType<VariableDeclarator>(result);
+        if (result is VariableDeclarator decl)
         {
-            Assert.Fail("Expected Identifier or FunctionExpression but got different type");
+            Assert.IsInstanceOfType<ArrowFunctionExpression>(decl.Init);
         }
     }
 
@@ -3028,7 +3032,7 @@ public sealed class AstOperationWalkerTests
         if (result is CallExpression callExpression)
         {
             Assert.AreEqual(1, callExpression.Arguments.Count);
-            Assert.IsInstanceOfType<NumericLiteral>(callExpression.Arguments[0]);
+            Assert.IsInstanceOfType<UnaryExpression>(callExpression.Arguments[0]);
         }
         else
         {
@@ -3188,10 +3192,10 @@ public sealed class AstOperationWalkerTests
         var result = CompileAndVisitFirstVariableInitializer(code);
 
         // Assert
-        Assert.IsInstanceOfType<Identifier>(result);
-        if (result is Identifier identifier)
+        Assert.IsInstanceOfType<MemberExpression>(result);
+        if (result is MemberExpression member)
         {
-            Assert.AreEqual("_field", identifier.Name);
+            Assert.AreEqual("_field", (member.Property as Identifier)?.Name);
         }
     }
 
@@ -3243,15 +3247,16 @@ public sealed class AstOperationWalkerTests
             """;
 
         // Act
-        var result = CompileAndVisitOperationAt<IInvocationOperation>(code);
+        var result = CompileAndVisitOperationAt<IExpressionStatementOperation>(code);
 
         // Assert
-        Assert.IsInstanceOfType<CallExpression>(result);
-        if (result is CallExpression callExpression)
+        Assert.IsInstanceOfType<ExpressionStatement>(result);
+        if (result is ExpressionStatement statement)
         {
-            Assert.AreEqual(3, callExpression.Arguments.Count);
+            var exp = statement.Expression as CallExpression;
+            Assert.AreEqual(3, exp?.Arguments.Count);
             // 默认参数会被转换为适当的字面量
-            Assert.IsInstanceOfType<NumericLiteral>(callExpression.Arguments[1]);
+            Assert.IsInstanceOfType<NumericLiteral>(exp?.Arguments[1]);
         }
     }
 
@@ -3369,8 +3374,8 @@ public sealed class AstOperationWalkerTests
         var result = CompileAndVisitFirstVariableInitializer(code);
 
         // Assert
-        Assert.IsInstanceOfType<UpdateExpression>(result);
-        if (result is UpdateExpression updateExpression)
+        Assert.IsInstanceOfType<UnaryExpression>(result);
+        if (result is UnaryExpression updateExpression)
         {
             Assert.AreEqual(Acornima.Operator.BitwiseNot, updateExpression.Operator);
             Assert.IsTrue(updateExpression.Prefix);
@@ -3382,7 +3387,7 @@ public sealed class AstOperationWalkerTests
     }
 
     [TestMethod]
-    public void VisitBinaryOperator_Multiplication_ReturnsLogicalExpression()
+    public void VisitBinaryOperator_Multiplication_ReturnsBinaryExpression()
     {
         // Arrange
         var code = """
@@ -3399,10 +3404,10 @@ public sealed class AstOperationWalkerTests
         var result = CompileAndVisitFirstVariableInitializer(code);
 
         // Assert
-        Assert.IsInstanceOfType<LogicalExpression>(result);
-        if (result is LogicalExpression logicalExpression)
+        Assert.IsInstanceOfType<BinaryExpression>(result);
+        if (result is BinaryExpression exp)
         {
-            Assert.AreEqual(Acornima.Operator.Multiplication, logicalExpression.Operator);
+            Assert.AreEqual(Acornima.Operator.Multiplication, exp.Operator);
         }
         else
         {
@@ -3411,7 +3416,7 @@ public sealed class AstOperationWalkerTests
     }
 
     [TestMethod]
-    public void VisitBinaryOperator_Division_ReturnsLogicalExpression()
+    public void VisitBinaryOperator_Division_ReturnsBinaryExpression()
     {
         // Arrange
         var code = """
@@ -3428,10 +3433,10 @@ public sealed class AstOperationWalkerTests
         var result = CompileAndVisitFirstVariableInitializer(code);
 
         // Assert
-        Assert.IsInstanceOfType<LogicalExpression>(result);
-        if (result is LogicalExpression logicalExpression)
+        Assert.IsInstanceOfType<BinaryExpression>(result);
+        if (result is BinaryExpression exp)
         {
-            Assert.AreEqual(Acornima.Operator.Division, logicalExpression.Operator);
+            Assert.AreEqual(Acornima.Operator.Division, exp.Operator);
         }
         else
         {
@@ -3440,7 +3445,7 @@ public sealed class AstOperationWalkerTests
     }
 
     [TestMethod]
-    public void VisitBinaryOperator_Remainder_ReturnsLogicalExpression()
+    public void VisitBinaryOperator_Remainder_ReturnsBinaryExpression()
     {
         // Arrange
         var code = """
@@ -3457,10 +3462,10 @@ public sealed class AstOperationWalkerTests
         var result = CompileAndVisitFirstVariableInitializer(code);
 
         // Assert
-        Assert.IsInstanceOfType<LogicalExpression>(result);
-        if (result is LogicalExpression logicalExpression)
+        Assert.IsInstanceOfType<BinaryExpression>(result);
+        if (result is BinaryExpression exp)
         {
-            Assert.AreEqual(Acornima.Operator.Remainder, logicalExpression.Operator);
+            Assert.AreEqual(Acornima.Operator.Remainder, exp.Operator);
         }
         else
         {
@@ -3469,7 +3474,7 @@ public sealed class AstOperationWalkerTests
     }
 
     [TestMethod]
-    public void VisitBinaryOperator_NotEquals_ReturnsLogicalExpression()
+    public void VisitBinaryOperator_NotEquals_ReturnsBinaryExpression()
     {
         // Arrange
         var code = """
@@ -3486,10 +3491,10 @@ public sealed class AstOperationWalkerTests
         var result = CompileAndVisitFirstVariableInitializer(code);
 
         // Assert
-        Assert.IsInstanceOfType<LogicalExpression>(result);
-        if (result is LogicalExpression logicalExpression)
+        Assert.IsInstanceOfType<BinaryExpression>(result);
+        if (result is BinaryExpression exp)
         {
-            Assert.AreEqual(Acornima.Operator.Inequality, logicalExpression.Operator);
+            Assert.AreEqual(Acornima.Operator.Inequality, exp.Operator);
         }
         else
         {
@@ -3498,7 +3503,7 @@ public sealed class AstOperationWalkerTests
     }
 
     [TestMethod]
-    public void VisitBinaryOperator_LessThan_ReturnsLogicalExpression()
+    public void VisitBinaryOperator_LessThan_ReturnsBinaryExpression()
     {
         // Arrange
         var code = """
@@ -3515,10 +3520,10 @@ public sealed class AstOperationWalkerTests
         var result = CompileAndVisitFirstVariableInitializer(code);
 
         // Assert
-        Assert.IsInstanceOfType<LogicalExpression>(result);
-        if (result is LogicalExpression logicalExpression)
+        Assert.IsInstanceOfType<BinaryExpression>(result);
+        if (result is BinaryExpression exp)
         {
-            Assert.AreEqual(Acornima.Operator.LessThan, logicalExpression.Operator);
+            Assert.AreEqual(Acornima.Operator.LessThan, exp.Operator);
         }
         else
         {
@@ -3527,7 +3532,7 @@ public sealed class AstOperationWalkerTests
     }
 
     [TestMethod]
-    public void VisitBinaryOperator_GreaterThan_ReturnsLogicalExpression()
+    public void VisitBinaryOperator_GreaterThan_ReturnsBinaryExpression()
     {
         // Arrange
         var code = """
@@ -3544,10 +3549,10 @@ public sealed class AstOperationWalkerTests
         var result = CompileAndVisitFirstVariableInitializer(code);
 
         // Assert
-        Assert.IsInstanceOfType<LogicalExpression>(result);
-        if (result is LogicalExpression logicalExpression)
+        Assert.IsInstanceOfType<BinaryExpression>(result);
+        if (result is BinaryExpression exp)
         {
-            Assert.AreEqual(Acornima.Operator.GreaterThan, logicalExpression.Operator);
+            Assert.AreEqual(Acornima.Operator.GreaterThan, exp.Operator);
         }
         else
         {
@@ -3556,7 +3561,7 @@ public sealed class AstOperationWalkerTests
     }
 
     [TestMethod]
-    public void VisitBinaryOperator_LessThanOrEqual_ReturnsLogicalExpression()
+    public void VisitBinaryOperator_LessThanOrEqual_ReturnsBinaryExpression()
     {
         // Arrange
         var code = """
@@ -3573,10 +3578,10 @@ public sealed class AstOperationWalkerTests
         var result = CompileAndVisitFirstVariableInitializer(code);
 
         // Assert
-        Assert.IsInstanceOfType<LogicalExpression>(result);
-        if (result is LogicalExpression logicalExpression)
+        Assert.IsInstanceOfType<BinaryExpression>(result);
+        if (result is BinaryExpression exp)
         {
-            Assert.AreEqual(Acornima.Operator.LessThanOrEqual, logicalExpression.Operator);
+            Assert.AreEqual(Acornima.Operator.LessThanOrEqual, exp.Operator);
         }
         else
         {
@@ -3585,7 +3590,7 @@ public sealed class AstOperationWalkerTests
     }
 
     [TestMethod]
-    public void VisitBinaryOperator_GreaterThanOrEqual_ReturnsLogicalExpression()
+    public void VisitBinaryOperator_GreaterThanOrEqual_ReturnsBinaryExpression()
     {
         // Arrange
         var code = """
@@ -3602,10 +3607,10 @@ public sealed class AstOperationWalkerTests
         var result = CompileAndVisitFirstVariableInitializer(code);
 
         // Assert
-        Assert.IsInstanceOfType<LogicalExpression>(result);
-        if (result is LogicalExpression logicalExpression)
+        Assert.IsInstanceOfType<BinaryExpression>(result);
+        if (result is BinaryExpression exp)
         {
-            Assert.AreEqual(Acornima.Operator.GreaterThanOrEqual, logicalExpression.Operator);
+            Assert.AreEqual(Acornima.Operator.GreaterThanOrEqual, exp.Operator);
         }
         else
         {
