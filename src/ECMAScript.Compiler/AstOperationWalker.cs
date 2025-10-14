@@ -125,7 +125,35 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     }
 
     /// <summary>
-    /// 从operation中提取简单的名称信息
+    /// 操作无法转换时的兜底方法
+    /// </summary>
+    /// <param name="operation">无法转换的Operation</param>
+    /// <param name="message"></param>
+    /// <returns></returns>
+    /// <exception cref="OperationTransformationException"></exception>
+    public Node? HandleTransformationFailure(IOperation operation, string? message = null)
+    {
+        var error = message ?? $"Unsupported operation: {operation?.GetType().Name}";
+        throw new OperationTransformationException(operation, error);
+        //内部可能有其他处理改进，如推给analysis
+    }
+
+    /// <summary>
+    /// 语法无法转换时的兜底方法
+    /// </summary>
+    /// <param name="node">无法转换的语法节点</param>
+    /// <param name="message"></param>
+    /// <returns></returns>
+    /// <exception cref="SyntaxNodeTransformationException"></exception>
+    public Node? HandleTransformationFailure(SyntaxNode node, string? message = null)
+    {
+        var error = message ?? $"Unsupported operation: {node?.GetType().Name}";
+        throw new SyntaxNodeTransformationException(node, error);
+        //内部可能有其他处理改进，如推给analysis
+    }
+    
+    /// <summary>
+    /// 从operation中提取名称信息
     /// </summary>
     /// <param name="operation"></param>
     /// <returns></returns>
@@ -142,19 +170,24 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
                 => switchExpr.Value,
 
             // 关系模式匹配：从 value is > 5 中获取 value 的名称
-            IRelationalPatternOperation relPattern when relPattern.Parent != null
+            IRelationalPatternOperation relPattern when relPattern.Parent is not null
                 => relPattern.Parent,
 
             // 处理嵌套在递归模式中的关系模式
             IPropertySubpatternOperation propSubPattern when propSubPattern.Parent is IRecursivePatternOperation recPattern
-                => ExtractReferenceNameFromRecursivePattern(recPattern),
+                => (recPattern.Parent switch
+                {
+                    IIsPatternOperation isPattern => isPattern.Value,
+                    ISwitchExpressionOperation switchExpr => switchExpr.Value,
+                    _ => null
+                }),//递归模式的父节点可能是 is 模式或 switch 表达式
 
             // 其他情况返回null
             _ => null
         };
 
         // 特殊处理：如果传入的operation本身就是RelationalPatternOperation，需要从其父节点获取参考名称
-        if (operation is IRelationalPatternOperation relationalPattern && relationalPattern.Parent != null)
+        if (operation is IRelationalPatternOperation relationalPattern && relationalPattern.Parent is not null)
         {
             refOperation = relationalPattern.Parent;
         }
@@ -163,34 +196,16 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
         {
             ILocalReferenceOperation localRef => localRef.Local?.Name,
             IParameterReferenceOperation paramRef => paramRef.Parameter?.Name,
-            IFieldReferenceOperation fieldRef when fieldRef.Instance == null => fieldRef.Field?.Name,
-            IPropertyReferenceOperation propRef when propRef.Instance == null => propRef.Property?.Name,
+            IFieldReferenceOperation fieldRef when fieldRef.Instance is null => fieldRef.Field?.Name,
+            IPropertyReferenceOperation propRef when propRef.Instance is null => propRef.Property?.Name,
             IInstanceReferenceOperation => "this",
             _ => null
         };
 
         if (refName is null || string.IsNullOrEmpty(refName))
-            throw new OperationTransformationException(operation, $"Unsupported operation: {operation?.GetType().Name}");
+            HandleTransformationFailure(operation);
 
         return refName;
-    }
-
-    /// <summary>
-    /// 从递归模式中提取参考名称
-    /// </summary>
-    /// <param name="recursivePattern">递归模式操作</param>
-    /// <returns>参考名称</returns>
-    private static IOperation? ExtractReferenceNameFromRecursivePattern(IRecursivePatternOperation recursivePattern)
-    {
-        // 递归模式的父节点可能是 is 模式或 switch 表达式
-        var parent = recursivePattern.Parent;
-
-        return parent switch
-        {
-            IIsPatternOperation isPattern => isPattern.Value,
-            ISwitchExpressionOperation switchExpr => switchExpr.Value,
-            _ => null
-        };
     }
 
     /// <summary>
@@ -247,9 +262,6 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// <exception cref="NotSupportedException">当遇到不支持的语法节点类型时抛出。</exception>
     private Node ConvertFromSyntaxNode(SyntaxNode node)
     {
-        if (node == null)
-            throw new ArgumentNullException(nameof(node), "语法节点不能为 null");
-
         var result = node switch
         {
             // --- 基础表达式和字面量 ---
