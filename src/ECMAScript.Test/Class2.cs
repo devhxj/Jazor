@@ -17,6 +17,15 @@ public class Result
 	public Data? data { get; set; }
 
 	public bool success { get; set; }
+
+	void TestMethod()
+	{
+		var x = 0;
+		for (int i = 0, j = 1, z = x++; i < 10; i++, j++)
+		{
+			Console.WriteLine(i * j * z);
+		}
+	}
 }
 
 public class Data

@@ -728,20 +728,21 @@ public sealed class AstOperationWalkerTests
             {
                 void TestMethod()
                 {
-                    for (int i = 0; i < 10; i++)
+                    var x = 0;
+                    for (int i = 0, j = 1, z = x++; i < 10; i++, j++)
                     {
-                        Console.WriteLine(i);
+                        Console.WriteLine(i * j * z);
                     }
                 }
             }
             """;
 
         // Act
-        var result = CompileAndVisitOperationAt<IForLoopOperation>(code);
+        var result = CompileAndVisitOperationAt<IForLoopOperation>(code, 1);
         var js = result.ToJavaScript();
 
         // Assert - 使用生成的 JavaScript 代码进行验证
-        Assert.AreEqual("for(let i=0;i<10;i++){Console.WriteLine(i)}", js);
+        Assert.AreEqual("for(let i=0,j=1,z=x++;i<10;i++,j++){Console.WriteLine(i*j*z)}", js);
         
         // 保留原有的类型检查作为辅助验证
         Assert.IsInstanceOfType<ForStatement>(result);
