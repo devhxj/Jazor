@@ -39,8 +39,8 @@ Console.WriteLine("Hello, World!");
 
 
 var script = @"
-let person = { Name : 'John', Age : 30 };
-let updated = {...person, Age : 31 };
+let obj;
+let a = obj?.Property;
 ";
 var parser = new Parser(new ParserOptions { 
 
