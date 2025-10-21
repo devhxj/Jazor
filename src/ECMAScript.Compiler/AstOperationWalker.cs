@@ -18,104 +18,25 @@ namespace ECMAScript.Compiler;
 
 /// <summary>
 /// C# Roslyn 操作树到 JavaScript Acornima AST 的转换器
-/// 
 /// <para><b>转换器功能范围</b></para>
 /// 支持将方法体、静态字段初始值、属性 getter/setter、构造函数初始值设定项、局部函数、匿名函数/Lambda 转换为 Acornima AST。
-/// 
 /// <para><b>核心转换原则</b></para>
 /// 1. <b>语义等价性</b>：确保 C# 和 JavaScript 之间的语义完全等价，禁止任何形式的简化处理
 /// 2. <b>直接AST构造</b>：必须直接构造目标AST节点，禁止使用Parser进行解析
 /// 3. <b>空值安全处理</b>：构造AST节点时必须先检查输入值是否为null，避免NullReferenceException
 /// 4. <b>编译时优化</b>：利用C#强类型系统的编译时信息直接生成最简AST，避免不必要的运行时检测
 /// 5. <b>方法复用原则</b>：优先复用现有的Visit方法，避免为相似语义创建多个独立生成方法
-/// 
-/// <para><b>主要转换规则</b></para>
-/// 
-/// <para><b>基础语法转换</b></para>
-/// - 变量声明：C# var/int → JavaScript let
-/// - 赋值操作：C# = += -= *= /= %= → JavaScript = += -= *= /= %=
-/// - 二元运算：C# + - * / % == != < > <= >= &amp;&amp; || → JavaScript 相同运算符
-/// - 一元运算：C# + - ! ~ → JavaScript 相同运算符
-/// - 三元运算：C# condition ? true : false → JavaScript 相同语法
-/// - 空合并：C# value ?? defaultValue → JavaScript value || defaultValue
-/// 
-/// <para><b>控制流转换</b></para>
-/// - if语句：C# if/else → JavaScript if/else
-/// - switch语句：C# switch → JavaScript switch（仅支持常量模式）
-/// - switch表达式：简单常量模式 → JavaScript switch语句包装在IIFE中；复杂模式匹配 → IIFE包装if-else链
-/// - for循环：C# for → JavaScript for
-/// - foreach循环：C# foreach → JavaScript for...of
-/// - while循环：C# while → JavaScript while
-/// - break/continue：C# break/continue → JavaScript 相同语句
-/// - return语句：C# return → JavaScript return
-/// 
-/// <para><b>模式匹配转换</b></para>
-/// - 常量模式：C# value is 42 → JavaScript value === 42
-/// - 类型模式：C# obj is string → JavaScript typeof obj === "string" 或 obj instanceof Type
-/// - 属性模式：C# obj is { Name: "John" } → JavaScript obj.Name === "John"
-/// - 丢弃模式：C# _ → JavaScript true（总是匹配）
-/// - 列表模式：C# array is [1, 2, 3] → JavaScript Array.isArray(array)
-/// - 二元模式：C# value is > 0 and < 100 → JavaScript (value > 0) &amp;&amp; (value < 100)
-/// - 取反模式：C# obj is not null → JavaScript !(obj === null)
-/// - 递归模式：C# obj is Person { Name: "John", Age: > 18 } → JavaScript (obj instanceof Person) && (obj.Name === "John") && (obj.Age > 18)
-/// 
-/// <para><b>数据结构转换</b></para>
-/// - 数组：C# new int[] {1, 2, 3} → JavaScript [1, 2, 3]
-/// - 对象：C# new MyClass { Prop = value } → JavaScript new MyClass()
-/// - 元组：C# (a, b) → JavaScript [a, b]
-/// - 元组比较：C# (a, b) == (c, d) → JavaScript (a === c) &amp;&amp; (b === d)
-/// - Range操作：C# 1..5 → JavaScript { start: 1, end: 5 }
-/// 
-/// <para><b>函数转换</b></para>
-/// - 方法调用：C# obj.Method(args) → JavaScript obj.method(args)
-/// - Lambda表达式：C# (x, y) => x + y → JavaScript (x, y) => { return x + y; }
-/// - 本地函数：C# void LocalFunc() { } → JavaScript function localFunc() { }
-/// - 异步函数：C# async/await → JavaScript async/await
-/// 
-/// <para><b>成员访问转换</b></para>
-/// - 属性访问：C# obj.Property → JavaScript obj.property
-/// - 字段访问：C# obj.field → JavaScript obj.field
-/// - 索引访问：C# array[index] → JavaScript array[index]
-/// - 隐式索引：C# array[^1] → JavaScript array[array.length - 1]
-/// 
-/// <para><b>异常处理转换</b></para>
-/// - try-catch：C# try { } catch (Exception e) { } → JavaScript try { } catch (e) { }
-/// - finally：C# finally { } → JavaScript finally { }
-/// - throw：C# throw new Exception() → JavaScript throw new Error()
-/// 
-/// <para><b>不支持的特性</b></para>
-/// - 事件系统（EventReference, RaiseEvent）
-/// - 动态类型（dynamic关键字相关操作）
-/// - LINQ查询表达式
-/// - goto语句（除break/continue外的跳转）
-/// - 多维数组访问
-/// - VB.NET特有功能（ReDim等）
-/// - C#特定的值类型语义（结构体按值传递等）
-/// 
-/// <para><b>错误处理策略</b></para>
-/// - 对于不支持的操作：抛出NotSupportedException并提供明确的错误信息
-/// - 对于编译器内部操作：抛出NotSupportedException
-/// - 对于无效操作：抛出NotSupportedException
-/// - 对于null输入：返回null或提供默认值
-/// 
-/// <para><b>AST节点构造规范</b></para>
-/// - 使用LogicalExpression而非BinaryExpression表示逻辑操作
-/// - 使用UpdateExpression处理typeof等一元操作
-/// - NullLiteral必须提供raw参数
-/// - BooleanLiteral第一个参数为bool值，第二个参数为string原始值
-/// - 使用PropertyDefinition而非抽象Property类型创建对象属性
-/// - 所有字符串字面量需要适当的转义处理
-/// 
 /// <para><b>性能优化策略</b></para>
 /// - 利用编译时类型信息避免运行时类型检测
 /// - 对于强类型到弱类型转换，依赖编译时类型安全
 /// - 生成最简洁的JavaScript代码，避免复杂的IIFE包装（除非必要）
 /// - 递归深度控制，防止栈溢出
 /// </summary>
-public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
+public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclaration>, Node?>
 {
     private int _recursionDepth;
-    private Action<Location, string>? _report;
+
+    private readonly Action<Location, string>? _report;
 
     public AstOperationWalker()
     {
@@ -189,12 +110,11 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     }
 
     /// <summary>
-    /// 从operation中提取名称信息
+    /// 提取模式操作中引用对象名称
     /// </summary>
-    /// <param name="operation"></param>
-    /// <returns></returns>
-    /// <exception cref="InvalidOperationException"></exception>
-    private string? ExtractReferenceName(IOperation? operation)
+    /// <param name="operation">模式相关操作</param>
+    /// <returns>引用对象名称</returns>
+    private string? ExtractPatternValName(IOperation? operation)
     {
         var refOperation = operation switch
         {
@@ -211,12 +131,12 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
 
             // 处理嵌套在递归模式中的关系模式
             IPropertySubpatternOperation propSubPattern when propSubPattern.Parent is IRecursivePatternOperation recPattern
-                => (recPattern.Parent switch
+                => recPattern.Parent switch
                 {
                     IIsPatternOperation isPattern => isPattern.Value,
                     ISwitchExpressionOperation switchExpr => switchExpr.Value,
                     _ => null
-                }),//递归模式的父节点可能是 is 模式或 switch 表达式
+                },//递归模式的父节点可能是 is 模式或 switch 表达式
 
             // 其他情况返回null
             _ => null
@@ -230,10 +150,10 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
 
         var refName = refOperation switch
         {
-            ILocalReferenceOperation localRef => localRef.Local?.Name,
-            IParameterReferenceOperation paramRef => paramRef.Parameter?.Name,
-            IFieldReferenceOperation fieldRef when fieldRef.Instance is null => fieldRef.Field?.Name,
-            IPropertyReferenceOperation propRef when propRef.Instance is null => propRef.Property?.Name,
+            ILocalReferenceOperation localRef => localRef.Local.Name,
+            IParameterReferenceOperation paramRef => paramRef.Parameter.Name,
+            IFieldReferenceOperation fieldRef when fieldRef.Instance is null => fieldRef.Field.Name,
+            IPropertyReferenceOperation propRef when propRef.Instance is null => propRef.Property.Name,
             IInstanceReferenceOperation => "this",
             _ => null
         };
@@ -245,9 +165,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 方法体、静态字段初始值、属性 getter/setter、构造函数初始值设定项、局部函数、匿名函数/Lambda 转换为 Acornima AST。
     /// </summary>
     /// <param name="operation">BlockSyntax对应的IOperation</param>
-    /// <param name="argument">当前访问的 operation 的根 operation。</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? Visit(IOperation? operation, IOperation? argument)
+    public override Acornima.Ast.Node? Visit(IOperation? operation, Queue<VariableDeclaration> argument)
     {
         if (operation is not null)
         {
@@ -275,9 +195,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，JavaScript 没有内置的资源管理机制
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitUsing(IUsingOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitUsing(IUsingOperation operation, Queue<VariableDeclaration> argument)
         => HandleTransformationFailure(operation, "Using statements are not supported in JavaScript conversion");
 
     /// <summary>
@@ -286,9 +206,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitStop(IStopOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitStop(IStopOperation operation, Queue<VariableDeclaration> argument)
         => HandleTransformationFailure(operation, "Stop operations are compiler-internal and not supported in JavaScript conversion.");
 
     /// <summary>
@@ -297,9 +217,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitEnd(IEndOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitEnd(IEndOperation operation, Queue<VariableDeclaration> argument)
         => HandleTransformationFailure(operation, "End operations are compiler-internal and not supported in JavaScript conversion.");
 
     /// <summary>
@@ -309,9 +229,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，JavaScript 事件模型不同
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitRaiseEvent(IRaiseEventOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitRaiseEvent(IRaiseEventOperation operation, Queue<VariableDeclaration> argument)
         => HandleTransformationFailure(operation, "Event raising operations are not supported in JavaScript conversion");
 
     /// <summary>
@@ -323,9 +243,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，请使用标准 for 循环
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitForToLoop(IForToLoopOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitForToLoop(IForToLoopOperation operation, Queue<VariableDeclaration> argument)
         => HandleTransformationFailure(operation, "For-to loops are not supported in JavaScript conversion");
 
     /// <summary>
@@ -337,9 +257,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，JavaScript 没有内置的锁机制
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitLock(ILockOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitLock(ILockOperation operation, Queue<VariableDeclaration> argument)
         => HandleTransformationFailure(operation, "Lock statements are not supported in JavaScript conversion");
 
     /// <summary>
@@ -350,9 +270,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，JavaScript 事件模型不同
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitEventReference(IEventReferenceOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitEventReference(IEventReferenceOperation operation, Queue<VariableDeclaration> argument)
         => HandleTransformationFailure(operation, "Event references are not supported in JavaScript conversion");
 
     /// <summary>
@@ -363,9 +283,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，JavaScript 事件模型不同
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitEventAssignment(IEventAssignmentOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitEventAssignment(IEventAssignmentOperation operation, Queue<VariableDeclaration> argument)
         => HandleTransformationFailure(operation, "C# 事件模型（多播、弱引用、线程安全）与 JavaScript 事件模型根本不同，无论订阅、取消订阅还是直接赋值都无法保证语义等价");
 
     /// <summary>
@@ -376,11 +296,10 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，JavaScript 的动态性与 C# dynamic 语义不同
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitDynamicObjectCreation(IDynamicObjectCreationOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitDynamicObjectCreation(IDynamicObjectCreationOperation operation, Queue<VariableDeclaration> argument)
          => HandleTransformationFailure(operation, "C# 动态绑定语义（运行时解析、重载决策、动态分派）与 JavaScript 静态分派模型根本不可通约，无法保证语义等价");
-    
 
     /// <summary>
     /// 处理动态成员引用操作
@@ -390,11 +309,11 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，需要编译时确定成员信息
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitDynamicMemberReference(IDynamicMemberReferenceOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitDynamicMemberReference(IDynamicMemberReferenceOperation operation, Queue<VariableDeclaration> argument)
         => HandleTransformationFailure(operation, "C# 动态绑定语义（运行时解析、重载决策、动态分派）与 JavaScript 静态分派模型根本不可通约，无法保证语义等价");
-    
+
     /// <summary>
     /// 处理动态方法调用操作
     /// C# 示例：
@@ -403,10 +322,10 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，需要编译时确定方法签名
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitDynamicInvocation(IDynamicInvocationOperation operation,IOperation? argument)
-     => HandleTransformationFailure(operation,"C# 动态绑定语义（运行时解析、重载决策、动态分派）与 JavaScript 静态分派模型根本不可通约，无法保证语义等价");
+    public override Acornima.Ast.Node? VisitDynamicInvocation(IDynamicInvocationOperation operation, Queue<VariableDeclaration> argument)
+     => HandleTransformationFailure(operation, "C# 动态绑定语义（运行时解析、重载决策、动态分派）与 JavaScript 静态分派模型根本不可通约，无法保证语义等价");
 
     /// <summary>
     /// 处理动态索引器访问操作
@@ -417,11 +336,11 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，需要编译时确定索引器类型
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitDynamicIndexerAccess(IDynamicIndexerAccessOperation operation,IOperation? argument)
-        => HandleTransformationFailure(operation,"C# 动态绑定语义（运行时解析、重载决策、动态分派）与 JavaScript 静态分派模型根本不可通约，无法保证语义等价");
-    
+    public override Acornima.Ast.Node? VisitDynamicIndexerAccess(IDynamicIndexerAccessOperation operation, Queue<VariableDeclaration> argument)
+        => HandleTransformationFailure(operation, "C# 动态绑定语义（运行时解析、重载决策、动态分派）与 JavaScript 静态分派模型根本不可通约，无法保证语义等价");
+
     /// <summary>
     /// 处理已翻译的 LINQ 查询操作
     /// C# 示例：
@@ -432,9 +351,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，LINQ 语义复杂且 JavaScript 没有对应构造
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitTranslatedQuery(ITranslatedQueryOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitTranslatedQuery(ITranslatedQueryOperation operation, Queue<VariableDeclaration> argument)
         => HandleTransformationFailure(operation, "LINQ queries are not supported in JavaScript conversion");
 
     /// <summary>
@@ -445,9 +364,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，JavaScript typeof 语义与 C# 不同
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitTypeOf(ITypeOfOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitTypeOf(ITypeOfOperation operation, Queue<VariableDeclaration> argument)
         => HandleTransformationFailure(operation, "typeof operator is not supported in JavaScript conversion");
 
     /// <summary>
@@ -458,9 +377,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，JavaScript 没有直接的内存大小概念
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitSizeOf(ISizeOfOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitSizeOf(ISizeOfOperation operation, Queue<VariableDeclaration> argument)
         => HandleTransformationFailure(operation, "sizeof operator is not supported in JavaScript conversion");
 
     /// <summary>
@@ -473,32 +392,32 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，JavaScript 是安全语言，不支持指针操作
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitAddressOf(IAddressOfOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitAddressOf(IAddressOfOperation operation, Queue<VariableDeclaration> argument)
         => HandleTransformationFailure(operation, "JavaScript 为安全语言，不支持指针、函数指针或 unsafe 语义，取地址操作符（&）无法转换");
-  
+
     /// <summary>
     /// 处理方法体操作（编译器内部）
     /// 这是编译器内部使用的操作，不对应具体的 C# 语法
     /// 转换结果：不支持
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitMethodBodyOperation(IMethodBodyOperation operation,IOperation? argument)
-        => HandleTransformationFailure(operation,$"方法体操作（{operation.Kind}）是编译器内部使用的操作，不对应具体的 C# 语法，无法转换为 JavaScript");
-    
+    public override Acornima.Ast.Node? VisitMethodBodyOperation(IMethodBodyOperation operation, Queue<VariableDeclaration> argument)
+        => HandleTransformationFailure(operation, $"方法体操作（{operation.Kind}）是编译器内部使用的操作，不对应具体的 C# 语法，无法转换为 JavaScript");
+
     /// <summary>
     /// 处理构造函数体操作（编译器内部）
     /// 这是编译器内部使用的操作，不对应具体的 C# 语法
     /// 转换结果：不支持
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitConstructorBodyOperation(IConstructorBodyOperation operation, IOperation? argument)
-        => HandleTransformationFailure(operation,$"构造函数体操作（{operation.Kind}）是编译器内部使用的操作，不对应具体的 C# 语法，无法转换为 JavaScript");
+    public override Acornima.Ast.Node? VisitConstructorBodyOperation(IConstructorBodyOperation operation, Queue<VariableDeclaration> argument)
+        => HandleTransformationFailure(operation, $"构造函数体操作（{operation.Kind}）是编译器内部使用的操作，不对应具体的 C# 语法，无法转换为 JavaScript");
 
     /// <summary>
     /// 处理捕获异常操作（编译器内部）
@@ -506,9 +425,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitCaughtException(ICaughtExceptionOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitCaughtException(ICaughtExceptionOperation operation, Queue<VariableDeclaration> argument)
         => HandleTransformationFailure(operation, "Caught exception operations are compiler-internal and not supported in JavaScript conversion.");
 
     /// <summary>
@@ -517,9 +436,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitStaticLocalInitializationSemaphore(IStaticLocalInitializationSemaphoreOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitStaticLocalInitializationSemaphore(IStaticLocalInitializationSemaphoreOperation operation, Queue<VariableDeclaration> argument)
         => HandleTransformationFailure(operation, "Static local initialization semaphore operations are compiler-internal and not supported in JavaScript conversion.");
 
     /// <summary>
@@ -528,11 +447,11 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitFlowAnonymousFunction(IFlowAnonymousFunctionOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitFlowAnonymousFunction(IFlowAnonymousFunctionOperation operation, Queue<VariableDeclaration> argument)
         => HandleTransformationFailure(operation, "Flow anonymous function operations are compiler-internal and not supported in JavaScript conversion.");
-    
+
     /// <summary>
     /// 处理范围 case 子句操作（VB.NET 特有）
     /// VB.NET 示例：
@@ -543,10 +462,32 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitRangeCaseClause(IRangeCaseClauseOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitRangeCaseClause(IRangeCaseClauseOperation operation, Queue<VariableDeclaration> argument)
         => HandleTransformationFailure(operation, "Range case clauses require complex range checking logic and are not supported in JavaScript conversion.");
+
+    /// <summary>
+    /// 处理流捕获操作（编译器内部）
+    /// 这是编译器内部使用的操作，用于数据流分析
+    /// 转换结果：不支持
+    /// </summary>
+    /// <param name="operation">当前访问的operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+    /// <returns>Acornima的ESTree的Node</returns>
+    public override Acornima.Ast.Node? VisitFlowCapture(IFlowCaptureOperation operation, Queue<VariableDeclaration> argument)
+        => HandleTransformationFailure(operation, $"流捕获操作（{operation.Kind}）是编译器内部使用的操作，用于数据流分析，无法转换为 JavaScript");
+
+    /// <summary>
+    /// 处理流捕获引用操作（编译器内部）
+    /// 这是编译器内部使用的操作，用于数据流分析
+    /// 转换结果：不支持
+    /// </summary>
+    /// <param name="operation">当前访问的operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+    /// <returns>Acornima的ESTree的Node</returns>
+    public override Acornima.Ast.Node? VisitFlowCaptureReference(IFlowCaptureReferenceOperation operation, Queue<VariableDeclaration> argument)
+        => HandleTransformationFailure(operation, $"流捕获引用操作（{operation.Kind}）是编译器内部使用的操作，用于数据流分析，无法转换为 JavaScript");
 
     /// <summary>
     /// 处理关系 case 子句操作（VB.NET 特有）
@@ -558,10 +499,117 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：返回比较值，关系操作符在上级处理
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitRelationalCaseClause(IRelationalCaseClauseOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitRelationalCaseClause(IRelationalCaseClauseOperation operation, Queue<VariableDeclaration> argument)
         => HandleTransformationFailure(operation);
+
+    /// <summary>
+    /// 处理范围操作（Range 操作符）
+    /// C# 示例：
+    /// Range range = 1..5;                // 创建范围 1 到 5
+    /// var slice = array[1..^1];          // 使用范围进行切片
+    /// array[start..end]                  // 数组切片操作
+    /// list[2..^2]                        // 列表切片，从索引 2 到倒数第 2 个
+    /// 转换结果：C# Range 操作在没有下游消费逗辑（如索引器转换为 slice 调用）时属于“悬空 AST”
+    /// 为保证语义等价，必须由上层语法节点实现 Range 消费逗辑
+    /// </summary>
+    /// <param name="operation">范围操作</param>
+    /// <param name="argument">当前operation所属的父operation</param>
+    /// <returns>JavaScript范围对象字面量</returns>
+    public override Acornima.Ast.Node? VisitRangeOperation(IRangeOperation operation, Queue<VariableDeclaration> argument)
+        => HandleTransformationFailure(operation, "C# Range 操作必须在索引器操作中被消费转换为 slice/splice 调用，单独的 Range 对象在 JavaScript 中无意义且可能导致运行时错误");
+
+    /// <summary>
+    /// 处理 ReDim 操作（VB.NET 特有）
+    /// VB.NET 示例：
+    /// ReDim array(10)         // 重新设置数组大小
+    /// ReDim Preserve array(20) // 保留数据同时重新设置大小
+    /// 转换结果：不支持，这是 VB.NET 特有功能
+    /// </summary>
+    /// <param name="operation">当前访问的operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+    /// <returns>Acornima的ESTree的Node</returns>
+    public override Acornima.Ast.Node? VisitReDim(IReDimOperation operation, Queue<VariableDeclaration> argument)
+        => HandleTransformationFailure(operation, "ReDim operations are VB.NET-specific and not supported in JavaScript conversion.");
+
+    /// <summary>
+    /// 处理 ReDim 子句操作（VB.NET 特有）
+    /// VB.NET 示例：
+    /// ReDim array1(10), array2(20) 中的每个数组重新定义
+    /// 转换结果：不支持，这是 VB.NET 特有功能
+    /// </summary>
+    /// <param name="operation">当前访问的operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+    /// <returns>Acornima的ESTree的Node</returns>
+    public override Acornima.Ast.Node? VisitReDimClause(IReDimClauseOperation operation, Queue<VariableDeclaration> argument)
+        => HandleTransformationFailure(operation, "ReDim clause operations are VB.NET-specific and not supported in JavaScript conversion.");
+
+    /// <summary>
+    /// 处理 using 声明操作
+    /// C# 示例：
+    /// using var file = File.OpenRead("data.txt"); // using 声明
+    /// using FileStream fs = new FileStream(...);   // 传统 using 声明
+    /// 转换结果：不支持，JavaScript 没有内置的资源管理机制
+    /// </summary>
+    /// <param name="operation">当前访问的operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+    /// <returns>Acornima的ESTree的Node</returns>
+    public override Acornima.Ast.Node? VisitUsingDeclaration(IUsingDeclarationOperation operation, Queue<VariableDeclaration> argument)
+        => HandleTransformationFailure(operation, "Using declarations are not supported in JavaScript conversion.");
+
+    /// <summary>
+    /// 处理插值字符串处理器创建操作
+    /// C# 示例：
+    /// public void WriteInterpolated([InterpolatedStringHandler] ref CustomHandler handler) { ... }
+    /// WriteInterpolated($"Hello {name}!"); // 触发处理器创建
+    /// 转换结果：不支持，插值字符串处理器的自定义 AppendLiteral/AppendFormatted 调用链无法在 JS 端重现
+    /// 处理器的副作用、格式化逗辑、状态管理均无法保证语义等价
+    /// </summary>
+    /// <param name="operation">当前访问的operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+    /// <returns>Acornima的ESTree的Node</returns>
+    public override Acornima.Ast.Node? VisitInterpolatedStringHandlerCreation(IInterpolatedStringHandlerCreationOperation operation, Queue<VariableDeclaration> argument)
+        => HandleTransformationFailure(operation, "插值字符串处理器的自定义 AppendLiteral/AppendFormatted 调用链无法在 JavaScript 端重现，处理器的副作用、格式化逗辑、状态管理均无法保证语义等价");
+
+    /// <summary>
+    /// 处理插值字符串追加操作
+    /// C# 示例：
+    /// 在插值字符串处理器中追加内容的操作
+    /// 转换结果：插值字符串追加操作属于处理器框架的一部分，无法单独转换
+    /// </summary>
+    /// <param name="operation">当前访问的operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+    /// <returns>Acornima的ESTree的Node</returns>
+    public override Acornima.Ast.Node? VisitInterpolatedStringAppend(IInterpolatedStringAppendOperation operation, Queue<VariableDeclaration> argument)
+        => HandleTransformationFailure(operation, "插值字符串追加操作属于处理器框架的一部分，其语义依赖于处理器上下文，无法在 JavaScript 中单独转换而保证语义等价");
+
+    /// <summary>
+    /// 处理插值字符串处理器参数占位符操作
+    /// C# 示例：
+    /// 插值字符串处理器中的参数占位符（编译器内部）
+    /// 转换结果：插值字符串处理器参数占位符是编译器内部操作，无法转换
+    /// </summary>
+    /// <param name="operation">当前访问的operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+    /// <returns>Acornima的ESTree的Node</returns>
+    public override Acornima.Ast.Node? VisitInterpolatedStringHandlerArgumentPlaceholder(IInterpolatedStringHandlerArgumentPlaceholderOperation operation, Queue<VariableDeclaration> argument)
+        => HandleTransformationFailure(operation, $"插值字符串处理器参数占位符操作（{operation.Kind}）是编译器内部实现细节，无法转换为 JavaScript 并保证语义等价");
+
+    /// <summary>
+    /// 处理函数指针调用操作
+    /// C# 示例：
+    /// unsafe {
+    ///     delegate*<int, int> ptr = &MyMethod;
+    ///     int result = ptr(42);    // 函数指针调用
+    /// }
+    /// 转换结果：不支持，JavaScript 是安全语言，不支持函数指针
+    /// </summary>
+    /// <param name="operation">当前访问的operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+    /// <returns>Acornima的ESTree的Node</returns>
+    public override Acornima.Ast.Node? VisitFunctionPointerInvocation(IFunctionPointerInvocationOperation operation, Queue<VariableDeclaration> argument)
+        => HandleTransformationFailure(operation, "JavaScript 为安全语言，不支持指针、函数指针或 unsafe 语义，函数指针调用无法转换");
 
     /// <summary>
     /// 处理 IInvalidOperation，它包装了在当前上下文中无法用单一类型表示其结果的操作。
@@ -578,9 +626,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// <param name="operation">当前访问的 IInvalidOperation。</param>
     /// <param name="argument">当前访问的 operation 的根 operation。</param>
     /// <returns>转换后的 Acornima AST Node。</returns>
-    public override Acornima.Ast.Node? VisitInvalid(IInvalidOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitInvalid(IInvalidOperation operation, Queue<VariableDeclaration> argument)
         => ConvertFromSyntaxNode(operation.Syntax);
-    
+
     /// <summary>
     /// 核心转换器，基于 C# 语法节点类型进行模式匹配，转换为 Acornima AST 节点。
     /// </summary>
@@ -708,9 +756,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：根据上下文返回 NestedBlockStatement、FunctionBody 或 StaticBlock
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitBlock(IBlockOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitBlock(IBlockOperation operation, Queue<VariableDeclaration> argument)
     {
         var statements = new List<Statement>();
         foreach (var stmt in operation.Operations)
@@ -721,7 +769,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
             else if (node is Expression expr)
                 statements.Add(new NonSpecialExpressionStatement(expr));
         }
-        
+
         // 根据上下文判断返回不同类型的语句块
         // 如果父节点是方法或函数，返回 FunctionBody
         if (operation.Parent is IMethodBodyOperation ||
@@ -731,7 +779,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
         {
             return new FunctionBody(NodeList.From(statements), strict: true);
         }
-        
+
         // 如果父节点是类型或类定义的静态初始化块，返回 StaticBlock
         if (operation.Parent is IFieldInitializerOperation &&
             operation.Parent is IFieldReferenceOperation fieldRef &&
@@ -739,7 +787,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
         {
             return new StaticBlock(NodeList.From(statements));
         }
-        
+
         // 默认情况返回 NestedBlockStatement
         return new NestedBlockStatement(NodeList.From(statements));
     }
@@ -750,9 +798,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：let a = 1, b = 2, c;
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitVariableDeclarationGroup(IVariableDeclarationGroupOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitVariableDeclarationGroup(IVariableDeclarationGroupOperation operation, Queue<VariableDeclaration> argument)
     {
         // 可以假设 IVariableDeclarationGroupOperation.Declarations 只包含一个元素
         // 除非你正在处理一些非常特殊的、涉及类型推断的复合声明（如 using 语句）。
@@ -791,9 +839,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：直接转换为 JavaScript 的 switch 语句
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitSwitch(ISwitchOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitSwitch(ISwitchOperation operation, Queue<VariableDeclaration> argument)
     {
         if (Visit(operation.Value, argument) is not Expression discriminant)
             return HandleTransformationFailure(operation);
@@ -856,9 +904,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：for (let item of collection) { console.log(item); }
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitForEachLoop(IForEachLoopOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitForEachLoop(IForEachLoopOperation operation, Queue<VariableDeclaration> argument)
     {
         // 获取循环变量 - 使用 LoopControlVariable 直接访问
         var left = Visit(operation.LoopControlVariable, argument);
@@ -880,9 +928,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：for (let i = 0; i < 10; i++) { console.log(i); }
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitForLoop(IForLoopOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitForLoop(IForLoopOperation operation, Queue<VariableDeclaration> argument)
     {
         StatementOrExpression? init = null;
         Expression? test = null;
@@ -915,7 +963,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
             if (test is null)
                 return HandleTransformationFailure(operation.Condition);
         }
-        
+
         // 处理多个 AtLoopBottom 操作的情况
         // IForLoopOperation.AtLoopBottom 出现“多个”运算并不代表 C# 支持写多个迭代表达式，
         // 而是 Roslyn 在 lowering 阶段把源码里的一个迭代表达式拆成多条中间指令。
@@ -945,11 +993,11 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
 
                     expressions.Add(stmt.Expression);
                 }
-                
+
                 // 如果只有一个有效表达式，直接使用
                 if (expressions.Count == 1)
                     updateExpression = expressions[0];
-                
+
                 // 如果有多个有效表达式，使用逗号表达式组合
                 else if (expressions.Count > 1)
                 {
@@ -957,7 +1005,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
                     for (int i = 1; i < expressions.Count; i++)
                     {
                         updateExpression = new SequenceExpression(
-                            NodeList.From<Expression>([updateExpression, expressions[i]])
+                            NodeList.From([updateExpression, expressions[i]])
                         );
                     }
                 }
@@ -980,15 +1028,15 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：while (condition) { doSomething(); }
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitWhileLoop(IWhileLoopOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitWhileLoop(IWhileLoopOperation operation, Queue<VariableDeclaration> argument)
     {
         if (Visit(operation.Condition!, argument) is not Expression test)
             return HandleTransformationFailure(operation.Condition!);//not null
-            
-        if (Visit(operation.Body, argument) is not Statement body) 
-            return HandleTransformationFailure(operation.Body);            
+
+        if (Visit(operation.Body, argument) is not Statement body)
+            return HandleTransformationFailure(operation.Body);
 
         return new WhileStatement(test, body);
     }
@@ -1002,9 +1050,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：label1: console.log("Labeled statement");
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitLabeled(ILabeledOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitLabeled(ILabeledOperation operation, Queue<VariableDeclaration> argument)
     {
         var label = new Identifier(operation.Label.Name);
 
@@ -1030,9 +1078,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：break; / continue; / break label1;
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitBranch(IBranchOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitBranch(IBranchOperation operation, Queue<VariableDeclaration> argument)
     {
         var label = new Identifier(operation.Target.Name);
 
@@ -1050,9 +1098,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：; // JavaScript 空语句
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitEmpty(IEmptyOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitEmpty(IEmptyOperation operation, Queue<VariableDeclaration> argument)
         => new EmptyStatement();
 
     /// <summary>
@@ -1063,9 +1111,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：return; / return value;
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitReturn(IReturnOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitReturn(IReturnOperation operation, Queue<VariableDeclaration> argument)
     {
         if (operation.ReturnedValue is null)
             return new ReturnStatement(null);
@@ -1089,9 +1137,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：try { riskyOperation(); } catch (ex) { handleError(ex); } finally { cleanup(); }
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitTry(ITryOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitTry(ITryOperation operation, Queue<VariableDeclaration> argument)
     {
         var bodyStatements = new List<Statement>();
         foreach (var stmt in operation.Body.Operations)
@@ -1164,7 +1212,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
 
         return new TryStatement(block, handler, finalizer);
     }
-    
+
     /// <summary>
     /// 从ExceptionDeclarationOrExpression中提取异常变量名
     /// </summary>
@@ -1205,7 +1253,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// <param name="operation"></param>
     /// <param name="argument"></param>
     /// <returns></returns>
-    private List<Acornima.Ast.Statement> ExtractCatchClauseBody(ICatchClauseOperation operation, IOperation? argument)
+    private List<Acornima.Ast.Statement> ExtractCatchClauseBody(ICatchClauseOperation operation, Queue<VariableDeclaration> argument)
     {
         var bodyStatements = new List<Statement>();
         foreach (var stmt in operation.Handler.Operations)
@@ -1230,14 +1278,14 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：catch (ex) { ... } / catch (error) { ... }
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitCatchClause(ICatchClauseOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitCatchClause(ICatchClauseOperation operation, Queue<VariableDeclaration> argument)
     {
         // 此处不用担心多个catch，多catch会在 VisitTry中处理
         var param = ExtractCatchClauseParam(operation);
         var statements = ExtractCatchClauseBody(operation, argument);
-        var body = new NestedBlockStatement(NodeList.From(statements));      
+        var body = new NestedBlockStatement(NodeList.From(statements));
 
         return new CatchClause(param, body);
     }
@@ -1250,9 +1298,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：method(); / x++;
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitExpressionStatement(IExpressionStatementOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitExpressionStatement(IExpressionStatementOperation operation, Queue<VariableDeclaration> argument)
     {
         return Visit(operation.Operation, argument) is Expression expr
             ? new NonSpecialExpressionStatement(expr)
@@ -1269,15 +1317,15 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：function localFunction(param) { console.log(param); }
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitLocalFunction(ILocalFunctionOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitLocalFunction(ILocalFunctionOperation operation, Queue<VariableDeclaration> argument)
     {
         var id = new Identifier(operation.Symbol.Name);
         var parameters = new List<Node>();
         foreach (var param in operation.Symbol.Parameters)
             parameters.Add(new Identifier(param.Name));
-           
+
         var bodyStatements = new List<Statement>();
         if (operation.Body is not null)
         {
@@ -1301,7 +1349,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
         // 检查是否返回IEnumerable类型（可能是迭代器）
         var returnTypeName = operation.Symbol.ReturnType.Name;
         var isGenerator = returnTypeName.Contains("IEnumerable") || returnTypeName.Contains("IEnumerator");
-        
+
         return new FunctionDeclaration(id,
             NodeList.From(parameters),
             body,
@@ -1320,9 +1368,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：42 / "Hello" / true / "A" / null
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitLiteral(ILiteralOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitLiteral(ILiteralOperation operation, Queue<VariableDeclaration> argument)
     {
         if (operation.ConstantValue.Value is null)
             return new NullLiteral("null");
@@ -1358,9 +1406,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：直接返回操作数（JavaScript 是动态类型）
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitConversion(IConversionOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitConversion(IConversionOperation operation, Queue<VariableDeclaration> argument)
     {
         return Visit(operation.Operand, argument);
     }
@@ -1374,9 +1422,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：obj.method(arg1, arg2) / staticClass.method(arg) / obj.extensionMethod(arg)
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitInvocation(IInvocationOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitInvocation(IInvocationOperation operation, Queue<VariableDeclaration> argument)
     {
         var arguments = new List<Expression>();
 
@@ -1442,9 +1490,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：array[0] / 不支持多维数组
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitArrayElementReference(IArrayElementReferenceOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitArrayElementReference(IArrayElementReferenceOperation operation, Queue<VariableDeclaration> argument)
     {
         if (Visit(operation.ArrayReference, argument) is not Expression exp)
             return HandleTransformationFailure(operation.ArrayReference);
@@ -1460,7 +1508,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
 
         if (indices.Count == 1)
             return new MemberExpression(exp, indices[0], computed: true, optional: false);
-        
+
         return HandleTransformationFailure(operation, "Multi-dimensional array access is not supported in JavaScript conversion");
     }
 
@@ -1472,9 +1520,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：localVar
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitLocalReference(ILocalReferenceOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitLocalReference(ILocalReferenceOperation operation, Queue<VariableDeclaration> argument)
     {
         return new Identifier(operation.Local.Name);
     }
@@ -1488,9 +1536,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：param
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitParameterReference(IParameterReferenceOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitParameterReference(IParameterReferenceOperation operation, Queue<VariableDeclaration> argument)
     {
         return new Identifier(operation.Parameter.Name);
     }
@@ -1503,9 +1551,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：obj.field / MyClass.field
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitFieldReference(IFieldReferenceOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitFieldReference(IFieldReferenceOperation operation, Queue<VariableDeclaration> argument)
     {
         if (operation.Instance is not null)
         {
@@ -1526,9 +1574,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：obj.method
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitMethodReference(IMethodReferenceOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitMethodReference(IMethodReferenceOperation operation, Queue<VariableDeclaration> argument)
     {
         if (operation.Instance is not null)
         {
@@ -1550,9 +1598,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：obj.property / MyClass.property
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitPropertyReference(IPropertyReferenceOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitPropertyReference(IPropertyReferenceOperation operation, Queue<VariableDeclaration> argument)
     {
         if (operation.Instance is not null)
         {
@@ -1576,9 +1624,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：+x / -x / !condition / ~value
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitUnaryOperator(IUnaryOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitUnaryOperator(IUnaryOperation operation, Queue<VariableDeclaration> argument)
     {
         if (Visit(operation.Operand, argument) is not Expression operand)
             return HandleTransformationFailure(operation.Operand);
@@ -1608,11 +1656,11 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
         }
         else if (operation.OperatorKind == UnaryOperatorKind.None)
         {
-            // 对应语义()，尝试翻译成逗号表达式
-            return new SequenceExpression(NodeList.From(operand));
+            // 对应语义()
+            return new ParenthesizedExpression(operand);
         }
         else
-            return HandleTransformationFailure(operation.Operand, "");    
+            return HandleTransformationFailure(operation.Operand, "");
     }
 
     /// <summary>
@@ -1634,9 +1682,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：相同的 JavaScript 运算符
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitBinaryOperator(IBinaryOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitBinaryOperator(IBinaryOperation operation, Queue<VariableDeclaration> argument)
     {
         if (Visit(operation.LeftOperand, argument) is not Expression left)
             return HandleTransformationFailure(operation.LeftOperand);
@@ -1680,16 +1728,16 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：condition ? trueValue : falseValue
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitConditional(IConditionalOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitConditional(IConditionalOperation operation, Queue<VariableDeclaration> argument)
     {
         var alternate = Visit(operation.WhenFalse, argument);
         var consequent = Visit(operation.WhenTrue, argument);
         if (consequent is null)
             return HandleTransformationFailure(operation.WhenTrue);
-            
-        if (Visit(operation.Condition, argument) is not Expression test) 
+
+        if (Visit(operation.Condition, argument) is not Expression test)
             return HandleTransformationFailure(operation.Condition);
 
         if (operation.Syntax is ConditionalExpressionSyntax &&
@@ -1718,16 +1766,16 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：value ?? defaultValue
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitCoalesce(ICoalesceOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitCoalesce(ICoalesceOperation operation, Queue<VariableDeclaration> argument)
     {
         if (Visit(operation.WhenNull, argument) is not Expression left)
             return HandleTransformationFailure(operation.WhenNull);
-                         
+
         if (Visit(operation.Value, argument) is not Expression right)
             return HandleTransformationFailure(operation.Value);
-            
+
         return new LogicalExpression(Operator.NullishCoalescing, left, right);
     }
 
@@ -1740,9 +1788,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：(x, y) => { return x + y; } / x => { return x * 2; }
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitAnonymousFunction(IAnonymousFunctionOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitAnonymousFunction(IAnonymousFunctionOperation operation, Queue<VariableDeclaration> argument)
     {
         var parameters = new List<Node>();
         if (operation.Symbol?.Parameters is not null)
@@ -1787,9 +1835,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：new MyClass() / new MyClass(arg1, arg2) / { Name: "John", Age: 30 }
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitObjectCreation(IObjectCreationOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitObjectCreation(IObjectCreationOperation operation, Queue<VariableDeclaration> argument)
     {
         if (operation.Type is null)
             return HandleTransformationFailure(operation);
@@ -1809,10 +1857,10 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
                         properties.Add(node);
                 }
             }
-            
+
             return new ObjectExpression(NodeList.From(properties));
         }
-        
+
         // 普通对象创建
         var callee = new Identifier(operation.Type.Name);
         var arguments = new List<Expression>();
@@ -1836,9 +1884,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：忽略泛型参数，转换为普通对象创建 new T() / new List()
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitTypeParameterObjectCreation(ITypeParameterObjectCreationOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitTypeParameterObjectCreation(ITypeParameterObjectCreationOperation operation, Queue<VariableDeclaration> argument)
     {
         if (operation.Type is null)
             return HandleTransformationFailure(operation);
@@ -1860,9 +1908,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：[1, 2, 3] / new Array(5)
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitArrayCreation(IArrayCreationOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitArrayCreation(IArrayCreationOperation operation, Queue<VariableDeclaration> argument)
     {
         // 检查是否为多维数组
         if (operation.Type is IArrayTypeSymbol arrayType)
@@ -1910,9 +1958,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：{ name: "John", age: 25 }
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitAnonymousObjectCreation(IAnonymousObjectCreationOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitAnonymousObjectCreation(IAnonymousObjectCreationOperation operation, Queue<VariableDeclaration> argument)
     {
         var properties = new List<Node>();
 
@@ -1936,16 +1984,16 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：{ prop1: val1 } / [1, 2, 3]
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitObjectOrCollectionInitializer(IObjectOrCollectionInitializerOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitObjectOrCollectionInitializer(IObjectOrCollectionInitializerOperation operation, Queue<VariableDeclaration> argument)
     {
         var initializers = new List<Node>();
 
         foreach (var initializer in operation.Initializers)
         {
             var node = Visit(initializer, argument);
-            if (node is null)                
+            if (node is null)
                 return HandleTransformationFailure(initializer);
             else
                 initializers.Add(node);
@@ -1962,9 +2010,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：property = value
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitMemberInitializer(IMemberInitializerOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitMemberInitializer(IMemberInitializerOperation operation, Queue<VariableDeclaration> argument)
     {
         string memberName;
         if (operation.InitializedMember is IFieldSymbol field)
@@ -1994,9 +2042,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：this
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitInstanceReference(IInstanceReferenceOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitInstanceReference(IInstanceReferenceOperation operation, Queue<VariableDeclaration> argument)
     {
         return new ThisExpression();
     }
@@ -2008,9 +2056,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// typeof obj === 'string'
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitIsType(IIsTypeOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitIsType(IIsTypeOperation operation, Queue<VariableDeclaration> argument)
     {
         if (Visit(operation.ValueOperand, argument) is not Expression valueOperand)
             return HandleTransformationFailure(operation.ValueOperand);
@@ -2018,7 +2066,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
         var targetType = operation.TypeOperand;
         var typeName = targetType.Name;
         var fullTypeName = targetType.ToDisplayString();
-        
+
         // 类型映射
         // object -> js object
         // string -> js string
@@ -2029,7 +2077,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
         // IDictionary -> js Map
         // IEnumerable(非IDictionary) -> js Set
         // 其他 class -> js class
-        
+
         // 使用 SpecialType 进行基础类型检查，更加类型安全和高效
         switch (targetType.SpecialType)
         {
@@ -2038,7 +2086,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
                     Operator.StrictEquality,
                     new NonUpdateUnaryExpression(Operator.TypeOf, valueOperand),
                     new StringLiteral("string", "\"string\"")
-                );   
+                );
             case SpecialType.System_SByte:
             case SpecialType.System_Byte:
             case SpecialType.System_Int16:
@@ -2058,7 +2106,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
                     Operator.StrictEquality,
                     new NonUpdateUnaryExpression(Operator.TypeOf, valueOperand),
                     new StringLiteral("boolean", "\"boolean\"")
-                );     
+                );
             case SpecialType.System_Object:
                 return new LogicalExpression(
                     Operator.LogicalAnd,
@@ -2067,10 +2115,10 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
                         new NonUpdateUnaryExpression(Operator.TypeOf, valueOperand),
                         new StringLiteral("object", "\"object\"")
                     ),
-                    new NonLogicalBinaryExpression(Operator.Inequality,valueOperand,new NullLiteral("null"))
+                    new NonLogicalBinaryExpression(Operator.Inequality, valueOperand, new NullLiteral("null"))
                 );
         }
-        
+
         // 对于非基础类型，使用字符串名称进行判断
         // 大整数类型检查（long、timestamp等）
         if (targetType.SpecialType == SpecialType.System_Int64 ||
@@ -2084,10 +2132,10 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
                     new NonUpdateUnaryExpression(Operator.TypeOf, valueOperand),
                     new StringLiteral("bigint", "\"bigint\"")
                 ),
-                new NonLogicalBinaryExpression(Operator.Inequality,valueOperand,new NullLiteral("null"))
+                new NonLogicalBinaryExpression(Operator.Inequality, valueOperand, new NullLiteral("null"))
             );
         }
-        
+
         // 日期类型检查
         if (typeName.Equals("DateOnly", StringComparison.OrdinalIgnoreCase) ||
             typeName.Equals("TimeOnly", StringComparison.OrdinalIgnoreCase) ||
@@ -2100,16 +2148,16 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
                 new NonLogicalBinaryExpression(Operator.Inequality, valueOperand, new NullLiteral("null"))
             );
         }
-        
+
         // 数组类型检查
         if (typeName.Equals("Array", StringComparison.OrdinalIgnoreCase) ||
             fullTypeName.Contains("[]"))
         {
             return new LogicalExpression(
                 Operator.LogicalAnd,
-                new NonLogicalBinaryExpression(Operator.Inequality,valueOperand,new NullLiteral("null")),
+                new NonLogicalBinaryExpression(Operator.Inequality, valueOperand, new NullLiteral("null")),
                 new CallExpression(
-                    new MemberExpression(new Identifier("Array"),new Identifier("isArray"),computed: false,optional: false),
+                    new MemberExpression(new Identifier("Array"), new Identifier("isArray"), computed: false, optional: false),
                     NodeList.From(valueOperand),
                     optional: false
                 )
@@ -2127,7 +2175,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
                 new NonLogicalBinaryExpression(Operator.Inequality, valueOperand, new NullLiteral("null"))
             );
         }
-        
+
         // 集合类型检查（非字典）
         if (typeName.Equals("IEnumerable", StringComparison.OrdinalIgnoreCase) ||
             (targetType is INamedTypeSymbol enumType &&
@@ -2140,12 +2188,12 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
                 new NonLogicalBinaryExpression(Operator.Inequality, valueOperand, new NullLiteral("null"))
             );
         }
-        
+
         // 其他自定义类类型检查
         return new LogicalExpression(
             Operator.LogicalAnd,
-            new NonLogicalBinaryExpression(Operator.InstanceOf,valueOperand,new Identifier(typeName)),
-            new NonLogicalBinaryExpression(Operator.Inequality,valueOperand,new NullLiteral("null"))
+            new NonLogicalBinaryExpression(Operator.InstanceOf, valueOperand, new Identifier(typeName)),
+            new NonLogicalBinaryExpression(Operator.Inequality, valueOperand, new NullLiteral("null"))
         );
     }
 
@@ -2156,9 +2204,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：await someAsyncMethod()
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitAwait(IAwaitOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitAwait(IAwaitOperation operation, Queue<VariableDeclaration> argument)
     {
         if (Visit(operation.Operation, argument) is not Expression awaitedExpression)
             return HandleTransformationFailure(operation.Operation);
@@ -2175,9 +2223,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：x = 5 / obj.prop = val / arr[0] = item
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitSimpleAssignment(ISimpleAssignmentOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitSimpleAssignment(ISimpleAssignmentOperation operation, Queue<VariableDeclaration> argument)
     {
         if (Visit(operation.Target, argument) is not Expression left)
             return HandleTransformationFailure(operation.Target);
@@ -2199,9 +2247,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：x += 5 / x -= 3 / x *= 2 / x /= 4 / x %= 7
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitCompoundAssignment(ICompoundAssignmentOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitCompoundAssignment(ICompoundAssignmentOperation operation, Queue<VariableDeclaration> argument)
     {
         if (Visit(operation.Target, argument) is not Expression left)
             return HandleTransformationFailure(operation.Target);
@@ -2232,9 +2280,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：直接返回内部表达式（JavaScript 中括号由解析器处理）
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitParenthesized(IParenthesizedOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitParenthesized(IParenthesizedOperation operation, Queue<VariableDeclaration> argument)
     {
         if (Visit(operation.Operand, argument) is not Expression exp)
             return HandleTransformationFailure(operation.Operand);
@@ -2250,9 +2298,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：obj?.property
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitConditionalAccess(IConditionalAccessOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitConditionalAccess(IConditionalAccessOperation operation, Queue<VariableDeclaration> argument)
     {
         // 不需要处理 operation.WhenNotNull
         if (Visit(operation.Operation, argument) is not Expression operand)
@@ -2268,7 +2316,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// obj?.member 中的 obj 部分
     /// 转换结果：递归访问并返回 obj 部分对应的节点。
     /// </summary>
-    public override Acornima.Ast.Node? VisitConditionalAccessInstance(IConditionalAccessInstanceOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitConditionalAccessInstance(IConditionalAccessInstanceOperation operation, Queue<VariableDeclaration> argument)
     {
         // IConditionalAccessInstanceOperation 是一个包装器。
         // 它唯一的子操作就是 ?. 左侧的表达式 (someExpr)。
@@ -2286,9 +2334,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：`Hello${name}!` / `Value: ${(x + y)}`
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitInterpolatedString(IInterpolatedStringOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitInterpolatedString(IInterpolatedStringOperation operation, Queue<VariableDeclaration> argument)
     {
         var quasis = new List<TemplateElement>();
         var expressions = new List<Expression>();
@@ -2359,9 +2407,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果："variable" / "Property"
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitNameOf(INameOfOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitNameOf(INameOfOperation operation, Queue<VariableDeclaration> argument)
     {
         string? name = null;
         if (operation.Argument.ConstantValue.HasValue)
@@ -2382,16 +2430,16 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：{ Item1: 1, Item2: "hello", Item3: true } 或 { Sum: 4.5, Count: 3 } （使用对象模拟）
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitTuple(ITupleOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitTuple(ITupleOperation operation, Queue<VariableDeclaration> argument)
     {
         var properties = new List<Node>();
 
         // 尝试从元组类型中获取元素名称
         var tupleType = operation.Type as INamedTypeSymbol;
         var elementNames = new List<string>();
-        
+
         // 检查是否为命名元组
         if (tupleType?.TupleElements is not null && tupleType.TupleElements.Length > 0)
         {
@@ -2444,9 +2492,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：转换为函数引用或箭头函数
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitDelegateCreation(IDelegateCreationOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitDelegateCreation(IDelegateCreationOperation operation, Queue<VariableDeclaration> argument)
     {
         // 委托创建转换为函数引用或箭头函数
         return Visit(operation.Target, argument);
@@ -2462,9 +2510,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：0 / "" / false / null（根据类型）
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitDefaultValue(IDefaultValueOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitDefaultValue(IDefaultValueOperation operation, Queue<VariableDeclaration> argument)
     {
         // default(T) 转换为适当的默认值
         return operation.Type?.SpecialType switch
@@ -2495,9 +2543,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：对于复杂模式，替换占位符并返回条件表达式
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitIsPattern(IIsPatternOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitIsPattern(IIsPatternOperation operation, Queue<VariableDeclaration> argument)
     {
         // is 模式转换，支持复杂模式匹配
         if (Visit(operation.Value, argument) is not Expression value)
@@ -2526,9 +2574,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：x++ / ++x / x-- / --x
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitIncrementOrDecrement(IIncrementOrDecrementOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitIncrementOrDecrement(IIncrementOrDecrementOperation operation, Queue<VariableDeclaration> argument)
     {
         if (Visit(operation.Target, argument) is not Expression operand)
             return HandleTransformationFailure(operation);
@@ -2549,9 +2597,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：throw new Error("Error message") / throw Error
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitThrow(IThrowOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitThrow(IThrowOperation operation, Queue<VariableDeclaration> argument)
     {
         Expression expr;
         if (operation.Exception is not null)
@@ -2575,9 +2623,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：转换为普通赋值表达式（简化处理）
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitDeconstructionAssignment(IDeconstructionAssignmentOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitDeconstructionAssignment(IDeconstructionAssignmentOperation operation, Queue<VariableDeclaration> argument)
     {
         if (Visit(operation.Target, argument) is not Expression target)
             return HandleTransformationFailure(operation.Target);
@@ -2597,9 +2645,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：undefined
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitOmittedArgument(IOmittedArgumentOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitOmittedArgument(IOmittedArgumentOperation operation, Queue<VariableDeclaration> argument)
     {
         // 省略的参数返回 undefined
         return new Identifier("undefined");
@@ -2613,19 +2661,26 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：[1, 2, 3, 4, 5] / ["apple", "banana", "cherry"]
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitArrayInitializer(IArrayInitializerOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitArrayInitializer(IArrayInitializerOperation operation, Queue<VariableDeclaration> argument)
     {
         var elements = new List<Expression?>();
 
         foreach (var element in operation.ElementValues)
         {
-            var elementNode = Visit(element, argument) as Expression;
-            elements.Add(elementNode);
+            Expression? expr = null;
+            if (element is not null)
+            {
+                if (Visit(element, argument) is not Expression exp)
+                    return HandleTransformationFailure(element);
+
+                expr = exp;
+            }
+            elements.Add(expr);
         }
 
-        return new ArrayExpression(NodeList.From<Expression?>(elements));
+        return new ArrayExpression(NodeList.From(elements));
     }
 
     /// <summary>
@@ -2636,9 +2691,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：直接返回初始化值表达式
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitFieldInitializer(IFieldInitializerOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitFieldInitializer(IFieldInitializerOperation operation, Queue<VariableDeclaration> argument)
     {
         return Visit(operation.Value, argument);
     }
@@ -2651,9 +2706,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：直接返回初始化值表达式
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitVariableInitializer(IVariableInitializerOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitVariableInitializer(IVariableInitializerOperation operation, Queue<VariableDeclaration> argument)
     {
         return Visit(operation.Value, argument);
     }
@@ -2666,12 +2721,19 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：x = 5 / name
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitVariableDeclarator(IVariableDeclaratorOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitVariableDeclarator(IVariableDeclaratorOperation operation, Queue<VariableDeclaration> argument)
     {
-        var identifier = operation.Symbol?.Name is not null ? new Identifier(operation.Symbol.Name) : new Identifier("symbol");
-        var init = operation.Initializer is not null ? Visit(operation.Initializer, argument) as Expression : null;
+        var identifier = new Identifier(operation.Symbol.Name);
+        Expression? init = null;
+        if (operation.Initializer is not null)
+        {
+            if (Visit(operation.Initializer, argument) is not Expression expr)
+                return HandleTransformationFailure(operation.Initializer);
+
+            init = expr;
+        }
         return new VariableDeclarator(identifier, init);
     }
 
@@ -2683,16 +2745,17 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：let x = 5, y = 10; / let name = "test", message;
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitVariableDeclaration(IVariableDeclarationOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitVariableDeclaration(IVariableDeclarationOperation operation, Queue<VariableDeclaration> argument)
     {
         var declarators = new List<VariableDeclarator>();
         foreach (var declarator in operation.Declarators)
         {
-            var node = Visit(declarator, argument);
-            if (node is VariableDeclarator variableDeclarator)
+            if (Visit(declarator, argument) is VariableDeclarator variableDeclarator)
                 declarators.Add(variableDeclarator);
+            else
+                return HandleTransformationFailure(declarator);
         }
         return new VariableDeclaration(VariableDeclarationKind.Let, NodeList.From(declarators));
     }
@@ -2705,9 +2768,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：直接返回参数值表达式
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitArgument(IArgumentOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitArgument(IArgumentOperation operation, Queue<VariableDeclaration> argument)
     {
         return Visit(operation.Value, argument);
     }
@@ -2723,13 +2786,14 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：转换为 if-else 链的一部分
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitSwitchCase(ISwitchCaseOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitSwitchCase(ISwitchCaseOperation operation, Queue<VariableDeclaration> argument)
     {
         // 将switch case转换为if-else链
         var clauses = operation.Clauses;
-        if (clauses.Length == 0) return null;
+        if (clauses.Length == 0)
+            return null;
 
         var statements = new List<Statement>();
         foreach (var clause in clauses)
@@ -2737,6 +2801,8 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
             var clauseNode = Visit(clause, argument);
             if (clauseNode is Statement stmt)
                 statements.Add(stmt);
+            else
+                return HandleTransformationFailure(clause);
         }
 
         // 如果有body操作，添加到语句中
@@ -2747,28 +2813,11 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
                 statements.Add(bodyStmt);
             else if (bodyNode is Expression bodyExpr)
                 statements.Add(new NonSpecialExpressionStatement(bodyExpr));
+            else
+                return HandleTransformationFailure(bodyOp);
         }
 
         return statements.Count > 0 ? new NestedBlockStatement(NodeList.From(statements)) : null;
-    }
-
-    /// <summary>
-    /// 处理 switch 默认 case 子句操作
-    /// C# 示例：
-    /// switch (value) {
-    ///     default:
-    ///         DefaultAction();
-    ///         break;
-    /// }
-    /// 转换结果：true（作为最终的 else 条件）
-    /// </summary>
-    /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
-    /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitDefaultCaseClause(IDefaultCaseClauseOperation operation,IOperation? argument)
-    {
-        // 默认case子句转换为else分支，返回true作为最终条件
-        return new BooleanLiteral(true, "true");
     }
 
     /// <summary>
@@ -2782,9 +2831,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：转换为条件表达式
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitPatternCaseClause(IPatternCaseClauseOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitPatternCaseClause(IPatternCaseClauseOperation operation, Queue<VariableDeclaration> argument)
     {
         // 模式 case 子句转换为条件表达式
         return Visit(operation.Pattern, argument);
@@ -2801,16 +2850,16 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：返回比较值，在上级组合成 if-else 链
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitSingleValueCaseClause(ISingleValueCaseClauseOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitSingleValueCaseClause(ISingleValueCaseClauseOperation operation, Queue<VariableDeclaration> argument)
     {
         // 将单值case转换为条件比较
-        var value = Visit(operation.Value, argument) as Expression;
-        if (value == null) return null;
+        if (Visit(operation.Value, argument) is not Expression expr)
+            return HandleTransformationFailure(operation.Value);
 
         // 返回比较表达式，需要在上级switch中组合成if-else
-        return value;
+        return expr;
     }
 
     /// <summary>
@@ -2820,9 +2869,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：字符串字面量 "Hello " / ", welcome!"
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitInterpolatedStringText(IInterpolatedStringTextOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitInterpolatedStringText(IInterpolatedStringTextOperation operation, Queue<VariableDeclaration> argument)
     {
         // 插值字符串中的文本部分转换为字符串字面量
         var text = operation.Text.ConstantValue.Value?.ToString() ?? "";
@@ -2837,13 +2886,13 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：返回插值表达式 name / (x + y)，并处理格式化
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitInterpolation(IInterpolationOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitInterpolation(IInterpolationOperation operation, Queue<VariableDeclaration> argument)
     {
         // 插值表达式转换为表达式
-        var expr = Visit(operation.Expression, argument) as Expression;
-        if (expr == null) return null;
+        if (Visit(operation.Expression, argument) is not Expression expr)
+            return HandleTransformationFailure(operation);
 
         // 修复：处理格式化说明符（如 :F2）
         // 注意：由于API限制，格式化信息可能不在IInterpolationOperation中
@@ -2860,9 +2909,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：返回常量字面量进行比较
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitConstantPattern(IConstantPatternOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitConstantPattern(IConstantPatternOperation operation, Queue<VariableDeclaration> argument)
     {
         // 常量模式转换为字面量比较
         return Visit(operation.Value, argument);
@@ -2876,18 +2925,17 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：转换为变量声明 let value / let str
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitDeclarationPattern(IDeclarationPatternOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitDeclarationPattern(IDeclarationPatternOperation operation, Queue<VariableDeclaration> argument)
     {
+        if (operation.DeclaredSymbol is null)
+            return null;
+
         // 声明模式转换为变量声明
-        if (operation.DeclaredSymbol?.Name is not null)
-        {
-            var identifier = new Identifier(operation.DeclaredSymbol.Name);
-            return new VariableDeclaration(VariableDeclarationKind.Let,
-                NodeList.From<VariableDeclarator>(new[] { new VariableDeclarator(identifier, null) }));
-        }
-        return null;
+        var identifier = new Identifier(operation.DeclaredSymbol.Name);
+        return new VariableDeclaration(VariableDeclarationKind.Let,
+            NodeList.From(new VariableDeclarator(identifier, null)));
     }
 
     /// <summary>
@@ -2897,97 +2945,67 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// (x, y) != (1, 2)                    // 元组不等比较
     /// (name, age) == ("John", 25)         // 元组与常量比较
     /// tuple1 == tuple2                    // 元组变量比较
-    /// 转换结果：转换为JavaScript的逐元素比较表达式
-    /// (a == c) &amp;&amp; (b == d) 或 (a != c) || (b != d)
-    /// 利用编译时信息生成最简洁的比较代码
+    /// 转换结果：利用编译时信息生成最简洁的比较代码
     /// </summary>
     /// <param name="operation">元组二元操作</param>
     /// <param name="argument">当前operation所属的父operation</param>
     /// <returns>JavaScript逻辑表达式</returns>
-    public override Acornima.Ast.Node? VisitTupleBinaryOperator(ITupleBinaryOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitTupleBinaryOperator(ITupleBinaryOperation operation, Queue<VariableDeclaration> argument)
     {
-        // 元组二元操作的直接AST转换
-        // C# 示例：(a, b) == (c, d) 表示元组相等性比较
-        // 转换结果：生成 (a === c) && (b === d) 的JavaScript表达式
-        // 根据编译时优化原则，直接生成最简洁的比较代码
+        var isEq = operation.OperatorKind == BinaryOperatorKind.Equals;
 
-        // 获取左右元组操作数
-        var leftTuple = Visit(operation.LeftOperand, argument) as ArrayExpression;
-        var rightTuple = Visit(operation.RightOperand, argument) as ArrayExpression;
-
-        if (leftTuple == null || rightTuple == null) return null;
-
-        // 检查元组元素数量是否一致
-        var leftElements = leftTuple.Elements;
-        var rightElements = rightTuple.Elements;
-
-        if (leftElements.Count != rightElements.Count)
+        // 处理空元组比较：() == () 为 true, () == (1,) 为 false。
+        // 空元组的类型没有 TupleElements。
+        if (operation.Type is not INamedTypeSymbol { TupleElements.Length: > 0 } tupleType)
         {
-            // 不同大小的元组比较在 C# 中会在运行时抛出异常，无法静默返回布尔值
-            // 为保证语义等价，必须抛出异常而非生成错误的布尔常量
-            throw new OperationTransformationException(operation,
-                $"C# 中不同大小的元组比较会在运行时抛出异常，而 JavaScript 静默返回布尔值，语义不等价：左側元组元素{leftElements.Count}个，右侧元组元素{rightElements.Count}个");
+            // 对于空元组，相等性仅取决于操作符本身。
+            return new BooleanLiteral(isEq, isEq ? "true" : "false");
         }
 
-        // 修复：使用更严格的枚举值判断，避免字符串匹配的误判
-        // 直接使用枚举值而不是ToString()方法
-        var operatorKind = operation.OperatorKind;
-        bool isEqualityOperation = operatorKind == BinaryOperatorKind.Equals;
-        bool isInequalityOperation = operatorKind == BinaryOperatorKind.NotEquals;
+        // 递归访问左右操作元，获取它们的表达式。
+        if (Visit(operation.LeftOperand, argument) is not Expression left)
+            return HandleTransformationFailure(operation.LeftOperand);
 
-        if (!isEqualityOperation && !isInequalityOperation)
+        if (Visit(operation.RightOperand, argument) is not Expression right)
+            return HandleTransformationFailure(operation.RightOperand);
+
+        Acornima.Ast.Expression? result = null;
+
+        // 遍历元组的每个元素，为每个元素生成比较表达式。
+        foreach (var field in tupleType.TupleElements)
         {
-            throw new OperationTransformationException(operation, $"Unsupported tuple binary operator: {operation.OperatorKind}");
-        }
+            // 创建访问元组元素的表达式，如 left.Item1 或 left.Name。
+            // field.Name 会正确解析为 "Item1" 或自定义名称如 "Name"。
+            var leftMember = new MemberExpression(left, new Identifier(field.Name), false, false);
+            var rightMember = new MemberExpression(right, new Identifier(field.Name), false, false);
 
-        // 生成各元素的比较表达式
-        var comparisons = new List<Expression>();
+            // 为当前元素创建严格相等/不相等比较。
+            // 使用严格相等 (===) 更贴近C#的强类型比较语义。
+            var currentComparison = new NonLogicalBinaryExpression(
+                isEq ? Operator.StrictEquality : Operator.StrictInequality,
+                leftMember,
+                rightMember);
 
-        for (int i = 0; i < leftElements.Count; i++)
-        {
-            var leftElement = leftElements[i] as Expression;
-            var rightElement = rightElements[i] as Expression;
-
-            if (leftElement is not null && rightElement is not null)
+            // 将当前比较与之前的结果用逻辑运算符组合。
+            // 相等要求所有元素都相等 (&&)，不等要求至少一个元素不等 (||)。
+            if (result is null)
             {
-                // 根据AST节点构造规范，使用LogicalExpression表示比较操作
-                var elementComparison = new LogicalExpression(
-                    isEqualityOperation ? Operator.StrictEquality : Operator.StrictInequality,
-                    leftElement,
-                    rightElement
-                );
-                comparisons.Add(elementComparison);
+                result = currentComparison;
+            }
+            else
+            {
+                result = new LogicalExpression(
+                    isEq ? Operator.LogicalAnd : Operator.LogicalOr,
+                    result,
+                    currentComparison);
             }
         }
 
-        if (comparisons.Count == 0)
-        {
-            // 空元组比较，相等性为true，不等性为false
-            return new BooleanLiteral(isEqualityOperation, isEqualityOperation.ToString().ToLower());
-        }
-        else if (comparisons.Count == 1)
-        {
-            // 只有一个元素，直接返回比较结果
-            return comparisons[0];
-        }
-        else
-        {
-            // 多个元素，组合比较结果
-            Expression result = comparisons[0];
+        if (result is null)
+            return HandleTransformationFailure(operation);
 
-            for (int i = 1; i < comparisons.Count; i++)
-            {
-                // 对于相等性比较，使用 && （所有元素都相等）
-                // 对于不等性比较，使用 || （任意元素不相等）
-                var logicalOperator = isEqualityOperation ? Operator.LogicalAnd : Operator.LogicalOr;
-                result = new LogicalExpression(logicalOperator, result, comparisons[i]);
-            }
-
-            return result;
-        }
+        return new ParenthesizedExpression(result);
     }
-
-
 
     /// <summary>
     /// 处理丢弃操作（下划线变量）
@@ -2997,40 +3015,67 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：undefined
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitDiscardOperation(IDiscardOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitDiscardOperation(IDiscardOperation operation, Queue<VariableDeclaration> argument)
     {
-        // 丢弃操作 _ 转换为 undefined
+        // 在解构赋值模式中 (例如: (_, y) = tuple)
+        if (operation.Parent is IDeconstructionAssignmentOperation)
+        {
+            // 在JavaScript的解构模式中，丢弃元素用空槽位表示。
+            // 例如: const [, y] = tuple;
+            // 但是，AST节点本身不能是“空的”。这里需要特殊处理。
+            // 一个常见的策略是返回一个特殊的标记节点，然后在 VisitDeconstructionAssignment 中处理它。
+            // 或者，更简单的方法是，让 VisitDeconstructionAssignment 自己处理丢弃操作，
+            // 而不是让 VisitDiscardOperation 返回一个有意义的节点。
+            // 如果必须返回一个节点，可以返回 null，并在父节点中处理。
+            // 最简单直接的方式是返回一个代表“无”的节点，让父节点忽略它。
+            // 这里我们返回一个特殊的Identifier，父节点需要识别它。
+            // 但更好的做法是让父节点直接检查子操作是否为 IDiscardOperation。
+            return null; // 让父节点处理
+        }
+
+        // 在简单赋值操作的左侧 (例如: _ = value)
+        if (operation.Parent is ISimpleAssignmentOperation assignment && assignment.Target == operation)
+        {
+            // C# 的 _ = value 意味着“执行 value 但不关心结果”。
+            // 这等价于直接执行 value 这个表达式语句。
+            // 所以，我们应该返回 value 本身，而不是 undefined。
+            // 父节点 VisitSimpleAssignmentOperation 应该检测到目标是丢弃操作，
+            // 然后只返回对 operation.Value 的访问结果。
+            return null; // 让父节点处理
+        }
+
+        // 在其他表达式中作为值使用 (非常罕见，但可能)
+        // 例如: var isNull = _ is null; // 这在C#中是编译时错误
+        // 或者作为方法参数: SomeMethod(_); // 这也是编译时错误
+        // 如果真的遇到了，可以返回 undefined。
         return new Identifier("undefined");
     }
 
     /// <summary>
-    /// 处理流捕获操作（编译器内部）
-    /// 这是编译器内部使用的操作，用于数据流分析
-    /// 转换结果：不支持
+    /// 处理丢弃模式操作
+    /// C# 示例：
+    /// value switch {
+    ///     _ => "Default",              // 丢弃模式，总是匹配
+    ///     var _ => "Any value",        // 丢弃模式变量声明
+    /// }
+    /// obj is _                         // 丢弃模式类型检查
+    /// 转换结果：转换为JavaScript的true条件表达式
+    /// 丢弃模式表示"总是匹配"，在条件判断中等价于true
     /// </summary>
-    /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
-    /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitFlowCapture(IFlowCaptureOperation operation,IOperation? argument)
+    /// <param name="operation">丢弃模式操作</param>
+    /// <param name="argument">当前operation所属的父operation</param>
+    /// <returns>JavaScript布尔字面量true</returns>
+    public override Acornima.Ast.Node? VisitDiscardPattern(IDiscardPatternOperation operation, Queue<VariableDeclaration> argument)
     {
-        throw new OperationTransformationException(operation,
-            $"流捕获操作（{operation.Kind}）是编译器内部使用的操作，用于数据流分析，无法转换为 JavaScript");
-    }
+        // 丢弃模式的条件判断转换
+        // C# 示例：_ 表示"总是匹配"的模式
+        // 转换结果：生成JavaScript的true字面量
+        // 因为丢弃模式在任何情况下都应该匹配成功
 
-    /// <summary>
-    /// 处理流捕获引用操作（编译器内部）
-    /// 这是编译器内部使用的操作，用于数据流分析
-    /// 转换结果：不支持
-    /// </summary>
-    /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
-    /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitFlowCaptureReference(IFlowCaptureReferenceOperation operation,IOperation? argument)
-    {
-        throw new OperationTransformationException(operation,
-            $"流捕获引用操作（{operation.Kind}）是编译器内部使用的操作，用于数据流分析，无法转换为 JavaScript");
+        // 丢弃模式总是匹配，返回true字面量
+        return new BooleanLiteral(true, "true");
     }
 
     /// <summary>
@@ -3041,13 +3086,13 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：obj === null
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitIsNull(IIsNullOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitIsNull(IIsNullOperation operation, Queue<VariableDeclaration> argument)
     {
         // null检查转换为 === null 比较
-        var operand = Visit(operation.Operand, argument) as Expression;
-        if (operand == null) return null;
+        if (Visit(operation.Operand, argument) is not Expression operand)
+            return HandleTransformationFailure(operation.Operand);
 
         return new LogicalExpression(Operator.StrictEquality, operand, new NullLiteral("null"));
     }
@@ -3057,73 +3102,20 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// C# 示例：
     /// name ??= "Default";     // 如果 name 为 null，则赋值 "Default"
     /// value ??= 0;            // 如果 value 为 null，则赋值 0
-    /// 转换结果：name = name || "Default" / value = value || 0
+    /// 转换结果：name ??= "Default" / value ??= 0
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitCoalesceAssignment(ICoalesceAssignmentOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitCoalesceAssignment(ICoalesceAssignmentOperation operation, Queue<VariableDeclaration> argument)
     {
-        var left = Visit(operation.Target, argument) as Expression;
-        var right = Visit(operation.Value, argument) as Expression;
+        if (Visit(operation.Target, argument) is not Expression left)
+            return HandleTransformationFailure(operation.Target);
 
-        if (left == null || right == null) return null;
+        if (Visit(operation.Value, argument) is not Expression right)
+            return HandleTransformationFailure(operation.Value);
 
-        // 使用严格的 null 检查而非 || 运算符，保证与 VisitCoalesce 一致的语义
-        var nullCheck = new LogicalExpression(Operator.Inequality, left, new NullLiteral("null"));
-        var coalesce = new ConditionalExpression(nullCheck, left, right);
-        return new AssignmentExpression(Operator.Assignment, left, coalesce);
-    }
-
-    /// <summary>
-    /// 处理范围操作（Range 操作符）
-    /// C# 示例：
-    /// Range range = 1..5;                // 创建范围 1 到 5
-    /// var slice = array[1..^1];          // 使用范围进行切片
-    /// array[start..end]                  // 数组切片操作
-    /// list[2..^2]                        // 列表切片，从索引 2 到倒数第 2 个
-    /// 转换结果：转换为JavaScript的对象字面量表示范围
-    /// 生成 { start: startValue, end: endValue } 形式的范围对象
-    /// 在实际使用时将转换为 array.slice(start, end) 调用
-    /// </summary>
-    /// <param name="operation">范围操作</param>
-    /// <param name="argument">当前operation所属的父operation</param>
-    /// <returns>JavaScript范围对象字面量</returns>
-    public override Acornima.Ast.Node? VisitRangeOperation(IRangeOperation operation,IOperation? argument)
-    {
-        // C# Range 操作在没有下游消费逗辑（如索引器转换为 slice 调用）时属于“悬空 AST”
-        // 为保证语义等价，必须由上层语法节点实现 Range 消费逗辑
-        throw new OperationTransformationException(operation,
-            "C# Range 操作必须在索引器操作中被消费转换为 slice/splice 调用，单独的 Range 对象在 JavaScript 中无意义且可能导致运行时错误");
-    }
-
-    /// <summary>
-    /// 处理 ReDim 操作（VB.NET 特有）
-    /// VB.NET 示例：
-    /// ReDim array(10)         // 重新设置数组大小
-    /// ReDim Preserve array(20) // 保留数据同时重新设置大小
-    /// 转换结果：不支持，这是 VB.NET 特有功能
-    /// </summary>
-    /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
-    /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitReDim(IReDimOperation operation,IOperation? argument)
-    {
-        throw new OperationTransformationException(operation, "ReDim operations are VB.NET-specific and not supported in JavaScript conversion.");
-    }
-
-    /// <summary>
-    /// 处理 ReDim 子句操作（VB.NET 特有）
-    /// VB.NET 示例：
-    /// ReDim array1(10), array2(20) 中的每个数组重新定义
-    /// 转换结果：不支持，这是 VB.NET 特有功能
-    /// </summary>
-    /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
-    /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitReDimClause(IReDimClauseOperation operation,IOperation? argument)
-    {
-        throw new OperationTransformationException(operation, "ReDim clause operations are VB.NET-specific and not supported in JavaScript conversion.");
+        return new AssignmentExpression(Operator.NullishCoalescing, left, right);
     }
 
     /// <summary>
@@ -3139,7 +3131,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// <param name="operation">递归模式操作</param>
     /// <param name="argument">当前operation所属的父operation</param>
     /// <returns>JavaScript组合条件表达式</returns>
-    public override Acornima.Ast.Node? VisitRecursivePattern(IRecursivePatternOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitRecursivePattern(IRecursivePatternOperation operation, Queue<VariableDeclaration> argument)
     {
         // 递归模式的条件判断转换
         // C# 示例：obj is Person { Name: "John", Age: > 18 }
@@ -3152,13 +3144,13 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
         if (operation.MatchedType is not null)
         {
             // 从父operation获取目标名称，在节点内构建表达式
-            var targetName = ExtractReferenceName(operation.Parent);
+            var targetName = ExtractPatternValName(operation.Parent);
             if (string.IsNullOrEmpty(targetName))
-                return HandleTransformationFailure(operation,"cannot extract reference name.");
+                return HandleTransformationFailure(operation, "cannot extract reference name.");
 
             // 根据获取的名称构建目标表达式
             var target = new Identifier(targetName);
-            var typeName = operation.MatchedType.Name ?? "object";
+            var typeName = operation.MatchedType.Name;
             var condition = typeName.ToLowerInvariant() switch
             {
                 "string" => new LogicalExpression(
@@ -3186,11 +3178,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
                                 new StringLiteral("object", "\"object\"")
                             )
                         ),// 对于对象类型，检查是否不为null且为object
-                _ => new LogicalExpression(
-                            Operator.InstanceOf,
-                            target,
-                            new Identifier(typeName)
-                        ),// 对于自定义类型，使用instanceof检查
+                _ => new LogicalExpression(Operator.InstanceOf, target, new Identifier(typeName)),// 对于自定义类型，使用instanceof检查
             };
             conditions.Add(condition);
         }
@@ -3202,9 +3190,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
             {
                 // 根据AST转换器方法复用原则，argument是父节点，这里传递当前的递归模式操作
                 if (Visit(propertySubpattern, argument) is Expression propertyCondition)
-                {
                     conditions.Add(propertyCondition);
-                }
+                else
+                    return HandleTransformationFailure(propertySubpattern);
             }
         }
 
@@ -3239,31 +3227,6 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     }
 
     /// <summary>
-    /// 处理丢弃模式操作
-    /// C# 示例：
-    /// value switch {
-    ///     _ => "Default",              // 丢弃模式，总是匹配
-    ///     var _ => "Any value",        // 丢弃模式变量声明
-    /// }
-    /// obj is _                         // 丢弃模式类型检查
-    /// 转换结果：转换为JavaScript的true条件表达式
-    /// 丢弃模式表示"总是匹配"，在条件判断中等价于true
-    /// </summary>
-    /// <param name="operation">丢弃模式操作</param>
-    /// <param name="argument">当前operation所属的父operation</param>
-    /// <returns>JavaScript布尔字面量true</returns>
-    public override Acornima.Ast.Node? VisitDiscardPattern(IDiscardPatternOperation operation,IOperation? argument)
-    {
-        // 丢弃模式的条件判断转换
-        // C# 示例：_ 表示"总是匹配"的模式
-        // 转换结果：生成JavaScript的true字面量
-        // 因为丢弃模式在任何情况下都应该匹配成功
-
-        // 丢弃模式总是匹配，返回true字面量
-        return new BooleanLiteral(true, "true");
-    }
-
-    /// <summary>
     /// 处理 switch 表达式操作
     /// C# 示例：
     /// var result = value switch {
@@ -3279,12 +3242,12 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 非模式匹配switch转换为switch语句，模式匹配switch转换为IIFE
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitSwitchExpression(ISwitchExpressionOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitSwitchExpression(ISwitchExpressionOperation operation, Queue<VariableDeclaration> argument)
     {
-        if (Visit(operation.Value, argument) is not Expression input || operation.Arms.Length == 0) 
-            return null;
+        if (Visit(operation.Value, argument) is not Expression input || operation.Arms.Length == 0)
+            return HandleTransformationFailure(operation.Value);
 
         // 检查是否为非模式匹配switch（传统switch）
         bool isTraditionalSwitch = true;
@@ -3347,7 +3310,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
                 async: false
             );
 
-            // 修复：立即调用箭头函数 (() => { ... })()
+            // 立即调用箭头函数 (() => { ... })()
             return new CallExpression(arrowFunction, NodeList.From<Expression>(), optional: false);
         }
         else
@@ -3358,10 +3321,10 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
             var discardArm = (ISwitchExpressionArmOperation?)null;
 
             // 创建临时变量存储输入值，确保仅求值一次
-            var inputVar = new Identifier("_switchInput");
+            var inputVar = new Identifier(GetUniqueName(operation));
             statements.Add(new VariableDeclaration(
                 VariableDeclarationKind.Const,
-                NodeList.From<VariableDeclarator>(
+                NodeList.From(
                     new VariableDeclarator(inputVar, input)
                 )
             ));
@@ -3375,26 +3338,25 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
                     continue;
                 }
 
-                var value = Visit(arm.Value, argument) as Expression;
-                if (value == null) continue;
+                if (Visit(arm.Value, argument) is not Expression value)
+                    return HandleTransformationFailure(arm.Value);
 
                 // 生成模式匹配条件
                 Expression? patternCondition = null;
 
                 if (arm.Pattern.Kind == OperationKind.ConstantPattern)
                 {
-                    var constantValue = Visit(arm.Pattern, argument) as Expression;
-                    if (constantValue is not null)
-                    {
-                        patternCondition = new LogicalExpression(Operator.StrictEquality, inputVar, constantValue);
-                    }
+                    if (Visit(arm.Pattern, argument) is not Expression constantValue)
+                        return HandleTransformationFailure(arm.Pattern);
+
+                    patternCondition = new LogicalExpression(Operator.StrictEquality, inputVar, constantValue);
                 }
                 else if (arm.Pattern.Kind == OperationKind.TypePattern)
                 {
                     // 对于类型模式，使用typeof或instanceof检查
                     if (arm.Pattern is ITypePatternOperation typeOp && typeOp.InputType is not null)
                     {
-                        var typeName = typeOp.InputType.Name?.ToLowerInvariant() ?? "object";
+                        var typeName = typeOp.InputType.Name.ToLowerInvariant();
                         patternCondition = typeName switch
                         {
                             "string" => new LogicalExpression(Operator.StrictEquality,
@@ -3414,13 +3376,13 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
                 else
                 {
                     // 其他模式类型，尝试访问并处理占位符替换
-                    var complexPattern = Visit(arm.Pattern, argument) as Expression;
-                    if (complexPattern is not null)
-                    {
-                        // 这里需要实现占位符替换逻辑
-                        // 暂时使用原始表达式，但需要注意占位符问题
-                        patternCondition = complexPattern;
-                    }
+                    if (Visit(arm.Pattern, argument) is not Expression complexPattern)
+                        return HandleTransformationFailure(arm.Pattern);
+
+                    // 这里需要实现占位符替换逻辑
+                    // 暂时使用原始表达式，但需要注意占位符问题
+                    patternCondition = complexPattern;
+
                 }
 
                 if (patternCondition is not null)
@@ -3431,20 +3393,16 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
                     {
                         // 有when子句：关键的分层判断保证副作用顺序
                         // 先模式匹配，成功后才执行when条件
-                        var guardCondition = Visit(arm.Guard, argument) as Expression;
-                        if (guardCondition is not null)
-                        {
-                            // 嵌套if结构：
-                            // if (pattern) {
-                            //   if (when) return value;
-                            // }
-                            var innerIf = new IfStatement(guardCondition, new ReturnStatement(value), null);
-                            branchStatement = new IfStatement(patternCondition, innerIf, null);
-                        }
-                        else
-                        {
-                            branchStatement = new IfStatement(patternCondition, new ReturnStatement(value), null);
-                        }
+                        if (Visit(arm.Guard, argument) is not Expression guardCondition)
+                            return HandleTransformationFailure(arm.Guard);
+
+
+                        // 嵌套if结构：
+                        // if (pattern) {
+                        //   if (when) return value;
+                        // }
+                        var innerIf = new IfStatement(guardCondition, new ReturnStatement(value), null);
+                        branchStatement = new IfStatement(patternCondition, innerIf, null);
                     }
                     else
                     {
@@ -3459,20 +3417,19 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
             // 最后处理丢弃模式（默认情况）
             if (discardArm is not null)
             {
-                var discardValue = Visit(discardArm.Value, argument) as Expression;
-                if (discardValue is not null)
-                {
-                    statements.Add(new ReturnStatement(discardValue));
-                }
+                if (Visit(discardArm.Value, argument) is not Expression discardValue)
+                    return HandleTransformationFailure(discardArm.Value);
+
+                statements.Add(new ReturnStatement(discardValue));
             }
 
             // 确保有返回值
-            if (statements.Count == 0 || !(statements[statements.Count - 1] is ReturnStatement))
+            if (statements.Count == 0 || statements[^1] is not ReturnStatement)
             {
                 statements.Add(new ReturnStatement(new Identifier("undefined")));
             }
 
-            var functionBody = new FunctionBody(NodeList.From<Statement>(statements), strict: true);
+            var functionBody = new FunctionBody(NodeList.From(statements), strict: true);
             var arrowFunction = new ArrowFunctionExpression(
                 NodeList.From<Node>(),
                 functionBody,
@@ -3490,17 +3447,22 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 根据上下文返回SwitchCase（传统switch）或Statement（模式匹配）
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitSwitchExpressionArm(ISwitchExpressionArmOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitSwitchExpressionArm(ISwitchExpressionArmOperation operation, Queue<VariableDeclaration> argument)
     {
-        var pattern = Visit(operation.Pattern, argument) as Expression;
-        var guard = operation.Guard is not null
-            ? Visit(operation.Guard, argument) as Expression
-            : null;
+        if (Visit(operation.Pattern, argument) is not Expression pattern)
+            return HandleTransformationFailure(operation.Pattern);
+
+        Expression? guard = null;
+        if (operation.Guard is not null)
+        {
+            if (Visit(operation.Guard, argument) is not Expression expr)
+                return HandleTransformationFailure(operation.Guard);
+        }
 
         if (Visit(operation.Value, argument) is not Expression value)
-            return null;
+            return HandleTransformationFailure(operation.Value); ;
 
         // 检查是否为传统的常量模式（无when子句）
         bool isTraditionalPattern = (operation.Pattern.Kind == OperationKind.ConstantPattern ||
@@ -3540,7 +3502,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
                 if (operation.Pattern.Kind == OperationKind.ConstantPattern)
                 {
                     // 从父operation获取switch目标名称并构建表达式
-                    var targetName = ExtractReferenceName(operation.Parent);
+                    var targetName = ExtractPatternValName(operation.Parent);
                     if (string.IsNullOrEmpty(targetName))
                         return HandleTransformationFailure(operation, "cannot extract reference name.");
 
@@ -3563,7 +3525,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
             }
         }
 
-        return null;
+        return HandleTransformationFailure(operation);
     }
 
     /// <summary>
@@ -3577,9 +3539,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// Name: "John" 转换为 obj.Name === "John"
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitPropertySubpattern(IPropertySubpatternOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitPropertySubpattern(IPropertySubpatternOperation operation, Queue<VariableDeclaration> argument)
     {
         // 属性子模式的条件判断转换
         // C# 示例：obj is { Name: "John" } 中的 Name: "John" 部分
@@ -3587,10 +3549,10 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
         // 转换结果：生成属性访问和比较的组合表达式
 
         // 从父operation获取目标名称，在节点内构建表达式
-        var targetName = ExtractReferenceName(operation.Parent);
+        var targetName = ExtractPatternValName(operation.Parent);
         if (string.IsNullOrEmpty(targetName))
             return HandleTransformationFailure(operation, "cannot extract reference name.");
-                                
+
         var targetExpression = new Identifier(targetName);
 
         // 从Member中获取名称
@@ -3621,21 +3583,6 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     }
 
     /// <summary>
-    /// 处理 using 声明操作
-    /// C# 示例：
-    /// using var file = File.OpenRead("data.txt"); // using 声明
-    /// using FileStream fs = new FileStream(...);   // 传统 using 声明
-    /// 转换结果：不支持，JavaScript 没有内置的资源管理机制
-    /// </summary>
-    /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
-    /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitUsingDeclaration(IUsingDeclarationOperation operation,IOperation? argument)
-    {
-        return HandleTransformationFailure(operation, "Using declarations are not supported in JavaScript conversion.");
-    }
-
-    /// <summary>
     /// 处理取反模式操作
     /// C# 示例：
     /// obj is not null         // not 模式
@@ -3644,24 +3591,20 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：转换为JavaScript的逻辑非操作符（!）
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitNegatedPattern(INegatedPatternOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitNegatedPattern(INegatedPatternOperation operation, Queue<VariableDeclaration> argument)
     {
         // 取反模式的条件判断转换
         // C# 示例：obj is not null 是一个布尔条件表达式
         //         value is not 0 检查值是否不等于0
         // 转换结果：生成JavaScript的逻辑非表达式
 
-        // 访问内部模式
-        var pattern = operation.Pattern;
-        if (pattern == null) return null;
-
         // 访问内部模式并转换为表达式
-        var innerExpression = Visit(pattern, argument) as Expression;
-        if (innerExpression == null) return null;
+        if (Visit(operation.Pattern, argument) is not Expression innerExpression)
+            return HandleTransformationFailure(operation.Pattern);
 
-        // 根据AST节点构造规范，使用UpdateExpression处理逻辑非操作
+        // 使用UpdateExpression处理逻辑非操作
         // 生成 !(innerExpression) 的JavaScript表达式
         return new UpdateExpression(Operator.LogicalNot, innerExpression, prefix: true);
     }
@@ -3677,50 +3620,34 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// and 模式转换为 (left) &amp;&amp; (right)，or 模式转换为 (left) || (right)
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitBinaryPattern(IBinaryPatternOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitBinaryPattern(IBinaryPatternOperation operation, Queue<VariableDeclaration> argument)
     {
         // 二元模式的条件判断转换
         // C# 示例：value is > 0 and < 100 是一个布尔条件表达式
         //         obj is string or int 检查对象是否为指定类型中的任意一种
         // 转换结果：生成相应的JavaScript逻辑表达式
 
-        // 尝试访问左右子模式，使用常见的属性名
-        var leftPattern = operation.LeftPattern;
-        var rightPattern = operation.RightPattern;
-
-        if (leftPattern == null || rightPattern == null) return null;
-
         // 访问左右两个子模式
-        var left = Visit(leftPattern, argument) as Expression;
-        var right = Visit(rightPattern, argument) as Expression;
+        if (Visit(operation.LeftPattern, argument) is not Expression left)
+            return HandleTransformationFailure(operation.LeftPattern);
 
-        if (left == null || right == null) return null;
+        if (Visit(operation.RightPattern, argument) is not Expression right)
+            return HandleTransformationFailure(operation.RightPattern);
 
-        // 根据编译时优化原则，直接生成最简洁的JavaScript逻辑表达式
         // 检查模式的类型来确定操作符
-        var operatorKind = operation.OperatorKind;
-
-        // 修复：使用更严格的枚举值判断，避免字符串匹配的误判
-        Operator logicalOperator;
-        var operatorString = operatorKind.ToString();
-
-        // 使用精确的枚举值比较
-        if (operatorString == "And" || operatorString.EndsWith("And"))
+        var @operator = operation.OperatorKind switch
         {
-            logicalOperator = Operator.LogicalAnd;
-        }
-        else if (operatorString == "Or" || operatorString.EndsWith("Or"))
-        {
-            logicalOperator = Operator.LogicalOr;
-        }
-        else
-        {
-            throw new OperationTransformationException(operation, $"Unsupported binary pattern operator: {operatorKind}");
-        }
+            BinaryOperatorKind.And => Operator.LogicalAnd,
+            BinaryOperatorKind.Or => Operator.LogicalOr,
+            _ => Operator.Unknown
+        };
 
-        return new LogicalExpression(logicalOperator, left, right);
+        if (@operator == Operator.Unknown)
+            return HandleTransformationFailure(operation);
+
+        return new LogicalExpression(@operator, left, right);
     }
 
     /// <summary>
@@ -3732,9 +3659,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：根据类型生成相应的JavaScript类型检查条件
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitTypePattern(ITypePatternOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitTypePattern(ITypePatternOperation operation, Queue<VariableDeclaration> argument)
     {
         // 类型模式的条件判断转换
         // C# 示例：obj is string 是一个布尔条件表达式
@@ -3743,10 +3670,10 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
 
         var inputType = operation.InputType;
         // 从父operation获取目标名称，在节点内构建表达式
-        var targetName = ExtractReferenceName(operation.Parent);
+        var targetName = ExtractPatternValName(operation.Parent);
         if (string.IsNullOrEmpty(targetName))
             return HandleTransformationFailure(operation, "cannot extract reference name.");
-                                
+
         // 根据获取的名称构建目标表达式
         var targetExpression = new Identifier(targetName);
 
@@ -3790,7 +3717,6 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
         };
     }
 
-
     /// <summary>
     /// 处理关系模式操作
     /// C# 示例：
@@ -3801,9 +3727,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// value > 0, age >= 18, score < 60
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitRelationalPattern(IRelationalPatternOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitRelationalPattern(IRelationalPatternOperation operation, Queue<VariableDeclaration> argument)
     {
         // 关系模式的条件判断转换
         // C# 示例：value is > 0 是一个布尔条件表达式
@@ -3827,10 +3753,10 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
         // 从参考操作中提取名称
         var targetName = refOperation switch
         {
-            ILocalReferenceOperation localRef => localRef.Local?.Name ?? "value",
-            IParameterReferenceOperation paramRef => paramRef.Parameter?.Name ?? "value",
-            IFieldReferenceOperation fieldRef when fieldRef.Instance == null => fieldRef.Field?.Name ?? "value",
-            IPropertyReferenceOperation propRef when propRef.Instance == null => propRef.Property?.Name ?? "value",
+            ILocalReferenceOperation localRef => localRef.Local.Name,
+            IParameterReferenceOperation paramRef => paramRef.Parameter.Name,
+            IFieldReferenceOperation fieldRef when fieldRef.Instance is null => fieldRef.Field.Name,
+            IPropertyReferenceOperation propRef when propRef.Instance is null => propRef.Property.Name,
             IInstanceReferenceOperation => "this",
             _ => "value"
         };
@@ -3840,7 +3766,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
 
         // 获取右操作数（比较值）
         if (Visit(operation.Value, argument) is not Expression value)
-            return null;
+            return HandleTransformationFailure(operation.Value);
 
         // 检查是否在取反模式中（使用简化的检查逻辑）
         bool isInNegatedPattern = operation.OperatorKind == BinaryOperatorKind.NotEquals ||
@@ -3856,7 +3782,7 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
         // 根据编译时优化原则，直接生成最简洁的JavaScript关系比较表达式
         // 将C#的关系操作符映射到JavaScript的操作符
         // 如果在取反模式中，需要反转操作符（如 Equals 变为 StrictInequality）
-        Operator jsOperator = (operation.OperatorKind, isInNegatedPattern) switch
+        var @operator = (operation.OperatorKind, isInNegatedPattern) switch
         {
             (BinaryOperatorKind.GreaterThan, false) => Operator.GreaterThan,
             (BinaryOperatorKind.GreaterThan, true) => Operator.LessThanOrEqual,
@@ -3870,16 +3796,15 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
             (BinaryOperatorKind.Equals, true) => Operator.StrictInequality,
             (BinaryOperatorKind.NotEquals, false) => Operator.StrictInequality,
             (BinaryOperatorKind.NotEquals, true) => Operator.StrictEquality,
-            _ => throw new OperationTransformationException(operation, $"Unsupported relational operator: {operation.OperatorKind}")
+            _ => Operator.Unknown
         };
+
+        if (@operator == Operator.Unknown)
+            return HandleTransformationFailure(operation);
 
         // 根据AST节点构造规范，使用LogicalExpression表示比较操作
         // 使用实际的目标表达式而不是占位符
-        return new LogicalExpression(
-            jsOperator,
-            targetExpression,
-            value
-        );
+        return new LogicalExpression(@operator, targetExpression, value);
     }
 
     /// <summary>
@@ -3891,9 +3816,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// { ...person, Name: "John" } / { ...point, X: 10 }
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitWith(IWithOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitWith(IWithOperation operation, Queue<VariableDeclaration> argument)
     {
         // with表达式的直接AST转换
         // C# 示例：person with { Name = "John" } 表示创建一个新对象，复制原对象并修改指定属性
@@ -3902,7 +3827,8 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
         // 语义等价：C# record的with表达式在运行时语义上等同于JavaScript的对象展开
 
         // 获取原始对象
-        if (Visit(operation.Operand, argument) is not Expression operand) return null;
+        if (Visit(operation.Operand, argument) is not Expression operand)
+            return HandleTransformationFailure(operation.Operand);
 
         // 处理初始化器（要修改的属性）
         var properties = new List<Node>
@@ -3912,30 +3838,62 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
         };
 
         // 处理初始化器中的新属性
-        if (operation.Initializer is not null)
+        // 获取初始化器中的所有初始化操作
+        foreach (var initializer in operation.Initializer.Initializers)
         {
-            // 获取初始化器中的所有初始化操作
-            foreach (var initializer in operation.Initializer.Initializers)
+            if (initializer is IMemberInitializerOperation memberInit)
             {
-                if (initializer is IMemberInitializerOperation memberInit)
+                // 获取成员名称
+                string memberName;
+                if (memberInit.InitializedMember is IFieldSymbol f)
+                    memberName = f.Name;
+                else if (memberInit.InitializedMember is IPropertySymbol p)
+                    memberName = p.Name;
+                else
+                    return HandleTransformationFailure(operation.Initializer);
+
+                // 获取初始化值
+                if (Visit(memberInit.Initializer, argument) is Expression initValue)
                 {
-                    // 获取成员名称
-                    var memberName = memberInit.InitializedMember switch
+                    // 根据AST节点构造规范，使用PropertyDefinition创建对象属性
+                    // 确保生成正确的属性语法：{ ...original, propertyName: value }
+                    properties.Add(new ObjectProperty(
+                        kind: PropertyKind.Init,
+                        key: new Identifier(memberName),
+                        value: initValue,
+                        computed: false,
+                        shorthand: false,
+                        method: false
+                    ));
+                }
+                else
+                    return HandleTransformationFailure(operation.Initializer);
+            }
+            else
+            {
+                // 对于其他类型的初始化器，需要确保生成正确的属性语法
+                var initNode = Visit(initializer, argument);
+
+                // 如果初始化器不是PropertyDefinition，需要包装成PropertyDefinition
+                // 这样可以确保生成正确的JavaScript对象属性语法
+                if (initNode is PropertyDefinition)
+                    properties.Add(initNode);
+                else if (initNode is AssignmentExpression assignment)
+                {
+                    // 如果是赋值表达式，提取左侧作为属性名，右侧作为值
+                    var key = assignment.Left switch
                     {
-                        IFieldSymbol f => f.Name,
-                        IPropertySymbol p => p.Name,
-                        _ => throw new OperationTransformationException(memberInit.InitializedMember,$"{nameof(IMemberInitializerOperation)}.")
+                        Identifier i => i,
+                        MemberExpression m => m.Property as Identifier,
+                        _ => null
                     };
 
-                    // 获取初始化值
-                    if (Visit(memberInit.Initializer, argument) is Expression initValue)
+                    if (key is not null)
                     {
-                        // 根据AST节点构造规范，使用PropertyDefinition创建对象属性
-                        // 确保生成正确的属性语法：{ ...original, propertyName: value }
                         properties.Add(new ObjectProperty(
-                            kind:PropertyKind.Init,
-                            key: new Identifier(memberName),
-                            value: initValue,
+                            kind: PropertyKind.Init,
+                            key: key,
+                            value: assignment.Right,
                             computed: false,
                             shorthand: false,
                             method: false
@@ -3943,48 +3901,11 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
                     }
                 }
                 else
-                {
-                    // 对于其他类型的初始化器，需要确保生成正确的属性语法
-                    var initNode = Visit(initializer, argument);
-                    if (initNode is not null)
-                    {
-                        // 如果初始化器不是PropertyDefinition，需要包装成PropertyDefinition
-                        // 这样可以确保生成正确的JavaScript对象属性语法
-                        if (initNode is PropertyDefinition)
-                        {
-                            properties.Add(initNode);
-                        }
-                        else if (initNode is AssignmentExpression assignment)
-                        {
-                            // 如果是赋值表达式，提取左侧作为属性名，右侧作为值
-                            var key = assignment.Left switch
-                            {
-                                Identifier i => i,
-                                MemberExpression m => m.Property as Identifier,
-                                _ => null
-                            };
+                    return HandleTransformationFailure(operation);
 
-                            if (key is not null)
-                            {
-                                properties.Add(new ObjectProperty(
-                                    kind:PropertyKind.Init,
-                                    key: key,
-                                    value: assignment.Right,
-                                    computed: false,
-                                    shorthand: false,
-                                    method: false
-                                ));
-                            }
-                        }
-                        else
-                        {
-                            // 其他情况，尝试将其转换为属性定义
-                            // 这里可能需要根据实际情况进一步处理
-                        }
-                    }
-                }
             }
         }
+
 
         // 根据编译时优化原则，直接生成最简洁的JavaScript对象字面量
         // 返回对象表达式：{ ...original, property: value }
@@ -3992,118 +3913,184 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     }
 
     /// <summary>
-    /// 处理插值字符串处理器创建操作
-    /// C# 示例：
-    /// public void WriteInterpolated([InterpolatedStringHandler] ref CustomHandler handler) { ... }
-    /// WriteInterpolated($"Hello {name}!"); // 触发处理器创建
-    /// 转换结果：不支持，JavaScript没有对应机制
-    /// </summary>
-    /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
-    /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitInterpolatedStringHandlerCreation(IInterpolatedStringHandlerCreationOperation operation,IOperation? argument)
-    {
-        // 插值字符串处理器的自定义 AppendLiteral/AppendFormatted 调用链无法在 JS 端重现
-        // 处理器的副作用、格式化逗辑、状态管理均无法保证语义等价
-        throw new OperationTransformationException(operation,
-            "插值字符串处理器的自定义 AppendLiteral/AppendFormatted 调用链无法在 JavaScript 端重现，处理器的副作用、格式化逗辑、状态管理均无法保证语义等价");
-    }
-
-    /// <summary>
     /// 处理插值字符串添加操作
     /// C# 示例：
     /// $"Hello {name}!" 中的字符串连接操作
-    /// 转换结果：使用 + 操作符进行字符串连接
+    /// 转换结果： `Hello ${name}!`
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitInterpolatedStringAddition(IInterpolatedStringAdditionOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitInterpolatedStringAddition(IInterpolatedStringAdditionOperation operation, Queue<VariableDeclaration> argument)
     {
-        // 插值字符串添加操作属于处理器框架的一部分，无法单独转换
-        throw new OperationTransformationException(operation,
-            "插值字符串添加操作属于处理器框架的一部分，其语义依赖于处理器上下文，无法在 JavaScript 中单独转换而保证语义等价");
-    }
+        // 递归收集所有静态字符串和动态表达式
+        var quasis = new List<TemplateElement>();
+        var exprs = new List<Expression>();
 
-    /// <summary>
-    /// 处理插值字符串追加操作
-    /// C# 示例：
-    /// 在插值字符串处理器中追加内容的操作
-    /// 转换结果：返回追加调用的表达式
-    /// </summary>
-    /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
-    /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitInterpolatedStringAppend(IInterpolatedStringAppendOperation operation,IOperation? argument)
-    {
-        // 插值字符串追加操作属于处理器框架的一部分，无法单独转换
-        throw new OperationTransformationException(operation,
-            "插值字符串追加操作属于处理器框架的一部分，其语义依赖于处理器上下文，无法在 JavaScript 中单独转换而保证语义等价");
-    }
+        void Collect(IOperation? node)
+        {
+            switch (node)
+            {
+                case IInterpolatedStringAdditionOperation add:
+                    // 递归处理左子树和右子树，以压平编译器生成的二叉树结构
+                    Collect(add.Left);
+                    Collect(add.Right);
+                    break;
 
-    /// <summary>
-    /// 处理插值字符串处理器参数占位符操作
-    /// C# 示例：
-    /// 插值字符串处理器中的参数占位符（编译器内部）
-    /// 转换结果：不支持，这是编译器内部实现细节
-    /// </summary>
-    /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
-    /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitInterpolatedStringHandlerArgumentPlaceholder(IInterpolatedStringHandlerArgumentPlaceholderOperation operation,IOperation? argument)
-    {
-        // 插值字符串处理器参数占位符是编译器内部操作，无法转换
-        throw new OperationTransformationException(operation,
-            $"插值字符串处理器参数占位符操作（{operation.Kind}）是编译器内部实现细节，无法转换为 JavaScript 并保证语义等价");
-    }
+                case ILiteralOperation { ConstantValue: { HasValue: true, Value: string cookedValue } }:
+                    // s 是 C# 解释后的 "cooked" 值
+                    var rawValue = CookedToRaw(cookedValue);
+                    var templateValue = TemplateValue.From(cookedValue, rawValue);
+                    quasis.Add(new TemplateElement(templateValue, tail: false));
+                    break;
 
-    /// <summary>
-    /// 处理函数指针调用操作
-    /// C# 示例：
-    /// unsafe {
-    ///     delegate*<int, int> ptr = &MyMethod;
-    ///     int result = ptr(42);    // 函数指针调用
-    /// }
-    /// 转换结果：不支持，JavaScript 是安全语言，不支持函数指针
-    /// </summary>
-    /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
-    /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitFunctionPointerInvocation(IFunctionPointerInvocationOperation operation,IOperation? argument)
-    {
-        throw new OperationTransformationException(operation,
-            "JavaScript 为安全语言，不支持指针、函数指针或 unsafe 语义，函数指针调用无法转换");
+                default:
+                    if (node is not null)
+                    {
+                        // 任何非字面量操作（如变量、方法调用等）都被视为动态表达式
+                        if (Visit(node, argument) is Expression e)
+                            exprs.Add(e);
+                        else
+                            HandleTransformationFailure(node);
+                    }
+                    break;
+            }
+        }
+
+        Collect(operation);
+
+        // 最后一个 quasi 的 tail 标志必须是 true
+        if (quasis.Count == exprs.Count)
+            quasis.Add(new TemplateElement(TemplateValue.From("", ""), tail: true));
+        else
+            quasis[^1] = new TemplateElement(quasis[^1].Value, tail: true);
+
+        // 生成最终的 TemplateLiteral AST 节点
+        return new TemplateLiteral(NodeList.From(quasis), NodeList.From(exprs));
+
+        string CookedToRaw(string cooked)
+        {
+            var sb = new StringBuilder(cooked.Length);
+            foreach (var c in cooked)
+            {
+                switch (c)
+                {
+                    case '`': sb.Append("\\`"); break;
+                    case '\\': sb.Append("\\\\"); break;
+                    case '$': sb.Append("\\$"); break;
+                    case '\r': sb.Append("\\r"); break;
+                    case '\n': sb.Append("\\n"); break;
+                    case '\t': sb.Append("\\t"); break;
+                    default: sb.Append(c); break;
+                }
+            }
+            return sb.ToString();
+        }
     }
 
     /// <summary>
     /// 处理列表模式操作
     /// C# 示例：
-    /// list is [1, 2, 3]                   // 列表模式匹配
-    /// array is [var first, .., var last]  // 列表模式解构
-    /// 转换结果：Array.isArray(array) &amp;&amp; array.length === expectedLength
+    ///   list is [1, 2, ..]            // 长度 ≥2 即可
+    ///   list is [var a, .. var rest]  // 长度 ≥1，rest 运行时就是 slice(1)
+    /// 转换结果：
+    ///   Array.isArray(list) &&
+    ///   list.length >= 2 &&
+    ///   list[0] === 1
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitListPattern(IListPatternOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitListPattern(IListPatternOperation operation, Queue<VariableDeclaration> argument)
     {
-        // 列表模式的条件判断转换
-        // C# 示例：array is [1, 2, 3] 是一个布尔条件表达式
-        //         list is [var x, var y] 检查列表是否匹配指定模式
-        // 转换结果：Array.isArray(array) && array.length === expectedLength
+        // 从父operation获取目标名称，在节点内构建表达式
+        var targetName = ExtractPatternValName(operation.Parent);
+        if (string.IsNullOrEmpty(targetName))
+            return HandleTransformationFailure(operation, "cannot extract reference name.");
 
         var patterns = operation.Patterns;
-        if (patterns == null) return null;
+        if (patterns == null || patterns.IsEmpty) return null;
 
-        // 根据编译时优化原则，生成数组类型和长度检查的条件
-        // 在模式匹配上下文中，这会被应用到具体的目标上
-        // 返回Array.isArray的模板调用，实际参数在上下文中提供
+        Expression targetExpr = new Identifier(targetName);
 
-        return new CallExpression(
-            new MemberExpression(new Identifier("Array"), new Identifier("isArray"), computed: false, optional: false),
-            NodeList.From<Expression>(), // 参数由上下文提供
+        /* 1. Array.isArray(target) */
+        // 修正 CallExpression 的构造：callee 和 arguments 分开
+        var arrayCheck = new CallExpression(
+            callee: new MemberExpression(new Identifier("Array"), new Identifier("isArray"), computed: false, optional: false),
+            args: NodeList.From(targetExpr),
             optional: false
         );
+
+        /* 2. 统计“固定头”长度，并检测有没有 .. */
+        int fixedLen = 0;
+        bool hasSlice = false;
+        foreach (var p in patterns)
+        {
+            if (p is ISlicePatternOperation)
+            {
+                hasSlice = true;
+                break;
+            }
+            fixedLen++;
+        }
+
+        /* 3. 长度检查：有切片就用 >=，没有就用 === */
+        var lengthCheck = new NonLogicalBinaryExpression(
+            hasSlice ? Operator.GreaterThanOrEqual : Operator.StrictEquality,
+            new MemberExpression(targetExpr, new Identifier("length"), computed: false, optional: false),
+            new NumericLiteral(fixedLen, fixedLen.ToString())
+        );
+
+        /* 4. 固定头元素检查 */
+        Expression? elemChecks = null;
+        for (int i = 0; i < fixedLen; i++)
+        {
+            var pattern = patterns[i];
+            // 创建对 target[i] 的访问表达式
+            var indexAccess = new MemberExpression(targetExpr,
+                new NumericLiteral(i, i.ToString()), computed: true, optional: false);
+
+            Expression? subCondition = null;
+
+            // 【核心修正】直接在此处处理子模式，而不是递归调用 Visit
+            // 因为我们不能改变 argument，所以子模式必须由父模式“解释”和“生成”
+            switch (pattern)
+            {
+                case IConstantPatternOperation cpo:
+                    // 递归访问常量表达式，这是安全的，因为它不依赖于 argument
+                    var valueExpr = (Expression)Visit(cpo.Value, argument)!;
+                    subCondition = new NonLogicalBinaryExpression(Operator.StrictEquality, indexAccess, valueExpr);
+                    break;
+
+                case IDeclarationPatternOperation:
+                    // 声明模式总是匹配，不增加布尔条件
+                    subCondition = null;
+                    break;
+
+                case IDiscardPatternOperation:
+                    // 弃元模式忽略，不增加条件
+                    subCondition = null;
+                    break;
+
+                    // 可以根据需要添加其他模式类型的处理
+                    // default:
+                    //     return HandleTransformationFailure(pattern, "Unsupported pattern type in list.");
+            }
+
+            if (subCondition is not null)
+            {
+                elemChecks = elemChecks is null
+                    ? subCondition
+                    : new LogicalExpression(Operator.LogicalAnd, elemChecks, subCondition);
+            }
+        }
+
+        /* 5. 拼总表达式 */
+        Expression result = new LogicalExpression(Operator.LogicalAnd, arrayCheck, lengthCheck);
+        if (elemChecks != null)
+            result = new LogicalExpression(Operator.LogicalAnd, result, elemChecks);
+
+        return result;
     }
 
     /// <summary>
@@ -4115,9 +4102,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 符合模式匹配语义：判断是否匹配，而不是提取数据
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitSlicePattern(ISlicePatternOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitSlicePattern(ISlicePatternOperation operation, Queue<VariableDeclaration> argument)
     {
         // 切片模式的条件判断转换
         // C# 示例：array is [.., var lastPart] 是一个布尔条件表达式
@@ -4146,9 +4133,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 利用C#强类型系统，避免不必要的运行时检测，生成高效简洁的代码
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitImplicitIndexerReference(IImplicitIndexerReferenceOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitImplicitIndexerReference(IImplicitIndexerReferenceOperation operation, Queue<VariableDeclaration> argument)
     {
         // 隐式索引器引用的直接AST转换，生成最简洁的代码
         var instance = Visit(operation.Instance, argument) as Expression;
@@ -4198,9 +4185,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，JavaScript 字符串是 UTF-16 编码
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitUtf8String(IUtf8StringOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitUtf8String(IUtf8StringOperation operation, Queue<VariableDeclaration> argument)
     {
         throw new OperationTransformationException(operation,
             "UTF-8 字节序列与 JavaScript UTF-16 字符串模型语义不兼容，无法保持字节级等价，编码语义不可映射");
@@ -4214,9 +4201,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，JavaScript 没有特性系统
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitAttribute(IAttributeOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitAttribute(IAttributeOperation operation, Queue<VariableDeclaration> argument)
     {
         throw new OperationTransformationException(operation, "Attributes are not supported in JavaScript conversion");
     }
@@ -4229,9 +4216,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：不支持，JavaScript 没有堆栈分配数组概念
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitInlineArrayAccess(IInlineArrayAccessOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitInlineArrayAccess(IInlineArrayAccessOperation operation, Queue<VariableDeclaration> argument)
     {
         throw new OperationTransformationException(operation, "Inline array access is not supported in JavaScript conversion");
     }
@@ -4244,9 +4231,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：[1, 2, 3, 4, 5] / ["a", "b", "c"]
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitCollectionExpression(ICollectionExpressionOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitCollectionExpression(ICollectionExpressionOperation operation, Queue<VariableDeclaration> argument)
     {
         var elements = new List<Expression?>();
 
@@ -4267,16 +4254,16 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：...array1 / ...args（JavaScript 扩展运算符）
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitSpread(ISpreadOperation operation, IOperation? argument)
+    public override Acornima.Ast.Node? VisitSpread(ISpreadOperation operation, Queue<VariableDeclaration> argument)
     {
         if (Visit(operation.Operand, argument) is not Expression operand)
             return null;
 
         return new SpreadElement(operand);
     }
-    
+
     /// <summary>
     /// 处理声明表达式操作
     /// C# 示例：
@@ -4285,9 +4272,9 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
     /// 转换结果：转换为 let 变量声明
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">当前访问的operation的根operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitDeclarationExpression(IDeclarationExpressionOperation operation,IOperation? argument)
+    public override Acornima.Ast.Node? VisitDeclarationExpression(IDeclarationExpressionOperation operation, Queue<VariableDeclaration> argument)
     {
         // 声明表达式（如 out var x）转换为变量声明
         var declarator = Visit(operation.Expression, argument);
@@ -4298,5 +4285,24 @@ public sealed class AstOperationWalker : OperationVisitor<IOperation?, Node?>
         }
 
         return declarator;
-    }    
+    }
+
+    /// <summary>
+    /// 处理 switch 默认 case 子句操作
+    /// C# 示例：
+    /// switch (value) {
+    ///     default:
+    ///         DefaultAction();
+    ///         break;
+    /// }
+    /// 转换结果：true（作为最终的 else 条件）
+    /// </summary>
+    /// <param name="operation">当前访问的operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+    /// <returns>Acornima的ESTree的Node</returns>
+    public override Acornima.Ast.Node? VisitDefaultCaseClause(IDefaultCaseClauseOperation operation, Queue<VariableDeclaration> argument)
+    {
+        // 默认case子句转换为else分支，返回true作为最终条件
+        return new BooleanLiteral(true, "true");
+    }
 }
