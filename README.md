@@ -8,6 +8,10 @@
 [![.NET](https://img.shields.io/badge/.NET-10.0-blue.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
+> ⚠️ **EXPERIMENTAL DEMO** ⚠️\
+> This library is a pilot project, and its API and features are subject to change during development, and may ultimately not be completed.
+---
+
 Jazor is a high-performance C# to JavaScript compiler that aims to achieve semantically equivalent conversion from C# code to JavaScript code. Based on the Roslyn compiler platform, this project utilizes AST (Abstract Syntax Tree) transformation technology to precisely convert C# code into JavaScript code that can run in browsers or Node.js environments.
 
 ## Key Features
