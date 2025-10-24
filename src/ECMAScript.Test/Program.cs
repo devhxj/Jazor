@@ -34,20 +34,23 @@ Console.WriteLine("Hello, World!");
 //}
 //catch (Exception ex)
 //{
-//	Console.WriteLine($"请求失败: {ex.Message}");
+//	Console.WriteLi ne($"请求失败: {ex.Message}");
 //}
-
+int c;
+(c,int e) = (2, 2);
+(int a, int b) = (3, 4/5);
 
 var script = @"
-let obj;
-let a = obj?.Property;
+let tuple= {a:1,Item2:2}
 ";
 var parser = new Parser(new ParserOptions { 
 
 });
 var ast = parser.ParseModule(script);
 Console.WriteLine($"CODE:{script}");
-Console.WriteLine($"JSON:{ast.ToJson()}");
+Console.WriteLine($"------------------");
+Console.WriteLine($"{ast.ToJson()}");
+Console.WriteLine($"------------------");
 Console.WriteLine($"OUT:{ast.ToJavaScript()}");
 Console.ReadLine();
 

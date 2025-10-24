@@ -10,11 +10,37 @@ using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections;
 using System.Security.Cryptography;
 using System.Text;
+using System.Collections.Concurrent;
 
 namespace ECMAScript.Compiler;
+
+public sealed class StatementGroup(in NodeList<Statement> elements) 
+    : Statement(NodeType.ExpressionStatement)
+{
+    private readonly NodeList<Statement> _elements = elements;
+
+    public ref readonly NodeList<Statement> Elements 
+    { 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] 
+        get => ref _elements; 
+    }
+
+    protected override object? Accept(AstVisitor visitor)
+    {
+        for (var i = 0; i < _elements.Count; i++)
+        {
+            var elementsItem = _elements[i];
+            if (elementsItem is not null)
+            {
+                visitor.Visit(elementsItem);
+            }
+        }
+        
+        return this;     
+    } 
+}
 
 /// <summary>
 /// C# Roslyn 操作树到 JavaScript Acornima AST 的转换器
@@ -32,27 +58,51 @@ namespace ECMAScript.Compiler;
 /// - 生成最简洁的JavaScript代码，避免复杂的IIFE包装（除非必要）
 /// - 递归深度控制，防止栈溢出
 /// </summary>
-public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclaration>, Node?>
+public sealed class SemanticWalker : OperationVisitor<Queue<VariableDeclaration>, Node?>
 {
     private int _recursionDepth;
 
     private readonly Action<Location, string?>? _report;
 
-    public AstOperationWalker()
-    {
+    private readonly ConcurrentDictionary<int,(OperationKind Kind,string Name)> _cache = [];
 
-    }
+    public SemanticWalker() { }
 
-    public AstOperationWalker(Action<Location, string?> report) => _report = report;
+    public SemanticWalker(Action<Location, string?> report) => _report = report;
 
     [DebuggerStepThrough]
     public static void EnsureSufficientExecutionStack(int recursionDepth)
     {
         if (recursionDepth > 20)
-        {
             RuntimeHelpers.EnsureSufficientExecutionStack();
-        }
     }
+
+    /// <summary>
+    /// 根据操作生成以v开头的稳定的唯一名称
+    /// </summary>
+    /// <param name="operation">操作</param>
+    /// <returns></returns>
+    private string GetUniqueName(IOperation operation)
+    {
+        //var hash = operation.Syntax.GetHashCode();
+        //if(_cache.TryGetValue(hash,out var cache) && cache.Kind == operation.Kind)
+        //    return cache.Name;
+
+        var syntaxTree = operation.Syntax.SyntaxTree;
+        var sourceSpan = operation.Syntax.GetLocation().SourceSpan;
+        using var sha256 = SHA256.Create();
+        var key = $"{syntaxTree.FilePath}${operation.Kind}${sourceSpan.Start}${sourceSpan.End}";
+        var bytes = Encoding.UTF8.GetBytes(key);
+        var hashBytes = sha256.ComputeHash(bytes);
+        var sb = new StringBuilder("_");
+        for (int i = 0; i < 8; i++)
+            sb.Append(hashBytes[i].ToString("x2"));
+        var name = sb.ToString();
+
+        //_cache.TryAdd(hash,(operation.Kind,name));
+
+        return name;
+    }    
 
     /// <summary>
     /// 操作无法转换时的兜底方法，提供详细的错误信息，包括操作类型
@@ -64,9 +114,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     public Node HandleTransformationFailure(IOperation operation, string? message)
     {
         var location = operation.Syntax.GetLocation();
-        //内部可能有其他处理改进，如推给analysis
         _report?.Invoke(location, message);
-
         throw new OperationTransformationException(operation, message);
     }
 
@@ -80,30 +128,8 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     public Node HandleTransformationFailure(SyntaxNode node, string? message)
     {
         var location = node.GetLocation();
-
-        //内部可能有其他处理改进，如推给analysis
         _report?.Invoke(location, message);
-
         throw new SyntaxNodeTransformationException(node, message);
-    }
-
-    /// <summary>
-    /// 根据操作生成以v开头的稳定的唯一名称
-    /// </summary>
-    /// <param name="operation">操作</param>
-    /// <returns></returns>
-    private static string GetUniqueName(IOperation operation)
-    {
-        var syntaxTree = operation.Syntax.SyntaxTree;
-        var sourceSpan = operation.Syntax.GetLocation().SourceSpan;
-        using var sha256 = SHA256.Create();
-        var key = $"{syntaxTree.FilePath}${sourceSpan.Start}${sourceSpan.End}";
-        var bytes = Encoding.UTF8.GetBytes(key);
-        var hashBytes = sha256.ComputeHash(bytes);
-        var sb = new StringBuilder($"v{operation.Kind}");
-        for (int i = 0; i < 8; i++)
-            sb.Append(hashBytes[i].ToString("x2"));
-        return sb.ToString();
     }
 
     /// <summary>
@@ -111,51 +137,58 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     /// </summary>
     /// <param name="operation">模式相关操作</param>
     /// <returns>引用对象名称</returns>
-    private string? ExtractPatternValName(IOperation? operation)
+    private string ExtractPatternValName(IOperation? operation)
     {
-        var refOperation = operation switch
-        {
-            // is 模式匹配：从 obj is Pattern 中获取 obj 的名称
-            IIsPatternOperation isPattern => isPattern.Value,
+        if (operation is null)
+            return string.Empty;
 
-            // switch 表达式分支：直接从父节点获取switch输入名称
-            ISwitchExpressionArmOperation armOp when armOp.Parent is ISwitchExpressionOperation switchExpr
-                => switchExpr.Value,
-
-            // 关系模式匹配：从 value is > 5 中获取 value 的名称
-            IRelationalPatternOperation relPattern when relPattern.Parent is not null
-                => relPattern.Parent,
-
-            // 处理嵌套在递归模式中的关系模式
-            IPropertySubpatternOperation propSubPattern when propSubPattern.Parent is IRecursivePatternOperation recPattern
-                => recPattern.Parent switch
-                {
-                    IIsPatternOperation isPattern => isPattern.Value,
-                    ISwitchExpressionOperation switchExpr => switchExpr.Value,
-                    _ => null
-                },//递归模式的父节点可能是 is 模式或 switch 表达式
-
-            // 其他情况返回null
-            _ => null
-        };
-
-        // 特殊处理：如果传入的operation本身就是RelationalPatternOperation，需要从其父节点获取参考名称
-        if (operation is IRelationalPatternOperation relationalPattern && relationalPattern.Parent is not null)
-        {
-            refOperation = relationalPattern.Parent;
-        }
-
-        var refName = refOperation switch
+        var op = FindValueOperation(operation);
+        var name = op switch
         {
             ILocalReferenceOperation localRef => localRef.Local.Name,
             IParameterReferenceOperation paramRef => paramRef.Parameter.Name,
-            IFieldReferenceOperation fieldRef when fieldRef.Instance is null => fieldRef.Field.Name,
-            IPropertyReferenceOperation propRef when propRef.Instance is null => propRef.Property.Name,
+            IFieldReferenceOperation fieldRef => fieldRef.Field.Name,
+            IPropertyReferenceOperation propRef => propRef.Property.Name,
+            IDiscardOperation => "_",
             IInstanceReferenceOperation => "this",
-            _ => null
+            _ => string.Empty
         };
 
-        return refName;
+        if (string.IsNullOrEmpty(name))
+        {
+            var location = operation.Syntax.GetLocation();
+            var message = $"cannot extract reference name from {operation.Kind}.";
+            _report?.Invoke(location, message);
+        }
+
+        return name;
+
+        static IOperation? FindValueOperation(IOperation? startOp)
+        {
+            var visited = new HashSet<IOperation>();
+            var currentOp = startOp;
+            while (currentOp is not null)
+            {
+                // 防止在损坏的 IOperation 树中出现无限循环
+                if (!visited.Add(currentOp))
+                    return null; // 检测到循环
+
+                // 这是关键的判断：我们正在寻找的“容器”操作
+                switch (currentOp)
+                {
+                    case IIsPatternOperation isPattern:
+                        return isPattern.Value; // is e
+                    case ISwitchExpressionOperation switchExpr:
+                        return switchExpr.Value; // switch (e) { ... }
+                    case ISwitchOperation switchStmt:
+                        return switchStmt.Value; // switch (e) { ... }
+                }
+                // 如果不是容器操作，则向父级继续搜索
+                currentOp = currentOp.Parent;
+            }
+
+            return null; // 到达根节点仍未找到
+        }
     }
 
     /// <summary>
@@ -166,21 +199,135 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     /// <returns>Acornima的ESTree的Node</returns>
     public override Acornima.Ast.Node? Visit(IOperation? operation, Queue<VariableDeclaration> argument)
     {
-        if (operation is not null)
+        if (operation is null)
+            return null;
+
+        _recursionDepth++;
+        try
         {
-            _recursionDepth++;
-            try
-            {
-                EnsureSufficientExecutionStack(_recursionDepth);
-                return operation.Accept(this, argument);
-            }
-            finally
-            {
-                _recursionDepth--;
-            }
+            EnsureSufficientExecutionStack(_recursionDepth);
+            return operation.Accept(this, argument);
         }
+        finally
+        {
+            _recursionDepth--;
+        }
+    }
+
+    /// <summary>
+    /// 安全访问可能为null的操作并转换为指定类型的AST节点
+    /// <para>
+    /// 此方法是类型安全的访问器，用于处理可能为null的操作，确保转换结果符合预期的节点类型。
+    /// 如果操作为null、转换结果为null或无法转换，抛出异常。
+    /// </para>
+    /// </summary>
+    /// <typeparam name="T">期望返回的AST节点类型</typeparam>
+    /// <param name="operation">要访问和转换的操作，可能为null</param>
+    /// <param name="argument">用于存放变量声明的队列</param>
+    /// <returns>转换后的指定类型AST节点，如果操作为null或转换结果为null则抛出异常</returns>
+    /// <exception cref="OperationTransformationException">当操作不为null但无法转换为目标类型时抛出</exception>
+    private T VisitTo<T>(IOperation operation, Queue<VariableDeclaration> argument) where T : INode
+    {
+        if (Visit(operation, argument) is T result)
+            return result;
+
+        var message = $"Cannot convert operation '{operation.Kind}' to AST node type '{typeof(T).Name}'. This indicates missing support for this operation type or a type mismatch. ";
+        var location = operation.Syntax.GetLocation();
+        _report?.Invoke(location, message);
+
+        throw new OperationTransformationException(operation, message);
+    }
+
+    /// <summary>
+    /// 安全访问可能为null的操作并转换为指定类型的AST节点
+    /// <para>
+    /// 此方法是类型安全的访问器，用于处理可能为null的操作，确保转换结果符合预期的节点类型。
+    /// 如果操作为null、转换结果为null或无法转换，返回默认值而不是抛出异常。
+    /// </para>
+    /// </summary>
+    /// <typeparam name="T">期望返回的AST节点类型</typeparam>
+    /// <param name="operation">要访问和转换的操作，可能为null</param>
+    /// <param name="argument">用于存放变量声明的队列</param>
+    /// <returns>转换后的指定类型AST节点，如果操作为null或转换结果为null则返回默认值</returns>
+    private T? VisitToNullable<T>(IOperation? operation, Queue<VariableDeclaration> argument) where T : INode
+    {
+        if (operation is null)
+            return default;
+
+        var node = Visit(operation, argument);
+        if (node is null)
+            return default;
+
+        if (node is T result)
+            return result;
+
+        var message = $"Cannot convert operation '{operation.Kind}' to AST node type '{typeof(T).Name}'. This indicates missing support for this operation type or a type mismatch. ";
+        var location = operation.Syntax.GetLocation();
+        _report?.Invoke(location, message);
 
         return default;
+    }
+
+    /// <summary>
+    /// 安全访问操作并将其添加到集合中
+    /// <para>
+    /// 此方法用于将操作转换为指定类型的AST节点，并将成功转换的节点添加到集合中。
+    /// 如果操作为null或转换结果为null，则跳过处理，不抛出异常。
+    /// 如果转换结果类型不匹配，会记录错误信息但不中断处理流程。
+    /// </para>
+    /// </summary>
+    /// <typeparam name="T">期望的AST节点类型</typeparam>
+    /// <param name="list">用于存放成功转换的AST节点的集合</param>
+    /// <param name="operation">要访问和转换的操作，可能为null</param>
+    /// <param name="argument">用于存放变量声明的队列</param>
+    private void VisitTo<T>(ICollection<T> list, IOperation? operation, Queue<VariableDeclaration> argument) where T : INode
+    {
+        if (operation is null)
+            return;
+
+        var node = Visit(operation, argument);
+        if (node is null)
+            return;
+
+        if (node is T item)
+            list.Add(item);
+        else
+        {
+            var message = $"Cannot convert operation '{operation.Kind}' to AST node type '{typeof(T).Name}'. This indicates missing support for this operation type or a type mismatch. ";
+            var location = operation.Syntax.GetLocation();
+            _report?.Invoke(location, message);
+        }
+    }
+
+    /// <summary>
+    /// 安全访问操作并将其添加到集合中
+    /// <para>
+    /// 此方法用于将操作转换为指定类型的AST节点，并将成功转换的节点添加到集合中。
+    /// 如果操作为null或转换结果为null，则跳过处理，不抛出异常。
+    /// 如果转换结果类型不匹配，会记录错误信息但不中断处理流程。
+    /// </para>
+    /// </summary>
+    /// <typeparam name="T">期望的AST节点类型</typeparam>
+    /// <param name="list">用于存放成功转换的AST节点的集合</param>
+    /// <param name="operation">要访问和转换的操作，可能为null</param>
+    /// <param name="argument">用于存放变量声明的队列</param>
+    private void VisitToNullable<T>(ICollection<T?> list, IOperation? operation, Queue<VariableDeclaration> argument) where T : INode
+    {
+        if (operation is null)
+            return;
+
+        var node = Visit(operation, argument);
+        if (node is null)
+            return;
+
+        if (node is T item)
+            list.Add(item);
+        else
+        {
+            var message = $"Cannot convert operation '{operation.Kind}' to AST node type '{typeof(T).Name}'. This indicates missing support for this operation type or a type mismatch. ";
+            var location = operation.Syntax.GetLocation();
+            _report?.Invoke(location, message);
+        }
     }
 
     /// <summary>
@@ -553,7 +700,19 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     /// <param name="argument">当前operation所属的父operation</param>
     /// <returns>JavaScript范围对象字面量</returns>
     public override Acornima.Ast.Node? VisitRangeOperation(IRangeOperation operation, Queue<VariableDeclaration> argument)
-        => HandleTransformationFailure(operation, "Range operations are not supported in JavaScript conversion.");
+    {
+        // 检查是否在数组元素访问的上下文中
+        if (operation.Parent is IArrayElementReferenceOperation arrayRef)
+        {
+            // 在数组元素访问上下文中，范围操作应该已经在 VisitArrayElementReference 中处理
+            // 这里不应该到达，但为了安全起见，返回一个错误
+            return HandleTransformationFailure(operation, "Range operation in array access should be handled by VisitArrayElementReference.");
+        }
+
+        // 单独的范围操作（不在数组访问中）在 JavaScript 中没有直接等价物
+        // 返回一个错误，因为无法在 JavaScript 中表示独立的范围对象
+        return HandleTransformationFailure(operation, "Standalone range operations are not supported in JavaScript conversion. Use array slicing instead.");
+    }
 
     /// <summary>
     /// 处理 ReDim 操作（VB.NET 特有）
@@ -686,11 +845,11 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     /// <returns>Acornima的ESTree的Node</returns>
     public override Acornima.Ast.Node? VisitInlineArrayAccess(IInlineArrayAccessOperation operation, Queue<VariableDeclaration> argument)
         => HandleTransformationFailure(operation, "Inline array access operations are not supported in JavaScript conversion.");
-       
+
     /// <summary>
     /// 处理 IInvalidOperation，它包装了在当前上下文中无法用单一类型表示其结果的操作。
     /// 此方法会尝试解包结合语法节点和子操作实现语义的精准匹配（不支持dynamic，不用考虑这个）。
-    /// why do:如“var x = Math.Abs(-5);”，IInvalidOperation的子操作会把Math.Abs(-5)计算成5，而我们需要完整的方法调用转换而不是一个字面量。
+    /// why do:如"var x = Math.Abs(-5);"，IInvalidOperation的子操作会把Math.Abs(-5)计算成5，而我们需要完整的方法调用转换而不是一个字面量。
     /// - 如果只有一个子表达式，则直接返回该表达式的转换结果。
     /// - 如果有多个子表达式，则将它们组合成一个 Acornima 的 SequenceExpression (逗号表达式)。
     /// - 如果没有可转换的子节点，则抛出异常。
@@ -698,6 +857,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     /// C# 示例 2: var y = (a = 1, b = 2, a + b); -> let y = (a = 1, b = 2, a + b);
     /// C# 示例 3: MyMethod(); -> MyMethod();
     /// C# 示例 4: condition ? whenTrue : whenFalse; -> condition ? whenTrue : whenFalse;
+    /// C# 示例 5: var result = array[1..^4..2]; -> array.slice(1, array.length-4).filter((_, i) => i % 2 === 0); // 步长范围操作
     /// </summary>
     /// <param name="operation">当前访问的 IInvalidOperation。</param>
     /// <param name="argument">当前访问的 operation 的根 operation。</param>
@@ -844,6 +1004,8 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
                 statements.Add(statement);
             else if (node is Expression expr)
                 statements.Add(new NonSpecialExpressionStatement(expr));
+            else
+                HandleTransformationFailure(stmt, $"{stmt.Kind} could not be translated to JavaScript.");
         }
 
         // 根据上下文判断返回不同类型的语句块
@@ -859,7 +1021,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
         // 如果父节点是类型或类定义的静态初始化块，返回 StaticBlock
         if (operation.Parent is IFieldInitializerOperation &&
             operation.Parent is IFieldReferenceOperation fieldRef &&
-            fieldRef.Field?.IsStatic == true)
+            fieldRef.Field.IsStatic)
         {
             return new StaticBlock(NodeList.From(statements));
         }
@@ -888,11 +1050,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
         {
             foreach (var declarator in declaration.Declarators)
             {
-                var node = Visit(declarator, argument);
-                if (node is VariableDeclarator variableDeclarator)
-                    declarators.Add(variableDeclarator);
-                else
-                    return HandleTransformationFailure(declarator, "Variable declarator could not be translated to JavaScript.");
+                VisitTo(declarators, declarator, argument);
             }
         }
         return new VariableDeclaration(VariableDeclarationKind.Let, NodeList.From(declarators));
@@ -937,12 +1095,10 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
                 }
                 else if (clause is ISingleValueCaseClauseOperation singleValue)
                 {
-                    if (Visit(singleValue.Value, argument) is Expression caseValue)
-                        tests.Add(caseValue);
-                    else
-                        return HandleTransformationFailure(singleValue.Value, "Switch case clause value could not be translated to JavaScript.");
+                    VisitToNullable(tests, singleValue.Value, argument);
                 }
-                else return HandleTransformationFailure(clause, "Switch case clause could not be translated to JavaScript.");   
+                else
+                    return HandleTransformationFailure(clause, "Switch case clause could not be translated to JavaScript.");
             }
 
             // 处理case体
@@ -964,11 +1120,11 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
                 var testExpr = tests[i];
                 // 只有第一个case包含语句，其余case为fallthrough
                 var statements = i == 0 ? consequent : [];
-                cases.Add(new SwitchCase(testExpr, NodeList.From<Statement>(statements)));
+                cases.Add(new SwitchCase(testExpr, NodeList.From(statements)));
             }
         }
 
-        return new SwitchStatement(discriminant, NodeList.From<SwitchCase>(cases));
+        return new SwitchStatement(discriminant, NodeList.From(cases));
     }
 
     /// <summary>
@@ -988,7 +1144,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
         // 返回null，因为实际处理在VisitSwitch中完成
         return null;
     }
-    
+
     /// <summary>
     /// 处理 foreach 循环操作
     /// C# 示例：
@@ -1003,12 +1159,9 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     public override Acornima.Ast.Node? VisitForEachLoop(IForEachLoopOperation operation, Queue<VariableDeclaration> argument)
     {
         // 获取循环变量 - 使用 LoopControlVariable 直接访问
-        var left = Visit(operation.LoopControlVariable, argument);
-        if (left is null)
-            return HandleTransformationFailure(operation.LoopControlVariable, "ForEach loop control variable could not be translated to JavaScript.");
-
-        if (Visit(operation.Collection, argument) is not Expression right || Visit(operation.Body, argument) is not Statement body)
-            return HandleTransformationFailure(operation, "ForEach loop body statement could not be translated to JavaScript.");
+        var left = VisitTo<Node>(operation.LoopControlVariable, argument);
+        var right = VisitTo<Expression>(operation.Collection, argument);
+        var body = VisitTo<Statement>(operation.Body, argument);
 
         return new ForOfStatement(left, right, body, @await: false);
     }
@@ -1033,10 +1186,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
             var variableDecls = new List<VariableDeclaration>();
             foreach (var before in operation.Before)
             {
-                if (Visit(before, argument) is not VariableDeclaration variableDecl)
-                    return HandleTransformationFailure(before, "For loop initialization statement could not be translated to JavaScript.");
-
-                variableDecls.Add(variableDecl);
+                VisitTo(variableDecls, before, argument);
             }
             if (variableDecls.Count == 1)
                 init = variableDecls[0];
@@ -1053,9 +1203,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
 
         if (operation.Condition is not null)
         {
-            test = Visit(operation.Condition, argument) as Expression;
-            if (test is null)
-                return HandleTransformationFailure(operation.Condition, "For loop condition expression could not be translated to JavaScript.");
+            test = VisitTo<Expression>(operation.Condition, argument);
         }
 
         // 处理多个 AtLoopBottom 操作的情况
@@ -1072,7 +1220,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
             // 如果只有一个操作，直接使用
             if (operation.AtLoopBottom.Length == 1)
             {
-                var updateStatement = Visit(operation.AtLoopBottom[0], argument) as NonSpecialExpressionStatement;
+                var updateStatement = VisitTo<NonSpecialExpressionStatement>(operation.AtLoopBottom[0], argument);
                 updateExpression = updateStatement?.Expression;
             }
             else
@@ -1081,10 +1229,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
                 var expressions = new List<Expression>();
                 foreach (var atLoopBottomOp in operation.AtLoopBottom)
                 {
-                    var stmt = Visit(atLoopBottomOp, argument) as NonSpecialExpressionStatement;
-                    if (stmt?.Expression is null)
-                        return HandleTransformationFailure(atLoopBottomOp, "For loop iteration statement could not be translated to JavaScript.");
-
+                    var stmt = VisitTo<NonSpecialExpressionStatement>(atLoopBottomOp, argument);
                     expressions.Add(stmt.Expression);
                 }
 
@@ -1106,10 +1251,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
             }
         }
 
-
-        if (Visit(operation.Body, argument) is not Statement body)
-            return HandleTransformationFailure(operation.Body, "For loop body statement could not be translated to JavaScript.");
-
+        var body = VisitTo<Statement>(operation.Body, argument);
         return new ForStatement(init, test, updateExpression, body);
     }
 
@@ -1126,12 +1268,11 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     /// <returns>Acornima的ESTree的Node</returns>
     public override Acornima.Ast.Node? VisitWhileLoop(IWhileLoopOperation operation, Queue<VariableDeclaration> argument)
     {
-        if (Visit(operation.Condition!, argument) is not Expression test)
-            return HandleTransformationFailure(operation.Condition!, "While loop condition expression could not be translated to JavaScript.");//not null
+        if (operation.Condition is null)
+            return null;
 
-        if (Visit(operation.Body, argument) is not Statement body)
-            return HandleTransformationFailure(operation.Body, "While loop body statement could not be translated to JavaScript.");
-
+        var test = VisitTo<Expression>(operation.Condition, argument);
+        var body = VisitTo<Statement>(operation.Body, argument);
         return new WhileStatement(test, body);
     }
 
@@ -1154,11 +1295,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
         if (operation.Operation is null)
             statement = new EmptyStatement();
         else
-        {
-            if (Visit(operation.Operation, argument) is not Statement st)
-                return HandleTransformationFailure(operation.Operation, "Labeled statement could not be translated to JavaScript.");
-            statement = st;
-        }
+            statement = VisitTo<Statement>(operation.Operation, argument);
 
         return new LabeledStatement(label, statement);
     }
@@ -1182,7 +1319,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
         {
             BranchKind.Break => new BreakStatement(label),
             BranchKind.Continue => new ContinueStatement(label),
-            _ => HandleTransformationFailure(operation, $"Branch kind {operation.BranchKind} is not supported in JavaScript conversion")
+            _ => null
         };
     }
 
@@ -1212,9 +1349,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
         if (operation.ReturnedValue is null)
             return new ReturnStatement(null);
 
-        if (Visit(operation.ReturnedValue, argument) is not Expression exp)
-            return HandleTransformationFailure(operation.ReturnedValue, "Return statement expression could not be translated to JavaScript.");
-
+        var exp = VisitTo<Expression>(operation.ReturnedValue, argument);
         return new ReturnStatement(exp);
     }
 
@@ -1238,11 +1373,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
         var bodyStatements = new List<Statement>();
         foreach (var stmt in operation.Body.Operations)
         {
-            var node = Visit(stmt, argument);
-            if (node is Statement statement)
-                bodyStatements.Add(statement);
-            else
-                HandleTransformationFailure(stmt, "Try statement body could not be translated to JavaScript.");
+            VisitTo(bodyStatements, stmt, argument);
         }
         var block = new NestedBlockStatement(NodeList.From(bodyStatements));
 
@@ -1253,7 +1384,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
             var @catch = operation.Catches[0];
             if (Visit(@catch, argument) is not CatchClause node)
                 return HandleTransformationFailure(@catch, "Try statement catch clause could not be translated to JavaScript.");
-                
+
             handler = node;
         }
         else if (operation.Catches.Length > 1)
@@ -1297,11 +1428,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
             var finallyStatements = new List<Statement>();
             foreach (var stmt in operation.Finally.Operations)
             {
-                var node = Visit(stmt, argument);
-                if (node is Statement statement)
-                    finallyStatements.Add(statement);
-                else
-                    return HandleTransformationFailure(operation, "Try statement finally clause could not be translated to JavaScript.");
+                VisitTo(finallyStatements, stmt, argument);
             }
             finalizer = new NestedBlockStatement(NodeList.From(finallyStatements));
         }
@@ -1398,9 +1525,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     /// <returns>Acornima的ESTree的Node</returns>
     public override Acornima.Ast.Node? VisitExpressionStatement(IExpressionStatementOperation operation, Queue<VariableDeclaration> argument)
     {
-        return Visit(operation.Operation, argument) is Expression expr
-            ? new NonSpecialExpressionStatement(expr)
-            : HandleTransformationFailure(operation.Operation, "Expression statement could not be translated to JavaScript.");
+        return VisitTo<Node>(operation.Operation, argument);
     }
 
     /// <summary>
@@ -1526,11 +1651,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
 
         foreach (var arg in operation.Arguments)
         {
-            var argNode = Visit(arg.Value, argument) as Expression;
-            if (argNode is not null)
-                arguments.Add(argNode);
-            else
-                return HandleTransformationFailure(arg.Value, "Method invocation argument could not be translated to JavaScript.");
+            VisitTo(arguments, arg.Value, argument);
         }
 
         // 判断方法调用的类型
@@ -1561,9 +1682,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
         else
         {
             // 实例方法调用：obj.Method()
-            if (Visit(operation.Instance, argument) is not Expression instance)
-                return HandleTransformationFailure(operation.Instance, "Method invocation instance could not be translated to JavaScript.");
-
+            var instance = VisitTo<Expression>(operation.Instance, argument);
             var methodName = operation.TargetMethod.Name;
 
             callee = new MemberExpression(
@@ -1578,33 +1697,134 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     }
 
     /// <summary>
-    /// 处理数组元素访问操作
+    /// 处理数组元素访问操作，不支持多维数组
     /// C# 示例：
     /// array[0]        // 一维数组访问
     /// array[i, j]     // 多维数组访问（不支持）
-    /// 转换结果：array[0] / 不支持多维数组
+    /// array[^1]       // 从末尾开始的索引访问
+    /// 复杂情况：array[1..^4] 转换为 array.slice(1, array.length - 4)
+    /// 转换结果：array[0]/不支持多维数组/array[array.length - 1]
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
     /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Acornima.Ast.Node? VisitArrayElementReference(IArrayElementReferenceOperation operation, Queue<VariableDeclaration> argument)
     {
-        if (Visit(operation.ArrayReference, argument) is not Expression exp)
-            return HandleTransformationFailure(operation.ArrayReference, "Array element reference could not be translated to JavaScript.");
+        if (operation.Indices.Length != 1)
+            return HandleTransformationFailure(operation,
+                operation.Indices.Length > 1
+                    ? "Multi-dimensional array access is not supported in JavaScript conversion"
+                    : "Array access requires at least one index.");
 
-        var indices = new List<Expression>();
-        foreach (var item in operation.Indices)
+        var expr = VisitTo<Expression>(operation.ArrayReference, argument);
+        var indexOperation = operation.Indices[0];
+
+        // 检查是否是从末尾开始的索引（^n）
+        // 处理从末尾开始的索引，转换为 array[array.length - n]
+        // 生成 array.length 访问
+        if (indexOperation is IUnaryOperation unary && unary.OperatorKind == UnaryOperatorKind.Hat)
         {
-            if (Visit(item, argument) is not Expression indexExpr)
-                return HandleTransformationFailure(item, "Array element index could not be translated to JavaScript.");
-            else
-                indices.Add(indexExpr);
+            var lengthAccess = new MemberExpression(expr, new Identifier("length"), computed: false, optional: false);
+            var innerIndex = VisitTo<Expression>(unary.Operand, argument);
+            var indexCalculation = new NonLogicalBinaryExpression(Operator.Subtraction, lengthAccess, innerIndex);
+            return new MemberExpression(expr, indexCalculation, computed: true, optional: false);
+        }
+        else if (indexOperation is IImplicitIndexerReferenceOperation implicitIndexer)
+        {
+            // 处理隐式索引器引用（另一种可能的表示方式）
+            var instance = VisitTo<Expression>(implicitIndexer.Instance, argument);
+            var indexArgument = VisitTo<Expression>(implicitIndexer.Argument, argument);
+            var lengthAccess = new MemberExpression(instance, new Identifier("length"), computed: false, optional: false);
+            if (implicitIndexer.Argument is IUnaryOperation indexUnaryOp && indexUnaryOp.OperatorKind == UnaryOperatorKind.Hat)
+                indexArgument = VisitTo<Expression>(indexUnaryOp.Operand, argument);
+            var indexCalculation = new NonLogicalBinaryExpression(Operator.Subtraction, lengthAccess, indexArgument);
+            return new MemberExpression(instance, indexCalculation, computed: true, optional: false);
+        }
+        else if (indexOperation is IRangeOperation range)
+        {
+            // 处理普通范围操作，转换为 Array.slice
+            // 获取范围的起始和结束值
+            // 检查起始值是否是从末尾开始的索引（^n）
+            var start = range.LeftOperand is IUnaryOperation leftUnary && leftUnary.OperatorKind == UnaryOperatorKind.Hat
+                ? UnaryHat(expr, leftUnary)
+                : VisitToNullable<Expression>(range.LeftOperand, argument);
+
+            var end = range.RightOperand is IUnaryOperation rightUnary && rightUnary.OperatorKind == UnaryOperatorKind.Hat
+                ? UnaryHat(expr, rightUnary)
+                : VisitToNullable<Expression>(range.RightOperand, argument);
+
+            // 创建 slice 方法调用
+            var slice = new MemberExpression(expr, new Identifier("slice"), computed: false, optional: false);
+            var args = NodeList.Empty<Expression>();// 空范围：array[..] -> array.slice() (复制整个数组)
+
+            // 处理不同的范围情况
+            if (start is not null && end is not null)
+            {
+                // 完整范围：array[start..end] -> array.slice(start, end + 1)
+                // C# 范围包含结束位置，JavaScript slice 不包含，所以需要 +1
+                var adjustedEnd = new NonLogicalBinaryExpression(Operator.Addition, end, new NumericLiteral(1, "1"));
+                args = NodeList.From(start, adjustedEnd);
+            }
+            else if (start is not null)
+            {
+                // 只有起始：array[start..] -> array.slice(start)
+                args = NodeList.From(start);
+            }
+            else if (end is not null)
+            {
+                // 只有结束：array[..end] -> array.slice(0, end + 1)
+                var adjustedEnd = new NonLogicalBinaryExpression(Operator.Addition, end, new NumericLiteral(1, "1"));
+                args = NodeList.From<Expression>(new NumericLiteral(0, "0"), adjustedEnd);
+            }
+
+            return new CallExpression(slice, args, optional: false);
+        }
+        // 注意：步长范围操作（如 array[1..^4..2]）在当前的 Roslyn 操作模型中可能不直接支持
+        // 这种情况可能需要通过自定义操作或语法节点处理
+        // 如果需要支持，可以在 VisitInvalid 方法中处理特殊的语法节点
+        else
+        {
+            // 普通索引访问
+            var indexCalculation = VisitTo<Expression>(indexOperation, argument);
+            return new MemberExpression(expr, indexCalculation, computed: true, optional: false);
         }
 
-        if (indices.Count == 1)
-            return new MemberExpression(exp, indices[0], computed: true, optional: false);
+        Expression UnaryHat(Expression obj, IUnaryOperation unary)
+        {
+            var left = new MemberExpression(obj, new Identifier("length"), computed: false, optional: false);
+            var right = VisitTo<Expression>(unary.Operand, argument);
+            return new NonLogicalBinaryExpression(Operator.Subtraction, left, right);
+        }
+    }
 
-        return HandleTransformationFailure(operation, "Multi-dimensional array access is not supported in JavaScript conversion");
+    /// <summary>
+    /// 处理隐式索引器引用操作
+    /// C# 示例：
+    /// array[^1]                           // 从末尾开始的索引
+    /// array[^n]                           // 从末尾开始的第n个位置
+    /// array[^0]                           // 从末尾开始的第0个位置（等同于array.length）
+    /// 转换结果：直接生成最简单的 array[array.length - n] 表达式
+    /// 利用C#强类型系统，避免不必要的运行时检测，生成高效简洁的代码
+    /// </summary>
+    /// <param name="operation">当前访问的operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+    /// <returns>Acornima的ESTree的Node</returns>
+    public override Acornima.Ast.Node? VisitImplicitIndexerReference(IImplicitIndexerReferenceOperation operation, Queue<VariableDeclaration> argument)
+    {
+        // 隐式索引器引用的直接AST转换，生成最简洁的代码
+        var instance = VisitTo<Expression>(operation.Instance, argument);
+        var indexArgument = VisitTo<Expression>(operation.Argument, argument);
+        // 生成 array.length 访问
+        var lengthAccess = new MemberExpression(instance, new Identifier("length"), computed: false, optional: false);
+        if (operation.Argument is IUnaryOperation indexUnaryOp && indexUnaryOp.OperatorKind == UnaryOperatorKind.Hat)
+            indexArgument = VisitTo<Expression>(indexUnaryOp.Operand, argument);
+        // 处理从末尾开始的索引（^n），转换为 length - n
+        // 普通索引计算，不是从末尾开始的索引
+        // 这种情况可能出现在显式使用 Index.FromEnd() 等场景
+        var indexCalculation = new NonLogicalBinaryExpression(Operator.Subtraction, lengthAccess, indexArgument);
+
+        // 直接返回数组访问表达式：array[array.length - n]
+        return new MemberExpression(instance, indexCalculation, computed: true, optional: false);
     }
 
     /// <summary>
@@ -1652,12 +1872,9 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     {
         if (operation.Instance is not null)
         {
-            if (Visit(operation.Instance, argument) is not Expression exp)
-                return HandleTransformationFailure(operation.Instance, "Field reference instance could not be translated to JavaScript.");
-
+            var expr = VisitTo<Expression>(operation.Instance, argument);
             var property = new Identifier(operation.Field.Name);
-            return new MemberExpression(exp, property, computed: false, optional: false);
-
+            return new MemberExpression(expr, property, computed: false, optional: false);
         }
         return new Identifier(operation.Field.Name);
     }
@@ -1675,14 +1892,30 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     {
         if (operation.Instance is not null)
         {
-            if (Visit(operation.Instance, argument) is not Expression exp)
-                return HandleTransformationFailure(operation.Instance, "Method reference instance could not be translated to JavaScript.");
-
+            var expr = VisitTo<Expression>(operation.Instance, argument);
             var methodName = operation.Method.Name;
             var property = new Identifier(methodName);
-            return new MemberExpression(exp, property, computed: false, optional: false);
+            return new MemberExpression(expr, property, computed: false, optional: false);
         }
         return new Identifier(operation.Method.Name);
+    }
+
+    /// <summary>
+    /// 处理条件访问操作（可选链操作符）
+    /// C# 示例：
+    /// obj?.Property               // 属性可选访问
+    /// obj?.Method()               // 方法可选调用
+    /// 转换结果：obj?.property
+    /// </summary>
+    /// <param name="operation">当前访问的operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+    /// <returns>Acornima的ESTree的Node</returns>
+    public override Acornima.Ast.Node? VisitConditionalAccess(IConditionalAccessOperation operation, Queue<VariableDeclaration> argument)
+    {
+        // 不需要处理 Operation，会在 WhenNotNull中递归回来处理
+        //var operand = VisitTo<Expression>(operation.Operation, argument);
+        var whenNotNull = VisitTo<Expression>(operation.WhenNotNull, argument);
+        return new ChainExpression(whenNotNull);
     }
 
     /// <summary>
@@ -1699,14 +1932,39 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     {
         if (operation.Instance is not null)
         {
-            if (Visit(operation.Instance, argument) is not Expression exp)
-                return HandleTransformationFailure(operation.Instance, "Property reference instance could not be translated to JavaScript.");
-
+            var expr = VisitTo<Expression>(operation.Instance, argument);
             var propName = operation.Property.Name;
             var property = new Identifier(propName);
-            return new MemberExpression(exp, property, computed: false, optional: false);
+            var optional = operation.Instance is IConditionalAccessInstanceOperation;
+            return new MemberExpression(expr, property, false, optional);
         }
+
+        // Null if the reference is to a static/shared member.
         return new Identifier(operation.Property.Name);
+    }
+
+    /// <summary>
+    /// IConditionalAccessInstanceOperation 是一个轻量级的、无子操作的、作为语义占位符的叶子节点。
+    /// 它被专门设计用于在 IOperation 树中，作为空条件访问表达式（?.）右侧成员操作的 Instance。
+    /// 它的唯一目的是提供类型信息，从而将运行时的短路求值逻辑（由 IConditionalAccessOperation 控制）与编译时的静态语义分析（由成员操作自身完成）完美解耦。
+    /// C# 示例：
+    /// obj?.Property中的obj?
+    /// 转换方式：递归向上找到IConditionalAccessOperation，提取真实的 Operation
+    /// 转换结果：obj?
+    /// </summary>
+    public override Acornima.Ast.Node? VisitConditionalAccessInstance(IConditionalAccessInstanceOperation operation, Queue<VariableDeclaration> argument)
+    {
+        var parent = operation.Parent;
+        while (parent is not null)
+        {
+            if (parent is IConditionalAccessOperation access)
+            {
+                return VisitTo<Expression>(access.Operation, argument);
+            }
+            parent = parent.Parent;
+        }
+
+        return HandleTransformationFailure(operation, "Could not find parent ConditionalAccessOperation.");
     }
 
     /// <summary>
@@ -1723,9 +1981,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     /// <returns>Acornima的ESTree的Node</returns>
     public override Acornima.Ast.Node? VisitUnaryOperator(IUnaryOperation operation, Queue<VariableDeclaration> argument)
     {
-        if (Visit(operation.Operand, argument) is not Expression operand)
-            return HandleTransformationFailure(operation.Operand, "Unary operator operand could not be translated to JavaScript.");
-
+        var operand = VisitTo<Expression>(operation.Operand, argument);
         if (operation.OperatorKind == UnaryOperatorKind.BitwiseNegation ||
             operation.OperatorKind == UnaryOperatorKind.Not ||
             operation.OperatorKind == UnaryOperatorKind.Plus ||
@@ -1749,13 +2005,17 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
             var innerOperand = new NonUpdateUnaryExpression(Operator.LogicalNot, operand);
             return new NonUpdateUnaryExpression(Operator.LogicalNot, innerOperand);
         }
+        else if (operation.OperatorKind == UnaryOperatorKind.Hat)
+        {
+            // 需要根据上下文语义来生成内容
+        }
         else if (operation.OperatorKind == UnaryOperatorKind.None)
         {
             // 对应语义()
             return new ParenthesizedExpression(operand);
         }
-        else
-            return HandleTransformationFailure(operation.Operand, "");
+
+        return HandleTransformationFailure(operation.Operand, "Unary operator operand could not be translated to JavaScript.");
     }
 
     /// <summary>
@@ -1781,12 +2041,8 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     /// <returns>Acornima的ESTree的Node</returns>
     public override Acornima.Ast.Node? VisitBinaryOperator(IBinaryOperation operation, Queue<VariableDeclaration> argument)
     {
-        if (Visit(operation.LeftOperand, argument) is not Expression left)
-            return HandleTransformationFailure(operation.LeftOperand, "Binary operator left operand could not be translated to JavaScript.");
-
-        if (Visit(operation.RightOperand, argument) is not Expression right)
-            return HandleTransformationFailure(operation.RightOperand, "Binary operator right operand could not be translated to JavaScript.");
-
+        var left = VisitTo<Expression>(operation.LeftOperand, argument);
+        var right = VisitTo<Expression>(operation.RightOperand, argument);
         var @operator = operation.OperatorKind switch
         {
             BinaryOperatorKind.Add => Operator.Addition,
@@ -1828,13 +2084,8 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     public override Acornima.Ast.Node? VisitConditional(IConditionalOperation operation, Queue<VariableDeclaration> argument)
     {
         var alternate = Visit(operation.WhenFalse, argument);
-        var consequent = Visit(operation.WhenTrue, argument);
-        if (consequent is null)
-            return HandleTransformationFailure(operation.WhenTrue, "Conditional operator true expression could not be translated to JavaScript.");
-
-        if (Visit(operation.Condition, argument) is not Expression test)
-            return HandleTransformationFailure(operation.Condition, "Conditional operator condition could not be translated to JavaScript.");
-
+        var consequent = VisitTo<Node>(operation.WhenTrue, argument);
+        var test = VisitTo<Expression>(operation.Condition, argument);
         if (operation.Syntax is ConditionalExpressionSyntax &&
             consequent is Expression expConsequent &&
             alternate is Expression expAlternate)
@@ -1865,12 +2116,8 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     /// <returns>Acornima的ESTree的Node</returns>
     public override Acornima.Ast.Node? VisitCoalesce(ICoalesceOperation operation, Queue<VariableDeclaration> argument)
     {
-        if (Visit(operation.WhenNull, argument) is not Expression left)
-            return HandleTransformationFailure(operation.WhenNull, "Coalesce operator null expression could not be translated to JavaScript.");
-
-        if (Visit(operation.Value, argument) is not Expression right)
-            return HandleTransformationFailure(operation.Value, "Coalesce operator value expression could not be translated to JavaScript.");
-
+        var left = VisitTo<Expression>(operation.Value, argument);
+        var right = VisitTo<Expression>(operation.WhenNull, argument);
         return new LogicalExpression(Operator.NullishCoalescing, left, right);
     }
 
@@ -1888,28 +2135,22 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     public override Acornima.Ast.Node? VisitAnonymousFunction(IAnonymousFunctionOperation operation, Queue<VariableDeclaration> argument)
     {
         var parameters = new List<Node>();
-        if (operation.Symbol?.Parameters is not null)
+        foreach (var param in operation.Symbol.Parameters)
         {
-            foreach (var param in operation.Symbol.Parameters)
-            {
-                var paramName = param.Name;
-                parameters.Add(new Identifier(paramName));
-            }
+            var paramName = param.Name;
+            parameters.Add(new Identifier(paramName));
         }
 
         var statements = new List<Statement>();
-        if (operation.Body is not null)
+        foreach (var stmt in operation.Body.Operations)
         {
-            foreach (var stmt in operation.Body.Operations)
-            {
-                var node = Visit(stmt, argument);
-                if (node is Statement statement)
-                    statements.Add(statement);
-                else if (node is Expression expr)
-                    statements.Add(new NonSpecialExpressionStatement(expr));
-                else
-                    return HandleTransformationFailure(stmt, "Anonymous function body statement could not be translated to JavaScript.");
-            }
+            var node = Visit(stmt, argument);
+            if (node is Statement statement)
+                statements.Add(statement);
+            else if (node is Expression expr)
+                statements.Add(new NonSpecialExpressionStatement(expr));
+            else
+                return HandleTransformationFailure(stmt, "Anonymous function body statement could not be translated to JavaScript.");
         }
 
         var body = new FunctionBody(NodeList.From(statements), strict: true);
@@ -1945,11 +2186,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
             {
                 foreach (var initializer in operation.Initializer.Initializers)
                 {
-                    var node = Visit(initializer, argument);
-                    if (node is null)
-                        return HandleTransformationFailure(initializer, "Anonymous object property initializer could not be translated to JavaScript.");
-                    else
-                        properties.Add(node);
+                    VisitTo(properties, initializer, argument);
                 }
             }
 
@@ -1962,10 +2199,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
 
         foreach (var arg in operation.Arguments)
         {
-            if (Visit(arg.Value, argument) is not Expression argNode)
-                return HandleTransformationFailure(arg.Value, "Object creation argument could not be translated to JavaScript.");
-            else
-                arguments.Add(argNode);
+            VisitTo(arguments, arg.Value, argument);
         }
 
         return new NewExpression(callee, NodeList.From(arguments));
@@ -2023,10 +2257,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
         {
             foreach (var element in operation.Initializer.ElementValues)
             {
-                if (Visit(element, argument) is not Expression elementNode)
-                    return HandleTransformationFailure(element, "Array element could not be translated to JavaScript.");
-
-                elements.Add(elementNode);
+                VisitToNullable(elements, element, argument);
             }
         }
         else
@@ -2034,10 +2265,8 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
             // 处理空数组或基于大小的数组
             foreach (var dimension in operation.DimensionSizes)
             {
-                if (Visit(dimension, argument) is not Expression sizeNode)
-                    return HandleTransformationFailure(dimension, "Array dimension size could not be translated to JavaScript.");
-
                 // 为简化，创建一个空数组，实际可能需要 new Array(size)
+                var sizeNode = VisitTo<Expression>(dimension, argument);
                 return new NewExpression(new Identifier("Array"), NodeList.From(sizeNode));
             }
         }
@@ -2060,11 +2289,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
 
         foreach (var initializer in operation.Initializers)
         {
-            var property = Visit(initializer, argument);
-            if (property is null)
-                return HandleTransformationFailure(initializer, "Anonymous object property initializer could not be translated to JavaScript.");
-            else
-                properties.Add(property);
+            VisitTo(properties, initializer, argument);
         }
 
         return new ObjectExpression(NodeList.From(properties));
@@ -2086,11 +2311,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
 
         foreach (var initializer in operation.Initializers)
         {
-            var node = Visit(initializer, argument);
-            if (node is null)
-                return HandleTransformationFailure(initializer, "Object or collection initializer element could not be translated to JavaScript.");
-            else
-                initializers.Add(node);
+            VisitTo(initializers, initializer, argument);
         }
 
         // 默认返回对象表达式
@@ -2121,9 +2342,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
             return HandleTransformationFailure(operation.InitializedMember, "Member initializer could not be translated to JavaScript.");
 
         var key = new Identifier(memberName);
-
-        if (Visit(operation.Initializer, argument) is not Expression value)
-            return HandleTransformationFailure(operation.Initializer, "Member initializer value could not be translated to JavaScript.");
+        var value = VisitTo<Expression>(operation.Initializer, argument);
 
         return new AssignmentExpression(Operator.Assignment, key, value);
     }
@@ -2154,9 +2373,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     /// <returns>Acornima的ESTree的Node</returns>
     public override Acornima.Ast.Node? VisitIsType(IIsTypeOperation operation, Queue<VariableDeclaration> argument)
     {
-        if (Visit(operation.ValueOperand, argument) is not Expression valueOperand)
-            return HandleTransformationFailure(operation.ValueOperand, "Type check operand could not be translated to JavaScript.");
-
+        var valueOperand = VisitTo<Expression>(operation.ValueOperand, argument);
         var targetType = operation.TypeOperand;
         var typeName = targetType.Name;
         var fullTypeName = targetType.ToDisplayString();
@@ -2302,9 +2519,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     /// <returns>Acornima的ESTree的Node</returns>
     public override Acornima.Ast.Node? VisitAwait(IAwaitOperation operation, Queue<VariableDeclaration> argument)
     {
-        if (Visit(operation.Operation, argument) is not Expression awaitedExpression)
-            return HandleTransformationFailure(operation.Operation, "Await expression could not be translated to JavaScript.");
-
+        var awaitedExpression = VisitTo<Expression>(operation.Operation, argument);
         return new AwaitExpression(awaitedExpression);
     }
 
@@ -2321,13 +2536,13 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     /// <returns>Acornima的ESTree的Node</returns>
     public override Acornima.Ast.Node? VisitSimpleAssignment(ISimpleAssignmentOperation operation, Queue<VariableDeclaration> argument)
     {
-        if (Visit(operation.Target, argument) is not Expression left)
-            return HandleTransformationFailure(operation.Target, "Assignment target could not be translated to JavaScript.");
+        var left = VisitToNullable<Expression>(operation.Target, argument);
+        var right = VisitTo<Expression>(operation.Value, argument);
 
-        if (Visit(operation.Value, argument) is not Expression right)
-            return HandleTransformationFailure(operation.Value, "Assignment value could not be translated to JavaScript.");
-
-        return new AssignmentExpression(Operator.Assignment, left, right);
+        if (left is null)
+            return right;
+        else
+            return new AssignmentExpression(Operator.Assignment, left, right);
     }
 
     /// <summary>
@@ -2345,12 +2560,8 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     /// <returns>Acornima的ESTree的Node</returns>
     public override Acornima.Ast.Node? VisitCompoundAssignment(ICompoundAssignmentOperation operation, Queue<VariableDeclaration> argument)
     {
-        if (Visit(operation.Target, argument) is not Expression left)
-            return HandleTransformationFailure(operation.Target, "Compound assignment target could not be translated to JavaScript.");
-
-        if (Visit(operation.Value, argument) is not Expression right)
-            return HandleTransformationFailure(operation.Value, "Compound assignment value could not be translated to JavaScript.");
-
+        var left = VisitTo<Expression>(operation.Target, argument);
+        var right = VisitTo<Expression>(operation.Value, argument);
         var @operator = operation.OperatorKind switch
         {
             BinaryOperatorKind.Add => Operator.AdditionAssignment,
@@ -2378,46 +2589,8 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     /// <returns>Acornima的ESTree的Node</returns>
     public override Acornima.Ast.Node? VisitParenthesized(IParenthesizedOperation operation, Queue<VariableDeclaration> argument)
     {
-        if (Visit(operation.Operand, argument) is not Expression exp)
-            return HandleTransformationFailure(operation.Operand, "Parenthesized expression could not be translated to JavaScript.");
-
+        var exp = VisitTo<Expression>(operation.Operand, argument);
         return new SequenceExpression(NodeList.From(exp));
-    }
-
-    /// <summary>
-    /// 处理条件访问操作（可选链操作符）
-    /// C# 示例：
-    /// obj?.Property               // 属性可选访问
-    /// obj?.Method()               // 方法可选调用
-    /// 转换结果：obj?.property
-    /// </summary>
-    /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-    /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitConditionalAccess(IConditionalAccessOperation operation, Queue<VariableDeclaration> argument)
-    {
-        // 不需要处理 operation.WhenNotNull
-        if (Visit(operation.Operation, argument) is not Expression operand)
-            return HandleTransformationFailure(operation.Operation, "Conditional access expression could not be translated to JavaScript.");
-
-        // 转换为可选链
-        return new ChainExpression(operand);
-    }
-
-    /// <summary>
-    /// 处理条件访问实例操作。
-    /// C# 示例：
-    /// obj?.member 中的 obj 部分
-    /// 转换结果：递归访问并返回 obj 部分对应的节点。
-    /// </summary>
-    public override Acornima.Ast.Node? VisitConditionalAccessInstance(IConditionalAccessInstanceOperation operation, Queue<VariableDeclaration> argument)
-    {
-        // IConditionalAccessInstanceOperation 是一个包装器。
-        // 它唯一的子操作就是 ?. 左侧的表达式 (someExpr)。
-        // 我们需要访问并返回这个子操作的结果。
-        // 递归访问这个子操作，将其进行转换。
-        // 现有语法下，理论上 ChildOperations只会有一个元素
-        return Visit(operation.ChildOperations.First(), argument);
     }
 
     /// <summary>
@@ -2509,72 +2682,13 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
         if (operation.Argument.ConstantValue.HasValue)
             name = operation.Argument.ConstantValue.Value?.ToString();
 
+        else if (operation.ConstantValue.HasValue)
+            name = operation.ConstantValue.Value?.ToString();
+
         if (string.IsNullOrEmpty(name))
             return HandleTransformationFailure(operation.Argument, "NameOf expression could not be translated to JavaScript.");
 
         return new StringLiteral(name, $"\"{name}\"");
-    }
-
-    /// <summary>
-    /// 处理元组操作
-    /// C# 示例：
-    /// (1, "hello", true)          // 元组字面量
-    /// var tuple = (x, y);         // 元组创建
-    /// (double Sum, int Count) t2 = (4.5, 3);// 命名元组创建
-    /// 转换结果：{ Item1: 1, Item2: "hello", Item3: true } 或 { Sum: 4.5, Count: 3 } （使用对象模拟）
-    /// </summary>
-    /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-    /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitTuple(ITupleOperation operation, Queue<VariableDeclaration> argument)
-    {
-        var properties = new List<Node>();
-
-        // 尝试从元组类型中获取元素名称
-        var tupleType = operation.Type as INamedTypeSymbol;
-        var elementNames = new List<string>();
-
-        // 检查是否为命名元组
-        if (tupleType?.TupleElements is not null && tupleType.TupleElements.Length > 0)
-        {
-            // 对于命名元组，使用指定的元素名称
-            foreach (var element in tupleType.TupleElements)
-            {
-                elementNames.Add(element.Name);
-            }
-        }
-        else
-        {
-            // 对于未命名元组，使用默认的 Item1, Item2, Item3...
-            for (int i = 0; i < operation.Elements.Length; i++)
-            {
-                elementNames.Add($"Item{i + 1}");
-            }
-        }
-
-        for (int i = 0; i < operation.Elements.Length; i++)
-        {
-            var element = operation.Elements[i];
-            if (Visit(element, argument) is not Expression exp)
-                return HandleTransformationFailure(element, "Tuple element could not be translated to JavaScript.");
-
-            // 使用获取的元素名称
-            var propertyName = i < elementNames.Count ? elementNames[i] : $"Item{i + 1}";
-            var key = new Identifier(propertyName);
-
-            // 创建属性定义
-            var property = new PropertyDefinition(
-                key: key,
-                value: exp,
-                computed: false,
-                isStatic: false,
-                decorators: NodeList.Empty<Decorator>()
-            );
-
-            properties.Add(property);
-        }
-
-        return new ObjectExpression(NodeList.From(properties));
     }
 
     /// <summary>
@@ -2641,16 +2755,13 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     /// <returns>Acornima的ESTree的Node</returns>
     public override Acornima.Ast.Node? VisitIsPattern(IIsPatternOperation operation, Queue<VariableDeclaration> argument)
     {
-        // is 模式转换，支持复杂模式匹配
-        if (Visit(operation.Value, argument) is not Expression value)
-            return HandleTransformationFailure(operation.Value, "Is pattern value could not be translated to JavaScript.");
-
-        if (Visit(operation.Pattern, argument) is not Expression pattern)
-            return HandleTransformationFailure(operation.Pattern, "Is pattern pattern could not be translated to JavaScript.");
+        var pattern = VisitTo<Expression>(operation.Pattern, argument);
 
         // 对于常量模式，直接比较
         if (operation.Pattern.Kind == OperationKind.ConstantPattern)
         {
+            // is 模式转换，支持复杂模式匹配
+            var value = VisitTo<Expression>(operation.Value, argument);
             return new LogicalExpression(Operator.StrictEquality, value, pattern);
         }
 
@@ -2672,15 +2783,13 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     /// <returns>Acornima的ESTree的Node</returns>
     public override Acornima.Ast.Node? VisitIncrementOrDecrement(IIncrementOrDecrementOperation operation, Queue<VariableDeclaration> argument)
     {
-        if (Visit(operation.Target, argument) is not Expression operand)
-            return HandleTransformationFailure(operation.Target, "Increment or decrement target could not be translated to JavaScript.");
-
+        var target = VisitTo<Expression>(operation.Target, argument);
         var @operator = operation.Kind == OperationKind.Increment
             ? Operator.Increment
             : Operator.Decrement;
         var prefix = !operation.IsPostfix; // 前缀当IsPostfix为false时
 
-        return new UpdateExpression(@operator, operand, prefix: prefix);
+        return new UpdateExpression(@operator, target, prefix: prefix);
     }
 
     /// <summary>
@@ -2697,12 +2806,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     {
         Expression expr;
         if (operation.Exception is not null)
-        {
-            if (Visit(operation.Exception, argument) is not Expression ex)
-                return HandleTransformationFailure(operation.Exception, "Throw expression could not be translated to JavaScript.");
-
-            expr = ex;
-        }
+            expr = VisitTo<Expression>(operation.Exception, argument);
         else
             expr = new Identifier(GetUniqueName(operation));
 
@@ -2710,25 +2814,199 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     }
 
     /// <summary>
+    /// 处理声明表达式操作
+    /// C# 示例：
+    /// if (int.TryParse(input, out var result)) // out var 声明
+    /// if (dict.TryGetValue(key, out string value)) // out 声明
+    /// 转换结果：转换为 let 变量声明
+    /// </summary>
+    /// <param name="operation">当前访问的operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+    /// <returns>Acornima的ESTree的Node</returns>
+    public override Acornima.Ast.Node? VisitDeclarationExpression(IDeclarationExpressionOperation operation, Queue<VariableDeclaration> argument)
+    {
+        // 解构语法
+        if(operation.Parent is ITupleOperation)
+            return VisitTo<Node>(operation.Expression, argument);
+
+        // 声明表达式（如 out var x）转换为变量声明
+        var declarator = VisitTo<VariableDeclarator>(operation.Expression, argument);
+        return new VariableDeclaration(VariableDeclarationKind.Let, NodeList.From(declarator));
+    }
+
+    /// <summary>
     /// 处理解构赋值操作
     /// C# 示例：
     /// (var x, var y) = GetTuple();        // 元组解构
     /// (int a, string b) = (1, "hello");   // 元组解构赋值
-    /// 转换结果：转换为普通赋值表达式（简化处理）
+    /// 转换结果：
+    /// let vhash = GetTuple();let x = vhash.Item1;let y = vhash.Item2;
+    /// let a = 1;let b = "hello";
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
     /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
     public override Acornima.Ast.Node? VisitDeconstructionAssignment(IDeconstructionAssignmentOperation operation, Queue<VariableDeclaration> argument)
     {
-        if (Visit(operation.Target, argument) is not Expression target)
-            return HandleTransformationFailure(operation.Target, "Deconstruction assignment target could not be translated to JavaScript.");
+        var nodes = new List<Statement>();
 
-        if (Visit(operation.Value, argument) is not Expression value)
-            return HandleTransformationFailure(operation.Value, "Deconstruction assignment value could not be translated to JavaScript.");
+        List<Expression> exprs = [];
+        if (operation.Value is ITupleOperation tuple)
+        {
+            foreach(var element in tuple.Elements)
+                VisitTo(exprs,element, argument);
+        }
+        else
+        {
+            // 如果值操作不是元组，则需要定义一个中间变量
+            var name = GetUniqueName(operation.Value);
+            var temp = new Identifier(name);
+            var expr = VisitTo<Expression>(operation.Value, argument);
+            var declarator = new VariableDeclarator(temp, expr);
+            var declaration= new VariableDeclaration(VariableDeclarationKind.Const,
+                NodeList.From(declarator));         
+            nodes.Add(declaration);
 
-        // 将解构赋值转换为普通赋值表达式
-        return new AssignmentExpression(Operator.Assignment, target, value);
+            // 解构语法中值类型肯定是元组，生成元组字段引用
+            var tupleType = (INamedTypeSymbol)operation.Value.Type!;
+            foreach (var element in tupleType.TupleElements)
+            {
+                var key = new Identifier(element.Name);
+                var value = new MemberExpression(temp,key,false,false);
+                exprs.Add(value);
+            }
+        }
+
+        var target = (ITupleOperation)operation.Target;
+        for(var index = 0;index< target.Elements.Length;index++)
+        {
+            var element = target.Elements[index];
+            var value = exprs[index];
+            var identifier = VisitTo<Node>(element, argument);
+            if (element is IDeclarationExpressionOperation)
+            {
+                // 如果有变量定义
+                var declarator = new VariableDeclarator(identifier, value);
+                var declaration = new VariableDeclaration(VariableDeclarationKind.Let,
+                    NodeList.From(declarator));
+            
+                nodes.Add(declaration);
+            }
+            else
+            {
+                // 非变量定义，则应该是赋值操作
+                var assignment =  new AssignmentExpression(Operator.Assignment, identifier, value);
+                var statement = new NonSpecialExpressionStatement(assignment);
+                nodes.Add(statement);
+            }
+        }
+
+        return new NestedBlockStatement(NodeList.From(nodes));
+    }
+
+    /// <summary>
+    /// 处理元组操作
+    /// C# 示例：
+    /// (1, "hello", true)          // 元组字面量
+    /// var tuple = (x, y);         // 元组创建
+    /// (double Sum, int Count) t2 = (4.5, 3);// 命名元组创建
+    /// 转换结果：{ Item1: 1, Item2: "hello", Item3: true } 或 { Sum: 4.5, Count: 3 } （使用对象模拟）
+    /// </summary>
+    /// <param name="operation">当前访问的operation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+    /// <returns>Acornima的ESTree的Node</returns>
+    public override Acornima.Ast.Node? VisitTuple(ITupleOperation operation, Queue<VariableDeclaration> argument)
+    {
+        var nodes = new List<Node>();
+
+        // 尝试从元组类型中获取元素名称
+        var tupleType = (INamedTypeSymbol)operation.NaturalType!;
+        var fieldNames = new List<string>();
+        foreach (var element in tupleType.TupleElements)
+            fieldNames.Add(element.Name);
+
+        for (var index = 0; index < operation.Elements.Length; index++)
+        {
+            var element = operation.Elements[index];
+            var key = new Identifier(fieldNames[index]);
+            var value = VisitTo<Expression>(element, argument);
+            nodes.Add(new ObjectProperty(
+                PropertyKind.Init,
+                key: key,
+                value: value,
+                computed: false,
+                shorthand: false,
+                method: false
+            ));
+        }
+
+        return new ObjectExpression(NodeList.From(nodes));
+    }
+
+    /// <summary>
+    /// 处理元组二元操作符操作
+    /// C# 示例：
+    /// (a, b) == (c, d)                    // 元组相等比较
+    /// (x, y) != (1, 2)                    // 元组不等比较
+    /// (name, age) == ("John", 25)         // 元组与常量比较
+    /// tuple1 == tuple2                    // 元组变量比较
+    /// 转换结果：利用编译时信息生成最简洁的比较代码
+    /// </summary>
+    /// <param name="operation">元组二元操作</param>
+    /// <param name="argument">当前operation所属的父operation</param>
+    /// <returns>JavaScript逻辑表达式</returns>
+    public override Acornima.Ast.Node? VisitTupleBinaryOperator(ITupleBinaryOperation operation, Queue<VariableDeclaration> argument)
+    {
+        var isEq = operation.OperatorKind == BinaryOperatorKind.Equals;
+
+        // 处理空元组比较：() == () 为 true, () == (1,) 为 false。
+        // 空元组的类型没有 TupleElements。
+        if (operation.Type is not INamedTypeSymbol { TupleElements.Length: > 0 } tupleType)
+        {
+            // 对于空元组，相等性仅取决于操作符本身。
+            return new BooleanLiteral(isEq, isEq ? "true" : "false");
+        }
+
+        // 递归访问左右操作元，获取它们的表达式。
+        var left = VisitTo<Expression>(operation.LeftOperand, argument);
+        var right = VisitTo<Expression>(operation.RightOperand, argument);
+
+        Acornima.Ast.Expression? result = null;
+
+        // 遍历元组的每个元素，为每个元素生成比较表达式。
+        foreach (var field in tupleType.TupleElements)
+        {
+            // 创建访问元组元素的表达式，如 left.Item1 或 left.Name。
+            // field.Name 会正确解析为 "Item1" 或自定义名称如 "Name"。
+            var leftMember = new MemberExpression(left, new Identifier(field.Name), false, false);
+            var rightMember = new MemberExpression(right, new Identifier(field.Name), false, false);
+
+            // 为当前元素创建严格相等/不相等比较。
+            // 使用严格相等 (===) 更贴近C#的强类型比较语义。
+            var currentComparison = new NonLogicalBinaryExpression(
+                isEq ? Operator.StrictEquality : Operator.StrictInequality,
+                leftMember,
+                rightMember);
+
+            // 将当前比较与之前的结果用逻辑运算符组合。
+            // 相等要求所有元素都相等 (&&)，不等要求至少一个元素不等 (||)。
+            if (result is null)
+            {
+                result = currentComparison;
+            }
+            else
+            {
+                result = new LogicalExpression(
+                    isEq ? Operator.LogicalAnd : Operator.LogicalOr,
+                    result,
+                    currentComparison);
+            }
+        }
+
+        if (result is null)
+            return HandleTransformationFailure(operation, "Tuple binary operation could not be translated to JavaScript.");
+
+        return new ParenthesizedExpression(result);
     }
 
     /// <summary>
@@ -2760,20 +3038,10 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     public override Acornima.Ast.Node? VisitArrayInitializer(IArrayInitializerOperation operation, Queue<VariableDeclaration> argument)
     {
         var elements = new List<Expression?>();
-
         foreach (var element in operation.ElementValues)
         {
-            Expression? expr = null;
-            if (element is not null)
-            {
-                if (Visit(element, argument) is not Expression exp)
-                    return HandleTransformationFailure(element, "Array initializer element could not be translated to JavaScript.");
-
-                expr = exp;
-            }
-            elements.Add(expr);
+            VisitToNullable(elements, element, argument);
         }
-
         return new ArrayExpression(NodeList.From(elements));
     }
 
@@ -2820,14 +3088,8 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     public override Acornima.Ast.Node? VisitVariableDeclarator(IVariableDeclaratorOperation operation, Queue<VariableDeclaration> argument)
     {
         var identifier = new Identifier(operation.Symbol.Name);
-        Expression? init = null;
-        if (operation.Initializer is not null)
-        {
-            if (Visit(operation.Initializer, argument) is not Expression expr)
-                return HandleTransformationFailure(operation.Initializer, "Variable initializer could not be translated to JavaScript.");
+        var init = VisitToNullable<Expression>(operation.Initializer, argument);
 
-            init = expr;
-        }
         return new VariableDeclarator(identifier, init);
     }
 
@@ -2846,10 +3108,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
         var declarators = new List<VariableDeclarator>();
         foreach (var declarator in operation.Declarators)
         {
-            if (Visit(declarator, argument) is VariableDeclarator variableDeclarator)
-                declarators.Add(variableDeclarator);
-            else
-                return HandleTransformationFailure(declarator, "Variable declarator could not be translated to JavaScript.");
+            VisitTo(declarators, declarator, argument);
         }
         return new VariableDeclaration(VariableDeclarationKind.Let, NodeList.From(declarators));
     }
@@ -2892,11 +3151,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
         var statements = new List<Statement>();
         foreach (var clause in clauses)
         {
-            var clauseNode = Visit(clause, argument);
-            if (clauseNode is Statement stmt)
-                statements.Add(stmt);
-            else
-                return HandleTransformationFailure(clause, "Switch case clause could not be translated to JavaScript.");
+            VisitTo(statements, clause, argument);
         }
 
         // 如果有body操作，添加到语句中
@@ -2949,11 +3204,8 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     public override Acornima.Ast.Node? VisitSingleValueCaseClause(ISingleValueCaseClauseOperation operation, Queue<VariableDeclaration> argument)
     {
         // 将单值case转换为条件比较
-        if (Visit(operation.Value, argument) is not Expression expr)
-            return HandleTransformationFailure(operation.Value, "Switch case value could not be translated to JavaScript.");
-
         // 返回比较表达式，需要在上级switch中组合成if-else
-        return expr;
+        return VisitTo<Expression>(operation.Value, argument);
     }
 
     /// <summary>
@@ -2985,13 +3237,10 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     public override Acornima.Ast.Node? VisitInterpolation(IInterpolationOperation operation, Queue<VariableDeclaration> argument)
     {
         // 插值表达式转换为表达式
-        if (Visit(operation.Expression, argument) is not Expression expr)
-            return HandleTransformationFailure(operation.Expression, "Interpolation expression could not be translated to JavaScript.");
-
-        // 修复：处理格式化说明符（如 :F2）
+        // 处理格式化说明符（如 :F2）
         // 注意：由于API限制，格式化信息可能不在IInterpolationOperation中
         // 这里保留原始行为，只返回表达式
-        return expr;
+        return VisitTo<Expression>(operation.Expression, argument);
     }
 
     /// <summary>
@@ -3030,75 +3279,6 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
         var identifier = new Identifier(operation.DeclaredSymbol.Name);
         return new VariableDeclaration(VariableDeclarationKind.Let,
             NodeList.From(new VariableDeclarator(identifier, null)));
-    }
-
-    /// <summary>
-    /// 处理元组二元操作符操作
-    /// C# 示例：
-    /// (a, b) == (c, d)                    // 元组相等比较
-    /// (x, y) != (1, 2)                    // 元组不等比较
-    /// (name, age) == ("John", 25)         // 元组与常量比较
-    /// tuple1 == tuple2                    // 元组变量比较
-    /// 转换结果：利用编译时信息生成最简洁的比较代码
-    /// </summary>
-    /// <param name="operation">元组二元操作</param>
-    /// <param name="argument">当前operation所属的父operation</param>
-    /// <returns>JavaScript逻辑表达式</returns>
-    public override Acornima.Ast.Node? VisitTupleBinaryOperator(ITupleBinaryOperation operation, Queue<VariableDeclaration> argument)
-    {
-        var isEq = operation.OperatorKind == BinaryOperatorKind.Equals;
-
-        // 处理空元组比较：() == () 为 true, () == (1,) 为 false。
-        // 空元组的类型没有 TupleElements。
-        if (operation.Type is not INamedTypeSymbol { TupleElements.Length: > 0 } tupleType)
-        {
-            // 对于空元组，相等性仅取决于操作符本身。
-            return new BooleanLiteral(isEq, isEq ? "true" : "false");
-        }
-
-        // 递归访问左右操作元，获取它们的表达式。
-        if (Visit(operation.LeftOperand, argument) is not Expression left)
-            return HandleTransformationFailure(operation.LeftOperand, "Left operand of tuple binary operation could not be translated to JavaScript.");
-
-        if (Visit(operation.RightOperand, argument) is not Expression right)
-            return HandleTransformationFailure(operation.RightOperand, "Right operand of tuple binary operation could not be translated to JavaScript.");
-
-        Acornima.Ast.Expression? result = null;
-
-        // 遍历元组的每个元素，为每个元素生成比较表达式。
-        foreach (var field in tupleType.TupleElements)
-        {
-            // 创建访问元组元素的表达式，如 left.Item1 或 left.Name。
-            // field.Name 会正确解析为 "Item1" 或自定义名称如 "Name"。
-            var leftMember = new MemberExpression(left, new Identifier(field.Name), false, false);
-            var rightMember = new MemberExpression(right, new Identifier(field.Name), false, false);
-
-            // 为当前元素创建严格相等/不相等比较。
-            // 使用严格相等 (===) 更贴近C#的强类型比较语义。
-            var currentComparison = new NonLogicalBinaryExpression(
-                isEq ? Operator.StrictEquality : Operator.StrictInequality,
-                leftMember,
-                rightMember);
-
-            // 将当前比较与之前的结果用逻辑运算符组合。
-            // 相等要求所有元素都相等 (&&)，不等要求至少一个元素不等 (||)。
-            if (result is null)
-            {
-                result = currentComparison;
-            }
-            else
-            {
-                result = new LogicalExpression(
-                    isEq ? Operator.LogicalAnd : Operator.LogicalOr,
-                    result,
-                    currentComparison);
-            }
-        }
-
-        if (result is null)
-            return HandleTransformationFailure(operation, "Tuple binary operation could not be translated to JavaScript.");
-
-        return new ParenthesizedExpression(result);
     }
 
     /// <summary>
@@ -3185,8 +3365,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     public override Acornima.Ast.Node? VisitIsNull(IIsNullOperation operation, Queue<VariableDeclaration> argument)
     {
         // null检查转换为 === null 比较
-        if (Visit(operation.Operand, argument) is not Expression operand)
-            return HandleTransformationFailure(operation.Operand, "Operand of null check operation could not be translated to JavaScript.");
+        var operand = VisitTo<Expression>(operation.Operand, argument);
 
         return new LogicalExpression(Operator.StrictEquality, operand, new NullLiteral("null"));
     }
@@ -3203,13 +3382,9 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     /// <returns>Acornima的ESTree的Node</returns>
     public override Acornima.Ast.Node? VisitCoalesceAssignment(ICoalesceAssignmentOperation operation, Queue<VariableDeclaration> argument)
     {
-        if (Visit(operation.Target, argument) is not Expression left)
-            return HandleTransformationFailure(operation.Target, "Target of coalesce assignment operation could not be translated to JavaScript.");
-
-        if (Visit(operation.Value, argument) is not Expression right)
-            return HandleTransformationFailure(operation.Value, "Value of coalesce assignment operation could not be translated to JavaScript.");
-
-        return new AssignmentExpression(Operator.NullishCoalescing, left, right);
+        var left = VisitTo<Expression>(operation.Target, argument);
+        var right = VisitTo<Expression>(operation.Value, argument);
+        return new AssignmentExpression(Operator.NullishCoalescingAssignment, left, right);
     }
 
     /// <summary>
@@ -3239,40 +3414,35 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
         {
             // 从父operation获取目标名称，在节点内构建表达式
             var targetName = ExtractPatternValName(operation.Parent);
-            if (string.IsNullOrEmpty(targetName))
-                return HandleTransformationFailure(operation, "cannot extract reference name.");
-
             // 根据获取的名称构建目标表达式
             var target = new Identifier(targetName);
-            var typeName = operation.MatchedType.Name;
-            var condition = typeName.ToLowerInvariant() switch
+            var typeName = operation.MatchedType.IsAnonymousType
+                ? "Object"
+                : operation.MatchedType.Name;
+            Expression condition = typeName.ToLowerInvariant() switch
             {
-                "string" => new LogicalExpression(
+                "string" => new NonLogicalBinaryExpression(
                         Operator.StrictEquality,
-                        new UpdateExpression(Operator.TypeOf, target, prefix: true),
+                        new NonUpdateUnaryExpression(Operator.TypeOf, target),
                         new StringLiteral("string", "\"string\"")
                     ),
                 "number" or "int32" or "int64" or "double" or "float" or "decimal" =>
-                             new LogicalExpression(
+                             new NonLogicalBinaryExpression(
                         Operator.StrictEquality,
-                        new UpdateExpression(Operator.TypeOf, target, prefix: true),
+                        new NonUpdateUnaryExpression(Operator.TypeOf, target),
                         new StringLiteral("number", "\"number\"")
                     ),
-                "boolean" => new LogicalExpression(
+                "boolean" => new NonLogicalBinaryExpression(
                         Operator.StrictEquality,
-                        new UpdateExpression(Operator.TypeOf, target, prefix: true),
+                        new NonUpdateUnaryExpression(Operator.TypeOf, target),
                         new StringLiteral("boolean", "\"boolean\"")
                     ),
-                "object" => new LogicalExpression(
-                            Operator.LogicalAnd,
-                            new LogicalExpression(Operator.StrictInequality, target, new NullLiteral("null")),
-                            new LogicalExpression(
-                                Operator.StrictEquality,
-                                new UpdateExpression(Operator.TypeOf, target, prefix: true),
-                                new StringLiteral("object", "\"object\"")
-                            )
-                        ),// 对于对象类型，检查是否不为null且为object
-                _ => new LogicalExpression(Operator.InstanceOf, target, new Identifier(typeName)),// 对于自定义类型，使用instanceof检查
+                "object" => new NonLogicalBinaryExpression(
+                        Operator.StrictEquality,
+                        new NonUpdateUnaryExpression(Operator.TypeOf, target),
+                        new StringLiteral("object", "\"object\"")
+                    ),// 对于对象类型，检查是否不为null且为object
+                _ => new NonLogicalBinaryExpression(Operator.InstanceOf, target, new Identifier(typeName)),// 对于自定义类型，使用instanceof检查
             };
             conditions.Add(condition);
         }
@@ -3283,10 +3453,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
             foreach (var propertySubpattern in operation.PropertySubpatterns)
             {
                 // 根据AST转换器方法复用原则，argument是父节点，这里传递当前的递归模式操作
-                if (Visit(propertySubpattern, argument) is Expression propertyCondition)
-                    conditions.Add(propertyCondition);
-                else
-                    return HandleTransformationFailure(propertySubpattern, "Property subpattern of recursive pattern could not be translated to JavaScript.");
+                VisitTo(conditions, propertySubpattern, argument);
             }
         }
 
@@ -3340,9 +3507,10 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     /// <returns>Acornima的ESTree的Node</returns>
     public override Acornima.Ast.Node? VisitSwitchExpression(ISwitchExpressionOperation operation, Queue<VariableDeclaration> argument)
     {
-        if (Visit(operation.Value, argument) is not Expression input || operation.Arms.Length == 0)
-            return HandleTransformationFailure(operation.Value, "Switch expression value could not be translated to JavaScript.");
+        if (operation.Arms.Length == 0)
+            return null;
 
+        var input = VisitTo<Expression>(operation.Value, argument);
         // 检查是否为非模式匹配switch（传统switch）
         bool isTraditionalSwitch = true;
         foreach (var arm in operation.Arms)
@@ -3432,17 +3600,13 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
                     continue;
                 }
 
-                if (Visit(arm.Value, argument) is not Expression value)
-                    return HandleTransformationFailure(arm.Value, "Switch expression arm value could not be translated to JavaScript.");
-
+                var value = VisitTo<Expression>(arm.Value, argument);
                 // 生成模式匹配条件
                 Expression? patternCondition = null;
 
                 if (arm.Pattern.Kind == OperationKind.ConstantPattern)
                 {
-                    if (Visit(arm.Pattern, argument) is not Expression constantValue)
-                        return HandleTransformationFailure(arm.Pattern, "Switch expression arm pattern could not be translated to JavaScript.");
-
+                    var constantValue = VisitTo<Expression>(arm.Pattern, argument);
                     patternCondition = new LogicalExpression(Operator.StrictEquality, inputVar, constantValue);
                 }
                 else if (arm.Pattern.Kind == OperationKind.TypePattern)
@@ -3470,12 +3634,9 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
                 else
                 {
                     // 其他模式类型，尝试访问并处理占位符替换
-                    if (Visit(arm.Pattern, argument) is not Expression complexPattern)
-                        return HandleTransformationFailure(arm.Pattern, "Switch expression arm pattern could not be translated to JavaScript.");
-
                     // 这里需要实现占位符替换逻辑
                     // 暂时使用原始表达式，但需要注意占位符问题
-                    patternCondition = complexPattern;
+                    patternCondition = VisitTo<Expression>(arm.Pattern, argument);
 
                 }
 
@@ -3487,10 +3648,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
                     {
                         // 有when子句：关键的分层判断保证副作用顺序
                         // 先模式匹配，成功后才执行when条件
-                        if (Visit(arm.Guard, argument) is not Expression guardCondition)
-                            return HandleTransformationFailure(arm.Guard, "Switch expression arm guard could not be translated to JavaScript.");
-
-
+                        var guardCondition = VisitTo<Expression>(arm.Guard, argument);
                         // 嵌套if结构：
                         // if (pattern) {
                         //   if (when) return value;
@@ -3511,9 +3669,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
             // 最后处理丢弃模式（默认情况）
             if (discardArm is not null)
             {
-                if (Visit(discardArm.Value, argument) is not Expression discardValue)
-                    return HandleTransformationFailure(discardArm.Value, "Switch expression arm value could not be translated to JavaScript.");
-
+                var discardValue = VisitTo<Expression>(discardArm.Value, argument);
                 statements.Add(new ReturnStatement(discardValue));
             }
 
@@ -3545,19 +3701,9 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     /// <returns>Acornima的ESTree的Node</returns>
     public override Acornima.Ast.Node? VisitSwitchExpressionArm(ISwitchExpressionArmOperation operation, Queue<VariableDeclaration> argument)
     {
-        if (Visit(operation.Pattern, argument) is not Expression pattern)
-            return HandleTransformationFailure(operation.Pattern, "Switch expression arm pattern could not be translated to JavaScript.");
-
-        Expression? guard = null;
-        if (operation.Guard is not null)
-        {
-            if (Visit(operation.Guard, argument) is not Expression expr)
-                return HandleTransformationFailure(operation.Guard, "Switch expression arm guard could not be translated to JavaScript.");
-            guard = expr;
-        }
-
-        if (Visit(operation.Value, argument) is not Expression value)
-            return HandleTransformationFailure(operation.Value, "Switch expression arm value could not be translated to JavaScript.");
+        var pattern = VisitTo<Expression>(operation.Pattern, argument);
+        var guard = VisitToNullable<Expression>(operation.Guard, argument);
+        var value = VisitTo<Expression>(operation.Value, argument);
 
         // 检查是否为传统的常量模式（无when子句）
         bool isTraditionalPattern = (operation.Pattern.Kind == OperationKind.ConstantPattern ||
@@ -3598,9 +3744,6 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
                 {
                     // 从父operation获取switch目标名称并构建表达式
                     var targetName = ExtractPatternValName(operation.Parent);
-                    if (string.IsNullOrEmpty(targetName))
-                        return HandleTransformationFailure(operation, "cannot extract reference name.");
-
                     var target = new Identifier(targetName);
                     condition = new LogicalExpression(Operator.StrictEquality, target, pattern);
                 }
@@ -3645,9 +3788,6 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
 
         // 从父operation获取目标名称，在节点内构建表达式
         var targetName = ExtractPatternValName(operation.Parent);
-        if (string.IsNullOrEmpty(targetName))
-            return HandleTransformationFailure(operation, "cannot extract reference name.");
-
         var targetExpression = new Identifier(targetName);
 
         // 从Member中获取名称
@@ -3659,7 +3799,8 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
         };
 
         // 访问属性模式并转换为表达式
-        if (string.IsNullOrEmpty(propertyName) || Visit(operation.Pattern, argument) is not Expression patternExpression)
+        var patternExpression = VisitTo<Expression>(operation.Pattern, argument);
+        if (string.IsNullOrEmpty(propertyName))
             return HandleTransformationFailure(operation, "Unsupported member type in property subpattern.");
 
         // 根据AST节点构造规范，生成属性访问表达式
@@ -3674,7 +3815,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
         // 根据模式类型生成不同的比较表达式
         // 对于常量模式，生成 === 比较
         // 对于其他模式，直接返回模式表达式（如关系比较等）
-        return new LogicalExpression(Operator.StrictEquality, propertyAccess, patternExpression);
+        return new NonLogicalBinaryExpression(Operator.StrictEquality, propertyAccess, patternExpression);
     }
 
     /// <summary>
@@ -3696,8 +3837,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
         // 转换结果：生成JavaScript的逻辑非表达式
 
         // 访问内部模式并转换为表达式
-        if (Visit(operation.Pattern, argument) is not Expression innerExpression)
-            return HandleTransformationFailure(operation.Pattern, "Negated pattern could not be translated to JavaScript.");
+        var innerExpression = VisitTo<Expression>(operation.Pattern, argument);
 
         // 使用UpdateExpression处理逻辑非操作
         // 生成 !(innerExpression) 的JavaScript表达式
@@ -3725,12 +3865,8 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
         // 转换结果：生成相应的JavaScript逻辑表达式
 
         // 访问左右两个子模式
-        if (Visit(operation.LeftPattern, argument) is not Expression left)
-            return HandleTransformationFailure(operation.LeftPattern, "Left pattern could not be translated to JavaScript.");
-
-        if (Visit(operation.RightPattern, argument) is not Expression right)
-            return HandleTransformationFailure(operation.RightPattern, "Right pattern could not be translated to JavaScript.");
-
+        var left = VisitTo<Expression>(operation.LeftPattern, argument);
+        var right = VisitTo<Expression>(operation.RightPattern, argument);
         // 检查模式的类型来确定操作符
         var @operator = operation.OperatorKind switch
         {
@@ -3766,9 +3902,6 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
         var inputType = operation.InputType;
         // 从父operation获取目标名称，在节点内构建表达式
         var targetName = ExtractPatternValName(operation.Parent);
-        if (string.IsNullOrEmpty(targetName))
-            return HandleTransformationFailure(operation, "cannot extract reference name.");
-
         // 根据获取的名称构建目标表达式
         var targetExpression = new Identifier(targetName);
 
@@ -3860,8 +3993,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
         var targetExpression = new Identifier(targetName);
 
         // 获取右操作数（比较值）
-        if (Visit(operation.Value, argument) is not Expression value)
-            return HandleTransformationFailure(operation.Value, "Relational pattern value could not be translated to JavaScript.");
+        var value = VisitTo<Expression>(operation.Value, argument);
 
         // 检查是否在取反模式中（使用简化的检查逻辑）
         bool isInNegatedPattern = operation.OperatorKind == BinaryOperatorKind.NotEquals ||
@@ -3922,8 +4054,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
         // 语义等价：C# record的with表达式在运行时语义上等同于JavaScript的对象展开
 
         // 获取原始对象
-        if (Visit(operation.Operand, argument) is not Expression operand)
-            return HandleTransformationFailure(operation.Operand, "With operand could not be translated to JavaScript.");
+        var operand = VisitTo<Expression>(operation.Operand, argument);
 
         // 处理初始化器（要修改的属性）
         var properties = new List<Node>
@@ -3948,21 +4079,17 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
                     return HandleTransformationFailure(operation.Initializer, "With initializer could not be translated to JavaScript.");
 
                 // 获取初始化值
-                if (Visit(memberInit.Initializer, argument) is Expression initValue)
-                {
-                    // 根据AST节点构造规范，使用PropertyDefinition创建对象属性
-                    // 确保生成正确的属性语法：{ ...original, propertyName: value }
-                    properties.Add(new ObjectProperty(
-                        kind: PropertyKind.Init,
-                        key: new Identifier(memberName),
-                        value: initValue,
-                        computed: false,
-                        shorthand: false,
-                        method: false
-                    ));
-                }
-                else
-                    return HandleTransformationFailure(operation.Initializer, "With initializer could not be translated to JavaScript.");
+                var initValue = VisitTo<Expression>(memberInit.Initializer, argument);
+                // 根据AST节点构造规范，使用PropertyDefinition创建对象属性
+                // 确保生成正确的属性语法：{ ...original, propertyName: value }
+                properties.Add(new ObjectProperty(
+                    kind: PropertyKind.Init,
+                    key: new Identifier(memberName),
+                    value: initValue,
+                    computed: false,
+                    shorthand: false,
+                    method: false
+                ));
             }
             else
             {
@@ -4031,23 +4158,15 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
                     Collect(add.Left);
                     Collect(add.Right);
                     break;
-
                 case ILiteralOperation { ConstantValue: { HasValue: true, Value: string cookedValue } }:
                     // s 是 C# 解释后的 "cooked" 值
                     var rawValue = CookedToRaw(cookedValue);
                     var templateValue = TemplateValue.From(cookedValue, rawValue);
                     quasis.Add(new TemplateElement(templateValue, tail: false));
                     break;
-
                 default:
-                    if (node is not null)
-                    {
-                        // 任何非字面量操作（如变量、方法调用等）都被视为动态表达式
-                        if (Visit(node, argument) is Expression e)
-                            exprs.Add(e);
-                        else
-                            HandleTransformationFailure(node, "With interpolated string addition could not be translated to JavaScript.");
-                    }
+                    // 任何非字面量操作（如变量、方法调用等）都被视为动态表达式
+                    VisitTo(exprs, node, argument);
                     break;
             }
         }
@@ -4100,9 +4219,6 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     {
         // 从父operation获取目标名称，在节点内构建表达式
         var targetName = ExtractPatternValName(operation.Parent);
-        if (string.IsNullOrEmpty(targetName))
-            return HandleTransformationFailure(operation, "cannot extract reference name.");
-
         var patterns = operation.Patterns;
         if (patterns == null || patterns.IsEmpty) return null;
 
@@ -4155,7 +4271,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
             {
                 case IConstantPatternOperation cpo:
                     // 递归访问常量表达式，这是安全的，因为它不依赖于 argument
-                    var valueExpr = (Expression)Visit(cpo.Value, argument)!;
+                    var valueExpr = VisitTo<Expression>(cpo.Value, argument)!;
                     subCondition = new NonLogicalBinaryExpression(Operator.StrictEquality, indexAccess, valueExpr);
                     break;
 
@@ -4200,14 +4316,14 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
             {
                 // 处理切片模式中的变量声明，如 .. var rest
                 var variableName = sliceDeclPattern.DeclaredSymbol.Name;
-                
+
                 // 创建切片表达式：target.slice(fixedLen)
                 var sliceCall = new CallExpression(
                     new MemberExpression(targetExpr, new Identifier("slice"), computed: false, optional: false),
                     NodeList.From<Expression>(new NumericLiteral(fixedLen, fixedLen.ToString())),
                     optional: false
                 );
-                
+
                 // 将变量名添加到 argument 队列，由上层统一生成 const 语句
                 argument.Enqueue(new VariableDeclaration(
                     VariableDeclarationKind.Const,
@@ -4242,14 +4358,11 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
         // 转换结果：Array.isArray(array) && array.length >= minLength
 
         var pattern = operation.Pattern;
-        if (pattern is null) 
+        if (pattern is null)
             return null;
 
         // 从父operation获取目标名称，在节点内构建表达式
         var targetName = ExtractPatternValName(operation.Parent);
-        if (string.IsNullOrEmpty(targetName))
-            return HandleTransformationFailure(operation, "cannot extract reference name.");
-
         var targetExpression = new Identifier(targetName);
 
         // 1. 首先生成 Array.isArray(targetExpression) 检查
@@ -4261,7 +4374,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
 
         // 2. 处理切片模式内部的模式（如果有）
         // 切片模式本身可以包含一个子模式，如 .. var rest 或 .. 5
-        
+
         // 对于声明模式（如 .. var rest），需要将变量名添加到 argument 队列
         if (pattern is IDeclarationPatternOperation declPattern && declPattern.DeclaredSymbol is not null)
         {
@@ -4271,11 +4384,11 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
                 VariableDeclarationKind.Let,
                 NodeList.From(new VariableDeclarator(new Identifier(variableName), null))
             ));
-            
+
             // 声明模式总是匹配，不增加额外条件
             return arrayCheck;
         }
-        
+
         // 对于常量模式（如 .. 5），需要生成条件检查
         if (pattern is IConstantPatternOperation)
         {
@@ -4285,7 +4398,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
             // 实际的长度检查由 VisitListPattern 处理
             return arrayCheck;
         }
-        
+
         // 对于丢弃模式（如 ..），总是匹配
         if (pattern is IDiscardPatternOperation)
         {
@@ -4294,73 +4407,6 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
 
         // 3. 如果没有子模式，只返回数组检查
         return arrayCheck;
-    }
-
-    /// <summary>
-    /// 处理隐式索引器引用操作
-    /// C# 示例：
-    /// array[^1]                           // 从末尾开始的索引
-    /// array[^n]                           // 从末尾开始的第n个位置
-    /// array[^0]                           // 从末尾开始的第0个位置（等同于array.length）
-    /// 转换结果：直接生成最简单的 array[array.length - n] 表达式
-    /// 利用C#强类型系统，避免不必要的运行时检测，生成高效简洁的代码
-    /// </summary>
-    /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-    /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitImplicitIndexerReference(IImplicitIndexerReferenceOperation operation, Queue<VariableDeclaration> argument)
-    {
-        // 隐式索引器引用的直接AST转换，生成最简洁的代码
-        if (Visit(operation.Instance, argument) is not Expression instance)
-            return HandleTransformationFailure(operation.Instance, "Failed to convert instance expression");
-
-        if (Visit(operation.Argument, argument) is not Expression indexArgument)
-            return HandleTransformationFailure(operation.Argument, "Failed to convert index argument");
-
-        // 生成 array.length 访问
-        var lengthAccess = new MemberExpression(instance,
-            new Identifier("length"),
-            computed: false,
-            optional: false);
-
-        // 处理从末尾开始的索引（^n），转换为 length - n
-        Expression indexCalculation;
-
-        // 检查是否为 System.Index 类型或包含 Hat 操作的一元运算
-        // C# 中的 ^ 操作符会被编译器转换为 System.Index 类型或一元运算
-        if (operation.Argument.Type?.Name == "Index" ||
-           (operation.Argument is IUnaryOperation unaryOp &&
-           unaryOp.OperatorKind == UnaryOperatorKind.Hat))
-        {
-            // 对于 ^n 模式，转换为 length - n
-            Expression innerIndex;
-            if (operation.Argument is IUnaryOperation unary)
-            {
-                // 获取 ^ 操作符的操作数
-                // 如果操作数为空，默认为 1（^1 等同于 ^1）
-                if (Visit(unary.Operand, argument) is not Expression expr)
-                    return HandleTransformationFailure(unary.Operand, "Failed to convert index argument");
-
-                innerIndex = expr;
-            }
-            else
-            {
-                // 如果是 Index 类型，尝试获取其值
-                innerIndex = indexArgument;
-            }
-            
-            // 生成 length - innerIndex 表达式
-            indexCalculation = new NonLogicalBinaryExpression(Operator.Subtraction, lengthAccess, innerIndex);
-        }
-        else
-        {
-            // 普通索引计算，不是从末尾开始的索引
-            // 这种情况可能出现在显式使用 Index.FromEnd() 等场景
-            indexCalculation = new NonLogicalBinaryExpression(Operator.Subtraction, lengthAccess, indexArgument);
-        }
-
-        // 直接返回数组访问表达式：array[array.length - n]
-        return new MemberExpression(instance, indexCalculation, computed: true, optional: false);
     }
 
     /// <summary>
@@ -4380,16 +4426,16 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
         // 通过语法节点获取特性信息
         if (operation.Syntax is not AttributeSyntax attributeSyntax)
             return HandleTransformationFailure(operation.Syntax, "Attribute syntax node is not available");
-        
+
         // 获取特性名称
         var attributeName = attributeSyntax.Name?.ToString();
         if (string.IsNullOrEmpty(attributeName))
             return HandleTransformationFailure(operation, "Cannot determine attribute name");
-        
+
         // 移除常见的 C# 特性后缀
         if (attributeName.EndsWith("Attribute"))
             attributeName = attributeName[..^9];
-        
+
         // 处理特性参数
         var arguments = new List<Expression>();
         if (attributeSyntax.ArgumentList?.Arguments is not null)
@@ -4406,7 +4452,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
                 }
             }
         }
-        
+
         // 处理命名参数
         var properties = new List<Node>();
         if (attributeSyntax.ArgumentList?.Arguments is not null)
@@ -4437,7 +4483,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
                 }
             }
         }
-        
+
         // 创建装饰器表达式
         Expression decorator;
         if (arguments.Count == 0 && properties.Count == 0)
@@ -4481,7 +4527,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
                 );
             }
         }
-        
+
         // 返回装饰器节点
         return new Decorator(decorator);
     }
@@ -4501,10 +4547,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
         var elements = new List<Expression?>();
         foreach (var element in operation.Elements)
         {
-            if (Visit(element, argument) is not Expression expr)
-                return HandleTransformationFailure(element, "Failed to convert collection element");
-
-            elements.Add(expr);
+            VisitToNullable(elements, element, argument);
         }
         return new ArrayExpression(NodeList.From(elements));
     }
@@ -4521,32 +4564,7 @@ public sealed class AstOperationWalker : OperationVisitor<Queue<VariableDeclarat
     /// <returns>Acornima的ESTree的Node</returns>
     public override Acornima.Ast.Node? VisitSpread(ISpreadOperation operation, Queue<VariableDeclaration> argument)
     {
-        if (Visit(operation.Operand, argument) is not Expression operand)
-            return HandleTransformationFailure(operation.Operand, "Failed to convert spread operand");
-
+        var operand = VisitTo<Expression>(operation.Operand, argument);
         return new SpreadElement(operand);
-    }
-
-    /// <summary>
-    /// 处理声明表达式操作
-    /// C# 示例：
-    /// if (int.TryParse(input, out var result)) // out var 声明
-    /// if (dict.TryGetValue(key, out string value)) // out 声明
-    /// 转换结果：转换为 let 变量声明
-    /// </summary>
-    /// <param name="operation">当前访问的operation</param>
-    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-    /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitDeclarationExpression(IDeclarationExpressionOperation operation, Queue<VariableDeclaration> argument)
-    {
-        // 声明表达式（如 out var x）转换为变量声明
-        var declarator = Visit(operation.Expression, argument);
-        if (declarator is VariableDeclarator variableDeclarator)
-        {
-            return new VariableDeclaration(VariableDeclarationKind.Let,
-                NodeList.From(variableDeclarator));
-        }
-
-        return declarator;
     }
 }

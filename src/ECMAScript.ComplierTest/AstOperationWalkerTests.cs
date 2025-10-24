@@ -52,8 +52,8 @@ public sealed class AstOperationWalkerTests
     /// </summary>
     private static Node VisitWithWalker(IOperation operation)
     {
-        var walker = new AstOperationWalker();
-        var node = walker.Visit(operation, operation);
+        var walker = new SemanticWalker();
+        var node = walker.Visit(operation, new());
 
         return node ?? throw new InvalidOperationException("未找到可分析的操作");
     }
@@ -517,13 +517,10 @@ public sealed class AstOperationWalkerTests
 
         // Act
         var result = CompileAndVisitFirstVariableInitializer(code, 1); // 获取第二个变量声明
+        var js = result.ToJavaScript();
 
         // Assert
-        Assert.IsInstanceOfType<ConditionalExpression>(result);
-        var conditionalExpression = (ConditionalExpression)result!;
-        Assert.IsInstanceOfType<LogicalExpression>(conditionalExpression.Test);
-        Assert.IsInstanceOfType<Identifier>(conditionalExpression.Consequent);
-        Assert.IsInstanceOfType<StringLiteral>(conditionalExpression.Alternate);
+        Assert.IsInstanceOfType<LogicalExpression>(result);
     }
 
     [TestMethod]
@@ -1666,7 +1663,9 @@ public sealed class AstOperationWalkerTests
         try
         {
             var result = CompileAndVisitFirstVariableInitializer(code, 1); // 获取第二个变量声明
-            Assert.Fail("Expected OperationTransformationException but no exception was thrown");
+            var js = result.ToJavaScript();
+            
+            Assert.AreEqual("typeof person===\"object\"&&person.Name===\"John\"",js);
         }
         catch (OperationTransformationException)
         {
@@ -1755,21 +1754,10 @@ public sealed class AstOperationWalkerTests
 
         // Act
         var result = CompileAndVisitFirstVariableInitializer(code, 1); // 获取第二个变量声明
+        var js = result.ToJavaScript();
 
         // Assert
-        Assert.IsInstanceOfType<BinaryExpression>(result);
-        if (result is BinaryExpression logicalExpression)
-        {
-            Assert.AreEqual(Acornima.Operator.Addition, logicalExpression.Operator);
-            Assert.IsInstanceOfType<BinaryExpression>(logicalExpression.Left);
-            // 插值字符串的右侧可能是字符串字面量或表达式
-            // 这里我们只验证它不为空
-            Assert.IsNotNull(logicalExpression.Right);
-        }
-        else
-        {
-            Assert.Fail("Expected BinaryExpression but got different type");
-        }
+        Assert.IsInstanceOfType<TemplateLiteral>(result);
     }
 
     [TestMethod]
@@ -1878,14 +1866,16 @@ public sealed class AstOperationWalkerTests
 
         // Act
         var result = CompileAndVisitFirstVariableInitializer(code, 1); // 获取第二个变量声明
-
+        var js = result.ToJavaScript();
+        
         // Assert
-        Assert.IsInstanceOfType<ConditionalExpression>(result);
-        if (result is ConditionalExpression conditionalExpression)
+        Assert.IsInstanceOfType<ChainExpression>(result);
+        if (result is ChainExpression expr)
         {
-            Assert.IsInstanceOfType<LogicalExpression>(conditionalExpression.Test);
-            Assert.IsInstanceOfType<MemberExpression>(conditionalExpression.Consequent);
-            Assert.IsInstanceOfType<NullLiteral>(conditionalExpression.Alternate);
+            var m = expr.Expression as MemberExpression;
+            Assert.IsNotNull(m);
+            Assert.AreEqual("nullable", (m.Object as Identifier)?.Name);
+            Assert.IsTrue(m.Optional);
         }
         else
         {
@@ -1909,15 +1899,16 @@ public sealed class AstOperationWalkerTests
 
         // Act
         var result = CompileAndVisitOperationAt<IExpressionStatementOperation>(code, 1); // 获取第二个操作
+        var ja = result.ToJavaScript();
 
         // Assert
-        Assert.IsInstanceOfType<NonSpecialExpressionStatement>(result);
-        if (result is NonSpecialExpressionStatement statement)
+        Assert.IsInstanceOfType<ExpressionStatement>(result);
+        if (result is ExpressionStatement statement)
         {
             var exp = statement.Expression as AssignmentExpression;
-            Assert.AreEqual(Operator.Assignment, exp?.Operator);
+            Assert.AreEqual(Operator.NullishCoalescingAssignment, exp?.Operator);
             Assert.IsInstanceOfType<Identifier>(exp?.Left);
-            Assert.IsInstanceOfType<ConditionalExpression>(exp?.Right);
+            Assert.IsInstanceOfType<Literal>(exp?.Right);
         }
         else
         {
@@ -2637,13 +2628,53 @@ public sealed class AstOperationWalkerTests
 
         // Act
         var result = CompileAndVisitFirstVariableInitializer(code, 1); // 获取第二个变量声明
-
+        var js = result.ToJavaScript();
+        
         // Assert
         Assert.IsInstanceOfType<MemberExpression>(result);
         if (result is MemberExpression memberExpression)
         {
             Assert.IsInstanceOfType<Identifier>(memberExpression.Object);
             Assert.IsTrue(memberExpression.Computed);
+        }
+        else
+        {
+            Assert.Fail("Expected MemberExpression but got different type");
+        }
+    }
+
+    [TestMethod]
+    public void VisitArrayElementReference_FromEnd_ReturnsMemberExpression()
+    {
+        // Arrange
+        var code = """
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var arr = new[] { 1, 2, 3, 4, 5 };
+                    var last = arr[^1];
+                }
+            }
+            """;
+
+        // Act
+        var result = CompileAndVisitFirstVariableInitializer(code, 1); // 获取第二个变量声明
+        var js = result.ToJavaScript();
+        
+        // Assert
+        Assert.IsInstanceOfType<MemberExpression>(result);
+        if (result is MemberExpression memberExpression)
+        {
+            Assert.IsInstanceOfType<Identifier>(memberExpression.Object);
+            Assert.IsTrue(memberExpression.Computed);
+            
+            // 验证生成的 JavaScript 代码包含 array.length - 1 的形式
+            // 先打印出实际的 JavaScript 代码以便调试
+            System.Console.WriteLine($"Generated JavaScript: {js}");
+            System.Diagnostics.Debug.WriteLine($"Generated JavaScript: {js}");
+            Assert.IsTrue(js.Contains("arr.length-1") || js.Contains("arr.length - 1"),
+                $"Expected JavaScript to contain 'arr.length-1' or 'arr.length - 1', but got: {js}");
         }
         else
         {
@@ -2713,6 +2744,7 @@ public sealed class AstOperationWalkerTests
 
         // Act
         var result = CompileAndVisitFirstVariableInitializer(code);
+        var js = result.ToJavaScript();
 
         // Assert
         Assert.IsInstanceOfType<StringLiteral>(result);
@@ -3239,15 +3271,8 @@ public sealed class AstOperationWalkerTests
 
         // Act
         var result = CompileAndVisitFirstVariableInitializer(code, 1); // 获取第二个变量声明
-
-        // Assert
-        // 插值表达式可能被转换为不同的形式
-        Assert.IsNotNull(result);
-        // 根据实际的转换结果调整断言
-        if (!(result is LogicalExpression) && !(result is CallExpression) && !(result is BinaryExpression))
-        {
-            Assert.Fail("Expected LogicalExpression, CallExpression or BinaryExpression but got different type");
-        }
+        var js = result.ToJavaScript();
+        Assert.AreEqual("`Hello, ${name}!`",js);
     }
 
     [TestMethod]
@@ -3267,6 +3292,7 @@ public sealed class AstOperationWalkerTests
         // Act
         var result = CompileAndGetBlockOperation(code).Operations.First();
         var node = VisitWithWalker(result);
+        var js = node.ToJavaScript();
 
         // Assert
         Assert.IsInstanceOfType<NonSpecialExpressionStatement>(node);
@@ -3369,14 +3395,21 @@ public sealed class AstOperationWalkerTests
             {
                 void TestMethod()
                 {
-                    var tuple = (1, 2);
-                    (int a, int b) = tuple;
+                    var tuple = (aaa:1,2);
+                    (int bbb, int ccc) = tuple;
+                    int ddd,eee;
+                    (ddd, eee) = tuple;
                 }
             }
             """;
 
         // Act ExpressionStatementOperation
-        var result = CompileAndVisitOperationAt<IExpressionStatementOperation>(code, 1); // 获取第二个操作
+        var block = CompileAndGetBlockOperation(code);
+        var node = VisitWithWalker(block);
+        var a = node.ToJavaScript();
+                
+        var result = CompileAndVisitOperationAt<IExpressionStatementOperation>(code, 3); // 获取第二个操作
+        var js = result.ToJavaScript();
 
         // Assert
         Assert.IsInstanceOfType<ExpressionStatement>(result);
@@ -4075,5 +4108,349 @@ public sealed class AstOperationWalkerTests
         }
     }
 
+    #endregion
+    
+    #region 复杂范围操作测试
+    
+    [TestMethod]
+    public void VisitArrayElementReference_ComplexRange_ReturnsCallExpression()
+    {
+        // Arrange
+        var code = """
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var arr = new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+                    var result = arr[1..^4];
+                }
+            }
+            """;
+        
+        // Act
+        var result = CompileAndVisitFirstVariableInitializer(code, 1); // 获取第二个变量声明
+        var js = result.ToJavaScript();
+        
+        // Assert
+        Assert.IsNotNull(result);
+        // 复杂范围操作应该被转换为 slice 调用
+        Assert.IsTrue(js.Contains("slice"), $"Expected JavaScript to contain 'slice', but got: {js}");
+        Assert.IsTrue(js.Contains("arr.length-4") || js.Contains("arr.length - 4"),
+            $"Expected JavaScript to contain 'arr.length-4' or 'arr.length - 4', but got: {js}");
+        
+        // 验证生成的 JavaScript 代码结构
+        // 期望的结构：arr.slice(1, arr.length-4+1)
+        System.Console.WriteLine($"Generated JavaScript: {js}");
+        System.Diagnostics.Debug.WriteLine($"Generated JavaScript: {js}");
+    }
+    
+    [TestMethod]
+    public void VisitArrayElementRange_FromEndOnly_ReturnsCallExpression()
+    {
+        // Arrange
+        var code = """
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var arr = new[] { 1, 2, 3, 4, 5 };
+                    var result = arr[..^2];
+                }
+            }
+            """;
+        
+        // Act
+        var result = CompileAndVisitFirstVariableInitializer(code, 1); // 获取第二个变量声明
+        var js = result.ToJavaScript();
+        
+        // Assert
+        Assert.IsNotNull(result);
+        // 从末尾开始的范围操作应该被转换为 slice 调用
+        Assert.IsTrue(js.Contains("slice"), $"Expected JavaScript to contain 'slice', but got: {js}");
+        Assert.IsTrue(js.Contains("arr.length-2") || js.Contains("arr.length - 2"),
+            $"Expected JavaScript to contain 'arr.length-2' or 'arr.length - 2', but got: {js}");
+        
+        // 验证生成的 JavaScript 代码结构
+        // 期望的结构：arr.slice(0, arr.length-2+1)
+        System.Console.WriteLine($"Generated JavaScript: {js}");
+        System.Diagnostics.Debug.WriteLine($"Generated JavaScript: {js}");
+    }
+    
+    #endregion
+    
+    #region 步长范围操作测试
+    
+    [TestMethod]
+    public void VisitArrayElementReference_StepRange_ReturnsCallExpression()
+    {
+        // Arrange
+        var code = """
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var arr = new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+                    var result = arr[1..^4..2];
+                }
+            }
+            """;
+        
+        // Act
+        var result = CompileAndVisitFirstVariableInitializer(code, 1); // 获取第二个变量声明
+        var js = result.ToJavaScript();
+        
+        // Assert
+        Assert.IsNotNull(result);
+        // 步长范围操作应该被转换为 filter 调用
+        Assert.IsTrue(js.Contains("filter"), $"Expected JavaScript to contain 'filter', but got: {js}");
+        Assert.IsTrue(js.Contains("slice"), $"Expected JavaScript to contain 'slice', but got: {js}");
+        
+        // 验证生成的 JavaScript 代码结构
+        // 期望的结构：arr.slice(1, arr.length-4+1).filter((_, i) => i % 2 === 0)
+        System.Console.WriteLine($"Generated JavaScript: {js}");
+        System.Diagnostics.Debug.WriteLine($"Generated JavaScript: {js}");
+    }
+    
+    [TestMethod]
+    public void VisitArrayElementReference_ComplexStepRange_ReturnsCallExpression()
+    {
+        // Arrange
+        var code = """
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var arr = new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+                    var result = arr[0..^1..3];
+                }
+            }
+            """;
+        
+        // Act
+        var result = CompileAndVisitFirstVariableInitializer(code, 1); // 获取第二个变量声明
+        var js = result.ToJavaScript();
+        
+        // Assert
+        Assert.IsNotNull(result);
+        // 步长范围操作应该被转换为 filter 调用
+        Assert.IsTrue(js.Contains("filter"), $"Expected JavaScript to contain 'filter', but got: {js}");
+        Assert.IsTrue(js.Contains("slice"), $"Expected JavaScript to contain 'slice', but got: {js}");
+        
+        // 验证生成的 JavaScript 代码结构
+        System.Console.WriteLine($"Generated JavaScript: {js}");
+        System.Diagnostics.Debug.WriteLine($"Generated JavaScript: {js}");
+    }
+    
+    #endregion
+    
+    #region ExtractPatternValName 测试
+    
+    [TestMethod]
+    public void ExtractPatternValName_RelationalPattern_ReturnsCorrectName()
+    {
+        // Arrange
+        var code = """
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int value = 10;
+                    bool isMatch = value is > 5;
+                }
+            }
+            """;
+        
+        // Act
+        var blockOperation = CompileAndGetBlockOperation(code);
+        var operations = blockOperation.Operations.ToList();
+        
+        // 查找关系模式操作
+        IRelationalPatternOperation? relationalPattern = null;
+        foreach (var operation in operations)
+        {
+            if (operation is IExpressionStatementOperation exprStmt &&
+                exprStmt.Operation is IBinaryOperation binaryOp &&
+                binaryOp.RightOperand is IIsPatternOperation isPattern &&
+                isPattern.Pattern is IRelationalPatternOperation relPattern)
+            {
+                relationalPattern = relPattern;
+                break;
+            }
+        }
+        
+        Assert.IsNotNull(relationalPattern, "应该找到关系模式操作");
+        
+        // 使用反射调用私有方法 ExtractPatternValName
+        var walkerType = typeof(SemanticWalker);
+        var method = walkerType.GetMethod("ExtractPatternValName",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        
+        Assert.IsNotNull(method, "应该找到 ExtractPatternValName 方法");
+        
+        var walker = new SemanticWalker();
+        var result = method.Invoke(walker, [relationalPattern]) as string;
+        
+        // Assert
+        Assert.AreEqual("value", result, "应该正确提取引用对象名称");
+    }
+    
+    [TestMethod]
+    public void ExtractPatternValName_NestedPattern_ReturnsCorrectName()
+    {
+        // Arrange
+        var code = """
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = new { Name = "Test", Value = 42 };
+                    bool isMatch = obj is { Name: "Test", Value: > 40 };
+                }
+            }
+            """;
+        
+        // Act
+        var blockOperation = CompileAndGetBlockOperation(code);
+        var operations = blockOperation.Operations.ToList();
+        
+        // 查找嵌套模式操作
+        IPropertySubpatternOperation? propertySubPattern = null;
+        foreach (var operation in operations)
+        {
+            if (operation is IExpressionStatementOperation exprStmt &&
+                exprStmt.Operation is IBinaryOperation binaryOp &&
+                binaryOp.RightOperand is IIsPatternOperation isPattern &&
+                isPattern.Pattern is IRecursivePatternOperation recursivePattern &&
+                recursivePattern.PropertySubpatterns.Length > 0)
+            {
+                propertySubPattern = recursivePattern.PropertySubpatterns[0] as IPropertySubpatternOperation;
+                break;
+            }
+        }
+        
+        Assert.IsNotNull(propertySubPattern, "应该找到属性子模式操作");
+        
+        // 使用反射调用私有方法 ExtractPatternValName
+        var walkerType = typeof(SemanticWalker);
+        var method = walkerType.GetMethod("ExtractPatternValName",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        
+        Assert.IsNotNull(method, "应该找到 ExtractPatternValName 方法");
+        
+        var walker = new SemanticWalker();
+        var result = method.Invoke(walker, [propertySubPattern]) as string;
+        
+        // Assert
+        Assert.AreEqual("obj", result, "应该正确提取引用对象名称");
+    }
+    
+    [TestMethod]
+    public void ExtractPatternValName_SwitchExpressionPattern_ReturnsCorrectName()
+    {
+        // Arrange
+        var code = """
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int value = 5;
+                    string result = value switch
+                    {
+                        > 0 => "Positive",
+                        < 0 => "Negative",
+                        _ => "Zero"
+                    };
+                }
+            }
+            """;
+        
+        // Act
+        var blockOperation = CompileAndGetBlockOperation(code);
+        var operations = blockOperation.Operations.ToList();
+        
+        // 查找 switch 表达式中的关系模式操作
+        IRelationalPatternOperation? relationalPattern = null;
+        foreach (var operation in operations)
+        {
+            if (operation is IExpressionStatementOperation exprStmt &&
+                exprStmt.Operation is IVariableDeclarationGroupOperation varDeclGroup &&
+                varDeclGroup.Declarations.First().Declarators.First().Initializer?.Value is ISwitchExpressionOperation switchExpr)
+            {
+                // 查找第一个 arm 中的关系模式
+                var firstArm = switchExpr.Arms.First();
+                if (firstArm.Pattern is IRelationalPatternOperation relPattern)
+                {
+                    relationalPattern = relPattern;
+                    break;
+                }
+            }
+        }
+        
+        Assert.IsNotNull(relationalPattern, "应该找到关系模式操作");
+        
+        // 使用反射调用私有方法 ExtractPatternValName
+        var walkerType = typeof(SemanticWalker);
+        var method = walkerType.GetMethod("ExtractPatternValName",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        
+        Assert.IsNotNull(method, "应该找到 ExtractPatternValName 方法");
+        
+        var walker = new SemanticWalker();
+        var result = method.Invoke(walker, [relationalPattern]) as string;
+        
+        // Assert
+        Assert.AreEqual("value", result, "应该正确提取引用对象名称");
+    }
+    
+    [TestMethod]
+    public void ExtractPatternValName_DeepRecursion_ReturnsEmptyString()
+    {
+        // Arrange - 创建一个深度嵌套的模式结构
+        var code = """
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int value = 10;
+                    // 这个模式会导致深层递归
+                    bool isMatch = value is > 5 and < 15 and > 0 and < 20 and > -5 and < 25;
+                }
+            }
+            """;
+        
+        // Act
+        var blockOperation = CompileAndGetBlockOperation(code);
+        var operations = blockOperation.Operations.ToList();
+        
+        // 查找深层嵌套的模式操作
+        IBinaryPatternOperation? binaryPattern = null;
+        foreach (var operation in operations)
+        {
+            if (operation is IExpressionStatementOperation exprStmt &&
+                exprStmt.Operation is IBinaryOperation binaryOp &&
+                binaryOp.RightOperand is IIsPatternOperation isPattern &&
+                isPattern.Pattern is IBinaryPatternOperation binPattern)
+            {
+                binaryPattern = binPattern;
+                break;
+            }
+        }
+        
+        Assert.IsNotNull(binaryPattern, "应该找到二元模式操作");
+        
+        // 使用反射调用私有方法 ExtractPatternValName
+        var walkerType = typeof(SemanticWalker);
+        var method = walkerType.GetMethod("ExtractPatternValName",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        
+        Assert.IsNotNull(method, "应该找到 ExtractPatternValName 方法");
+        
+        var walker = new SemanticWalker();
+        var result = method.Invoke(walker, [binaryPattern]) as string;
+        
+        // Assert - 即使是深层嵌套，也应该能正确提取名称
+        Assert.AreEqual("value", result, "应该正确提取引用对象名称，即使在深层嵌套的情况下");
+    }
+    
     #endregion
 }
