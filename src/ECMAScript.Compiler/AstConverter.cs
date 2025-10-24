@@ -142,7 +142,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         FunctionBody body;
         if (operation is not null)
         {
-            var walker = new AstOperationWalker();
+            var walker = new SemanticWalker();
             body = walker.Visit(operation, new()) as FunctionBody
                 ?? throw new NotSupportedException($"Jazor cannot suport {symbol.Name}.");
         }
@@ -251,7 +251,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         FunctionBody body;
         if (operation is not null)
         {
-            var walker = new AstOperationWalker();
+            var walker = new SemanticWalker();
             body = walker.Visit(operation, new()) as FunctionBody
                 ?? throw new NotSupportedException($"Jazor 不支持转换方法 {symbol.Name}，无法从操作生成函数体。");
         }
