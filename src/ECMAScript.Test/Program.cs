@@ -1,5 +1,6 @@
 ﻿using Acornima;
 using ConsoleApp1;
+using ECMAScript;
 using ECMAScript.Test;
 using System.Text;
 using System.Text.Json;
@@ -36,9 +37,6 @@ Console.WriteLine("Hello, World!");
 //{
 //	Console.WriteLi ne($"请求失败: {ex.Message}");
 //}
-int c;
-(c,int e) = (2, 2);
-(int a, int b) = (3, 4/5);
 
 var script = @"
 let tuple= {a:1,Item2:2}

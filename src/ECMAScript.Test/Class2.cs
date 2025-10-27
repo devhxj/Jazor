@@ -71,8 +71,25 @@ public class Buyer
 	public string? notes { get; set; }
 	public string? company { get; set; }
 
+class Point
+{
+    public int X{get;set;}
+    public int Y{get;set;}
+
+	public void Deconstruct(out int x, out int y)
+    {
+        x = X;
+        y = Y;
+    }
+}
+
 	public void Aa()
     {
 		ValueTuple<int,int> a = (7,8);
+
+
+
     }
+
+
 }

@@ -1,0 +1,254 @@
+﻿using Acornima;
+using Acornima.Ast;
+using Microsoft.CodeAnalysis.Operations;
+using System.Collections.Generic;
+
+namespace ECMAScript.Compiler;
+
+public partial class SemanticWalker
+{
+	/// <summary>
+	/// 处理数组元素访问操作，不支持多维数组
+	/// C# 示例：
+	/// array[0]        // 一维数组访问
+	/// array[i, j]     // 多维数组访问（不支持）
+	/// array[^1]       // 从末尾开始的索引访问
+	/// 复杂情况：array[1..^4] 转换为 array.slice(1, array.length - 4)
+	/// 转换结果：array[0]/不支持多维数组/array[array.length - 1]
+	/// </summary>
+	/// <param name="operation">当前访问的operation</param>
+	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+	/// <returns>Acornima的ESTree的Node</returns>
+	public override Acornima.Ast.Node? VisitArrayElementReference(IArrayElementReferenceOperation operation, Queue<VariableDeclaration> argument)
+	{
+		if (operation.Indices.Length != 1)
+			return HandleTransformationFailure(operation,
+				operation.Indices.Length > 1
+					? "Multi-dimensional array access is not supported in JavaScript conversion"
+					: "Array access requires at least one index.");
+
+		var expr = Translate<Expression>(operation.ArrayReference, argument);
+		var indexOperation = operation.Indices[0];
+
+		// 检查是否是从末尾开始的索引（^n）
+		// 处理从末尾开始的索引，转换为 array[array.length - n]
+		// 生成 array.length 访问
+		if (indexOperation is IUnaryOperation unary && unary.OperatorKind == UnaryOperatorKind.Hat)
+		{
+			var lengthAccess = new MemberExpression(expr, new Identifier("length"), computed: false, optional: false);
+			var innerIndex = Translate<Expression>(unary.Operand, argument);
+			var indexCalculation = new NonLogicalBinaryExpression(Operator.Subtraction, lengthAccess, innerIndex);
+			return new MemberExpression(expr, indexCalculation, computed: true, optional: false);
+		}
+		else if (indexOperation is IImplicitIndexerReferenceOperation implicitIndexer)
+		{
+			// 处理隐式索引器引用（另一种可能的表示方式）
+			var instance = Translate<Expression>(implicitIndexer.Instance, argument);
+			var indexArgument = Translate<Expression>(implicitIndexer.Argument, argument);
+			var lengthAccess = new MemberExpression(instance, new Identifier("length"), computed: false, optional: false);
+			if (implicitIndexer.Argument is IUnaryOperation indexUnaryOp && indexUnaryOp.OperatorKind == UnaryOperatorKind.Hat)
+				indexArgument = Translate<Expression>(indexUnaryOp.Operand, argument);
+			var indexCalculation = new NonLogicalBinaryExpression(Operator.Subtraction, lengthAccess, indexArgument);
+			return new MemberExpression(instance, indexCalculation, computed: true, optional: false);
+		}
+		else if (indexOperation is IRangeOperation range)
+		{
+			// 处理普通范围操作，转换为 Array.slice
+			// 获取范围的起始和结束值
+			// 检查起始值是否是从末尾开始的索引（^n）
+			var start = range.LeftOperand is IUnaryOperation leftUnary && leftUnary.OperatorKind == UnaryOperatorKind.Hat
+				? UnaryHat(expr, leftUnary)
+				: VisitNull<Expression>(range.LeftOperand, argument);
+
+			var end = range.RightOperand is IUnaryOperation rightUnary && rightUnary.OperatorKind == UnaryOperatorKind.Hat
+				? UnaryHat(expr, rightUnary)
+				: VisitNull<Expression>(range.RightOperand, argument);
+
+			// 创建 slice 方法调用
+			var slice = new MemberExpression(expr, new Identifier("slice"), computed: false, optional: false);
+			var args = NodeList.Empty<Expression>();// 空范围：array[..] -> array.slice() (复制整个数组)
+
+			// 处理不同的范围情况
+			if (start is not null && end is not null)
+			{
+				// 完整范围：array[start..end] -> array.slice(start, end + 1)
+				// C# 范围包含结束位置，JavaScript slice 不包含，所以需要 +1
+				var adjustedEnd = new NonLogicalBinaryExpression(Operator.Addition, end, new NumericLiteral(1, "1"));
+				args = NodeList.From(start, adjustedEnd);
+			}
+			else if (start is not null)
+			{
+				// 只有起始：array[start..] -> array.slice(start)
+				args = NodeList.From(start);
+			}
+			else if (end is not null)
+			{
+				// 只有结束：array[..end] -> array.slice(0, end + 1)
+				var adjustedEnd = new NonLogicalBinaryExpression(Operator.Addition, end, new NumericLiteral(1, "1"));
+				args = NodeList.From<Expression>(new NumericLiteral(0, "0"), adjustedEnd);
+			}
+
+			return new CallExpression(slice, args, optional: false);
+		}
+		// 注意：步长范围操作（如 array[1..^4..2]）在当前的 Roslyn 操作模型中可能不直接支持
+		// 这种情况可能需要通过自定义操作或语法节点处理
+		// 如果需要支持，可以在 VisitInvalid 方法中处理特殊的语法节点
+		else
+		{
+			// 普通索引访问
+			var indexCalculation = Translate<Expression>(indexOperation, argument);
+			return new MemberExpression(expr, indexCalculation, computed: true, optional: false);
+		}
+
+		Expression UnaryHat(Expression obj, IUnaryOperation unary)
+		{
+			var left = new MemberExpression(obj, new Identifier("length"), computed: false, optional: false);
+			var right = Translate<Expression>(unary.Operand, argument);
+			return new NonLogicalBinaryExpression(Operator.Subtraction, left, right);
+		}
+	}
+
+	/// <summary>
+	/// 处理隐式索引器引用操作
+	/// C# 示例：
+	/// array[^1]                           // 从末尾开始的索引
+	/// array[^n]                           // 从末尾开始的第n个位置
+	/// array[^0]                           // 从末尾开始的第0个位置（等同于array.length）
+	/// 转换结果：直接生成最简单的 array[array.length - n] 表达式
+	/// 利用C#强类型系统，避免不必要的运行时检测，生成高效简洁的代码
+	/// </summary>
+	/// <param name="operation">当前访问的operation</param>
+	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+	/// <returns>Acornima的ESTree的Node</returns>
+	public override Acornima.Ast.Node? VisitImplicitIndexerReference(IImplicitIndexerReferenceOperation operation, Queue<VariableDeclaration> argument)
+	{
+		// 隐式索引器引用的直接AST转换，生成最简洁的代码
+		var instance = Translate<Expression>(operation.Instance, argument);
+		var indexArgument = Translate<Expression>(operation.Argument, argument);
+		// 生成 array.length 访问
+		var lengthAccess = new MemberExpression(instance, new Identifier("length"), computed: false, optional: false);
+		if (operation.Argument is IUnaryOperation indexUnaryOp && indexUnaryOp.OperatorKind == UnaryOperatorKind.Hat)
+			indexArgument = Translate<Expression>(indexUnaryOp.Operand, argument);
+		// 处理从末尾开始的索引（^n），转换为 length - n
+		// 普通索引计算，不是从末尾开始的索引
+		// 这种情况可能出现在显式使用 Index.FromEnd() 等场景
+		var indexCalculation = new NonLogicalBinaryExpression(Operator.Subtraction, lengthAccess, indexArgument);
+
+		// 直接返回数组访问表达式：array[array.length - n]
+		return new MemberExpression(instance, indexCalculation, computed: true, optional: false);
+	}
+
+	/// <summary>
+	/// 处理局部变量引用操作
+	/// C# 示例：
+	/// int localVar = 5;
+	/// Console.WriteLine(localVar);  // localVar 引用
+	/// 转换结果：localVar
+	/// </summary>
+	/// <param name="operation">当前访问的operation</param>
+	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+	/// <returns>Acornima的ESTree的Node</returns>
+	public override Acornima.Ast.Node? VisitLocalReference(ILocalReferenceOperation operation, Queue<VariableDeclaration> argument)
+	{
+		return new Identifier(operation.Local.Name);
+	}
+
+	/// <summary>
+	/// 处理参数引用操作
+	/// C# 示例：
+	/// void Method(int param) {
+	///     Console.WriteLine(param);  // param 引用
+	/// }
+	/// 转换结果：param
+	/// </summary>
+	/// <param name="operation">当前访问的operation</param>
+	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+	/// <returns>Acornima的ESTree的Node</returns>
+	public override Acornima.Ast.Node? VisitParameterReference(IParameterReferenceOperation operation, Queue<VariableDeclaration> argument)
+	{
+		return new Identifier(operation.Parameter.Name);
+	}
+
+	/// <summary>
+	/// 处理字段引用操作
+	/// C# 示例：
+	/// obj.field        // 实例字段访问
+	/// MyClass.field    // 静态字段访问
+	/// 转换结果：obj.field / MyClass.field
+	/// </summary>
+	/// <param name="operation">当前访问的operation</param>
+	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+	/// <returns>Acornima的ESTree的Node</returns>
+	public override Acornima.Ast.Node? VisitFieldReference(IFieldReferenceOperation operation, Queue<VariableDeclaration> argument)
+	{
+		if (operation.Instance is not null)
+		{
+			var expr = Translate<Expression>(operation.Instance, argument);
+			var property = new Identifier(operation.Field.Name);
+			return new MemberExpression(expr, property, computed: false, optional: false);
+		}
+		return new Identifier(operation.Field.Name);
+	}
+
+	/// <summary>
+	/// 处理方法引用操作（不调用）
+	/// C# 示例：
+	/// Action action = obj.Method;  // 方法引用（委托）
+	/// 转换结果：obj.method
+	/// </summary>
+	/// <param name="operation">当前访问的operation</param>
+	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+	/// <returns>Acornima的ESTree的Node</returns>
+	public override Acornima.Ast.Node? VisitMethodReference(IMethodReferenceOperation operation, Queue<VariableDeclaration> argument)
+	{
+		if (operation.Instance is not null)
+		{
+			var expr = Translate<Expression>(operation.Instance, argument);
+			var methodName = operation.Method.Name;
+			var property = new Identifier(methodName);
+			return new MemberExpression(expr, property, computed: false, optional: false);
+		}
+		return new Identifier(operation.Method.Name);
+	}
+
+	/// <summary>
+	/// 处理属性引用操作
+	/// C# 示例：
+	/// obj.Property     // 实例属性访问
+	/// MyClass.Property // 静态属性访问
+	/// 转换结果：obj.property / MyClass.property
+	/// </summary>
+	/// <param name="operation">当前访问的operation</param>
+	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+	/// <returns>Acornima的ESTree的Node</returns>
+	public override Acornima.Ast.Node? VisitPropertyReference(IPropertyReferenceOperation operation, Queue<VariableDeclaration> argument)
+	{
+		if (operation.Instance is not null)
+		{
+			var expr = Translate<Expression>(operation.Instance, argument);
+			var propName = operation.Property.Name;
+			var property = new Identifier(propName);
+			var optional = operation.Instance is IConditionalAccessInstanceOperation;
+			return new MemberExpression(expr, property, false, optional);
+		}
+
+		// Null if the reference is to a static/shared member.
+		return new Identifier(operation.Property.Name);
+	}
+
+	/// <summary>
+	/// 处理实例引用操作（this 关键字）
+	/// C# 示例：
+	/// this.Property   // 引用当前实例
+	/// this            // 直接使用 this
+	/// 转换结果：this
+	/// </summary>
+	/// <param name="operation">当前访问的operation</param>
+	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+	/// <returns>Acornima的ESTree的Node</returns>
+	public override Acornima.Ast.Node? VisitInstanceReference(IInstanceReferenceOperation operation, Queue<VariableDeclaration> argument)
+	{
+		return new ThisExpression();
+	}
+
+}

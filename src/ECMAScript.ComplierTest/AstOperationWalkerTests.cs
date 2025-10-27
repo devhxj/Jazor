@@ -52,7 +52,7 @@ public sealed class AstOperationWalkerTests
     /// </summary>
     private static Node VisitWithWalker(IOperation operation)
     {
-        var walker = new SemanticWalker();
+        var walker = new SemanticWalker(true);
         var node = walker.Visit(operation, new());
 
         return node ?? throw new InvalidOperationException("未找到可分析的操作");
@@ -3399,7 +3399,27 @@ public sealed class AstOperationWalkerTests
                     (int bbb, int ccc) = tuple;
                     int ddd,eee;
                     (ddd, eee) = tuple;
+                    int kkk;
+                    (kkk,int qqq) = tuple;
+                    (int fff, (int ggg,int hhh)) = (2,tuple);
+                    (int f44, (int g44,int h44)) = (y8:2,y9:tuple);
+                    var func = (int x,int y)=>(mmm:x,y);
+                    (int zzz,int yyy)= func(2,5);
+                    var p = new Point();
+                    (int z99,int y99)= p;
                 }
+                
+                class Point
+                {
+                    public int X{get;set;}
+                    public int Y{get;set;}
+
+                    public void Deconstruct(out int x, out int y)
+                    {
+                        x = X;
+                        y = Y;
+                    }
+                }                 
             }
             """;
 
@@ -4134,7 +4154,7 @@ public sealed class AstOperationWalkerTests
         // Assert
         Assert.IsNotNull(result);
         // 复杂范围操作应该被转换为 slice 调用
-        Assert.IsTrue(js.Contains("slice"), $"Expected JavaScript to contain 'slice', but got: {js}");
+        Assert.Contains("slice", js, $"Expected JavaScript to contain 'slice', but got: {js}");
         Assert.IsTrue(js.Contains("arr.length-4") || js.Contains("arr.length - 4"),
             $"Expected JavaScript to contain 'arr.length-4' or 'arr.length - 4', but got: {js}");
         
@@ -4166,7 +4186,7 @@ public sealed class AstOperationWalkerTests
         // Assert
         Assert.IsNotNull(result);
         // 从末尾开始的范围操作应该被转换为 slice 调用
-        Assert.IsTrue(js.Contains("slice"), $"Expected JavaScript to contain 'slice', but got: {js}");
+        Assert.Contains("slice", js, $"Expected JavaScript to contain 'slice', but got: {js}");
         Assert.IsTrue(js.Contains("arr.length-2") || js.Contains("arr.length - 2"),
             $"Expected JavaScript to contain 'arr.length-2' or 'arr.length - 2', but got: {js}");
         
@@ -4202,8 +4222,8 @@ public sealed class AstOperationWalkerTests
         // Assert
         Assert.IsNotNull(result);
         // 步长范围操作应该被转换为 filter 调用
-        Assert.IsTrue(js.Contains("filter"), $"Expected JavaScript to contain 'filter', but got: {js}");
-        Assert.IsTrue(js.Contains("slice"), $"Expected JavaScript to contain 'slice', but got: {js}");
+        Assert.Contains("filter", js, $"Expected JavaScript to contain 'filter', but got: {js}");
+        Assert.Contains("slice", js, $"Expected JavaScript to contain 'slice', but got: {js}");
         
         // 验证生成的 JavaScript 代码结构
         // 期望的结构：arr.slice(1, arr.length-4+1).filter((_, i) => i % 2 === 0)
@@ -4233,8 +4253,8 @@ public sealed class AstOperationWalkerTests
         // Assert
         Assert.IsNotNull(result);
         // 步长范围操作应该被转换为 filter 调用
-        Assert.IsTrue(js.Contains("filter"), $"Expected JavaScript to contain 'filter', but got: {js}");
-        Assert.IsTrue(js.Contains("slice"), $"Expected JavaScript to contain 'slice', but got: {js}");
+        Assert.Contains("filter", js, $"Expected JavaScript to contain 'filter', but got: {js}");
+        Assert.Contains("slice", js, $"Expected JavaScript to contain 'slice', but got: {js}");
         
         // 验证生成的 JavaScript 代码结构
         System.Console.WriteLine($"Generated JavaScript: {js}");
