@@ -582,7 +582,7 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitSimpleAssignment(ISimpleAssignmentOperation operation, Queue<VariableDeclaration> argument)
 	{
-		var left = VisitNull<Expression>(operation.Target, argument);
+		var left = Translate<Expression>(operation.Target, argument,null);
 		var right = Translate<Expression>(operation.Value, argument);
 
 		if (left is null)
@@ -1007,7 +1007,7 @@ public partial class SemanticWalker
 		var elements = new List<Expression?>();
 		foreach (var element in operation.Elements)
 		{
-			VisitNull(elements, element, argument);
+			Translate(elements, element, argument,null);
 		}
 		return new ArrayExpression(NodeList.From(elements));
 	}

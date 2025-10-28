@@ -106,7 +106,7 @@ public partial class SemanticWalker
 		{
 			foreach (var element in operation.Initializer.ElementValues)
 			{
-				VisitNull(elements, element, argument);
+				Translate(elements, element, argument,null);
 			}
 		}
 		else

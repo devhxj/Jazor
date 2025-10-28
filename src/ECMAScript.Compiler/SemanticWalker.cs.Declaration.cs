@@ -21,7 +21,7 @@ public partial class SemanticWalker
 		var elements = new List<Expression?>();
 		foreach (var element in operation.ElementValues)
 		{
-			VisitNull(elements, element, argument);
+			Translate(elements, element, argument,null);
 		}
 		return new ArrayExpression(NodeList.From(elements));
 	}
@@ -69,7 +69,7 @@ public partial class SemanticWalker
 	public override Acornima.Ast.Node? VisitVariableDeclarator(IVariableDeclaratorOperation operation, Queue<VariableDeclaration> argument)
 	{
 		var identifier = new Identifier(operation.Symbol.Name);
-		var init = VisitNull<Expression>(operation.Initializer, argument);
+		var init = Translate<Expression>(operation.Initializer, argument,null);
 
 		return new VariableDeclarator(identifier, init);
 	}

@@ -20,7 +20,7 @@ public sealed class AstConverterTests
         var syntaxTree = compilation.SyntaxTrees.First();
         var semanticModel = compilation.GetSemanticModel(syntaxTree);
         var classDeclaration = syntaxTree.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>().First();
-        var classSymbol = semanticModel.GetDeclaredSymbol(classDeclaration) as INamedTypeSymbol;
+        var classSymbol = semanticModel.GetDeclaredSymbol(classDeclaration);
 
         Assert.IsNotNull(classSymbol);
         return (classSymbol, semanticModel);

@@ -50,7 +50,7 @@ public partial class SemanticWalker
 				}
 				else if (clause is ISingleValueCaseClauseOperation singleValue)
 				{
-					VisitNull(tests, singleValue.Value, argument);
+					Translate(tests, singleValue.Value, argument,null);
 				}
 				else
 					return HandleTransformationFailure(clause, "Switch case clause could not be translated to JavaScript.");
@@ -376,7 +376,7 @@ public partial class SemanticWalker
 	public override Acornima.Ast.Node? VisitSwitchExpressionArm(ISwitchExpressionArmOperation operation, Queue<VariableDeclaration> argument)
 	{
 		var pattern = Translate<Expression>(operation.Pattern, argument);
-		var guard = VisitNull<Expression>(operation.Guard, argument);
+		var guard = Translate<Expression>(operation.Guard, argument,null);
 		var value = Translate<Expression>(operation.Value, argument);
 
 		// 检查是否为传统的常量模式（无when子句）

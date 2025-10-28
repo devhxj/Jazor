@@ -170,15 +170,16 @@ public sealed partial class SemanticWalker : OperationVisitor<Queue<VariableDecl
     /// <typeparam name="T">期望返回的AST节点类型</typeparam>
     /// <param name="operation">要访问和转换的操作，可能为null</param>
     /// <param name="argument">用于存放变量声明的队列</param>
+    /// <param name="defaultValue">为空时的默认值</param>
     /// <returns>转换后的指定类型AST节点，如果操作为null或转换结果为null则返回默认值</returns>
-    private T? VisitNull<T>(IOperation? operation, Queue<VariableDeclaration> argument) where T : INode
+    private T? Translate<T>(IOperation? operation, Queue<VariableDeclaration> argument,T? defaultValue) where T : INode
     {
         if (operation is null)
-            return default;
+            return defaultValue;
 
         var node = Visit(operation, argument);
         if (node is null)
-            return default;
+            return defaultValue;
 
         if (node is T result)
             return result;
@@ -187,7 +188,7 @@ public sealed partial class SemanticWalker : OperationVisitor<Queue<VariableDecl
         var location = operation.Syntax.GetLocation();
         _report?.Invoke(location, message);
 
-        return default;
+        return defaultValue;
     }
 
     /// <summary>
@@ -230,10 +231,11 @@ public sealed partial class SemanticWalker : OperationVisitor<Queue<VariableDecl
     /// </para>
     /// </summary>
     /// <typeparam name="T">期望的AST节点类型</typeparam>
-    /// <param name="list">用于存放成功转换的AST节点的集合</param>
+    /// <param name="target">用于存放成功转换的AST节点的集合</param>
     /// <param name="operation">要访问和转换的操作，可能为null</param>
     /// <param name="argument">用于存放变量声明的队列</param>
-    private void VisitNull<T>(ICollection<T?> list, IOperation? operation, Queue<VariableDeclaration> argument) where T : INode
+    /// <param name="defaultValue">为空时的默认值</param>
+    private void Translate<T>(ICollection<T?> target, IOperation? operation, Queue<VariableDeclaration> argument,T? defaultValue) where T : INode
     {
         if (operation is null)
             return;
@@ -243,7 +245,7 @@ public sealed partial class SemanticWalker : OperationVisitor<Queue<VariableDecl
             return;
 
         if (node is T item)
-            list.Add(item);
+            target.Add(item);
         else
         {
             var message = $"Cannot convert operation '{operation.Kind}' to AST node type '{typeof(T).Name}'. This indicates missing support for this operation type or a type mismatch. ";

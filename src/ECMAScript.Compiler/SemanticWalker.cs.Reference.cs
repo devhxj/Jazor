@@ -58,11 +58,11 @@ public partial class SemanticWalker
 			// 检查起始值是否是从末尾开始的索引（^n）
 			var start = range.LeftOperand is IUnaryOperation leftUnary && leftUnary.OperatorKind == UnaryOperatorKind.Hat
 				? UnaryHat(expr, leftUnary)
-				: VisitNull<Expression>(range.LeftOperand, argument);
+				: Translate<Expression>(range.LeftOperand, argument,null);
 
 			var end = range.RightOperand is IUnaryOperation rightUnary && rightUnary.OperatorKind == UnaryOperatorKind.Hat
 				? UnaryHat(expr, rightUnary)
-				: VisitNull<Expression>(range.RightOperand, argument);
+				: Translate<Expression>(range.RightOperand, argument,null);
 
 			// 创建 slice 方法调用
 			var slice = new MemberExpression(expr, new Identifier("slice"), computed: false, optional: false);
