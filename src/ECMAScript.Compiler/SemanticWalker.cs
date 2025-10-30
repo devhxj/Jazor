@@ -34,7 +34,7 @@ public sealed partial class SemanticWalker : OperationVisitor<Queue<VariableDecl
     /// <summary>
     /// 调试标识
     /// </summary>
-    private readonly bool _debug;
+    private readonly bool _test;
 
     private readonly Action<Location, string?>? _report;
 
@@ -42,7 +42,7 @@ public sealed partial class SemanticWalker : OperationVisitor<Queue<VariableDecl
 
     public SemanticWalker() { }
 
-    public SemanticWalker(bool debug)=> _debug = debug;
+    public SemanticWalker(bool test)=> _test = test;
 
     public SemanticWalker(Action<Location, string?> report) => _report = report;
 
@@ -91,8 +91,8 @@ public sealed partial class SemanticWalker : OperationVisitor<Queue<VariableDecl
         var sourceSpan = operation.Syntax.GetLocation().SourceSpan;
 
         //方便单元测试，生成固定名称
-        if(_debug)
-            return $"v{sourceSpan.Start}${sourceSpan.End}";
+        if(_test)
+            return $"v$test";
 
         using var sha256 = SHA256.Create();
         var key = $"{syntaxTree.FilePath}${operation.Kind}${sourceSpan.Start}${sourceSpan.End}";

@@ -37,7 +37,8 @@ Console.WriteLine("Hello, World!");
 //{
 //	Console.WriteLi ne($"请求失败: {ex.Message}");
 //}
-
+                 var tuple = (outer: (inner: 1, 2), 3);
+                    ((int bbb, int ccc),int aaa) = tuple;
 var script = @"
 let tuple= {a:1,Item2:2}
 ";

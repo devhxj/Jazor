@@ -70,11 +70,18 @@ public class Buyer
 	public string? phoneNumber { get; set; }
 	public string? notes { get; set; }
 	public string? company { get; set; }
+}
 
 class Point
 {
     public int X{get;set;}
     public int Y{get;set;}
+    
+    public Point(int x, int y)
+    {
+        X = x;
+        Y = y;
+    }
 
 	public void Deconstruct(out int x, out int y)
     {
@@ -83,13 +90,26 @@ class Point
     }
 }
 
-	public void Aa()
+class TestClass
+{
+	void TestMethod()
+	{
+		var point = new KeyValuePair<string, int>("a", 1);
+		var (x,y) = point;
+	}
+	
+	void Aa()
     {
 		ValueTuple<int,int> a = (7,8);
-
-
-
+		// 使用变量a以避免编译器警告
+		Console.WriteLine($"Item1: {a.Item1}, Item2: {a.Item2}");
     }
+}
 
-
+public static class PersonExtensions
+{
+    public static void Deconstruct<TKey,TValue>(this KeyValuePair<TKey,TValue> kv, out TKey key, out TValue value)
+    {
+        (key,value) = kv;
+    }
 }

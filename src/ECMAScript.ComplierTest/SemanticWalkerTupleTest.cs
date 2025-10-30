@@ -270,7 +270,7 @@ public sealed class SemanticWalkerTupleTest
     }
 
     [TestMethod]
-    public void VisitDeconstructionAssignment()
+    public void VisitDeconstructionAssignment_WithTupleRefrence()
     {
         var code = @"
             class TestClass
@@ -291,4 +291,448 @@ public sealed class SemanticWalkerTupleTest
                      
         Assert.AreEqual("let bbb=tuple.aaa;let ccc=tuple.Item2;", script);
     }
+
+    [TestMethod]
+    public void VisitDeconstructionAssignment_WithExistingVariables()
+    {
+        var code = @"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var tuple = (aaa:1,2);
+                    int bbb, ccc;
+                    (bbb, ccc) = tuple;
+                }
+            }
+            ";
+
+        var statement = GetOperationAt<IExpressionStatementOperation>(code,2);
+        var operation = (IDeconstructionAssignmentOperation)statement.Operation;
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitDeconstructionAssignment(operation, new());
+        var script = node?.ToECMAScript();
+                     
+        Assert.AreEqual("bbb=tuple.aaa;ccc=tuple.Item2;", script);
+    }
+
+    [TestMethod]
+    public void VisitDeconstructionAssignment_MixedDeclaration()
+    {
+        var code = @"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var tuple = (aaa:1,2);
+                    int bbb;
+                    (bbb, int ccc) = tuple;
+                }
+            }
+            ";
+
+        var statement = GetOperationAt<IExpressionStatementOperation>(code,2);
+        var operation = (IDeconstructionAssignmentOperation)statement.Operation;
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitDeconstructionAssignment(operation, new());
+        var script = node?.ToECMAScript();
+                     
+        Assert.AreEqual("bbb=tuple.aaa;let ccc=tuple.Item2;", script);
+    }
+
+    [TestMethod]
+    public void VisitDeconstructionAssignment_NestedTuple()
+    {
+        var code = @"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var tuple = (outer: (inner: 1, 2), 3);
+                    ((int bbb, int ccc),int aaa) = tuple;
+                }
+            }
+            ";
+
+        var statement = GetOperationAt<IExpressionStatementOperation>(code,1);
+        var operation = (IDeconstructionAssignmentOperation)statement.Operation;
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitDeconstructionAssignment(operation, new());
+        var script = node?.ToECMAScript();
+                     
+        Assert.AreEqual("let bbb=tuple.outer.inner;let ccc=tuple.outer.Item2;let aaa=tuple.Item2;", script);
+    }
+
+    [TestMethod]
+    public void VisitDeconstructionAssignment_MethodCall()
+    {
+        var code = @"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    (int aaa, int bbb) = GetTuple();
+                }
+                
+                (int, int) GetTuple() => (1, 2);
+            }
+            ";
+
+        var statement = GetOperationAt<IExpressionStatementOperation>(code,0);
+        var operation = (IDeconstructionAssignmentOperation)statement.Operation;
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitDeconstructionAssignment(operation, new());
+        var script = node?.ToECMAScript();
+                     
+        Assert.AreEqual("const v$test=this.GetTuple();let aaa=v$test.Item1;let bbb=v$test.Item2;", script);
+    }
+
+    [TestMethod]
+    public void VisitDeconstructionAssignment_WithDiscard()
+    {
+        var code = @"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var tuple = (aaa:1,2);
+                    (_, int ccc) = tuple;
+                }
+            }
+            ";
+
+        var statement = GetOperationAt<IExpressionStatementOperation>(code,1);
+        var operation = (IDeconstructionAssignmentOperation)statement.Operation;
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitDeconstructionAssignment(operation, new());
+        var script = node?.ToECMAScript();
+                     
+        Assert.AreEqual("let ccc=tuple.Item2;", script);
+    }
+
+    [TestMethod]
+    public void VisitTupleBinaryOperator_Equals()
+    {
+        var code = @"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var tuple1 = (1, 2);
+                    var tuple2 = (1, 2);
+                    var result = tuple1 == tuple2;
+                }
+            }
+            ";
+
+        var statement = GetOperationAt<IVariableDeclarationGroupOperation>(code, 2);
+        var variableDeclaration = statement!.Declarations.First();
+        var initializer = variableDeclaration.Declarators.First().Initializer;
+        var operation = (ITupleBinaryOperation)initializer!.Value;
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitTupleBinaryOperator(operation, new());
+        var script = node?.ToECMAScript();
+                     
+        Assert.AreEqual("(tuple1.Item1===tuple2.Item1&&tuple1.Item2===tuple2.Item2)", script);
+    }
+
+    [TestMethod]
+    public void VisitTupleBinaryOperator_NotEquals()
+    {
+        var code = @"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var tuple1 = (1, 2);
+                    var tuple2 = (1, 2);
+                    var result = tuple1 != tuple2;
+                }
+            }
+            ";
+
+        var statement = GetOperationAt<IVariableDeclarationGroupOperation>(code, 2);
+        var variableDeclaration = statement!.Declarations.First();
+        var initializer = variableDeclaration.Declarators.First().Initializer;
+        var operation = (ITupleBinaryOperation)initializer!.Value;
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitTupleBinaryOperator(operation, new());
+        var script = node?.ToECMAScript();
+                     
+        Assert.AreEqual("(tuple1.Item1!==tuple2.Item1||tuple1.Item2!==tuple2.Item2)", script);
+    }
+
+    [TestMethod]
+    public void VisitTupleBinaryOperator_NamedElements()
+    {
+        var code = @"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var tuple1 = (name: ""test"", value: 42);
+                    var tuple2 = (name: ""test"", value: 42);
+                    var result = tuple1 == tuple2;
+                }
+            }
+            ";
+
+        var statement = GetOperationAt<IVariableDeclarationGroupOperation>(code, 2);
+        var variableDeclaration = statement!.Declarations.First();
+        var initializer = variableDeclaration.Declarators.First().Initializer;
+        var operation = (ITupleBinaryOperation)initializer!.Value;
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitTupleBinaryOperator(operation, new());
+        var script = node?.ToECMAScript();
+                     
+        Assert.AreEqual("(tuple1.name===tuple2.name&&tuple1.value===tuple2.value)", script);
+    }
+
+    [TestMethod]
+    public void VisitTupleBinaryOperator_EmptyTuple()
+    {
+        var code = @"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var result = () == ();
+                }
+            }
+            ";
+
+        var statement = GetOperationAt<IVariableDeclarationGroupOperation>(code, 0);
+        var variableDeclaration = statement!.Declarations.First();
+        var initializer = variableDeclaration.Declarators.First().Initializer;
+        var operation = (ITupleBinaryOperation)initializer!.Value;
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitTupleBinaryOperator(operation, new());
+        var script = node?.ToECMAScript();
+                     
+        Assert.AreEqual("true", script);
+    }
+
+    [TestMethod]
+    public void VisitTupleBinaryOperator_EmptyTupleNotEquals()
+    {
+        var code = @"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var result = () != ();
+                }
+            }
+            ";
+
+        var statement = GetOperationAt<IVariableDeclarationGroupOperation>(code, 0);
+        var variableDeclaration = statement!.Declarations.First();
+        var initializer = variableDeclaration.Declarators.First().Initializer;
+        var operation = (ITupleBinaryOperation)initializer!.Value;
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitTupleBinaryOperator(operation, new());
+        var script = node?.ToECMAScript();
+                     
+        Assert.AreEqual("false", script);
+    }
+
+    [TestMethod]
+    public void VisitTupleBinaryOperator_ThreeElements()
+    {
+        var code = @"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var tuple1 = (1, 2, 3);
+                    var tuple2 = (1, 2, 3);
+                    var result = tuple1 == tuple2;
+                }
+            }
+            ";
+
+        var statement = GetOperationAt<IVariableDeclarationGroupOperation>(code, 2);
+        var variableDeclaration = statement!.Declarations.First();
+        var initializer = variableDeclaration.Declarators.First().Initializer;
+        var operation = (ITupleBinaryOperation)initializer!.Value;
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitTupleBinaryOperator(operation, new());
+        var script = node?.ToECMAScript();
+                     
+        Assert.AreEqual("(tuple1.Item1===tuple2.Item1&&tuple1.Item2===tuple2.Item2&&tuple1.Item3===tuple2.Item3)", script);
+    }
+
+    [TestMethod]
+    public void VisitDiscardOperation_InDeconstruction()
+    {
+        var code = @"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var tuple = (1, 2, 3);
+                    var (_, second, _) = tuple;
+                }
+            }
+            ";
+
+        var statement = GetOperationAt<IVariableDeclarationGroupOperation>(code, 1);
+        var variableDeclaration = statement!.Declarations.First();
+        var initializer = variableDeclaration.Declarators.First().Initializer;
+        var operation = (IDeconstructionAssignmentOperation)initializer!.Value;
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitDeconstructionAssignment(operation, new());
+        var script = node?.ToECMAScript();
+                     
+        Assert.AreEqual("let second=tuple.Item2;", script);
+    }
+
+    [TestMethod]
+    public void VisitDiscardOperation_SimpleAssignment()
+    {
+        var code = @"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    _ = SomeMethod();
+                }
+                
+                int SomeMethod() => 42;
+            }
+            ";
+
+        var statement = GetOperationAt<IExpressionStatementOperation>(code, 0);
+        var operation = (ISimpleAssignmentOperation)statement.Operation;
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitSimpleAssignment(operation, new());
+        var script = node?.ToECMAScript();
+                     
+        Assert.AreEqual("SomeMethod();", script);
+    }
+
+    [TestMethod]
+    public void VisitDeconstructionAssignment_DeconstructMethod()
+    {
+        var code = @"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var point = new Point(1, 2);
+                    var (x, y) = point;
+                }
+                
+                class Point
+                {
+                    public int X { get; }
+                    public int Y { get; }
+                    
+                    public Point(int x, int y)
+                    {
+                        X = x;
+                        Y = y;
+                    }
+                    
+                    public void Deconstruct(out int x, out int y)
+                    {
+                        x = X;
+                        y = Y;
+                    }
+                }
+            }
+            ";
+
+        var statement = GetOperationAt<IExpressionStatementOperation>(code, 1);
+        var operation = (IDeconstructionAssignmentOperation)statement.Operation;
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitDeconstructionAssignment(operation, new());
+        var script = node?.ToECMAScript();
+                     
+        Assert.AreEqual("let x,y;point.Deconstruct(x,y);", script);
+    }
+
+    [TestMethod]
+    public void VisitDeconstructionAssignment_DeconstructMethodNestedTuple()
+    {
+        var code = @"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var point = new Point(1, (2,3));
+                    int x;
+                    (x,((int w,(int j,int g)),int z)) = point;
+                }
+                            
+                class Point(int x, (int a, int b) y)
+                {
+                    private int X { get; } = x;
+                    private int A { get; } = y.a;
+                    private int B { get; } = y.b;
+
+                    public void Deconstruct(out int x, out ((int,(int,int)),int b) y)
+                    {
+                        x = X;
+                        y = ((A,(1,2)),B);
+                    }
+                }
+            }";
+
+        var statement = GetOperationAt<IExpressionStatementOperation>(code, 2);
+        var operation = (IDeconstructionAssignmentOperation)statement.Operation;
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitDeconstructionAssignment(operation, new());
+        var script = node?.ToKnRECMAScript();
+                     
+        Assert.AreEqual(@"let v$test;
+point.Deconstruct(x, v$test);
+let w = v$test.Item1.Item1;
+let j = v$test.Item1.Item2.Item1;
+let g = v$test.Item1.Item2.Item2;
+let z = v$test.b;
+", script);
+    }    
+
+    [TestMethod]
+    public void VisitDeconstructionAssignment_DeconstructMethodDictTuple()
+    {
+        var code = @"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var point = new Point(1, (2,3));
+                    int x;
+                    (x,((int w,(int j,int g)),int z)) = point;
+                }
+                            
+                class Point(int x, (int a, int b) y)
+                {
+                    private int X { get; } = x;
+                    private int A { get; } = y.a;
+                    private int B { get; } = y.b;
+
+                    public void Deconstruct(out int x, out ((int,(int,int)),int b) y)
+                    {
+                        x = X;
+                        y = ((A,(1,2)),B);
+                    }
+                }
+            }";
+
+        var statement = GetOperationAt<IExpressionStatementOperation>(code, 2);
+        var operation = (IDeconstructionAssignmentOperation)statement.Operation;
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitDeconstructionAssignment(operation, new());
+        var script = node?.ToKnRECMAScript();
+                     
+        Assert.AreEqual(@"let v$test;
+point.Deconstruct(x, v$test);
+let w = v$test.Item1.Item1;
+let j = v$test.Item1.Item2.Item1;
+let g = v$test.Item1.Item2.Item2;
+let z = v$test.b;
+", script);
+    }     
 }
