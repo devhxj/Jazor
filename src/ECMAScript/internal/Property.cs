@@ -1,19 +1,19 @@
 ﻿namespace ECMAScript;
 
 [ECMAScript]
-public abstract class PropertyDescriptor
+public class PropertyDescriptor
 {
 	[DisplayName("configurable")]
-	public bool? Configurable { get; set; } = null!;
+	public bool? Configurable { get; set; }
 
 	[DisplayName("enumerable")]
-	public bool? Enumerable { get; set; } = null!;
+	public bool? Enumerable { get; set; }
 
 	[DisplayName("value")]
-	public object? Value { get; set; } = null!;
+	public object? Value { get; set; }
 
 	[DisplayName("writable")]
-	public bool? Writable { get; set; } = null!;
+	public bool? Writable { get; set; }
 
 	[DisplayName("get")]
 	public extern object? Get();

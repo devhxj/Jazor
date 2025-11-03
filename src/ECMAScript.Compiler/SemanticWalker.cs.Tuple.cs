@@ -11,6 +11,40 @@ namespace ECMAScript.Compiler;
 public partial class SemanticWalker
 {
 	/// <summary>
+	/// 处理元组操作
+	/// C# 示例：
+	/// (1, "hello", true)          // 元组字面量
+	/// var tuple = (x, y);         // 元组创建
+	/// (double Sum, int Count) t2 = (4.5, 3);// 命名元组创建
+	/// 转换结果：{ Item1: 1, Item2: "hello", Item3: true } 或 { Sum: 4.5, Count: 3 } （使用对象模拟）
+	/// </summary>
+	/// <param name="operation">当前访问的operation</param>
+	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+	/// <returns>Acornima的ESTree的Node</returns>
+	public override Acornima.Ast.Node? VisitTuple(ITupleOperation operation, Queue<VariableDeclaration> argument)
+	{
+		var nodes = new List<Node>();
+		var tupleType = (INamedTypeSymbol)operation.NaturalType!;
+		for (var index = 0; index < operation.Elements.Length; index++)
+		{
+			var fieldName = tupleType.TupleElements[index].Name;
+			var element = operation.Elements[index];
+			var key = new Identifier(fieldName);
+			var value = Translate<Expression>(element, argument);
+			nodes.Add(new ObjectProperty(
+				PropertyKind.Init,
+				key: key,
+				value: value,
+				computed: false,
+				shorthand: false,
+				method: false
+			));
+		}
+
+		return new ObjectExpression(NodeList.From(nodes));
+	}
+
+	/// <summary>
 	/// 处理解构赋值操作
 	/// </summary>
 	/// <param name="operation">当前访问的operation</param>
@@ -77,7 +111,11 @@ public partial class SemanticWalker
 				{
 					var element = tupleTarget.Elements[index];
 					var field = ((INamedTypeSymbol)valueType).TupleElements[index];
-					if (element is IDeclarationExpressionOperation decl)
+					if (element is IDiscardOperation)
+					{
+						continue;
+					}
+					else if (element is IDeclarationExpressionOperation decl)
 					{
 						Expression init;
 						if (value is ILocalReferenceOperation localRef)
@@ -152,19 +190,19 @@ public partial class SemanticWalker
 					}
 					else if (field.Type.IsTupleType)
 					{
-						if(value is IConversionOperation conversion && conversion.Operand is ITupleOperation conversionTuple)
+						if (value is IConversionOperation conversion && conversion.Operand is ITupleOperation conversionTuple)
 						{
 							var subValue = conversionTuple.Elements[index];
 							Deconstruct(element, subValue.Type!, subValue, states);
 						}
-						else if(value is ILocalReferenceOperation l1)
+						else if (value is ILocalReferenceOperation l1)
 						{
 							var obj = new Identifier(l1.Local.Name);
 							var prop = new Identifier(field.Name);
 							var subValue = new MemberExpression(obj, prop, false, false);
 							Deconstruct(element, field.Type, subValue, states);
 						}
-						else if(value is Expression p)
+						else if (value is Expression p)
 						{
 							var prop = new Identifier(field.Name);
 							var subValue = new MemberExpression(p, prop, false, false);
@@ -248,10 +286,10 @@ public partial class SemanticWalker
 
 				IMethodSymbol method;
 				// 处理嵌套元组中的解构参数
-				if(expr is IInvocationOperation invocation)
-                {
-                    method = invocation.TargetMethod;
-                }
+				if (expr is IInvocationOperation invocation)
+				{
+					method = invocation.TargetMethod;
+				}
 				else
 				{
 					method = (IMethodSymbol)valueType
@@ -274,103 +312,66 @@ public partial class SemanticWalker
 	}
 
 	/// <summary>
-	/// 处理元组操作
-	/// C# 示例：
-	/// (1, "hello", true)          // 元组字面量
-	/// var tuple = (x, y);         // 元组创建
-	/// (double Sum, int Count) t2 = (4.5, 3);// 命名元组创建
-	/// 转换结果：{ Item1: 1, Item2: "hello", Item3: true } 或 { Sum: 4.5, Count: 3 } （使用对象模拟）
-	/// </summary>
-	/// <param name="operation">当前访问的operation</param>
-	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitTuple(ITupleOperation operation, Queue<VariableDeclaration> argument)
-	{
-		var nodes = new List<Node>();
-		var tupleType = (INamedTypeSymbol)operation.NaturalType!;
-		for (var index = 0; index < operation.Elements.Length; index++)
-		{
-			var fieldName = tupleType.TupleElements[index].Name;
-			var element = operation.Elements[index];
-			var key = new Identifier(fieldName);
-			var value = Translate<Expression>(element, argument);
-			nodes.Add(new ObjectProperty(
-				PropertyKind.Init,
-				key: key,
-				value: value,
-				computed: false,
-				shorthand: false,
-				method: false
-			));
-		}
-
-		return new ObjectExpression(NodeList.From(nodes));
-	}
-
-	/// <summary>
 	/// 处理元组二元操作符操作
 	/// C# 示例：
 	/// (a, b) == (c, d)                    // 元组相等比较
 	/// (x, y) != (1, 2)                    // 元组不等比较
 	/// (name, age) == ("John", 25)         // 元组与常量比较
 	/// tuple1 == tuple2                    // 元组变量比较
-	/// 转换结果：利用编译时信息生成最简洁的比较代码
+	/// 转换结果：
+	/// a==c&&b==d
+	/// x!=1||y!=2
+	/// name=="John"&&age==25
+	/// tuple1.Item1 == tuple2.Item1&&tuple1.Item2 == tuple2.Item2
 	/// </summary>
 	/// <param name="operation">元组二元操作</param>
 	/// <param name="argument">当前operation所属的父operation</param>
 	/// <returns>JavaScript逻辑表达式</returns>
 	public override Acornima.Ast.Node? VisitTupleBinaryOperator(ITupleBinaryOperation operation, Queue<VariableDeclaration> argument)
 	{
-		var isEq = operation.OperatorKind == BinaryOperatorKind.Equals;
+		var leftType = (INamedTypeSymbol)operation.LeftOperand.Type!;
+		var rightType = (INamedTypeSymbol)operation.RightOperand.Type!;
 
-		// 处理空元组比较：() == () 为 true, () == (1,) 为 false。
-		// 空元组的类型没有 TupleElements。
-		if (operation.Type is not INamedTypeSymbol { TupleElements.Length: > 0 } tupleType)
-		{
-			// 对于空元组，相等性仅取决于操作符本身。
-			return new BooleanLiteral(isEq, isEq ? "true" : "false");
-		}
+		if (leftType.TupleElements.Length == 0 || 
+			rightType.TupleElements.Length == 0 || 
+			leftType.TupleElements.Length != rightType.TupleElements.Length)
+			return new BooleanLiteral(false, "false");
 
+		Expression? result = null;
 		// 递归访问左右操作元，获取它们的表达式。
-		var left = Translate<Expression>(operation.LeftOperand, argument);
-		var right = Translate<Expression>(operation.RightOperand, argument);
+		var isEq = operation.OperatorKind == BinaryOperatorKind.Equals;
+		var leftExpr = Translate<Expression>(operation.LeftOperand, argument);
+		var rightExpr = Translate<Expression>(operation.RightOperand, argument);
+		for(var index = 0; index < leftType.TupleElements.Length; index++)
+        {
+            var leftField = leftType.TupleElements[index];
+            var rightField = rightType.TupleElements[index];
 
-		Acornima.Ast.Expression? result = null;
-
-		// 遍历元组的每个元素，为每个元素生成比较表达式。
-		foreach (var field in tupleType.TupleElements)
-		{
-			// 创建访问元组元素的表达式，如 left.Item1 或 left.Name。
-			// field.Name 会正确解析为 "Item1" 或自定义名称如 "Name"。
-			var leftMember = new MemberExpression(left, new Identifier(field.Name), false, false);
-			var rightMember = new MemberExpression(right, new Identifier(field.Name), false, false);
-
-			// 为当前元素创建严格相等/不相等比较。
-			// 使用严格相等 (===) 更贴近C#的强类型比较语义。
-			var currentComparison = new NonLogicalBinaryExpression(
+            if (leftField.Type.IsTupleType)
+            {
+                
+            }
+			var leftMember = new MemberExpression(leftExpr, new Identifier(leftField.Name), false, false);
+			var rightMember = new MemberExpression(rightExpr, new Identifier(rightField.Name), false, false);
+			var expr = new NonLogicalBinaryExpression(
 				isEq ? Operator.StrictEquality : Operator.StrictInequality,
 				leftMember,
 				rightMember);
 
-			// 将当前比较与之前的结果用逻辑运算符组合。
-			// 相等要求所有元素都相等 (&&)，不等要求至少一个元素不等 (||)。
-			if (result is null)
-			{
-				result = currentComparison;
-			}
-			else
-			{
-				result = new LogicalExpression(
-					isEq ? Operator.LogicalAnd : Operator.LogicalOr,
-					result,
-					currentComparison);
-			}
+			result = result is null 
+				? expr
+				: new LogicalExpression(isEq ? Operator.LogicalAnd : Operator.LogicalOr,result,expr);
 		}
 
 		if (result is null)
 			return HandleTransformationFailure(operation, "Tuple binary operation could not be translated to JavaScript.");
 
 		return new ParenthesizedExpression(result);
+
+		void a()
+        {
+            
+        }
 	}
 
 	/// <summary>

@@ -57,6 +57,13 @@ public static partial class Global
 
 	extension(object obj)
 	{
+		/// <summary>
+		/// 仅能在构造函数中使用，调用当前对象的父类构造函数
+		/// </summary>
+		/// <param name="values"></param>
+		[Description("@#super")]
+		public extern void Super(params Array<object?> values);
+				
 		[Description("@#is")]
 		public extern static bool Is(object? value1, object value2);
 
@@ -155,6 +162,12 @@ public static partial class Global
 		/// <returns></returns>
 		[Description("@#hasOwnProperty")]
 		public extern bool HasOwnProperty(PropertyKey v);
+
+		[ECMAScriptLiteral("@#target[@#{0}]")]
+		public extern bool GetPropertyValue(string name);	
+
+		[ECMAScriptLiteral("@#target[@#{0}]")]
+		public extern bool GetPropertyValue(Symbol name);				
 
 		/// <summary>
 		/// Determines whether an object exists in another object's prototype chain.

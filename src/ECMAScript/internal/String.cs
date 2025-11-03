@@ -27,10 +27,10 @@ public static partial class Global
 		[Description("@#replace")]
 		public extern string Replace(IPattern pattern, string replacement);
 
-		[ECMAScriptLiteral("{0} > {1}")]
+		[ECMAScriptLiteral("@#{0} > @#{1}")]
 		public extern static bool GreaterThan(string x, string y);
 
-		[ECMAScriptLiteral("{0} < {1}")]
+		[ECMAScriptLiteral("@#{0} < @#{1}")]
 		public extern static bool LessThan(string x, string y);
 
 		[Description("@#localeCompare")]

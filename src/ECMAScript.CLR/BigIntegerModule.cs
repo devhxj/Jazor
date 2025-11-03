@@ -14,7 +14,7 @@ public static class BigIntegerModule
 	[WhiteList("System.Numerics.BigInteger.BigInteger(double)")]
 	[WhiteList("System.Numerics.BigInteger.BigInteger(System.Decimal)")]
 	[WhiteList("System.Numerics.BigInteger.BigInteger(byte[])")]
-	[ECMAScriptLiteral("BigInt({0})")]
+	[ECMAScriptLiteral("BigInt(@#{0})")]
     public extern static BigInt BigIntegerNew(Number value);
 
     ///<summary>Initializes a new instance of the <see cref="T:System.Numerics.BigInteger" /> structure using the values in a byte array.</summary>
@@ -151,35 +151,35 @@ public static class BigIntegerModule
 	}
 
     [WhiteList("static System.Numerics.BigInteger.Zero.get")]
-    [ECMAScriptLiteral("0n",false)]
+    [ECMAScriptLiteral("0n")]
     public extern static BigInt BigIntegerGetZero(BigInt instance);
 
     [WhiteList("static System.Numerics.BigInteger.One.get")]
-    [ECMAScriptLiteral("1n", false)]
+    [ECMAScriptLiteral("1n")]
     public extern static BigInt BigIntegerGetOne(BigInt instance);
 
     [WhiteList("static System.Numerics.BigInteger.MinusOne.get")]
-    [ECMAScriptLiteral("-1n", false)]
+    [ECMAScriptLiteral("-1n")]
     public extern static BigInt BigIntegerGetMinusOne(BigInt instance);
 
     [WhiteList("System.Numerics.BigInteger.IsPowerOfTwo.get")]
-    [ECMAScriptLiteral("({0} > 0n && (({0} & ({0} - 1n)) == 0n))")]
+    [ECMAScriptLiteral("(@#{0} > 0n && ((@#{0} & (@#{0} - 1n)) == 0n))")]
     public extern static bool BigIntegerGetIsPowerOfTwo(BigInt instance);
 
     [WhiteList("System.Numerics.BigInteger.IsZero.get")]
-    [ECMAScriptLiteral("{0} === 0n")]
+    [ECMAScriptLiteral("@#{0} === 0n")]
     public extern static bool BigIntegerGetIsZero(BigInt instance);
 
     [WhiteList("System.Numerics.BigInteger.IsOne.get")]
-	[ECMAScriptLiteral("{0} === 1n")]
+	[ECMAScriptLiteral("@#{0} === 1n")]
 	public extern static bool BigIntegerGetIsOne(BigInt instance);
 
     [WhiteList("System.Numerics.BigInteger.IsEven.get")]
-    [ECMAScriptLiteral("{0} % 2n === 0n")]
+    [ECMAScriptLiteral("@#{0} % 2n === 0n")]
     public extern static bool BigIntegerGetIsEven(BigInt instance);
 
     [WhiteList("System.Numerics.BigInteger.Sign.get")]
-    [ECMAScriptLiteral("({0} == 0n ? 0 : ({0} > 0n ? 1 : -1))")]
+    [ECMAScriptLiteral("(@#{0} === 0n ? 0 : (@#{0} > 0n ? 1 : -1))")]
     public extern static Number BigIntegerGetSign(BigInt instance);
 
     ///<summary>Converts the string representation of a number to its <see cref="T:System.Numerics.BigInteger" /> equivalent.</summary>
@@ -188,7 +188,7 @@ public static class BigIntegerModule
     ///<exception cref="T:System.FormatException">  <paramref name="value" /> is not in the correct format.</exception>
     ///<returns>A value that is equivalent to the number specified in the <paramref name="value" /> parameter.</returns>
     [WhiteList("static System.Numerics.BigInteger.Parse(string)")]
-    [ECMAScriptLiteral("BigInt({0})")]
+    [ECMAScriptLiteral("BigInt(@#{0})")]
     public extern static BigInt BigIntegerParse(string value);
 
     ///<summary>Converts the string representation of a number in a specified style to its <see cref="T:System.Numerics.BigInteger" /> equivalent.</summary>
@@ -234,7 +234,7 @@ public static class BigIntegerModule
     {
         try
         {
-            if (value.Length > 0)
+            if (value?.Length > 0)
             {
                 result.Value = BigInt(value);
                 return true;
@@ -296,14 +296,14 @@ public static class BigIntegerModule
 	[WhiteList("System.Numerics.BigInteger.CompareTo(ulong)")]
 	[WhiteList("System.Numerics.BigInteger.CompareTo(System.Numerics.BigInteger)")]
 	[WhiteList("System.Numerics.BigInteger.CompareTo(object)")]
-	[ECMAScriptLiteral("{0} === {1} ? 0 :({0} > {1} ? 1 : -1)")]
+	[ECMAScriptLiteral("@#{0} === @#{1} ? 0 :(@#{0} > @#{1} ? 1 : -1)")]
     public extern static Number BigIntegerCompare(BigInt left, BigInt right);
 
     ///<summary>Gets the absolute value of a <see cref="T:System.Numerics.BigInteger" /> object.</summary>
     ///<param name="value">A number.</param>
     ///<returns>The absolute value of <paramref name="value" />.</returns>
     [WhiteList("static System.Numerics.BigInteger.Abs(System.Numerics.BigInteger)")]
-    [ECMAScriptLiteral("{0} < 0n ? -{0} : {0}")]
+    [ECMAScriptLiteral("@#{0} < 0n ? -@#{0} : @#{0}")]
     public extern static BigInt BigIntegerAbs(BigInt value);
 
     ///<summary>Adds two <see cref="T:System.Numerics.BigInteger" /> values and returns the result.</summary>
@@ -311,7 +311,7 @@ public static class BigIntegerModule
     ///<param name="right">The second value to add.</param>
     ///<returns>The sum of <paramref name="left" /> and <paramref name="right" />.</returns>
     [WhiteList("static System.Numerics.BigInteger.Add(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
-    [ECMAScriptLiteral("{0} + {1}")]
+    [ECMAScriptLiteral("@#{0} + @#{1}")]
     public extern static BigInt BigIntegerAdd(BigInt left, BigInt right);
 
     ///<summary>Subtracts one <see cref="T:System.Numerics.BigInteger" /> value from another and returns the result.</summary>
@@ -319,7 +319,7 @@ public static class BigIntegerModule
     ///<param name="right">The value to subtract (the subtrahend).</param>
     ///<returns>The result of subtracting <paramref name="right" /> from <paramref name="left" />.</returns>
     [WhiteList("static System.Numerics.BigInteger.Subtract(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
-    [ECMAScriptLiteral("{0} - {1}")]
+    [ECMAScriptLiteral("@#{0} - @#{1}")]
     public extern static BigInt BigIntegerSubtract(BigInt left, BigInt right);
 
     ///<summary>Returns the product of two <see cref="T:System.Numerics.BigInteger" /> values.</summary>
@@ -327,7 +327,7 @@ public static class BigIntegerModule
     ///<param name="right">The second number to multiply.</param>
     ///<returns>The product of the <paramref name="left" /> and <paramref name="right" /> parameters.</returns>
     [WhiteList("static System.Numerics.BigInteger.Multiply(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
-    [ECMAScriptLiteral("{0} * {1}")]
+    [ECMAScriptLiteral("@#{0} * @#{1}")]
     public extern static BigInt BigIntegerMultiply(BigInt left, BigInt right);
 
     ///<summary>Divides one <see cref="T:System.Numerics.BigInteger" /> value by another and returns the result.</summary>
@@ -336,7 +336,7 @@ public static class BigIntegerModule
     ///<exception cref="T:System.DivideByZeroException">  <paramref name="divisor" /> is 0 (zero).</exception>
     ///<returns>The quotient of the division.</returns>
     [WhiteList("static System.Numerics.BigInteger.Divide(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
-    [ECMAScriptLiteral("{0} / {1}")]
+    [ECMAScriptLiteral("@#{0} / @#{1}")]
     public extern static BigInt BigIntegerDivide(BigInt dividend, BigInt divisor);
 
     ///<summary>Performs integer division on two <see cref="T:System.Numerics.BigInteger" /> values and returns the remainder.</summary>
@@ -345,7 +345,7 @@ public static class BigIntegerModule
     ///<exception cref="T:System.DivideByZeroException">  <paramref name="divisor" /> is 0 (zero).</exception>
     ///<returns>The remainder after dividing <paramref name="dividend" /> by <paramref name="divisor" />.</returns>
     [WhiteList("static System.Numerics.BigInteger.Remainder(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
-	[ECMAScriptLiteral("{0} % {1}")]
+	[ECMAScriptLiteral("@#{0} % @#{1}")]
 	public extern static BigInt BigIntegerRemainder(BigInt dividend, BigInt divisor);
 
     ///<summary>Divides one <see cref="T:System.Numerics.BigInteger" /> value by another, returns the result, and returns the remainder in an output parameter.</summary>
@@ -365,7 +365,7 @@ public static class BigIntegerModule
     ///<param name="value">The value to negate.</param>
     ///<returns>The result of the <paramref name="value" /> parameter multiplied by negative one (-1).</returns>
     [WhiteList("static System.Numerics.BigInteger.Negate(System.Numerics.BigInteger)")]
-	[ECMAScriptLiteral("-{0}")]
+	[ECMAScriptLiteral("-@#{0}")]
 	public extern static BigInt BigIntegerNegate(BigInt value);
 
     ///<summary>Returns the natural (base <see langword="e" />) logarithm of a specified number.</summary>
@@ -469,7 +469,7 @@ public static class BigIntegerModule
     ///<param name="right">The second value to compare.</param>
     ///<returns>The <paramref name="left" /> or <paramref name="right" /> parameter, whichever is larger.</returns>
     [WhiteList("static System.Numerics.BigInteger.Max(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
-	[ECMAScriptLiteral("{0} > {1} ? {0} : {1}")]
+	[ECMAScriptLiteral("@#{0} > @#{1} ? @#{0} : @#{1}")]
 	public extern static BigInt BigIntegerMax(BigInt left, BigInt right);
 
     ///<summary>Returns the smaller of two <see cref="T:System.Numerics.BigInteger" /> values.</summary>
@@ -477,7 +477,7 @@ public static class BigIntegerModule
     ///<param name="right">The second value to compare.</param>
     ///<returns>The <paramref name="left" /> or <paramref name="right" /> parameter, whichever is smaller.</returns>
     [WhiteList("static System.Numerics.BigInteger.Min(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
-	[ECMAScriptLiteral("{0} < {1} ? {0} : {1}")]
+	[ECMAScriptLiteral("@#{0} < @#{1} ? @#{0} : @#{1}")]
 	public extern static BigInt BigIntegerMin(BigInt left, BigInt right);
 
     ///<summary>Performs modulus division on a number raised to the power of another number.</summary>
@@ -552,7 +552,7 @@ public static class BigIntegerModule
 	[WhiteList("System.Numerics.BigInteger.Equals(long)")]
 	[WhiteList("System.Numerics.BigInteger.Equals(ulong)")]
 	[WhiteList("System.Numerics.BigInteger.Equals(System.Numerics.BigInteger)")]
-	[ECMAScriptLiteral("{0} === {1}")]
+	[ECMAScriptLiteral("@#{0} === @#{1}")]
 	public extern static bool BigIntegerEquals(BigInt instance, Object? obj);
 
     ///<summary>Converts a <see cref="T:System.Numerics.BigInteger" /> value to a byte array.</summary>
@@ -843,7 +843,7 @@ public static class BigIntegerModule
     ///<param name="right">The value to subtract (the subtrahend).</param>
     ///<returns>The result of subtracting <paramref name="right" /> from <paramref name="left" />.</returns>
     [WhiteList("static System.Numerics.BigInteger.operator -(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
-	[ECMAScriptLiteral("{0} - {1}")]
+	[ECMAScriptLiteral("@#{0} - @#{1}")]
 	public extern static BigInt BigIntegerOpSubtraction(BigInt left, BigInt right);
 
     ///<summary>Performs a bitwise <see langword="And" /> operation on two <see cref="T:System.Numerics.BigInteger" /> values.</summary>
@@ -851,7 +851,7 @@ public static class BigIntegerModule
     ///<param name="right">The second value.</param>
     ///<returns>The result of the bitwise <see langword="And" /> operation.</returns>
     [WhiteList("static System.Numerics.BigInteger.operator &(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
-	[ECMAScriptLiteral("{0} & {1}")]
+	[ECMAScriptLiteral("@#{0} & @#{1}")]
 	public extern static BigInt BigIntegerOpBitwiseAnd(BigInt left, BigInt right);
 
     ///<summary>Performs a bitwise <see langword="Or" /> operation on two <see cref="T:System.Numerics.BigInteger" /> values.</summary>
@@ -859,7 +859,7 @@ public static class BigIntegerModule
     ///<param name="right">The second value.</param>
     ///<returns>The result of the bitwise <see langword="Or" /> operation.</returns>
     [WhiteList("static System.Numerics.BigInteger.operator |(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
-	[ECMAScriptLiteral("{0} | {1}")]
+	[ECMAScriptLiteral("@#{0} | @#{1}")]
 	public extern static BigInt BigIntegerOpBitwiseOr(BigInt left, BigInt right);
 
     ///<summary>Performs a bitwise exclusive <see langword="Or" /> (<see langword="XOr" />) operation on two <see cref="T:System.Numerics.BigInteger" /> values.</summary>
@@ -867,7 +867,7 @@ public static class BigIntegerModule
     ///<param name="right">The second value.</param>
     ///<returns>The result of the bitwise <see langword="Or" /> operation.</returns>
     [WhiteList("static System.Numerics.BigInteger.operator ^(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
-	[ECMAScriptLiteral("{0} ^ {1}")]
+	[ECMAScriptLiteral("@#{0} ^ @#{1}")]
 	public extern static BigInt BigIntegerOpExclusiveOr(BigInt left, BigInt right);
 
     ///<summary>Shifts a <see cref="T:System.Numerics.BigInteger" /> value a specified number of bits to the left.</summary>
@@ -875,7 +875,7 @@ public static class BigIntegerModule
     ///<param name="shift">The number of bits to shift <paramref name="value" /> to the left.</param>
     ///<returns>A value that has been shifted to the left by the specified number of bits.</returns>
     [WhiteList("static System.Numerics.BigInteger.operator <<(System.Numerics.BigInteger, int)")]
-	[ECMAScriptLiteral("{0} << {1}")]
+	[ECMAScriptLiteral("@#{0} << @#{1}")]
 	public extern static BigInt BigIntegerOpLeftShift(BigInt value, Number shift);
 
     ///<summary>Shifts a <see cref="T:System.Numerics.BigInteger" /> value a specified number of bits to the right.</summary>
@@ -883,42 +883,42 @@ public static class BigIntegerModule
     ///<param name="shift">The number of bits to shift <paramref name="value" /> to the right.</param>
     ///<returns>A value that has been shifted to the right by the specified number of bits.</returns>
     [WhiteList("static System.Numerics.BigInteger.operator >>(System.Numerics.BigInteger, int)")]
-	[ECMAScriptLiteral("{0} >> {1}")]
+	[ECMAScriptLiteral("@#{0} >> @#{1}")]
 	public extern static BigInt BigIntegerOpRightShift(BigInt value, Number shift);
 
     ///<summary>Returns the bitwise one's complement of a <see cref="T:System.Numerics.BigInteger" /> value.</summary>
     ///<param name="value">An integer value.</param>
     ///<returns>The bitwise one's complement of <paramref name="value" />.</returns>
     [WhiteList("static System.Numerics.BigInteger.operator ~(System.Numerics.BigInteger)")]
-	[ECMAScriptLiteral("~{0}")]
+	[ECMAScriptLiteral("~@#{0}")]
 	public extern static BigInt BigIntegerOpOnesComplement(BigInt value);
 
     ///<summary>Negates a specified BigInteger value.</summary>
     ///<param name="value">The value to negate.</param>
     ///<returns>The result of the <paramref name="value" /> parameter multiplied by negative one (-1).</returns>
     [WhiteList("static System.Numerics.BigInteger.operator -(System.Numerics.BigInteger)")]
-	[ECMAScriptLiteral("-{0}")]
+	[ECMAScriptLiteral("-@#{0}")]
 	public extern static BigInt BigIntegerOpUnaryNegation(BigInt value);
 
     ///<summary>Returns the value of the <see cref="T:System.Numerics.BigInteger" /> operand. (The sign of the operand is unchanged.)</summary>
     ///<param name="value">An integer value.</param>
     ///<returns>The value of the <paramref name="value" /> operand.</returns>
     [WhiteList("static System.Numerics.BigInteger.operator +(System.Numerics.BigInteger)")]
-	[ECMAScriptLiteral("+{0}")]
+	[ECMAScriptLiteral("+@#{0}")]
 	public extern static BigInt BigIntegerOpUnaryPlus(BigInt value);
 
     ///<summary>Increments a <see cref="T:System.Numerics.BigInteger" /> value by 1.</summary>
     ///<param name="value">The value to increment.</param>
     ///<returns>The value of the <paramref name="value" /> parameter incremented by 1.</returns>
     [WhiteList("static System.Numerics.BigInteger.operator ++(System.Numerics.BigInteger)")]
-    [ECMAScriptLiteral("++{0}")]
+    [ECMAScriptLiteral("++@#{0}")]
     public extern static BigInt BigIntegerOpIncrement(BigInt value);
 
     ///<summary>Decrements a <see cref="T:System.Numerics.BigInteger" /> value by 1.</summary>
     ///<param name="value">The value to decrement.</param>
     ///<returns>The value of the <paramref name="value" /> parameter decremented by 1.</returns>
     [WhiteList("static System.Numerics.BigInteger.operator --(System.Numerics.BigInteger)")]
-    [ECMAScriptLiteral("--{0}")]
+    [ECMAScriptLiteral("--@#{0}")]
     public extern static BigInt BigIntegerOpDecrement(BigInt value);
 
     ///<summary>Adds the values of two specified <see cref="T:System.Numerics.BigInteger" /> objects.</summary>
@@ -926,7 +926,7 @@ public static class BigIntegerModule
     ///<param name="right">The second value to add.</param>
     ///<returns>The sum of <paramref name="left" /> and <paramref name="right" />.</returns>
     [WhiteList("static System.Numerics.BigInteger.operator +(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
-    [ECMAScriptLiteral("{0} + {1}")]
+    [ECMAScriptLiteral("@#{0} + @#{1}")]
     public extern static BigInt BigIntegerOpAddition(BigInt left, BigInt right);
 
     ///<summary>Multiplies two specified <see cref="T:System.Numerics.BigInteger" /> values.</summary>
@@ -934,7 +934,7 @@ public static class BigIntegerModule
     ///<param name="right">The second value to multiply.</param>
     ///<returns>The product of <paramref name="left" /> and <paramref name="right" />.</returns>
     [WhiteList("static System.Numerics.BigInteger.operator *(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
-    [ECMAScriptLiteral("{0} * {1}")]
+    [ECMAScriptLiteral("@#{0} * @#{1}")]
     public extern static BigInt BigIntegerOpMultiply(BigInt left, BigInt right);
 
     ///<summary>Divides a specified <see cref="T:System.Numerics.BigInteger" /> value by another specified <see cref="T:System.Numerics.BigInteger" /> value by using integer division.</summary>
@@ -943,7 +943,7 @@ public static class BigIntegerModule
     ///<exception cref="T:System.DivideByZeroException">  <paramref name="divisor" /> is 0 (zero).</exception>
     ///<returns>The integral result of the division.</returns>
     [WhiteList("static System.Numerics.BigInteger.operator /(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
-    [ECMAScriptLiteral("{0} / {1}")]
+    [ECMAScriptLiteral("@#{0} / @#{1}")]
     public extern static BigInt BigIntegerOpDivision(BigInt dividend, BigInt divisor);
 
     ///<summary>Returns the remainder that results from division with two specified <see cref="T:System.Numerics.BigInteger" /> values.</summary>
@@ -952,7 +952,7 @@ public static class BigIntegerModule
     ///<exception cref="T:System.DivideByZeroException">  <paramref name="divisor" /> is 0 (zero).</exception>
     ///<returns>The remainder that results from the division.</returns>
     [WhiteList("static System.Numerics.BigInteger.operator %(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
-    [ECMAScriptLiteral("{0} % {1}")]
+    [ECMAScriptLiteral("@#{0} % @#{1}")]
     public extern static BigInt BigIntegerOpModulus(BigInt dividend, BigInt divisor);
 
     ///<summary>Returns a value that indicates whether a <see cref="T:System.Numerics.BigInteger" /> value is less than another <see cref="T:System.Numerics.BigInteger" /> value.</summary>
@@ -964,7 +964,7 @@ public static class BigIntegerModule
 	[WhiteList("static System.Numerics.BigInteger.operator <(System.Numerics.BigInteger, ulong)")]
 	[WhiteList("static System.Numerics.BigInteger.operator <(long, System.Numerics.BigInteger)")]
 	[WhiteList("static System.Numerics.BigInteger.operator <(ulong, System.Numerics.BigInteger)")]
-	[ECMAScriptLiteral("{0} < {1}")]
+	[ECMAScriptLiteral("@#{0} < @#{1}")]
     public extern static bool BigIntegerOpLessThan(BigInt left, BigInt right);
 
     ///<summary>Returns a value that indicates whether a <see cref="T:System.Numerics.BigInteger" /> value is less than or equal to another <see cref="T:System.Numerics.BigInteger" /> value.</summary>
@@ -976,7 +976,7 @@ public static class BigIntegerModule
 	[WhiteList("static System.Numerics.BigInteger.operator <=(System.Numerics.BigInteger, ulong)")]
 	[WhiteList("static System.Numerics.BigInteger.operator <=(long, System.Numerics.BigInteger)")]
 	[WhiteList("static System.Numerics.BigInteger.operator <=(ulong, System.Numerics.BigInteger)")]
-	[ECMAScriptLiteral("{0} <= {1}")]
+	[ECMAScriptLiteral("@#{0} <= @#{1}")]
     public extern static bool BigIntegerOpLessThanOrEqual(BigInt left, BigInt right);
 
     ///<summary>Returns a value that indicates whether a <see cref="T:System.Numerics.BigInteger" /> value is greater than another <see cref="T:System.Numerics.BigInteger" /> value.</summary>
@@ -988,7 +988,7 @@ public static class BigIntegerModule
 	[WhiteList("static System.Numerics.BigInteger.operator >(System.Numerics.BigInteger, ulong)")]
 	[WhiteList("static System.Numerics.BigInteger.operator >(long, System.Numerics.BigInteger)")]
 	[WhiteList("static System.Numerics.BigInteger.operator >(ulong, System.Numerics.BigInteger)")]
-	[ECMAScriptLiteral("{0} > {1}")]
+	[ECMAScriptLiteral("@#{0} > @#{1}")]
     public extern static bool BigIntegerOpGreaterThan(BigInt left, BigInt right);
 
     ///<summary>Returns a value that indicates whether a <see cref="T:System.Numerics.BigInteger" /> value is greater than or equal to another <see cref="T:System.Numerics.BigInteger" /> value.</summary>
@@ -1000,7 +1000,7 @@ public static class BigIntegerModule
 	[WhiteList("static System.Numerics.BigInteger.operator >=(System.Numerics.BigInteger, ulong)")]
 	[WhiteList("static System.Numerics.BigInteger.operator >=(long, System.Numerics.BigInteger)")]
 	[WhiteList("static System.Numerics.BigInteger.operator >=(ulong, System.Numerics.BigInteger)")]
-	[ECMAScriptLiteral("{0} >= {1}")]
+	[ECMAScriptLiteral("@#{0} >= @#{1}")]
     public extern static bool BigIntegerOpGreaterThanOrEqual(BigInt left, BigInt right);
 
     ///<summary>Returns a value that indicates whether the values of two <see cref="T:System.Numerics.BigInteger" /> objects are equal.</summary>
@@ -1012,7 +1012,7 @@ public static class BigIntegerModule
 	[WhiteList("static System.Numerics.BigInteger.operator ==(System.Numerics.BigInteger, ulong)")]
 	[WhiteList("static System.Numerics.BigInteger.operator ==(long, System.Numerics.BigInteger)")]
 	[WhiteList("static System.Numerics.BigInteger.operator ==(ulong, System.Numerics.BigInteger)")]
-	[ECMAScriptLiteral("{0} == {1}")]
+	[ECMAScriptLiteral("@#{0} == @#{1}")]
     public extern static bool BigIntegerOpEquality(BigInt left, BigInt right);
 
     ///<summary>Returns a value that indicates whether two <see cref="T:System.Numerics.BigInteger" /> objects have different values.</summary>
@@ -1024,7 +1024,7 @@ public static class BigIntegerModule
 	[WhiteList("static System.Numerics.BigInteger.operator !=(System.Numerics.BigInteger, ulong)")]
 	[WhiteList("static System.Numerics.BigInteger.operator !=(long, System.Numerics.BigInteger)")]
 	[WhiteList("static System.Numerics.BigInteger.operator !=(ulong, System.Numerics.BigInteger)")]
-	[ECMAScriptLiteral("{0} != {1}")]
+	[ECMAScriptLiteral("@#{0} != @#{1}")]
     public extern static bool BigIntegerOpInequality(BigInt left, BigInt right);
 
     ///<summary>Gets the number of bits required for shortest two's complement representation of the current instance without the sign bit.</summary>
@@ -1269,7 +1269,7 @@ public static class BigIntegerModule
     ///<param name="sign">The value whose sign is used in the result.</param>
     ///<returns>A value with the magnitude of <code data-dev-comment-type="paramref">value</code> and the sign of <code data-dev-comment-type="paramref">sign</code>.</returns>
     [WhiteList("static System.Numerics.BigInteger.CopySign(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
-    [ECMAScriptLiteral("({1} < 0n ? -1 : 1)*({0} < 0n ? -{0} : {0})")]
+    [ECMAScriptLiteral("(@#{1} < 0n ? -1 : 1)*(@#{0} < 0n ? -@#{0} : @#{0})")]
     public extern static BigInt BigIntegerCopySign(BigInt value, BigInt sign);
 
     ///<summary>Creates an instance of the current type from a value, throwing an overflow exception for any values that fall outside the representable range of the current type.</summary>
@@ -1352,28 +1352,28 @@ public static class BigIntegerModule
     ///<param name="value">The value to be checked.</param>
     ///<returns>  <code data-dev-comment-type="langword">true</code> if <code data-dev-comment-type="paramref">value</code> is an even integer; otherwise, <code data-dev-comment-type="langword">false</code>.</returns>
     [WhiteList("static System.Numerics.BigInteger.IsEvenInteger(System.Numerics.BigInteger)")]
-	[ECMAScriptLiteral("({0} & 1n) === 0n")]
+	[ECMAScriptLiteral("(@#{0} & 1n) === 0n")]
 	public extern static bool BigIntegerIsEvenInteger(BigInt value);
 
     ///<summary>Determines if a value is negative.</summary>
     ///<param name="value">The value to be checked.</param>
     ///<returns>  <code data-dev-comment-type="langword">true</code> if <code data-dev-comment-type="paramref">value</code> is negative; otherwise, <code data-dev-comment-type="langword">false</code>.</returns>
     [WhiteList("static System.Numerics.BigInteger.IsNegative(System.Numerics.BigInteger)")]
-    [ECMAScriptLiteral("{0} < 0n")]
+    [ECMAScriptLiteral("@#{0} < 0n")]
     public extern static bool BigIntegerIsNegative(BigInt value);
 
     ///<summary>Determines if a value represents an odd integral number.</summary>
     ///<param name="value">The value to be checked.</param>
     ///<returns>  <code data-dev-comment-type="langword">true</code> if <code data-dev-comment-type="paramref">value</code> is an odd integer; otherwise, <code data-dev-comment-type="langword">false</code>.</returns>
     [WhiteList("static System.Numerics.BigInteger.IsOddInteger(System.Numerics.BigInteger)")]
-    [ECMAScriptLiteral("({0} & 1n) === 1n")]
+    [ECMAScriptLiteral("(@#{0} & 1n) === 1n")]
     public extern static bool BigIntegerIsOddInteger(BigInt value);
 
     ///<summary>Determines if a value is positive.</summary>
     ///<param name="value">The value to be checked.</param>
     ///<returns>  <code data-dev-comment-type="langword">true</code> if <code data-dev-comment-type="paramref">value</code> is positive; otherwise, <code data-dev-comment-type="langword">false</code>.</returns>
     [WhiteList("static System.Numerics.BigInteger.IsPositive(System.Numerics.BigInteger)")]
-    [ECMAScriptLiteral("{0} >= 0n")]
+    [ECMAScriptLiteral("@#{0} >= 0n")]
     public extern static bool BigIntegerIsPositive(BigInt value);
 
     ///<summary>Compares two values to compute which is greater.</summary>
@@ -1381,7 +1381,7 @@ public static class BigIntegerModule
     ///<param name="y">The value to compare with <code data-dev-comment-type="paramref">x</code>.</param>
     ///<returns>  <code data-dev-comment-type="paramref">x</code> if it is greater than <code data-dev-comment-type="paramref">y</code>; otherwise, <code data-dev-comment-type="paramref">y</code>.</returns>
     [WhiteList("static System.Numerics.BigInteger.MaxMagnitude(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
-    [ECMAScriptLiteral("{0} > {1} ? {0} : {1}")]
+    [ECMAScriptLiteral("@#{0} > @#{1} ? @#{0} : @#{1}")]
     public extern static BigInt BigIntegerMaxMagnitude(BigInt x, BigInt y);
 
     ///<summary>Compares two values to compute which is lesser.</summary>
@@ -1389,7 +1389,7 @@ public static class BigIntegerModule
     ///<param name="y">The value to compare with <code data-dev-comment-type="paramref">x</code>.</param>
     ///<returns>  <code data-dev-comment-type="paramref">x</code> if it is less than <code data-dev-comment-type="paramref">y</code>; otherwise, <code data-dev-comment-type="paramref">y</code>.</returns>
     [WhiteList("static System.Numerics.BigInteger.MinMagnitude(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
-    [ECMAScriptLiteral("{0} < {1} ? {0} : {1}")]
+    [ECMAScriptLiteral("@#{0} < @#{1} ? @#{0} : @#{1}")]
     public extern static BigInt BigIntegerMinMagnitude(BigInt x, BigInt y);
 
     ///<summary>Tries to parse a string into a value.</summary>

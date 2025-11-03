@@ -7,34 +7,34 @@ public static partial class Global
 	/// <summary>
 	/// Checks if the value is strictly null.
 	/// </summary>
-	[ECMAScriptLiteral("{0} === null")]
+	[ECMAScriptLiteral("@#{0} === null")]
 	public extern static bool IsNull(object? value);
 
 	/// <summary>
 	/// Checks if the value is strictly undefined.
 	/// </summary>
-	[ECMAScriptLiteral("{0} === undefined")]
+	[ECMAScriptLiteral("@#{0} === undefined")]
 	public extern static bool IsUndefined(object? value);
 
 	/// <summary>
 	/// Checks if the value is either null or undefined.
 	/// </summary>
-	[ECMAScriptLiteral("{0} === null || {0} === undefined")]
+	[ECMAScriptLiteral("@#{0} === null || @#{0} === undefined")]
 	public extern static bool IsNullOrUndefined(object? value);
 
 	/// <summary>
 	/// Returns the value if not null or undefined, otherwise returns undefined.
 	/// </summary>
-	[ECMAScriptLiteral("{0} ?? undefined")]
+	[ECMAScriptLiteral("@#{0} ?? undefined")]
 	public extern static T? OrUndefined<T>(T? value);
 
 	/// <summary>
 	/// Returns the JavaScript type of the value.
 	/// </summary>
-	[ECMAScriptLiteral("typeof {0}")]
+	[ECMAScriptLiteral("typeof @#{0}")]
 	public extern static string TypeOf(object? value);
 
-	[ECMAScriptLiteral("{0}")]
+	[ECMAScriptLiteral("@#{0}")]
 	public extern static RegExp RegExp(string value);
 
 	[Description("@#Number")]

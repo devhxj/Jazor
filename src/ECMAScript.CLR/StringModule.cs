@@ -34,7 +34,7 @@ public static class StringModule
     [WhiteList("static string.Compare(string, string)")]
     public static Number StringCompare(string? strA, string? strB, bool ignoreCase = false)
     {
-		// ´¦Àí null »ò undefined Öµ
+		// ï¿½ï¿½ï¿½ï¿½ null ï¿½ï¿½ undefined Öµ
         if (IsNullOrUndefined(strA))
             if (IsNullOrUndefined(strB))
                 return 0;
@@ -44,7 +44,7 @@ public static class StringModule
 		if (IsNullOrUndefined(strB)) 
             return 1;
 
-		// ´¦Àí¿Õ×Ö·û´®
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½
         if (object.Is(strA, ""))
             if (object.Is(strB, ""))
                 return 0;
@@ -54,7 +54,7 @@ public static class StringModule
 		if (Is(strB, "")) 
             return 1;
 
-        // Ê¹ÓÃ localeCompare ½øÐÐ±È½Ï
+        // Ê¹ï¿½ï¿½ localeCompare ï¿½ï¿½ï¿½Ð±È½ï¿½
         return strA!.LocaleCompare(strB!, string.Undefined, new
 	    {
 		    sensitivity = ignoreCase ? "base" : "case",
@@ -351,7 +351,7 @@ public static class StringModule
     ///<param name="b">The second string to compare, or <see langword="null" />.</param>
     ///<returns>  <see langword="true" /> if the value of <paramref name="a" /> is the same as the value of <paramref name="b" />; otherwise, <see langword="false" />.</returns>
     [WhiteList("static string.operator ==(string, string)")]
-    [ECMAScriptLiteral("{0} == {1}")]
+    [ECMAScriptLiteral("@#{0} === @#{1}")]
 	public extern static bool StringOpEquality(string? a, string? b);
 
     ///<summary>Determines whether two specified strings have different values.</summary>
@@ -359,7 +359,7 @@ public static class StringModule
     ///<param name="b">The second string to compare, or <see langword="null" />.</param>
     ///<returns>  <see langword="true" /> if the value of <paramref name="a" /> is different from the value of <paramref name="b" />; otherwise, <see langword="false" />.</returns>
     [WhiteList("static string.operator !=(string, string)")]
-    [ECMAScriptLiteral("{0} != {1}")]
+    [ECMAScriptLiteral("@#{0} !== @#{1}")]
 	public extern static bool StringOpInequality(string? a, string? b);
 
     ///<summary>Returns the hash code for this string.</summary>
@@ -1343,7 +1343,7 @@ public static class StringModule
     ///<summary>Returns a copy of this string converted to lowercase.</summary>
     ///<returns>A string in lowercase.</returns>
     [WhiteList("string.ToLower()")]
-	[ECMAScriptLiteral("1n", false)]
+	[ECMAScriptLiteral("1n")]
 	public extern static string StringToLower(String instance);
 
     ///<summary>Returns a copy of this string converted to lowercase, using the casing rules of the specified culture.</summary>

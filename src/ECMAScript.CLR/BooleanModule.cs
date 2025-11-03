@@ -6,12 +6,12 @@ public static class BooleanModule
 {
     ///<summary>Represents the Boolean value <see langword="true" /> as a string. This field is read-only.</summary>
     [WhiteList("static readonly bool.TrueString")]
-	[ECMAScriptLiteral("'true'", false)]
+	[ECMAScriptLiteral("'true'")]
 	public extern static string BooleanTrueString();
 
     ///<summary>Represents the Boolean value <see langword="false" /> as a string. This field is read-only.</summary>
     [WhiteList("static readonly bool.FalseString")]
-	[ECMAScriptLiteral("'false'", false)]
+	[ECMAScriptLiteral("'false'")]
 	public extern static bool BooleanFalseString();
 
     [WhiteList("bool.Boolean()")]
@@ -20,7 +20,7 @@ public static class BooleanModule
     ///<summary>Returns the hash code for this instance.</summary>
     ///<returns>A hash code for the current <see cref="T:System.Boolean" />.</returns>
     [WhiteList("override bool.GetHashCode()")]
-	[ECMAScriptLiteral("{0} ? 1 : 0")]
+	[ECMAScriptLiteral("@#{0} ? 1 : 0")]
 	public extern static Number BooleanGetHashCode(bool instance);
 
     ///<summary>Converts the value of this instance to its equivalent string representation (either "True" or "False").</summary>
@@ -48,7 +48,7 @@ public static class BooleanModule
     ///<returns>  <see langword="true" /> if <paramref name="obj" /> is a <see cref="T:System.Boolean" /> and has the same value as this instance; otherwise, <see langword="false" />.</returns>
     [WhiteList("override bool.Equals(object)")]
 	[WhiteList("bool.Equals(bool)")]
-	[ECMAScriptLiteral("{0} === {1}")]
+	[ECMAScriptLiteral("@#{0} === @#{1}")]
 	public extern static bool BooleanEquals(bool instance, Object? obj);
 
     ///<summary>Compares this instance to a specified object and returns an integer that indicates their relationship to one another.</summary>
@@ -57,7 +57,7 @@ public static class BooleanModule
     ///<returns>A signed integer that indicates the relative order of this instance and <paramref name="obj" />. <list type="table"><listheader><term> Return Value</term><description> Condition</description></listheader><item><term> Less than zero</term><description> This instance is <see langword="false" /> and <paramref name="obj" /> is <see langword="true" />.</description></item><item><term> Zero</term><description> This instance and <paramref name="obj" /> are equal (either both are <see langword="true" /> or both are <see langword="false" />).</description></item><item><term> Greater than zero</term><description> This instance is <see langword="true" /> and <paramref name="obj" /> is <see langword="false" />. -or- <paramref name="obj" /> is <see langword="null" />.</description></item></list></returns>
     [WhiteList("bool.CompareTo(object)")]
 	[WhiteList("bool.CompareTo(bool)")]
-	[ECMAScriptLiteral("{0} === {1} ? 0 :({0} > {1} ? 1 : -1)")]
+	[ECMAScriptLiteral("@#{0} === @#{1} ? 0 :(@#{0} > @#{1} ? 1 : -1)")]
 	public extern static Number BooleanCompareTo(bool instance, Object? obj);
 
     ///<summary>Converts the specified string representation of a logical value to its <see cref="T:System.Boolean" /> equivalent.</summary>

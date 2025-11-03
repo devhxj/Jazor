@@ -29,7 +29,7 @@ public static class ObjectModule
 	[WhiteList("virtual object.Equals(object)")]
 	[WhiteList("static object.Equals(object, object)")]
 	[WhiteList("static object.ReferenceEquals(object, object)")]
-	[ECMAScriptLiteral("{0} === {1}")]
+	[ECMAScriptLiteral("@#{0} === @#{1}")]
 	public extern static bool ObjectEquals(object instance, object? obj);
 
     ///<summary>Serves as the default hash function.</summary>

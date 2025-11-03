@@ -18,6 +18,8 @@ namespace ECMAScript;
 /// <returns></returns>
 [ECMAScript]
 public delegate S Predicate<T, S>(T value, uint index, Array<T> array);
+[ECMAScript]
+public delegate T Predicate1<T>(T value);
 
 /// <summary>
 /// A function that accepts up to three arguments. The map method calls the callbackfn function one time for each element in the array.
@@ -116,7 +118,7 @@ public interface IArray<T> : IArray
 /// <typeparam name="T"></typeparam>
 [ECMAScript]
 [Description("@#Array")]
-public partial class Array<T>: IArray<T>
+public partial class Array<T>: object, IArray<T>
 {
 	public extern Array();
 
@@ -177,6 +179,9 @@ public partial class Array<T>: IArray<T>
 	/// <returns></returns>
 	[Description("@#push")]
 	public extern double Push(params IEnumerable<T> items);
+
+	[Description("@#push")]
+	public extern double PushItem(T item);
 
 	/// <summary>
 	/// Combines two or more arrays.
@@ -337,6 +342,10 @@ public partial class Array<T>: IArray<T>
 	/// <returns></returns>
 	[Description("@#map")]
 	public extern Array<U> Map<U>(CallbackFunc<T, U> callbackfn, object? thisArg = null);
+	[Description("@#map")]
+	public extern Array<U> Map<U>(CallbackFunc2<T, U> callbackfn, object? thisArg = null);
+	[Description("@#map")]
+	public extern Array<U> Map<U>(CallbackFunc5<T, U> callbackfn, object? thisArg = null);
 
 	/// <summary>
 	/// Returns the elements of an array that meet the condition specified in a callback function.
@@ -357,6 +366,12 @@ public partial class Array<T>: IArray<T>
 	/// <returns></returns>
 	[Description("@#filter")]
 	public extern IEnumerable<T> Filter<S>(Predicate<T, object?> predicate, object? thisArg = null);
+
+	[Description("@#find")]
+	public extern T? Find<S>(Predicate<T, S> predicate, object? thisArg = null);
+
+	[Description("@#find")]
+	public extern T? Find(Predicate1<T> predicate, object? thisArg = null);
 
 	/// <summary>
 	/// Calls the specified callback function for all the elements in an array.The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
@@ -429,6 +444,6 @@ public static partial class Global
 {
 	extension(Array array)
 	{
-		public static bool IsArray(object obj) => default;
+		public static bool IsArray(object? obj) => default;
 	}
 }

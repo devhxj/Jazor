@@ -54,7 +54,6 @@
     <Compile Remove="UInt16Module.cs" />
     <Compile Remove="UInt32Module.cs" />
     <Compile Remove="UInt64Module.cs" />
-    <Compile Remove="ValueTupleModule.cs" />
     <Compile Remove="WeakReferenceModule.cs" />
   </ItemGroup>
 
