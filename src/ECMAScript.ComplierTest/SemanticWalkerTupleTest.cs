@@ -107,7 +107,7 @@ public sealed class SemanticWalkerTupleTest
         var script = node?.ToKnRECMAScript();
                 
         Assert.AreEqual(@"{
-  let tuple = { aaa: 1, Item2: 2 };
+  let tuple = Tuple.Create([['aaa', 1], ['Item2', 2]]);
     let bbb = tuple.aaa;
   let ccc = tuple.Item2;
 
@@ -128,14 +128,15 @@ public sealed class SemanticWalkerTupleTest
   let h44 = tuple.Item2;
 
   let func = (x, y) => {
-    return { mmm: x, y: y };
+    return Tuple.Create([['mmm', x], ['y', y]]);
   };
-    const v571$580 = func.Invoke(2, 5);
-  let zzz = v571$580.mmm;
-  let yyy = v571$580.y;
+    const v$test = func.Invoke(2, 5);
+  let zzz = v$test.mmm;
+  let yyy = v$test.y;
 
   let p = new Point;
-  
+    p.Deconstruct(z99, y99);
+
 }", script);
     }
 
@@ -157,7 +158,7 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.VisitTuple(operation, new());
         var script = node?.ToECMAScript();
                      
-        Assert.AreEqual("{first:1,second:2,third:3}", script);
+        Assert.AreEqual("Tuple.Create([['first',1],['second',2],['third',3]])", script);
     }
 
     [TestMethod]
@@ -181,7 +182,7 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.VisitTuple(operation, new());
         var script = node?.ToECMAScript();
                      
-        Assert.AreEqual("{name:\"test\",Item2:42,Item3:true}", script);
+        Assert.AreEqual("Tuple.Create([['name','test'],['Item2',42],['Item3',true]])", script);
     }
 
     [TestMethod]
@@ -202,7 +203,7 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.VisitTuple(operation, new());
         var script = node?.ToECMAScript();
                      
-        Assert.AreEqual(@"{outer:{inner:1,Item2:2},Item2:3}", script);
+        Assert.AreEqual(@"Tuple.Create([['outer',Tuple.Create([['inner',1],['Item2',2]])],['Item2',3]])", script);
     }
 
     [TestMethod]
@@ -223,7 +224,7 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.VisitTuple(operation, new());
         var script = node?.ToECMAScript();
                      
-        Assert.AreEqual(@"{str:""hello"",num:3.14,flag:false,list:[1,2,3]}", script);
+        Assert.AreEqual(@"Tuple.Create([['str','hello'],['num',3.14],['flag',false],['list',[1,2,3]]])", script);
     }
 
     [TestMethod]
@@ -245,7 +246,7 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.VisitTuple(operation, new());
         var script = node?.ToECMAScript();
                      
-        Assert.AreEqual(@"{sum:x+y,diff:x-y,product:x*y}", script);
+        Assert.AreEqual(@"Tuple.Create([['sum',x+y],['diff',x-y],['product',x*y]])", script);
     }
 
     [TestMethod]
@@ -265,8 +266,8 @@ public sealed class SemanticWalkerTupleTest
         var walker = new SemanticWalker(true);
         var node = walker.VisitTuple(operation, new());
         var script = node?.ToECMAScript();
-                     
-        Assert.AreEqual(@"{len:""test"".Length,upper:""test"".ToUpper(),lower:""TEST"".ToLower()}", script);
+
+        Assert.AreEqual(@"Tuple.Create([['len','test'.Length],['upper','test'.ToUpper()],['lower','TEST'.ToLower()]])", script);
     }
 
     [TestMethod]
@@ -471,7 +472,7 @@ public sealed class SemanticWalkerTupleTest
                 void TestMethod()
                 {
                     var tuple1 = (name: ""test"", value: 42);
-                    var tuple2 = (name: ""test"", value: 42);
+                    var tuple2 = (name: ""test"", a: 42);
                     var result = tuple1 == tuple2;
                 }
             }
@@ -485,18 +486,18 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.VisitTupleBinaryOperator(operation, new());
         var script = node?.ToECMAScript();
                      
-        Assert.AreEqual("(tuple1.name===tuple2.name&&tuple1.value===tuple2.value)", script);
+        Assert.AreEqual("(tuple1.name===tuple2.name&&tuple1.value===tuple2.a)", script);
     }
 
     [TestMethod]
-    public void VisitTupleBinaryOperator_EmptyTuple()
+    public void VisitTupleBinaryOperator_SimpleAssignmentEquals()
     {
         var code = @"
             class TestClass
             {
                 void TestMethod()
                 {
-                    var result = () == ();
+                    var result = (1,2) == (2,1);
                 }
             }
             ";
@@ -509,18 +510,18 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.VisitTupleBinaryOperator(operation, new());
         var script = node?.ToECMAScript();
                      
-        Assert.AreEqual("true", script);
+        Assert.AreEqual("(1===2&&2===1)", script);
     }
 
     [TestMethod]
-    public void VisitTupleBinaryOperator_EmptyTupleNotEquals()
+    public void VisitTupleBinaryOperator_SimpleAssignmentNotEquals()
     {
         var code = @"
             class TestClass
             {
                 void TestMethod()
                 {
-                    var result = () != ();
+                    var result = (1,2) != (2,1);
                 }
             }
             ";
@@ -533,7 +534,55 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.VisitTupleBinaryOperator(operation, new());
         var script = node?.ToECMAScript();
                      
-        Assert.AreEqual("false", script);
+        Assert.AreEqual("(1!==2||2!==1)", script);
+    }
+
+    [TestMethod]
+    public void VisitTupleBinaryOperator_SimpleAssignmentNestedEquals()
+    {
+        var code = @"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var result = (1,(3,5)) == (2,(4,6));
+                }
+            }
+            ";
+
+        var statement = GetOperationAt<IVariableDeclarationGroupOperation>(code, 0);
+        var variableDeclaration = statement!.Declarations.First();
+        var initializer = variableDeclaration.Declarators.First().Initializer;
+        var operation = (ITupleBinaryOperation)initializer!.Value;
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitTupleBinaryOperator(operation, new());
+        var script = node?.ToECMAScript();
+                     
+        Assert.AreEqual("(1===2&&3===4&&5===6)", script);
+    }
+
+    [TestMethod]
+    public void VisitTupleBinaryOperator_SimpleAssignmentNestedNotEquals()
+    {
+        var code = @"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var result = (1,(3,5)) != (2,(4,6));
+                }
+            }
+            ";
+
+        var statement = GetOperationAt<IVariableDeclarationGroupOperation>(code, 0);
+        var variableDeclaration = statement!.Declarations.First();
+        var initializer = variableDeclaration.Declarators.First().Initializer;
+        var operation = (ITupleBinaryOperation)initializer!.Value;
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitTupleBinaryOperator(operation, new());
+        var script = node?.ToECMAScript();
+                     
+        Assert.AreEqual("(1!==2||3!==4||5!==6)", script);
     }
 
     [TestMethod]
@@ -563,6 +612,32 @@ public sealed class SemanticWalkerTupleTest
     }
 
     [TestMethod]
+    public void VisitTupleBinaryOperator_NestedElements()
+    {
+        var code = @"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var tuple1 = (1, 2, (4,6));
+                    var tuple2 = (1, 2, (4,9));
+                    var result = tuple1 == tuple2;
+                }
+            }
+            ";
+
+        var statement = GetOperationAt<IVariableDeclarationGroupOperation>(code, 2);
+        var variableDeclaration = statement!.Declarations.First();
+        var initializer = variableDeclaration.Declarators.First().Initializer;
+        var operation = (ITupleBinaryOperation)initializer!.Value;
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitTupleBinaryOperator(operation, new());
+        var script = node?.ToECMAScript();
+                     
+        Assert.AreEqual("(tuple1.Item1===tuple2.Item1&&tuple1.Item2===tuple2.Item2&&tuple1.Item3.Item1===tuple2.Item3.Item1&&tuple1.Item3.Item2===tuple2.Item3.Item2)", script);
+    }
+
+    [TestMethod]
     public void VisitDiscardOperation_InDeconstruction()
     {
         var code = @"
@@ -576,10 +651,8 @@ public sealed class SemanticWalkerTupleTest
             }
             ";
 
-        var statement = GetOperationAt<IVariableDeclarationGroupOperation>(code, 1);
-        var variableDeclaration = statement!.Declarations.First();
-        var initializer = variableDeclaration.Declarators.First().Initializer;
-        var operation = (IDeconstructionAssignmentOperation)initializer!.Value;
+        var statement = GetOperationAt<IExpressionStatementOperation>(code, 1);
+        var operation = (IDeconstructionAssignmentOperation)statement.Operation;
         var walker = new SemanticWalker(true);
         var node = walker.VisitDeconstructionAssignment(operation, new());
         var script = node?.ToECMAScript();
@@ -608,7 +681,7 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.VisitSimpleAssignment(operation, new());
         var script = node?.ToECMAScript();
                      
-        Assert.AreEqual("SomeMethod();", script);
+        Assert.AreEqual("this.SomeMethod()", script);
     }
 
     [TestMethod]

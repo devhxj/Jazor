@@ -22,7 +22,7 @@ public partial class SemanticWalker
 	{
 		// 插值字符串中的文本部分转换为字符串字面量
 		var text = operation.Text.ConstantValue.Value?.ToString() ?? "";
-		return new StringLiteral(text, $"\"{text}\"");
+		return new StringLiteral(text, $"'{text}'");
 	}
 
 	/// <summary>

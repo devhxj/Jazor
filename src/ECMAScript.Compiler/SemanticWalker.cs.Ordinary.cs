@@ -223,7 +223,7 @@ public partial class SemanticWalker
 		return operation.Type?.SpecialType switch
 		{
 			SpecialType.System_Boolean => new BooleanLiteral((bool)value, raw.ToLower()),
-			SpecialType.System_String => new StringLiteral((string)value, $"\"{raw}\""),
+			SpecialType.System_String => new StringLiteral((string)value, $"'{raw}'"),
 			SpecialType.System_Char => new StringLiteral(value.ToString() ?? "", $"'{raw}'"),
 			SpecialType.System_SByte or
 			SpecialType.System_Byte or
@@ -678,7 +678,7 @@ public partial class SemanticWalker
 		if (string.IsNullOrEmpty(name))
 			return HandleTransformationFailure(operation.Argument, "NameOf expression could not be translated to JavaScript.");
 
-		return new StringLiteral(name, $"\"{name}\"");
+		return new StringLiteral(name, $"'{name}'");
 	}
 
 	/// <summary>
@@ -699,7 +699,7 @@ public partial class SemanticWalker
 		return operation.Type?.SpecialType switch
 		{
 			SpecialType.System_Boolean => new BooleanLiteral(false, "false"),
-			SpecialType.System_String => new StringLiteral("", "\"\""),
+			SpecialType.System_String => new StringLiteral("", "''"),
 			SpecialType.System_SByte or
 			SpecialType.System_Byte or
 			SpecialType.System_Int16 or

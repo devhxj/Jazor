@@ -293,14 +293,14 @@ public partial class SemanticWalker
 						{
 							"string" => new LogicalExpression(Operator.StrictEquality,
 								new UpdateExpression(Operator.TypeOf, inputVar, prefix: true),
-								new StringLiteral("string", "\"string\"")),
+								new StringLiteral("string", "'string'")),
 							"number" or "int32" or "int64" or "double" or "float" or "decimal" =>
 								new LogicalExpression(Operator.StrictEquality,
 									new UpdateExpression(Operator.TypeOf, inputVar, prefix: true),
-									new StringLiteral("number", "\"number\"")),
+									new StringLiteral("number", "'number'")),
 							"boolean" => new LogicalExpression(Operator.StrictEquality,
 								new UpdateExpression(Operator.TypeOf, inputVar, prefix: true),
-								new StringLiteral("boolean", "\"boolean\"")),
+								new StringLiteral("boolean", "'boolean'")),
 							_ => new LogicalExpression(Operator.InstanceOf, inputVar, new Identifier(typeName))
 						};
 					}

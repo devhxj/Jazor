@@ -1,10 +1,10 @@
 ﻿using Acornima;
 using Acornima.Ast;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using System.Collections.Generic;
 using System.Linq;
+using OneOf;
 
 namespace ECMAScript.Compiler;
 
@@ -23,25 +23,24 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitTuple(ITupleOperation operation, Queue<VariableDeclaration> argument)
 	{
-		var nodes = new List<Node>();
+		var elements = new List<Expression?>();
 		var tupleType = (INamedTypeSymbol)operation.NaturalType!;
 		for (var index = 0; index < operation.Elements.Length; index++)
 		{
 			var fieldName = tupleType.TupleElements[index].Name;
 			var element = operation.Elements[index];
-			var key = new Identifier(fieldName);
+			var key = new StringLiteral(fieldName, $"'{fieldName}'");
 			var value = Translate<Expression>(element, argument);
-			nodes.Add(new ObjectProperty(
-				PropertyKind.Init,
-				key: key,
-				value: value,
-				computed: false,
-				shorthand: false,
-				method: false
-			));
+			var array = new ArrayExpression(NodeList.From<Expression?>(key, value));
+			elements.Add(array);
 		}
 
-		return new ObjectExpression(NodeList.From(nodes));
+		var obj = new Identifier("Tuple");
+		var prop = new Identifier("Create");
+		var func = new MemberExpression(obj, prop, false, false);
+		var args = new ArrayExpression(NodeList.From(elements));
+		var call = new CallExpression(func, NodeList.From<Expression>(args), false);
+		return call;
 	}
 
 	/// <summary>
@@ -91,8 +90,18 @@ public partial class SemanticWalker
 
 		void Deconstruct(IOperation target, ITypeSymbol valueType, object value, List<Statement> states)
 		{
-			if (valueType.IsTupleType && target is ITupleOperation tupleTarget)
+			if (valueType.IsTupleType && target is ITupleOperation or IDeclarationExpressionOperation)
 			{
+				ITupleOperation tupleTarget;
+				bool isDeclarationExpr = false;
+				if (target is IDeclarationExpressionOperation declarationExpressionOp)
+				{
+					isDeclarationExpr = true;
+					tupleTarget = (ITupleOperation)declarationExpressionOp.Expression;
+				}
+				else
+					tupleTarget = (ITupleOperation)target;
+
 				Expression? idExpr = null;
 				if (value is IInvocationOperation invocation)
 				{
@@ -115,7 +124,7 @@ public partial class SemanticWalker
 					{
 						continue;
 					}
-					else if (element is IDeclarationExpressionOperation decl)
+					else if (isDeclarationExpr || element is IDeclarationExpressionOperation)
 					{
 						Expression init;
 						if (value is ILocalReferenceOperation localRef)
@@ -148,13 +157,13 @@ public partial class SemanticWalker
 							return;
 						}
 
-						var id = Translate<Node>(decl, argument);
+						var id = Translate<Node>(element, argument);
 						var declarator = new VariableDeclarator(id, init);
 						var declaration = new VariableDeclaration(VariableDeclarationKind.Let,
 							NodeList.From(declarator));
 						states.Add(declaration);
 					}
-					else if (element is ILocalReferenceOperation localRef)
+					else if (!isDeclarationExpr && element is ILocalReferenceOperation localRef)
 					{
 						Expression right;
 						if (value is ILocalReferenceOperation valueLocalRef)
@@ -329,49 +338,119 @@ public partial class SemanticWalker
 	/// <returns>JavaScript逻辑表达式</returns>
 	public override Acornima.Ast.Node? VisitTupleBinaryOperator(ITupleBinaryOperation operation, Queue<VariableDeclaration> argument)
 	{
-		var leftType = (INamedTypeSymbol)operation.LeftOperand.Type!;
-		var rightType = (INamedTypeSymbol)operation.RightOperand.Type!;
-
-		if (leftType.TupleElements.Length == 0 || 
-			rightType.TupleElements.Length == 0 || 
-			leftType.TupleElements.Length != rightType.TupleElements.Length)
-			return new BooleanLiteral(false, "false");
-
+		// C#本身语法限定左右都必须是同样元素类型和个数的元组
+		// 所以此处不用考虑类型和个数不匹配
 		Expression? result = null;
 		// 递归访问左右操作元，获取它们的表达式。
 		var isEq = operation.OperatorKind == BinaryOperatorKind.Equals;
-		var leftExpr = Translate<Expression>(operation.LeftOperand, argument);
-		var rightExpr = Translate<Expression>(operation.RightOperand, argument);
-		for(var index = 0; index < leftType.TupleElements.Length; index++)
-        {
-            var leftField = leftType.TupleElements[index];
-            var rightField = rightType.TupleElements[index];
 
-            if (leftField.Type.IsTupleType)
-            {
-                
-            }
-			var leftMember = new MemberExpression(leftExpr, new Identifier(leftField.Name), false, false);
-			var rightMember = new MemberExpression(rightExpr, new Identifier(rightField.Name), false, false);
-			var expr = new NonLogicalBinaryExpression(
-				isEq ? Operator.StrictEquality : Operator.StrictInequality,
-				leftMember,
-				rightMember);
-
-			result = result is null 
-				? expr
-				: new LogicalExpression(isEq ? Operator.LogicalAnd : Operator.LogicalOr,result,expr);
-		}
+		NestedBuilder(
+			(operation.LeftOperand, operation.LeftOperand.Type!),
+			(operation.RightOperand, operation.RightOperand.Type!),
+			isEq);
 
 		if (result is null)
 			return HandleTransformationFailure(operation, "Tuple binary operation could not be translated to JavaScript.");
 
 		return new ParenthesizedExpression(result);
 
-		void a()
-        {
-            
-        }
+		void NestedBuilder((object Target, ITypeSymbol Type) left, (object Target, ITypeSymbol Type) right, bool isEq)
+		{
+			Expression? leftExpr = null, rightExpr = null;
+			ITupleOperation? tupleLeft = null, tupleRight = null;
+			if (left.Target is IInvocationOperation leftInvocation)
+			{
+				leftExpr = new Identifier(GetUniqueName(leftInvocation));
+				var init = Translate<Expression>(leftInvocation, argument);
+				var declarator = new VariableDeclarator(leftExpr, init);
+				var declaration = new VariableDeclaration(VariableDeclarationKind.Const,
+					NodeList.From(declarator));
+				argument.Enqueue(declaration);
+			}
+			else if (left.Target is ITupleOperation leftTuple)
+				tupleLeft = leftTuple;
+
+			else if (left.Target is IOperation leftOp)
+				leftExpr = Translate<Expression>(leftOp, argument);
+
+			else if (left.Target is Expression leftExp)
+				leftExpr = leftExp;
+
+			if (right.Target is IInvocationOperation rightInvocation)
+			{
+				rightExpr = new Identifier(GetUniqueName(rightInvocation));
+				var init = Translate<Expression>(rightInvocation, argument);
+				var declarator = new VariableDeclarator(rightExpr, init);
+				var declaration = new VariableDeclaration(VariableDeclarationKind.Const,
+					NodeList.From(declarator));
+				argument.Enqueue(declaration);
+			}
+			else if (right.Target is ITupleOperation rightTuple)
+				tupleRight = rightTuple;
+
+			else if (right.Target is IOperation rightOp)
+				rightExpr = Translate<Expression>(rightOp, argument);
+
+			else if (right.Target is Expression rightExp)
+				rightExpr = rightExp;
+
+			var leftType = (INamedTypeSymbol)left.Type;
+			var rightType = (INamedTypeSymbol)right.Type;
+			for (var index = 0; index < leftType.TupleElements.Length; index++)
+			{
+				var leftField = leftType.TupleElements[index];
+				var rightField = rightType.TupleElements[index];
+
+				Expression? exprLeft = null, exprRight = null;
+				if (tupleLeft is not null)
+					exprLeft = Translate<Expression>(tupleLeft.Elements[index], argument);
+
+				else if (leftExpr is not null)
+					exprLeft = new MemberExpression(leftExpr, new Identifier(leftField.Name), false, false);
+
+				if (tupleRight is not null)
+					exprRight = Translate<Expression>(tupleRight.Elements[index], argument);
+
+				else if (rightExpr is not null)
+					exprRight = new MemberExpression(rightExpr, new Identifier(rightField.Name), false, false);
+
+				if (leftField.Type.IsTupleType)
+				{
+					object? subLeft = tupleLeft is not null
+						? tupleLeft.Elements[index]
+						: exprLeft;
+
+					object? subRight = tupleRight is not null
+						? tupleRight.Elements[index]
+						: exprRight;
+
+					if (subLeft is null || subRight is null)
+					{
+						HandleTransformationFailure(operation, "Tuple binary operation could not be translated to JavaScript.");
+						return;
+					}
+
+					NestedBuilder((subLeft, leftField.Type), (subRight, rightField.Type), isEq);
+				}
+				else
+				{
+					if (exprLeft is null || exprRight is null)
+					{
+						HandleTransformationFailure(operation, "Tuple binary operation could not be translated to JavaScript.");
+						return;
+					}
+
+					var expr = new NonLogicalBinaryExpression(
+						isEq ? Operator.StrictEquality : Operator.StrictInequality,
+						exprLeft,
+						exprRight);
+
+					result = result is null
+						? expr
+						: new LogicalExpression(isEq ? Operator.LogicalAnd : Operator.LogicalOr, result, expr);
+				}
+			}
+		}
 	}
 
 	/// <summary>

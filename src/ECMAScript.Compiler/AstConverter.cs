@@ -42,7 +42,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             throw new NotSupportedException($"嵌套类 {_classSymbol.Name} 需要扁平化处理");
 
         var members = new List<Statement>();
-        
+
         foreach (var member in _classSymbol.GetMembers())
         {
             switch (member)
@@ -110,7 +110,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     {
         var declaration = ConvertVariableField(symbol);
 
-        if(ShouldBePrivate(symbol.DeclaredAccessibility))
+        if (ShouldBePrivate(symbol.DeclaredAccessibility))
             return declaration;
         else
             return new ExportNamedDeclaration(
@@ -376,7 +376,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         // 处理属性初始化器，如 int P { get; set; } = 42;
         // 属性初始化器 是只有自动属性或field关键字实现的属性才有
         // 会在BackingField的默认值上处理
-        
+
         return declarations;
     }
 
@@ -488,7 +488,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
     private static Expression CreateEqualsValueClauseSyntaxLiteral(SpecialType type, object? value)
     {
-        if(value is null)
+        if (value is null)
             throw new NotSupportedException($"Cannot convert null to literal.");
 
         var val = value.ToString();
@@ -513,11 +513,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 .Replace("\r", "\\r")
                 .Replace("\t", "\\t")
                 .Replace("\v", "\\v");
-                
-            if (type == SpecialType.System_String)
-                right = new StringLiteral(value: val, raw: $"\"{raw}\"");
-            else
-                right = new StringLiteral(value: val, raw: $"'{raw}'");
+
+            right = new StringLiteral(value: val, raw: $"'{raw}'");
         }
         else if (type == SpecialType.System_Boolean)
             right = new BooleanLiteral(value: val.ToLower() == "true", raw: val.ToLower());

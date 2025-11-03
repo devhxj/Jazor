@@ -133,7 +133,7 @@ public partial class SemanticWalker
 				return new NonLogicalBinaryExpression(
 					Operator.StrictEquality,
 					new NonUpdateUnaryExpression(Operator.TypeOf, valueOperand),
-					new StringLiteral("string", "\"string\"")
+					new StringLiteral("string", "'string'")
 				);
 			case SpecialType.System_SByte:
 			case SpecialType.System_Byte:
@@ -147,13 +147,13 @@ public partial class SemanticWalker
 				return new NonLogicalBinaryExpression(
 					Operator.StrictEquality,
 					new NonUpdateUnaryExpression(Operator.TypeOf, valueOperand),
-					new StringLiteral("number", "\"number\"")
+					new StringLiteral("number", "'number'")
 				);
 			case SpecialType.System_Boolean:
 				return new NonLogicalBinaryExpression(
 					Operator.StrictEquality,
 					new NonUpdateUnaryExpression(Operator.TypeOf, valueOperand),
-					new StringLiteral("boolean", "\"boolean\"")
+					new StringLiteral("boolean", "'boolean'")
 				);
 			case SpecialType.System_Object:
 				return new LogicalExpression(
@@ -161,7 +161,7 @@ public partial class SemanticWalker
 					new NonLogicalBinaryExpression(
 						Operator.StrictEquality,
 						new NonUpdateUnaryExpression(Operator.TypeOf, valueOperand),
-						new StringLiteral("object", "\"object\"")
+						new StringLiteral("object", "'object'")
 					),
 					new NonLogicalBinaryExpression(Operator.Inequality, valueOperand, new NullLiteral("null"))
 				);
@@ -178,7 +178,7 @@ public partial class SemanticWalker
 				new NonLogicalBinaryExpression(
 					Operator.StrictEquality,
 					new NonUpdateUnaryExpression(Operator.TypeOf, valueOperand),
-					new StringLiteral("bigint", "\"bigint\"")
+					new StringLiteral("bigint", "'bigint'")
 				),
 				new NonLogicalBinaryExpression(Operator.Inequality, valueOperand, new NullLiteral("null"))
 			);
@@ -476,17 +476,17 @@ public partial class SemanticWalker
 			"string" => new LogicalExpression(
 								Operator.StrictEquality,
 								new UpdateExpression(Operator.TypeOf, targetExpression, prefix: true),
-								new StringLiteral("string", "\"string\"")
+								new StringLiteral("string", "'string'")
 							),
 			"number" or "int32" or "int64" or "double" or "float" or "decimal" => new LogicalExpression(
 								Operator.StrictEquality,
 								new UpdateExpression(Operator.TypeOf, targetExpression, prefix: true),
-								new StringLiteral("number", "\"number\"")
+								new StringLiteral("number", "'number'")
 							),
 			"boolean" => new LogicalExpression(
 								Operator.StrictEquality,
 								new UpdateExpression(Operator.TypeOf, targetExpression, prefix: true),
-								new StringLiteral("boolean", "\"boolean\"")
+								new StringLiteral("boolean", "'boolean'")
 							),
 			"object" => new LogicalExpression(
 								Operator.LogicalAnd,
@@ -494,7 +494,7 @@ public partial class SemanticWalker
 								new LogicalExpression(
 									Operator.StrictEquality,
 									new UpdateExpression(Operator.TypeOf, targetExpression, prefix: true),
-									new StringLiteral("object", "\"object\"")
+									new StringLiteral("object", "'object'")
 								)
 							),// 对于对象类型，检查是否不为null且为object
 			_ => new LogicalExpression(
@@ -857,23 +857,23 @@ public partial class SemanticWalker
 				"string" => new NonLogicalBinaryExpression(
 						Operator.StrictEquality,
 						new NonUpdateUnaryExpression(Operator.TypeOf, target),
-						new StringLiteral("string", "\"string\"")
+						new StringLiteral("string", "'string'")
 					),
 				"number" or "int32" or "int64" or "double" or "float" or "decimal" =>
 							 new NonLogicalBinaryExpression(
 						Operator.StrictEquality,
 						new NonUpdateUnaryExpression(Operator.TypeOf, target),
-						new StringLiteral("number", "\"number\"")
+						new StringLiteral("number", "'number'")
 					),
 				"boolean" => new NonLogicalBinaryExpression(
 						Operator.StrictEquality,
 						new NonUpdateUnaryExpression(Operator.TypeOf, target),
-						new StringLiteral("boolean", "\"boolean\"")
+						new StringLiteral("boolean", "'boolean'")
 					),
 				"object" => new NonLogicalBinaryExpression(
 						Operator.StrictEquality,
 						new NonUpdateUnaryExpression(Operator.TypeOf, target),
-						new StringLiteral("object", "\"object\"")
+						new StringLiteral("object", "'object'")
 					),// 对于对象类型，检查是否不为null且为object
 				_ => new NonLogicalBinaryExpression(Operator.InstanceOf, target, new Identifier(typeName)),// 对于自定义类型，使用instanceof检查
 			};

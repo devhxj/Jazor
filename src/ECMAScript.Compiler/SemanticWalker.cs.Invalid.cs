@@ -46,7 +46,7 @@ public partial class SemanticWalker
 			{
 				null => new NullLiteral("null"),
 				bool b => new BooleanLiteral(b, b.ToString().ToLower()),
-				string s => new StringLiteral(s, $"\"{s}\""),
+				string s => new StringLiteral(s, $"'{s}'"),
 				int i => new NumericLiteral(i, i.ToString()),
 				long l => new NumericLiteral(l, l.ToString()),
 				double d => new NumericLiteral(d, d.ToString()),
