@@ -271,6 +271,30 @@ public sealed class SemanticWalkerTupleTest
     }
 
     [TestMethod]
+    public void VisitTuple_LongTupleMoreThanSevenElements()
+    {
+        var code = @"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var t = (1,2,3,4,5,6,7,8);
+                }
+            }
+            ";
+
+        var operation = GetTupleOperationAt(code);
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitTuple(operation, new());
+        var script = node?.ToECMAScript();
+
+        Assert.IsNotNull(script);
+        Assert.Contains("Tuple.Create", script);
+        Assert.IsTrue(script.Contains("['Item1',1]") || script.Contains("['Item1', 1]"));
+        Assert.IsTrue(script.Contains("['Item8',8]") || script.Contains("['Item8', 8]"));
+    }
+
+    [TestMethod]
     public void VisitDeconstructionAssignment_WithTupleRefrence()
     {
         var code = @"
@@ -638,6 +662,99 @@ public sealed class SemanticWalkerTupleTest
     }
 
     [TestMethod]
+    public void VisitTupleBinaryOperator_WithInvocationOperand()
+    {
+        var code = @"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var result = GetTuple() == (1,2);
+                }
+
+                (int, int) GetTuple() => (1, 2);
+            }
+            ";
+
+        var statement = GetOperationAt<IVariableDeclarationGroupOperation>(code, 0);
+        var variableDeclaration = statement!.Declarations.First();
+        var initializer = variableDeclaration.Declarators.First().Initializer;
+        var operation = (ITupleBinaryOperation)initializer!.Value;
+        var walker = new SemanticWalker(true);
+        var queue = new Queue<Acornima.Ast.VariableDeclaration>();
+        var node = walker.VisitTupleBinaryOperator(operation, queue);
+        var exprScript = node?.ToECMAScript();
+        var declScript = "";
+        foreach (var d in queue)
+        {
+            var s = d.ToECMAScript();
+            if (!string.IsNullOrEmpty(s) && !s.EndsWith(";"))
+                s += ";";
+            declScript += s;
+        }
+
+        Assert.AreEqual("const v$test=this.GetTuple();(v$test.Item1===1&&v$test.Item2===2)", declScript + exprScript);
+    }
+
+    [TestMethod]
+    public void VisitTupleBinaryOperator_InvocationBothSides()
+    {
+        var code = @"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var result = Get1() == Get2();
+                }
+
+                (int,int) Get1() => (1,2);
+                (int,int) Get2() => (1,2);
+            }
+            ";
+
+        var statement = GetOperationAt<IVariableDeclarationGroupOperation>(code, 0);
+        var variableDeclaration = statement!.Declarations.First();
+        var initializer = variableDeclaration.Declarators.First().Initializer;
+        var operation = (ITupleBinaryOperation)initializer!.Value;
+        var walker = new SemanticWalker(true);
+        var queue = new Queue<Acornima.Ast.VariableDeclaration>();
+        var node = walker.VisitTupleBinaryOperator(operation, queue);
+        var exprScript = node?.ToECMAScript();
+        var declScript = string.Concat(queue.Select(d => d.ToECMAScript()));
+        if (!string.IsNullOrEmpty(declScript) && !declScript.EndsWith(";"))
+            declScript += ";";
+
+    var combined = (declScript ?? string.Empty) + (exprScript ?? string.Empty);
+    Assert.Contains("const v$test=this.Get1()", combined);
+    Assert.Contains("const v$test=this.Get2()", combined);
+    Assert.Contains("v$test.Item1===v$test.Item1", combined);
+    }
+
+    [TestMethod]
+    public void VisitTupleBinaryOperator_Conversion()
+    {
+        var code = @"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var result = ((long)1,2) == (1L,2);
+                }
+            }
+            ";
+
+        var statement = GetOperationAt<IVariableDeclarationGroupOperation>(code, 0);
+        var variableDeclaration = statement!.Declarations.First();
+        var initializer = variableDeclaration.Declarators.First().Initializer;
+        var operation = (ITupleBinaryOperation)initializer!.Value;
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitTupleBinaryOperator(operation, new());
+        var script = node?.ToECMAScript();
+
+        Assert.AreEqual("(1===1&&2===2)", script);
+    }
+
+    [TestMethod]
     public void VisitDiscardOperation_InDeconstruction()
     {
         var code = @"
@@ -675,7 +792,7 @@ public sealed class SemanticWalkerTupleTest
             }
             ";
 
-        var statement = GetOperationAt<IExpressionStatementOperation>(code, 0);
+    var statement = GetOperationAt<IExpressionStatementOperation>(code, 0);
         var operation = (ISimpleAssignmentOperation)statement.Operation;
         var walker = new SemanticWalker(true);
         var node = walker.VisitSimpleAssignment(operation, new());
@@ -808,4 +925,29 @@ let g = v$test.Item1.Item2.Item2;
 let z = v$test.b;
 ", script);
     }     
+
+    [TestMethod]
+    public void VisitDeconstructionAssignment_ConversionOperand()
+    {
+        var code = @"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    (int a, int b) = ((int,int))(1,2);
+                }
+            }
+            ";
+
+    var block = GetBlockOperation(code);
+        var statement = block.Operations
+            .OfType<IExpressionStatementOperation>()
+            .First(op => op.Operation is IDeconstructionAssignmentOperation);
+        var operation = (IDeconstructionAssignmentOperation)statement.Operation;
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitDeconstructionAssignment(operation, new());
+        var script = node?.ToECMAScript();
+                     
+        Assert.AreEqual("let a=1;let b=2;", script);
+    }
 }

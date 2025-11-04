@@ -89,27 +89,3 @@ class Point
         y = Y;
     }
 }
-
-class TestClass
-{
-	void TestMethod()
-	{
-		var point = new KeyValuePair<string, int>("a", 1);
-		var (x,y) = point;
-	}
-	
-	void Aa()
-    {
-		ValueTuple<int,int> a = (7,8);
-		// 使用变量a以避免编译器警告
-		Console.WriteLine($"Item1: {a.Item1}, Item2: {a.Item2}");
-    }
-}
-
-public static class PersonExtensions
-{
-    public static void Deconstruct<TKey,TValue>(this KeyValuePair<TKey,TValue> kv, out TKey key, out TValue value)
-    {
-        (key,value) = kv;
-    }
-}
