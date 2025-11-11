@@ -107,7 +107,7 @@ public sealed class SemanticWalkerTupleTest
         var script = node?.ToKnRECMAScript();
                 
         Assert.AreEqual(@"{
-  let tuple = Tuple.Create([['aaa', 1], ['Item2', 2]]);
+  let tuple = { aaa: 1, Item2: 2 };
     let bbb = tuple.aaa;
   let ccc = tuple.Item2;
 
@@ -128,7 +128,7 @@ public sealed class SemanticWalkerTupleTest
   let h44 = tuple.Item2;
 
   let func = (x, y) => {
-    return Tuple.Create([['mmm', x], ['y', y]]);
+    return { mmm: x, y: y };
   };
     const v$test = func.Invoke(2, 5);
   let zzz = v$test.mmm;
@@ -157,8 +157,9 @@ public sealed class SemanticWalkerTupleTest
         var walker = new SemanticWalker(true);
         var node = walker.VisitTuple(operation, new());
         var script = node?.ToECMAScript();
-                     
-        Assert.AreEqual("Tuple.Create([['first',1],['second',2],['third',3]])", script);
+
+        Assert.AreEqual("{first:1,second:2,third:3}", script); 
+        //Assert.AreEqual("Tuple.Create([['first',1],['second',2],['third',3]])", script);
     }
 
     [TestMethod]
@@ -181,8 +182,9 @@ public sealed class SemanticWalkerTupleTest
         var walker = new SemanticWalker(true);
         var node = walker.VisitTuple(operation, new());
         var script = node?.ToECMAScript();
-                     
-        Assert.AreEqual("Tuple.Create([['name','test'],['Item2',42],['Item3',true]])", script);
+
+        Assert.AreEqual("{name:'test',Item2:42,Item3:true}", script);          
+        //Assert.AreEqual("Tuple.Create([['name','test'],['Item2',42],['Item3',true]])", script);
     }
 
     [TestMethod]
@@ -202,8 +204,9 @@ public sealed class SemanticWalkerTupleTest
         var walker = new SemanticWalker(true);
         var node = walker.VisitTuple(operation, new());
         var script = node?.ToECMAScript();
-                     
-        Assert.AreEqual(@"Tuple.Create([['outer',Tuple.Create([['inner',1],['Item2',2]])],['Item2',3]])", script);
+
+        Assert.AreEqual("{outer:{inner:1,Item2:2},Item2:3}", script);          
+        //Assert.AreEqual(@"Tuple.Create([['outer',Tuple.Create([['inner',1],['Item2',2]])],['Item2',3]])", script);
     }
 
     [TestMethod]
@@ -223,8 +226,9 @@ public sealed class SemanticWalkerTupleTest
         var walker = new SemanticWalker(true);
         var node = walker.VisitTuple(operation, new());
         var script = node?.ToECMAScript();
-                     
-        Assert.AreEqual(@"Tuple.Create([['str','hello'],['num',3.14],['flag',false],['list',[1,2,3]]])", script);
+
+        Assert.AreEqual("{str:'hello',num:3.14,flag:false,list:[1,2,3]}", script);        
+        //Assert.AreEqual(@"Tuple.Create([['str','hello'],['num',3.14],['flag',false],['list',[1,2,3]]])", script);
     }
 
     [TestMethod]
@@ -245,8 +249,9 @@ public sealed class SemanticWalkerTupleTest
         var walker = new SemanticWalker(true);
         var node = walker.VisitTuple(operation, new());
         var script = node?.ToECMAScript();
-                     
-        Assert.AreEqual(@"Tuple.Create([['sum',x+y],['diff',x-y],['product',x*y]])", script);
+
+        Assert.AreEqual("{sum:x+y,diff:x-y,product:x*y}", script);   
+        //Assert.AreEqual(@"Tuple.Create([['sum',x+y],['diff',x-y],['product',x*y]])", script);
     }
 
     [TestMethod]
@@ -267,7 +272,8 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.VisitTuple(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual(@"Tuple.Create([['len','test'.Length],['upper','test'.ToUpper()],['lower','TEST'.ToLower()]])", script);
+        Assert.AreEqual("{len:'test'.Length,upper:'test'.ToUpper(),lower:'TEST'.ToLower()}", script);   
+        //Assert.AreEqual(@"Tuple.Create([['len','test'.Length],['upper','test'.ToUpper()],['lower','TEST'.ToLower()]])", script);
     }
 
     [TestMethod]
@@ -288,10 +294,7 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.VisitTuple(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.IsNotNull(script);
-        Assert.Contains("Tuple.Create", script);
-        Assert.IsTrue(script.Contains("['Item1',1]") || script.Contains("['Item1', 1]"));
-        Assert.IsTrue(script.Contains("['Item8',8]") || script.Contains("['Item8', 8]"));
+        Assert.AreEqual("{Item1:1,Item2:2,Item3:3,Item4:4,Item5:5,Item6:6,Item7:7,Item8:8}",script);
     }
 
     [TestMethod]

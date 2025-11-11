@@ -43,11 +43,19 @@ var  b = (2,4);
 var  c = (2,"a");
 ((int bbb, int ccc),int aaa) = tuple;
 var script = @"
-class A{
-    constructor(){
-    }
+class Person {
+  #name;
+  constructor() {
+  }
+  get name() {
+    return this.#name;
+  }
+  set name(v) {
+    this.#name = v;
+  }
 }
-let b = new A();
+
+let b = new Person(){name = 'tom'};
 ";
 var parser = new Parser(new ParserOptions { 
 

@@ -22,6 +22,7 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitTuple(ITupleOperation operation, Queue<VariableDeclaration> argument)
 	{
+		/*
 		var elements = new List<Expression?>();
 		var tupleType = (INamedTypeSymbol)operation.NaturalType!;
 		for (var index = 0; index < operation.Elements.Length; index++)
@@ -40,6 +41,27 @@ public partial class SemanticWalker
 		var args = new ArrayExpression(NodeList.From(elements));
 		var call = new CallExpression(func, NodeList.From<Expression>(args), false);
 		return call;
+		*/
+		
+		var nodes = new List<Node>();
+		var tupleType = (INamedTypeSymbol)operation.NaturalType!;
+		for (var index = 0; index < operation.Elements.Length; index++)
+		{
+			var fieldName = tupleType.TupleElements[index].Name;
+			var element = operation.Elements[index];
+			var key = new Identifier(fieldName);
+			var value = Translate<Expression>(element, argument);
+			nodes.Add(new ObjectProperty(
+				PropertyKind.Init,
+				key: key,
+				value: value,
+				computed: false,
+				shorthand: false,
+				method: false
+			));
+		}
+
+		return new ObjectExpression(NodeList.From(nodes));		
 	}
 
 	/// <summary>

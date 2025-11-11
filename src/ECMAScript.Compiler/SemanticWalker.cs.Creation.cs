@@ -1,11 +1,8 @@
 ﻿using Acornima;
 using Acornima.Ast;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace ECMAScript.Compiler;
 
@@ -27,21 +24,6 @@ public partial class SemanticWalker
 		if (operation.Type is null)
 			return HandleTransformationFailure(operation, "Object creation type could not be translated to JavaScript.");
 
-		// 处理匿名类型创建
-		if (operation.Type.IsAnonymousType)
-		{
-			var properties = new List<Node>();
-			if (operation.Initializer is not null)
-			{
-				foreach (var initializer in operation.Initializer.Initializers)
-				{
-					Translate(properties, initializer, argument);
-				}
-			}
-
-			return new ObjectExpression(NodeList.From(properties));
-		}
-
 		// 普通对象创建
 		var callee = new Identifier(operation.Type.Name);
 		var arguments = new List<Expression>();
@@ -52,6 +34,27 @@ public partial class SemanticWalker
 		}
 
 		return new NewExpression(callee, NodeList.From(arguments));
+	}
+
+	/// <summary>
+	/// 处理匿名对象创建操作
+	/// C# 示例：
+	/// new { Name = "John", Age = 25 }  // 匿名对象
+	/// 转换结果：{ name: "John", age: 25 }
+	/// </summary>
+	/// <param name="operation">当前访问的operation</param>
+	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+	/// <returns>Acornima的ESTree的Node</returns>
+	public override Acornima.Ast.Node? VisitAnonymousObjectCreation(IAnonymousObjectCreationOperation operation, Queue<VariableDeclaration> argument)
+	{
+		var properties = new List<Node>();
+
+		foreach (var initializer in operation.Initializers)
+		{
+			Translate(properties, initializer, argument);
+		}
+
+		return new ObjectExpression(NodeList.From(properties));
 	}
 
 	/// <summary>
@@ -121,27 +124,6 @@ public partial class SemanticWalker
 		}
 
 		return new ArrayExpression(NodeList.From(elements));
-	}
-
-	/// <summary>
-	/// 处理匿名对象创建操作
-	/// C# 示例：
-	/// new { Name = "John", Age = 25 }  // 匿名对象
-	/// 转换结果：{ name: "John", age: 25 }
-	/// </summary>
-	/// <param name="operation">当前访问的operation</param>
-	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitAnonymousObjectCreation(IAnonymousObjectCreationOperation operation, Queue<VariableDeclaration> argument)
-	{
-		var properties = new List<Node>();
-
-		foreach (var initializer in operation.Initializers)
-		{
-			Translate(properties, initializer, argument);
-		}
-
-		return new ObjectExpression(NodeList.From(properties));
 	}
 
 	/// <summary>

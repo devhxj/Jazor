@@ -223,6 +223,10 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitPropertyReference(IPropertyReferenceOperation operation, Queue<VariableDeclaration> argument)
 	{
+		// 对象初始化器 或 匿名对象创建
+		if (operation.Parent?.Parent is IObjectOrCollectionInitializerOperation or IAnonymousObjectCreationOperation)
+       		return new Identifier(operation.Property.Name);     
+
 		if (operation.Instance is not null)
 		{
 			var expr = Translate<Expression>(operation.Instance, argument);
