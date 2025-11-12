@@ -329,7 +329,7 @@ public sealed class SemanticWalkerCreationTest
     }
 
     [TestMethod]
-    public void VisitObjectOrCollectionInitializer_ObjectInitializer1()
+    public void VisitObjectCreation_ObjectInitializer()
     {
         var code = @"
             class TestClass
@@ -351,12 +351,11 @@ public sealed class SemanticWalkerCreationTest
 
         var operation = GetObjectCreationOperationAt(code);
         var walker = new SemanticWalker(true);
-        var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!, new());
+        var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("{Property1:'value1',Property2:42}", script);
+        Assert.AreEqual("new MyClass(2,3);obj.Property1='value1';obj.Property2=42;", script);
     }
-
 
     [TestMethod]
     public void VisitObjectOrCollectionInitializer_ObjectInitializer()
@@ -382,7 +381,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("{Property1:'value1',Property2:42}", script);
+        Assert.AreEqual("obj.Property1='value1';obj.Property2=42;", script);
     }
 
     [TestMethod]
@@ -393,15 +392,28 @@ public sealed class SemanticWalkerCreationTest
             {
                 void TestMethod()
                 {
-                    var obj = new MyClass { Property = ""value"" };
+                    var obj = new A { A1={ ""Test"",B2=3},A2 = ""value"" };
                 }
+
+                class A
+                {
+                    public B A1 { get; set; }
+                    public string A2 { get; set; }
+                }     
+
+                class B
+                {
+                    public string B1 { get; set; }
+                    public int B2 { get; set; }
+                }                             
             }
             ";
 
-        var operation = GetObjectCreationOperationAt(code);
-        var memberInitializer = (IMemberInitializerOperation)operation.Initializer!.Initializers.First();
         var walker = new SemanticWalker(true);
-        var node = walker.VisitMemberInitializer(memberInitializer, new());
+        var operation = GetObjectCreationOperationAt(code);
+        //var memberInitializer = (IMemberInitializerOperation)operation.Initializer!.Initializers.First();
+        //var node = walker.VisitMemberInitializer(memberInitializer, new());
+        var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
         Assert.AreEqual("Property='value'", script);

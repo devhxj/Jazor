@@ -33,7 +33,53 @@ public partial class SemanticWalker
 			Translate(arguments, arg.Value, argument);
 		}
 
-		return new NewExpression(callee, NodeList.From(arguments));
+		var newExpr = new NewExpression(callee, NodeList.From(arguments));
+
+		if (operation.Initializer is null)
+			return newExpr;
+
+		Expression? obj = null;
+		if (operation.Parent?.Parent is IVariableDeclaratorOperation variableDeclaratorOp)
+		{
+			obj = new Identifier(variableDeclaratorOp.Symbol.Name);
+		}
+		else if (operation.Parent?.Parent is ISimpleAssignmentOperation simpleAssignmentOp)
+		{
+			obj = Translate<Expression>(simpleAssignmentOp.Target, argument);
+		}
+
+		var initializers = new List<Statement>() { new NonSpecialExpressionStatement(newExpr) };
+		foreach (var initializer in operation.Initializer.Initializers)
+		{
+			if (initializer is ISimpleAssignmentOperation simpleAssignmentOp)
+			{
+				var prop = Translate<Expression>(simpleAssignmentOp.Target, argument);
+				var value = Translate<Expression>(simpleAssignmentOp.Value, argument);
+				var left = new MemberExpression(
+					obj,
+					prop,
+					computed: false,
+					optional: false
+				);
+				var expr = new AssignmentExpression(Operator.Assignment, left, value);
+				initializers.Add(new NonSpecialExpressionStatement(expr));
+			}
+			else if (initializer is IMemberInitializerOperation memberInitializerOp)
+			{
+				if (memberInitializerOp.InitializedMember is IPropertyReferenceOperation propertyReferenceOp)
+				{
+
+				}
+				if (memberInitializerOp.InitializedMember is IFieldReferenceOperation fieldReferenceOperation)
+                {
+                    
+                }				
+			}
+
+			//var expr = Translate<Expression>(initializer, argument);
+			//initializers.Add(new NonSpecialExpressionStatement(expr));
+		}		
+		return new StatementGroup(NodeList.From(initializers));
 	}
 
 	/// <summary>
@@ -51,7 +97,21 @@ public partial class SemanticWalker
 
 		foreach (var initializer in operation.Initializers)
 		{
-			Translate(properties, initializer, argument);
+			if (initializer is ISimpleAssignmentOperation simpleAssignmentOp)
+			{
+				var value = Translate<Expression>(simpleAssignmentOp.Value, argument);
+				var key = Translate<Expression>(simpleAssignmentOp.Target, argument);
+				var prop = new ObjectProperty(
+					PropertyKind.Init,
+					key: key,
+					value: value,
+					computed: false,
+					shorthand: false,
+					method: false
+				);
+				properties.Add(prop);
+			}
+			else HandleTransformationFailure(initializer, "");
 		}
 
 		return new ObjectExpression(NodeList.From(properties));
@@ -109,7 +169,7 @@ public partial class SemanticWalker
 		{
 			foreach (var element in operation.Initializer.ElementValues)
 			{
-				Translate(elements, element, argument,null);
+				Translate(elements, element, argument, null);
 			}
 		}
 		else
@@ -126,6 +186,19 @@ public partial class SemanticWalker
 		return new ArrayExpression(NodeList.From(elements));
 	}
 
+	private List<Statement> TranslateObjectOrCollectionInitializer(IObjectOrCollectionInitializerOperation operation, Queue<VariableDeclaration> argument)
+	{
+		var initializers = new List<Statement>();
+
+		foreach (var initializer in operation.Initializers)
+		{
+			var expr = Translate<Expression>(initializer, argument);
+			initializers.Add(new NonSpecialExpressionStatement(expr));
+		}
+
+		return initializers;
+	}
+
 	/// <summary>
 	/// 处理对象或集合初始化器操作
 	/// C# 示例：
@@ -138,15 +211,8 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitObjectOrCollectionInitializer(IObjectOrCollectionInitializerOperation operation, Queue<VariableDeclaration> argument)
 	{
-		var initializers = new List<Node>();
-
-		foreach (var initializer in operation.Initializers)
-		{
-			Translate(initializers, initializer, argument);
-		}
-
-		// 默认返回对象表达式
-		return new ObjectExpression(NodeList.From(initializers));
+		var initializers = TranslateObjectOrCollectionInitializer(operation, argument);
+		return new StatementGroup(NodeList.From(initializers));
 	}
 
 	/// <summary>
@@ -179,75 +245,19 @@ public partial class SemanticWalker
 	}
 
 	/// <summary>
-	/// 处理插值字符串操作
+	/// 处理委托创建操作
 	/// C# 示例：
-	/// $"Hello, {name}!"           // 插值字符串
-	/// $"Value: {x + y}"           // 包含表达式的插值字符串
-	/// 转换结果：`Hello${name}!` / `Value: ${(x + y)}`
+	/// Action action = Method;              // 方法组转委托
+	/// Func<int, string> func = x => x.ToString(); // Lambda 转委托
+	/// EventHandler handler = new EventHandler(OnEvent); // 显式委托创建
+	/// 转换结果：转换为函数引用或箭头函数
 	/// </summary>
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitInterpolatedString(IInterpolatedStringOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitDelegateCreation(IDelegateCreationOperation operation, Queue<VariableDeclaration> argument)
 	{
-		var quasis = new List<TemplateElement>();
-		var expressions = new List<Expression>();
-
-		foreach (var part in operation.Parts)
-		{
-			switch (part)
-			{
-				case IInterpolatedStringTextOperation textOp:
-					// 遇到文本，直接添加为 quasi
-					var literal = textOp.Text as ILiteralOperation;
-					var cooked = literal?.ConstantValue.Value as string ?? "";
-					quasis.Add(new TemplateElement(
-						TemplateValue.From(cooked, cooked),
-						tail: false // tail 将在最后统一设置
-					));
-					break;
-
-				case IInterpolationOperation interpOp:
-					// 核心逻辑：在处理表达式前，确保它前面有一个 quasi。
-					// 如果当前 quasi 数量不比 expression 多一个，说明前面是表达式或这是开头，需要补一个空的 quasi。
-					if (quasis.Count == expressions.Count)
-					{
-						quasis.Add(new TemplateElement(
-							TemplateValue.From("", ""),
-							tail: false
-						));
-					}
-
-					// 转换并添加表达式
-					var expr = Visit(interpOp.Expression, argument) as Expression;
-					if (expr is not null)
-					{
-						expressions.Add(expr);
-					}
-					break;
-			}
-		}
-
-		// 循环结束后，处理尾部 quasi
-		if (quasis.Count == expressions.Count)
-		{
-			// 如果数量相等，说明字符串以表达式结尾，需要补一个空的尾部 quasi。
-			quasis.Add(new TemplateElement(TemplateValue.From("", ""), tail: true));
-		}
-		else if (quasis.Count > 0)
-		{
-			// 否则，字符串以文本结尾，将最后一个 quasi 标记为 tail。
-			var lastQuasi = quasis[quasis.Count - 1];
-			quasis[quasis.Count - 1] = new TemplateElement(lastQuasi.Value, tail: true);
-		}
-
-		// 优化：如果没有任何表达式，只有一个文本部分，返回更简单的 StringLiteral。
-		if (expressions.Count == 0 && quasis.Count == 1)
-		{
-			return new StringLiteral(quasis[0].Value.Cooked ?? "", quasis[0].Value.Raw);
-		}
-
-		// 返回结构完整的 TemplateLiteral
-		return new TemplateLiteral(NodeList.From(quasis), NodeList.From(expressions));
-	}
+		// 委托创建转换为函数引用或箭头函数
+		return Visit(operation.Target, argument);
+	}	
 }

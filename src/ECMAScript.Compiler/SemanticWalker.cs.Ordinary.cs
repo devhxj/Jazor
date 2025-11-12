@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ECMAScript.Compiler;
 
@@ -582,32 +583,29 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitSimpleAssignment(ISimpleAssignmentOperation operation, Queue<VariableDeclaration> argument)
 	{
-		if (operation.Parent is IObjectOrCollectionInitializerOperation op)
-        {
-            var type = op.Type;
-        }
-
 		var value = Translate<Expression>(operation.Value, argument);
-		if (operation.Parent is IAnonymousObjectCreationOperation)
+		Expression? left = null;
+		if (operation.Parent is IObjectOrCollectionInitializerOperation objectOrCollectionInitializerOp)
 		{
-			var key = Translate<Expression>(operation.Target, argument);
-			return new ObjectProperty(
-				PropertyKind.Init,
-				key: key,
-				value: value,
-				computed: false,
-				shorthand: false,
-				method: false
-			);
+			if (objectOrCollectionInitializerOp.Parent?.Parent?.Parent is IVariableDeclaratorOperation variableDeclaratorOp)
+			{
+				var obj = variableDeclaratorOp.Symbol.Name;
+				var prop = Translate<Expression>(operation.Target, argument);
+				left = new MemberExpression(
+					new Identifier(obj),
+					prop,
+					computed: false,
+					optional: false
+				);
+			}
 		}
 		else
-		{
-			var left = Translate<Expression>(operation.Target, argument, null);
-			if (left is null)
-				return value;
-			else
-				return new AssignmentExpression(Operator.Assignment, left, value);
-		}
+			left = Translate<Expression>(operation.Target, argument, null);
+			
+		if (left is null)
+			return value;
+		else
+			return new AssignmentExpression(Operator.Assignment, left, value);
 	}
 
 	/// <summary>
