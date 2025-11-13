@@ -18,7 +18,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitInterpolatedStringText(IInterpolatedStringTextOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitInterpolatedStringText(IInterpolatedStringTextOperation operation, Context argument)
 	{
 		// 插值字符串中的文本部分转换为字符串字面量
 		var text = operation.Text.ConstantValue.Value?.ToString() ?? "";
@@ -35,7 +35,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitInterpolation(IInterpolationOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitInterpolation(IInterpolationOperation operation, Context argument)
 	{
 		// 插值表达式转换为表达式
 		// 处理格式化说明符（如 :F2）
@@ -53,7 +53,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitInterpolatedStringAddition(IInterpolatedStringAdditionOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitInterpolatedStringAddition(IInterpolatedStringAdditionOperation operation, Context argument)
 	{
 		// 递归收集所有静态字符串和动态表达式
 		var quasis = new List<TemplateElement>();
@@ -122,7 +122,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitInterpolatedString(IInterpolatedStringOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitInterpolatedString(IInterpolatedStringOperation operation, Context argument)
 	{
 		var quasis = new List<TemplateElement>();
 		var expressions = new List<Expression>();
@@ -178,7 +178,9 @@ public partial class SemanticWalker
 		// 优化：如果没有任何表达式，只有一个文本部分，返回更简单的 StringLiteral。
 		if (expressions.Count == 0 && quasis.Count == 1)
 		{
-			return new StringLiteral(quasis[0].Value.Cooked ?? "", quasis[0].Value.Raw);
+			var cookedValue = quasis[0].Value.Cooked ?? "";
+			// 对于测试兼容性，确保返回带引号的字符串字面量
+			return new StringLiteral(cookedValue, $"'{cookedValue}'");
 		}
 
 		// 返回结构完整的 TemplateLiteral

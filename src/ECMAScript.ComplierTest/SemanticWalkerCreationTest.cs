@@ -1,3 +1,4 @@
+using Acornima.Ast;
 using ECMAScript.Compiler;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -351,7 +352,8 @@ public sealed class SemanticWalkerCreationTest
 
         var operation = GetObjectCreationOperationAt(code);
         var walker = new SemanticWalker(true);
-        var node = walker.VisitObjectCreation(operation, new());
+        var left = new Identifier("obj");
+        var node = walker.VisitObjectCreation(operation, (left, AstType.Any, []));
         var script = node?.ToECMAScript();
 
         Assert.AreEqual("new MyClass(2,3);obj.Property1='value1';obj.Property2=42;", script);
@@ -378,7 +380,8 @@ public sealed class SemanticWalkerCreationTest
 
         var operation = GetObjectCreationOperationAt(code);
         var walker = new SemanticWalker(true);
-        var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!, new());
+        var left = new Identifier("obj");
+        var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!, (left, AstType.Any, []));
         var script = node?.ToECMAScript();
 
         Assert.AreEqual("obj.Property1='value1';obj.Property2=42;", script);
@@ -392,31 +395,38 @@ public sealed class SemanticWalkerCreationTest
             {
                 void TestMethod()
                 {
-                    var obj = new A { A1={ ""Test"",B2=3},A2 = ""value"" };
+                    var obj = new A { A1 = { B1 = ""Test"", B2 = { C1 = ""a"", C2 = 9 } }, A2 = ""value"" };
                 }
 
                 class A
                 {
-                    public B A1 { get; set; }
-                    public string A2 { get; set; }
-                }     
+                    public B? A1 { get; set; }
+                    public string? A2 { get; set; }
+                }
 
                 class B
                 {
-                    public string B1 { get; set; }
-                    public int B2 { get; set; }
-                }                             
+                    public string? B1 { get; set; }
+                    public C? B2 { get; set; }
+                }
+
+                class C
+                {
+                    public string? C1 { get; set; }
+                    public int C2 { get; set; }
+                }	
             }
             ";
 
         var walker = new SemanticWalker(true);
         var operation = GetObjectCreationOperationAt(code);
+        var left = new Identifier("obj");
         //var memberInitializer = (IMemberInitializerOperation)operation.Initializer!.Initializers.First();
         //var node = walker.VisitMemberInitializer(memberInitializer, new());
-        var node = walker.VisitObjectCreation(operation, new());
+        var node = walker.VisitObjectCreation(operation, (left, AstType.Any, []));
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("Property='value'", script);
+        Assert.AreEqual("new A;obj.A1={B1:'Test',B2:{C1:'a',C2:9}};obj.A2='value';", script);
     }
 
     [TestMethod]
@@ -532,14 +542,13 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToKnRECMAScript();
 
         Assert.AreEqual(@"{
-  let simpleObj = new MyClass();
+  let simpleObj = new MyClass;
   let paramObj = new MyClass(42, 'test');
-  let anonymousObj = {Name:'John',Age:30};
-  let array1 = [1,2,3];
+  let anonymousObj = { Name: 'John', Age: 30 };
+  let array1 = [1, 2, 3];
   let array2 = new Array(5);
   let name = 'John';
   let message = `Hello, ${name}!`;
-
 }", script);
     }
 }

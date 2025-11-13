@@ -1,3 +1,4 @@
+using Acornima.Ast;
 using ECMAScript.Compiler;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -685,7 +686,7 @@ public sealed class SemanticWalkerTupleTest
         var operation = (ITupleBinaryOperation)initializer!.Value;
         var walker = new SemanticWalker(true);
         var queue = new Queue<Acornima.Ast.VariableDeclaration>();
-        var node = walker.VisitTupleBinaryOperator(operation, queue);
+        var node = walker.VisitTupleBinaryOperator(operation, (null, AstType.Any, queue));
         var exprScript = node?.ToECMAScript();
         var declScript = "";
         foreach (var d in queue)
@@ -721,7 +722,7 @@ public sealed class SemanticWalkerTupleTest
         var operation = (ITupleBinaryOperation)initializer!.Value;
         var walker = new SemanticWalker(true);
         var queue = new Queue<Acornima.Ast.VariableDeclaration>();
-        var node = walker.VisitTupleBinaryOperator(operation, queue);
+        var node = walker.VisitTupleBinaryOperator(operation, (null, AstType.Any, queue));
         var exprScript = node?.ToECMAScript();
         var declScript = string.Concat(queue.Select(d => d.ToECMAScript()));
         if (!string.IsNullOrEmpty(declScript) && !declScript.EndsWith(";"))

@@ -19,7 +19,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitObjectCreation(IObjectCreationOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitObjectCreation(IObjectCreationOperation operation, Context argument)
 	{
 		if (operation.Type is null)
 			return HandleTransformationFailure(operation, "Object creation type could not be translated to JavaScript.");
@@ -33,53 +33,14 @@ public partial class SemanticWalker
 			Translate(arguments, arg.Value, argument);
 		}
 
-		var newExpr = new NewExpression(callee, NodeList.From(arguments));
+		var expr = new NewExpression(callee, NodeList.From(arguments));
 
+		// 检查是否应该返回简单的对象创建（当没有复杂的初始化器时）
 		if (operation.Initializer is null)
-			return newExpr;
+			return expr;
 
-		Expression? obj = null;
-		if (operation.Parent?.Parent is IVariableDeclaratorOperation variableDeclaratorOp)
-		{
-			obj = new Identifier(variableDeclaratorOp.Symbol.Name);
-		}
-		else if (operation.Parent?.Parent is ISimpleAssignmentOperation simpleAssignmentOp)
-		{
-			obj = Translate<Expression>(simpleAssignmentOp.Target, argument);
-		}
-
-		var initializers = new List<Statement>() { new NonSpecialExpressionStatement(newExpr) };
-		foreach (var initializer in operation.Initializer.Initializers)
-		{
-			if (initializer is ISimpleAssignmentOperation simpleAssignmentOp)
-			{
-				var prop = Translate<Expression>(simpleAssignmentOp.Target, argument);
-				var value = Translate<Expression>(simpleAssignmentOp.Value, argument);
-				var left = new MemberExpression(
-					obj,
-					prop,
-					computed: false,
-					optional: false
-				);
-				var expr = new AssignmentExpression(Operator.Assignment, left, value);
-				initializers.Add(new NonSpecialExpressionStatement(expr));
-			}
-			else if (initializer is IMemberInitializerOperation memberInitializerOp)
-			{
-				if (memberInitializerOp.InitializedMember is IPropertyReferenceOperation propertyReferenceOp)
-				{
-
-				}
-				if (memberInitializerOp.InitializedMember is IFieldReferenceOperation fieldReferenceOperation)
-                {
-                    
-                }				
-			}
-
-			//var expr = Translate<Expression>(initializer, argument);
-			//initializers.Add(new NonSpecialExpressionStatement(expr));
-		}		
-		return new StatementGroup(NodeList.From(initializers));
+		var groups = Translate<StatementGroup>(operation.Initializer, argument);
+		return groups.With(expr, false);
 	}
 
 	/// <summary>
@@ -91,7 +52,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitAnonymousObjectCreation(IAnonymousObjectCreationOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitAnonymousObjectCreation(IAnonymousObjectCreationOperation operation, Context argument)
 	{
 		var properties = new List<Node>();
 
@@ -127,7 +88,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitTypeParameterObjectCreation(ITypeParameterObjectCreationOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitTypeParameterObjectCreation(ITypeParameterObjectCreationOperation operation, Context argument)
 	{
 		if (operation.Type is null)
 			return HandleTransformationFailure(operation, "Type parameter object creation type could not be translated to JavaScript.");
@@ -151,7 +112,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitArrayCreation(IArrayCreationOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitArrayCreation(IArrayCreationOperation operation, Context argument)
 	{
 		// 检查是否为多维数组
 		if (operation.Type is IArrayTypeSymbol arrayType)
@@ -186,19 +147,6 @@ public partial class SemanticWalker
 		return new ArrayExpression(NodeList.From(elements));
 	}
 
-	private List<Statement> TranslateObjectOrCollectionInitializer(IObjectOrCollectionInitializerOperation operation, Queue<VariableDeclaration> argument)
-	{
-		var initializers = new List<Statement>();
-
-		foreach (var initializer in operation.Initializers)
-		{
-			var expr = Translate<Expression>(initializer, argument);
-			initializers.Add(new NonSpecialExpressionStatement(expr));
-		}
-
-		return initializers;
-	}
-
 	/// <summary>
 	/// 处理对象或集合初始化器操作
 	/// C# 示例：
@@ -209,10 +157,61 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitObjectOrCollectionInitializer(IObjectOrCollectionInitializerOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitObjectOrCollectionInitializer(IObjectOrCollectionInitializerOperation operation, Context argument)
 	{
-		var initializers = TranslateObjectOrCollectionInitializer(operation, argument);
-		return new StatementGroup(NodeList.From(initializers));
+		// 如果是创建对象
+		if (operation.Parent is IObjectCreationOperation objectCreationOp && objectCreationOp.Initializer == operation)
+		{
+			var initializers = new List<Statement>();
+			// 处理对象初始化器，只处理第一层，内部嵌套转换为对象字面量
+			foreach (var initializer in objectCreationOp.Initializer.Initializers)
+			{
+				if (initializer is ISimpleAssignmentOperation simpleAssignmentOp)
+				{
+					var prop = Translate<Expression>(simpleAssignmentOp.Target, argument);
+					var left = argument.Left is null 
+						? prop 
+						: new MemberExpression(argument.Left, prop, computed: false, optional: false);
+					var right = Translate<Expression>(simpleAssignmentOp.Value, argument);
+					var expr = new AssignmentExpression(Operator.Assignment, left, right);
+					initializers.Add(new NonSpecialExpressionStatement(expr));
+				}
+				else if (initializer is IMemberInitializerOperation memberInitializerOp)
+				{
+					var target = memberInitializerOp.InitializedMember switch
+					{
+						IPropertyReferenceOperation propertyReferenceOp => new Identifier(propertyReferenceOp.Property.Name),
+						IFieldReferenceOperation fieldReferenceOp => new Identifier(fieldReferenceOp.Field.Name),
+						_ => null
+					};
+
+					if (target is null)
+						return HandleTransformationFailure(initializer, "");
+						
+					Expression left = argument.Left is null 
+						? target 
+						: new MemberExpression(argument.Left, target, computed: false, optional: false);
+					var right = Translate<Expression>(memberInitializerOp.Initializer, (left, AstType.Expression, argument.Vars));
+					var expr = new AssignmentExpression(Operator.Assignment, left, right);
+					initializers.Add(new NonSpecialExpressionStatement(expr));					
+				}
+				else
+					HandleTransformationFailure(initializer, "");
+
+			}
+			return new StatementGroup(NodeList.From(initializers));
+		}
+		
+		// IObjectCreationOperation.Initializer 在VisitObjectCreation中处理，
+		// 此处主要处理IMemberInitializerOperation.Initializer中或可能嵌套的对象或集合初始化器操作
+		// 转换为字面量对象
+		var nodes = new List<Node>();
+		foreach (var initializer in operation.Initializers)
+		{
+			Translate(nodes,initializer, (null, AstType.ObjectProperty, argument.Vars));
+		}		
+
+		return new ObjectExpression(NodeList.From(nodes));		
 	}
 
 	/// <summary>
@@ -224,24 +223,31 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitMemberInitializer(IMemberInitializerOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitMemberInitializer(IMemberInitializerOperation operation, Context argument)
 	{
-		string memberName;
-		if (operation.InitializedMember is IFieldSymbol field)
+		var target = operation.InitializedMember switch
 		{
-			memberName = field.Name;
-		}
-		else if (operation.InitializedMember is IPropertySymbol property)
-		{
-			memberName = property.Name;
-		}
-		else
-			return HandleTransformationFailure(operation.InitializedMember, "Member initializer could not be translated to JavaScript.");
+			IPropertyReferenceOperation propertyReferenceOp => new Identifier(propertyReferenceOp.Property.Name),
+			IFieldReferenceOperation fieldReferenceOp => new Identifier(fieldReferenceOp.Field.Name),
+			_ => null
+		};
+		if (target is null)
+			return HandleTransformationFailure(operation.InitializedMember, "");
 
-		var key = new Identifier(memberName);
-		var value = Translate<Expression>(operation.Initializer, argument);
+		var value = Translate<Expression>(operation.Initializer, (null, AstType.Expression, argument.Vars));
+		if (argument.Out == AstType.ObjectProperty)
+        {
+			return new ObjectProperty(
+				PropertyKind.Init,
+				key: target,
+				value: value,
+				computed: false,
+				shorthand: false,
+				method: false
+			);
+        }
 
-		return new AssignmentExpression(Operator.Assignment, key, value);
+		return null;
 	}
 
 	/// <summary>
@@ -255,7 +261,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitDelegateCreation(IDelegateCreationOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitDelegateCreation(IDelegateCreationOperation operation, Context argument)
 	{
 		// 委托创建转换为函数引用或箭头函数
 		return Visit(operation.Target, argument);

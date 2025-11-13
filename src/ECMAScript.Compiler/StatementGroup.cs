@@ -1,8 +1,19 @@
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Acornima;
 using Acornima.Ast;
 
 namespace ECMAScript.Compiler;
+
+public enum AstType
+{
+    Any,
+    Expression,
+    Statement,
+    Comment,
+    StatementGroup,
+    ObjectProperty,
+}
 
 public sealed class StatementGroup(in NodeList<Statement> elements)
     : Statement(NodeType.ExpressionStatement)
@@ -33,6 +44,25 @@ public sealed class StatementGroup(in NodeList<Statement> elements)
             }
             return this;
         }
+    }
+
+    public StatementGroup With(StatementOrExpression item, bool append = true)
+    {
+        var statements = new List<Statement>(_elements.Count + 1);
+        var statement = item is Statement s
+            ? s
+            : new NonSpecialExpressionStatement((Expression)item);
+        if (append)
+        {
+            statements.AddRange(_elements);
+            statements.Add(statement);
+        }
+        else
+        {
+            statements.Add(statement);
+            statements.AddRange(_elements);
+        }
+        return new(NodeList.From(statements));
     }
 }
 

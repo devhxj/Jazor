@@ -27,7 +27,7 @@ namespace ECMAScript.Compiler;
 /// - 生成最简洁的JavaScript代码，避免复杂的IIFE包装（除非必要）
 /// - 递归深度控制，防止栈溢出
 /// </summary>
-public sealed partial class SemanticWalker : OperationVisitor<Queue<VariableDeclaration>, Node?>
+public sealed partial class SemanticWalker : OperationVisitor<Context, Node?>
 {
     private int _recursionDepth;
 
@@ -38,11 +38,11 @@ public sealed partial class SemanticWalker : OperationVisitor<Queue<VariableDecl
 
     private readonly Action<Location, string?>? _report;
 
-    private readonly ConcurrentDictionary<int,(OperationKind Kind,string Name)> _cache = [];
+    private readonly ConcurrentDictionary<int, (OperationKind Kind, string Name)> _cache = [];
 
     public SemanticWalker() { }
 
-    public SemanticWalker(bool test)=> _test = test;
+    public SemanticWalker(bool test) => _test = test;
 
     public SemanticWalker(Action<Location, string?> report) => _report = report;
 
@@ -53,35 +53,35 @@ public sealed partial class SemanticWalker : OperationVisitor<Queue<VariableDecl
             RuntimeHelpers.EnsureSufficientExecutionStack();
     }
 
-	/// <summary>
-	/// 方法体、静态字段初始值、属性 getter/setter、构造函数初始值设定项、局部函数、匿名函数/Lambda 转换为 Acornima AST。
-	/// </summary>
-	/// <param name="operation">BlockSyntax对应的IOperation</param>
-	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? Visit(IOperation? operation, Queue<VariableDeclaration> argument)
-	{
-		if (operation is null)
-			return null;
+    /// <summary>
+    /// 方法体、静态字段初始值、属性 getter/setter、构造函数初始值设定项、局部函数、匿名函数/Lambda 转换为 Acornima AST。
+    /// </summary>
+    /// <param name="operation">BlockSyntax对应的IOperation</param>
+    /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+    /// <returns>Acornima的ESTree的Node</returns>
+    public override Acornima.Ast.Node? Visit(IOperation? operation, Context argument)
+    {
+        if (operation is null)
+            return null;
 
-		_recursionDepth++;
-		try
-		{
-			EnsureSufficientExecutionStack(_recursionDepth);
-			return operation.Accept(this, argument);
-		}
-		finally
-		{
-			_recursionDepth--;
-		}
-	}
+        _recursionDepth++;
+        try
+        {
+            EnsureSufficientExecutionStack(_recursionDepth);
+            return operation.Accept(this, argument);
+        }
+        finally
+        {
+            _recursionDepth--;
+        }
+    }
 
-	/// <summary>
-	/// 根据操作生成以v开头的稳定的唯一名称
-	/// </summary>
-	/// <param name="operation">操作</param>
-	/// <returns></returns>
-	private string GetUniqueName(IOperation operation)
+    /// <summary>
+    /// 根据操作生成以v开头的稳定的唯一名称
+    /// </summary>
+    /// <param name="operation">操作</param>
+    /// <returns></returns>
+    private string GetUniqueName(IOperation operation)
     {
         //var hash = operation.Syntax.GetHashCode();
         //if(_cache.TryGetValue(hash,out var cache) && cache.Kind == operation.Kind)
@@ -91,7 +91,7 @@ public sealed partial class SemanticWalker : OperationVisitor<Queue<VariableDecl
         var sourceSpan = operation.Syntax.GetLocation().SourceSpan;
 
         //方便单元测试，生成固定名称
-        if(_test)
+        if (_test)
             return $"v$test";
 
         using var sha256 = SHA256.Create();
@@ -108,28 +108,28 @@ public sealed partial class SemanticWalker : OperationVisitor<Queue<VariableDecl
         return name;
     }
 
-	/// <summary>
-	/// 操作无法转换时的兜底方法，提供详细的错误信息，包括操作类型
-	/// </summary>
-	/// <param name="operation">无法转换的Operation</param>
-	/// <param name="message">错误信息</param>
-	/// <returns></returns>
-	/// <exception cref="OperationTransformationException">当操作无法转换时抛出</exception>
-	private Node HandleTransformationFailure(IOperation operation, string? message)
+    /// <summary>
+    /// 操作无法转换时的兜底方法，提供详细的错误信息，包括操作类型
+    /// </summary>
+    /// <param name="operation">无法转换的Operation</param>
+    /// <param name="message">错误信息</param>
+    /// <returns></returns>
+    /// <exception cref="OperationTransformationException">当操作无法转换时抛出</exception>
+    private Node HandleTransformationFailure(IOperation operation, string? message)
     {
         var location = operation.Syntax.GetLocation();
         _report?.Invoke(location, message);
         throw new OperationTransformationException(operation, message);
     }
 
-	/// <summary>
-	/// 语法无法转换时的兜底方法
-	/// </summary>
-	/// <param name="operation">无法转换的Operation</param>
-	/// <param name="message">错误信息</param>
-	/// <returns></returns>
-	/// <exception cref="SyntaxNodeTransformationException"></exception>
-	private Node HandleTransformationFailure(SyntaxNode node, string? message)
+    /// <summary>
+    /// 语法无法转换时的兜底方法
+    /// </summary>
+    /// <param name="operation">无法转换的Operation</param>
+    /// <param name="message">错误信息</param>
+    /// <returns></returns>
+    /// <exception cref="SyntaxNodeTransformationException"></exception>
+    private Node HandleTransformationFailure(SyntaxNode node, string? message)
     {
         var location = node.GetLocation();
         _report?.Invoke(location, message);
@@ -148,7 +148,7 @@ public sealed partial class SemanticWalker : OperationVisitor<Queue<VariableDecl
     /// <param name="argument">用于存放变量声明的队列</param>
     /// <returns>转换后的指定类型AST节点，如果操作为null或转换结果为null则抛出异常</returns>
     /// <exception cref="OperationTransformationException">当操作不为null但无法转换为目标类型时抛出</exception>
-    private T Translate<T>(IOperation operation, Queue<VariableDeclaration> argument) where T : INode
+    private T Translate<T>(IOperation operation, Context argument) where T : INode
     {
         if (Visit(operation, argument) is T result)
             return result;
@@ -172,7 +172,7 @@ public sealed partial class SemanticWalker : OperationVisitor<Queue<VariableDecl
     /// <param name="argument">用于存放变量声明的队列</param>
     /// <param name="defaultValue">为空时的默认值</param>
     /// <returns>转换后的指定类型AST节点，如果操作为null或转换结果为null则返回默认值</returns>
-    private T? Translate<T>(IOperation? operation, Queue<VariableDeclaration> argument,T? defaultValue) where T : INode
+    private T? Translate<T>(IOperation? operation, Context argument, T? defaultValue) where T : INode
     {
         if (operation is null)
             return defaultValue;
@@ -203,7 +203,7 @@ public sealed partial class SemanticWalker : OperationVisitor<Queue<VariableDecl
     /// <param name="target">用于存放成功转换的AST节点的集合</param>
     /// <param name="operation">要访问和转换的操作，可能为null</param>
     /// <param name="argument">用于存放变量声明的队列</param>
-    private void Translate<T>(ICollection<T> target, IOperation? operation, Queue<VariableDeclaration> argument) where T : INode
+    private void Translate<T>(ICollection<T> target, IOperation? operation, Context argument) where T : INode
     {
         if (operation is null)
             return;
@@ -235,7 +235,7 @@ public sealed partial class SemanticWalker : OperationVisitor<Queue<VariableDecl
     /// <param name="operation">要访问和转换的操作，可能为null</param>
     /// <param name="argument">用于存放变量声明的队列</param>
     /// <param name="defaultValue">为空时的默认值</param>
-    private void Translate<T>(ICollection<T?> target, IOperation? operation, Queue<VariableDeclaration> argument,T? defaultValue) where T : INode
+    private void Translate<T>(ICollection<T?> target, IOperation? operation, Context argument, T? defaultValue) where T : INode
     {
         if (operation is null)
             return;

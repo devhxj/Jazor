@@ -83,7 +83,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitIsPattern(IIsPatternOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitIsPattern(IIsPatternOperation operation, Context argument)
 	{
 		var pattern = Translate<Expression>(operation.Pattern, argument);
 
@@ -108,7 +108,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitIsType(IIsTypeOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitIsType(IIsTypeOperation operation, Context argument)
 	{
 		var valueOperand = Translate<Expression>(operation.ValueOperand, argument);
 		var targetType = operation.TypeOperand;
@@ -256,7 +256,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitConstantPattern(IConstantPatternOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitConstantPattern(IConstantPatternOperation operation, Context argument)
 	{
 		// 常量模式转换为字面量比较
 		return Visit(operation.Value, argument);
@@ -272,7 +272,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitDeclarationPattern(IDeclarationPatternOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitDeclarationPattern(IDeclarationPatternOperation operation, Context argument)
 	{
 		if (operation.DeclaredSymbol is null)
 			return null;
@@ -297,7 +297,7 @@ public partial class SemanticWalker
 	/// <param name="operation">丢弃模式操作</param>
 	/// <param name="argument">当前operation所属的父operation</param>
 	/// <returns>JavaScript布尔字面量true</returns>
-	public override Acornima.Ast.Node? VisitDiscardPattern(IDiscardPatternOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitDiscardPattern(IDiscardPatternOperation operation, Context argument)
 	{
 		// 丢弃模式的条件判断转换
 		// C# 示例：_ 表示"总是匹配"的模式
@@ -318,7 +318,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitIsNull(IIsNullOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitIsNull(IIsNullOperation operation, Context argument)
 	{
 		// null检查转换为 === null 比较
 		var operand = Translate<Expression>(operation.Operand, argument);
@@ -339,7 +339,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitPropertySubpattern(IPropertySubpatternOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitPropertySubpattern(IPropertySubpatternOperation operation, Context argument)
 	{
 		// 属性子模式的条件判断转换
 		// C# 示例：obj is { Name: "John" } 中的 Name: "John" 部分
@@ -389,7 +389,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitNegatedPattern(INegatedPatternOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitNegatedPattern(INegatedPatternOperation operation, Context argument)
 	{
 		// 取反模式的条件判断转换
 		// C# 示例：obj is not null 是一个布尔条件表达式
@@ -417,7 +417,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitBinaryPattern(IBinaryPatternOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitBinaryPattern(IBinaryPatternOperation operation, Context argument)
 	{
 		// 二元模式的条件判断转换
 		// C# 示例：value is > 0 and < 100 是一个布尔条件表达式
@@ -452,7 +452,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitTypePattern(ITypePatternOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitTypePattern(ITypePatternOperation operation, Context argument)
 	{
 		// 类型模式的条件判断转换
 		// C# 示例：obj is string 是一个布尔条件表达式
@@ -517,7 +517,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitRelationalPattern(IRelationalPatternOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitRelationalPattern(IRelationalPatternOperation operation, Context argument)
 	{
 		// 关系模式的条件判断转换
 		// C# 示例：value is > 0 是一个布尔条件表达式
@@ -607,7 +607,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitListPattern(IListPatternOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitListPattern(IListPatternOperation operation, Context argument)
 	{
 		// 从父operation获取目标名称，在节点内构建表达式
 		var targetName = ExtractPatternValName(operation.Parent);
@@ -672,7 +672,7 @@ public partial class SemanticWalker
 					if (declPattern.DeclaredSymbol is not null)
 					{
 						var variableName = declPattern.DeclaredSymbol.Name;
-						argument.Enqueue(new VariableDeclaration(
+						argument.Vars.Enqueue(new VariableDeclaration(
 							VariableDeclarationKind.Const,
 							NodeList.From(new VariableDeclarator(new Identifier(variableName), indexAccess))
 						));
@@ -717,7 +717,7 @@ public partial class SemanticWalker
 				);
 
 				// 将变量名添加到 argument 队列，由上层统一生成 const 语句
-				argument.Enqueue(new VariableDeclaration(
+				argument.Vars.Enqueue(new VariableDeclaration(
 					VariableDeclarationKind.Const,
 					NodeList.From(new VariableDeclarator(new Identifier(variableName), sliceCall))
 				));
@@ -743,7 +743,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitSlicePattern(ISlicePatternOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitSlicePattern(ISlicePatternOperation operation, Context argument)
 	{
 		// 切片模式的条件判断转换
 		// C# 示例：array is [.., var lastPart] 是一个布尔条件表达式
@@ -772,7 +772,7 @@ public partial class SemanticWalker
 		{
 			// 在解构上下文中，将变量名添加到 argument 队列，由上层统一生成 Let 语句
 			var variableName = declPattern.DeclaredSymbol.Name;
-			argument.Enqueue(new VariableDeclaration(
+			argument.Vars.Enqueue(new VariableDeclaration(
 				VariableDeclarationKind.Let,
 				NodeList.From(new VariableDeclarator(new Identifier(variableName), null))
 			));
@@ -814,7 +814,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitPatternCaseClause(IPatternCaseClauseOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitPatternCaseClause(IPatternCaseClauseOperation operation, Context argument)
 	{
 		// 模式 case 子句转换为条件表达式
 		return Visit(operation.Pattern, argument);
@@ -833,7 +833,7 @@ public partial class SemanticWalker
 	/// <param name="operation">递归模式操作</param>
 	/// <param name="argument">当前operation所属的父operation</param>
 	/// <returns>JavaScript组合条件表达式</returns>
-	public override Acornima.Ast.Node? VisitRecursivePattern(IRecursivePatternOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitRecursivePattern(IRecursivePatternOperation operation, Context argument)
 	{
 		// 递归模式的条件判断转换
 		// C# 示例：obj is Person { Name: "John", Age: > 18 }

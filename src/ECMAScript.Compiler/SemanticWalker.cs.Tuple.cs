@@ -20,7 +20,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitTuple(ITupleOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitTuple(ITupleOperation operation, Context argument)
 	{
 		/*
 		var elements = new List<Expression?>();
@@ -70,7 +70,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitDeconstructionAssignment(IDeconstructionAssignmentOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitDeconstructionAssignment(IDeconstructionAssignmentOperation operation, Context argument)
 	{
 		// C# 示例：
 		// var tuple = (aaa:1,2);
@@ -357,7 +357,7 @@ public partial class SemanticWalker
 	/// <param name="operation">元组二元操作</param>
 	/// <param name="argument">当前operation所属的父operation</param>
 	/// <returns>JavaScript逻辑表达式</returns>
-	public override Acornima.Ast.Node? VisitTupleBinaryOperator(ITupleBinaryOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitTupleBinaryOperator(ITupleBinaryOperation operation, Context argument)
 	{
 		// C#本身语法限定左右都必须是同样元素类型和个数的元组
 		// 所以此处不用考虑类型和个数不匹配
@@ -386,7 +386,7 @@ public partial class SemanticWalker
 				var declarator = new VariableDeclarator(leftExpr, init);
 				var declaration = new VariableDeclaration(VariableDeclarationKind.Const,
 					NodeList.From(declarator));
-				argument.Enqueue(declaration);
+				argument.Vars.Enqueue(declaration);
 			}
 			else if (left.Target is ITupleOperation leftTuple)
 				tupleLeft = leftTuple;
@@ -404,7 +404,7 @@ public partial class SemanticWalker
 				var declarator = new VariableDeclarator(rightExpr, init);
 				var declaration = new VariableDeclaration(VariableDeclarationKind.Const,
 					NodeList.From(declarator));
-				argument.Enqueue(declaration);
+				argument.Vars.Enqueue(declaration);
 			}
 			else if (right.Target is ITupleOperation rightTuple)
 				tupleRight = rightTuple;
@@ -484,7 +484,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitDiscardOperation(IDiscardOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitDiscardOperation(IDiscardOperation operation, Context argument)
 	{
 		// 在解构赋值模式中 (例如: (_, y) = tuple)
 		if (operation.Parent is IDeconstructionAssignmentOperation)

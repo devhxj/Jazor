@@ -30,7 +30,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitSwitch(ISwitchOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitSwitch(ISwitchOperation operation, Context argument)
 	{
 		if (Visit(operation.Value, argument) is not Expression discriminant)
 			return HandleTransformationFailure(operation.Value, "Switch discriminant could not be translated to JavaScript.");
@@ -89,7 +89,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitDefaultCaseClause(IDefaultCaseClauseOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitDefaultCaseClause(IDefaultCaseClauseOperation operation, Context argument)
 	{
 		// 默认case子句转换为switch语句中的default case
 		// 在JavaScript中，default case的test为null（表示没有条件）
@@ -113,7 +113,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitSwitchCase(ISwitchCaseOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitSwitchCase(ISwitchCaseOperation operation, Context argument)
 	{
 		// 将switch case转换为if-else链
 		var clauses = operation.Clauses;
@@ -154,7 +154,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitSingleValueCaseClause(ISingleValueCaseClauseOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitSingleValueCaseClause(ISingleValueCaseClauseOperation operation, Context argument)
 	{
 		// 将单值case转换为条件比较
 		// 返回比较表达式，需要在上级switch中组合成if-else
@@ -179,7 +179,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitSwitchExpression(ISwitchExpressionOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitSwitchExpression(ISwitchExpressionOperation operation, Context argument)
 	{
 		if (operation.Arms.Length == 0)
 			return null;
@@ -373,7 +373,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitSwitchExpressionArm(ISwitchExpressionArmOperation operation, Queue<VariableDeclaration> argument)
+	public override Acornima.Ast.Node? VisitSwitchExpressionArm(ISwitchExpressionArmOperation operation, Context argument)
 	{
 		var pattern = Translate<Expression>(operation.Pattern, argument);
 		var guard = Translate<Expression>(operation.Guard, argument,null);

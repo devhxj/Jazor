@@ -89,3 +89,30 @@ class Point
 		y = Y;
 	}
 }
+
+
+class TestClass1
+{
+	void TestMethod()
+	{
+		var obj = new A { A1 = { B1 = "Test", B2 = { C1 = "a", C2 = 9 } }, A2 = "value" };
+	}
+
+	class A
+	{
+		public B? A1 { get; set; }
+		public string? A2 { get; set; }
+	}
+
+	class B
+	{
+		public string? B1 { get; set; }
+		public C? B2 { get; set; }
+	}
+
+	class C
+	{
+		public string? C1 { get; set; }
+		public int C2 { get; set; }
+	}	
+}
