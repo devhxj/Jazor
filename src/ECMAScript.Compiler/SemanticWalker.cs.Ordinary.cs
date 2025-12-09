@@ -583,10 +583,12 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitSimpleAssignment(ISimpleAssignmentOperation operation, Context argument)
 	{
-		var value = Translate<Expression>(operation.Value, (null, AstType.Expression, argument.Vars));
-		var target = Translate<Expression>(operation.Target, (null, AstType.Expression, argument.Vars));
-		if (argument.Out == AstType.ObjectProperty)
-		{
+		var value = Translate<Expression>(operation.Value, (null, Scene.Expression, argument.Vars));
+		if (operation.Target is IDiscardOperation)
+			return value;
+
+		var target = Translate<Expression>(operation.Target, (null, Scene.Expression, argument.Vars));
+		if (argument.Out == Scene.ObjectProperty)
 			return new ObjectProperty(
 				PropertyKind.Init,
 				key: target,
@@ -595,9 +597,8 @@ public partial class SemanticWalker
 				shorthand: false,
 				method: false
 			);
-		}
-				
-		var left = target;
+		
+		var left = Translate<Expression>(operation.Target, (null, Scene.Expression, argument.Vars));
 		if (argument.Left is not null)
 		{
 			left = new MemberExpression(

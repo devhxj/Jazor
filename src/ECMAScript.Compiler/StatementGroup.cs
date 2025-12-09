@@ -5,7 +5,7 @@ using Acornima.Ast;
 
 namespace ECMAScript.Compiler;
 
-public enum AstType
+public enum Scene
 {
     Any,
     Expression,

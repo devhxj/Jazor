@@ -66,13 +66,13 @@ public static class ValueTupleModule
 
         public override bool Equals(object? other)
         {
-            if (other is not System.Tuple o || o.Length != this.Length)
+            if (other is not Tuple o || o.Length != this.Length)
                 return false;
 
             for (uint i = 0; i < this.Length; i++)
             {
                 object? a = this[i], b = o[i];
-                if (a is System.Tuple && b is System.Tuple)
+                if (a is Tuple && b is Tuple)
                 {
                     if (!a.Equals(b))
                         return false;

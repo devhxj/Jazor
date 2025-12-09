@@ -33,7 +33,9 @@ public partial class SemanticWalker
 			Translate(arguments, arg.Value, argument);
 		}
 
-		var expr = new NewExpression(callee, NodeList.From(arguments));
+		Expression expr = new NewExpression(callee, NodeList.From(arguments));
+		if (operation.Parent?.Kind == OperationKind.SimpleAssignment && argument.Left is not null)
+			expr = new AssignmentExpression(Operator.Assignment, argument.Left, expr);
 
 		// 检查是否应该返回简单的对象创建（当没有复杂的初始化器时）
 		if (operation.Initializer is null)
@@ -169,12 +171,21 @@ public partial class SemanticWalker
 				if (initializer is ISimpleAssignmentOperation simpleAssignmentOp)
 				{
 					var prop = Translate<Expression>(simpleAssignmentOp.Target, argument);
-					var left = argument.Left is null 
-						? prop 
+					var left = argument.Left is null
+						? prop
 						: new MemberExpression(argument.Left, prop, computed: false, optional: false);
-					var right = Translate<Expression>(simpleAssignmentOp.Value, argument);
-					var expr = new AssignmentExpression(Operator.Assignment, left, right);
-					initializers.Add(new NonSpecialExpressionStatement(expr));
+					if (simpleAssignmentOp.Value is IObjectCreationOperation subObjectCreationOp &&
+						subObjectCreationOp.Initializer is not null)
+					{
+						var group = Translate<StatementGroup>(simpleAssignmentOp.Value, (left, Scene.StatementGroup, argument.Vars));
+						initializers.AddRange(group.Elements);
+					}
+					else
+					{
+						var right = Translate<Expression>(simpleAssignmentOp.Value, (left, Scene.Expression, argument.Vars));
+						var expr = new AssignmentExpression(Operator.Assignment, left, right);
+						initializers.Add(new NonSpecialExpressionStatement(expr));
+					}
 				}
 				else if (initializer is IMemberInitializerOperation memberInitializerOp)
 				{
@@ -191,7 +202,7 @@ public partial class SemanticWalker
 					Expression left = argument.Left is null 
 						? target 
 						: new MemberExpression(argument.Left, target, computed: false, optional: false);
-					var right = Translate<Expression>(memberInitializerOp.Initializer, (left, AstType.Expression, argument.Vars));
+					var right = Translate<Expression>(memberInitializerOp.Initializer, (left, Scene.Expression, argument.Vars));
 					var expr = new AssignmentExpression(Operator.Assignment, left, right);
 					initializers.Add(new NonSpecialExpressionStatement(expr));					
 				}
@@ -208,7 +219,7 @@ public partial class SemanticWalker
 		var nodes = new List<Node>();
 		foreach (var initializer in operation.Initializers)
 		{
-			Translate(nodes,initializer, (null, AstType.ObjectProperty, argument.Vars));
+			Translate(nodes,initializer, (null, Scene.ObjectProperty, argument.Vars));
 		}		
 
 		return new ObjectExpression(NodeList.From(nodes));		
@@ -234,20 +245,15 @@ public partial class SemanticWalker
 		if (target is null)
 			return HandleTransformationFailure(operation.InitializedMember, "");
 
-		var value = Translate<Expression>(operation.Initializer, (null, AstType.Expression, argument.Vars));
-		if (argument.Out == AstType.ObjectProperty)
-        {
-			return new ObjectProperty(
-				PropertyKind.Init,
-				key: target,
-				value: value,
-				computed: false,
-				shorthand: false,
-				method: false
-			);
-        }
-
-		return null;
+		var value = Translate<Expression>(operation.Initializer, (null, Scene.Expression, argument.Vars));
+		return new ObjectProperty(
+			PropertyKind.Init,
+			key: target,
+			value: value,
+			computed: false,
+			shorthand: false,
+			method: false
+		);
 	}
 
 	/// <summary>
