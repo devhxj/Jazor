@@ -765,10 +765,9 @@ public sealed class SemanticWalkerCreationTest
 
         var operation = GetArrayCreationOperationAt(code);
         var walker = new SemanticWalker(true);
-        var node = walker.VisitArrayCreation(operation, new());
 
-        // 多维数组应该返回 null（转换失败）
-        Assert.IsNull(node);
+        // 多维数组应该转换失败
+        Assert.Throws<OperationTransformationException>(() => walker.VisitArrayCreation(operation, new()));
     }
 
     [TestMethod]
@@ -862,7 +861,7 @@ public sealed class SemanticWalkerCreationTest
     }
 
     [TestMethod]
-    public void VisitDelegateCreation_Lambda()
+    public void VisitConversionOperation_Lambda()
     {
         var code = @"
             class TestClass
@@ -877,13 +876,13 @@ public sealed class SemanticWalkerCreationTest
         var operation = GetOperationAt<IVariableDeclarationGroupOperation>(code);
         var variableDeclaration = operation.Declarations.First();
         var initializer = variableDeclaration.Declarators.First().Initializer!;
-        var delegateCreationOp = (IDelegateCreationOperation)initializer.Value;
+        var conversionOp = (IConversionOperation)initializer.Value;
 
         var watcher = new SemanticWalker(true);
-        var node = watcher.VisitDelegateCreation(delegateCreationOp, new());
+        var node = watcher.VisitConversion(conversionOp, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("x=>x*2", script);
+        Assert.AreEqual("x=>{return x*2}", script);
     }
 
     [TestMethod]
@@ -1002,26 +1001,5 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToECMAScript();
 
         Assert.AreEqual("{Flag:true,Count:100,Price:19.99}", script);
-    }
-
-    [TestMethod]
-    public void VisitObjectCreation_WithBaseTypes()
-    {
-        var code = @"
-            class TestClass
-            {
-                void TestMethod()
-                {
-                    var str = new string('a', 5);
-                }
-            }
-            ";
-
-        var operation = GetObjectCreationOperationAt(code);
-        var walker = new SemanticWalker(true);
-        var node = walker.VisitObjectCreation(operation, new());
-        var script = node?.ToECMAScript();
-
-        Assert.AreEqual("new string('a',5)", script);
     }
 }

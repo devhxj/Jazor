@@ -183,6 +183,11 @@ public partial class SemanticWalker
 	{
 		if (operation.Instance is not null)
 		{
+			// ImplicitReceiver 指那些语法上不需要、也不能写 this 的隐式实例引用
+			if (operation.Instance is IInstanceReferenceOperation instanceReferenceOp &&
+				instanceReferenceOp.ReferenceKind == InstanceReferenceKind.ImplicitReceiver)
+				return new Identifier(operation.Field.Name);
+
 			var expr = Translate<Expression>(operation.Instance, argument);
 			var property = new Identifier(operation.Field.Name);
 			return new MemberExpression(expr, property, computed: false, optional: false);

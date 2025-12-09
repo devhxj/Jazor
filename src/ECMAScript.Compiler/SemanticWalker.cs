@@ -253,4 +253,14 @@ public sealed partial class SemanticWalker : OperationVisitor<Context, Node?>
             _report?.Invoke(location, message);
         }
     }
+
+    private string RecursionUpFindTargetObj(IOperation operation)
+    {
+        // 递归向上查找目标对象，比如：var list = new System.Collections.Generic.List<int> { 1, 2, 3 };
+        // 它是 IObjectCreationOperation，它的Initializer是IObjectOrCollectionInitializerOperation
+        // IObjectOrCollectionInitializerOperation的Initializers是3个IInvocationOperation
+        // 调用 Add添加1、2、3，TargetObj是list
+        // 这个方法就是让 IInvocationOperation或IObjectOrCollectionInitializerOperation向上递归parent找到他的TargetObj
+        throw new NotImplementedException();
+    }
 }
