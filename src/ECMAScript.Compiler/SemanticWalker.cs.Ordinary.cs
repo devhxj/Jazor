@@ -253,6 +253,26 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitConversion(IConversionOperation operation, Context argument)
 	{
+		// 处理特殊情况，类似如下
+		// class TestClass
+		// {
+		//    void TestMethod()
+		//    {
+		//        Action action = MyMethod;
+		//    }
+		//    void MyMethod() { }
+		// }		
+		if ((operation.Operand.Kind == OperationKind.None &&
+			operation.Operand.Syntax is IdentifierNameSyntax) ||
+			(operation.Operand.Kind == OperationKind.Invalid &&
+			operation.Syntax is ImplicitObjectCreationExpressionSyntax))
+		{
+			var node = operation.Operand.Syntax.WithAdditionalAnnotations(
+				new SyntaxAnnotation("TypeName", operation.Type?.Name)
+			);
+			return ConvertFromSyntaxNode(node);
+		}
+
 		return Visit(operation.Operand, argument);
 	}
 

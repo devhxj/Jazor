@@ -1,8 +1,10 @@
 ﻿using Acornima;
 using Acornima.Ast;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ECMAScript.Compiler;
 
@@ -208,26 +210,26 @@ public partial class SemanticWalker
 				}
 				else if (initializer is IInvocationOperation invocationOp)
 				{
-					// 使用递归向上查找目标对象来确定调用上下文
-					var targetObj = RecursionUpFindTargetObj(invocationOp, "CollectionInitializer");
-					
-					// 确定调用目标
-					Expression? calleeTarget = argument.Left;
-					if (targetObj is not null && targetObj != invocationOp.Parent)
-					{
-						// 如果找到了不同的目标对象，使用它作为调用目标
-						calleeTarget = Translate<Expression>(targetObj, argument);
-					}
+					if (argument.Left is null)
+						return HandleTransformationFailure(initializer, "");
 
 					var methodName = invocationOp.TargetMethod.Name;
 					var arguments = new List<Expression>();
+
 					foreach (var arg in invocationOp.Arguments)
 					{
-						Translate(arguments, arg.Value, argument);
+						var exp = Translate<Expression>(arg.Value, argument);
+						if (exp is DefinitionExpression dexp)
+						{
+							initializers.AddRange(dexp.Definitions);
+							arguments.Add(dexp.Expression);
+						}
+						else
+							arguments.Add(exp);
 					}
-					
+
 					var callee = new MemberExpression(
-						calleeTarget,
+						argument.Left,
 						new Identifier(methodName),
 						computed: false,
 						optional: false
@@ -238,7 +240,6 @@ public partial class SemanticWalker
 				}
 				else
 					HandleTransformationFailure(initializer, "");
-
 			}
 			return new StatementGroup(NodeList.From(initializers));
 		}

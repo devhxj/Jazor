@@ -1,10 +1,12 @@
 using Acornima.Ast;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Operations;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -30,6 +32,7 @@ namespace ECMAScript.Compiler;
 public sealed partial class SemanticWalker : OperationVisitor<Context, Node?>
 {
     private int _recursionDepth;
+    private readonly ConcurrentDictionary<IOperation, Expression> _exprCache = [];
 
     /// <summary>
     /// 调试标识
@@ -81,21 +84,21 @@ public sealed partial class SemanticWalker : OperationVisitor<Context, Node?>
     /// </summary>
     /// <param name="operation">操作</param>
     /// <returns></returns>
-    private string GetUniqueName(IOperation operation)
+    private string GetUniqueName(SyntaxNode node)
     {
         //var hash = operation.Syntax.GetHashCode();
         //if(_cache.TryGetValue(hash,out var cache) && cache.Kind == operation.Kind)
         //    return cache.Name;
 
-        var syntaxTree = operation.Syntax.SyntaxTree;
-        var sourceSpan = operation.Syntax.GetLocation().SourceSpan;
+        var syntaxTree = node.SyntaxTree;
+        var sourceSpan = node.GetLocation().SourceSpan;
 
         //方便单元测试，生成固定名称
         if (_test)
             return $"v$test";
 
         using var sha256 = SHA256.Create();
-        var key = $"{syntaxTree.FilePath}${operation.Kind}${sourceSpan.Start}${sourceSpan.End}";
+        var key = $"{syntaxTree.FilePath}${node.Kind()}${sourceSpan.Start}${sourceSpan.End}";
         var bytes = Encoding.UTF8.GetBytes(key);
         var hashBytes = sha256.ComputeHash(bytes);
         var sb = new StringBuilder("_");
@@ -107,6 +110,7 @@ public sealed partial class SemanticWalker : OperationVisitor<Context, Node?>
 
         return name;
     }
+
 
     /// <summary>
     /// 操作无法转换时的兜底方法，提供详细的错误信息，包括操作类型
@@ -252,15 +256,5 @@ public sealed partial class SemanticWalker : OperationVisitor<Context, Node?>
             var location = operation.Syntax.GetLocation();
             _report?.Invoke(location, message);
         }
-    }
-
-    private string RecursionUpFindTargetObj(IOperation operation)
-    {
-        // 递归向上查找目标对象，比如：var list = new System.Collections.Generic.List<int> { 1, 2, 3 };
-        // 它是 IObjectCreationOperation，它的Initializer是IObjectOrCollectionInitializerOperation
-        // IObjectOrCollectionInitializerOperation的Initializers是3个IInvocationOperation
-        // 调用 Add添加1、2、3，TargetObj是list
-        // 这个方法就是让 IInvocationOperation或IObjectOrCollectionInitializerOperation向上递归parent找到他的TargetObj
-        throw new NotImplementedException();
     }
 }
