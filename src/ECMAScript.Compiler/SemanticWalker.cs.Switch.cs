@@ -257,7 +257,7 @@ public partial class SemanticWalker
 			var discardArm = (ISwitchExpressionArmOperation?)null;
 
 			// 创建临时变量存储输入值，确保仅求值一次
-			var inputVar = new Identifier(GetUniqueName(operation));
+			var inputVar = new Identifier(GetUniqueName(operation.Syntax));
 			statements.Add(new VariableDeclaration(
 				VariableDeclarationKind.Const,
 				NodeList.From(

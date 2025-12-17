@@ -927,11 +927,36 @@ public sealed class SemanticWalkerCreationTest
 
         var operation = GetObjectCreationOperationAt(code);
         var walker = new SemanticWalker(true);
-        var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!, new());
+        var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!,
+            (new Identifier("list"), Scene.Any, new()));
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("{0:1,1:2,2:3}", script);
+        Assert.AreEqual("list.Add(1);list.Add(2);list.Add(3);", script);
     }
+
+    [TestMethod]
+    public void VisitObjectOrCollectionInitializer_ComplexCollectionInitializer()
+    {
+        var code = @"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var list = new System.Collections.Generic.List<List<int>> {
+                        new(){1},new(){2,4},new(){3},
+                    };
+                }
+            }
+            ";
+
+        var operation = GetObjectCreationOperationAt(code);
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!,
+            (new Identifier("list"), Scene.Any, new()));
+        var script = node?.ToECMAScript();
+
+        Assert.AreEqual("list.Add(1);list.Add(2);list.Add(3);", script);
+    }    
 
     [TestMethod]
     public void VisitMemberInitializer_FieldAssignment()

@@ -12,6 +12,7 @@ public enum Scene
     Statement,
     Comment,
     StatementGroup,
+    DefinitionExpression,
     ObjectProperty,
 }
 
@@ -66,12 +67,55 @@ public sealed class StatementGroup(in NodeList<Statement> elements)
     }
 }
 
+public sealed class DefinitionExpression(in NodeList<Statement> definitions,in Expression expression)
+    : Expression(NodeType.ObjectExpression)
+{
+    private readonly NodeList<Statement> _definitions = definitions;
+
+    public Expression Expression { get; } = expression;
+  
+    public ref readonly NodeList<Statement> Definitions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => ref _definitions;
+    }
+
+    protected override object? Accept(AstVisitor visitor)
+    {
+        if (visitor is AstToECMAScriptConverter v)
+        {
+            return v.VisitDefinitionExpression(this);
+        }
+        else
+        {
+            for (var i = 0; i < _definitions.Count; i++)
+            {
+                var elementsItem = _definitions[i];
+                if (elementsItem is not null)
+                {
+                    visitor.Visit(elementsItem);
+                }
+            }
+            return this;
+        }
+    }
+}
+
 public sealed class AstToECMAScriptConverter(JavaScriptTextWriter writer, AstToJavaScriptOptions options)
     : AstToJavaScriptConverter(writer, options)
 {
     public object? VisitStatementGroup(StatementGroup node)
     {
         VisitStatementList(in node.Elements, (_, _, _, _) => StatementFlags.NeedsSemicolon);
+        return node;
+    }
+
+    public object? VisitDefinitionExpression(DefinitionExpression node)
+    {
+        var elements = new List<Statement>();
+        elements.AddRange(node.Definitions);
+        elements.Add(new NonSpecialExpressionStatement(node.Expression));
+        VisitStatementList(NodeList.From(elements), (_, _, _, _) => StatementFlags.NeedsSemicolon);
         return node;
     }
 }

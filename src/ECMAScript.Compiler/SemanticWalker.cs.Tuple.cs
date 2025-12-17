@@ -127,7 +127,7 @@ public partial class SemanticWalker
 				if (value is IInvocationOperation invocation)
 				{
 					// 如果是方法调用，先造一个临时对象存放方法的值
-					idExpr = new Identifier(GetUniqueName(invocation));
+					idExpr = new Identifier(GetUniqueName(invocation.Syntax));
 					var init = Translate<Expression>(invocation, argument);
 					var declarator = new VariableDeclarator(idExpr, init);
 					var declaration = new VariableDeclaration(VariableDeclarationKind.Const,
@@ -284,7 +284,7 @@ public partial class SemanticWalker
 					{
 						// 如果是一个元组，需要创建一个临时变量，被自定义Deconstruct方法调用后
 						// 再解构出元组里面变量定义或引用
-						var name = GetUniqueName(subTuple);
+						var name = GetUniqueName(subTuple.Syntax);
 						var id = new Identifier(name);
 						var declarator = new VariableDeclarator(id, null);
 
@@ -381,7 +381,7 @@ public partial class SemanticWalker
 			ITupleOperation? tupleLeft = null, tupleRight = null;
 			if (left.Target is IInvocationOperation leftInvocation)
 			{
-				leftExpr = new Identifier(GetUniqueName(leftInvocation));
+				leftExpr = new Identifier(GetUniqueName(leftInvocation.Syntax));
 				var init = Translate<Expression>(leftInvocation, argument);
 				var declarator = new VariableDeclarator(leftExpr, init);
 				var declaration = new VariableDeclaration(VariableDeclarationKind.Const,
@@ -399,7 +399,7 @@ public partial class SemanticWalker
 
 			if (right.Target is IInvocationOperation rightInvocation)
 			{
-				rightExpr = new Identifier(GetUniqueName(rightInvocation));
+				rightExpr = new Identifier(GetUniqueName(rightInvocation.Syntax));
 				var init = Translate<Expression>(rightInvocation, argument);
 				var declarator = new VariableDeclarator(rightExpr, init);
 				var declaration = new VariableDeclaration(VariableDeclarationKind.Const,

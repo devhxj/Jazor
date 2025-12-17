@@ -114,5 +114,15 @@ class TestClass1
 	{
 		public string? C1 { get; set; }
 		public int C2 { get; set; }
-	}	
+	}
+
+	class TestClass
+	{
+		void TestMethod()
+		{
+			var list = new System.Collections.Generic.List<List<int>> {
+				new(){1},new(){2,4},new(){3},
+			};
+		}
+	}
 }
