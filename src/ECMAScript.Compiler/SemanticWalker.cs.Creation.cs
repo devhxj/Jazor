@@ -10,6 +10,63 @@ namespace ECMAScript.Compiler;
 
 public partial class SemanticWalker
 {
+	private Acornima.Ast.StatementOrExpression VisitObjectCreation(Expression? simpleAssignmentExpr,
+		IObjectCreationOperation operation, Context argument)
+	{
+		if (operation.Type is null)
+			return HandleTransformationFailure<StatementOrExpression>(operation, "Object creation type could not be translated to JavaScript.");
+
+		// 普通对象创建
+		var callee = new Identifier(operation.Type.Name);
+		var arguments = new List<Expression>();
+
+		foreach (var arg in operation.Arguments)
+		{
+			Translate(arguments, arg.Value, argument);
+		}
+
+		Expression expr = new NewExpression(callee, NodeList.From(arguments));
+
+		// 如果祖先是参数类型，中间有个转换
+		// IObjectCreationOperation->IConversionOperation->IArgumentOperation
+		if (operation.Parent?.Parent is IArgumentOperation argumentOp)
+		{
+			var definitions = new List<Statement>();
+			var name = GetUniqueName(operation.Syntax);
+			var obj = new Identifier(name);
+			var assignmentExpr = new AssignmentExpression(Operator.Assignment, obj, expr);
+			definitions.Add(new NonSpecialExpressionStatement(assignmentExpr));
+
+			if (operation.Initializer is not null)
+			{
+				var node = VisitObjectOrCollectionInitializer(obj, operation.Initializer, argument);
+				if (node is StatementGroup group)
+					definitions.AddRange(group.Elements);
+				else if (node is Statement statement)
+					definitions.Add(statement);
+				else
+					definitions.Add(new NonSpecialExpressionStatement((Expression)node));
+			}
+
+			return new DefinitionExpression(NodeList.From(definitions), obj);
+		}
+
+		if (simpleAssignmentExpr is not null)
+			expr = new AssignmentExpression(Operator.Assignment, simpleAssignmentExpr, expr);
+
+		// 检查是否应该返回简单的对象创建（当没有复杂的初始化器时）
+		if (operation.Initializer is not null)
+		{
+			var node = VisitObjectOrCollectionInitializer(simpleAssignmentExpr, operation.Initializer, argument);
+			if (node is StatementGroup groups)
+				return groups.With(expr, false);
+
+			return node;
+		}
+
+		return expr;
+	}
+
 	/// <summary>
 	/// 处理对象创建操作
 	/// C# 示例：
@@ -22,31 +79,8 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitObjectCreation(IObjectCreationOperation operation, Context argument)
-	{
-		if (operation.Type is null)
-			return HandleTransformationFailure(operation, "Object creation type could not be translated to JavaScript.");
-
-		// 普通对象创建
-		var callee = new Identifier(operation.Type.Name);
-		var arguments = new List<Expression>();
-
-		foreach (var arg in operation.Arguments)
-		{
-			Translate(arguments, arg.Value, argument);
-		}
-
-		Expression expr = new NewExpression(callee, NodeList.From(arguments));
-		if (operation.Parent?.Kind == OperationKind.SimpleAssignment && argument.Left is not null)
-			expr = new AssignmentExpression(Operator.Assignment, argument.Left, expr);
-
-		// 检查是否应该返回简单的对象创建（当没有复杂的初始化器时）
-		if (operation.Initializer is null)
-			return expr;
-
-		var groups = Translate<StatementGroup>(operation.Initializer, argument);
-		return groups.With(expr, false);
-	}
-
+		=> VisitObjectCreation(null, operation, argument);
+	
 	/// <summary>
 	/// 处理匿名对象创建操作
 	/// C# 示例：
@@ -151,18 +185,13 @@ public partial class SemanticWalker
 		return new ArrayExpression(NodeList.From(elements));
 	}
 
-	/// <summary>
-	/// 处理对象或集合初始化器操作
-	/// C# 示例：
-	/// new List<int> { 1, 2, 3 }      // 集合初始化器
-	/// new MyClass { Prop1 = val1 }   // 对象初始化器
-	/// 转换结果：{ prop1: val1 } / [1, 2, 3]
-	/// </summary>
-	/// <param name="operation">当前访问的operation</param>
-	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitObjectOrCollectionInitializer(IObjectOrCollectionInitializerOperation operation, Context argument)
+	private Acornima.Ast.StatementOrExpression VisitObjectOrCollectionInitializer(Expression? simpleAssignmentExpr,
+		IObjectOrCollectionInitializerOperation operation, Context argument)
 	{
+		Expression? obj = simpleAssignmentExpr;
+		if (obj is null && operation.Parent?.Parent?.Parent is IVariableDeclaratorOperation variableDeclaratorOp)
+			obj = new Identifier(variableDeclaratorOp.Symbol.Name);
+
 		// 如果是创建对象
 		if (operation.Parent is IObjectCreationOperation objectCreationOp && objectCreationOp.Initializer == operation)
 		{
@@ -173,18 +202,18 @@ public partial class SemanticWalker
 				if (initializer is ISimpleAssignmentOperation simpleAssignmentOp)
 				{
 					var prop = Translate<Expression>(simpleAssignmentOp.Target, argument);
-					var left = argument.Left is null
-						? prop
-						: new MemberExpression(argument.Left, prop, computed: false, optional: false);
+					var left = obj is null
+					 	? prop
+					 	: new MemberExpression(obj, prop, computed: false, optional: false);
 					if (simpleAssignmentOp.Value is IObjectCreationOperation subObjectCreationOp &&
 						subObjectCreationOp.Initializer is not null)
 					{
-						var group = Translate<StatementGroup>(simpleAssignmentOp.Value, (left, Scene.StatementGroup, argument.Vars));
+						var group = (StatementGroup)VisitObjectCreation(left, subObjectCreationOp, argument);
 						initializers.AddRange(group.Elements);
 					}
 					else
 					{
-						var right = Translate<Expression>(simpleAssignmentOp.Value, (left, Scene.Expression, argument.Vars));
+						var right = Translate<Expression>(simpleAssignmentOp.Value, argument);
 						var expr = new AssignmentExpression(Operator.Assignment, left, right);
 						initializers.Add(new NonSpecialExpressionStatement(expr));
 					}
@@ -199,19 +228,19 @@ public partial class SemanticWalker
 					};
 
 					if (target is null)
-						return HandleTransformationFailure(initializer, "");
+						return HandleTransformationFailure<StatementOrExpression>(initializer, "");
 
-					Expression left = argument.Left is null
-						? target
-						: new MemberExpression(argument.Left, target, computed: false, optional: false);
-					var right = Translate<Expression>(memberInitializerOp.Initializer, (left, Scene.Expression, argument.Vars));
+					Expression left = obj is null
+					 	? target
+					 	: new MemberExpression(obj, target, computed: false, optional: false);
+					var right = RecursiveObjectOrCollectionInitializer(left, memberInitializerOp.Initializer);
 					var expr = new AssignmentExpression(Operator.Assignment, left, right);
 					initializers.Add(new NonSpecialExpressionStatement(expr));
 				}
 				else if (initializer is IInvocationOperation invocationOp)
 				{
-					if (argument.Left is null)
-						return HandleTransformationFailure(initializer, "");
+					if (obj is null)
+						return HandleTransformationFailure<StatementOrExpression>(initializer, "");
 
 					var methodName = invocationOp.TargetMethod.Name;
 					var arguments = new List<Expression>();
@@ -229,7 +258,7 @@ public partial class SemanticWalker
 					}
 
 					var callee = new MemberExpression(
-						argument.Left,
+						obj,
 						new Identifier(methodName),
 						computed: false,
 						optional: false
@@ -243,18 +272,64 @@ public partial class SemanticWalker
 			}
 			return new StatementGroup(NodeList.From(initializers));
 		}
-		
+
+		return HandleTransformationFailure<StatementOrExpression>(operation, "");
+
 		// IObjectCreationOperation.Initializer 在VisitObjectCreation中处理，
 		// 此处主要处理IMemberInitializerOperation.Initializer中或可能嵌套的对象或集合初始化器操作
 		// 转换为字面量对象
-		var nodes = new List<Node>();
-		foreach (var initializer in operation.Initializers)
+		ObjectExpression RecursiveObjectOrCollectionInitializer(Expression left,IObjectOrCollectionInitializerOperation op)
 		{
-			Translate(nodes,initializer, (null, Scene.ObjectProperty, argument.Vars));
-		}		
+			var nodes = new List<Node>();
+			foreach (var initializer in op.Initializers)
+			{
+				Expression? target = null, value = null;
+				if (initializer is ISimpleAssignmentOperation simpleAssignmentOp)
+				{
+					target = Translate<Expression>(simpleAssignmentOp.Target, []);
+					value = Translate<Expression>(simpleAssignmentOp.Value, []);
+				}
+				else if (initializer is IMemberInitializerOperation memberInitializerOp)
+				{
+					target = memberInitializerOp.InitializedMember switch
+					{
+						IPropertyReferenceOperation propertyReferenceOp => new Identifier(propertyReferenceOp.Property.Name),
+						IFieldReferenceOperation fieldReferenceOp => new Identifier(fieldReferenceOp.Field.Name),
+						_ => null
+					};
+					if (target is not null)
+						value = RecursiveObjectOrCollectionInitializer(target, memberInitializerOp.Initializer);
+				}
 
-		return new ObjectExpression(NodeList.From(nodes));		
+				if (target is null || value is null)
+					return HandleTransformationFailure<ObjectExpression>(op, "");
+
+				var prop = new ObjectProperty(
+					PropertyKind.Init,
+					key: target,
+					value: value,
+					computed: false,
+					shorthand: false,
+					method: false
+				);
+				nodes.Add(prop);
+			}
+			return new ObjectExpression(NodeList.From(nodes));
+		}
 	}
+
+	/// <summary>
+	/// 处理对象或集合初始化器操作
+	/// C# 示例：
+	/// new List<int> { 1, 2, 3 }      // 集合初始化器
+	/// new MyClass { Prop1 = val1 }   // 对象初始化器
+	/// 转换结果：{ prop1: val1 } / [1, 2, 3]
+	/// </summary>
+	/// <param name="operation">当前访问的operation</param>
+	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+	/// <returns>Acornima的ESTree的Node</returns>
+	public override Acornima.Ast.Node? VisitObjectOrCollectionInitializer(IObjectOrCollectionInitializerOperation operation, Context argument)
+		=> VisitObjectOrCollectionInitializer(null, operation, argument);
 
 	/// <summary>
 	/// 处理成员初始化器操作
@@ -276,7 +351,7 @@ public partial class SemanticWalker
 		if (target is null)
 			return HandleTransformationFailure(operation.InitializedMember, "");
 
-		var value = Translate<Expression>(operation.Initializer, (null, Scene.Expression, argument.Vars));
+		var value = Translate<Expression>(operation.Initializer, argument);
 		return new ObjectProperty(
 			PropertyKind.Init,
 			key: target,

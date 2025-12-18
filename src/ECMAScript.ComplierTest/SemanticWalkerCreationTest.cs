@@ -16,16 +16,16 @@ public sealed class SemanticWalkerCreationTest
     /// <param name="code"></param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    private static IBlockOperation GetBlockOperation(string code)
+    private static IBlockOperation GetBlockOperation(string code, out SemanticModel semanticModel)
     {
         var compilation = CSharpCompilation.Create(
             "TestAssembly",
-            [CSharpSyntaxTree.ParseText(code)],
-            [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)],
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+            syntaxTrees: [CSharpSyntaxTree.ParseText(code)],
+            references: Basic.Reference.Assemblies.Net100.References.All,
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         var syntaxTree = compilation.SyntaxTrees.First();
-        var semanticModel = compilation.GetSemanticModel(syntaxTree);
+        semanticModel = compilation.GetSemanticModel(syntaxTree);
         var root = syntaxTree.GetRoot();
 
         // 查找第一个方法体
@@ -43,11 +43,9 @@ public sealed class SemanticWalkerCreationTest
     /// <summary>
     /// 获取指定索引的操作
     /// </summary>
-    private static T GetOperationAt<T>(string code, int index = 0) where T : class, IOperation
+    private static T GetOperationAt<T>(IBlockOperation block, int index = 0) where T : class, IOperation
     {
-        var block = GetBlockOperation(code);
         var operation = block.Operations.Skip(index).First() as T;
-
         return operation ?? throw new InvalidOperationException("未找到可分析的操作");
     }
 
@@ -57,9 +55,9 @@ public sealed class SemanticWalkerCreationTest
     /// <param name="code"></param>
     /// <param name="index"></param>
     /// <returns></returns>
-    private static IObjectCreationOperation GetObjectCreationOperationAt(string code, int index = 0)
+    private static IObjectCreationOperation GetObjectCreationOperationAt(IBlockOperation block, int index = 0)
     {
-        var variableDeclarationGroup = GetOperationAt<IVariableDeclarationGroupOperation>(code, index);
+        var variableDeclarationGroup = GetOperationAt<IVariableDeclarationGroupOperation>(block, index);
         var variableDeclaration = variableDeclarationGroup!.Declarations.First();
         var initializer = variableDeclaration.Declarators.First().Initializer;
         var operation = (IObjectCreationOperation)initializer!.Value;
@@ -72,9 +70,9 @@ public sealed class SemanticWalkerCreationTest
     /// <param name="code"></param>
     /// <param name="index"></param>
     /// <returns></returns>
-    private static IArrayCreationOperation GetArrayCreationOperationAt(string code, int index = 0)
+    private static IArrayCreationOperation GetArrayCreationOperationAt(IBlockOperation block, int index = 0)
     {
-        var variableDeclarationGroup = GetOperationAt<IVariableDeclarationGroupOperation>(code, index);
+        var variableDeclarationGroup = GetOperationAt<IVariableDeclarationGroupOperation>(block, index);
         var variableDeclaration = variableDeclarationGroup!.Declarations.First();
         var initializer = variableDeclaration.Declarators.First().Initializer;
         var operation = (IArrayCreationOperation)initializer!.Value;
@@ -87,9 +85,9 @@ public sealed class SemanticWalkerCreationTest
     /// <param name="code"></param>
     /// <param name="index"></param>
     /// <returns></returns>
-    private static IAnonymousObjectCreationOperation GetAnonymousObjectCreationOperationAt(string code, int index = 0)
+    private static IAnonymousObjectCreationOperation GetAnonymousObjectCreationOperationAt(IBlockOperation block, int index = 0)
     {
-        var variableDeclarationGroup = GetOperationAt<IVariableDeclarationGroupOperation>(code, index);
+        var variableDeclarationGroup = GetOperationAt<IVariableDeclarationGroupOperation>(block, index);
         var variableDeclaration = variableDeclarationGroup!.Declarations.First();
         var initializer = variableDeclaration.Declarators.First().Initializer;
         var operation = (IAnonymousObjectCreationOperation)initializer!.Value;
@@ -102,9 +100,9 @@ public sealed class SemanticWalkerCreationTest
     /// <param name="code"></param>
     /// <param name="index"></param>
     /// <returns></returns>
-    private static IInterpolatedStringOperation GetInterpolatedStringOperationAt(string code, int index = 0)
+    private static IInterpolatedStringOperation GetInterpolatedStringOperationAt(IBlockOperation block, int index = 0)
     {
-        var variableDeclarationGroup = GetOperationAt<IVariableDeclarationGroupOperation>(code, index);
+        var variableDeclarationGroup = GetOperationAt<IVariableDeclarationGroupOperation>(block, index);
         var variableDeclaration = variableDeclarationGroup!.Declarations.First();
         var initializer = variableDeclaration.Declarators.First().Initializer;
         var operation = (IInterpolatedStringOperation)initializer!.Value;
@@ -117,9 +115,9 @@ public sealed class SemanticWalkerCreationTest
     /// <param name="code"></param>
     /// <param name="index"></param>
     /// <returns></returns>
-    private static ITypeParameterObjectCreationOperation GetTypeParameterObjectCreationOperationAt(string code, int index = 0)
+    private static ITypeParameterObjectCreationOperation GetTypeParameterObjectCreationOperationAt(IBlockOperation block, int index = 0)
     {
-        var variableDeclarationGroup = GetOperationAt<IVariableDeclarationGroupOperation>(code, index);
+        var variableDeclarationGroup = GetOperationAt<IVariableDeclarationGroupOperation>(block, index);
         var variableDeclaration = variableDeclarationGroup!.Declarations.First();
         var initializer = variableDeclaration.Declarators.First().Initializer;
         var operation = (ITypeParameterObjectCreationOperation)initializer!.Value;
@@ -129,7 +127,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitObjectCreation_SimpleConstructor()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -141,10 +139,10 @@ public sealed class SemanticWalkerCreationTest
                 {
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetObjectCreationOperationAt(code);
-        var walker = new SemanticWalker(true);
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(semanticModel, true);
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -154,7 +152,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitObjectCreation_ConstructorWithParameters()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -167,10 +165,10 @@ public sealed class SemanticWalkerCreationTest
                     public MyClass(int number, string text) { }
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetObjectCreationOperationAt(code);
-        var walker = new SemanticWalker(true);
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(semanticModel, true);
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -180,7 +178,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitObjectCreation_AnonymousType()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -188,10 +186,10 @@ public sealed class SemanticWalkerCreationTest
                     var obj = new { Name = ""John"", Age = 30 };
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetAnonymousObjectCreationOperationAt(code);
-        var walker = new SemanticWalker(true);
+        var operation = GetAnonymousObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(semanticModel, true);
         var node = walker.VisitAnonymousObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -201,7 +199,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitObjectCreation_GenericType()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod<T>()
@@ -213,10 +211,10 @@ public sealed class SemanticWalkerCreationTest
                 {
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetObjectCreationOperationAt(code);
-        var walker = new SemanticWalker(true);
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(semanticModel, true);
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -226,7 +224,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitArrayCreation_WithInitializer()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -234,10 +232,10 @@ public sealed class SemanticWalkerCreationTest
                     var arr = new int[] { 1, 2, 3 };
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetArrayCreationOperationAt(code);
-        var walker = new SemanticWalker(true);
+        var operation = GetArrayCreationOperationAt(block);
+        var walker = new SemanticWalker(semanticModel, true);
         var node = walker.VisitArrayCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -247,7 +245,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitArrayCreation_WithSize()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -255,10 +253,10 @@ public sealed class SemanticWalkerCreationTest
                     var arr = new int[5];
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetArrayCreationOperationAt(code);
-        var walker = new SemanticWalker(true);
+        var operation = GetArrayCreationOperationAt(block);
+        var walker = new SemanticWalker(semanticModel, true);
         var node = walker.VisitArrayCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -268,7 +266,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitArrayCreation_EmptyArray()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -276,10 +274,10 @@ public sealed class SemanticWalkerCreationTest
                     var arr = new int[] { };
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetArrayCreationOperationAt(code);
-        var walker = new SemanticWalker(true);
+        var operation = GetArrayCreationOperationAt(block);
+        var walker = new SemanticWalker(semanticModel, true);
         var node = walker.VisitArrayCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -289,7 +287,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitAnonymousObjectCreation_SimpleProperties()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -297,10 +295,10 @@ public sealed class SemanticWalkerCreationTest
                     var obj = new { Name = ""John"", Age = 25 };
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetAnonymousObjectCreationOperationAt(code);
-        var walker = new SemanticWalker(true);
+        var operation = GetAnonymousObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(semanticModel, true);
         var node = walker.VisitAnonymousObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -310,7 +308,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitAnonymousObjectCreation_WithExpressions()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -319,10 +317,10 @@ public sealed class SemanticWalkerCreationTest
                     var obj = new { Sum = x + y, Product = x * y };
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetAnonymousObjectCreationOperationAt(code, 1);
-        var walker = new SemanticWalker(true);
+        var operation = GetAnonymousObjectCreationOperationAt(block, 1);
+        var walker = new SemanticWalker(semanticModel, true);
         var node = walker.VisitAnonymousObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -332,7 +330,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitObjectCreation_ObjectInitializer()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -348,12 +346,11 @@ public sealed class SemanticWalkerCreationTest
                     public int Property2 { get; set; }
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetObjectCreationOperationAt(code);
-        var walker = new SemanticWalker(true);
-        var left = new Identifier("obj");
-        var node = walker.VisitObjectCreation(operation, (left, Scene.Any, []));
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(semanticModel, true);
+        var node = walker.VisitObjectCreation(operation, []);
         var script = node?.ToECMAScript();
 
         Assert.AreEqual("new MyClass(2,3);obj.Property1='value1';obj.Property2=42;", script);
@@ -362,7 +359,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitObjectOrCollectionInitializer_ObjectInitializer()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -376,12 +373,12 @@ public sealed class SemanticWalkerCreationTest
                     public int Property2 { get; set; }
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetObjectCreationOperationAt(code);
-        var walker = new SemanticWalker(true);
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(semanticModel, true);
         var left = new Identifier("obj");
-        var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!, (left, Scene.Any, []));
+        var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!, []);
         var script = node?.ToECMAScript();
 
         Assert.AreEqual("obj.Property1='value1';obj.Property2=42;", script);
@@ -390,7 +387,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitMemberInitializer_PropertyAssignment()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -416,14 +413,14 @@ public sealed class SemanticWalkerCreationTest
                     public int C2 { get; set; }
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var walker = new SemanticWalker(true);
-        var operation = GetObjectCreationOperationAt(code);
+        var walker = new SemanticWalker(semanticModel, true);
+        var operation = GetObjectCreationOperationAt(block);
         var left = new Identifier("obj");
         //var memberInitializer = (IMemberInitializerOperation)operation.Initializer!.Initializers.First();
         //var node = walker.VisitMemberInitializer(memberInitializer, new());
-        var node = walker.VisitObjectCreation(operation, (left, Scene.Any, []));
+        var node = walker.VisitObjectCreation(operation, []);
         var script = node?.ToECMAScript();
 
         Assert.AreEqual("new A;obj.A1={B1:'Test',B2:{C1:'a',C2:9}};obj.A2='value';", script);
@@ -432,7 +429,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitInterpolatedString_SimpleInterpolation()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -441,10 +438,10 @@ public sealed class SemanticWalkerCreationTest
                     var message = $""Hello, {name}!"";
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetInterpolatedStringOperationAt(code, 1);
-        var walker = new SemanticWalker(true);
+        var operation = GetInterpolatedStringOperationAt(block, 1);
+        var walker = new SemanticWalker(semanticModel, true);
         var node = walker.VisitInterpolatedString(operation, new());
         var script = node?.ToECMAScript();
 
@@ -454,7 +451,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitInterpolatedString_WithExpressions()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -463,10 +460,10 @@ public sealed class SemanticWalkerCreationTest
                     var message = $""Sum: {x + y}, Product: {x * y}"";
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetInterpolatedStringOperationAt(code, 1);
-        var walker = new SemanticWalker(true);
+        var operation = GetInterpolatedStringOperationAt(block, 1);
+        var walker = new SemanticWalker(semanticModel, true);
         var node = walker.VisitInterpolatedString(operation, new());
         var script = node?.ToECMAScript();
 
@@ -476,7 +473,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitInterpolatedString_MultipleInterpolations()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -486,10 +483,10 @@ public sealed class SemanticWalkerCreationTest
                     var message = $""Name: {name}, Age: {age}"";
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetInterpolatedStringOperationAt(code, 2);
-        var walker = new SemanticWalker(true);
+        var operation = GetInterpolatedStringOperationAt(block, 2);
+        var walker = new SemanticWalker(semanticModel, true);
         var node = walker.VisitInterpolatedString(operation, new());
         var script = node?.ToECMAScript();
 
@@ -499,7 +496,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitInterpolatedString_WithoutInterpolation()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -507,10 +504,10 @@ public sealed class SemanticWalkerCreationTest
                     var message = $""Hello, World!"";
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetInterpolatedStringOperationAt(code);
-        var walker = new SemanticWalker(true);
+        var operation = GetInterpolatedStringOperationAt(block);
+        var walker = new SemanticWalker(semanticModel, true);
         var node = walker.VisitInterpolatedString(operation, new());
         var script = node?.ToECMAScript();
 
@@ -520,7 +517,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitObjectCreation_BlockCode()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -534,10 +531,9 @@ public sealed class SemanticWalkerCreationTest
                     var message = $""Hello, {name}!"";
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var block = GetBlockOperation(code);
-        var walker = new SemanticWalker(true);
+        var walker = new SemanticWalker(semanticModel, true);
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
@@ -555,7 +551,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitObjectCreation_EmptyObjectInitializer()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -567,10 +563,10 @@ public sealed class SemanticWalkerCreationTest
                 {
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetObjectCreationOperationAt(code);
-        var walker = new SemanticWalker(true);
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(semanticModel, true);
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -580,7 +576,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitObjectCreation_MultipleLevelsOfNesting()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -609,12 +605,11 @@ public sealed class SemanticWalkerCreationTest
                     public int Value { get; set; }
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetObjectCreationOperationAt(code);
-        var walker = new SemanticWalker(true);
-        var left = new Identifier("obj");
-        var node = walker.VisitObjectCreation(operation, (left, Scene.Any, []));
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(semanticModel, true);
+        var node = walker.VisitObjectCreation(operation, []);
         var script = node?.ToECMAScript();
 
         Assert.AreEqual("new Outer;obj.Middle=new Middle;obj.Middle.Inner=new Inner;obj.Middle.Inner.Value=42;", script);
@@ -623,7 +618,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitObjectCreation_MixedInitializers()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -650,12 +645,12 @@ public sealed class SemanticWalkerCreationTest
                     public string? NestedProp { get; set; }
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetObjectCreationOperationAt(code);
-        var walker = new SemanticWalker(true);
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(semanticModel, true);
         var left = new Identifier("obj");
-        var node = walker.VisitObjectCreation(operation, (left, Scene.Any, []));
+        var node = walker.VisitObjectCreation(operation, []);
         var script = node?.ToECMAScript();
 
         Assert.AreEqual("new MyClass(1,2);obj.Prop1='value1';obj.Prop2=42;obj.Nested=new NestedClass;obj.Nested.NestedProp='nested';", script);
@@ -664,7 +659,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitAnonymousObjectCreation_NestedAnonymousObject()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -676,10 +671,10 @@ public sealed class SemanticWalkerCreationTest
                     };
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetAnonymousObjectCreationOperationAt(code);
-        var walker = new SemanticWalker(true);
+        var operation = GetAnonymousObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(semanticModel, true);
         var node = walker.VisitAnonymousObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -689,7 +684,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitAnonymousObjectCreation_WithArray()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -697,10 +692,10 @@ public sealed class SemanticWalkerCreationTest
                     var obj = new { Name = ""John"", Scores = new[] { 85, 92, 78 } };
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetAnonymousObjectCreationOperationAt(code);
-        var walker = new SemanticWalker(true);
+        var operation = GetAnonymousObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(semanticModel, true);
         var node = walker.VisitAnonymousObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -710,7 +705,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitAnonymousObjectCreation_EmptyAnonymousObject()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -718,10 +713,10 @@ public sealed class SemanticWalkerCreationTest
                     var obj = new { };
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetAnonymousObjectCreationOperationAt(code);
-        var walker = new SemanticWalker(true);
+        var operation = GetAnonymousObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(semanticModel, true);
         var node = walker.VisitAnonymousObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -731,7 +726,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitAnonymousObjectCreation_WithNullValue()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -740,10 +735,10 @@ public sealed class SemanticWalkerCreationTest
                     var obj = new { Name = name, Age = 30 };
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetAnonymousObjectCreationOperationAt(code, 1);
-        var walker = new SemanticWalker(true);
+        var operation = GetAnonymousObjectCreationOperationAt(block, 1);
+        var walker = new SemanticWalker(semanticModel, true);
         var node = walker.VisitAnonymousObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -753,7 +748,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitArrayCreation_WithMultipleDimensions_ShouldHandleGracefully()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -761,10 +756,10 @@ public sealed class SemanticWalkerCreationTest
                     var arr = new int[5, 5];
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetArrayCreationOperationAt(code);
-        var walker = new SemanticWalker(true);
+        var operation = GetArrayCreationOperationAt(block);
+        var walker = new SemanticWalker(semanticModel, true);
 
         // 多维数组应该转换失败
         Assert.Throws<OperationTransformationException>(() => walker.VisitArrayCreation(operation, new()));
@@ -773,7 +768,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitArrayCreation_StringArray()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -781,10 +776,10 @@ public sealed class SemanticWalkerCreationTest
                     var arr = new string[] { ""Hello"", ""World"" };
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetArrayCreationOperationAt(code);
-        var walker = new SemanticWalker(true);
+        var operation = GetArrayCreationOperationAt(block);
+        var walker = new SemanticWalker(semanticModel, true);
         var node = walker.VisitArrayCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -794,7 +789,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitArrayCreation_MixedTypeArray()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -802,10 +797,10 @@ public sealed class SemanticWalkerCreationTest
                     var arr = new object[] { 42, ""test"", true };
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetArrayCreationOperationAt(code);
-        var walker = new SemanticWalker(true);
+        var operation = GetArrayCreationOperationAt(block);
+        var walker = new SemanticWalker(semanticModel, true);
         var node = walker.VisitArrayCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -815,7 +810,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitArrayCreation_NestedArrays()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -823,10 +818,10 @@ public sealed class SemanticWalkerCreationTest
                     var arr = new int[][] { new[] { 1, 2 }, new[] { 3, 4 } };
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetArrayCreationOperationAt(code);
-        var walker = new SemanticWalker(true);
+        var operation = GetArrayCreationOperationAt(block);
+        var walker = new SemanticWalker(semanticModel, true);
         var node = walker.VisitArrayCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -836,7 +831,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitConversionOperation_MethodGroup()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -846,14 +841,14 @@ public sealed class SemanticWalkerCreationTest
 
                 void MyMethod() { }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetOperationAt<IVariableDeclarationGroupOperation>(code);
+        var operation = GetOperationAt<IVariableDeclarationGroupOperation>(block);
         var variableDeclaration = operation.Declarations.First();
         var initializer = variableDeclaration.Declarators.First().Initializer!;
         var conversionOp = (IConversionOperation)initializer.Value;
 
-        var walker = new SemanticWalker(true);
+        var walker = new SemanticWalker(semanticModel, true);
         var node = walker.VisitConversion(conversionOp, new());
         var script = node?.ToECMAScript();
 
@@ -863,7 +858,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitConversionOperation_Lambda()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -871,14 +866,14 @@ public sealed class SemanticWalkerCreationTest
                     Func<int, int> func = x => x * 2;
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetOperationAt<IVariableDeclarationGroupOperation>(code);
+        var operation = GetOperationAt<IVariableDeclarationGroupOperation>(block);
         var variableDeclaration = operation.Declarations.First();
         var initializer = variableDeclaration.Declarators.First().Initializer!;
         var conversionOp = (IConversionOperation)initializer.Value;
 
-        var watcher = new SemanticWalker(true);
+        var watcher = new SemanticWalker(semanticModel, true);
         var node = watcher.VisitConversion(conversionOp, new());
         var script = node?.ToECMAScript();
 
@@ -888,7 +883,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitObjectOrCollectionInitializer_EmptyInitializer()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -901,12 +896,12 @@ public sealed class SemanticWalkerCreationTest
                     public string? Prop1 { get; set; }
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetObjectCreationOperationAt(code);
-        var walker = new SemanticWalker(true);
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(semanticModel, true);
         var left = new Identifier("obj");
-        var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!, (left, Scene.Any, []));
+        var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!, []);
         var script = node?.ToECMAScript();
 
         Assert.AreEqual("", script);
@@ -915,7 +910,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitObjectOrCollectionInitializer_CollectionInitializer()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -923,12 +918,11 @@ public sealed class SemanticWalkerCreationTest
                     var list = new System.Collections.Generic.List<int> { 1, 2, 3 };
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetObjectCreationOperationAt(code);
-        var walker = new SemanticWalker(true);
-        var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!,
-            (new Identifier("list"), Scene.Any, new()));
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(semanticModel, true);
+        var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!,[]);
         var script = node?.ToECMAScript();
 
         Assert.AreEqual("list.Add(1);list.Add(2);list.Add(3);", script);
@@ -937,31 +931,42 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitObjectOrCollectionInitializer_ComplexCollectionInitializer()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
+            using System.Collections.Generic;
             class TestClass
             {
                 void TestMethod()
                 {
-                    var list = new System.Collections.Generic.List<List<int>> {
+                    var list = new List<List<int>> {
                         new(){1},new(){2,4},new(){3},
                     };
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetObjectCreationOperationAt(code);
-        var walker = new SemanticWalker(true);
-        var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!,
-            (new Identifier("list"), Scene.Any, new()));
-        var script = node?.ToECMAScript();
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(semanticModel, true);
+        var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!,[]);
+        var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual("list.Add(1);list.Add(2);list.Add(3);", script);
+        Assert.AreEqual(
+@"v$test = new List;
+v$test.Add(1);
+list.Add(v$test);
+v$test = new List;
+v$test.Add(2);
+v$test.Add(4);
+list.Add(v$test);
+v$test = new List;
+v$test.Add(3);
+list.Add(v$test);
+", script);
     }    
 
     [TestMethod]
     public void VisitMemberInitializer_FieldAssignment()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -975,12 +980,12 @@ public sealed class SemanticWalkerCreationTest
                     public string? Field2;
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetObjectCreationOperationAt(code);
-        var walker = new SemanticWalker(true);
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(semanticModel, true);
         var left = new Identifier("obj");
-        var node = walker.VisitObjectCreation(operation, (left, Scene.Any, []));
+        var node = walker.VisitObjectCreation(operation, []);
         var script = node?.ToECMAScript();
 
         Assert.AreEqual("new MyClass;obj.Field1=42;obj.Field2='test';", script);
@@ -989,7 +994,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitArrayCreation_SingleElement()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -997,10 +1002,10 @@ public sealed class SemanticWalkerCreationTest
                     var arr = new int[] { 42 };
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetArrayCreationOperationAt(code);
-        var walker = new SemanticWalker(true);
+        var operation = GetArrayCreationOperationAt(block);
+        var walker = new SemanticWalker(semanticModel, true);
         var node = walker.VisitArrayCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -1010,7 +1015,7 @@ public sealed class SemanticWalkerCreationTest
     [TestMethod]
     public void VisitAnonymousObjectCreation_BooleanAndNumericValues()
     {
-        var code = @"
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
@@ -1018,10 +1023,10 @@ public sealed class SemanticWalkerCreationTest
                     var obj = new { Flag = true, Count = 100, Price = 19.99 };
                 }
             }
-            ";
+            ", out var semanticModel);
 
-        var operation = GetAnonymousObjectCreationOperationAt(code);
-        var walker = new SemanticWalker(true);
+        var operation = GetAnonymousObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(semanticModel, true);
         var node = walker.VisitAnonymousObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 

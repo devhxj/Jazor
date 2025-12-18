@@ -69,7 +69,7 @@ public partial class SemanticWalker
 	public override Acornima.Ast.Node? VisitVariableDeclarator(IVariableDeclaratorOperation operation, Context argument)
 	{
 		var identifier = new Identifier(operation.Symbol.Name);
-		var init = Translate<Expression>(operation.Initializer, (identifier, Scene.Any, argument.Vars), null);
+		var init = Translate<Expression>(operation.Initializer, argument, null);
 
 		return new VariableDeclarator(identifier, init);
 	}

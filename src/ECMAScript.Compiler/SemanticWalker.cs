@@ -2,6 +2,7 @@ using Acornima.Ast;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Operations;
+using OneOf.Types;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -31,6 +32,10 @@ namespace ECMAScript.Compiler;
 /// </summary>
 public sealed partial class SemanticWalker : OperationVisitor<Context, Node?>
 {
+    private static readonly SymbolDisplayFormat _metadataNameFormat = new(
+        globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
+        typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces);
+        
     private int _recursionDepth;
     private readonly ConcurrentDictionary<IOperation, Expression> _exprCache = [];
 
@@ -39,15 +44,17 @@ public sealed partial class SemanticWalker : OperationVisitor<Context, Node?>
     /// </summary>
     private readonly bool _test;
 
+    private readonly SemanticModel _semanticModel;
+
     private readonly Action<Location, string?>? _report;
 
     private readonly ConcurrentDictionary<int, (OperationKind Kind, string Name)> _cache = [];
 
-    public SemanticWalker() { }
+    public SemanticWalker(SemanticModel semanticModel) => _semanticModel = semanticModel;
 
-    public SemanticWalker(bool test) => _test = test;
+    public SemanticWalker(SemanticModel semanticModel, bool test) => (_semanticModel, _test) = (semanticModel, test);
 
-    public SemanticWalker(Action<Location, string?> report) => _report = report;
+    public SemanticWalker(SemanticModel semanticModel, Action<Location, string?> report) => (_semanticModel, _report) = (semanticModel, report);
 
     [DebuggerStepThrough]
     public static void EnsureSufficientExecutionStack(int recursionDepth)
@@ -120,6 +127,20 @@ public sealed partial class SemanticWalker : OperationVisitor<Context, Node?>
     /// <returns></returns>
     /// <exception cref="OperationTransformationException">当操作无法转换时抛出</exception>
     private Node HandleTransformationFailure(IOperation operation, string? message)
+    {
+        var location = operation.Syntax.GetLocation();
+        _report?.Invoke(location, message);
+        throw new OperationTransformationException(operation, message);
+    }
+
+    /// <summary>
+    /// 操作无法转换时的兜底方法，提供详细的错误信息，包括操作类型
+    /// </summary>
+    /// <param name="operation">无法转换的Operation</param>
+    /// <param name="message">错误信息</param>
+    /// <returns></returns>
+    /// <exception cref="OperationTransformationException">当操作无法转换时抛出</exception>
+    private T HandleTransformationFailure<T>(IOperation operation, string? message) where T : Node
     {
         var location = operation.Syntax.GetLocation();
         _report?.Invoke(location, message);

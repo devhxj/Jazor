@@ -120,7 +120,7 @@ class TestClass1
 	{
 		void TestMethod()
 		{
-			var list = new System.Collections.Generic.List<List<int>> {
+			var list = new List<List<int>> {
 				new(){1},new(){2,4},new(){3},
 			};
 		}

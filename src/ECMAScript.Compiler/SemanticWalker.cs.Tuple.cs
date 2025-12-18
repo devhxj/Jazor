@@ -386,7 +386,7 @@ public partial class SemanticWalker
 				var declarator = new VariableDeclarator(leftExpr, init);
 				var declaration = new VariableDeclaration(VariableDeclarationKind.Const,
 					NodeList.From(declarator));
-				argument.Vars.Enqueue(declaration);
+				argument.Enqueue(declaration);
 			}
 			else if (left.Target is ITupleOperation leftTuple)
 				tupleLeft = leftTuple;
@@ -404,7 +404,7 @@ public partial class SemanticWalker
 				var declarator = new VariableDeclarator(rightExpr, init);
 				var declaration = new VariableDeclaration(VariableDeclarationKind.Const,
 					NodeList.From(declarator));
-				argument.Vars.Enqueue(declaration);
+				argument.Enqueue(declaration);
 			}
 			else if (right.Target is ITupleOperation rightTuple)
 				tupleRight = rightTuple;

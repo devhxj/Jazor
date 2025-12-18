@@ -1,6 +1,7 @@
 ﻿using Acornima;
 using Acornima.Ast;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using System.Collections.Generic;
@@ -262,16 +263,9 @@ public partial class SemanticWalker
 		//    }
 		//    void MyMethod() { }
 		// }		
-		if ((operation.Operand.Kind == OperationKind.None &&
-			operation.Operand.Syntax is IdentifierNameSyntax) ||
-			(operation.Operand.Kind == OperationKind.Invalid &&
-			operation.Syntax is ImplicitObjectCreationExpressionSyntax))
-		{
-			var node = operation.Operand.Syntax.WithAdditionalAnnotations(
-				new SyntaxAnnotation("TypeName", operation.Type?.Name)
-			);
-			return ConvertFromSyntaxNode(node);
-		}
+		if (operation.Operand.Kind == OperationKind.None &&
+			operation.Operand.Syntax is IdentifierNameSyntax)
+			return ConvertFromSyntaxNode(operation.Operand.Syntax);
 
 		return Visit(operation.Operand, argument);
 	}
@@ -603,12 +597,12 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitSimpleAssignment(ISimpleAssignmentOperation operation, Context argument)
 	{
-		var value = Translate<Expression>(operation.Value, (null, Scene.Expression, argument.Vars));
+		var value = Translate<Expression>(operation.Value, argument);
 		if (operation.Target is IDiscardOperation)
 			return value;
 
-		var target = Translate<Expression>(operation.Target, (null, Scene.Expression, argument.Vars));
-		if (argument.Out == Scene.ObjectProperty)
+		var target = Translate<Expression>(operation.Target, argument);
+		if (operation.Parent is IObjectCreationOperation)
 			return new ObjectProperty(
 				PropertyKind.Init,
 				key: target,
@@ -617,19 +611,8 @@ public partial class SemanticWalker
 				shorthand: false,
 				method: false
 			);
-		
-		var left = Translate<Expression>(operation.Target, (null, Scene.Expression, argument.Vars));
-		if (argument.Left is not null)
-		{
-			left = new MemberExpression(
-				argument.Left,
-				target,
-				computed: false,
-				optional: false
-			);
-		}
 
-		return new AssignmentExpression(Operator.Assignment, left, value);
+		return new AssignmentExpression(Operator.Assignment, target, value);
 	}
 
 	/// <summary>

@@ -360,7 +360,7 @@ public partial class SemanticWalker
 
 		// 访问属性模式并转换为表达式
 		var patternExpression = Translate<Expression>(operation.Pattern, argument);
-		if (string.IsNullOrEmpty(propertyName))
+		if (propertyName is null)
 			return HandleTransformationFailure(operation, "Unsupported member type in property subpattern.");
 
 		// 根据AST节点构造规范，生成属性访问表达式
@@ -672,7 +672,7 @@ public partial class SemanticWalker
 					if (declPattern.DeclaredSymbol is not null)
 					{
 						var variableName = declPattern.DeclaredSymbol.Name;
-						argument.Vars.Enqueue(new VariableDeclaration(
+						argument.Enqueue(new VariableDeclaration(
 							VariableDeclarationKind.Const,
 							NodeList.From(new VariableDeclarator(new Identifier(variableName), indexAccess))
 						));
@@ -717,7 +717,7 @@ public partial class SemanticWalker
 				);
 
 				// 将变量名添加到 argument 队列，由上层统一生成 const 语句
-				argument.Vars.Enqueue(new VariableDeclaration(
+				argument.Enqueue(new VariableDeclaration(
 					VariableDeclarationKind.Const,
 					NodeList.From(new VariableDeclarator(new Identifier(variableName), sliceCall))
 				));
@@ -772,7 +772,7 @@ public partial class SemanticWalker
 		{
 			// 在解构上下文中，将变量名添加到 argument 队列，由上层统一生成 Let 语句
 			var variableName = declPattern.DeclaredSymbol.Name;
-			argument.Vars.Enqueue(new VariableDeclaration(
+			argument.Enqueue(new VariableDeclaration(
 				VariableDeclarationKind.Let,
 				NodeList.From(new VariableDeclarator(new Identifier(variableName), null))
 			));
