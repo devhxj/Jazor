@@ -699,7 +699,7 @@ public partial class SemanticWalker
 		else if (operation.ConstantValue.HasValue)
 			name = operation.ConstantValue.Value?.ToString();
 
-		if (string.IsNullOrEmpty(name))
+		if (string.IsNullOrEmpty(name) && name is null)
 			return HandleTransformationFailure(operation.Argument, "NameOf expression could not be translated to JavaScript.");
 
 		return new StringLiteral(name, $"'{name}'");
@@ -913,7 +913,7 @@ public partial class SemanticWalker
 
 		// 获取特性名称
 		var attributeName = attributeSyntax.Name?.ToString();
-		if (string.IsNullOrEmpty(attributeName))
+		if (string.IsNullOrEmpty(attributeName) && attributeName is null)
 			return HandleTransformationFailure(operation, "Cannot determine attribute name");
 
 		// 移除常见的 C# 特性后缀

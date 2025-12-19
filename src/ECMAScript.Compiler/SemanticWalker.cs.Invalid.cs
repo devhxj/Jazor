@@ -38,35 +38,7 @@ public partial class SemanticWalker
 	/// <exception cref="ArgumentNullException">当 syn 参数为 null 时抛出。</exception>
 	/// <exception cref="NotSupportedException">当遇到不支持的语法节点类型时抛出。</exception>
 	private Node ConvertFromSyntaxNode(SyntaxNode node)
-	{
-		if (node is ImplicitObjectCreationExpressionSyntax implicitObjectCreationExpressionSyntax)
-		{
-			var definitions = new List<Statement>();
-			var obj = new Identifier(GetUniqueName(node));
-			var typeName = implicitObjectCreationExpressionSyntax.GetAnnotations("TypeName").FirstOrDefault()?.Data;
-			if (typeName is not null)
-            {
-				var arguments = new List<Expression>();
-				foreach (var arg in implicitObjectCreationExpressionSyntax.ArgumentList.Arguments)
-				{
-					var argExpr = ConvertFromSyntaxNode(arg.Expression) as Expression;
-					arguments.Add(argExpr);
-				}				
-				var callee = new Identifier(typeName);
-				var nexpr = new NewExpression(callee, NodeList.From(arguments));
-				var expr = new AssignmentExpression(Operator.Assignment, obj, nexpr);
-				definitions.Add(new NonSpecialExpressionStatement(expr));
-				if (implicitObjectCreationExpressionSyntax.Initializer is not null)
-				{
-					foreach (var initializer in implicitObjectCreationExpressionSyntax.Initializer.Expressions)
-                    {
-                        var n = ConvertFromSyntaxNode(initializer);
-                    }
-				}
-            }
-			return new DefinitionExpression(NodeList.From(definitions), obj);
-		}
-					
+	{					
 		var result = node switch
 		{
 			// 基础表达式和字面量
@@ -75,11 +47,11 @@ public partial class SemanticWalker
 				null => new NullLiteral("null"),
 				bool b => new BooleanLiteral(b, b.ToString().ToLower()),
 				string s => new StringLiteral(s, $"'{s}'"),
-				int i => new NumericLiteral(i, i.ToString()),
-				long l => new NumericLiteral(l, l.ToString()),
-				double d => new NumericLiteral(d, d.ToString()),
-				float f => new NumericLiteral(f, f.ToString()),
-				decimal dec => new NumericLiteral(System.Convert.ToDouble(dec), dec.ToString()),
+				int i => new NumericLiteral(i, i.ToString()!),
+				long l => new NumericLiteral(l, l.ToString()!),
+				double d => new NumericLiteral(d, d.ToString()!),
+				float f => new NumericLiteral(f, f.ToString()!),
+				decimal dec => new NumericLiteral(System.Convert.ToDouble(dec), dec.ToString()!),
 				_ => null
 			},
 			IdentifierNameSyntax id => new Identifier(id.Identifier.Text),

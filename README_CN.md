@@ -16,7 +16,7 @@ Jazor 是一个高性能的 C# 到 JavaScript 编译器，旨在实现 C# 代码
 - **静态分析**：Roslyn 分析器自动对标记的类进行语法校验
 - **源代码生成器**：自动生成包含转换后的 ES6+ 模块 JavaScript 内容的 `ECMAScript.g.cs` 文件
 - **网页项目集成**：配置输出目标从 `ECMAScript.g.cs` 提取 JavaScript 代码并生成 JS 文件
-- **Bun 主机集成**：通过 bunhost 将 JS 文件与其他 npm 包进行打包编译
+- **Deno 主机集成**：通过 denohost 将 JS 文件与其他 npm 包进行打包编译
 - **CLI 代理生成**：为 TypeScript 编写的 npm 包生成代理类（使用 `[ECMAScript]` 特性，不转换但可调用）
 - **Razor JSX 支持**：基于 `.razor` 文件实现类似 JSX 的功能
 - **完整类型映射**：全面支持 C# 类型与自动 JavaScript 类型转换
