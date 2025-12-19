@@ -16,7 +16,7 @@ public sealed class SemanticWalkerTupleTest
     /// <param name="code"></param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    private static IBlockOperation GetBlockOperation(string code, out SemanticModel semanticModel)
+    private static IBlockOperation GetBlockOperation(string code)
     {
         var compilation = CSharpCompilation.Create(
             "TestAssembly",
@@ -25,7 +25,7 @@ public sealed class SemanticWalkerTupleTest
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         var syntaxTree = compilation.SyntaxTrees.First();
-        semanticModel = compilation.GetSemanticModel(syntaxTree);
+        var semanticModel = compilation.GetSemanticModel(syntaxTree);
         var root = syntaxTree.GetRoot();
 
         // 查找第一个方法体
@@ -98,9 +98,9 @@ public sealed class SemanticWalkerTupleTest
                     }
                 }                 
             }
-            ", out var semanticModel);
+            ");
 
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
@@ -149,10 +149,10 @@ public sealed class SemanticWalkerTupleTest
                     var tuple = (first: 1, second: 2, third: 3);
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetTupleOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitTuple(operation, new());
         var script = node?.ToECMAScript();
 
@@ -171,13 +171,13 @@ public sealed class SemanticWalkerTupleTest
                     var tuple = (name: ""test"", 42, true);
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var variableDeclarationGroup = GetOperationAt<IVariableDeclarationGroupOperation>(block);
         var variableDeclaration = variableDeclarationGroup!.Declarations.First();
         var initializer = variableDeclaration.Declarators.First().Initializer;
         var operation = (ITupleOperation)initializer!.Value;
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitTuple(operation, new());
         var script = node?.ToECMAScript();
 
@@ -196,10 +196,10 @@ public sealed class SemanticWalkerTupleTest
                     var tuple = (outer: (inner: 1, 2), 3);
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetTupleOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitTuple(operation, new());
         var script = node?.ToECMAScript();
 
@@ -218,10 +218,10 @@ public sealed class SemanticWalkerTupleTest
                     var tuple = (str: ""hello"", num: 3.14, flag: false, list: new int[] {1, 2, 3});
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetTupleOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitTuple(operation, new());
         var script = node?.ToECMAScript();
 
@@ -241,10 +241,10 @@ public sealed class SemanticWalkerTupleTest
                     var tuple = (sum: x + y, diff: x - y, product: x * y);
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetTupleOperationAt(block, 1);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitTuple(operation, new());
         var script = node?.ToECMAScript();
 
@@ -263,10 +263,10 @@ public sealed class SemanticWalkerTupleTest
                     var tuple = (len: ""test"".Length, upper: ""test"".ToUpper(), lower: ""TEST"".ToLower());
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetTupleOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitTuple(operation, new());
         var script = node?.ToECMAScript();
 
@@ -285,10 +285,10 @@ public sealed class SemanticWalkerTupleTest
                     var t = (1,2,3,4,5,6,7,8);
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetTupleOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitTuple(operation, new());
         var script = node?.ToECMAScript();
 
@@ -307,11 +307,11 @@ public sealed class SemanticWalkerTupleTest
                     (int bbb, int ccc) = tuple;
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var statement = GetOperationAt<IExpressionStatementOperation>(block, 1);
         var operation = (IDeconstructionAssignmentOperation)statement.Operation;
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitDeconstructionAssignment(operation, new());
         var script = node?.ToECMAScript();
 
@@ -331,11 +331,11 @@ public sealed class SemanticWalkerTupleTest
                     (bbb, ccc) = tuple;
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var statement = GetOperationAt<IExpressionStatementOperation>(block, 2);
         var operation = (IDeconstructionAssignmentOperation)statement.Operation;
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitDeconstructionAssignment(operation, new());
         var script = node?.ToECMAScript();
 
@@ -355,11 +355,11 @@ public sealed class SemanticWalkerTupleTest
                     (bbb, int ccc) = tuple;
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var statement = GetOperationAt<IExpressionStatementOperation>(block, 2);
         var operation = (IDeconstructionAssignmentOperation)statement.Operation;
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitDeconstructionAssignment(operation, new());
         var script = node?.ToECMAScript();
 
@@ -378,11 +378,11 @@ public sealed class SemanticWalkerTupleTest
                     ((int bbb, int ccc),int aaa) = tuple;
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var statement = GetOperationAt<IExpressionStatementOperation>(block, 1);
         var operation = (IDeconstructionAssignmentOperation)statement.Operation;
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitDeconstructionAssignment(operation, new());
         var script = node?.ToECMAScript();
 
@@ -402,11 +402,11 @@ public sealed class SemanticWalkerTupleTest
                 
                 (int, int) GetTuple() => (1, 2);
             }
-            ", out var semanticModel);
+            ");
 
         var statement = GetOperationAt<IExpressionStatementOperation>(block, 0);
         var operation = (IDeconstructionAssignmentOperation)statement.Operation;
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitDeconstructionAssignment(operation, new());
         var script = node?.ToECMAScript();
 
@@ -425,11 +425,11 @@ public sealed class SemanticWalkerTupleTest
                     (_, int ccc) = tuple;
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var statement = GetOperationAt<IExpressionStatementOperation>(block, 1);
         var operation = (IDeconstructionAssignmentOperation)statement.Operation;
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitDeconstructionAssignment(operation, new());
         var script = node?.ToECMAScript();
 
@@ -449,13 +449,13 @@ public sealed class SemanticWalkerTupleTest
                     var result = tuple1 == tuple2;
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var statement = GetOperationAt<IVariableDeclarationGroupOperation>(block, 2);
         var variableDeclaration = statement!.Declarations.First();
         var initializer = variableDeclaration.Declarators.First().Initializer;
         var operation = (ITupleBinaryOperation)initializer!.Value;
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitTupleBinaryOperator(operation, new());
         var script = node?.ToECMAScript();
 
@@ -475,13 +475,13 @@ public sealed class SemanticWalkerTupleTest
                     var result = tuple1 != tuple2;
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var statement = GetOperationAt<IVariableDeclarationGroupOperation>(block, 2);
         var variableDeclaration = statement!.Declarations.First();
         var initializer = variableDeclaration.Declarators.First().Initializer;
         var operation = (ITupleBinaryOperation)initializer!.Value;
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitTupleBinaryOperator(operation, new());
         var script = node?.ToECMAScript();
 
@@ -501,13 +501,13 @@ public sealed class SemanticWalkerTupleTest
                     var result = tuple1 == tuple2;
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var statement = GetOperationAt<IVariableDeclarationGroupOperation>(block, 2);
         var variableDeclaration = statement!.Declarations.First();
         var initializer = variableDeclaration.Declarators.First().Initializer;
         var operation = (ITupleBinaryOperation)initializer!.Value;
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitTupleBinaryOperator(operation, new());
         var script = node?.ToECMAScript();
 
@@ -525,13 +525,13 @@ public sealed class SemanticWalkerTupleTest
                     var result = (1,2) == (2,1);
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var statement = GetOperationAt<IVariableDeclarationGroupOperation>(block, 0);
         var variableDeclaration = statement!.Declarations.First();
         var initializer = variableDeclaration.Declarators.First().Initializer;
         var operation = (ITupleBinaryOperation)initializer!.Value;
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitTupleBinaryOperator(operation, new());
         var script = node?.ToECMAScript();
 
@@ -549,13 +549,13 @@ public sealed class SemanticWalkerTupleTest
                     var result = (1,2) != (2,1);
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var statement = GetOperationAt<IVariableDeclarationGroupOperation>(block, 0);
         var variableDeclaration = statement!.Declarations.First();
         var initializer = variableDeclaration.Declarators.First().Initializer;
         var operation = (ITupleBinaryOperation)initializer!.Value;
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitTupleBinaryOperator(operation, new());
         var script = node?.ToECMAScript();
 
@@ -573,13 +573,13 @@ public sealed class SemanticWalkerTupleTest
                     var result = (1,(3,5)) == (2,(4,6));
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var statement = GetOperationAt<IVariableDeclarationGroupOperation>(block, 0);
         var variableDeclaration = statement!.Declarations.First();
         var initializer = variableDeclaration.Declarators.First().Initializer;
         var operation = (ITupleBinaryOperation)initializer!.Value;
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitTupleBinaryOperator(operation, new());
         var script = node?.ToECMAScript();
 
@@ -597,13 +597,13 @@ public sealed class SemanticWalkerTupleTest
                     var result = (1,(3,5)) != (2,(4,6));
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var statement = GetOperationAt<IVariableDeclarationGroupOperation>(block, 0);
         var variableDeclaration = statement!.Declarations.First();
         var initializer = variableDeclaration.Declarators.First().Initializer;
         var operation = (ITupleBinaryOperation)initializer!.Value;
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitTupleBinaryOperator(operation, new());
         var script = node?.ToECMAScript();
 
@@ -623,13 +623,13 @@ public sealed class SemanticWalkerTupleTest
                     var result = tuple1 == tuple2;
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var statement = GetOperationAt<IVariableDeclarationGroupOperation>(block, 2);
         var variableDeclaration = statement!.Declarations.First();
         var initializer = variableDeclaration.Declarators.First().Initializer;
         var operation = (ITupleBinaryOperation)initializer!.Value;
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitTupleBinaryOperator(operation, new());
         var script = node?.ToECMAScript();
 
@@ -649,13 +649,13 @@ public sealed class SemanticWalkerTupleTest
                     var result = tuple1 == tuple2;
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var statement = GetOperationAt<IVariableDeclarationGroupOperation>(block, 2);
         var variableDeclaration = statement!.Declarations.First();
         var initializer = variableDeclaration.Declarators.First().Initializer;
         var operation = (ITupleBinaryOperation)initializer!.Value;
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitTupleBinaryOperator(operation, new());
         var script = node?.ToECMAScript();
 
@@ -675,13 +675,13 @@ public sealed class SemanticWalkerTupleTest
 
                 (int, int) GetTuple() => (1, 2);
             }
-            ", out var semanticModel);
+            ");
 
         var statement = GetOperationAt<IVariableDeclarationGroupOperation>(block, 0);
         var variableDeclaration = statement!.Declarations.First();
         var initializer = variableDeclaration.Declarators.First().Initializer;
         var operation = (ITupleBinaryOperation)initializer!.Value;
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var queue = new Queue<Acornima.Ast.VariableDeclaration>();
         var node = walker.VisitTupleBinaryOperator(operation, queue);
         var exprScript = node?.ToECMAScript();
@@ -711,13 +711,13 @@ public sealed class SemanticWalkerTupleTest
                 (int,int) Get1() => (1,2);
                 (int,int) Get2() => (1,2);
             }
-            ", out var semanticModel);
+            ");
 
         var statement = GetOperationAt<IVariableDeclarationGroupOperation>(block, 0);
         var variableDeclaration = statement!.Declarations.First();
         var initializer = variableDeclaration.Declarators.First().Initializer;
         var operation = (ITupleBinaryOperation)initializer!.Value;
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var queue = new Queue<Acornima.Ast.VariableDeclaration>();
         var node = walker.VisitTupleBinaryOperator(operation, queue);
         var exprScript = node?.ToECMAScript();
@@ -742,13 +742,13 @@ public sealed class SemanticWalkerTupleTest
                     var result = ((long)1,2) == (1L,2);
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var statement = GetOperationAt<IVariableDeclarationGroupOperation>(block, 0);
         var variableDeclaration = statement!.Declarations.First();
         var initializer = variableDeclaration.Declarators.First().Initializer;
         var operation = (ITupleBinaryOperation)initializer!.Value;
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitTupleBinaryOperator(operation, new());
         var script = node?.ToECMAScript();
 
@@ -767,11 +767,11 @@ public sealed class SemanticWalkerTupleTest
                     var (_, second, _) = tuple;
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var statement = GetOperationAt<IExpressionStatementOperation>(block, 1);
         var operation = (IDeconstructionAssignmentOperation)statement.Operation;
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitDeconstructionAssignment(operation, new());
         var script = node?.ToECMAScript();
 
@@ -791,11 +791,11 @@ public sealed class SemanticWalkerTupleTest
                 
                 int SomeMethod() => 42;
             }
-            ", out var semanticModel);
+            ");
 
         var statement = GetOperationAt<IExpressionStatementOperation>(block, 0);
         var operation = (ISimpleAssignmentOperation)statement.Operation;
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitSimpleAssignment(operation, new());
         var script = node?.ToECMAScript();
 
@@ -832,11 +832,11 @@ public sealed class SemanticWalkerTupleTest
                     }
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var statement = GetOperationAt<IExpressionStatementOperation>(block, 1);
         var operation = (IDeconstructionAssignmentOperation)statement.Operation;
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitDeconstructionAssignment(operation, new());
         var script = node?.ToECMAScript();
 
@@ -868,11 +868,11 @@ public sealed class SemanticWalkerTupleTest
                         y = ((A,(1,2)),B);
                     }
                 }
-            }", out var semanticModel);
+            }");
 
         var statement = GetOperationAt<IExpressionStatementOperation>(block, 2);
         var operation = (IDeconstructionAssignmentOperation)statement.Operation;
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitDeconstructionAssignment(operation, new());
         var script = node?.ToKnRECMAScript();
 
@@ -910,11 +910,11 @@ let z = v$test.b;
                         y = ((A,(1,2)),B);
                     }
                 }
-            }", out var semanticModel);
+            }");
 
         var statement = GetOperationAt<IExpressionStatementOperation>(block, 2);
         var operation = (IDeconstructionAssignmentOperation)statement.Operation;
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitDeconstructionAssignment(operation, new());
         var script = node?.ToKnRECMAScript();
 
@@ -937,13 +937,13 @@ let z = v$test.b;
                 {
                     (int a, int b) = ((int,int))(1,2);
                 }
-            }", out var semanticModel);
+            }");
 
         var statement = block.Operations
             .OfType<IExpressionStatementOperation>()
             .First(op => op.Operation is IDeconstructionAssignmentOperation);
         var operation = (IDeconstructionAssignmentOperation)statement.Operation;
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitDeconstructionAssignment(operation, new());
         var script = node?.ToECMAScript();
 

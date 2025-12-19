@@ -16,7 +16,7 @@ public sealed class SemanticWalkerCreationTest
     /// <param name="code"></param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    private static IBlockOperation GetBlockOperation(string code, out SemanticModel semanticModel)
+    private static IBlockOperation GetBlockOperation(string code)
     {
         var compilation = CSharpCompilation.Create(
             "TestAssembly",
@@ -25,7 +25,7 @@ public sealed class SemanticWalkerCreationTest
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         var syntaxTree = compilation.SyntaxTrees.First();
-        semanticModel = compilation.GetSemanticModel(syntaxTree);
+        var semanticModel = compilation.GetSemanticModel(syntaxTree);
         var root = syntaxTree.GetRoot();
 
         // 查找第一个方法体
@@ -139,10 +139,10 @@ public sealed class SemanticWalkerCreationTest
                 {
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetObjectCreationOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -165,10 +165,10 @@ public sealed class SemanticWalkerCreationTest
                     public MyClass(int number, string text) { }
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetObjectCreationOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -186,10 +186,10 @@ public sealed class SemanticWalkerCreationTest
                     var obj = new { Name = ""John"", Age = 30 };
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetAnonymousObjectCreationOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitAnonymousObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -211,10 +211,10 @@ public sealed class SemanticWalkerCreationTest
                 {
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetObjectCreationOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -232,10 +232,10 @@ public sealed class SemanticWalkerCreationTest
                     var arr = new int[] { 1, 2, 3 };
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetArrayCreationOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitArrayCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -253,10 +253,10 @@ public sealed class SemanticWalkerCreationTest
                     var arr = new int[5];
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetArrayCreationOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitArrayCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -274,10 +274,10 @@ public sealed class SemanticWalkerCreationTest
                     var arr = new int[] { };
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetArrayCreationOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitArrayCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -295,10 +295,10 @@ public sealed class SemanticWalkerCreationTest
                     var obj = new { Name = ""John"", Age = 25 };
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetAnonymousObjectCreationOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitAnonymousObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -317,10 +317,10 @@ public sealed class SemanticWalkerCreationTest
                     var obj = new { Sum = x + y, Product = x * y };
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetAnonymousObjectCreationOperationAt(block, 1);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitAnonymousObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -346,10 +346,10 @@ public sealed class SemanticWalkerCreationTest
                     public int Property2 { get; set; }
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetObjectCreationOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitObjectCreation(operation, []);
         var script = node?.ToECMAScript();
 
@@ -373,10 +373,10 @@ public sealed class SemanticWalkerCreationTest
                     public int Property2 { get; set; }
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetObjectCreationOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var left = new Identifier("obj");
         var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!, []);
         var script = node?.ToECMAScript();
@@ -413,9 +413,9 @@ public sealed class SemanticWalkerCreationTest
                     public int C2 { get; set; }
                 }
             }
-            ", out var semanticModel);
+            ");
 
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var operation = GetObjectCreationOperationAt(block);
         var left = new Identifier("obj");
         //var memberInitializer = (IMemberInitializerOperation)operation.Initializer!.Initializers.First();
@@ -438,10 +438,10 @@ public sealed class SemanticWalkerCreationTest
                     var message = $""Hello, {name}!"";
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetInterpolatedStringOperationAt(block, 1);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitInterpolatedString(operation, new());
         var script = node?.ToECMAScript();
 
@@ -460,10 +460,10 @@ public sealed class SemanticWalkerCreationTest
                     var message = $""Sum: {x + y}, Product: {x * y}"";
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetInterpolatedStringOperationAt(block, 1);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitInterpolatedString(operation, new());
         var script = node?.ToECMAScript();
 
@@ -483,10 +483,10 @@ public sealed class SemanticWalkerCreationTest
                     var message = $""Name: {name}, Age: {age}"";
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetInterpolatedStringOperationAt(block, 2);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitInterpolatedString(operation, new());
         var script = node?.ToECMAScript();
 
@@ -504,10 +504,10 @@ public sealed class SemanticWalkerCreationTest
                     var message = $""Hello, World!"";
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetInterpolatedStringOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitInterpolatedString(operation, new());
         var script = node?.ToECMAScript();
 
@@ -531,9 +531,9 @@ public sealed class SemanticWalkerCreationTest
                     var message = $""Hello, {name}!"";
                 }
             }
-            ", out var semanticModel);
+            ");
 
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
@@ -563,10 +563,10 @@ public sealed class SemanticWalkerCreationTest
                 {
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetObjectCreationOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -605,10 +605,10 @@ public sealed class SemanticWalkerCreationTest
                     public int Value { get; set; }
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetObjectCreationOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitObjectCreation(operation, []);
         var script = node?.ToECMAScript();
 
@@ -645,10 +645,10 @@ public sealed class SemanticWalkerCreationTest
                     public string? NestedProp { get; set; }
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetObjectCreationOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var left = new Identifier("obj");
         var node = walker.VisitObjectCreation(operation, []);
         var script = node?.ToECMAScript();
@@ -671,10 +671,10 @@ public sealed class SemanticWalkerCreationTest
                     };
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetAnonymousObjectCreationOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitAnonymousObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -692,10 +692,10 @@ public sealed class SemanticWalkerCreationTest
                     var obj = new { Name = ""John"", Scores = new[] { 85, 92, 78 } };
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetAnonymousObjectCreationOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitAnonymousObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -713,10 +713,10 @@ public sealed class SemanticWalkerCreationTest
                     var obj = new { };
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetAnonymousObjectCreationOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitAnonymousObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -735,10 +735,10 @@ public sealed class SemanticWalkerCreationTest
                     var obj = new { Name = name, Age = 30 };
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetAnonymousObjectCreationOperationAt(block, 1);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitAnonymousObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -756,10 +756,10 @@ public sealed class SemanticWalkerCreationTest
                     var arr = new int[5, 5];
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetArrayCreationOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
 
         // 多维数组应该转换失败
         Assert.Throws<OperationTransformationException>(() => walker.VisitArrayCreation(operation, new()));
@@ -776,10 +776,10 @@ public sealed class SemanticWalkerCreationTest
                     var arr = new string[] { ""Hello"", ""World"" };
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetArrayCreationOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitArrayCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -797,10 +797,10 @@ public sealed class SemanticWalkerCreationTest
                     var arr = new object[] { 42, ""test"", true };
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetArrayCreationOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitArrayCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -818,10 +818,10 @@ public sealed class SemanticWalkerCreationTest
                     var arr = new int[][] { new[] { 1, 2 }, new[] { 3, 4 } };
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetArrayCreationOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitArrayCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -841,14 +841,14 @@ public sealed class SemanticWalkerCreationTest
 
                 void MyMethod() { }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetOperationAt<IVariableDeclarationGroupOperation>(block);
         var variableDeclaration = operation.Declarations.First();
         var initializer = variableDeclaration.Declarators.First().Initializer!;
         var conversionOp = (IConversionOperation)initializer.Value;
 
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitConversion(conversionOp, new());
         var script = node?.ToECMAScript();
 
@@ -866,14 +866,14 @@ public sealed class SemanticWalkerCreationTest
                     Func<int, int> func = x => x * 2;
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetOperationAt<IVariableDeclarationGroupOperation>(block);
         var variableDeclaration = operation.Declarations.First();
         var initializer = variableDeclaration.Declarators.First().Initializer!;
         var conversionOp = (IConversionOperation)initializer.Value;
 
-        var watcher = new SemanticWalker(semanticModel, true);
+        var watcher = new SemanticWalker(true);
         var node = watcher.VisitConversion(conversionOp, new());
         var script = node?.ToECMAScript();
 
@@ -896,10 +896,10 @@ public sealed class SemanticWalkerCreationTest
                     public string? Prop1 { get; set; }
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetObjectCreationOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var left = new Identifier("obj");
         var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!, []);
         var script = node?.ToECMAScript();
@@ -918,10 +918,10 @@ public sealed class SemanticWalkerCreationTest
                     var list = new System.Collections.Generic.List<int> { 1, 2, 3 };
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetObjectCreationOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!,[]);
         var script = node?.ToECMAScript();
 
@@ -942,10 +942,10 @@ public sealed class SemanticWalkerCreationTest
                     };
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetObjectCreationOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!,[]);
         var script = node?.ToKnRECMAScript();
 
@@ -980,10 +980,10 @@ list.Add(v$test);
                     public string? Field2;
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetObjectCreationOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var left = new Identifier("obj");
         var node = walker.VisitObjectCreation(operation, []);
         var script = node?.ToECMAScript();
@@ -1002,10 +1002,10 @@ list.Add(v$test);
                     var arr = new int[] { 42 };
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetArrayCreationOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitArrayCreation(operation, new());
         var script = node?.ToECMAScript();
 
@@ -1023,10 +1023,10 @@ list.Add(v$test);
                     var obj = new { Flag = true, Count = 100, Price = 19.99 };
                 }
             }
-            ", out var semanticModel);
+            ");
 
         var operation = GetAnonymousObjectCreationOperationAt(block);
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.VisitAnonymousObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 

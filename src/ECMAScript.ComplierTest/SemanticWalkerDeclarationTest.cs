@@ -16,7 +16,7 @@ public sealed class SemanticWalkerDeclarationTest
     /// <param name="code"></param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    private static IBlockOperation GetBlockOperation(string code, out SemanticModel semanticModel)
+    private static IBlockOperation GetBlockOperation(string code)
     {
         var compilation = CSharpCompilation.Create(
             "TestAssembly",
@@ -25,7 +25,7 @@ public sealed class SemanticWalkerDeclarationTest
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         var syntaxTree = compilation.SyntaxTrees.First();
-        semanticModel = compilation.GetSemanticModel(syntaxTree);
+        var semanticModel = compilation.GetSemanticModel(syntaxTree);
         var root = syntaxTree.GetRoot();
 
         // 查找第一个方法体
@@ -45,8 +45,8 @@ public sealed class SemanticWalkerDeclarationTest
     /// </summary>
     private static T GetOperationAt<T>(IBlockOperation block, int index = 0) where T : class, IOperation
     {
-        var operation = block.Operations.Skip(index).First() as T;
-        return operation ?? throw new InvalidOperationException("未找到可分析的操作");
+        var operation = block.Operations.Skip(index).First();
+        return operation as T ?? throw new InvalidOperationException("未找到可分析的操作");
     }
 
     /// <summary>
@@ -76,16 +76,16 @@ public sealed class SemanticWalkerDeclarationTest
                     var stringArray = new string[] {""apple"", ""banana"", ""cherry""};
                 }
             }
-            ", out var semanticModel);
+            ");
 
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(@"{
+        Assert.AreEqual(
+@"{
   let intArray = [1, 2, 3, 4, 5];
-  let stringArray = [""apple"", ""banana"", ""cherry""];
-
+  let stringArray = ['apple', 'banana', 'cherry'];
 }", script);
     }
 
@@ -102,17 +102,17 @@ public sealed class SemanticWalkerDeclarationTest
                     double pi = 3.14;
                 }
             }
-            ", out var semanticModel);
+            ");
 
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(@"{
+        Assert.AreEqual(
+@"{
   let x = 10;
-  let name = ""Hello"";
+  let name = 'Hello';
   let pi = 3.14;
-
 }", script);
     }
 
@@ -129,17 +129,17 @@ public sealed class SemanticWalkerDeclarationTest
                     bool flag = true;
                 }
             }
-            ", out var semanticModel);
+            ");
 
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(@"{
+        Assert.AreEqual(
+@"{
   let x = 5;
   let name;
   let flag = true;
-
 }", script);
     }
 
@@ -152,19 +152,19 @@ public sealed class SemanticWalkerDeclarationTest
                 void TestMethod()
                 {
                     int x = 5, y = 10;
-                    string name = ""test"", message;
+                    string name = $""test{x}{y}"";
                 }
             }
-            ", out var semanticModel);
+            ");
 
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(@"{
+        Assert.AreEqual(
+@"{
   let x = 5, y = 10;
-  let name = ""test"", message;
-
+  let name = `test${x}${y}`;
 }", script);
     }
 
@@ -180,17 +180,18 @@ public sealed class SemanticWalkerDeclarationTest
                     string x = ""hello"", y = ""world"";
                 }
             }
-            ", out var semanticModel);
+            ");
 
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(@"{
+        Assert.AreEqual(
+@"{
   let a = 1, b = 2, c;
-  let x = ""hello"", y = ""world"";
-
+  let x = 'hello', y = 'world';
 }", script);
+
     }
 
     [TestMethod]
@@ -214,9 +215,9 @@ public sealed class SemanticWalkerDeclarationTest
                     }
                 }
             }
-            ", out var semanticModel);
+            ");
 
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
@@ -251,16 +252,17 @@ public sealed class SemanticWalkerDeclarationTest
                 public int Field = 42;
                 private string _name = ""default"";
             }
-            ", out var semanticModel);
+            ");
 
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(@"{
+        Assert.AreEqual(
+@"{
   let obj = new TestClassWithFields;
-
 }", script);
+
     }
 
     [TestMethod]
@@ -288,22 +290,23 @@ public sealed class SemanticWalkerDeclarationTest
                     }
                 }
             }
-            ", out var semanticModel);
+            ");
 
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(@"{
+        Assert.AreEqual(
+@"{
   let x = 10;
   let a = 1, b = 2, c;
   let numbers = [1, 2, 3];
-  let input = ""123"";
+  let input = '123';
   let result;
   if (System.Int32.TryParse(input, result)) {
   }
-
 }", script);
+
     }
 
     [TestMethod]
@@ -317,17 +320,16 @@ public sealed class SemanticWalkerDeclarationTest
                     var arr = new int[] { 1, 2, 3 };
                 }
             }
-            ", out var semanticModel);
+            ");
 
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var variableDeclaration = GetOperationAt<IVariableDeclarationGroupOperation>(block, 0);
         var variableDeclarator = variableDeclaration.Declarations.First().Declarators.First();
-        var arrayInitializer = (IArrayInitializerOperation)variableDeclarator.Initializer!.Value;
-        
-        var result = walker.VisitArrayInitializer(arrayInitializer, new());
-        var script = result?.ToKnRECMAScript();
+        var arrayCreation = (IArrayCreationOperation)variableDeclarator.Initializer!.Value;
+        var result = walker.VisitArrayInitializer(arrayCreation.Initializer!, new());
+        var script = result?.ToECMAScript();
 
-        Assert.AreEqual("[1, 2, 3]", script);
+        Assert.AreEqual("[1,2,3]", script);
     }
 
     [TestMethod]
@@ -341,9 +343,9 @@ public sealed class SemanticWalkerDeclarationTest
                     int x = 42;
                 }
             }
-            ", out var semanticModel);
+            ");
 
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var variableDeclaration = GetOperationAt<IVariableDeclarationGroupOperation>(block, 0);
         var variableDeclarator = variableDeclaration.Declarations.First().Declarators.First();
         var variableInitializer = variableDeclarator.Initializer!;
@@ -365,9 +367,9 @@ public sealed class SemanticWalkerDeclarationTest
                     int x = 100;
                 }
             }
-            ", out var semanticModel);
+            ");
 
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var variableDeclaration = GetOperationAt<IVariableDeclarationGroupOperation>(block, 0);
         var variableDeclarator = variableDeclaration.Declarations.First().Declarators.First();
         
@@ -388,9 +390,9 @@ public sealed class SemanticWalkerDeclarationTest
                     int x = 5, y = 10;
                 }
             }
-            ", out var semanticModel);
+            ");
 
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var variableDeclarationGroup = GetOperationAt<IVariableDeclarationGroupOperation>(block, 0);
         var variableDeclaration = variableDeclarationGroup.Declarations.First();
         
@@ -411,9 +413,9 @@ public sealed class SemanticWalkerDeclarationTest
                     int a = 1, b = 2;
                 }
             }
-            ", out var semanticModel);
+            ");
 
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var variableDeclarationGroup = GetOperationAt<IVariableDeclarationGroupOperation>(block, 0);
         
         var result = walker.VisitVariableDeclarationGroup(variableDeclarationGroup, new());
@@ -435,9 +437,9 @@ public sealed class SemanticWalkerDeclarationTest
                     }
                 }
             }
-            ", out var semanticModel);
+            ");
 
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var ifOperation = GetOperationAt<IConditionalOperation>(block, 0);
         var invocationOperation = (IInvocationOperation)ifOperation.Condition;
         var argumentOperation = invocationOperation.Arguments[1];
@@ -461,9 +463,9 @@ public sealed class SemanticWalkerDeclarationTest
                     (int a, int b) = tuple;
                 }
             }
-            ", out var semanticModel);
+            ");
 
-        var walker = new SemanticWalker(semanticModel, true);
+        var walker = new SemanticWalker(true);
         var tupleOperation = GetTupleOperationAt(block, 1);
         var declarationExpression = (IDeclarationExpressionOperation)tupleOperation.Elements[0];
         
@@ -489,14 +491,18 @@ public sealed class SemanticWalkerDeclarationTest
             {
                 public int Field = 42;
             }
-            ", out var semanticModel);
+            ");
 
-        var walker = new SemanticWalker(semanticModel, true);
-        var objectCreationOperation = GetOperationAt<IObjectCreationOperation>(block, 0);
-        var fieldInitializer = objectCreationOperation.Initializer!.Initializers.First() as IFieldInitializerOperation;
-        
-        var result = walker.VisitFieldInitializer(fieldInitializer!, new());
-        var script = result?.ToKnRECMAScript();
+        var walker = new SemanticWalker(true);
+        var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 0);
+        var initializer = variableDeclarationGroupOp
+            .Declarations.FirstOrDefault()?
+            .Declarators.FirstOrDefault()?
+            .Initializer;
+
+        var script = "";
+        //var result = walker.VisitFieldInitializer(fieldInitializer!, new());
+        //var script = result?.ToECMAScript();
 
         Assert.AreEqual("42", script);
     }

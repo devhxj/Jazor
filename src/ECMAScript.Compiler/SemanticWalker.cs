@@ -32,10 +32,6 @@ namespace ECMAScript.Compiler;
 /// </summary>
 public sealed partial class SemanticWalker : OperationVisitor<Context, Node?>
 {
-    private static readonly SymbolDisplayFormat _metadataNameFormat = new(
-        globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
-        typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces);
-        
     private int _recursionDepth;
     private readonly ConcurrentDictionary<IOperation, Expression> _exprCache = [];
 
@@ -44,17 +40,15 @@ public sealed partial class SemanticWalker : OperationVisitor<Context, Node?>
     /// </summary>
     private readonly bool _test;
 
-    private readonly SemanticModel _semanticModel;
-
     private readonly Action<Location, string?>? _report;
 
     private readonly ConcurrentDictionary<int, (OperationKind Kind, string Name)> _cache = [];
 
-    public SemanticWalker(SemanticModel semanticModel) => _semanticModel = semanticModel;
+    public SemanticWalker() { }
 
-    public SemanticWalker(SemanticModel semanticModel, bool test) => (_semanticModel, _test) = (semanticModel, test);
+    public SemanticWalker(bool test) => _test = test;
 
-    public SemanticWalker(SemanticModel semanticModel, Action<Location, string?> report) => (_semanticModel, _report) = (semanticModel, report);
+    public SemanticWalker(Action<Location, string?> report) => _report = report;
 
     [DebuggerStepThrough]
     public static void EnsureSufficientExecutionStack(int recursionDepth)
