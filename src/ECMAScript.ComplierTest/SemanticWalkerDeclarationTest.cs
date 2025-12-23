@@ -30,12 +30,10 @@ public sealed class SemanticWalkerDeclarationTest
 
         // 查找第一个方法体
         var methodDeclaration = root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault();
-        if (methodDeclaration?.Body is not null)
-        {
-            var operation = semanticModel.GetOperation(methodDeclaration.Body) as IBlockOperation;
-            if (operation is not null)
-                return operation;
-        }
+        if (methodDeclaration?.Body is null) throw new InvalidOperationException("未找到可分析的操作");
+        var operation = semanticModel.GetOperation(methodDeclaration.Body) as IBlockOperation;
+        if (operation is not null)
+            return operation;
 
         throw new InvalidOperationException("未找到可分析的操作");
     }
@@ -52,7 +50,7 @@ public sealed class SemanticWalkerDeclarationTest
     /// <summary>
     /// 获取元组操作
     /// </summary>
-    /// <param name="code"></param>
+    /// <param name="block"></param>
     /// <param name="index"></param>
     /// <returns></returns>
     private static ITupleOperation GetTupleOperationAt(IBlockOperation block, int index = 0)

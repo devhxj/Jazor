@@ -110,7 +110,7 @@ public partial class SemanticWalker
 				);
 				properties.Add(prop);
 			}
-			else HandleTransformationFailure(initializer, "");
+			else HandleTransformationFailure(initializer, "Anonymous object initializer could not be translated to JavaScript.");
 		}
 
 		return new ObjectExpression(NodeList.From(properties));
@@ -228,7 +228,7 @@ public partial class SemanticWalker
 					};
 
 					if (target is null)
-						return HandleTransformationFailure<StatementOrExpression>(initializer, "");
+						return HandleTransformationFailure<StatementOrExpression>(initializer, "Member initializer target could not be translated to JavaScript.");
 
 					Expression left = obj is null
 					 	? target
@@ -240,7 +240,7 @@ public partial class SemanticWalker
 				else if (initializer is IInvocationOperation invocationOp)
 				{
 					if (obj is null)
-						return HandleTransformationFailure<StatementOrExpression>(initializer, "");
+						return HandleTransformationFailure<StatementOrExpression>(initializer, "Member initializer target could not be translated to JavaScript.");
 
 					var methodName = invocationOp.TargetMethod.Name;
 					var arguments = new List<Expression>();
@@ -268,12 +268,12 @@ public partial class SemanticWalker
 					initializers.Add(new NonSpecialExpressionStatement(expr));
 				}
 				else
-					HandleTransformationFailure(initializer, "");
+					HandleTransformationFailure(initializer, "Member initializer could not be translated to JavaScript.");
 			}
 			return new StatementGroup(NodeList.From(initializers));
 		}
 
-		return HandleTransformationFailure<StatementOrExpression>(operation, "");
+		return HandleTransformationFailure<StatementOrExpression>(operation, "Member initializer could not be translated to JavaScript.");
 
 		// IObjectCreationOperation.Initializer 在VisitObjectCreation中处理，
 		// 此处主要处理IMemberInitializerOperation.Initializer中或可能嵌套的对象或集合初始化器操作
@@ -302,7 +302,7 @@ public partial class SemanticWalker
 				}
 
 				if (target is null || value is null)
-					return HandleTransformationFailure<ObjectExpression>(op, "");
+					return HandleTransformationFailure<ObjectExpression>(op, "Member initializer could not be translated to JavaScript.");
 
 				var prop = new ObjectProperty(
 					PropertyKind.Init,
@@ -349,7 +349,7 @@ public partial class SemanticWalker
 			_ => null
 		};
 		if (target is null)
-			return HandleTransformationFailure(operation.InitializedMember, "");
+			return HandleTransformationFailure(operation.InitializedMember, "Member initializer target could not be translated to JavaScript.");
 
 		var value = Translate<Expression>(operation.Initializer, argument);
 		return new ObjectProperty(
