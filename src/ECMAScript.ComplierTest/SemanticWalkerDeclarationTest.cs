@@ -1,4 +1,3 @@
-using Acornima.Ast;
 using ECMAScript.Compiler;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -32,10 +31,7 @@ public sealed class SemanticWalkerDeclarationTest
         var methodDeclaration = root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault();
         if (methodDeclaration?.Body is null) throw new InvalidOperationException("未找到可分析的操作");
         var operation = semanticModel.GetOperation(methodDeclaration.Body) as IBlockOperation;
-        if (operation is not null)
-            return operation;
-
-        throw new InvalidOperationException("未找到可分析的操作");
+        return operation ?? throw new InvalidOperationException("未找到可分析的操作");
     }
 
     /// <summary>
