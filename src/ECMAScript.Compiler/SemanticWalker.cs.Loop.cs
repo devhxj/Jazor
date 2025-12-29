@@ -69,7 +69,7 @@ public partial class SemanticWalker
 
 		if (operation.Condition is not null)
 		{
-			test = Translate<Expression>(operation.Condition, argument);
+			test = TranslateExpression(operation.Condition, argument);
 		}
 
 		// 处理多个 AtLoopBottom 操作的情况
@@ -86,8 +86,8 @@ public partial class SemanticWalker
 			// 如果只有一个操作，直接使用
 			if (operation.AtLoopBottom.Length == 1)
 			{
-				var updateStatement = Translate<NonSpecialExpressionStatement>(operation.AtLoopBottom[0], argument);
-				updateExpression = updateStatement?.Expression;
+				updateExpression = TranslateExpression(operation.AtLoopBottom[0], argument);
+				var updateStatement = new NonSpecialExpressionStatement(updateExpression);
 			}
 			else
 			{
@@ -95,8 +95,8 @@ public partial class SemanticWalker
 				var expressions = new List<Expression>();
 				foreach (var atLoopBottomOp in operation.AtLoopBottom)
 				{
-					var stmt = Translate<NonSpecialExpressionStatement>(atLoopBottomOp, argument);
-					expressions.Add(stmt.Expression);
+					var expr = TranslateExpression(atLoopBottomOp, argument);
+					expressions.Add(expr);
 				}
 
 				// 如果只有一个有效表达式，直接使用

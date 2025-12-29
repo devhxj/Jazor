@@ -78,7 +78,10 @@ public partial class SemanticWalker
 		if (operation.Operation is null)
 			statement = new EmptyStatement();
 		else
-			statement = Translate<Statement>(operation.Operation, argument);
+		{
+			var expr = TranslateExpression(operation.Operation, argument);
+			statement = new NonSpecialExpressionStatement(expr);
+		}
 
 		return new LabeledStatement(label, statement);
 	}
@@ -96,12 +99,11 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitBranch(IBranchOperation operation, Context argument)
 	{
-		var label = new Identifier(operation.Target.Name);
-
 		return operation.BranchKind switch
 		{
-			BranchKind.Break => new BreakStatement(label),
-			BranchKind.Continue => new ContinueStatement(label),
+			BranchKind.Break => new BreakStatement(null),
+			BranchKind.Continue => new ContinueStatement(null),
+			BranchKind.GoTo => HandleTransformationFailure(operation, "Goto statements are not supported in JavaScript."),
 			_ => null
 		};
 	}

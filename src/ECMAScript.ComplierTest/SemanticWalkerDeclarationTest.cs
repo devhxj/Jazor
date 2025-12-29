@@ -259,6 +259,7 @@ public sealed class SemanticWalkerDeclarationTest
 
     }
 
+    
     [TestMethod]
     public void Visit_MixedDeclarationTypes()
     {

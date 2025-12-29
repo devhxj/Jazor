@@ -154,6 +154,27 @@ public sealed partial class SemanticWalker : OperationVisitor<Context, Node?>
     }
 
     /// <summary>
+    /// 安全访问可能为null的操作并转换为Expression
+    /// <para>
+    /// </summary>
+    /// <param name="operation">要访问和转换的操作，可能为null</param>
+    /// <param name="argument">用于存放变量声明的队列</param>
+    /// <returns>转换后的Expression节点，如果操作为null或转换结果为null则抛出异常</returns>
+    /// <exception cref="OperationTransformationException"></exception>
+    private Expression TranslateExpression(IOperation operation, Context argument)
+    {
+        var node = Visit(operation, argument);
+        if (node is Expression result)
+            return result;
+
+        var message = $"Cannot convert operation '{operation.Kind}' to AST node type '{typeof(Expression).Name}'. This indicates missing support for this operation type or a type mismatch. ";
+        var location = operation.Syntax.GetLocation();
+        _report?.Invoke(location, message);
+
+        throw new OperationTransformationException(operation, message);
+    }
+
+    /// <summary>
     /// 安全访问可能为null的操作并转换为指定类型的AST节点
     /// <para>
     /// 此方法是类型安全的访问器，用于处理可能为null的操作，确保转换结果符合预期的节点类型。
@@ -167,7 +188,8 @@ public sealed partial class SemanticWalker : OperationVisitor<Context, Node?>
     /// <exception cref="OperationTransformationException">当操作不为null但无法转换为目标类型时抛出</exception>
     private T Translate<T>(IOperation operation, Context argument) where T : INode
     {
-        if (Visit(operation, argument) is T result)
+        var node = Visit(operation, argument);
+        if (node is T result)
             return result;
 
         var message = $"Cannot convert operation '{operation.Kind}' to AST node type '{typeof(T).Name}'. This indicates missing support for this operation type or a type mismatch. ";
