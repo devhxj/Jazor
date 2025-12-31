@@ -92,7 +92,7 @@ public partial class SemanticWalker
 		{
 			// is 模式转换，支持复杂模式匹配
 			var value = Translate<Expression>(operation.Value, argument);
-			return new LogicalExpression(Operator.StrictEquality, value, pattern);
+			return new NonLogicalBinaryExpression(Operator.StrictEquality, value, pattern);
 		}
 
 		// 对于复杂模式，直接使用模式表达式（已经包含实际目标）

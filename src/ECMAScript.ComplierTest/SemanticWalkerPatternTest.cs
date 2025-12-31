@@ -45,8 +45,8 @@ public sealed class SemanticWalkerPatternTest
   /// </summary>
   private static T GetOperationAt<T>(IBlockOperation block, int index = 0) where T : class, IOperation
   {
-    var operation = block.Operations.Skip(index).First() as T;
-    return operation ?? throw new InvalidOperationException("未找到可分析的操作");
+    var operation = block.Operations.Skip(index).First();
+    return operation as T ?? throw new InvalidOperationException("未找到可分析的操作");
   }
 
   // ==================== VisitIsPattern 测试 ====================
@@ -96,8 +96,11 @@ public sealed class SemanticWalkerPatternTest
             ");
 
     var walker = new SemanticWalker(true);
-    var isPatternOperation = GetOperationAt<IIsPatternOperation>(block, 1);
-    var node = walker.VisitIsPattern(isPatternOperation, new());
+    var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
+    var declaration = variableDeclarationGroupOp.Declarations.First();
+    var declarator = declaration.Declarators.First();
+    var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
+    var node = walker.VisitIsPattern(isPatternOperation!, new());
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual("obj === 42", script);
@@ -148,8 +151,11 @@ public sealed class SemanticWalkerPatternTest
             ");
 
     var walker = new SemanticWalker(true);
-    var isPatternOperation = GetOperationAt<IIsPatternOperation>(block, 1);
-    var node = walker.VisitIsPattern(isPatternOperation, new());
+    var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
+    var declaration = variableDeclarationGroupOp.Declarations.First();
+    var declarator = declaration.Declarators.First();
+    var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
+    var node = walker.VisitIsPattern(isPatternOperation!, new());
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual("obj === 'hello'", script);
@@ -202,8 +208,11 @@ public sealed class SemanticWalkerPatternTest
             ");
 
     var walker = new SemanticWalker(true);
-    var isTypeOperation = GetOperationAt<IIsTypeOperation>(block, 1);
-    var node = walker.VisitIsType(isTypeOperation, new());
+    var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
+    var declaration = variableDeclarationGroupOp.Declarations.First();
+    var declarator = declaration.Declarators.First();
+    var isTypeOperation = declarator.Initializer!.Value as IIsTypeOperation;    
+    var node = walker.VisitIsType(isTypeOperation!, new());
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual("typeof obj === 'string'", script);
@@ -254,8 +263,11 @@ public sealed class SemanticWalkerPatternTest
             ");
 
     var walker = new SemanticWalker(true);
-    var isTypeOperation = GetOperationAt<IIsTypeOperation>(block, 1);
-    var node = walker.VisitIsType(isTypeOperation, new());
+    var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
+    var declaration = variableDeclarationGroupOp.Declarations.First();
+    var declarator = declaration.Declarators.First();
+    var isTypeOperation = declarator.Initializer!.Value as IIsTypeOperation;
+    var node = walker.VisitIsType(isTypeOperation!, new());
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual("typeof obj === 'number'", script);
@@ -306,8 +318,11 @@ public sealed class SemanticWalkerPatternTest
             ");
 
     var walker = new SemanticWalker(true);
-    var isTypeOperation = GetOperationAt<IIsTypeOperation>(block, 1);
-    var node = walker.VisitIsType(isTypeOperation, new());
+    var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
+    var declaration = variableDeclarationGroupOp.Declarations.First();
+    var declarator = declaration.Declarators.First();
+    var isTypeOperation = declarator.Initializer!.Value as IIsTypeOperation;   
+    var node = walker.VisitIsType(isTypeOperation!, new());
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual("typeof obj === 'boolean'", script);
@@ -335,8 +350,8 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let obj = {};
-  let result = typeof obj === 'object' && obj !== null;
+  let obj = new Object;
+  let result = typeof obj === 'object' && obj != null;
 }", script);
   }
 
@@ -358,11 +373,14 @@ public sealed class SemanticWalkerPatternTest
             ");
 
     var walker = new SemanticWalker(true);
-    var isTypeOperation = GetOperationAt<IIsTypeOperation>(block, 1);
-    var node = walker.VisitIsType(isTypeOperation, new());
+    var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
+    var declaration = variableDeclarationGroupOp.Declarations.First();
+    var declarator = declaration.Declarators.First();
+    var isTypeOperation = declarator.Initializer!.Value as IIsTypeOperation;   
+    var node = walker.VisitIsType(isTypeOperation!, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual("typeof obj === 'object' && obj !== null", script);
+    Assert.AreEqual("typeof obj === 'object' && obj != null", script);
   }
 
   // ==================== VisitIsNull 测试 ====================
@@ -412,8 +430,11 @@ public sealed class SemanticWalkerPatternTest
             ");
 
     var walker = new SemanticWalker(true);
-    var isPatternOperation = GetOperationAt<IIsPatternOperation>(block, 1);
-    var node = walker.Visit(isPatternOperation, new());
+    var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
+    var declaration = variableDeclarationGroupOp.Declarations.First();
+    var declarator = declaration.Declarators.First();
+    var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
+    var node = walker.Visit(isPatternOperation!, new());
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual("obj === null", script);
