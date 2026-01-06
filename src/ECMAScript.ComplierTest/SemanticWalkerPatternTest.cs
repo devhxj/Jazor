@@ -443,10 +443,11 @@ public sealed class SemanticWalkerPatternTest
   // ==================== VisitDiscardPattern 测试 ====================
 
   /// <summary>
-  /// 测试 Visit - DiscardPattern 丢弃模式
+  /// 测试 Visit - DiscardPattern 丢弃模式（在 switch 表达式中）
+  /// 丢弃模式 _ 作为 switch 表达式的默认分支，总是匹配
   /// </summary>
   [TestMethod]
-  public void Visit_DiscardPattern()
+  public void Visit_DiscardPattern_SwitchExpression()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -454,7 +455,12 @@ public sealed class SemanticWalkerPatternTest
                 void TestMethod()
                 {
                     int value = 42;
-                    bool result = value is _;
+                    string result = value switch
+                    {
+                        1 => ""one"",
+                        2 => ""two"",
+                        _ => ""default""
+                    };
                 }
             }
             ");
@@ -465,12 +471,13 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let value = 42;
-  let result = true;
+  let result = value === 1 ? 'one' : value === 2 ? 'two' : 'default';
 }", script);
   }
 
   /// <summary>
   /// 测试 VisitDiscardPattern - 丢弃模式（直接调用）
+  /// 丢弃模式总是返回 true，表示总是匹配
   /// </summary>
   [TestMethod]
   public void VisitDiscardPattern_Direct()
@@ -481,14 +488,18 @@ public sealed class SemanticWalkerPatternTest
                 void TestMethod()
                 {
                     int value = 42;
-                    bool result = value is _;
+                    string result = value switch
+                    {
+                        _ => ""always matches""
+                    };
                 }
             }
             ");
 
     var walker = new SemanticWalker(true);
-    var isPatternOperation = GetOperationAt<IIsPatternOperation>(block, 1);
-    var discardPatternOperation = (IDiscardPatternOperation)isPatternOperation.Pattern;
+    var switchExpressionOperation = GetOperationAt<ISwitchExpressionOperation>(block, 1);
+    var switchCaseArm = switchExpressionOperation.Arms.First();
+    var discardPatternOperation = (IDiscardPatternOperation)switchCaseArm.Pattern;
     var node = walker.VisitDiscardPattern(discardPatternOperation, new());
     var script = node?.ToKnRECMAScript();
 
