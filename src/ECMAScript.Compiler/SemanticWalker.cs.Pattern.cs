@@ -1,8 +1,121 @@
-﻿using Acornima;
+﻿/*
+IPatternOperation  (base: InputType, NarrowedType)
+ ├─ 常见的上下文（pattern 可直接出现在这些位置）
+ │   ├─ IIsPatternOperation
+ │   │   ├─ Value : IOperation
+ │   │   └─ Pattern : IPatternOperation
+ │   ├─ IPatternCaseClauseOperation  (switch/case 语句的 case)
+ │   │   ├─ Pattern : IPatternOperation
+ │   │   ├─ Guard : IOperation? 
+ │   │   └─ Label : ILabelSymbol?
+ │   ├─ ISwitchExpressionArmOperation (switch expression 的 arm)
+ │   │   ├─ Pattern : IPatternOperation
+ │   │   ├─ Guard : IOperation?
+ │   │   └─ Value : IOperation (右侧表达式)
+ │   ├─ IRangeCaseClauseOperation (range case; 相关于 pattern 的分支 VB特有)
+ │   │   ├─ MinimumValue : IOperation?
+ │   │   ├─ MaximumValue : IOperation?
+ │   │   └─ (可能与 pattern 组合的其它成员)
+ │   └─ 其它位置（如分析/推断 API 中直接使用 IPatternOperation）
+ ├─ 具体的 pattern 类型（均为 IPatternOperation 的实现）
+ │   ├─ IConstantPatternOperation
+ │   │   └─ Value : IOperation (ILiteralOperation / IConversionOperation / IFieldReferenceOperation / ...)
+ │   ├─ IDeclarationPatternOperation
+ │   │   ├─ DeclaredSymbol : ISymbol  (绑定到的新变量)
+ │   │   ├─ MatchesNull : bool
+ │   │   └─ MatchedType : ITypeSymbol
+ │   ├─ IDiscardPatternOperation
+ │   │   └─ (表示 `_`)  (仅 InputType / NarrowedType)
+ │   ├─ ITypePatternOperation
+ │   │   ├─ MatchedType : ITypeSymbol
+ │   │   └─ (InputType / NarrowedType)
+ │   ├─ IRelationalPatternOperation
+ │   │   ├─ OperatorKind : BinaryOperatorKind (LessThan / GreaterThan / Equals / NotEquals / ...)
+ │   │   └─ Value : IOperation (Literal / FieldRef / Conversion / ...)
+ │   ├─ INegatedPatternOperation
+ │   │   └─ Pattern : IPatternOperation
+ │   ├─ IBinaryPatternOperation
+ │   │   ├─ OperatorKind : BinaryOperatorKind (And / Or)
+ │   │   ├─ LeftPattern : IPatternOperation
+ │   │   └─ RightPattern : IPatternOperation
+ │   ├─ IRecursivePatternOperation
+ │   │   ├─ MatchedType : ITypeSymbol
+ │   │   ├─ DeconstructSymbol : ISymbol? (Deconstruct 方法符号，若有)
+ │   │   ├─ DeclaredSymbol : ISymbol? (模式绑定的符号，如命名元组/变量)
+ │   │   ├─ DeconstructionSubpatterns[] : ImmutableArray<IPatternOperation>  (位置式 / positional 子模式)
+ │   │   └─ PropertySubpatterns[] : ImmutableArray<IPropertySubpatternOperation>
+ │   │       └─ IPropertySubpatternOperation
+ │   │           ├─ Member : ISymbol (属性/字段/成员符号)
+ │   │           └─ Pattern : IPatternOperation (可递归)
+ │   ├─ IListPatternOperation (list / list pattern)
+ │   │   ├─ patterns[] : ImmutableArray<IPatternOperation> (按索引的子模式)
+ │   │   ├─ LengthSymbol : ISymbol? (Length/Count property，可能为 null)
+ │   │   ├─ IndexerSymbol : ISymbol? (indexer 或隐式索引器)
+ │   │   └─ DeclaredSymbol : ISymbol? (若列表模式绑定一个变量)
+ │   ├─ ISlicePatternOperation
+ │   │   ├─ SliceSymbol : ISymbol? (索引/切片相关符号，可能为 null)
+ │   │   ├─ Pattern : IPatternOperation? (切片内子模式，或 null 表示省略)
+ │   │   └─ (InputType / NarrowedType)
+ │   └─ 可能的扩展/语言特性 pattern（比如组合/新的子类型）
+ └─ 递归与嵌套说明
+     ├─ 任一 IPatternOperation 都可以出现在另一个 pattern 的子位置（例如 Binary/Negated/Recursive 的子 Pattern）
+     ├─ Pattern 可作为 switch/case/arm 的顶层（无需通过 IIsPatternOperation 包裹）
+     └─ IIsPatternOperation 只是表达式层面 (expr is pattern) 的容器，而非 pattern 的唯一父节点
+
+IIsPatternOperation
+ ├─ Value : IOperation (任意表达式)
+ └─ Pattern : IPatternOperation
+     ├─ IConstantPatternOperation
+     │   └─ Value : IOperation (常见：ILiteralOperation / IConversionOperation / IFieldReferenceOperation / ...)
+     ├─ IDeclarationPatternOperation
+     │   ├─ DeclaredSymbol : ISymbol (绑定到的新变量)
+     │   ├─ MatchesNull : bool
+     │   └─ MatchedType : ITypeSymbol
+     ├─ IDiscardPatternOperation
+     │   └─ (表示 `_`) (继承 IPatternOperation 的 InputType / NarrowedType)
+     ├─ ITypePatternOperation
+     │   ├─ MatchedType : ITypeSymbol
+     │   └─ (InputType, NarrowedType 来自 IPatternOperation)
+     ├─ IRelationalPatternOperation
+     │   ├─ OperatorKind : BinaryOperatorKind (LessThan / GreaterThan / Equals / NotEquals / ...)
+     │   └─ Value : IOperation (Literal / FieldRef / Conversion / ...)
+     ├─ INegatedPatternOperation
+     │   └─ Pattern : IPatternOperation
+     ├─ IBinaryPatternOperation
+     │   ├─ OperatorKind : BinaryOperatorKind (And / Or)
+     │   ├─ LeftPattern : IPatternOperation
+     │   └─ RightPattern : IPatternOperation
+     ├─ IRecursivePatternOperation
+     │   ├─ MatchedType : ITypeSymbol
+     │   ├─ DeconstructSymbol : ISymbol? (Deconstruct 方法符号，若有)
+     │   ├─ DeclaredSymbol : ISymbol? (绑定到的变量/命名元组等)
+     │   ├─ DeconstructionSubpatterns[] : ImmutableArray<IPatternOperation>  (位置式/析构子模式 / positional subpatterns)
+     │   └─ PropertySubpatterns[] : ImmutableArray<IPropertySubpatternOperation>
+     │       └─ IPropertySubpatternOperation
+     │           ├─ Member : ISymbol (属性/字段/成员符号)
+     │           └─ Pattern : IPatternOperation (可递归：Constant/Declaration/Recursive/...)
+     ├─ IListPatternOperation (list / list pattern)
+     │   ├─ patterns[] : ImmutableArray<IPatternOperation> (按索引的子模式)
+     │   ├─ LengthSymbol : ISymbol? (Length/Count property, 可为 null 表示不可用)
+     │   ├─ IndexerSymbol : ISymbol? (indexer 或隐式索引器)
+     │   └─ DeclaredSymbol : ISymbol? (若列表模式绑定一个变量)
+     ├─ ISlicePatternOperation
+     │   ├─ SliceSymbol : ISymbol? (索引/切片相关符号，可能为 null)
+     │   ├─ Pattern : IPatternOperation? (切片内的子模式，或 null 表示省略)
+     │   └─ (InputType / NarrowedType)
+     └─ 其他相关/组合节点
+         ├─ IPropertySubpatternOperation (见上)
+         ├─ IPatternCaseClauseOperation / ISwitchExpressionArmOperation
+         │   ├─ Pattern : IPatternOperation
+         │   ├─ Guard : IOperation? (可选守卫)
+         │   └─ Label : ILabelSymbol?
+         └─ IPatternOperation（基接口）
+             ├─ InputType : ITypeSymbol (模式的输入类型)
+             └─ NarrowedType : ITypeSymbol (匹配成功后被“缩窄”的类型)
+*/
+using Acornima;
 using Acornima.Ast;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.FlowAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 using System;
@@ -13,90 +126,93 @@ namespace ECMAScript.Compiler;
 
 public partial class SemanticWalker
 {
+	private static bool IsNullableType(ITypeSymbol? type)
+		=> type is INamedTypeSymbol namedType && namedType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T;
+
 	/// <summary>
 	/// 提取模式操作中引用对象名称
 	/// </summary>
 	/// <param name="operation">模式相关操作</param>
 	/// <returns>引用对象名称</returns>
-	private string ExtractPatternValName(IOperation? operation)
+	private Expression? ExtractPatternRefrence(IOperation? operation)
 	{
 		if (operation is null)
-			return string.Empty;
+			return null;
 
-		var op = FindValueOperation(operation);
-		var name = op switch
+		var visited = new HashSet<IOperation>();
+		var current = operation;
+		IOperation? reference = null;
+		Queue<(Identifier, bool)> members = [];
+		while (current is not null)
 		{
-			ILocalReferenceOperation localRef => localRef.Local.Name,
-			IParameterReferenceOperation paramRef => paramRef.Parameter.Name,
-			IFieldReferenceOperation fieldRef => fieldRef.Field.Name,
-			IPropertyReferenceOperation propRef => propRef.Property.Name,
-			IDiscardOperation => "_",
-			IInstanceReferenceOperation => "this",
-			_ => string.Empty
-		};
-
-		if (string.IsNullOrEmpty(name))
-		{
-			var location = operation.Syntax.GetLocation();
-			var message = $"cannot extract reference name from {operation.Kind}.";
-			_report?.Invoke(location, message);
-		}
-
-		return name;
-
-		static IOperation? FindValueOperation(IOperation? startOp)
-		{
-			var visited = new HashSet<IOperation>();
-			var currentOp = startOp;
-			while (currentOp is not null)
+			if (!visited.Add(current))
+				break;
+			else if (current is IPropertySubpatternOperation propertySubpatternOp)
 			{
-				// 防止在损坏的 IOperation 树中出现无限循环
-				if (!visited.Add(currentOp))
-					return null; // 检测到循环
-
-				// 这是关键的判断：我们正在寻找的“容器”操作
-				switch (currentOp)
+				if (propertySubpatternOp.Member is IFieldReferenceOperation fieldRef)
 				{
-					case IIsPatternOperation isPattern:
-						return isPattern.Value; // is e
-					case ISwitchExpressionOperation switchExpr:
-						return switchExpr.Value; // switch (e) { ... }
-					case ISwitchOperation switchStmt:
-						return switchStmt.Value; // switch (e) { ... }
+					var member = new Identifier(fieldRef.Field.Name);
+					var optional = IsNullableType(fieldRef.Field.Type);
+					members.Enqueue((member, optional));
 				}
-				// 如果不是容器操作，则向父级继续搜索
-				currentOp = currentOp.Parent;
+				else if (propertySubpatternOp.Member is IPropertyReferenceOperation propRef)
+				{
+					var member = new Identifier(propRef.Property.Name);
+					var optional = IsNullableType(propRef.Property.Type);
+					members.Enqueue((member, optional));
+				}
+			}
+			else if (current is IIsTypeOperation isTypeOp)
+			{
+				reference = isTypeOp.ValueOperand;
+				break;
+			}
+			else if (current is IIsPatternOperation isPatternOp)
+			{
+				reference = isPatternOp.Value;
+				break;
+			}
+			else if (current is ISwitchExpressionOperation switchExpressionOp)
+			{
+				reference = switchExpressionOp.Value;
+				break;
 			}
 
-			return null; // 到达根节点仍未找到
+			// 继续向上
+			current = current.Parent;
 		}
+
+		if (reference is null)
+			return null;
+
+		var expr = Translate<Expression>(reference, []);
+		while (members.Count > 0)
+		{
+			var (member, optional) = members.Dequeue();
+			expr = new MemberExpression(expr, member, computed: false, optional);
+		}
+
+		return expr;
 	}
 
 	/// <summary>
-	/// 处理 is 模式匹配操作
-	/// C# 示例：
-	/// obj is int value                    // 模式匹配并声明变量
-	/// x is > 0 and < 10                   // 关系模式匹配
-	/// input is "hello"                    // 常量模式匹配
-	/// 转换结果：对于复杂模式，替换占位符并返回条件表达式
+	/// 提取模式操作中引用对象名称
 	/// </summary>
-	/// <param name="operation">当前访问的operation</param>
-	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitIsPattern(IIsPatternOperation operation, Context argument)
+	/// <param name="operation">模式相关操作</param>
+	/// <returns>引用对象名称</returns>
+	private Expression GetPatternRefrence(IOperation operation)
 	{
-		var pattern = Translate<Expression>(operation.Pattern, argument);
-
-		// 对于常量模式，直接比较
-		if (operation.Pattern.Kind == OperationKind.ConstantPattern)
+		var expr = ExtractPatternRefrence(operation);
+		if (expr is null)
 		{
-			// is 模式转换，支持复杂模式匹配
-			var value = Translate<Expression>(operation.Value, argument);
-			return new NonLogicalBinaryExpression(Operator.StrictEquality, value, pattern);
+			var location = operation.Syntax.GetLocation();
+			var message = $"无法提取模式引用对象名称，操作类型：{operation.Kind}。";
+			_report?.Invoke(location, message);
+
+			throw new OperationTransformationException(operation, message);
 		}
 
-		// 对于复杂模式，直接使用模式表达式（已经包含实际目标）
-		return pattern;
+		return expr;
 	}
 
 	/// <summary>
@@ -246,6 +362,241 @@ public partial class SemanticWalker
 	}
 
 	/// <summary>
+	/// 处理 null 检查操作
+	/// C# 示例：
+	/// obj is null             // 检查是否为 null
+	/// value == null           // 直接 null 比较
+	/// 转换结果：obj === null
+	/// </summary>
+	/// <param name="operation">当前访问的operation</param>
+	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+	/// <returns>Acornima的ESTree的Node</returns>
+	public override Acornima.Ast.Node? VisitIsNull(IIsNullOperation operation, Context argument)
+	{
+		// null检查转换为 === null 比较
+		var operand = Translate<Expression>(operation.Operand, argument);
+
+		return new NonLogicalBinaryExpression(Operator.StrictEquality, operand, new NullLiteral("null"));
+	}
+
+	/// <summary>
+	/// 处理 is 模式匹配操作
+	/// C# 示例：
+	/// obj is int value                    // 模式匹配并声明变量
+	/// x is > 0 and < 10                   // 关系模式匹配
+	/// input is "hello"                    // 常量模式匹配
+	/// 转换结果：对于复杂模式，替换占位符并返回条件表达式
+	/// </summary>
+	/// <param name="operation">当前访问的operation</param>
+	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+	/// <returns>Acornima的ESTree的Node</returns>
+	public override Acornima.Ast.Node? VisitIsPattern(IIsPatternOperation operation, Context argument)
+	{
+		var pattern = Translate<Expression>(operation.Pattern, argument);
+
+		// 对于常量模式，直接比较
+		if (operation.Pattern.Kind == OperationKind.ConstantPattern)
+		{
+			// is 模式转换，支持复杂模式匹配
+			var value = Translate<Expression>(operation.Value, argument);
+			return new NonLogicalBinaryExpression(Operator.StrictEquality, value, pattern);
+		}
+
+		// 对于复杂模式，直接使用模式表达式（已经包含实际目标）
+		return pattern;
+	}
+
+	/// <summary>
+	/// 处理模式 case 子句操作
+	/// C# 示例：
+	/// switch (obj) {
+	///     case string s when s.Length > 0:
+	///         Console.WriteLine(s);
+	///         break;
+	/// }
+	/// 转换结果：转换为条件表达式
+	/// </summary>
+	/// <param name="operation">当前访问的operation</param>
+	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+	/// <returns>Acornima的ESTree的Node</returns>
+	public override Acornima.Ast.Node? VisitPatternCaseClause(IPatternCaseClauseOperation operation, Context argument)
+	{
+		// 模式 case 子句转换为条件表达式
+		return Visit(operation.Pattern, argument);
+	}
+
+	/// <summary>
+	/// 处理 switch 表达式分支操作
+	/// 根据上下文返回SwitchCase（传统switch）或Statement（模式匹配）
+	/// </summary>
+	/// <param name="operation">当前访问的operation</param>
+	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+	/// <returns>Acornima的ESTree的Node</returns>
+	public override Acornima.Ast.Node? VisitSwitchExpressionArm(ISwitchExpressionArmOperation operation, Context argument)
+	{
+		var pattern = Translate<Expression>(operation.Pattern, argument);
+		var guard = Translate<Expression>(operation.Guard, argument, null);
+		var value = Translate<Expression>(operation.Value, argument);
+
+		// 检查是否为传统的常量模式（无when子句）
+		bool isTraditionalPattern = (operation.Pattern.Kind == OperationKind.ConstantPattern ||
+								   operation.Pattern.Kind == OperationKind.DiscardPattern) &&
+								   operation.Guard == null;
+
+		if (isTraditionalPattern)
+		{
+			// 生成SwitchCase用于传统switch语句
+			Expression? test = null;
+
+			if (operation.Pattern.Kind == OperationKind.ConstantPattern)
+				test = pattern;
+
+			// DiscardPattern的test为null（默认情况）
+			// 修复P0：SwitchCase中不能直接使用ReturnStatement，应该使用break
+			// 对于switch表达式转换为switch语句的场景，需要在外层包装函数来处理返回值
+			var breakStatement = new BreakStatement(null);
+
+			return new SwitchCase(
+				test,
+				NodeList.From<Statement>(new NonSpecialExpressionStatement(value), breakStatement)
+			);
+		}
+		else
+		{
+			// 生成Statement用于模式匹配IIFE
+			if (operation.Pattern.Kind == OperationKind.DiscardPattern)
+			{
+				// 默认情况，直接返回
+				return new ReturnStatement(value);
+			}
+			else if (pattern is not null)
+			{
+				Expression condition;
+
+				if (operation.Pattern.Kind == OperationKind.ConstantPattern)
+				{
+					// 从父operation获取switch目标名称并构建表达式
+					var target = GetPatternRefrence(operation);
+					condition = new LogicalExpression(Operator.StrictEquality, target, pattern);
+				}
+				else
+				{
+					// 复杂模式，直接使用模式表达式（已经包含实际目标）
+					condition = pattern;
+				}
+
+				// 处理when子句
+				if (guard is not null)
+				{
+					condition = new LogicalExpression(Operator.LogicalAnd, condition, guard);
+				}
+
+				return new IfStatement(condition, new ReturnStatement(value), null);
+			}
+		}
+
+		return HandleTransformationFailure(operation, "Switch expression arm could not be translated to JavaScript.");
+	}
+
+	/// <summary>
+	/// 处理递归模式操作
+	/// C# 示例：
+	/// obj is Person { Name: "John", Age: > 18 }        // 类型模式 + 属性模式组合
+	/// value is { Length: > 0, Count: var c }          // 属性模式组合
+	/// data is MyClass { Prop1: 1, Prop2: { X: 2 } }   // 嵌套递归模式
+	/// item is (int x, string s) when x > 0            // 元组模式 + when子句
+	/// 转换结果：转换为JavaScript的组合条件表达式
+	/// 递归模式是多个模式的组合，生成 &amp;&amp;连接的条件判断
+	/// </summary>
+	/// <param name="operation">递归模式操作</param>
+	/// <param name="argument">当前operation所属的父operation</param>
+	/// <returns>JavaScript组合条件表达式</returns>
+	public override Acornima.Ast.Node? VisitRecursivePattern(IRecursivePatternOperation operation, Context argument)
+	{
+		// 递归模式的条件判断转换
+		// C# 示例：obj is Person { Name: "John", Age: > 18 }
+		// 转换结果：生成 (obj instanceof Person) && (obj.Name === "John") && (obj.Age > 18)
+		// 递归模式由多个子模式组成，需要用 && 连接所有条件
+
+		var conditions = new List<Expression>();
+
+		// 1. 处理类型模式（如果存在）
+		if (operation.MatchedType is not null) //&& operation.PropertySubpatterns.Length == 0)
+		{
+			// 根据获取的名称构建目标表达式
+			var target = GetPatternRefrence(operation);
+			var typeName = operation.MatchedType.IsAnonymousType
+				? "Object"
+				: operation.MatchedType.Name;
+			Expression condition = typeName.ToLowerInvariant() switch
+			{
+				"string" => new NonLogicalBinaryExpression(
+						Operator.StrictEquality,
+						new NonUpdateUnaryExpression(Operator.TypeOf, target),
+						new StringLiteral("string", "'string'")
+					),
+				"number" or "int32" or "int64" or "double" or "float" or "decimal" =>
+							 new NonLogicalBinaryExpression(
+						Operator.StrictEquality,
+						new NonUpdateUnaryExpression(Operator.TypeOf, target),
+						new StringLiteral("number", "'number'")
+					),
+				"boolean" => new NonLogicalBinaryExpression(
+						Operator.StrictEquality,
+						new NonUpdateUnaryExpression(Operator.TypeOf, target),
+						new StringLiteral("boolean", "'boolean'")
+					),
+				"object" => new NonLogicalBinaryExpression(
+						Operator.StrictEquality,
+						new NonUpdateUnaryExpression(Operator.TypeOf, target),
+						new StringLiteral("object", "'object'")
+					),// 对于对象类型，检查是否不为null且为object
+				_ => new NonLogicalBinaryExpression(Operator.InstanceOf, target, new Identifier(typeName)),// 对于自定义类型，使用instanceof检查
+			};
+			conditions.Add(condition);
+		}
+
+		// 2. 处理属性子模式（如果存在）
+		if (operation.PropertySubpatterns.Length > 0)
+		{
+			foreach (var propertySubpattern in operation.PropertySubpatterns)
+			{
+				// 根据AST转换器方法复用原则，argument是父节点，这里传递当前的递归模式操作
+				Translate(conditions, propertySubpattern, argument);
+			}
+		}
+
+		// 3. 处理声明模式（变量声明）
+		if (operation.DeclaredSymbol is not null)
+		{
+			// 声明模式不影响条件判断，只是绑定变量
+			// 在模式匹配中，我们只关心条件判断部分
+		}
+
+		// 4. 组合所有条件
+		if (conditions.Count == 0)
+		{
+			// 如果没有条件，返回true（空模式总是匹配）
+			return new BooleanLiteral(true, "true");
+		}
+		else if (conditions.Count == 1)
+		{
+			// 只有一个条件，直接返回
+			return conditions[0];
+		}
+		else
+		{
+			// 多个条件，用 && 连接
+			Expression result = conditions[0];
+			for (int i = 1; i < conditions.Count; i++)
+			{
+				result = new LogicalExpression(Operator.LogicalAnd, result, conditions[i]);
+			}
+			return result;
+		}
+	}
+
+	/// <summary>
 	/// 处理常量模式操作
 	/// C# 示例：
 	/// obj is 42              // 常量模式匹配
@@ -258,8 +609,7 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitConstantPattern(IConstantPatternOperation operation, Context argument)
 	{
-		// 常量模式转换为字面量比较
-		return Visit(operation.Value, argument);
+		return Translate<Expression>(operation.Value, argument);
 	}
 
 	/// <summary>
@@ -309,24 +659,6 @@ public partial class SemanticWalker
 	}
 
 	/// <summary>
-	/// 处理 null 检查操作
-	/// C# 示例：
-	/// obj is null             // 检查是否为 null
-	/// value == null           // 直接 null 比较
-	/// 转换结果：obj === null
-	/// </summary>
-	/// <param name="operation">当前访问的operation</param>
-	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitIsNull(IIsNullOperation operation, Context argument)
-	{
-		// null检查转换为 === null 比较
-		var operand = Translate<Expression>(operation.Operand, argument);
-
-		return new LogicalExpression(Operator.StrictEquality, operand, new NullLiteral("null"));
-	}
-
-	/// <summary>
 	/// 处理属性子模式操作
 	/// C# 示例：
 	/// obj is { Name: "John" }             // 属性模式中的 Name: "John" 部分
@@ -345,37 +677,20 @@ public partial class SemanticWalker
 		// C# 示例：obj is { Name: "John" } 中的 Name: "John" 部分
 		//         转换为 obj.Name === "John" 的JavaScript表达式
 		// 转换结果：生成属性访问和比较的组合表达式
+		// 访问属性模式并转换为表达式
+		var expr = Translate<Expression>(operation.Pattern, argument);
+
+		// 已经是比较表达式，直接返回
+		if (expr is NonLogicalBinaryExpression binaryExpr)
+			return binaryExpr;
 
 		// 从父operation获取目标名称，在节点内构建表达式
-		var targetName = ExtractPatternValName(operation.Parent);
-		var targetExpression = new Identifier(targetName);
-
-		// 从Member中获取名称
-		var propertyName = operation.Member switch
-		{
-			IFieldReferenceOperation fieldRef => fieldRef.Field.Name,
-			IPropertyReferenceOperation propRef => propRef.Property.Name,
-			_ => null
-		};
-
-		// 访问属性模式并转换为表达式
-		var patternExpression = Translate<Expression>(operation.Pattern, argument);
-		if (propertyName is null)
-			return HandleTransformationFailure(operation, "Unsupported member type in property subpattern.");
-
-		// 根据AST节点构造规范，生成属性访问表达式
-		// 使用实际的目标表达式而不是占位符
-		var propertyAccess = new MemberExpression(
-			targetExpression,
-			new Identifier(propertyName),
-			computed: false,
-			optional: false
-		);
+		var left = GetPatternRefrence(operation);
 
 		// 根据模式类型生成不同的比较表达式
 		// 对于常量模式，生成 === 比较
 		// 对于其他模式，直接返回模式表达式（如关系比较等）
-		return new NonLogicalBinaryExpression(Operator.StrictEquality, propertyAccess, patternExpression);
+		return new NonLogicalBinaryExpression(Operator.StrictEquality, left, expr);
 	}
 
 	/// <summary>
@@ -397,11 +712,15 @@ public partial class SemanticWalker
 		// 转换结果：生成JavaScript的逻辑非表达式
 
 		// 访问内部模式并转换为表达式
-		var innerExpression = Translate<Expression>(operation.Pattern, argument);
+		var expr = Translate<Expression>(operation.Pattern, argument);
+		if (operation.Pattern.Kind == OperationKind.ConstantPattern)
+		{
+			var obj = GetPatternRefrence(operation);
+			return new NonLogicalBinaryExpression(Operator.StrictInequality, obj, new NullLiteral("null"));
+		}
 
-		// 使用UpdateExpression处理逻辑非操作
-		// 生成 !(innerExpression) 的JavaScript表达式
-		return new UpdateExpression(Operator.LogicalNot, innerExpression, prefix: true);
+		// 使用NonUpdateUnaryExpression处理逻辑非操作
+		return new NonUpdateUnaryExpression(Operator.LogicalNot, expr);
 	}
 
 	/// <summary>
@@ -427,6 +746,15 @@ public partial class SemanticWalker
 		// 访问左右两个子模式
 		var left = Translate<Expression>(operation.LeftPattern, argument);
 		var right = Translate<Expression>(operation.RightPattern, argument);
+
+		// 对于常量模式，生成严格相等比较
+		var obj = GetPatternRefrence(operation);
+		if (operation.LeftPattern.Kind == OperationKind.ConstantPattern)
+			left = new NonLogicalBinaryExpression(Operator.StrictEquality, obj, left);
+
+		if (operation.RightPattern.Kind == OperationKind.ConstantPattern)
+			right = new NonLogicalBinaryExpression(Operator.StrictEquality, obj, right);
+
 		// 检查模式的类型来确定操作符
 		var @operator = operation.OperatorKind switch
 		{
@@ -439,70 +767,6 @@ public partial class SemanticWalker
 			return HandleTransformationFailure(operation, "Unsupported binary operator in pattern.");
 
 		return new LogicalExpression(@operator, left, right);
-	}
-
-	/// <summary>
-	/// 处理类型模式操作
-	/// C# 示例：
-	/// obj is string           // 类型模式
-	/// value is int            // 值类型模式
-	/// item is MyClass         // 自定义类型模式
-	/// 转换结果：根据类型生成相应的JavaScript类型检查条件
-	/// </summary>
-	/// <param name="operation">当前访问的operation</param>
-	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitTypePattern(ITypePatternOperation operation, Context argument)
-	{
-		// 类型模式的条件判断转换
-		// C# 示例：obj is string 是一个布尔条件表达式
-		//         value is MyClass 检查对象是否为指定类型
-		// 转换结果：根据类型生成对应的JavaScript检查条件
-
-		var inputType = operation.InputType;
-		// 从父operation获取目标名称，在节点内构建表达式
-		var targetName = ExtractPatternValName(operation.Parent);
-		// 根据获取的名称构建目标表达式
-		var targetExpression = new Identifier(targetName);
-
-		// 根据编译时优化原则和强弱类型转换优化原则
-		// 利用C#的编译时类型信息，生成最简洁的JavaScript类型检查
-
-		var typeName = inputType.Name;
-
-		// 对于基本类型，使用typeof检查
-		return typeName.ToLowerInvariant() switch
-		{
-			"string" => new LogicalExpression(
-								Operator.StrictEquality,
-								new UpdateExpression(Operator.TypeOf, targetExpression, prefix: true),
-								new StringLiteral("string", "'string'")
-							),
-			"number" or "int32" or "int64" or "double" or "float" or "decimal" => new LogicalExpression(
-								Operator.StrictEquality,
-								new UpdateExpression(Operator.TypeOf, targetExpression, prefix: true),
-								new StringLiteral("number", "'number'")
-							),
-			"boolean" => new LogicalExpression(
-								Operator.StrictEquality,
-								new UpdateExpression(Operator.TypeOf, targetExpression, prefix: true),
-								new StringLiteral("boolean", "'boolean'")
-							),
-			"object" => new LogicalExpression(
-								Operator.LogicalAnd,
-								new LogicalExpression(Operator.StrictInequality, targetExpression, new NullLiteral("null")),
-								new LogicalExpression(
-									Operator.StrictEquality,
-									new UpdateExpression(Operator.TypeOf, targetExpression, prefix: true),
-									new StringLiteral("object", "'object'")
-								)
-							),// 对于对象类型，检查是否不为null且为object
-			_ => new LogicalExpression(
-								Operator.InstanceOf,
-								targetExpression,
-								new Identifier(typeName)
-							),// 对于自定义类型，使用instanceof检查
-		};
 	}
 
 	/// <summary>
@@ -524,47 +788,28 @@ public partial class SemanticWalker
 		//         age is >= 18 检查年龄是否满足条件
 		// 转换结果：生成相应的JavaScript关系比较表达式
 
-		// 获取参考操作
-		IOperation? refOperation = operation.Parent switch
-		{
-			IIsPatternOperation isPattern => isPattern.Value,
-			ISwitchExpressionOperation switchExpr => switchExpr.Value,
-			INegatedPatternOperation negatedPattern => negatedPattern.Parent switch
-			{
-				IIsPatternOperation nestedIsPattern => nestedIsPattern.Value,
-				ISwitchExpressionOperation nestedSwitchExpr => nestedSwitchExpr.Value,
-				_ => null
-			},
-			_ => null
-		};
-
-		// 从参考操作中提取名称
-		var targetName = refOperation switch
-		{
-			ILocalReferenceOperation localRef => localRef.Local.Name,
-			IParameterReferenceOperation paramRef => paramRef.Parameter.Name,
-			IFieldReferenceOperation fieldRef when fieldRef.Instance is null => fieldRef.Field.Name,
-			IPropertyReferenceOperation propRef when propRef.Instance is null => propRef.Property.Name,
-			IInstanceReferenceOperation => "this",
-			_ => "value"
-		};
-
-		// 根据获取的名称构建目标表达式
-		var targetExpression = new Identifier(targetName);
-
 		// 获取右操作数（比较值）
-		var value = Translate<Expression>(operation.Value, argument);
+		var right = Translate<Expression>(operation.Value, argument);
+
+		// 从参考操作中提取名称构建目标表达式
+		var left = GetPatternRefrence(operation);
 
 		// 检查是否在取反模式中（使用简化的检查逻辑）
 		bool isInNegatedPattern = operation.OperatorKind == BinaryOperatorKind.NotEquals ||
-								  operation.Parent is INegatedPatternOperation ||
-								  (operation.Parent is IIsPatternOperation isPatternOp &&
-								   isPatternOp.Pattern is INegatedPatternOperation) ||
-								  (operation.Parent is IIsPatternOperation parentPattern &&
-								   parentPattern.Parent is INegatedPatternOperation) ||
-								  (operation.OperatorKind == BinaryOperatorKind.Equals &&
-								   operation.Parent is IIsPatternOperation patternOp &&
-								   patternOp.Parent is INegatedPatternOperation);
+			operation.Parent is INegatedPatternOperation ||
+			(
+				operation.Parent is IIsPatternOperation isPatternOp &&
+				isPatternOp.Pattern is INegatedPatternOperation
+			) ||
+			(
+				operation.Parent is IIsPatternOperation parentPattern &&
+				parentPattern.Parent is INegatedPatternOperation
+			) ||
+			(
+				operation.OperatorKind == BinaryOperatorKind.Equals &&
+				operation.Parent is IIsPatternOperation patternOp &&
+				patternOp.Parent is INegatedPatternOperation
+			);
 
 		// 根据编译时优化原则，直接生成最简洁的JavaScript关系比较表达式
 		// 将C#的关系操作符映射到JavaScript的操作符
@@ -591,7 +836,7 @@ public partial class SemanticWalker
 
 		// 根据AST节点构造规范，使用LogicalExpression表示比较操作
 		// 使用实际的目标表达式而不是占位符
-		return new LogicalExpression(@operator, targetExpression, value);
+		return new NonLogicalBinaryExpression(@operator, left, right);
 	}
 
 	/// <summary>
@@ -609,12 +854,11 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitListPattern(IListPatternOperation operation, Context argument)
 	{
-		// 从父operation获取目标名称，在节点内构建表达式
-		var targetName = ExtractPatternValName(operation.Parent);
 		var patterns = operation.Patterns;
 		if (patterns == null || patterns.IsEmpty) return null;
 
-		Expression targetExpr = new Identifier(targetName);
+		// 获取目标名称，在节点内构建表达式
+		Expression targetExpr = GetPatternRefrence(operation);
 
 		/* 1. Array.isArray(target) */
 		// 修正 CallExpression 的构造：callee 和 arguments 分开
@@ -754,8 +998,7 @@ public partial class SemanticWalker
 			return null;
 
 		// 从父operation获取目标名称，在节点内构建表达式
-		var targetName = ExtractPatternValName(operation.Parent);
-		var targetExpression = new Identifier(targetName);
+		var targetExpression = GetPatternRefrence(operation);
 
 		// 1. 首先生成 Array.isArray(targetExpression) 检查
 		var arrayCheck = new CallExpression(
@@ -802,121 +1045,68 @@ public partial class SemanticWalker
 	}
 
 	/// <summary>
-	/// 处理模式 case 子句操作
+	/// 在模式匹配上下文中声明一个新变量（如 s）或进行类型测试。
+	/// is string s 中的 string s 部分，或 case string s: 中的模式，是构成一个模式匹配的组件。
+	/// 作为 IIsPatternOperation.Pattern 或 ICaseClauseOperation.Pattern 的子节点出现。
 	/// C# 示例：
-	/// switch (obj) {
-	///     case string s when s.Length > 0:
-	///         Console.WriteLine(s);
-	///         break;
-	/// }
-	/// 转换结果：转换为条件表达式
+	/// obj is string s    // 类型模式
+	/// value is int s            // 值类型模式
+	/// item is MyClass s        // 自定义类型模式
+	/// case string s:		  // switch case 类型模式
+	/// 转换结果：根据类型生成相应的JavaScript类型检查条件
 	/// </summary>
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitPatternCaseClause(IPatternCaseClauseOperation operation, Context argument)
+	public override Acornima.Ast.Node? VisitTypePattern(ITypePatternOperation operation, Context argument)
 	{
-		// 模式 case 子句转换为条件表达式
-		return Visit(operation.Pattern, argument);
+		// 类型模式的条件判断转换
+		// C# 示例：obj is string 是一个布尔条件表达式
+		//         value is MyClass 检查对象是否为指定类型
+		// 转换结果：根据类型生成对应的JavaScript检查条件
+
+		var inputType = operation.InputType;
+		// 根据获取的名称构建目标表达式
+		var targetExpression = GetPatternRefrence(operation);
+
+		// 根据编译时优化原则和强弱类型转换优化原则
+		// 利用C#的编译时类型信息，生成最简洁的JavaScript类型检查
+
+		var typeName = inputType.Name;
+
+		// 对于基本类型，使用typeof检查
+		return typeName.ToLowerInvariant() switch
+		{
+			"string" => new LogicalExpression(
+								Operator.StrictEquality,
+								new UpdateExpression(Operator.TypeOf, targetExpression, prefix: true),
+								new StringLiteral("string", "'string'")
+							),
+			"number" or "int32" or "int64" or "double" or "float" or "decimal" => new LogicalExpression(
+								Operator.StrictEquality,
+								new UpdateExpression(Operator.TypeOf, targetExpression, prefix: true),
+								new StringLiteral("number", "'number'")
+							),
+			"boolean" => new LogicalExpression(
+								Operator.StrictEquality,
+								new UpdateExpression(Operator.TypeOf, targetExpression, prefix: true),
+								new StringLiteral("boolean", "'boolean'")
+							),
+			"object" => new LogicalExpression(
+								Operator.LogicalAnd,
+								new LogicalExpression(Operator.StrictInequality, targetExpression, new NullLiteral("null")),
+								new LogicalExpression(
+									Operator.StrictEquality,
+									new UpdateExpression(Operator.TypeOf, targetExpression, prefix: true),
+									new StringLiteral("object", "'object'")
+								)
+							),// 对于对象类型，检查是否不为null且为object
+			_ => new LogicalExpression(
+								Operator.InstanceOf,
+								targetExpression,
+								new Identifier(typeName)
+							),// 对于自定义类型，使用instanceof检查
+		};
 	}
 
-	/// <summary>
-	/// 处理递归模式操作
-	/// C# 示例：
-	/// obj is Person { Name: "John", Age: > 18 }        // 类型模式 + 属性模式组合
-	/// value is { Length: > 0, Count: var c }          // 属性模式组合
-	/// data is MyClass { Prop1: 1, Prop2: { X: 2 } }   // 嵌套递归模式
-	/// item is (int x, string s) when x > 0            // 元组模式 + when子句
-	/// 转换结果：转换为JavaScript的组合条件表达式
-	/// 递归模式是多个模式的组合，生成 &amp;&amp;连接的条件判断
-	/// </summary>
-	/// <param name="operation">递归模式操作</param>
-	/// <param name="argument">当前operation所属的父operation</param>
-	/// <returns>JavaScript组合条件表达式</returns>
-	public override Acornima.Ast.Node? VisitRecursivePattern(IRecursivePatternOperation operation, Context argument)
-	{
-		// 递归模式的条件判断转换
-		// C# 示例：obj is Person { Name: "John", Age: > 18 }
-		// 转换结果：生成 (obj instanceof Person) && (obj.Name === "John") && (obj.Age > 18)
-		// 递归模式由多个子模式组成，需要用 && 连接所有条件
-
-		var conditions = new List<Expression>();
-
-		// 1. 处理类型模式（如果存在）
-		if (operation.MatchedType is not null)
-		{
-			// 从父operation获取目标名称，在节点内构建表达式
-			var targetName = ExtractPatternValName(operation.Parent);
-			// 根据获取的名称构建目标表达式
-			var target = new Identifier(targetName);
-			var typeName = operation.MatchedType.IsAnonymousType
-				? "Object"
-				: operation.MatchedType.Name;
-			Expression condition = typeName.ToLowerInvariant() switch
-			{
-				"string" => new NonLogicalBinaryExpression(
-						Operator.StrictEquality,
-						new NonUpdateUnaryExpression(Operator.TypeOf, target),
-						new StringLiteral("string", "'string'")
-					),
-				"number" or "int32" or "int64" or "double" or "float" or "decimal" =>
-							 new NonLogicalBinaryExpression(
-						Operator.StrictEquality,
-						new NonUpdateUnaryExpression(Operator.TypeOf, target),
-						new StringLiteral("number", "'number'")
-					),
-				"boolean" => new NonLogicalBinaryExpression(
-						Operator.StrictEquality,
-						new NonUpdateUnaryExpression(Operator.TypeOf, target),
-						new StringLiteral("boolean", "'boolean'")
-					),
-				"object" => new NonLogicalBinaryExpression(
-						Operator.StrictEquality,
-						new NonUpdateUnaryExpression(Operator.TypeOf, target),
-						new StringLiteral("object", "'object'")
-					),// 对于对象类型，检查是否不为null且为object
-				_ => new NonLogicalBinaryExpression(Operator.InstanceOf, target, new Identifier(typeName)),// 对于自定义类型，使用instanceof检查
-			};
-			conditions.Add(condition);
-		}
-
-		// 2. 处理属性子模式（如果存在）
-		if (operation.PropertySubpatterns.Length > 0)
-		{
-			foreach (var propertySubpattern in operation.PropertySubpatterns)
-			{
-				// 根据AST转换器方法复用原则，argument是父节点，这里传递当前的递归模式操作
-				Translate(conditions, propertySubpattern, argument);
-			}
-		}
-
-		// 3. 处理声明模式（变量声明）
-		if (operation.DeclaredSymbol is not null)
-		{
-			// 声明模式不影响条件判断，只是绑定变量
-			// 在模式匹配中，我们只关心条件判断部分
-		}
-
-		// 4. 组合所有条件
-		if (conditions.Count == 0)
-		{
-			// 如果没有条件，返回true（空模式总是匹配）
-			return new BooleanLiteral(true, "true");
-		}
-		else if (conditions.Count == 1)
-		{
-			// 只有一个条件，直接返回
-			return conditions[0];
-		}
-		else
-		{
-			// 多个条件，用 && 连接
-			Expression result = conditions[0];
-			for (int i = 1; i < conditions.Count; i++)
-			{
-				result = new LogicalExpression(Operator.LogicalAnd, result, conditions[i]);
-			}
-			return result;
-		}
-	}
 }

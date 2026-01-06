@@ -131,21 +131,9 @@ class TestClass
 {
 	void TestMethod()
 	{
-		// 标签和跳转
-	label1:
-		Console.WriteLine("Label1");
-
-		// 带标签的跳转（简化测试）
-		for (int i = 0; i < 10; i++)
-		{
-			if (i == 5)
-				break;
-			if (i % 2 == 0)
-				continue;
-		}
-
-		// 返回语句
-		return;
+		int value = 5;
+		bool result = value is > 0 and < 10;
 	}
+
 
 }

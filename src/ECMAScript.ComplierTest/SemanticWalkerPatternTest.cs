@@ -82,7 +82,7 @@ public sealed class SemanticWalkerPatternTest
   /// 测试 VisitIsPattern - 常量模式（直接调用）
   /// </summary>
   [TestMethod]
-  public void VisitIsPattern_Constant_Direct()
+  public void Visit_IsPattern_Constant_Direct()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -137,7 +137,7 @@ public sealed class SemanticWalkerPatternTest
   /// 测试 VisitIsPattern - 字符串常量模式（直接调用）
   /// </summary>
   [TestMethod]
-  public void VisitIsPattern_StringConstant_Direct()
+  public void Visit_IsPattern_StringConstant_Direct()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -194,7 +194,7 @@ public sealed class SemanticWalkerPatternTest
   /// 测试 VisitIsType - 字符串类型检查（直接调用）
   /// </summary>
   [TestMethod]
-  public void VisitIsType_String_Direct()
+  public void Visit_IsType_String_Direct()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -304,7 +304,7 @@ public sealed class SemanticWalkerPatternTest
   /// 测试 VisitIsType - 布尔类型检查（直接调用）
   /// </summary>
   [TestMethod]
-  public void VisitIsType_Boolean_Direct()
+  public void Visit_IsType_Boolean_Direct()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -359,7 +359,7 @@ public sealed class SemanticWalkerPatternTest
   /// 测试 VisitIsType - 对象类型检查（直接调用）
   /// </summary>
   [TestMethod]
-  public void VisitIsType_Object_Direct()
+  public void Visit_IsType_Object_Direct()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -416,7 +416,7 @@ public sealed class SemanticWalkerPatternTest
   /// 测试 VisitIsNull - null 检查（直接调用）
   /// </summary>
   [TestMethod]
-  public void VisitIsNull_Direct()
+  public void Visit_IsNull_Direct()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -438,6 +438,63 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual("obj === null", script);
+  }
+
+  // ==================== VisitIsNotNull 测试 ====================
+
+  /// <summary>
+  /// 测试 Visit - IsNotNull not null 检查
+  /// </summary>
+  [TestMethod]
+  public void Visit_IsNotNull()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = null;
+                    bool result = obj is not null;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = null;
+  let result = obj !== null;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 VisitIsNotNull -not null 检查（直接调用）
+  /// </summary>
+  [TestMethod]
+  public void Visit_IsNotNull_Direct()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = null;
+                    bool result = obj is not null;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
+    var declaration = variableDeclarationGroupOp.Declarations.First();
+    var declarator = declaration.Declarators.First();
+    var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
+    var node = walker.Visit(isPatternOperation!, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual("obj !== null", script);
   }
 
   // ==================== VisitDiscardPattern 测试 ====================
@@ -471,7 +528,14 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let value = 42;
-  let result = value === 1 ? 'one' : value === 2 ? 'two' : 'default';
+  let result = (() => {
+    const v$test = value;
+    if (v$test === 1)
+      return 'one';
+    if (v$test === 2)
+      return 'two';
+    return 'default';
+  })();
 }", script);
   }
 
@@ -480,7 +544,7 @@ public sealed class SemanticWalkerPatternTest
   /// 丢弃模式总是返回 true，表示总是匹配
   /// </summary>
   [TestMethod]
-  public void VisitDiscardPattern_Direct()
+  public void Visit_DiscardPattern_Direct()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -497,8 +561,11 @@ public sealed class SemanticWalkerPatternTest
             ");
 
     var walker = new SemanticWalker(true);
-    var switchExpressionOperation = GetOperationAt<ISwitchExpressionOperation>(block, 1);
-    var switchCaseArm = switchExpressionOperation.Arms.First();
+    var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
+    var declaration = variableDeclarationGroupOp.Declarations.First();
+    var declarator = declaration.Declarators.First();
+    var switchExpressionOperation = declarator.Initializer!.Value as ISwitchExpressionOperation;   
+    var switchCaseArm = switchExpressionOperation!.Arms.First();
     var discardPatternOperation = (IDiscardPatternOperation)switchCaseArm.Pattern;
     var node = walker.VisitDiscardPattern(discardPatternOperation, new());
     var script = node?.ToKnRECMAScript();
@@ -531,7 +598,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let obj = 42;
-  let result = !(obj === null);
+  let result = obj !== null;
 }", script);
   }
 
@@ -539,7 +606,7 @@ public sealed class SemanticWalkerPatternTest
   /// 测试 VisitNegatedPattern - 取反模式（直接调用）
   /// </summary>
   [TestMethod]
-  public void VisitNegatedPattern_Direct()
+  public void Visit_NegatedPattern_Direct()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -553,12 +620,15 @@ public sealed class SemanticWalkerPatternTest
             ");
 
     var walker = new SemanticWalker(true);
-    var isPatternOperation = GetOperationAt<IIsPatternOperation>(block, 1);
-    var negatedPatternOperation = (INegatedPatternOperation)isPatternOperation.Pattern;
+    var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
+    var declaration = variableDeclarationGroupOp.Declarations.First();
+    var declarator = declaration.Declarators.First();
+    var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;   
+    var negatedPatternOperation = (INegatedPatternOperation)isPatternOperation!.Pattern;
     var node = walker.VisitNegatedPattern(negatedPatternOperation, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual("!(obj === null)", script);
+    Assert.AreEqual("obj !== null", script);
   }
 
   // ==================== VisitBinaryPattern 测试 ====================
@@ -594,7 +664,7 @@ public sealed class SemanticWalkerPatternTest
   /// 测试 VisitBinaryPattern - and 模式（直接调用）
   /// </summary>
   [TestMethod]
-  public void VisitBinaryPattern_And_Direct()
+  public void Visit_BinaryPattern_And_Direct()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -608,8 +678,11 @@ public sealed class SemanticWalkerPatternTest
             ");
 
     var walker = new SemanticWalker(true);
-    var isPatternOperation = GetOperationAt<IIsPatternOperation>(block, 1);
-    var binaryPatternOperation = (IBinaryPatternOperation)isPatternOperation.Pattern;
+    var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
+    var declaration = variableDeclarationGroupOp.Declarations.First();
+    var declarator = declaration.Declarators.First();
+    var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
+    var binaryPatternOperation = (IBinaryPatternOperation)isPatternOperation!.Pattern;
     var node = walker.VisitBinaryPattern(binaryPatternOperation, new());
     var script = node?.ToKnRECMAScript();
 
@@ -628,7 +701,7 @@ public sealed class SemanticWalkerPatternTest
                 void TestMethod()
                 {
                     int value = 5;
-                    bool result = value is 1 or 2 or 3;
+                    bool result = value is 1 or 2 or 3 or 4 or >8;
                 }
             }
             ");
@@ -639,7 +712,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let value = 5;
-  let result = value === 1 || value === 2 || value === 3;
+  let result = value === 1 || value === 2 || value === 3 || value === 4 || value > 8;
 }", script);
   }
 
@@ -647,7 +720,7 @@ public sealed class SemanticWalkerPatternTest
   /// 测试 VisitBinaryPattern - or 模式（直接调用）
   /// </summary>
   [TestMethod]
-  public void VisitBinaryPattern_Or_Direct()
+  public void Visit_BinaryPattern_Or_Direct()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -655,18 +728,21 @@ public sealed class SemanticWalkerPatternTest
                 void TestMethod()
                 {
                     int value = 5;
-                    bool result = value is 1 or 2 or 3;
+                    bool result = value is 1 or 2 or 3 or 4 or >8;
                 }
             }
             ");
 
     var walker = new SemanticWalker(true);
-    var isPatternOperation = GetOperationAt<IIsPatternOperation>(block, 1);
-    var binaryPatternOperation = (IBinaryPatternOperation)isPatternOperation.Pattern;
+    var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
+    var declaration = variableDeclarationGroupOp.Declarations.First();
+    var declarator = declaration.Declarators.First();
+    var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
+    var binaryPatternOperation = (IBinaryPatternOperation)isPatternOperation!.Pattern;
     var node = walker.VisitBinaryPattern(binaryPatternOperation, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual("value === 1 || value === 2 || value === 3", script);
+    Assert.AreEqual("value === 1 || value === 2 || value === 3 || value === 4 || value > 8", script);
   }
 
   // ==================== VisitRelationalPattern 测试 ====================
@@ -702,7 +778,7 @@ public sealed class SemanticWalkerPatternTest
   /// 测试 VisitRelationalPattern - 大于模式（直接调用）
   /// </summary>
   [TestMethod]
-  public void VisitRelationalPattern_GreaterThan_Direct()
+  public void Visit_RelationalPattern_GreaterThan_Direct()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -716,8 +792,11 @@ public sealed class SemanticWalkerPatternTest
             ");
 
     var walker = new SemanticWalker(true);
-    var isPatternOperation = GetOperationAt<IIsPatternOperation>(block, 1);
-    var relationalPatternOperation = (IRelationalPatternOperation)isPatternOperation.Pattern;
+    var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
+    var declaration = variableDeclarationGroupOp.Declarations.First();
+    var declarator = declaration.Declarators.First();
+    var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
+    var relationalPatternOperation = (IRelationalPatternOperation)isPatternOperation!.Pattern;
     var node = walker.VisitRelationalPattern(relationalPatternOperation, new());
     var script = node?.ToKnRECMAScript();
 
@@ -755,7 +834,7 @@ public sealed class SemanticWalkerPatternTest
   /// 测试 VisitRelationalPattern - 小于模式（直接调用）
   /// </summary>
   [TestMethod]
-  public void VisitRelationalPattern_LessThan_Direct()
+  public void Visit_RelationalPattern_LessThan_Direct()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -769,8 +848,11 @@ public sealed class SemanticWalkerPatternTest
             ");
 
     var walker = new SemanticWalker(true);
-    var isPatternOperation = GetOperationAt<IIsPatternOperation>(block, 1);
-    var relationalPatternOperation = (IRelationalPatternOperation)isPatternOperation.Pattern;
+    var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
+    var declaration = variableDeclarationGroupOp.Declarations.First();
+    var declarator = declaration.Declarators.First();
+    var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
+    var relationalPatternOperation = (IRelationalPatternOperation)isPatternOperation!.Pattern;
     var node = walker.VisitRelationalPattern(relationalPatternOperation, new());
     var script = node?.ToKnRECMAScript();
 
@@ -808,7 +890,7 @@ public sealed class SemanticWalkerPatternTest
   /// 测试 VisitRelationalPattern - 大于等于模式（直接调用）
   /// </summary>
   [TestMethod]
-  public void VisitRelationalPattern_GreaterThanOrEqual_Direct()
+  public void Visit_RelationalPattern_GreaterThanOrEqual_Direct()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -822,8 +904,11 @@ public sealed class SemanticWalkerPatternTest
             ");
 
     var walker = new SemanticWalker(true);
-    var isPatternOperation = GetOperationAt<IIsPatternOperation>(block, 1);
-    var relationalPatternOperation = (IRelationalPatternOperation)isPatternOperation.Pattern;
+    var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
+    var declaration = variableDeclarationGroupOp.Declarations.First();
+    var declarator = declaration.Declarators.First();
+    var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
+    var relationalPatternOperation = (IRelationalPatternOperation)isPatternOperation!.Pattern;
     var node = walker.VisitRelationalPattern(relationalPatternOperation, new());
     var script = node?.ToKnRECMAScript();
 
@@ -861,7 +946,7 @@ public sealed class SemanticWalkerPatternTest
   /// 测试 VisitRelationalPattern - 小于等于模式（直接调用）
   /// </summary>
   [TestMethod]
-  public void VisitRelationalPattern_LessThanOrEqual_Direct()
+  public void Visit_RelationalPattern_LessThanOrEqual_Direct()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -875,8 +960,11 @@ public sealed class SemanticWalkerPatternTest
             ");
 
     var walker = new SemanticWalker(true);
-    var isPatternOperation = GetOperationAt<IIsPatternOperation>(block, 1);
-    var relationalPatternOperation = (IRelationalPatternOperation)isPatternOperation.Pattern;
+    var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
+    var declaration = variableDeclarationGroupOp.Declarations.First();
+    var declarator = declaration.Declarators.First();
+    var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
+    var relationalPatternOperation = (IRelationalPatternOperation)isPatternOperation!.Pattern;
     var node = walker.VisitRelationalPattern(relationalPatternOperation, new());
     var script = node?.ToKnRECMAScript();
 
@@ -916,7 +1004,7 @@ public sealed class SemanticWalkerPatternTest
   /// 测试 VisitTypePattern - 类型模式（直接调用）
   /// </summary>
   [TestMethod]
-  public void VisitTypePattern_Direct()
+  public void Visit_TypePattern_Direct()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -930,9 +1018,11 @@ public sealed class SemanticWalkerPatternTest
             ");
 
     var walker = new SemanticWalker(true);
-    var isPatternOperation = GetOperationAt<IIsPatternOperation>(block, 1);
-    var typePatternOperation = (ITypePatternOperation)isPatternOperation.Pattern;
-    var node = walker.VisitTypePattern(typePatternOperation, new());
+    var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
+    var declaration = variableDeclarationGroupOp.Declarations.First();
+    var declarator = declaration.Declarators.First();
+    var isTypeOperation = declarator.Initializer!.Value as IIsTypeOperation;
+    var node = walker.VisitIsType(isTypeOperation!, new());
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual("typeof obj === 'string'", script);
@@ -971,7 +1061,7 @@ public sealed class SemanticWalkerPatternTest
   /// 测试 VisitPropertySubpattern - 属性子模式（直接调用）
   /// </summary>
   [TestMethod]
-  public void VisitPropertySubpattern_Direct()
+  public void Visit_PropertySubpattern_Direct()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -985,8 +1075,11 @@ public sealed class SemanticWalkerPatternTest
             ");
 
     var walker = new SemanticWalker(true);
-    var isPatternOperation = GetOperationAt<IIsPatternOperation>(block, 1);
-    var recursivePatternOperation = (IRecursivePatternOperation)isPatternOperation.Pattern;
+    var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
+    var declaration = variableDeclarationGroupOp.Declarations.First();
+    var declarator = declaration.Declarators.First();
+    var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
+    var recursivePatternOperation = (IRecursivePatternOperation)isPatternOperation!.Pattern;
     var propertySubpatternOperation = recursivePatternOperation.PropertySubpatterns.First();
     var node = walker.VisitPropertySubpattern(propertySubpatternOperation, new());
     var script = node?.ToKnRECMAScript();
@@ -1041,8 +1134,11 @@ public sealed class SemanticWalkerPatternTest
             ");
 
     var walker = new SemanticWalker(true);
-    var isPatternOperation = GetOperationAt<IIsPatternOperation>(block, 1);
-    var recursivePatternOperation = (IRecursivePatternOperation)isPatternOperation.Pattern;
+    var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
+    var declaration = variableDeclarationGroupOp.Declarations.First();
+    var declarator = declaration.Declarators.First();
+    var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
+    var recursivePatternOperation = (IRecursivePatternOperation)isPatternOperation!.Pattern;
     var node = walker.VisitRecursivePattern(recursivePatternOperation, new());
     var script = node?.ToKnRECMAScript();
 
@@ -1190,7 +1286,7 @@ public sealed class SemanticWalkerPatternTest
   /// 测试 VisitSlicePattern - 切片模式（直接调用）
   /// </summary>
   [TestMethod]
-  public void VisitSlicePattern_Direct()
+  public void Visit_SlicePattern_Direct()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -1251,7 +1347,7 @@ public sealed class SemanticWalkerPatternTest
   /// 测试 VisitDeclarationPattern - 声明模式（直接调用）
   /// </summary>
   [TestMethod]
-  public void VisitDeclarationPattern_Direct()
+  public void Visit_DeclarationPattern_Direct()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -1489,7 +1585,7 @@ public sealed class SemanticWalkerPatternTest
   /// 测试 VisitConstantPattern - 常量模式（直接调用）
   /// </summary>
   [TestMethod]
-  public void VisitConstantPattern_Direct()
+  public void Visit_ConstantPattern_Direct()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -1515,7 +1611,7 @@ public sealed class SemanticWalkerPatternTest
   /// 测试 VisitConstantPattern - 字符串常量模式（直接调用）
   /// </summary>
   [TestMethod]
-  public void VisitConstantPattern_String_Direct()
+  public void Visit_ConstantPattern_String_Direct()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -1543,7 +1639,7 @@ public sealed class SemanticWalkerPatternTest
   /// 测试 VisitPatternCaseClause - 模式 case 子句（直接调用）
   /// </summary>
   [TestMethod]
-  public void VisitPatternCaseClause_Direct()
+  public void Visit_PatternCaseClause_Direct()
   {
     var block = GetBlockOperation(@"
             class TestClass

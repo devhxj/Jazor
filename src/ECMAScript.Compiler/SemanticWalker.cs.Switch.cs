@@ -185,258 +185,119 @@ public partial class SemanticWalker
 			return null;
 
 		var input = Translate<Expression>(operation.Value, argument);
-		// 检查是否为非模式匹配switch（传统switch）
-		bool isTraditionalSwitch = true;
+
+		// 复杂模式匹配switch，生成健全的IIFE保证副作用顺序
+		// 采用分层判断：先模式匹配，后when条件，确保求值节拍与C#一致
+		var statements = new List<Statement>();
+		var discardArm = (ISwitchExpressionArmOperation?)null;
+
+		// 创建临时变量存储输入值，确保仅求值一次
+		var inputVar = new Identifier(GetUniqueName(operation.Syntax));
+		statements.Add(new VariableDeclaration(
+			VariableDeclarationKind.Const,
+			NodeList.From(
+				new VariableDeclarator(inputVar, input)
+			)
+		));
+
+		// 处理所有非丢弃模式，采用嵌套if确保副作用顺序
 		foreach (var arm in operation.Arms)
 		{
-			// 检查是否为常量模式或丢弃模式
-			if (arm.Pattern.Kind != OperationKind.ConstantPattern &&
-				arm.Pattern.Kind != OperationKind.DiscardPattern)
+			if (arm.Pattern.Kind == OperationKind.DiscardPattern)
 			{
-				isTraditionalSwitch = false;
-				break;
+				discardArm = arm; // 保存丢弃模式，最后处理
+				continue;
 			}
 
-			// 检查是否有when子句
-			if (arm.Guard is not null)
+			var value = Translate<Expression>(arm.Value, argument);
+			// 生成模式匹配条件
+			Expression? patternCondition = null;
+
+			if (arm.Pattern.Kind == OperationKind.ConstantPattern)
 			{
-				isTraditionalSwitch = false;
-				break;
+				var constantValue = Translate<Expression>(arm.Pattern, argument);
+				patternCondition = new NonLogicalBinaryExpression(Operator.StrictEquality, inputVar, constantValue);
 			}
-		}
-
-		if (isTraditionalSwitch)
-		{
-			// 非模式匹配switch，转换为JavaScript switch语句
-			var cases = new List<SwitchCase>();
-
-			foreach (var arm in operation.Arms)
+			else if (arm.Pattern.Kind == OperationKind.TypePattern)
 			{
-				if (VisitSwitchExpressionArm(arm, argument) is SwitchCase switchCase)
+				// 对于类型模式，使用typeof或instanceof检查
+				if (arm.Pattern is ITypePatternOperation typeOp && typeOp.InputType is not null)
 				{
-					cases.Add(switchCase);
-				}
-			}
-
-			// 确保有默认情况
-			bool hasDefault = false;
-			foreach (var c in cases)
-			{
-				if (c.Test == null)
-				{
-					hasDefault = true;
-					break;
-				}
-			}
-
-			if (!hasDefault)
-			{
-				cases.Add(new SwitchCase(
-					null,
-					NodeList.From<Statement>(new ReturnStatement(new Identifier("undefined")))
-				));
-			}
-
-			var switchStatement = new SwitchStatement(input, NodeList.From<SwitchCase>(cases));
-			var functionBody = new FunctionBody(NodeList.From<Statement>(switchStatement), strict: true);
-			var arrowFunction = new ArrowFunctionExpression(
-				NodeList.From<Node>(),
-				functionBody,
-				expression: false,
-				async: false
-			);
-
-			// 立即调用箭头函数 (() => { ... })()
-			return new CallExpression(arrowFunction, NodeList.From<Expression>(), optional: false);
-		}
-		else
-		{
-			// 复杂模式匹配switch，生成健全的IIFE保证副作用顺序
-			// 采用分层判断：先模式匹配，后when条件，确保求值节拍与C#一致
-			var statements = new List<Statement>();
-			var discardArm = (ISwitchExpressionArmOperation?)null;
-
-			// 创建临时变量存储输入值，确保仅求值一次
-			var inputVar = new Identifier(GetUniqueName(operation.Syntax));
-			statements.Add(new VariableDeclaration(
-				VariableDeclarationKind.Const,
-				NodeList.From(
-					new VariableDeclarator(inputVar, input)
-				)
-			));
-
-			// 处理所有非丢弃模式，采用嵌套if确保副作用顺序
-			foreach (var arm in operation.Arms)
-			{
-				if (arm.Pattern.Kind == OperationKind.DiscardPattern)
-				{
-					discardArm = arm; // 保存丢弃模式，最后处理
-					continue;
-				}
-
-				var value = Translate<Expression>(arm.Value, argument);
-				// 生成模式匹配条件
-				Expression? patternCondition = null;
-
-				if (arm.Pattern.Kind == OperationKind.ConstantPattern)
-				{
-					var constantValue = Translate<Expression>(arm.Pattern, argument);
-					patternCondition = new LogicalExpression(Operator.StrictEquality, inputVar, constantValue);
-				}
-				else if (arm.Pattern.Kind == OperationKind.TypePattern)
-				{
-					// 对于类型模式，使用typeof或instanceof检查
-					if (arm.Pattern is ITypePatternOperation typeOp && typeOp.InputType is not null)
+					var typeName = typeOp.InputType.Name.ToLowerInvariant();
+					patternCondition = typeName switch
 					{
-						var typeName = typeOp.InputType.Name.ToLowerInvariant();
-						patternCondition = typeName switch
-						{
-							"string" => new LogicalExpression(Operator.StrictEquality,
+						"string" => new NonLogicalBinaryExpression(Operator.StrictEquality,
+							new UpdateExpression(Operator.TypeOf, inputVar, prefix: true),
+							new StringLiteral("string", "'string'")),
+						"number" or "int32" or "int64" or "double" or "float" or "decimal" =>
+							new NonLogicalBinaryExpression(Operator.StrictEquality,
 								new UpdateExpression(Operator.TypeOf, inputVar, prefix: true),
-								new StringLiteral("string", "'string'")),
-							"number" or "int32" or "int64" or "double" or "float" or "decimal" =>
-								new LogicalExpression(Operator.StrictEquality,
-									new UpdateExpression(Operator.TypeOf, inputVar, prefix: true),
-									new StringLiteral("number", "'number'")),
-							"boolean" => new LogicalExpression(Operator.StrictEquality,
-								new UpdateExpression(Operator.TypeOf, inputVar, prefix: true),
-								new StringLiteral("boolean", "'boolean'")),
-							_ => new LogicalExpression(Operator.InstanceOf, inputVar, new Identifier(typeName))
-						};
-					}
+								new StringLiteral("number", "'number'")),
+						"boolean" => new NonLogicalBinaryExpression(Operator.StrictEquality,
+							new UpdateExpression(Operator.TypeOf, inputVar, prefix: true),
+							new StringLiteral("boolean", "'boolean'")),
+						_ => new NonLogicalBinaryExpression(Operator.InstanceOf, inputVar, new Identifier(typeName))
+					};
+				}
+			}
+			else
+			{
+				// 其他模式类型，尝试访问并处理占位符替换
+				// 这里需要实现占位符替换逻辑
+				// 暂时使用原始表达式，但需要注意占位符问题
+				patternCondition = Translate<Expression>(arm.Pattern, argument);
+
+			}
+
+			if (patternCondition is not null)
+			{
+				Statement branchStatement;
+
+				if (arm.Guard is not null)
+				{
+					// 有when子句：关键的分层判断保证副作用顺序
+					// 先模式匹配，成功后才执行when条件
+					var guardCondition = Translate<Expression>(arm.Guard, argument);
+					// 嵌套if结构：
+					// if (pattern) {
+					//   if (when) return value;
+					// }
+					var innerIf = new IfStatement(guardCondition, new ReturnStatement(value), null);
+					branchStatement = new IfStatement(patternCondition, innerIf, null);
 				}
 				else
 				{
-					// 其他模式类型，尝试访问并处理占位符替换
-					// 这里需要实现占位符替换逻辑
-					// 暂时使用原始表达式，但需要注意占位符问题
-					patternCondition = Translate<Expression>(arm.Pattern, argument);
-
+					// 无when子句：直接判断模式
+					branchStatement = new IfStatement(patternCondition, new ReturnStatement(value), null);
 				}
 
-				if (patternCondition is not null)
-				{
-					Statement branchStatement;
-
-					if (arm.Guard is not null)
-					{
-						// 有when子句：关键的分层判断保证副作用顺序
-						// 先模式匹配，成功后才执行when条件
-						var guardCondition = Translate<Expression>(arm.Guard, argument);
-						// 嵌套if结构：
-						// if (pattern) {
-						//   if (when) return value;
-						// }
-						var innerIf = new IfStatement(guardCondition, new ReturnStatement(value), null);
-						branchStatement = new IfStatement(patternCondition, innerIf, null);
-					}
-					else
-					{
-						// 无when子句：直接判断模式
-						branchStatement = new IfStatement(patternCondition, new ReturnStatement(value), null);
-					}
-
-					statements.Add(branchStatement);
-				}
+				statements.Add(branchStatement);
 			}
-
-			// 最后处理丢弃模式（默认情况）
-			if (discardArm is not null)
-			{
-				var discardValue = Translate<Expression>(discardArm.Value, argument);
-				statements.Add(new ReturnStatement(discardValue));
-			}
-
-			// 确保有返回值
-			if (statements.Count == 0 || statements[statements.Count - 1] is not ReturnStatement)
-			{
-				statements.Add(new ReturnStatement(new Identifier("undefined")));
-			}
-
-			var functionBody = new FunctionBody(NodeList.From(statements), strict: true);
-			var arrowFunction = new ArrowFunctionExpression(
-				NodeList.From<Node>(),
-				functionBody,
-				expression: false,
-				async: false
-			);
-
-			// 立即调用箭头函数
-			return new CallExpression(arrowFunction, NodeList.From<Expression>(), optional: false);
 		}
-	}
 
-	/// <summary>
-	/// 处理 switch 表达式分支操作
-	/// 根据上下文返回SwitchCase（传统switch）或Statement（模式匹配）
-	/// </summary>
-	/// <param name="operation">当前访问的operation</param>
-	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitSwitchExpressionArm(ISwitchExpressionArmOperation operation, Context argument)
-	{
-		var pattern = Translate<Expression>(operation.Pattern, argument);
-		var guard = Translate<Expression>(operation.Guard, argument,null);
-		var value = Translate<Expression>(operation.Value, argument);
-
-		// 检查是否为传统的常量模式（无when子句）
-		bool isTraditionalPattern = (operation.Pattern.Kind == OperationKind.ConstantPattern ||
-								   operation.Pattern.Kind == OperationKind.DiscardPattern) &&
-								   operation.Guard == null;
-
-		if (isTraditionalPattern)
+		// 最后处理丢弃模式（默认情况）
+		if (discardArm is not null)
 		{
-			// 生成SwitchCase用于传统switch语句
-			Expression? test = null;
-
-			if (operation.Pattern.Kind == OperationKind.ConstantPattern)
-				test = pattern;
-
-			// DiscardPattern的test为null（默认情况）
-			// 修复P0：SwitchCase中不能直接使用ReturnStatement，应该使用break
-			// 对于switch表达式转换为switch语句的场景，需要在外层包装函数来处理返回值
-			var breakStatement = new BreakStatement(null);
-
-			return new SwitchCase(
-				test,
-				NodeList.From<Statement>(new NonSpecialExpressionStatement(value), breakStatement)
-			);
+			var discardValue = Translate<Expression>(discardArm.Value, argument);
+			statements.Add(new ReturnStatement(discardValue));
 		}
-		else
+
+		// 确保有返回值
+		if (statements.Count == 0 || statements[statements.Count - 1] is not ReturnStatement)
 		{
-			// 生成Statement用于模式匹配IIFE
-			if (operation.Pattern.Kind == OperationKind.DiscardPattern)
-			{
-				// 默认情况，直接返回
-				return new ReturnStatement(value);
-			}
-			else if (pattern is not null)
-			{
-				Expression condition;
-
-				if (operation.Pattern.Kind == OperationKind.ConstantPattern)
-				{
-					// 从父operation获取switch目标名称并构建表达式
-					var targetName = ExtractPatternValName(operation.Parent);
-					var target = new Identifier(targetName);
-					condition = new LogicalExpression(Operator.StrictEquality, target, pattern);
-				}
-				else
-				{
-					// 复杂模式，直接使用模式表达式（已经包含实际目标）
-					condition = pattern;
-				}
-
-				// 处理when子句
-				if (guard is not null)
-				{
-					condition = new LogicalExpression(Operator.LogicalAnd, condition, guard);
-				}
-
-				return new IfStatement(condition, new ReturnStatement(value), null);
-			}
+			statements.Add(new ReturnStatement(new Identifier("undefined")));
 		}
 
-		return HandleTransformationFailure(operation, "Switch expression arm could not be translated to JavaScript.");
+		var functionBody = new FunctionBody(NodeList.From(statements), strict: true);
+		var arrowFunction = new ArrowFunctionExpression(
+			NodeList.From<Node>(),
+			functionBody,
+			expression: false,
+			async: false
+		);
+
+		// 立即调用箭头函数
+		return new CallExpression(arrowFunction, NodeList.From<Expression>(), optional: false);
+
 	}
 }
