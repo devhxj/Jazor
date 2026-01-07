@@ -392,18 +392,7 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitIsPattern(IIsPatternOperation operation, Context argument)
 	{
-		var pattern = Translate<Expression>(operation.Pattern, argument);
-
-		// 对于常量模式，直接比较
-		if (operation.Pattern.Kind == OperationKind.ConstantPattern)
-		{
-			// is 模式转换，支持复杂模式匹配
-			var value = Translate<Expression>(operation.Value, argument);
-			return new NonLogicalBinaryExpression(Operator.StrictEquality, value, pattern);
-		}
-
-		// 对于复杂模式，直接使用模式表达式（已经包含实际目标）
-		return pattern;
+		return Translate<Expression>(operation.Pattern, argument);
 	}
 
 	/// <summary>
@@ -518,81 +507,111 @@ public partial class SemanticWalker
 		// 转换结果：生成 (obj instanceof Person) && (obj.Name === "John") && (obj.Age > 18)
 		// 递归模式由多个子模式组成，需要用 && 连接所有条件
 
-		var conditions = new List<Expression>();
+		var andExprs = new List<Expression>();
+		var orExprs = new List<Expression>();
 
-		// 1. 处理类型模式（如果存在）
-		if (operation.MatchedType is not null) //&& operation.PropertySubpatterns.Length == 0)
-		{
-			// 根据获取的名称构建目标表达式
-			var target = GetPatternRefrence(operation);
-			var typeName = operation.MatchedType.IsAnonymousType
-				? "Object"
-				: operation.MatchedType.Name;
-			Expression condition = typeName.ToLowerInvariant() switch
-			{
-				"string" => new NonLogicalBinaryExpression(
-						Operator.StrictEquality,
-						new NonUpdateUnaryExpression(Operator.TypeOf, target),
-						new StringLiteral("string", "'string'")
-					),
-				"number" or "int32" or "int64" or "double" or "float" or "decimal" =>
-							 new NonLogicalBinaryExpression(
-						Operator.StrictEquality,
-						new NonUpdateUnaryExpression(Operator.TypeOf, target),
-						new StringLiteral("number", "'number'")
-					),
-				"boolean" => new NonLogicalBinaryExpression(
-						Operator.StrictEquality,
-						new NonUpdateUnaryExpression(Operator.TypeOf, target),
-						new StringLiteral("boolean", "'boolean'")
-					),
-				"object" => new NonLogicalBinaryExpression(
-						Operator.StrictEquality,
-						new NonUpdateUnaryExpression(Operator.TypeOf, target),
-						new StringLiteral("object", "'object'")
-					),// 对于对象类型，检查是否不为null且为object
-				_ => new NonLogicalBinaryExpression(Operator.InstanceOf, target, new Identifier(typeName)),// 对于自定义类型，使用instanceof检查
-			};
-			conditions.Add(condition);
-		}
-
-		// 2. 处理属性子模式（如果存在）
+		// 如果不存在子模式，处理类型模式
 		if (operation.PropertySubpatterns.Length > 0)
 		{
 			foreach (var propertySubpattern in operation.PropertySubpatterns)
-			{
-				// 根据AST转换器方法复用原则，argument是父节点，这里传递当前的递归模式操作
-				Translate(conditions, propertySubpattern, argument);
-			}
-		}
-
-		// 3. 处理声明模式（变量声明）
-		if (operation.DeclaredSymbol is not null)
-		{
-			// 声明模式不影响条件判断，只是绑定变量
-			// 在模式匹配中，我们只关心条件判断部分
-		}
-
-		// 4. 组合所有条件
-		if (conditions.Count == 0)
-		{
-			// 如果没有条件，返回true（空模式总是匹配）
-			return new BooleanLiteral(true, "true");
-		}
-		else if (conditions.Count == 1)
-		{
-			// 只有一个条件，直接返回
-			return conditions[0];
+				Translate(andExprs, propertySubpattern, argument);
 		}
 		else
 		{
-			// 多个条件，用 && 连接
-			Expression result = conditions[0];
-			for (int i = 1; i < conditions.Count; i++)
+			// 根据获取的名称构建目标表达式
+			var target = GetPatternRefrence(operation);
+
+			// 判断可空
+			if (IsNullableType(operation.MatchedType))
 			{
-				result = new LogicalExpression(Operator.LogicalAnd, result, conditions[i]);
+				var orExpr = new NonLogicalBinaryExpression(Operator.StrictEquality, target, new NullLiteral("null"));
+				orExprs.Add(orExpr);
 			}
-			return result;
+
+			if (operation.MatchedType.IsTupleType)
+			{
+				// 元组类型检查
+			}
+			else if (operation.MatchedType.IsAnonymousType)
+			{
+				var andExpr = CreateExpr(target, new StringLiteral("object", "'object'"));
+				andExprs.Add(andExpr);
+			}
+			else if (operation.MatchedType is INamedTypeSymbol namedTypeSymbol)
+			{
+				Expression andExpr;
+				if (namedTypeSymbol.SpecialType == SpecialType.System_String)
+					andExpr = CreateExpr(target, new StringLiteral("string", "'string'"));
+				else if (namedTypeSymbol.SpecialType == SpecialType.System_Object)
+					andExpr = CreateExpr(target, new StringLiteral("object", "'object'"));
+				else if (namedTypeSymbol.SpecialType == SpecialType.System_Boolean)
+					andExpr = CreateExpr(target, new StringLiteral("boolean", "'boolean'"));
+				else if (
+						 namedTypeSymbol.SpecialType == SpecialType.System_Byte ||
+						 namedTypeSymbol.SpecialType == SpecialType.System_SByte ||
+						 namedTypeSymbol.SpecialType == SpecialType.System_Int16 ||
+						 namedTypeSymbol.SpecialType == SpecialType.System_UInt16 ||
+						 namedTypeSymbol.SpecialType == SpecialType.System_Int32 ||
+						 namedTypeSymbol.SpecialType == SpecialType.System_UInt32 ||
+						 namedTypeSymbol.SpecialType == SpecialType.System_Single ||
+						 namedTypeSymbol.SpecialType == SpecialType.System_Double ||
+						 namedTypeSymbol.SpecialType == SpecialType.System_Decimal)
+					andExpr = CreateExpr(target, new StringLiteral("number", "'number'"));
+				else if (namedTypeSymbol.SpecialType == SpecialType.System_Int64 ||
+						 namedTypeSymbol.SpecialType == SpecialType.System_UInt64 ||
+						 namedTypeSymbol.Name.Equals("timestamp", StringComparison.OrdinalIgnoreCase))
+					andExpr = CreateExpr(target, new StringLiteral("bigint", "'bigint'"));
+				else if (namedTypeSymbol.SpecialType == SpecialType.System_Boolean)
+					andExpr = CreateExpr(target, new StringLiteral("boolean", "'boolean'"));
+				
+				else
+				{
+					var right = new Identifier(namedTypeSymbol.Name);
+					// 对于自定义类型，使用instanceof检查
+					andExpr = new NonLogicalBinaryExpression(Operator.InstanceOf, target, right);
+				}
+
+				andExprs.Add(andExpr);
+			}
+		}
+
+		// 声明模式不影响条件判断，只是绑定变量
+		// 在模式匹配中，我们只关心条件判断部分
+		// operation.DeclaredSymbol
+
+		// 组合所有条件
+		Expression result;
+
+		// 如果没有条件，返回true（空模式总是匹配）
+		if (andExprs.Count == 0)
+			result = new BooleanLiteral(true, "true");
+		// 只有一个条件，直接返回
+		else if (andExprs.Count == 1)
+			result = andExprs[0];
+		else
+		{
+			// 多个条件，用 && 连接
+			result = andExprs[0];
+			for (int i = 1; i < andExprs.Count; i++)
+			{
+				result = new LogicalExpression(Operator.LogicalAnd, result, andExprs[i]);
+			}
+		}
+
+		for (int i = 1; i < orExprs.Count; i++)
+		{
+			result = new LogicalExpression(Operator.LogicalOr, result, orExprs[i]);
+		}
+
+		return result;
+
+		static NonLogicalBinaryExpression CreateExpr(Expression target, Literal literal)
+		{
+			return new NonLogicalBinaryExpression(
+				Operator.StrictEquality,
+				new NonUpdateUnaryExpression(Operator.TypeOf, target),
+				literal
+			);
 		}
 	}
 
@@ -609,6 +628,19 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitConstantPattern(IConstantPatternOperation operation, Context argument)
 	{
+		var expr = Translate<Expression>(operation.Value, argument);
+
+		// 对于常量模式，直接比较
+		if (operation.Parent is
+			IIsPatternOperation or
+			IBinaryPatternOperation or
+			INegatedPatternOperation or
+			IPropertySubpatternOperation)
+		{
+			var obj = GetPatternRefrence(operation.Parent);
+			return new NonLogicalBinaryExpression(Operator.StrictEquality, obj, expr);
+		}
+	
 		return Translate<Expression>(operation.Value, argument);
 	}
 
@@ -678,19 +710,7 @@ public partial class SemanticWalker
 		//         转换为 obj.Name === "John" 的JavaScript表达式
 		// 转换结果：生成属性访问和比较的组合表达式
 		// 访问属性模式并转换为表达式
-		var expr = Translate<Expression>(operation.Pattern, argument);
-
-		// 已经是比较表达式，直接返回
-		if (expr is NonLogicalBinaryExpression binaryExpr)
-			return binaryExpr;
-
-		// 从父operation获取目标名称，在节点内构建表达式
-		var left = GetPatternRefrence(operation);
-
-		// 根据模式类型生成不同的比较表达式
-		// 对于常量模式，生成 === 比较
-		// 对于其他模式，直接返回模式表达式（如关系比较等）
-		return new NonLogicalBinaryExpression(Operator.StrictEquality, left, expr);
+		return Translate<Expression>(operation.Pattern, argument);
 	}
 
 	/// <summary>
@@ -713,11 +733,6 @@ public partial class SemanticWalker
 
 		// 访问内部模式并转换为表达式
 		var expr = Translate<Expression>(operation.Pattern, argument);
-		if (operation.Pattern.Kind == OperationKind.ConstantPattern)
-		{
-			var obj = GetPatternRefrence(operation);
-			return new NonLogicalBinaryExpression(Operator.StrictInequality, obj, new NullLiteral("null"));
-		}
 
 		// 使用NonUpdateUnaryExpression处理逻辑非操作
 		return new NonUpdateUnaryExpression(Operator.LogicalNot, expr);
@@ -746,14 +761,6 @@ public partial class SemanticWalker
 		// 访问左右两个子模式
 		var left = Translate<Expression>(operation.LeftPattern, argument);
 		var right = Translate<Expression>(operation.RightPattern, argument);
-
-		// 对于常量模式，生成严格相等比较
-		var obj = GetPatternRefrence(operation);
-		if (operation.LeftPattern.Kind == OperationKind.ConstantPattern)
-			left = new NonLogicalBinaryExpression(Operator.StrictEquality, obj, left);
-
-		if (operation.RightPattern.Kind == OperationKind.ConstantPattern)
-			right = new NonLogicalBinaryExpression(Operator.StrictEquality, obj, right);
 
 		// 检查模式的类型来确定操作符
 		var @operator = operation.OperatorKind switch
@@ -787,47 +794,23 @@ public partial class SemanticWalker
 		// C# 示例：value is > 0 是一个布尔条件表达式
 		//         age is >= 18 检查年龄是否满足条件
 		// 转换结果：生成相应的JavaScript关系比较表达式
+		// 从参考操作中提取名称构建目标表达式
+		var left = GetPatternRefrence(operation);
 
 		// 获取右操作数（比较值）
 		var right = Translate<Expression>(operation.Value, argument);
 
-		// 从参考操作中提取名称构建目标表达式
-		var left = GetPatternRefrence(operation);
-
-		// 检查是否在取反模式中（使用简化的检查逻辑）
-		bool isInNegatedPattern = operation.OperatorKind == BinaryOperatorKind.NotEquals ||
-			operation.Parent is INegatedPatternOperation ||
-			(
-				operation.Parent is IIsPatternOperation isPatternOp &&
-				isPatternOp.Pattern is INegatedPatternOperation
-			) ||
-			(
-				operation.Parent is IIsPatternOperation parentPattern &&
-				parentPattern.Parent is INegatedPatternOperation
-			) ||
-			(
-				operation.OperatorKind == BinaryOperatorKind.Equals &&
-				operation.Parent is IIsPatternOperation patternOp &&
-				patternOp.Parent is INegatedPatternOperation
-			);
-
 		// 根据编译时优化原则，直接生成最简洁的JavaScript关系比较表达式
 		// 将C#的关系操作符映射到JavaScript的操作符
 		// 如果在取反模式中，需要反转操作符（如 Equals 变为 StrictInequality）
-		var @operator = (operation.OperatorKind, isInNegatedPattern) switch
+		var @operator = operation.OperatorKind switch
 		{
-			(BinaryOperatorKind.GreaterThan, false) => Operator.GreaterThan,
-			(BinaryOperatorKind.GreaterThan, true) => Operator.LessThanOrEqual,
-			(BinaryOperatorKind.GreaterThanOrEqual, false) => Operator.GreaterThanOrEqual,
-			(BinaryOperatorKind.GreaterThanOrEqual, true) => Operator.LessThan,
-			(BinaryOperatorKind.LessThan, false) => Operator.LessThan,
-			(BinaryOperatorKind.LessThan, true) => Operator.GreaterThanOrEqual,
-			(BinaryOperatorKind.LessThanOrEqual, false) => Operator.LessThanOrEqual,
-			(BinaryOperatorKind.LessThanOrEqual, true) => Operator.GreaterThan,
-			(BinaryOperatorKind.Equals, false) => Operator.StrictEquality,
-			(BinaryOperatorKind.Equals, true) => Operator.StrictInequality,
-			(BinaryOperatorKind.NotEquals, false) => Operator.StrictInequality,
-			(BinaryOperatorKind.NotEquals, true) => Operator.StrictEquality,
+			BinaryOperatorKind.GreaterThan => Operator.GreaterThan,
+			BinaryOperatorKind.GreaterThanOrEqual => Operator.GreaterThanOrEqual,
+			BinaryOperatorKind.LessThan => Operator.LessThan,
+			BinaryOperatorKind.LessThanOrEqual => Operator.LessThanOrEqual,
+			BinaryOperatorKind.Equals => Operator.StrictEquality,
+			BinaryOperatorKind.NotEquals => Operator.StrictInequality,
 			_ => Operator.Unknown
 		};
 
@@ -854,16 +837,19 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitListPattern(IListPatternOperation operation, Context argument)
 	{
-		var patterns = operation.Patterns;
-		if (patterns == null || patterns.IsEmpty) return null;
+		if (operation.Patterns.IsEmpty) 
+			return null;
 
 		// 获取目标名称，在节点内构建表达式
-		Expression targetExpr = GetPatternRefrence(operation);
+		var targetExpr = GetPatternRefrence(operation);
 
-		/* 1. Array.isArray(target) */
-		// 修正 CallExpression 的构造：callee 和 arguments 分开
+		// Array.isArray(target)
 		var arrayCheck = new CallExpression(
-			callee: new MemberExpression(new Identifier("Array"), new Identifier("isArray"), computed: false, optional: false),
+			callee: new MemberExpression(
+				obj: new Identifier("Array"),
+				property: new Identifier("isArray"),
+				computed: false,
+				optional: false),
 			args: NodeList.From(targetExpr),
 			optional: false
 		);
@@ -872,9 +858,9 @@ public partial class SemanticWalker
 		int fixedLen = 0;
 		bool hasSlice = false;
 		int sliceIndex = -1; // 记录切片模式的位置
-		for (int i = 0; i < patterns.Length; i++)
+		for (int i = 0; i < operation.Patterns.Length; i++)
 		{
-			if (patterns[i] is ISlicePatternOperation)
+			if (operation.Patterns[i] is ISlicePatternOperation)
 			{
 				hasSlice = true;
 				sliceIndex = i;
@@ -894,7 +880,7 @@ public partial class SemanticWalker
 		Expression? elemChecks = null;
 		for (int i = 0; i < fixedLen; i++)
 		{
-			var pattern = patterns[i];
+			var pattern = operation.Patterns[i];
 			// 创建对 target[i] 的访问表达式
 			var indexAccess = new MemberExpression(targetExpr,
 				new NumericLiteral(i, i.ToString()), computed: true, optional: false);
@@ -946,7 +932,7 @@ public partial class SemanticWalker
 		/* 6. 处理切片模式（如果有） */
 		if (hasSlice && sliceIndex >= 0)
 		{
-			var slicePattern = patterns[sliceIndex] as ISlicePatternOperation;
+			var slicePattern = operation.Patterns[sliceIndex] as ISlicePatternOperation;
 			if (slicePattern?.Pattern is IDeclarationPatternOperation sliceDeclPattern &&
 				sliceDeclPattern.DeclaredSymbol is not null)
 			{

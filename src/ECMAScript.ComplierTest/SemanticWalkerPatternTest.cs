@@ -465,7 +465,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let obj = null;
-  let result = obj !== null;
+  let result = !(obj === null);
 }", script);
   }
 
@@ -494,7 +494,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(isPatternOperation!, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual("obj !== null", script);
+    Assert.AreEqual("!(obj === null)", script);
   }
 
   // ==================== VisitDiscardPattern 测试 ====================
@@ -598,7 +598,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let obj = 42;
-  let result = obj !== null;
+  let result = !(obj === null);
 }", script);
   }
 
@@ -628,7 +628,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitNegatedPattern(negatedPatternOperation, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual("obj !== null", script);
+    Assert.AreEqual("!(obj === null)", script);
   }
 
   // ==================== VisitBinaryPattern 测试 ====================
@@ -1053,7 +1053,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let person = { Name: 'John', Age: 30 };
-  let result = typeof person === 'object' && person.Name === 'John';
+  let result = person.Name === 'John';
 }", script);
   }
 
@@ -1112,7 +1112,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let obj = { Name: 'John', Age: 30 };
-  let result = typeof obj === 'object' && obj.Name === 'John' && obj.Age > 18;
+  let result = obj.Name === 'John' && obj.Age > 18;
 }", script);
   }
 
@@ -1142,7 +1142,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitRecursivePattern(recursivePatternOperation, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual("typeof obj === 'object' && obj.Name === 'John' && obj.Age > 18", script);
+    Assert.AreEqual("obj.Name === 'John' && obj.Age > 18", script);
   }
 
   // ==================== VisitListPattern 测试 ====================
@@ -1192,8 +1192,11 @@ public sealed class SemanticWalkerPatternTest
             ");
 
     var walker = new SemanticWalker(true);
-    var isPatternOperation = GetOperationAt<IIsPatternOperation>(block, 1);
-    var listPatternOperation = (IListPatternOperation)isPatternOperation.Pattern;
+    var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
+    var declaration = variableDeclarationGroupOp.Declarations.First();
+    var declarator = declaration.Declarators.First();
+    var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
+    var listPatternOperation = (IListPatternOperation)isPatternOperation!.Pattern;
     var node = walker.VisitListPattern(listPatternOperation, new());
     var script = node?.ToKnRECMAScript();
 
@@ -1245,8 +1248,11 @@ public sealed class SemanticWalkerPatternTest
             ");
 
     var walker = new SemanticWalker(true);
-    var isPatternOperation = GetOperationAt<IIsPatternOperation>(block, 1);
-    var listPatternOperation = (IListPatternOperation)isPatternOperation.Pattern;
+    var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
+    var declaration = variableDeclarationGroupOp.Declarations.First();
+    var declarator = declaration.Declarators.First();
+    var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
+    var listPatternOperation = (IListPatternOperation)isPatternOperation!.Pattern;
     var node = walker.VisitListPattern(listPatternOperation, new());
     var script = node?.ToKnRECMAScript();
 
@@ -1300,8 +1306,11 @@ public sealed class SemanticWalkerPatternTest
             ");
 
     var walker = new SemanticWalker(true);
-    var isPatternOperation = GetOperationAt<IIsPatternOperation>(block, 1);
-    var listPatternOperation = (IListPatternOperation)isPatternOperation.Pattern;
+    var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
+    var declaration = variableDeclarationGroupOp.Declarations.First();
+    var declarator = declaration.Declarators.First();
+    var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
+    var listPatternOperation = (IListPatternOperation)isPatternOperation!.Pattern;
     var slicePatternOperation = (ISlicePatternOperation)listPatternOperation.Patterns.First();
     var node = walker.VisitSlicePattern(slicePatternOperation, new());
     var script = node?.ToKnRECMAScript();
