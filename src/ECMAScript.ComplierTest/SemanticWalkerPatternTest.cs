@@ -1,9 +1,11 @@
+using System.Text;
 using Acornima.Ast;
 using ECMAScript.Compiler;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
+using Context = System.Collections.Generic.Queue<Acornima.Ast.VariableDeclaration>;
 
 namespace ECMAScript.ComplierTest;
 
@@ -1284,15 +1286,15 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let array = [1, 2, 3, 4, 5];
-  let result = Array.isArray(array);
+  let result = Array.isArray(array) && array.length >= 0;
 }", script);
   }
 
   /// <summary>
-  /// 测试 VisitSlicePattern - 切片模式（直接调用）
+  /// 测试 Visit - SlicePattern 切片带变量捕获（解构赋值）
   /// </summary>
   [TestMethod]
-  public void Visit_SlicePattern_Direct()
+  public void Visit_SlicePattern_WithVariableCapture()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -1300,22 +1302,323 @@ public sealed class SemanticWalkerPatternTest
                 void TestMethod()
                 {
                     int[] array = [1, 2, 3, 4, 5];
+                    if (array is [.. var rest])
+                    {
+                        Console.WriteLine(rest.Length);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+
+    var context = new Context();
+    var node = walker.Visit(block, context);
+    var builder = new StringBuilder();
+    while (context.TryDequeue(out var decl))
+      builder.AppendLine(decl.ToECMAScript());
+    builder.AppendLine(node!.ToKnRECMAScript());
+    var script = builder.ToString();
+
+    Assert.AreEqual(@"const rest=array.slice(0)
+{
+  let array = [1, 2, 3, 4, 5];
+  if (Array.isArray(array) && array.length >= 0) {
+    Console.WriteLine(rest.Length);
+  }
+}
+", script);
+
+  }
+
+  /// <summary>
+  /// 测试 VisitSlicePattern - 切片带变量捕获（直接调用）
+  /// 验证切片模式中的声明模式会被正确处理，变量名被添加到上下文
+  /// </summary>
+  [TestMethod]
+  public void Visit_SlicePattern_WithVariableCapture_Direct()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[] array = [1, 2, 3, 4, 5];
+                    if (array is [.. var rest])
+                    {
+                        Console.WriteLine(rest.Length);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var ifOperation = GetOperationAt<IConditionalOperation>(block, 1);
+    var isPatternOperation = (IIsPatternOperation)ifOperation.Condition;
+    var listPatternOperation = (IListPatternOperation)isPatternOperation.Pattern;
+    var slicePatternOperation = (ISlicePatternOperation)listPatternOperation.Patterns.First();
+
+    var context = new Context();
+    var node = walker.VisitSlicePattern(slicePatternOperation, context);
+
+    var builder = new StringBuilder();
+    while (context.TryDequeue(out var decl))
+      builder.AppendLine(decl.ToECMAScript());
+    builder.AppendLine(node!.ToKnRECMAScript());
+    var script = builder.ToString();
+
+    // 验证生成的表达式
+    Assert.AreEqual(@"let rest = array
+", script);
+
+  }
+
+  /// <summary>
+  /// 测试 Visit - SlicePattern 切片在列表开头
+  /// </summary>
+  [TestMethod]
+  public void Visit_SlicePattern_AtStart()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[] array = [1, 2, 3, 4, 5];
+                    bool result = array is [.., 4, 5];
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let array = [1, 2, 3, 4, 5];
+  let result = Array.isArray(array) && array.length >= 2 && (array[array.length - 2] === 4 && array[array.length - 1] === 5);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - SlicePattern 切片在列表中间
+  /// </summary>
+  [TestMethod]
+  public void Visit_SlicePattern_InMiddle()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[] array = [1, 2, 3, 4, 5];
+                    bool result = array is [1, .., 5];
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let array = [1, 2, 3, 4, 5];
+  let result = Array.isArray(array) && array.length >= 2 && (array[0] === 1 && array[array.length - 1] === 5);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - SlicePattern 切片在列表末尾（多元素前）
+  /// </summary>
+  [TestMethod]
+  public void Visit_SlicePattern_AtEnd()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[] array = [1, 2, 3, 4, 5];
+                    bool result = array is [1, 2, ..];
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let array = [1, 2, 3, 4, 5];
+  let result = Array.isArray(array) && array.length >= 2 && (array[0] === 1 && array[1] === 2);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - SlicePattern 切片带前缀和后缀变量捕获
+  /// </summary>
+  [TestMethod]
+  public void Visit_SlicePattern_WithPrefixAndSuffix()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[] array = [1, 2, 3, 4, 5];
+                    if (array is [var first, .. var rest])
+                    {
+                        Console.WriteLine(first);
+                        Console.WriteLine(rest.Length);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let array = [1, 2, 3, 4, 5];
+  if (Array.isArray(array) && array.length >= 1) {
+    let first = array[0];
+    Console.WriteLine(first);
+    Console.WriteLine(array.length);
+  }
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - SlicePattern 切片带前缀、中间和后缀
+  /// </summary>
+  [TestMethod]
+  public void Visit_SlicePattern_ComplexDestructuring()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[] array = [1, 2, 3, 4, 5];
+                    if (array is [var first, .., var last])
+                    {
+                        Console.WriteLine(first);
+                        Console.WriteLine(last);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let array = [1, 2, 3, 4, 5];
+  if (Array.isArray(array) && array.length >= 2) {
+    let first = array[0];
+    let last = array[array.length - 1];
+    Console.WriteLine(first);
+    Console.WriteLine(last);
+  }
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - SlicePattern 切片与 switch 表达式结合
+  /// </summary>
+  [TestMethod]
+  public void Visit_SlicePattern_InSwitchExpression()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[] array = [1, 2];
+                    string result = array switch
+                    {
+                        [..] => ""empty or any"",
+                        [1] => ""single one"",
+                        [1, 2] => ""one two"",
+                        _ => ""other""
+                    };
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let array = [1, 2];
+  let result = (() => {
+    const v$test = array;
+    if (Array.isArray(v$test))
+      return 'empty or any';
+    if (Array.isArray(v$test) && v$test.length === 1 && (v$test[0] === 1))
+      return 'single one';
+    if (Array.isArray(v$test) && v$test.length === 2 && (v$test[0] === 1 && v$test[1] === 2))
+      return 'one two';
+    return 'other';
+  })();
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - SlicePattern 空数组匹配
+  /// </summary>
+  [TestMethod]
+  public void Visit_SlicePattern_EmptyArray()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[] array = [];
                     bool result = array is [..];
                 }
             }
             ");
 
     var walker = new SemanticWalker(true);
-    var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
-    var declaration = variableDeclarationGroupOp.Declarations.First();
-    var declarator = declaration.Declarators.First();
-    var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
-    var listPatternOperation = (IListPatternOperation)isPatternOperation!.Pattern;
-    var slicePatternOperation = (ISlicePatternOperation)listPatternOperation.Patterns.First();
-    var node = walker.VisitSlicePattern(slicePatternOperation, new());
+    var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual("Array.isArray(array)", script);
+    Assert.AreEqual(@"{
+  let array = [];
+  let result = Array.isArray(array);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - SlicePattern 单元素数组匹配
+  /// </summary>
+  [TestMethod]
+  public void Visit_SlicePattern_SingleElementArray()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[] array = [42];
+                    bool result = array is [..];
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let array = [42];
+  let result = Array.isArray(array);
+}", script);
   }
 
   // ==================== VisitDeclarationPattern 测试 ====================

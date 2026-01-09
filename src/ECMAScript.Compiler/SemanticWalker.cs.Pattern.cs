@@ -659,10 +659,21 @@ public partial class SemanticWalker
 		if (operation.DeclaredSymbol is null)
 			return null;
 
+		Expression? init = null;
+		if (operation.Parent is ISlicePatternOperation slicePatternOp)
+		{
+			if(slicePatternOp.SliceSymbol is null)
+				init = GetPatternRefrence(operation.Parent);
+		}
+
 		// 声明模式转换为变量声明
 		var identifier = new Identifier(operation.DeclaredSymbol.Name);
-		return new VariableDeclaration(VariableDeclarationKind.Let,
-			NodeList.From(new VariableDeclarator(identifier, null)));
+		var declarator = new VariableDeclarator(identifier, init);
+		var declaration = new VariableDeclaration(VariableDeclarationKind.Let, NodeList.From(declarator));
+
+		argument.Enqueue(declaration);
+
+		return null;
 	}
 
 	/// <summary>
@@ -841,7 +852,7 @@ public partial class SemanticWalker
 			return null;
 
 		// 获取目标名称，在节点内构建表达式
-		var targetExpr = GetPatternRefrence(operation);
+		var obj = GetPatternRefrence(operation);
 
 		// Array.isArray(target)
 		var arrayCheck = new CallExpression(
@@ -850,7 +861,7 @@ public partial class SemanticWalker
 				property: new Identifier("isArray"),
 				computed: false,
 				optional: false),
-			args: NodeList.From(targetExpr),
+			args: NodeList.From(obj),
 			optional: false
 		);
 
@@ -872,7 +883,7 @@ public partial class SemanticWalker
 		/* 3. 长度检查：有切片就用 >=，没有就用 === */
 		var lengthCheck = new NonLogicalBinaryExpression(
 			hasSlice ? Operator.GreaterThanOrEqual : Operator.StrictEquality,
-			new MemberExpression(targetExpr, new Identifier("length"), computed: false, optional: false),
+			new MemberExpression(obj, new Identifier("length"), computed: false, optional: false),
 			new NumericLiteral(fixedLen, fixedLen.ToString())
 		);
 
@@ -882,7 +893,7 @@ public partial class SemanticWalker
 		{
 			var pattern = operation.Patterns[i];
 			// 创建对 target[i] 的访问表达式
-			var indexAccess = new MemberExpression(targetExpr,
+			var indexAccess = new MemberExpression(obj,
 				new NumericLiteral(i, i.ToString()), computed: true, optional: false);
 
 			Expression? subCondition = null;
@@ -941,7 +952,7 @@ public partial class SemanticWalker
 
 				// 创建切片表达式：target.slice(fixedLen)
 				var sliceCall = new CallExpression(
-					new MemberExpression(targetExpr, new Identifier("slice"), computed: false, optional: false),
+					new MemberExpression(obj, new Identifier("slice"), computed: false, optional: false),
 					NodeList.From<Expression>(new NumericLiteral(fixedLen, fixedLen.ToString())),
 					optional: false
 				);
@@ -975,59 +986,10 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitSlicePattern(ISlicePatternOperation operation, Context argument)
 	{
-		// 切片模式的条件判断转换
-		// C# 示例：array is [.., var lastPart] 是一个布尔条件表达式
-		// 转换结果：Array.isArray(array) && array.length >= minLength
-
-		var pattern = operation.Pattern;
-		if (pattern is null)
+		if (operation.Pattern is null)
 			return null;
 
-		// 从父operation获取目标名称，在节点内构建表达式
-		var targetExpression = GetPatternRefrence(operation);
-
-		// 1. 首先生成 Array.isArray(targetExpression) 检查
-		var arrayCheck = new CallExpression(
-			new MemberExpression(new Identifier("Array"), new Identifier("isArray"), computed: false, optional: false),
-			NodeList.From<Expression>(targetExpression),
-			optional: false
-		);
-
-		// 2. 处理切片模式内部的模式（如果有）
-		// 切片模式本身可以包含一个子模式，如 .. var rest 或 .. 5
-
-		// 对于声明模式（如 .. var rest），需要将变量名添加到 argument 队列
-		if (pattern is IDeclarationPatternOperation declPattern && declPattern.DeclaredSymbol is not null)
-		{
-			// 在解构上下文中，将变量名添加到 argument 队列，由上层统一生成 Let 语句
-			var variableName = declPattern.DeclaredSymbol.Name;
-			argument.Enqueue(new VariableDeclaration(
-				VariableDeclarationKind.Let,
-				NodeList.From(new VariableDeclarator(new Identifier(variableName), null))
-			));
-
-			// 声明模式总是匹配，不增加额外条件
-			return arrayCheck;
-		}
-
-		// 对于常量模式（如 .. 5），需要生成条件检查
-		if (pattern is IConstantPatternOperation)
-		{
-			// 对于常量模式，需要检查切片部分是否为空
-			// 例如：array is [1, .., 5] 中的 .. 部分不能为空
-			// 但在纯条件判断中，我们只需要确保数组类型正确
-			// 实际的长度检查由 VisitListPattern 处理
-			return arrayCheck;
-		}
-
-		// 对于丢弃模式（如 ..），总是匹配
-		if (pattern is IDiscardPatternOperation)
-		{
-			return arrayCheck;
-		}
-
-		// 3. 如果没有子模式，只返回数组检查
-		return arrayCheck;
+		return Visit(operation.Pattern, argument);
 	}
 
 	/// <summary>

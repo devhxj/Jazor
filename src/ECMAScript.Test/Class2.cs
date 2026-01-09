@@ -131,9 +131,10 @@ class TestClass
 {
 	void TestMethod()
 	{
-		int value = 5;
-		bool result = value is > 0 and < 10;
+		int[] array = [1, 2, 3, 4, 5];
+		if (array is [.. var rest])
+		{
+			Console.WriteLine(rest.Length);
+		}
 	}
-
-
 }
