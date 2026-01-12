@@ -1,7 +1,6 @@
 ﻿using Acornima;
 using Acornima.Ast;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using System.Collections.Generic;
@@ -25,16 +24,26 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitBlock(IBlockOperation operation, Context argument)
 	{
+		var ctx = new Context();
 		var statements = new List<Statement>();
 		foreach (var stmt in operation.Operations)
 		{
-			var node = Visit(stmt, argument);
+			var node = Visit(stmt, ctx);
 			if (node is Statement statement)
 				statements.Add(statement);
 			else if (node is Expression expr)
 				statements.Add(new NonSpecialExpressionStatement(expr));
 			else
 				HandleTransformationFailure(stmt, $"{stmt.Kind} could not be translated to JavaScript.");
+		}
+
+		// 合并定义
+		VariableDeclaration? decl = null;
+		if (ctx.Count > 0)
+		{
+			decl = new VariableDeclaration(
+				VariableDeclarationKind.Let,
+				NodeList.From(ctx.SelectMany(x => x.Declarations)));
 		}
 
 		// 根据上下文判断返回不同类型的语句块
@@ -44,6 +53,10 @@ public partial class SemanticWalker
 			operation.Parent is IAnonymousFunctionOperation ||
 			operation.Parent is IConstructorBodyOperation)
 		{
+			// 插入预定义变量
+			if (decl is not null)
+				statements.Insert(0, decl);
+
 			return new FunctionBody(NodeList.From(statements), strict: true);
 		}
 
@@ -52,8 +65,16 @@ public partial class SemanticWalker
 			operation.Parent is IFieldReferenceOperation fieldRef &&
 			fieldRef.Field.IsStatic)
 		{
+			// 插入预定义变量
+			if (decl is not null)
+				statements.Insert(0, decl);
+
 			return new StaticBlock(NodeList.From(statements));
 		}
+
+		// 插入预定义变量
+		if (decl is not null)
+			argument.Enqueue(decl);
 
 		// 默认情况返回 NestedBlockStatement
 		return new NestedBlockStatement(NodeList.From(statements));

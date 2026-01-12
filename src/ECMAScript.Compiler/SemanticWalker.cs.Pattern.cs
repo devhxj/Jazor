@@ -121,6 +121,7 @@ using Microsoft.CodeAnalysis.Operations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace ECMAScript.Compiler;
 
@@ -659,21 +660,21 @@ public partial class SemanticWalker
 		if (operation.DeclaredSymbol is null)
 			return null;
 
-		Expression? init = null;
-		if (operation.Parent is ISlicePatternOperation slicePatternOp)
-		{
-			if(slicePatternOp.SliceSymbol is null)
-				init = GetPatternRefrence(operation.Parent);
-		}
-
 		// 声明模式转换为变量声明
 		var identifier = new Identifier(operation.DeclaredSymbol.Name);
-		var declarator = new VariableDeclarator(identifier, init);
+		var declarator = new VariableDeclarator(identifier, null);
 		var declaration = new VariableDeclaration(VariableDeclarationKind.Let, NodeList.From(declarator));
 
 		argument.Enqueue(declaration);
 
-		return null;
+		Expression right = new NullLiteral("null");
+		if (operation.Parent is ISlicePatternOperation slicePatternOp)
+		{
+			if (slicePatternOp.SliceSymbol is null)
+				right = GetPatternRefrence(operation.Parent);
+		}
+		
+		return new AssignmentExpression(Operator.Assignment, identifier, right);
 	}
 
 	/// <summary>
@@ -854,8 +855,8 @@ public partial class SemanticWalker
 		// 获取目标名称，在节点内构建表达式
 		var obj = GetPatternRefrence(operation);
 
-		// Array.isArray(target)
-		var arrayCheck = new CallExpression(
+		// 检查是数组 Array.isArray(target)
+		Expression result = new CallExpression(
 			callee: new MemberExpression(
 				obj: new Identifier("Array"),
 				property: new Identifier("isArray"),
@@ -865,7 +866,7 @@ public partial class SemanticWalker
 			optional: false
 		);
 
-		/* 2. 统计"固定头"长度，并检测有没有 .. */
+		// 如果有弃元或切片则需要判断长度
 		int fixedLen = 0;
 		bool hasSlice = false;
 		int sliceIndex = -1; // 记录切片模式的位置
@@ -880,7 +881,7 @@ public partial class SemanticWalker
 			fixedLen++;
 		}
 
-		/* 3. 长度检查：有切片就用 >=，没有就用 === */
+		/* 长度检查：有切片就用 >=，没有就用 === */
 		var lengthCheck = new NonLogicalBinaryExpression(
 			hasSlice ? Operator.GreaterThanOrEqual : Operator.StrictEquality,
 			new MemberExpression(obj, new Identifier("length"), computed: false, optional: false),

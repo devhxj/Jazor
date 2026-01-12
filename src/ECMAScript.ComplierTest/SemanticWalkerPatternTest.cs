@@ -1312,22 +1312,16 @@ public sealed class SemanticWalkerPatternTest
 
     var walker = new SemanticWalker(true);
 
-    var context = new Context();
-    var node = walker.Visit(block, context);
-    var builder = new StringBuilder();
-    while (context.TryDequeue(out var decl))
-      builder.AppendLine(decl.ToECMAScript());
-    builder.AppendLine(node!.ToKnRECMAScript());
-    var script = builder.ToString();
+    var node = walker.Visit(block, []);
+    var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"const rest=array.slice(0)
-{
+    Assert.AreEqual(@"{
+  let rest = array.slice(0);
   let array = [1, 2, 3, 4, 5];
   if (Array.isArray(array) && array.length >= 0) {
     Console.WriteLine(rest.Length);
   }
-}
-", script);
+}", script);
 
   }
 
@@ -1364,13 +1358,14 @@ public sealed class SemanticWalkerPatternTest
     var builder = new StringBuilder();
     while (context.TryDequeue(out var decl))
       builder.AppendLine(decl.ToECMAScript());
-    builder.AppendLine(node!.ToKnRECMAScript());
-    var script = builder.ToString();
+
+    var vars = builder.ToString();
+    var script = node?.ToECMAScript();
 
     // 验证生成的表达式
-    Assert.AreEqual(@"let rest = array
-", script);
-
+    Assert.AreEqual(@"rest=array", script);
+    Assert.AreEqual(@"let rest
+", vars);
   }
 
   /// <summary>

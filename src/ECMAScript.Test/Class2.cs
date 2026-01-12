@@ -137,4 +137,13 @@ class TestClass
 			Console.WriteLine(rest.Length);
 		}
 	}
+
+	static string Demo1(int[] a) => a switch
+	{
+		[> 0, _, _, _, < 0] => "头正尾负",
+		[> 0, _, _, < 0] => "头正尾负",
+		[> 0, .., < 0] => "头正尾负",
+		[> 0, .., >=0] => "头正尾负",
+		_ => "其它"
+	};
 }
