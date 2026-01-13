@@ -240,7 +240,7 @@ public partial class SemanticWalker
 	public override Acornima.Ast.Node? VisitLiteral(ILiteralOperation operation, Context argument)
 	{
 		if (operation.ConstantValue.Value is null)
-			return new NullLiteral("null");
+			return Null;
 
 		var value = operation.ConstantValue.Value;
 		var raw = value.ToString() ?? "null";
@@ -261,7 +261,7 @@ public partial class SemanticWalker
 			SpecialType.System_Single or
 			SpecialType.System_Double or
 			SpecialType.System_Decimal => new NumericLiteral(System.Convert.ToDouble(value), raw),
-			_ => new NullLiteral("null")
+			_ => Null
 		};
 	}
 

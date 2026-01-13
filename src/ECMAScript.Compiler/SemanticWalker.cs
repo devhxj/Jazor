@@ -30,6 +30,12 @@ namespace ECMAScript.Compiler;
 /// </summary>
 public sealed partial class SemanticWalker : OperationVisitor<Context, Node?>
 {
+    private static readonly NullLiteral Null = new("null");
+
+    private static readonly Identifier Undefined = new("undefined");
+
+	private static readonly MemberExpression IsArrayExpr = new(new Identifier("Array"), new Identifier("isArray"), computed: false, optional: false);
+
     private int _recursionDepth;
     private readonly ConcurrentDictionary<IOperation, Expression> _exprCache = [];
 

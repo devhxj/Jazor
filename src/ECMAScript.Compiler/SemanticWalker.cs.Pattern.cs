@@ -126,10 +126,6 @@ namespace ECMAScript.Compiler;
 
 public partial class SemanticWalker
 {
-	private static readonly NullLiteral NullExpr = new("null");
-
-	private static readonly MemberExpression IsArrayExpr = new(new Identifier("Array"), new Identifier("isArray"), computed: false, optional: false);
-
 	private static bool IsNullableType(ITypeSymbol? type)
 		=> type is INamedTypeSymbol namedType && namedType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T;
 
@@ -153,7 +149,9 @@ public partial class SemanticWalker
 				break;
 			else if (current is IPropertySubpatternOperation propertySubpatternOp)
 			{
-				if (propertySubpatternOp.Member is IFieldReferenceOperation fieldRef)
+				reference = propertySubpatternOp.Member;
+				break;
+/* 				if (propertySubpatternOp.Member is IFieldReferenceOperation fieldRef)
 				{
 					var member = new Identifier(fieldRef.Field.Name);
 					var optional = IsNullableType(fieldRef.Field.Type);
@@ -164,7 +162,7 @@ public partial class SemanticWalker
 					var member = new Identifier(propRef.Property.Name);
 					var optional = IsNullableType(propRef.Property.Type);
 					members.Enqueue((member, optional));
-				}
+				} */
 			}
 			else if (current is IIsTypeOperation isTypeOp)
 			{
@@ -190,11 +188,11 @@ public partial class SemanticWalker
 			return null;
 
 		var expr = Translate<Expression>(reference, []);
-		while (members.Count > 0)
+		/* while (members.Count > 0)
 		{
 			var (member, optional) = members.Dequeue();
 			expr = new MemberExpression(expr, member, computed: false, optional);
-		}
+		} */
 
 		return expr;
 	}
@@ -318,7 +316,7 @@ public partial class SemanticWalker
 		// 判断可空
 		if (nullable ?? IsNullableType(typeSymbol))
 		{
-			var expr = new NonLogicalBinaryExpression(Operator.StrictEquality, value, NullExpr);
+			var expr = new NonLogicalBinaryExpression(Operator.StrictEquality, value, Null);
 			result = result is null ? expr : new LogicalExpression(Operator.LogicalOr, result, expr);
 		}
 
@@ -376,7 +374,7 @@ public partial class SemanticWalker
 		// null检查转换为 === null 比较
 		var operand = Translate<Expression>(operation.Operand, argument);
 
-		return new NonLogicalBinaryExpression(Operator.StrictEquality, operand, NullExpr);
+		return new NonLogicalBinaryExpression(Operator.StrictEquality, operand, Null);
 	}
 
 	/// <summary>
@@ -415,6 +413,60 @@ public partial class SemanticWalker
 	}
 
 	/// <summary>
+	/// 处理 switch 表达式操作
+	/// C# 示例：
+	/// var result = value switch {
+	///     1 => "One",              // 常量模式
+	///     string s => $"String: {s}", // 类型模式
+	///     { Length: > 5 } => "Long",   // 属性模式
+	///     var x when x > 0 => "Positive", // when 子句
+	///     _ => "Other"             // 默认模式
+	/// };
+	/// 转换结果：根据模式复杂度转换为嵌套条件表达式或函数调用
+	/// <summary>
+	/// 将C# switch表达式转换为JavaScript switch语句或IIFE
+	/// 非模式匹配switch转换为switch语句，模式匹配switch转换为IIFE
+	/// </summary>
+	/// <param name="operation">当前访问的operation</param>
+	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+	/// <returns>Acornima的ESTree的Node</returns>
+	public override Acornima.Ast.Node? VisitSwitchExpression(ISwitchExpressionOperation operation, Context argument)
+	{
+		// 至少有一个分支
+		if (operation.Arms.Length < 1)
+			return HandleTransformationFailure(operation, "Switch expression must have at least one arm.");
+
+		var input = Translate<Expression>(operation.Value, argument);
+
+		// 复杂模式匹配switch，生成健全的IIFE保证副作用顺序
+		// 采用分层判断：先模式匹配，后when条件，确保求值节拍与C#一致
+		var statements = new List<Statement>();
+
+		// input 可能是方法调用或一个复杂表达式，此处定义一个中间变量存储其值
+		var id = new Identifier(GetUniqueName(operation.Value.Syntax));
+		var inputVar = new VariableDeclaration(
+			VariableDeclarationKind.Const,
+			NodeList.From(new VariableDeclarator(id, input))
+		);
+
+		// 处理所有模式，采用嵌套if确保副作用顺序
+		foreach (var arm in operation.Arms)
+			Translate(statements, arm, argument);
+
+		statements.Insert(0, inputVar);
+		var functionBody = new FunctionBody(NodeList.From(statements), strict: true);
+		var arrowFunction = new ArrowFunctionExpression(
+			NodeList.From<Node>(),
+			functionBody,
+			expression: false,
+			async: false
+		);
+
+		// 立即调用箭头函数
+		return new CallExpression(arrowFunction, NodeList.From<Expression>(), optional: false);
+	}
+
+	/// <summary>
 	/// 处理 switch 表达式分支操作
 	/// 根据上下文返回SwitchCase（传统switch）或Statement（模式匹配）
 	/// </summary>
@@ -423,68 +475,25 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitSwitchExpressionArm(ISwitchExpressionArmOperation operation, Context argument)
 	{
-		var pattern = Translate<Expression>(operation.Pattern, argument);
-		var guard = Translate<Expression>(operation.Guard, argument, null);
 		var value = Translate<Expression>(operation.Value, argument);
 
-		// 检查是否为传统的常量模式（无when子句）
-		bool isTraditionalPattern = (operation.Pattern.Kind == OperationKind.ConstantPattern ||
-								   operation.Pattern.Kind == OperationKind.DiscardPattern) &&
-								   operation.Guard == null;
+		// 默认情况，直接返回
+		if (operation.Pattern.Kind == OperationKind.DiscardPattern)
+			return new ReturnStatement(value);
 
-		if (isTraditionalPattern)
-		{
-			// 生成SwitchCase用于传统switch语句
-			Expression? test = null;
-
-			if (operation.Pattern.Kind == OperationKind.ConstantPattern)
-				test = pattern;
-
-			// DiscardPattern的test为null（默认情况）
-			// SwitchCase中不能直接使用ReturnStatement，应该使用break
-			// 对于switch表达式转换为switch语句的场景，需要在外层包装函数来处理返回值
-			var breakStatement = new BreakStatement(null);
-
-			return new SwitchCase(
-				test,
-				NodeList.From<Statement>(new NonSpecialExpressionStatement(value), breakStatement)
-			);
-		}
 		else
 		{
-			// 生成Statement用于模式匹配IIFE
-			if (operation.Pattern.Kind == OperationKind.DiscardPattern)
+			var condition = Translate<Expression>(operation.Pattern, argument);
+
+			// 处理when子句
+			if (operation.Guard is not null)
 			{
-				// 默认情况，直接返回
-				return new ReturnStatement(value);
+				var guard = Translate<Expression>(operation.Guard, argument);
+				condition = new LogicalExpression(Operator.LogicalAnd, condition, guard);
 			}
-			else if (pattern is not null)
-			{
-				Expression condition;
 
-				if (operation.Pattern.Kind == OperationKind.ConstantPattern)
-				{
-					// 从父operation获取switch目标名称并构建表达式
-					var target = GetPatternRefrence(operation);
-					condition = new LogicalExpression(Operator.StrictEquality, target, pattern);
-				}
-				else
-				{
-					// 复杂模式，直接使用模式表达式（已经包含实际目标）
-					condition = pattern;
-				}
-
-				// 处理when子句
-				if (guard is not null)
-				{
-					condition = new LogicalExpression(Operator.LogicalAnd, condition, guard);
-				}
-
-				return new IfStatement(condition, new ReturnStatement(value), null);
-			}
+			return new IfStatement(condition, new ReturnStatement(value), null);
 		}
-
-		return HandleTransformationFailure(operation, "Switch expression arm could not be translated to JavaScript.");
 	}
 
 	/// <summary>
@@ -569,7 +578,8 @@ public partial class SemanticWalker
 			IIsPatternOperation or
 			IBinaryPatternOperation or
 			INegatedPatternOperation or
-			IPropertySubpatternOperation)
+			IPropertySubpatternOperation or
+			ISwitchExpressionArmOperation)
 		{
 			var obj = GetPatternRefrence(operation.Parent);
 			return new NonLogicalBinaryExpression(Operator.StrictEquality, obj, expr);
@@ -983,7 +993,7 @@ public partial class SemanticWalker
 							),
 			"object" => new LogicalExpression(
 								Operator.LogicalAnd,
-								new LogicalExpression(Operator.StrictInequality, targetExpression, NullExpr),
+								new LogicalExpression(Operator.StrictInequality, targetExpression, Null),
 								new LogicalExpression(
 									Operator.StrictEquality,
 									new UpdateExpression(Operator.TypeOf, targetExpression, prefix: true),

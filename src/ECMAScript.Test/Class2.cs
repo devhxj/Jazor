@@ -127,7 +127,7 @@ class TestClass1
 	}
 }
 
-class TestClass
+class TestClass2
 {
 	void TestMethod()
 	{
@@ -145,13 +145,21 @@ class TestClass
 		if (array is [_, _, .. var r2])
 		{
 			Console.WriteLine(r2.Length);
-		}	
+		}
 
 		if (array is [var first, .. var rest1])
 		{
 			Console.WriteLine(first);
 			Console.WriteLine(rest1.Length);
-		}			
+		}
+
+		int value = 5;
+		string result = value switch
+		{
+			> 0 and < 10 => "Small",
+			>= 10 => "Large",
+			_ => "Unknown"
+		};
 	}
 
 	static string Demo1(int[] a) => a switch
@@ -159,7 +167,30 @@ class TestClass
 		[> 0, _, _, _, < 0] => "头正尾负",
 		[> 0, _, _, < 0] => "头正尾负",
 		[> 0, .., < 0] => "头正尾负",
-		[> 0, .., >=0] => "头正尾负",
+		[> 0, .., >= 0] => "头正尾负",
 		_ => "其它"
 	};
+}
+
+class TestClass
+{
+	void TestMethod()
+	{
+		int value = 5;
+		string result = Get5(value) switch
+		{
+			> 0 and < 10 => "Small",
+			>= 10 => "Large",
+			_ => "Unknown"
+		};
+	}
+
+	static int Get5(int x)
+	{
+		return x switch
+		{
+			> 0 and < 10 => 5,
+			_ => 0
+		};
+	}	
 }

@@ -230,16 +230,19 @@ public partial class SemanticWalker
 	{
 		var property = new Identifier(operation.Property.Name);
 
-		// 对象初始化器 或 匿名对象创建
+		/* // 对象初始化器 或 匿名对象创建
 		if (operation.Instance is IInstanceReferenceOperation instanceReferenceOp &&
 			instanceReferenceOp.ReferenceKind == InstanceReferenceKind.ImplicitReceiver)
-			return property;
+			return property; */
 
 		if (operation.Instance is not null)
 		{
-			var obj = Translate<Expression>(operation.Instance, argument);
-			var optional = operation.Instance is IConditionalAccessInstanceOperation;
-			return new MemberExpression(obj, property, false, optional);
+			var obj = Translate<Expression>(operation.Instance, argument, null);
+			if (obj is not null)
+			{
+				var optional = operation.Instance is IConditionalAccessInstanceOperation;
+				return new MemberExpression(obj, property, false, optional);
+			}
 		}
 
 		// Null if the reference is to a static/shared member.
@@ -258,7 +261,18 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitInstanceReference(IInstanceReferenceOperation operation, Context argument)
 	{
-		return new ThisExpression();
-	}
+		// InstanceReferenceKind
+		// ContainingTypeInstance - 语言特性：类实例引用
+		// ImplicitReceiver - 语言特性：对象初始化
+		// PatternInput - 语言特性：模式匹配
+		// InterpolatedStringHandler - 语言特性：内插字符串 
 
+		if (operation.ReferenceKind == InstanceReferenceKind.ContainingTypeInstance)
+			return new ThisExpression();
+
+		else if (operation.ReferenceKind == InstanceReferenceKind.PatternInput)
+			return null;//GetPatternRefrence(operation);
+
+		return null;
+	}
 }

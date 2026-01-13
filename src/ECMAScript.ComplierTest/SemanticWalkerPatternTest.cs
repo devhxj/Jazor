@@ -532,9 +532,9 @@ public sealed class SemanticWalkerPatternTest
   let value = 42;
   let result = (() => {
     const v$test = value;
-    if (v$test === 1)
+    if (value === 1)
       return 'one';
-    if (v$test === 2)
+    if (value === 2)
       return 'two';
     return 'default';
   })();
@@ -1690,20 +1690,29 @@ public sealed class SemanticWalkerPatternTest
   public void Visit_ComplexPattern_SwitchExpression()
   {
     var block = GetBlockOperation(@"
-            class TestClass
-            {
-                void TestMethod()
-                {
-                    int value = 5;
-                    string result = value switch
-                    {
-                        > 0 and < 10 => ""Small"",
-                        >= 10 => ""Large"",
-                        _ => ""Unknown""
-                    };
-                }
-            }
-            ");
+    class TestClass
+    {
+      void TestMethod()
+      {
+        int value = 5;
+        string result = Get5(value) switch
+        {
+          > 0 and < 10 => ""Small"",
+          >= 10 => ""Large"",
+          _ => ""Unknown""
+        };
+      }
+
+      static int Get5(int x)
+      {
+        return x switch
+        {
+          > 0 and < 10 => 5,
+          _ => 0
+        };
+      }	
+    }
+    ");
 
     var walker = new SemanticWalker(true);
     var node = walker.Visit(block, new());
