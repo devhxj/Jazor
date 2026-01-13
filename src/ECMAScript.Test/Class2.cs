@@ -136,6 +136,22 @@ class TestClass
 		{
 			Console.WriteLine(rest.Length);
 		}
+
+		if (array is [_, _, .. var r1])
+		{
+			Console.WriteLine(r1.Length);
+		}
+
+		if (array is [_, _, .. var r2])
+		{
+			Console.WriteLine(r2.Length);
+		}	
+
+		if (array is [var first, .. var rest1])
+		{
+			Console.WriteLine(first);
+			Console.WriteLine(rest1.Length);
+		}			
 	}
 
 	static string Demo1(int[] a) => a switch

@@ -121,12 +121,15 @@ using Microsoft.CodeAnalysis.Operations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 
 namespace ECMAScript.Compiler;
 
 public partial class SemanticWalker
 {
+	private static readonly NullLiteral NullExpr = new("null");
+
+	private static readonly MemberExpression IsArrayExpr = new(new Identifier("Array"), new Identifier("isArray"), computed: false, optional: false);
+
 	private static bool IsNullableType(ITypeSymbol? type)
 		=> type is INamedTypeSymbol namedType && namedType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T;
 
@@ -216,21 +219,11 @@ public partial class SemanticWalker
 		return expr;
 	}
 
-	/// <summary>
-	/// 处理类型检查操作（is 运算符）
-	/// C# 示例：
-	/// obj is string   // 检查对象是否为特定类型
-	/// typeof obj === 'string'
-	/// </summary>
-	/// <param name="operation">当前访问的operation</param>
-	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitIsType(IIsTypeOperation operation, Context argument)
+	private Expression CreateTypeMatchExpr(IOperation operation, ITypeSymbol typeSymbol, Expression value, bool? nullable = null)
 	{
-		var valueOperand = Translate<Expression>(operation.ValueOperand, argument);
-		var targetType = operation.TypeOperand;
-		var typeName = targetType.Name;
-		var fullTypeName = targetType.ToDisplayString();
+		Expression? result = null;
+		var typeName = typeSymbol.Name;
+		var fullTypeName = typeSymbol.ToDisplayString();
 
 		// 类型映射
 		// object -> js object
@@ -244,14 +237,12 @@ public partial class SemanticWalker
 		// 其他 class -> js class
 
 		// 使用 SpecialType 进行基础类型检查，更加类型安全和高效
-		switch (targetType.SpecialType)
+		switch (typeSymbol.SpecialType)
 		{
+			case SpecialType.System_Char:
 			case SpecialType.System_String:
-				return new NonLogicalBinaryExpression(
-					Operator.StrictEquality,
-					new NonUpdateUnaryExpression(Operator.TypeOf, valueOperand),
-					new StringLiteral("string", "'string'")
-				);
+				result = TypeOfExpr(value, new StringLiteral("string", "'string'"));
+				break;
 			case SpecialType.System_SByte:
 			case SpecialType.System_Byte:
 			case SpecialType.System_Int16:
@@ -261,105 +252,113 @@ public partial class SemanticWalker
 			case SpecialType.System_Single:
 			case SpecialType.System_Double:
 			case SpecialType.System_Decimal:
-				return new NonLogicalBinaryExpression(
-					Operator.StrictEquality,
-					new NonUpdateUnaryExpression(Operator.TypeOf, valueOperand),
-					new StringLiteral("number", "'number'")
-				);
+				result = TypeOfExpr(value, new StringLiteral("number", "'number'"));
+				break;
 			case SpecialType.System_Boolean:
-				return new NonLogicalBinaryExpression(
-					Operator.StrictEquality,
-					new NonUpdateUnaryExpression(Operator.TypeOf, valueOperand),
-					new StringLiteral("boolean", "'boolean'")
-				);
+				result = TypeOfExpr(value, new StringLiteral("boolean", "'boolean'"));
+				break;
 			case SpecialType.System_Object:
-				return new LogicalExpression(
-					Operator.LogicalAnd,
-					new NonLogicalBinaryExpression(
-						Operator.StrictEquality,
-						new NonUpdateUnaryExpression(Operator.TypeOf, valueOperand),
-						new StringLiteral("object", "'object'")
-					),
-					new NonLogicalBinaryExpression(Operator.Inequality, valueOperand, new NullLiteral("null"))
-				);
+				result = TypeOfExpr(value, new StringLiteral("object", "'object'"));
+				break;
+			case SpecialType.System_Int64:
+			case SpecialType.System_UInt64:
+				result = TypeOfExpr(value, new StringLiteral("bigint", "'bigint'"));
+				break;
+			case SpecialType.System_DateTime:
+				result = InstanceOfExpr(value, new Identifier("Date"));
+				break;
+			default:
+				{
+					// 元组类型
+					if (typeSymbol.IsTupleType) { }
+
+					// 匿名类型检查为 object
+					else if (typeSymbol.IsAnonymousType)
+						result = TypeOfExpr(value, new StringLiteral("object", "'object'"));
+
+					// 大整数类型检查（long、timestamp等）
+					else if (typeName.Equals("timestamp", StringComparison.OrdinalIgnoreCase))
+						result = TypeOfExpr(value, new StringLiteral("bigint", "'bigint'"));
+
+					// 日期类型检查
+					else if (typeName.Equals("DateOnly", StringComparison.OrdinalIgnoreCase) ||
+							typeName.Equals("TimeOnly", StringComparison.OrdinalIgnoreCase) ||
+							typeName.Equals("DateTime", StringComparison.OrdinalIgnoreCase) ||
+							typeName.Equals("DateTimeOffset", StringComparison.OrdinalIgnoreCase))
+						result = InstanceOfExpr(value, new Identifier("Date"));
+
+					// 数组类型检查
+					else if (typeName.Equals("Array", StringComparison.OrdinalIgnoreCase) ||
+						fullTypeName.Contains("[]"))
+						result = new CallExpression(IsArrayExpr, NodeList.From(value), optional: false);
+
+					// 字典类型检查
+					else if (typeName.Equals("IDictionary", StringComparison.OrdinalIgnoreCase) ||
+						(typeSymbol is INamedTypeSymbol namedType &&
+						 namedType.AllInterfaces.Any(i => i.Name.Equals("IDictionary", StringComparison.OrdinalIgnoreCase))))
+						result = InstanceOfExpr(value, new Identifier("Map"));
+
+					// 集合类型检查（非字典）
+					else if (typeName.Equals("IEnumerable", StringComparison.OrdinalIgnoreCase) ||
+						(typeSymbol is INamedTypeSymbol enumType &&
+						 enumType.AllInterfaces.Any(i => i.Name.Equals("IEnumerable", StringComparison.OrdinalIgnoreCase)) &&
+						 !enumType.AllInterfaces.Any(i => i.Name.Equals("IDictionary", StringComparison.OrdinalIgnoreCase))))
+						result = InstanceOfExpr(value, new Identifier("Map"));
+
+					// 对于自定义类型，使用instanceof检查
+					else if (typeSymbol.TypeKind == TypeKind.Class)
+					{
+						var right = new Identifier(typeSymbol.Name);
+						result = InstanceOfExpr(value, right);
+					}
+				}
+				break;
 		}
 
-		// 对于非基础类型，使用字符串名称进行判断
-		// 大整数类型检查（long、timestamp等）
-		if (targetType.SpecialType == SpecialType.System_Int64 ||
-			targetType.SpecialType == SpecialType.System_UInt64 ||
-			typeName.Equals("timestamp", StringComparison.OrdinalIgnoreCase))
+		// 判断可空
+		if (nullable ?? IsNullableType(typeSymbol))
 		{
-			return new LogicalExpression(
-				Operator.LogicalAnd,
-				new NonLogicalBinaryExpression(
-					Operator.StrictEquality,
-					new NonUpdateUnaryExpression(Operator.TypeOf, valueOperand),
-					new StringLiteral("bigint", "'bigint'")
-				),
-				new NonLogicalBinaryExpression(Operator.Inequality, valueOperand, new NullLiteral("null"))
+			var expr = new NonLogicalBinaryExpression(Operator.StrictEquality, value, NullExpr);
+			result = result is null ? expr : new LogicalExpression(Operator.LogicalOr, result, expr);
+		}
+
+		if (result is null)
+			return HandleTransformationFailure<Expression>(operation, "Unsupported type in is-type operation.");
+
+		return result;
+
+		static NonLogicalBinaryExpression TypeOfExpr(Expression target, Literal literal)
+		{
+			return new NonLogicalBinaryExpression(
+				Operator.StrictEquality,
+				new NonUpdateUnaryExpression(Operator.TypeOf, target),
+				literal
 			);
 		}
 
-		// 日期类型检查
-		if (typeName.Equals("DateOnly", StringComparison.OrdinalIgnoreCase) ||
-			typeName.Equals("TimeOnly", StringComparison.OrdinalIgnoreCase) ||
-			typeName.Equals("DateTime", StringComparison.OrdinalIgnoreCase) ||
-			typeName.Equals("DateTimeOffset", StringComparison.OrdinalIgnoreCase))
+		static NonLogicalBinaryExpression InstanceOfExpr(Expression target, Expression expr)
 		{
-			return new LogicalExpression(
-				Operator.LogicalAnd,
-				new NonLogicalBinaryExpression(Operator.InstanceOf, valueOperand, new Identifier("Date")),
-				new NonLogicalBinaryExpression(Operator.Inequality, valueOperand, new NullLiteral("null"))
-			);
+			return new NonLogicalBinaryExpression(Operator.InstanceOf, target, expr);
 		}
-
-		// 数组类型检查
-		if (typeName.Equals("Array", StringComparison.OrdinalIgnoreCase) ||
-			fullTypeName.Contains("[]"))
-		{
-			return new LogicalExpression(
-				Operator.LogicalAnd,
-				new NonLogicalBinaryExpression(Operator.Inequality, valueOperand, new NullLiteral("null")),
-				new CallExpression(
-					new MemberExpression(new Identifier("Array"), new Identifier("isArray"), computed: false, optional: false),
-					NodeList.From(valueOperand),
-					optional: false
-				)
-			);
-		}
-
-		// 字典类型检查
-		if (typeName.Equals("IDictionary", StringComparison.OrdinalIgnoreCase) ||
-			(targetType is INamedTypeSymbol namedType &&
-			 namedType.AllInterfaces.Any(i => i.Name.Equals("IDictionary", StringComparison.OrdinalIgnoreCase))))
-		{
-			return new LogicalExpression(
-				Operator.LogicalAnd,
-				new NonLogicalBinaryExpression(Operator.InstanceOf, valueOperand, new Identifier("Map")),
-				new NonLogicalBinaryExpression(Operator.Inequality, valueOperand, new NullLiteral("null"))
-			);
-		}
-
-		// 集合类型检查（非字典）
-		if (typeName.Equals("IEnumerable", StringComparison.OrdinalIgnoreCase) ||
-			(targetType is INamedTypeSymbol enumType &&
-			 enumType.AllInterfaces.Any(i => i.Name.Equals("IEnumerable", StringComparison.OrdinalIgnoreCase)) &&
-			 !enumType.AllInterfaces.Any(i => i.Name.Equals("IDictionary", StringComparison.OrdinalIgnoreCase))))
-		{
-			return new LogicalExpression(
-				Operator.LogicalAnd,
-				new NonLogicalBinaryExpression(Operator.InstanceOf, valueOperand, new Identifier("Set")),
-				new NonLogicalBinaryExpression(Operator.Inequality, valueOperand, new NullLiteral("null"))
-			);
-		}
-
-		// 其他自定义类类型检查
-		return new LogicalExpression(
-			Operator.LogicalAnd,
-			new NonLogicalBinaryExpression(Operator.InstanceOf, valueOperand, new Identifier(typeName)),
-			new NonLogicalBinaryExpression(Operator.Inequality, valueOperand, new NullLiteral("null"))
-		);
+	}
+	
+	/// <summary>
+	/// 处理类型检查操作（is 运算符）
+	/// C# 示例：
+	/// obj is string   // 检查对象是否为特定类型
+	/// typeof obj === 'string'
+	/// </summary>
+	/// <param name="operation">当前访问的operation</param>
+	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+	/// <returns>Acornima的ESTree的Node</returns>
+	public override Acornima.Ast.Node? VisitIsType(IIsTypeOperation operation, Context argument)
+	{
+		var value = Translate<Expression>(operation.ValueOperand, argument);
+		var result = CreateTypeMatchExpr(operation, operation.TypeOperand, value);
+		if (operation.IsNegated)
+			return new NonUpdateUnaryExpression(Operator.LogicalNot, result);
+		
+		return result;
 	}
 
 	/// <summary>
@@ -377,7 +376,7 @@ public partial class SemanticWalker
 		// null检查转换为 === null 比较
 		var operand = Translate<Expression>(operation.Operand, argument);
 
-		return new NonLogicalBinaryExpression(Operator.StrictEquality, operand, new NullLiteral("null"));
+		return new NonLogicalBinaryExpression(Operator.StrictEquality, operand, NullExpr);
 	}
 
 	/// <summary>
@@ -442,7 +441,7 @@ public partial class SemanticWalker
 				test = pattern;
 
 			// DiscardPattern的test为null（默认情况）
-			// 修复P0：SwitchCase中不能直接使用ReturnStatement，应该使用break
+			// SwitchCase中不能直接使用ReturnStatement，应该使用break
 			// 对于switch表达式转换为switch语句的场景，需要在外层包装函数来处理返回值
 			var breakStatement = new BreakStatement(null);
 
@@ -508,72 +507,20 @@ public partial class SemanticWalker
 		// 转换结果：生成 (obj instanceof Person) && (obj.Name === "John") && (obj.Age > 18)
 		// 递归模式由多个子模式组成，需要用 && 连接所有条件
 
-		var andExprs = new List<Expression>();
-		var orExprs = new List<Expression>();
+		var exprs = new List<Expression>();
 
 		// 如果不存在子模式，处理类型模式
 		if (operation.PropertySubpatterns.Length > 0)
 		{
 			foreach (var propertySubpattern in operation.PropertySubpatterns)
-				Translate(andExprs, propertySubpattern, argument);
+				Translate(exprs, propertySubpattern, argument);
 		}
 		else
 		{
 			// 根据获取的名称构建目标表达式
-			var target = GetPatternRefrence(operation);
-
-			// 判断可空
-			if (IsNullableType(operation.MatchedType))
-			{
-				var orExpr = new NonLogicalBinaryExpression(Operator.StrictEquality, target, new NullLiteral("null"));
-				orExprs.Add(orExpr);
-			}
-
-			if (operation.MatchedType.IsTupleType)
-			{
-				// 元组类型检查
-			}
-			else if (operation.MatchedType.IsAnonymousType)
-			{
-				var andExpr = CreateExpr(target, new StringLiteral("object", "'object'"));
-				andExprs.Add(andExpr);
-			}
-			else if (operation.MatchedType is INamedTypeSymbol namedTypeSymbol)
-			{
-				Expression andExpr;
-				if (namedTypeSymbol.SpecialType == SpecialType.System_String)
-					andExpr = CreateExpr(target, new StringLiteral("string", "'string'"));
-				else if (namedTypeSymbol.SpecialType == SpecialType.System_Object)
-					andExpr = CreateExpr(target, new StringLiteral("object", "'object'"));
-				else if (namedTypeSymbol.SpecialType == SpecialType.System_Boolean)
-					andExpr = CreateExpr(target, new StringLiteral("boolean", "'boolean'"));
-				else if (
-						 namedTypeSymbol.SpecialType == SpecialType.System_Byte ||
-						 namedTypeSymbol.SpecialType == SpecialType.System_SByte ||
-						 namedTypeSymbol.SpecialType == SpecialType.System_Int16 ||
-						 namedTypeSymbol.SpecialType == SpecialType.System_UInt16 ||
-						 namedTypeSymbol.SpecialType == SpecialType.System_Int32 ||
-						 namedTypeSymbol.SpecialType == SpecialType.System_UInt32 ||
-						 namedTypeSymbol.SpecialType == SpecialType.System_Single ||
-						 namedTypeSymbol.SpecialType == SpecialType.System_Double ||
-						 namedTypeSymbol.SpecialType == SpecialType.System_Decimal)
-					andExpr = CreateExpr(target, new StringLiteral("number", "'number'"));
-				else if (namedTypeSymbol.SpecialType == SpecialType.System_Int64 ||
-						 namedTypeSymbol.SpecialType == SpecialType.System_UInt64 ||
-						 namedTypeSymbol.Name.Equals("timestamp", StringComparison.OrdinalIgnoreCase))
-					andExpr = CreateExpr(target, new StringLiteral("bigint", "'bigint'"));
-				else if (namedTypeSymbol.SpecialType == SpecialType.System_Boolean)
-					andExpr = CreateExpr(target, new StringLiteral("boolean", "'boolean'"));
-				
-				else
-				{
-					var right = new Identifier(namedTypeSymbol.Name);
-					// 对于自定义类型，使用instanceof检查
-					andExpr = new NonLogicalBinaryExpression(Operator.InstanceOf, target, right);
-				}
-
-				andExprs.Add(andExpr);
-			}
+			var obj = GetPatternRefrence(operation);
+			var expr = CreateTypeMatchExpr(operation,operation.MatchedType, obj);
+			exprs.Add(expr);
 		}
 
 		// 声明模式不影响条件判断，只是绑定变量
@@ -584,36 +531,22 @@ public partial class SemanticWalker
 		Expression result;
 
 		// 如果没有条件，返回true（空模式总是匹配）
-		if (andExprs.Count == 0)
+		if (exprs.Count == 0)
 			result = new BooleanLiteral(true, "true");
 		// 只有一个条件，直接返回
-		else if (andExprs.Count == 1)
-			result = andExprs[0];
+		else if (exprs.Count == 1)
+			result = exprs[0];
 		else
 		{
 			// 多个条件，用 && 连接
-			result = andExprs[0];
-			for (int i = 1; i < andExprs.Count; i++)
+			result = exprs[0];
+			for (int i = 1; i < exprs.Count; i++)
 			{
-				result = new LogicalExpression(Operator.LogicalAnd, result, andExprs[i]);
+				result = new LogicalExpression(Operator.LogicalAnd, result, exprs[i]);
 			}
 		}
 
-		for (int i = 1; i < orExprs.Count; i++)
-		{
-			result = new LogicalExpression(Operator.LogicalOr, result, orExprs[i]);
-		}
-
 		return result;
-
-		static NonLogicalBinaryExpression CreateExpr(Expression target, Literal literal)
-		{
-			return new NonLogicalBinaryExpression(
-				Operator.StrictEquality,
-				new NonUpdateUnaryExpression(Operator.TypeOf, target),
-				literal
-			);
-		}
 	}
 
 	/// <summary>
@@ -641,8 +574,71 @@ public partial class SemanticWalker
 			var obj = GetPatternRefrence(operation.Parent);
 			return new NonLogicalBinaryExpression(Operator.StrictEquality, obj, expr);
 		}
-	
+
 		return Translate<Expression>(operation.Value, argument);
+	}
+
+	/// <summary>
+	/// 处理声明模式操作
+	/// </summary>
+	/// <param name="operation">声明模式操作</param>
+	/// <param name="value">赋值对象</param>
+	/// <param name="argument"></param>
+	/// <returns></returns>
+	private Expression VisitDeclarationPattern(IDeclarationPatternOperation operation, Expression? value, Context argument)
+	{
+		/* 
+		有效 - 显式类型声明，MatchedType 非空，DeclaredSymbol 非空：if (obj is string s)，显式指定类型并声明变量
+		有效 - 推断类型声明，MatchedType null，DeclaredSymbol 非空：if (obj is var s)，类型推断，声明变量
+		有效 - 类型检查，MatchedType 非空，DeclaredSymbol null：if (obj is string)，仅检查类型，不声明变量
+		无效，MatchedType null，DeclaredSymbol null：if (obj is )，语法错误：未指定类型，未声明变量
+		*/
+
+		if (operation.DeclaredSymbol is null && operation.MatchedType is null)
+			return HandleTransformationFailure<Expression>(operation, "Declaration pattern must have either a declared symbol or a matched type.");
+
+		var obj = GetPatternRefrence(operation);
+
+		Expression? typeMatchExpr = null, declaredExpr = null;
+
+		if (operation.MatchedType is not null)
+		{
+			typeMatchExpr = CreateTypeMatchExpr(operation, operation.MatchedType, obj);
+		}
+
+		if (operation.DeclaredSymbol is not null)
+		{
+			// 声明模式转换为变量声明
+			var id = new Identifier(operation.DeclaredSymbol.Name);
+			var declarator = new VariableDeclarator(id, null);
+			var declaration = new VariableDeclaration(VariableDeclarationKind.Let, NodeList.From(declarator));
+			argument.Enqueue(declaration);
+
+			Expression? assignValueExpr = null;
+			if (value is not null)
+				assignValueExpr = value;
+
+			else if (operation.Parent is ISlicePatternOperation slicePatternOp && slicePatternOp.SliceSymbol is null)
+				assignValueExpr = obj;
+
+			else if (operation.Parent is IIsPatternOperation)
+				assignValueExpr = obj;
+
+			if (assignValueExpr is null)
+				return HandleTransformationFailure<Expression>(operation, "Cannot determine value to assign in declaration pattern.");
+
+			var assignmentExpr = new AssignmentExpression(Operator.Assignment, id, assignValueExpr);
+			var exprs = NodeList.From<Expression>(assignmentExpr, new BooleanLiteral(true, "true"));
+
+			declaredExpr = new SequenceExpression(exprs);
+		}
+
+		if (typeMatchExpr is not null && declaredExpr is not null)
+			return new LogicalExpression(Operator.LogicalAnd, typeMatchExpr, declaredExpr);
+		else if (typeMatchExpr is not null)
+			return typeMatchExpr;
+		else
+			return declaredExpr!;
 	}
 
 	/// <summary>
@@ -656,27 +652,8 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitDeclarationPattern(IDeclarationPatternOperation operation, Context argument)
-	{
-		if (operation.DeclaredSymbol is null)
-			return null;
-
-		// 声明模式转换为变量声明
-		var identifier = new Identifier(operation.DeclaredSymbol.Name);
-		var declarator = new VariableDeclarator(identifier, null);
-		var declaration = new VariableDeclaration(VariableDeclarationKind.Let, NodeList.From(declarator));
-
-		argument.Enqueue(declaration);
-
-		Expression right = new NullLiteral("null");
-		if (operation.Parent is ISlicePatternOperation slicePatternOp)
-		{
-			if (slicePatternOp.SliceSymbol is null)
-				right = GetPatternRefrence(operation.Parent);
-		}
-		
-		return new AssignmentExpression(Operator.Assignment, identifier, right);
-	}
-
+		=> VisitDeclarationPattern(operation, null, argument);
+	
 	/// <summary>
 	/// 处理丢弃模式操作
 	/// C# 示例：
@@ -866,110 +843,73 @@ public partial class SemanticWalker
 			optional: false
 		);
 
-		// 如果有弃元或切片则需要判断长度
-		int fixedLen = 0;
-		bool hasSlice = false;
-		int sliceIndex = -1; // 记录切片模式的位置
+		// 如果有切片则需要判断长度
+		var hasSlice = false;
+		var sliceIndex = -1; // 记录切片模式的位置
 		for (int i = 0; i < operation.Patterns.Length; i++)
 		{
-			if (operation.Patterns[i] is ISlicePatternOperation)
+			if (operation.Patterns[i].Kind == OperationKind.SlicePattern)
 			{
 				hasSlice = true;
 				sliceIndex = i;
 				break;
 			}
-			fixedLen++;
 		}
 
-		/* 长度检查：有切片就用 >=，没有就用 === */
+		// 长度检查，有切片就用 >=，没有就用 ===
+		var fixedLen = hasSlice ? operation.Patterns.Length - 1 : operation.Patterns.Length;
+		var lengthProp = new Identifier("length");
+		var lengthExpr = new MemberExpression(obj, lengthProp, computed: false, optional: false);
 		var lengthCheck = new NonLogicalBinaryExpression(
 			hasSlice ? Operator.GreaterThanOrEqual : Operator.StrictEquality,
-			new MemberExpression(obj, new Identifier("length"), computed: false, optional: false),
+			lengthExpr,
 			new NumericLiteral(fixedLen, fixedLen.ToString())
 		);
+		result = new LogicalExpression(Operator.LogicalAnd, result, lengthCheck);
 
-		/* 4. 固定头元素检查 */
-		Expression? elemChecks = null;
-		for (int i = 0; i < fixedLen; i++)
+		// 模式处理
+		for (int i = 0; i < operation.Patterns.Length; i++)
 		{
 			var pattern = operation.Patterns[i];
-			// 创建对 target[i] 的访问表达式
-			var indexAccess = new MemberExpression(obj,
-				new NumericLiteral(i, i.ToString()), computed: true, optional: false);
-
-			Expression? subCondition = null;
-
-			// 【核心修正】直接在此处处理子模式，而不是递归调用 Visit
-			// 因为我们不能改变 argument，所以子模式必须由父模式"解释"和"生成"
-			switch (pattern)
+			if (pattern.Kind == OperationKind.DiscardPattern)
+				continue;// 弃元模式忽略
+			else if (pattern.Kind == OperationKind.ConstantPattern || pattern.Kind == OperationKind.DeclarationPattern)
 			{
-				case IConstantPatternOperation cpo:
-					// 递归访问常量表达式，这是安全的，因为它不依赖于 argument
-					var valueExpr = Translate<Expression>(cpo.Value, argument)!;
-					subCondition = new NonLogicalBinaryExpression(Operator.StrictEquality, indexAccess, valueExpr);
-					break;
+				// 切片前直接使用索引，切片后需要计算反向索引
+				Expression prop = new NumericLiteral(i, i.ToString());
+				if (hasSlice && i > sliceIndex)
+				{
+					var offset = operation.Patterns.Length - i;
+					var subExpr = new NumericLiteral(offset, offset.ToString());
+					prop = new NonLogicalBinaryExpression(Operator.Subtraction, lengthExpr, subExpr);
+				}
 
-				case IDeclarationPatternOperation declPattern:
-					// 声明模式：将变量名添加到 argument 队列，由上层统一生成 const 语句
-					if (declPattern.DeclaredSymbol is not null)
-					{
-						var variableName = declPattern.DeclaredSymbol.Name;
-						argument.Enqueue(new VariableDeclaration(
-							VariableDeclarationKind.Const,
-							NodeList.From(new VariableDeclarator(new Identifier(variableName), indexAccess))
-						));
-					}
-					// 声明模式总是匹配，不增加布尔条件
-					subCondition = null;
-					break;
+				var indexAccess = new MemberExpression(obj, prop, computed: true, optional: false);
+				Expression? expr;
+				if (pattern is IDeclarationPatternOperation declarationPatternOp)
+					expr = VisitDeclarationPattern(declarationPatternOp, indexAccess, argument);
+				else
+				{
+					var value = Translate<Expression>(pattern, argument);
+					expr = new NonLogicalBinaryExpression(Operator.StrictEquality, indexAccess, value);
+				}
 
-				case IDiscardPatternOperation:
-					// 弃元模式忽略，不增加条件
-					subCondition = null;
-					break;
-
-					// 可以根据需要添加其他模式类型的处理
-					// default:
-					//     return HandleTransformationFailure(pattern, "Unsupported pattern type in list.");
+				if (expr is not null)
+					result = new LogicalExpression(Operator.LogicalAnd, result, expr);
 			}
-
-			if (subCondition is not null)
+			else if (pattern.Kind == OperationKind.SlicePattern)
 			{
-				elemChecks = elemChecks is null
-					? subCondition
-					: new LogicalExpression(Operator.LogicalAnd, elemChecks, subCondition);
+				// 切片模式可能返回空
+				var expr = Translate<Expression>(pattern, argument, null);
+				if (expr is not null)
+					result = new LogicalExpression(Operator.LogicalAnd, result, expr);
+			}
+			else
+			{
+				var expr = Translate<Expression>(pattern, argument);
+				result = new LogicalExpression(Operator.LogicalAnd, result, expr);
 			}
 		}
-
-		/* 6. 处理切片模式（如果有） */
-		if (hasSlice && sliceIndex >= 0)
-		{
-			var slicePattern = operation.Patterns[sliceIndex] as ISlicePatternOperation;
-			if (slicePattern?.Pattern is IDeclarationPatternOperation sliceDeclPattern &&
-				sliceDeclPattern.DeclaredSymbol is not null)
-			{
-				// 处理切片模式中的变量声明，如 .. var rest
-				var variableName = sliceDeclPattern.DeclaredSymbol.Name;
-
-				// 创建切片表达式：target.slice(fixedLen)
-				var sliceCall = new CallExpression(
-					new MemberExpression(obj, new Identifier("slice"), computed: false, optional: false),
-					NodeList.From<Expression>(new NumericLiteral(fixedLen, fixedLen.ToString())),
-					optional: false
-				);
-
-				// 将变量名添加到 argument 队列，由上层统一生成 const 语句
-				argument.Enqueue(new VariableDeclaration(
-					VariableDeclarationKind.Const,
-					NodeList.From(new VariableDeclarator(new Identifier(variableName), sliceCall))
-				));
-			}
-		}
-
-		/* 7. 拼总表达式 */
-		Expression result = new LogicalExpression(Operator.LogicalAnd, arrayCheck, lengthCheck);
-		if (elemChecks != null)
-			result = new LogicalExpression(Operator.LogicalAnd, result, elemChecks);
 
 		return result;
 	}
@@ -1043,7 +983,7 @@ public partial class SemanticWalker
 							),
 			"object" => new LogicalExpression(
 								Operator.LogicalAnd,
-								new LogicalExpression(Operator.StrictInequality, targetExpression, new NullLiteral("null")),
+								new LogicalExpression(Operator.StrictInequality, targetExpression, NullExpr),
 								new LogicalExpression(
 									Operator.StrictEquality,
 									new UpdateExpression(Operator.TypeOf, targetExpression, prefix: true),

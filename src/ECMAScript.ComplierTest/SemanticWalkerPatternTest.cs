@@ -353,7 +353,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let obj = new Object;
-  let result = typeof obj === 'object' && obj != null;
+  let result = typeof obj === 'object';
 }", script);
   }
 
@@ -382,7 +382,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitIsType(isTypeOperation!, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual("typeof obj === 'object' && obj != null", script);
+    Assert.AreEqual("typeof obj === 'object'", script);
   }
 
   // ==================== VisitIsNull 测试 ====================
@@ -1172,7 +1172,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let array = [1, 2, 3];
-  let result = Array.isArray(array) && array.length === 3 && (array[0] === 1 && array[1] === 2 && array[2] === 3);
+  let result = Array.isArray(array) && array.length === 3 && array[0] === 1 && array[1] === 2 && array[2] === 3;
 }", script);
   }
 
@@ -1202,7 +1202,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitListPattern(listPatternOperation, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual("Array.isArray(array) && array.length === 3 && (array[0] === 1 && array[1] === 2 && array[2] === 3)", script);
+    Assert.AreEqual("Array.isArray(array) && array.length === 3 && array[0] === 1 && array[1] === 2 && array[2] === 3", script);
   }
 
   /// <summary>
@@ -1228,7 +1228,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let array = [1, 2, 3, 4, 5];
-  let result = Array.isArray(array) && array.length >= 2 && (array[0] === 1 && array[1] === 2);
+  let result = Array.isArray(array) && array.length >= 2 && array[0] === 1 && array[1] === 2;
 }", script);
   }
 
@@ -1258,7 +1258,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitListPattern(listPatternOperation, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual("Array.isArray(array) && array.length >= 2 && (array[0] === 1 && array[1] === 2)", script);
+    Assert.AreEqual("Array.isArray(array) && array.length >= 2 && array[0] === 1 && array[1] === 2", script);
   }
 
   // ==================== VisitSlicePattern 测试 ====================
@@ -1316,9 +1316,9 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let rest = array.slice(0);
+  let rest;
   let array = [1, 2, 3, 4, 5];
-  if (Array.isArray(array) && array.length >= 0) {
+  if (Array.isArray(array) && array.length >= 0 && (rest = array, true)) {
     Console.WriteLine(rest.Length);
   }
 }", script);
@@ -1352,6 +1352,7 @@ public sealed class SemanticWalkerPatternTest
     var listPatternOperation = (IListPatternOperation)isPatternOperation.Pattern;
     var slicePatternOperation = (ISlicePatternOperation)listPatternOperation.Patterns.First();
 
+    var b = walker.Visit(block, new())?.ToECMAScript();
     var context = new Context();
     var node = walker.VisitSlicePattern(slicePatternOperation, context);
 
@@ -1363,7 +1364,7 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToECMAScript();
 
     // 验证生成的表达式
-    Assert.AreEqual(@"rest=array", script);
+    Assert.AreEqual(@"rest=array,true", script);
     Assert.AreEqual(@"let rest
 ", vars);
   }
@@ -1391,7 +1392,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let array = [1, 2, 3, 4, 5];
-  let result = Array.isArray(array) && array.length >= 2 && (array[array.length - 2] === 4 && array[array.length - 1] === 5);
+  let result = Array.isArray(array) && array.length >= 2 && array[array.length - 2] === 4 && array[array.length - 1] === 5;
 }", script);
   }
 
@@ -1418,7 +1419,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let array = [1, 2, 3, 4, 5];
-  let result = Array.isArray(array) && array.length >= 2 && (array[0] === 1 && array[array.length - 1] === 5);
+  let result = Array.isArray(array) && array.length >= 2 && array[0] === 1 && array[array.length - 1] === 5;
 }", script);
   }
 
@@ -1445,7 +1446,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let array = [1, 2, 3, 4, 5];
-  let result = Array.isArray(array) && array.length >= 2 && (array[0] === 1 && array[1] === 2);
+  let result = Array.isArray(array) && array.length >= 2 && array[0] === 1 && array[1] === 2;
 }", script);
   }
 
@@ -1475,11 +1476,11 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
+  let first, rest;
   let array = [1, 2, 3, 4, 5];
-  if (Array.isArray(array) && array.length >= 1) {
-    let first = array[0];
+  if (Array.isArray(array) && array.length >= 1 && (first = array[0], true) && (rest = array, true)) {
     Console.WriteLine(first);
-    Console.WriteLine(array.length);
+    Console.WriteLine(rest.Length);
   }
 }", script);
   }
@@ -1510,10 +1511,9 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
+  let first, last;
   let array = [1, 2, 3, 4, 5];
-  if (Array.isArray(array) && array.length >= 2) {
-    let first = array[0];
-    let last = array[array.length - 1];
+  if (Array.isArray(array) && array.length >= 2 && (first = array[0], true) && (last = array[array.length - 1], true)) {
     Console.WriteLine(first);
     Console.WriteLine(last);
   }
@@ -1551,11 +1551,11 @@ public sealed class SemanticWalkerPatternTest
   let array = [1, 2];
   let result = (() => {
     const v$test = array;
-    if (Array.isArray(v$test))
+    if (Array.isArray(array) && array.length >= 0)
       return 'empty or any';
-    if (Array.isArray(v$test) && v$test.length === 1 && (v$test[0] === 1))
+    if (Array.isArray(array) && array.length === 1 && array[0] === 1)
       return 'single one';
-    if (Array.isArray(v$test) && v$test.length === 2 && (v$test[0] === 1 && v$test[1] === 2))
+    if (Array.isArray(array) && array.length === 2 && array[0] === 1 && array[1] === 2)
       return 'one two';
     return 'other';
   })();
@@ -1585,7 +1585,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let array = [];
-  let result = Array.isArray(array);
+  let result = Array.isArray(array) && array.length >= 0;
 }", script);
   }
 
@@ -1612,7 +1612,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let array = [42];
-  let result = Array.isArray(array);
+  let result = Array.isArray(array) && array.length >= 0;
 }", script);
   }
 
@@ -1643,9 +1643,10 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
+  let value;
   let obj = 42;
-  if (typeof obj === 'number') {
-    Console.WriteLine(obj);
+  if (typeof obj === 'number' && (value = obj, true)) {
+    Console.WriteLine(value);
   }
 }", script);
   }
@@ -1671,12 +1672,13 @@ public sealed class SemanticWalkerPatternTest
             ");
 
     var walker = new SemanticWalker(true);
-    var isPatternOperation = GetOperationAt<IIsPatternOperation>(block, 1);
-    var declarationPatternOperation = (IDeclarationPatternOperation)isPatternOperation.Pattern;
+    var conditionalOp = GetOperationAt<IConditionalOperation>(block, 1);
+    var isPatternOperation = conditionalOp.Condition as IIsPatternOperation;
+    var declarationPatternOperation = (IDeclarationPatternOperation)isPatternOperation!.Pattern;
     var node = walker.VisitDeclarationPattern(declarationPatternOperation, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual("let value;", script);
+    Assert.AreEqual("typeof obj === 'number' && (value = obj, true)", script);
   }
 
   // ==================== 复杂模式匹配测试 ====================
@@ -1709,7 +1711,14 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let value = 5;
-  let result = value > 0 && value < 10 ? 'Small' : value >= 10 ? 'Large' : 'Unknown';
+  let result = (() => {
+    const v$test = value;
+    if (value > 0 && value < 10)
+      return 'Small';
+    if (value >= 10)
+      return 'Large';
+    return 'Unknown';
+  })();
 }", script);
   }
 
