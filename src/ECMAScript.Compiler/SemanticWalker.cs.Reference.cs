@@ -270,9 +270,6 @@ public partial class SemanticWalker
 		if (operation.ReferenceKind == InstanceReferenceKind.ContainingTypeInstance)
 			return new ThisExpression();
 
-		else if (operation.ReferenceKind == InstanceReferenceKind.PatternInput)
-			return null;//GetPatternRefrence(operation);
-
 		return null;
 	}
 }

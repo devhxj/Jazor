@@ -213,7 +213,7 @@ public sealed class SemanticWalkerPatternTest
     var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
     var declaration = variableDeclarationGroupOp.Declarations.First();
     var declarator = declaration.Declarators.First();
-    var isTypeOperation = declarator.Initializer!.Value as IIsTypeOperation;    
+    var isTypeOperation = declarator.Initializer!.Value as IIsTypeOperation;
     var node = walker.VisitIsType(isTypeOperation!, new());
     var script = node?.ToKnRECMAScript();
 
@@ -323,7 +323,7 @@ public sealed class SemanticWalkerPatternTest
     var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
     var declaration = variableDeclarationGroupOp.Declarations.First();
     var declarator = declaration.Declarators.First();
-    var isTypeOperation = declarator.Initializer!.Value as IIsTypeOperation;   
+    var isTypeOperation = declarator.Initializer!.Value as IIsTypeOperation;
     var node = walker.VisitIsType(isTypeOperation!, new());
     var script = node?.ToKnRECMAScript();
 
@@ -378,7 +378,7 @@ public sealed class SemanticWalkerPatternTest
     var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
     var declaration = variableDeclarationGroupOp.Declarations.First();
     var declarator = declaration.Declarators.First();
-    var isTypeOperation = declarator.Initializer!.Value as IIsTypeOperation;   
+    var isTypeOperation = declarator.Initializer!.Value as IIsTypeOperation;
     var node = walker.VisitIsType(isTypeOperation!, new());
     var script = node?.ToKnRECMAScript();
 
@@ -532,9 +532,9 @@ public sealed class SemanticWalkerPatternTest
   let value = 42;
   let result = (() => {
     const v$test = value;
-    if (value === 1)
+    if (v$test === 1)
       return 'one';
-    if (value === 2)
+    if (v$test === 2)
       return 'two';
     return 'default';
   })();
@@ -566,7 +566,7 @@ public sealed class SemanticWalkerPatternTest
     var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
     var declaration = variableDeclarationGroupOp.Declarations.First();
     var declarator = declaration.Declarators.First();
-    var switchExpressionOperation = declarator.Initializer!.Value as ISwitchExpressionOperation;   
+    var switchExpressionOperation = declarator.Initializer!.Value as ISwitchExpressionOperation;
     var switchCaseArm = switchExpressionOperation!.Arms.First();
     var discardPatternOperation = (IDiscardPatternOperation)switchCaseArm.Pattern;
     var node = walker.VisitDiscardPattern(discardPatternOperation, new());
@@ -625,7 +625,7 @@ public sealed class SemanticWalkerPatternTest
     var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
     var declaration = variableDeclarationGroupOp.Declarations.First();
     var declarator = declaration.Declarators.First();
-    var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;   
+    var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
     var negatedPatternOperation = (INegatedPatternOperation)isPatternOperation!.Pattern;
     var node = walker.VisitNegatedPattern(negatedPatternOperation, new());
     var script = node?.ToKnRECMAScript();
@@ -1316,8 +1316,8 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let rest;
   let array = [1, 2, 3, 4, 5];
+  let rest;
   if (Array.isArray(array) && array.length >= 0 && (rest = array, true)) {
     Console.WriteLine(rest.Length);
   }
@@ -1476,8 +1476,8 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let first, rest;
   let array = [1, 2, 3, 4, 5];
+  let first, rest;
   if (Array.isArray(array) && array.length >= 1 && (first = array[0], true) && (rest = array, true)) {
     Console.WriteLine(first);
     Console.WriteLine(rest.Length);
@@ -1511,8 +1511,8 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let first, last;
   let array = [1, 2, 3, 4, 5];
+  let first, last;
   if (Array.isArray(array) && array.length >= 2 && (first = array[0], true) && (last = array[array.length - 1], true)) {
     Console.WriteLine(first);
     Console.WriteLine(last);
@@ -1551,11 +1551,11 @@ public sealed class SemanticWalkerPatternTest
   let array = [1, 2];
   let result = (() => {
     const v$test = array;
-    if (Array.isArray(array) && array.length >= 0)
+    if (Array.isArray(v$test) && v$test.length >= 0)
       return 'empty or any';
-    if (Array.isArray(array) && array.length === 1 && array[0] === 1)
+    if (Array.isArray(v$test) && v$test.length === 1 && v$test[0] === 1)
       return 'single one';
-    if (Array.isArray(array) && array.length === 2 && array[0] === 1 && array[1] === 2)
+    if (Array.isArray(v$test) && v$test.length === 2 && v$test[0] === 1 && v$test[1] === 2)
       return 'one two';
     return 'other';
   })();
@@ -1643,8 +1643,8 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let value;
   let obj = 42;
+  let value;
   if (typeof obj === 'number' && (value = obj, true)) {
     Console.WriteLine(value);
   }
@@ -1721,14 +1721,15 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(@"{
   let value = 5;
   let result = (() => {
-    const v$test = value;
-    if (value > 0 && value < 10)
+    const v$test = TestClass.Get5(value);
+    if (v$test > 0 && v$test < 10)
       return 'Small';
-    if (value >= 10)
+    if (v$test >= 10)
       return 'Large';
     return 'Unknown';
   })();
 }", script);
+
   }
 
   /// <summary>
@@ -1759,7 +1760,14 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let person = { Name: 'John', Age: 30 };
-  let result = typeof person === 'object' && person.Name === 'John' ? 'Hello John' : typeof person === 'object' && person.Age > 18 ? 'Adult' : 'Unknown';
+  let result = (() => {
+    const v$test = person;
+    if (v$test.Name === 'John')
+      return 'Hello John';
+    if (v$test.Age > 18)
+      return 'Adult';
+    return 'Unknown';
+  })();
 }", script);
   }
 
@@ -1790,9 +1798,10 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let array = [1, 2, 3, 4, 5];
-  if (Array.isArray(array) && array.length >= 2) {
-    Console.WriteLine(array[0]);
-    Console.WriteLine(array[1]);
+  let first, second, rest;
+  if (Array.isArray(array) && array.length >= 2 && (first = array[0], true) && (second = array[1], true) && (rest = array, true)) {
+    Console.WriteLine(first);
+    Console.WriteLine(second);
   }
 }", script);
   }
@@ -1988,5 +1997,30 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual("42", script);
+  }
+
+  [TestMethod]
+  public void Visit_Test99()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int value = 5;
+                    bool result = value > 9 && (value is > 0 and < 10 and not 5) && (value is var x && x < 10);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let x;
+  let value = 5;
+  let result = value > 9 && (value > 0 && value < 10 && !(value === 5)) && ((x = value, true) && x < 10);
+}", script);
   }
 }

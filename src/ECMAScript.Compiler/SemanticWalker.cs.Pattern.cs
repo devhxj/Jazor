@@ -139,6 +139,7 @@ public partial class SemanticWalker
 		if (operation is null)
 			return null;
 
+		var isSwitchExpressionOp = false;
 		var visited = new HashSet<IOperation>();
 		var current = operation;
 		IOperation? reference = null;
@@ -147,11 +148,10 @@ public partial class SemanticWalker
 		{
 			if (!visited.Add(current))
 				break;
+
 			else if (current is IPropertySubpatternOperation propertySubpatternOp)
 			{
-				reference = propertySubpatternOp.Member;
-				break;
-/* 				if (propertySubpatternOp.Member is IFieldReferenceOperation fieldRef)
+				if (propertySubpatternOp.Member is IFieldReferenceOperation fieldRef)
 				{
 					var member = new Identifier(fieldRef.Field.Name);
 					var optional = IsNullableType(fieldRef.Field.Type);
@@ -162,11 +162,16 @@ public partial class SemanticWalker
 					var member = new Identifier(propRef.Property.Name);
 					var optional = IsNullableType(propRef.Property.Type);
 					members.Enqueue((member, optional));
-				} */
+				}
 			}
 			else if (current is IIsTypeOperation isTypeOp)
 			{
 				reference = isTypeOp.ValueOperand;
+				break;
+			}
+			else if (current is ISwitchOperation switchOp)
+			{
+				reference = switchOp.Value;
 				break;
 			}
 			else if (current is IIsPatternOperation isPatternOp)
@@ -176,6 +181,7 @@ public partial class SemanticWalker
 			}
 			else if (current is ISwitchExpressionOperation switchExpressionOp)
 			{
+				isSwitchExpressionOp = true;
 				reference = switchExpressionOp.Value;
 				break;
 			}
@@ -187,12 +193,21 @@ public partial class SemanticWalker
 		if (reference is null)
 			return null;
 
-		var expr = Translate<Expression>(reference, []);
-		/* while (members.Count > 0)
+
+		Expression expr;
+		if (isSwitchExpressionOp)
+		{
+			var id = GetUniqueName(reference.Syntax);
+			expr = new Identifier(id);
+		}
+		else
+			expr = Translate<Expression>(reference, []);
+
+		while (members.Count > 0)
 		{
 			var (member, optional) = members.Dequeue();
 			expr = new MemberExpression(expr, member, computed: false, optional);
-		} */
+		}
 
 		return expr;
 	}
@@ -408,8 +423,25 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitPatternCaseClause(IPatternCaseClauseOperation operation, Context argument)
 	{
-		// 模式 case 子句转换为条件表达式
-		return Visit(operation.Pattern, argument);
+		var value = Translate<Expression>(operation.Value, argument);
+
+		// 默认情况，直接返回
+		if (operation.Pattern.Kind == OperationKind.DiscardPattern)
+			return new ReturnStatement(value);
+
+		else
+		{
+			var condition = Translate<Expression>(operation.Pattern, argument);
+
+			// 处理when子句
+			if (operation.Guard is not null)
+			{
+				var guard = Translate<Expression>(operation.Guard, argument);
+				condition = new LogicalExpression(Operator.LogicalAnd, condition, guard);
+			}
+
+			return new IfStatement(condition, new ReturnStatement(value), null);
+		}
 	}
 
 	/// <summary>
@@ -628,11 +660,14 @@ public partial class SemanticWalker
 			if (value is not null)
 				assignValueExpr = value;
 
-			else if (operation.Parent is ISlicePatternOperation slicePatternOp && slicePatternOp.SliceSymbol is null)
-				assignValueExpr = obj;
-
 			else if (operation.Parent is IIsPatternOperation)
 				assignValueExpr = obj;
+
+			else if (operation.Parent is ISlicePatternOperation slicePatternOp)
+			{
+				if (slicePatternOp.SliceSymbol is null)
+					assignValueExpr = obj;
+			}
 
 			if (assignValueExpr is null)
 				return HandleTransformationFailure<Expression>(operation, "Cannot determine value to assign in declaration pattern.");

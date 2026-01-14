@@ -29,14 +29,29 @@ public partial class SemanticWalker
 		foreach (var stmt in operation.Operations)
 		{
 			var node = Visit(stmt, ctx);
+
+			// 在statement之间，理论上C#代码那边也不会存在同级别statement出现同样的名称，编译器会报错的
+			// 即使是不同级别statement，变量名称相同，在存在作用域交叉的情况下 也会报错，而用{}隔离那明显是跨statement了
+			if (ctx.Count > 0)
+			{
+				var declaration = new VariableDeclaration(
+					VariableDeclarationKind.Let,
+					NodeList.From(ctx.SelectMany(x => x.Declarations)));
+
+				statements.Add(declaration);
+			}
+
 			if (node is Statement statement)
 				statements.Add(statement);
+
 			else if (node is Expression expr)
 				statements.Add(new NonSpecialExpressionStatement(expr));
+
 			else
 				HandleTransformationFailure(stmt, $"{stmt.Kind} could not be translated to JavaScript.");
 		}
 
+		/*
 		// 合并定义
 		VariableDeclaration? decl = null;
 		if (ctx.Count > 0)
@@ -45,6 +60,7 @@ public partial class SemanticWalker
 				VariableDeclarationKind.Let,
 				NodeList.From(ctx.SelectMany(x => x.Declarations)));
 		}
+		*/
 
 		// 根据上下文判断返回不同类型的语句块
 		// 如果父节点是方法或函数，返回 FunctionBody
@@ -53,9 +69,11 @@ public partial class SemanticWalker
 			operation.Parent is IAnonymousFunctionOperation ||
 			operation.Parent is IConstructorBodyOperation)
 		{
+			/*
 			// 插入预定义变量
 			if (decl is not null)
 				statements.Insert(0, decl);
+			*/
 
 			return new FunctionBody(NodeList.From(statements), strict: true);
 		}
@@ -65,17 +83,21 @@ public partial class SemanticWalker
 			operation.Parent is IFieldReferenceOperation fieldRef &&
 			fieldRef.Field.IsStatic)
 		{
+			/*
 			// 插入预定义变量
 			if (decl is not null)
 				statements.Insert(0, decl);
+			*/
 
 			return new StaticBlock(NodeList.From(statements));
 		}
 
+		/*
 		// 插入预定义变量
 		if (decl is not null)
 			argument.Enqueue(decl);
-
+		*/
+		
 		// 默认情况返回 NestedBlockStatement
 		return new NestedBlockStatement(NodeList.From(statements));
 	}

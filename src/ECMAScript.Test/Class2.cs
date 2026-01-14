@@ -154,12 +154,7 @@ class TestClass2
 		}
 
 		int value = 5;
-		string result = value switch
-		{
-			> 0 and < 10 => "Small",
-			>= 10 => "Large",
-			_ => "Unknown"
-		};
+		bool result = value > 9 && (value is > 0 and < 10 and not 5) && (value is var x && x < 10);
 	}
 
 	static string Demo1(int[] a) => a switch
