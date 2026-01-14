@@ -123,20 +123,6 @@ public sealed partial class SemanticWalker : OperationVisitor<Context, Node?>
     /// <param name="message">错误信息</param>
     /// <returns></returns>
     /// <exception cref="OperationTransformationException">当操作无法转换时抛出</exception>
-    private Node HandleTransformationFailure(IOperation operation, string? message)
-    {
-        var location = operation.Syntax.GetLocation();
-        _report?.Invoke(location, message);
-        throw new OperationTransformationException(operation, message);
-    }
-
-    /// <summary>
-    /// 操作无法转换时的兜底方法，提供详细的错误信息，包括操作类型
-    /// </summary>
-    /// <param name="operation">无法转换的Operation</param>
-    /// <param name="message">错误信息</param>
-    /// <returns></returns>
-    /// <exception cref="OperationTransformationException">当操作无法转换时抛出</exception>
     private T HandleTransformationFailure<T>(IOperation operation, string? message) where T : INode
     {
         var location = operation.Syntax.GetLocation();

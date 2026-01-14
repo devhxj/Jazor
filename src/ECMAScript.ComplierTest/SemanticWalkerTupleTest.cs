@@ -682,19 +682,12 @@ public sealed class SemanticWalkerTupleTest
         var initializer = variableDeclaration.Declarators.First().Initializer;
         var operation = (ITupleBinaryOperation)initializer!.Value;
         var walker = new SemanticWalker(true);
-        var queue = new Queue<Acornima.Ast.VariableDeclaration>();
+        var queue = new Queue<Acornima.Ast.VariableDeclarator>();
         var node = walker.VisitTupleBinaryOperator(operation, queue);
-        var exprScript = node?.ToECMAScript();
-        var declScript = "";
-        foreach (var d in queue)
-        {
-            var s = d.ToECMAScript();
-            if (!string.IsNullOrEmpty(s) && !s.EndsWith(";"))
-                s += ";";
-            declScript += s;
-        }
+        var script = node?.ToECMAScript();
 
-        Assert.AreEqual("const v$test=this.GetTuple();(v$test.Item1===1&&v$test.Item2===2)", declScript + exprScript);
+        Assert.AreEqual("(v$test.Item1===1&&v$test.Item2===2)", script);
+        Assert.HasCount(1, queue);
     }
 
     [TestMethod]
@@ -718,17 +711,12 @@ public sealed class SemanticWalkerTupleTest
         var initializer = variableDeclaration.Declarators.First().Initializer;
         var operation = (ITupleBinaryOperation)initializer!.Value;
         var walker = new SemanticWalker(true);
-        var queue = new Queue<Acornima.Ast.VariableDeclaration>();
+        var queue = new Queue<Acornima.Ast.VariableDeclarator>();
         var node = walker.VisitTupleBinaryOperator(operation, queue);
-        var exprScript = node?.ToECMAScript();
-        var declScript = string.Concat(queue.Select(d => d.ToECMAScript()));
-        if (!string.IsNullOrEmpty(declScript) && !declScript.EndsWith(";"))
-            declScript += ";";
+        var script = node?.ToECMAScript();
 
-        var combined = (declScript ?? string.Empty) + (exprScript ?? string.Empty);
-        Assert.Contains("const v$test=this.Get1()", combined);
-        Assert.Contains("const v$test=this.Get2()", combined);
-        Assert.Contains("v$test.Item1===v$test.Item1", combined);
+        Assert.AreEqual("(v$test.Item1===v$test.Item1&&v$test.Item2===v$test.Item2)", script);
+        Assert.HasCount(2, queue);
     }
 
     [TestMethod]

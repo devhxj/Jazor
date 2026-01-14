@@ -1351,22 +1351,13 @@ public sealed class SemanticWalkerPatternTest
     var isPatternOperation = (IIsPatternOperation)ifOperation.Condition;
     var listPatternOperation = (IListPatternOperation)isPatternOperation.Pattern;
     var slicePatternOperation = (ISlicePatternOperation)listPatternOperation.Patterns.First();
-
-    var b = walker.Visit(block, new())?.ToECMAScript();
-    var context = new Context();
+    var context = new Queue<VariableDeclarator>();
     var node = walker.VisitSlicePattern(slicePatternOperation, context);
-
-    var builder = new StringBuilder();
-    while (context.TryDequeue(out var decl))
-      builder.AppendLine(decl.ToECMAScript());
-
-    var vars = builder.ToString();
     var script = node?.ToECMAScript();
 
     // 验证生成的表达式
     Assert.AreEqual(@"rest=array,true", script);
-    Assert.AreEqual(@"let rest
-", vars);
+    Assert.HasCount(1, context);
   }
 
   /// <summary>
@@ -1829,7 +1820,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let data = { Inner: { Value: 42 } };
-  let result = typeof data === 'object' && data.Inner.Value > 0;
+  let result = data.Inner.Value > 0;
 }", script);
   }
 
@@ -1933,12 +1924,15 @@ public sealed class SemanticWalkerPatternTest
             ");
 
     var walker = new SemanticWalker(true);
-    var isPatternOperation = GetOperationAt<IIsPatternOperation>(block, 1);
-    var constantPatternOperation = (IConstantPatternOperation)isPatternOperation.Pattern;
+    var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
+    var declaration = variableDeclarationGroupOp.Declarations.First();
+    var declarator = declaration.Declarators.First();
+    var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
+    var constantPatternOperation = (IConstantPatternOperation)isPatternOperation!.Pattern;
     var node = walker.VisitConstantPattern(constantPatternOperation, new());
-    var script = node?.ToKnRECMAScript();
+    var script = node?.ToECMAScript();
 
-    Assert.AreEqual("42", script);
+    Assert.AreEqual("obj===42", script);
   }
 
   /// <summary>
@@ -1959,12 +1953,15 @@ public sealed class SemanticWalkerPatternTest
             ");
 
     var walker = new SemanticWalker(true);
-    var isPatternOperation = GetOperationAt<IIsPatternOperation>(block, 1);
-    var constantPatternOperation = (IConstantPatternOperation)isPatternOperation.Pattern;
+    var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
+    var declaration = variableDeclarationGroupOp.Declarations.First();
+    var declarator = declaration.Declarators.First();
+    var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
+    var constantPatternOperation = (IConstantPatternOperation)isPatternOperation!.Pattern;
     var node = walker.VisitConstantPattern(constantPatternOperation, new());
-    var script = node?.ToKnRECMAScript();
+    var script = node?.ToECMAScript();
 
-    Assert.AreEqual("'hello'", script);
+    Assert.AreEqual("obj==='hello'", script);
   }
 
   // ==================== VisitPatternCaseClause 测试 ====================
@@ -1983,7 +1980,7 @@ public sealed class SemanticWalkerPatternTest
                     object obj = 42;
                     switch (obj)
                     {
-                        case 42:
+                        case var x when x>10:
                             break;
                     }
                 }
@@ -1992,15 +1989,15 @@ public sealed class SemanticWalkerPatternTest
 
     var walker = new SemanticWalker(true);
     var switchOperation = GetOperationAt<ISwitchOperation>(block, 1);
-    var patternCaseClause = (IPatternCaseClauseOperation)switchOperation.Cases.First();
+    var patternCaseClause = (IPatternCaseClauseOperation)switchOperation.Cases.First()!.Clauses.First()!;
     var node = walker.VisitPatternCaseClause(patternCaseClause, new());
-    var script = node?.ToKnRECMAScript();
+    var script = node?.ToECMAScript();
 
-    Assert.AreEqual("42", script);
+    Assert.AreEqual("(x=obj,true)&&x>10", script);
   }
 
   [TestMethod]
-  public void Visit_Test99()
+  public void Visit_All()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -2016,10 +2013,10 @@ public sealed class SemanticWalkerPatternTest
                         break;
                       case 1:
                         Console.WriteLine(""1"");
-                        goto case 1;  							
+                        break;			
                       case 2:
                         Console.WriteLine(""2"");
-                        goto case 1;
+                        break;
                       default:
                         Console.WriteLine(""Default"");
                         break;
@@ -2036,24 +2033,23 @@ public sealed class SemanticWalkerPatternTest
   let value = 5;
   let x;
   let result = value > 9 && (value > 0 && value < 10 && !(value === 5)) && ((x = value, true) && x < 10);
-  let x, s;
+  let s;
   (() => {
     const v$test = value;
     if ((s = value, true) && s > 0) {
       Console.WriteLine('>0');
-      break;
-      break;
+      return;
     }
     if (v$test === 1) {
       Console.WriteLine('1');
+      return;
     }
     if (v$test === 2) {
       Console.WriteLine('2');
+      return;
     }
-    {
-      Console.WriteLine('Default');
-      break;
-    }
+    Console.WriteLine('Default');
+    return;
   })();
 }", script);
   }

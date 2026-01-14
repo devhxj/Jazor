@@ -110,7 +110,7 @@ public partial class SemanticWalker
 				);
 				properties.Add(prop);
 			}
-			else HandleTransformationFailure(initializer, "Anonymous object initializer could not be translated to JavaScript.");
+			else HandleTransformationFailure<Node>(initializer, "Anonymous object initializer could not be translated to JavaScript.");
 		}
 
 		return new ObjectExpression(NodeList.From(properties));
@@ -129,7 +129,7 @@ public partial class SemanticWalker
 	public override Acornima.Ast.Node? VisitTypeParameterObjectCreation(ITypeParameterObjectCreationOperation operation, Context argument)
 	{
 		if (operation.Type is null)
-			return HandleTransformationFailure(operation, "Type parameter object creation type could not be translated to JavaScript.");
+			return HandleTransformationFailure<Node>(operation, "Type parameter object creation type could not be translated to JavaScript.");
 
 		// 泛型类型参数对象创建，忽略泛型参数，当作普通对象创建
 		var typeName = operation.Type.Name;
@@ -159,7 +159,7 @@ public partial class SemanticWalker
 			{
 				// 多维数组在 C# 中可以创建但无法访问，导致“能创建却无法访问”的悄论
 				// 为保证语义一致性，禁止创建多维数组
-				return HandleTransformationFailure(operation, "Array creation with unsupported initializer or dimension.");
+				return HandleTransformationFailure<Node>(operation, "Array creation with unsupported initializer or dimension.");
 			}
 		}
 
@@ -268,7 +268,7 @@ public partial class SemanticWalker
 					initializers.Add(new NonSpecialExpressionStatement(expr));
 				}
 				else
-					HandleTransformationFailure(initializer, "Member initializer could not be translated to JavaScript.");
+					HandleTransformationFailure<Node>(initializer, "Member initializer could not be translated to JavaScript.");
 			}
 			return new StatementGroup(NodeList.From(initializers));
 		}
@@ -349,7 +349,7 @@ public partial class SemanticWalker
 			_ => null
 		};
 		if (target is null)
-			return HandleTransformationFailure(operation.InitializedMember, "Member initializer target could not be translated to JavaScript.");
+			return HandleTransformationFailure<Node>(operation.InitializedMember, "Member initializer target could not be translated to JavaScript.");
 
 		var value = Translate<Expression>(operation.Initializer, argument);
 		return new ObjectProperty(

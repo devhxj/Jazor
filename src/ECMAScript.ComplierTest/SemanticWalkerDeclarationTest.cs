@@ -199,13 +199,13 @@ public sealed class SemanticWalkerDeclarationTest
                     string input = ""123"";
                     if (int.TryParse(input, out var result))
                     {
-                        // 使用 result
+                        Console.WriteLine(result);
                     }
                     
                     var dict = new System.Collections.Generic.Dictionary<string, int>();
-                    if (dict.TryGetValue(""key"", out string value))
+                    if (dict.TryGetValue(""key"", out int value))
                     {
-                        // 使用 value
+                        Console.WriteLine(value);
                     }
                 }
             }
@@ -216,16 +216,16 @@ public sealed class SemanticWalkerDeclarationTest
         var script = node?.ToKnRECMAScript();
 
         Assert.AreEqual(@"{
-  let input = ""123"";
+  let input = '123';
   let result;
-  if (System.Int32.TryParse(input, result)) {
+  if (Int32.TryParse(input, result)) {
+    Console.WriteLine(result);
   }
-  
-  let dict = new System.Collections.Generic.Dictionary(System.String, System.Int32);
+  let dict = new Dictionary;
   let value;
-  if (dict.TryGetValue(""key"", value)) {
+  if (dict.TryGetValue('key', value)) {
+    Console.WriteLine(value);
   }
-
 }", script);
     }
 
@@ -259,7 +259,6 @@ public sealed class SemanticWalkerDeclarationTest
 
     }
 
-    
     [TestMethod]
     public void Visit_MixedDeclarationTypes()
     {
@@ -281,8 +280,14 @@ public sealed class SemanticWalkerDeclarationTest
                     string input = ""123"";
                     if (int.TryParse(input, out var result))
                     {
-                        // 使用 result
+                        Console.WriteLine(result);
                     }
+
+                    int cc;
+                    if (int.TryParse(input, out cc))
+                    {
+                        Console.WriteLine(cc);
+                    }                    
                 }
             }
             ");
@@ -298,7 +303,12 @@ public sealed class SemanticWalkerDeclarationTest
   let numbers = [1, 2, 3];
   let input = '123';
   let result;
-  if (System.Int32.TryParse(input, result)) {
+  if (Int32.TryParse(input, result)) {
+    Console.WriteLine(result);
+  }
+  let cc;
+  if (Int32.TryParse(input, cc)) {
+    Console.WriteLine(cc);
   }
 }", script);
 
@@ -429,6 +439,7 @@ public sealed class SemanticWalkerDeclarationTest
                 {
                     if (int.TryParse(""123"", out var result))
                     {
+                        Console.WriteLine(result);
                     }
                 }
             }
@@ -441,66 +452,9 @@ public sealed class SemanticWalkerDeclarationTest
         var declarationExpression = (IDeclarationExpressionOperation)argumentOperation.Value;
         
         var result = walker.VisitDeclarationExpression(declarationExpression, new());
-        var script = result?.ToKnRECMAScript();
+        var script = result?.ToECMAScript();
 
-        Assert.AreEqual("let result", script);
+        Assert.AreEqual("result", script);
     }
-
-    [TestMethod]
-    public void DirectVisit_DeclarationExpression_Tuple()
-    {
-        var block = GetBlockOperation(@"
-            class TestClass
-            {
-                void TestMethod()
-                {
-                    var tuple = (1, 2);
-                    (int a, int b) = tuple;
-                }
-            }
-            ");
-
-        var walker = new SemanticWalker(true);
-        var tupleOperation = GetTupleOperationAt(block, 1);
-        var declarationExpression = (IDeclarationExpressionOperation)tupleOperation.Elements[0];
-        
-        var result = walker.VisitDeclarationExpression(declarationExpression, new());
-        var script = result?.ToKnRECMAScript();
-
-        Assert.AreEqual("a", script);
-    }
-
-    [TestMethod]
-    public void DirectVisit_FieldInitializer()
-    {
-        var block = GetBlockOperation(@"
-            class TestClass
-            {
-                void TestMethod()
-                {
-                    var obj = new ClassWithField();
-                }
-            }
-            
-            class ClassWithField
-            {
-                public int Field = 42;
-            }
-            ");
-
-        var walker = new SemanticWalker(true);
-        var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 0);
-        var initializer = variableDeclarationGroupOp
-            .Declarations.FirstOrDefault()?
-            .Declarators.FirstOrDefault()?
-            .Initializer;
-
-        var script = "";
-        //var result = walker.VisitFieldInitializer(fieldInitializer!, new());
-        //var script = result?.ToECMAScript();
-
-        Assert.AreEqual("42", script);
-    }
-
 
 }

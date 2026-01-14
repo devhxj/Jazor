@@ -143,7 +143,7 @@ public partial class SemanticWalker
 		var visited = new HashSet<IOperation>();
 		var current = operation;
 		IOperation? reference = null;
-		Queue<(Identifier, bool)> members = [];
+		Stack<(Identifier, bool)> members = [];
 		while (current is not null)
 		{
 			if (!visited.Add(current))
@@ -155,13 +155,13 @@ public partial class SemanticWalker
 				{
 					var member = new Identifier(fieldRef.Field.Name);
 					var optional = IsNullableType(fieldRef.Field.Type);
-					members.Enqueue((member, optional));
+					members.Push((member, optional));
 				}
 				else if (propertySubpatternOp.Member is IPropertyReferenceOperation propRef)
 				{
 					var member = new Identifier(propRef.Property.Name);
 					var optional = IsNullableType(propRef.Property.Type);
-					members.Enqueue((member, optional));
+					members.Push((member, optional));
 				}
 			}
 			else if (current is IIsTypeOperation isTypeOp)
@@ -205,7 +205,7 @@ public partial class SemanticWalker
 
 		while (members.Count > 0)
 		{
-			var (member, optional) = members.Dequeue();
+			var (member, optional) = members.Pop();
 			expr = new MemberExpression(expr, member, computed: false, optional);
 		}
 
@@ -430,16 +430,6 @@ public partial class SemanticWalker
 		if (Visit(operation.Value, argument) is not Expression discriminant)
 			return HandleTransformationFailure<CallExpression>(operation.Value, "Switch discriminant could not be translated to JavaScript.");
 
-		// 检测并禁止 goto 语句
-		foreach (var switchCase in operation.Cases)
-		{
-			foreach (var bodyOp in switchCase.Body)
-			{
-				if (bodyOp is IBranchOperation branch && branch.BranchKind == BranchKind.GoTo)
-					return HandleTransformationFailure<CallExpression>(bodyOp, "Goto statements are not supported in switch statements. Please extract shared logic into a separate method.");
-			}
-		}
-
 		// 创建唯一名称存储 switch 值
 		var inputId = new Identifier(GetUniqueName(operation.Value.Syntax));
 		var inputVar = new VariableDeclaration(
@@ -448,53 +438,44 @@ public partial class SemanticWalker
 		);
 
 		var statements = new List<Statement>();
-		Statement? defaultStatement = null;
-
 		foreach (var switchCase in operation.Cases)
 		{
+			var hasDefault = false;
 			// 收集所有条件表达式
 			var conditions = new List<Expression>();
-
 			foreach (var clause in switchCase.Clauses)
 			{
 				if (clause.CaseKind == CaseKind.Default)
+					hasDefault = true;
+				else
 				{
-					// default case，稍后处理
-					continue;
-				}
-				else if (clause is ISingleValueCaseClauseOperation singleValue)
-				{
-					// 常量 case: value === discriminant
-					var valueExpr = Translate<Expression>(singleValue.Value, argument);
-					var condition = new NonLogicalBinaryExpression(Operator.StrictEquality, inputId, valueExpr);
-					conditions.Add(condition);
-				}
-				else if (clause is IPatternCaseClauseOperation patternClause)
-				{
-					// 模式 case: 通过 VisitPatternCaseClause 处理
-					if (Visit(patternClause, argument) is Expression patternCondition)
-						conditions.Add(patternCondition);
+
+					var expr = Translate<Expression>(clause, argument);
+					if (clause.CaseKind == CaseKind.SingleValue)
+						expr = new NonLogicalBinaryExpression(Operator.StrictEquality, inputId, expr);
+
+					conditions.Add(expr);
 				}
 			}
 
 			// 处理 case 体
 			var bodyStatements = new List<Statement>();
-
 			foreach (var bodyOp in switchCase.Body)
 			{
-				if (Visit(bodyOp, argument) is Statement stmt)
+				// 此处会下沉检测是否使用了goto
+				var node = Visit(bodyOp, argument);
+				if (bodyOp.Kind == OperationKind.Branch)
+					bodyStatements.Add(new ReturnStatement(null));
+
+				else if (node is Statement stmt)
 					bodyStatements.Add(stmt);
-				else if (Visit(bodyOp, argument) is Expression expr)
+
+				else if (node is Expression expr)
 					bodyStatements.Add(new NonSpecialExpressionStatement(expr));
 			}
 
-			// 如果没有条件，则是 default case
-			if (conditions.Count == 0)
-			{
-				if (bodyStatements.Count > 0)
-					defaultStatement = new NestedBlockStatement(NodeList.From(bodyStatements));
-			}
-			else
+			// 如果有条件
+			if (conditions.Count > 0)
 			{
 				// 组合所有条件（同一个 switchCase 的多个 clause 是 OR 关系）
 				Expression combinedCondition = conditions[0];
@@ -503,18 +484,14 @@ public partial class SemanticWalker
 					combinedCondition = new LogicalExpression(Operator.LogicalOr, combinedCondition, conditions[i]);
 				}
 
-				// 添加 break 语句
-				bodyStatements.Add(new BreakStatement(null));
-
 				// 创建 if 语句
 				var ifStmt = new IfStatement(combinedCondition, new NestedBlockStatement(NodeList.From(bodyStatements)), null);
 				statements.Add(ifStmt);
 			}
-		}
 
-		// 添加 default case（如果有）
-		if (defaultStatement is not null)
-			statements.Add(defaultStatement);
+			if (hasDefault)
+				statements.AddRange(bodyStatements);
+		}
 
 		// 构造 IIFE
 		statements.Insert(0, inputVar);
@@ -581,7 +558,7 @@ public partial class SemanticWalker
 	{
 		// 至少有一个分支
 		if (operation.Arms.Length < 1)
-			return HandleTransformationFailure(operation, "Switch expression must have at least one arm.");
+			return HandleTransformationFailure<Node>(operation, "Switch expression must have at least one arm.");
 
 		var input = Translate<Expression>(operation.Value, argument);
 
@@ -660,49 +637,37 @@ public partial class SemanticWalker
 	{
 		// 递归模式的条件判断转换
 		// C# 示例：obj is Person { Name: "John", Age: > 18 }
-		// 转换结果：生成 (obj instanceof Person) && (obj.Name === "John") && (obj.Age > 18)
+		// 转换结果：生成 obj instanceof Person && obj.Name === "John" && obj.Age > 18
 		// 递归模式由多个子模式组成，需要用 && 连接所有条件
 
-		var exprs = new List<Expression>();
-
+		var conditions = new List<Expression>();
+		if (!operation.MatchedType.IsAnonymousType)
+		{
+			// 根据获取的名称构建目标表达式
+			var obj = GetPatternRefrence(operation);
+			var expr = CreateTypeMatchExpr(operation, operation.MatchedType, obj);
+			conditions.Add(expr);
+		}
+		
 		// 如果不存在子模式，处理类型模式
 		if (operation.PropertySubpatterns.Length > 0)
 		{
 			foreach (var propertySubpattern in operation.PropertySubpatterns)
-				Translate(exprs, propertySubpattern, argument);
-		}
-		else
-		{
-			// 根据获取的名称构建目标表达式
-			var obj = GetPatternRefrence(operation);
-			var expr = CreateTypeMatchExpr(operation,operation.MatchedType, obj);
-			exprs.Add(expr);
+				Translate(conditions, propertySubpattern, argument);
 		}
 
-		// 声明模式不影响条件判断，只是绑定变量
-		// 在模式匹配中，我们只关心条件判断部分
-		// operation.DeclaredSymbol
-
-		// 组合所有条件
-		Expression result;
-
-		// 如果没有条件，返回true（空模式总是匹配）
-		if (exprs.Count == 0)
-			result = new BooleanLiteral(true, "true");
-		// 只有一个条件，直接返回
-		else if (exprs.Count == 1)
-			result = exprs[0];
-		else
+		if (conditions.Count > 0)
 		{
 			// 多个条件，用 && 连接
-			result = exprs[0];
-			for (int i = 1; i < exprs.Count; i++)
-			{
-				result = new LogicalExpression(Operator.LogicalAnd, result, exprs[i]);
-			}
+			var result = conditions[0];
+			for (int i = 1; i < conditions.Count; i++)
+				result = new LogicalExpression(Operator.LogicalAnd, result, conditions[i]);
+			
+			return result;
 		}
-
-		return result;
+		
+		// 如果没有条件，返回true（空模式总是匹配）
+		return new BooleanLiteral(true, "true");
 	}
 
 	/// <summary>
@@ -768,8 +733,7 @@ public partial class SemanticWalker
 			// 声明模式转换为变量声明
 			var id = new Identifier(operation.DeclaredSymbol.Name);
 			var declarator = new VariableDeclarator(id, null);
-			var declaration = new VariableDeclaration(VariableDeclarationKind.Let, NodeList.From(declarator));
-			argument.Enqueue(declaration);
+			argument.Enqueue(declarator);
 
 			Expression? assignValueExpr = null;
 			if (value is not null)
@@ -920,7 +884,7 @@ public partial class SemanticWalker
 		};
 
 		if (@operator == Operator.Unknown)
-			return HandleTransformationFailure(operation, "Unsupported binary operator in pattern.");
+			return HandleTransformationFailure<Node>(operation, "Unsupported binary operator in pattern.");
 
 		return new LogicalExpression(@operator, left, right);
 	}
@@ -964,7 +928,7 @@ public partial class SemanticWalker
 		};
 
 		if (@operator == Operator.Unknown)
-			return HandleTransformationFailure(operation, "Unsupported relational operator in pattern.");
+			return HandleTransformationFailure<Node>(operation, "Unsupported relational operator in pattern.");
 
 		// 根据AST节点构造规范，使用LogicalExpression表示比较操作
 		// 使用实际的目标表达式而不是占位符

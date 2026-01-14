@@ -1,1 +1,1 @@
-global using Context = System.Collections.Generic.Queue<Acornima.Ast.VariableDeclaration>;
+global using Context = System.Collections.Generic.Queue<Acornima.Ast.VariableDeclarator>;

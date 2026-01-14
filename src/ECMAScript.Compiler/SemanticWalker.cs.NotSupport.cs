@@ -19,7 +19,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitUsing(IUsingOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "Using statements are not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "Using statements are not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理 Stop 操作（编译器内部）
@@ -30,7 +30,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitStop(IStopOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "Stop operations are compiler-internal and not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "Stop operations are compiler-internal and not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理 End 操作（编译器内部）
@@ -41,7 +41,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitEnd(IEndOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "End operations are compiler-internal and not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "End operations are compiler-internal and not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理事件触发操作
@@ -55,7 +55,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitRaiseEvent(IRaiseEventOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "Raising events is not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "Raising events is not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理 For-To 循环操作（VB.NET 特有）
@@ -71,7 +71,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitForToLoop(IForToLoopOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "For-To loops are not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "For-To loops are not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理 lock 语句操作
@@ -87,7 +87,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitLock(ILockOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "Lock statements are not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "Lock statements are not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理事件引用操作
@@ -102,7 +102,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitEventReference(IEventReferenceOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "Event references are not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "Event references are not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理事件赋值操作
@@ -117,7 +117,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitEventAssignment(IEventAssignmentOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "Event assignments are not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "Event assignments are not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理动态对象创建操作
@@ -132,7 +132,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitDynamicObjectCreation(IDynamicObjectCreationOperation operation, Context argument)
-		 => HandleTransformationFailure(operation, "Dynamic object creation is not supported in JavaScript conversion.");
+		 => HandleTransformationFailure<Node>(operation, "Dynamic object creation is not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理动态成员引用操作
@@ -147,7 +147,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitDynamicMemberReference(IDynamicMemberReferenceOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "Dynamic member references are not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "Dynamic member references are not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理动态方法调用操作
@@ -162,7 +162,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitDynamicInvocation(IDynamicInvocationOperation operation, Context argument)
-	 => HandleTransformationFailure(operation, "Dynamic method invocations are not supported in JavaScript conversion.");
+	 => HandleTransformationFailure<Node>(operation, "Dynamic method invocations are not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理动态索引器访问操作
@@ -178,7 +178,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitDynamicIndexerAccess(IDynamicIndexerAccessOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "Dynamic indexer access is not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "Dynamic indexer access is not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理已翻译的 LINQ 查询操作
@@ -195,7 +195,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitTranslatedQuery(ITranslatedQueryOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "Translated LINQ queries are not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "Translated LINQ queries are not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理 typeof 运算符操作
@@ -210,7 +210,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitTypeOf(ITypeOfOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "typeof operator is not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "typeof operator is not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理 sizeof 运算符操作
@@ -225,7 +225,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitSizeOf(ISizeOfOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "sizeof operator is not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "sizeof operator is not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理取地址运算符操作
@@ -242,7 +242,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitAddressOf(IAddressOfOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "Address of operator is not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "Address of operator is not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理方法体操作（编译器内部）
@@ -254,7 +254,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitMethodBodyOperation(IMethodBodyOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "Method body operations are not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "Method body operations are not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理构造函数体操作（编译器内部）
@@ -266,7 +266,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitConstructorBodyOperation(IConstructorBodyOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "Constructor body operations are not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "Constructor body operations are not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理捕获异常操作（编译器内部）
@@ -278,7 +278,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitCaughtException(ICaughtExceptionOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "Caught exception operations are not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "Caught exception operations are not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理静态本地初始化信号量操作（编译器内部）
@@ -290,7 +290,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitStaticLocalInitializationSemaphore(IStaticLocalInitializationSemaphoreOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "Static local initialization semaphore operations are not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "Static local initialization semaphore operations are not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理流匿名函数操作（编译器内部）
@@ -302,7 +302,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitFlowAnonymousFunction(IFlowAnonymousFunctionOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "Flow anonymous function operations are not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "Flow anonymous function operations are not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理范围 case 子句操作（VB.NET 特有）
@@ -319,7 +319,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitRangeCaseClause(IRangeCaseClauseOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "Range case clause operations are not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "Range case clause operations are not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理流捕获操作（编译器内部）
@@ -331,7 +331,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitFlowCapture(IFlowCaptureOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "Flow capture operations are not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "Flow capture operations are not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理流捕获引用操作（编译器内部）
@@ -343,7 +343,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitFlowCaptureReference(IFlowCaptureReferenceOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "Flow capture reference operations are not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "Flow capture reference operations are not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理关系 case 子句操作（VB.NET 特有）
@@ -360,7 +360,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitRelationalCaseClause(IRelationalCaseClauseOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "Relational case clause operations are not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "Relational case clause operations are not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理范围操作（Range 操作符）
@@ -383,12 +383,12 @@ public partial class SemanticWalker
 		{
 			// 在数组元素访问上下文中，范围操作应该已经在 VisitArrayElementReference 中处理
 			// 这里不应该到达，但为了安全起见，返回一个错误
-			return HandleTransformationFailure(operation, "Range operation in array access should be handled by VisitArrayElementReference.");
+			return HandleTransformationFailure<Node>(operation, "Range operation in array access should be handled by VisitArrayElementReference.");
 		}
 
 		// 单独的范围操作（不在数组访问中）在 JavaScript 中没有直接等价物
 		// 返回一个错误，因为无法在 JavaScript 中表示独立的范围对象
-		return HandleTransformationFailure(operation, "Standalone range operations are not supported in JavaScript conversion. Use array slicing instead.");
+		return HandleTransformationFailure<Node>(operation, "Standalone range operations are not supported in JavaScript conversion. Use array slicing instead.");
 	}
 
 	/// <summary>
@@ -404,7 +404,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitReDim(IReDimOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "ReDim operations are not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "ReDim operations are not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理 ReDim 子句操作（VB.NET 特有）
@@ -418,7 +418,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitReDimClause(IReDimClauseOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "ReDim clause operations are not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "ReDim clause operations are not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理 using 声明操作
@@ -433,7 +433,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitUsingDeclaration(IUsingDeclarationOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "Using declaration operations are not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "Using declaration operations are not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理插值字符串处理器创建操作
@@ -448,7 +448,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitInterpolatedStringHandlerCreation(IInterpolatedStringHandlerCreationOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "Interpolated string handler creation operations are not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "Interpolated string handler creation operations are not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理插值字符串追加操作
@@ -462,7 +462,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitInterpolatedStringAppend(IInterpolatedStringAppendOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "Interpolated string append operations are not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "Interpolated string append operations are not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理插值字符串处理器参数占位符操作
@@ -475,7 +475,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitInterpolatedStringHandlerArgumentPlaceholder(IInterpolatedStringHandlerArgumentPlaceholderOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "Interpolated string handler argument placeholder operations are not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "Interpolated string handler argument placeholder operations are not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理函数指针调用操作
@@ -492,7 +492,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitFunctionPointerInvocation(IFunctionPointerInvocationOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "Function pointer invocation operations are not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "Function pointer invocation operations are not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理 UTF-8 字符串操作
@@ -506,7 +506,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitUtf8String(IUtf8StringOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "UTF-8 string operations are not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "UTF-8 string operations are not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理内联数组访问操作
@@ -521,5 +521,5 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitInlineArrayAccess(IInlineArrayAccessOperation operation, Context argument)
-		=> HandleTransformationFailure(operation, "Inline array access operations are not supported in JavaScript conversion.");
+		=> HandleTransformationFailure<Node>(operation, "Inline array access operations are not supported in JavaScript conversion.");
 }

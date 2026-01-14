@@ -155,26 +155,23 @@ class TestClass2
 
 		int value = 5;
 		bool result = value > 9 && (value is > 0 and < 10 and not 5) && (value is var x && x < 10);
-	                void TestMethod()
-                {
-                    int value = 5;
-                    bool result = value > 9 && (value is > 0 and < 10 and not 5) && (value is var x && x < 10);
-                    switch (value)
-                    {
-                        case var s when s > 0:
-                            Console.WriteLine(">0");
-							break;
-                        case 1:
-                            Console.WriteLine("1");
-							break;					
-                        case 2:
-                            Console.WriteLine("2");
-                            goto case 1;
-                        default:
-                            Console.WriteLine("Default");
-                            break;
-                    }
-                }	
+		switch (value)
+		{
+			case var s when s > 0:
+				Console.WriteLine(">0");
+				break;
+			case 1:
+				Console.WriteLine("1");
+				break;
+			case 2:
+			default:
+				Console.WriteLine("2");
+				break;
+		}
+
+
+		object obj = "hello";
+		bool result1 = obj is string { Length: > 0 };
 	}
 
 	static string Demo1(int[] a) => a switch
@@ -185,6 +182,21 @@ class TestClass2
 		[> 0, .., >= 0] => "头正尾负",
 		_ => "其它"
 	};
+
+	void TestMethod1()
+	{
+		string input = "123";
+		if (int.TryParse(input, out var result))
+		{
+			// 使用 result
+		}
+		
+		var dict = new System.Collections.Generic.Dictionary<string, int>();
+		if (dict.TryGetValue("key", out int value))
+		{
+			// 使用 value
+		}
+	}	
 }
 
 class TestClass

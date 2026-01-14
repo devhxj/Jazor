@@ -22,7 +22,7 @@ public partial class SemanticWalker
 	public override Acornima.Ast.Node? VisitArrayElementReference(IArrayElementReferenceOperation operation, Context argument)
 	{
 		if (operation.Indices.Length != 1)
-			return HandleTransformationFailure(operation,
+			return HandleTransformationFailure<Node>(operation,
 				operation.Indices.Length > 1
 					? "Multi-dimensional array access is not supported in JavaScript conversion"
 					: "Array access requires at least one index.");

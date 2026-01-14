@@ -37,7 +37,7 @@ public partial class SemanticWalker
         {
             var @catch = operation.Catches[0];
             if (Visit(@catch, argument) is not CatchClause node)
-                return HandleTransformationFailure(@catch, "Try statement catch clause could not be translated to JavaScript.");
+                return HandleTransformationFailure<Node>(@catch, "Try statement catch clause could not be translated to JavaScript.");
 
             handler = node;
         }
@@ -71,7 +71,7 @@ public partial class SemanticWalker
             }
 
             if (alternate is null)
-                return HandleTransformationFailure(operation, "Try statement catch clause could not be translated to JavaScript.");
+                return HandleTransformationFailure<Node>(operation, "Try statement catch clause could not be translated to JavaScript.");
 
             var catchBody = new NestedBlockStatement(NodeList.From(alternate));
             handler = new CatchClause(tryParam, catchBody);
@@ -117,7 +117,7 @@ public partial class SemanticWalker
                     param = new Identifier(varDeclarator.Symbol.Name);
                     break;
                 default:
-                    HandleTransformationFailure(operation.ExceptionDeclarationOrExpression, "Try statement catch clause could not be translated to JavaScript.");
+                    HandleTransformationFailure<Node>(operation.ExceptionDeclarationOrExpression, "Try statement catch clause could not be translated to JavaScript.");
                     break;
             }
         }
@@ -142,7 +142,7 @@ public partial class SemanticWalker
             else if (node is Expression expr)
                 bodyStatements.Add(new NonSpecialExpressionStatement(expr));
             else
-                HandleTransformationFailure(stmt, "Try statement catch clause could not be translated to JavaScript.");
+                HandleTransformationFailure<Node>(stmt, "Try statement catch clause could not be translated to JavaScript.");
         }
         return bodyStatements;
     }

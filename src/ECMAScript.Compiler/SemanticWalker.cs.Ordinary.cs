@@ -34,10 +34,11 @@ public partial class SemanticWalker
 			// 即使是不同级别statement，变量名称相同，在存在作用域交叉的情况下 也会报错，而用{}隔离那明显是跨statement了
 			if (ctx.Count > 0)
 			{
-				var declaration = new VariableDeclaration(
-					VariableDeclarationKind.Let,
-					NodeList.From(ctx.SelectMany(x => x.Declarations)));
+				var declarators = new List<VariableDeclarator>(ctx.Count);
+				while (ctx.Count > 0)
+					declarators.Add(ctx.Dequeue());
 
+				var declaration = new VariableDeclaration(VariableDeclarationKind.Let, NodeList.From(declarators));
 				statements.Add(declaration);
 			}
 
@@ -48,19 +49,8 @@ public partial class SemanticWalker
 				statements.Add(new NonSpecialExpressionStatement(expr));
 
 			else
-				HandleTransformationFailure(stmt, $"{stmt.Kind} could not be translated to JavaScript.");
+				HandleTransformationFailure<Node>(stmt, $"{stmt.Kind} could not be translated to JavaScript.");
 		}
-
-		/*
-		// 合并定义
-		VariableDeclaration? decl = null;
-		if (ctx.Count > 0)
-		{
-			decl = new VariableDeclaration(
-				VariableDeclarationKind.Let,
-				NodeList.From(ctx.SelectMany(x => x.Declarations)));
-		}
-		*/
 
 		// 根据上下文判断返回不同类型的语句块
 		// 如果父节点是方法或函数，返回 FunctionBody
@@ -68,36 +58,14 @@ public partial class SemanticWalker
 			operation.Parent is ILocalFunctionOperation ||
 			operation.Parent is IAnonymousFunctionOperation ||
 			operation.Parent is IConstructorBodyOperation)
-		{
-			/*
-			// 插入预定义变量
-			if (decl is not null)
-				statements.Insert(0, decl);
-			*/
-
 			return new FunctionBody(NodeList.From(statements), strict: true);
-		}
 
 		// 如果父节点是类型或类定义的静态初始化块，返回 StaticBlock
 		if (operation.Parent is IFieldInitializerOperation &&
 			operation.Parent is IFieldReferenceOperation fieldRef &&
 			fieldRef.Field.IsStatic)
-		{
-			/*
-			// 插入预定义变量
-			if (decl is not null)
-				statements.Insert(0, decl);
-			*/
-
 			return new StaticBlock(NodeList.From(statements));
-		}
 
-		/*
-		// 插入预定义变量
-		if (decl is not null)
-			argument.Enqueue(decl);
-		*/
-		
 		// 默认情况返回 NestedBlockStatement
 		return new NestedBlockStatement(NodeList.From(statements));
 	}
@@ -146,7 +114,7 @@ public partial class SemanticWalker
 		{
 			BranchKind.Break => new BreakStatement(null),
 			BranchKind.Continue => new ContinueStatement(null),
-			BranchKind.GoTo => HandleTransformationFailure(operation, "Goto statements are not supported in JavaScript."),
+			BranchKind.GoTo => HandleTransformationFailure<Node>(operation, "Goto statements are not supported in JavaScript."),
 			_ => null
 		};
 	}
@@ -226,7 +194,7 @@ public partial class SemanticWalker
 				else if (node is Expression expr)
 					bodyStatements.Add(new NonSpecialExpressionStatement(expr));
 				else
-					HandleTransformationFailure(stmt, "Local function statement could not be translated to JavaScript.");
+					HandleTransformationFailure<Node>(stmt, "Local function statement could not be translated to JavaScript.");
 			}
 		}
 
@@ -416,7 +384,7 @@ public partial class SemanticWalker
 			parent = parent.Parent;
 		}
 
-		return HandleTransformationFailure(operation, "Could not find parent ConditionalAccessOperation.");
+		return HandleTransformationFailure<Node>(operation, "Could not find parent ConditionalAccessOperation.");
 	}
 
 	/// <summary>
@@ -467,7 +435,7 @@ public partial class SemanticWalker
 			return new ParenthesizedExpression(operand);
 		}
 
-		return HandleTransformationFailure(operation.Operand, "Unary operator operand could not be translated to JavaScript.");
+		return HandleTransformationFailure<Node>(operation.Operand, "Unary operator operand could not be translated to JavaScript.");
 	}
 
 	/// <summary>
@@ -518,7 +486,7 @@ public partial class SemanticWalker
 			return new LogicalExpression(@operator, left, right);
 
 		else if (@operator == Operator.Unknown)
-			return HandleTransformationFailure(operation, "Binary operator could not be translated to JavaScript.");
+			return HandleTransformationFailure<Node>(operation, "Binary operator could not be translated to JavaScript.");
 
 		// 其余 → BinaryExpression
 		return new NonLogicalBinaryExpression(@operator, left, right);
@@ -554,7 +522,7 @@ public partial class SemanticWalker
 			return new IfStatement(test, ifConsequent, alternate as Statement);
 		}
 
-		return HandleTransformationFailure(operation, "Conditional operator could not be translated to JavaScript.");
+		return HandleTransformationFailure<Node>(operation, "Conditional operator could not be translated to JavaScript.");
 	}
 
 	/// <summary>
@@ -602,7 +570,7 @@ public partial class SemanticWalker
 			else if (node is Expression expr)
 				statements.Add(new NonSpecialExpressionStatement(expr));
 			else
-				return HandleTransformationFailure(stmt, "Anonymous function body statement could not be translated to JavaScript.");
+				return HandleTransformationFailure<Node>(stmt, "Anonymous function body statement could not be translated to JavaScript.");
 		}
 
 		var body = new FunctionBody(NodeList.From(statements), strict: true);
@@ -688,7 +656,7 @@ public partial class SemanticWalker
 		};
 
 		if (@operator == Operator.Unknown)
-			return HandleTransformationFailure(operation, $"Compound assignment operator {operation.OperatorKind} is not supported");
+			return HandleTransformationFailure<Node>(operation, $"Compound assignment operator {operation.OperatorKind} is not supported");
 
 		return new AssignmentExpression(@operator, left, right);
 	}
@@ -744,8 +712,8 @@ public partial class SemanticWalker
 		else if (operation.ConstantValue.HasValue)
 			name = operation.ConstantValue.Value?.ToString();
 
-		if (string.IsNullOrEmpty(name) && name is null)
-			return HandleTransformationFailure(operation.Argument, "NameOf expression could not be translated to JavaScript.");
+		if (string.IsNullOrEmpty(name) || name is null)
+			return HandleTransformationFailure<Node>(operation.Argument, "NameOf expression could not be translated to JavaScript.");
 
 		return new StringLiteral(name, $"'{name}'");
 	}
@@ -880,7 +848,7 @@ public partial class SemanticWalker
 				else if (memberInit.InitializedMember is IPropertySymbol p)
 					memberName = p.Name;
 				else
-					return HandleTransformationFailure(operation.Initializer, "With initializer could not be translated to JavaScript.");
+					return HandleTransformationFailure<Node>(operation.Initializer, "With initializer could not be translated to JavaScript.");
 
 				// 获取初始化值
 				var initValue = Translate<Expression>(memberInit.Initializer, argument);
@@ -927,7 +895,7 @@ public partial class SemanticWalker
 					}
 				}
 				else
-					return HandleTransformationFailure(operation, "With initializer could not be translated to JavaScript.");
+					return HandleTransformationFailure<Node>(operation, "With initializer could not be translated to JavaScript.");
 
 			}
 		}
@@ -954,12 +922,12 @@ public partial class SemanticWalker
 	{
 		// 通过语法节点获取特性信息
 		if (operation.Syntax is not AttributeSyntax attributeSyntax)
-			return HandleTransformationFailure(operation, "Attribute syntax node is not available");
+			return HandleTransformationFailure<Node>(operation, "Attribute syntax node is not available");
 
 		// 获取特性名称
 		var attributeName = attributeSyntax.Name?.ToString();
-		if (string.IsNullOrEmpty(attributeName) && attributeName is null)
-			return HandleTransformationFailure(operation, "Cannot determine attribute name");
+		if (string.IsNullOrEmpty(attributeName) || attributeName is null)
+			return HandleTransformationFailure<Node>(operation, "Cannot determine attribute name");
 
 		// 移除常见的 C# 特性后缀
 		if (attributeName.EndsWith("Attribute"))
@@ -977,7 +945,7 @@ public partial class SemanticWalker
 					if (expr is Expression convertedExpr)
 						arguments.Add(convertedExpr);
 					else
-						return HandleTransformationFailure(operation, "Failed to convert attribute argument");
+						return HandleTransformationFailure<Node>(operation, "Failed to convert attribute argument");
 				}
 			}
 		}
@@ -1007,7 +975,7 @@ public partial class SemanticWalker
 							));
 						}
 						else
-							return HandleTransformationFailure(operation, "Failed to convert named argument value");
+							return HandleTransformationFailure<Node>(operation, "Failed to convert named argument value");
 					}
 				}
 			}

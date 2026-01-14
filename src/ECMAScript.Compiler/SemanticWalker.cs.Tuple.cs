@@ -174,7 +174,7 @@ public partial class SemanticWalker
 						}
 						else
 						{
-							HandleTransformationFailure(target, $"The {target.Kind} operation is not supported in DeconstructionAssignment.");
+							HandleTransformationFailure<Node>(target, $"The {target.Kind} operation is not supported in DeconstructionAssignment.");
 							return;
 						}
 
@@ -209,7 +209,7 @@ public partial class SemanticWalker
 						}
 						else
 						{
-							HandleTransformationFailure(target, $"The {target.Kind} operation is not supported in DeconstructionAssignment.");
+							HandleTransformationFailure<Node>(target, $"The {target.Kind} operation is not supported in DeconstructionAssignment.");
 							return;
 						}
 
@@ -241,7 +241,7 @@ public partial class SemanticWalker
 					}
 					else
 					{
-						HandleTransformationFailure(element, $"The {element.Kind} operation is not supported in DeconstructionAssignment.");
+						HandleTransformationFailure<Node>(element, $"The {element.Kind} operation is not supported in DeconstructionAssignment.");
 						return;
 					}
 				}
@@ -260,7 +260,7 @@ public partial class SemanticWalker
 					tupleResult = t2;
 				else
 				{
-					HandleTransformationFailure(target, $"The {target.Kind} operation is not supported in DeconstructionAssignment.");
+					HandleTransformationFailure<Node>(target, $"The {target.Kind} operation is not supported in DeconstructionAssignment.");
 					return;
 				}
 
@@ -336,7 +336,7 @@ public partial class SemanticWalker
 			}
 			else
 			{
-				HandleTransformationFailure(target, $"The {target.Kind} operation is not supported in DeconstructionAssignment.");
+				HandleTransformationFailure<Node>(target, $"The {target.Kind} operation is not supported in DeconstructionAssignment.");
 			}
 		}
 	}
@@ -371,7 +371,7 @@ public partial class SemanticWalker
 			isEq);
 
 		if (result is null)
-			return HandleTransformationFailure(operation, "Tuple binary operation could not be translated to JavaScript.");
+			return HandleTransformationFailure<Node>(operation, "Tuple binary operation could not be translated to JavaScript.");
 
 		return new ParenthesizedExpression(result);
 
@@ -384,9 +384,7 @@ public partial class SemanticWalker
 				leftExpr = new Identifier(GetUniqueName(leftInvocation.Syntax));
 				var init = Translate<Expression>(leftInvocation, argument);
 				var declarator = new VariableDeclarator(leftExpr, init);
-				var declaration = new VariableDeclaration(VariableDeclarationKind.Const,
-					NodeList.From(declarator));
-				argument.Enqueue(declaration);
+				argument.Enqueue(declarator);
 			}
 			else if (left.Target is ITupleOperation leftTuple)
 				tupleLeft = leftTuple;
@@ -402,9 +400,7 @@ public partial class SemanticWalker
 				rightExpr = new Identifier(GetUniqueName(rightInvocation.Syntax));
 				var init = Translate<Expression>(rightInvocation, argument);
 				var declarator = new VariableDeclarator(rightExpr, init);
-				var declaration = new VariableDeclaration(VariableDeclarationKind.Const,
-					NodeList.From(declarator));
-				argument.Enqueue(declaration);
+				argument.Enqueue(declarator);
 			}
 			else if (right.Target is ITupleOperation rightTuple)
 				tupleRight = rightTuple;
@@ -447,7 +443,7 @@ public partial class SemanticWalker
 
 					if (subLeft is null || subRight is null)
 					{
-						HandleTransformationFailure(operation, "Tuple binary operation could not be translated to JavaScript.");
+						HandleTransformationFailure<Node>(operation, "Tuple binary operation could not be translated to JavaScript.");
 						return;
 					}
 
@@ -457,7 +453,7 @@ public partial class SemanticWalker
 				{
 					if (exprLeft is null || exprRight is null)
 					{
-						HandleTransformationFailure(operation, "Tuple binary operation could not be translated to JavaScript.");
+						HandleTransformationFailure<Node>(operation, "Tuple binary operation could not be translated to JavaScript.");
 						return;
 					}
 

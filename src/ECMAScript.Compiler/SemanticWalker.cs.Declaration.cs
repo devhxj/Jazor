@@ -132,12 +132,13 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitDeclarationExpression(IDeclarationExpressionOperation operation, Context argument)
 	{
-		// 解构语法
-		if (operation.Parent is ITupleOperation)
-			return Translate<Node>(operation.Expression, argument);
+		var expr = Translate<Expression>(operation.Expression, argument);
+		if (operation.Parent is IArgumentOperation)
+		{
+			var declarator = new VariableDeclarator(expr, null);
+			argument.Enqueue(declarator);
+		}
 
-		// 声明表达式（如 out var x）转换为变量声明
-		var declarator = Translate<VariableDeclarator>(operation.Expression, argument);
-		return new VariableDeclaration(VariableDeclarationKind.Let, NodeList.From(declarator));
+		return expr;
 	}
 }

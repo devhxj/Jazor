@@ -140,7 +140,7 @@ public partial class SemanticWalker
 			else if (bodyNode is Expression bodyExpr)
 				statements.Add(new NonSpecialExpressionStatement(bodyExpr));
 			else
-				return HandleTransformationFailure(bodyOp, "Switch case body could not be translated to JavaScript.");
+				return HandleTransformationFailure<Node>(bodyOp, "Switch case body could not be translated to JavaScript.");
 		}
 
 		return statements.Count > 0 ? new NestedBlockStatement(NodeList.From(statements)) : null;
@@ -154,15 +154,12 @@ public partial class SemanticWalker
 	///         DoSomething();
 	///         break;
 	/// }
-	/// 转换结果：返回比较值，在上级组合成 if-else 链
 	/// </summary>
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitSingleValueCaseClause(ISingleValueCaseClauseOperation operation, Context argument)
 	{
-		// 将单值case转换为条件比较
-		// 返回比较表达式，需要在上级switch中组合成if-else
 		return Translate<Expression>(operation.Value, argument);
 	}
 }
