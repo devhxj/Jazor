@@ -2009,6 +2009,21 @@ public sealed class SemanticWalkerPatternTest
                 {
                     int value = 5;
                     bool result = value > 9 && (value is > 0 and < 10 and not 5) && (value is var x && x < 10);
+                    switch (value)
+                    {
+                      case var s when s > 0:
+                        Console.WriteLine("">0"");
+                        break;
+                      case 1:
+                        Console.WriteLine(""1"");
+                        goto case 1;  							
+                      case 2:
+                        Console.WriteLine(""2"");
+                        goto case 1;
+                      default:
+                        Console.WriteLine(""Default"");
+                        break;
+                    }
                 }
             }
             ");
@@ -2018,9 +2033,28 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let x;
   let value = 5;
+  let x;
   let result = value > 9 && (value > 0 && value < 10 && !(value === 5)) && ((x = value, true) && x < 10);
+  let x, s;
+  (() => {
+    const v$test = value;
+    if ((s = value, true) && s > 0) {
+      Console.WriteLine('>0');
+      break;
+      break;
+    }
+    if (v$test === 1) {
+      Console.WriteLine('1');
+    }
+    if (v$test === 2) {
+      Console.WriteLine('2');
+    }
+    {
+      Console.WriteLine('Default');
+      break;
+    }
+  })();
 }", script);
   }
 }

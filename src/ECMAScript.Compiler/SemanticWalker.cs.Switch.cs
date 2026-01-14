@@ -1,8 +1,8 @@
-﻿using Acornima;
-using Acornima.Ast;
+﻿using Acornima.Ast;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ECMAScript.Compiler;
 
@@ -12,25 +12,44 @@ public partial class SemanticWalker
 	/// 处理 switch 语句操作
 	/// C# 示例：
 	/// switch (value) {
-	///     case 1: 
-	///         DoOne(); 
+	///     case 1:
+	///         DoOne();
 	///         break;
 	///     case 2:
 	///         DoTwo();
 	///         break;
-	///     default: 
-	///         DoDefault(); 
+	///     default:
+	///         DoDefault();
 	///         break;
 	/// }
-	/// 转换结果：直接转换为 JavaScript 的 switch 语句
+	/// 转换结果：
+	/// - 常量 case: 转换为 JavaScript 的 switch 语句
+	/// - 模式 case: 转换为 IIFE + if-else 链
 	/// </summary>
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitSwitch(ISwitchOperation operation, Context argument)
 	{
+		// 检测是否包含模式匹配 case
+		var hasPatternCase = operation.Cases
+			.Any(x=>x.Clauses.Any(y=>y.CaseKind == CaseKind.Pattern));
+
+		// 如果包含模式匹配，转换为 IIFE + if-else 链
+		if (hasPatternCase)
+			return VisitSwitchPatternMatching(operation, argument);
+
+		// 否则转换为传统的 switch 语句
+		return VisitSwitchTraditional(operation, argument);
+	}
+
+	/// <summary>
+	/// 处理传统的 switch 语句（常量 case）
+	/// </summary>
+	private SwitchStatement VisitSwitchTraditional(ISwitchOperation operation, Context argument)
+	{
 		if (Visit(operation.Value, argument) is not Expression discriminant)
-			return HandleTransformationFailure(operation.Value, "Switch discriminant could not be translated to JavaScript.");
+			return HandleTransformationFailure<SwitchStatement>(operation.Value, "Switch discriminant could not be translated to JavaScript.");
 
 		var cases = new List<SwitchCase>();
 		foreach (var switchCase in operation.Cases)
@@ -40,19 +59,8 @@ public partial class SemanticWalker
 
 			// 处理case条件
 			foreach (var clause in switchCase.Clauses)
-			{
-				if (clause.CaseKind == CaseKind.Default)
-				{
-					tests.Add(null); // null表示default case
-				}
-				else if (clause is ISingleValueCaseClauseOperation singleValue)
-				{
-					Translate(tests, singleValue.Value, argument,null);
-				}
-				else
-					return HandleTransformationFailure(clause, "Switch case clause could not be translated to JavaScript.");
-			}
-
+				Translate(tests, clause, argument, null);
+			
 			// 处理case体
 			foreach (var bodyOp in switchCase.Body)
 			{
@@ -62,7 +70,7 @@ public partial class SemanticWalker
 				else if (bodyNode is Expression expr)
 					consequent.Add(new NonSpecialExpressionStatement(expr));
 				else
-					HandleTransformationFailure(bodyOp, "Switch case body statement could not be translated to JavaScript.");
+					return HandleTransformationFailure<SwitchStatement>(bodyOp, "Switch case body statement could not be translated to JavaScript.");
 			}
 
 			// 为每个test值创建一个SwitchCase

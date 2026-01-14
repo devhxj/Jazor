@@ -409,6 +409,127 @@ public partial class SemanticWalker
 	}
 
 	/// <summary>
+	/// 处理包含模式匹配的 switch 语句，转换为 IIFE + if-else 链
+	/// C# 示例：
+	/// switch (obj) {
+	///     case string s when s.Length > 0:
+	///         Console.WriteLine(s);
+	///         break;
+	///     case int i when i > 0:
+	///         Console.WriteLine(i);
+	///         break;
+	///     default:
+	///         Console.WriteLine("Default");
+	///         break;
+	/// }
+	/// 转换结果：IIFE + if-else 链
+	/// 注意：不支持 goto 语句，如需共享逻辑请提取为方法
+	/// </summary>
+	private CallExpression VisitSwitchPatternMatching(ISwitchOperation operation, Context argument)
+	{
+		if (Visit(operation.Value, argument) is not Expression discriminant)
+			return HandleTransformationFailure<CallExpression>(operation.Value, "Switch discriminant could not be translated to JavaScript.");
+
+		// 检测并禁止 goto 语句
+		foreach (var switchCase in operation.Cases)
+		{
+			foreach (var bodyOp in switchCase.Body)
+			{
+				if (bodyOp is IBranchOperation branch && branch.BranchKind == BranchKind.GoTo)
+					return HandleTransformationFailure<CallExpression>(bodyOp, "Goto statements are not supported in switch statements. Please extract shared logic into a separate method.");
+			}
+		}
+
+		// 创建唯一名称存储 switch 值
+		var inputId = new Identifier(GetUniqueName(operation.Value.Syntax));
+		var inputVar = new VariableDeclaration(
+			VariableDeclarationKind.Const,
+			NodeList.From(new VariableDeclarator(inputId, discriminant))
+		);
+
+		var statements = new List<Statement>();
+		Statement? defaultStatement = null;
+
+		foreach (var switchCase in operation.Cases)
+		{
+			// 收集所有条件表达式
+			var conditions = new List<Expression>();
+
+			foreach (var clause in switchCase.Clauses)
+			{
+				if (clause.CaseKind == CaseKind.Default)
+				{
+					// default case，稍后处理
+					continue;
+				}
+				else if (clause is ISingleValueCaseClauseOperation singleValue)
+				{
+					// 常量 case: value === discriminant
+					var valueExpr = Translate<Expression>(singleValue.Value, argument);
+					var condition = new NonLogicalBinaryExpression(Operator.StrictEquality, inputId, valueExpr);
+					conditions.Add(condition);
+				}
+				else if (clause is IPatternCaseClauseOperation patternClause)
+				{
+					// 模式 case: 通过 VisitPatternCaseClause 处理
+					if (Visit(patternClause, argument) is Expression patternCondition)
+						conditions.Add(patternCondition);
+				}
+			}
+
+			// 处理 case 体
+			var bodyStatements = new List<Statement>();
+
+			foreach (var bodyOp in switchCase.Body)
+			{
+				if (Visit(bodyOp, argument) is Statement stmt)
+					bodyStatements.Add(stmt);
+				else if (Visit(bodyOp, argument) is Expression expr)
+					bodyStatements.Add(new NonSpecialExpressionStatement(expr));
+			}
+
+			// 如果没有条件，则是 default case
+			if (conditions.Count == 0)
+			{
+				if (bodyStatements.Count > 0)
+					defaultStatement = new NestedBlockStatement(NodeList.From(bodyStatements));
+			}
+			else
+			{
+				// 组合所有条件（同一个 switchCase 的多个 clause 是 OR 关系）
+				Expression combinedCondition = conditions[0];
+				for (int i = 1; i < conditions.Count; i++)
+				{
+					combinedCondition = new LogicalExpression(Operator.LogicalOr, combinedCondition, conditions[i]);
+				}
+
+				// 添加 break 语句
+				bodyStatements.Add(new BreakStatement(null));
+
+				// 创建 if 语句
+				var ifStmt = new IfStatement(combinedCondition, new NestedBlockStatement(NodeList.From(bodyStatements)), null);
+				statements.Add(ifStmt);
+			}
+		}
+
+		// 添加 default case（如果有）
+		if (defaultStatement is not null)
+			statements.Add(defaultStatement);
+
+		// 构造 IIFE
+		statements.Insert(0, inputVar);
+		var functionBody = new FunctionBody(NodeList.From(statements), strict: true);
+		var arrowFunction = new ArrowFunctionExpression(
+			NodeList.From<Node>(),
+			functionBody,
+			expression: false,
+			async: false
+		);
+
+		return new CallExpression(arrowFunction, NodeList.From<Expression>(), optional: false);
+	}
+
+	/// <summary>
 	/// 处理模式 case 子句操作
 	/// C# 示例：
 	/// switch (obj) {
@@ -416,32 +537,26 @@ public partial class SemanticWalker
 	///         Console.WriteLine(s);
 	///         break;
 	/// }
-	/// 转换结果：转换为条件表达式
+	/// 转换结果：转换为条件表达式（用于模式匹配的 switch 语句）
 	/// </summary>
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Acornima.Ast.Node? VisitPatternCaseClause(IPatternCaseClauseOperation operation, Context argument)
 	{
-		var value = Translate<Expression>(operation.Value, argument);
+		// IPatternCaseClauseOperation 没有 Value 属性
+		// 只返回条件表达式（模式检查 + when 守卫）
+		// 实际的语句体由 VisitSwitch 的 Body 部分处理
+		var condition = Translate<Expression>(operation.Pattern, argument);
 
-		// 默认情况，直接返回
-		if (operation.Pattern.Kind == OperationKind.DiscardPattern)
-			return new ReturnStatement(value);
-
-		else
+		// 处理when子句
+		if (operation.Guard is not null)
 		{
-			var condition = Translate<Expression>(operation.Pattern, argument);
-
-			// 处理when子句
-			if (operation.Guard is not null)
-			{
-				var guard = Translate<Expression>(operation.Guard, argument);
-				condition = new LogicalExpression(Operator.LogicalAnd, condition, guard);
-			}
-
-			return new IfStatement(condition, new ReturnStatement(value), null);
+			var guard = Translate<Expression>(operation.Guard, argument);
+			condition = new LogicalExpression(Operator.LogicalAnd, condition, guard);
 		}
+
+		return condition;
 	}
 
 	/// <summary>
@@ -660,7 +775,7 @@ public partial class SemanticWalker
 			if (value is not null)
 				assignValueExpr = value;
 
-			else if (operation.Parent is IIsPatternOperation)
+			else if (operation.Parent is IIsPatternOperation or IPatternCaseClauseOperation)
 				assignValueExpr = obj;
 
 			else if (operation.Parent is ISlicePatternOperation slicePatternOp)
