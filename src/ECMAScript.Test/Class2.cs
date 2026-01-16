@@ -185,6 +185,8 @@ class TestClass2
 
 	void TestMethod1()
 	{
+		object obj = DateTime.Now;
+		bool a = obj is DateTime;
 		string input = "123";
 		if (int.TryParse(input, out var result))
 		{

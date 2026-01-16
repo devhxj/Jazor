@@ -1,11 +1,9 @@
-using System.Text;
 using Acornima.Ast;
 using ECMAScript.Compiler;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
-using Context = System.Collections.Generic.Queue<Acornima.Ast.VariableDeclaration>;
 
 namespace ECMAScript.ComplierTest;
 
@@ -20,11 +18,27 @@ public sealed class SemanticWalkerPatternTest
   /// <exception cref="InvalidOperationException"></exception>
   private static IBlockOperation GetBlockOperation(string code)
   {
+    var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+      .WithUsings(
+        "System",
+        "System.Collections.Generic",
+        "System.Linq"
+      );
+
     var compilation = CSharpCompilation.Create(
         "TestAssembly",
         syntaxTrees: [CSharpSyntaxTree.ParseText(code)],
         references: Basic.Reference.Assemblies.Net100.References.All,
-        options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        options: options);
+
+    // 输出编译诊断信息
+    var diagnostics = compilation.GetDiagnostics();
+    var errors = diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
+    if (errors.Count > 0)
+    {
+      var errorMessages = string.Join("\n", errors.Select(e => $"{e.Id}: {e.GetMessage()}"));
+      throw new InvalidOperationException(errorMessages);
+    }
 
     var syntaxTree = compilation.SyntaxTrees.First();
     var semanticModel = compilation.GetSemanticModel(syntaxTree);
@@ -298,7 +312,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let obj = true;
-  let result = typeof obj === 'boolean';
+  let result = typeof obj === 'Boolean';
 }", script);
   }
 
@@ -327,7 +341,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitIsType(isTypeOperation!, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual("typeof obj === 'boolean'", script);
+    Assert.AreEqual("typeof obj === 'Boolean'", script);
   }
 
   /// <summary>
@@ -1318,7 +1332,7 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(@"{
   let array = [1, 2, 3, 4, 5];
   let rest;
-  if (Array.isArray(array) && array.length >= 0 && (rest = array, true)) {
+  if (Array.isArray(array) && array.length >= 0 && (rest = array.slice(0), true)) {
     Console.WriteLine(rest.Length);
   }
 }", script);
@@ -1356,7 +1370,7 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToECMAScript();
 
     // 验证生成的表达式
-    Assert.AreEqual(@"rest=array,true", script);
+    Assert.AreEqual(@"rest=array.slice(0),true", script);
     Assert.HasCount(1, context);
   }
 
@@ -1469,7 +1483,7 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(@"{
   let array = [1, 2, 3, 4, 5];
   let first, rest;
-  if (Array.isArray(array) && array.length >= 1 && (first = array[0], true) && (rest = array, true)) {
+  if (Array.isArray(array) && array.length >= 1 && (first = array[0], true) && (rest = array.slice(1), true)) {
     Console.WriteLine(first);
     Console.WriteLine(rest.Length);
   }
@@ -1790,7 +1804,7 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(@"{
   let array = [1, 2, 3, 4, 5];
   let first, second, rest;
-  if (Array.isArray(array) && array.length >= 2 && (first = array[0], true) && (second = array[1], true) && (rest = array, true)) {
+  if (Array.isArray(array) && array.length >= 2 && (first = array[0], true) && (second = array[1], true) && (rest = array.slice(2), true)) {
     Console.WriteLine(first);
     Console.WriteLine(second);
   }
@@ -1996,6 +2010,1099 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual("(x=obj,true)&&x>10", script);
   }
 
+  // ==================== 特殊类型模式测试 ====================
+
+  /// <summary>
+  /// 测试 Visit - IsType DateTime 类型检查
+  /// </summary>
+  [TestMethod]
+  public void Visit_IsType_DateTime()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = DateTime.Now;
+                    bool result = obj is DateTime;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = DateTime.Now;
+  let result = obj instanceof Date;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - IsType long/Int64 类型检查 (BigInt)
+  /// </summary>
+  [TestMethod]
+  public void Visit_IsType_Long()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = 42L;
+                    bool result = obj is long;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = 42n;
+  let result = typeof obj === 'bigint';
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - IsType 数组类型检查
+  /// </summary>
+  [TestMethod]
+  public void Visit_IsType_Array()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = new int[] { 1, 2, 3 };
+                    bool result = obj is int[];
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = [1, 2, 3];
+  let result = Array.isArray(obj);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - IsType Dictionary/Map 类型检查
+  /// </summary>
+  [TestMethod]
+  public void Visit_IsType_Dictionary()
+  {
+    var block = GetBlockOperation(@"
+            using System.Collections.Generic;
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = new Dictionary<string, int>();
+                    bool result = obj is IDictionary<string, int>;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = new Map;
+  let result = obj instanceof Map;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - IsType 自定义 Class 类型检查
+  /// </summary>
+  [TestMethod]
+  public void Visit_IsType_CustomClass()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = new TestClass();
+                    bool result = obj is TestClass;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = new TestClass;
+  let result = obj instanceof TestClass;
+}", script);
+  }
+
+  // ==================== 元组模式测试 ====================
+
+  /// <summary>
+  /// 测试 Visit - RecursivePattern 元组模式
+  /// </summary>
+  [TestMethod]
+  public void Visit_RecursivePattern_Tuple()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var tuple = (1, ""hello"");
+                    bool result = tuple is (int x, string s);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let tuple = [1, 'hello'];
+  let x, s;
+  let result = (x = tuple[0], true) && (s = tuple[1], true);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - RecursivePattern 元组模式带条件
+  /// </summary>
+  [TestMethod]
+  public void Visit_RecursivePattern_TupleWithCondition()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var tuple = (1, ""hello"");
+                    bool result = tuple is (int x, string s) && x > 0;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let tuple = [1, 'hello'];
+  let x, s;
+  let result = (x = tuple[0], true) && (s = tuple[1], true) && x > 0;
+}", script);
+  }
+
+  // ==================== 空列表模式测试 ====================
+
+  /// <summary>
+  /// 测试 Visit - ListPattern 空列表模式
+  /// </summary>
+  [TestMethod]
+  public void Visit_ListPattern_Empty()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[] array = [];
+                    bool result = array is [];
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let array = [];
+  let result = Array.isArray(array) && array.length === 0;
+}", script);
+  }
+
+  // ==================== 可空类型模式测试 ====================
+
+  /// <summary>
+  /// 测试 Visit - IsType 可空类型模式
+  /// </summary>
+  [TestMethod]
+  public void Visit_IsType_NullableInt()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int? value = null;
+                    bool result = value is int;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let value = null;
+  let result = value === null || typeof value === 'number';
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - DeclarationPattern 可空类型带变量声明
+  /// </summary>
+  [TestMethod]
+  public void Visit_DeclarationPattern_Nullable()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int? value = 42;
+                    if (value is int v)
+                    {
+                        Console.WriteLine(v);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let value = 42;
+  let v;
+  if ((value === null || typeof value === 'number') && (v = value, true)) {
+    Console.WriteLine(v);
+  }
+}", script);
+  }
+
+  // ==================== 嵌套声明模式测试 ====================
+
+  /// <summary>
+  /// 测试 Visit - BinaryPattern 嵌套声明模式
+  /// </summary>
+  [TestMethod]
+  public void Visit_BinaryPattern_NestedDeclaration()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = 42;
+                    bool result = obj is int x and int y;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = 42;
+  let x, y;
+  let result = (typeof obj === 'number' && (x = obj, true)) && (typeof obj === 'number' && (y = obj, true));
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - ListPattern 嵌套声明模式
+  /// </summary>
+  [TestMethod]
+  public void Visit_ListPattern_NestedDeclaration()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[] array = [1, 2, 3];
+                    if (array is [var a, var b, var c])
+                    {
+                        Console.WriteLine(a + b + c);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let array = [1, 2, 3];
+  let a, b, c;
+  if (Array.isArray(array) && array.length === 3 && (a = array[0], true) && (b = array[1], true) && (c = array[2], true)) {
+    Console.WriteLine(a + b + c);
+  }
+}", script);
+  }
+
+  // ==================== VisitSwitchExpressionArm 直接调用测试 ====================
+
+  /// <summary>
+  /// 测试 VisitSwitchExpressionArm - 常量模式 arm（直接调用）
+  /// </summary>
+  [TestMethod]
+  public void Visit_SwitchExpressionArm_Constant_Direct()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int value = 5;
+                    string result = value switch
+                    {
+                        1 => ""one"",
+                        2 => ""two"",
+                        _ => ""default""
+                    };
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
+    var declaration = variableDeclarationGroupOp.Declarations.First();
+    var declarator = declaration.Declarators.First();
+    var switchExpressionOperation = declarator.Initializer!.Value as ISwitchExpressionOperation;
+    if (switchExpressionOperation is null)
+      throw new InvalidOperationException("switchExpressionOperation is null");
+    var switchCaseArm = switchExpressionOperation.Arms.First();
+    var node = walker.VisitSwitchExpressionArm(switchCaseArm, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"if (v$test === 1)
+      return 'one';", script);
+  }
+
+  /// <summary>
+  /// 测试 VisitSwitchExpressionArm - 模式 arm 带 when 子句（直接调用）
+  /// </summary>
+  [TestMethod]
+  public void Visit_SwitchExpressionArm_WithGuard_Direct()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int value = 5;
+                    string result = value switch
+                    {
+                        var x when x > 0 => ""positive"",
+                        _ => ""default""
+                    };
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
+    var declaration = variableDeclarationGroupOp.Declarations.First();
+    var declarator = declaration.Declarators.First();
+    var switchExpressionOperation = declarator.Initializer!.Value as ISwitchExpressionOperation;
+    if (switchExpressionOperation is null)
+      throw new InvalidOperationException("switchExpressionOperation is null");
+    var switchCaseArm = switchExpressionOperation.Arms.First();
+    var node = walker.VisitSwitchExpressionArm(switchCaseArm, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"if ((x = v$test, true) && x > 0)
+      return 'positive';", script);
+  }
+
+  /// <summary>
+  /// 测试 VisitSwitchExpressionArm - 丢弃模式 arm（直接调用）
+  /// </summary>
+  [TestMethod]
+  public void Visit_SwitchExpressionArm_Discard_Direct()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int value = 5;
+                    string result = value switch
+                    {
+                        _ => ""default""
+                    };
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
+    var declaration = variableDeclarationGroupOp.Declarations.First();
+    var declarator = declaration.Declarators.First();
+    var switchExpressionOperation = declarator.Initializer!.Value as ISwitchExpressionOperation;
+    if (switchExpressionOperation is null)
+      throw new InvalidOperationException("switchExpressionOperation is null");
+    var switchCaseArm = switchExpressionOperation.Arms.First();
+    var node = walker.VisitSwitchExpressionArm(switchCaseArm, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"return 'default';", script);
+  }
+
+  // ==================== VisitPatternCaseClause 更多测试 ====================
+
+  /// <summary>
+  /// 测试 VisitPatternCaseClause - 常量模式 case（直接调用）
+  /// </summary>
+  [TestMethod]
+  public void Visit_PatternCaseClause_Constant_Direct()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int value = 5;
+                    switch (value)
+                    {
+                        case 1:
+                            break;
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var switchOperation = GetOperationAt<ISwitchOperation>(block, 1);
+    var patternCaseClause = (IPatternCaseClauseOperation)switchOperation.Cases.First()!.Clauses.First()!;
+    var node = walker.VisitPatternCaseClause(patternCaseClause, new());
+    var script = node?.ToECMAScript();
+
+    Assert.AreEqual("v$test===1", script);
+  }
+
+  /// <summary>
+  /// 测试 VisitPatternCaseClause - 关系模式 case（直接调用）
+  /// </summary>
+  [TestMethod]
+  public void Visit_PatternCaseClause_Relational_Direct()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int value = 5;
+                    switch (value)
+                    {
+                        case > 0:
+                            break;
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var switchOperation = GetOperationAt<ISwitchOperation>(block, 1);
+    var patternCaseClause = (IPatternCaseClauseOperation)switchOperation.Cases.First()!.Clauses.First()!;
+    var node = walker.VisitPatternCaseClause(patternCaseClause, new());
+    var script = node?.ToECMAScript();
+
+    Assert.AreEqual("v$test>0", script);
+  }
+
+  /// <summary>
+  /// 测试 VisitPatternCaseClause - 复杂模式带 when 子句（直接调用）
+  /// </summary>
+  [TestMethod]
+  public void Visit_PatternCaseClause_ComplexWithGuard_Direct()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    string value = ""hello"";
+                    switch (value)
+                    {
+                        case string s when s.Length > 0:
+                            break;
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var switchOperation = GetOperationAt<ISwitchOperation>(block, 1);
+    var patternCaseClause = (IPatternCaseClauseOperation)switchOperation.Cases.First()!.Clauses.First()!;
+    var node = walker.VisitPatternCaseClause(patternCaseClause, new());
+    var script = node?.ToECMAScript();
+
+    Assert.AreEqual("(typeof v$test==='string'&&(s=v$test,true))&&s.Length>0", script);
+  }
+
+  // ==================== DateOnly/TimeOnly 类型测试 ====================
+
+  /// <summary>
+  /// 测试 Visit - IsType DateOnly 类型检查
+  /// </summary>
+  [TestMethod]
+  public void Visit_IsType_DateOnly()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = new DateOnly();
+                    bool result = obj is DateOnly;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = new Date;
+  let result = obj instanceof Date;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - IsType DateTimeOffset 类型检查
+  /// </summary>
+  [TestMethod]
+  public void Visit_IsType_DateTimeOffset()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = new DateTimeOffset();
+                    bool result = obj is DateTimeOffset;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = new Date;
+  let result = obj instanceof Date;
+}", script);
+  }
+
+  // ==================== timestamp 类型测试 ====================
+
+  /// <summary>
+  /// 测试 Visit - IsType timestamp 类型检查 (BigInt)
+  /// </summary>
+  [TestMethod]
+  public void Visit_IsType_Timestamp()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = new timestamp();
+                    bool result = obj is timestamp;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = 0n;
+  let result = typeof obj === 'bigint';
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - IsType Char 类型检查
+  /// </summary>
+  [TestMethod]
+  public void Visit_IsType_Char()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = 'A';
+                    bool result = obj is char;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = 'A';
+  let result = typeof obj === 'string';
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - IsType Decimal 类型检查
+  /// </summary>
+  [TestMethod]
+  public void Visit_IsType_Decimal()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = 123.45m;
+                    bool result = obj is decimal;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = 123.45;
+  let result = typeof obj === 'number';
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - IsType TimeOnly 类型检查
+  /// </summary>
+  [TestMethod]
+  public void Visit_IsType_TimeOnly()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = new TimeOnly();
+                    bool result = obj is TimeOnly;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = new Date;
+  let result = obj instanceof Date;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - IsType IEnumerable（非 IDictionary）类型检查
+  /// </summary>
+  [TestMethod]
+  public void Visit_IsType_IEnumerable()
+  {
+    var block = GetBlockOperation(@"
+            using System.Collections.Generic;
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = new List<int>();
+                    bool result = obj is IEnumerable<int>;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = [];
+  let result = obj instanceof Map;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - IsType 匿名类型模式检查
+  /// </summary>
+  [TestMethod]
+  public void Visit_IsType_AnonymousType()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = new { Name = ""Test"", Value = 42 };
+                    bool result = obj is { Name: ""Test"" };
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = { Name: 'Test', Value: 42 };
+  let result = obj.Name === 'Test';
+}", script);
+  }
+
+  // ==================== 复杂切片模式测试 ====================
+
+  /// <summary>
+  /// 测试 Visit - SlicePattern 多个切片模式
+  /// </summary>
+  [TestMethod]
+  public void Visit_SlicePattern_MultipleSlices()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[] array = [1, 2, 3, 4, 5];
+                    bool result = array is [.., 2, ..];
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let array = [1, 2, 3, 4, 5];
+  let result = Array.isArray(array) && array.length >= 1 && array[array.length - 1] === 2;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - SlicePattern 切片带常量模式
+  /// </summary>
+  [TestMethod]
+  public void Visit_SlicePattern_SliceWithConstantPattern()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[] array = [1, 2, 3];
+                    if (array is [.., var last] && last > 0)
+                    {
+                        Console.WriteLine(last);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let array = [1, 2, 3];
+  let last;
+  if (Array.isArray(array) && array.length >= 1 && (last = array, true) && last > 0) {
+    Console.WriteLine(last);
+  }
+}", script);
+  }
+
+  // ==================== 嵌套列表模式测试 ====================
+
+  /// <summary>
+  /// 测试 Visit - ListPattern 嵌套列表模式
+  /// </summary>
+  [TestMethod]
+  public void Visit_ListPattern_NestedList()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var nested = new[] { new[] { 1, 2 }, new[] { 3, 4 } };
+                    bool result = nested is [[1, 2], [3, 4]];
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let nested = [[1, 2], [3, 4]];
+  let result = Array.isArray(nested) && nested.length === 2 && Array.isArray(nested[0]) && nested[0].length === 2 && nested[0][0] === 1 && nested[0][1] === 2 && Array.isArray(nested[1]) && nested[1].length === 2 && nested[1][0] === 3 && nested[1][1] === 4;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - ListPattern 嵌套列表带切片
+  /// </summary>
+  [TestMethod]
+  public void Visit_ListPattern_NestedListWithSlice()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var nested = new[] { new[] { 1, 2, 3 }, new[] { 4, 5, 6 } };
+                    bool result = nested is [[1, ..], [4, ..]];
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let nested = [[1, 2, 3], [4, 5, 6]];
+  let result = Array.isArray(nested) && nested.length === 2 && Array.isArray(nested[0]) && nested[0].length >= 1 && nested[0][0] === 1 && Array.isArray(nested[1]) && nested[1].length >= 1 && nested[1][0] === 4;
+}", script);
+  }
+
+  // ==================== 边界情况测试 ====================
+
+  /// <summary>
+  /// 测试 Visit - RecursivePattern 空属性模式
+  /// </summary>
+  [TestMethod]
+  public void Visit_RecursivePattern_EmptyPropertyPattern()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = new { Name = ""Test"" };
+                    bool result = obj is { };
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = { Name: 'Test' };
+  let result = true;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - ListPattern 单元素列表
+  /// </summary>
+  [TestMethod]
+  public void Visit_ListPattern_SingleElement()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[] array = [42];
+                    bool result = array is [42];
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let array = [42];
+  let result = Array.isArray(array) && array.length === 1 && array[0] === 42;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - BinaryPattern 复杂嵌套
+  /// </summary>
+  [TestMethod]
+  public void Visit_BinaryPattern_ComplexNesting()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int value = 5;
+                    bool result = value is (> 0 and < 10) or (>= 100 and <= 200);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let value = 5;
+  let result = (value > 0 && value < 10) || (value >= 100 && value <= 200);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - RelationalPattern 相等和不等
+  /// </summary>
+  [TestMethod]
+  public void Visit_RelationalPattern_Equality()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int value = 5;
+                    bool result = value is == 5;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let value = 5;
+  let result = value === 5;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - RelationalPattern 不等
+  /// </summary>
+  [TestMethod]
+  public void Visit_RelationalPattern_Inequality()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int value = 5;
+                    bool result = value is != 0;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let value = 5;
+  let result = value !== 0;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - PropertySubpattern 嵌套属性访问
+  /// </summary>
+  [TestMethod]
+  public void Visit_PropertySubpattern_NestedProperty()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var data = new { Inner = new { Value = 42 } };
+                    bool result = data is { Inner: { Value: 42 } };
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let data = { Inner: { Value: 42 } };
+  let result = data.Inner.Value === 42;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - Switch 表达式复杂模式组合
+  /// </summary>
+  [TestMethod]
+  public void Visit_SwitchExpression_ComplexPatternCombination()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = new { X = 1, Y = 2 };
+                    string result = obj switch
+                    {
+                        { X: 1, Y: 2 } => ""Point (1,2)"",
+                        { X: var x } when x > 0 => ""Positive X"",
+                        _ => ""Other""
+                    };
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = { X: 1, Y: 2 };
+  let result = (() => {
+    const v$test = obj;
+    if (v$test.X === 1 && v$test.Y === 2)
+      return 'Point (1,2)';
+    if ((x = v$test.X, true) && x > 0)
+      return 'Positive X';
+    return 'Other';
+  })();
+}", script);
+  }
+
   [TestMethod]
   public void Visit_All()
   {
@@ -2053,4 +3160,6 @@ public sealed class SemanticWalkerPatternTest
   })();
 }", script);
   }
+
+
 }

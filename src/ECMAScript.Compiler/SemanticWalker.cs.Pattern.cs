@@ -120,6 +120,7 @@ using Microsoft.CodeAnalysis.FlowAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 
 namespace ECMAScript.Compiler;
@@ -235,97 +236,30 @@ public partial class SemanticWalker
 	private Expression CreateTypeMatchExpr(IOperation operation, ITypeSymbol typeSymbol, Expression value, bool? nullable = null)
 	{
 		Expression? result = null;
-		var typeName = typeSymbol.Name;
-		var fullTypeName = typeSymbol.ToDisplayString();
+		if (typeSymbol.IsTupleType)
+			result = new CallExpression(IsArrayExpr, NodeList.From(value), optional: false);
 
-		// 类型映射
-		// object -> js object
-		// string -> js string
-		// byte、sbyte、short、ushort、int、uint、decimal、double、float -> js Number
-		// long、timestamp -> BigInt
-		// DateOnly、TimeOnly、DateTime、DateTimeOffset -> js Date
-		// Array -> js array
-		// IDictionary -> js Map
-		// IEnumerable(非IDictionary) -> js Set
-		// 其他 class -> js class
+		// 匿名类型检查为 object
+		else if (typeSymbol.IsAnonymousType)
+			result = TypeOfExpr(value, new StringLiteral("object", "'object'"));
 
-		// 使用 SpecialType 进行基础类型检查，更加类型安全和高效
-		switch (typeSymbol.SpecialType)
+		else
 		{
-			case SpecialType.System_Char:
-			case SpecialType.System_String:
-				result = TypeOfExpr(value, new StringLiteral("string", "'string'"));
-				break;
-			case SpecialType.System_SByte:
-			case SpecialType.System_Byte:
-			case SpecialType.System_Int16:
-			case SpecialType.System_UInt16:
-			case SpecialType.System_Int32:
-			case SpecialType.System_UInt32:
-			case SpecialType.System_Single:
-			case SpecialType.System_Double:
-			case SpecialType.System_Decimal:
-				result = TypeOfExpr(value, new StringLiteral("number", "'number'"));
-				break;
-			case SpecialType.System_Boolean:
-				result = TypeOfExpr(value, new StringLiteral("boolean", "'boolean'"));
-				break;
-			case SpecialType.System_Object:
-				result = TypeOfExpr(value, new StringLiteral("object", "'object'"));
-				break;
-			case SpecialType.System_Int64:
-			case SpecialType.System_UInt64:
-				result = TypeOfExpr(value, new StringLiteral("bigint", "'bigint'"));
-				break;
-			case SpecialType.System_DateTime:
-				result = InstanceOfExpr(value, new Identifier("Date"));
-				break;
-			default:
-				{
-					// 元组类型
-					if (typeSymbol.IsTupleType) { }
-
-					// 匿名类型检查为 object
-					else if (typeSymbol.IsAnonymousType)
-						result = TypeOfExpr(value, new StringLiteral("object", "'object'"));
-
-					// 大整数类型检查（long、timestamp等）
-					else if (typeName.Equals("timestamp", StringComparison.OrdinalIgnoreCase))
-						result = TypeOfExpr(value, new StringLiteral("bigint", "'bigint'"));
-
-					// 日期类型检查
-					else if (typeName.Equals("DateOnly", StringComparison.OrdinalIgnoreCase) ||
-							typeName.Equals("TimeOnly", StringComparison.OrdinalIgnoreCase) ||
-							typeName.Equals("DateTime", StringComparison.OrdinalIgnoreCase) ||
-							typeName.Equals("DateTimeOffset", StringComparison.OrdinalIgnoreCase))
-						result = InstanceOfExpr(value, new Identifier("Date"));
-
-					// 数组类型检查
-					else if (typeName.Equals("Array", StringComparison.OrdinalIgnoreCase) ||
-						fullTypeName.Contains("[]"))
-						result = new CallExpression(IsArrayExpr, NodeList.From(value), optional: false);
-
-					// 字典类型检查
-					else if (typeName.Equals("IDictionary", StringComparison.OrdinalIgnoreCase) ||
-						(typeSymbol is INamedTypeSymbol namedType &&
-						 namedType.AllInterfaces.Any(i => i.Name.Equals("IDictionary", StringComparison.OrdinalIgnoreCase))))
-						result = InstanceOfExpr(value, new Identifier("Map"));
-
-					// 集合类型检查（非字典）
-					else if (typeName.Equals("IEnumerable", StringComparison.OrdinalIgnoreCase) ||
-						(typeSymbol is INamedTypeSymbol enumType &&
-						 enumType.AllInterfaces.Any(i => i.Name.Equals("IEnumerable", StringComparison.OrdinalIgnoreCase)) &&
-						 !enumType.AllInterfaces.Any(i => i.Name.Equals("IDictionary", StringComparison.OrdinalIgnoreCase))))
-						result = InstanceOfExpr(value, new Identifier("Map"));
-
-					// 对于自定义类型，使用instanceof检查
-					else if (typeSymbol.TypeKind == TypeKind.Class)
-					{
-						var right = new Identifier(typeSymbol.Name);
-						result = InstanceOfExpr(value, right);
-					}
-				}
-				break;
+			var mapper = GetMapperType(typeSymbol, out _);
+			result = mapper switch
+			{
+				TypeMapper.String => TypeOfExpr(value, new StringLiteral("string", "'string'")),
+				TypeMapper.Number => TypeOfExpr(value, new StringLiteral("number", "'number'")),
+				TypeMapper.BigInt => TypeOfExpr(value, new StringLiteral("bigint", "'bigint'")),
+				TypeMapper.Object => TypeOfExpr(value, new StringLiteral("object", "'object'")),
+				TypeMapper.Boolean => TypeOfExpr(value, new StringLiteral("Boolean", "'Boolean'")),
+				TypeMapper.Date => InstanceOfExpr(value, new Identifier("Date")),
+				TypeMapper.Map => InstanceOfExpr(value, new Identifier("Map")),
+				TypeMapper.Set => InstanceOfExpr(value, new Identifier("Set")),
+				TypeMapper.Class => InstanceOfExpr(value, new Identifier(typeSymbol.Name)),
+				TypeMapper.Array => new CallExpression(IsArrayExpr, NodeList.From(value), optional: false),
+				_ => null
+			};
 		}
 
 		// 判断可空
@@ -649,11 +583,52 @@ public partial class SemanticWalker
 			conditions.Add(expr);
 		}
 		
-		// 如果不存在子模式，处理类型模式
+		// 处理属性子模式（命名属性）
 		if (operation.PropertySubpatterns.Length > 0)
 		{
 			foreach (var propertySubpattern in operation.PropertySubpatterns)
 				Translate(conditions, propertySubpattern, argument);
+		}
+
+		// 处理元组的位置式解构子模式
+		// C# 示例：value is (int x, string y) 或 tuple is (1, "hello")
+		// 转换结果：生成数组索引访问和比较的组合表达式
+		if (operation.DeconstructionSubpatterns.Length > 0)
+		{
+			var obj = GetPatternRefrence(operation);
+			for (int i = 0; i < operation.DeconstructionSubpatterns.Length; i++)
+			{
+				var subpattern = operation.DeconstructionSubpatterns[i];
+
+				// 创建数组索引访问表达式：obj[i]
+				var indexAccess = new MemberExpression(
+					obj,
+					new NumericLiteral(i, i.ToString()),
+					computed: true,
+					optional: false
+				);
+
+				// 处理每个子模式
+				if (subpattern is IDeclarationPatternOperation declarationPatternOp)
+				{
+					// 声明模式：需要将数组元素赋值给声明的变量
+					// 例如：(int x, string y) 中的 x 和 y
+					var expr = VisitDeclarationPattern(declarationPatternOp, indexAccess, argument);
+					conditions.Add(expr);
+				}
+				else if (subpattern is IDiscardPatternOperation)
+				{
+					// 弃元模式 _：跳过处理
+					continue;
+				}
+				else
+				{
+					// 其他模式（常量模式、类型模式等）：需要比较数组元素的值
+					var patternResult = Translate<Expression>(subpattern, argument);
+					var checkExpr = new NonLogicalBinaryExpression(Operator.StrictEquality, indexAccess, patternResult);
+					conditions.Add(checkExpr);
+				}
+			}
 		}
 
 		if (conditions.Count > 0)
@@ -739,13 +714,44 @@ public partial class SemanticWalker
 			if (value is not null)
 				assignValueExpr = value;
 
-			else if (operation.Parent is IIsPatternOperation or IPatternCaseClauseOperation)
+			else if (operation.Parent is IIsPatternOperation 
+				or IPatternCaseClauseOperation
+				or ISwitchExpressionArmOperation)
 				assignValueExpr = obj;
 
-			else if (operation.Parent is ISlicePatternOperation slicePatternOp)
+			else if (operation.Parent is ISlicePatternOperation slicePatternOp &&
+				operation.Parent.Parent is IListPatternOperation listPatternOp)
 			{
-				if (slicePatternOp.SliceSymbol is null)
-					assignValueExpr = obj;
+				// 获取Slice位置（list 中只有一个切片模式）
+				var index = listPatternOp.Patterns.IndexOf(slicePatternOp);
+				// 切片后面有多少个元素
+				var elementsAfterSlice = listPatternOp.Patterns.Length - index - 1;
+				var sliceMember = new MemberExpression(obj, new Identifier("slice"), computed: false, optional: false);
+				if (elementsAfterSlice == 0)
+				{
+					// 切片在末尾，如 [var first, .. var rest]
+					// JavaScript: obj.slice(index)
+					assignValueExpr = new CallExpression(
+						sliceMember,
+						NodeList.From<Expression>(new NumericLiteral(index, index.ToString())),
+						optional: false
+					);
+				}
+				else
+				{
+					// 切片在中间或开头，需要排除后面的 elementsAfterSlice 个元素
+					// 如 [var first, .. var middle, var last] -> obj.slice(1, -1)
+					// 如 [.. var rest, var last] -> obj.slice(0, -1)
+					// 如 [var a, .. var middle, var b, var c] -> obj.slice(1, -2)
+					assignValueExpr = new CallExpression(
+						sliceMember,
+						NodeList.From<Expression>(
+							new NumericLiteral(index, index.ToString()),
+							new NumericLiteral(-elementsAfterSlice, (-elementsAfterSlice).ToString())
+						),
+						optional: false
+					);
+				}
 			}
 
 			if (assignValueExpr is null)
@@ -958,11 +964,7 @@ public partial class SemanticWalker
 
 		// 检查是数组 Array.isArray(target)
 		Expression result = new CallExpression(
-			callee: new MemberExpression(
-				obj: new Identifier("Array"),
-				property: new Identifier("isArray"),
-				computed: false,
-				optional: false),
+			callee: IsArrayExpr,
 			args: NodeList.From(obj),
 			optional: false
 		);

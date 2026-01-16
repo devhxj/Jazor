@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.Operations;
 using System;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Reflection.Metadata;
+using ECMAScript.Common;
 
 namespace ECMAScript.Analyzer;
 
@@ -33,48 +33,6 @@ public partial class Analyzer : DiagnosticAnalyzer
 	private const string Title = "Jazor";
 	private const string MessageFormat = "[{0}] is not support in ECMAScript";
 	private const string Category = "Security";
-	/// <summary>
-	/// 不显示global::前缀，保留完整的命名空间路径，不显示泛型参数。
-	/// </summary>
-	private readonly static SymbolDisplayFormat NameFormat = new(
-		globalNamespaceStyle:
-			// 不包含 
-			SymbolDisplayGlobalNamespaceStyle.Omitted,
-		typeQualificationStyle:
-			//保留完整的命名空间路径
-			SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
-		genericsOptions:
-			// 不显示泛型参数
-			SymbolDisplayGenericsOptions.IncludeTypeParameters,
-		memberOptions:
-			//SymbolDisplayMemberOptions.IncludeType |
-			SymbolDisplayMemberOptions.IncludeModifiers |
-			//SymbolDisplayMemberOptions.IncludeAccessibility |
-			SymbolDisplayMemberOptions.IncludeExplicitInterface |
-			SymbolDisplayMemberOptions.IncludeParameters |
-			SymbolDisplayMemberOptions.IncludeContainingType |
-			SymbolDisplayMemberOptions.IncludeConstantValue |
-			SymbolDisplayMemberOptions.IncludeRef,
-		delegateStyle:
-			SymbolDisplayDelegateStyle.NameAndParameters,
-		extensionMethodStyle:
-			 SymbolDisplayExtensionMethodStyle.InstanceMethod,
-		parameterOptions:
-			SymbolDisplayParameterOptions.IncludeType |
-			SymbolDisplayParameterOptions.IncludeModifiers |
-			SymbolDisplayParameterOptions.IncludeParamsRefOut,
-		propertyStyle:
-			SymbolDisplayPropertyStyle.ShowReadWriteDescriptor,
-		localOptions:
-			SymbolDisplayLocalOptions.IncludeType |
-			SymbolDisplayLocalOptions.IncludeModifiers |
-			SymbolDisplayLocalOptions.IncludeConstantValue,
-		kindOptions:
-			SymbolDisplayKindOptions.None,
-		miscellaneousOptions:
-			SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers |
-			SymbolDisplayMiscellaneousOptions.UseSpecialTypes
-	);
 
 	/// <summary>
 	/// 表示用于定义特定分析器诊断特征的诊断规则。
@@ -217,7 +175,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 		}
 
 		// 允许白名单中的类型
-		var fullName = typeSymbol.OriginalDefinition.ToDisplayString(NameFormat);
+		var fullName = typeSymbol.OriginalDefinition.ToDisplayString(Util.NameFormat);
 		if (WhiteList.Types.Contains(fullName))
 			return;
 
@@ -265,7 +223,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 						var location = creation.Syntax.GetLocation();
 						CheckType(ctx.ReportDiagnostic, type, location);
 						// 添加构造函数检查
-						var ctorKey = creation.Constructor!.OriginalDefinition.ToDisplayString(NameFormat);
+						var ctorKey = creation.Constructor!.OriginalDefinition.ToDisplayString(Util.NameFormat);
 						if (!WhiteList.Members.Contains(ctorKey))
 							ctx.ReportDiagnostic(Diagnostic.Create(Rule,
 								location,
@@ -299,7 +257,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 					if (InECMAScriptAttribute(invocation.TargetMethod.ContainingType))
 						return;
 
-					var key = invocation.TargetMethod.OriginalDefinition.ToDisplayString(NameFormat);
+					var key = invocation.TargetMethod.OriginalDefinition.ToDisplayString(Util.NameFormat);
 					if (WhiteList.Members.Contains(key))
 						return;
 
@@ -314,12 +272,12 @@ public partial class Analyzer : DiagnosticAnalyzer
 					// 枚举字段、特性、白名单内不检查
 					if (operation.Field.ContainingType.TypeKind == TypeKind.Enum ||
 						InECMAScriptAttribute(operation.Field.ContainingType) ||
-						WhiteList.Members.Contains(operation.Field.OriginalDefinition.ToDisplayString(NameFormat)))
+						WhiteList.Members.Contains(operation.Field.OriginalDefinition.ToDisplayString(Util.NameFormat)))
 						return;
 
 					ctx.ReportDiagnostic(Diagnostic.Create(Rule,
 						operation.Syntax.GetLocation(),
-						operation.Field.OriginalDefinition.ToDisplayString(NameFormat)));
+						operation.Field.OriginalDefinition.ToDisplayString(Util.NameFormat)));
 				}
 				break;
 
@@ -330,12 +288,12 @@ public partial class Analyzer : DiagnosticAnalyzer
 					// 匿名类型、特性、白名单内不检查
 					if (operation.Property.ContainingType.IsAnonymousType ||
 						InECMAScriptAttribute(operation.Property.ContainingType) ||
-						WhiteList.Members.Contains(operation.Property.OriginalDefinition.ToDisplayString(NameFormat)))
+						WhiteList.Members.Contains(operation.Property.OriginalDefinition.ToDisplayString(Util.NameFormat)))
 						return;
 
 					ctx.ReportDiagnostic(Diagnostic.Create(Rule,
 						operation.Syntax.GetLocation(),
-						operation.Property.OriginalDefinition.ToDisplayString(NameFormat)));
+						operation.Property.OriginalDefinition.ToDisplayString(Util.NameFormat)));
 				}
 				break;
 			case OperationKind.MethodReference:
@@ -344,7 +302,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 					if (InECMAScriptAttribute(operation.Method.ContainingType))
 						return;
 
-					var key = operation.Method.OriginalDefinition.ToDisplayString(NameFormat);
+					var key = operation.Method.OriginalDefinition.ToDisplayString(Util.NameFormat);
 					if (WhiteList.Members.Contains(key))
 						return;
 

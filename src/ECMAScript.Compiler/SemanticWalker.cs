@@ -9,6 +9,8 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
+using System.Linq;
+using ECMAScript.Common;
 
 namespace ECMAScript.Compiler;
 
@@ -36,8 +38,98 @@ public sealed partial class SemanticWalker : OperationVisitor<Context, Node?>
 
 	private static readonly MemberExpression IsArrayExpr = new(new Identifier("Array"), new Identifier("isArray"), computed: false, optional: false);
 
+    private static TypeMapper GetMapperType(ITypeSymbol typeSymbol, out string displayName)
+    {
+        // 类型映射
+        // object、匿名类型、元组类型 -> js object
+        // string -> js string
+        // byte、sbyte、short、ushort、int、uint、decimal、double、float -> js Number
+        // long、ulong、Int128、UInt128、timestamp、BigInteger ->js BigInt
+        // DateOnly、TimeOnly、DateTime、DateTimeOffset -> js Date
+        // Array -> js array
+        // IDictionary -> js Map
+        // IEnumerable(非IDictionary) -> js Set
+        // 其他 class -> js class
+        // 其他类型不支持 -> Unknown
+
+        var kind = typeSymbol.Kind;
+        var typeKind = typeSymbol.TypeKind;
+        displayName = typeSymbol.ToDisplayString(Util.NameFormat);
+
+        if (typeSymbol.IsTupleType || typeSymbol.IsAnonymousType)
+            return TypeMapper.Object;
+
+        // 使用 SpecialType 进行基础类型检查，更加类型安全和高效
+        switch (typeSymbol.SpecialType)
+        {
+            case SpecialType.System_Char:
+            case SpecialType.System_String:
+                return TypeMapper.String;
+            case SpecialType.System_SByte:
+            case SpecialType.System_Byte:
+            case SpecialType.System_Int16:
+            case SpecialType.System_UInt16:
+            case SpecialType.System_Int32:
+            case SpecialType.System_UInt32:
+            case SpecialType.System_Single:
+            case SpecialType.System_Double:
+            case SpecialType.System_Decimal:
+                return TypeMapper.Number;
+            case SpecialType.System_Boolean:
+                return TypeMapper.Boolean;
+            case SpecialType.System_Object:
+                return TypeMapper.Object;
+            case SpecialType.System_Int64:
+            case SpecialType.System_UInt64:
+                return TypeMapper.BigInt;
+            case SpecialType.System_DateTime:
+                return TypeMapper.Date;
+            default:
+                {
+                    // Array 类型检查
+                    if (typeSymbol.TypeKind == TypeKind.Array)
+                        return TypeMapper.Array;
+
+                    // Enum 类型映射到 Number
+                    else if (typeSymbol.TypeKind == TypeKind.Enum)
+                        return TypeMapper.Number;
+
+                    // 对于自定义类型，使用instanceof检查（优先于接口检查）
+                    else if (typeSymbol.TypeKind == TypeKind.Class)
+                        return TypeMapper.Class;
+
+                    // Struct 类型映射到 Object
+                    else if (typeSymbol.TypeKind == TypeKind.Struct)
+                        return TypeMapper.Class;
+
+                    // IDictionary 类型检查（包括泛型和非泛型）
+                    else if (typeSymbol.AllInterfaces.Any(i => i.Name == "IDictionary"))
+                        return TypeMapper.Map;
+
+                    // IEnumerable 类型检查（包括泛型和非泛型，排除 IDictionary）
+                    else if (typeSymbol.AllInterfaces.Any(i => i.Name == "IEnumerable"))
+                        return TypeMapper.Set;
+
+                    // Date 相关类型（SpecialType 只包含 DateTime）
+                    else if (displayName == "System.DateTimeOffset" ||
+                        displayName == "System.DateOnly" ||
+                        displayName == "System.TimeOnly")
+                        return TypeMapper.Date;
+
+                    // BigInt 相关类型（SpecialType 只包含 Int64/UInt64）
+                    else if (displayName == "System.Int128" ||
+                        displayName == "System.UInt128" ||
+                        displayName == "System.TimeSpan" ||
+                        displayName == "System.Numerics.BigInteger")
+                        return TypeMapper.BigInt;
+                }
+                break;
+        }
+
+        return TypeMapper.Unknown;
+    }
+
     private int _recursionDepth;
-    private readonly ConcurrentDictionary<IOperation, Expression> _exprCache = [];
 
     /// <summary>
     /// 调试标识
