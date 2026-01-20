@@ -181,7 +181,7 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.VisitTuple(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("{name:'test',Item2:42,Item3:true}", script);
+        Assert.AreEqual(@"{name:""test"",Item2:42,Item3:true}", script);
         //Assert.AreEqual("Tuple.Create([['name','test'],['Item2',42],['Item3',true]])", script);
     }
 
@@ -225,7 +225,7 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.VisitTuple(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("{str:'hello',num:3.14,flag:false,list:[1,2,3]}", script);
+        Assert.AreEqual(@"{str:""hello"",num:3.14,flag:false,list:[1,2,3]}", script);
         //Assert.AreEqual(@"Tuple.Create([['str','hello'],['num',3.14],['flag',false],['list',[1,2,3]]])", script);
     }
 
@@ -270,7 +270,7 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.VisitTuple(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("{len:'test'.Length,upper:'test'.ToUpper(),lower:'TEST'.ToLower()}", script);
+        Assert.AreEqual(@"{len:""test"".Length,upper:""test"".ToUpper(),lower:""TEST"".ToLower()}", script);
         //Assert.AreEqual(@"Tuple.Create([['len','test'.Length],['upper','test'.ToUpper()],['lower','TEST'.ToLower()]])", script);
     }
 
@@ -740,7 +740,7 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.VisitTupleBinaryOperator(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("(1===1&&2===2)", script);
+        Assert.AreEqual("(BigInt(1)===1n&&2===2)", script);
     }
 
     [TestMethod]

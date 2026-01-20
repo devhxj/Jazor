@@ -1,11 +1,58 @@
-﻿using Acornima;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Operations;
+using Acornima;
 using ConsoleApp1;
 using ECMAScript;
 using ECMAScript.Test;
 using System.Text;
 using System.Text.Json;
 
+
 Console.WriteLine("Hello, World!");
+
+
+var code = @"
+class TestClass
+{
+    void TestMethod()
+    {
+        int[] array = [1, 2];
+        string result = array switch
+        {
+            [..] => ""empty or any"",
+            _ => ""other""
+        };
+    }
+}
+";
+
+    // 创建 global using 语法树
+    var usings = @"
+        global using System;
+        global using System.Collections.Generic;
+        global using System.Linq;";
+
+    var compilation = CSharpCompilation.Create(
+        "TestAssembly",
+        syntaxTrees:
+        [
+            CSharpSyntaxTree.ParseText(usings),
+            CSharpSyntaxTree.ParseText(code)
+        ],
+        references: Basic.Reference.Assemblies.Net100.References.All,
+        options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+    // 输出编译诊断信息
+    var diagnostics = compilation.GetDiagnostics();
+    var errors = diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
+    if (errors.Count > 0)
+    {
+      var errorMessages = string.Join("\n", errors.Select(e => $"{e.Id}: {e.GetMessage()}"));
+      throw new InvalidOperationException(errorMessages);
+    }
+
 
 //Thread.Sleep(5000);
 
@@ -37,25 +84,13 @@ Console.WriteLine("Hello, World!");
 //{
 //	Console.WriteLi ne($"请求失败: {ex.Message}");
 //}
- var result = (1,(3,5)) == (2,(4,6));
+var result = (1,(3,5)) == (2,(4,6));
 var tuple = (outer: (inner: 1, 2), 3);
 var  b = (2,4);
 var  c = (2,"a");
 ((int bbb, int ccc),int aaa) = tuple;
 var script = @"
-class Person {
-  #name;
-  constructor() {
-  }
-  get name() {
-    return this.#name;
-  }
-  set name(v) {
-    this.#name = v;
-  }
-}
-
-let b = new Person(){name = 'tom'};
+const a = 48n
 ";
 var parser = new Parser(new ParserOptions { 
 
@@ -67,4 +102,6 @@ Console.WriteLine($"{ast.ToJson()}");
 Console.WriteLine($"------------------");
 Console.WriteLine($"OUT:{ast.ToJavaScript()}");
 Console.ReadLine();
+
+
 

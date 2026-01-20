@@ -118,10 +118,7 @@ using Acornima.Ast;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis;
 using Microsoft.CodeAnalysis.Operations;
-using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Linq;
 
 namespace ECMAScript.Compiler;
 
@@ -235,12 +232,8 @@ public partial class SemanticWalker
 
 	private Expression CreateTypeMatchExpr(IOperation operation, ITypeSymbol typeSymbol, Expression value, bool? nullable = null)
 	{
-		Expression? result = null;
-		if (typeSymbol.IsTupleType)
-			result = new CallExpression(IsArrayExpr, NodeList.From(value), optional: false);
-
-		// 匿名类型检查为 object
-		else if (typeSymbol.IsAnonymousType)
+		Expression? result;
+		if (typeSymbol.IsTupleType || typeSymbol.IsAnonymousType)
 			result = TypeOfExpr(value, new StringLiteral("object", "'object'"));
 
 		else
@@ -248,11 +241,11 @@ public partial class SemanticWalker
 			var mapper = GetMapperType(typeSymbol, out _);
 			result = mapper switch
 			{
-				TypeMapper.String => TypeOfExpr(value, new StringLiteral("string", "'string'")),
-				TypeMapper.Number => TypeOfExpr(value, new StringLiteral("number", "'number'")),
-				TypeMapper.BigInt => TypeOfExpr(value, new StringLiteral("bigint", "'bigint'")),
-				TypeMapper.Object => TypeOfExpr(value, new StringLiteral("object", "'object'")),
-				TypeMapper.Boolean => TypeOfExpr(value, new StringLiteral("Boolean", "'Boolean'")),
+				TypeMapper.String => TypeOfExpr(value, new StringLiteral("string", "\"string\"")),
+				TypeMapper.Number => TypeOfExpr(value, new StringLiteral("number", "\"number\"")),
+				TypeMapper.BigInt => TypeOfExpr(value, new StringLiteral("bigint", "\"bigint\"")),
+				TypeMapper.Object => TypeOfExpr(value, new StringLiteral("object", "\"object\"")),
+				TypeMapper.Boolean => TypeOfExpr(value, new StringLiteral("boolean", "\"boolean\"")),
 				TypeMapper.Date => InstanceOfExpr(value, new Identifier("Date")),
 				TypeMapper.Map => InstanceOfExpr(value, new Identifier("Map")),
 				TypeMapper.Set => InstanceOfExpr(value, new Identifier("Set")),
@@ -298,7 +291,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitIsType(IIsTypeOperation operation, Context argument)
+	public override Node? VisitIsType(IIsTypeOperation operation, Context argument)
 	{
 		var value = Translate<Expression>(operation.ValueOperand, argument);
 		var result = CreateTypeMatchExpr(operation, operation.TypeOperand, value);
@@ -318,7 +311,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitIsNull(IIsNullOperation operation, Context argument)
+	public override Node? VisitIsNull(IIsNullOperation operation, Context argument)
 	{
 		// null检查转换为 === null 比较
 		var operand = Translate<Expression>(operation.Operand, argument);
@@ -337,7 +330,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitIsPattern(IIsPatternOperation operation, Context argument)
+	public override Node? VisitIsPattern(IIsPatternOperation operation, Context argument)
 	{
 		return Translate<Expression>(operation.Pattern, argument);
 	}
@@ -453,7 +446,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitPatternCaseClause(IPatternCaseClauseOperation operation, Context argument)
+	public override Node? VisitPatternCaseClause(IPatternCaseClauseOperation operation, Context argument)
 	{
 		// IPatternCaseClauseOperation 没有 Value 属性
 		// 只返回条件表达式（模式检查 + when 守卫）
@@ -488,7 +481,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitSwitchExpression(ISwitchExpressionOperation operation, Context argument)
+	public override Node? VisitSwitchExpression(ISwitchExpressionOperation operation, Context argument)
 	{
 		// 至少有一个分支
 		if (operation.Arms.Length < 1)
@@ -531,7 +524,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitSwitchExpressionArm(ISwitchExpressionArmOperation operation, Context argument)
+	public override Node? VisitSwitchExpressionArm(ISwitchExpressionArmOperation operation, Context argument)
 	{
 		var value = Translate<Expression>(operation.Value, argument);
 
@@ -567,7 +560,7 @@ public partial class SemanticWalker
 	/// <param name="operation">递归模式操作</param>
 	/// <param name="argument">当前operation所属的父operation</param>
 	/// <returns>JavaScript组合条件表达式</returns>
-	public override Acornima.Ast.Node? VisitRecursivePattern(IRecursivePatternOperation operation, Context argument)
+	public override Node? VisitRecursivePattern(IRecursivePatternOperation operation, Context argument)
 	{
 		// 递归模式的条件判断转换
 		// C# 示例：obj is Person { Name: "John", Age: > 18 }
@@ -575,24 +568,27 @@ public partial class SemanticWalker
 		// 递归模式由多个子模式组成，需要用 && 连接所有条件
 
 		var conditions = new List<Expression>();
-		if (!operation.MatchedType.IsAnonymousType)
+		if (!(
+			operation.MatchedType.IsAnonymousType ||
+			operation.MatchedType.IsTupleType ||
+			operation.MatchedType.SpecialType == SpecialType.System_Object
+		))
 		{
 			// 根据获取的名称构建目标表达式
 			var obj = GetPatternRefrence(operation);
 			var expr = CreateTypeMatchExpr(operation, operation.MatchedType, obj);
 			conditions.Add(expr);
 		}
-		
+
 		// 处理属性子模式（命名属性）
 		if (operation.PropertySubpatterns.Length > 0)
-		{
 			foreach (var propertySubpattern in operation.PropertySubpatterns)
 				Translate(conditions, propertySubpattern, argument);
-		}
+		
 
 		// 处理元组的位置式解构子模式
 		// C# 示例：value is (int x, string y) 或 tuple is (1, "hello")
-		// 转换结果：生成数组索引访问和比较的组合表达式
+		// 转换结果：生成对象属性访问和比较的组合表达式
 		if (operation.DeconstructionSubpatterns.Length > 0)
 		{
 			var obj = GetPatternRefrence(operation);
@@ -637,10 +633,10 @@ public partial class SemanticWalker
 			var result = conditions[0];
 			for (int i = 1; i < conditions.Count; i++)
 				result = new LogicalExpression(Operator.LogicalAnd, result, conditions[i]);
-			
+
 			return result;
 		}
-		
+
 		// 如果没有条件，返回true（空模式总是匹配）
 		return new BooleanLiteral(true, "true");
 	}
@@ -656,7 +652,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitConstantPattern(IConstantPatternOperation operation, Context argument)
+	public override Node? VisitConstantPattern(IConstantPatternOperation operation, Context argument)
 	{
 		var expr = Translate<Expression>(operation.Value, argument);
 
@@ -781,7 +777,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitDeclarationPattern(IDeclarationPatternOperation operation, Context argument)
+	public override Node? VisitDeclarationPattern(IDeclarationPatternOperation operation, Context argument)
 		=> VisitDeclarationPattern(operation, null, argument);
 	
 	/// <summary>
@@ -798,7 +794,7 @@ public partial class SemanticWalker
 	/// <param name="operation">丢弃模式操作</param>
 	/// <param name="argument">当前operation所属的父operation</param>
 	/// <returns>JavaScript布尔字面量true</returns>
-	public override Acornima.Ast.Node? VisitDiscardPattern(IDiscardPatternOperation operation, Context argument)
+	public override Node? VisitDiscardPattern(IDiscardPatternOperation operation, Context argument)
 	{
 		// 丢弃模式的条件判断转换
 		// C# 示例：_ 表示"总是匹配"的模式
@@ -822,7 +818,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitPropertySubpattern(IPropertySubpatternOperation operation, Context argument)
+	public override Node? VisitPropertySubpattern(IPropertySubpatternOperation operation, Context argument)
 	{
 		// 属性子模式的条件判断转换
 		// C# 示例：obj is { Name: "John" } 中的 Name: "John" 部分
@@ -843,7 +839,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitNegatedPattern(INegatedPatternOperation operation, Context argument)
+	public override Node? VisitNegatedPattern(INegatedPatternOperation operation, Context argument)
 	{
 		// 取反模式的条件判断转换
 		// C# 示例：obj is not null 是一个布尔条件表达式
@@ -870,7 +866,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitBinaryPattern(IBinaryPatternOperation operation, Context argument)
+	public override Node? VisitBinaryPattern(IBinaryPatternOperation operation, Context argument)
 	{
 		// 二元模式的条件判断转换
 		// C# 示例：value is > 0 and < 100 是一个布尔条件表达式
@@ -907,7 +903,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitRelationalPattern(IRelationalPatternOperation operation, Context argument)
+	public override Node? VisitRelationalPattern(IRelationalPatternOperation operation, Context argument)
 	{
 		// 关系模式的条件判断转换
 		// C# 示例：value is > 0 是一个布尔条件表达式
@@ -954,7 +950,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitListPattern(IListPatternOperation operation, Context argument)
+	public override Node? VisitListPattern(IListPatternOperation operation, Context argument)
 	{
 		if (operation.Patterns.IsEmpty) 
 			return null;
@@ -1051,7 +1047,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitSlicePattern(ISlicePatternOperation operation, Context argument)
+	public override Node? VisitSlicePattern(ISlicePatternOperation operation, Context argument)
 	{
 		if (operation.Pattern is null)
 			return null;
@@ -1073,7 +1069,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitTypePattern(ITypePatternOperation operation, Context argument)
+	public override Node? VisitTypePattern(ITypePatternOperation operation, Context argument)
 	{
 		// 类型模式的条件判断转换
 		// C# 示例：obj is string 是一个布尔条件表达式

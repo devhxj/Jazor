@@ -16,7 +16,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitArrayInitializer(IArrayInitializerOperation operation, Context argument)
+	public override Node? VisitArrayInitializer(IArrayInitializerOperation operation, Context argument)
 	{
 		var elements = new List<Expression?>();
 		foreach (var element in operation.ElementValues)
@@ -36,7 +36,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitFieldInitializer(IFieldInitializerOperation operation, Context argument)
+	public override Node? VisitFieldInitializer(IFieldInitializerOperation operation, Context argument)
 	{
 		return Visit(operation.Value, argument);
 	}
@@ -51,7 +51,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitVariableInitializer(IVariableInitializerOperation operation, Context argument)
+	public override Node? VisitVariableInitializer(IVariableInitializerOperation operation, Context argument)
 	{
 		return Visit(operation.Value, argument);
 	}
@@ -66,7 +66,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitVariableDeclarator(IVariableDeclaratorOperation operation, Context argument)
+	public override Node? VisitVariableDeclarator(IVariableDeclaratorOperation operation, Context argument)
 	{
 		var identifier = new Identifier(operation.Symbol.Name);
 		var init = Translate<Expression>(operation.Initializer, argument, null);
@@ -84,7 +84,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitVariableDeclaration(IVariableDeclarationOperation operation, Context argument)
+	public override Node? VisitVariableDeclaration(IVariableDeclarationOperation operation, Context argument)
 	{
 		var declarators = new List<VariableDeclarator>();
 		foreach (var declarator in operation.Declarators)
@@ -102,7 +102,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitVariableDeclarationGroup(IVariableDeclarationGroupOperation operation, Context argument)
+	public override Node? VisitVariableDeclarationGroup(IVariableDeclarationGroupOperation operation, Context argument)
 	{
 		// 可以假设 IVariableDeclarationGroupOperation.Declarations 只包含一个元素
 		// 除非你正在处理一些非常特殊的、涉及类型推断的复合声明（如 using 语句）。
@@ -111,12 +111,9 @@ public partial class SemanticWalker
 		// 在这些操作内部，你可能会找到多个 IVariableDeclarationOperation，但它们不一定被包装在一个公开的 IVariableDeclarationGroupOperation 中。
 		var declarators = new List<VariableDeclarator>();
 		foreach (var declaration in operation.Declarations)
-		{
 			foreach (var declarator in declaration.Declarators)
-			{
 				Translate(declarators, declarator, argument);
-			}
-		}
+
 		return new VariableDeclaration(VariableDeclarationKind.Let, NodeList.From(declarators));
 	}
 
@@ -130,7 +127,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitDeclarationExpression(IDeclarationExpressionOperation operation, Context argument)
+	public override Node? VisitDeclarationExpression(IDeclarationExpressionOperation operation, Context argument)
 	{
 		var expr = Translate<Expression>(operation.Expression, argument);
 		if (operation.Parent is IArgumentOperation)

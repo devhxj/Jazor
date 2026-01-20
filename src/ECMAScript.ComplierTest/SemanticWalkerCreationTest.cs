@@ -172,7 +172,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("new MyClass(42,'test')", script);
+        Assert.AreEqual(@"new MyClass(42,""test"")", script);
     }
 
     [TestMethod]
@@ -193,7 +193,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitAnonymousObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("{Name:'John',Age:30}", script);
+        Assert.AreEqual(@"{Name:""John"",Age:30}", script);
     }
 
     [TestMethod]
@@ -302,7 +302,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitAnonymousObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("{Name:'John',Age:25}", script);
+        Assert.AreEqual(@"{Name:""John"",Age:25}", script);
     }
 
     [TestMethod]
@@ -353,7 +353,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, []);
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("new MyClass(2,3);obj.Property1='value1';obj.Property2=42;", script);
+        Assert.AreEqual(@"new MyClass(2,3);obj.Property1=""value1"";obj.Property2=42;", script);
     }
 
     [TestMethod]
@@ -381,7 +381,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!, []);
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("obj.Property1='value1';obj.Property2=42;", script);
+        Assert.AreEqual(@"obj.Property1=""value1"";obj.Property2=42;", script);
     }
 
     [TestMethod]
@@ -423,7 +423,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, []);
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("new A;obj.A1={B1:'Test',B2:{C1:'a',C2:9}};obj.A2='value';", script);
+        Assert.AreEqual(@"new A;obj.A1={B1:""Test"",B2:{C1:""a"",C2:9}};obj.A2=""value"";", script);
     }
 
     [TestMethod]
@@ -540,10 +540,10 @@ public sealed class SemanticWalkerCreationTest
         Assert.AreEqual(@"{
   let simpleObj = new MyClass;
   let paramObj = new MyClass(42, 'test');
-  let anonymousObj = { Name: 'John', Age: 30 };
+  let anonymousObj = { Name: ""John"", Age: 30 };
   let array1 = [1, 2, 3];
   let array2 = new Array(5);
-  let name = 'John';
+  let name = ""John"";
   let message = `Hello, ${name}!`;
 }", script);
     }
@@ -651,9 +651,14 @@ public sealed class SemanticWalkerCreationTest
         var walker = new SemanticWalker(true);
         var left = new Identifier("obj");
         var node = walker.VisitObjectCreation(operation, []);
-        var script = node?.ToECMAScript();
+        var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual("new MyClass(1,2);obj.Prop1='value1';obj.Prop2=42;obj.Nested=new NestedClass;obj.Nested.NestedProp='nested';", script);
+        Assert.AreEqual(@"new MyClass(1, 2);
+obj.Prop1 = ""value1"";
+obj.Prop2 = 42;
+obj.Nested = new NestedClass;
+obj.Nested.NestedProp = ""nested"";
+", script);
     }
 
     [TestMethod]

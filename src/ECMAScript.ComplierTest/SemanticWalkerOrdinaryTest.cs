@@ -333,7 +333,7 @@ public sealed class SemanticWalkerOrdinaryTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let str = 'Hello';
+  let str = ""Hello"";
 }", script);
 
   }
@@ -440,7 +440,7 @@ public sealed class SemanticWalkerOrdinaryTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let str = 'Hello';
+  let str = ""Hello"";
   let length = str.Length;
 }", script);
 
@@ -667,7 +667,7 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.AreEqual(@"{
   let str = null;
-  let result = str ?? 'default';
+  let result = str ?? ""default"";
 }", script);
 
   }
@@ -805,7 +805,7 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.AreEqual(@"{
   let name = null;
-  name ??= 'Default';
+  name ??= ""Default"";
 }", script);
 
   }
@@ -933,8 +933,8 @@ public sealed class SemanticWalkerOrdinaryTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let person = { Name: 'John', Age: 30 };
-  let newPerson = { ...person, Name: 'Jane' };
+  let person = { Name: ""John"", Age: 30 };
+  let newPerson = { ...person, Name: ""Jane"" };
 }", script);
 
   }
@@ -1073,7 +1073,7 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.AreEqual(@"{
   let x = 42;
-  let str = 'Hello';
+  let str = ""Hello"";
   let flag = true;
   let negX = -x;
   let notFlag = !flag;
@@ -1081,9 +1081,9 @@ public sealed class SemanticWalkerOrdinaryTest
   let result = flag && !notFlag;
   let value = result ? 1 : 0;
   let nullableStr = null;
-  let finalStr = nullableStr ?? 'default';
+  let finalStr = nullableStr ?? ""default"";
   let name = null;
-  name ??= 'Default';
+  name ??= ""Default"";
   x += 5;
   x -= 3;
   x++;
@@ -1145,7 +1145,7 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.AreEqual(@"{
   let absValue = Math.Abs(-5);
-  let text = 'Hello World';
+  let text = ""Hello\ World"";
   let upperText = text.ToUpper();
   function LocalFunction(param) {
     Console.WriteLine(param);
@@ -1244,10 +1244,10 @@ public sealed class SemanticWalkerOrdinaryTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let person = { Name: 'John', Age: 30 };
+  let person = { Name: ""John"", Age: 30 };
   let newPerson = {
     ...person,
-    Name: 'Jane',
+    Name: ""Jane"",
     Age: 25
   };
   let name = person.Name;

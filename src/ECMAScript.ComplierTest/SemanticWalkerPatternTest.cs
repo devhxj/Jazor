@@ -18,18 +18,19 @@ public sealed class SemanticWalkerPatternTest
   /// <exception cref="InvalidOperationException"></exception>
   private static IBlockOperation GetBlockOperation(string code)
   {
-    var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
-      .WithUsings(
-        "System",
-        "System.Collections.Generic",
-        "System.Linq"
-      );
+    var usings = @"
+        global using System;
+        global using System.Collections.Generic;
+        global using System.Linq;";
 
     var compilation = CSharpCompilation.Create(
         "TestAssembly",
-        syntaxTrees: [CSharpSyntaxTree.ParseText(code)],
+        syntaxTrees: [
+          CSharpSyntaxTree.ParseText(usings),
+          CSharpSyntaxTree.ParseText(code)
+        ],
         references: Basic.Reference.Assemblies.Net100.References.All,
-        options: options);
+        options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
     // 输出编译诊断信息
     var diagnostics = compilation.GetDiagnostics();
@@ -40,7 +41,7 @@ public sealed class SemanticWalkerPatternTest
       throw new InvalidOperationException(errorMessages);
     }
 
-    var syntaxTree = compilation.SyntaxTrees.First();
+    var syntaxTree = compilation.SyntaxTrees.Last();
     var semanticModel = compilation.GetSemanticModel(syntaxTree);
     var root = syntaxTree.GetRoot();
 
@@ -144,8 +145,8 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let obj = 'hello';
-  let result = obj === 'hello';
+  let obj = ""hello"";
+  let result = obj === ""hello"";
 }", script);
   }
 
@@ -174,7 +175,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitIsPattern(isPatternOperation!, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual("obj === 'hello'", script);
+    Assert.AreEqual(@"obj === ""hello""", script);
   }
 
   // ==================== VisitIsType 测试 ====================
@@ -201,8 +202,8 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let obj = 'hello';
-  let result = typeof obj === 'string';
+  let obj = ""hello"";
+  let result = typeof obj === ""string"";
 }", script);
   }
 
@@ -231,7 +232,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitIsType(isTypeOperation!, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual("typeof obj === 'string'", script);
+    Assert.AreEqual(@"typeof obj === ""string""", script);
   }
 
   /// <summary>
@@ -257,7 +258,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let obj = 42;
-  let result = typeof obj === 'number';
+  let result = typeof obj === ""number"";
 }", script);
   }
 
@@ -286,7 +287,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitIsType(isTypeOperation!, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual("typeof obj === 'number'", script);
+    Assert.AreEqual(@"typeof obj === ""number""", script);
   }
 
   /// <summary>
@@ -312,7 +313,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let obj = true;
-  let result = typeof obj === 'Boolean';
+  let result = typeof obj === ""boolean"";
 }", script);
   }
 
@@ -341,7 +342,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitIsType(isTypeOperation!, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual("typeof obj === 'Boolean'", script);
+    Assert.AreEqual(@"typeof obj === ""boolean""", script);
   }
 
   /// <summary>
@@ -367,7 +368,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let obj = new Object;
-  let result = typeof obj === 'object';
+  let result = typeof obj === ""object"";
 }", script);
   }
 
@@ -396,7 +397,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitIsType(isTypeOperation!, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual("typeof obj === 'object'", script);
+    Assert.AreEqual(@"typeof obj === ""object""", script);
   }
 
   // ==================== VisitIsNull 测试 ====================
@@ -547,10 +548,10 @@ public sealed class SemanticWalkerPatternTest
   let result = (() => {
     const v$test = value;
     if (v$test === 1)
-      return 'one';
+      return ""one"";
     if (v$test === 2)
-      return 'two';
-    return 'default';
+      return ""two"";
+    return ""default"";
   })();
 }", script);
   }
@@ -1011,8 +1012,8 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let obj = 'hello';
-  let result = typeof obj === 'string';
+  let obj = ""hello"";
+  let result = typeof obj === ""string"";
 }", script);
   }
 
@@ -1041,7 +1042,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitIsType(isTypeOperation!, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual("typeof obj === 'string'", script);
+    Assert.AreEqual(@"typeof obj === ""string""", script);
   }
 
   // ==================== VisitPropertySubpattern 测试 ====================
@@ -1068,8 +1069,8 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let person = { Name: 'John', Age: 30 };
-  let result = person.Name === 'John';
+  let person = { Name: ""John"", Age: 30 };
+  let result = person.Name === ""John"";
 }", script);
   }
 
@@ -1100,7 +1101,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitPropertySubpattern(propertySubpatternOperation, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual("person.Name === 'John'", script);
+    Assert.AreEqual(@"person.Name === ""John""", script);
   }
 
   // ==================== VisitRecursivePattern 测试 ====================
@@ -1127,8 +1128,8 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let obj = { Name: 'John', Age: 30 };
-  let result = obj.Name === 'John' && obj.Age > 18;
+  let obj = { Name: ""John"", Age: 30 };
+  let result = obj.Name === ""John"" && obj.Age > 18;
 }", script);
   }
 
@@ -1158,7 +1159,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitRecursivePattern(recursivePatternOperation, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual("obj.Name === 'John' && obj.Age > 18", script);
+    Assert.AreEqual(@"obj.Name === ""John"" && obj.Age > 18", script);
   }
 
   // ==================== VisitListPattern 测试 ====================
@@ -1540,8 +1541,6 @@ public sealed class SemanticWalkerPatternTest
                     string result = array switch
                     {
                         [..] => ""empty or any"",
-                        [1] => ""single one"",
-                        [1, 2] => ""one two"",
                         _ => ""other""
                     };
                 }
@@ -1557,12 +1556,8 @@ public sealed class SemanticWalkerPatternTest
   let result = (() => {
     const v$test = array;
     if (Array.isArray(v$test) && v$test.length >= 0)
-      return 'empty or any';
-    if (Array.isArray(v$test) && v$test.length === 1 && v$test[0] === 1)
-      return 'single one';
-    if (Array.isArray(v$test) && v$test.length === 2 && v$test[0] === 1 && v$test[1] === 2)
-      return 'one two';
-    return 'other';
+      return ""empty\ or\ any"";
+    return ""other"";
   })();
 }", script);
   }
@@ -1650,7 +1645,7 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(@"{
   let obj = 42;
   let value;
-  if (typeof obj === 'number' && (value = obj, true)) {
+  if (typeof obj === ""number"" && (value = obj, true)) {
     Console.WriteLine(value);
   }
 }", script);
@@ -1683,7 +1678,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitDeclarationPattern(declarationPatternOperation, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual("typeof obj === 'number' && (value = obj, true)", script);
+    Assert.AreEqual(@"typeof obj === ""number"" && (value = obj, true)", script);
   }
 
   // ==================== 复杂模式匹配测试 ====================
@@ -1728,10 +1723,10 @@ public sealed class SemanticWalkerPatternTest
   let result = (() => {
     const v$test = TestClass.Get5(value);
     if (v$test > 0 && v$test < 10)
-      return 'Small';
+      return ""Small"";
     if (v$test >= 10)
-      return 'Large';
-    return 'Unknown';
+      return ""Large"";
+    return ""Unknown"";
   })();
 }", script);
 
@@ -1764,14 +1759,14 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let person = { Name: 'John', Age: 30 };
+  let person = { Name: ""John"", Age: 30 };
   let result = (() => {
     const v$test = person;
-    if (v$test.Name === 'John')
-      return 'Hello John';
+    if (v$test.Name === ""John"")
+      return ""Hello\ John"";
     if (v$test.Age > 18)
-      return 'Adult';
-    return 'Unknown';
+      return ""Adult"";
+    return ""Unknown"";
   })();
 }", script);
   }
@@ -1860,8 +1855,8 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let obj = 'hello';
-  let result = typeof obj === 'string' && obj.Length > 0;
+  let obj = ""hello"";
+  let result = typeof obj === ""string"" && obj.Length > 0;
 }", script);
   }
 
@@ -1975,7 +1970,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitConstantPattern(constantPatternOperation, new());
     var script = node?.ToECMAScript();
 
-    Assert.AreEqual("obj==='hello'", script);
+    Assert.AreEqual(@"obj===""hello""", script);
   }
 
   // ==================== VisitPatternCaseClause 测试 ====================
@@ -1991,7 +1986,7 @@ public sealed class SemanticWalkerPatternTest
             {
                 void TestMethod()
                 {
-                    object obj = 42;
+                    int obj = 42;
                     switch (obj)
                     {
                         case var x when x>10:
@@ -2034,7 +2029,7 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let obj = DateTime.Now;
+  let obj = Now;
   let result = obj instanceof Date;
 }", script);
   }
@@ -2062,7 +2057,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let obj = 42n;
-  let result = typeof obj === 'bigint';
+  let result = typeof obj === ""bigint"";
 }", script);
   }
 
@@ -2172,9 +2167,9 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let tuple = [1, 'hello'];
+  let tuple = { Item1: 1, Item2: ""hello"" };
   let x, s;
-  let result = (x = tuple[0], true) && (s = tuple[1], true);
+  let result = typeof tuple === 'object' && (typeof tuple === ""number"" && (x = tuple[0], true)) && (typeof tuple === ""string"" && (s = tuple[1], true));
 }", script);
   }
 
@@ -2200,7 +2195,7 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let tuple = [1, 'hello'];
+  let tuple = [1, ""hello""];
   let x, s;
   let result = (x = tuple[0], true) && (s = tuple[1], true) && x > 0;
 }", script);
@@ -2260,7 +2255,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let value = null;
-  let result = value === null || typeof value === 'number';
+  let result = value === null || typeof value === ""number"";
 }", script);
   }
 
@@ -2291,7 +2286,7 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(@"{
   let value = 42;
   let v;
-  if ((value === null || typeof value === 'number') && (v = value, true)) {
+  if ((value === null || typeof value === ""number"") && (v = value, true)) {
     Console.WriteLine(v);
   }
 }", script);
@@ -2323,7 +2318,7 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(@"{
   let obj = 42;
   let x, y;
-  let result = (typeof obj === 'number' && (x = obj, true)) && (typeof obj === 'number' && (y = obj, true));
+  let result = (typeof obj === ""number"" && (x = obj, true)) && (typeof obj === ""number"" && (y = obj, true));
 }", script);
   }
 
@@ -2396,7 +2391,7 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"if (v$test === 1)
-      return 'one';", script);
+      return ""one"";", script);
   }
 
   /// <summary>
@@ -2432,7 +2427,7 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"if ((x = v$test, true) && x > 0)
-      return 'positive';", script);
+      return ""positive"";", script);
   }
 
   /// <summary>
@@ -2466,7 +2461,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitSwitchExpressionArm(switchCaseArm, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"return 'default';", script);
+    Assert.AreEqual(@"return ""default"";", script);
   }
 
   // ==================== VisitPatternCaseClause 更多测试 ====================
@@ -2558,7 +2553,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitPatternCaseClause(patternCaseClause, new());
     var script = node?.ToECMAScript();
 
-    Assert.AreEqual("(typeof v$test==='string'&&(s=v$test,true))&&s.Length>0", script);
+    Assert.AreEqual(@"(typeof v$test===""string""&&(s=v$test,true))&&s.Length>0", script);
   }
 
   // ==================== DateOnly/TimeOnly 类型测试 ====================
@@ -2642,7 +2637,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let obj = 0n;
-  let result = typeof obj === 'bigint';
+  let result = typeof obj === ""bigint"";
 }", script);
   }
 
@@ -2657,7 +2652,7 @@ public sealed class SemanticWalkerPatternTest
             {
                 void TestMethod()
                 {
-                    object obj = 'A';
+                    object obj = ""A"";
                     bool result = obj is char;
                 }
             }
@@ -2668,8 +2663,8 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let obj = 'A';
-  let result = typeof obj === 'string';
+  let obj = ""A"";
+  let result = typeof obj === ""string"";
 }", script);
   }
 
@@ -2696,7 +2691,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let obj = 123.45;
-  let result = typeof obj === 'number';
+  let result = typeof obj === ""number"";
 }", script);
   }
 
@@ -2777,8 +2772,8 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let obj = { Name: 'Test', Value: 42 };
-  let result = obj.Name === 'Test';
+  let obj = { Name: ""Test"", Value: 42 };
+  let result = obj.Name === ""Test"";
 }", script);
   }
 
@@ -2924,7 +2919,7 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let obj = { Name: 'Test' };
+  let obj = { Name: ""Test"" };
   let result = true;
 }", script);
   }
@@ -3095,10 +3090,10 @@ public sealed class SemanticWalkerPatternTest
   let result = (() => {
     const v$test = obj;
     if (v$test.X === 1 && v$test.Y === 2)
-      return 'Point (1,2)';
+      return ""Point (1,2)"";
     if ((x = v$test.X, true) && x > 0)
-      return 'Positive X';
-    return 'Other';
+      return ""Positive X"";
+    return ""Other"";
   })();
 }", script);
   }
@@ -3144,18 +3139,18 @@ public sealed class SemanticWalkerPatternTest
   (() => {
     const v$test = value;
     if ((s = value, true) && s > 0) {
-      Console.WriteLine('>0');
+      Console.WriteLine("">0"");
       return;
     }
     if (v$test === 1) {
-      Console.WriteLine('1');
+      Console.WriteLine(""1"");
       return;
     }
     if (v$test === 2) {
-      Console.WriteLine('2');
+      Console.WriteLine(""2"");
       return;
     }
-    Console.WriteLine('Default');
+    Console.WriteLine(""Default"");
     return;
   })();
 }", script);

@@ -38,7 +38,7 @@ public sealed partial class SemanticWalker : OperationVisitor<Context, Node?>
 
 	private static readonly MemberExpression IsArrayExpr = new(new Identifier("Array"), new Identifier("isArray"), computed: false, optional: false);
 
-    private static TypeMapper GetMapperType(ITypeSymbol typeSymbol, out string displayName)
+    private static TypeMapper GetMapperType(ITypeSymbol typeSymbol, out string typeName)
     {
         // 类型映射
         // object、匿名类型、元组类型 -> js object
@@ -52,9 +52,8 @@ public sealed partial class SemanticWalker : OperationVisitor<Context, Node?>
         // 其他 class -> js class
         // 其他类型不支持 -> Unknown
 
-        var kind = typeSymbol.Kind;
-        var typeKind = typeSymbol.TypeKind;
-        displayName = typeSymbol.ToDisplayString(Util.NameFormat);
+        typeName = typeSymbol.Name;
+        var displayName = typeSymbol.OriginalDefinition.ToDisplayString(Util.NameFormat);
 
         if (typeSymbol.IsTupleType || typeSymbol.IsAnonymousType)
             return TypeMapper.Object;
@@ -94,34 +93,46 @@ public sealed partial class SemanticWalker : OperationVisitor<Context, Node?>
                     else if (typeSymbol.TypeKind == TypeKind.Enum)
                         return TypeMapper.Number;
 
-                    // 对于自定义类型，使用instanceof检查（优先于接口检查）
-                    else if (typeSymbol.TypeKind == TypeKind.Class)
-                        return TypeMapper.Class;
-
                     // Struct 类型映射到 Object
                     else if (typeSymbol.TypeKind == TypeKind.Struct)
                         return TypeMapper.Class;
-
-                    // IDictionary 类型检查（包括泛型和非泛型）
-                    else if (typeSymbol.AllInterfaces.Any(i => i.Name == "IDictionary"))
-                        return TypeMapper.Map;
-
-                    // IEnumerable 类型检查（包括泛型和非泛型，排除 IDictionary）
-                    else if (typeSymbol.AllInterfaces.Any(i => i.Name == "IEnumerable"))
-                        return TypeMapper.Set;
 
                     // Date 相关类型（SpecialType 只包含 DateTime）
                     else if (displayName == "System.DateTimeOffset" ||
                         displayName == "System.DateOnly" ||
                         displayName == "System.TimeOnly")
+                    {
+                        typeName = "Date";
                         return TypeMapper.Date;
+                    }
 
                     // BigInt 相关类型（SpecialType 只包含 Int64/UInt64）
                     else if (displayName == "System.Int128" ||
                         displayName == "System.UInt128" ||
                         displayName == "System.TimeSpan" ||
                         displayName == "System.Numerics.BigInteger")
+                    {
+                        typeName = "BigInt";
                         return TypeMapper.BigInt;
+                    }
+
+                    else if (
+                        displayName == "System.Collections.Generic.Dictionary<TKey, TValue>" ||
+                        displayName == "System.Collections.Generic.IDictionary<TKey, TValue>")
+                    {
+                        typeName = "Map";
+                        return TypeMapper.Map;
+                    }
+
+                    else if (displayName == "System.Collections.Generic.Set<TValue>")
+                    {
+                        typeName = "Set";
+                        return TypeMapper.Set;
+                    }
+
+                    // 对于自定义类型，使用instanceof检查（优先于接口检查）
+                    else if (typeSymbol.TypeKind == TypeKind.Class)
+                        return TypeMapper.Class;
                 }
                 break;
         }
@@ -159,7 +170,7 @@ public sealed partial class SemanticWalker : OperationVisitor<Context, Node?>
     /// <param name="operation">BlockSyntax对应的IOperation</param>
     /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? Visit(IOperation? operation, Context argument)
+    public override Node? Visit(IOperation? operation, Context argument)
     {
         if (operation is null)
             return null;

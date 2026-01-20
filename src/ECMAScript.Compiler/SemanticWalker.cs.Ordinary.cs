@@ -3,8 +3,8 @@ using Acornima.Ast;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace ECMAScript.Compiler;
 
@@ -22,7 +22,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitBlock(IBlockOperation operation, Context argument)
+	public override Node? VisitBlock(IBlockOperation operation, Context argument)
 	{
 		var ctx = new Context();
 		var statements = new List<Statement>();
@@ -81,7 +81,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitLabeled(ILabeledOperation operation, Context argument)
+	public override Node? VisitLabeled(ILabeledOperation operation, Context argument)
 	{
 		var label = new Identifier(operation.Label.Name);
 
@@ -108,7 +108,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitBranch(IBranchOperation operation, Context argument)
+	public override Node? VisitBranch(IBranchOperation operation, Context argument)
 	{
 		return operation.BranchKind switch
 		{
@@ -127,7 +127,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitEmpty(IEmptyOperation operation, Context argument)
+	public override Node? VisitEmpty(IEmptyOperation operation, Context argument)
 		=> new EmptyStatement();
 
 	/// <summary>
@@ -140,7 +140,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitReturn(IReturnOperation operation, Context argument)
+	public override Node? VisitReturn(IReturnOperation operation, Context argument)
 	{
 		if (operation.ReturnedValue is null)
 			return new ReturnStatement(null);
@@ -159,7 +159,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitExpressionStatement(IExpressionStatementOperation operation, Context argument)
+	public override Node? VisitExpressionStatement(IExpressionStatementOperation operation, Context argument)
 	{
 		return Translate<Node>(operation.Operation, argument);
 	}
@@ -176,7 +176,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitLocalFunction(ILocalFunctionOperation operation, Context argument)
+	public override Node? VisitLocalFunction(ILocalFunctionOperation operation, Context argument)
 	{
 		var id = new Identifier(operation.Symbol.Name);
 		var parameters = new List<Node>();
@@ -215,72 +215,291 @@ public partial class SemanticWalker
 	}
 
 	/// <summary>
-	/// 处理字面量操作
-	/// C# 示例：
-	/// 42              // 整数字面量
-	/// "Hello"         // 字符串字面量
-	/// true            // 布尔字面量
-	/// 'A'             // 字符字面量
-	/// null            // 空字面量
-	/// 转换结果：42 / "Hello" / true / "A" / null
+	/// 处理 C# 字面量操作，将其转换为 JavaScript 字面量表达式。
+	///
+	/// 转换策略说明：
+	/// 1. null 值：直接返回 null（必须优先处理，因为 null 没有类型信息）
+	/// 2. Boolean: true/false 直接映射
+	/// 3. String/Char: 统一转换为双引号字符串，并对特殊字符进行转义
+	///    - 控制字符：\0, \b, \f, \n, \r, \t, \v
+	///    - 特殊字符：\\, \"
+	///    - Unicode 字符直接保留（UTF-8）
+	/// 4. Number: 根据 C# 类型进行差异化处理
+	///    - 整数类型（byte, short, int, uint）: 保持原格式
+	///    - float/double: 使用 "R" 格式符避免精度丢失，处理 NaN/Infinity
+	///    - decimal: 转为 double，注意精度损失（28-29 位 → 15-16 位）
+	/// 5. BigInt: 64 位及以上整数，添加 n 后缀
+	///    - long/ulong: 直接加 n
+	///    - Int128/UInt128/BigInteger: 解析后加 n
+	///
+	/// C# 示例 → JavaScript 转换结果：
+	///   null              → null
+	///   true              → true
+	///   false             → false
+	///   "Hello"           → "Hello"
+	///   "Line1\nLine2"    → "Line1\nLine2"
+	///   "C:\\Path"        → "C:\\Path"
+	///   'A'               → "A"
+	///   ""                → ""
+	///   42                → 42
+	///   3.14              → 3.14
+	///   3.14f             → 3.14
+	///   3.1415926535m     → 3.1415926535 (注意精度损失)
+	///   float.NaN         → NaN
+	///   float.PositiveInfinity → Infinity
+	///   float.NegativeInfinity → -Infinity
+	///   42L               → 42n
+	///   42UL              → 42n
+	///   -42L              → -42n
+	///   (long)42          → 42n
 	/// </summary>
-	/// <param name="operation">当前访问的operation</param>
-	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitLiteral(ILiteralOperation operation, Context argument)
+	/// <param name="operation">当前访问的 ILiteralOperation 操作，包含字面量值和类型信息</param>
+	/// <param name="argument">用于存放当前操作内部需要的全局变量定义的上下文（字面量通常不需要）</param>
+	/// <returns>转换后的 JavaScript 字面量 Node（BooleanLiteral, StringLiteral, NumericLiteral, BigIntLiteral, NullLiteral 或 Identifier）</returns>
+	public override Node? VisitLiteral(ILiteralOperation operation, Context argument)
 	{
+		// 处理 null 值（必须在类型检查之前，因为 null 没有特定的类型信息）
 		if (operation.ConstantValue.Value is null)
 			return Null;
 
-		var value = operation.ConstantValue.Value;
-		var raw = value.ToString() ?? "null";
+		// 类型信息缺失时报告错误
+		if (operation.Type is null)
+			return HandleTransformationFailure<Node>(operation, "Type information is not available for this literal.");
 
-		return operation.Type?.SpecialType switch
+		var value = operation.ConstantValue.Value;
+		var valueStr = Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture);
+		var mapper = GetMapperType(operation.Type, out var displayName);
+
+		// 布尔值字面量：true / false
+		if (mapper == TypeMapper.Boolean)
+			return new BooleanLiteral((bool)value, ((bool)value).ToString().ToLowerInvariant());
+
+		// 字符串和字符字面量
+		else if (mapper == TypeMapper.String)
 		{
-			SpecialType.System_Boolean => new BooleanLiteral((bool)value, raw.ToLower()),
-			SpecialType.System_String => new StringLiteral((string)value, $"'{raw}'"),
-			SpecialType.System_Char => new StringLiteral(value.ToString() ?? "", $"'{raw}'"),
-			SpecialType.System_SByte or
-			SpecialType.System_Byte or
-			SpecialType.System_Int16 or
-			SpecialType.System_UInt16 or
-			SpecialType.System_Int32 or
-			SpecialType.System_UInt32 or
-			SpecialType.System_Int64 or
-			SpecialType.System_UInt64 or
-			SpecialType.System_Single or
-			SpecialType.System_Double or
-			SpecialType.System_Decimal => new NumericLiteral(System.Convert.ToDouble(value), raw),
-			_ => Null
-		};
+			if (string.IsNullOrEmpty(valueStr))
+				return new StringLiteral("", "\"\"");
+
+			// 为 JavaScript 字符串字面量进行正确的转义处理
+			// JavaScript 字符串中需要转义的特殊字符：
+			// - 控制字符：\0 (null), \b (backspace), \f (form feed), \n (newline), \r (carriage return), \t (tab), \v (vertical tab)
+			// - 特殊字符：\\ (backslash), \" (double quote), \' (single quote)
+			// - Unicode 字符大于 0x7F 的可以保留原样（现代 JS 支持 UTF-8）
+			var escaped = new System.Text.StringBuilder();
+			foreach (char c in valueStr)
+			{
+				switch (c)
+				{
+					case '\0':
+						escaped.Append("\\0");
+						break;
+					case '\b':
+						escaped.Append("\\b");
+						break;
+					case '\f':
+						escaped.Append("\\f");
+						break;
+					case '\n':
+						escaped.Append("\\n");
+						break;
+					case '\r':
+						escaped.Append("\\r");
+						break;
+					case '\t':
+						escaped.Append("\\t");
+						break;
+					case '\v':
+						escaped.Append("\\v");
+						break;
+					case '\\':
+						escaped.Append("\\\\");
+						break;
+					case '"':
+						escaped.Append("\\\"");
+						break;
+					// 单引号在双引号字符串中不需要转义，但为了一致性可以保留
+					// case '\'':
+					//     escaped.Append("\\'");
+					//     break;
+					default:
+						// Unicode 字符可以直接保留（UTF-8 编码）
+						escaped.Append(c);
+						break;
+				}
+			}
+
+			// 使用双引号包裹
+			var formatted = $"\"{escaped}\"";
+
+			return new StringLiteral(valueStr, formatted);
+		}
+
+		//  数值字面量：42 / 3.14
+		else if (mapper == TypeMapper.Number)
+		{
+			// 对于 decimal 类型，需要处理精度损失问题
+			// decimal 范围约为 ±7.9×10²⁸，double 范围约为 ±1.7×10³⁰⁸
+			// double 范围更大，不会溢出，但 decimal 有 28-29 位精度，double 只有 15-16 位
+			if (operation.Type.SpecialType == SpecialType.System_Decimal)
+			{
+				var decimalValue = Convert.ToDecimal(value);
+				return new NumericLiteral(
+					(double)decimalValue,
+					decimalValue.ToString(System.Globalization.CultureInfo.InvariantCulture)
+				);
+			}
+
+			// 对于 float 类型，处理特殊值并使用 float 转换以保持单精度格式
+			else if (operation.Type.SpecialType == SpecialType.System_Single)
+			{
+				var floatValue = Convert.ToSingle(value);
+
+				// 处理特殊浮点值
+				if (float.IsNaN(floatValue))
+					return new Identifier("NaN");
+				if (float.IsPositiveInfinity(floatValue))
+					return new Identifier("Infinity");
+				if (float.IsNegativeInfinity(floatValue))
+					return new NonUpdateUnaryExpression(Operator.UnaryNegation, new Identifier("Infinity"));
+
+				return new NumericLiteral(
+					floatValue,
+					floatValue.ToString("R", System.Globalization.CultureInfo.InvariantCulture)
+				);
+			}
+
+			// 对于 double 类型，处理特殊值并直接使用
+			else if (operation.Type.SpecialType == SpecialType.System_Double)
+			{
+				var doubleValue = Convert.ToDouble(value);
+
+				// 处理特殊浮点值
+				if (double.IsNaN(doubleValue))
+					return new Identifier("NaN");
+				if (double.IsPositiveInfinity(doubleValue))
+					return new Identifier("Infinity");
+				if (double.IsNegativeInfinity(doubleValue))
+					return new NonUpdateUnaryExpression(Operator.UnaryNegation, new Identifier("Infinity"));
+
+				return new NumericLiteral(
+					doubleValue,
+					doubleValue.ToString("R", System.Globalization.CultureInfo.InvariantCulture)
+				);
+			}
+
+			// 对于整数类型，使用原始字符串格式
+			var numberValue = Convert.ToDouble(value);
+			if (!string.IsNullOrEmpty(valueStr))
+				return new NumericLiteral(numberValue, valueStr);
+		}
+
+		// BigInt 字面量：42L / 100UL / -42L -> 42n / 100n / -42n
+		else if (mapper == TypeMapper.BigInt)
+		{
+			// 处理 ulong 类型（无符号 64 位整数）
+			if (operation.Type.SpecialType == SpecialType.System_UInt64)
+			{
+				var ulongValue = Convert.ToUInt64(value);
+				var bigInt = new System.Numerics.BigInteger(ulongValue);
+				return new BigIntLiteral(bigInt, $"{ulongValue}n");
+			}
+
+			// 处理 long 类型（有符号 64 位整数）
+			else if (operation.Type.SpecialType == SpecialType.System_Int64)
+			{
+				var longValue = Convert.ToInt64(value);
+				var bigInt = new System.Numerics.BigInteger(longValue);
+				return new BigIntLiteral(bigInt, $"{longValue}n");
+			}
+
+			// 处理 Int128 和 UInt128 类型（128 位整数）
+			// 这些类型的值会被装箱为 object，需要特殊处理
+			else if (value is IFormattable formattable)
+			{
+				// 使用 InvariantCulture 确保格式一致性
+				var invariantStr = formattable.ToString(null, System.Globalization.CultureInfo.InvariantCulture);
+				if (System.Numerics.BigInteger.TryParse(invariantStr, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var bigIntValue))
+					return new BigIntLiteral(bigIntValue, $"{invariantStr}n");
+			}
+
+			// 尝试直接解析为 BigInteger（使用 InvariantCulture 确保健壮性）
+			else if (System.Numerics.BigInteger.TryParse(valueStr, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var bigIntValue))
+				return new BigIntLiteral(bigIntValue, $"{valueStr}n");
+		}
+
+		// 不支持的类型报告错误 或 其他类型返回 null（如 Object、Array、Date 等不应出现在字面量中）
+		return HandleTransformationFailure<Node>(operation, $"Literal type '{mapper}' ({displayName}) cannot be directly translated to JavaScript literal.");
 	}
 
 	/// <summary>
-	/// 处理类型转换操作
-	/// C# 示例：
-	/// (int)3.14       // 显式类型转换
-	/// obj as Type     // 安全类型转换
-	/// 转换结果：直接返回操作数（JavaScript 是动态类型）
+	/// 处理 C# 类型转换操作，将其转换为 JavaScript 表达式。
+	///
+	/// 转换策略说明：
+	/// 1. Number 与 BigInt 之间的显式转换需要生成转换函数调用
+	///    - Number → BigInt: 生成 BigInt(value) 调用
+	///    - BigInt → Number: 生成 Number(value) 调用
+	/// 2. 其他类型转换在 JavaScript 中可以安全忽略，因为 JS 是动态类型语言
+	///    - 装箱/拆箱: JS 无需区分值类型和引用类型
+	///    - 引用类型转换: JS 运行时动态检查
+	///    - as 转换: 语义等价于直接访问
+	///
+	/// C# 示例 → JavaScript 转换结果：
+	///   (long)42           → BigInt(42)      // int 转 long，需要显式转换
+	///   (long)x            → BigInt(x)       // 变量转 BigInt
+	///   (int)someLong      → Number(someLong) // long 转 int，需要显式转换
+	///   (ulong)count       → BigInt(count)   // uint 转 ulong
+	///   (int)3.14          → 3.14            // float 转 int，忽略转换
+	///   obj as string      → obj             // as 转换，直接返回
+	///   (BaseType)derived  → derived         // 引用类型强转，直接返回
+	///   object o = 42      → 42              // 装箱，忽略
+	///   int i = (int)o     → o               // 拆箱，忽略
+	///
+	/// 特殊情况：方法组转换为委托类型（如 Action a = MyMethod）
+	///           此时 OperationKind 为 None，需要通过语法节点直接处理
 	/// </summary>
-	/// <param name="operation">当前访问的operation</param>
-	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitConversion(IConversionOperation operation, Context argument)
+	/// <param name="operation">当前访问的 IConversionOperation 操作</param>
+	/// <param name="argument">用于存放当前操作内部需要的全局变量定义的上下文</param>
+	/// <returns>转换后的 JavaScript ESTree Node</returns>
+	public override Node? VisitConversion(IConversionOperation operation, Context argument)
 	{
-		// 处理特殊情况，类似如下
+		// 处理特殊情况：方法组转换为委托类型
 		// class TestClass
 		// {
-		//    void TestMethod()
-		//    {
-		//        Action action = MyMethod;
-		//    }
-		//    void MyMethod() { }
-		// }		
+		//     void TestMethod() { Action action = MyMethod; }
+		//     void MyMethod() { }
+		// }
 		if (operation.Operand.Kind == OperationKind.None &&
 			operation.Operand.Syntax is IdentifierNameSyntax)
 			return ConvertFromSyntaxNode(operation.Operand.Syntax);
 
-		return Visit(operation.Operand, argument);
+		var expr = Translate<Expression>(operation.Operand, argument);
+
+		// 处理 Number 与 BigInt 之间的显式转换
+		if (operation.Type is not null && operation.Operand.Type is not null)
+		{
+			var targetType = GetMapperType(operation.Type, out var _);
+			var operandType = GetMapperType(operation.Operand.Type, out var _);
+
+			// Number → BigInt: (long)1 → BigInt(1)
+			if (operandType == TypeMapper.Number && targetType == TypeMapper.BigInt)
+				return new CallExpression(
+					new Identifier("BigInt"),
+					NodeList.From(expr),
+					optional: false
+				);
+
+			// BigInt → Number: (int)someLong → Number(someLong)
+			if (operandType == TypeMapper.BigInt && targetType == TypeMapper.Number)
+				return new CallExpression(
+					new Identifier("Number"),
+					NodeList.From(expr),
+					optional: false
+				);
+		}
+
+		// 其他情况：直接返回操作数（JavaScript 是动态类型）
+		// 包括：装箱/拆箱、引用类型转换、as 转换等
+		return expr;
 	}
 
 	/// <summary>
@@ -294,7 +513,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitInvocation(IInvocationOperation operation, Context argument)
+	public override Node? VisitInvocation(IInvocationOperation operation, Context argument)
 	{
 		var arguments = new List<Expression>();
 
@@ -355,7 +574,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitConditionalAccess(IConditionalAccessOperation operation, Context argument)
+	public override Node? VisitConditionalAccess(IConditionalAccessOperation operation, Context argument)
 	{
 		// 不需要处理 Operation，会在 WhenNotNull中递归回来处理
 		//var operand = VisitTo<Expression>(operation.Operation, argument);
@@ -372,7 +591,7 @@ public partial class SemanticWalker
 	/// 转换方式：递归向上找到IConditionalAccessOperation，提取真实的 Operation
 	/// 转换结果：obj?
 	/// </summary>
-	public override Acornima.Ast.Node? VisitConditionalAccessInstance(IConditionalAccessInstanceOperation operation, Context argument)
+	public override Node? VisitConditionalAccessInstance(IConditionalAccessInstanceOperation operation, Context argument)
 	{
 		var parent = operation.Parent;
 		while (parent is not null)
@@ -399,7 +618,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitUnaryOperator(IUnaryOperation operation, Context argument)
+	public override Node? VisitUnaryOperator(IUnaryOperation operation, Context argument)
 	{
 		var operand = Translate<Expression>(operation.Operand, argument);
 		if (operation.OperatorKind == UnaryOperatorKind.BitwiseNegation ||
@@ -459,7 +678,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitBinaryOperator(IBinaryOperation operation, Context argument)
+	public override Node? VisitBinaryOperator(IBinaryOperation operation, Context argument)
 	{
 		var left = Translate<Expression>(operation.LeftOperand, argument);
 		var right = Translate<Expression>(operation.RightOperand, argument);
@@ -501,7 +720,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitConditional(IConditionalOperation operation, Context argument)
+	public override Node? VisitConditional(IConditionalOperation operation, Context argument)
 	{
 		var alternate = Visit(operation.WhenFalse, argument);
 		var consequent = Translate<Node>(operation.WhenTrue, argument);
@@ -534,7 +753,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitCoalesce(ICoalesceOperation operation, Context argument)
+	public override Node? VisitCoalesce(ICoalesceOperation operation, Context argument)
 	{
 		var left = Translate<Expression>(operation.Value, argument);
 		var right = Translate<Expression>(operation.WhenNull, argument);
@@ -552,7 +771,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitAnonymousFunction(IAnonymousFunctionOperation operation, Context argument)
+	public override Node? VisitAnonymousFunction(IAnonymousFunctionOperation operation, Context argument)
 	{
 		var parameters = new List<Node>();
 		foreach (var param in operation.Symbol.Parameters)
@@ -591,7 +810,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitAwait(IAwaitOperation operation, Context argument)
+	public override Node? VisitAwait(IAwaitOperation operation, Context argument)
 	{
 		var awaitedExpression = Translate<Expression>(operation.Operation, argument);
 		return new AwaitExpression(awaitedExpression);
@@ -608,7 +827,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitSimpleAssignment(ISimpleAssignmentOperation operation, Context argument)
+	public override Node? VisitSimpleAssignment(ISimpleAssignmentOperation operation, Context argument)
 	{
 		var value = Translate<Expression>(operation.Value, argument);
 		if (operation.Target is IDiscardOperation)
@@ -641,7 +860,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitCompoundAssignment(ICompoundAssignmentOperation operation, Context argument)
+	public override Node? VisitCompoundAssignment(ICompoundAssignmentOperation operation, Context argument)
 	{
 		var left = Translate<Expression>(operation.Target, argument);
 		var right = Translate<Expression>(operation.Value, argument);
@@ -671,7 +890,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitCoalesceAssignment(ICoalesceAssignmentOperation operation, Context argument)
+	public override Node? VisitCoalesceAssignment(ICoalesceAssignmentOperation operation, Context argument)
 	{
 		var left = Translate<Expression>(operation.Target, argument);
 		var right = Translate<Expression>(operation.Value, argument);
@@ -687,7 +906,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitParenthesized(IParenthesizedOperation operation, Context argument)
+	public override Node? VisitParenthesized(IParenthesizedOperation operation, Context argument)
 	{
 		var exp = Translate<Expression>(operation.Operand, argument);
 		return new SequenceExpression(NodeList.From(exp));
@@ -703,7 +922,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitNameOf(INameOfOperation operation, Context argument)
+	public override Node? VisitNameOf(INameOfOperation operation, Context argument)
 	{
 		string? name = null;
 		if (operation.Argument.ConstantValue.HasValue)
@@ -730,7 +949,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitDefaultValue(IDefaultValueOperation operation, Context argument)
+	public override Node? VisitDefaultValue(IDefaultValueOperation operation, Context argument)
 	{
 		// default(T) 转换为适当的默认值
 		return operation.Type?.SpecialType switch
@@ -764,7 +983,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitIncrementOrDecrement(IIncrementOrDecrementOperation operation, Context argument)
+	public override Node? VisitIncrementOrDecrement(IIncrementOrDecrementOperation operation, Context argument)
 	{
 		var target = Translate<Expression>(operation.Target, argument);
 		var @operator = operation.Kind == OperationKind.Increment
@@ -785,7 +1004,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitOmittedArgument(IOmittedArgumentOperation operation, Context argument)
+	public override Node? VisitOmittedArgument(IOmittedArgumentOperation operation, Context argument)
 	{
 		// 省略的参数返回 undefined
 		return new Identifier("undefined");
@@ -801,7 +1020,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitArgument(IArgumentOperation operation, Context argument)
+	public override Node? VisitArgument(IArgumentOperation operation, Context argument)
 	{
 		return Visit(operation.Value, argument);
 	}
@@ -817,7 +1036,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitWith(IWithOperation operation, Context argument)
+	public override Node? VisitWith(IWithOperation operation, Context argument)
 	{
 		// with表达式的直接AST转换
 		// C# 示例：person with { Name = "John" } 表示创建一个新对象，复制原对象并修改指定属性
@@ -918,7 +1137,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitAttribute(IAttributeOperation operation, Context argument)
+	public override Node? VisitAttribute(IAttributeOperation operation, Context argument)
 	{
 		// 通过语法节点获取特性信息
 		if (operation.Syntax is not AttributeSyntax attributeSyntax)
@@ -1039,7 +1258,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitCollectionExpression(ICollectionExpressionOperation operation, Context argument)
+	public override Node? VisitCollectionExpression(ICollectionExpressionOperation operation, Context argument)
 	{
 		var elements = new List<Expression?>();
 		foreach (var element in operation.Elements)
@@ -1059,7 +1278,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitSpread(ISpreadOperation operation, Context argument)
+	public override Node? VisitSpread(ISpreadOperation operation, Context argument)
 	{
 		var operand = Translate<Expression>(operation.Operand, argument);
 		return new SpreadElement(operand);
