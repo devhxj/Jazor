@@ -1145,7 +1145,7 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.AreEqual(@"{
   let absValue = Math.Abs(-5);
-  let text = ""Hello\ World"";
+  let text = ""Hello World"";
   let upperText = text.ToUpper();
   function LocalFunction(param) {
     Console.WriteLine(param);

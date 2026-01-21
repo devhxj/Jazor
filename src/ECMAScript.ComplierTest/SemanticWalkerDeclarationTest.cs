@@ -79,7 +79,7 @@ public sealed class SemanticWalkerDeclarationTest
         Assert.AreEqual(
 @"{
   let intArray = [1, 2, 3, 4, 5];
-  let stringArray = ['apple', 'banana', 'cherry'];
+  let stringArray = [""apple"", ""banana"", ""cherry""];
 }", script);
     }
 
@@ -105,7 +105,7 @@ public sealed class SemanticWalkerDeclarationTest
         Assert.AreEqual(
 @"{
   let x = 10;
-  let name = 'Hello';
+  let name = ""Hello"";
   let pi = 3.14;
 }", script);
     }
@@ -183,7 +183,7 @@ public sealed class SemanticWalkerDeclarationTest
         Assert.AreEqual(
 @"{
   let a = 1, b = 2, c;
-  let x = 'hello', y = 'world';
+  let x = ""hello"", y = ""world"";
 }", script);
 
     }
@@ -216,14 +216,14 @@ public sealed class SemanticWalkerDeclarationTest
         var script = node?.ToKnRECMAScript();
 
         Assert.AreEqual(@"{
-  let input = '123';
+  let input = ""123"";
   let result;
   if (Int32.TryParse(input, result)) {
     Console.WriteLine(result);
   }
-  let dict = new Dictionary;
+  let dict = new Map;
   let value;
-  if (dict.TryGetValue('key', value)) {
+  if (dict.TryGetValue(""key"", value)) {
     Console.WriteLine(value);
   }
 }", script);
@@ -301,7 +301,7 @@ public sealed class SemanticWalkerDeclarationTest
   let x = 10;
   let a = 1, b = 2, c;
   let numbers = [1, 2, 3];
-  let input = '123';
+  let input = ""123"";
   let result;
   if (Int32.TryParse(input, result)) {
     Console.WriteLine(result);

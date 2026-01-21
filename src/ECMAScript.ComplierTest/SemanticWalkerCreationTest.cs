@@ -683,7 +683,7 @@ obj.Nested.NestedProp = ""nested"";
         var node = walker.VisitAnonymousObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("{Name:'John',Address:{City:'New York',Zip:10001}}", script);
+        Assert.AreEqual(@"{Name:""John"",Address:{City:""New York"",Zip:10001}}", script);
     }
 
     [TestMethod]
@@ -704,7 +704,7 @@ obj.Nested.NestedProp = ""nested"";
         var node = walker.VisitAnonymousObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("{Name:'John',Scores:[85,92,78]}", script);
+        Assert.AreEqual(@"{Name:""John"",Scores:[85,92,78]}", script);
     }
 
     [TestMethod]
@@ -788,7 +788,7 @@ obj.Nested.NestedProp = ""nested"";
         var node = walker.VisitArrayCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("['Hello','World']", script);
+        Assert.AreEqual(@"[""Hello"",""World""]", script);
     }
 
     [TestMethod]
@@ -809,7 +809,7 @@ obj.Nested.NestedProp = ""nested"";
         var node = walker.VisitArrayCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("[42,'test',true]", script);
+        Assert.AreEqual(@"[42,""test"",true]", script);
     }
 
     [TestMethod]
@@ -993,7 +993,7 @@ list.Add(v$test);
         var node = walker.VisitObjectCreation(operation, []);
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("new MyClass;obj.Field1=42;obj.Field2='test';", script);
+        Assert.AreEqual(@"new MyClass;obj.Field1=42;obj.Field2=""test"";", script);
     }
 
     [TestMethod]
