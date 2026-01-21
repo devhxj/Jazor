@@ -2169,7 +2169,7 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(@"{
   let tuple = { Item1: 1, Item2: ""hello"" };
   let x, s;
-  let result = typeof tuple === 'object' && (typeof tuple === ""number"" && (x = tuple[0], true)) && (typeof tuple === ""string"" && (s = tuple[1], true));
+  let result = typeof tuple.Item1 === ""number"" && (x = tuple.Item1, true) && (typeof tuple.Item2 === ""string"" && (s = tuple.Item2, true));
 }", script);
   }
 
@@ -2195,9 +2195,9 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let tuple = [1, ""hello""];
+  let tuple = { Item1: 1, Item2: ""hello"" };
   let x, s;
-  let result = (x = tuple[0], true) && (s = tuple[1], true) && x > 0;
+  let result = typeof tuple.Item1 === ""number"" && (x = tuple.Item1, true) && (typeof tuple.Item2 === ""string"" && (s = tuple.Item2, true)) && x > 0;
 }", script);
   }
 

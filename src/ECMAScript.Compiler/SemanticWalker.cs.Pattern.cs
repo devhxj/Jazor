@@ -658,16 +658,20 @@ public partial class SemanticWalker
 		// 转换结果：生成对象属性访问和比较的组合表达式
 		if (operation.DeconstructionSubpatterns.Length > 0)
 		{
+			if (operation.InputType is not INamedTypeSymbol tupleType)
+				return HandleTransformationFailure<Node>(operation, "");
+			
 			var obj = GetPatternRefrence(operation);
 			for (int i = 0; i < operation.DeconstructionSubpatterns.Length; i++)
 			{
 				var subpattern = operation.DeconstructionSubpatterns[i];
 
 				// 创建数组索引访问表达式：obj[i]
-				var indexAccess = new MemberExpression(
+				var field = tupleType.TupleElements[i];
+				var property = new MemberExpression(
 					obj,
-					new NumericLiteral(i, i.ToString()),
-					computed: true,
+					new Identifier(field.Name),
+					computed: false,
 					optional: false
 				);
 
@@ -676,7 +680,7 @@ public partial class SemanticWalker
 				{
 					// 声明模式：需要将数组元素赋值给声明的变量
 					// 例如：(int x, string y) 中的 x 和 y
-					var expr = VisitDeclarationPattern(declarationPatternOp, indexAccess, argument);
+					var expr = VisitDeclarationPattern(declarationPatternOp, property, argument);
 					conditions.Add(expr);
 				}
 				else if (subpattern is IDiscardPatternOperation)
@@ -688,7 +692,7 @@ public partial class SemanticWalker
 				{
 					// 其他模式（常量模式、类型模式等）：需要比较数组元素的值
 					var patternResult = Translate<Expression>(subpattern, argument);
-					var checkExpr = new NonLogicalBinaryExpression(Operator.StrictEquality, indexAccess, patternResult);
+					var checkExpr = new NonLogicalBinaryExpression(Operator.StrictEquality, property, patternResult);
 					conditions.Add(checkExpr);
 				}
 			}
@@ -761,8 +765,9 @@ public partial class SemanticWalker
 
 		Expression? typeMatchExpr = null, declaredExpr = null;
 
+		// 存在赋值对象使用赋值对象
 		if (operation.MatchedType is not null)
-			typeMatchExpr = CreateTypeMatchExpr(operation, operation.MatchedType, obj);
+			typeMatchExpr = CreateTypeMatchExpr(operation, operation.MatchedType, value ?? obj);
 
 		if (operation.DeclaredSymbol is not null)
 		{
