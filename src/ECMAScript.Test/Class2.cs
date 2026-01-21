@@ -172,6 +172,9 @@ class TestClass2
 
 		object obj = "hello";
 		bool result1 = obj is string { Length: > 0 };
+
+		object obj1 = 42;
+		bool result2 = obj1 is int x1 and int y1;
 	}
 
 	static string Demo1(int[] a) => a switch
@@ -198,6 +201,9 @@ class TestClass2
 		{
 			// 使用 value
 		}
+
+		var v = 5;
+		bool r = v is not 5;
 	}	
 }
 
@@ -221,5 +227,20 @@ class TestClass
 			> 0 and < 10 => 5,
 			_ => 0
 		};
-	}	
+	}
+
+}
+
+class TestClass3
+{
+	void TestMethod()
+	{
+		var obj = new { X = 1, Y = 2 };
+		string result = obj switch
+		{
+			{ X: 1, Y: 2 } => "Point(1, 2)",
+			{ X: var x } when x > 0 => "Positive X",
+			_ => "Other"
+		};
+	}
 }

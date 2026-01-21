@@ -955,14 +955,14 @@ obj.Nested.NestedProp = ""nested"";
         var script = node?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"v$test = new List;
+@"v$test = new Array;
 v$test.Add(1);
 list.Add(v$test);
-v$test = new List;
+v$test = new Array;
 v$test.Add(2);
 v$test.Add(4);
 list.Add(v$test);
-v$test = new List;
+v$test = new Array;
 v$test.Add(3);
 list.Add(v$test);
 ", script);

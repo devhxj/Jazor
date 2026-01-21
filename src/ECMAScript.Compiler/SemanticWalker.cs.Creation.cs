@@ -17,14 +17,16 @@ public partial class SemanticWalker
 			return HandleTransformationFailure<StatementOrExpression>(operation, "Object creation type could not be translated to JavaScript.");
 
 		// 普通对象创建
-		_ = GetMapperType(operation.Type, out var typeName);
+		var mapper = GetMapperType(operation.Type, out var typeName);
 		var callee = new Identifier(typeName);
 		var arguments = new List<Expression>();
 
 		foreach (var arg in operation.Arguments)
 			Translate(arguments, arg.Value, argument);
-		
-		Expression expr = new NewExpression(callee, NodeList.From(arguments));
+
+		Expression expr = mapper == TypeMapper.BigInt
+			? new CallExpression(callee, NodeList.From(arguments), false)
+			: new NewExpression(callee, NodeList.From(arguments));
 
 		// 如果祖先是参数类型，中间有个转换
 		// IObjectCreationOperation->IConversionOperation->IArgumentOperation

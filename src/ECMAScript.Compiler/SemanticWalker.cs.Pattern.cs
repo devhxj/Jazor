@@ -118,6 +118,7 @@ using Acornima.Ast;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis;
 using Microsoft.CodeAnalysis.Operations;
+using System;
 using System.Collections.Generic;
 
 namespace ECMAScript.Compiler;
@@ -141,7 +142,7 @@ public partial class SemanticWalker
 		var visited = new HashSet<IOperation>();
 		var current = operation;
 		IOperation? reference = null;
-		Stack<(Identifier, bool)> members = [];
+		Stack<Func<Expression,Expression>> members = [];
 		while (current is not null)
 		{
 			if (!visited.Add(current))
@@ -153,14 +154,83 @@ public partial class SemanticWalker
 				{
 					var member = new Identifier(fieldRef.Field.Name);
 					var optional = IsNullableType(fieldRef.Field.Type);
-					members.Push((member, optional));
+					members.Push((x) => new MemberExpression(x, member, computed: false, optional));
 				}
 				else if (propertySubpatternOp.Member is IPropertyReferenceOperation propRef)
 				{
 					var member = new Identifier(propRef.Property.Name);
 					var optional = IsNullableType(propRef.Property.Type);
-					members.Push((member, optional));
+					members.Push((x) => new MemberExpression(x, member, computed: false, optional));
 				}
+			}
+			else if (
+				current is IPatternOperation patternOp &&
+				current.Parent is IListPatternOperation listPatternOp)
+			{
+				// 判断是否有切片和切片位置
+				var hasSlice = false;
+				var sliceIndex = -1;
+				for (int i = 0; i < listPatternOp.Patterns.Length; i++)
+				{
+					if (listPatternOp.Patterns[i].Kind == OperationKind.SlicePattern)
+					{
+						hasSlice = true;
+						sliceIndex = i;
+						break;
+					}
+				}
+
+				var fixedLen = hasSlice ? listPatternOp.Patterns.Length - 1 : listPatternOp.Patterns.Length;
+				var currentIndex = listPatternOp.Patterns.IndexOf(patternOp);
+				
+				members.Push((x) =>
+				{				
+					// 切片前直接使用索引，切片后需要计算反向索引
+					Expression prop = new NumericLiteral(currentIndex, currentIndex.ToString());
+					if (hasSlice)
+					{
+						if (currentIndex > sliceIndex)
+						{
+							var offset = listPatternOp.Patterns.Length - currentIndex;
+							var subExpr = new NumericLiteral(offset, offset.ToString());
+							var lengthId = new Identifier("length");
+							var lengthExpr = new MemberExpression(x, lengthId, computed: false, optional: false);
+							prop = new NonLogicalBinaryExpression(Operator.Subtraction, lengthExpr, subExpr);
+						}
+						else if (currentIndex == sliceIndex)
+						{
+							var afterSlice = listPatternOp.Patterns.Length - currentIndex - 1;
+							var sliceId = new Identifier("slice");
+							var sliceExpr = new MemberExpression(x, sliceId, computed: false, optional: false);
+							if (afterSlice == 0)
+							{
+								// 切片在末尾，如 [var first, .. var rest]
+								// JavaScript: obj.slice(index)
+								return new CallExpression(
+									sliceExpr,
+									NodeList.From<Expression>(new NumericLiteral(currentIndex, currentIndex.ToString())),
+									optional: false
+								);
+							}
+							else
+							{
+								// 切片在中间或开头，需要排除后面的 elementsAfterSlice 个元素
+								// 如 [var first, .. var middle, var last] -> obj.slice(1, -1)
+								// 如 [.. var rest, var last] -> obj.slice(0, -1)
+								// 如 [var a, .. var middle, var b, var c] -> obj.slice(1, -2)
+								return new CallExpression(
+									sliceExpr,
+									NodeList.From<Expression>(
+										new NumericLiteral(currentIndex, currentIndex.ToString()),
+										new NumericLiteral(-afterSlice, (-afterSlice).ToString())
+									),
+									optional: false
+								);
+							}
+						}
+					}
+					return new MemberExpression(x, prop, computed: true, false);
+				});
 			}
 			else if (current is IIsTypeOperation isTypeOp)
 			{
@@ -202,10 +272,7 @@ public partial class SemanticWalker
 			expr = Translate<Expression>(reference, []);
 
 		while (members.Count > 0)
-		{
-			var (member, optional) = members.Pop();
-			expr = new MemberExpression(expr, member, computed: false, optional);
-		}
+			expr = members.Pop()(expr);
 
 		return expr;
 	}
@@ -695,9 +762,7 @@ public partial class SemanticWalker
 		Expression? typeMatchExpr = null, declaredExpr = null;
 
 		if (operation.MatchedType is not null)
-		{
 			typeMatchExpr = CreateTypeMatchExpr(operation, operation.MatchedType, obj);
-		}
 
 		if (operation.DeclaredSymbol is not null)
 		{
@@ -712,43 +777,11 @@ public partial class SemanticWalker
 
 			else if (operation.Parent is IIsPatternOperation 
 				or IPatternCaseClauseOperation
-				or ISwitchExpressionArmOperation)
+				or ISwitchExpressionArmOperation
+				or IBinaryPatternOperation
+				or ISlicePatternOperation
+				or IPropertySubpatternOperation)
 				assignValueExpr = obj;
-
-			else if (operation.Parent is ISlicePatternOperation slicePatternOp &&
-				operation.Parent.Parent is IListPatternOperation listPatternOp)
-			{
-				// 获取Slice位置（list 中只有一个切片模式）
-				var index = listPatternOp.Patterns.IndexOf(slicePatternOp);
-				// 切片后面有多少个元素
-				var elementsAfterSlice = listPatternOp.Patterns.Length - index - 1;
-				var sliceMember = new MemberExpression(obj, new Identifier("slice"), computed: false, optional: false);
-				if (elementsAfterSlice == 0)
-				{
-					// 切片在末尾，如 [var first, .. var rest]
-					// JavaScript: obj.slice(index)
-					assignValueExpr = new CallExpression(
-						sliceMember,
-						NodeList.From<Expression>(new NumericLiteral(index, index.ToString())),
-						optional: false
-					);
-				}
-				else
-				{
-					// 切片在中间或开头，需要排除后面的 elementsAfterSlice 个元素
-					// 如 [var first, .. var middle, var last] -> obj.slice(1, -1)
-					// 如 [.. var rest, var last] -> obj.slice(0, -1)
-					// 如 [var a, .. var middle, var b, var c] -> obj.slice(1, -2)
-					assignValueExpr = new CallExpression(
-						sliceMember,
-						NodeList.From<Expression>(
-							new NumericLiteral(index, index.ToString()),
-							new NumericLiteral(-elementsAfterSlice, (-elementsAfterSlice).ToString())
-						),
-						optional: false
-					);
-				}
-			}
 
 			if (assignValueExpr is null)
 				return HandleTransformationFailure<Expression>(operation, "Cannot determine value to assign in declaration pattern.");
@@ -952,11 +985,10 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitListPattern(IListPatternOperation operation, Context argument)
 	{
-		if (operation.Patterns.IsEmpty) 
-			return null;
-
 		// 获取目标名称，在节点内构建表达式
 		var obj = GetPatternRefrence(operation);
+		var lengthProp = new Identifier("length");
+		var lengthExpr = new MemberExpression(obj, lengthProp, computed: false, optional: false);
 
 		// 检查是数组 Array.isArray(target)
 		Expression result = new CallExpression(
@@ -965,71 +997,81 @@ public partial class SemanticWalker
 			optional: false
 		);
 
-		// 如果有切片则需要判断长度
-		var hasSlice = false;
-		var sliceIndex = -1; // 记录切片模式的位置
-		for (int i = 0; i < operation.Patterns.Length; i++)
+		if (operation.Patterns.IsEmpty)
 		{
-			if (operation.Patterns[i].Kind == OperationKind.SlicePattern)
-			{
-				hasSlice = true;
-				sliceIndex = i;
-				break;
-			}
+			var lengthCheck = new NonLogicalBinaryExpression(
+				Operator.StrictEquality,
+				lengthExpr,
+				new NumericLiteral(0, "0")
+			);
+			result = new LogicalExpression(Operator.LogicalAnd, result, lengthCheck);
 		}
-
-		// 长度检查，有切片就用 >=，没有就用 ===
-		var fixedLen = hasSlice ? operation.Patterns.Length - 1 : operation.Patterns.Length;
-		var lengthProp = new Identifier("length");
-		var lengthExpr = new MemberExpression(obj, lengthProp, computed: false, optional: false);
-		var lengthCheck = new NonLogicalBinaryExpression(
-			hasSlice ? Operator.GreaterThanOrEqual : Operator.StrictEquality,
-			lengthExpr,
-			new NumericLiteral(fixedLen, fixedLen.ToString())
-		);
-		result = new LogicalExpression(Operator.LogicalAnd, result, lengthCheck);
-
-		// 模式处理
-		for (int i = 0; i < operation.Patterns.Length; i++)
+		else
 		{
-			var pattern = operation.Patterns[i];
-			if (pattern.Kind == OperationKind.DiscardPattern)
-				continue;// 弃元模式忽略
-			else if (pattern.Kind == OperationKind.ConstantPattern || pattern.Kind == OperationKind.DeclarationPattern)
+			// 如果有切片则需要判断长度
+			var hasSlice = false;
+			var sliceIndex = -1; // 记录切片模式的位置
+			for (int i = 0; i < operation.Patterns.Length; i++)
 			{
-				// 切片前直接使用索引，切片后需要计算反向索引
-				Expression prop = new NumericLiteral(i, i.ToString());
-				if (hasSlice && i > sliceIndex)
+				if (operation.Patterns[i].Kind == OperationKind.SlicePattern)
 				{
-					var offset = operation.Patterns.Length - i;
-					var subExpr = new NumericLiteral(offset, offset.ToString());
-					prop = new NonLogicalBinaryExpression(Operator.Subtraction, lengthExpr, subExpr);
+					hasSlice = true;
+					sliceIndex = i;
+					break;
 				}
+			}
 
-				var indexAccess = new MemberExpression(obj, prop, computed: true, optional: false);
-				Expression? expr;
-				if (pattern is IDeclarationPatternOperation declarationPatternOp)
-					expr = VisitDeclarationPattern(declarationPatternOp, indexAccess, argument);
+			// 长度检查，有切片就用 >=，没有就用 ===
+			var fixedLen = hasSlice ? operation.Patterns.Length - 1 : operation.Patterns.Length;
+			var lengthCheck = new NonLogicalBinaryExpression(
+				hasSlice ? Operator.GreaterThanOrEqual : Operator.StrictEquality,
+				lengthExpr,
+				new NumericLiteral(fixedLen, fixedLen.ToString())
+			);
+			result = new LogicalExpression(Operator.LogicalAnd, result, lengthCheck);
+
+			// 模式处理
+			for (int i = 0; i < operation.Patterns.Length; i++)
+			{
+				var pattern = operation.Patterns[i];
+				if (pattern.Kind == OperationKind.DiscardPattern)
+					continue;// 弃元模式忽略
+				else if (pattern.Kind == OperationKind.ConstantPattern || pattern.Kind == OperationKind.DeclarationPattern)
+				{
+					// 切片前直接使用索引，切片后需要计算反向索引
+					Expression prop = new NumericLiteral(i, i.ToString());
+					if (hasSlice && i > sliceIndex)
+					{
+						var offset = operation.Patterns.Length - i;
+						var subExpr = new NumericLiteral(offset, offset.ToString());
+						prop = new NonLogicalBinaryExpression(Operator.Subtraction, lengthExpr, subExpr);
+					}
+
+					var indexAccess = new MemberExpression(obj, prop, computed: true, optional: false);
+					Expression? expr;
+					if (pattern is IDeclarationPatternOperation declarationPatternOp)
+						expr = VisitDeclarationPattern(declarationPatternOp, indexAccess, argument);
+					else
+					{
+						var value = Translate<Expression>(pattern, argument);
+						expr = new NonLogicalBinaryExpression(Operator.StrictEquality, indexAccess, value);
+					}
+
+					if (expr is not null)
+						result = new LogicalExpression(Operator.LogicalAnd, result, expr);
+				}
+				else if (pattern.Kind == OperationKind.SlicePattern)
+				{
+					// 切片模式可能返回空
+					var expr = Translate<Expression>(pattern, argument, null);
+					if (expr is not null)
+						result = new LogicalExpression(Operator.LogicalAnd, result, expr);
+				}
 				else
 				{
-					var value = Translate<Expression>(pattern, argument);
-					expr = new NonLogicalBinaryExpression(Operator.StrictEquality, indexAccess, value);
+					var expr = Translate<Expression>(pattern, argument);
+					result = new LogicalExpression(Operator.LogicalAnd, result, expr);
 				}
-
-				if (expr is not null)
-					result = new LogicalExpression(Operator.LogicalAnd, result, expr);
-			}
-			else if (pattern.Kind == OperationKind.SlicePattern)
-			{
-				// 切片模式可能返回空
-				var expr = Translate<Expression>(pattern, argument, null);
-				if (expr is not null)
-					result = new LogicalExpression(Operator.LogicalAnd, result, expr);
-			}
-			else
-			{
-				var expr = Translate<Expression>(pattern, argument);
-				result = new LogicalExpression(Operator.LogicalAnd, result, expr);
 			}
 		}
 

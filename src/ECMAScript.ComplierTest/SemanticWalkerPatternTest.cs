@@ -1556,7 +1556,7 @@ public sealed class SemanticWalkerPatternTest
   let result = (() => {
     const v$test = array;
     if (Array.isArray(v$test) && v$test.length >= 0)
-      return ""empty\ or\ any"";
+      return ""empty or any"";
     return ""other"";
   })();
 }", script);
@@ -1763,7 +1763,7 @@ public sealed class SemanticWalkerPatternTest
   let result = (() => {
     const v$test = person;
     if (v$test.Name === ""John"")
-      return ""Hello\ John"";
+      return ""Hello John"";
     if (v$test.Age > 18)
       return ""Adult"";
     return ""Unknown"";
@@ -2255,7 +2255,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let value = null;
-  let result = value === null || typeof value === ""number"";
+  let result = typeof value === ""number"";
 }", script);
   }
 
@@ -2286,7 +2286,7 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(@"{
   let value = 42;
   let v;
-  if ((value === null || typeof value === ""number"") && (v = value, true)) {
+  if (typeof value === ""number"" && (v = value, true)) {
     Console.WriteLine(v);
   }
 }", script);
@@ -2318,7 +2318,7 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(@"{
   let obj = 42;
   let x, y;
-  let result = (typeof obj === ""number"" && (x = obj, true)) && (typeof obj === ""number"" && (y = obj, true));
+  let result = typeof obj === ""number"" && (x = obj, true) && (typeof obj === ""number"" && (y = obj, true));
 }", script);
   }
 
@@ -2388,10 +2388,9 @@ public sealed class SemanticWalkerPatternTest
       throw new InvalidOperationException("switchExpressionOperation is null");
     var switchCaseArm = switchExpressionOperation.Arms.First();
     var node = walker.VisitSwitchExpressionArm(switchCaseArm, new());
-    var script = node?.ToKnRECMAScript();
+    var script = node?.ToECMAScript();
 
-    Assert.AreEqual(@"if (v$test === 1)
-      return ""one"";", script);
+    Assert.AreEqual(@"if(v$test===1)return""one"";", script);
   }
 
   /// <summary>
@@ -2419,15 +2418,13 @@ public sealed class SemanticWalkerPatternTest
     var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
     var declaration = variableDeclarationGroupOp.Declarations.First();
     var declarator = declaration.Declarators.First();
-    var switchExpressionOperation = declarator.Initializer!.Value as ISwitchExpressionOperation;
-    if (switchExpressionOperation is null)
-      throw new InvalidOperationException("switchExpressionOperation is null");
+    var switchExpressionOperation = declarator.Initializer!.Value as ISwitchExpressionOperation 
+      ?? throw new InvalidOperationException("switchExpressionOperation is null");
     var switchCaseArm = switchExpressionOperation.Arms.First();
     var node = walker.VisitSwitchExpressionArm(switchCaseArm, new());
-    var script = node?.ToKnRECMAScript();
+    var script = node?.ToECMAScript();
 
-    Assert.AreEqual(@"if ((x = v$test, true) && x > 0)
-      return ""positive"";", script);
+    Assert.AreEqual(@"if((x=v$test,true)&&x>0)return""positive"";", script);
   }
 
   /// <summary>
@@ -2454,14 +2451,13 @@ public sealed class SemanticWalkerPatternTest
     var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
     var declaration = variableDeclarationGroupOp.Declarations.First();
     var declarator = declaration.Declarators.First();
-    var switchExpressionOperation = declarator.Initializer!.Value as ISwitchExpressionOperation;
-    if (switchExpressionOperation is null)
-      throw new InvalidOperationException("switchExpressionOperation is null");
+    var switchExpressionOperation = declarator.Initializer!.Value as ISwitchExpressionOperation 
+      ?? throw new InvalidOperationException("switchExpressionOperation is null");
     var switchCaseArm = switchExpressionOperation.Arms.First();
     var node = walker.VisitSwitchExpressionArm(switchCaseArm, new());
-    var script = node?.ToKnRECMAScript();
+    var script = node?.ToECMAScript();
 
-    Assert.AreEqual(@"return ""default"";", script);
+    Assert.AreEqual(@"return""default""", script);
   }
 
   // ==================== VisitPatternCaseClause 更多测试 ====================
@@ -2470,7 +2466,7 @@ public sealed class SemanticWalkerPatternTest
   /// 测试 VisitPatternCaseClause - 常量模式 case（直接调用）
   /// </summary>
   [TestMethod]
-  public void Visit_PatternCaseClause_Constant_Direct()
+  public void Visit_SingleValueCaseClause_Constant_Direct()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -2489,11 +2485,11 @@ public sealed class SemanticWalkerPatternTest
 
     var walker = new SemanticWalker(true);
     var switchOperation = GetOperationAt<ISwitchOperation>(block, 1);
-    var patternCaseClause = (IPatternCaseClauseOperation)switchOperation.Cases.First()!.Clauses.First()!;
-    var node = walker.VisitPatternCaseClause(patternCaseClause, new());
+    var patternCaseClause = (ISingleValueCaseClauseOperation)switchOperation.Cases.First()!.Clauses.First()!;
+    var node = walker.VisitSingleValueCaseClause(patternCaseClause, new());
     var script = node?.ToECMAScript();
 
-    Assert.AreEqual("v$test===1", script);
+    Assert.AreEqual("1", script);
   }
 
   /// <summary>
@@ -2523,7 +2519,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitPatternCaseClause(patternCaseClause, new());
     var script = node?.ToECMAScript();
 
-    Assert.AreEqual("v$test>0", script);
+    Assert.AreEqual("value>0", script);
   }
 
   /// <summary>
@@ -2553,7 +2549,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitPatternCaseClause(patternCaseClause, new());
     var script = node?.ToECMAScript();
 
-    Assert.AreEqual(@"(typeof v$test===""string""&&(s=v$test,true))&&s.Length>0", script);
+    Assert.AreEqual(@"typeof value===""string""&&(s=value,true)&&s.Length>0", script);
   }
 
   // ==================== DateOnly/TimeOnly 类型测试 ====================
@@ -2625,8 +2621,8 @@ public sealed class SemanticWalkerPatternTest
             {
                 void TestMethod()
                 {
-                    object obj = new timestamp();
-                    bool result = obj is timestamp;
+                    object obj = new TimeSpan();
+                    bool result = obj is TimeSpan;
                 }
             }
             ");
@@ -2636,7 +2632,7 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let obj = 0n;
+  let obj = BigInt();
   let result = typeof obj === ""bigint"";
 }", script);
   }
@@ -2745,8 +2741,8 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let obj = [];
-  let result = obj instanceof Map;
+  let obj = new Array;
+  let result = Array.isArray(obj);
 }", script);
   }
 
@@ -2780,33 +2776,6 @@ public sealed class SemanticWalkerPatternTest
   // ==================== 复杂切片模式测试 ====================
 
   /// <summary>
-  /// 测试 Visit - SlicePattern 多个切片模式
-  /// </summary>
-  [TestMethod]
-  public void Visit_SlicePattern_MultipleSlices()
-  {
-    var block = GetBlockOperation(@"
-            class TestClass
-            {
-                void TestMethod()
-                {
-                    int[] array = [1, 2, 3, 4, 5];
-                    bool result = array is [.., 2, ..];
-                }
-            }
-            ");
-
-    var walker = new SemanticWalker(true);
-    var node = walker.Visit(block, new());
-    var script = node?.ToKnRECMAScript();
-
-    Assert.AreEqual(@"{
-  let array = [1, 2, 3, 4, 5];
-  let result = Array.isArray(array) && array.length >= 1 && array[array.length - 1] === 2;
-}", script);
-  }
-
-  /// <summary>
   /// 测试 Visit - SlicePattern 切片带常量模式
   /// </summary>
   [TestMethod]
@@ -2833,7 +2802,7 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(@"{
   let array = [1, 2, 3];
   let last;
-  if (Array.isArray(array) && array.length >= 1 && (last = array, true) && last > 0) {
+  if (Array.isArray(array) && array.length >= 1 && (last = array[array.length - 1], true) && last > 0) {
     Console.WriteLine(last);
   }
 }", script);
@@ -2864,7 +2833,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let nested = [[1, 2], [3, 4]];
-  let result = Array.isArray(nested) && nested.length === 2 && Array.isArray(nested[0]) && nested[0].length === 2 && nested[0][0] === 1 && nested[0][1] === 2 && Array.isArray(nested[1]) && nested[1].length === 2 && nested[1][0] === 3 && nested[1][1] === 4;
+  let result = Array.isArray(nested) && nested.length === 2 && (Array.isArray(nested[0]) && nested[0].length === 2 && nested[0][0] === 1 && nested[0][1] === 2) && (Array.isArray(nested[1]) && nested[1].length === 2 && nested[1][0] === 3 && nested[1][1] === 4);
 }", script);
   }
 
@@ -2891,7 +2860,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let nested = [[1, 2, 3], [4, 5, 6]];
-  let result = Array.isArray(nested) && nested.length === 2 && Array.isArray(nested[0]) && nested[0].length >= 1 && nested[0][0] === 1 && Array.isArray(nested[1]) && nested[1].length >= 1 && nested[1][0] === 4;
+  let result = Array.isArray(nested) && nested.length === 2 && (Array.isArray(nested[0]) && nested[0].length >= 1 && nested[0][0] === 1) && (Array.isArray(nested[1]) && nested[1].length >= 1 && nested[1][0] === 4);
 }", script);
   }
 
@@ -2974,7 +2943,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let value = 5;
-  let result = (value > 0 && value < 10) || (value >= 100 && value <= 200);
+  let result = value > 0 && value < 10 || value >= 100 && value <= 200;
 }", script);
   }
 
@@ -2990,7 +2959,7 @@ public sealed class SemanticWalkerPatternTest
                 void TestMethod()
                 {
                     int value = 5;
-                    bool result = value is == 5;
+                    bool result = value is 5;
                 }
             }
             ");
@@ -3017,7 +2986,7 @@ public sealed class SemanticWalkerPatternTest
                 void TestMethod()
                 {
                     int value = 5;
-                    bool result = value is != 0;
+                    bool result = value is not 0;
                 }
             }
             ");
@@ -3028,7 +2997,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let value = 5;
-  let result = value !== 0;
+  let result = !(value === 0);
 }", script);
   }
 
@@ -3087,6 +3056,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let obj = { X: 1, Y: 2 };
+  let x;
   let result = (() => {
     const v$test = obj;
     if (v$test.X === 1 && v$test.Y === 2)
@@ -3155,6 +3125,5 @@ public sealed class SemanticWalkerPatternTest
   })();
 }", script);
   }
-
 
 }

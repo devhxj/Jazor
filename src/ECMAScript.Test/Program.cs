@@ -90,7 +90,7 @@ var  b = (2,4);
 var  c = (2,"a");
 ((int bbb, int ccc),int aaa) = tuple;
 var script = @"
-const a = 48n
+const a = BigInt()
 ";
 var parser = new Parser(new ParserOptions { 
 

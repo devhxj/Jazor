@@ -59,7 +59,7 @@ public sealed partial class SemanticWalker : OperationVisitor<Context, Node?>
             return TypeMapper.Object;
 
         // 使用 SpecialType 进行基础类型检查，更加类型安全和高效
-        switch (typeSymbol.SpecialType)
+        switch (typeSymbol.OriginalDefinition.SpecialType)
         {
             case SpecialType.System_Char:
             case SpecialType.System_String:
@@ -93,10 +93,6 @@ public sealed partial class SemanticWalker : OperationVisitor<Context, Node?>
                     else if (typeSymbol.TypeKind == TypeKind.Enum)
                         return TypeMapper.Number;
 
-                    // Struct 类型映射到 Object
-                    else if (typeSymbol.TypeKind == TypeKind.Struct)
-                        return TypeMapper.Class;
-
                     // Date 相关类型（SpecialType 只包含 DateTime）
                     else if (displayName == "System.DateTimeOffset" ||
                         displayName == "System.DateOnly" ||
@@ -129,6 +125,22 @@ public sealed partial class SemanticWalker : OperationVisitor<Context, Node?>
                         typeName = "Set";
                         return TypeMapper.Set;
                     }
+
+                    // 集合类型检查
+                    else if (displayName == "System.Collections.Generic.List<T>" ||
+                        displayName == "System.Collections.Generic.IList" ||
+                        displayName == "System.Collections.Generic.IList<T>" ||
+                        displayName == "System.Collections.Generic.IEnumerable" ||
+                        displayName == "System.Collections.Generic.IEnumerable<T>" ||
+                        displayName == "System.Collections.Generic.ICollection<T>")
+                    {
+                        typeName = "Array";
+                        return TypeMapper.Array;
+                    }
+
+                    // Struct 类型映射到 Object
+                    else if (typeSymbol.TypeKind == TypeKind.Struct)
+                        return TypeMapper.Class;
 
                     // 对于自定义类型，使用instanceof检查（优先于接口检查）
                     else if (typeSymbol.TypeKind == TypeKind.Class)

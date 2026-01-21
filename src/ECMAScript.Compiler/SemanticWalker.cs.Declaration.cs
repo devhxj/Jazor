@@ -88,9 +88,8 @@ public partial class SemanticWalker
 	{
 		var declarators = new List<VariableDeclarator>();
 		foreach (var declarator in operation.Declarators)
-		{
 			Translate(declarators, declarator, argument);
-		}
+			
 		return new VariableDeclaration(VariableDeclarationKind.Let, NodeList.From(declarators));
 	}
 
