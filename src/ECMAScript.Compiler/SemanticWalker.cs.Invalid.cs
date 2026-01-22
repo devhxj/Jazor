@@ -27,7 +27,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的 IInvalidOperation。</param>
 	/// <param name="argument">当前访问的 operation 的根 operation。</param>
 	/// <returns>转换后的 Acornima AST Node。</returns>
-	public override Acornima.Ast.Node? VisitInvalid(IInvalidOperation operation, Context argument)
+	public override Acornima.Ast.Node? VisitInvalid(IInvalidOperation operation, WalkerArgument argument)
 		=> ConvertFromSyntaxNode(operation.Syntax);
 
 	/// <summary>

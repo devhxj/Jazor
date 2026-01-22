@@ -16,12 +16,12 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitArrayInitializer(IArrayInitializerOperation operation, Context argument)
+	public override Node? VisitArrayInitializer(IArrayInitializerOperation operation, WalkerArgument argument)
 	{
 		var elements = new List<Expression?>();
 		foreach (var element in operation.ElementValues)
 		{
-			Translate(elements, element, argument,null);
+			Translate(elements, element, argument, null);
 		}
 		return new ArrayExpression(NodeList.From(elements));
 	}
@@ -36,7 +36,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitFieldInitializer(IFieldInitializerOperation operation, Context argument)
+	public override Node? VisitFieldInitializer(IFieldInitializerOperation operation, WalkerArgument argument)
 	{
 		return Visit(operation.Value, argument);
 	}
@@ -51,7 +51,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitVariableInitializer(IVariableInitializerOperation operation, Context argument)
+	public override Node? VisitVariableInitializer(IVariableInitializerOperation operation, WalkerArgument argument)
 	{
 		return Visit(operation.Value, argument);
 	}
@@ -66,7 +66,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitVariableDeclarator(IVariableDeclaratorOperation operation, Context argument)
+	public override Node? VisitVariableDeclarator(IVariableDeclaratorOperation operation, WalkerArgument argument)
 	{
 		var identifier = new Identifier(operation.Symbol.Name);
 		var init = Translate<Expression>(operation.Initializer, argument, null);
@@ -84,12 +84,12 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitVariableDeclaration(IVariableDeclarationOperation operation, Context argument)
+	public override Node? VisitVariableDeclaration(IVariableDeclarationOperation operation, WalkerArgument argument)
 	{
 		var declarators = new List<VariableDeclarator>();
 		foreach (var declarator in operation.Declarators)
 			Translate(declarators, declarator, argument);
-			
+
 		return new VariableDeclaration(VariableDeclarationKind.Let, NodeList.From(declarators));
 	}
 
@@ -101,7 +101,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitVariableDeclarationGroup(IVariableDeclarationGroupOperation operation, Context argument)
+	public override Node? VisitVariableDeclarationGroup(IVariableDeclarationGroupOperation operation, WalkerArgument argument)
 	{
 		// 可以假设 IVariableDeclarationGroupOperation.Declarations 只包含一个元素
 		// 除非你正在处理一些非常特殊的、涉及类型推断的复合声明（如 using 语句）。
@@ -126,13 +126,13 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitDeclarationExpression(IDeclarationExpressionOperation operation, Context argument)
+	public override Node? VisitDeclarationExpression(IDeclarationExpressionOperation operation, WalkerArgument argument)
 	{
 		var expr = Translate<Expression>(operation.Expression, argument);
 		if (operation.Parent is IArgumentOperation)
 		{
 			var declarator = new VariableDeclarator(expr, null);
-			argument.Enqueue(declarator);
+			argument.AddVarDeclarator(declarator, _recursionDepth);
 		}
 
 		return expr;

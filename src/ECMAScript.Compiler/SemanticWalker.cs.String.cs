@@ -18,7 +18,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitInterpolatedStringText(IInterpolatedStringTextOperation operation, Context argument)
+	public override Acornima.Ast.Node? VisitInterpolatedStringText(IInterpolatedStringTextOperation operation, WalkerArgument argument)
 	{
 		// 插值字符串中的文本部分转换为字符串字面量
 		var text = operation.Text.ConstantValue.Value?.ToString() ?? "";
@@ -35,7 +35,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitInterpolation(IInterpolationOperation operation, Context argument)
+	public override Acornima.Ast.Node? VisitInterpolation(IInterpolationOperation operation, WalkerArgument argument)
 	{
 		// 插值表达式转换为表达式
 		// 处理格式化说明符（如 :F2）
@@ -53,7 +53,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitInterpolatedStringAddition(IInterpolatedStringAdditionOperation operation, Context argument)
+	public override Acornima.Ast.Node? VisitInterpolatedStringAddition(IInterpolatedStringAdditionOperation operation, WalkerArgument argument)
 	{
 		// 递归收集所有静态字符串和动态表达式
 		var quasis = new List<TemplateElement>();
@@ -122,7 +122,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitInterpolatedString(IInterpolatedStringOperation operation, Context argument)
+	public override Acornima.Ast.Node? VisitInterpolatedString(IInterpolatedStringOperation operation, WalkerArgument argument)
 	{
 		var quasis = new List<TemplateElement>();
 		var expressions = new List<Expression>();

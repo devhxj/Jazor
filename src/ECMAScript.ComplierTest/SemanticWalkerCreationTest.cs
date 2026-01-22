@@ -350,7 +350,7 @@ public sealed class SemanticWalkerCreationTest
 
         var operation = GetObjectCreationOperationAt(block);
         var walker = new SemanticWalker(true);
-        var node = walker.VisitObjectCreation(operation, []);
+        var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
         Assert.AreEqual(@"new MyClass(2,3);obj.Property1=""value1"";obj.Property2=42;", script);
@@ -378,7 +378,7 @@ public sealed class SemanticWalkerCreationTest
         var operation = GetObjectCreationOperationAt(block);
         var walker = new SemanticWalker(true);
         var left = new Identifier("obj");
-        var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!, []);
+        var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!, new());
         var script = node?.ToECMAScript();
 
         Assert.AreEqual(@"obj.Property1=""value1"";obj.Property2=42;", script);
@@ -420,7 +420,7 @@ public sealed class SemanticWalkerCreationTest
         var left = new Identifier("obj");
         //var memberInitializer = (IMemberInitializerOperation)operation.Initializer!.Initializers.First();
         //var node = walker.VisitMemberInitializer(memberInitializer, new());
-        var node = walker.VisitObjectCreation(operation, []);
+        var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
         Assert.AreEqual(@"new A;obj.A1={B1:""Test"",B2:{C1:""a"",C2:9}};obj.A2=""value"";", script);
@@ -609,7 +609,7 @@ public sealed class SemanticWalkerCreationTest
 
         var operation = GetObjectCreationOperationAt(block);
         var walker = new SemanticWalker(true);
-        var node = walker.VisitObjectCreation(operation, []);
+        var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
         Assert.AreEqual("new Outer;obj.Middle=new Middle;obj.Middle.Inner=new Inner;obj.Middle.Inner.Value=42;", script);
@@ -650,7 +650,7 @@ public sealed class SemanticWalkerCreationTest
         var operation = GetObjectCreationOperationAt(block);
         var walker = new SemanticWalker(true);
         var left = new Identifier("obj");
-        var node = walker.VisitObjectCreation(operation, []);
+        var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToKnRECMAScript();
 
         Assert.AreEqual(@"new MyClass(1, 2);
@@ -906,7 +906,7 @@ obj.Nested.NestedProp = ""nested"";
         var operation = GetObjectCreationOperationAt(block);
         var walker = new SemanticWalker(true);
         var left = new Identifier("obj");
-        var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!, []);
+        var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!, new());
         var script = node?.ToECMAScript();
 
         Assert.AreEqual("", script);
@@ -927,7 +927,7 @@ obj.Nested.NestedProp = ""nested"";
 
         var operation = GetObjectCreationOperationAt(block);
         var walker = new SemanticWalker(true);
-        var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!,[]);
+        var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!,new());
         var script = node?.ToECMAScript();
 
         Assert.AreEqual("list.Add(1);list.Add(2);list.Add(3);", script);
@@ -951,7 +951,7 @@ obj.Nested.NestedProp = ""nested"";
 
         var operation = GetObjectCreationOperationAt(block);
         var walker = new SemanticWalker(true);
-        var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!,[]);
+        var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!,new());
         var script = node?.ToKnRECMAScript();
 
         Assert.AreEqual(
@@ -990,7 +990,7 @@ list.Add(v$test);
         var operation = GetObjectCreationOperationAt(block);
         var walker = new SemanticWalker(true);
         var left = new Identifier("obj");
-        var node = walker.VisitObjectCreation(operation, []);
+        var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
         Assert.AreEqual(@"new MyClass;obj.Field1=42;obj.Field2=""test"";", script);

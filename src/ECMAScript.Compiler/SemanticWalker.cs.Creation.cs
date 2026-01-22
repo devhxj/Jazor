@@ -11,7 +11,7 @@ namespace ECMAScript.Compiler;
 public partial class SemanticWalker
 {
 	private StatementOrExpression VisitObjectCreation(Expression? simpleAssignmentExpr,
-		IObjectCreationOperation operation, Context argument)
+		IObjectCreationOperation operation, WalkerArgument argument)
 	{
 		if (operation.Type is null)
 			return HandleTransformationFailure<StatementOrExpression>(operation, "Object creation type could not be translated to JavaScript.");
@@ -79,7 +79,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitObjectCreation(IObjectCreationOperation operation, Context argument)
+	public override Acornima.Ast.Node? VisitObjectCreation(IObjectCreationOperation operation, WalkerArgument argument)
 		=> VisitObjectCreation(null, operation, argument);
 	
 	/// <summary>
@@ -91,7 +91,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitAnonymousObjectCreation(IAnonymousObjectCreationOperation operation, Context argument)
+	public override Acornima.Ast.Node? VisitAnonymousObjectCreation(IAnonymousObjectCreationOperation operation, WalkerArgument argument)
 	{
 		var properties = new List<Node>();
 
@@ -127,7 +127,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitTypeParameterObjectCreation(ITypeParameterObjectCreationOperation operation, Context argument)
+	public override Acornima.Ast.Node? VisitTypeParameterObjectCreation(ITypeParameterObjectCreationOperation operation, WalkerArgument argument)
 	{
 		if (operation.Type is null)
 			return HandleTransformationFailure<Node>(operation, "Type parameter object creation type could not be translated to JavaScript.");
@@ -151,7 +151,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitArrayCreation(IArrayCreationOperation operation, Context argument)
+	public override Acornima.Ast.Node? VisitArrayCreation(IArrayCreationOperation operation, WalkerArgument argument)
 	{
 		// 检查是否为多维数组
 		if (operation.Type is IArrayTypeSymbol arrayType)
@@ -187,7 +187,7 @@ public partial class SemanticWalker
 	}
 
 	private Acornima.Ast.StatementOrExpression VisitObjectOrCollectionInitializer(Expression? simpleAssignmentExpr,
-		IObjectOrCollectionInitializerOperation operation, Context argument)
+		IObjectOrCollectionInitializerOperation operation, WalkerArgument argument)
 	{
 		Expression? obj = simpleAssignmentExpr;
 		if (obj is null && operation.Parent?.Parent?.Parent is IVariableDeclaratorOperation variableDeclaratorOp)
@@ -287,8 +287,8 @@ public partial class SemanticWalker
 				Expression? target = null, value = null;
 				if (initializer is ISimpleAssignmentOperation simpleAssignmentOp)
 				{
-					target = Translate<Expression>(simpleAssignmentOp.Target, []);
-					value = Translate<Expression>(simpleAssignmentOp.Value, []);
+					target = Translate<Expression>(simpleAssignmentOp.Target, new());
+					value = Translate<Expression>(simpleAssignmentOp.Value, new());
 				}
 				else if (initializer is IMemberInitializerOperation memberInitializerOp)
 				{
@@ -329,7 +329,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitObjectOrCollectionInitializer(IObjectOrCollectionInitializerOperation operation, Context argument)
+	public override Acornima.Ast.Node? VisitObjectOrCollectionInitializer(IObjectOrCollectionInitializerOperation operation, WalkerArgument argument)
 		=> VisitObjectOrCollectionInitializer(null, operation, argument);
 
 	/// <summary>
@@ -341,7 +341,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitMemberInitializer(IMemberInitializerOperation operation, Context argument)
+	public override Acornima.Ast.Node? VisitMemberInitializer(IMemberInitializerOperation operation, WalkerArgument argument)
 	{
 		var target = operation.InitializedMember switch
 		{
@@ -374,7 +374,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitDelegateCreation(IDelegateCreationOperation operation, Context argument)
+	public override Acornima.Ast.Node? VisitDelegateCreation(IDelegateCreationOperation operation, WalkerArgument argument)
 	{
 		// 委托创建转换为函数引用或箭头函数
 		return Visit(operation.Target, argument);

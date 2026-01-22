@@ -682,12 +682,12 @@ public sealed class SemanticWalkerTupleTest
         var initializer = variableDeclaration.Declarators.First().Initializer;
         var operation = (ITupleBinaryOperation)initializer!.Value;
         var walker = new SemanticWalker(true);
-        var queue = new Queue<Acornima.Ast.VariableDeclarator>();
+        var queue = new WalkerArgument();
         var node = walker.VisitTupleBinaryOperator(operation, queue);
         var script = node?.ToECMAScript();
 
         Assert.AreEqual("(v$test.Item1===1&&v$test.Item2===2)", script);
-        Assert.HasCount(1, queue);
+        Assert.IsTrue(queue.HasVarDeclarator);
     }
 
     [TestMethod]
@@ -711,12 +711,12 @@ public sealed class SemanticWalkerTupleTest
         var initializer = variableDeclaration.Declarators.First().Initializer;
         var operation = (ITupleBinaryOperation)initializer!.Value;
         var walker = new SemanticWalker(true);
-        var queue = new Queue<Acornima.Ast.VariableDeclarator>();
+        var queue = new WalkerArgument();
         var node = walker.VisitTupleBinaryOperator(operation, queue);
         var script = node?.ToECMAScript();
 
         Assert.AreEqual("(v$test.Item1===v$test.Item1&&v$test.Item2===v$test.Item2)", script);
-        Assert.HasCount(2, queue);
+        Assert.IsTrue(queue.HasVarDeclarator);
     }
 
     [TestMethod]

@@ -30,7 +30,7 @@ namespace ECMAScript.Compiler;
 /// - 生成最简洁的JavaScript代码，避免复杂的IIFE包装（除非必要）
 /// - 递归深度控制，防止栈溢出
 /// </summary>
-public sealed partial class SemanticWalker : OperationVisitor<Context, Node?>
+public sealed partial class SemanticWalker : OperationVisitor<WalkerArgument, Node?>
 {
     private static readonly NullLiteral Null = new("null");
 
@@ -182,7 +182,7 @@ public sealed partial class SemanticWalker : OperationVisitor<Context, Node?>
     /// <param name="operation">BlockSyntax对应的IOperation</param>
     /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Node? Visit(IOperation? operation, Context argument)
+    public override Node? Visit(IOperation? operation, WalkerArgument argument)
     {
         if (operation is null)
             return null;
@@ -267,7 +267,7 @@ public sealed partial class SemanticWalker : OperationVisitor<Context, Node?>
     /// <param name="argument">用于存放变量声明的队列</param>
     /// <returns>转换后的Expression节点，如果操作为null或转换结果为null则抛出异常</returns>
     /// <exception cref="OperationTransformationException"></exception>
-    private Expression TranslateExpression(IOperation operation, Context argument)
+    private Expression TranslateExpression(IOperation operation, WalkerArgument argument)
     {
         var node = Visit(operation, argument);
         if (node is Expression result)
@@ -292,7 +292,7 @@ public sealed partial class SemanticWalker : OperationVisitor<Context, Node?>
     /// <param name="argument">用于存放变量声明的队列</param>
     /// <returns>转换后的指定类型AST节点，如果操作为null或转换结果为null则抛出异常</returns>
     /// <exception cref="OperationTransformationException">当操作不为null但无法转换为目标类型时抛出</exception>
-    private T Translate<T>(IOperation operation, Context argument) where T : INode
+    private T Translate<T>(IOperation operation, WalkerArgument argument) where T : INode
     {
         var node = Visit(operation, argument);
         if (node is T result)
@@ -317,7 +317,7 @@ public sealed partial class SemanticWalker : OperationVisitor<Context, Node?>
     /// <param name="argument">用于存放变量声明的队列</param>
     /// <param name="defaultValue">为空时的默认值</param>
     /// <returns>转换后的指定类型AST节点，如果操作为null或转换结果为null则返回默认值</returns>
-    private T? Translate<T>(IOperation? operation, Context argument, T? defaultValue) where T : INode
+    private T? Translate<T>(IOperation? operation, WalkerArgument argument, T? defaultValue) where T : INode
     {
         if (operation is null)
             return defaultValue;
@@ -348,7 +348,7 @@ public sealed partial class SemanticWalker : OperationVisitor<Context, Node?>
     /// <param name="target">用于存放成功转换的AST节点的集合</param>
     /// <param name="operation">要访问和转换的操作，可能为null</param>
     /// <param name="argument">用于存放变量声明的队列</param>
-    private void Translate<T>(ICollection<T> target, IOperation? operation, Context argument) where T : INode
+    private void Translate<T>(ICollection<T> target, IOperation? operation, WalkerArgument argument) where T : INode
     {
         if (operation is null)
             return;
@@ -380,7 +380,7 @@ public sealed partial class SemanticWalker : OperationVisitor<Context, Node?>
     /// <param name="operation">要访问和转换的操作，可能为null</param>
     /// <param name="argument">用于存放变量声明的队列</param>
     /// <param name="defaultValue">为空时的默认值</param>
-    private void Translate<T>(ICollection<T?> target, IOperation? operation, Context argument, T? defaultValue) where T : INode
+    private void Translate<T>(ICollection<T?> target, IOperation? operation, WalkerArgument argument, T? defaultValue) where T : INode
     {
         if (operation is null)
             return;

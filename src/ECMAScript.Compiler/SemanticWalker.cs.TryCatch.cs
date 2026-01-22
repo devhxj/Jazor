@@ -22,7 +22,7 @@ public partial class SemanticWalker
     /// <param name="operation">当前访问的operation</param>
     /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitTry(ITryOperation operation, Context argument)
+    public override Acornima.Ast.Node? VisitTry(ITryOperation operation, WalkerArgument argument)
     {
         var bodyStatements = new List<Statement>();
         foreach (var stmt in operation.Body.Operations)
@@ -131,7 +131,7 @@ public partial class SemanticWalker
     /// <param name="operation"></param>
     /// <param name="argument"></param>
     /// <returns></returns>
-    private List<Acornima.Ast.Statement> ExtractCatchClauseBody(ICatchClauseOperation operation, Context argument)
+    private List<Acornima.Ast.Statement> ExtractCatchClauseBody(ICatchClauseOperation operation, WalkerArgument argument)
     {
         var bodyStatements = new List<Statement>();
         foreach (var stmt in operation.Handler.Operations)
@@ -158,7 +158,7 @@ public partial class SemanticWalker
     /// <param name="operation">当前访问的operation</param>
     /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitCatchClause(ICatchClauseOperation operation, Context argument)
+    public override Acornima.Ast.Node? VisitCatchClause(ICatchClauseOperation operation, WalkerArgument argument)
     {
         // 此处不用担心多个catch，多catch会在 VisitTry中处理
         var param = ExtractCatchClauseParam(operation);
@@ -178,7 +178,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitThrow(IThrowOperation operation, Context argument)
+	public override Acornima.Ast.Node? VisitThrow(IThrowOperation operation, WalkerArgument argument)
 	{
 		Expression expr;
 		if (operation.Exception is not null)

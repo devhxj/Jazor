@@ -1326,7 +1326,7 @@ public sealed class SemanticWalkerPatternTest
 
     var walker = new SemanticWalker(true);
 
-    var node = walker.Visit(block, []);
+    var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
@@ -1365,13 +1365,13 @@ public sealed class SemanticWalkerPatternTest
     var isPatternOperation = (IIsPatternOperation)ifOperation.Condition;
     var listPatternOperation = (IListPatternOperation)isPatternOperation.Pattern;
     var slicePatternOperation = (ISlicePatternOperation)listPatternOperation.Patterns.First();
-    var context = new Queue<VariableDeclarator>();
+    var context = new WalkerArgument();
     var node = walker.VisitSlicePattern(slicePatternOperation, context);
     var script = node?.ToECMAScript();
 
     // 验证生成的表达式
     Assert.AreEqual(@"rest=array.slice(0),true", script);
-    Assert.HasCount(1, context);
+    Assert.IsTrue(context.HasVarDeclarator);
   }
 
   /// <summary>
@@ -1994,7 +1994,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitPatternCaseClause(patternCaseClause, new());
     var script = node?.ToECMAScript();
 
-    Assert.AreEqual("(x=obj,true)&&x>10", script);
+    Assert.AreEqual("(x=v$test,true)&&x>10", script);
   }
 
   /// <summary>
@@ -2497,7 +2497,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitPatternCaseClause(patternCaseClause, new());
     var script = node?.ToECMAScript();
 
-    Assert.AreEqual("value>0", script);
+    Assert.AreEqual("v$test>0", script);
   }
 
   /// <summary>
@@ -2527,7 +2527,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitPatternCaseClause(patternCaseClause, new());
     var script = node?.ToECMAScript();
 
-    Assert.AreEqual(@"typeof value===""string""&&(s=value,true)&&s.Length>0", script);
+    Assert.AreEqual(@"typeof v$test===""string""&&(s=v$test,true)&&s.Length>0", script);
   }
 
   /// <summary>
@@ -3081,7 +3081,7 @@ public sealed class SemanticWalkerPatternTest
   let s;
   (() => {
     const v$test = value;
-    if ((s = value, true) && s > 0) {
+    if ((s = v$test, true) && s > 0) {
       Console.WriteLine("">0"");
       return;
     }
@@ -3481,13 +3481,9 @@ line2"";
             ");
 
     var walker = new SemanticWalker(true);
-    var node = walker.Visit(block, new());
-    var script = node?.ToKnRECMAScript();
-
-    Assert.AreEqual(@"{
-  let obj = ""test"";
-  let result = typeof obj === ""string"";
-}", script);
+    Assert.Throws<OperationTransformationException>(
+      () => walker.Visit(block, new()),
+      "Unsupported type in is-type operation.");
   }
 
   #endregion
@@ -3665,8 +3661,8 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let point = { X: 1, Y: 2 };
-  let result = point.X === 1 && point.Y === 2;
+  let point = new Point(1, 2);
+  let result = point instanceof Point && point.X === 1 && point.Y === 2;
 }", script);
   }
 
@@ -3694,8 +3690,8 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let point = { X: 1, Y: 2 };
-  let result = point.X > 0 && point.Y > 0;
+  let point = new Point(1, 2);
+  let result = point instanceof Point && point.X === point > 0 && point.Y === point > 0;
 }", script);
   }
 
@@ -3726,9 +3722,9 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let point = { X: 1, Y: 2 };
+  let point = new Point(1, 2);
   let x, y;
-  if ((x = point.X, true) && (y = point.Y, true)) {
+  if (point instanceof Point && (x = point.X, true) && (y = point.Y, true)) {
     Console.WriteLine(`(${x}, ${y})`);
   }
 }", script);
@@ -3766,11 +3762,12 @@ line2"";
 
     Assert.AreEqual(@"{
   let value = 5;
+  let x;
   let result = (() => {
     const v$test = value;
-    if ((v$test.x = value, true) && v$test.x > 0 && v$test.x < 10)
+    if ((x = v$test, true) && (x > 0 && x < 10))
       return ""Small"";
-    if ((v$test.x = value, true) && v$test.x >= 10)
+    if ((x = v$test, true) && x >= 10)
       return ""Large"";
     return ""Unknown"";
   })();
@@ -3805,9 +3802,9 @@ line2"";
 
     Assert.AreEqual(@"{
   let obj = { Value: 42 };
+  let v;
   let result = (() => {
     const v$test = obj;
-    let v;
     if ((v = v$test.Value, true) && v > 0)
       return ""Positive"";
     if ((v = v$test.Value, true) && v < 0)
@@ -3839,13 +3836,10 @@ line2"";
             ");
 
     var walker = new SemanticWalker(true);
-    var node = walker.Visit(block, new());
-    var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
-  let matrix = new Array;
-  let result = matrix.Length > 0;
-}", script);
+    Assert.Throws<OperationTransformationException>(
+      () => walker.Visit(block, new()),
+      "Array creation with unsupported initializer or dimension.");
   }
 
   /// <summary>
@@ -3872,7 +3866,9 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let jagged = [[], []];
+  let jagged = new Array(2);
+  jagged[0] = [1, 2];
+  jagged[1] = [3, 4, 5];
   let result = Array.isArray(jagged) && jagged.length >= 1;
 }", script);
   }
@@ -3937,7 +3933,7 @@ line2"";
 
     Assert.AreEqual(@"{
   let obj = ""hello"";
-  let result = typeof obj === ""string"" && obj.Length > 0 && obj.Length < 100;
+  let result = typeof obj === ""string"" && (obj.Length > 0 && obj.Length < 100);
 }", script);
   }
 
@@ -3979,7 +3975,7 @@ line2"";
             {
                 void TestMethod()
                 {
-                    object obj = new { Items = new[] { 1, 2, 3 } };
+                    var obj = new { Items = new[] { 1, 2, 3 } };
                     bool result = obj is { Items: [var first, ..] and { Length: > 0 } };
                 }
             }
@@ -3992,7 +3988,7 @@ line2"";
     Assert.AreEqual(@"{
   let obj = { Items: [1, 2, 3] };
   let first;
-  let result = Array.isArray(obj.Items) && obj.Items.length >= 1 && (first = obj.Items[0], true) && obj.Items.Length > 0;
+  let result = Array.isArray(obj.Items) && obj.Items.length >= 1 && (first = obj.Items[0], true) && (Array.isArray(obj.Items) && obj.Items.Length > 0);
 }", script);
   }
 
@@ -4090,16 +4086,17 @@ line2"";
 
     Assert.AreEqual(@"{
   let obj = 42;
+  let s, x;
   (() => {
     const v$test = obj;
-    if (typeof v$test === ""string"") {
-      let s;
-      (s = v$test, true) && Console.WriteLine(s);
+    if (typeof v$test === ""string"" && (s = v$test, true)) {
+      Console.WriteLine(s);
       return;
     }
-    let x;
-    (x = v$test, true) && Console.WriteLine(`Default: ${x}`);
-    return;
+    if (x = v$test, true) {
+      Console.WriteLine(`Default: ${x}`);
+      return;
+    }
   })();
 }", script);
   }

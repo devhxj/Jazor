@@ -62,7 +62,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitArrayElementReference(IArrayElementReferenceOperation operation, Context argument)
+	public override Node? VisitArrayElementReference(IArrayElementReferenceOperation operation, WalkerArgument argument)
 	{
 		if (operation.Indices.Length != 1)
 			return HandleTransformationFailure<Node>(operation,
@@ -163,7 +163,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitImplicitIndexerReference(IImplicitIndexerReferenceOperation operation, Context argument)
+	public override Node? VisitImplicitIndexerReference(IImplicitIndexerReferenceOperation operation, WalkerArgument argument)
 	{
 		// 隐式索引器引用的直接AST转换，生成最简洁的代码
 		var instance = Translate<Expression>(operation.Instance, argument);
@@ -191,7 +191,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitLocalReference(ILocalReferenceOperation operation, Context argument)
+	public override Node? VisitLocalReference(ILocalReferenceOperation operation, WalkerArgument argument)
 	{
 		return new Identifier(operation.Local.Name);
 	}
@@ -207,7 +207,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitParameterReference(IParameterReferenceOperation operation, Context argument)
+	public override Node? VisitParameterReference(IParameterReferenceOperation operation, WalkerArgument argument)
 	{
 		return new Identifier(operation.Parameter.Name);
 	}
@@ -222,7 +222,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitFieldReference(IFieldReferenceOperation operation, Context argument)
+	public override Node? VisitFieldReference(IFieldReferenceOperation operation, WalkerArgument argument)
 	{
 		// 对于静态常量字段（无实例），GetFieldName 返回的是常量表达式
 		if (operation.Instance is null)
@@ -255,7 +255,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitMethodReference(IMethodReferenceOperation operation, Context argument)
+	public override Node? VisitMethodReference(IMethodReferenceOperation operation, WalkerArgument argument)
 	{
 		if (operation.Instance is not null)
 		{
@@ -277,7 +277,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitPropertyReference(IPropertyReferenceOperation operation, Context argument)
+	public override Node? VisitPropertyReference(IPropertyReferenceOperation operation, WalkerArgument argument)
 	{
 		var property = new Identifier(operation.Property.Name);
 
@@ -310,7 +310,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitInstanceReference(IInstanceReferenceOperation operation, Context argument)
+	public override Node? VisitInstanceReference(IInstanceReferenceOperation operation, WalkerArgument argument)
 	{
 		// InstanceReferenceKind
 		// ContainingTypeInstance - 语言特性：类实例引用

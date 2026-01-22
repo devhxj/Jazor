@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ECMAScript.Compiler;
 
@@ -22,9 +23,9 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitBlock(IBlockOperation operation, Context argument)
+	public override Node? VisitBlock(IBlockOperation operation, WalkerArgument argument)
 	{
-		var ctx = new Context();
+		var ctx = new WalkerArgument();
 		var statements = new List<Statement>();
 		foreach (var stmt in operation.Operations)
 		{
@@ -32,13 +33,10 @@ public partial class SemanticWalker
 
 			// 在statement之间，理论上C#代码那边也不会存在同级别statement出现同样的名称，编译器会报错的
 			// 即使是不同级别statement，变量名称相同，在存在作用域交叉的情况下 也会报错，而用{}隔离那明显是跨statement了
-			if (ctx.Count > 0)
+			if (ctx.HasVarDeclarator)
 			{
-				var declarators = new List<VariableDeclarator>(ctx.Count);
-				while (ctx.Count > 0)
-					declarators.Add(ctx.Dequeue());
-
-				var declaration = new VariableDeclaration(VariableDeclarationKind.Let, NodeList.From(declarators));
+				var declarators = ctx.FlushVarDeclarator();
+				var declaration = new VariableDeclaration(VariableDeclarationKind.Let, declarators);
 				statements.Add(declaration);
 			}
 
@@ -81,7 +79,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitLabeled(ILabeledOperation operation, Context argument)
+	public override Node? VisitLabeled(ILabeledOperation operation, WalkerArgument argument)
 	{
 		var label = new Identifier(operation.Label.Name);
 
@@ -108,7 +106,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitBranch(IBranchOperation operation, Context argument)
+	public override Node? VisitBranch(IBranchOperation operation, WalkerArgument argument)
 	{
 		return operation.BranchKind switch
 		{
@@ -127,7 +125,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitEmpty(IEmptyOperation operation, Context argument)
+	public override Node? VisitEmpty(IEmptyOperation operation, WalkerArgument argument)
 		=> new EmptyStatement();
 
 	/// <summary>
@@ -140,7 +138,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitReturn(IReturnOperation operation, Context argument)
+	public override Node? VisitReturn(IReturnOperation operation, WalkerArgument argument)
 	{
 		if (operation.ReturnedValue is null)
 			return new ReturnStatement(null);
@@ -159,7 +157,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitExpressionStatement(IExpressionStatementOperation operation, Context argument)
+	public override Node? VisitExpressionStatement(IExpressionStatementOperation operation, WalkerArgument argument)
 	{
 		return Translate<Node>(operation.Operation, argument);
 	}
@@ -176,7 +174,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitLocalFunction(ILocalFunctionOperation operation, Context argument)
+	public override Node? VisitLocalFunction(ILocalFunctionOperation operation, WalkerArgument argument)
 	{
 		var id = new Identifier(operation.Symbol.Name);
 		var parameters = new List<Node>();
@@ -430,7 +428,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的 ILiteralOperation 操作，包含字面量值和类型信息</param>
 	/// <param name="argument">用于存放当前操作内部需要的全局变量定义的上下文（字面量通常不需要）</param>
 	/// <returns>转换后的 JavaScript 字面量 Node（BooleanLiteral, StringLiteral, NumericLiteral, BigIntLiteral, NullLiteral 或 Identifier）</returns>
-	public override Node? VisitLiteral(ILiteralOperation operation, Context argument)
+	public override Node? VisitLiteral(ILiteralOperation operation, WalkerArgument argument)
 	{
 		var expr = BuildValueLiteral(operation.Type, operation.ConstantValue.Value);
 		if (expr is null)
@@ -469,7 +467,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的 IConversionOperation 操作</param>
 	/// <param name="argument">用于存放当前操作内部需要的全局变量定义的上下文</param>
 	/// <returns>转换后的 JavaScript ESTree Node</returns>
-	public override Node? VisitConversion(IConversionOperation operation, Context argument)
+	public override Node? VisitConversion(IConversionOperation operation, WalkerArgument argument)
 	{
 		// 处理特殊情况：方法组转换为委托类型
 		// class TestClass
@@ -522,7 +520,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitInvocation(IInvocationOperation operation, Context argument)
+	public override Node? VisitInvocation(IInvocationOperation operation, WalkerArgument argument)
 	{
 		var arguments = new List<Expression>();
 
@@ -583,7 +581,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitConditionalAccess(IConditionalAccessOperation operation, Context argument)
+	public override Node? VisitConditionalAccess(IConditionalAccessOperation operation, WalkerArgument argument)
 	{
 		// 不需要处理 Operation，会在 WhenNotNull中递归回来处理
 		//var operand = VisitTo<Expression>(operation.Operation, argument);
@@ -600,7 +598,7 @@ public partial class SemanticWalker
 	/// 转换方式：递归向上找到IConditionalAccessOperation，提取真实的 Operation
 	/// 转换结果：obj?
 	/// </summary>
-	public override Node? VisitConditionalAccessInstance(IConditionalAccessInstanceOperation operation, Context argument)
+	public override Node? VisitConditionalAccessInstance(IConditionalAccessInstanceOperation operation, WalkerArgument argument)
 	{
 		var parent = operation.Parent;
 		while (parent is not null)
@@ -627,7 +625,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitUnaryOperator(IUnaryOperation operation, Context argument)
+	public override Node? VisitUnaryOperator(IUnaryOperation operation, WalkerArgument argument)
 	{
 		var operand = Translate<Expression>(operation.Operand, argument);
 		if (operation.OperatorKind == UnaryOperatorKind.BitwiseNegation ||
@@ -687,7 +685,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitBinaryOperator(IBinaryOperation operation, Context argument)
+	public override Node? VisitBinaryOperator(IBinaryOperation operation, WalkerArgument argument)
 	{
 		var left = Translate<Expression>(operation.LeftOperand, argument);
 		var right = Translate<Expression>(operation.RightOperand, argument);
@@ -729,7 +727,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitConditional(IConditionalOperation operation, Context argument)
+	public override Node? VisitConditional(IConditionalOperation operation, WalkerArgument argument)
 	{
 		var alternate = Visit(operation.WhenFalse, argument);
 		var consequent = Translate<Node>(operation.WhenTrue, argument);
@@ -762,7 +760,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitCoalesce(ICoalesceOperation operation, Context argument)
+	public override Node? VisitCoalesce(ICoalesceOperation operation, WalkerArgument argument)
 	{
 		var left = Translate<Expression>(operation.Value, argument);
 		var right = Translate<Expression>(operation.WhenNull, argument);
@@ -780,7 +778,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitAnonymousFunction(IAnonymousFunctionOperation operation, Context argument)
+	public override Node? VisitAnonymousFunction(IAnonymousFunctionOperation operation, WalkerArgument argument)
 	{
 		var parameters = new List<Node>();
 		foreach (var param in operation.Symbol.Parameters)
@@ -819,7 +817,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitAwait(IAwaitOperation operation, Context argument)
+	public override Node? VisitAwait(IAwaitOperation operation, WalkerArgument argument)
 	{
 		var awaitedExpression = Translate<Expression>(operation.Operation, argument);
 		return new AwaitExpression(awaitedExpression);
@@ -836,7 +834,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitSimpleAssignment(ISimpleAssignmentOperation operation, Context argument)
+	public override Node? VisitSimpleAssignment(ISimpleAssignmentOperation operation, WalkerArgument argument)
 	{
 		var value = Translate<Expression>(operation.Value, argument);
 		if (operation.Target is IDiscardOperation)
@@ -869,7 +867,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitCompoundAssignment(ICompoundAssignmentOperation operation, Context argument)
+	public override Node? VisitCompoundAssignment(ICompoundAssignmentOperation operation, WalkerArgument argument)
 	{
 		var left = Translate<Expression>(operation.Target, argument);
 		var right = Translate<Expression>(operation.Value, argument);
@@ -899,7 +897,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitCoalesceAssignment(ICoalesceAssignmentOperation operation, Context argument)
+	public override Node? VisitCoalesceAssignment(ICoalesceAssignmentOperation operation, WalkerArgument argument)
 	{
 		var left = Translate<Expression>(operation.Target, argument);
 		var right = Translate<Expression>(operation.Value, argument);
@@ -915,7 +913,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitParenthesized(IParenthesizedOperation operation, Context argument)
+	public override Node? VisitParenthesized(IParenthesizedOperation operation, WalkerArgument argument)
 	{
 		var exp = Translate<Expression>(operation.Operand, argument);
 		return new SequenceExpression(NodeList.From(exp));
@@ -931,7 +929,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitNameOf(INameOfOperation operation, Context argument)
+	public override Node? VisitNameOf(INameOfOperation operation, WalkerArgument argument)
 	{
 		string? name = null;
 		if (operation.Argument.ConstantValue.HasValue)
@@ -958,7 +956,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitDefaultValue(IDefaultValueOperation operation, Context argument)
+	public override Node? VisitDefaultValue(IDefaultValueOperation operation, WalkerArgument argument)
 	{
 		// default(T) 转换为适当的默认值
 		return operation.Type?.SpecialType switch
@@ -992,7 +990,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitIncrementOrDecrement(IIncrementOrDecrementOperation operation, Context argument)
+	public override Node? VisitIncrementOrDecrement(IIncrementOrDecrementOperation operation, WalkerArgument argument)
 	{
 		var target = Translate<Expression>(operation.Target, argument);
 		var @operator = operation.Kind == OperationKind.Increment
@@ -1013,7 +1011,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitOmittedArgument(IOmittedArgumentOperation operation, Context argument)
+	public override Node? VisitOmittedArgument(IOmittedArgumentOperation operation, WalkerArgument argument)
 	{
 		// 省略的参数返回 undefined
 		return new Identifier("undefined");
@@ -1029,7 +1027,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitArgument(IArgumentOperation operation, Context argument)
+	public override Node? VisitArgument(IArgumentOperation operation, WalkerArgument argument)
 	{
 		return Visit(operation.Value, argument);
 	}
@@ -1045,7 +1043,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitWith(IWithOperation operation, Context argument)
+	public override Node? VisitWith(IWithOperation operation, WalkerArgument argument)
 	{
 		// with表达式的直接AST转换
 		// C# 示例：person with { Name = "John" } 表示创建一个新对象，复制原对象并修改指定属性
@@ -1146,7 +1144,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitAttribute(IAttributeOperation operation, Context argument)
+	public override Node? VisitAttribute(IAttributeOperation operation, WalkerArgument argument)
 	{
 		// 通过语法节点获取特性信息
 		if (operation.Syntax is not AttributeSyntax attributeSyntax)
@@ -1267,7 +1265,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitCollectionExpression(ICollectionExpressionOperation operation, Context argument)
+	public override Node? VisitCollectionExpression(ICollectionExpressionOperation operation, WalkerArgument argument)
 	{
 		var elements = new List<Expression?>();
 		foreach (var element in operation.Elements)
@@ -1287,7 +1285,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitSpread(ISpreadOperation operation, Context argument)
+	public override Node? VisitSpread(ISpreadOperation operation, WalkerArgument argument)
 	{
 		var operand = Translate<Expression>(operation.Operand, argument);
 		return new SpreadElement(operand);

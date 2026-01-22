@@ -20,7 +20,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitTuple(ITupleOperation operation, Context argument)
+	public override Node? VisitTuple(ITupleOperation operation, WalkerArgument argument)
 	{
 		/*
 		var elements = new List<Expression?>();
@@ -70,7 +70,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitDeconstructionAssignment(IDeconstructionAssignmentOperation operation, Context argument)
+	public override Node? VisitDeconstructionAssignment(IDeconstructionAssignmentOperation operation, WalkerArgument argument)
 	{
 		// C# 示例：
 		// var tuple = (aaa:1,2);
@@ -376,7 +376,7 @@ public partial class SemanticWalker
 	/// <param name="operation">元组二元操作</param>
 	/// <param name="argument">上下文参数，用于存放临时变量定义</param>
 	/// <returns>带括号的 JavaScript 逻辑表达式，转换失败返回 null</returns>
-	public override Node? VisitTupleBinaryOperator(ITupleBinaryOperation operation, Context argument)
+	public override Node? VisitTupleBinaryOperator(ITupleBinaryOperation operation, WalkerArgument argument)
 	{
 		// C#本身语法限定左右都必须是同样元素类型和个数的元组
 		// 所以此处不用考虑类型和个数不匹配
@@ -404,7 +404,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitDiscardOperation(IDiscardOperation operation, Context argument)
+	public override Node? VisitDiscardOperation(IDiscardOperation operation, WalkerArgument argument)
 	{
 		// 在解构赋值模式中 (例如: (_, y) = tuple)
 		if (operation.Parent is IDeconstructionAssignmentOperation)
@@ -452,7 +452,7 @@ public partial class SemanticWalker
 		(object Target, ITypeSymbol Type) left,
 		(object Target, ITypeSymbol Type) right,
 		bool isEq,
-		Context argument)
+		WalkerArgument argument)
 	{
 		// 类型防御性检查
 		if (left.Type is not INamedTypeSymbol leftType || right.Type is not INamedTypeSymbol rightType)
@@ -467,7 +467,7 @@ public partial class SemanticWalker
 			leftExpr = new Identifier(GetUniqueName(leftInvocation.Syntax));
 			var init = Translate<Expression>(leftInvocation, argument);
 			var declarator = new VariableDeclarator(leftExpr, init);
-			argument.Enqueue(declarator);
+			argument.AddVarDeclarator(declarator,_recursionDepth);
 		}
 		else if (left.Target is ITupleOperation leftTuple)
 			tupleLeft = leftTuple;
@@ -482,7 +482,7 @@ public partial class SemanticWalker
 			rightExpr = new Identifier(GetUniqueName(rightInvocation.Syntax));
 			var init = Translate<Expression>(rightInvocation, argument);
 			var declarator = new VariableDeclarator(rightExpr, init);
-			argument.Enqueue(declarator);
+			argument.AddVarDeclarator(declarator,_recursionDepth);
 		}
 		else if (right.Target is ITupleOperation rightTuple)
 			tupleRight = rightTuple;

@@ -243,4 +243,15 @@ class TestClass3
 			_ => "Other"
 		};
 	}
+
+	void TestMethod1()
+	{
+		int value = 5;
+		string result = value switch
+		{
+			var x when x > 0 && x < 10 => "Small",
+			var x when x >= 10 => "Large",
+			_ => "Unknown"
+		};
+	}
 }
