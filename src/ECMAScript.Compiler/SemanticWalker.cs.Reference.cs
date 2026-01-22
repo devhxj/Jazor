@@ -1,12 +1,55 @@
 ﻿using Acornima;
 using Acornima.Ast;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
-using System.Collections.Generic;
 
 namespace ECMAScript.Compiler;
 
 public partial class SemanticWalker
 {
+	private Expression GetFieldName(IOperation includeOp, IFieldSymbol symbol)
+	{
+		// 检查是否是特殊常量字段（如 double.PositiveInfinity, double.NaN 等）
+		if (symbol.ContainingType is not null && symbol.IsConst)
+		{
+			// 处理特殊常量字段
+			return (symbol.Name, symbol.ContainingType.SpecialType) switch
+			{
+				// 浮点类型特殊常量
+				(nameof(double.PositiveInfinity), SpecialType.System_Double) or
+				(nameof(float.PositiveInfinity), SpecialType.System_Single) => new Identifier("Infinity"),
+
+				(nameof(double.NegativeInfinity), SpecialType.System_Double) or
+				(nameof(float.NegativeInfinity), SpecialType.System_Single) => new Identifier("-Infinity"),
+
+				(nameof(double.NaN), SpecialType.System_Double) or
+				(nameof(float.NaN), SpecialType.System_Single) => new Identifier("NaN"),
+
+				(nameof(double.Epsilon), SpecialType.System_Double) or
+				(nameof(float.Epsilon), SpecialType.System_Single) => new Identifier("Number.EPSILON"),
+
+				// 浮点类型的最大/最小值
+				(nameof(double.MaxValue), SpecialType.System_Double) or
+				(nameof(float.MaxValue), SpecialType.System_Single) => new Identifier("Number.MAX_VALUE"),
+
+				(nameof(double.MinValue), SpecialType.System_Double) or
+				(nameof(float.MinValue), SpecialType.System_Single) => new Identifier("Number.MIN_VALUE"),
+
+				// 整数类型的最大/最小值 - 使用安全整数常量或字面量
+				// long 类型超出 JavaScript 安全整数范围，使用 MAX/MIN_SAFE_INTEGER
+				(nameof(long.MaxValue), SpecialType.System_Int64) => new Identifier("Number.MAX_SAFE_INTEGER"),
+				(nameof(long.MinValue), SpecialType.System_Int64) => new Identifier("Number.MIN_SAFE_INTEGER"),
+
+				// 其他整数类型（int, short, sbyte 等）保持原样，会作为字面量处理
+				_ => symbol.HasConstantValue
+					? BuildValueLiteral(symbol.ContainingType, symbol.ConstantValue) ?? Null
+					: new Identifier(symbol.Name)
+			};
+		}
+
+		return new Identifier(symbol.Name);
+	}
+
 	/// <summary>
 	/// 处理数组元素访问操作，不支持多维数组
 	/// C# 示例：
@@ -19,7 +62,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitArrayElementReference(IArrayElementReferenceOperation operation, Context argument)
+	public override Node? VisitArrayElementReference(IArrayElementReferenceOperation operation, Context argument)
 	{
 		if (operation.Indices.Length != 1)
 			return HandleTransformationFailure<Node>(operation,
@@ -120,7 +163,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitImplicitIndexerReference(IImplicitIndexerReferenceOperation operation, Context argument)
+	public override Node? VisitImplicitIndexerReference(IImplicitIndexerReferenceOperation operation, Context argument)
 	{
 		// 隐式索引器引用的直接AST转换，生成最简洁的代码
 		var instance = Translate<Expression>(operation.Instance, argument);
@@ -148,7 +191,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitLocalReference(ILocalReferenceOperation operation, Context argument)
+	public override Node? VisitLocalReference(ILocalReferenceOperation operation, Context argument)
 	{
 		return new Identifier(operation.Local.Name);
 	}
@@ -164,7 +207,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitParameterReference(IParameterReferenceOperation operation, Context argument)
+	public override Node? VisitParameterReference(IParameterReferenceOperation operation, Context argument)
 	{
 		return new Identifier(operation.Parameter.Name);
 	}
@@ -179,20 +222,28 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitFieldReference(IFieldReferenceOperation operation, Context argument)
+	public override Node? VisitFieldReference(IFieldReferenceOperation operation, Context argument)
 	{
-		if (operation.Instance is not null)
-		{
-			// ImplicitReceiver 指那些语法上不需要、也不能写 this 的隐式实例引用
-			if (operation.Instance is IInstanceReferenceOperation instanceReferenceOp &&
-				instanceReferenceOp.ReferenceKind == InstanceReferenceKind.ImplicitReceiver)
-				return new Identifier(operation.Field.Name);
+		// 对于静态常量字段（无实例），GetFieldName 返回的是常量表达式
+		if (operation.Instance is null)
+			return GetFieldName(operation, operation.Field);
 
-			var expr = Translate<Expression>(operation.Instance, argument);
-			var property = new Identifier(operation.Field.Name);
-			return new MemberExpression(expr, property, computed: false, optional: false);
+		// 对于实例字段访问，需要创建成员访问表达式
+		// ImplicitReceiver 指那些语法上不需要、也不能写 this 的隐式实例引用
+		if (operation.Instance is IInstanceReferenceOperation instanceReferenceOp &&
+			instanceReferenceOp.ReferenceKind == InstanceReferenceKind.ImplicitReceiver)
+		{
+			// 隐式接收者（如对象初始化器中的字段引用）
+			// 如果是常量字段，返回字面量；否则返回字段名
+			var fieldExpr = GetFieldName(operation, operation.Field);
+			return fieldExpr;
 		}
-		return new Identifier(operation.Field.Name);
+
+		// 普通实例字段访问：obj.field
+		var expr = Translate<Expression>(operation.Instance, argument);
+		var fieldName = operation.Field.Name;
+		var property = new Identifier(fieldName);
+		return new MemberExpression(expr, property, computed: false, optional: false);
 	}
 
 	/// <summary>
@@ -204,7 +255,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitMethodReference(IMethodReferenceOperation operation, Context argument)
+	public override Node? VisitMethodReference(IMethodReferenceOperation operation, Context argument)
 	{
 		if (operation.Instance is not null)
 		{
@@ -226,7 +277,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitPropertyReference(IPropertyReferenceOperation operation, Context argument)
+	public override Node? VisitPropertyReference(IPropertyReferenceOperation operation, Context argument)
 	{
 		var property = new Identifier(operation.Property.Name);
 
@@ -259,7 +310,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitInstanceReference(IInstanceReferenceOperation operation, Context argument)
+	public override Node? VisitInstanceReference(IInstanceReferenceOperation operation, Context argument)
 	{
 		// InstanceReferenceKind
 		// ContainingTypeInstance - 语言特性：类实例引用

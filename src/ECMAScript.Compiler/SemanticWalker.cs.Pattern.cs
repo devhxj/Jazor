@@ -658,22 +658,37 @@ public partial class SemanticWalker
 		// 转换结果：生成对象属性访问和比较的组合表达式
 		if (operation.DeconstructionSubpatterns.Length > 0)
 		{
-			if (operation.InputType is not INamedTypeSymbol tupleType)
+			if (operation.InputType is not INamedTypeSymbol namedType)
 				return HandleTransformationFailure<Node>(operation, "");
 			
 			var obj = GetPatternRefrence(operation);
 			for (int i = 0; i < operation.DeconstructionSubpatterns.Length; i++)
 			{
 				var subpattern = operation.DeconstructionSubpatterns[i];
+				// 弃元模式 _：跳过处理
+				if (subpattern.Kind == OperationKind.DiscardPattern)
+					continue;
 
-				// 创建数组索引访问表达式：obj[i]
-				var field = tupleType.TupleElements[i];
-				var property = new MemberExpression(
-					obj,
-					new Identifier(field.Name),
-					computed: false,
-					optional: false
-				);
+				MemberExpression? property = null;
+
+				if (namedType.IsTupleType)
+				{
+					// 创建对象属性访问表达式
+					var field = namedType.TupleElements[i];
+					property = new MemberExpression(
+						obj,
+						new Identifier(field.Name),
+						computed: false,
+						optional: false
+					);
+				}
+				else if (namedType.IsRecord)
+				{
+					var a = namedType.Name;
+				}
+
+				if (property is null)
+					return HandleTransformationFailure<Node>(operation, "");
 
 				// 处理每个子模式
 				if (subpattern is IDeclarationPatternOperation declarationPatternOp)
@@ -682,11 +697,6 @@ public partial class SemanticWalker
 					// 例如：(int x, string y) 中的 x 和 y
 					var expr = VisitDeclarationPattern(declarationPatternOp, property, argument);
 					conditions.Add(expr);
-				}
-				else if (subpattern is IDiscardPatternOperation)
-				{
-					// 弃元模式 _：跳过处理
-					continue;
 				}
 				else
 				{
@@ -1103,68 +1113,39 @@ public partial class SemanticWalker
 	}
 
 	/// <summary>
-	/// 在模式匹配上下文中声明一个新变量（如 s）或进行类型测试。
-	/// is string s 中的 string s 部分，或 case string s: 中的模式，是构成一个模式匹配的组件。
-	/// 作为 IIsPatternOperation.Pattern 或 ICaseClauseOperation.Pattern 的子节点出现。
+	/// 处理类型模式操作
+	/// ITypePatternOperation 是一种仅检查类型的模式，不声明变量。
+	/// 结构：
+	///   - MatchedType : ITypeSymbol - 要匹配的目标类型
+	///   - InputType : ITypeSymbol - 输入类型（继承自 IPatternOperation）
+	///   - NarrowedType : ITypeSymbol - 匹配成功后缩窄的类型
+	///
+	/// 与 IDeclarationPatternOperation 的区别：
+	///   - TypePattern: 只检查类型，不声明变量（如 obj is string）
+	///   - DeclarationPattern: 检查类型并声明变量（如 obj is string s）
+	///
 	/// C# 示例：
-	/// obj is string s    // 类型模式
-	/// value is int s            // 值类型模式
-	/// item is MyClass s        // 自定义类型模式
-	/// case string s:		  // switch case 类型模式
-	/// 转换结果：根据类型生成相应的JavaScript类型检查条件
+	///   obj is string           // 类型模式，只检查不声明
+	///   value switch { int => ... }  // 类型模式在 switch 表达式中
+	/// 转换结果：根据类型生成相应的 JavaScript 类型检查条件
 	/// </summary>
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitTypePattern(ITypePatternOperation operation, Context argument)
 	{
-		// 类型模式的条件判断转换
-		// C# 示例：obj is string 是一个布尔条件表达式
-		//         value is MyClass 检查对象是否为指定类型
-		// 转换结果：根据类型生成对应的JavaScript检查条件
+		// ITypePatternOperation 只进行类型检查，不声明变量
+		// 使用 MatchedType 而非 InputType，因为我们要检查的是目标类型
+		var matchedType = operation.MatchedType;
+		var targetExpr = GetPatternRefrence(operation);
 
-		var inputType = operation.InputType;
-		// 根据获取的名称构建目标表达式
-		var targetExpression = GetPatternRefrence(operation);
-
-		// 根据编译时优化原则和强弱类型转换优化原则
-		// 利用C#的编译时类型信息，生成最简洁的JavaScript类型检查
-
-		var typeName = inputType.Name;
-
-		// 对于基本类型，使用typeof检查
-		return typeName.ToLowerInvariant() switch
-		{
-			"string" => new LogicalExpression(
-								Operator.StrictEquality,
-								new UpdateExpression(Operator.TypeOf, targetExpression, prefix: true),
-								new StringLiteral("string", "'string'")
-							),
-			"number" or "int32" or "int64" or "double" or "float" or "decimal" => new LogicalExpression(
-								Operator.StrictEquality,
-								new UpdateExpression(Operator.TypeOf, targetExpression, prefix: true),
-								new StringLiteral("number", "'number'")
-							),
-			"boolean" => new LogicalExpression(
-								Operator.StrictEquality,
-								new UpdateExpression(Operator.TypeOf, targetExpression, prefix: true),
-								new StringLiteral("boolean", "'boolean'")
-							),
-			"object" => new LogicalExpression(
-								Operator.LogicalAnd,
-								new LogicalExpression(Operator.StrictInequality, targetExpression, Null),
-								new LogicalExpression(
-									Operator.StrictEquality,
-									new UpdateExpression(Operator.TypeOf, targetExpression, prefix: true),
-									new StringLiteral("object", "'object'")
-								)
-							),// 对于对象类型，检查是否不为null且为object
-			_ => new LogicalExpression(
-								Operator.InstanceOf,
-								targetExpression,
-								new Identifier(typeName)
-							),// 对于自定义类型，使用instanceof检查
-		};
+		// 复用已有的类型匹配表达式生成方法
+		// CreateTypeMatchExpr 已正确处理：
+		//   - 基本类型映射（string/number/boolean/bigint）
+		//   - 引用类型映射（Date/Map/Set/Class）
+		//   - 数组类型检查（Array.isArray）
+		//   - 可空类型处理（nullable 包含 null 检查）
+		return CreateTypeMatchExpr(operation, matchedType, targetExpr);
 	}
 
 }

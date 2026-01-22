@@ -214,61 +214,18 @@ public partial class SemanticWalker
 			@async: isAsync);
 	}
 
-	/// <summary>
-	/// 处理 C# 字面量操作，将其转换为 JavaScript 字面量表达式。
-	///
-	/// 转换策略说明：
-	/// 1. null 值：直接返回 null（必须优先处理，因为 null 没有类型信息）
-	/// 2. Boolean: true/false 直接映射
-	/// 3. String/Char: 统一转换为双引号字符串，并对特殊字符进行转义
-	///    - 控制字符：\0, \b, \f, \n, \r, \t, \v
-	///    - 特殊字符：\\, \"
-	///    - Unicode 字符直接保留（UTF-8）
-	/// 4. Number: 根据 C# 类型进行差异化处理
-	///    - 整数类型（byte, short, int, uint）: 保持原格式
-	///    - float/double: 使用 "R" 格式符避免精度丢失，处理 NaN/Infinity
-	///    - decimal: 转为 double，注意精度损失（28-29 位 → 15-16 位）
-	/// 5. BigInt: 64 位及以上整数，添加 n 后缀
-	///    - long/ulong: 直接加 n
-	///    - Int128/UInt128/BigInteger: 解析后加 n
-	///
-	/// C# 示例 → JavaScript 转换结果：
-	///   null              → null
-	///   true              → true
-	///   false             → false
-	///   "Hello"           → "Hello"
-	///   "Line1\nLine2"    → "Line1\nLine2"
-	///   "C:\\Path"        → "C:\\Path"
-	///   'A'               → "A"
-	///   ""                → ""
-	///   42                → 42
-	///   3.14              → 3.14
-	///   3.14f             → 3.14
-	///   3.1415926535m     → 3.1415926535 (注意精度损失)
-	///   float.NaN         → NaN
-	///   float.PositiveInfinity → Infinity
-	///   float.NegativeInfinity → -Infinity
-	///   42L               → 42n
-	///   42UL              → 42n
-	///   -42L              → -42n
-	///   (long)42          → 42n
-	/// </summary>
-	/// <param name="operation">当前访问的 ILiteralOperation 操作，包含字面量值和类型信息</param>
-	/// <param name="argument">用于存放当前操作内部需要的全局变量定义的上下文（字面量通常不需要）</param>
-	/// <returns>转换后的 JavaScript 字面量 Node（BooleanLiteral, StringLiteral, NumericLiteral, BigIntLiteral, NullLiteral 或 Identifier）</returns>
-	public override Node? VisitLiteral(ILiteralOperation operation, Context argument)
+	private Expression? BuildValueLiteral(ITypeSymbol? type, object? value)
 	{
 		// 处理 null 值（必须在类型检查之前，因为 null 没有特定的类型信息）
-		if (operation.ConstantValue.Value is null)
+		if (value is null)
 			return Null;
 
 		// 类型信息缺失时报告错误
-		if (operation.Type is null)
-			return HandleTransformationFailure<Node>(operation, "Type information is not available for this literal.");
+		if (type is null)
+			return null;
 
-		var value = operation.ConstantValue.Value;
 		var valueStr = Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture);
-		var mapper = GetMapperType(operation.Type, out var displayName);
+		var mapper = GetMapperType(type, out var displayName);
 
 		// 布尔值字面量：true / false
 		if (mapper == TypeMapper.Boolean)
@@ -340,7 +297,7 @@ public partial class SemanticWalker
 			// 对于 decimal 类型，需要处理精度损失问题
 			// decimal 范围约为 ±7.9×10²⁸，double 范围约为 ±1.7×10³⁰⁸
 			// double 范围更大，不会溢出，但 decimal 有 28-29 位精度，double 只有 15-16 位
-			if (operation.Type.SpecialType == SpecialType.System_Decimal)
+			if (type.SpecialType == SpecialType.System_Decimal)
 			{
 				var decimalValue = Convert.ToDecimal(value);
 				return new NumericLiteral(
@@ -350,7 +307,7 @@ public partial class SemanticWalker
 			}
 
 			// 对于 float 类型，处理特殊值并使用 float 转换以保持单精度格式
-			else if (operation.Type.SpecialType == SpecialType.System_Single)
+			else if (type.SpecialType == SpecialType.System_Single)
 			{
 				var floatValue = Convert.ToSingle(value);
 
@@ -369,7 +326,7 @@ public partial class SemanticWalker
 			}
 
 			// 对于 double 类型，处理特殊值并直接使用
-			else if (operation.Type.SpecialType == SpecialType.System_Double)
+			else if (type.SpecialType == SpecialType.System_Double)
 			{
 				var doubleValue = Convert.ToDouble(value);
 
@@ -397,7 +354,7 @@ public partial class SemanticWalker
 		else if (mapper == TypeMapper.BigInt)
 		{
 			// 处理 ulong 类型（无符号 64 位整数）
-			if (operation.Type.SpecialType == SpecialType.System_UInt64)
+			if (type.SpecialType == SpecialType.System_UInt64)
 			{
 				var ulongValue = Convert.ToUInt64(value);
 				var bigInt = new System.Numerics.BigInteger(ulongValue);
@@ -405,7 +362,7 @@ public partial class SemanticWalker
 			}
 
 			// 处理 long 类型（有符号 64 位整数）
-			else if (operation.Type.SpecialType == SpecialType.System_Int64)
+			else if (type.SpecialType == SpecialType.System_Int64)
 			{
 				var longValue = Convert.ToInt64(value);
 				var bigInt = new System.Numerics.BigInteger(longValue);
@@ -428,7 +385,59 @@ public partial class SemanticWalker
 		}
 
 		// 不支持的类型报告错误 或 其他类型返回 null（如 Object、Array、Date 等不应出现在字面量中）
-		return HandleTransformationFailure<Node>(operation, $"Literal type '{mapper}' ({displayName}) cannot be directly translated to JavaScript literal.");
+		return null;
+	}
+
+	/// <summary>
+	/// 处理 C# 字面量操作，将其转换为 JavaScript 字面量表达式。
+	///
+	/// 转换策略说明：
+	/// 1. null 值：直接返回 null（必须优先处理，因为 null 没有类型信息）
+	/// 2. Boolean: true/false 直接映射
+	/// 3. String/Char: 统一转换为双引号字符串，并对特殊字符进行转义
+	///    - 控制字符：\0, \b, \f, \n, \r, \t, \v
+	///    - 特殊字符：\\, \"
+	///    - Unicode 字符直接保留（UTF-8）
+	/// 4. Number: 根据 C# 类型进行差异化处理
+	///    - 整数类型（byte, short, int, uint）: 保持原格式
+	///    - float/double: 使用 "R" 格式符避免精度丢失，处理 NaN/Infinity
+	///    - decimal: 转为 double，注意精度损失（28-29 位 → 15-16 位）
+	/// 5. BigInt: 64 位及以上整数，添加 n 后缀
+	///    - long/ulong: 直接加 n
+	///    - Int128/UInt128/BigInteger: 解析后加 n
+	///
+	/// C# 示例 → JavaScript 转换结果：
+	///   null              → null
+	///   true              → true
+	///   false             → false
+	///   "Hello"           → "Hello"
+	///   "Line1\nLine2"    → "Line1\nLine2"
+	///   "C:\\Path"        → "C:\\Path"
+	///   'A'               → "A"
+	///   ""                → ""
+	///   42                → 42
+	///   3.14              → 3.14
+	///   3.14f             → 3.14
+	///   3.1415926535m     → 3.1415926535 (注意精度损失)
+	///   float.NaN         → NaN
+	///   float.PositiveInfinity → Infinity
+	///   float.NegativeInfinity → -Infinity
+	///   42L               → 42n
+	///   42UL              → 42n
+	///   -42L              → -42n
+	///   (long)42          → 42n
+	/// </summary>
+	/// <param name="operation">当前访问的 ILiteralOperation 操作，包含字面量值和类型信息</param>
+	/// <param name="argument">用于存放当前操作内部需要的全局变量定义的上下文（字面量通常不需要）</param>
+	/// <returns>转换后的 JavaScript 字面量 Node（BooleanLiteral, StringLiteral, NumericLiteral, BigIntLiteral, NullLiteral 或 Identifier）</returns>
+	public override Node? VisitLiteral(ILiteralOperation operation, Context argument)
+	{
+		var expr = BuildValueLiteral(operation.Type, operation.ConstantValue.Value);
+		if (expr is null)
+			// 不支持的类型报告错误 或 其他类型返回 null（如 Object、Array、Date 等不应出现在字面量中）
+			return HandleTransformationFailure<Node>(operation, $"Literal type '{operation.Type?.Name}' ({operation.Kind}) cannot be directly translated to JavaScript literal.");
+
+		return expr;
 	}
 
 	/// <summary>

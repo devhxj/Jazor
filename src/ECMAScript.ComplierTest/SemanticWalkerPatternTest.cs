@@ -7,6 +7,31 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace ECMAScript.ComplierTest;
 
+/// <summary>
+/// SemanticWalker 模式匹配功能测试类
+///
+/// 本测试类验证 C# 模式匹配语法到 JavaScript 的转换功能，涵盖：
+/// - IsPattern: 常量模式匹配 (obj is 42, obj is "hello")
+/// - IsType: 类型检查 (obj is string, obj is int, obj is DateTime 等)
+/// - IsNull/IsNotNull: null 检查 (obj is null, obj is not null)
+/// - DiscardPattern: 丢弃模式 (_ 作为默认分支)
+/// - NegatedPattern: 取反模式 (obj is not null)
+/// - BinaryPattern: 逻辑模式 (and, or)
+/// - RelationalPattern: 关系模式 (>, <, >=, <=, ==, !=)
+/// - TypePattern: 类型模式
+/// - PropertySubpattern: 属性子模式 ({ Name: "John" })
+/// - RecursivePattern: 递归模式 (类型+属性、元组模式)
+/// - ListPattern: 列表模式 ([1, 2, 3], [..], [var first, .. var rest])
+/// - SlicePattern: 切片模式 (列表解构)
+/// - DeclarationPattern: 声明模式 (obj is int value)
+/// - ConstantPattern: 常量模式
+/// - SwitchExpression/CaseClause: switch 表达式和 case 子句
+///
+/// 测试方法命名约定：
+/// - Visit_[PatternType]_[Scenario]: 完整块级转换测试
+/// - Visit_[PatternType]_[Scenario]_Direct: 直接调用特定 Visit 方法测试
+/// - Visit_ComplexPattern_[Scenario]: 复杂模式组合测试
+/// </summary>
 [TestClass]
 public sealed class SemanticWalkerPatternTest
 {
@@ -65,8 +90,6 @@ public sealed class SemanticWalkerPatternTest
     var operation = block.Operations.Skip(index).First();
     return operation as T ?? throw new InvalidOperationException("未找到可分析的操作");
   }
-
-  // ==================== VisitIsPattern 测试 ====================
 
   /// <summary>
   /// 测试 Visit - IsPattern 常量模式匹配
@@ -177,8 +200,6 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"obj === ""hello""", script);
   }
-
-  // ==================== VisitIsType 测试 ====================
 
   /// <summary>
   /// 测试 Visit - IsType 字符串类型检查
@@ -400,8 +421,6 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(@"typeof obj === ""object""", script);
   }
 
-  // ==================== VisitIsNull 测试 ====================
-
   /// <summary>
   /// 测试 Visit - IsNull null 检查
   /// </summary>
@@ -457,8 +476,6 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual("obj === null", script);
   }
 
-  // ==================== VisitIsNotNull 测试 ====================
-
   /// <summary>
   /// 测试 Visit - IsNotNull not null 检查
   /// </summary>
@@ -513,8 +530,6 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual("!(obj === null)", script);
   }
-
-  // ==================== VisitDiscardPattern 测试 ====================
 
   /// <summary>
   /// 测试 Visit - DiscardPattern 丢弃模式（在 switch 表达式中）
@@ -590,8 +605,6 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual("true", script);
   }
 
-  // ==================== VisitNegatedPattern 测试 ====================
-
   /// <summary>
   /// 测试 Visit - NegatedPattern 取反模式
   /// </summary>
@@ -647,8 +660,6 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual("!(obj === null)", script);
   }
-
-  // ==================== VisitBinaryPattern 测试 ====================
 
   /// <summary>
   /// 测试 Visit - BinaryPattern and 模式
@@ -761,8 +772,6 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual("value === 1 || value === 2 || value === 3 || value === 4 || value > 8", script);
   }
-
-  // ==================== VisitRelationalPattern 测试 ====================
 
   /// <summary>
   /// 测试 Visit - RelationalPattern 大于模式
@@ -988,8 +997,6 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual("value <= 10", script);
   }
 
-  // ==================== VisitTypePattern 测试 ====================
-
   /// <summary>
   /// 测试 Visit - TypePattern 类型模式
   /// </summary>
@@ -1044,8 +1051,6 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"typeof obj === ""string""", script);
   }
-
-  // ==================== VisitPropertySubpattern 测试 ====================
 
   /// <summary>
   /// 测试 Visit - PropertySubpattern 属性子模式
@@ -1104,8 +1109,6 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(@"person.Name === ""John""", script);
   }
 
-  // ==================== VisitRecursivePattern 测试 ====================
-
   /// <summary>
   /// 测试 Visit - RecursivePattern 递归模式（类型+属性）
   /// </summary>
@@ -1161,8 +1164,6 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"obj.Name === ""John"" && obj.Age > 18", script);
   }
-
-  // ==================== VisitListPattern 测试 ====================
 
   /// <summary>
   /// 测试 Visit - ListPattern 列表模式（固定长度）
@@ -1275,8 +1276,6 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual("Array.isArray(array) && array.length >= 2 && array[0] === 1 && array[1] === 2", script);
   }
-
-  // ==================== VisitSlicePattern 测试 ====================
 
   /// <summary>
   /// 测试 Visit - SlicePattern 切片模式
@@ -1616,8 +1615,6 @@ public sealed class SemanticWalkerPatternTest
 }", script);
   }
 
-  // ==================== VisitDeclarationPattern 测试 ====================
-
   /// <summary>
   /// 测试 Visit - DeclarationPattern 声明模式
   /// </summary>
@@ -1680,8 +1677,6 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"typeof obj === ""number"" && (value = obj, true)", script);
   }
-
-  // ==================== 复杂模式匹配测试 ====================
 
   /// <summary>
   /// 测试复杂模式匹配 - switch 表达式
@@ -1913,7 +1908,6 @@ public sealed class SemanticWalkerPatternTest
   let result = value > 0 && value < 10 && !(value === 5);
 }", script);
   }
-  // ==================== VisitConstantPattern 测试 ====================
 
   /// <summary>
   /// 测试 VisitConstantPattern - 常量模式（直接调用）
@@ -1973,8 +1967,6 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(@"obj===""hello""", script);
   }
 
-  // ==================== VisitPatternCaseClause 测试 ====================
-
   /// <summary>
   /// 测试 VisitPatternCaseClause - 模式 case 子句（直接调用）
   /// </summary>
@@ -2004,8 +1996,6 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual("(x=obj,true)&&x>10", script);
   }
-
-  // ==================== 特殊类型模式测试 ====================
 
   /// <summary>
   /// 测试 Visit - IsType DateTime 类型检查
@@ -2143,8 +2133,6 @@ public sealed class SemanticWalkerPatternTest
 }", script);
   }
 
-  // ==================== 元组模式测试 ====================
-
   /// <summary>
   /// 测试 Visit - RecursivePattern 元组模式
   /// </summary>
@@ -2201,8 +2189,6 @@ public sealed class SemanticWalkerPatternTest
 }", script);
   }
 
-  // ==================== 空列表模式测试 ====================
-
   /// <summary>
   /// 测试 Visit - ListPattern 空列表模式
   /// </summary>
@@ -2229,8 +2215,6 @@ public sealed class SemanticWalkerPatternTest
   let result = Array.isArray(array) && array.length === 0;
 }", script);
   }
-
-  // ==================== 可空类型模式测试 ====================
 
   /// <summary>
   /// 测试 Visit - IsType 可空类型模式
@@ -2292,8 +2276,6 @@ public sealed class SemanticWalkerPatternTest
 }", script);
   }
 
-  // ==================== 嵌套声明模式测试 ====================
-
   /// <summary>
   /// 测试 Visit - BinaryPattern 嵌套声明模式
   /// </summary>
@@ -2354,8 +2336,6 @@ public sealed class SemanticWalkerPatternTest
   }
 }", script);
   }
-
-  // ==================== VisitSwitchExpressionArm 直接调用测试 ====================
 
   /// <summary>
   /// 测试 VisitSwitchExpressionArm - 常量模式 arm（直接调用）
@@ -2460,8 +2440,6 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(@"return""default""", script);
   }
 
-  // ==================== VisitPatternCaseClause 更多测试 ====================
-
   /// <summary>
   /// 测试 VisitPatternCaseClause - 常量模式 case（直接调用）
   /// </summary>
@@ -2552,8 +2530,6 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(@"typeof value===""string""&&(s=value,true)&&s.Length>0", script);
   }
 
-  // ==================== DateOnly/TimeOnly 类型测试 ====================
-
   /// <summary>
   /// 测试 Visit - IsType DateOnly 类型检查
   /// </summary>
@@ -2607,8 +2583,6 @@ public sealed class SemanticWalkerPatternTest
   let result = obj instanceof Date;
 }", script);
   }
-
-  // ==================== timestamp 类型测试 ====================
 
   /// <summary>
   /// 测试 Visit - IsType timestamp 类型检查 (BigInt)
@@ -2773,8 +2747,6 @@ public sealed class SemanticWalkerPatternTest
 }", script);
   }
 
-  // ==================== 复杂切片模式测试 ====================
-
   /// <summary>
   /// 测试 Visit - SlicePattern 切片带常量模式
   /// </summary>
@@ -2807,8 +2779,6 @@ public sealed class SemanticWalkerPatternTest
   }
 }", script);
   }
-
-  // ==================== 嵌套列表模式测试 ====================
 
   /// <summary>
   /// 测试 Visit - ListPattern 嵌套列表模式
@@ -2863,8 +2833,6 @@ public sealed class SemanticWalkerPatternTest
   let result = Array.isArray(nested) && nested.length === 2 && (Array.isArray(nested[0]) && nested[0].length >= 1 && nested[0][0] === 1) && (Array.isArray(nested[1]) && nested[1].length >= 1 && nested[1][0] === 4);
 }", script);
   }
-
-  // ==================== 边界情况测试 ====================
 
   /// <summary>
   /// 测试 Visit - RecursivePattern 空属性模式
@@ -3068,6 +3036,11 @@ public sealed class SemanticWalkerPatternTest
 }", script);
   }
 
+  /// <summary>
+  /// 测试综合场景 - 组合多种模式匹配和 switch 语句
+  /// 输入: 关系模式 (>, &lt;), 声明模式 (var), 逻辑模式 (and, not), switch case with when 子句
+  /// 期望输出: 正确转换所有模式为 JavaScript 语法，包括变量提升和 IIFE 包装的 switch
+  /// </summary>
   [TestMethod]
   public void Visit_All()
   {
@@ -3125,5 +3098,1012 @@ public sealed class SemanticWalkerPatternTest
   })();
 }", script);
   }
+
+  #region 边界情况测试 - 特殊数值
+
+  /// <summary>
+  /// 测试 Visit - RelationalPattern NaN 特殊值
+  /// NaN 与任何关系比较都返回 false，包括其自身
+  /// </summary>
+  [TestMethod]
+  public void Visit_RelationalPattern_NaN()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    double value = double.NaN;
+                    bool result = value is > 0;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let value = NaN;
+  let result = value > 0;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - RelationalPattern 正无穷大
+  /// </summary>
+  [TestMethod]
+  public void Visit_RelationalPattern_PositiveInfinity()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    double value = double.PositiveInfinity;
+                    bool result = value is > 0;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let value = Infinity;
+  let result = value > 0;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - RelationalPattern 负无穷大
+  /// </summary>
+  [TestMethod]
+  public void Visit_RelationalPattern_NegativeInfinity()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    double value = double.NegativeInfinity;
+                    bool result = value is < 0;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let value = -Infinity;
+  let result = value < 0;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - RelationalPattern 最大值边界
+  /// </summary>
+  [TestMethod]
+  public void Visit_RelationalPattern_MaxValue()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int value = int.MaxValue;
+                    bool result = value is > 0 and < int.MaxValue;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let value = 2147483647;
+  let result = value > 0 && value < 2147483647;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - RelationalPattern 最小值边界
+  /// </summary>
+  [TestMethod]
+  public void Visit_RelationalPattern_MinValue()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int value = int.MinValue;
+                    bool result = value is < 0 and > int.MinValue;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let value = -2147483648;
+  let result = value < 0 && value > -2147483648;
+}", script);
+  }
+
+  #endregion
+
+  #region 字符串模式边界测试
+
+  /// <summary>
+  /// 测试 Visit - IsPattern 空字符串
+  /// </summary>
+  [TestMethod]
+  public void Visit_IsPattern_EmptyString()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    string value = """";
+                    bool result = value is """";
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let value = """";
+  let result = value === """";
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - IsPattern 逐字字符串（包含特殊字符）
+  /// </summary>
+  [TestMethod]
+  public void Visit_IsPattern_VerbatimString()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    string value = ""line1\\nline2"";
+                    bool result = value is ""line1\\nline2"";
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let value = ""line1\\nline2"";
+  let result = value === ""line1\\nline2"";
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - IsPattern 多行字符串
+  /// </summary>
+  [TestMethod]
+  public void Visit_IsPattern_MultiLineString()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    string value = @""line1
+line2"";
+                    bool result = value is @""line1
+line2"";
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let value = ""line1\r\nline2"";
+  let result = value === ""line1\r\nline2"";
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - PropertySubpattern 字符串长度属性
+  /// </summary>
+  [TestMethod]
+  public void Visit_PropertySubpattern_StringLength()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    string value = ""hello"";
+                    bool result = value is { Length: > 0 and < 10 };
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let value = ""hello"";
+  let result = typeof value === ""string"" && (value.Length > 0 && value.Length < 10);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - PropertySubpattern 空字符串检查
+  /// </summary>
+  [TestMethod]
+  public void Visit_PropertySubpattern_EmptyStringCheck()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    string value = """";
+                    bool result = value is { Length: 0 };
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let value = """";
+  let result = typeof value === ""string"" && value.Length === 0;
+}", script);
+  }
+
+  #endregion
+
+  #region 泛型类型模式测试
+
+  /// <summary>
+  /// 测试 Visit - TypePattern 泛型类型 List
+  /// </summary>
+  [TestMethod]
+  public void Visit_TypePattern_GenericList()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = new List<int>();
+                    bool result = obj is List<int>;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = new Array;
+  let result = Array.isArray(obj);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - TypePattern 泛型字典类型
+  /// </summary>
+  [TestMethod]
+  public void Visit_TypePattern_GenericDictionary()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = new Dictionary<string, int>();
+                    bool result = obj is Dictionary<string, int>;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = new Map;
+  let result = obj instanceof Map;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - TypePattern 多接口组合
+  /// </summary>
+  [TestMethod]
+  public void Visit_TypePattern_MultipleInterfaces()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = new List<int>();
+                    bool result = obj is IList<int> or ICollection<int>;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = new Array;
+  let result = Array.isArray(obj) || Array.isArray(obj);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - TypePattern 泛型约束与类型检查
+  /// </summary>
+  [TestMethod]
+  public void Visit_TypePattern_GenericWithConstraints()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = ""test"";
+                    bool result = obj is IComparable<string>;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = ""test"";
+  let result = typeof obj === ""string"";
+}", script);
+  }
+
+  #endregion
+
+  #region Nullable 和声明模式测试
+
+  /// <summary>
+  /// 测试 Visit - DeclarationPattern Nullable 值为 null
+  /// </summary>
+  [TestMethod]
+  public void Visit_DeclarationPattern_NullableValueType_Null()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int? value = null;
+                    if (value is int actual)
+                    {
+                        Console.WriteLine(actual);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let value = null;
+  let actual;
+  if (typeof value === ""number"" && (actual = value, true)) {
+    Console.WriteLine(actual);
+  }
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - DeclarationPattern Nullable 值不为 null
+  /// </summary>
+  [TestMethod]
+  public void Visit_DeclarationPattern_NullableValueType_HasValue()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int? value = 42;
+                    if (value is int actual)
+                    {
+                        Console.WriteLine(actual);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let value = 42;
+  let actual;
+  if (typeof value === ""number"" && (actual = value, true)) {
+    Console.WriteLine(actual);
+  }
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - DeclarationPattern 嵌套声明作用域
+  /// </summary>
+  [TestMethod]
+  public void Visit_DeclarationPattern_NestedScope_DoubleCapture()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = 42;
+                    if (obj is int x)
+                    {
+                        if (x is > 0 and var y)
+                        {
+                            Console.WriteLine($""{x}, {y}"");
+                        }
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = 42;
+  let x;
+  if (typeof obj === ""number"" && (x = obj, true)) {
+    let y;
+    if (x > 0 && (y = x, true)) {
+      Console.WriteLine(`${x}, ${y}`);
+    }
+  }
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - DeclarationPattern 循环中的变量捕获
+  /// </summary>
+  [TestMethod]
+  public void Visit_DeclarationPattern_InLoop()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object[] items = [1, ""hello"", 3.14];
+                    foreach (var item in items)
+                    {
+                        if (item is int value)
+                        {
+                            Console.WriteLine(value);
+                        }
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let items = [1, ""hello"", 3.14];
+  for (item of items) {
+    let value;
+    if (typeof item === ""number"" && (value = item, true)) {
+      Console.WriteLine(value);
+    }
+  }
+}", script);
+  }
+
+  #endregion
+
+  #region Deconstruct 和记录类型测试
+
+  /// <summary>
+  /// 测试 Visit - RecursivePattern 记录类型位置解构
+  /// </summary>
+  [TestMethod]
+  public void Visit_RecursivePattern_PositionalRecord()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var point = new Point(1, 2);
+                    bool result = point is (1, 2);
+                }
+
+                record Point(int X, int Y);
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let point = { X: 1, Y: 2 };
+  let result = point.X === 1 && point.Y === 2;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - RecursivePattern 记录类型带关系模式
+  /// </summary>
+  [TestMethod]
+  public void Visit_RecursivePattern_PositionalRecord_WithRelational()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var point = new Point(1, 2);
+                    bool result = point is (> 0, > 0);
+                }
+
+                record Point(int X, int Y);
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let point = { X: 1, Y: 2 };
+  let result = point.X > 0 && point.Y > 0;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - RecursivePattern 记录类型变量捕获
+  /// </summary>
+  [TestMethod]
+  public void Visit_RecursivePattern_PositionalRecord_WithCapture()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var point = new Point(1, 2);
+                    if (point is (var x, var y))
+                    {
+                        Console.WriteLine($""({x}, {y})"");
+                    }
+                }
+
+                record Point(int X, int Y);
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let point = { X: 1, Y: 2 };
+  let x, y;
+  if ((x = point.X, true) && (y = point.Y, true)) {
+    Console.WriteLine(`(${x}, ${y})`);
+  }
+}", script);
+  }
+
+  #endregion
+
+  #region Switch 表达式高级测试
+
+  /// <summary>
+  /// 测试 Visit - SwitchExpressionArm 带 when 子句和复杂逻辑
+  /// </summary>
+  [TestMethod]
+  public void Visit_SwitchExpressionArm_WhenWithComplexLogic()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int value = 5;
+                    string result = value switch
+                    {
+                        var x when x > 0 && x < 10 => ""Small"",
+                        var x when x >= 10 => ""Large"",
+                        _ => ""Unknown""
+                    };
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let value = 5;
+  let result = (() => {
+    const v$test = value;
+    if ((v$test.x = value, true) && v$test.x > 0 && v$test.x < 10)
+      return ""Small"";
+    if ((v$test.x = value, true) && v$test.x >= 10)
+      return ""Large"";
+    return ""Unknown"";
+  })();
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - SwitchExpressionArm 嵌套模式带 when
+  /// </summary>
+  [TestMethod]
+  public void Visit_SwitchExpressionArm_NestedPatternWithWhen()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = new { Value = 42 };
+                    string result = obj switch
+                    {
+                        { Value: var v } when v > 0 => ""Positive"",
+                        { Value: var v } when v < 0 => ""Negative"",
+                        _ => ""Zero""
+                    };
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = { Value: 42 };
+  let result = (() => {
+    const v$test = obj;
+    let v;
+    if ((v = v$test.Value, true) && v > 0)
+      return ""Positive"";
+    if ((v = v$test.Value, true) && v < 0)
+      return ""Negative"";
+    return ""Zero"";
+  })();
+}", script);
+  }
+
+  #endregion
+
+  #region 列表模式高级测试
+
+  /// <summary>
+  /// 测试 Visit - ListPattern 多维数组
+  /// </summary>
+  [TestMethod]
+  public void Visit_ListPattern_MultiDimensionalArray()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[,] matrix = { { 1, 2 }, { 3, 4 } };
+                    bool result = matrix is { Length: > 0 };
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let matrix = new Array;
+  let result = matrix.Length > 0;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - ListPattern 交错数组（锯齿数组）
+  /// </summary>
+  [TestMethod]
+  public void Visit_ListPattern_JaggedArray()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[][] jagged = new int[2][];
+                    jagged[0] = new[] { 1, 2 };
+                    jagged[1] = new[] { 3, 4, 5 };
+                    bool result = jagged is [_, ..];
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let jagged = [[], []];
+  let result = Array.isArray(jagged) && jagged.length >= 1;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - SlicePattern 多变量捕获
+  /// </summary>
+  [TestMethod]
+  public void Visit_SlicePattern_WithMultipleVariableCaptures()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[] array = [1, 2, 3, 4, 5];
+                    if (array is [var first, var second, .. var rest, var last])
+                    {
+                        Console.WriteLine($""{first}, {second}, {rest.Length}, {last}"");
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let array = [1, 2, 3, 4, 5];
+  let first, second, rest, last;
+  if (Array.isArray(array) && array.length >= 3 && (first = array[0], true) && (second = array[1], true) && (rest = array.slice(2, -1), true) && (last = array[array.length - 1], true)) {
+    Console.WriteLine(`${first}, ${second}, ${rest.Length}, ${last}`);
+  }
+}", script);
+  }
+
+  #endregion
+
+  #region 复杂模式组合测试
+
+  /// <summary>
+  /// 测试 Visit - 复杂模式组合 类型、属性、关系
+  /// </summary>
+  [TestMethod]
+  public void Visit_ComplexPattern_TypePropertyRelational()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = ""hello"";
+                    bool result = obj is string { Length: > 0 and < 100 };
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = ""hello"";
+  let result = typeof obj === ""string"" && obj.Length > 0 && obj.Length < 100;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - 复杂模式 三层嵌套
+  /// </summary>
+  [TestMethod]
+  public void Visit_ComplexPattern_DeepNesting()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var data = new { Outer = new { Middle = new { Inner = 42 } } };
+                    bool result = data is { Outer: { Middle: { Inner: > 0 } } };
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let data = { Outer: { Middle: { Inner: 42 } } };
+  let result = data.Outer.Middle.Inner > 0;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - 复杂模式 所有模式类型组合
+  /// </summary>
+  [TestMethod]
+  public void Visit_ComplexPattern_AllPatternTypes()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = new { Items = new[] { 1, 2, 3 } };
+                    bool result = obj is { Items: [var first, ..] and { Length: > 0 } };
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = { Items: [1, 2, 3] };
+  let first;
+  let result = Array.isArray(obj.Items) && obj.Items.length >= 1 && (first = obj.Items[0], true) && obj.Items.Length > 0;
+}", script);
+  }
+
+  #endregion
+
+  #region 属性模式高级测试
+
+  /// <summary>
+  /// 测试 Visit - PropertySubpattern null 检查
+  /// </summary>
+  [TestMethod]
+  public void Visit_PropertySubpattern_NullChecking()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = new { Value = (string?)null };
+                    bool result = obj is { Value: not null };
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = { Value: null };
+  let result = !(obj.Value === null);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - PropertySubpattern 可选链式属性
+  /// </summary>
+  [TestMethod]
+  public void Visit_PropertySubpattern_OptionalChaining()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = new { Inner = new { Value = 42 } };
+                    bool result = obj is { Inner: { Value: var v } };
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = { Inner: { Value: 42 } };
+  let v;
+  let result = (v = obj.Inner.Value, true);
+}", script);
+  }
+
+  #endregion
+
+  #region Switch 语句高级测试
+
+  /// <summary>
+  /// 测试 Visit - Switch 语句 default 分支中的声明模式
+  /// </summary>
+  [TestMethod]
+  public void Visit_DeclarationPattern_InSwitch_Default()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = 42;
+                    switch (obj)
+                    {
+                        case string s:
+                            Console.WriteLine(s);
+                            break;
+                        case var x:
+                            Console.WriteLine($""Default: {x}"");
+                            break;
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = 42;
+  (() => {
+    const v$test = obj;
+    if (typeof v$test === ""string"") {
+      let s;
+      (s = v$test, true) && Console.WriteLine(s);
+      return;
+    }
+    let x;
+    (x = v$test, true) && Console.WriteLine(`Default: ${x}`);
+    return;
+  })();
+}", script);
+  }
+
+  #endregion
 
 }
