@@ -322,34 +322,54 @@ public partial class SemanticWalker
 	public override Node? VisitRecursivePattern(IRecursivePatternOperation operation, WalkerArgument argument)
 	{
 		var conditions = new List<Expression>();
-		Expression? targetExpr = null;
+		var targetExpr = GetPatternRefrence(operation);
 
-		// 1. 类型匹配条件（排除匿名类型、元组类型、object）
-		if (!IsPatternMatchWithoutTypeCheck(operation.MatchedType))
+		// 类型匹配条件（排除匿名类型、元组类型、object）
+		if (!operation.MatchedType.IsAnonymousType &&
+			!operation.MatchedType.IsTupleType &&
+			operation.MatchedType.SpecialType != SpecialType.System_Object)
 		{
-			targetExpr ??= GetPatternRefrence(operation);
 			var typeCheck = CreateTypeMatchExpr(operation, operation.MatchedType, targetExpr);
 			conditions.Add(typeCheck);
 		}
 
-		// 2. 属性子模式（命名属性，如 { Name: "John" }）
+		// 属性子模式（命名属性，如 { Name: "John" }）
 		if (operation.PropertySubpatterns.Length > 0)
 		{
 			foreach (var propertySubpattern in operation.PropertySubpatterns)
-				Translate(conditions, propertySubpattern, argument);
+			{
+				var right = Translate<Expression>(propertySubpattern, argument);
+
+				// todo：需要完善判断是否检测属性存在，比如有些固定属性不需要检测
+				if (propertySubpattern.Member is IFieldReferenceOperation fieldRef)
+				{
+					var name = fieldRef.Field.Name;
+					var left = BuildHasOwnProperty(targetExpr, name);
+					var condition = new LogicalExpression(Operator.LogicalAnd, left, right);
+					conditions.Add(condition);
+				}
+				else if (propertySubpattern.Member is IPropertyReferenceOperation propRef)
+				{
+					var name = propRef.Property.Name;
+					var left = BuildHasOwnProperty(targetExpr, name);
+					var condition = new LogicalExpression(Operator.LogicalAnd, left, right);
+					conditions.Add(condition);
+				}
+				else
+					conditions.Add(right);
+			}
 		}
 
-		// 3. 位置式解构子模式（如 (int x, string y) 或 Person("John", 18)）
+		// 位置式解构子模式（如 (int x, string y) 或 Person("John", 18)）
 		if (operation.DeconstructionSubpatterns.Length > 0)
 		{
 			if (operation.InputType is not INamedTypeSymbol namedType)
 				return HandleTransformationFailure<Node>(operation, $"Input type '{operation.InputType}' is not a named type for deconstruction pattern.");
 
-			targetExpr ??= GetPatternRefrence(operation);
 			ProcessPositionalSubpatterns(operation, namedType, targetExpr, conditions, argument);
 		}
 
-		// 4. 组合所有条件
+		// 组合所有条件
 		if (conditions.Count > 0)
 		{
 			var result = conditions[0];
@@ -360,6 +380,18 @@ public partial class SemanticWalker
 
 		// 空模式总是匹配
 		return new BooleanLiteral(true, "true");
+
+		static CallExpression BuildHasOwnProperty(Expression obj,string name)
+		{
+			var member = new StringLiteral(name, $"\"{name}\"");
+			var property = new Identifier("hasOwnProperty");
+			var hasPropcallee = new MemberExpression(obj, property, computed: false, optional: false);
+			return new CallExpression(
+				callee: hasPropcallee,
+				args: NodeList.From<Expression>(member),
+				optional: false
+			);
+		}
 	}
 
 	/// <summary>
@@ -958,12 +990,6 @@ public partial class SemanticWalker
 			return new NonLogicalBinaryExpression(Operator.InstanceOf, target, expr);
 		}
 	}
-
-	/// <summary>
-	/// 判断指定类型是否在模式匹配时无需进行类型检查
-	/// </summary>
-	private static bool IsPatternMatchWithoutTypeCheck(ITypeSymbol type)
-		=> type.IsAnonymousType || type.IsTupleType || type.SpecialType == SpecialType.System_Object;
 
 	/// <summary>
 	/// 处理位置式解构子模式

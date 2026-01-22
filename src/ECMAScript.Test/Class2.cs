@@ -255,3 +255,22 @@ class TestClass3
 		};
 	}
 }
+
+
+class TestClass5
+{
+	void TestMethod()
+	{
+		string result = A.GetNumbers() switch
+		{
+			[var first, var second, ..] when first > 0 => "Starts with positive",
+			[.., var last] when last < 0 => "Ends with negative",
+			_ => "Other"
+		};
+	}
+
+	static class A
+	{
+		public static int[] GetNumbers() => [1, 2, 3, 4, 5];
+	}
+}
