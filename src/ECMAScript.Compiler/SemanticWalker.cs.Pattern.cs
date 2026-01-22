@@ -120,6 +120,7 @@ using Microsoft.CodeAnalysis.FlowAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ECMAScript.Compiler;
 
@@ -684,7 +685,52 @@ public partial class SemanticWalker
 				}
 				else if (namedType.IsRecord)
 				{
-					var a = namedType.Name;
+					// 对于 record 类型，位置式模式匹配对应于主构造函数的参数或 Deconstruct 输出参数
+					// 1. 如果有 Deconstruct 方法，使用 Deconstruct 方法的输出参数名
+					// 2. 否则使用主构造函数的参数名（这些参数对应同名属性）
+					string propertyName;
+					if (operation.DeconstructSymbol is IMethodSymbol deconstructMethod &&
+						deconstructMethod.Parameters.Length > i)
+					{
+						// 使用 Deconstruct 方法的输出参数名作为属性名
+						propertyName = deconstructMethod.Parameters[i].Name;
+					}
+					else
+					{
+						// 获取主构造函数（参数数量匹配的位置式解构的构造函数）
+						// 优先选择参数数量匹配的构造函数
+						IMethodSymbol? constructor = null;
+						foreach (var ctor in namedType.Constructors)
+						{
+							if (ctor.Parameters.Length == operation.DeconstructionSubpatterns.Length)
+							{
+								constructor = ctor;
+								break;
+							}
+						}
+
+						// 如果没找到匹配的，使用第一个实例构造函数
+						if (constructor is null)
+						{
+							constructor = namedType.Constructors.FirstOrDefault(c => !c.IsStatic);
+						}
+
+						if (constructor is not null && constructor.Parameters.Length > i)
+						{
+							propertyName = constructor.Parameters[i].Name;
+						}
+						else
+						{
+							return HandleTransformationFailure<Node>(operation, $"Cannot determine property name for record type '{namedType.Name}' at position {i}.");
+						}
+					}
+
+					property = new MemberExpression(
+						obj,
+						new Identifier(propertyName),
+						computed: false,
+						optional: false
+					);
 				}
 
 				if (property is null)
