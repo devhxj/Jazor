@@ -1037,4 +1037,291 @@ list.Add(v$test);
 
         Assert.AreEqual("{Flag:true,Count:100,Price:19.99}", script);
     }
+
+    [TestMethod]
+    public void VisitObjectCreation_BigIntType()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var num = new System.Numerics.BigInteger(42);
+                }
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitObjectCreation(operation, new());
+        var script = node?.ToECMAScript();
+
+        // BigInt 类型使用 CallExpression 而非 NewExpression
+        // GetMapperType 将 BigInteger 类型名称映射为 "BigInt"
+        Assert.AreEqual("BigInt(42)", script);
+    }
+
+    [TestMethod]
+    public void VisitObjectCreation_AsArgument()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    // 对象创建作为方法参数（不带初始化器）
+                    StaticMethod(new MyClass());
+                }
+
+                static void StaticMethod(MyClass obj) { }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        // 当对象创建作为方法参数时，会直接内联创建
+        // 静态方法调用使用类名前缀
+        Assert.AreEqual(@"{
+  TestClass.StaticMethod(new MyClass);
+}", script);
+    }
+
+    [TestMethod]
+    public void VisitDelegateCreation_ExplicitDelegateCreation()
+    {
+        var block = GetBlockOperation(@"
+            using System;
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    Action action = new Action(MyMethod);
+                }
+
+                void MyMethod() { }
+            }
+            ");
+
+        var operation = GetOperationAt<IVariableDeclarationGroupOperation>(block);
+        var variableDeclaration = operation.Declarations.First();
+        var initializer = variableDeclaration.Declarators.First().Initializer!;
+        var delegateCreationOp = (IDelegateCreationOperation)initializer.Value;
+
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitDelegateCreation(delegateCreationOp, new());
+        var script = node?.ToECMAScript();
+
+        // 实例方法会带有 this 前缀
+        Assert.AreEqual("this.MyMethod", script);
+    }
+
+    [TestMethod]
+    public void VisitDelegateCreation_WithLambda()
+    {
+        var block = GetBlockOperation(@"
+            using System;
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    Func<int, int> func = new Func<int, int>(x => x * 2);
+                }
+            }
+            ");
+
+        var operation = GetOperationAt<IVariableDeclarationGroupOperation>(block);
+        var variableDeclaration = operation.Declarations.First();
+        var initializer = variableDeclaration.Declarators.First().Initializer!;
+        var delegateCreationOp = (IDelegateCreationOperation)initializer.Value;
+
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitDelegateCreation(delegateCreationOp, new());
+        var script = node?.ToECMAScript();
+
+        Assert.AreEqual("x=>{return x*2}", script);
+    }
+
+    [TestMethod]
+    public void VisitObjectCreation_NestedArgument()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var list = new System.Collections.Generic.List<int>();
+                    // 嵌套对象创建作为参数
+                    list.Add((new Outer { Inner = new Inner { Value = 42 } }).Inner.Value);
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        // 验证嵌套对象创建作为参数时的处理
+        // 当对象创建没有初始化器时，会直接内联创建
+        Assert.AreEqual(@"{
+  let list = new Array;
+  list.Add((new Outer).Inner.Value);
+}", script);
+    }
+
+    [TestMethod]
+    public void VisitArrayCreation_JaggedArray()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var jagged = new int[3][];
+                }
+            }
+            ");
+
+        var operation = GetArrayCreationOperationAt(block);
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitArrayCreation(operation, new());
+        var script = node?.ToECMAScript();
+
+        // 交错数组（数组的数组）应该创建指定大小的数组
+        Assert.AreEqual("new Array(3)", script);
+    }
+
+    [TestMethod]
+    public void VisitObjectCreation_WithComplexArguments()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = new MyClass(
+                        42,
+                        ""hello"",
+                        ""world""
+                    );
+                }
+
+                class MyClass(int a, string b, string c) { }
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitObjectCreation(operation, new());
+        var script = node?.ToECMAScript();
+
+        Assert.AreEqual(@"new MyClass(42,""hello"",""world"")", script);
+    }
+
+    [TestMethod]
+    public void VisitAnonymousObjectCreation_DeeplyNested()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = new {
+                        Level1 = new {
+                            Level2 = new {
+                                Level3 = ""deep""
+                            }
+                        }
+                    };
+                }
+            }
+            ");
+
+        var operation = GetAnonymousObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitAnonymousObjectCreation(operation, new());
+        var script = node?.ToECMAScript();
+
+        Assert.AreEqual(@"{Level1:{Level2:{Level3:""deep""}}}", script);
+    }
+
+    [TestMethod]
+    public void VisitArrayCreation_WithNullElements()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var arr = new string?[] { ""hello"", null, ""world"" };
+                }
+            }
+            ");
+
+        var operation = GetArrayCreationOperationAt(block);
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitArrayCreation(operation, new());
+        var script = node?.ToECMAScript();
+
+        Assert.AreEqual(@"[""hello"",null,""world""]", script);
+    }
+
+    [TestMethod]
+    public void VisitInterpolatedString_WithEscapedBraces()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int value = 42;
+                    var message = $""The value is {{value}}: {value}"";
+                }
+            }
+            ");
+
+        var operation = GetInterpolatedStringOperationAt(block, 1);
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitInterpolatedString(operation, new());
+        var script = node?.ToECMAScript();
+
+        // 双大括号转义为单大括号
+        Assert.AreEqual(@"`The value is {value}: ${value}`", script);
+    }
+
+    [TestMethod]
+    public void VisitObjectCreation_MultipleNestedLevels()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = new A {
+                        B = new B {
+                            C = new C {
+                                D = new D {
+                                    Value = 999
+                                }
+                            }
+                        }
+                    };
+                }
+
+                class A { public B? B { get; set; } }
+                class B { public C? C { get; set; } }
+                class C { public D? D { get; set; } }
+                class D { public int Value { get; set; } }
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitObjectCreation(operation, new());
+        var script = node?.ToECMAScript();
+
+        // 多层嵌套会逐级创建对象
+        Assert.AreEqual(@"new A;obj.B=new B;obj.B.C=new C;obj.B.C.D=new D;obj.B.C.D.Value=999;", script);
+    }
 }
