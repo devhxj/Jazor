@@ -12,12 +12,11 @@ public partial class SemanticWalker
 	/// <summary>
 	/// 构建对象创建表达式
 	/// </summary>
-	/// <param name="path"></param>
 	/// <param name="assignObj"></param>
 	/// <param name="operation"></param>
 	/// <param name="argument"></param>
 	/// <returns></returns>
-	private Expression BuildObjectCreation(string path, Expression? assignObj, IObjectCreationOperation operation, WalkerArgument argument)
+	private Expression BuildObjectCreation(Expression? assignObj, IObjectCreationOperation operation, WalkerArgument argument)
 	{
 		if (operation.Type is null)
 			return HandleTransformationFailure<Expression>(operation, "Object creation type could not be translated to JavaScript.");
@@ -41,11 +40,11 @@ public partial class SemanticWalker
 		if (operation.Initializer?.Initializers.Length > 0)
 		{
 			if (assignObj is null)
-				return BuildObjectOrCollectionInitializer($"{path}/", expr, operation.Initializer, argument)!;
+				return BuildObjectOrCollectionInitializer(expr, operation.Initializer, argument)!;
 			else
 			{
 				var exprs = new List<Expression> { expr };
-				var initExprs = BuildObjectCreationInitializer($"{path}/", assignObj, operation.Initializer, argument);
+				var initExprs = BuildObjectCreationInitializer(assignObj, operation.Initializer, argument);
 				exprs.AddRange(initExprs);
 				return new SequenceExpression(NodeList.From(exprs));
 			}
@@ -57,19 +56,16 @@ public partial class SemanticWalker
 	/// <summary>
 	/// 处理对象创建初始化器
 	/// </summary>
-	/// <param name="path"></param>
 	/// <param name="obj"></param>
 	/// <param name="initializers"></param>
 	/// <param name="argument"></param>
 	/// <returns></returns>
-	private List<Expression> BuildObjectCreationInitializer(string path, Expression? obj, IObjectOrCollectionInitializerOperation initializers, WalkerArgument argument)
+	private List<Expression> BuildObjectCreationInitializer(Expression? obj, IObjectOrCollectionInitializerOperation initializers, WalkerArgument argument)
 	{
 		var exprs = new List<Expression>();
 		// 处理对象初始化器，只处理第一层，内部嵌套转换为对象字面量
-		for (var index = 0; index < initializers.Initializers.Length; index++)
+		foreach (var initializer in initializers.Initializers)
 		{
-			var initializer = initializers.Initializers[index];
-
 			if (initializer is ISimpleAssignmentOperation simpleAssignmentOp)
 			{
 				var prop = Translate<Expression>(simpleAssignmentOp.Target, argument);
@@ -79,7 +75,7 @@ public partial class SemanticWalker
 				if (simpleAssignmentOp.Value is IObjectCreationOperation subObjectCreationOp &&
 					subObjectCreationOp.Initializer is not null)
 				{
-					var sequenceExpr = BuildObjectCreation($"{path}/{index}", left, subObjectCreationOp, argument);
+					var sequenceExpr = BuildObjectCreation(left, subObjectCreationOp, argument);
 					if (sequenceExpr is SequenceExpression seqExpr)
 						exprs.AddRange(seqExpr.Expressions);
 					else
@@ -107,7 +103,7 @@ public partial class SemanticWalker
 				Expression left = obj is null
 					 ? target
 					 : new MemberExpression(obj, target, computed: false, optional: false);
-				var right = RecursiveObjectOrCollectionInitializer($"{path}/", memberInitializerOp.Initializer);
+				var right = RecursiveObjectOrCollectionInitializer(memberInitializerOp.Initializer);
 				var expr = new AssignmentExpression(Operator.Assignment, left, right);
 				exprs.Add(expr);
 			}
@@ -145,16 +141,14 @@ public partial class SemanticWalker
 	/// <summary>
 	/// 此处主要处理IMemberInitializerOperation.Initializer中或可能嵌套的对象或集合初始化器操作
 	/// </summary>
-	/// <param name="path"></param>
 	/// <param name="operation"></param>
 	/// <returns>转换为字面量对象</returns>
-	private ObjectExpression RecursiveObjectOrCollectionInitializer(string path, IObjectOrCollectionInitializerOperation operation)
+	private ObjectExpression RecursiveObjectOrCollectionInitializer(IObjectOrCollectionInitializerOperation operation)
 	{
 		var nodes = new List<Node>();
-		for (var index = 0; index < operation.Initializers.Length; index++)
+		foreach (var initializer in operation.Initializers)
 		{
 			Expression? target = null, value = null;
-			var initializer = operation.Initializers[index];
 			if (initializer is ISimpleAssignmentOperation simpleAssignmentOp)
 			{
 				target = Translate<Expression>(simpleAssignmentOp.Target, new());
@@ -170,7 +164,7 @@ public partial class SemanticWalker
 				};
 
 				if (target is not null)
-					value = RecursiveObjectOrCollectionInitializer($"{path}/{index}", memberInitializerOp.Initializer);
+					value = RecursiveObjectOrCollectionInitializer(memberInitializerOp.Initializer);
 			}
 
 			if (target is null || value is null)
@@ -192,19 +186,18 @@ public partial class SemanticWalker
 	/// <summary>
 	///  
 	/// </summary>
-	/// <param name="path"></param>
 	/// <param name="initExpr"></param>
 	/// <param name="operation"></param>
 	/// <param name="argument"></param>
 	/// <returns>IIFE箭头函数</returns>
-	private Expression? BuildObjectOrCollectionInitializer(string path, Expression? initExpr, IObjectOrCollectionInitializerOperation operation, WalkerArgument argument)
+	private Expression? BuildObjectOrCollectionInitializer(Expression? initExpr, IObjectOrCollectionInitializerOperation operation, WalkerArgument argument)
 	{
 		if (operation.Initializers.Length == 0)
 			return null;
 
 		var name = GetUniqueName(operation);
 		var obj = new Identifier(name);
-		var initExprs = BuildObjectCreationInitializer($"{path}/", obj, operation, argument);
+		var initExprs = BuildObjectCreationInitializer(obj, operation, argument);
 		if (initExpr is null)
 			return new SequenceExpression(NodeList.From(initExprs));
 
@@ -247,7 +240,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitObjectCreation(IObjectCreationOperation operation, WalkerArgument argument)
-		=> BuildObjectCreation(string.Empty, null, operation, argument);
+		=> BuildObjectCreation(null, operation, argument);
 
 	/// <summary>
 	/// 处理对象或集合初始化器操作
@@ -260,7 +253,7 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitObjectOrCollectionInitializer(IObjectOrCollectionInitializerOperation operation, WalkerArgument argument)
-		=> BuildObjectOrCollectionInitializer(string.Empty, null, operation, argument);
+		=> BuildObjectOrCollectionInitializer(null, operation, argument);
 	
 	/// <summary>
 	/// 处理匿名对象创建操作

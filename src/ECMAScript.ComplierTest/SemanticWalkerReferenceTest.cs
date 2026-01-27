@@ -1,4 +1,3 @@
-using Acornima.Ast;
 using ECMAScript.Compiler;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -10,35 +9,53 @@ namespace ECMAScript.ComplierTest;
 [TestClass]
 public sealed class SemanticWalkerReferenceTest
 {
-  /// <summary>
-  /// 编译代码并获取roslyn代码块
-  /// </summary>
-  /// <param name="code"></param>
-  /// <returns></returns>
-  /// <exception cref="InvalidOperationException"></exception>
-  private static IBlockOperation GetBlockOperation(string code)
-  {
-    var compilation = CSharpCompilation.Create(
-        "TestAssembly",
-        syntaxTrees: [CSharpSyntaxTree.ParseText(code)],
-        references: Basic.Reference.Assemblies.Net100.References.All,
-        options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-    var syntaxTree = compilation.SyntaxTrees.First();
-    var semanticModel = compilation.GetSemanticModel(syntaxTree);
-    var root = syntaxTree.GetRoot();
-
-    // 查找第一个方法体
-    var methodDeclaration = root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault();
-    if (methodDeclaration?.Body is not null)
+    /// <summary>
+    /// 编译代码并获取roslyn代码块
+    /// </summary>
+    /// <param name="code"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    private static IBlockOperation GetBlockOperation(string code)
     {
-      var operation = semanticModel.GetOperation(methodDeclaration.Body) as IBlockOperation;
-      if (operation is not null)
-        return operation;
-    }
+        var usings = @"
+        global using System;
+        global using System.Collections.Generic;
+        global using System.Linq;";
 
-    throw new InvalidOperationException("未找到可分析的操作");
-  }
+        var compilation = CSharpCompilation.Create(
+            "TestAssembly",
+            syntaxTrees: [
+              CSharpSyntaxTree.ParseText(usings),
+          CSharpSyntaxTree.ParseText(code)
+            ],
+            references: Basic.Reference.Assemblies.Net100.References.All,
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        // 输出编译诊断信息
+        var diagnostics = compilation.GetDiagnostics();
+        var errors = diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
+        if (errors.Count > 0)
+        {
+            var errorMessages = string.Join("\n", errors.Select(e => $"{e.Id}: {e.GetMessage()}"));
+            throw new InvalidOperationException(errorMessages);
+        }
+
+        var syntaxTree = compilation.SyntaxTrees.Last();
+        var semanticModel = compilation.GetSemanticModel(syntaxTree);
+        var root = syntaxTree.GetRoot();
+
+        // 查找第一个方法体
+        var methodDeclaration = root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault();
+        if (methodDeclaration?.Body is not null)
+        {
+            var operation = semanticModel.GetOperation(methodDeclaration.Body) as IBlockOperation;
+            if (operation is not null)
+                return operation;
+        }
+
+        throw new InvalidOperationException("未找到可分析的操作");
+    }
+  
 
   /// <summary>
   /// 获取指定索引的操作

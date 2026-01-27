@@ -205,15 +205,14 @@ public sealed partial class SemanticWalker : OperationVisitor<WalkerArgument, No
     /// 根据操作生成稳定的唯一名称
     /// </summary>
     /// <param name="operation">操作</param>
-    /// <param name="path">操作树路径</param>
-    /// <returns>此名称仅针对语法树唯一，若想操作树唯一，请传入path参数</returns>
-    private string GetUniqueName(IOperation operation, string path = "")
+    /// <returns>此名称仅针对语法树唯一</returns>
+    private string GetUniqueName(IOperation operation)
     {
         var syntaxTree = operation.Syntax.SyntaxTree;
         var sourceSpan = operation.Syntax.GetLocation().SourceSpan;
 
         using var sha256 = SHA256.Create();
-        var key = $"{syntaxTree.FilePath}${operation.Syntax.Kind()}${sourceSpan.Start}${sourceSpan.End}${operation.Kind}${path}";
+        var key = $"{syntaxTree.FilePath}${operation.Syntax.Kind()}${sourceSpan.Start}${sourceSpan.End}${operation.Kind}";
         var bytes = Encoding.UTF8.GetBytes(key);
         var hashBytes = sha256.ComputeHash(bytes);
         var sb = new StringBuilder("_");

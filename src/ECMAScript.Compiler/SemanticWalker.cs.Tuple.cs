@@ -295,7 +295,14 @@ public partial class SemanticWalker
 					else
 					{
 						var name = tupleType.TupleElements[index].Name;
-						args.Add(new Identifier(name));
+						var id = new Identifier(name);
+						// 处理声明表达式
+						if (element is IDeclarationExpressionOperation)
+						{
+							var declarator = new VariableDeclarator(id, null);
+							declarators.Add(declarator);
+						}						
+						args.Add(id);
 					}
 				}
 
@@ -317,15 +324,12 @@ public partial class SemanticWalker
 				IMethodSymbol method;
 				// 处理嵌套元组中的解构参数
 				if (expr is IInvocationOperation invocation)
-				{
 					method = invocation.TargetMethod;
-				}
 				else
-				{
 					method = (IMethodSymbol)valueType
 						.GetMembers()
 						.First(x => x.Kind == SymbolKind.Method && x.Name == "Deconstruct");
-				}
+				
 
 				foreach (var (index, id) in nestedRefs)
 				{

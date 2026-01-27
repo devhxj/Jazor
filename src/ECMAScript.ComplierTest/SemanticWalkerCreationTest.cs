@@ -680,7 +680,7 @@ public sealed class SemanticWalkerCreationTest
   v$0.Nested.NestedProp = ""nested"";
   return v$0;
 })()", script);
-    
+
     }
 
     [TestMethod]
@@ -948,7 +948,7 @@ public sealed class SemanticWalkerCreationTest
 
         var operation = GetObjectCreationOperationAt(block);
         var walker = new SemanticWalker(true);
-        var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!,new());
+        var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!, new());
         var script = node?.ToKnRECMAScript();
 
         Assert.AreEqual(@"v$0.Add(1), v$0.Add(2), v$0.Add(3)", script);

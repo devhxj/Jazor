@@ -561,10 +561,10 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(@"{
   let value = 42;
   let result = (() => {
-    const v$test = value;
-    if (v$test === 1)
+    const v$0 = value;
+    if (v$0 === 1)
       return ""one"";
-    if (v$test === 2)
+    if (v$0 === 2)
       return ""two"";
     return ""default"";
   })();
@@ -1553,8 +1553,8 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(@"{
   let array = [1, 2];
   let result = (() => {
-    const v$test = array;
-    if (Array.isArray(v$test) && v$test.length >= 0)
+    const v$0 = array;
+    if (Array.isArray(v$0) && v$0.length >= 0)
       return ""empty or any"";
     return ""other"";
   })();
@@ -1716,10 +1716,10 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(@"{
   let value = 5;
   let result = (() => {
-    const v$test = TestClass.Get5(value);
-    if (v$test > 0 && v$test < 10)
+    const v$0 = TestClass.Get5(value);
+    if (v$0 > 0 && v$0 < 10)
       return ""Small"";
-    if (v$test >= 10)
+    if (v$0 >= 10)
       return ""Large"";
     return ""Unknown"";
   })();
@@ -1756,10 +1756,10 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(@"{
   let person = { Name: ""John"", Age: 30 };
   let result = (() => {
-    const v$test = person;
-    if (v$test.hasOwnProperty(""Name"") && v$test.Name === ""John"")
+    const v$0 = person;
+    if (v$0.hasOwnProperty(""Name"") && v$0.Name === ""John"")
       return ""Hello John"";
-    if (v$test.hasOwnProperty(""Age"") && v$test.Age > 18)
+    if (v$0.hasOwnProperty(""Age"") && v$0.Age > 18)
       return ""Adult"";
     return ""Unknown"";
   })();
@@ -1994,7 +1994,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitPatternCaseClause(patternCaseClause, new());
     var script = node?.ToECMAScript();
 
-    Assert.AreEqual("(x=v$test,true)&&x>10", script);
+    Assert.AreEqual("(x=v$0,true)&&x>10", script);
   }
 
   /// <summary>
@@ -2370,7 +2370,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitSwitchExpressionArm(switchCaseArm, new());
     var script = node?.ToECMAScript();
 
-    Assert.AreEqual(@"if(v$test===1)return""one"";", script);
+    Assert.AreEqual(@"if(v$0===1)return""one"";", script);
   }
 
   /// <summary>
@@ -2404,7 +2404,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitSwitchExpressionArm(switchCaseArm, new());
     var script = node?.ToECMAScript();
 
-    Assert.AreEqual(@"if((x=v$test,true)&&x>0)return""positive"";", script);
+    Assert.AreEqual(@"if((x=v$0,true)&&x>0)return""positive"";", script);
   }
 
   /// <summary>
@@ -2497,7 +2497,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitPatternCaseClause(patternCaseClause, new());
     var script = node?.ToECMAScript();
 
-    Assert.AreEqual("v$test>0", script);
+    Assert.AreEqual("v$0>0", script);
   }
 
   /// <summary>
@@ -2527,7 +2527,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitPatternCaseClause(patternCaseClause, new());
     var script = node?.ToECMAScript();
 
-    Assert.AreEqual(@"typeof v$test===""string""&&(s=v$test,true)&&s.Length>0", script);
+    Assert.AreEqual(@"typeof v$0===""string""&&(s=v$0,true)&&s.Length>0", script);
   }
 
   /// <summary>
@@ -3026,10 +3026,10 @@ public sealed class SemanticWalkerPatternTest
   let obj = { X: 1, Y: 2 };
   let x;
   let result = (() => {
-    const v$test = obj;
-    if (v$test.hasOwnProperty(""X"") && v$test.X === 1 && (v$test.hasOwnProperty(""Y"") && v$test.Y === 2))
+    const v$0 = obj;
+    if (v$0.hasOwnProperty(""X"") && v$0.X === 1 && (v$0.hasOwnProperty(""Y"") && v$0.Y === 2))
       return ""Point (1,2)"";
-    if (v$test.hasOwnProperty(""X"") && (x = v$test.X, true) && x > 0)
+    if (v$0.hasOwnProperty(""X"") && (x = v$0.X, true) && x > 0)
       return ""Positive X"";
     return ""Other"";
   })();
@@ -3080,16 +3080,16 @@ public sealed class SemanticWalkerPatternTest
   let result = value > 9 && (value > 0 && value < 10 && !(value === 5)) && ((x = value, true) && x < 10);
   let s;
   (() => {
-    const v$test = value;
-    if ((s = v$test, true) && s > 0) {
+    const v$0 = value;
+    if ((s = v$0, true) && s > 0) {
       Console.WriteLine("">0"");
       return;
     }
-    if (v$test === 1) {
+    if (v$0 === 1) {
       Console.WriteLine(""1"");
       return;
     }
-    if (v$test === 2) {
+    if (v$0 === 2) {
       Console.WriteLine(""2"");
       return;
     }
@@ -3764,10 +3764,10 @@ line2"";
   let value = 5;
   let x;
   let result = (() => {
-    const v$test = value;
-    if ((x = v$test, true) && (x > 0 && x < 10))
+    const v$0 = value;
+    if ((x = v$0, true) && (x > 0 && x < 10))
       return ""Small"";
-    if ((x = v$test, true) && x >= 10)
+    if ((x = v$0, true) && x >= 10)
       return ""Large"";
     return ""Unknown"";
   })();
@@ -3804,10 +3804,10 @@ line2"";
   let obj = { Value: 42 };
   let v;
   let result = (() => {
-    const v$test = obj;
-    if (v$test.hasOwnProperty(""Value"") && (v = v$test.Value, true) && v > 0)
+    const v$0 = obj;
+    if (v$0.hasOwnProperty(""Value"") && (v = v$0.Value, true) && v > 0)
       return ""Positive"";
-    if (v$test.hasOwnProperty(""Value"") && (v = v$test.Value, true) && v < 0)
+    if (v$0.hasOwnProperty(""Value"") && (v = v$0.Value, true) && v < 0)
       return ""Negative"";
     return ""Zero"";
   })();
@@ -4088,12 +4088,12 @@ line2"";
   let obj = 42;
   let s, x;
   (() => {
-    const v$test = obj;
-    if (typeof v$test === ""string"" && (s = v$test, true)) {
+    const v$0 = obj;
+    if (typeof v$0 === ""string"" && (s = v$0, true)) {
       Console.WriteLine(s);
       return;
     }
-    if (x = v$test, true) {
+    if (x = v$0, true) {
       Console.WriteLine(`Default: ${x}`);
       return;
     }
@@ -4426,10 +4426,10 @@ line2"";
   let numbers = [1, 2, 3, 4, 5];
   let first, second, last;
   let result = (() => {
-    const v$test = numbers;
-    if (Array.isArray(v$test) && v$test.length >= 2 && (first = v$test[0], true) && (second = v$test[1], true) && first > 0)
+    const v$0 = numbers;
+    if (Array.isArray(v$0) && v$0.length >= 2 && (first = v$0[0], true) && (second = v$0[1], true) && first > 0)
       return ""Starts with positive"";
-    if (Array.isArray(v$test) && v$test.length >= 1 && (last = v$test[v$test.length - 1], true) && last < 0)
+    if (Array.isArray(v$0) && v$0.length >= 1 && (last = v$0[v$0.length - 1], true) && last < 0)
       return ""Ends with negative"";
     return ""Other"";
   })();
@@ -4469,10 +4469,10 @@ line2"";
     Assert.AreEqual(@"{
   let first, second, last;
   let result = (() => {
-    const v$test = A.GetNumbers();
-    if (Array.isArray(v$test) && v$test.length >= 2 && (first = v$test[0], true) && (second = v$test[1], true) && first > 0)
+    const v$0 = A.GetNumbers();
+    if (Array.isArray(v$0) && v$0.length >= 2 && (first = v$0[0], true) && (second = v$0[1], true) && first > 0)
       return ""Starts with positive"";
-    if (Array.isArray(v$test) && v$test.length >= 1 && (last = v$test[v$test.length - 1], true) && last < 0)
+    if (Array.isArray(v$0) && v$0.length >= 1 && (last = v$0[v$0.length - 1], true) && last < 0)
       return ""Ends with negative"";
     return ""Other"";
   })();

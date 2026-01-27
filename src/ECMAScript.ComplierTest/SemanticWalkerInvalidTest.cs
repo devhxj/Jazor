@@ -1,4 +1,3 @@
-using Acornima.Ast;
 using ECMAScript.Compiler;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -18,13 +17,30 @@ public sealed class SemanticWalkerInvalidTest
   /// <exception cref="InvalidOperationException"></exception>
   private static IBlockOperation GetBlockOperation(string code)
   {
+    var usings = @"
+        global using System;
+        global using System.Collections.Generic;
+        global using System.Linq;";
+
     var compilation = CSharpCompilation.Create(
         "TestAssembly",
-        syntaxTrees: [CSharpSyntaxTree.ParseText(code)],
+        syntaxTrees: [
+          CSharpSyntaxTree.ParseText(usings),
+          CSharpSyntaxTree.ParseText(code)
+        ],
         references: Basic.Reference.Assemblies.Net100.References.All,
         options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-    var syntaxTree = compilation.SyntaxTrees.First();
+    // 输出编译诊断信息
+    var diagnostics = compilation.GetDiagnostics();
+    var errors = diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
+    if (errors.Count > 0)
+    {
+      var errorMessages = string.Join("\n", errors.Select(e => $"{e.Id}: {e.GetMessage()}"));
+      throw new InvalidOperationException(errorMessages);
+    }
+
+    var syntaxTree = compilation.SyntaxTrees.Last();
     var semanticModel = compilation.GetSemanticModel(syntaxTree);
     var root = syntaxTree.GetRoot();
 
@@ -39,6 +55,7 @@ public sealed class SemanticWalkerInvalidTest
 
     throw new InvalidOperationException("未找到可分析的操作");
   }
+
 
   /// <summary>
   /// 获取指定索引的操作
@@ -71,73 +88,18 @@ public sealed class SemanticWalkerInvalidTest
   public void Visit_TupleBlockCode()
   {
     var block = GetBlockOperation(@"
-            class TestClass
-            {
-                void TestMethod()
-                {
-                    var tuple = (aaa:1,2);
-                    (int bbb, int ccc) = tuple;
-                    int ddd,eee;
-                    (ddd, eee) = tuple;
-                    int kkk;
-                    (kkk,int qqq) = tuple;
-                    (int fff, (int ggg,int hhh)) = (2,tuple);
-                    (int f44, (int g44,int h44)) = (y8:2,y9:tuple);
-                    var func = (int x,int y)=>(mmm:x,y);
-                    (int zzz,int yyy)= func(2,5);
-                    var p = new Point();
-                    (int z99,int y99)= p;
-                }
-                
-                class Point
-                {
-                    public int X{get;set;}
-                    public int Y{get;set;}
-
-                    public void Deconstruct(out int x, out int y)
-                    {
-                        x = X;
-                        y = Y;
-                    }
-                }                 
-            }
+            
             ");
 
     var walker = new SemanticWalker(true);
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
-  let tuple = { aaa: 1, Item2: 2 };
-    let bbb = tuple.aaa;
-  let ccc = tuple.Item2;
+    Assert.AreEqual(
+  @"{
 
-  let ddd, eee;
-    ddd = tuple.aaa;
-  eee = tuple.Item2;
-
-  let kkk;
-    kkk = tuple.aaa;
-  let qqq = tuple.Item2;
-
-    let fff = 2;
-  let ggg = tuple.aaa;
-  let hhh = tuple.Item2;
-
-    let f44 = 2;
-  let g44 = tuple.aaa;
-  let h44 = tuple.Item2;
-
-  let func = (x, y) => {
-    return { mmm: x, y: y };
-  };
-    const v$test = func.Invoke(2, 5);
-  let zzz = v$test.mmm;
-  let yyy = v$test.y;
-
-  let p = new Point;
-    p.Deconstruct(z99, y99);
 
 }", script);
+
   }
 }
