@@ -13,9 +13,6 @@ public sealed class SemanticWalkerTryCatchTest
     /// <summary>
     /// 编译代码并获取roslyn代码块
     /// </summary>
-    /// <param name="code"></param>
-    /// <returns></returns>
-    /// <exception cref="InvalidOperationException"></exception>
     private static IBlockOperation GetBlockOperation(string code)
     {
         var usings = @"
@@ -26,13 +23,12 @@ public sealed class SemanticWalkerTryCatchTest
         var compilation = CSharpCompilation.Create(
             "TestAssembly",
             syntaxTrees: [
-              CSharpSyntaxTree.ParseText(usings),
-          CSharpSyntaxTree.ParseText(code)
+                CSharpSyntaxTree.ParseText(usings),
+                CSharpSyntaxTree.ParseText(code)
             ],
             references: Basic.Reference.Assemblies.Net100.References.All,
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-        // 输出编译诊断信息
         var diagnostics = compilation.GetDiagnostics();
         var errors = diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
         if (errors.Count > 0)
@@ -45,7 +41,6 @@ public sealed class SemanticWalkerTryCatchTest
         var semanticModel = compilation.GetSemanticModel(syntaxTree);
         var root = syntaxTree.GetRoot();
 
-        // 查找第一个方法体
         var methodDeclaration = root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault();
         if (methodDeclaration?.Body is not null)
         {
@@ -57,104 +52,703 @@ public sealed class SemanticWalkerTryCatchTest
         throw new InvalidOperationException("未找到可分析的操作");
     }
 
-  /// <summary>
-  /// 获取指定索引的操作
-  /// </summary>
-  private static T GetOperationAt<T>(IBlockOperation block, int index = 0) where T : class, IOperation
-  {
-    var operation = block.Operations.Skip(index).First() as T;
-    return operation ?? throw new InvalidOperationException("未找到可分析的操作");
-  }
+    /// <summary>
+    /// 获取指定索引的操作
+    /// </summary>
+    private static T GetOperationAt<T>(IBlockOperation block, int index = 0) where T : class, IOperation
+    {
+        var operation = block.Operations.Skip(index).First();
+        return operation as T ?? throw new InvalidOperationException("未找到可分析的操作");
+    }
 
-  /// <summary>
-  /// 获取元组操作
-  /// </summary>
-  /// <param name="code"></param>
-  /// <param name="index"></param>
-  /// <returns></returns>
-  private static ITupleOperation GetTupleOperationAt(IBlockOperation block, int index = 0)
-  {
-    var variableDeclarationGroup = GetOperationAt<IVariableDeclarationGroupOperation>(block, index);
-    var variableDeclaration = variableDeclarationGroup!.Declarations.First();
-    var initializer = variableDeclaration.Declarators.First().Initializer;
-    var operation = (ITupleOperation)initializer!.Value;
-    return operation;
-  }
+    #region Try-Catch 基础测试
 
-  /// <summary>
-  /// 这只是一个整体测试例子
-  /// </summary>
-  [TestMethod]
-  public void Visit_TupleBlockCode()
-  {
-    var block = GetBlockOperation(@"
+    /// <summary>
+    /// 测试 try-catch 语句转换
+    /// C# 示例：
+    /// try {
+    ///     int x = 1;
+    /// } catch (Exception ex) {
+    ///     int y = 2;
+    /// }
+    /// 转换结果：try { let x = 1; } catch (ex) { let y = 2; }
+    /// </summary>
+    [TestMethod]
+    public void VisitTry_SingleCatch()
+    {
+        var block = GetBlockOperation(@"
             class TestClass
             {
                 void TestMethod()
                 {
-                    var tuple = (aaa:1,2);
-                    (int bbb, int ccc) = tuple;
-                    int ddd,eee;
-                    (ddd, eee) = tuple;
-                    int kkk;
-                    (kkk,int qqq) = tuple;
-                    (int fff, (int ggg,int hhh)) = (2,tuple);
-                    (int f44, (int g44,int h44)) = (y8:2,y9:tuple);
-                    var func = (int x,int y)=>(mmm:x,y);
-                    (int zzz,int yyy)= func(2,5);
-                    var p = new Point();
-                    (int z99,int y99)= p;
-                }
-                
-                class Point
-                {
-                    public int X{get;set;}
-                    public int Y{get;set;}
-
-                    public void Deconstruct(out int x, out int y)
+                    try
                     {
-                        x = X;
-                        y = Y;
+                        int x = 1;
                     }
-                }                 
+                    catch (Exception ex)
+                    {
+                        int y = 2;
+                    }
+                }
             }
-            ");
+        ");
 
-    var walker = new SemanticWalker(true);
-    var node = walker.Visit(block, new());
-    var script = node?.ToKnRECMAScript();
+        var walker = new SemanticWalker(true);
+        var tryOp = GetOperationAt<ITryOperation>(block, 0);
+        var node = walker.VisitTry(tryOp, new());
+        var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
-  let tuple = { aaa: 1, Item2: 2 };
-    let bbb = tuple.aaa;
-  let ccc = tuple.Item2;
-
-  let ddd, eee;
-    ddd = tuple.aaa;
-  eee = tuple.Item2;
-
-  let kkk;
-    kkk = tuple.aaa;
-  let qqq = tuple.Item2;
-
-    let fff = 2;
-  let ggg = tuple.aaa;
-  let hhh = tuple.Item2;
-
-    let f44 = 2;
-  let g44 = tuple.aaa;
-  let h44 = tuple.Item2;
-
-  let func = (x, y) => {
-    return { mmm: x, y: y };
-  };
-    const v$test = func.Invoke(2, 5);
-  let zzz = v$test.mmm;
-  let yyy = v$test.y;
-
-  let p = new Point;
-    p.Deconstruct(z99, y99);
-
+        Assert.AreEqual(
+            @"try {
+  let x = 1;
+} catch (ex) {
+  let y = 2;
 }", script);
+    }
+
+    /// <summary>
+    /// 测试 try-catch-finally 语句转换
+    /// C# 示例：
+    /// try {
+    ///     int x = 1;
+    /// } catch (Exception ex) {
+    ///     int y = 2;
+    /// } finally {
+    ///     int z = 3;
+    /// }
+    /// 转换结果：try { let x = 1; } catch (ex) { let y = 2; } finally { let z = 3; }
+    /// </summary>
+    [TestMethod]
+    public void VisitTry_WithFinally()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    try
+                    {
+                        int x = 1;
+                    }
+                    catch (Exception ex)
+                    {
+                        int y = 2;
+                    }
+                    finally
+                    {
+                        int z = 3;
+                    }
+                }
+            }
+        ");
+
+        var walker = new SemanticWalker(true);
+        var tryOp = GetOperationAt<ITryOperation>(block, 0);
+        var node = walker.VisitTry(tryOp, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+            @"try {
+  let x = 1;
+} catch (ex) {
+  let y = 2;
+} finally {
+  let z = 3;
+}", script);
+    }
+
+    /// <summary>
+    /// 测试 try-finally 语句转换（无 catch）
+    /// C# 示例：
+    /// try {
+    ///     int x = 1;
+    /// } finally {
+    ///     int y = 2;
+    /// }
+    /// 转换结果：try { let x = 1; } finally { let y = 2; }
+    /// </summary>
+    [TestMethod]
+    public void VisitTry_OnlyFinally()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    try
+                    {
+                        int x = 1;
+                    }
+                    finally
+                    {
+                        int y = 2;
+                    }
+                }
+            }
+        ");
+
+        var walker = new SemanticWalker(true);
+        var tryOp = GetOperationAt<ITryOperation>(block, 0);
+        var node = walker.VisitTry(tryOp, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+            @"try {
+  let x = 1;
+} finally {
+  let y = 2;
+}", script);
+    }
+
+    #endregion
+
+    #region 多 Catch 子句测试
+
+    /// <summary>
+    /// 测试多个 catch 子句转换
+    /// C# 示例：
+    /// try {
+    ///     int x = 1;
+    /// } catch (ArgumentException ex) {
+    ///     int y = 2;
+    /// } catch (InvalidOperationException ex) {
+    ///     int z = 3;
+    /// }
+    /// 转换结果：try { let x = 1; } catch (v$0) {
+    ///     if (v$0 instanceof ArgumentException) {
+    ///         const ex = v$0;
+    ///         let y = 2;
+    ///     } else if (v$0 instanceof InvalidOperationException) {
+    ///         const ex = v$0;
+    ///         let z = 3;
+    ///     }
+    /// }
+    /// </summary>
+    [TestMethod]
+    public void VisitTry_MultipleCatches()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    try
+                    {
+                        int x = 1;
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        int y = 2;
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        int z = 3;
+                    }
+                }
+            }
+        ");
+
+        var walker = new SemanticWalker(true);
+        var tryOp = GetOperationAt<ITryOperation>(block, 0);
+        var node = walker.VisitTry(tryOp, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+            @"try {
+  let x = 1;
+} catch (v$0) {
+  if (v$0 instanceof ArgumentException) {
+    const ex = v$0;
+    let y = 2;
+  } else if (v$0 instanceof InvalidOperationException) {
+    const ex = v$0;
+    let z = 3;
   }
+}", script);
+    }
+
+    /// <summary>
+    /// 测试多个 catch 子句带 finally
+    /// C# 示例：
+    /// try {
+    ///     int x = 1;
+    /// } catch (ArgumentException ex) {
+    ///     int y = 2;
+    /// } catch (Exception ex) {
+    ///     int z = 3;
+    /// } finally {
+    ///     int w = 4;
+    /// }
+    /// 转换结果：try { let x = 1; } catch (v$0) {
+    ///     if (v$0 instanceof ArgumentException) { const ex = v$0; let y = 2; }
+    ///     else if (v$0 instanceof Exception) { const ex = v$0; let z = 3; }
+    /// } finally { let w = 4; }
+    /// </summary>
+    [TestMethod]
+    public void VisitTry_MultipleCatchesWithFinally()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    try
+                    {
+                        int x = 1;
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        int y = 2;
+                    }
+                    catch (Exception ex)
+                    {
+                        int z = 3;
+                    }
+                    finally
+                    {
+                        int w = 4;
+                    }
+                }
+            }
+        ");
+
+        var walker = new SemanticWalker(true);
+        var tryOp = GetOperationAt<ITryOperation>(block, 0);
+        var node = walker.VisitTry(tryOp, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+            @"try {
+  let x = 1;
+} catch (v$0) {
+  if (v$0 instanceof ArgumentException) {
+    const ex = v$0;
+    let y = 2;
+  } else if (v$0 instanceof Exception) {
+    const ex = v$0;
+    let z = 3;
+  }
+} finally {
+  let w = 4;
+}", script);
+    }
+
+    #endregion
+
+    #region Throw 语句测试
+
+    /// <summary>
+    /// 测试 throw 语句转换
+    /// C# 示例：
+    /// throw new Exception("error");
+    /// 转换结果：throw new Exception("error");
+    /// </summary>
+    [TestMethod]
+    public void VisitThrow_WithException()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    throw new Exception(""error"");
+                }
+            }
+        ");
+
+        var walker = new SemanticWalker(true);
+        var throwOp = GetOperationAt<IThrowOperation>(block, 0);
+        var node = walker.VisitThrow(throwOp, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+            @"throw new Exception(""error"")", script);
+    }
+
+    /// <summary>
+    /// 测试 throw 语句与字符串字面量
+    /// C# 示例：
+    /// throw new Exception("test message");
+    /// 转换结果：throw new Exception("test message");
+    /// </summary>
+    [TestMethod]
+    public void VisitThrow_StringLiteral()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    throw new Exception(""test message"");
+                }
+            }
+        ");
+
+        var walker = new SemanticWalker(true);
+        var throwOp = GetOperationAt<IThrowOperation>(block, 0);
+        var node = walker.VisitThrow(throwOp, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+            @"throw new Exception(""test message"")", script);
+    }
+
+    /// <summary>
+    /// 测试 throw 在 try-catch 中的使用
+    /// C# 示例：
+    /// try {
+    ///     throw new Exception("error");
+    /// } catch (Exception ex) {
+    ///     int x = 1;
+    /// }
+    /// 转换结果：try { throw new Exception("error"); } catch (ex) { let x = 1; }
+    /// </summary>
+    [TestMethod]
+    public void VisitTry_WithThrowInBody()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    try
+                    {
+                        throw new Exception(""error"");
+                    }
+                    catch (Exception ex)
+                    {
+                        int x = 1;
+                    }
+                }
+            }
+        ");
+
+        var walker = new SemanticWalker(true);
+        var tryOp = GetOperationAt<ITryOperation>(block, 0);
+        var node = walker.VisitTry(tryOp, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+            @"try {
+  throw new Exception(""error"");
+} catch (ex) {
+  let x = 1;
+}", script);
+    }
+
+    /// <summary>
+    /// 测试 catch 块中的 throw
+    /// C# 示例：
+    /// try {
+    ///     int x = 1;
+    /// } catch (Exception ex) {
+    ///     throw;
+    /// }
+    /// 转换结果：try { let x = 1; } catch (ex) { throw v$0; }
+    /// </summary>
+    [TestMethod]
+    public void VisitTry_WithThrowInCatch()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    try
+                    {
+                        int x = 1;
+                    }
+                    catch (Exception ex)
+                    {
+                        throw;
+                    }
+                }
+            }
+        ");
+
+        var walker = new SemanticWalker(true);
+        var tryOp = GetOperationAt<ITryOperation>(block, 0);
+        var node = walker.VisitTry(tryOp, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+            @"try {
+  let x = 1;
+} catch (ex) {
+  throw v$0;
+}", script);
+    }
+
+    #endregion
+
+    #region 嵌套 Try-Catch 测试
+
+    /// <summary>
+    /// 测试嵌套 try-catch
+    /// C# 示例：
+    /// try {
+    ///     try {
+    ///         int x = 1;
+    ///     } catch (Exception ex) {
+    ///         int y = 2;
+    ///     }
+    /// } catch (Exception ex) {
+    ///     int z = 3;
+    /// }
+    /// 转换结果：try { try { let x = 1; } catch (ex) { let y = 2; } } catch (ex) { let z = 3; }
+    /// </summary>
+    [TestMethod]
+    public void VisitTry_NestedTryCatch()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    try
+                    {
+                        try
+                        {
+                            int x = 1;
+                        }
+                        catch (Exception ex)
+                        {
+                            int y = 2;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        int z = 3;
+                    }
+                }
+            }
+        ");
+
+        var walker = new SemanticWalker(true);
+        var tryOp = GetOperationAt<ITryOperation>(block, 0);
+        var node = walker.VisitTry(tryOp, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+            @"try {
+  try {
+    let x = 1;
+  } catch (ex) {
+    let y = 2;
+  }
+} catch (ex) {
+  let z = 3;
+}", script);
+    }
+
+    #endregion
+
+    #region VisitCatchClause 单独测试
+
+    /// <summary>
+    /// 测试单个 catch 子句转换
+    /// C# 示例：
+    /// catch (Exception ex) {
+    ///     int x = 1;
+    /// }
+    /// 转换结果：catch (ex) { let x = 1; }
+    /// </summary>
+    [TestMethod]
+    public void VisitCatchClause_Single()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    try
+                    {
+                        int a = 0;
+                    }
+                    catch (Exception ex)
+                    {
+                        int x = 1;
+                    }
+                }
+            }
+        ");
+
+        var walker = new SemanticWalker(true);
+        var tryOp = GetOperationAt<ITryOperation>(block, 0);
+        var catchOp = tryOp.Catches[0];
+        var node = walker.VisitCatchClause(catchOp, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+            @"(ex) {
+  let x = 1;
+}", script);
+    }
+
+    #endregion
+
+    #region 边界情况测试
+
+    /// <summary>
+    /// 测试空的 try 块
+    /// C# 示例：
+    /// try {
+    /// } catch (Exception ex) {
+    ///     int x = 1;
+    /// }
+    /// 转换结果：try { } catch (ex) { let x = 1; }
+    /// </summary>
+    [TestMethod]
+    public void VisitTry_EmptyBody()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    try
+                    {
+                    }
+                    catch (Exception ex)
+                    {
+                        int x = 1;
+                    }
+                }
+            }
+        ");
+
+        var walker = new SemanticWalker(true);
+        var tryOp = GetOperationAt<ITryOperation>(block, 0);
+        var node = walker.VisitTry(tryOp, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+            @"try { }
+catch (ex) {
+  let x = 1;
+}", script);
+    }
+
+    /// <summary>
+    /// 测试空的 catch 块
+    /// C# 示例：
+    /// try {
+    ///     int x = 1;
+    /// } catch (Exception ex) {
+    /// }
+    /// 转换结果：try { let x = 1; } catch (ex) { }
+    /// </summary>
+    [TestMethod]
+    public void VisitTry_EmptyCatch()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    try
+                    {
+                        int x = 1;
+                    }
+                    catch (Exception ex)
+                    {
+                    }
+                }
+            }
+        ");
+
+        var walker = new SemanticWalker(true);
+        var tryOp = GetOperationAt<ITryOperation>(block, 0);
+        var node = walker.VisitTry(tryOp, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+            @"try {
+  let x = 1;
+} catch (ex) { }", script);
+    }
+
+    /// <summary>
+    /// 测试空的 finally 块
+    /// C# 示例：
+    /// try {
+    ///     int x = 1;
+    /// } finally {
+    /// }
+    /// 转换结果：try { let x = 1; } finally { }
+    /// </summary>
+    [TestMethod]
+    public void VisitTry_EmptyFinally()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    try
+                    {
+                        int x = 1;
+                    }
+                    finally
+                    {
+                    }
+                }
+            }
+        ");
+
+        var walker = new SemanticWalker(true);
+        var tryOp = GetOperationAt<ITryOperation>(block, 0);
+        var node = walker.VisitTry(tryOp, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+            @"try {
+  let x = 1;
+} finally { }", script);
+    }
+
+    /// <summary>
+    /// 测试 catch 块中使用异常变量
+    /// C# 示例：
+    /// try {
+    ///     throw new Exception("error");
+    /// } catch (Exception ex) {
+    ///     string msg = ex.Message;
+    /// }
+    /// 转换结果：try { throw new Exception("error"); } catch (ex) { let msg = ex.Message; }
+    /// </summary>
+    [TestMethod]
+    public void VisitTry_UseExceptionVariable()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    try
+                    {
+                        throw new Exception(""error"");
+                    }
+                    catch (Exception ex)
+                    {
+                        string msg = ex.Message;
+                    }
+                }
+            }
+        ");
+
+        var walker = new SemanticWalker(true);
+        var tryOp = GetOperationAt<ITryOperation>(block, 0);
+        var node = walker.VisitTry(tryOp, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+            @"try {
+  throw new Exception(""error"");
+} catch (ex) {
+  let msg = ex.Message;
+}", script);
+    }
+
+    #endregion
 }

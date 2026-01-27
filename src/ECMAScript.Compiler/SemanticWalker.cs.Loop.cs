@@ -1,8 +1,5 @@
-﻿using Acornima;
-using Acornima.Ast;
+﻿using Acornima.Ast;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using System.Collections.Generic;
 using System.Linq;

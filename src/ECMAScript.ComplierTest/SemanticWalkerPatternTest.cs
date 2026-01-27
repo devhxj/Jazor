@@ -3404,7 +3404,7 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let obj = new Array;
+  let obj = [];
   let result = Array.isArray(obj);
 }", script);
   }
@@ -3458,7 +3458,7 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let obj = new Array;
+  let obj = [];
   let result = Array.isArray(obj) || Array.isArray(obj);
 }", script);
   }
