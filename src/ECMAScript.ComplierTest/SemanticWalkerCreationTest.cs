@@ -385,10 +385,9 @@ public sealed class SemanticWalkerCreationTest
         var operation = GetObjectCreationOperationAt(block);
         var walker = new SemanticWalker(true);
         var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!, new());
-        var script = node?.ToECMAScript();
+        var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
-@"v$0.Property1=""value1"",v$0.Property2=42", script);
+        Assert.AreEqual(@"v$0.Property1 = ""value1"", v$0.Property2 = 42", script);
 
     }
 
@@ -950,9 +949,9 @@ public sealed class SemanticWalkerCreationTest
         var operation = GetObjectCreationOperationAt(block);
         var walker = new SemanticWalker(true);
         var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!,new());
-        var script = node?.ToECMAScript();
+        var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual("v$0.Add(1),v$0.Add(2),v$0.Add(3)", script);
+        Assert.AreEqual(@"v$0.Add(1), v$0.Add(2), v$0.Add(3)", script);
     }
 
     [TestMethod]
@@ -978,18 +977,18 @@ public sealed class SemanticWalkerCreationTest
 
         Assert.AreEqual(
 @"v$0.Add((() => {
-  let v$0 = new Array;
-  v$0.Add(1);
-  return v$0;
+  let v$1 = new Array;
+  v$1.Add(1);
+  return v$1;
 })()), v$0.Add((() => {
-  let v$0 = new Array;
-  v$0.Add(2);
-  v$0.Add(4);
-  return v$0;
+  let v$2 = new Array;
+  v$2.Add(2);
+  v$2.Add(4);
+  return v$2;
 })()), v$0.Add((() => {
-  let v$0 = new Array;
-  v$0.Add(3);
-  return v$0;
+  let v$3 = new Array;
+  v$3.Add(3);
+  return v$3;
 })())", script);
 
     }
@@ -1585,7 +1584,11 @@ public sealed class SemanticWalkerCreationTest
         // 3. 条件检查 operation.Parent?.Parent 可能需要调整
         Assert.AreEqual(
 @"{
-  this.ProcessObject((v$0 = new MyClass, v$0.Value = 42, v$0));
+  this.ProcessObject((() => {
+    let v$0 = new MyClass;
+    v$0.Value = 42;
+    return v$0;
+  })());
 }", script);
 
 

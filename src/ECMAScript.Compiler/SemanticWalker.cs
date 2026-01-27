@@ -202,21 +202,18 @@ public sealed partial class SemanticWalker : OperationVisitor<WalkerArgument, No
     }
 
     /// <summary>
-    /// 根据操作生成以v开头的稳定的唯一名称
+    /// 根据操作生成稳定的唯一名称
     /// </summary>
     /// <param name="operation">操作</param>
-    /// <returns></returns>
-    private string GetUniqueName(SyntaxNode node)
+    /// <param name="path">操作树路径</param>
+    /// <returns>此名称仅针对语法树唯一，若想操作树唯一，请传入path参数</returns>
+    private string GetUniqueName(IOperation operation, string path = "")
     {
-        //var hash = operation.Syntax.GetHashCode();
-        //if(_cache.TryGetValue(hash,out var cache) && cache.Kind == operation.Kind)
-        //    return cache.Name;
-
-        var syntaxTree = node.SyntaxTree;
-        var sourceSpan = node.GetLocation().SourceSpan;
+        var syntaxTree = operation.Syntax.SyntaxTree;
+        var sourceSpan = operation.Syntax.GetLocation().SourceSpan;
 
         using var sha256 = SHA256.Create();
-        var key = $"{syntaxTree.FilePath}${node.Kind()}${sourceSpan.Start}${sourceSpan.End}";
+        var key = $"{syntaxTree.FilePath}${operation.Syntax.Kind()}${sourceSpan.Start}${sourceSpan.End}${operation.Kind}${path}";
         var bytes = Encoding.UTF8.GetBytes(key);
         var hashBytes = sha256.ComputeHash(bytes);
         var sb = new StringBuilder("_");
@@ -228,10 +225,10 @@ public sealed partial class SemanticWalker : OperationVisitor<WalkerArgument, No
         if (_test)
         {
             var index = _testCache.IndexOf(name);
-            if(index <0)
+            if (index < 0)
             {
                 _testCache.Add(name);
-                return $"v$0";
+                return $"v${_testCache.Count - 1}";
             }
             return $"v${index}";
         }
@@ -246,7 +243,7 @@ public sealed partial class SemanticWalker : OperationVisitor<WalkerArgument, No
     /// <param name="message">错误信息</param>
     /// <returns></returns>
     /// <exception cref="OperationTransformationException">当操作无法转换时抛出</exception>
-    private T HandleTransformationFailure<T>(IOperation operation, string? message) where T : INode
+    private T HandleTransformationFailure<T>(IOperation operation, string? message)
     {
         var location = operation.Syntax.GetLocation();
         _report?.Invoke(location, message);

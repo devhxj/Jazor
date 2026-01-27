@@ -240,7 +240,7 @@ public partial class SemanticWalker
 		var statements = new List<Statement>();
 
 		// input 可能是方法调用或一个复杂表达式，此处定义一个中间变量存储其值
-		var id = new Identifier(GetUniqueName(operation.Value.Syntax));
+		var id = new Identifier(GetUniqueName(operation.Value));
 		var inputVar = new VariableDeclaration(
 			VariableDeclarationKind.Const,
 			NodeList.From(new VariableDeclarator(id, input))
@@ -899,7 +899,7 @@ public partial class SemanticWalker
 		if (isInSwitch)
 		{
 			//switch的目标值可能是一个复杂表达式，需要创建一个中间变量
-			var id = GetUniqueName(reference.Syntax);
+			var id = GetUniqueName(reference);
 			expr = new Identifier(id);
 		}
 		else
@@ -1133,7 +1133,7 @@ public partial class SemanticWalker
 			return HandleTransformationFailure<CallExpression>(operation.Value, "Switch discriminant could not be translated to JavaScript.");
 
 		// 创建唯一名称存储 switch 值
-		var inputId = new Identifier(GetUniqueName(operation.Value.Syntax));
+		var inputId = new Identifier(GetUniqueName(operation.Value));
 		var inputVar = new VariableDeclaration(
 			VariableDeclarationKind.Const,
 			NodeList.From(new VariableDeclarator(inputId, discriminant))

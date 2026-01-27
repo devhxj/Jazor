@@ -44,7 +44,7 @@ public partial class SemanticWalker
         else if (operation.Catches.Length > 1)
         {
             // 定义catch使用的param
-            var tryParam = new Identifier(GetUniqueName(operation.Syntax));
+            var tryParam = new Identifier(GetUniqueName(operation));
             var queue = new Stack<ICatchClauseOperation>();
             foreach (var @catch in operation.Catches)
                 queue.Push(@catch);
@@ -184,7 +184,7 @@ public partial class SemanticWalker
 		if (operation.Exception is not null)
 			expr = Translate<Expression>(operation.Exception, argument);
 		else
-			expr = new Identifier(GetUniqueName(operation.Syntax));
+			expr = new Identifier(GetUniqueName(operation));
 
 		return new ThrowStatement(expr);
 	}
