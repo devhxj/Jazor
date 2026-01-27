@@ -11,6 +11,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Linq;
 using ECMAScript.Common;
+using System.Dynamic;
 
 namespace ECMAScript.Compiler;
 
@@ -82,6 +83,7 @@ public sealed partial class SemanticWalker : OperationVisitor<WalkerArgument, No
             case SpecialType.System_UInt64:
                 return TypeMapper.BigInt;
             case SpecialType.System_DateTime:
+                typeName = "Date"; 
                 return TypeMapper.Date;
             default:
                 {
@@ -120,7 +122,7 @@ public sealed partial class SemanticWalker : OperationVisitor<WalkerArgument, No
                         return TypeMapper.Map;
                     }
 
-                    else if (displayName == "System.Collections.Generic.Set<TValue>")
+                    else if (displayName == "System.Collections.Generic.HashSet<T>")
                     {
                         typeName = "Set";
                         return TypeMapper.Set;
@@ -159,9 +161,9 @@ public sealed partial class SemanticWalker : OperationVisitor<WalkerArgument, No
     /// </summary>
     private readonly bool _test;
 
-    private readonly Action<Location, string?>? _report;
+    private readonly List<string> _testCache = [];
 
-    private readonly ConcurrentDictionary<int, (OperationKind Kind, string Name)> _cache = [];
+    private readonly Action<Location, string?>? _report;
 
     public SemanticWalker() { }
 
@@ -213,10 +215,6 @@ public sealed partial class SemanticWalker : OperationVisitor<WalkerArgument, No
         var syntaxTree = node.SyntaxTree;
         var sourceSpan = node.GetLocation().SourceSpan;
 
-        //方便单元测试，生成固定名称
-        if (_test)
-            return $"v$test";
-
         using var sha256 = SHA256.Create();
         var key = $"{syntaxTree.FilePath}${node.Kind()}${sourceSpan.Start}${sourceSpan.End}";
         var bytes = Encoding.UTF8.GetBytes(key);
@@ -226,7 +224,17 @@ public sealed partial class SemanticWalker : OperationVisitor<WalkerArgument, No
             sb.Append(hashBytes[i].ToString("x2"));
         var name = sb.ToString();
 
-        //_cache.TryAdd(hash,(operation.Kind,name));
+        //方便单元测试，生成固定名称
+        if (_test)
+        {
+            var index = _testCache.IndexOf(name);
+            if(index <0)
+            {
+                _testCache.Add(name);
+                return $"v$0";
+            }
+            return $"v${index}";
+        }
 
         return name;
     }
