@@ -559,6 +559,12 @@ public sealed class SemanticWalkerCreationTest
                     string name = ""John"";
                     var message = $""Hello, {name}!"";
                 }
+
+                class MyClass
+                {
+                    public MyClass() { }
+                    public MyClass(int number, string text) { }
+                }
             }
             ");
 
@@ -566,9 +572,10 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(@"{
+        Assert.AreEqual(
+@"{
   let simpleObj = new MyClass;
-  let paramObj = new MyClass(42, 'test');
+  let paramObj = new MyClass(42, ""test"");
   let anonymousObj = { Name: ""John"", Age: 30 };
   let array1 = [1, 2, 3];
   let array2 = new Array(5);
@@ -874,7 +881,7 @@ public sealed class SemanticWalkerCreationTest
     }
 
     [TestMethod]
-    public void VisitConversionOperation_MethodGroup()
+    public void VisitDelegateCreation_MethodGroup()
     {
         var block = GetBlockOperation(@"
             class TestClass
@@ -891,17 +898,17 @@ public sealed class SemanticWalkerCreationTest
         var operation = GetOperationAt<IVariableDeclarationGroupOperation>(block);
         var variableDeclaration = operation.Declarations.First();
         var initializer = variableDeclaration.Declarators.First().Initializer!;
-        var conversionOp = (IConversionOperation)initializer.Value;
+        var delegateCreationOp = (IDelegateCreationOperation)initializer.Value;
 
         var walker = new SemanticWalker(true);
-        var node = walker.VisitConversion(conversionOp, new());
+        var node = walker.VisitDelegateCreation(delegateCreationOp, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("MyMethod", script);
+        Assert.AreEqual("this.MyMethod", script);
     }
 
     [TestMethod]
-    public void VisitConversionOperation_Lambda()
+    public void VisitDelegateCreation_Lambda()
     {
         var block = GetBlockOperation(@"
             class TestClass
@@ -916,10 +923,10 @@ public sealed class SemanticWalkerCreationTest
         var operation = GetOperationAt<IVariableDeclarationGroupOperation>(block);
         var variableDeclaration = operation.Declarations.First();
         var initializer = variableDeclaration.Declarators.First().Initializer!;
-        var conversionOp = (IConversionOperation)initializer.Value;
+        var delegateCreationOp = (IDelegateCreationOperation)initializer.Value;
 
         var watcher = new SemanticWalker(true);
-        var node = watcher.VisitConversion(conversionOp, new());
+        var node = watcher.VisitDelegateCreation(delegateCreationOp, new());
         var script = node?.ToECMAScript();
 
         Assert.AreEqual("x=>{return x*2}", script);
@@ -995,16 +1002,16 @@ public sealed class SemanticWalkerCreationTest
 
         Assert.AreEqual(
 @"v$0.Add((() => {
-  let v$1 = new Array;
+  let v$1 = [];
   v$1.Add(1);
   return v$1;
 })()), v$0.Add((() => {
-  let v$2 = new Array;
+  let v$2 = [];
   v$2.Add(2);
   v$2.Add(4);
   return v$2;
 })()), v$0.Add((() => {
-  let v$3 = new Array;
+  let v$3 = [];
   v$3.Add(3);
   return v$3;
 })())", script);
@@ -1123,6 +1130,10 @@ public sealed class SemanticWalkerCreationTest
                 }
 
                 static void StaticMethod(MyClass obj) { }
+
+                class MyClass
+                {
+                }
             }
             ");
 
@@ -1204,6 +1215,16 @@ public sealed class SemanticWalkerCreationTest
                     // 嵌套对象创建作为参数
                     list.Add((new Outer { Inner = new Inner { Value = 42 } }).Inner.Value);
                 }
+
+                class Outer
+                {
+                    public Inner? Inner { get; set; }
+                }
+
+                class Inner
+                {
+                    public int Value { get; set; }
+                }
             }
             ");
 
@@ -1213,10 +1234,17 @@ public sealed class SemanticWalkerCreationTest
 
         // 验证嵌套对象创建作为参数时的处理
         // 当对象创建没有初始化器时，会直接内联创建
-        Assert.AreEqual(@"{
-  let list = new Array;
-  list.Add((new Outer).Inner.Value);
+        Assert.AreEqual(
+@"{
+  let list = [];
+  list.Add((() => {
+    let v$0 = new Outer;
+    v$0.Inner = new Inner;
+    v$0.Inner.Value = 42;
+    return v$0;
+  })().Inner.Value);
 }", script);
+
     }
 
     [TestMethod]
@@ -1492,7 +1520,7 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToECMAScript();
 
         // List 映射为 Array
-        Assert.AreEqual("new Array", script);
+        Assert.AreEqual("[]", script);
     }
 
     [TestMethod]
@@ -1554,6 +1582,11 @@ public sealed class SemanticWalkerCreationTest
                 }
 
                 void ProcessObject(MyClass obj) { }
+
+                class MyClass
+                {
+                    public int Value { get; set; }
+                }
             }
             ");
 
@@ -1566,9 +1599,15 @@ public sealed class SemanticWalkerCreationTest
         // 1. Roslyn 操作树结构与预期不同
         // 2. 需要特定的类型转换场景才包含 IConversionOperation
         // 3. 条件检查 operation.Parent?.Parent 可能需要调整
-        Assert.AreEqual(@"{
-  this.ProcessObject(new MyClass);
+        Assert.AreEqual(
+@"{
+  this.ProcessObject((() => {
+    let v$0 = new MyClass;
+    v$0.Value = 42;
+    return v$0;
+  })());
 }", script);
+
     }
 
     [TestMethod]
@@ -1624,6 +1663,11 @@ public sealed class SemanticWalkerCreationTest
                     // 集合初始化器中，参数是复杂对象创建
                     list.Add(new Outer().Value);
                 }
+
+                class Outer
+                {
+                    public int Value { get; set; } = 100;
+                }
             }
             ");
 
@@ -1631,10 +1675,12 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(@"{
-  let list = new Array;
+        Assert.AreEqual(
+@"{
+  let list = [];
   list.Add((new Outer).Value);
 }", script);
+
     }
 
     [TestMethod]

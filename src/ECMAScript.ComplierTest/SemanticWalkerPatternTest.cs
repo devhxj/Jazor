@@ -2715,7 +2715,7 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let obj = new Array;
+  let obj = [];
   let result = Array.isArray(obj);
 }", script);
   }

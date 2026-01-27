@@ -1,6 +1,7 @@
 ﻿using Acornima;
 using Acornima.Ast;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,9 +30,12 @@ public partial class SemanticWalker
 		foreach (var arg in operation.Arguments)
 			Translate(arguments, arg.Value, argument);
 
-		Expression expr = mapper == TypeMapper.BigInt
-			? new CallExpression(callee, NodeList.From(arguments), false)
-			: new NewExpression(callee, NodeList.From(arguments));
+		Expression expr = new NewExpression(callee, NodeList.From(arguments));
+		if (mapper == TypeMapper.BigInt)
+			expr = new CallExpression(callee, NodeList.From(arguments), false);
+
+		else if (mapper == TypeMapper.Array)
+			expr = new ArrayExpression(NodeList.From<Expression?>(arguments));
 
 		if (assignObj is not null)
 			expr = new AssignmentExpression(Operator.Assignment, assignObj, expr);
