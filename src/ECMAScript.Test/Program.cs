@@ -90,7 +90,7 @@ var  b = (2,4);
 var  c = (2,"a");
 ((int bbb, int ccc),int aaa) = tuple;
 var script = @"
-const a = (let a = 1, let b = 2, a + b);
+const a = Number.MAX_SAFE_INTEGER
 ";
 var parser = new Parser(new ParserOptions { 
 

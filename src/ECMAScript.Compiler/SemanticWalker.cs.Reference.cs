@@ -1,5 +1,4 @@
-﻿using System;
-using Acornima;
+﻿using Acornima;
 using Acornima.Ast;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
@@ -27,19 +26,33 @@ public partial class SemanticWalker
 				(nameof(float.NaN), SpecialType.System_Single) => new Identifier("NaN"),
 
 				(nameof(double.Epsilon), SpecialType.System_Double) or
-				(nameof(float.Epsilon), SpecialType.System_Single) => new Identifier("Number.EPSILON"),
+				(nameof(float.Epsilon), SpecialType.System_Single) =>
+					new MemberExpression(
+						new Identifier("Number"),
+						new Identifier("EPSILON"), computed: false, optional: false),
 
 				// 浮点类型的最大/最小值
 				(nameof(double.MaxValue), SpecialType.System_Double) or
-				(nameof(float.MaxValue), SpecialType.System_Single) => new Identifier("Number.MAX_VALUE"),
-
+				(nameof(float.MaxValue), SpecialType.System_Single) =>
+					new MemberExpression(
+						new Identifier("Number"),
+						new Identifier("MAX_VALUE"), computed: false, optional: false),
 				(nameof(double.MinValue), SpecialType.System_Double) or
-				(nameof(float.MinValue), SpecialType.System_Single) => new Identifier("Number.MIN_VALUE"),
+				(nameof(float.MinValue), SpecialType.System_Single) =>
+					new MemberExpression(
+						new Identifier("Number"),
+						new Identifier("MIN_VALUE"), computed: false, optional: false),
 
 				// 整数类型的最大/最小值 - 使用安全整数常量或字面量
 				// long 类型超出 JavaScript 安全整数范围，使用 MAX/MIN_SAFE_INTEGER
-				(nameof(long.MaxValue), SpecialType.System_Int64) => new Identifier("Number.MAX_SAFE_INTEGER"),
-				(nameof(long.MinValue), SpecialType.System_Int64) => new Identifier("Number.MIN_SAFE_INTEGER"),
+				(nameof(long.MaxValue), SpecialType.System_Int64) =>
+					new MemberExpression(
+						new Identifier("Number"),
+						new Identifier("MAX_SAFE_INTEGER"), computed: false, optional: false),
+				(nameof(long.MinValue), SpecialType.System_Int64) =>
+					new MemberExpression(
+						new Identifier("Number"),
+						new Identifier("MIN_SAFE_INTEGER"), computed: false, optional: false),
 
 				// 其他整数类型（int, short, sbyte 等）保持原样，会作为字面量处理
 				_ => symbol.HasConstantValue

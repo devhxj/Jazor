@@ -4,7 +4,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace ECMAScript.Compiler;
@@ -14,20 +13,12 @@ public partial class SemanticWalker
 	/// <summary>
 	/// 处理 IInvalidOperation，它包装了在当前上下文中无法用单一类型表示其结果的操作。
 	/// 此方法会尝试解包结合语法节点和子操作实现语义的精准匹配（不支持dynamic，不用考虑这个）。
-	/// why do:如"var x = Math.Abs(-5);"，IInvalidOperation的子操作会把Math.Abs(-5)计算成5，而我们需要完整的方法调用转换而不是一个字面量。
-	/// - 如果只有一个子表达式，则直接返回该表达式的转换结果。
-	/// - 如果有多个子表达式，则将它们组合成一个 Acornima 的 SequenceExpression (逗号表达式)。
-	/// - 如果没有可转换的子节点，则抛出异常。
-	/// C# 示例 1: var x = Math.Abs(-5); -> let x = Math.Abs(-5); (注意: 这通常不是IInvalidOperation)
-	/// C# 示例 2: var y = (a = 1, b = 2, a + b); -> let y = (a = 1, b = 2, a + b);
-	/// C# 示例 3: MyMethod(); -> MyMethod();
-	/// C# 示例 4: condition ? whenTrue : whenFalse; -> condition ? whenTrue : whenFalse;
-	/// C# 示例 5: var result = array[1..^4..2]; -> array.slice(1, array.length-4).filter((_, i) => i % 2 === 0); // 步长范围操作
+	/// 在诊断器没有异常的情况下，理论上不会触发这个方法
 	/// </summary>
 	/// <param name="operation">当前访问的 IInvalidOperation。</param>
 	/// <param name="argument">当前访问的 operation 的根 operation。</param>
 	/// <returns>转换后的 Acornima AST Node。</returns>
-	public override Acornima.Ast.Node? VisitInvalid(IInvalidOperation operation, WalkerArgument argument)
+	public override Node? VisitInvalid(IInvalidOperation operation, WalkerArgument argument)
 		=> ConvertFromSyntaxNode(operation.Syntax);
 
 	/// <summary>
@@ -44,18 +35,25 @@ public partial class SemanticWalker
 			// 基础表达式和字面量
 			LiteralExpressionSyntax lit => lit.Token.Value switch
 			{
-				null => new NullLiteral("null"),
+				null => Null,
 				bool b => new BooleanLiteral(b, b.ToString().ToLower()),
+				char c => new StringLiteral(c.ToString(), $"'{c}'"),
 				string s => new StringLiteral(s, $"'{s}'"),
-				int i => new NumericLiteral(i, i.ToString()!),
-				long l => new NumericLiteral(l, l.ToString()!),
-				double d => new NumericLiteral(d, d.ToString()!),
-				float f => new NumericLiteral(f, f.ToString()!),
-				decimal dec => new NumericLiteral(System.Convert.ToDouble(dec), dec.ToString()!),
+				sbyte sb => new NumericLiteral(sb, sb.ToString()),
+				byte b => new NumericLiteral(b, b.ToString()),
+				short s => new NumericLiteral(s, s.ToString()),
+				ushort us => new NumericLiteral(us, us.ToString()),
+				int i => new NumericLiteral(i, i.ToString()),
+				uint ui => new NumericLiteral(ui, ui.ToString()),
+				long l => new NumericLiteral(l, l.ToString()),
+				ulong ul => new NumericLiteral(ul, ul.ToString()),
+				double d => new NumericLiteral(d, d.ToString()),
+				float f => new NumericLiteral(f, f.ToString()),
+				decimal dec => new NumericLiteral(System.Convert.ToDouble(dec), dec.ToString()),
 				_ => null
 			},
 			IdentifierNameSyntax id => new Identifier(id.Identifier.Text),
-			DefaultExpressionSyntax _ => new Identifier("null"),
+			DefaultExpressionSyntax _ => Null,
 
 			ParenthesizedExpressionSyntax pe => ConvertFromSyntaxNode(pe.Expression),
 
@@ -77,18 +75,22 @@ public partial class SemanticWalker
 
 			ConditionalAccessExpressionSyntax ca => new ConditionalExpression(
 				new LogicalExpression(
-					Operator.StrictEquality,
+					Operator.LogicalAnd,
 					(Expression)ConvertFromSyntaxNode(ca.Expression),
-					new NullLiteral("null")
+					new LogicalExpression(
+						Operator.StrictInequality,
+						(Expression)ConvertFromSyntaxNode(ca.Expression),
+						Null
+					)
 				),
-				new Identifier("undefined"),
-				(Expression)ConvertFromSyntaxNode(ca.WhenNotNull)),
+				(Expression)ConvertFromSyntaxNode(ca.WhenNotNull),
+				Undefined),
 
 			ElementAccessExpressionSyntax ea => new MemberExpression(
 				(Expression)ConvertFromSyntaxNode(ea.Expression),
 				ea.ArgumentList.Arguments.Count > 0
 				? (Expression)ConvertFromSyntaxNode(ea.ArgumentList.Arguments[0].Expression)
-				: new Identifier("undefined"),
+				: Undefined,
 				computed: true,
 				optional: false),
 
@@ -123,8 +125,9 @@ public partial class SemanticWalker
 				SyntaxKind.MinusToken => new NonUpdateUnaryExpression(Operator.UnaryNegation, (Expression)ConvertFromSyntaxNode(pu.Operand)),
 				SyntaxKind.PlusPlusToken => new UpdateExpression(Operator.Increment, (Expression)ConvertFromSyntaxNode(pu.Operand), prefix: true),
 				SyntaxKind.MinusMinusToken => new UpdateExpression(Operator.Decrement, (Expression)ConvertFromSyntaxNode(pu.Operand), prefix: true),
-				SyntaxKind.ExclamationToken => new UpdateExpression(Operator.LogicalNot, (Expression)ConvertFromSyntaxNode(pu.Operand), prefix: true),
-				SyntaxKind.PlusToken => new UpdateExpression(Operator.Addition, (Expression)ConvertFromSyntaxNode(pu.Operand), prefix: true),
+				SyntaxKind.ExclamationToken => new NonUpdateUnaryExpression(Operator.LogicalNot, (Expression)ConvertFromSyntaxNode(pu.Operand)),
+				SyntaxKind.PlusToken => new NonUpdateUnaryExpression(Operator.UnaryPlus, (Expression)ConvertFromSyntaxNode(pu.Operand)),
+				SyntaxKind.TildeToken => new NonUpdateUnaryExpression(Operator.BitwiseNot, (Expression)ConvertFromSyntaxNode(pu.Operand)),
 				_ => null
 			},
 			PostfixUnaryExpressionSyntax po when po.OperatorToken.IsKind(SyntaxKind.PlusPlusToken) || po.OperatorToken.IsKind(SyntaxKind.MinusMinusToken) =>

@@ -26,7 +26,7 @@ public sealed class SemanticWalkerInvalidTest
         "TestAssembly",
         syntaxTrees: [
           CSharpSyntaxTree.ParseText(usings),
-          CSharpSyntaxTree.ParseText(code)
+              CSharpSyntaxTree.ParseText(code)
         ],
         references: Basic.Reference.Assemblies.Net100.References.All,
         options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
@@ -56,50 +56,62 @@ public sealed class SemanticWalkerInvalidTest
     throw new InvalidOperationException("未找到可分析的操作");
   }
 
-
   /// <summary>
   /// 获取指定索引的操作
   /// </summary>
   private static T GetOperationAt<T>(IBlockOperation block, int index = 0) where T : class, IOperation
   {
-    var operation = block.Operations.Skip(index).First() as T;
-    return operation ?? throw new InvalidOperationException("未找到可分析的操作");
+    var operation = block.Operations.Skip(index).First();
+    return operation as T ?? throw new InvalidOperationException("未找到可分析的操作");
   }
 
   /// <summary>
-  /// 获取元组操作
-  /// </summary>
-  /// <param name="code"></param>
-  /// <param name="index"></param>
-  /// <returns></returns>
-  private static ITupleOperation GetTupleOperationAt(IBlockOperation block, int index = 0)
-  {
-    var variableDeclarationGroup = GetOperationAt<IVariableDeclarationGroupOperation>(block, index);
-    var variableDeclaration = variableDeclarationGroup!.Declarations.First();
-    var initializer = variableDeclaration.Declarators.First().Initializer;
-    var operation = (ITupleOperation)initializer!.Value;
-    return operation;
-  }
-
-  /// <summary>
-  /// 这只是一个整体测试例子
+  /// 测试各种字面量类型转换
   /// </summary>
   [TestMethod]
-  public void Visit_TupleBlockCode()
+  public void Visit_InvalidOperation_Direct()
   {
     var block = GetBlockOperation(@"
-            
-            ");
+			class TestClass
+			{
+				void TestMethod()
+				{
+				}
+			}
+		");
+
+    var walker = new SemanticWalker(true);
+    var invalidOp = GetOperationAt<IInvalidOperation>(block, 1);
+    var node = walker.VisitInvalid(invalidOp, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(
+      @"{
+}", script);
+  }
+
+  /// <summary>
+  /// 测试各种字面量类型转换
+  /// </summary>
+  [TestMethod]
+  public void Visit_InvalidOperation()
+  {
+    var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+				}
+			}
+		");
 
     var walker = new SemanticWalker(true);
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(
-  @"{
-
-
+      @"{
 }", script);
-
   }
+
 }

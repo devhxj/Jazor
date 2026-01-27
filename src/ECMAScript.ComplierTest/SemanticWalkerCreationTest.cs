@@ -18,13 +18,30 @@ public sealed class SemanticWalkerCreationTest
     /// <exception cref="InvalidOperationException"></exception>
     private static IBlockOperation GetBlockOperation(string code)
     {
+        var usings = @"
+        global using System;
+        global using System.Collections.Generic;
+        global using System.Linq;";
+
         var compilation = CSharpCompilation.Create(
             "TestAssembly",
-            syntaxTrees: [CSharpSyntaxTree.ParseText(code)],
+            syntaxTrees: [
+              CSharpSyntaxTree.ParseText(usings),
+          CSharpSyntaxTree.ParseText(code)
+            ],
             references: Basic.Reference.Assemblies.Net100.References.All,
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-        var syntaxTree = compilation.SyntaxTrees.First();
+        // 输出编译诊断信息
+        var diagnostics = compilation.GetDiagnostics();
+        var errors = diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
+        if (errors.Count > 0)
+        {
+            var errorMessages = string.Join("\n", errors.Select(e => $"{e.Id}: {e.GetMessage()}"));
+            throw new InvalidOperationException(errorMessages);
+        }
+
+        var syntaxTree = compilation.SyntaxTrees.Last();
         var semanticModel = compilation.GetSemanticModel(syntaxTree);
         var root = syntaxTree.GetRoot();
 
@@ -39,6 +56,7 @@ public sealed class SemanticWalkerCreationTest
 
         throw new InvalidOperationException("未找到可分析的操作");
     }
+  
 
     /// <summary>
     /// 获取指定索引的操作
