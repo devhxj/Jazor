@@ -2398,7 +2398,7 @@ public sealed class SemanticWalkerPatternTest
     var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
     var declaration = variableDeclarationGroupOp.Declarations.First();
     var declarator = declaration.Declarators.First();
-    var switchExpressionOperation = declarator.Initializer!.Value as ISwitchExpressionOperation 
+    var switchExpressionOperation = declarator.Initializer!.Value as ISwitchExpressionOperation
       ?? throw new InvalidOperationException("switchExpressionOperation is null");
     var switchCaseArm = switchExpressionOperation.Arms.First();
     var node = walker.VisitSwitchExpressionArm(switchCaseArm, new());
@@ -2431,7 +2431,7 @@ public sealed class SemanticWalkerPatternTest
     var variableDeclarationGroupOp = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
     var declaration = variableDeclarationGroupOp.Declarations.First();
     var declarator = declaration.Declarators.First();
-    var switchExpressionOperation = declarator.Initializer!.Value as ISwitchExpressionOperation 
+    var switchExpressionOperation = declarator.Initializer!.Value as ISwitchExpressionOperation
       ?? throw new InvalidOperationException("switchExpressionOperation is null");
     var switchCaseArm = switchExpressionOperation.Arms.First();
     var node = walker.VisitSwitchExpressionArm(switchCaseArm, new());
@@ -3032,69 +3032,6 @@ public sealed class SemanticWalkerPatternTest
     if (v$0.hasOwnProperty(""X"") && (x = v$0.X, true) && x > 0)
       return ""Positive X"";
     return ""Other"";
-  })();
-}", script);
-  }
-
-  /// <summary>
-  /// 测试综合场景 - 组合多种模式匹配和 switch 语句
-  /// 输入: 关系模式 (>, &lt;), 声明模式 (var), 逻辑模式 (and, not), switch case with when 子句
-  /// 期望输出: 正确转换所有模式为 JavaScript 语法，包括变量提升和 IIFE 包装的 switch
-  /// </summary>
-  [TestMethod]
-  public void Visit_All()
-  {
-    var block = GetBlockOperation(@"
-            class TestClass
-            {
-                void TestMethod()
-                {
-                    int value = 5;
-                    bool result = value > 9 && (value is > 0 and < 10 and not 5) && (value is var x && x < 10);
-                    switch (value)
-                    {
-                      case var s when s > 0:
-                        Console.WriteLine("">0"");
-                        break;
-                      case 1:
-                        Console.WriteLine(""1"");
-                        break;			
-                      case 2:
-                        Console.WriteLine(""2"");
-                        break;
-                      default:
-                        Console.WriteLine(""Default"");
-                        break;
-                    }
-                }
-            }
-            ");
-
-    var walker = new SemanticWalker(true);
-    var node = walker.Visit(block, new());
-    var script = node?.ToKnRECMAScript();
-
-    Assert.AreEqual(@"{
-  let value = 5;
-  let x;
-  let result = value > 9 && (value > 0 && value < 10 && !(value === 5)) && ((x = value, true) && x < 10);
-  let s;
-  (() => {
-    const v$0 = value;
-    if ((s = v$0, true) && s > 0) {
-      Console.WriteLine("">0"");
-      return;
-    }
-    if (v$0 === 1) {
-      Console.WriteLine(""1"");
-      return;
-    }
-    if (v$0 === 2) {
-      Console.WriteLine(""2"");
-      return;
-    }
-    Console.WriteLine(""Default"");
-    return;
   })();
 }", script);
   }
@@ -4537,5 +4474,226 @@ line2"";
   }
 
   #endregion
+
+  #region 边界条件测试
+
+  /// <summary>
+  /// 测试超长列表模式（15+ 元素）
+  /// C# 示例：list is [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+  /// 转换结果：JavaScript 长模式匹配表达式
+  /// </summary>
+  [TestMethod]
+  public void Visit_ListPattern_ExtraLong()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var list = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+                    bool match = list is [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    // 验证生成了完整的 15 元素检查
+    Assert.AreEqual(
+@"{
+  let list = (() => {
+    let v$0 = [];
+    v$0.Add(1);
+    v$0.Add(2);
+    v$0.Add(3);
+    v$0.Add(4);
+    v$0.Add(5);
+    v$0.Add(6);
+    v$0.Add(7);
+    v$0.Add(8);
+    v$0.Add(9);
+    v$0.Add(10);
+    v$0.Add(11);
+    v$0.Add(12);
+    v$0.Add(13);
+    v$0.Add(14);
+    v$0.Add(15);
+    return v$0;
+  })();
+  let match = Array.isArray(list) && list.length === 15 && list[0] === 1 && list[1] === 2 && list[2] === 3 && list[3] === 4 && list[4] === 5 && list[5] === 6 && list[6] === 7 && list[7] === 8 && list[8] === 9 && list[9] === 10 && list[10] === 11 && list[11] === 12 && list[12] === 13 && list[13] === 14 && list[14] === 15;
+}", script);
+
+  }
+
+  /// <summary>
+  /// 测试深度嵌套属性模式（6+ 层）
+  /// C# 示例：obj is { A: { B: { C: { D: { E: { F: 1 } } } } } }
+  /// 转换结果：JavaScript 深度嵌套属性检查
+  /// </summary>
+  [TestMethod]
+  public void Visit_PropertySubpattern_SixLevelNesting()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = new {
+                        A = new {
+                            B = new {
+                                C = new {
+                                    D = new {
+                                        E = new {
+                                            F = 42
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    };
+                    bool match = obj is {
+                        A: {
+                            B: {
+                                C: {
+                                    D: {
+                                        E: {
+                                            F: 42
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    };
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    // 验证生成包含完整的嵌套 hasOwnProperty 检查
+    Assert.AreEqual(
+@"{
+  let obj = { A: { B: { C: { D: { E: { F: 42 } } } } } };
+  let match = obj.hasOwnProperty(""A"") && (obj.A.hasOwnProperty(""B"") && (obj.A.B.hasOwnProperty(""C"") && (obj.A.B.C.hasOwnProperty(""D"") && (obj.A.B.C.D.hasOwnProperty(""E"") && (obj.A.B.C.D.E.hasOwnProperty(""F"") && obj.A.B.C.D.E.F === 42)))));
+}", script);
+
+  }
+
+  /// <summary>
+  /// 测试声明模式边界 - 作用域嵌套
+  /// C# 示例：嵌套作用域中的声明模式变量
+  /// 转换结果：JavaScript 变量作用域处理
+  /// </summary>
+  [TestMethod]
+  public void Visit_DeclarationPattern_ScopeBoundary()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj1 = ""hello"";
+                    if (obj1 is string s && s.Length > 0)
+                    {
+                        Console.WriteLine(s);
+                    }
+                    if (obj1 is string s2 && s2.Length > 0)
+                    {
+                        Console.WriteLine(s2);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    // 验证不同作用域的变量声明
+    // 注意：变量可能在同一行或不同行声明
+    Assert.AreEqual(
+@"{
+  let obj1 = ""hello"";
+  let s;
+  if (typeof obj1 === ""string"" && (s = obj1, true) && s.Length > 0) {
+    Console.WriteLine(s);
+  }
+  let s2;
+  if (typeof obj1 === ""string"" && (s2 = obj1, true) && s2.Length > 0) {
+    Console.WriteLine(s2);
+  }
+}", script);
+
+  }
+
+  #endregion
+
+  /// <summary>
+  /// 测试综合场景 - 组合多种模式匹配和 switch 语句
+  /// 输入: 关系模式 (>, &lt;), 声明模式 (var), 逻辑模式 (and, not), switch case with when 子句
+  /// 期望输出: 正确转换所有模式为 JavaScript 语法，包括变量提升和 IIFE 包装的 switch
+  /// </summary>
+  [TestMethod]
+  public void Visit_All()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int value = 5;
+                    bool result = value > 9 && (value is > 0 and < 10 and not 5) && (value is var x && x < 10);
+                    switch (value)
+                    {
+                      case var s when s > 0:
+                        Console.WriteLine("">0"");
+                        break;
+                      case 1:
+                        Console.WriteLine(""1"");
+                        break;			
+                      case 2:
+                        Console.WriteLine(""2"");
+                        break;
+                      default:
+                        Console.WriteLine(""Default"");
+                        break;
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let value = 5;
+  let x;
+  let result = value > 9 && (value > 0 && value < 10 && !(value === 5)) && ((x = value, true) && x < 10);
+  let s;
+  (() => {
+    const v$0 = value;
+    if ((s = v$0, true) && s > 0) {
+      Console.WriteLine("">0"");
+      return;
+    }
+    if (v$0 === 1) {
+      Console.WriteLine(""1"");
+      return;
+    }
+    if (v$0 === 2) {
+      Console.WriteLine(""2"");
+      return;
+    }
+    Console.WriteLine(""Default"");
+    return;
+  })();
+}", script);
+  }
+
 
 }
