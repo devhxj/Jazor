@@ -19,7 +19,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitForEachLoop(IForEachLoopOperation operation, WalkerArgument argument)
+	public override Node? VisitForEachLoop(IForEachLoopOperation operation, WalkerArgument argument)
 	{
 		// 获取循环变量 - 使用 LoopControlVariable 直接访问
 		var left = Translate<Node>(operation.LoopControlVariable, argument);
@@ -40,7 +40,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitForLoop(IForLoopOperation operation, WalkerArgument argument)
+	public override Node? VisitForLoop(IForLoopOperation operation, WalkerArgument argument)
 	{
 		StatementOrExpression? init = null;
 		Expression? test = null;
@@ -119,24 +119,27 @@ public partial class SemanticWalker
 	}
 
 	/// <summary>
-	/// 处理 while 循环操作
+	/// 处理 while 和 do-while 循环操作
 	/// C# 示例：
-	/// while (condition) {
-	///     DoSomething();
-	/// }
-	/// 转换结果：while (condition) { doSomething(); }
+	/// while (condition) { ... }        → while (condition) { ... }
+	/// do { ... } while (condition);    → do { ... } while (condition);
 	/// </summary>
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitWhileLoop(IWhileLoopOperation operation, WalkerArgument argument)
+	public override Node? VisitWhileLoop(IWhileLoopOperation operation, WalkerArgument argument)
 	{
 		if (operation.Condition is null)
 			return null;
 
 		var test = Translate<Expression>(operation.Condition, argument);
 		var body = Translate<Statement>(operation.Body, argument);
-		return new WhileStatement(test, body);
+
+		// ConditionIsTop: true = while (条件在顶部), false = do-while (条件在底部)
+		if (!operation.ConditionIsTop)
+			return new DoWhileStatement(body, test);
+		else
+			return new WhileStatement(test, body);
 	}
 
 }

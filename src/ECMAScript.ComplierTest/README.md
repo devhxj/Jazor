@@ -266,10 +266,81 @@ dotnet test --filter "SemanticWalkerPatternTest"
 dotnet test --filter "SemanticWalkerPatternTest.Visit_IsPattern_Constant"
 ```
 
-### 运行测试并生成覆盖率报告
+## 代码覆盖率
+
+### 生成覆盖率报告
+
+#### 使用 coverlet.runsettings 配置（推荐）
 
 ```bash
+# 使用配置文件运行测试并生成覆盖率
+dotnet test src/ECMAScript.ComplierTest --settings coverlet.runsettings
+
+# 覆盖率结果将输出到输出目录
+# 格式：opencover, cobertura, json, lcov
+```
+
+#### 快速覆盖率收集
+
+```bash
+# 使用 XPlat Code Coverage 收集器
 dotnet test --collect:"XPlat Code Coverage"
+
+# 结果输出到：coverage.opencover.xml
+```
+
+### 查看覆盖率报告
+
+#### 使用 ReportGenerator 生成 HTML 报告
+
+```bash
+# 安装 ReportGenerator 工具
+dotnet tool install -g dotnet-reportgenerator-globaltool
+
+# 生成 HTML 报告
+dotnet-reportgenerator \
+  -reports:src/ECMAScript.ComplierTest/TestResults/**/*.coverage.opencover.xml \
+  -targetdir:coverage-report \
+  -reporttypes:Html
+
+# 在浏览器中打开报告
+start coverage-report/index.html  # Windows
+open coverage-report/index.html   # macOS
+```
+
+### 覆盖率目标
+
+| 指标 | 目标值 | 说明 |
+|------|-------|------|
+| 行覆盖率 | ≥85% | 代码行覆盖率 |
+| 分支覆盖率 | ≥80% | 条件分支覆盖率 |
+
+### 覆盖率配置
+
+覆盖率配置在 `coverlet.runsettings` 文件中定义：
+
+```xml
+<CoverageThreshold>
+  <LineMinimum>85</LineMinimum>
+  <BranchMinimum>80</BranchMinimum>
+</CoverageThreshold>
+```
+
+要修改覆盖率阈值，编辑 `coverlet.runsettings` 文件中的对应值。
+
+### CI/CD 集成
+
+在 CI/CD 管道中，可以配置覆盖率检查：
+
+```yaml
+# GitHub Actions 示例
+- name: Run tests with coverage
+  run: dotnet test --settings coverlet.runsettings
+
+- name: Check coverage threshold
+  run: |
+    dotnet test --settings coverlet.runsettings \
+      --logger "trx;LogFileName=test-results.trx"
 ```
 
 ## 测试模式说明

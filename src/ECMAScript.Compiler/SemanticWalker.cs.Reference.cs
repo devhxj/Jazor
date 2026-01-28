@@ -278,6 +278,15 @@ public partial class SemanticWalker
 			var property = new Identifier(methodName);
 			return new MemberExpression(expr, property, computed: false, optional: false);
 		}
+
+		// 静态方法：生成完整的限定名（如 Math.Abs）
+		if (operation.Method.IsStatic && operation.Method.ContainingType is not null)
+		{
+			var typeName = new Identifier(operation.Method.ContainingType.Name);
+			var methodName = new Identifier(operation.Method.Name);
+			return new MemberExpression(typeName, methodName, computed: false, optional: false);
+		}
+
 		return new Identifier(operation.Method.Name);
 	}
 
@@ -310,7 +319,15 @@ public partial class SemanticWalker
 			}
 		}
 
-		// Null if the reference is to a static/shared member.
+		// 静态成员：生成完整的限定名（如 DateTime.Now）
+		// 检查属性是否是静态成员
+		if (operation.Property.IsStatic && operation.Property.ContainingType is not null)
+		{
+			// 生成类型标识符作为对象
+			var typeName = new Identifier(operation.Property.ContainingType.Name);
+			return new MemberExpression(typeName, property, computed: false, optional: false);
+		}
+
 		return property;
 	}
 

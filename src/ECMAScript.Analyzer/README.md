@@ -417,7 +417,7 @@ dotnet build src/ECMAScript.Analyzer
 
 ---
 
-**维护者**：Jazor 开发团队
+**维护者**：developerhan
 **最后更新**：2026-01-28
 **相关项目**：
 - [ECMAScript.Compiler](../ECMAScript.Compiler/README.md)

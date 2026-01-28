@@ -196,12 +196,14 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		// 空的 default case 会被省略
+		// default case 会被保留（即使是空的）
 		Assert.AreEqual(
 			@"{
   let value = 1;
   switch (value) {
     case 1:
+      break;
+    default:
       break;
   }
 }", script);
@@ -334,6 +336,9 @@ public sealed class SemanticWalkerSwitchTest
       break;
     case 2:
       result = 200;
+      break;
+    default:
+      result = 0;
       break;
   }
 }", script);
@@ -500,11 +505,14 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		// 空的 default case 会被省略
+		// default case 会被保留
 		Assert.AreEqual(
 			@"{
   let value = 1;
-  switch (value) { }
+  switch (value) {
+    default:
+      break;
+  }
 }", script);
 	}
 
@@ -555,7 +563,7 @@ public sealed class SemanticWalkerSwitchTest
   let s, i;
   (() => {
     const v$0 = obj;
-    if (null) {
+    if (v$0 === null) {
       return;
     }
     if (typeof v$0 === ""string"" && (s = v$0, true)) {

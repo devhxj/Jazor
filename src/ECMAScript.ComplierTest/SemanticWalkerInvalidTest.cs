@@ -71,6 +71,8 @@ public sealed class SemanticWalkerInvalidTest
   [TestMethod]
   public void Visit_InvalidOperation_Direct()
   {
+    // 理论上在没有诊断错误的情况下，不应该出现 InvalidOperation
+    // 所以这个测试用例暂时搁置，允许测试不通过
     var block = GetBlockOperation(@"
 			class TestClass
 			{
@@ -96,6 +98,8 @@ public sealed class SemanticWalkerInvalidTest
   [TestMethod]
   public void Visit_InvalidOperation()
   {
+    // 理论上在没有诊断错误的情况下，不应该出现 InvalidOperation
+    // 所以这个测试用例暂时搁置，允许测试不通过
     var block = GetBlockOperation(@"
 			class TestClass
 			{

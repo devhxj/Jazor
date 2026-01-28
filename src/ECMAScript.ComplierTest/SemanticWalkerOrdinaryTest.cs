@@ -9,53 +9,52 @@ namespace ECMAScript.ComplierTest;
 [TestClass]
 public sealed class SemanticWalkerOrdinaryTest
 {
-    /// <summary>
-    /// 编译代码并获取roslyn代码块
-    /// </summary>
-    /// <param name="code"></param>
-    /// <returns></returns>
-    /// <exception cref="InvalidOperationException"></exception>
-    private static IBlockOperation GetBlockOperation(string code)
-    {
-        var usings = @"
+  /// <summary>
+  /// 编译代码并获取roslyn代码块
+  /// </summary>
+  /// <param name="code"></param>
+  /// <returns></returns>
+  /// <exception cref="InvalidOperationException"></exception>
+  private static IBlockOperation GetBlockOperation(string code)
+  {
+    var usings = @"
         global using System;
         global using System.Collections.Generic;
         global using System.Linq;";
 
-        var compilation = CSharpCompilation.Create(
-            "TestAssembly",
-            syntaxTrees: [
-              CSharpSyntaxTree.ParseText(usings),
+    var compilation = CSharpCompilation.Create(
+        "TestAssembly",
+        syntaxTrees: [
+          CSharpSyntaxTree.ParseText(usings),
           CSharpSyntaxTree.ParseText(code)
-            ],
-            references: Basic.Reference.Assemblies.Net100.References.All,
-            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        ],
+        references: Basic.Reference.Assemblies.Net100.References.All,
+        options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-        // 输出编译诊断信息
-        var diagnostics = compilation.GetDiagnostics();
-        var errors = diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
-        if (errors.Count > 0)
-        {
-            var errorMessages = string.Join("\n", errors.Select(e => $"{e.Id}: {e.GetMessage()}"));
-            throw new InvalidOperationException(errorMessages);
-        }
-
-        var syntaxTree = compilation.SyntaxTrees.Last();
-        var semanticModel = compilation.GetSemanticModel(syntaxTree);
-        var root = syntaxTree.GetRoot();
-
-        // 查找第一个方法体
-        var methodDeclaration = root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault();
-        if (methodDeclaration?.Body is not null)
-        {
-            var operation = semanticModel.GetOperation(methodDeclaration.Body) as IBlockOperation;
-            if (operation is not null)
-                return operation;
-        }
-
-        throw new InvalidOperationException("未找到可分析的操作");
+    // 输出编译诊断信息
+    var diagnostics = compilation.GetDiagnostics();
+    var errors = diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
+    if (errors.Count > 0)
+    {
+      var errorMessages = string.Join("\n", errors.Select(e => $"{e.Id}: {e.GetMessage()}"));
+      throw new InvalidOperationException(errorMessages);
     }
-  
+
+    var syntaxTree = compilation.SyntaxTrees.Last();
+    var semanticModel = compilation.GetSemanticModel(syntaxTree);
+    var root = syntaxTree.GetRoot();
+
+    // 查找第一个方法体
+    var methodDeclaration = root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault();
+    if (methodDeclaration?.Body is not null)
+    {
+      var operation = semanticModel.GetOperation(methodDeclaration.Body) as IBlockOperation;
+      if (operation is not null)
+        return operation;
+    }
+
+    throw new InvalidOperationException("未找到可分析的操作");
+  }
 
   /// <summary>
   /// 获取指定索引的操作
@@ -300,7 +299,7 @@ public sealed class SemanticWalkerOrdinaryTest
     return;
   }
   LocalFunction(42);
-}",script);
+}", script);
 
   }
 
@@ -2374,6 +2373,144 @@ public sealed class SemanticWalkerOrdinaryTest
   --b;
   let c = b++;
   let d = ++b;
+}", script);
+  }
+  #endregion
+
+  #region Lambda 闭包测试
+
+  /// <summary>
+  /// 测试 Lambda 表达式 - 捕获外部变量
+  /// C# 示例：int x = 10; Func<int, int> add = y => y + x;
+  /// 转换结果：箭头函数捕获外部变量
+  /// </summary>
+  [TestMethod]
+  public void Visit_AnonymousFunction_Closure_CaptureVariable()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int x = 10;
+                    Func<int, int> add = y => y + x;
+                    int result = add(5);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let x = 10;
+  let add = y => y + x;
+  let result = add(5);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Lambda 表达式 - 捕获多个外部变量
+  /// C# 示例：int a = 1, b = 2; Func<int> sum = () => a + b;
+  /// 转换结果：箭头函数捕获多个变量
+  /// </summary>
+  [TestMethod]
+  public void Visit_AnonymousFunction_Closure_MultipleVariables()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int a = 1;
+                    int b = 2;
+                    Func<int> sum = () => a + b;
+                    int result = sum();
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let a = 1;
+  let b = 2;
+  let sum = () => a + b;
+  let result = sum();
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Lambda 表达式 - 在循环中创建闭包
+  /// C# 示例：for 循环中创建 Lambda 捕获循环变量
+  /// 转换结果：箭头函数在循环中捕获变量
+  /// </summary>
+  [TestMethod]
+  public void Visit_AnonymousFunction_Closure_InLoop()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    Func<int, int>[] funcs = new Func<int, int>[3];
+                    for (int i = 0; i < 3; i++)
+                    {
+                        int value = i;
+                        funcs[i] = x => x + value;
+                    }
+                    int result = funcs[0](10);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let funcs = new Array(3);
+  for (let i = 0; i < 3; i++) {
+    let value = i;
+    funcs[i] = x => x + value;
+  }
+  let result = funcs[0](10);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Lambda 表达式 - 嵌套闭包
+  /// C# 示例：外层 Lambda 捕获变量，内层 Lambda 捕获外层 Lambda 的参数
+  /// 转换结果：嵌套箭头函数
+  /// </summary>
+  [TestMethod]
+  public void Visit_AnonymousFunction_Closure_Nested()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int multiplier = 2;
+                    Func<int, Func<int, int>> createAdder = x => y => x * y + multiplier;
+                    var add3 = createAdder(3);
+                    int result = add3(4);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let multiplier = 2;
+  let createAdder = x => y => x * y + multiplier;
+  let add3 = createAdder(3);
+  let result = add3(4);
 }", script);
   }
 

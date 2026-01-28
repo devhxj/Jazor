@@ -479,7 +479,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.AreEqual(@"{
-  let now = Now;
+  let now = DateTime.Now;
 }", script);
 	}
 
@@ -541,7 +541,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.AreEqual(@"{
-  let abs = Abs;
+  let abs = Math.Abs;
 }", script);
 	}
 
@@ -568,7 +568,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.AreEqual(@"{
-  let action = WriteLine;
+  let action = Console.WriteLine;
 }", script);
 	}
 

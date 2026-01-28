@@ -2019,7 +2019,7 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let obj = Now;
+  let obj = DateTime.Now;
   let result = obj instanceof Date;
 }", script);
   }
@@ -4278,9 +4278,9 @@ line2"";
 
     Assert.AreEqual(@"{
   let value = 5;
-  while (value > 0) {
+  do {
     value--;
-  }
+  } while (value > 0);
 }", script);
   }
 

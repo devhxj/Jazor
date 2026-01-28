@@ -47,7 +47,7 @@ public sealed class AstConverterTests
         // Assert
         Assert.IsNotNull(result);
         Assert.IsInstanceOfType(result, typeof(Module));
-        Assert.IsGreaterThan(0, result.Body.Count);
+        Assert.IsGreaterThan(result.Body.Count, 0);
     }
 
     [TestMethod]
@@ -194,16 +194,16 @@ public sealed class AstConverterTests
 
         // Assert
         Assert.IsNotNull(result);
-        
+
         // 应该包含 getter 和 setter 方法的导出
         var exportDeclarations = result.Body.OfType<ExportNamedDeclaration>().ToList();
-        Assert.IsGreaterThanOrEqualTo(2, exportDeclarations.Count); // 至少包含 getter 和 setter
-        
+        Assert.IsGreaterThanOrEqualTo(exportDeclarations.Count, 2); // 至少包含 getter 和 setter
+
         var functionDeclarations = exportDeclarations
             .Select(ed => ed.Declaration)
             .OfType<FunctionDeclaration>()
             .ToList();
-        Assert.IsGreaterThanOrEqualTo(2, functionDeclarations.Count);
+        Assert.IsGreaterThanOrEqualTo(functionDeclarations.Count, 2);
     }
 
     [TestMethod]

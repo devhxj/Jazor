@@ -656,5 +656,150 @@ public sealed class SemanticWalkerStringTest
 }", script);
 	}
 
+	/// <summary>
+	/// 测试插值字符串 - 包含制表符（Tab）
+	/// C# 示例：$"Name:\t{name}"
+	/// 转换结果：模板字符串包含制表符
+	/// </summary>
+	[TestMethod]
+	public void Visit_InterpolatedString_WithRealTab()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string name = ""John"";
+					string message = $""Name:\t{name}"";
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let name = ""John"";
+  let message = `Name:	${name}`;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试插值字符串 - 包含反斜杠
+	/// C# 示例：$"Path:\\{path}"
+	/// 转换结果：模板字符串包含转义的反斜杠
+	/// </summary>
+	[TestMethod]
+	public void Visit_InterpolatedString_WithRealBackslash()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string path = ""folder/file.txt"";
+					string message = $""Path:\\{path}"";
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let path = ""folder/file.txt"";
+  let message = `Path:\${path}`;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试插值字符串 - 包含换行符
+	/// C# 示例：$"Line1\nLine2"
+	/// 转换结果：由于没有插值表达式，优化为普通字符串
+	/// </summary>
+	[TestMethod]
+	public void Visit_InterpolatedString_WithNewline()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string message = $""Line1\nLine2"";
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let message = 'Line1\nLine2';
+}", script);
+	}
+
+	/// <summary>
+	/// 测试插值字符串 - 包含回车符
+	/// C# 示例：$"Text\r\nMore"
+	/// 转换结果：模板字符串包含回车换行符
+	/// </summary>
+	[TestMethod]
+	public void Visit_InterpolatedString_WithCarriageReturn()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string message = $""Text\r\nMore"";
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let message = 'Text
+More';
+}", script);
+	}
+
+	/// <summary>
+	/// 测试插值字符串 - 多种转义字符组合
+	/// C# 示例：$"Item:\t{name}\nPrice:\t{price}"
+	/// 转换结果：模板字符串包含多种转义字符
+	/// </summary>
+	[TestMethod]
+	public void Visit_InterpolatedString_MixedEscapeSequences()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string name = ""Apple"";
+					int price = 100;
+					string message = $""Item:\t{name}\nPrice:\t{price}"";
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let name = ""Apple"";
+  let price = 100;
+  let message = 'Item:	${name}
+Price:	${price}';
+}", script);
+	}
+
 	#endregion
 }

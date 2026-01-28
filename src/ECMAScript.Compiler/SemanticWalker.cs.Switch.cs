@@ -59,7 +59,13 @@ public partial class SemanticWalker
 
 			// 处理case条件
 			foreach (var clause in switchCase.Clauses)
-				Translate(tests, clause, argument, null);
+			{
+				// 特殊处理 default case clause：需要添加 null 到 tests 列表
+				if (clause.CaseKind == CaseKind.Default)
+					tests.Add(null);  // null 表示 default case
+				else
+					Translate(tests, clause, argument, null);
+			}
 			
 			// 处理case体
 			foreach (var bodyOp in switchCase.Body)

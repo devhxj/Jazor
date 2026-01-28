@@ -1106,5 +1106,130 @@ public sealed class SemanticWalkerLoopTest
 }", script);
   }
 
+  /// <summary>
+  /// 测试 do-while 循环
+  /// C# 示例：
+  /// do {
+  ///     i++;
+  /// } while (i < 10);
+  /// 转换结果：do { i++; } while (i < 10);
+  /// </summary>
+  [TestMethod]
+  public void Visit_DoWhileLoop_Simple()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int i = 0;
+                    do
+                    {
+                        i++;
+                    } while (i < 10);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let i = 0;
+  do {
+    i++;
+  } while (i < 10);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 do-while 循环 - 复杂条件
+  /// C# 示例：
+  /// do {
+  ///     i++;
+  /// } while (i < 10 && j > 0);
+  /// 转换结果：do { i++; } while (i < 10 && j > 0);
+  /// </summary>
+  [TestMethod]
+  public void Visit_DoWhileLoop_ComplexCondition()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int i = 0;
+                    int j = 5;
+                    do
+                    {
+                        i++;
+                    } while (i < 10 && j > 0);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let i = 0;
+  let j = 5;
+  do {
+    i++;
+  } while (i < 10 && j > 0);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 do-while 循环 - 嵌套
+  /// C# 示例：
+  /// do {
+  ///     do {
+  ///         i++;
+  ///     } while (i < 3);
+  ///     j++;
+  /// } while (j < 5);
+  /// 转换结果：嵌套的 do-while 循环
+  /// </summary>
+  [TestMethod]
+  public void Visit_DoWhileLoop_Nested()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int i = 0;
+                    int j = 0;
+                    do
+                    {
+                        do
+                        {
+                            i++;
+                        } while (i < 3);
+                        j++;
+                    } while (j < 5);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let i = 0;
+  let j = 0;
+  do {
+    do {
+      i++;
+    } while (i < 3);
+    j++;
+  } while (j < 5);
+}", script);
+  }
+
   #endregion
 }
