@@ -9,8 +9,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- <WhiteListOutputPath>$(BaseIntermediateOutputPath)WhiteList.g.cs</WhiteListOutputPath> -->
-    <WhiteListOutputPath>$(SolutionDir)ECMAScript.Analyzer\WhiteList.cs</WhiteListOutputPath>
+    <WhiteListOutputPath>$(SolutionDir)\src\ECMAScript.Common\WhiteList.cs</WhiteListOutputPath>
   </PropertyGroup>
 
   <Target Name="GenerateWhiteList" BeforeTargets="Build" Inputs="@(Compile)" Outputs="$(WhiteListOutputPath)">
@@ -22,7 +21,7 @@
   </Target>
 
   <!-- 引用任务程序集 -->
-  <UsingTask TaskName="GenerateWhiteListTask" AssemblyFile="$(SolutionDir)\src\ECMASCript.MSBuild\bin\$(Configuration)\netstandard2.0\ECMASCript.MSBuild.dll" />
+  <UsingTask TaskName="GenerateWhiteListTask" AssemblyFile="$(SolutionDir)\src\ECMASCript.CLRBuild\bin\$(Configuration)\netstandard2.0\ECMASCript.CLRBuild.dll" />
 
   <ItemGroup>
     <Compile Remove="ByteModule.cs" />
