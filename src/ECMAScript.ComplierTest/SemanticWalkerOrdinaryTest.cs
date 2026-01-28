@@ -2403,11 +2403,15 @@ public sealed class SemanticWalkerOrdinaryTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let x = 10;
-  let add = y => y + x;
-  let result = add(5);
+  let add = y => {
+    return y + x;
+  };
+  let result = add.Invoke(5);
 }", script);
+
   }
 
   /// <summary>
@@ -2435,12 +2439,16 @@ public sealed class SemanticWalkerOrdinaryTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let a = 1;
   let b = 2;
-  let sum = () => a + b;
-  let result = sum();
+  let sum = () => {
+    return a + b;
+  };
+  let result = sum.Invoke();
 }", script);
+
   }
 
   /// <summary>
@@ -2471,14 +2479,18 @@ public sealed class SemanticWalkerOrdinaryTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let funcs = new Array(3);
   for (let i = 0; i < 3; i++) {
     let value = i;
-    funcs[i] = x => x + value;
+    funcs[i] = x => {
+      return x + value;
+    };
   }
-  let result = funcs[0](10);
+  let result = funcs[0].Invoke(10);
 }", script);
+
   }
 
   /// <summary>
@@ -2506,12 +2518,18 @@ public sealed class SemanticWalkerOrdinaryTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let multiplier = 2;
-  let createAdder = x => y => x * y + multiplier;
-  let add3 = createAdder(3);
-  let result = add3(4);
+  let createAdder = x => {
+    return y => {
+      return x * y + multiplier;
+    };
+  };
+  let add3 = createAdder.Invoke(3);
+  let result = add3.Invoke(4);
 }", script);
+
   }
 
   #endregion

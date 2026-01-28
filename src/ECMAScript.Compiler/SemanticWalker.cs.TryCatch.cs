@@ -22,7 +22,7 @@ public partial class SemanticWalker
     /// <param name="operation">当前访问的operation</param>
     /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitTry(ITryOperation operation, WalkerArgument argument)
+    public override Node? VisitTry(ITryOperation operation, WalkerArgument argument)
     {
         var bodyStatements = new List<Statement>();
         foreach (var stmt in operation.Body.Operations)
@@ -54,7 +54,8 @@ public partial class SemanticWalker
             {
                 var @catch = queue.Pop();
                 var right = new Identifier(@catch.ExceptionType.Name);
-                var statements = ExtractCatchClauseBody(@catch, argument);
+                // 传递 tryParam 作为 exceptionParam，用于 when 条件检查
+                var statements = ExtractCatchClauseBody(@catch, argument, tryParam);
                 var param = ExtractCatchClauseParam(@catch);
                 if (param is not null)
                 {
@@ -97,7 +98,7 @@ public partial class SemanticWalker
     /// <param name="operation"></param>
     /// <param name="argument"></param>
     /// <returns></returns>
-    private Acornima.Ast.Identifier? ExtractCatchClauseParam(ICatchClauseOperation operation)
+    private Identifier? ExtractCatchClauseParam(ICatchClauseOperation operation)
     {
         // 从ExceptionDeclarationOrExpression中提取异常变量名
         Identifier? param = null;
@@ -130,10 +131,38 @@ public partial class SemanticWalker
     /// </summary>
     /// <param name="operation"></param>
     /// <param name="argument"></param>
+    /// <param name="exceptionParam">异常参数标识符，用于 when 条件和重新抛出</param>
     /// <returns></returns>
-    private List<Acornima.Ast.Statement> ExtractCatchClauseBody(ICatchClauseOperation operation, WalkerArgument argument)
+    private List<Statement> ExtractCatchClauseBody(ICatchClauseOperation operation, WalkerArgument argument, Identifier? exceptionParam)
     {
         var bodyStatements = new List<Statement>();
+
+        // 处理 when 条件过滤器
+        // C# 示例：
+        // catch (Exception ex) when (condition) { handler }
+        // 转换结果：
+        // catch (ex) {
+        //     if (!(condition)) throw ex;
+        //     handler
+        // }
+        if (operation.Filter is not null)
+        {
+            var filterExpr = TranslateExpression(operation.Filter, argument);
+
+            // 获取用于重新抛出的异常标识符
+            // 如果 catch 有参数名则使用参数名，否则使用 tryParam
+            var throwExpr = exceptionParam is not null
+                ? (Expression)new Identifier(exceptionParam.Name)
+                : new Identifier(GetUniqueName(operation));
+
+            // 构造 if (!(condition)) throw ex; 语句
+            var notFilter = new NonUpdateUnaryExpression(Operator.LogicalNot, filterExpr);
+            var throwStmt = new ThrowStatement(throwExpr);
+            var filterCheck = new IfStatement(notFilter, throwStmt, null);
+
+            bodyStatements.Add(filterCheck);
+        }
+
         foreach (var stmt in operation.Handler.Operations)
         {
             var node = Visit(stmt, argument);
@@ -153,16 +182,17 @@ public partial class SemanticWalker
     /// try { ... }
     /// catch (Exception ex) { ... }     // catch 子句
     /// catch (InvalidOperationException) { ... } // 不带变量的 catch
-    /// 转换结果：catch (ex) { ... } / catch (error) { ... }
+    /// catch (Exception ex) when (condition) { ... } // 带 when 条件的 catch
+    /// 转换结果：catch (ex) { if (!(condition)) throw ex; ... } / catch (error) { ... }
     /// </summary>
     /// <param name="operation">当前访问的operation</param>
     /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Acornima.Ast.Node? VisitCatchClause(ICatchClauseOperation operation, WalkerArgument argument)
+    public override Node? VisitCatchClause(ICatchClauseOperation operation, WalkerArgument argument)
     {
         // 此处不用担心多个catch，多catch会在 VisitTry中处理
         var param = ExtractCatchClauseParam(operation);
-        var statements = ExtractCatchClauseBody(operation, argument);
+        var statements = ExtractCatchClauseBody(operation, argument, param);
         var body = new NestedBlockStatement(NodeList.From(statements));
 
         return new CatchClause(param, body);
@@ -178,7 +208,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Acornima.Ast.Node? VisitThrow(IThrowOperation operation, WalkerArgument argument)
+	public override Node? VisitThrow(IThrowOperation operation, WalkerArgument argument)
 	{
 		Expression expr;
 		if (operation.Exception is not null)

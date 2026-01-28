@@ -751,4 +751,195 @@ catch (ex) {
     }
 
     #endregion
+
+    #region Catch When 测试
+
+    /// <summary>
+    /// 测试 catch when 子句转换
+    /// C# 示例：
+    /// try {
+    ///     throw new Exception("error");
+    /// } catch (Exception ex) when (ex.Message.Contains("error")) {
+    ///     string msg = ex.Message;
+    /// }
+    /// 转换结果：try { throw new Exception("error"); } catch (ex) { if (!(ex.Message.contains("error"))) throw ex; let msg = ex.Message; }
+    /// </summary>
+    [TestMethod]
+    public void VisitCatchClause_WithWhenClause()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    try
+                    {
+                        throw new Exception(""error"");
+                    }
+                    catch (Exception ex) when (ex.Message.Contains(""error""))
+                    {
+                        string msg = ex.Message;
+                    }
+                }
+            }
+        ");
+
+        var walker = new SemanticWalker(true);
+        var tryOp = GetOperationAt<ITryOperation>(block, 0);
+        var node = walker.VisitTry(tryOp, new());
+        var script = node?.ToKnRECMAScript();
+
+        // Console.WriteLine("=== Actual Output ===");
+        // Console.WriteLine(script);
+        // Console.WriteLine("=== End Output ===");
+
+        Assert.AreEqual(
+            @"try {
+  throw new Exception(""error"");
+} catch (ex) {
+  if (!ex.Message.Contains(""error""))
+    throw ex;
+  let msg = ex.Message;
+}", script);
+    }
+
+    /// <summary>
+    /// 测试 catch when 子句带简单条件
+    /// C# 示例：
+    /// try {
+    ///     throw new Exception("error");
+    /// } catch (Exception ex) when (ex != null) {
+    ///     string msg = ex.Message;
+    /// }
+    /// 转换结果：try { throw new Exception("error"); } catch (ex) { if (!(ex !== null)) throw ex; let msg = ex.Message; }
+    /// </summary>
+    [TestMethod]
+    public void VisitCatchClause_WithWhenClause_SimpleCondition()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    try
+                    {
+                        throw new Exception(""error"");
+                    }
+                    catch (Exception ex) when (ex != null)
+                    {
+                        string msg = ex.Message;
+                    }
+                }
+            }
+        ");
+
+        var walker = new SemanticWalker(true);
+        var tryOp = GetOperationAt<ITryOperation>(block, 0);
+        var node = walker.VisitTry(tryOp, new());
+        var script = node?.ToKnRECMAScript();
+
+        // C# 的 != 被转换为 JavaScript 的 !=
+        Assert.AreEqual(
+            @"try {
+  throw new Exception(""error"");
+} catch (ex) {
+  if (!(ex != null))
+    throw ex;
+  let msg = ex.Message;
+}", script);
+    }
+
+    /// <summary>
+    /// 测试 catch when 子句带逻辑与条件
+    /// C# 示例：
+    /// try {
+    ///     throw new Exception("error");
+    /// } catch (Exception ex) when (ex != null && ex.Message.Length > 0) {
+    ///     string msg = ex.Message;
+    /// }
+    /// </summary>
+    [TestMethod]
+    public void VisitCatchClause_WithWhenClause_LogicalAndCondition()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    try
+                    {
+                        throw new Exception(""error"");
+                    }
+                    catch (Exception ex) when (ex != null && ex.Message.Length > 0)
+                    {
+                        string msg = ex.Message;
+                    }
+                }
+            }
+        ");
+
+        var walker = new SemanticWalker(true);
+        var tryOp = GetOperationAt<ITryOperation>(block, 0);
+        var node = walker.VisitTry(tryOp, new());
+        var script = node?.ToKnRECMAScript();
+
+        // C# 的 != 被转换为 JavaScript 的 !=
+        // C# 的 Length 属性被转换为 JavaScript 的 Length（由白名单处理）
+        Assert.AreEqual(
+            @"try {
+  throw new Exception(""error"");
+} catch (ex) {
+  if (!(ex != null && ex.Message.Length > 0))
+    throw ex;
+  let msg = ex.Message;
+}", script);
+    }
+
+    /// <summary>
+    /// 测试不带异常变量的 catch when
+    /// C# 示例：
+    /// try {
+    ///     throw new Exception("error");
+    /// } catch (Exception) when (true) {
+    ///     string msg = ""caught"";
+    /// }
+    /// </summary>
+    [TestMethod]
+    public void VisitCatchClause_WithWhenClause_NoExceptionVariable()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    try
+                    {
+                        throw new Exception(""error"");
+                    }
+                    catch (Exception) when (true)
+                    {
+                        string msg = ""caught"";
+                    }
+                }
+            }
+        ");
+
+        var walker = new SemanticWalker(true);
+        var tryOp = GetOperationAt<ITryOperation>(block, 0);
+        var node = walker.VisitTry(tryOp, new());
+        var script = node?.ToKnRECMAScript();
+
+        // 没有 catch 参数时，重新抛出使用唯一标识符
+        // 注意：if 语句主体只有一个语句时，不会生成花括号
+        Assert.AreEqual(
+            @"try {
+  throw new Exception(""error"");
+} catch {
+  if (!true)
+    throw v$0;
+  let msg = ""caught"";
+}", script);
+    }
+
+    #endregion
 }

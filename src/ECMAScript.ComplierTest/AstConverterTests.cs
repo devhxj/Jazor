@@ -46,8 +46,8 @@ public sealed class AstConverterTests
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.IsInstanceOfType(result, typeof(Module));
-        Assert.IsGreaterThan(result.Body.Count, 0);
+        Assert.IsInstanceOfType<Module>(result);
+        Assert.IsLessThan(result.Body.Count, 0);
     }
 
     [TestMethod]
