@@ -20,9 +20,13 @@ internal enum WhiteListOp
 	AttributeTargets.Method,
 	AllowMultiple = true,
 	Inherited = false)]
-public sealed class WhiteListAttribute(string key) : Attribute
+public sealed class WhiteListAttribute(string key, string value, string name) : Attribute
 {
 	public string Key { get; } = key;
+
+	public string Value { get; } = value;
+
+	public string Name { get; } = name;
 }
 
 //[AttributeUsage(

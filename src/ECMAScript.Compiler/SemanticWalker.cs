@@ -210,15 +210,8 @@ public sealed partial class SemanticWalker : OperationVisitor<WalkerArgument, No
     {
         var syntaxTree = operation.Syntax.SyntaxTree;
         var sourceSpan = operation.Syntax.GetLocation().SourceSpan;
-
-        using var sha256 = SHA256.Create();
         var key = $"{syntaxTree.FilePath}${operation.Syntax.Kind()}${sourceSpan.Start}${sourceSpan.End}${operation.Kind}";
-        var bytes = Encoding.UTF8.GetBytes(key);
-        var hashBytes = sha256.ComputeHash(bytes);
-        var sb = new StringBuilder("_");
-        for (int i = 0; i < 8; i++)
-            sb.Append(hashBytes[i].ToString("x2"));
-        var name = sb.ToString();
+        var name = Util.HashName(key);
 
         //方便单元测试，生成固定名称
         if (_test)

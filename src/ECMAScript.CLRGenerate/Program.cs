@@ -1,9 +1,8 @@
-﻿// See https://aka.ms/new-console-template for more information
+﻿using ECMAScript.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.ObjectModel;
 using System.Globalization;
-using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -24,47 +23,7 @@ static string? GetComment(ISymbol? symbol)
 	return builder.ToString().TrimEnd('\n');
 }
 
-var format = new SymbolDisplayFormat(
-	globalNamespaceStyle:
-		// 不包含 
-		SymbolDisplayGlobalNamespaceStyle.Omitted,
-	typeQualificationStyle:
-		//保留完整的命名空间路径
-		SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
-	genericsOptions:
-		// 不显示泛型参数
-		SymbolDisplayGenericsOptions.IncludeTypeParameters,
-	memberOptions:
-		//SymbolDisplayMemberOptions.IncludeType |
-		SymbolDisplayMemberOptions.IncludeModifiers |
-		//SymbolDisplayMemberOptions.IncludeAccessibility |
-		SymbolDisplayMemberOptions.IncludeExplicitInterface |
-		SymbolDisplayMemberOptions.IncludeParameters |
-		SymbolDisplayMemberOptions.IncludeContainingType |
-		SymbolDisplayMemberOptions.IncludeConstantValue |
-		SymbolDisplayMemberOptions.IncludeRef,
-	delegateStyle:
-		SymbolDisplayDelegateStyle.NameAndParameters,
-	extensionMethodStyle:
-		 SymbolDisplayExtensionMethodStyle.InstanceMethod,
-	parameterOptions:
-		SymbolDisplayParameterOptions.IncludeType |
-		SymbolDisplayParameterOptions.IncludeModifiers |
-		SymbolDisplayParameterOptions.IncludeParamsRefOut,
-	propertyStyle:
-		SymbolDisplayPropertyStyle.ShowReadWriteDescriptor,
-	localOptions:
-		SymbolDisplayLocalOptions.IncludeType|
-		SymbolDisplayLocalOptions.IncludeModifiers |
-		SymbolDisplayLocalOptions.IncludeConstantValue,
-	kindOptions: 
-		SymbolDisplayKindOptions.None,
-	miscellaneousOptions:
-		SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers |
-		SymbolDisplayMiscellaneousOptions.UseSpecialTypes
-);
-
-//var xmlDir = @"C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\10.0.0-preview.5.25277.114\ref\net10.0";
+//var xmlDir = @"C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\10.0.2\ref\net10.0";
 var coreLibXml = XmlDocumentationProvider.CreateFromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "System.Private.CoreLib.xml"));
 var numericsXml = XmlDocumentationProvider.CreateFromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "System.Runtime.Numerics.xml"));
 var compilation = CSharpCompilation.Create("Jazor", references: [
@@ -104,41 +63,41 @@ var operatorNames = new Dictionary<string, string>
 var types = new Type[]{
 	// 基本类型
 	//typeof(void),
-	typeof(Object),
-	typeof(Boolean),
-	typeof(Char),
-	typeof(SByte),
-	typeof(Byte),
-	typeof(Int16),
-	typeof(UInt16),
-	typeof(Int32),
-	typeof(UInt32),
-	typeof(Int64),
-	typeof(UInt64),
-	typeof(Single),
-	typeof(Double),
-	typeof(Decimal),
-	typeof(DateTime),
-	typeof(DateOnly),
-	typeof(TimeOnly),
-	typeof(DateTimeOffset),
-	typeof(TimeSpan),
-	typeof(String),
 	typeof(BigInteger),
-	typeof(Exception),
-	typeof(StringBuilder),
-	typeof(Nullable),
-	typeof(ValueTuple),
-	typeof(WeakReference),
-	typeof(List<>),
-	typeof(Dictionary<,>),
-	typeof(HashSet<>),
-	typeof(ReadOnlyCollection),
-	typeof(ReadOnlyDictionary<,>),
-	typeof(ReadOnlySet<>),
-	typeof(ConditionalWeakTable<,>),
-	typeof(GregorianCalendar),
-	typeof(CultureInfo)
+	//typeof(Object),
+	//typeof(Boolean),
+	//typeof(Char),
+	//typeof(SByte),
+	//typeof(Byte),
+	//typeof(Int16),
+	//typeof(UInt16),
+	//typeof(Int32),
+	//typeof(UInt32),
+	//typeof(Int64),
+	//typeof(UInt64),
+	//typeof(Single),
+	//typeof(Double),
+	//typeof(Decimal),
+	//typeof(DateTime),
+	//typeof(DateOnly),
+	//typeof(TimeOnly),
+	//typeof(DateTimeOffset),
+	//typeof(TimeSpan),
+	typeof(String),
+	//typeof(Exception),
+	//typeof(StringBuilder),
+	//typeof(Nullable),
+	//typeof(ValueTuple),
+	//typeof(WeakReference),
+	//typeof(List<>),
+	//typeof(Dictionary<,>),
+	//typeof(HashSet<>),
+	//typeof(ReadOnlyCollection),
+	//typeof(ReadOnlyDictionary<,>),
+	//typeof(ReadOnlySet<>),
+	//typeof(ConditionalWeakTable<,>),
+	//typeof(GregorianCalendar),
+	//typeof(CultureInfo)
 };
 var typeMaps = new Dictionary<Type, string>()
 {
@@ -253,13 +212,17 @@ string ConvertParamaterName(IParameterSymbol symbol)
 		key = $"ref {key}";
 		newValue = $"RefValue<{newValue}>";
 	}
-	else if(symbol.RefKind == RefKind.Out)
+	else if (symbol.RefKind == RefKind.Out)
 	{
 		key = $"out {key}";
 		newValue = $"OutValue<{newValue}>";
 	}
 
-	return name.Replace(key, newValue);
+
+	var r = name.Replace(key, newValue);
+	if (symbol.IsParams)
+		r = r.Replace("params", "");
+	return r;
 }
 
 //var directory = Path.Combine(Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory)!.Parent!.Parent!.Parent!.FullName, "generate");
@@ -273,169 +236,114 @@ foreach (var type in types)
 	var builder = new StringBuilder();
 	var symbol = compilation.GetTypeByMetadataName(type.FullName!)!;
 	var typeName = type.Name.Split('`')[0];
-	var fullName = symbol.ToDisplayString(format);
+	var fullName = symbol.ToDisplayString(Util.NameFormat);
 
 	if (!typeMaps.TryGetValue(type, out var mapName))
 		mapName = fullName;
 	
-	builder.Append($@"using System.Collections;
+	builder.Append(
+$@"using System.Collections;
 using static ECMAScript.CLRModule;
-using static ECMAScript.Jazor;
 
 namespace ECMAScript;
 
 [ECMAScriptModule]
-[WhiteList(""{fullName}"")]
+[WhiteList(""{fullName}"",""{fullName}"",""{fullName}"")]
 public static class {typeName}Module
 {{");
 
-	var keys = new List<string>();
-	var methods = new List<string>(); 
-	foreach (var member in symbol.GetMembers())
+	var keys = new Dictionary<string,string>();
+	var members = symbol.GetMembers();
+	foreach (var member in members)
 	{
 		if (member.DeclaredAccessibility.HasFlag(Accessibility.Public))
 		{
-			var key = member.ToDisplayString(format);
+			var value = member.ToDisplayString(Util.NameFormat);
+			var key = Util.HashName(value);
 			var comment = GetComment(member);
+			var generics = string.Empty;
+			var para = string.Empty;
+			var attribute = string.Empty;
+			var returnType = string.Empty;
+			keys.Add(key, value);
 
 			if (member is IFieldSymbol field)
 			{
 				if (field.IsConst)
 				{
 					builder.AppendLine($@"{Environment.NewLine}	//{field.ToDisplayString()} = {field.ConstantValue};");
+					continue;
 				}
 				else
 				{
-					var para = field.IsStatic ? string.Empty : $"{mapName} instance";
-					builder.Append($@"
-{comment}    [WhiteList(""{key}"")]
-    [Obsolete(""Not Support in Jazor"",true)]
-	public extern static {mapName} {typeName}{field.Name}({para});
-");
-
-					keys.Add(key);
+					returnType = mapName;
+					para = field.IsStatic ? string.Empty : $"{mapName} instance";
 				}
 			}
 			else if (member is IMethodSymbol method)
 			{
-				var returnType = method.ReturnType.ToDisplayString();
-				if (nameMaps.TryGetValue(returnType.TrimEnd('?'), out var mapName1))
-					returnType = $"{mapName1}{(returnType.EndsWith('?') ? "?" : "")}";
+				returnType = method.ReturnType.ToDisplayString();
+				if (nameMaps.TryGetValue(returnType.TrimEnd('?'), out var nullMapName))
+					returnType = $"{nullMapName}{(returnType.EndsWith('?') ? "?" : "")}";
+
+				// 不支持指针
+				if (method.Parameters.Any(x => x.Type?.TypeKind == TypeKind.Pointer))
+					continue;
 
 				if (method.MethodKind == MethodKind.PropertyGet || method.MethodKind == MethodKind.PropertySet)
 				{
-					var prop = (IPropertySymbol)method.AssociatedSymbol!;
-					var para = method.Parameters.Length > 0
+					para = method.Parameters.Length > 0
 						? $"{mapName} instance, {string.Join(", ", method.Parameters.Select(ConvertParamaterName))}"
 						: $"{mapName} instance";
-					var op = prop.IsStatic
-						? $"PropertyReference2Literal, \"{prop.Name}\""
-						: "PropertyReference2CallExpression";
-					var methodName = method.MethodKind == MethodKind.PropertyGet
-						? "Get"
-						: "Set";
-
-					if (prop.IsIndexer)
-						methodName = "This";
-					else
-						methodName += prop.Name;
-
-					if (method.ContainingType.TypeParameters.Length > 0)
-					{
-						var pTypes = method.ContainingType.TypeParameters.Select(x => x.Name).ToList();
-						methodName += $"<{string.Join(", ", pTypes)}>";
-					}
-
-					builder.Append($@"
-{comment}    [WhiteList(""{key}"")]
-    [Obsolete(""Not Support in Jazor"",true)]
-	public extern static {returnType} {typeName}{methodName}({para});
-");
-
-					keys.Add(key);
 				}
 				else if(method.MethodKind != MethodKind.Destructor && method.MethodKind != MethodKind.Conversion)
 				{
-					var op = "Invocation2CallExpression";
-					var methodName = string.Empty;
-
 					if (method.MethodKind == MethodKind.Constructor)
-					{
-						if (mapName == "BigInt" && method.Parameters.Length ==1)
-							op = "ObjectCreation2CallExpression, \"BigInt\"";
-						methodName = "New";
 						returnType = mapName;
-					}
-
-					//else if (method.MethodKind == MethodKind.Destructor)
-					//	methodName = $"Des{typeName}";
-
-					else if (method.Name.StartsWith("op_", StringComparison.InvariantCulture))
-						methodName += method.Name.Replace("op_", "Op", StringComparison.InvariantCulture);
-
-					else
-						methodName = method.Name;
-
-					if (key == "System.Runtime.CompilerServices.ConditionalWeakTable<TKey, TValue>.GetOrAdd<TArg>(TKey, System.Func<TKey, TArg, TValue>, TArg)")
-					{
-						var a = 3;
-					}
-
-					methods.Add(method.Name);
-					var count = methods.Count(x => x == method.Name);
-					var para = method.IsStatic || method.MethodKind == MethodKind.Constructor
+					
+					para = method.IsStatic || method.MethodKind == MethodKind.Constructor
 						? string.Join(", ", method.Parameters.Select(ConvertParamaterName))
 						: $"{mapName} instance{(method.Parameters.Length> 0? ", ": "")}{string.Join(", ", method.Parameters.Select(ConvertParamaterName))}";
 
-					var suffix = count == 1 ? string.Empty : count.ToString();
-					var generics = string.Empty;
-					if (method.IsGenericMethod || method.ContainingType.TypeParameters.Length > 0)
-					{
-						var pTypes = method.ContainingType.TypeParameters
+					generics = (method.IsGenericMethod || method.ContainingType.TypeParameters.Length > 0)
+						? $"<{string.Join(", ", method.ContainingType.TypeParameters
 							.Concat(method.TypeParameters)
-							.Select(x => x.Name)
-							.ToList();
-						generics = $"<{string.Join(", ", pTypes)}>";
-					}
+							.Select(x => x.Name))}>"
+						: string.Empty;
+				}
 
-					var attribute = "[Obsolete(\"Not Support in Jazor\",true)]";
-					if (method.Name.StartsWith("op_", StringComparison.InvariantCulture))
+				attribute = "[Obsolete(\"Not Support in Jazor\",true)]";
+				if (method.Name.StartsWith("op_", StringComparison.InvariantCulture))
+				{
+					if (operatorNames.TryGetValue(method.Name, out var ope))
 					{
-						if (operatorNames.TryGetValue(method.Name, out var ope))
+						if (method.Parameters.Length == 1)
 						{
-							if (method.Parameters.Length == 1)
-							{
-								attribute = $"[ECMAScriptLiteral(\"{ope}{{0}}\")]";
-							}
-							else if (method.Parameters.Length == 2)
-							{
-								attribute = $"[ECMAScriptLiteral(\"{{0}} {ope} {{1}}\")]";
-							}
+							attribute = $"[ECMAScriptLiteral(\"{ope}{{0}}\")]";
+						}
+						else if (method.Parameters.Length == 2)
+						{
+							attribute = $"[ECMAScriptLiteral(\"{{0}} {ope} {{1}}\")]";
 						}
 					}
-					builder.Append($@"
-{comment}    [WhiteList(""{key}"")]
-    {attribute}
-	public extern static {returnType} {typeName}{methodName}{suffix}{generics}({para});
-");
-
-					keys.Add(key);
 				}
+
+				builder.Append(
+$@"
+{comment}    [WhiteList(""{key}"",""{value}"",""{key}"")]
+    {attribute}
+	public extern static {returnType} {key}{generics}({para});
+");
 			}
 		}
 	}
 
-	//builder.AppendLine($@"
-	///// <summary>
-	///// {keys.Count} WhiteList Member
-	///// </summary>
- //   public static readonly string[] MemberWhiteList = [
-	//	{string.Join(",\n\t\t", keys.Select(x => $"\"{x}\""))}
-	//];");
-
 	builder.AppendLine("}");
-
-	File.WriteAllText(Path.Combine(directory, $"{typeName}Module.cs"), builder.ToString());
+	var content = builder.ToString()
+		.Replace("\r\n", "\n") // Windows → Unix
+		.Replace("\r", "\n")   // Old Mac → Unix
+		.Replace("\n", "\r\n"); // Unix → Windows
+	File.WriteAllText(Path.Combine(directory, $"{typeName}Module.cs"), content);
 	Console.WriteLine(typeName);
 }
 
@@ -482,14 +390,14 @@ Type[] whiteListTypes = [
 		typeof(ConditionalWeakTable<,>)
 	];
 var whiteListTypeNames = whiteListTypes
-	.Select(type => compilation.GetTypeByMetadataName(type.FullName!).ToDisplayString(format))
+	.Select(type => compilation!.GetTypeByMetadataName(type.FullName!)!.ToDisplayString(Util.NameFormat))
 	.Select(type => $"\"{type}\"");
 
 var whiteListTypeName = string.Join($", \n", whiteListTypeNames);
 
-var name = compilation.GetTypeByMetadataName(typeof(List<>).FullName)
+var name = compilation!.GetTypeByMetadataName(typeof(List<>).FullName!)!
 	.Construct(compilation.GetSpecialType(SpecialType.System_Int32))
-	.ToDisplayString(format);
+	.ToDisplayString(Util.NameFormat);
 
 Console.WriteLine(whiteListTypeName);
 Console.ReadLine();

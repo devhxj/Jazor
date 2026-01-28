@@ -1,4 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace ECMAScript.Common;
 
@@ -46,4 +48,20 @@ public static class Util
 			SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers |
 			SymbolDisplayMiscellaneousOptions.UseSpecialTypes
 	);
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="text"></param>
+	/// <returns></returns>
+	public static string HashName(string text)
+	{
+		using var sha256 = SHA256.Create();
+		var bytes = Encoding.UTF8.GetBytes(text);
+		var hashBytes = sha256.ComputeHash(bytes);
+		var sb = new StringBuilder("_");
+		for (int i = 0; i < 8; i++)
+			sb.Append(hashBytes[i].ToString("x2"));
+		return sb.ToString();
+	}
 }
