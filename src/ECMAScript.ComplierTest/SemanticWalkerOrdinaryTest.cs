@@ -2297,7 +2297,11 @@ public sealed class SemanticWalkerOrdinaryTest
                 void TestMethod()
                 {
                     int a = 5;
+                    int b = 3;
                     int notResult = ~a;
+                    int andResult = a & b;
+                    int orResult = a | b;
+                    int xorResult = a ^ b;
                 }
             }
             ");
@@ -2308,7 +2312,113 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.AreEqual(@"{
   let a = 5;
+  let b = 3;
   let notResult = ~a;
+  let andResult = a & b;
+  let orResult = a | b;
+  let xorResult = a ^ b;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试位移运算符
+  /// </summary>
+  [TestMethod]
+  public void Visit_BitwiseShiftOperators()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int a = 5;
+                    int leftShift = a << 2;
+                    int rightShift = a >> 1;
+                    int unsignedRightShift = a >>> 1;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let a = 5;
+  let leftShift = a << 2;
+  let rightShift = a >> 1;
+  let unsignedRightShift = a >>> 1;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试位运算符组合表达式
+  /// </summary>
+  [TestMethod]
+  public void Visit_BitwiseComplexExpression()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int a = 5;
+                    int b = 3;
+                    int c = 2;
+                    int result = (a & b) | (c ^ a);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    // 注意：JavaScript 生成器会优化掉不必要的括号
+    Assert.AreEqual(@"{
+  let a = 5;
+  let b = 3;
+  let c = 2;
+  let result = a & b | c ^ a;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试位运算符与赋值组合
+  /// </summary>
+  [TestMethod]
+  public void Visit_BitwiseWithAssignment()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int a = 5;
+                    int b = 3;
+                    a &= b;
+                    a |= b;
+                    a ^= b;
+                    a <<= 2;
+                    a >>= 1;
+                    a >>>= 1;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let a = 5;
+  let b = 3;
+  a &= b;
+  a |= b;
+  a ^= b;
+  a <<= 2;
+  a >>= 1;
+  a >>>= 1;
 }", script);
   }
 

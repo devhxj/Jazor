@@ -736,9 +736,8 @@ public sealed class SemanticWalkerStringTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
-  let message = 'Line1\nLine2';
-}", script);
+		Assert.AreEqual("{\r\n  let message = 'Line1\nLine2';\r\n}", script);
+
 	}
 
 	/// <summary>
@@ -761,12 +760,9 @@ public sealed class SemanticWalkerStringTest
 
 		var walker = new SemanticWalker(true);
 		var node = walker.Visit(block, new());
-		var script = node?.ToKnRECMAScript();
+		var script = node?.ToECMAScript();
 
-		Assert.AreEqual(@"{
-  let message = 'Text
-More';
-}", script);
+		Assert.AreEqual("{let message='Text\r\nMore'}", script);
 	}
 
 	/// <summary>
@@ -791,14 +787,10 @@ More';
 
 		var walker = new SemanticWalker(true);
 		var node = walker.Visit(block, new());
-		var script = node?.ToKnRECMAScript();
+		var script = node?.ToECMAScript();
 
-		Assert.AreEqual(@"{
-  let name = ""Apple"";
-  let price = 100;
-  let message = 'Item:	${name}
-Price:	${price}';
-}", script);
+		Assert.AreEqual("{let name=\"Apple\";let price=100;let message=`Item:	${name}\nPrice:	${price}`}", script);
+
 	}
 
 	#endregion

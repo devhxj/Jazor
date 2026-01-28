@@ -680,6 +680,12 @@ public partial class SemanticWalker
 	/// a >= b          // 大于等于比较
 	/// a &amp;&amp; b          // 逻辑与运算
 	/// a || b          // 逻辑或运算
+	/// a &amp; b           // 按位与运算
+	/// a | b           // 按位或运算
+	/// a ^ b           // 按位异或运算
+	/// a &lt;&lt; b          // 左移运算
+	/// a >> b          // 右移运算
+	/// a >>> b         // 无符号右移运算
 	/// 转换结果：相同的 JavaScript 运算符
 	/// </summary>
 	/// <param name="operation">当前访问的operation</param>
@@ -704,6 +710,12 @@ public partial class SemanticWalker
 			BinaryOperatorKind.GreaterThanOrEqual => Operator.GreaterThanOrEqual,
 			BinaryOperatorKind.ConditionalAnd => Operator.LogicalAnd,
 			BinaryOperatorKind.ConditionalOr => Operator.LogicalOr,
+			BinaryOperatorKind.And => Operator.BitwiseAnd,
+			BinaryOperatorKind.Or => Operator.BitwiseOr,
+			BinaryOperatorKind.ExclusiveOr => Operator.BitwiseXor,
+			BinaryOperatorKind.LeftShift => Operator.LeftShift,
+			BinaryOperatorKind.RightShift => Operator.RightShift,
+			BinaryOperatorKind.UnsignedRightShift => Operator.UnsignedRightShift,
 			_ => Operator.Unknown
 		};
 
@@ -862,7 +874,13 @@ public partial class SemanticWalker
 	/// x *= 2          // 乘法赋值
 	/// x /= 4          // 除法赋值
 	/// x %= 7          // 取模赋值
-	/// 转换结果：x += 5 / x -= 3 / x *= 2 / x /= 4 / x %= 7
+	/// x &amp;= 3          // 按位与赋值
+	/// x |= 2          // 按位或赋值
+	/// x ^= 1          // 按位异或赋值
+	/// x &lt;&lt;= 2         // 左移赋值
+	/// x >>= 1         // 右移赋值
+	/// x >>>= 1        // 无符号右移赋值
+	/// 转换结果：x += 5 / x -= 3 / x *= 2 / x /= 4 / x %= 7 / x &amp;= 3 / x |= 2 / x ^= 1 / x &lt;&lt;= 2 / x >>= 1 / x >>>= 1
 	/// </summary>
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
@@ -878,6 +896,12 @@ public partial class SemanticWalker
 			BinaryOperatorKind.Multiply => Operator.MultiplicationAssignment,
 			BinaryOperatorKind.Divide => Operator.DivisionAssignment,
 			BinaryOperatorKind.Remainder => Operator.RemainderAssignment,
+			BinaryOperatorKind.And => Operator.BitwiseAndAssignment,
+			BinaryOperatorKind.Or => Operator.BitwiseOrAssignment,
+			BinaryOperatorKind.ExclusiveOr => Operator.BitwiseXorAssignment,
+			BinaryOperatorKind.LeftShift => Operator.LeftShiftAssignment,
+			BinaryOperatorKind.RightShift => Operator.RightShiftAssignment,
+			BinaryOperatorKind.UnsignedRightShift => Operator.UnsignedRightShiftAssignment,
 			_ => Operator.Unknown
 		};
 

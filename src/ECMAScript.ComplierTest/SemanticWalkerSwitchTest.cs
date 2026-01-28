@@ -558,7 +558,7 @@ public sealed class SemanticWalkerSwitchTest
 		// 每个 case 是独立的 if 语句
 		// 类型模式中的变量声明通过逗号表达式转换为赋值
 		Assert.AreEqual(
-			@"{
+@"{
   let obj = ""hello"";
   let s, i;
   (() => {

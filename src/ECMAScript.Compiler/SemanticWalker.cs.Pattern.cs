@@ -1153,7 +1153,8 @@ public partial class SemanticWalker
 				{
 					// 兼容常量 null 模式
 					var expr = Translate<Expression>(clause, argument);
-					if (clause.CaseKind == CaseKind.SingleValue)
+					if ((clause.CaseKind == CaseKind.SingleValue) ||
+						(expr is Literal literal && literal.Kind == TokenKind.NullLiteral))
 						expr = new NonLogicalBinaryExpression(Operator.StrictEquality, inputId, expr);
 
 					conditions.Add(expr);
