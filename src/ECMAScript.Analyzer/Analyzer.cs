@@ -224,7 +224,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 						CheckType(ctx.ReportDiagnostic, type, location);
 						// 添加构造函数检查
 						var ctorKey = creation.Constructor!.OriginalDefinition.ToDisplayString(Util.NameFormat);
-						if (!WhiteList.Members.Contains(ctorKey))
+						if (!WhiteList.Members.ContainsKey(ctorKey))
 							ctx.ReportDiagnostic(Diagnostic.Create(Rule,
 								location,
 								ctorKey));
@@ -258,7 +258,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 						return;
 
 					var key = invocation.TargetMethod.OriginalDefinition.ToDisplayString(Util.NameFormat);
-					if (WhiteList.Members.Contains(key))
+					if (WhiteList.Members.ContainsKey(key))
 						return;
 
 					ctx.ReportDiagnostic(Diagnostic.Create(Rule,
@@ -272,7 +272,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 					// 枚举字段、特性、白名单内不检查
 					if (operation.Field.ContainingType.TypeKind == TypeKind.Enum ||
 						InECMAScriptAttribute(operation.Field.ContainingType) ||
-						WhiteList.Members.Contains(operation.Field.OriginalDefinition.ToDisplayString(Util.NameFormat)))
+						WhiteList.Members.ContainsKey(operation.Field.OriginalDefinition.ToDisplayString(Util.NameFormat)))
 						return;
 
 					ctx.ReportDiagnostic(Diagnostic.Create(Rule,
@@ -288,7 +288,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 					// 匿名类型、特性、白名单内不检查
 					if (operation.Property.ContainingType.IsAnonymousType ||
 						InECMAScriptAttribute(operation.Property.ContainingType) ||
-						WhiteList.Members.Contains(operation.Property.OriginalDefinition.ToDisplayString(Util.NameFormat)))
+						WhiteList.Members.ContainsKey(operation.Property.OriginalDefinition.ToDisplayString(Util.NameFormat)))
 						return;
 
 					ctx.ReportDiagnostic(Diagnostic.Create(Rule,
@@ -303,7 +303,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 						return;
 
 					var key = operation.Method.OriginalDefinition.ToDisplayString(Util.NameFormat);
-					if (WhiteList.Members.Contains(key))
+					if (WhiteList.Members.ContainsKey(key))
 						return;
 
 					ctx.ReportDiagnostic(Diagnostic.Create(Rule,

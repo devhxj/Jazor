@@ -69,8 +69,8 @@ var types = new Type[]{
 	// 基本类型
 	//typeof(void),
 	typeof(BigInteger),
-	//typeof(Object),
-	//typeof(Boolean),
+	typeof(Object),
+	typeof(Boolean),
 	//typeof(Char),
 	//typeof(SByte),
 	//typeof(Byte),
@@ -256,7 +256,7 @@ using static ECMAScript.CLRModule;
 namespace ECMAScript;
 
 [ECMAScriptModule]
-[WhiteList(""{fullName}"",""{fullName}"",WhiteListOp.Allowed)]
+[WhiteList(""{fullName}"", WhiteListOp.Allowed)]
 public static class {typeName}Module
 {{");
 
@@ -269,14 +269,14 @@ public static class {typeName}Module
 		if (member.DeclaredAccessibility.HasFlag(Accessibility.Public))
 		{
 			var display = member.ToDisplayString(Util.NameFormat);
-			var key = Util.HashName(display);
+			var hash = Util.HashName(display);
 			var comment = GetComment(member,out var summary);
 			var generics = string.Empty;
 			var para = string.Empty;
 			var wlop = "WhiteListOp.Discard";
 			string? value = null;
 			var returnType = string.Empty;
-			keys.Add(key, display);
+			keys.Add(hash, display);
 
 			if (member is IFieldSymbol field)
 			{
@@ -343,13 +343,13 @@ public static class {typeName}Module
 
 			coder.Append(
 $@"{(summary is not null?$"\r\n\t///{summary}":"")}
-	[WhiteList(""{key}"", ""{display}"", {wlop}{value})]
-	public extern static {returnType} {key}{generics}({para});
+	[WhiteList(""{display}"", {wlop}{value})]
+	public extern static {returnType} {hash}{generics}({para});
 ");
 
 			texter.Append(
-$@"签名: {key}
-成员:{display}
+$@"成员:{display}
+签名: {hash}
 注释：
 {comment}
 ");
