@@ -6,7 +6,7 @@ namespace ECMAScript;
 
 [ECMAScriptModule]
 [WhiteList("System.Numerics.BigInteger", "System.Numerics.BigInteger",WhiteListOp.Allowed)]
-public static class BigIntegerModule1
+public static class BigIntegerModule
 {
     ///<summary>Initializes a new instance of the <see cref="T:System.Numerics.BigInteger" /> structure using a 32-bit signed integer value.</summary>
     [WhiteList("_ba6e0e86598dc8b2","System.Numerics.BigInteger.BigInteger(int)",WhiteListOp.Literal, "BigInt(@#{0})")]
