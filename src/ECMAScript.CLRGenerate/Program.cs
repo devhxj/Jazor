@@ -8,8 +8,9 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Xml.Linq;
 
-static string? GetComment(ISymbol? symbol)
+static string? GetComment(ISymbol? symbol,out string? summary)
 {
+	summary = null;
 	var xml = symbol?.GetDocumentationCommentXml();
 	if (string.IsNullOrEmpty(xml))
 		return null;
@@ -18,7 +19,11 @@ static string? GetComment(ISymbol? symbol)
 	var builder = new StringBuilder();
 	foreach (var node in member.Nodes())
 	{
-		builder.Append($"    ///{node.ToString().Replace(Environment.NewLine,"")}{Environment.NewLine}");
+		var value = node.ToString().Replace(Environment.NewLine, "");
+		if (value.StartsWith("<summary>"))
+			summary = value;
+
+		builder.AppendLine(value);
 	}
 	return builder.ToString().TrimEnd('\n');
 }
@@ -202,10 +207,11 @@ string ConvertParamaterName(IParameterSymbol symbol)
 {
 	var name = symbol.ToDisplayString();
 	var key = symbol.Type.ToDisplayString();
-	var newValue = nameMaps.TryGetValue(key.TrimEnd('?'), out var mapName)
-		? $"{mapName}{(key.EndsWith('?') ? "?" : "")}"
-		: key;
-
+	var newValue = key;
+	if (nameMaps.TryGetValue(key.TrimEnd('?'), out var mapName))
+		newValue = $"{mapName}{(key.EndsWith('?') ? "?" : "")}";
+	else
+		newValue = "object";
 
 	if (symbol.RefKind == RefKind.Ref)
 	{
@@ -233,7 +239,8 @@ if (!Directory.Exists(directory))
 
 foreach (var type in types)
 {
-	var builder = new StringBuilder();
+	var coder = new StringBuilder();
+	var texter = new StringBuilder();
 	var symbol = compilation.GetTypeByMetadataName(type.FullName!)!;
 	var typeName = type.Name.Split('`')[0];
 	var fullName = symbol.ToDisplayString(Util.NameFormat);
@@ -241,16 +248,19 @@ foreach (var type in types)
 	if (!typeMaps.TryGetValue(type, out var mapName))
 		mapName = fullName;
 	
-	builder.Append(
+	coder.Append(
 $@"using System.Collections;
+using ECMAScript.Common;
 using static ECMAScript.CLRModule;
 
 namespace ECMAScript;
 
 [ECMAScriptModule]
-[WhiteList(""{fullName}"",""{fullName}"",""{fullName}"")]
+[WhiteList(""{fullName}"",""{fullName}"",WhiteListOp.Allowed)]
 public static class {typeName}Module
 {{");
+
+	texter.AppendLine(@"签名= _+ SHA256Hash(成员)").AppendLine();
 
 	var keys = new Dictionary<string,string>();
 	var members = symbol.GetMembers();
@@ -258,20 +268,21 @@ public static class {typeName}Module
 	{
 		if (member.DeclaredAccessibility.HasFlag(Accessibility.Public))
 		{
-			var value = member.ToDisplayString(Util.NameFormat);
-			var key = Util.HashName(value);
-			var comment = GetComment(member);
+			var display = member.ToDisplayString(Util.NameFormat);
+			var key = Util.HashName(display);
+			var comment = GetComment(member,out var summary);
 			var generics = string.Empty;
 			var para = string.Empty;
-			var attribute = string.Empty;
+			var wlop = "WhiteListOp.Discard";
+			string? value = null;
 			var returnType = string.Empty;
-			keys.Add(key, value);
+			keys.Add(key, display);
 
 			if (member is IFieldSymbol field)
 			{
 				if (field.IsConst)
 				{
-					builder.AppendLine($@"{Environment.NewLine}	//{field.ToDisplayString()} = {field.ConstantValue};");
+					coder.AppendLine($@"{Environment.NewLine}	//{field.ToDisplayString()} = {field.ConstantValue};");
 					continue;
 				}
 				else
@@ -296,14 +307,14 @@ public static class {typeName}Module
 						? $"{mapName} instance, {string.Join(", ", method.Parameters.Select(ConvertParamaterName))}"
 						: $"{mapName} instance";
 				}
-				else if(method.MethodKind != MethodKind.Destructor && method.MethodKind != MethodKind.Conversion)
+				else if (method.MethodKind != MethodKind.Destructor && method.MethodKind != MethodKind.Conversion)
 				{
 					if (method.MethodKind == MethodKind.Constructor)
 						returnType = mapName;
-					
+
 					para = method.IsStatic || method.MethodKind == MethodKind.Constructor
 						? string.Join(", ", method.Parameters.Select(ConvertParamaterName))
-						: $"{mapName} instance{(method.Parameters.Length> 0? ", ": "")}{string.Join(", ", method.Parameters.Select(ConvertParamaterName))}";
+						: $"{mapName} instance{(method.Parameters.Length > 0 ? ", " : "")}{string.Join(", ", method.Parameters.Select(ConvertParamaterName))}";
 
 					generics = (method.IsGenericMethod || method.ContainingType.TypeParameters.Length > 0)
 						? $"<{string.Join(", ", method.ContainingType.TypeParameters
@@ -311,39 +322,43 @@ public static class {typeName}Module
 							.Select(x => x.Name))}>"
 						: string.Empty;
 				}
-
-				attribute = "[Obsolete(\"Not Support in Jazor\",true)]";
 				if (method.Name.StartsWith("op_", StringComparison.InvariantCulture))
 				{
-					if (operatorNames.TryGetValue(method.Name, out var ope))
+					if (operatorNames.TryGetValue(method.Name, out var @operator))
 					{
 						if (method.Parameters.Length == 1)
 						{
-							attribute = $"[ECMAScriptLiteral(\"{ope}{{0}}\")]";
+							wlop = "WhiteListOp.Literal";
+							value = $", \"{@operator}{{0}}\"";
 						}
 						else if (method.Parameters.Length == 2)
 						{
-							attribute = $"[ECMAScriptLiteral(\"{{0}} {ope} {{1}}\")]";
+							wlop = "WhiteListOp.Literal";
+							value = $", \"{{0}} {@operator} {{1}}\"";
 						}
 					}
 				}
+			}
+			else continue;
 
-				builder.Append(
-$@"
-{comment}    [WhiteList(""{key}"",""{value}"",""{key}"")]
-    {attribute}
+			coder.Append(
+$@"{(summary is not null?$"\r\n\t///{summary}":"")}
+	[WhiteList(""{key}"", ""{display}"", {wlop}{value})]
 	public extern static {returnType} {key}{generics}({para});
 ");
-			}
+
+			texter.Append(
+$@"签名: {key}
+成员:{display}
+注释：
+{comment}
+");
 		}
 	}
 
-	builder.AppendLine("}");
-	var content = builder.ToString()
-		.Replace("\r\n", "\n") // Windows → Unix
-		.Replace("\r", "\n")   // Old Mac → Unix
-		.Replace("\n", "\r\n"); // Unix → Windows
-	File.WriteAllText(Path.Combine(directory, $"{typeName}Module.cs"), content);
+	coder.AppendLine("}");
+	File.WriteAllText(Path.Combine(directory, $"{typeName}Module.cs"), coder.ToString());
+	File.WriteAllText(Path.Combine(directory, $"{typeName}Module.note.txt"), texter.ToString());
 	Console.WriteLine(typeName);
 }
 

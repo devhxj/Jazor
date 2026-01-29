@@ -1,9 +1,11 @@
-﻿namespace ECMAScript.CLR;
+﻿using ECMAScript.Common;
 
-[WhiteList("void", "void", "void")]
-[WhiteList("System.Nullable", "System.Nullable", "System.Nullable")]
-[WhiteList("System.ValueTuple", "System.ValueTuple", "System.ValueTuple")]
-[WhiteList("System.Array", "System.Array", "System.Array")]
+namespace ECMAScript.CLR;
+
+[WhiteList("void", "void", WhiteListOp.Allowed)]
+[WhiteList("System.Nullable", "System.Nullable", WhiteListOp.Allowed)]
+[WhiteList("System.ValueTuple", "System.ValueTuple", WhiteListOp.Allowed)]
+[WhiteList("System.Array", "System.Array", WhiteListOp.Allowed)]
 public class AssignModule
 {
 }
