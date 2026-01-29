@@ -40,7 +40,7 @@ public static class BigIntegerModule
     [WhiteList("_c1e724fa6dbf63eb","System.Numerics.BigInteger.BigInteger(byte[])",WhiteListOp.Allowed)]
 	public static BigInt _c1e724fa6dbf63eb(Array<byte> value)
 	{
-		// ����������
+		// 空白数组处理
 		if (value.Length == 0)
 			return BigInt.Zero;
 
@@ -50,11 +50,11 @@ public static class BigIntegerModule
 		var result = BigInt.Zero;
 		var i = 0u;
 
-		// ÿ�δ��� 8 �ֽڣ�64λ��
+		// 每次处理 8 字节（64位）
 		for (; i + 8 <= value.Length; i += 8)
 			result = (result << BigInt(64)) | view.GetBigUint64(i, false);
 
-		// ����ʣ���ֽڣ����7�ֽڣ�
+		// 处理剩余字节（最多7字节）
 		if (i < value.Length)
 		{
 			var remaining = BigInt.Zero;
@@ -71,11 +71,11 @@ public static class BigIntegerModule
 	[WhiteList("_9c321a7400e5ff9b","System.Numerics.BigInteger.BigInteger(System.ReadOnlySpan<byte>, bool, bool)",WhiteListOp.Allowed)]
 	public static BigInt _9c321a7400e5ff9b(Array<byte> value, bool isUnsigned, bool isBigEndian)
 	{
-		// ��������������
+		// 处理空字节数组
 		if (value.Length == 0)
 			return BigInt.Zero;
 
-		// ����1�ֽ��������
+		// 处理1字节特殊情况
 		if (value.Length == 1)
 		{
 			if (isUnsigned)
@@ -84,14 +84,14 @@ public static class BigIntegerModule
 			}
 			else
 			{
-				// �з��Ŵ�����������λΪ1����Ϊ����
+				// 有符号数：如果最高位为1，则为负数
 				return (value[0] & 0x80) == 0
 					? BigInt(value[0])
 					: BigInt(value[0]) - BigInt(0x100);
 			}
 		}
 
-		// ������׼���ȣ�2/4/8�ֽڣ�
+		// 处理标准长度（2/4/8字节）
 		if (value.Length <= 8)
 		{
 			var buffer = new ArrayBuffer(value.Length);
@@ -109,54 +109,54 @@ public static class BigIntegerModule
 				8 => isUnsigned ?
 					view.GetBigUint64(0, !isBigEndian) :
 					view.GetBigInt64(0, !isBigEndian),
-				// 3/5/6/7�ֽڳ���ʹ�÷Ǳ�׼����
+				// 3/5/6/7字节长度使用非标准处理
 				_ => ProcessNonStandardLength(value, isUnsigned, isBigEndian)
 			};
 		}
 
-		// ����8�ֽ����ϵķǱ�׼����
+		// 处理超过8字节以上的非标准长度
 		return ProcessNonStandardLength(value, isUnsigned, isBigEndian);
 
-		// �����Ǳ�׼�����ֽ����飨3-7�ֽڻ�>8�ֽڣ�
+		// 处理非标准长度字节数组（3-7字节或>8字节）
 		static BigInt ProcessNonStandardLength(Array<byte> bytes, bool isUnsigned, bool isBigEndian)
 		{
-			// �����ֽ�����Ŀ����Ա����޸�ԭʼ����
+			// 创建字节数组的副本以避免修改原始数据
 			var processedBytes = bytes.Slice(0);
 
-			// �������Ҫ��ת��С�����Ա㴦��
+			// 如果需要转换为小端序以便处理
 			if (isBigEndian)
 			{
 				processedBytes.Reverse();
 			}
 
-			// �����޷��Ŵ�����
+			// 从小端序字节数组构建无符号大整数
 			var result = BuildBigIntFromLEBytes(processedBytes);
 
-			// �����з������Ĳ���ת�������λΪ1��
+			// 对于有符号数的处理，转换如果最高位为1
 			if (!isUnsigned && (processedBytes[processedBytes.Length - 1] & 0x80) != 0)
 			{
-				// ������λ�����ֽ��� * 8��
+				// 计算位宽度 = 字节数 * 8
 				var bitWidth = BigInt(processedBytes.Length) * BigInt(8);
 
-				// ����2��bitWidth�η���ƫ������
+				// 计算2的bitWidth次方作为偏移量
 				var offset = BigInt.One << bitWidth;
 
-				// ת��Ϊ�з��Ų���ֵ
+				// 转换为有符号补码值
 				result -= offset;
 			}
 
 			return result;
 		}
 
-		// ��С�����ֽ����鹹���޷��Ŵ�����
+		// 从小端序字节数组构建无符号大整数
 		static BigInt BuildBigIntFromLEBytes(Array<byte> littleEndianBytes)
 		{
 			var result = BigInt.Zero;
 
-			// �����λ�ֽڿ�ʼ������С������������һ���ֽ������λ��
+			// 从最低字节开始，按小端序累加，最后一个字节是最高位
 			for (var i = littleEndianBytes.Length - 1; i >= 0; i--)
 			{
-				// ����8λ��ƴ�ӵ�ǰ�ֽ�ֵ
+				// 移位8位拼接当前字节值
 				result = (result << BigInt(8)) | BigInt(littleEndianBytes[i] & 0xFF);
 			}
 
@@ -183,8 +183,7 @@ public static class BigIntegerModule
     [WhiteList("_2aa0739f87c79906","System.Numerics.BigInteger.IsOne.get", WhiteListOp.Literal, "@#{0} === 1n")]
 	public extern static bool _2aa0739f87c79906(BigInt instance);
 
-    [WhiteList("_4a465705ad4dc8ca","System.Numerics.BigInteger.IsEven.get", WhiteListOp.Literal, "-1n")]
-	[ECMAScriptLiteral("@#{0} % 2n === 0n")]
+    [WhiteList("_4a465705ad4dc8ca","System.Numerics.BigInteger.IsEven.get", WhiteListOp.Literal, "@#{0} % 2n === 0n")]
 	public extern static bool _4a465705ad4dc8ca(BigInt instance);
 
     [WhiteList("_734290a188c5bc5a","System.Numerics.BigInteger.Sign.get", WhiteListOp.Literal, "(@#{0} === 0n ? 0 : (@#{0} > 0n ? 1 : -1))")]
@@ -308,7 +307,7 @@ public static class BigIntegerModule
 			return 0;
 
 		if (baseValue == Maths.E)
-			Maths.Log(Number(value));
+			return Maths.Log(Number(value));
 
 		if (value <= Number.MAX_SAFE_INTEGER)
 			return Maths.Log(Number(value)) / Maths.Log(baseValue);
@@ -398,8 +397,8 @@ public static class BigIntegerModule
 	[WhiteList("_31cf4d89164dee40","static System.Numerics.BigInteger.Pow(System.Numerics.BigInteger, int)",WhiteListOp.Allowed)]
 	public static BigInt _31cf4d89164dee40(BigInt value, Number exponent)
 	{
-		if (value <= BigInt.Zero)
-			throw new RangeError("The index must be a non negative integer");
+		if (exponent < 0 || !Number.IsInteger(exponent))
+			throw new RangeError("The exponent must be a non-negative integer");
 
 		var result = BigInt.One;
 		var current = value;
@@ -464,13 +463,35 @@ public static class BigIntegerModule
 		if (instance == BigInt.Zero)
 			return [0];
 
-		var value = instance;
+		var isNegative = instance < BigInt.Zero;
+		var value = isNegative ? -instance : instance;
 		var bytes = new Array<byte>();
 
 		while (value > BigInt.Zero)
 		{
 			bytes.Unshift(Number(value & BigInt(0xFF)));
 			value >>= BigInt(8);
+		}
+
+		// 处理负数的补码表示
+		if (isNegative)
+		{
+			// 按位取反
+			for (var i = 0u; i < bytes.Length; i++)
+				bytes[i] = (byte)((~bytes[i]) & 0xFF);
+
+			// 加1（补码）
+			var carry = 1u;
+			for (var i = (uint)bytes.Length - 1; i >= 0 && carry > 0; i--)
+			{
+				var sum = bytes[i] + carry;
+				bytes[i] = (byte)(sum & 0xFF);
+				carry = sum >> 8;
+			}
+
+			// 确保符号位为1（最高位为1）
+			if ((bytes[0] & 0x80) == 0)
+				bytes.Unshift(0xFF);
 		}
 
 		return bytes;
@@ -528,35 +549,35 @@ public static class BigIntegerModule
 	[WhiteList("_76ae4e496fc976fd","System.Numerics.BigInteger.TryWriteBytes(System.Span<byte>, out int, bool, bool)",WhiteListOp.Allowed)]
 	public static bool _76ae4e496fc976fd(BigInt instance, Uint8Array destination, OutValue<Number> bytesWritten, bool isUnsigned, bool isBigEndian)
 	{
-		// 1. ���������ֽ���
-		var requiredBytes = 1; // ������Ҫ1�ֽ�
+		// 1. 计算所需字节数
+		var requiredBytes = 1; // 至少需要1字节
 		if (instance != BigInt.Zero)
 		{
 			var isNegative = !isUnsigned && instance < BigInt.Zero;
 			var value = isNegative ? (isUnsigned ? instance : -instance - BigInt.One) : instance;
 			var bitLength = 0u;
 
-			// ����λ����
+			// 计算位长度
 			while (value > BigInt.Zero)
 			{
 				bitLength++;
 				value >>= BigInt.One;
 			}
 
-			// ���������ֽ�
+			// 计算所需字节数
 			requiredBytes = isUnsigned
 				? Maths.Max(1, Maths.Ceil(bitLength / 8))
 				: Maths.Max(1, Maths.Ceil((bitLength + 1) / 8));
 		}
 
-		// 2. ��黺������С
+		// 2. 检查缓冲区大小
 		if (destination.Length < requiredBytes)
 		{
 			bytesWritten.Value = 0;
 			return false;
 		}
 
-		// 3. ת��Ϊ�ֽ�����
+		// 3. 转换为字节数组
 		var bytes = new Array<byte>();
 		if (instance == BigInt.Zero)
 			bytes.Push(0);
@@ -565,7 +586,7 @@ public static class BigIntegerModule
 			var isNegative = !isUnsigned && instance < BigInt.Zero;
 			var value = isNegative ? -instance - BigInt.One : instance;
 
-			// ����ʵ����Ҫ�������ֽ���
+			// 按实际需要生成字节数
 			var byteCount = requiredBytes;
 			while (byteCount-- > 0)
 			{
@@ -578,13 +599,13 @@ public static class BigIntegerModule
 				value >>= BigInt(8);
 			}
 
-			// ������������
+			// 处理负数的补码
 			if (isNegative)
 			{
 				for (var i = 0u; i < bytes.Length; i++)
 					bytes[i] = (byte)((~bytes[i]) & 0xFF);
 
-				// ȷ������λ��ȷ
+				// 确保符号位正确
 				if (isBigEndian && (bytes[0] & 0x80) == 0)
 				{
 					bytes.Unshift(0xFF);
@@ -598,18 +619,18 @@ public static class BigIntegerModule
 			}
 		}
 
-		// 4. ��������ֽ����Ƿ񳬳�������
+		// 4. 检查结果字节数是否超出缓冲区
 		if (bytes.Length > destination.Length)
 		{
 			bytesWritten.Value = 0;
 			return false;
 		}
 
-		// 5. д��Ŀ������
+		// 5. 写入目标缓冲区
 		for (var i = 0u; i < bytes.Length; i++)
 			destination[i] = bytes[i];
 
-		// 6. ���ʣ���ֽڣ������Ҫ��
+		// 6. 填充剩余字节（如果需要）
 		var fillByte = !isUnsigned && instance < BigInt.Zero ? 0xFF : 0;
 		for (var i = bytes.Length; i < destination.Length; i++)
 			destination[i] = (byte)fillByte;
@@ -639,8 +660,8 @@ public static class BigIntegerModule
 			return Maths.Max(1, Maths.Ceil(bitLength / 8));
 		else
 			return isNegative
-				? Maths.Max(1, Maths.Ceil((bitLength + 1) / 8))
-				: Maths.Max(1, Maths.Ceil((bitLength + 1) / 8));
+				? Maths.Max(1, Maths.Ceil((bitLength + 1) / 8))  // 负数需要符号位
+				: Maths.Max(1, Maths.Ceil(bitLength / 8));        // 正数不需要符号位
 	}
 
 	///<summary>Converts the numeric value of the current <see cref="T:System.Numerics.BigInteger" /> object to its equivalent string representation.</summary>
@@ -660,20 +681,20 @@ public static class BigIntegerModule
 
 		try
 		{
-			// ����ֱ��ʹ��Intl.NumberFormat�������ڰ�ȫ������Χ��
+			// 对于可以直接使用Intl.NumberFormat的范围（在安全整数范围内）
 			if (absValue <= BigInt(Number.MAX_SAFE_INTEGER))
 			{
 				var formatted = provider.Format(Number(absValue));
 				return isNegative ? $"-{formatted}" : formatted;
 			}
 
-			// ���ڳ��������ֶ�ʵ�ֻ������ػ���ʽ��
+			// 对于长数字手动实现本地化分组格式
 			var sample = provider.Format(1000.1);
 			var groupChar = sample.Includes("1,000") ? "," :
 							 sample.Includes("1.000") ? "." :
 							 sample.Includes("1 000") ? " " : ",";
 
-			// �����������ӷ���ָ���
+			// 从右到左添加分组分隔符
 			var result = "";
 			var i = strValue.Length;
 			var groupCount = 0;
@@ -940,8 +961,7 @@ public static class BigIntegerModule
     ///<param name="left">The first value to compare.</param>
     ///<param name="right">The second value to compare.</param>
     ///<returns>  <see langword="true" /> if <paramref name="left" /> and <paramref name="right" /> are not equal; otherwise, <see langword="false" />.</returns>
-    [WhiteList("_fa04bb024b763d8c","static System.Numerics.BigInteger.operator !=(System.Numerics.BigInteger, System.Numerics.BigInteger)",WhiteListOp.Discard)]
-    [ECMAScriptLiteral("{0} != {1}")]
+    [WhiteList("_fa04bb024b763d8c","static System.Numerics.BigInteger.operator !=(System.Numerics.BigInteger, System.Numerics.BigInteger)",WhiteListOp.Literal, "@#{0} != @#{1}")]
 	public extern static bool _fa04bb024b763d8c(BigInt left, BigInt right);
 
     ///<summary>Returns a value that indicates whether a <see cref="T:System.Numerics.BigInteger" /> value is less than a 64-bit signed integer.</summary>
@@ -1015,7 +1035,7 @@ public static class BigIntegerModule
     ///<param name="left">The first value to compare.</param>
     ///<param name="right">The second value to compare.</param>
     ///<returns>  <see langword="true" /> if the <paramref name="left" /> and <paramref name="right" /> parameters have the same value; otherwise, <see langword="false" />.</returns>
-    [WhiteList("_90393e5796d20760","static System.Numerics.BigInteger.operator ==(System.Numerics.BigInteger, ulong)",WhiteListOp.Literal, "{0} == {1}")]
+    [WhiteList("_90393e5796d20760","static System.Numerics.BigInteger.operator ==(System.Numerics.BigInteger, ulong)",WhiteListOp.Literal, "@#{0} == @#{1}")]
 	public extern static bool _90393e5796d20760(BigInt left, BigInt right);
 
     ///<summary>Returns a value that indicates whether a <see cref="T:System.Numerics.BigInteger" /> value and a 64-bit unsigned integer are not equal.</summary>
@@ -1087,12 +1107,11 @@ public static class BigIntegerModule
 	public static BigInt _276680abacb93277(BigInt value)
 	{
 		if (value == BigInt.Zero)
-			return BigInt(64);
+			return BigInt.Zero;
 
-		var binaryStr = value.ToString(2);
-		var bitLength = BigInt(binaryStr.Length);
-		var leadingZeros = BigInt(64) - bitLength;
-		return leadingZeros > BigInt.Zero ? leadingZeros : BigInt.Zero;
+		// BigInt 是任意精度，没有固定的位宽，因此没有前导零的概念
+		// 返回 0 表示值是从第一位开始的
+		return BigInt.Zero;
 	}
 
 	///<summary>Computes the number of bits that are set in a value.</summary>
@@ -1105,7 +1124,7 @@ public static class BigIntegerModule
 		var count = BigInt.Zero;
 		var n = value < BigInt.Zero ? -value - BigInt.One : value;
 
-		// Brian Kernighan�㷨
+		// Brian Kernighan算法
 		while (n > BigInt.Zero)
 		{
 			n &= n - BigInt.One;
@@ -1246,7 +1265,6 @@ public static class BigIntegerModule
 
 	///<summary>Clamps a value to an inclusive minimum and maximum value.</summary>
 	[WhiteList("_8548cc83c4d947f5","static System.Numerics.BigInteger.Clamp(System.Numerics.BigInteger, System.Numerics.BigInteger, System.Numerics.BigInteger)",WhiteListOp.Discard)]
-    [Obsolete("Not Support in Jazor",true)]
 	public static BigInt _8548cc83c4d947f5(BigInt value, BigInt min, BigInt max)
 	{
 		// Validate that min <= max
@@ -1300,7 +1318,7 @@ public static class BigIntegerModule
 			var trimmed = s.Trim();
 
 			// Validate integer format (optional sign + digits)
-			if (RegExp(@"!/ ^-?\d +$/").Test(trimmed))
+			if (!RegExp(@"^-?\d+$").Test(trimmed))
 				throw new RangeError("String must represent a valid integer");
 
 			// Convert to BigInt
@@ -1375,12 +1393,9 @@ public static class BigIntegerModule
 		if (value >= BigInt.Zero)
 			return value >> shift;
 
-		// ���ڸ�������ת��Ϊ������Ч��ʾ��Ȼ������
-		// ʹ�� 2^n �Ĳ�������
-		var bits = BigInt(64); // ����64λ�����Ը�����Ҫ������
-		var mask = (BigInt.One << bits) - BigInt.One;
-		var positiveRepresentation = value & mask;
-		return positiveRepresentation >> shift;
+		// BigInt 没有原生的 >>> 运算符（JavaScript 的 >>> 仅适用于 Number）
+		// 对于负数，抛出异常说明不支持
+		throw new Error("Unsigned right shift (>>>) is not supported for BigInt in JavaScript");
 	}
 
 	///<summary>Parses a span of characters into a value.</summary>
