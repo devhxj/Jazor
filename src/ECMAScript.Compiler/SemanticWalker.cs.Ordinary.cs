@@ -529,6 +529,10 @@ public partial class SemanticWalker
 			Translate(arguments, arg.Value, argument);
 		}
 
+		// 获取方法名称（支持白名单映射）
+		var methodName = GetSymbolName(operation.TargetMethod);
+		var property = new Identifier(methodName);
+
 		// 判断方法调用的类型
 		Expression callee;
 
@@ -539,10 +543,9 @@ public partial class SemanticWalker
 			{
 				// 静态方法调用：StaticClass.Method()
 				var className = operation.TargetMethod.ContainingType.Name;
-				var methodName = operation.TargetMethod.Name;
 				callee = new MemberExpression(
 					new Identifier(className),
-					new Identifier(methodName),
+					property,
 					computed: false,
 					optional: false
 				);
@@ -550,19 +553,16 @@ public partial class SemanticWalker
 			else
 			{
 				// 扩展方法调用：ExtensionMethod(arg)
-				var methodName = operation.TargetMethod.Name;
-				callee = new Identifier(methodName);
+				callee = property;
 			}
 		}
 		else
 		{
 			// 实例方法调用：obj.Method()
 			var instance = Translate<Expression>(operation.Instance, argument);
-			var methodName = operation.TargetMethod.Name;
-
 			callee = new MemberExpression(
 				instance,
-				new Identifier(methodName),
+				property,
 				computed: false,
 				optional: false
 			);

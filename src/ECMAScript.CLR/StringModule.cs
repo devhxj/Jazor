@@ -1,4 +1,6 @@
+using System.Collections;
 using ECMAScript.Common;
+using static ECMAScript.CLRModule;
 
 namespace ECMAScript;
 
@@ -111,11 +113,11 @@ public static class StringModule
 	public extern static bool _b7c36408f0f172e9(object a, object b, object comparisonType);
 
 	///<summary>Determines whether two specified strings have the same value.</summary>
-	[WhiteList("static string.operator ==(string, string)", WhiteListOp.Literal, "{0} == {1}")]
+	[WhiteList("static string.operator ==(string, string)", WhiteListOp.Allowed)]
 	public extern static bool _ee27dec45b308755(object a, object b);
 
 	///<summary>Determines whether two specified strings have different values.</summary>
-	[WhiteList("static string.operator !=(string, string)", WhiteListOp.Literal, "{0} != {1}")]
+	[WhiteList("static string.operator !=(string, string)", WhiteListOp.Allowed)]
 	public extern static bool _1573803c425863d3(object a, object b);
 
 	///<summary>Returns the hash code for this string.</summary>

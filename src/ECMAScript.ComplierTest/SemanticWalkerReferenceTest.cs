@@ -572,6 +572,35 @@ public sealed class SemanticWalkerReferenceTest
 }", script);
 	}
 
+	[TestMethod]
+	public void Visit_MethodReference_InstanceMethod1()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    TestMethod(1,2);
+                }
+
+				int TestMethod(int a,int b)
+                {
+                    return a + b;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+@"{
+  this.TestMethod(1, 2);
+}", script);
+
+	}
+
 	#endregion
 
 	#region VisitInstanceReference - 实例引用

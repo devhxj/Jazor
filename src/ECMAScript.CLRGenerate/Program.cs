@@ -328,13 +328,11 @@ public static class {typeName}Module
 					{
 						if (method.Parameters.Length == 1)
 						{
-							wlop = "WhiteListOp.Literal";
-							value = $", \"{@operator}{{0}}\"";
+							wlop = "WhiteListOp.Allowed";
 						}
 						else if (method.Parameters.Length == 2)
 						{
-							wlop = "WhiteListOp.Literal";
-							value = $", \"{{0}} {@operator} {{1}}\"";
+							wlop = "WhiteListOp.Allowed";
 						}
 					}
 				}

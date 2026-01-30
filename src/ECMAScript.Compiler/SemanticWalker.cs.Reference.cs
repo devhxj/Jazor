@@ -2,6 +2,8 @@
 using Acornima.Ast;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
+using ECMAScript.Common;
+using System.Linq;
 
 namespace ECMAScript.Compiler;
 
@@ -62,6 +64,57 @@ public partial class SemanticWalker
 		}
 
 		return new Identifier(symbol.Name);
+	}
+
+	/// <summary>
+	/// 获取ISymbol的 JavaScript 名称，支持白名单名称映射
+	/// 优先级：
+	/// 1. ECMAScriptNameAttribute
+	/// 2. DescriptionAttribute (以 @# 开头)
+	/// 3. WhiteList.Members 映射
+	/// 4. 默认symbol名
+	/// </summary>
+	private static string GetSymbolName(ISymbol symbol)
+	{
+		string? symbolName = null;
+		// 先从特性中找
+		foreach (var attr in symbol.GetAttributes())
+		{
+			if (attr.ConstructorArguments.Length > 0)
+			{
+				if (attr.AttributeClass?.Name == "ECMAScriptNameAttribute")
+				{
+					var name = attr.ConstructorArguments[0].Value?.ToString();
+					if (!string.IsNullOrEmpty(name))
+					{
+						symbolName = name!;
+						break;//ECMAScriptNameAttribute 优先级最高，找到后直接返回
+					}
+				}
+				else if (attr.AttributeClass?.Name == "DescriptionAttribute")
+				{
+					var desc = attr.ConstructorArguments[0].Value?.ToString();
+					if (desc is not null && desc.StartsWith("@#"))
+						return desc.Substring(2);
+				}
+			}
+		}
+
+		// 从白名单查找映射
+		if (string.IsNullOrEmpty(symbolName))
+		{
+			var display = symbol.ToDisplayString(Util.NameFormat);
+			if (WhiteList.Members.TryGetValue(display, out var entry))
+			{
+				if (entry.Op == WhiteListOp.Replace)
+				{
+					symbolName = entry.Value;
+				}
+			}
+		}
+
+		// 默认使用symbol名
+		return symbolName ?? symbol.Name;
 	}
 
 	/// <summary>
@@ -271,11 +324,12 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitMethodReference(IMethodReferenceOperation operation, WalkerArgument argument)
 	{
+		var methodName = GetSymbolName(operation.Method);
+		var property = new Identifier(methodName);
+
 		if (operation.Instance is not null)
 		{
 			var expr = Translate<Expression>(operation.Instance, argument);
-			var methodName = operation.Method.Name;
-			var property = new Identifier(methodName);
 			return new MemberExpression(expr, property, computed: false, optional: false);
 		}
 
@@ -283,11 +337,10 @@ public partial class SemanticWalker
 		if (operation.Method.IsStatic && operation.Method.ContainingType is not null)
 		{
 			var typeName = new Identifier(operation.Method.ContainingType.Name);
-			var methodName = new Identifier(operation.Method.Name);
-			return new MemberExpression(typeName, methodName, computed: false, optional: false);
+			return new MemberExpression(typeName, property, computed: false, optional: false);
 		}
 
-		return new Identifier(operation.Method.Name);
+		return property;
 	}
 
 	/// <summary>
@@ -302,7 +355,9 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitPropertyReference(IPropertyReferenceOperation operation, WalkerArgument argument)
 	{
-		var property = new Identifier(operation.Property.Name);
+		// 获取属性名称（支持白名单映射）
+		var propertyName = GetSymbolName(operation.Property);
+		var property = new Identifier(propertyName);
 
 		/* // 对象初始化器 或 匿名对象创建
 		if (operation.Instance is IInstanceReferenceOperation instanceReferenceOp &&
