@@ -15,7 +15,7 @@ public static class WhiteList
         "string"
     };
 
-    public static readonly Dictionary<string,(WhiteListOp Op, string Hash, string? Value)> Members = new()
+    public static readonly Dictionary<string, (WhiteListOp Op, string Hash, string? Value)> Members = new()
     {
         {"System.Numerics.BigInteger.BigInteger(int)",(WhiteListOp.BigIntNew, "_ba6e0e86598dc8b2", null)},
         {"System.Numerics.BigInteger.BigInteger(uint)",(WhiteListOp.BigIntNew, "_b7b735a5d507d449", null)},

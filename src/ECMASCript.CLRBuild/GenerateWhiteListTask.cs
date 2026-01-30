@@ -118,7 +118,7 @@ public static class WhiteList
         {string.Join(split, classes.Select(n => $"\"{n}\""))}
     }};
 
-    public static readonly Dictionary<string,(WhiteListOp Op, string Hash, string? Value)> Members = new()
+    public static readonly Dictionary<string, (WhiteListOp Op, string Hash, string? Value)> Members = new()
     {{
         {string.Join(split, members.Select(n => $"{{\"{n.Member}\",(WhiteListOp.{n.Op}, \"{n.Hash}\", {(n.Value is null ? "null" : $"\"{n.Value}\"")})}}"))}
     }};
