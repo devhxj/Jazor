@@ -31,10 +31,7 @@ static string? GetComment(ISymbol? symbol,out string? summary)
 //var xmlDir = @"C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\10.0.2\ref\net10.0";
 var coreLibXml = XmlDocumentationProvider.CreateFromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "System.Private.CoreLib.xml"));
 var numericsXml = XmlDocumentationProvider.CreateFromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "System.Runtime.Numerics.xml"));
-var compilation = CSharpCompilation.Create("Jazor", references: [
-	MetadataReference.CreateFromFile(typeof(object).Assembly.Location, documentation:coreLibXml),
-	MetadataReference.CreateFromFile(typeof(BigInteger).Assembly.Location,documentation:numericsXml),
-]);
+var compilation = CSharpCompilation.Create("Jazor", references: Basic.Reference.Assemblies.Net100.References.All);
 
 
 var operatorNames = new Dictionary<string, string>
@@ -68,16 +65,17 @@ var operatorNames = new Dictionary<string, string>
 var types = new Type[]{
 	// 基本类型
 	//typeof(void),
-	typeof(Console),
-	typeof(BigInteger),
-	typeof(Object),
-	typeof(Boolean),
+	//typeof(Console),
+	//typeof(Math),
+	//typeof(BigInteger),
+	//typeof(Object),
+	//typeof(Boolean),
 	//typeof(Char),
 	//typeof(SByte),
 	//typeof(Byte),
 	//typeof(Int16),
 	//typeof(UInt16),
-	//typeof(Int32),
+	typeof(Int32),
 	//typeof(UInt32),
 	//typeof(Int64),
 	//typeof(UInt64),
@@ -89,7 +87,7 @@ var types = new Type[]{
 	//typeof(TimeOnly),
 	//typeof(DateTimeOffset),
 	//typeof(TimeSpan),
-	typeof(String),
+	//typeof(String),
 	//typeof(Exception),
 	//typeof(StringBuilder),
 	//typeof(Nullable),

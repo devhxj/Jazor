@@ -16,6 +16,9 @@ public static partial class Global
 		public extern bool Includes(string? searchString, uint position);
 
 		[Description("@#fromCodePoint")]
+		public extern static bool FromCodePoint(uint num);
+
+		[Description("@#fromCodePoint")]
 		public extern static bool FromCodePoint(params uint[] nums);
 
 		[Description("@#replace")]
@@ -26,12 +29,6 @@ public static partial class Global
 
 		[Description("@#replace")]
 		public extern string Replace(IPattern pattern, string replacement);
-
-		[ECMAScriptLiteral("@#{0} > @#{1}")]
-		public extern static bool GreaterThan(string x, string y);
-
-		[ECMAScriptLiteral("@#{0} < @#{1}")]
-		public extern static bool LessThan(string x, string y);
 
 		[Description("@#localeCompare")]
 		public extern int LocaleCompare(string compareString);

@@ -11,7 +11,7 @@ using System.Text;
 
 namespace ECMASCript.CLRBuild;
 
-public class GenerateWhiteListTask : Task
+public class GenerateTask : Task
 {
 	[Required]
 	public ITaskItem[] SourceFiles { get; set; } = [];
@@ -68,7 +68,7 @@ public class GenerateWhiteListTask : Task
 				.ToList();
 
 			// 提取类名和方法名
-			var classes = new List<string>();
+			var classes = new List<(string Hash, string? Member, string? Op, string? Value)>();
 			var members = new List<(string Hash, string? Member, string? Op, string? Value)>();
 
 			foreach (var tree in syntaxTrees)
@@ -87,7 +87,11 @@ public class GenerateWhiteListTask : Task
 
 					// WhiteList("System.Numerics.BigInteger", WhiteListOp.Allowed, "System/Numerics/BigIntegerModule.js")
 					// 类上配置的是成员名、Allowed、js模块路径
-					classes.Add(classCfg.Value.member);
+					classes.Add((
+						string.Empty,
+						classCfg.Value.member,
+						classCfg.Value.op,
+						classCfg.Value.value));
 
 					foreach (var methodDecl in classDecl.DescendantNodes().OfType<MethodDeclarationSyntax>())
 					{
@@ -97,7 +101,11 @@ public class GenerateWhiteListTask : Task
 						{
 							// 如果是Import，则使用js模块路径作为值
 							var value = methodCfg.Value.op == "Import" ? classCfg.Value.value : methodCfg.Value.value;
-							members.Add((hash!, methodCfg.Value.member, methodCfg.Value.op, value));
+							members.Add((
+								hash!, 
+								methodCfg.Value.member, 
+								methodCfg.Value.op, 
+								value));
 						}
 					}
 				}
@@ -113,9 +121,9 @@ namespace ECMAScript.Common;
 
 public static class WhiteList
 {{
-    public static readonly HashSet<string> Types = new HashSet<string>
+    public static readonly Dictionary<string, (WhiteListOp Op, string Hash, string? Value)> Types = new()
     {{
-        {string.Join(split, classes.Select(n => $"\"{n}\""))}
+        {string.Join(split, classes.Select(n => $"{{\"{n.Member}\",(WhiteListOp.{n.Op}, \"{n.Hash}\", {(n.Value is null ? "null" : $"\"{n.Value}\"")})}}"))}
     }};
 
     public static readonly Dictionary<string, (WhiteListOp Op, string Hash, string? Value)> Members = new()

@@ -22,13 +22,15 @@ public sealed class SemanticWalkerOrdinaryTest
         global using System.Collections.Generic;
         global using System.Linq;";
 
-    var compilation = CSharpCompilation.Create(
+    var references = Basic.Reference.Assemblies.Net100.References.All
+        .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location));
+	var compilation = CSharpCompilation.Create(
         "TestAssembly",
         syntaxTrees: [
           CSharpSyntaxTree.ParseText(usings),
           CSharpSyntaxTree.ParseText(code)
         ],
-        references: Basic.Reference.Assemblies.Net100.References.All,
+        references: references,
         options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
     // 输出编译诊断信息

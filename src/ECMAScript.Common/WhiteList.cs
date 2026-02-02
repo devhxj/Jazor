@@ -6,13 +6,15 @@ namespace ECMAScript.Common;
 
 public static class WhiteList
 {
-    public static readonly HashSet<string> Types = new HashSet<string>
+    public static readonly Dictionary<string, (WhiteListOp Op, string Hash, string? Value)> Types = new()
     {
-        "void",
-        "System.Numerics.BigInteger",
-        "bool",
-        "object",
-        "string"
+        {"void",(WhiteListOp.Allowed, "", null)},
+        {"System.Numerics.BigInteger",(WhiteListOp.Allowed, "", "System/Numerics/BigIntegerModule.js")},
+        {"bool",(WhiteListOp.Allowed, "", "System/BooleanModule.js")},
+        {"System.Console",(WhiteListOp.Replace, "", "console")},
+        {"int",(WhiteListOp.Allowed, "", "System/Int32Module.js")},
+        {"object",(WhiteListOp.Allowed, "", "System/ObjectModule.js")},
+        {"string",(WhiteListOp.Allowed, "", null)}
     };
 
     public static readonly Dictionary<string, (WhiteListOp Op, string Hash, string? Value)> Members = new()
@@ -137,6 +139,37 @@ public static class WhiteList
         {"static bool.Parse(System.ReadOnlySpan<char>)",(WhiteListOp.Import, "_c3ccfdf8f687d2bf", "System/BooleanModule.js")},
         {"static bool.TryParse(string, out bool)",(WhiteListOp.Import, "_dada4bbdacd7aa19", "System/BooleanModule.js")},
         {"static bool.TryParse(System.ReadOnlySpan<char>, out bool)",(WhiteListOp.Import, "_619c4d1c94319558", "System/BooleanModule.js")},
+        {"static System.Console.Write(bool)",(WhiteListOp.Replace, "_a4ba329944e98b1c", "log")},
+        {"static System.Console.Write(char)",(WhiteListOp.Replace, "_c61ec50b9f9538a3", "log")},
+        {"static System.Console.Write(decimal)",(WhiteListOp.Replace, "_fe7b9d5b136e9441", "log")},
+        {"static System.Console.Write(double)",(WhiteListOp.Replace, "_c7002c416a3da063", "log")},
+        {"static System.Console.Write(int)",(WhiteListOp.Replace, "_9aeb4b39f93efc70", "log")},
+        {"static System.Console.Write(long)",(WhiteListOp.Replace, "_8950a34699a5bdf8", "log")},
+        {"static System.Console.Write(object)",(WhiteListOp.Replace, "_134c0342866ed156", "log")},
+        {"static System.Console.Write(float)",(WhiteListOp.Replace, "_80304f087568bfd4", "log")},
+        {"static System.Console.Write(string)",(WhiteListOp.Replace, "_89898d51245a9c64", "log")},
+        {"static System.Console.Write(string, object)",(WhiteListOp.Replace, "_961ab9b501a6baf0", "log")},
+        {"static System.Console.Write(string, object, object)",(WhiteListOp.Replace, "_33daccffa622fc66", "log")},
+        {"static System.Console.Write(string, object, object, object)",(WhiteListOp.Replace, "_366c851b7a360959", "log")},
+        {"static System.Console.Write(string, params object[])",(WhiteListOp.Replace, "_bdb97b77edce5259", "log")},
+        {"static System.Console.Write(uint)",(WhiteListOp.Replace, "_e31e2ab80d13cd13", "log")},
+        {"static System.Console.Write(ulong)",(WhiteListOp.Replace, "_e8ba4c4ca492d5a8", "log")},
+        {"static System.Console.WriteLine(bool)",(WhiteListOp.Replace, "_0657067880cafdd2", "log")},
+        {"static System.Console.WriteLine(char)",(WhiteListOp.Replace, "_5a138b02870324cb", "log")},
+        {"static System.Console.WriteLine(decimal)",(WhiteListOp.Replace, "_24ba609cace0df9d", "log")},
+        {"static System.Console.WriteLine(double)",(WhiteListOp.Replace, "_b457fd5c1c5f9568", "log")},
+        {"static System.Console.WriteLine(int)",(WhiteListOp.Replace, "_8f3980b4b82b99ac", "log")},
+        {"static System.Console.WriteLine(long)",(WhiteListOp.Replace, "_0a1213ea041262ff", "log")},
+        {"static System.Console.WriteLine(object)",(WhiteListOp.Replace, "_b1dc4a6e5df341aa", "log")},
+        {"static System.Console.WriteLine(float)",(WhiteListOp.Replace, "_38bc406a617b49ca", "log")},
+        {"static System.Console.WriteLine(string)",(WhiteListOp.Replace, "_19f2583beee4f7fb", "log")},
+        {"static System.Console.WriteLine(string, object)",(WhiteListOp.Replace, "_c4e6acf24771bb66", "log")},
+        {"static System.Console.WriteLine(string, object, object)",(WhiteListOp.Replace, "_f5c74fa705a4f0b9", "log")},
+        {"static System.Console.WriteLine(string, object, object, object)",(WhiteListOp.Replace, "_0fa26d5cd312b8d3", "log")},
+        {"static System.Console.WriteLine(string, params object[])",(WhiteListOp.Replace, "_7a73fda86982983f", "log")},
+        {"static System.Console.WriteLine(uint)",(WhiteListOp.Replace, "_029fda9e4e9b254f", "log")},
+        {"static System.Console.WriteLine(ulong)",(WhiteListOp.Replace, "_28da774493da8a92", "log")},
+        {"static int.TryParse(string, out int)",(WhiteListOp.Import, "_16e2a901535b765e", "System/Int32Module.js")},
         {"object.Object()",(WhiteListOp.Allowed, "_4aea088b73a04a68", null)},
         {"virtual object.ToString()",(WhiteListOp.Replace, "_b43835974ba92ea0", "toString")},
         {"virtual object.Equals(object)",(WhiteListOp.Equals, "_bfe118282c0f0f45", null)},

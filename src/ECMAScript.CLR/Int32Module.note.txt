@@ -1,0 +1,218 @@
+签名= _+ SHA256Hash(成员)
+
+成员:int.Int32()
+签名: _d8bb920f83e7d97e
+注释：
+
+成员:static int.Abs(int)
+签名: _49bf8261f5cf3a4b
+注释：
+
+成员:static int.BigMul(int, int)
+签名: _6f2c27167c45a727
+注释：
+
+成员:static int.Clamp(int, int, int)
+签名: _351e597bc27e1afc
+注释：
+
+成员:int.CompareTo(int)
+签名: _741df6ab5c9e75bc
+注释：
+
+成员:int.CompareTo(object)
+签名: _b03337a2a71c762d
+注释：
+
+成员:static int.CopySign(int, int)
+签名: _95793b26c4495935
+注释：
+
+成员:static int.CreateChecked<TOther>(TOther)
+签名: _275663af53fa5529
+注释：
+
+成员:static int.CreateSaturating<TOther>(TOther)
+签名: _570b24c0c63f26f9
+注释：
+
+成员:static int.CreateTruncating<TOther>(TOther)
+签名: _0315334a27eea649
+注释：
+
+成员:static int.DivRem(int, int)
+签名: _d4cc9914e60e5643
+注释：
+
+成员:int.Equals(int)
+签名: _5e7fb3a45e5a8f45
+注释：
+
+成员:override int.Equals(object)
+签名: _3f3e17a78ac17712
+注释：
+
+成员:override int.GetHashCode()
+签名: _74e858272ce4a15a
+注释：
+
+成员:int.GetTypeCode()
+签名: _5c5bca3bf690f9b1
+注释：
+
+成员:static int.IsEvenInteger(int)
+签名: _4cbed0ce3a7f9c5f
+注释：
+
+成员:static int.IsNegative(int)
+签名: _3d1db358d3f6d96f
+注释：
+
+成员:static int.IsOddInteger(int)
+签名: _0f92a85f87224c94
+注释：
+
+成员:static int.IsPositive(int)
+签名: _280b1b013a39c514
+注释：
+
+成员:static int.IsPow2(int)
+签名: _8157179708f5a6c3
+注释：
+
+成员:static int.LeadingZeroCount(int)
+签名: _f4458d4939549cbc
+注释：
+
+成员:static int.Log2(int)
+签名: _3173781f909bc9fc
+注释：
+
+成员:static int.Max(int, int)
+签名: _a98fdc6e84d091b3
+注释：
+
+成员:static int.MaxMagnitude(int, int)
+签名: _a36b4a6dbd50fa77
+注释：
+
+成员:static int.Min(int, int)
+签名: _a0b140070c2e6328
+注释：
+
+成员:static int.MinMagnitude(int, int)
+签名: _d0c6a74fd11d24bf
+注释：
+
+成员:static int.Parse(System.ReadOnlySpan<byte>, System.Globalization.NumberStyles, System.IFormatProvider)
+签名: _a78d8d9d4b2f22f6
+注释：
+
+成员:static int.Parse(System.ReadOnlySpan<byte>, System.IFormatProvider)
+签名: _835ae2f52c59c7ec
+注释：
+
+成员:static int.Parse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider)
+签名: _8791c7bfd3662e63
+注释：
+
+成员:static int.Parse(System.ReadOnlySpan<char>, System.IFormatProvider)
+签名: _40d7b4fbe4ce5fc0
+注释：
+
+成员:static int.Parse(string)
+签名: _151ccc6045162f8f
+注释：
+
+成员:static int.Parse(string, System.Globalization.NumberStyles)
+签名: _976d6e5278dfc58f
+注释：
+
+成员:static int.Parse(string, System.Globalization.NumberStyles, System.IFormatProvider)
+签名: _377c7ab241784b5b
+注释：
+
+成员:static int.Parse(string, System.IFormatProvider)
+签名: _bb24095a38bb9666
+注释：
+
+成员:static int.PopCount(int)
+签名: _e04660fe6cb92bf1
+注释：
+
+成员:static int.RotateLeft(int, int)
+签名: _f7913110e7d03a57
+注释：
+
+成员:static int.RotateRight(int, int)
+签名: _f090db0dba3c3b28
+注释：
+
+成员:static int.Sign(int)
+签名: _ab2e55d493adcdd8
+注释：
+
+成员:override int.ToString()
+签名: _0103494bc5e6253f
+注释：
+
+成员:int.ToString(System.IFormatProvider)
+签名: _1c432a82e61a7193
+注释：
+
+成员:int.ToString(string)
+签名: _2d79e025317a398b
+注释：
+
+成员:int.ToString(string, System.IFormatProvider)
+签名: _f57247af306a3082
+注释：
+
+成员:static int.TrailingZeroCount(int)
+签名: _43a8a807a2b103c8
+注释：
+
+成员:int.TryFormat(System.Span<byte>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)
+签名: _11b66442f91f5212
+注释：
+
+成员:int.TryFormat(System.Span<char>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)
+签名: _bf6eee9bbd850f13
+注释：
+
+成员:static int.TryParse(System.ReadOnlySpan<byte>, System.Globalization.NumberStyles, System.IFormatProvider, out int)
+签名: _e40b4c4d3f2f631c
+注释：
+
+成员:static int.TryParse(System.ReadOnlySpan<byte>, System.IFormatProvider, out int)
+签名: _b1fd33b593bc8df8
+注释：
+
+成员:static int.TryParse(System.ReadOnlySpan<byte>, out int)
+签名: _2acff5418dba43bd
+注释：
+
+成员:static int.TryParse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider, out int)
+签名: _b745c572061e8b30
+注释：
+
+成员:static int.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, out int)
+签名: _635895827c275362
+注释：
+
+成员:static int.TryParse(System.ReadOnlySpan<char>, out int)
+签名: _f6a664534980b0f4
+注释：
+
+成员:static int.TryParse(string, System.Globalization.NumberStyles, System.IFormatProvider, out int)
+签名: _69f925b0bfe7fa2a
+注释：
+
+成员:static int.TryParse(string, System.IFormatProvider, out int)
+签名: _a1335dcbd870906d
+注释：
+
+成员:static int.TryParse(string, out int)
+签名: _16e2a901535b765e
+注释：
+

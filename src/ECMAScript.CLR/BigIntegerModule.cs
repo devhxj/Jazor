@@ -1,6 +1,4 @@
 ﻿using ECMAScript.Common;
-using System.Collections;
-using static ECMAScript.CLRModule;
 
 namespace ECMAScript;
 
@@ -301,8 +299,10 @@ public static class BigIntegerModule
 
 	///<summary>Divides one <see cref="T:System.Numerics.BigInteger" /> value by another and returns the result.</summary>
 	[WhiteList("static System.Numerics.BigInteger.Divide(System.Numerics.BigInteger, System.Numerics.BigInteger)", WhiteListOp.Discard)]
-	[ECMAScriptLiteral("@#{0} / @#{1}")]
-	public extern static BigInt _7ff5692b085214c4(BigInt dividend, BigInt divisor);
+	public static BigInt _7ff5692b085214c4(BigInt dividend, BigInt divisor)
+	{
+		return dividend / divisor;
+	}
 
 	///<summary>Performs integer division on two <see cref="T:System.Numerics.BigInteger" /> values and returns the remainder.</summary>
 	[WhiteList("static System.Numerics.BigInteger.Remainder(System.Numerics.BigInteger, System.Numerics.BigInteger)", WhiteListOp.Import)]
@@ -337,7 +337,7 @@ public static class BigIntegerModule
 		var exponent = str.Length - 1;
 		var mantissa = Number(str.Substring(0, 15));
 
-		return Maths.Log(mantissa) + exponent * Maths.Log(10);
+		return Math.Log(mantissa) + exponent * Math.Log(10);
 	}
 
 	///<summary>Returns the logarithm of a specified number in a specified base.</summary>
@@ -353,19 +353,19 @@ public static class BigIntegerModule
 		if (value == BigInt.One)
 			return 0;
 
-		if (baseValue == Maths.E)
-			return Maths.Log(Number(value));
+		if (baseValue == Math.E)
+			return Math.Log(Number(value));
 
 		if (value <= Number.MAX_SAFE_INTEGER)
-			return Maths.Log(Number(value)) / Maths.Log(baseValue);
+			return Math.Log(Number(value)) / Math.log(baseValue);
 
 		var str = value.ToString()!;
 		var digitCount = str.Length;
 		var significantDigits = str.Substring(0, 15);
-		var mantissa = ParseFloat(significantDigits) / Maths.Pow(10, significantDigits.Length - 1);
+		var mantissa = ParseFloat(significantDigits) / Math.Pow(10, significantDigits.Length - 1);
 		var exponent = digitCount - 1;
-		var lnValue = Maths.Log(mantissa) + exponent * Maths.LN10;
-		var lnBase = Maths.Log(baseValue);
+		var lnValue = Math.Log(mantissa) + exponent * Math.LN10;
+		var lnBase = Math.Log(baseValue);
 
 		return lnValue / lnBase;
 	}
@@ -382,8 +382,8 @@ public static class BigIntegerModule
 
 		var str = value.ToString()!;
 		return (str.Length <= 15)
-			? Maths.Log10(Number(value))
-			: Maths.Log10(Number(str.Substring(0, 15))) + (str.Length - 15);
+			? Math.Log10(Number(value))
+			: Math.Log10(Number(str.Substring(0, 15))) + (str.Length - 15);
 	}
 
 	///<summary>Finds the greatest common divisor of two <see cref="T:System.Numerics.BigInteger" /> values.</summary>
@@ -455,7 +455,7 @@ public static class BigIntegerModule
 
 		var result = BigInt.One;
 		var current = value;
-		var exp = exponent;
+		Number exp = exponent;
 
 		while (exp > 0)
 		{
@@ -463,7 +463,7 @@ public static class BigIntegerModule
 				result *= current;
 
 			current *= current;
-			exp = Maths.Floor(exp / 2);
+			exp = Math.floor(exp / 2);
 		}
 
 		return result;
@@ -481,7 +481,7 @@ public static class BigIntegerModule
 	[WhiteList("override System.Numerics.BigInteger.Equals(object)", WhiteListOp.Equals)]
 	public static bool _27c2f0d965e3403d(BigInt instance, Object? obj)
 	{
-		return instance == obj;
+		return instance.Equals(obj);
 	}
 
 	///<summary>Returns a value that indicates whether the current instance and a signed 64-bit integer have the same value.</summary>
@@ -594,8 +594,8 @@ public static class BigIntegerModule
 			temp >>= BigInt.One;
 		}
 
-		var minLength = isNegative ? Maths.Ceil((bitLength + 1) / 8) : Maths.Ceil(bitLength / 8);
-		var byteLength = Maths.Max(minLength, 1);
+		var minLength = isNegative ? Math.ceil((bitLength + 1) / 8) : Math.ceil(bitLength / 8);
+		var byteLength = Math.max(minLength, 1);
 
 		for (var i = 0; i < byteLength; i++)
 		{
@@ -644,8 +644,8 @@ public static class BigIntegerModule
 
 			// 计算所需字节数
 			requiredBytes = isUnsigned
-				? Maths.Max(1, Maths.Ceil(bitLength / 8))
-				: Maths.Max(1, Maths.Ceil((bitLength + 1) / 8));
+				? Math.max(1, Math.ceil(bitLength / 8))
+				: Math.max(1, Math.ceil((bitLength + 1) / 8));
 		}
 
 		// 2. 检查缓冲区大小
@@ -735,11 +735,11 @@ public static class BigIntegerModule
 		}
 
 		if (isUnsigned)
-			return Maths.Max(1, Maths.Ceil(bitLength / 8));
+			return Math.max(1, Math.ceil(bitLength / 8));
 		else
 			return isNegative
-				? Maths.Max(1, Maths.Ceil((bitLength + 1) / 8))  // 负数需要符号位
-				: Maths.Max(1, Maths.Ceil(bitLength / 8));        // 正数不需要符号位
+				? Math.max(1, Math.ceil((bitLength + 1) / 8))  // 负数需要符号位
+				: Math.max(1, Math.ceil(bitLength / 8));        // 正数不需要符号位
 	}
 
 	///<summary>Converts the numeric value of the current <see cref="T:System.Numerics.BigInteger" /> object to its equivalent string representation.</summary>

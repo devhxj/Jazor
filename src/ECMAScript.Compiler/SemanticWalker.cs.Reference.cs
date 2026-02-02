@@ -10,13 +10,14 @@ namespace ECMAScript.Compiler;
 
 public partial class SemanticWalker
 {
+
 	/// <summary>
 	/// 获取ISymbol的 JavaScript 名称
 	/// 优先级：
 	/// 1. ECMAScriptNameAttribute
 	/// 2. DescriptionAttribute (以 @# 开头)
 	/// </summary>
-	private static string GetConfigOrSymbolName(ISymbol symbol)
+	private static string? GetSymbolConfigName(ISymbol symbol)
 	{
 		string? configName = null;
 		foreach (var attr in symbol.GetAttributes())
@@ -36,9 +37,60 @@ public partial class SemanticWalker
 				}
 			}
 		}
-
-		return configName ?? symbol.Name;
+		
+		return configName;
 	}
+
+	private static string GetConfigOrSymbolName(ISymbol symbol)
+		=> GetSymbolConfigName(symbol) ?? symbol.Name;
+
+	private static string? GetTypeName(ITypeSymbol symbol)
+	{
+		// 先取特性配置
+		var name = GetSymbolConfigName(symbol);
+
+		// 再查询白名单
+		if (string.IsNullOrEmpty(name))
+		{
+			var displayName = symbol.ToDisplayString(Util.NameFormat);
+			if (WhiteList.Types.TryGetValue(displayName, out var entry) &&
+				entry.Op == WhiteListOp.Replace &&
+				!string.IsNullOrEmpty(entry.Value))
+				name = entry.Value!;
+		}
+
+		return name;
+	}
+
+	private static Expression? BuildTypeName(ITypeSymbol symbol)
+	{
+		var queue = new Stack<string>();
+
+		var type = symbol;
+		while (type is not null)
+		{
+			var name = GetTypeName(type);
+			if (string.IsNullOrEmpty(name))
+				break;
+			else
+				queue.Push(name!);
+
+			type = symbol.ContainingType;
+		}
+
+		Expression? expr = null;
+		if (queue.Count > 0)
+		{
+			expr = new Identifier(queue.Pop());
+			while (queue.Count > 0)
+			{
+				var property = new Identifier(queue.Pop());
+				expr = new MemberExpression(expr, property, computed: false, optional: false);
+			}
+		}
+		return expr;
+	}
+
 
 	private Expression GetFieldName(IOperation includeOp, IFieldSymbol symbol)
 	{
@@ -351,15 +403,16 @@ public partial class SemanticWalker
 			var optional = operation.Instance is IConditionalAccessInstanceOperation;
 			return new MemberExpression(instance, property, false, optional);
 		}
-		
+
 		// todo：后续需要清理和白名单整合
 		// 静态成员：生成完整的限定名（如 DateTime.Now）
 		// 检查属性是否是静态成员
 		if (operation.Property.IsStatic && operation.Property.ContainingType is not null)
 		{
 			// 生成类型标识符作为对象
-			var typeName = new Identifier(operation.Property.ContainingType.Name);
-			return new MemberExpression(typeName, property, computed: false, optional: false);
+			var containing = BuildTypeName(operation.Property.ContainingType);
+			if (containing is not null)
+				return new MemberExpression(containing, property, computed: false, optional: false);
 		}
 
 		return property;
@@ -536,17 +589,15 @@ public partial class SemanticWalker
 			if (operation.TargetMethod.IsStatic)
 			{
 				// 静态方法调用：StaticClass.Method()
-				var className = GetConfigOrSymbolName(operation.TargetMethod.ContainingType);
-				callee = new MemberExpression(
-					new Identifier(className),
-					property,
-					computed: false,
-					optional: false
-				);
+				// 生成类型标识符作为对象
+				var containing = BuildTypeName(operation.TargetMethod.ContainingType);
+				callee = containing is not null
+					? new MemberExpression(containing, property, computed: false, optional: false)
+					: property;
 			}
 			else
 				callee = property;// 扩展方法调用：ExtensionMethod(arg)
-			
+
 		}
 		else
 		{

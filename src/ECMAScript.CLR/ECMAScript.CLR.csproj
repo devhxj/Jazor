@@ -8,20 +8,17 @@
     <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <!-- 配置编译后生成代码文件 -->
   <PropertyGroup>
-    <WhiteListOutputPath>$(SolutionDir)\src\ECMAScript.Common\WhiteList.cs</WhiteListOutputPath>
+    <BuildGeneratePath>$(SolutionDir)\src\ECMAScript.Common\WhiteList.cs</BuildGeneratePath>
   </PropertyGroup>
-
-  <Target Name="GenerateWhiteList" BeforeTargets="Build" Inputs="@(Compile)" Outputs="$(WhiteListOutputPath)">
-    <GenerateWhiteListTask SourceFiles="@(Compile)" OutputFile="$(WhiteListOutputPath)" Condition="'$(GenerateWhiteList)' != 'false'" />
+  <Target Name="BuildGenerateTarget" BeforeTargets="Build" Inputs="@(Compile)" Outputs="$(BuildGeneratePath)">
+    <GenerateTask SourceFiles="@(Compile)" OutputFile="$(BuildGeneratePath)" Condition="'$(BuildGenerateTarget)' != 'false'" />
   </Target>
-
-  <Target Name="CleanWhiteList" AfterTargets="Clean">
-    <Delete Files="$(WhiteListOutputPath)" Condition="Exists('$(WhiteListOutputPath)')" />
+  <Target Name="CleanBuildGenerate" AfterTargets="Clean">
+    <Delete Files="$(BuildGeneratePath)" Condition="Exists('$(BuildGeneratePath)')" />
   </Target>
-
-  <!-- 引用任务程序集 -->
-  <UsingTask TaskName="GenerateWhiteListTask" AssemblyFile="$(SolutionDir)\src\ECMASCript.CLRBuild\bin\$(Configuration)\netstandard2.0\ECMASCript.CLRBuild.dll" />
+  <UsingTask TaskName="GenerateTask" AssemblyFile="$(SolutionDir)\src\ECMASCript.Build\bin\$(Configuration)\netstandard2.0\ECMASCript.Build.dll" />
 
   <ItemGroup>
     <Compile Remove="ByteModule.cs" />
@@ -52,7 +49,6 @@
     <Compile Remove="HashSet_Module.cs" />
     <Compile Remove="Int16Module.cs" />
     <Compile Remove="Int16_Module.cs" />
-    <Compile Remove="Int32Module.cs" />
     <Compile Remove="Int32_Module.cs" />
     <Compile Remove="Int64Module.cs" />
     <Compile Remove="Int64_Module.cs" />

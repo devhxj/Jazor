@@ -15,4 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ECMAScript.Common\ECMAScript.Common.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Special\" />
+  </ItemGroup>
 </Project>

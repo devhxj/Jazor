@@ -176,7 +176,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 
 		// 允许白名单中的类型
 		var fullName = typeSymbol.OriginalDefinition.ToDisplayString(Util.NameFormat);
-		if (WhiteList.Types.Contains(fullName))
+		if (WhiteList.Types.ContainsKey(fullName))
 			return;
 
 		// 只要是被[ECMAScript]标记的类型就允许使用

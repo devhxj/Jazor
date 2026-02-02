@@ -2,7 +2,7 @@
 
 [ECMAScript]
 [Description("@#Number")]
-public sealed class Number : IEquatable<Number>, IComparable, IComparable<Number>, IMinMaxValue<Number>, IFormattable
+public readonly struct Number : IEquatable<Number>, IComparable, IComparable<Number>, IMinMaxValue<Number>, IFormattable
 {
 	public extern Number(byte value);
 
@@ -78,17 +78,17 @@ public sealed class Number : IEquatable<Number>, IComparable, IComparable<Number
 
 	public extern static Number operator /(Number a, Number b);
 
-	public extern static bool operator ==(Number a, Number b);
+	//public extern static bool operator ==(Number a, Number b);
 
 	public extern static bool operator ==(Number a, object? b);
 
-	public extern static bool operator ==(object? a, Number b);
+	//public extern static bool operator ==(object? a, Number b);
 
-	public extern static bool operator !=(Number a, Number b);
+	//public extern static bool operator !=(Number a, Number b);
 
 	public extern static bool operator !=(Number a, object? b);
 
-	public extern static bool operator !=(object? a, Number b);
+	//public extern static bool operator !=(object? a, Number b);
 
 	public extern static Number operator ++(Number x);
 
@@ -209,9 +209,9 @@ public sealed class Number : IEquatable<Number>, IComparable, IComparable<Number
 
 	extern int IComparable.CompareTo(object? obj);
 
-	extern int IComparable<Number>.CompareTo(Number? other);
+	extern int IComparable<Number>.CompareTo(Number other);
 
-	extern bool IEquatable<Number>.Equals(Number? other);
+	extern bool IEquatable<Number>.Equals(Number other);
 
 	extern string IFormattable.ToString(string? format, IFormatProvider? formatProvider);
 

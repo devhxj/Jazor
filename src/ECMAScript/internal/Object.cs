@@ -37,7 +37,7 @@ public interface IObject<TPrototype> : IObject
 
 [ECMAScript]
 [Description("@#Object")]
-public interface IObject<TPrototype,TValue> : IObject<TPrototype>
+public interface IObject<TPrototype, TValue> : IObject<TPrototype>
 {
 	public new extern TValue? this[string key] { get; }
 
@@ -46,15 +46,6 @@ public interface IObject<TPrototype,TValue> : IObject<TPrototype>
 
 public static partial class Global
 {
-	extension<T>(T obj)
-	{
-		/// <summary>
-		/// Returns undefined value.This is a special property designed to simulate the undefined implementation of javascript using C # syntax
-		/// </summary>
-		[ECMAScriptLiteral("undefined")]
-		public extern static T? Undefined { get; }
-	}
-
 	extension(object obj)
 	{
 		/// <summary>
@@ -63,7 +54,33 @@ public static partial class Global
 		/// <param name="values"></param>
 		[Description("@#super")]
 		public extern void Super(params Array<object?> values);
-				
+
+		/// <summary>
+		/// 需要应用源对象属性的目标对象，修改后将作为返回值。
+		/// </summary>
+		/// <param name="target">需要应用源对象属性的目标对象，修改后将作为返回值。</param>
+		/// <param name="source">一个或多个包含要应用的属性的源对象。</param>
+		/// <returns>修改后的目标对象。</returns>
+		[Description("@#assign")]
+		public extern static IObject<TPrototype> Assign<TPrototype>(TPrototype target, params object[] source);
+
+		/// <summary>
+		/// Creates an object that has the specified prototype or that has null prototype.
+		/// </summary>
+		/// <param name="proto">Object to use as a prototype.May be null.</param>
+		/// <returns></returns>
+		[Description("@#create")]
+		public extern static IObject<TPrototype>? Create<TPrototype>(TPrototype? proto);
+
+		/// <summary>
+		/// Creates an object that has the specified prototype, and that optionally contains specified properties.
+		/// </summary>
+		/// <param name="proto">Object to use as a prototype.May be null</param>
+		/// <param name="propertiesObject">JavaScript object that contains one or more property descriptors.</param>
+		/// <returns></returns>
+		[Description("@#create")]
+		public extern static IObject<TPrototype>? Create<TPrototype>(TPrototype? proto, PropertyDescriptorMap propertiesObject);
+
 		[Description("@#is")]
 		public extern static bool Is(object? value1, object value2);
 
@@ -125,23 +142,6 @@ public static partial class Global
 		public extern static Array<string> GetOwnPropertyNames(object o);
 
 		/// <summary>
-		/// Creates an object that has the specified prototype or that has null prototype.
-		/// </summary>
-		/// <param name="o">Object to use as a prototype.May be null.</param>
-		/// <returns></returns>
-		[Description("@#create")]
-		public extern static IObject Create(object? o);
-
-		/// <summary>
-		/// Creates an object that has the specified prototype, and that optionally contains specified properties.
-		/// </summary>
-		/// <param name="o">Object to use as a prototype.May be null</param>
-		/// <param name="properties">JavaScript object that contains one or more property descriptors.</param>
-		/// <returns></returns>
-		[Description("@#create")]
-		public extern static IObject Create(object? o, PropertyDescriptorMap properties);
-
-		/// <summary>
 		/// Returns a date converted to a string using the current locale.
 		/// </summary>
 		/// <returns></returns>
@@ -161,13 +161,7 @@ public static partial class Global
 		/// <param name="v">A property name.</param>
 		/// <returns></returns>
 		[Description("@#hasOwnProperty")]
-		public extern bool HasOwnProperty(PropertyKey v);
-
-		[ECMAScriptLiteral("@#target[@#{0}]")]
-		public extern bool GetPropertyValue(string name);	
-
-		[ECMAScriptLiteral("@#target[@#{0}]")]
-		public extern bool GetPropertyValue(Symbol name);				
+		public extern bool HasOwnProperty(PropertyKey v);		
 
 		/// <summary>
 		/// Determines whether an object exists in another object's prototype chain.

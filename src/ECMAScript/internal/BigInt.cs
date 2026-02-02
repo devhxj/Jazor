@@ -1,21 +1,20 @@
-﻿using static ECMAScript.Global;
-namespace ECMAScript;
+﻿namespace ECMAScript;
 
 [ECMAScript]
 [Description("@#BigInt")]
 public abstract class BigInt
 {
-	[Description("@#0n")]
-	public static readonly BigInt Zero = BigInt(0);
+	[SpecialCompile]
+	public extern static BigInt Zero { get; }
 
-	[Description("@#1n")]
-	public static readonly BigInt One = BigInt(1);
+	[SpecialCompile]
+	public extern static BigInt One { get; }
 
-	[Description("@#2n")]
-	public static readonly BigInt Two = BigInt(2);
+	[SpecialCompile]
+	public extern static BigInt Two { get; }
 
-	[Description("@#-1n")]
-	public static readonly BigInt MinusOne = BigInt(-1);
+	[SpecialCompile]
+	public extern static BigInt MinusOne { get; }
 
 	/// <summary>
 	/// 将 BigInt 值转换为一个 -2^(width-1) 与 2^(width-1)-1 之间的有符号整数。
@@ -75,7 +74,9 @@ public abstract class BigInt
 
 	public extern static BigInt operator %(BigInt x, BigInt y);
 
+	[ECMAScriptIgnore]
 	public extern override bool Equals(object? obj);
 
+	[ECMAScriptIgnore]
 	public extern override int GetHashCode();
 }

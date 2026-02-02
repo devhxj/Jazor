@@ -21,7 +21,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECMAScript.ComplierTest", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECMAScript.Common", "src\ECMAScript.Common\ECMAScript.Common.csproj", "{F6C8145A-F04E-40C9-AEBC-DAA79B6EB33A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECMASCript.CLRBuild", "src\ECMASCript.CLRBuild\ECMASCript.CLRBuild.csproj", "{A058748D-D964-1AA8-04E6-2A088F94B4CB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECMASCript.Build", "src\ECMASCript.Build\ECMASCript.Build.csproj", "{C42D8258-C085-A5D9-D36F-BB442E6335C4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -67,10 +67,10 @@ Global
 		{F6C8145A-F04E-40C9-AEBC-DAA79B6EB33A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F6C8145A-F04E-40C9-AEBC-DAA79B6EB33A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F6C8145A-F04E-40C9-AEBC-DAA79B6EB33A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A058748D-D964-1AA8-04E6-2A088F94B4CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A058748D-D964-1AA8-04E6-2A088F94B4CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A058748D-D964-1AA8-04E6-2A088F94B4CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A058748D-D964-1AA8-04E6-2A088F94B4CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C42D8258-C085-A5D9-D36F-BB442E6335C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C42D8258-C085-A5D9-D36F-BB442E6335C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C42D8258-C085-A5D9-D36F-BB442E6335C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C42D8258-C085-A5D9-D36F-BB442E6335C4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

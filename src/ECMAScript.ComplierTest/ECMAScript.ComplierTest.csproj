@@ -8,6 +8,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\ECMAScript.Compiler\ECMAScript.Compiler.csproj" />
+    <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Acornima" Version="1.2.0" />
