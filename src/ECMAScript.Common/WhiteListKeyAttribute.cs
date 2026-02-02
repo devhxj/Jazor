@@ -16,12 +16,13 @@ namespace ECMAScript.Common;
 	AttributeTargets.Method,
 	AllowMultiple = true,
 	Inherited = false)]
-public sealed class WhiteListAttribute(string member, WhiteListOp op, string? value = null) : Attribute
+public sealed class WhiteListAttribute(string member, WhiteListOp op, string? value = null, string? path = null) : Attribute
 {
 	public string Member { get; } = member;
-
 
 	public WhiteListOp Op { get; } = op;
 
 	public string? Value { get; } = value;
+
+	public string? Path { get; } = path;
 }

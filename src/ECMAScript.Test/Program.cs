@@ -91,9 +91,8 @@ var  b = (2,4);
 var  c = (2,"a");
 ((int bbb, int ccc),int aaa) = tuple;
 var script = @"
-const a = 0n;
-const b = BigInt(0);
-const c = a === b ? 0 : (a > b ? 1 : -1);
+const a = {};
+a.value = 1;
 ";
 var parser = new Parser(new ParserOptions { 
 

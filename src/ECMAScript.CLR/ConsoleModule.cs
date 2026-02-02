@@ -1,6 +1,4 @@
-using System.Collections;
 using ECMAScript.Common;
-using static ECMAScript.CLRModule;
 
 namespace ECMAScript;
 

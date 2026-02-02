@@ -220,16 +220,23 @@ public sealed class SemanticWalkerDeclarationTest
                 void TestMethod()
                 {
                     string input = ""123"";
-                    if (int.TryParse(input, out var result))
-                    {
-                        Console.WriteLine(result);
-                    }
                     
                     var dict = new System.Collections.Generic.Dictionary<string, int>();
                     if (dict.TryGetValue(""key"", out int value))
                     {
                         Console.WriteLine(value);
                     }
+
+                    int a;
+                    if (int.TryParse(input, out a))
+                    {
+                        Console.WriteLine(a);
+                    }
+
+                    if (int.TryParse(input, out var result))
+                    {
+                        Console.WriteLine(result);
+                    }                    
                 }
             }
             ");
@@ -238,18 +245,25 @@ public sealed class SemanticWalkerDeclarationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(@"{
+        Assert.AreEqual(
+@"{
   let input = ""123"";
-  let result;
-  if (Int32.TryParse(input, result)) {
-    Console.WriteLine(result);
-  }
   let dict = new Map;
-  let value;
-  if (dict.TryGetValue(""key"", value)) {
-    Console.WriteLine(value);
+  let value, v$0 = {}, v$1;
+  if (v$1 = _7db4d9112b4ba3c4(dict, ""key"", v$0), value = v$0.value, v$1) {
+    console.log(value);
+  }
+  let a;
+  let v$2 = {}, v$3;
+  if (v$3 = _16e2a901535b765e(input, v$2), a = v$2.value, v$3) {
+    console.log(a);
+  }
+  let result, v$4 = {}, v$5;
+  if (v$5 = _16e2a901535b765e(input, v$4), result = v$4.value, v$5) {
+    console.log(result);
   }
 }", script);
+
     }
 
     [TestMethod]

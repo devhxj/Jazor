@@ -3,7 +3,7 @@ using ECMAScript.Common;
 namespace ECMAScript;
 
 [ECMAScriptModule]
-[WhiteList("bool", WhiteListOp.Allowed, "System/BooleanModule.js")]
+[WhiteList("bool", WhiteListOp.Allowed, null, "System/BooleanModule.js")]
 public static class BooleanModule
 {
 	[WhiteList("bool.Boolean()", WhiteListOp.Discard)]

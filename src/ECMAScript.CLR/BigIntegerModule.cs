@@ -3,7 +3,7 @@
 namespace ECMAScript;
 
 [ECMAScriptModule]
-[WhiteList("System.Numerics.BigInteger", WhiteListOp.Allowed, "System/Numerics/BigIntegerModule.js")]
+[WhiteList("System.Numerics.BigInteger", WhiteListOp.Allowed, null, "System/Numerics/BigIntegerModule.js")]
 public static class BigIntegerModule
 {
 	///<summary>Initializes a new instance of the <see cref="T:System.Numerics.BigInteger" /> structure using a 32-bit signed integer value.</summary>

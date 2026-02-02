@@ -8,6 +8,11 @@
     <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ECMAScript.Common\ECMAScript.Common.csproj" />
+    <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
+  </ItemGroup>
+
   <!-- 配置编译后生成代码文件 -->
   <PropertyGroup>
     <BuildGeneratePath>$(SolutionDir)\src\ECMAScript.Common\WhiteList.cs</BuildGeneratePath>
@@ -19,75 +24,5 @@
     <Delete Files="$(BuildGeneratePath)" Condition="Exists('$(BuildGeneratePath)')" />
   </Target>
   <UsingTask TaskName="GenerateTask" AssemblyFile="$(SolutionDir)\src\ECMASCript.Build\bin\$(Configuration)\netstandard2.0\ECMASCript.Build.dll" />
-
-  <ItemGroup>
-    <Compile Remove="ByteModule.cs" />
-    <Compile Remove="Byte_Module.cs" />
-    <Compile Remove="CharModule.cs" />
-    <Compile Remove="Char_Module.cs" />
-    <Compile Remove="ConditionalWeakTableModule.cs" />
-    <Compile Remove="ConditionalWeakTable_Module.cs" />
-    <Compile Remove="CultureInfoModule.cs" />
-    <Compile Remove="CultureInfo_Module.cs" />
-    <Compile Remove="DateOnlyModule.cs" />
-    <Compile Remove="DateOnly_Module.cs" />
-    <Compile Remove="DateTimeModule.cs" />
-    <Compile Remove="DateTimeOffsetModule.cs" />
-    <Compile Remove="DateTimeOffset_Module.cs" />
-    <Compile Remove="DateTime_Module.cs" />
-    <Compile Remove="DecimalModule.cs" />
-    <Compile Remove="Decimal_Module.cs" />
-    <Compile Remove="DictionaryModule.cs" />
-    <Compile Remove="Dictionary_Module.cs" />
-    <Compile Remove="DoubleModule.cs" />
-    <Compile Remove="Double_Module.cs" />
-    <Compile Remove="ExceptionModule.cs" />
-    <Compile Remove="Exception_Module.cs" />
-    <Compile Remove="GregorianCalendarModule.cs" />
-    <Compile Remove="GregorianCalendar_Module.cs" />
-    <Compile Remove="HashSetModule.cs" />
-    <Compile Remove="HashSet_Module.cs" />
-    <Compile Remove="Int16Module.cs" />
-    <Compile Remove="Int16_Module.cs" />
-    <Compile Remove="Int32_Module.cs" />
-    <Compile Remove="Int64Module.cs" />
-    <Compile Remove="Int64_Module.cs" />
-    <Compile Remove="ListModule.cs" />
-    <Compile Remove="List_Module.cs" />
-    <Compile Remove="NullableModule.cs" />
-    <Compile Remove="Nullable_Module.cs" />
-    <Compile Remove="ReadOnlyCollectionModule.cs" />
-    <Compile Remove="ReadOnlyCollection_Module.cs" />
-    <Compile Remove="ReadOnlyDictionaryModule.cs" />
-    <Compile Remove="ReadOnlyDictionary_Module.cs" />
-    <Compile Remove="ReadOnlySetModule.cs" />
-    <Compile Remove="ReadOnlySet_Module.cs" />
-    <Compile Remove="SByteModule.cs" />
-    <Compile Remove="SByte_Module.cs" />
-    <Compile Remove="SingleModule.cs" />
-    <Compile Remove="Single_Module.cs" />
-    <Compile Remove="StringBuilderModule.cs" />
-    <Compile Remove="StringBuilder_Module.cs" />
-    <Compile Remove="String_Module.cs" />
-    <Compile Remove="TimeOnlyModule.cs" />
-    <Compile Remove="TimeOnly_Module.cs" />
-    <Compile Remove="TimeSpanModule.cs" />
-    <Compile Remove="TimeSpan_Module.cs" />
-    <Compile Remove="UInt16Module.cs" />
-    <Compile Remove="UInt16_Module.cs" />
-    <Compile Remove="UInt32Module.cs" />
-    <Compile Remove="UInt32_Module.cs" />
-    <Compile Remove="UInt64Module.cs" />
-    <Compile Remove="UInt64_Module.cs" />
-    <Compile Remove="ValueTupleModule.cs" />
-    <Compile Remove="ValueTuple_Module.cs" />
-    <Compile Remove="WeakReferenceModule.cs" />
-    <Compile Remove="WeakReference_Module.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\ECMAScript.Common\ECMAScript.Common.csproj" />
-    <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
-  </ItemGroup>
 
 </Project>

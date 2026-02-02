@@ -3,7 +3,7 @@ using ECMAScript.Common;
 namespace ECMAScript;
 
 [ECMAScriptModule]
-[WhiteList("object", WhiteListOp.Allowed, "System/ObjectModule.js")]
+[WhiteList("object", WhiteListOp.Allowed, null, "System/ObjectModule.js")]
 public static class ObjectModule
 {
     ///<summary>Gets the <see cref="T:System.Type" /> of the current instance.</summary>

@@ -25,7 +25,7 @@ public class GenerateTask : Task
 		return name == "WhiteListAttribute" || name == "WhiteList";
 	}
 
-	private static (string member, string? op, string? value)? GetWhiteListData(SyntaxList<AttributeListSyntax> attrs)
+	private static (string member, string? op, string? value, string? path)? GetWhiteListData(SyntaxList<AttributeListSyntax> attrs)
 	{
 		var attr = attrs
 			.SelectMany(a => a.Attributes)
@@ -45,8 +45,11 @@ public class GenerateTask : Task
 			var value = attr.ArgumentList.Arguments.Count > 2
 				? (attr.ArgumentList.Arguments[2].Expression as LiteralExpressionSyntax)?.Token.ValueText
 				: null;
+			var path = attr.ArgumentList.Arguments.Count > 3
+				? (attr.ArgumentList.Arguments[3].Expression as LiteralExpressionSyntax)?.Token.ValueText
+				: null;
 			if (op != "Discard")
-				return (member, op, value);
+				return (member, op, value, path);
 		}
 
 		return null;
@@ -68,7 +71,7 @@ public class GenerateTask : Task
 				.ToList();
 
 			// 提取类名和方法名
-			var classes = new List<(string Hash, string? Member, string? Op, string? Value)>();
+			var classes = new List<(string? Member, string? Op, string? Value, string? Path)>();
 			var members = new List<(string Hash, string? Member, string? Op, string? Value)>();
 
 			foreach (var tree in syntaxTrees)
@@ -88,10 +91,10 @@ public class GenerateTask : Task
 					// WhiteList("System.Numerics.BigInteger", WhiteListOp.Allowed, "System/Numerics/BigIntegerModule.js")
 					// 类上配置的是成员名、Allowed、js模块路径
 					classes.Add((
-						string.Empty,
 						classCfg.Value.member,
 						classCfg.Value.op,
-						classCfg.Value.value));
+						classCfg.Value.value,
+						classCfg.Value.path));
 
 					foreach (var methodDecl in classDecl.DescendantNodes().OfType<MethodDeclarationSyntax>())
 					{
@@ -100,11 +103,11 @@ public class GenerateTask : Task
 						if (methodCfg.HasValue && methodCfg.Value.op != "Discard")
 						{
 							// 如果是Import，则使用js模块路径作为值
-							var value = methodCfg.Value.op == "Import" ? classCfg.Value.value : methodCfg.Value.value;
+							var value = methodCfg.Value.op == "Import" ? classCfg.Value.path : methodCfg.Value.value;
 							members.Add((
-								hash!, 
-								methodCfg.Value.member, 
-								methodCfg.Value.op, 
+								hash!,
+								methodCfg.Value.member,
+								methodCfg.Value.op,
 								value));
 						}
 					}
@@ -121,9 +124,9 @@ namespace ECMAScript.Common;
 
 public static class WhiteList
 {{
-    public static readonly Dictionary<string, (WhiteListOp Op, string Hash, string? Value)> Types = new()
+    public static readonly Dictionary<string, (WhiteListOp Op, string? Value, string? Path)> Types = new()
     {{
-        {string.Join(split, classes.Select(n => $"{{\"{n.Member}\",(WhiteListOp.{n.Op}, \"{n.Hash}\", {(n.Value is null ? "null" : $"\"{n.Value}\"")})}}"))}
+        {string.Join(split, classes.Select(n => $"{{\"{n.Member}\",(WhiteListOp.{n.Op}, {(n.Value is null ? "null" : $"\"{n.Value}\"")}, {(n.Path is null ? "null" : $"\"{n.Path}\"")})}}"))}
     }};
 
     public static readonly Dictionary<string, (WhiteListOp Op, string Hash, string? Value)> Members = new()

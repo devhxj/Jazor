@@ -6,15 +6,16 @@ namespace ECMAScript.Common;
 
 public static class WhiteList
 {
-    public static readonly Dictionary<string, (WhiteListOp Op, string Hash, string? Value)> Types = new()
+    public static readonly Dictionary<string, (WhiteListOp Op, string? Value, string? Path)> Types = new()
     {
-        {"void",(WhiteListOp.Allowed, "", null)},
-        {"System.Numerics.BigInteger",(WhiteListOp.Allowed, "", "System/Numerics/BigIntegerModule.js")},
-        {"bool",(WhiteListOp.Allowed, "", "System/BooleanModule.js")},
-        {"System.Console",(WhiteListOp.Replace, "", "console")},
-        {"int",(WhiteListOp.Allowed, "", "System/Int32Module.js")},
-        {"object",(WhiteListOp.Allowed, "", "System/ObjectModule.js")},
-        {"string",(WhiteListOp.Allowed, "", null)}
+        {"void",(WhiteListOp.Allowed, null, null)},
+        {"System.Numerics.BigInteger",(WhiteListOp.Allowed, "null", "System/Numerics/BigIntegerModule.js")},
+        {"bool",(WhiteListOp.Allowed, "null", "System/BooleanModule.js")},
+        {"System.Console",(WhiteListOp.Replace, "console", null)},
+        {"System.Collections.Generic.Dictionary<TKey, TValue>",(WhiteListOp.Replace, "Map", "System/Collections/DictionaryModule.js")},
+        {"int",(WhiteListOp.Allowed, "null", "System/Int32Module.js")},
+        {"object",(WhiteListOp.Allowed, "null", "System/ObjectModule.js")},
+        {"string",(WhiteListOp.Allowed, null, null)}
     };
 
     public static readonly Dictionary<string, (WhiteListOp Op, string Hash, string? Value)> Members = new()
@@ -169,6 +170,7 @@ public static class WhiteList
         {"static System.Console.WriteLine(string, params object[])",(WhiteListOp.Replace, "_7a73fda86982983f", "log")},
         {"static System.Console.WriteLine(uint)",(WhiteListOp.Replace, "_029fda9e4e9b254f", "log")},
         {"static System.Console.WriteLine(ulong)",(WhiteListOp.Replace, "_28da774493da8a92", "log")},
+        {"System.Collections.Generic.Dictionary<TKey, TValue>.TryGetValue(TKey, out TValue)",(WhiteListOp.Import, "_7db4d9112b4ba3c4", "System/Collections/DictionaryModule.js")},
         {"static int.TryParse(string, out int)",(WhiteListOp.Import, "_16e2a901535b765e", "System/Int32Module.js")},
         {"object.Object()",(WhiteListOp.Allowed, "_4aea088b73a04a68", null)},
         {"virtual object.ToString()",(WhiteListOp.Replace, "_b43835974ba92ea0", "toString")},

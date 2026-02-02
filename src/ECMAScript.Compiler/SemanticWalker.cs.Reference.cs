@@ -52,7 +52,7 @@ public partial class SemanticWalker
 		// 再查询白名单
 		if (string.IsNullOrEmpty(name))
 		{
-			var displayName = symbol.ToDisplayString(Util.NameFormat);
+			var displayName = symbol.OriginalDefinition.ToDisplayString(Util.NameFormat);
 			if (WhiteList.Types.TryGetValue(displayName, out var entry) &&
 				entry.Op == WhiteListOp.Replace &&
 				!string.IsNullOrEmpty(entry.Value))
@@ -507,19 +507,46 @@ public partial class SemanticWalker
 	{
 		// 处理方法调用的实例对象
 		var instance = Translate<Expression>(operation.Instance, argument, null);
+		var preExprs = new List<Expression>();
+		var refParas = new Dictionary<MemberExpression, Expression>();
 
 		// 处理方法调用的参数
 		var arguments = new List<Expression>();
 		foreach (var arg in operation.Arguments)
 		{
-			Translate(arguments, arg.Value, argument);
+			var right = Translate<Expression>(arg.Value, argument);
+
+			// 此处需要使用逗号表达式特殊处理 out ref 参数
+			// 外部定义一个临时空对象来中转
+			// ref 引用 或 out 变量引用
+			if (arg.Parameter?.RefKind == RefKind.Out || arg.Parameter?.RefKind == RefKind.Ref)
+			{
+				var name = GetUniqueName(arg);
+				var temp = new Identifier(name);
+				var init = new ObjectExpression(NodeList.Empty<Node>());
+				var declarator = new VariableDeclarator(temp, init);
+				argument.AddVarDeclarator(declarator, _recursionDepth);
+
+				// ref 要多一步 ref.value赋值
+				var left = new MemberExpression(temp, new Identifier("value"), false, false);
+				if (arg.Parameter.RefKind == RefKind.Ref)
+				{
+					var expr = new AssignmentExpression(Operator.Assignment, left, right);
+					preExprs.Add(expr);
+				}
+
+				refParas.Add(left, right);
+				arguments.Add(temp);
+			}
+			else
+				arguments.Add(right);
 		}
 
 		// 获取方法名称
 		string? methodName = null;
 
 		// 检查白名单映射
-		var key = operation.TargetMethod.ToDisplayString(Util.NameFormat);
+		var key = operation.TargetMethod.OriginalDefinition.ToDisplayString(Util.NameFormat);
 		if (WhiteList.Members.TryGetValue(key, out var entry))
 		{
 			if (entry.Op == WhiteListOp.Allowed)
@@ -539,7 +566,9 @@ public partial class SemanticWalker
 				// 如果是实例方法调用，插入实例作为第一个参数
 				if (instance is not null)
 					arguments.Insert(0, instance);
-				return new CallExpression(id, NodeList.From(arguments), optional: false);
+
+				var aa = new CallExpression(id, NodeList.From(arguments), optional: false);
+				return aaa(aa, preExprs, refParas, argument);
 			}
 			else if (entry.Op == WhiteListOp.Equals || entry.Op == WhiteListOp.CompareTo)
 			{
@@ -583,8 +612,7 @@ public partial class SemanticWalker
 		Expression callee;
 		if (instance is null)
 		{
-			// todo:
-			// 可能需要完善多次嵌套类的静态方法调用			
+			// 考虑多次嵌套类的静态方法调用			
 			// 静态方法调用
 			if (operation.TargetMethod.IsStatic)
 			{
@@ -609,7 +637,45 @@ public partial class SemanticWalker
 			);
 		}
 
-		return new CallExpression(callee, NodeList.From(arguments), optional: false);
+		var callExpr = new CallExpression(callee, NodeList.From(arguments), optional: false);
+		return aaa(callExpr, preExprs, refParas, argument);
+
+
+		Expression aaa(
+			in Expression e,
+			in List<Expression> p,
+			in Dictionary<MemberExpression, Expression> refParas,
+			in WalkerArgument argument)
+		{
+			// 如果存在ref参数，需要生成逗号表达式
+			if (refParas.Count > 0)
+			{
+				var name = GetUniqueName(operation);
+				var id = new Identifier(name);
+				var declarator = new VariableDeclarator(id, null);
+				argument.AddVarDeclarator(declarator, _recursionDepth);
+
+				// 方法调用存临时变量
+				var expr = new AssignmentExpression(Operator.Assignment, id, e);
+				preExprs.Add(expr);
+
+				// 方法调用后需要返写参数
+				foreach (var pair in refParas)
+				{
+					var writeBackExpr = new AssignmentExpression(Operator.Assignment, pair.Value, pair.Key);
+					p.Add(writeBackExpr);
+				}
+
+				// 最后返回调用结果
+				p.Add(id);
+
+				return new SequenceExpression(NodeList.From(p));
+			}
+
+
+			return e;
+
+		}
 	}
 
 }

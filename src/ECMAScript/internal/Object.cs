@@ -217,6 +217,6 @@ public static partial class Global
 		/// <param name="o">Object on which to lock the attributes.</param>
 		/// <returns></returns>
 		[Description("@#freeze")]
-		public extern static IReadOnly<TTarget> Freeze<TTarget>(TTarget o);
+		public extern static ref readonly TTarget Freeze<TTarget>(TTarget o);
 	}
 }

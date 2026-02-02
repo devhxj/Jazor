@@ -1,11 +1,9 @@
-using System.Collections;
 using ECMAScript.Common;
-using static ECMAScript.CLRModule;
 
 namespace ECMAScript;
 
 [ECMAScriptModule]
-[WhiteList("int", WhiteListOp.Allowed, "System/Int32Module.js")]
+[WhiteList("int", WhiteListOp.Allowed, null, "System/Int32Module.js")]
 public static class Int32Module
 {
 	//int.MaxValue = 2147483647;
