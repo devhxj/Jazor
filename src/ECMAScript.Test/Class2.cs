@@ -1,5 +1,7 @@
-﻿using System;
+﻿using ECMAScript;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -272,5 +274,16 @@ class TestClass5
 	static class A
 	{
 		public static int[] GetNumbers() => [1, 2, 3, 4, 5];
+	}
+}
+
+
+public static class ConvertExtensions
+{
+	// 为静态类 Convert 添加扩展方法
+	extension(Console)
+	{
+		public static string ToHexStringLower(byte[] bytes) =>
+			Convert.ToHexString(bytes).ToLowerInvariant();
 	}
 }

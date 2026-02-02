@@ -7,7 +7,7 @@ namespace ECMAScript;
 public static class ObjectModule
 {
     ///<summary>Gets the <see cref="T:System.Type" /> of the current instance.</summary>
-    [WhiteList("object.GetType()", WhiteListOp.GetType)]
+    [WhiteList("object.GetType()", WhiteListOp.Discard)]
     public extern static System.Type _393ae40d42f17afb(Object instance);
 
     ///<summary>Initializes a new instance of the <see cref="T:System.Object" /> class.</summary>
@@ -15,7 +15,7 @@ public static class ObjectModule
     public extern static Object _4aea088b73a04a68();
 
     ///<summary>Returns a string that represents the current object.</summary>
-    [WhiteList("virtual object.ToString()", WhiteListOp.ToString)]
+    [WhiteList("virtual object.ToString()", WhiteListOp.Replace, "toString")]
     public extern static string? _b43835974ba92ea0(Object instance);
 
     ///<summary>Determines whether the specified object is equal to the current object.</summary>

@@ -68,6 +68,7 @@ var operatorNames = new Dictionary<string, string>
 var types = new Type[]{
 	// 基本类型
 	//typeof(void),
+	typeof(Console),
 	typeof(BigInteger),
 	typeof(Object),
 	typeof(Boolean),

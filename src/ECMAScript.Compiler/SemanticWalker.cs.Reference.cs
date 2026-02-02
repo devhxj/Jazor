@@ -4,11 +4,42 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 using ECMAScript.Common;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace ECMAScript.Compiler;
 
 public partial class SemanticWalker
 {
+	/// <summary>
+	/// 获取ISymbol的 JavaScript 名称
+	/// 优先级：
+	/// 1. ECMAScriptNameAttribute
+	/// 2. DescriptionAttribute (以 @# 开头)
+	/// </summary>
+	private static string GetConfigOrSymbolName(ISymbol symbol)
+	{
+		string? configName = null;
+		foreach (var attr in symbol.GetAttributes())
+		{
+			if (attr.ConstructorArguments.Length > 0)
+			{
+				if (attr.AttributeClass?.Name == "ECMAScriptNameAttribute")
+				{
+					configName = attr.ConstructorArguments[0].Value?.ToString();
+					break;//ECMAScriptNameAttribute 优先级最高，找到后直接返回
+				}
+				else if (attr.AttributeClass?.Name == "DescriptionAttribute")
+				{
+					var desc = attr.ConstructorArguments[0].Value?.ToString();
+					if (desc?.StartsWith("@#") == true)
+						return desc.Substring(2);
+				}
+			}
+		}
+
+		return configName ?? symbol.Name;
+	}
+
 	private Expression GetFieldName(IOperation includeOp, IFieldSymbol symbol)
 	{
 		// 检查是否是特殊常量字段（如 double.PositiveInfinity, double.NaN 等）
@@ -67,57 +98,6 @@ public partial class SemanticWalker
 	}
 
 	/// <summary>
-	/// 获取ISymbol的 JavaScript 名称，支持白名单名称映射
-	/// 优先级：
-	/// 1. ECMAScriptNameAttribute
-	/// 2. DescriptionAttribute (以 @# 开头)
-	/// 3. WhiteList.Members 映射
-	/// 4. 默认symbol名
-	/// </summary>
-	private static string GetSymbolName(ISymbol symbol)
-	{
-		string? symbolName = null;
-		// 先从特性中找
-		foreach (var attr in symbol.GetAttributes())
-		{
-			if (attr.ConstructorArguments.Length > 0)
-			{
-				if (attr.AttributeClass?.Name == "ECMAScriptNameAttribute")
-				{
-					var name = attr.ConstructorArguments[0].Value?.ToString();
-					if (!string.IsNullOrEmpty(name))
-					{
-						symbolName = name!;
-						break;//ECMAScriptNameAttribute 优先级最高，找到后直接返回
-					}
-				}
-				else if (attr.AttributeClass?.Name == "DescriptionAttribute")
-				{
-					var desc = attr.ConstructorArguments[0].Value?.ToString();
-					if (desc is not null && desc.StartsWith("@#"))
-						return desc.Substring(2);
-				}
-			}
-		}
-
-		// 从白名单查找映射
-		if (string.IsNullOrEmpty(symbolName))
-		{
-			var display = symbol.ToDisplayString(Util.NameFormat);
-			if (WhiteList.Members.TryGetValue(display, out var entry))
-			{
-				if (entry.Op == WhiteListOp.Replace)
-				{
-					symbolName = entry.Value;
-				}
-			}
-		}
-
-		// 默认使用symbol名
-		return symbolName ?? symbol.Name;
-	}
-
-	/// <summary>
 	/// 处理数组元素访问操作，不支持多维数组
 	/// C# 示例：
 	/// array[0]        // 一维数组访问
@@ -168,11 +148,11 @@ public partial class SemanticWalker
 			// 检查起始值是否是从末尾开始的索引（^n）
 			var start = range.LeftOperand is IUnaryOperation leftUnary && leftUnary.OperatorKind == UnaryOperatorKind.Hat
 				? UnaryHat(expr, leftUnary)
-				: Translate<Expression>(range.LeftOperand, argument,null);
+				: Translate<Expression>(range.LeftOperand, argument, null);
 
 			var end = range.RightOperand is IUnaryOperation rightUnary && rightUnary.OperatorKind == UnaryOperatorKind.Hat
 				? UnaryHat(expr, rightUnary)
-				: Translate<Expression>(range.RightOperand, argument,null);
+				: Translate<Expression>(range.RightOperand, argument, null);
 
 			// 创建 slice 方法调用
 			var slice = new MemberExpression(expr, new Identifier("slice"), computed: false, optional: false);
@@ -314,36 +294,6 @@ public partial class SemanticWalker
 	}
 
 	/// <summary>
-	/// 处理方法引用操作（不调用）
-	/// C# 示例：
-	/// Action action = obj.Method;  // 方法引用（委托）
-	/// 转换结果：obj.method
-	/// </summary>
-	/// <param name="operation">当前访问的operation</param>
-	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitMethodReference(IMethodReferenceOperation operation, WalkerArgument argument)
-	{
-		var methodName = GetSymbolName(operation.Method);
-		var property = new Identifier(methodName);
-
-		if (operation.Instance is not null)
-		{
-			var expr = Translate<Expression>(operation.Instance, argument);
-			return new MemberExpression(expr, property, computed: false, optional: false);
-		}
-
-		// 静态方法：生成完整的限定名（如 Math.Abs）
-		if (operation.Method.IsStatic && operation.Method.ContainingType is not null)
-		{
-			var typeName = new Identifier(operation.Method.ContainingType.Name);
-			return new MemberExpression(typeName, property, computed: false, optional: false);
-		}
-
-		return property;
-	}
-
-	/// <summary>
 	/// 处理属性引用操作
 	/// C# 示例：
 	/// obj.Property     // 实例属性访问
@@ -355,31 +305,110 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitPropertyReference(IPropertyReferenceOperation operation, WalkerArgument argument)
 	{
-		// 获取属性名称（支持白名单映射）
-		var propertyName = GetSymbolName(operation.Property);
-		var property = new Identifier(propertyName);
+		// 处理属性调用的实例对象
+		var instance = Translate<Expression>(operation.Instance, argument, null);
 
-		/* // 对象初始化器 或 匿名对象创建
-		if (operation.Instance is IInstanceReferenceOperation instanceReferenceOp &&
-			instanceReferenceOp.ReferenceKind == InstanceReferenceKind.ImplicitReceiver)
-			return property; */
+		// 获取方法名称
+		string? propertyName = null;
 
-		if (operation.Instance is not null)
+		// 检查白名单映射
+		var key = operation.Property.GetMethod!.ToDisplayString(Util.NameFormat);
+		if (WhiteList.Members.TryGetValue(key, out var entry))
 		{
-			var obj = Translate<Expression>(operation.Instance, argument, null);
-			if (obj is not null)
+			if (entry.Op == WhiteListOp.Allowed)
+				propertyName = operation.Property.Name;
+
+			else if (entry.Op == WhiteListOp.Replace)
+				propertyName = entry.Value;
+
+			else if (entry.Op == WhiteListOp.Import)
 			{
-				var optional = operation.Instance is IConditionalAccessInstanceOperation;
-				return new MemberExpression(obj, property, false, optional);
+				if (string.IsNullOrEmpty(entry.Value))
+					return HandleTransformationFailure<Node>(operation,
+						"Import mapping requires a module path.");
+
+				// 生成导入调用
+				var id = new Identifier(entry.Hash);
+				argument.MergeImportSpecifier(entry.Value!, new ImportSpecifier(id));
+
+				// 如果是实例属性调用，插入实例作为第一个参数
+				var arguments = new List<Expression>();
+				if (instance is not null)
+					arguments.Add(instance);
+
+				return new CallExpression(id, NodeList.From(arguments), optional: false);
 			}
 		}
+		else
+			propertyName = GetConfigOrSymbolName(operation.Property);
 
+		if (string.IsNullOrEmpty(propertyName))
+			return HandleTransformationFailure<Node>(operation, "");
+				
+		var property = new Identifier(propertyName!);
+		if (instance is not null)
+		{
+			var optional = operation.Instance is IConditionalAccessInstanceOperation;
+			return new MemberExpression(instance, property, false, optional);
+		}
+		
+		// todo：后续需要清理和白名单整合
 		// 静态成员：生成完整的限定名（如 DateTime.Now）
 		// 检查属性是否是静态成员
 		if (operation.Property.IsStatic && operation.Property.ContainingType is not null)
 		{
 			// 生成类型标识符作为对象
 			var typeName = new Identifier(operation.Property.ContainingType.Name);
+			return new MemberExpression(typeName, property, computed: false, optional: false);
+		}
+
+		return property;
+	}
+
+	/// <summary>
+	/// 处理方法引用操作（不调用）
+	/// C# 示例：
+	/// Action action = obj.Method;  // 方法引用（委托）
+	/// 转换结果：obj.method
+	/// </summary>
+	/// <param name="operation">当前访问的operation</param>
+	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+	/// <returns>Acornima的ESTree的Node</returns>
+	public override Node? VisitMethodReference(IMethodReferenceOperation operation, WalkerArgument argument)
+	{
+		// 获取属性名称（支持白名单映射）
+		var configName = GetConfigOrSymbolName(operation.Method);
+		if (string.IsNullOrEmpty(configName))
+		{
+			// GetMethod肯定不为null
+			// 检查白名单映射
+			var display = operation.Method.ToDisplayString(Util.NameFormat);
+			if (WhiteList.Members.TryGetValue(display, out var entry))
+			{
+				if (entry.Op == WhiteListOp.Import)
+				{
+					// todo：处理导入映射
+					// entry.Value 是导入模块路径
+					configName = entry.Hash;
+				}
+				else if (entry.Op == WhiteListOp.Allowed)
+					configName = operation.Method.Name;
+
+				else if (entry.Op == WhiteListOp.Replace)
+					configName = entry.Value;
+			}
+		}
+		var property = new Identifier(configName ?? operation.Method.Name);
+		if (operation.Instance is not null)
+		{
+			var expr = Translate<Expression>(operation.Instance, argument);
+			return new MemberExpression(expr, property, computed: false, optional: false);
+		}
+
+		// 静态方法：生成完整的限定名（如 Math.Abs）
+		if (operation.Method.IsStatic && operation.Method.ContainingType is not null)
+		{
+			var typeName = new Identifier(operation.Method.ContainingType.Name);
 			return new MemberExpression(typeName, property, computed: false, optional: false);
 		}
 
@@ -409,4 +438,127 @@ public partial class SemanticWalker
 
 		return null;
 	}
+
+	/// <summary>
+	/// 处理方法调用操作
+	/// C# 示例：
+	/// obj.Method(arg1, arg2)      // 实例方法调用
+	/// StaticClass.Method(arg)     // 静态方法调用
+	/// obj.ExtensionMethod(arg)     // 扩展方法调用
+	/// 转换结果：obj.method(arg1, arg2) / staticClass.method(arg) / obj.extensionMethod(arg)
+	/// </summary>
+	/// <param name="operation">当前访问的operation</param>
+	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+	/// <returns>Acornima的ESTree的Node</returns>
+	public override Node? VisitInvocation(IInvocationOperation operation, WalkerArgument argument)
+	{
+		// 处理方法调用的实例对象
+		var instance = Translate<Expression>(operation.Instance, argument, null);
+
+		// 处理方法调用的参数
+		var arguments = new List<Expression>();
+		foreach (var arg in operation.Arguments)
+		{
+			Translate(arguments, arg.Value, argument);
+		}
+
+		// 获取方法名称
+		string? methodName = null;
+
+		// 检查白名单映射
+		var key = operation.TargetMethod.ToDisplayString(Util.NameFormat);
+		if (WhiteList.Members.TryGetValue(key, out var entry))
+		{
+			if (entry.Op == WhiteListOp.Allowed)
+				methodName = operation.TargetMethod.Name;
+			else if (entry.Op == WhiteListOp.Replace)
+				methodName = entry.Value;
+			else if (entry.Op == WhiteListOp.Import)
+			{
+				if (string.IsNullOrEmpty(entry.Value))
+					return HandleTransformationFailure<Node>(operation,
+						"Import mapping requires a module path.");
+
+				// 生成导入调用
+				var id = new Identifier(entry.Hash);
+				argument.MergeImportSpecifier(entry.Value!, new ImportSpecifier(id));
+
+				// 如果是实例方法调用，插入实例作为第一个参数
+				if (instance is not null)
+					arguments.Insert(0, instance);
+				return new CallExpression(id, NodeList.From(arguments), optional: false);
+			}
+			else if (entry.Op == WhiteListOp.Equals || entry.Op == WhiteListOp.CompareTo)
+			{
+				Expression left, right;
+				if (instance is null && arguments.Count == 2)
+				{
+					left = arguments[0];
+					right = arguments[1];
+				}
+				else if (instance is not null && arguments.Count == 1)
+				{
+					left = instance;
+					right = arguments[0];
+				}
+				else
+					return HandleTransformationFailure<Node>(operation,
+						"Equals operation requires an instance and at least one argument.");
+
+				var test = new NonLogicalBinaryExpression(Operator.StrictEquality, left, right);
+				return entry.Op == WhiteListOp.CompareTo
+					? new ConditionalExpression(
+						test: test,
+						consequent: new NumericLiteral(0, "0"),
+						alternate: new ConditionalExpression(
+							test: new NonLogicalBinaryExpression(Operator.GreaterThan, left, right),
+							consequent: new NumericLiteral(1, "1"),
+							alternate: new NumericLiteral(-1, "-1")
+						)
+					) : test;
+			}
+		}
+		else
+			methodName = GetConfigOrSymbolName(operation.TargetMethod);
+
+		if(string.IsNullOrEmpty(methodName))
+			return HandleTransformationFailure<Node>(operation,
+				"Method name cannot be determined for invocation.");
+		
+		var property = new Identifier(methodName!);
+		// 判断方法调用的类型
+		Expression callee;
+		if (instance is null)
+		{
+			// todo:
+			// 可能需要完善多次嵌套类的静态方法调用			
+			// 静态方法调用
+			if (operation.TargetMethod.IsStatic)
+			{
+				// 静态方法调用：StaticClass.Method()
+				var className = GetConfigOrSymbolName(operation.TargetMethod.ContainingType);
+				callee = new MemberExpression(
+					new Identifier(className),
+					property,
+					computed: false,
+					optional: false
+				);
+			}
+			else
+				callee = property;// 扩展方法调用：ExtensionMethod(arg)
+			
+		}
+		else
+		{
+			callee = new MemberExpression(
+				instance,
+				property,
+				computed: false,
+				optional: false
+			);
+		}
+
+		return new CallExpression(callee, NodeList.From(arguments), optional: false);
+	}
+
 }

@@ -9,15 +9,26 @@ namespace ECMAScript.Compiler;
 /// </summary>
 public sealed class WalkerArgument
 {
+    private readonly Dictionary<string, List<ImportDeclarationSpecifier>> _specifiers = [];
+
     private readonly Dictionary<string, VariableDeclarator> _declarators;
 
     public WalkerArgument()
     {
+        _specifiers = [];
         _declarators = [];
     }
 
-    private WalkerArgument((NodeType Type, Expression Target)? context, Dictionary<string, VariableDeclarator> declarators)
-        => (Context, _declarators) = (context, declarators);
+    private WalkerArgument(
+        (NodeType Type, Expression Target)? context,
+        Dictionary<string, List<ImportDeclarationSpecifier>> specifiers,
+        Dictionary<string, VariableDeclarator> declarators)
+        => (Context, _specifiers, _declarators) = (context, specifiers, declarators);
+
+    /// <summary>
+    /// 是否包含导入声明规范
+    /// </summary>
+    public bool HasVarImportDeclarationSpecifier => _specifiers.Count > 0;
 
     /// <summary>
     /// 是否包含变量声明
@@ -28,6 +39,19 @@ public sealed class WalkerArgument
     /// 上下文表达式,如果未设置，则默认会在使用时用标识符"@ctx"代替
     /// </summary>
     public (NodeType Type, Expression Target)? Context { get; }
+
+    /// <summary>
+    /// 添加导入声明规范,根据模块路径进行分组存储。
+    /// </summary>
+    /// <param name="declarator"></param>
+    /// <param name="depth"></param>
+    public void MergeImportSpecifier(string modulePath, ImportDeclarationSpecifier specifier)
+    {
+        if (_specifiers.TryGetValue(modulePath, out var list))
+            list.Add(specifier);
+        else
+            _specifiers.Add(modulePath, [specifier]);
+    }
 
     /// <summary>
     /// 添加变量声明,根据深度和名称生成唯一键,防止重复添加。
@@ -61,5 +85,5 @@ public sealed class WalkerArgument
     /// <param name="context"></param>
     /// <returns></returns>
     public WalkerArgument With(NodeType type, Expression target)
-        => new((type, target), _declarators);
+        => new((type, target), _specifiers, _declarators);
 }

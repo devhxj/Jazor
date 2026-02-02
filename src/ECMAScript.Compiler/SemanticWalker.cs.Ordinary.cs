@@ -1,5 +1,6 @@
 ﻿using Acornima;
 using Acornima.Ast;
+using ECMAScript.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
@@ -507,68 +508,6 @@ public partial class SemanticWalker
 		// 其他情况：直接返回操作数（JavaScript 是动态类型）
 		// 包括：装箱/拆箱、引用类型转换、as 转换等
 		return expr;
-	}
-
-	/// <summary>
-	/// 处理方法调用操作
-	/// C# 示例：
-	/// obj.Method(arg1, arg2)      // 实例方法调用
-	/// StaticClass.Method(arg)     // 静态方法调用
-	/// obj.ExtensionMethod(arg)     // 扩展方法调用
-	/// 转换结果：obj.method(arg1, arg2) / staticClass.method(arg) / obj.extensionMethod(arg)
-	/// </summary>
-	/// <param name="operation">当前访问的operation</param>
-	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitInvocation(IInvocationOperation operation, WalkerArgument argument)
-	{
-		var arguments = new List<Expression>();
-
-		foreach (var arg in operation.Arguments)
-		{
-			Translate(arguments, arg.Value, argument);
-		}
-
-		// 获取方法名称（支持白名单映射）
-		var methodName = GetSymbolName(operation.TargetMethod);
-		var property = new Identifier(methodName);
-
-		// 判断方法调用的类型
-		Expression callee;
-
-		if (operation.Instance is null)
-		{
-			// 静态方法调用或扩展方法调用
-			if (operation.TargetMethod.IsStatic == true)
-			{
-				// 静态方法调用：StaticClass.Method()
-				var className = operation.TargetMethod.ContainingType.Name;
-				callee = new MemberExpression(
-					new Identifier(className),
-					property,
-					computed: false,
-					optional: false
-				);
-			}
-			else
-			{
-				// 扩展方法调用：ExtensionMethod(arg)
-				callee = property;
-			}
-		}
-		else
-		{
-			// 实例方法调用：obj.Method()
-			var instance = Translate<Expression>(operation.Instance, argument);
-			callee = new MemberExpression(
-				instance,
-				property,
-				computed: false,
-				optional: false
-			);
-		}
-
-		return new CallExpression(callee, NodeList.From(arguments), optional: false);
 	}
 
 	/// <summary>

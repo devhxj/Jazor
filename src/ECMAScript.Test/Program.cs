@@ -8,6 +8,7 @@ using ECMAScript;
 using ECMAScript.Test;
 using System.Text;
 using System.Text.Json;
+using System.Numerics;
 
 
 Console.WriteLine("Hello, World!");
@@ -18,12 +19,10 @@ class TestClass
 {
     void TestMethod()
     {
-        int[] array = [1, 2];
-        string result = array switch
-        {
-            [..] => ""empty or any"",
-            _ => ""other""
-        };
+var x = new BigInteger(100);
+var y = x++;
+var z = y * 33;
+Console.WriteLine(z);
     }
 }
 ";
@@ -32,7 +31,8 @@ class TestClass
     var usings = @"
         global using System;
         global using System.Collections.Generic;
-        global using System.Linq;";
+        global using System.Linq;
+        global using System.Numerics;";
 
     var compilation = CSharpCompilation.Create(
         "TestAssembly",
@@ -53,6 +53,8 @@ class TestClass
       throw new InvalidOperationException(errorMessages);
     }
 
+
+                    
 
 //Thread.Sleep(5000);
 
@@ -90,7 +92,9 @@ var  b = (2,4);
 var  c = (2,"a");
 ((int bbb, int ccc),int aaa) = tuple;
 var script = @"
-const a = []
+const a = 0n;
+const b = BigInt(0);
+const c = a === b ? 0 : (a > b ? 1 : -1);
 ";
 var parser = new Parser(new ParserOptions { 
 

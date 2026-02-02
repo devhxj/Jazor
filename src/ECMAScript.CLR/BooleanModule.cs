@@ -14,7 +14,7 @@ public static class BooleanModule
 	public extern static Number _80b6c29cc0038969(Boolean instance);
 
 	///<summary>Converts the value of this instance to its equivalent string representation (either "True" or "False").</summary>
-	[WhiteList("override bool.ToString()", WhiteListOp.ToString)]
+	[WhiteList("override bool.ToString()", WhiteListOp.Replace, "toString")]
 	public extern static string _d48c2d39317daf8f(Boolean instance);
 
 	///<summary>Converts the value of this instance to its equivalent string representation (either "True" or "False").</summary>

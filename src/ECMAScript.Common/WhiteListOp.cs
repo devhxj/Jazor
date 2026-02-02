@@ -23,16 +23,6 @@ public enum WhiteListOp
 	Import,
 
 	/// <summary>
-	/// 特殊处理，取空值
-	/// </summary>
-	Empty,
-
-	/// <summary>
-	/// 特殊处理，转字符串
-	/// </summary>
-	ToString,
-
-	/// <summary>
 	/// 特殊处理，判断相等
 	/// </summary>
 	Equals,
@@ -41,22 +31,4 @@ public enum WhiteListOp
 	/// 特殊处理，比较大小
 	/// </summary>
 	CompareTo,
-
-	/// <summary>
-	/// 特殊处理，typeof
-	/// </summary>
-	GetType,
-
-	/// <summary>
-	/// 特殊处理，强转
-	/// </summary>
-	Convert,
-
-	/// <summary>
-	/// 特殊处理，创建BigInt
-	/// </summary>
-	BigIntNew,
-	BigIntZero,
-	BigIntOne,
-	BigIntMinusOne,
 }

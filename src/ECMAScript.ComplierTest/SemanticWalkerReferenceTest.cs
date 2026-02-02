@@ -20,7 +20,8 @@ public sealed class SemanticWalkerReferenceTest
 		var usings = @"
         global using System;
         global using System.Collections.Generic;
-        global using System.Linq;";
+        global using System.Linq;
+        global using System.Numerics;";
 
 		var compilation = CSharpCompilation.Create(
 			"TestAssembly",
@@ -580,10 +581,19 @@ public sealed class SemanticWalkerReferenceTest
             {
                 void TestMethod()
                 {
-                    TestMethod(1,2);
+                    var x = new BigInteger(100);
+                    var y = BigInteger.Zero;
+					var z = BigInteger.Parse(""33"");
+					var w = y++;
+                    var v = z * 33;
+					var a = y.CompareTo(y);
+					var b = z.ToString();
+					var c = w.Equals(v);
+                    Console.WriteLine(z);
+                    TestMethod(x,y);
                 }
 
-				int TestMethod(int a,int b)
+				BigInteger TestMethod(BigInteger a,BigInteger b)
                 {
                     return a + b;
                 }
@@ -596,7 +606,16 @@ public sealed class SemanticWalkerReferenceTest
 
 		Assert.AreEqual(
 @"{
-  this.TestMethod(1, 2);
+  let x = BigInt(100);
+  let y = _77fc63f99954f8da();
+  let z = _155212572c9a3297(""33"");
+  let w = y++;
+  let v = z * BigInt(33);
+  let a = y === y ? 0 : y > y ? 1 : -1;
+  let b = z.toString();
+  let c = w === v;
+  Console.WriteLine(z);
+  this.TestMethod(x, y);
 }", script);
 
 	}

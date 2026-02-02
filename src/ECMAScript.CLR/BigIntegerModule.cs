@@ -9,31 +9,31 @@ namespace ECMAScript;
 public static class BigIntegerModule
 {
 	///<summary>Initializes a new instance of the <see cref="T:System.Numerics.BigInteger" /> structure using a 32-bit signed integer value.</summary>
-	[WhiteList("System.Numerics.BigInteger.BigInteger(int)", WhiteListOp.BigIntNew)]
+	[WhiteList("System.Numerics.BigInteger.BigInteger(int)", WhiteListOp.Allowed)]
 	public extern static BigInt _ba6e0e86598dc8b2(Number value);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Numerics.BigInteger" /> structure using an unsigned 32-bit integer value.</summary>
-	[WhiteList("System.Numerics.BigInteger.BigInteger(uint)", WhiteListOp.BigIntNew)]
+	[WhiteList("System.Numerics.BigInteger.BigInteger(uint)", WhiteListOp.Allowed)]
 	public extern static BigInt _b7b735a5d507d449(Number value);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Numerics.BigInteger" /> structure using a 64-bit signed integer value.</summary>
-	[WhiteList("System.Numerics.BigInteger.BigInteger(long)", WhiteListOp.BigIntNew)]
+	[WhiteList("System.Numerics.BigInteger.BigInteger(long)", WhiteListOp.Allowed)]
 	public extern static BigInt _74973910762e0e86(BigInt value);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Numerics.BigInteger" /> structure with an unsigned 64-bit integer value.</summary>
-	[WhiteList("System.Numerics.BigInteger.BigInteger(ulong)", WhiteListOp.BigIntNew)]
+	[WhiteList("System.Numerics.BigInteger.BigInteger(ulong)", WhiteListOp.Allowed)]
 	public extern static BigInt _0421ba6c202fdc80(BigInt value);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Numerics.BigInteger" /> structure using a single-precision floating-point value.</summary>
-	[WhiteList("System.Numerics.BigInteger.BigInteger(float)", WhiteListOp.BigIntNew)]
+	[WhiteList("System.Numerics.BigInteger.BigInteger(float)", WhiteListOp.Allowed)]
 	public extern static BigInt _cfd2038efd505e1f(Number value);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Numerics.BigInteger" /> structure using a double-precision floating-point value.</summary>
-	[WhiteList("System.Numerics.BigInteger.BigInteger(double)", WhiteListOp.BigIntNew)]
+	[WhiteList("System.Numerics.BigInteger.BigInteger(double)", WhiteListOp.Allowed)]
 	public extern static BigInt _38c7caccfd5e120e(Number value);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Numerics.BigInteger" /> structure using a <see cref="T:System.Decimal" /> value.</summary>
-	[WhiteList("System.Numerics.BigInteger.BigInteger(System.Decimal)", WhiteListOp.BigIntNew)]
+	[WhiteList("System.Numerics.BigInteger.BigInteger(System.Decimal)", WhiteListOp.Allowed)]
 	public extern static BigInt _f715f85cc5dcfe92(System.Decimal value);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Numerics.BigInteger" /> structure using the values in a byte array.</summary>
@@ -164,14 +164,23 @@ public static class BigIntegerModule
 		}
 	}
 
-	[WhiteList("static System.Numerics.BigInteger.Zero.get", WhiteListOp.BigIntZero)]
-	public extern static BigInt _77fc63f99954f8da(BigInt instance);
+	[WhiteList("static System.Numerics.BigInteger.Zero.get", WhiteListOp.Import)]
+	public static BigInt _77fc63f99954f8da(BigInt instance)
+	{
+		return BigInt.Zero;
+	}
 
-	[WhiteList("static System.Numerics.BigInteger.One.get", WhiteListOp.BigIntOne)]
-	public extern static BigInt _9c5419989e842d00(BigInt instance);
+	[WhiteList("static System.Numerics.BigInteger.One.get", WhiteListOp.Import)]
+	public static BigInt _9c5419989e842d00(BigInt instance)
+	{
+		return BigInt.One;
+	}
 
-	[WhiteList("static System.Numerics.BigInteger.MinusOne.get", WhiteListOp.BigIntMinusOne)]
-	public extern static BigInt _01c112900aa52c82(BigInt instance);
+	[WhiteList("static System.Numerics.BigInteger.MinusOne.get", WhiteListOp.Import)]
+	public static BigInt _01c112900aa52c82(BigInt instance)
+	{
+		return BigInt.MinusOne;
+	}
 
 	[WhiteList("System.Numerics.BigInteger.IsPowerOfTwo.get", WhiteListOp.Import)]
 	public static bool _ee8564f940baf789(BigInt instance)
@@ -204,8 +213,11 @@ public static class BigIntegerModule
 	}
 
 	///<summary>Converts the string representation of a number to its <see cref="T:System.Numerics.BigInteger" /> equivalent.</summary>
-	[WhiteList("static System.Numerics.BigInteger.Parse(string)", WhiteListOp.BigIntNew)]
-	public extern static BigInt _155212572c9a3297(string value);
+	[WhiteList("static System.Numerics.BigInteger.Parse(string)", WhiteListOp.Import)]
+	public static BigInt _155212572c9a3297(string value)
+	{
+		return BigInt(value);
+	}
 
 	///<summary>Converts the string representation of a number in a specified style to its <see cref="T:System.Numerics.BigInteger" /> equivalent.</summary>
 	[WhiteList("static System.Numerics.BigInteger.Parse(string, System.Globalization.NumberStyles)", WhiteListOp.Discard)]
@@ -731,7 +743,7 @@ public static class BigIntegerModule
 	}
 
 	///<summary>Converts the numeric value of the current <see cref="T:System.Numerics.BigInteger" /> object to its equivalent string representation.</summary>
-	[WhiteList("override System.Numerics.BigInteger.ToString()", WhiteListOp.Allowed)]
+	[WhiteList("override System.Numerics.BigInteger.ToString()", WhiteListOp.Replace, "toString")]
 	public extern static string _a7388cc0c5bc22ad(BigInt instance);
 
 	///<summary>Converts the numeric value of the current <see cref="T:System.Numerics.BigInteger" /> object to its equivalent string representation by using the specified culture-specific formatting information.</summary>
