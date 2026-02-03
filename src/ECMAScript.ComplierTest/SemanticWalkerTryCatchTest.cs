@@ -16,18 +16,23 @@ public sealed class SemanticWalkerTryCatchTest
     private static IBlockOperation GetBlockOperation(string code)
     {
         var usings = @"
-        global using System;
-        global using System.Collections.Generic;
-        global using System.Linq;";
+          global using System;
+          global using System.Collections.Generic;
+          global using System.Linq;
+          global using System.Numerics;
+          global using ECMAScript;
+          global using static ECMAScript.Global;";
 
+        var references = Basic.Reference.Assemblies.Net100.References.All
+          .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location));
         var compilation = CSharpCompilation.Create(
-            "TestAssembly",
-            syntaxTrees: [
-                CSharpSyntaxTree.ParseText(usings),
-                CSharpSyntaxTree.ParseText(code)
-            ],
-            references: Basic.Reference.Assemblies.Net100.References.All,
-            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+          assemblyName: "TestAssembly",
+          syntaxTrees: [
+            CSharpSyntaxTree.ParseText(usings),
+          CSharpSyntaxTree.ParseText(code)
+          ],
+          references: references,
+          options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         var diagnostics = compilation.GetDiagnostics();
         var errors = diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();

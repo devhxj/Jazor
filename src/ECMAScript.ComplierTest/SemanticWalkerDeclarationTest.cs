@@ -20,15 +20,20 @@ public sealed class SemanticWalkerDeclarationTest
         var usings = @"
         global using System;
         global using System.Collections.Generic;
-        global using System.Linq;";
+        global using System.Linq;
+        global using System.Numerics;
+		global using ECMAScript;
+		global using static ECMAScript.Global;";
 
+        var references = Basic.Reference.Assemblies.Net100.References.All
+            .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location));
         var compilation = CSharpCompilation.Create(
-            "TestAssembly",
+            assemblyName: "TestAssembly",
             syntaxTrees: [
               CSharpSyntaxTree.ParseText(usings),
-          CSharpSyntaxTree.ParseText(code)
+              CSharpSyntaxTree.ParseText(code)
             ],
-            references: Basic.Reference.Assemblies.Net100.References.All,
+            references: references,
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         // 输出编译诊断信息
@@ -339,13 +344,14 @@ public sealed class SemanticWalkerDeclarationTest
   let a = 1, b = 2, c;
   let numbers = [1, 2, 3];
   let input = ""123"";
-  let result;
-  if (Int32.TryParse(input, result)) {
-    Console.WriteLine(result);
+  let result, v$0 = {}, v$1;
+  if (v$1 = _16e2a901535b765e(input, v$0), result = v$0.value, v$1) {
+    console.log(result);
   }
   let cc;
-  if (Int32.TryParse(input, cc)) {
-    Console.WriteLine(cc);
+  let v$2 = {}, v$3;
+  if (v$3 = _16e2a901535b765e(input, v$2), cc = v$2.value, v$3) {
+    console.log(cc);
   }
 }", script);
 

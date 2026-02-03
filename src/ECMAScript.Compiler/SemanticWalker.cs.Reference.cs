@@ -10,53 +10,64 @@ namespace ECMAScript.Compiler;
 
 public partial class SemanticWalker
 {
-
 	/// <summary>
 	/// 获取ISymbol的 JavaScript 名称
 	/// 优先级：
 	/// 1. ECMAScriptNameAttribute
 	/// 2. DescriptionAttribute (以 @# 开头)
 	/// </summary>
+	/// <param name="symbol"></param>
+	/// <returns></returns>
 	private static string? GetSymbolConfigName(ISymbol symbol)
 	{
-		string? configName = null;
+		var useDescription = true;
+		string? configName = null, description = null;
 		foreach (var attr in symbol.GetAttributes())
 		{
-			if (attr.ConstructorArguments.Length > 0)
+			if (attr.ConstructorArguments.Length == 0)
+				continue;
+
+			//ECMAScriptNameAttribute 优先级最高，找到后直接返回
+			if (attr.AttributeClass?.Name == "ECMAScriptNameAttribute")
 			{
-				if (attr.AttributeClass?.Name == "ECMAScriptNameAttribute")
-				{
-					configName = attr.ConstructorArguments[0].Value?.ToString();
-					break;//ECMAScriptNameAttribute 优先级最高，找到后直接返回
-				}
-				else if (attr.AttributeClass?.Name == "DescriptionAttribute")
-				{
-					var desc = attr.ConstructorArguments[0].Value?.ToString();
-					if (desc?.StartsWith("@#") == true)
-						return desc.Substring(2);
-				}
+				useDescription = false;
+				configName = attr.ConstructorArguments[0].Value?.ToString()?.Trim();
+				break;
+			}
+			else if (attr.AttributeClass?.Name == "DescriptionAttribute")
+			{
+				var desc = attr.ConstructorArguments[0].Value?.ToString()?.Trim();
+				if (desc?.StartsWith("@#") == true)
+					description = desc.Substring(2);
 			}
 		}
-		
-		return configName;
+
+		return useDescription ? description : configName;
 	}
 
 	private static string GetConfigOrSymbolName(ISymbol symbol)
-		=> GetSymbolConfigName(symbol) ?? symbol.Name;
+	{
+		var name = GetSymbolConfigName(symbol);
+		return string.IsNullOrEmpty(name) ? symbol.Name : name!;
+	}
 
 	private static string? GetTypeName(ITypeSymbol symbol)
 	{
-		// 先取特性配置
-		var name = GetSymbolConfigName(symbol);
+		string? name = null;
 
-		// 再查询白名单
+		// 先查询白名单
+		var displayName = symbol.OriginalDefinition.ToDisplayString(Util.NameFormat);
+		if (WhiteList.Types.TryGetValue(displayName, out var entry) &&
+			entry.Op == WhiteListOp.Replace &&
+			!string.IsNullOrEmpty(entry.Value))
+			name = entry.Value!;
+
+		// 再取特性配置
 		if (string.IsNullOrEmpty(name))
 		{
-			var displayName = symbol.OriginalDefinition.ToDisplayString(Util.NameFormat);
-			if (WhiteList.Types.TryGetValue(displayName, out var entry) &&
-				entry.Op == WhiteListOp.Replace &&
-				!string.IsNullOrEmpty(entry.Value))
-				name = entry.Value!;
+			// 注意 name 为空字符串表示跳过名称，只有为null时才使用symbol name
+			name = GetSymbolConfigName(symbol);
+			name ??= symbol.Name;
 		}
 
 		return name;
@@ -65,7 +76,6 @@ public partial class SemanticWalker
 	private static Expression? BuildTypeName(ITypeSymbol symbol)
 	{
 		var queue = new Stack<string>();
-
 		var type = symbol;
 		while (type is not null)
 		{
@@ -75,7 +85,8 @@ public partial class SemanticWalker
 			else
 				queue.Push(name!);
 
-			type = symbol.ContainingType;
+			type = SymbolEqualityComparer.Default.Equals(type, symbol.ContainingType)
+				? null : symbol.ContainingType;
 		}
 
 		Expression? expr = null;
@@ -90,7 +101,6 @@ public partial class SemanticWalker
 		}
 		return expr;
 	}
-
 
 	private Expression GetFieldName(IOperation includeOp, IFieldSymbol symbol)
 	{
@@ -364,8 +374,8 @@ public partial class SemanticWalker
 		string? propertyName = null;
 
 		// 检查白名单映射
-		var key = operation.Property.GetMethod!.ToDisplayString(Util.NameFormat);
-		if (WhiteList.Members.TryGetValue(key, out var entry))
+		var displayName = operation.Property.GetMethod!.ToDisplayString(Util.NameFormat);
+		if (WhiteList.Members.TryGetValue(displayName, out var entry))
 		{
 			if (entry.Op == WhiteListOp.Allowed)
 				propertyName = operation.Property.Name;
@@ -546,8 +556,8 @@ public partial class SemanticWalker
 		string? methodName = null;
 
 		// 检查白名单映射
-		var key = operation.TargetMethod.OriginalDefinition.ToDisplayString(Util.NameFormat);
-		if (WhiteList.Members.TryGetValue(key, out var entry))
+		var displayName = operation.TargetMethod.OriginalDefinition.ToDisplayString(Util.NameFormat);
+		if (WhiteList.Members.TryGetValue(displayName, out var entry))
 		{
 			if (entry.Op == WhiteListOp.Allowed)
 				methodName = operation.TargetMethod.Name;
@@ -567,8 +577,8 @@ public partial class SemanticWalker
 				if (instance is not null)
 					arguments.Insert(0, instance);
 
-				var aa = new CallExpression(id, NodeList.From(arguments), optional: false);
-				return aaa(aa, preExprs, refParas, argument);
+				var temp = new CallExpression(id, NodeList.From(arguments), optional: false);
+				return BuildInvocationExpr(temp, preExprs, refParas, argument);
 			}
 			else if (entry.Op == WhiteListOp.Equals || entry.Op == WhiteListOp.CompareTo)
 			{
@@ -629,19 +639,22 @@ public partial class SemanticWalker
 		}
 		else
 		{
-			callee = new MemberExpression(
-				instance,
-				property,
-				computed: false,
-				optional: false
-			);
+			if (operation.TargetMethod.MethodKind == MethodKind.DelegateInvoke)
+				callee = instance;
+			else
+				callee = new MemberExpression(
+					instance,
+					property,
+					computed: false,
+					optional: false
+				);
 		}
 
 		var callExpr = new CallExpression(callee, NodeList.From(arguments), optional: false);
-		return aaa(callExpr, preExprs, refParas, argument);
+		return BuildInvocationExpr(callExpr, preExprs, refParas, argument);
 
 
-		Expression aaa(
+		Expression BuildInvocationExpr(
 			in Expression e,
 			in List<Expression> p,
 			in Dictionary<MemberExpression, Expression> refParas,

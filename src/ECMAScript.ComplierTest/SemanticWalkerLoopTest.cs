@@ -10,52 +10,57 @@ namespace ECMAScript.ComplierTest;
 [TestClass]
 public sealed class SemanticWalkerLoopTest
 {
-    /// <summary>
-    /// 编译代码并获取roslyn代码块
-    /// </summary>
-    /// <param name="code"></param>
-    /// <returns></returns>
-    /// <exception cref="InvalidOperationException"></exception>
-    private static IBlockOperation GetBlockOperation(string code)
-    {
-        var usings = @"
-        global using System;
-        global using System.Collections.Generic;
-        global using System.Linq;";
+  /// <summary>
+  /// 编译代码并获取roslyn代码块
+  /// </summary>
+  /// <param name="code"></param>
+  /// <returns></returns>
+  /// <exception cref="InvalidOperationException"></exception>
+  private static IBlockOperation GetBlockOperation(string code)
+  {
+    var usings = @"
+          global using System;
+          global using System.Collections.Generic;
+          global using System.Linq;
+          global using System.Numerics;
+          global using ECMAScript;
+          global using static ECMAScript.Global;";
 
-        var compilation = CSharpCompilation.Create(
-            "TestAssembly",
-            syntaxTrees: [
-              CSharpSyntaxTree.ParseText(usings),
+    var references = Basic.Reference.Assemblies.Net100.References.All
+      .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location));
+    var compilation = CSharpCompilation.Create(
+      assemblyName: "TestAssembly",
+      syntaxTrees: [
+        CSharpSyntaxTree.ParseText(usings),
           CSharpSyntaxTree.ParseText(code)
-            ],
-            references: Basic.Reference.Assemblies.Net100.References.All,
-            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+      ],
+      references: references,
+      options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-        // 输出编译诊断信息
-        var diagnostics = compilation.GetDiagnostics();
-        var errors = diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
-        if (errors.Count > 0)
-        {
-            var errorMessages = string.Join("\n", errors.Select(e => $"{e.Id}: {e.GetMessage()}"));
-            throw new InvalidOperationException(errorMessages);
-        }
-
-        var syntaxTree = compilation.SyntaxTrees.Last();
-        var semanticModel = compilation.GetSemanticModel(syntaxTree);
-        var root = syntaxTree.GetRoot();
-
-        // 查找第一个方法体
-        var methodDeclaration = root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault();
-        if (methodDeclaration?.Body is not null)
-        {
-            var operation = semanticModel.GetOperation(methodDeclaration.Body) as IBlockOperation;
-            if (operation is not null)
-                return operation;
-        }
-
-        throw new InvalidOperationException("未找到可分析的操作");
+    // 输出编译诊断信息
+    var diagnostics = compilation.GetDiagnostics();
+    var errors = diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
+    if (errors.Count > 0)
+    {
+      var errorMessages = string.Join("\n", errors.Select(e => $"{e.Id}: {e.GetMessage()}"));
+      throw new InvalidOperationException(errorMessages);
     }
+
+    var syntaxTree = compilation.SyntaxTrees.Last();
+    var semanticModel = compilation.GetSemanticModel(syntaxTree);
+    var root = syntaxTree.GetRoot();
+
+    // 查找第一个方法体
+    var methodDeclaration = root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault();
+    if (methodDeclaration?.Body is not null)
+    {
+      var operation = semanticModel.GetOperation(methodDeclaration.Body) as IBlockOperation;
+      if (operation is not null)
+        return operation;
+    }
+
+    throw new InvalidOperationException("未找到可分析的操作");
+  }
   
 
   /// <summary>
@@ -115,7 +120,7 @@ public sealed class SemanticWalkerLoopTest
 
     Assert.AreEqual(@"{
   for (let i = 0; i < 10; i++) {
-    Console.WriteLine(i);
+    console.log(i);
   }
 }", script);
   }
@@ -147,7 +152,7 @@ public sealed class SemanticWalkerLoopTest
     Assert.AreEqual(@"{
   let i = 0;
   for (; i < 10; i++) {
-    Console.WriteLine(i);
+    console.log(i);
   }
 }", script);
   }
@@ -181,7 +186,7 @@ public sealed class SemanticWalkerLoopTest
   for (let i = 0; ; i++) {
     if (i >= 10)
       break;
-    Console.WriteLine(i);
+    console.log(i);
   }
 }", script);
   }
@@ -212,7 +217,7 @@ public sealed class SemanticWalkerLoopTest
 
     Assert.AreEqual(@"{
   for (let i = 0; i < 10; ) {
-    Console.WriteLine(i);
+    console.log(i);
     i++;
   }
 }", script);
@@ -243,7 +248,7 @@ public sealed class SemanticWalkerLoopTest
 
     Assert.AreEqual(@"{
   for (let i = 0; i < 10; i += 2) {
-    Console.WriteLine(i);
+    console.log(i);
   }
 }", script);
   }
@@ -276,7 +281,7 @@ public sealed class SemanticWalkerLoopTest
     Assert.AreEqual(@"{
   let i = 0;
   while (i < 10) {
-    Console.WriteLine(i);
+    console.log(i);
     i++;
   }
 }", script);
@@ -313,7 +318,7 @@ public sealed class SemanticWalkerLoopTest
   let i = 0;
   let j = 0;
   while (i < 10 && j < 5) {
-    Console.WriteLine(i);
+    console.log(i);
     i++;
     j++;
   }
@@ -362,14 +367,14 @@ public sealed class SemanticWalkerLoopTest
     Assert.AreEqual(@"{
   let numbers = [1, 2, 3];
   for (num of numbers) {
-    Console.WriteLine(num);
+    console.log(num);
   }
   for (let i = 0; i < 5; i++) {
-    Console.WriteLine(i);
+    console.log(i);
   }
   let j = 0;
   while (j < 3) {
-    Console.WriteLine(j);
+    console.log(j);
     j++;
   }
 }", script);
@@ -404,7 +409,7 @@ public sealed class SemanticWalkerLoopTest
     Assert.AreEqual(@"{
   for (let i = 0; i < 3; i++) {
     for (let j = 0; j < 3; j++) {
-      Console.WriteLine(i * 3 + j);
+      console.log(i * 3 + j);
     }
   }
 }", script);
@@ -441,7 +446,7 @@ public sealed class SemanticWalkerLoopTest
     Assert.AreEqual(@"{
   let list = [10, 20, 30];
   for (item of list) {
-    Console.WriteLine(item);
+    console.log(item);
   }
 }", script);
   }
@@ -475,7 +480,7 @@ public sealed class SemanticWalkerLoopTest
     Assert.AreEqual(@"{
   let numbers = [1, 2, 3];
   for (num of numbers) {
-    Console.WriteLine(num);
+    console.log(num);
   }
 }", script);
   }
@@ -509,7 +514,7 @@ public sealed class SemanticWalkerLoopTest
     Assert.AreEqual(@"{
   let names = [""Alice"", ""Bob"", ""Charlie""];
   for (name of names) {
-    Console.WriteLine(name);
+    console.log(name);
   }
 }", script);
   }
@@ -545,7 +550,7 @@ public sealed class SemanticWalkerLoopTest
 
     Assert.AreEqual(@"{
   for (let i = 10; i >= 0; i--) {
-    Console.WriteLine(i);
+    console.log(i);
   }
 }", script);
   }
@@ -577,7 +582,7 @@ public sealed class SemanticWalkerLoopTest
 
     Assert.AreEqual(@"{
   for (let i = 0; i < 10; i += 2) {
-    Console.WriteLine(i);
+    console.log(i);
   }
 }", script);
   }
@@ -609,7 +614,7 @@ public sealed class SemanticWalkerLoopTest
 
     Assert.AreEqual(@"{
   for (let i = 0; i < 10; i = i * 2 + 1) {
-    Console.WriteLine(i);
+    console.log(i);
   }
 }", script);
   }
@@ -673,7 +678,7 @@ public sealed class SemanticWalkerLoopTest
 
     Assert.AreEqual(@"{
   for (let i = 0; i < 10; i++) {
-    Console.WriteLine(i);
+    console.log(i);
   }
 }", script);
   }
@@ -712,7 +717,7 @@ public sealed class SemanticWalkerLoopTest
     Assert.AreEqual(@"{
   let x = 5;
   while (x > 0) {
-    Console.WriteLine(x);
+    console.log(x);
     x--;
   }
 }", script);
@@ -751,7 +756,7 @@ public sealed class SemanticWalkerLoopTest
   let i = 0;
   let j = 0;
   while (i < 10 || j < 5) {
-    Console.WriteLine(i);
+    console.log(i);
     i++;
     j++;
   }
@@ -793,7 +798,7 @@ public sealed class SemanticWalkerLoopTest
   for (let i = 0; i < 10; i++) {
     if (i == 5)
       break;
-    Console.WriteLine(i);
+    console.log(i);
   }
 }", script);
   }
@@ -829,7 +834,7 @@ public sealed class SemanticWalkerLoopTest
   for (let i = 0; i < 10; i++) {
     if (i % 2 == 0)
       continue;
-    Console.WriteLine(i);
+    console.log(i);
   }
 }", script);
   }
@@ -909,7 +914,7 @@ public sealed class SemanticWalkerLoopTest
     for (let j = 0; j < 3; j++) {
       if (i == j)
         break;
-      Console.WriteLine(i * 3 + j);
+      console.log(i * 3 + j);
     }
   }
 }", script);
@@ -950,7 +955,7 @@ public sealed class SemanticWalkerLoopTest
     for (let j = 0; j < 3; j++) {
       if (i == j)
         continue;
-      Console.WriteLine(i * 3 + j);
+      console.log(i * 3 + j);
     }
   }
 }", script);
@@ -989,7 +994,7 @@ public sealed class SemanticWalkerLoopTest
   let matrix = [[1, 2], [3, 4]];
   for (row of matrix) {
     for (let j = 0; j < row.Length; j++) {
-      Console.WriteLine(row[j]);
+      console.log(row[j]);
     }
   }
 }", script);
@@ -1029,10 +1034,10 @@ public sealed class SemanticWalkerLoopTest
 
     Assert.AreEqual(@"{
   for (let i = 0; i < 3; i++) {
-    Console.WriteLine(i);
+    console.log(i);
   }
   let j = 0;
-  Console.WriteLine(j);
+  console.log(j);
 }", script);
   }
 
@@ -1088,19 +1093,19 @@ public sealed class SemanticWalkerLoopTest
     Assert.AreEqual(@"{
   let items = [1, 2, 3];
   for (item of items) {
-    Console.WriteLine(item);
+    console.log(item);
   }
   for (let i = 0; i < 5; i++) {
-    Console.WriteLine(i);
+    console.log(i);
   }
   for (let j = 10; j >= 0; j--) {
     if (j == 5)
       break;
-    Console.WriteLine(j);
+    console.log(j);
   }
   let k = 0;
   while (k < 3) {
-    Console.WriteLine(k);
+    console.log(k);
     k++;
   }
 }", script);

@@ -21,15 +21,20 @@ public sealed class SemanticWalkerCreationTest
         var usings = @"
         global using System;
         global using System.Collections.Generic;
-        global using System.Linq;";
+        global using System.Linq;
+        global using System.Numerics;
+		global using ECMAScript;
+		global using static ECMAScript.Global;";
 
+        var references = Basic.Reference.Assemblies.Net100.References.All
+            .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location));
         var compilation = CSharpCompilation.Create(
-            "TestAssembly",
+            assemblyName: "TestAssembly",
             syntaxTrees: [
               CSharpSyntaxTree.ParseText(usings),
-          CSharpSyntaxTree.ParseText(code)
+              CSharpSyntaxTree.ParseText(code)
             ],
-            references: Basic.Reference.Assemblies.Net100.References.All,
+            references: references,
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         // 输出编译诊断信息
@@ -1125,7 +1130,6 @@ public sealed class SemanticWalkerCreationTest
             {
                 void TestMethod()
                 {
-                    // 对象创建作为方法参数（不带初始化器）
                     StaticMethod(new MyClass());
                 }
 
@@ -1143,9 +1147,11 @@ public sealed class SemanticWalkerCreationTest
 
         // 当对象创建作为方法参数时，会直接内联创建
         // 静态方法调用使用类名前缀
-        Assert.AreEqual(@"{
+        Assert.AreEqual(
+@"{
   TestClass.StaticMethod(new MyClass);
 }", script);
+
     }
 
     [TestMethod]

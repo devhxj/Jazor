@@ -18,18 +18,23 @@ public sealed class SemanticWalkerTupleTest
     private static IBlockOperation GetBlockOperation(string code)
     {
         var usings = @"
-        global using System;
-        global using System.Collections.Generic;
-        global using System.Linq;";
+          global using System;
+          global using System.Collections.Generic;
+          global using System.Linq;
+          global using System.Numerics;
+          global using ECMAScript;
+          global using static ECMAScript.Global;";
 
+        var references = Basic.Reference.Assemblies.Net100.References.All
+          .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location));
         var compilation = CSharpCompilation.Create(
-            "TestAssembly",
-            syntaxTrees: [
-              CSharpSyntaxTree.ParseText(usings),
-          CSharpSyntaxTree.ParseText(code)
-            ],
-            references: Basic.Reference.Assemblies.Net100.References.All,
-            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+          assemblyName: "TestAssembly",
+          syntaxTrees: [
+            CSharpSyntaxTree.ParseText(usings),
+            CSharpSyntaxTree.ParseText(code)
+          ],
+          references: references,
+          options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         // 输出编译诊断信息
         var diagnostics = compilation.GetDiagnostics();
@@ -145,7 +150,7 @@ public sealed class SemanticWalkerTupleTest
   let func = (x, y) => {
     return { mmm: x, y: y };
   };
-    const v$0 = func.Invoke(2, 5);
+    const v$0 = func(2, 5);
   let zzz = v$0.mmm;
   let yyy = v$0.y;
 

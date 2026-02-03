@@ -25,15 +25,20 @@ public sealed class SemanticWalkerBoundaryTest
 		var usings = @"
         global using System;
         global using System.Collections.Generic;
-        global using System.Linq;";
+        global using System.Linq;
+        global using System.Numerics;
+		global using ECMAScript;
+		global using static ECMAScript.Global;";
 
+		var references = Basic.Reference.Assemblies.Net100.References.All
+			.Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location));
 		var compilation = CSharpCompilation.Create(
-			"TestAssembly",
+			assemblyName: "TestAssembly",
 			syntaxTrees: [
 			  CSharpSyntaxTree.ParseText(usings),
-				  CSharpSyntaxTree.ParseText(code)
+			  CSharpSyntaxTree.ParseText(code)
 			],
-			references: Basic.Reference.Assemblies.Net100.References.All,
+			references: references,
 			options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
 		var diagnostics = compilation.GetDiagnostics();
@@ -809,7 +814,7 @@ public sealed class SemanticWalkerBoundaryTest
       };
     };
   };
-  let result = nested.Invoke(1).Invoke(2).Invoke(3);
+  let result = nested(1)(2)(3);
 }", script);
 	}
 
@@ -922,7 +927,7 @@ public sealed class SemanticWalkerBoundaryTest
 		Assert.AreEqual(@"{
   let empty = [];
   for (item of empty) {
-    Console.WriteLine(item);
+    console.log(item);
   }
 }", script);
 	}

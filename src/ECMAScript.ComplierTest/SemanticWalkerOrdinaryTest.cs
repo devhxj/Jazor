@@ -18,20 +18,23 @@ public sealed class SemanticWalkerOrdinaryTest
   private static IBlockOperation GetBlockOperation(string code)
   {
     var usings = @"
-        global using System;
-        global using System.Collections.Generic;
-        global using System.Linq;";
+          global using System;
+          global using System.Collections.Generic;
+          global using System.Linq;
+          global using System.Numerics;
+          global using ECMAScript;
+          global using static ECMAScript.Global;";
 
     var references = Basic.Reference.Assemblies.Net100.References.All
-        .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location));
-	var compilation = CSharpCompilation.Create(
-        "TestAssembly",
-        syntaxTrees: [
-          CSharpSyntaxTree.ParseText(usings),
+      .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location));
+    var compilation = CSharpCompilation.Create(
+      assemblyName: "TestAssembly",
+      syntaxTrees: [
+        CSharpSyntaxTree.ParseText(usings),
           CSharpSyntaxTree.ParseText(code)
-        ],
-        references: references,
-        options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+      ],
+      references: references,
+      options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
     // 输出编译诊断信息
     var diagnostics = compilation.GetDiagnostics();
@@ -93,7 +96,7 @@ public sealed class SemanticWalkerOrdinaryTest
     Assert.AreEqual(@"{
   {
     let x = 5;
-    Console.WriteLine(x);
+    console.log(x);
   }
 }", script);
 
@@ -122,7 +125,7 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.AreEqual(
 @"{
-  label1: Console.WriteLine(""Labeled statement"");
+  label1: console.log(""Labeled statement"");
 }", script);
 
   }
@@ -297,7 +300,7 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.AreEqual(@"{
   function LocalFunction(param) {
-    Console.WriteLine(param);
+    console.log(param);
     return;
   }
   LocalFunction(42);
@@ -486,7 +489,7 @@ public sealed class SemanticWalkerOrdinaryTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let result = Math.Abs(-5);
+  let result = Math.abs(-5);
 }", script);
 
   }
@@ -1163,18 +1166,18 @@ public sealed class SemanticWalkerOrdinaryTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let absValue = Math.Abs(-5);
+  let absValue = Math.abs(-5);
   let text = ""Hello World"";
   let upperText = text.ToUpper();
   function LocalFunction(param) {
-    Console.WriteLine(param);
+    console.log(param);
     return;
   }
   LocalFunction(42);
   let add = (a, b) => {
     return a + b;
   };
-  let result = add.Invoke(3, 4);
+  let result = add(3, 4);
   let sub = text.Substring(0, 5);
 }", script);
 
@@ -1219,7 +1222,7 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.AreEqual(
 @"{
-  label1: Console.WriteLine(""Label1"");
+  label1: console.log(""Label1"");
   ;
   for (let i = 0; i < 10; i++) {
     if (i == 5)
@@ -2207,9 +2210,11 @@ public sealed class SemanticWalkerOrdinaryTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
-  Console.WriteLine(""test"");
+    Assert.AreEqual(
+@"{
+  console.log(""test"");
 }", script);
+
   }
 
   /// <summary>
@@ -2521,7 +2526,7 @@ public sealed class SemanticWalkerOrdinaryTest
   let add = y => {
     return y + x;
   };
-  let result = add.Invoke(5);
+  let result = add(5);
 }", script);
 
   }
@@ -2558,7 +2563,7 @@ public sealed class SemanticWalkerOrdinaryTest
   let sum = () => {
     return a + b;
   };
-  let result = sum.Invoke();
+  let result = sum();
 }", script);
 
   }
@@ -2600,7 +2605,7 @@ public sealed class SemanticWalkerOrdinaryTest
       return x + value;
     };
   }
-  let result = funcs[0].Invoke(10);
+  let result = funcs[0](10);
 }", script);
 
   }
@@ -2638,11 +2643,43 @@ public sealed class SemanticWalkerOrdinaryTest
       return x * y + multiplier;
     };
   };
-  let add3 = createAdder.Invoke(3);
-  let result = add3.Invoke(4);
+  let add3 = createAdder(3);
+  let result = add3(4);
 }", script);
 
   }
 
   #endregion
+
+  /// <summary>
+  /// 整体测试 - 方法和函数调用
+  /// </summary>
+  [TestMethod]
+  public void Visit_DelegateCalls()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var add = (int a, int b) => a + b;
+                    int result = add(3, 4);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(
+@"{
+  let add = (a, b) => {
+    return a + b;
+  };
+  let result = add(3, 4);
+}", script);
+
+  }
+
 }

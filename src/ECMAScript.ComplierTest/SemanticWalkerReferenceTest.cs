@@ -21,15 +21,19 @@ public sealed class SemanticWalkerReferenceTest
         global using System;
         global using System.Collections.Generic;
         global using System.Linq;
-        global using System.Numerics;";
+        global using System.Numerics;
+		global using ECMAScript;
+		global using static ECMAScript.Global;";
 
+		var references = Basic.Reference.Assemblies.Net100.References.All
+			.Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location));
 		var compilation = CSharpCompilation.Create(
-			"TestAssembly",
+			assemblyName: "TestAssembly",
 			syntaxTrees: [
 			  CSharpSyntaxTree.ParseText(usings),
 			  CSharpSyntaxTree.ParseText(code)
 			],
-			references: Basic.Reference.Assemblies.Net100.References.All,
+			references: references,
 			options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
 		// 输出编译诊断信息
@@ -56,7 +60,7 @@ public sealed class SemanticWalkerReferenceTest
 
 		throw new InvalidOperationException("未找到可分析的操作");
 	}
-
+	
 	#region VisitLocalReference - 局部变量引用
 
 	/// <summary>
@@ -614,7 +618,7 @@ public sealed class SemanticWalkerReferenceTest
   let a = y === y ? 0 : y > y ? 1 : -1;
   let b = z.toString();
   let c = w === v;
-  Console.WriteLine(z);
+  console.log(z);
   this.TestMethod(x, y);
 }", script);
 

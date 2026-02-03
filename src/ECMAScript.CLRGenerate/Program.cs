@@ -66,7 +66,7 @@ var types = new Type[]{
 	// 基本类型
 	//typeof(void),
 	//typeof(Console),
-	//typeof(Math),
+	typeof(Math),
 	//typeof(BigInteger),
 	//typeof(Object),
 	//typeof(Boolean),
@@ -94,7 +94,7 @@ var types = new Type[]{
 	//typeof(ValueTuple),
 	//typeof(WeakReference),
 	//typeof(List<>),
-	typeof(Dictionary<,>),
+	//typeof(Dictionary<,>),
 	//typeof(HashSet<>),
 	//typeof(ReadOnlyCollection),
 	//typeof(ReadOnlyDictionary<,>),

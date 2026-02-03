@@ -44,18 +44,23 @@ public sealed class SemanticWalkerPatternTest
   private static IBlockOperation GetBlockOperation(string code)
   {
     var usings = @"
-        global using System;
-        global using System.Collections.Generic;
-        global using System.Linq;";
+          global using System;
+          global using System.Collections.Generic;
+          global using System.Linq;
+          global using System.Numerics;
+          global using ECMAScript;
+          global using static ECMAScript.Global;";
 
+    var references = Basic.Reference.Assemblies.Net100.References.All
+      .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location));
     var compilation = CSharpCompilation.Create(
-        "TestAssembly",
-        syntaxTrees: [
-          CSharpSyntaxTree.ParseText(usings),
+      assemblyName: "TestAssembly",
+      syntaxTrees: [
+        CSharpSyntaxTree.ParseText(usings),
           CSharpSyntaxTree.ParseText(code)
-        ],
-        references: Basic.Reference.Assemblies.Net100.References.All,
-        options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+      ],
+      references: references,
+      options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
     // 输出编译诊断信息
     var diagnostics = compilation.GetDiagnostics();
@@ -1333,7 +1338,7 @@ public sealed class SemanticWalkerPatternTest
   let array = [1, 2, 3, 4, 5];
   let rest;
   if (Array.isArray(array) && array.length >= 0 && (rest = array.slice(0), true)) {
-    Console.WriteLine(rest.Length);
+    console.log(rest.Length);
   }
 }", script);
 
@@ -1484,8 +1489,8 @@ public sealed class SemanticWalkerPatternTest
   let array = [1, 2, 3, 4, 5];
   let first, rest;
   if (Array.isArray(array) && array.length >= 1 && (first = array[0], true) && (rest = array.slice(1), true)) {
-    Console.WriteLine(first);
-    Console.WriteLine(rest.Length);
+    console.log(first);
+    console.log(rest.Length);
   }
 }", script);
   }
@@ -1519,8 +1524,8 @@ public sealed class SemanticWalkerPatternTest
   let array = [1, 2, 3, 4, 5];
   let first, last;
   if (Array.isArray(array) && array.length >= 2 && (first = array[0], true) && (last = array[array.length - 1], true)) {
-    Console.WriteLine(first);
-    Console.WriteLine(last);
+    console.log(first);
+    console.log(last);
   }
 }", script);
   }
@@ -1643,7 +1648,7 @@ public sealed class SemanticWalkerPatternTest
   let obj = 42;
   let value;
   if (typeof obj === ""number"" && (value = obj, true)) {
-    Console.WriteLine(value);
+    console.log(value);
   }
 }", script);
   }
@@ -1795,8 +1800,8 @@ public sealed class SemanticWalkerPatternTest
   let array = [1, 2, 3, 4, 5];
   let first, second, rest;
   if (Array.isArray(array) && array.length >= 2 && (first = array[0], true) && (second = array[1], true) && (rest = array.slice(2), true)) {
-    Console.WriteLine(first);
-    Console.WriteLine(second);
+    console.log(first);
+    console.log(second);
   }
 }", script);
   }
@@ -2271,7 +2276,7 @@ public sealed class SemanticWalkerPatternTest
   let value = 42;
   let v;
   if (typeof value === ""number"" && (v = value, true)) {
-    Console.WriteLine(v);
+    console.log(v);
   }
 }", script);
   }
@@ -2332,7 +2337,7 @@ public sealed class SemanticWalkerPatternTest
   let array = [1, 2, 3];
   let a, b, c;
   if (Array.isArray(array) && array.length === 3 && (a = array[0], true) && (b = array[1], true) && (c = array[2], true)) {
-    Console.WriteLine(a + b + c);
+    console.log(a + b + c);
   }
 }", script);
   }
@@ -2775,7 +2780,7 @@ public sealed class SemanticWalkerPatternTest
   let array = [1, 2, 3];
   let last;
   if (Array.isArray(array) && array.length >= 1 && (last = array[array.length - 1], true) && last > 0) {
-    Console.WriteLine(last);
+    console.log(last);
   }
 }", script);
   }
@@ -3455,7 +3460,7 @@ line2"";
   let value = null;
   let actual;
   if (typeof value === ""number"" && (actual = value, true)) {
-    Console.WriteLine(actual);
+    console.log(actual);
   }
 }", script);
   }
@@ -3488,7 +3493,7 @@ line2"";
   let value = 42;
   let actual;
   if (typeof value === ""number"" && (actual = value, true)) {
-    Console.WriteLine(actual);
+    console.log(actual);
   }
 }", script);
   }
@@ -3526,7 +3531,7 @@ line2"";
   if (typeof obj === ""number"" && (x = obj, true)) {
     let y;
     if (x > 0 && (y = x, true)) {
-      Console.WriteLine(`${x}, ${y}`);
+      console.log(`${x}, ${y}`);
     }
   }
 }", script);
@@ -3564,7 +3569,7 @@ line2"";
   for (item of items) {
     let value;
     if (typeof item === ""number"" && (value = item, true)) {
-      Console.WriteLine(value);
+      console.log(value);
     }
   }
 }", script);
@@ -3662,7 +3667,7 @@ line2"";
   let point = new Point(1, 2);
   let x, y;
   if (point instanceof Point && (x = point.X, true) && (y = point.Y, true)) {
-    Console.WriteLine(`(${x}, ${y})`);
+    console.log(`(${x}, ${y})`);
   }
 }", script);
   }
@@ -3838,7 +3843,7 @@ line2"";
   let array = [1, 2, 3, 4, 5];
   let first, second, rest, last;
   if (Array.isArray(array) && array.length >= 3 && (first = array[0], true) && (second = array[1], true) && (rest = array.slice(2, -1), true) && (last = array[array.length - 1], true)) {
-    Console.WriteLine(`${first}, ${second}, ${rest.Length}, ${last}`);
+    console.log(`${first}, ${second}, ${rest.Length}, ${last}`);
   }
 }", script);
   }
@@ -4027,11 +4032,11 @@ line2"";
   (() => {
     const v$0 = obj;
     if (typeof v$0 === ""string"" && (s = v$0, true)) {
-      Console.WriteLine(s);
+      console.log(s);
       return;
     }
     if (x = v$0, true) {
-      Console.WriteLine(`Default: ${x}`);
+      console.log(`Default: ${x}`);
       return;
     }
   })();
@@ -4183,7 +4188,7 @@ line2"";
     Assert.AreEqual(@"{
   for (let i = 0; i < 10; i++) {
     if (i > 0 && i < 5) {
-      Console.WriteLine(i);
+      console.log(i);
     }
   }
 }", script);
@@ -4253,7 +4258,7 @@ line2"";
   for (item of items) {
     let value;
     if (typeof item === ""number"" && (value = item, true) && item > 0) {
-      Console.WriteLine(value);
+      console.log(value);
     }
   }
 }", script);
@@ -4403,10 +4408,11 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let first, second, last;
   let result = (() => {
-    const v$0 = A.GetNumbers();
+    const v$0 = TestClass.A.GetNumbers();
     if (Array.isArray(v$0) && v$0.length >= 2 && (first = v$0[0], true) && (second = v$0[1], true) && first > 0)
       return ""Starts with positive"";
     if (Array.isArray(v$0) && v$0.length >= 1 && (last = v$0[v$0.length - 1], true) && last < 0)
@@ -4414,6 +4420,7 @@ line2"";
     return ""Other"";
   })();
 }", script);
+
   }
   #endregion
 
@@ -4469,7 +4476,7 @@ line2"";
 
     Assert.AreEqual(@"{
   let obj = 42;
-  Console.WriteLine(typeof obj === ""number"" ? ""integer"" : ""not integer"");
+  console.log(typeof obj === ""number"" ? ""integer"" : ""not integer"");
 }", script);
   }
 
@@ -4620,11 +4627,11 @@ line2"";
   let obj1 = ""hello"";
   let s;
   if (typeof obj1 === ""string"" && (s = obj1, true) && s.Length > 0) {
-    Console.WriteLine(s);
+    console.log(s);
   }
   let s2;
   if (typeof obj1 === ""string"" && (s2 = obj1, true) && s2.Length > 0) {
-    Console.WriteLine(s2);
+    console.log(s2);
   }
 }", script);
 
@@ -4678,18 +4685,18 @@ line2"";
   (() => {
     const v$0 = value;
     if ((s = v$0, true) && s > 0) {
-      Console.WriteLine("">0"");
+      console.log("">0"");
       return;
     }
     if (v$0 === 1) {
-      Console.WriteLine(""1"");
+      console.log(""1"");
       return;
     }
     if (v$0 === 2) {
-      Console.WriteLine(""2"");
+      console.log(""2"");
       return;
     }
-    Console.WriteLine(""Default"");
+    console.log(""Default"");
     return;
   })();
 }", script);

@@ -1,0 +1,482 @@
+签名= _+ SHA256Hash(成员)
+
+成员:static System.Math.Abs(decimal)
+签名: _eab3564b2663dff6
+注释：
+
+成员:static System.Math.Abs(double)
+签名: _6a0f94e87051cd5f
+注释：
+
+成员:static System.Math.Abs(short)
+签名: _81a80e1bfb516bfb
+注释：
+
+成员:static System.Math.Abs(int)
+签名: _0aaf1073fc70e405
+注释：
+
+成员:static System.Math.Abs(long)
+签名: _2f5b0b713dde9501
+注释：
+
+成员:static System.Math.Abs(nint)
+签名: _6de080191221a07d
+注释：
+
+成员:static System.Math.Abs(sbyte)
+签名: _6ed2ee0733ac7051
+注释：
+
+成员:static System.Math.Abs(float)
+签名: _3e86488d0112bcd3
+注释：
+
+成员:static System.Math.Acos(double)
+签名: _473e58e8c04acfd3
+注释：
+
+成员:static System.Math.Acosh(double)
+签名: _46ecb0a75e5ba94e
+注释：
+
+成员:static System.Math.Asin(double)
+签名: _31a8579686d23c98
+注释：
+
+成员:static System.Math.Asinh(double)
+签名: _fac652d6d6a2503b
+注释：
+
+成员:static System.Math.Atan(double)
+签名: _64bb4dcf5871842b
+注释：
+
+成员:static System.Math.Atan2(double, double)
+签名: _cc6b2bb857d27648
+注释：
+
+成员:static System.Math.Atanh(double)
+签名: _8093e8210867a45e
+注释：
+
+成员:static System.Math.BigMul(int, int)
+签名: _f8dfabc9cf61c7c8
+注释：
+
+成员:static System.Math.BigMul(long, long)
+签名: _9eceeda3d33f938a
+注释：
+
+成员:static System.Math.BigMul(long, long, out long)
+签名: _1f2b3fb549b0a774
+注释：
+
+成员:static System.Math.BigMul(uint, uint)
+签名: _6683ad6f7ac7c14c
+注释：
+
+成员:static System.Math.BigMul(ulong, ulong)
+签名: _d2fa7191b8139e97
+注释：
+
+成员:static System.Math.BigMul(ulong, ulong, out ulong)
+签名: _99697fddb05f0646
+注释：
+
+成员:static System.Math.BitDecrement(double)
+签名: _bc28ec82e8385202
+注释：
+
+成员:static System.Math.BitIncrement(double)
+签名: _655bd4d428ca20ea
+注释：
+
+成员:static System.Math.Cbrt(double)
+签名: _9369c8e8f81372b6
+注释：
+
+成员:static System.Math.Ceiling(decimal)
+签名: _84cbc0eaf2d899af
+注释：
+
+成员:static System.Math.Ceiling(double)
+签名: _d7be7c95bfefd788
+注释：
+
+成员:static System.Math.Clamp(byte, byte, byte)
+签名: _8921213084b6685c
+注释：
+
+成员:static System.Math.Clamp(decimal, decimal, decimal)
+签名: _735e24a467fce432
+注释：
+
+成员:static System.Math.Clamp(double, double, double)
+签名: _a416f1414d77c0fa
+注释：
+
+成员:static System.Math.Clamp(short, short, short)
+签名: _86bd53ebc62ad520
+注释：
+
+成员:static System.Math.Clamp(int, int, int)
+签名: _ac5962f496c6acc0
+注释：
+
+成员:static System.Math.Clamp(long, long, long)
+签名: _d74b585d391b448a
+注释：
+
+成员:static System.Math.Clamp(nint, nint, nint)
+签名: _63803d1734456eee
+注释：
+
+成员:static System.Math.Clamp(sbyte, sbyte, sbyte)
+签名: _f2a0d82587b4e02a
+注释：
+
+成员:static System.Math.Clamp(float, float, float)
+签名: _751a0e2d62df6aff
+注释：
+
+成员:static System.Math.Clamp(ushort, ushort, ushort)
+签名: _74d6735122ecb151
+注释：
+
+成员:static System.Math.Clamp(uint, uint, uint)
+签名: _8322034639d6a05c
+注释：
+
+成员:static System.Math.Clamp(ulong, ulong, ulong)
+签名: _f1743d6e0c7a2101
+注释：
+
+成员:static System.Math.Clamp(nuint, nuint, nuint)
+签名: _25b262a1a57d5d06
+注释：
+
+成员:static System.Math.CopySign(double, double)
+签名: _f51bc6e5d8ce272b
+注释：
+
+成员:static System.Math.Cos(double)
+签名: _b6b312cfcefe789c
+注释：
+
+成员:static System.Math.Cosh(double)
+签名: _c6f1b8664a086e13
+注释：
+
+成员:static System.Math.DivRem(byte, byte)
+签名: _09ec2eababe53085
+注释：
+
+成员:static System.Math.DivRem(short, short)
+签名: _f6eb115003bc623f
+注释：
+
+成员:static System.Math.DivRem(int, int)
+签名: _45a4ab35fd8b6be8
+注释：
+
+成员:static System.Math.DivRem(int, int, out int)
+签名: _2a90cb0f64781864
+注释：
+
+成员:static System.Math.DivRem(long, long)
+签名: _96f1b2c20bd2e40b
+注释：
+
+成员:static System.Math.DivRem(long, long, out long)
+签名: _1961d3558bd76ea4
+注释：
+
+成员:static System.Math.DivRem(nint, nint)
+签名: _98ac53eebed8e823
+注释：
+
+成员:static System.Math.DivRem(sbyte, sbyte)
+签名: _e0661118fd9ce98d
+注释：
+
+成员:static System.Math.DivRem(ushort, ushort)
+签名: _267e04d7693208d4
+注释：
+
+成员:static System.Math.DivRem(uint, uint)
+签名: _c8e57fe110813408
+注释：
+
+成员:static System.Math.DivRem(ulong, ulong)
+签名: _4d9536a1220a7365
+注释：
+
+成员:static System.Math.DivRem(nuint, nuint)
+签名: _1b2439f6e0d31865
+注释：
+
+成员:static System.Math.Exp(double)
+签名: _d5b39999cc90e482
+注释：
+
+成员:static System.Math.Floor(decimal)
+签名: _b12193a7b6647a82
+注释：
+
+成员:static System.Math.Floor(double)
+签名: _a43200909dff4bc0
+注释：
+
+成员:static System.Math.FusedMultiplyAdd(double, double, double)
+签名: _52c95df2ad20c3bd
+注释：
+
+成员:static System.Math.IEEERemainder(double, double)
+签名: _288c181b5d9cf968
+注释：
+
+成员:static System.Math.ILogB(double)
+签名: _51e4d6005e6e11ef
+注释：
+
+成员:static System.Math.Log(double)
+签名: _c65770c0fcbed4b6
+注释：
+
+成员:static System.Math.Log(double, double)
+签名: _da091a35a0d7bc64
+注释：
+
+成员:static System.Math.Log10(double)
+签名: _a882de08086ccec9
+注释：
+
+成员:static System.Math.Log2(double)
+签名: _e622dc98a98720f4
+注释：
+
+成员:static System.Math.Max(byte, byte)
+签名: _a26e415f31a1dd41
+注释：
+
+成员:static System.Math.Max(decimal, decimal)
+签名: _68326de2fcd99278
+注释：
+
+成员:static System.Math.Max(double, double)
+签名: _1bcd36ee2d1a5261
+注释：
+
+成员:static System.Math.Max(short, short)
+签名: _52a2dcd88692950d
+注释：
+
+成员:static System.Math.Max(int, int)
+签名: _c89f0321e6ece69a
+注释：
+
+成员:static System.Math.Max(long, long)
+签名: _1513b88bb1abfff1
+注释：
+
+成员:static System.Math.Max(nint, nint)
+签名: _c03baee2a94d0113
+注释：
+
+成员:static System.Math.Max(sbyte, sbyte)
+签名: _cb1537d45a143e0d
+注释：
+
+成员:static System.Math.Max(float, float)
+签名: _5acf698f9a9ada61
+注释：
+
+成员:static System.Math.Max(ushort, ushort)
+签名: _07de56d6927ee6af
+注释：
+
+成员:static System.Math.Max(uint, uint)
+签名: _6638c647001d2908
+注释：
+
+成员:static System.Math.Max(ulong, ulong)
+签名: _3ac884b966eeb605
+注释：
+
+成员:static System.Math.Max(nuint, nuint)
+签名: _7f3becc9b24d51d3
+注释：
+
+成员:static System.Math.MaxMagnitude(double, double)
+签名: _7922e74207558715
+注释：
+
+成员:static System.Math.Min(byte, byte)
+签名: _f8806316e956dbb8
+注释：
+
+成员:static System.Math.Min(decimal, decimal)
+签名: _87f14d6593efd87f
+注释：
+
+成员:static System.Math.Min(double, double)
+签名: _d0d428d1a1f7d899
+注释：
+
+成员:static System.Math.Min(short, short)
+签名: _d7a779b3283b34dc
+注释：
+
+成员:static System.Math.Min(int, int)
+签名: _7fb229bda6fa1941
+注释：
+
+成员:static System.Math.Min(long, long)
+签名: _b98fea9bd3e4ce52
+注释：
+
+成员:static System.Math.Min(nint, nint)
+签名: _e3cdc59c4e2b3f04
+注释：
+
+成员:static System.Math.Min(sbyte, sbyte)
+签名: _0f8bf59fee331622
+注释：
+
+成员:static System.Math.Min(float, float)
+签名: _2c1e93a158a72838
+注释：
+
+成员:static System.Math.Min(ushort, ushort)
+签名: _3e853af2da5fd862
+注释：
+
+成员:static System.Math.Min(uint, uint)
+签名: _849b5d874239b92c
+注释：
+
+成员:static System.Math.Min(ulong, ulong)
+签名: _d468e999912e1120
+注释：
+
+成员:static System.Math.Min(nuint, nuint)
+签名: _c03fe2f175939d3a
+注释：
+
+成员:static System.Math.MinMagnitude(double, double)
+签名: _44776725ec896ede
+注释：
+
+成员:static System.Math.Pow(double, double)
+签名: _fd439387b010bb99
+注释：
+
+成员:static System.Math.ReciprocalEstimate(double)
+签名: _63ae085718e46139
+注释：
+
+成员:static System.Math.ReciprocalSqrtEstimate(double)
+签名: _5ab45aaeb89fbf4c
+注释：
+
+成员:static System.Math.Round(decimal)
+签名: _257741f3e4260d82
+注释：
+
+成员:static System.Math.Round(decimal, int)
+签名: _10e883cf6d89b70c
+注释：
+
+成员:static System.Math.Round(decimal, int, System.MidpointRounding)
+签名: _b955eff4c2d1fa63
+注释：
+
+成员:static System.Math.Round(decimal, System.MidpointRounding)
+签名: _584a7b2219b578fa
+注释：
+
+成员:static System.Math.Round(double)
+签名: _6cd7f67f98eae0bc
+注释：
+
+成员:static System.Math.Round(double, int)
+签名: _dab059b61a5b7428
+注释：
+
+成员:static System.Math.Round(double, int, System.MidpointRounding)
+签名: _ef441dda2abcc022
+注释：
+
+成员:static System.Math.Round(double, System.MidpointRounding)
+签名: _a7f99c51d0db12b5
+注释：
+
+成员:static System.Math.ScaleB(double, int)
+签名: _11ce4194425195ad
+注释：
+
+成员:static System.Math.Sign(decimal)
+签名: _8d626104a531d041
+注释：
+
+成员:static System.Math.Sign(double)
+签名: _9a554cfca79bdc59
+注释：
+
+成员:static System.Math.Sign(short)
+签名: _f8eefd9c948ed90a
+注释：
+
+成员:static System.Math.Sign(int)
+签名: _cfeb8757509066b2
+注释：
+
+成员:static System.Math.Sign(long)
+签名: _5354f93121b296ff
+注释：
+
+成员:static System.Math.Sign(nint)
+签名: _e5d5397dfe870f94
+注释：
+
+成员:static System.Math.Sign(sbyte)
+签名: _88575fe160876695
+注释：
+
+成员:static System.Math.Sign(float)
+签名: _c0668680ba7ef96e
+注释：
+
+成员:static System.Math.Sin(double)
+签名: _f1029100ea8114ab
+注释：
+
+成员:static System.Math.SinCos(double)
+签名: _4dcadff583296186
+注释：
+
+成员:static System.Math.Sinh(double)
+签名: _f48ae51bac192bdf
+注释：
+
+成员:static System.Math.Sqrt(double)
+签名: _b303f709d2b283f0
+注释：
+
+成员:static System.Math.Tan(double)
+签名: _5f9763f3b0176663
+注释：
+
+成员:static System.Math.Tanh(double)
+签名: _d198ea5fec4f6c8a
+注释：
+
+成员:static System.Math.Truncate(decimal)
+签名: _abd9211e1e7514b4
+注释：
+
+成员:static System.Math.Truncate(double)
+签名: _b74eaf879a3b5fd7
+注释：
+
