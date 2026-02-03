@@ -7,6 +7,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Xml.Linq;
+using static Basic.Reference.Assemblies.Net100;
 
 static string? GetComment(ISymbol? symbol,out string? summary)
 {
@@ -25,13 +26,28 @@ static string? GetComment(ISymbol? symbol,out string? summary)
 
 		builder.AppendLine(value);
 	}
-	return builder.ToString().TrimEnd('\n');
+	var result = builder.ToString().TrimEnd('\n').Trim();
+
+	if (string.IsNullOrEmpty(result))
+		return null;
+
+	return $@"
+**注释**：
+
+```xml
+{result}
+```";
 }
 
 //var xmlDir = @"C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\10.0.2\ref\net10.0";
 var coreLibXml = XmlDocumentationProvider.CreateFromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "System.Private.CoreLib.xml"));
 var numericsXml = XmlDocumentationProvider.CreateFromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "System.Runtime.Numerics.xml"));
-var compilation = CSharpCompilation.Create("Jazor", references: Basic.Reference.Assemblies.Net100.References.All);
+var compilation = CSharpCompilation.Create("Jazor", references: [
+	MetadataReference.CreateFromFile(typeof(object).Assembly.Location, documentation: coreLibXml),
+	MetadataReference.CreateFromFile(typeof(Console).Assembly.Location, documentation: coreLibXml),
+	MetadataReference.CreateFromFile(typeof(Math).Assembly.Location, documentation: coreLibXml),
+	MetadataReference.CreateFromFile(typeof(BigInteger).Assembly.Location, documentation: numericsXml),
+]);
 
 
 var operatorNames = new Dictionary<string, string>
@@ -65,43 +81,43 @@ var operatorNames = new Dictionary<string, string>
 var types = new Type[]{
 	// 基本类型
 	//typeof(void),
-	//typeof(Console),
+	typeof(Console),
 	typeof(Math),
-	//typeof(BigInteger),
-	//typeof(Object),
-	//typeof(Boolean),
-	//typeof(Char),
-	//typeof(SByte),
-	//typeof(Byte),
-	//typeof(Int16),
-	//typeof(UInt16),
-	//typeof(Int32),
-	//typeof(UInt32),
-	//typeof(Int64),
-	//typeof(UInt64),
-	//typeof(Single),
-	//typeof(Double),
-	//typeof(Decimal),
-	//typeof(DateTime),
-	//typeof(DateOnly),
-	//typeof(TimeOnly),
-	//typeof(DateTimeOffset),
-	//typeof(TimeSpan),
-	//typeof(String),
-	//typeof(Exception),
-	//typeof(StringBuilder),
-	//typeof(Nullable),
-	//typeof(ValueTuple),
-	//typeof(WeakReference),
-	//typeof(List<>),
-	//typeof(Dictionary<,>),
-	//typeof(HashSet<>),
-	//typeof(ReadOnlyCollection),
-	//typeof(ReadOnlyDictionary<,>),
-	//typeof(ReadOnlySet<>),
-	//typeof(ConditionalWeakTable<,>),
-	//typeof(GregorianCalendar),
-	//typeof(CultureInfo)
+	typeof(BigInteger),
+	typeof(Object),
+	typeof(Boolean),
+	typeof(Char),
+	typeof(SByte),
+	typeof(Byte),
+	typeof(Int16),
+	typeof(UInt16),
+	typeof(Int32),
+	typeof(UInt32),
+	typeof(Int64),
+	typeof(UInt64),
+	typeof(Single),
+	typeof(Double),
+	typeof(Decimal),
+	typeof(DateTime),
+	typeof(DateOnly),
+	typeof(TimeOnly),
+	typeof(DateTimeOffset),
+	typeof(TimeSpan),
+	typeof(String),
+	typeof(Exception),
+	typeof(StringBuilder),
+	typeof(Nullable),
+	typeof(ValueTuple),
+	typeof(WeakReference),
+	typeof(List<>),
+	typeof(Dictionary<,>),
+	typeof(HashSet<>),
+	typeof(ReadOnlyCollection),
+	typeof(ReadOnlyDictionary<,>),
+	typeof(ReadOnlySet<>),
+	typeof(ConditionalWeakTable<,>),
+	typeof(GregorianCalendar),
+	typeof(CultureInfo)
 };
 var typeMaps = new Dictionary<Type, string>()
 {
@@ -231,15 +247,19 @@ string ConvertParamaterName(IParameterSymbol symbol)
 }
 
 //var directory = Path.Combine(Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory)!.Parent!.Parent!.Parent!.FullName, "generate");
-var directory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "generate");
+var dir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "generate");
+var doc = Path.Combine(dir, "doc");
 
-if (!Directory.Exists(directory))
-	Directory.CreateDirectory(directory);
+if (!Directory.Exists(dir))
+	Directory.CreateDirectory(dir);
+
+if (!Directory.Exists(doc))
+	Directory.CreateDirectory(doc);	
 
 foreach (var type in types)
 {
 	var coder = new StringBuilder();
-	var texter = new StringBuilder();
+	var noter = new StringBuilder();
 	var symbol = compilation.GetTypeByMetadataName(type.FullName!)!;
 	var typeName = type.Name.Split('`')[0];
 	var fullName = symbol.ToDisplayString(Util.NameFormat);
@@ -259,7 +279,11 @@ namespace ECMAScript;
 public static class {typeName}Module
 {{");
 
-	texter.AppendLine(@"签名= _+ SHA256Hash(成员)").AppendLine();
+	noter
+		.AppendLine($"# {typeName}Module.cs")
+		.AppendLine()
+		.AppendLine(@"> ⚠️ **注意**：签名= _+ SHA256Hash(成员)")
+		.AppendLine();
 
 	var keys = new Dictionary<string,string>();
 	var members = symbol.GetMembers();
@@ -344,18 +368,17 @@ $@"{(summary is not null?$"\r\n\t///{summary}":"")}
 	public extern static {returnType} {hash}{generics}({para});
 ");
 
-			texter.Append(
-$@"成员:{display}
-签名: {hash}
-注释：
-{comment}
+			noter.Append(
+$@"**成员**：{display}</br>
+**签名**：{hash}</br>{comment}
+
 ");
 		}
 	}
 
 	coder.AppendLine("}");
-	File.WriteAllText(Path.Combine(directory, $"{typeName}Module.cs"), coder.ToString());
-	File.WriteAllText(Path.Combine(directory, $"{typeName}Module.note.txt"), texter.ToString());
+	File.WriteAllText(Path.Combine(dir, $"{typeName}Module.cs"), coder.ToString());
+	File.WriteAllText(Path.Combine(doc, $"{typeName}Module.md"), noter.ToString());
 	Console.WriteLine(typeName);
 }
 

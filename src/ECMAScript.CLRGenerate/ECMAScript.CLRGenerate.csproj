@@ -27,7 +27,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ECMAScript.Common\ECMAScript.Common.csproj" />
-    <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
   </ItemGroup>
 
   <ItemGroup>
