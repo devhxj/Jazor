@@ -88,12 +88,12 @@ public class GenerateTask : Task
 					if (!classCfg.HasValue)
 						continue;
 
-					// WhiteList("System.Numerics.BigInteger", WhiteListOp.Allowed, "System/Numerics/BigIntegerModule.js")
+					// WhiteList("System.Numerics.BigInteger", WhiteListOp.Allowed, null, "System/Numerics/BigIntegerModule.js")
 					// 类上配置的是成员名、Allowed、js模块路径
 					classes.Add((
 						classCfg.Value.member,
 						classCfg.Value.op,
-						classCfg.Value.value,
+						classCfg.Value.value == "null" ? null : classCfg.Value.value,
 						classCfg.Value.path));
 
 					foreach (var methodDecl in classDecl.DescendantNodes().OfType<MethodDeclarationSyntax>())

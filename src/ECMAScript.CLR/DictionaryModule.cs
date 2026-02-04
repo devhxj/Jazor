@@ -3,7 +3,7 @@ using ECMAScript.Common;
 namespace ECMAScript;
 
 [ECMAScriptModule]
-[WhiteList("System.Collections.Generic.Dictionary<TKey, TValue>", WhiteListOp.Allowed, null, "System/Collections/Generic/Dictionary.js")]
+[WhiteList("System.Collections.Generic.Dictionary<TKey, TValue>", WhiteListOp.Allowed, null, "System/Collections/Generic/DictionaryModule.js")]
 public static class DictionaryModule<TKey, TValue> where TKey : notnull
 {
 	///<summary>Initializes a new instance of the <see cref="T:System.Collections.Generic.Dictionary`2" /> class that is empty, has the default initial capacity, and uses the default equality comparer for the key type.</summary>

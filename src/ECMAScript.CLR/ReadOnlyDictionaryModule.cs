@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 namespace ECMAScript;
 
 [ECMAScriptModule]
-[WhiteList("System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>", WhiteListOp.Allowed, null,"System/Collections/ObjectModel/ReadOnlyDictionary.js")]
+[WhiteList("System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>", WhiteListOp.Allowed, null,"System/Collections/ObjectModel/ReadOnlyDictionaryModule.js")]
 public static class ReadOnlyDictionaryModule<TKey, TValue> where TKey : notnull
 {
 	///<summary>Initializes a new instance of the <see cref="T:System.Collections.ObjectModel.ReadOnlyDictionary`2" /> class that is a wrapper around the specified dictionary.</summary>
