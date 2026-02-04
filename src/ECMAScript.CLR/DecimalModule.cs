@@ -1,0 +1,520 @@
+using ECMAScript.Common;
+
+namespace ECMAScript;
+
+[ECMAScriptModule]
+[WhiteList("decimal", WhiteListOp.Allowed, null,"System/DecimalModule.js")]
+public static class DecimalModule
+{
+	//decimal.Zero = 0;
+
+	//decimal.One = 1;
+
+	//decimal.MinusOne = -1;
+
+	//decimal.MaxValue = 79228162514264337593543950335;
+
+	//decimal.MinValue = -79228162514264337593543950335;
+
+	[WhiteList("decimal.Decimal()", WhiteListOp.Discard)]
+	public extern static String _a7246904c5449b5f();
+
+	///<summary>Initializes a new instance of <see cref="T:System.Decimal" /> to the value of the specified 32-bit signed integer.</summary>
+	[WhiteList("decimal.Decimal(int)", WhiteListOp.Discard)]
+	public extern static String _9c4dd6829012e347(Number value);
+
+	///<summary>Initializes a new instance of <see cref="T:System.Decimal" /> to the value of the specified 32-bit unsigned integer.</summary>
+	[WhiteList("decimal.Decimal(uint)", WhiteListOp.Discard)]
+	public extern static String _73a058b17ed5de01(Number value);
+
+	///<summary>Initializes a new instance of <see cref="T:System.Decimal" /> to the value of the specified 64-bit signed integer.</summary>
+	[WhiteList("decimal.Decimal(long)", WhiteListOp.Discard)]
+	public extern static String _188ee93a8a80b7f4(BigInt value);
+
+	///<summary>Initializes a new instance of <see cref="T:System.Decimal" /> to the value of the specified 64-bit unsigned integer.</summary>
+	[WhiteList("decimal.Decimal(ulong)", WhiteListOp.Discard)]
+	public extern static String _9a3a0f6f89e1e594(BigInt value);
+
+	///<summary>Initializes a new instance of <see cref="T:System.Decimal" /> to the value of the specified single-precision floating-point number.</summary>
+	[WhiteList("decimal.Decimal(float)", WhiteListOp.Discard)]
+	public extern static String _2f7f0d9035a4bbf6(Number value);
+
+	///<summary>Initializes a new instance of <see cref="T:System.Decimal" /> to the value of the specified double-precision floating-point number.</summary>
+	[WhiteList("decimal.Decimal(double)", WhiteListOp.Discard)]
+	public extern static String _cb7c7a937d3b8460(Number value);
+
+	///<summary>Converts the specified 64-bit signed integer, which contains an OLE Automation Currency value, to the equivalent <see cref="T:System.Decimal" /> value.</summary>
+	[WhiteList("static decimal.FromOACurrency(long)", WhiteListOp.Discard)]
+	public extern static String _6cd0f8dfbedd7209(BigInt cy);
+
+	///<summary>Converts the specified <see cref="T:System.Decimal" /> value to the equivalent OLE Automation Currency value, which is contained in a 64-bit signed integer.</summary>
+	[WhiteList("static decimal.ToOACurrency(decimal)", WhiteListOp.Discard)]
+	public extern static BigInt _5d257b5cc33cdaeb(String value);
+
+	///<summary>Initializes a new instance of <see cref="T:System.Decimal" /> to a decimal value represented in binary and contained in a specified array.</summary>
+	[WhiteList("decimal.Decimal(int[])", WhiteListOp.Discard)]
+	public extern static String _1189e4d3b4884066(object bits);
+
+	///<summary>Initializes a new instance of <see cref="T:System.Decimal" /> to a decimal value represented in binary and contained in the specified span.</summary>
+	[WhiteList("decimal.Decimal(System.ReadOnlySpan<int>)", WhiteListOp.Discard)]
+	public extern static String _e195522f8f6783c0(object bits);
+
+	///<summary>Initializes a new instance of <see cref="T:System.Decimal" /> from parameters specifying the instance's constituent parts.</summary>
+	[WhiteList("decimal.Decimal(int, int, int, bool, byte)", WhiteListOp.Discard)]
+	public extern static String _030063a806322293(Number lo, Number mid, Number hi, object isNegative, Number scale);
+
+	[WhiteList("decimal.Scale.get", WhiteListOp.Discard)]
+	public extern static Number _db7e7c8def75fee8(String instance);
+
+	///<summary>Adds two specified <see cref="T:System.Decimal" /> values.</summary>
+	[WhiteList("static decimal.Add(decimal, decimal)", WhiteListOp.Discard)]
+	public extern static String _f73258f14e05c790(String d1, String d2);
+
+	///<summary>Returns the smallest integral value that is greater than or equal to the specified decimal number.</summary>
+	[WhiteList("static decimal.Ceiling(decimal)", WhiteListOp.Discard)]
+	public extern static String _84028a6e79626057(String d);
+
+	///<summary>Compares two specified <see cref="T:System.Decimal" /> values.</summary>
+	[WhiteList("static decimal.Compare(decimal, decimal)", WhiteListOp.Discard)]
+	public extern static Number _c11e0aef6b5ccf1e(String d1, String d2);
+
+	///<summary>Compares this instance to a specified object and returns a comparison of their relative values.</summary>
+	[WhiteList("decimal.CompareTo(object)", WhiteListOp.Discard)]
+	public extern static Number _ff0e77ab6566e092(String instance, Object? value);
+
+	///<summary>Compares this instance to a specified <see cref="T:System.Decimal" /> object and returns a comparison of their relative values.</summary>
+	[WhiteList("decimal.CompareTo(decimal)", WhiteListOp.Discard)]
+	public extern static Number _ca8a78810233056c(String instance, String value);
+
+	///<summary>Divides two specified <see cref="T:System.Decimal" /> values.</summary>
+	[WhiteList("static decimal.Divide(decimal, decimal)", WhiteListOp.Discard)]
+	public extern static String _f5c1c0a2a040b000(String d1, String d2);
+
+	///<summary>Returns a value indicating whether this instance and a specified <see cref="T:System.Object" /> represent the same type and value.</summary>
+	[WhiteList("override decimal.Equals(object)", WhiteListOp.Discard)]
+	public extern static bool _8abe47785e51f122(String instance, Object? value);
+
+	///<summary>Returns a value indicating whether this instance and a specified <see cref="T:System.Decimal" /> object represent the same value.</summary>
+	[WhiteList("decimal.Equals(decimal)", WhiteListOp.Discard)]
+	public extern static bool _3dfd87d9d2f35e11(String instance, String value);
+
+	///<summary>Returns the hash code for this instance.</summary>
+	[WhiteList("override decimal.GetHashCode()", WhiteListOp.Discard)]
+	public extern static Number _f58659c33299d2b1(String instance);
+
+	///<summary>Returns a value indicating whether two specified instances of <see cref="T:System.Decimal" /> represent the same value.</summary>
+	[WhiteList("static decimal.Equals(decimal, decimal)", WhiteListOp.Discard)]
+	public extern static bool _b25c4446c28ed255(String d1, String d2);
+
+	///<summary>Rounds a specified <see cref="T:System.Decimal" /> number to the closest integer toward negative infinity.</summary>
+	[WhiteList("static decimal.Floor(decimal)", WhiteListOp.Discard)]
+	public extern static String _518facaaeeb29ead(String d);
+
+	///<summary>Converts the numeric value of this instance to its equivalent string representation.</summary>
+	[WhiteList("override decimal.ToString()", WhiteListOp.Discard)]
+	public extern static string _65a0e4fe8ccdd829(String instance);
+
+	///<summary>Converts the numeric value of this instance to its equivalent string representation, using the specified format.</summary>
+	[WhiteList("decimal.ToString(string)", WhiteListOp.Discard)]
+	public extern static string _af32d07083f1da07(String instance, object format);
+
+	///<summary>Converts the numeric value of this instance to its equivalent string representation using the specified culture-specific format information.</summary>
+	[WhiteList("decimal.ToString(System.IFormatProvider)", WhiteListOp.Discard)]
+	public extern static string _6234ba988b3e006d(String instance, Intl.NumberFormat? provider);
+
+	///<summary>Converts the numeric value of this instance to its equivalent string representation using the specified format and culture-specific format information.</summary>
+	[WhiteList("decimal.ToString(string, System.IFormatProvider)", WhiteListOp.Discard)]
+	public extern static string _b1e6a06111674f0c(String instance, object format, Intl.NumberFormat? provider);
+
+	///<summary>Tries to format the value of the current decimal instance into the provided span of characters.</summary>
+	[WhiteList("decimal.TryFormat(System.Span<char>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)", WhiteListOp.Discard)]
+	public extern static bool _919259e7087cfd17(String instance, Uint32Array destination, Box<Number> charsWritten, Uint32Array format, Intl.NumberFormat? provider);
+
+	///<summary>Tries to format the value of the current instance as UTF-8 into the provided span of bytes.</summary>
+	[WhiteList("decimal.TryFormat(System.Span<byte>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)", WhiteListOp.Discard)]
+	public extern static bool _c5d11df37776e790(String instance, Uint8Array utf8Destination, Box<Number> bytesWritten, Uint32Array format, Intl.NumberFormat? provider);
+
+	///<summary>Converts the string representation of a number to its <see cref="T:System.Decimal" /> equivalent.</summary>
+	[WhiteList("static decimal.Parse(string)", WhiteListOp.Discard)]
+	public extern static String _91a2436283a24315(object s);
+
+	///<summary>Converts the string representation of a number in a specified style to its <see cref="T:System.Decimal" /> equivalent.</summary>
+	[WhiteList("static decimal.Parse(string, System.Globalization.NumberStyles)", WhiteListOp.Discard)]
+	public extern static String _79a0e8ede29256cc(object s, object style);
+
+	///<summary>Converts the string representation of a number to its <see cref="T:System.Decimal" /> equivalent using the specified culture-specific format information.</summary>
+	[WhiteList("static decimal.Parse(string, System.IFormatProvider)", WhiteListOp.Discard)]
+	public extern static String _01be2a34fe2cda4e(object s, Intl.NumberFormat? provider);
+
+	///<summary>Converts the string representation of a number to its <see cref="T:System.Decimal" /> equivalent using the specified style and culture-specific format.</summary>
+	[WhiteList("static decimal.Parse(string, System.Globalization.NumberStyles, System.IFormatProvider)", WhiteListOp.Discard)]
+	public extern static String _f525a420b2d600ec(object s, object style, Intl.NumberFormat? provider);
+
+	///<summary>Converts the span representation of a number to its <see cref="T:System.Decimal" /> equivalent using the specified style and culture-specific format.</summary>
+	[WhiteList("static decimal.Parse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider)", WhiteListOp.Discard)]
+	public extern static String _8e0c949ee2411c7f(Uint32Array s, object style, Intl.NumberFormat? provider);
+
+	///<summary>Converts the string representation of a number to its <see cref="T:System.Decimal" /> equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
+	[WhiteList("static decimal.TryParse(string, out decimal)", WhiteListOp.Discard)]
+	public extern static bool _e96278809bb50e35(object s, Box<String> result);
+
+	///<summary>Converts the span representation of a number to its <see cref="T:System.Decimal" /> equivalent using the culture-specific format. A return value indicates whether the conversion succeeded or failed.</summary>
+	[WhiteList("static decimal.TryParse(System.ReadOnlySpan<char>, out decimal)", WhiteListOp.Discard)]
+	public extern static bool _5f6432cf52162431(Uint32Array s, Box<String> result);
+
+	///<summary>Tries to convert a UTF-8 character span containing the string representation of a number to its signed decimal equivalent.</summary>
+	[WhiteList("static decimal.TryParse(System.ReadOnlySpan<byte>, out decimal)", WhiteListOp.Discard)]
+	public extern static bool _0111d7c27998205b(Uint8Array utf8Text, Box<String> result);
+
+	///<summary>Converts the string representation of a number to its <see cref="T:System.Decimal" /> equivalent using the specified style and culture-specific format. A return value indicates whether the conversion succeeded or failed.</summary>
+	[WhiteList("static decimal.TryParse(string, System.Globalization.NumberStyles, System.IFormatProvider, out decimal)", WhiteListOp.Discard)]
+	public extern static bool _b4ecd2424c9a371e(object s, object style, Intl.NumberFormat? provider, Box<String> result);
+
+	///<summary>Converts the span representation of a number to its <see cref="T:System.Decimal" /> equivalent using the specified style and culture-specific format. A return value indicates whether the conversion succeeded or failed.</summary>
+	[WhiteList("static decimal.TryParse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider, out decimal)", WhiteListOp.Discard)]
+	public extern static bool _ed6b24306e2ef5cd(Uint32Array s, object style, Intl.NumberFormat? provider, Box<String> result);
+
+	///<summary>Converts the value of a specified instance of <see cref="T:System.Decimal" /> to its equivalent binary representation.</summary>
+	[WhiteList("static decimal.GetBits(decimal)", WhiteListOp.Discard)]
+	public extern static int[] _e0536acf9668ef57(String d);
+
+	///<summary>Converts the value of a specified instance of <see cref="T:System.Decimal" /> to its equivalent binary representation.</summary>
+	[WhiteList("static decimal.GetBits(decimal, System.Span<int>)", WhiteListOp.Discard)]
+	public extern static Number _9d53437d519e15cb(String d, object destination);
+
+	///<summary>Tries to convert the value of a specified instance of <see cref="T:System.Decimal" /> to its equivalent binary representation.</summary>
+	[WhiteList("static decimal.TryGetBits(decimal, System.Span<int>, out int)", WhiteListOp.Discard)]
+	public extern static bool _db7a1f9648d8e6eb(String d, object destination, Box<Number> valuesWritten);
+
+	///<summary>Computes the remainder after dividing two <see cref="T:System.Decimal" /> values.</summary>
+	[WhiteList("static decimal.Remainder(decimal, decimal)", WhiteListOp.Discard)]
+	public extern static String _700359e0de148ee3(String d1, String d2);
+
+	///<summary>Multiplies two specified <see cref="T:System.Decimal" /> values.</summary>
+	[WhiteList("static decimal.Multiply(decimal, decimal)", WhiteListOp.Discard)]
+	public extern static String _d5be5da3d4effe96(String d1, String d2);
+
+	///<summary>Returns the result of multiplying the specified <see cref="T:System.Decimal" /> value by negative one.</summary>
+	[WhiteList("static decimal.Negate(decimal)", WhiteListOp.Discard)]
+	public extern static String _26945a698afa2a91(String d);
+
+	///<summary>Rounds a decimal value to the nearest integer.</summary>
+	[WhiteList("static decimal.Round(decimal)", WhiteListOp.Discard)]
+	public extern static String _4a816369b59f1ca3(String d);
+
+	///<summary>Rounds a <see cref="T:System.Decimal" /> value to a specified number of decimal places.</summary>
+	[WhiteList("static decimal.Round(decimal, int)", WhiteListOp.Discard)]
+	public extern static String _bc3a974d51c694ab(String d, Number decimals);
+
+	///<summary>Rounds a decimal value to an integer using the specified rounding strategy.</summary>
+	[WhiteList("static decimal.Round(decimal, System.MidpointRounding)", WhiteListOp.Discard)]
+	public extern static String _a334f7e82122cfc2(String d, object mode);
+
+	///<summary>Rounds a decimal value to the specified precision using the specified rounding strategy.</summary>
+	[WhiteList("static decimal.Round(decimal, int, System.MidpointRounding)", WhiteListOp.Discard)]
+	public extern static String _09ee3a4652dbe73c(String d, Number decimals, object mode);
+
+	///<summary>Subtracts a specified <see cref="T:System.Decimal" /> value from another.</summary>
+	[WhiteList("static decimal.Subtract(decimal, decimal)", WhiteListOp.Discard)]
+	public extern static String _3e80f2d9cf753d05(String d1, String d2);
+
+	///<summary>Converts the value of the specified <see cref="T:System.Decimal" /> to the equivalent 8-bit unsigned integer.</summary>
+	[WhiteList("static decimal.ToByte(decimal)", WhiteListOp.Discard)]
+	public extern static Number _d2aabede7e0207c1(String value);
+
+	///<summary>Converts the value of the specified <see cref="T:System.Decimal" /> to the equivalent 8-bit signed integer.</summary>
+	[WhiteList("static decimal.ToSByte(decimal)", WhiteListOp.Discard)]
+	public extern static Number _175bf5ee849fcf8f(String value);
+
+	///<summary>Converts the value of the specified <see cref="T:System.Decimal" /> to the equivalent 16-bit signed integer.</summary>
+	[WhiteList("static decimal.ToInt16(decimal)", WhiteListOp.Discard)]
+	public extern static Number _5df8c6a064c50c5f(String value);
+
+	///<summary>Converts the value of the specified <see cref="T:System.Decimal" /> to the equivalent double-precision floating-point number.</summary>
+	[WhiteList("static decimal.ToDouble(decimal)", WhiteListOp.Discard)]
+	public extern static Number _cfbbd251b43c99f4(String d);
+
+	///<summary>Converts the value of the specified <see cref="T:System.Decimal" /> to the equivalent 32-bit signed integer.</summary>
+	[WhiteList("static decimal.ToInt32(decimal)", WhiteListOp.Discard)]
+	public extern static Number _ad71e0d1a8679244(String d);
+
+	///<summary>Converts the value of the specified <see cref="T:System.Decimal" /> to the equivalent 64-bit signed integer.</summary>
+	[WhiteList("static decimal.ToInt64(decimal)", WhiteListOp.Discard)]
+	public extern static BigInt _7a077e2e1baba462(String d);
+
+	///<summary>Converts the value of the specified <see cref="T:System.Decimal" /> to the equivalent 16-bit unsigned integer.</summary>
+	[WhiteList("static decimal.ToUInt16(decimal)", WhiteListOp.Discard)]
+	public extern static Number _21bc553743dd324b(String value);
+
+	///<summary>Converts the value of the specified <see cref="T:System.Decimal" /> to the equivalent 32-bit unsigned integer.</summary>
+	[WhiteList("static decimal.ToUInt32(decimal)", WhiteListOp.Discard)]
+	public extern static Number _c975b2e5b2f4c009(String d);
+
+	///<summary>Converts the value of the specified <see cref="T:System.Decimal" /> to the equivalent 64-bit unsigned integer.</summary>
+	[WhiteList("static decimal.ToUInt64(decimal)", WhiteListOp.Discard)]
+	public extern static BigInt _9b15def492d41a4a(String d);
+
+	///<summary>Converts the value of the specified <see cref="T:System.Decimal" /> to the equivalent single-precision floating-point number.</summary>
+	[WhiteList("static decimal.ToSingle(decimal)", WhiteListOp.Discard)]
+	public extern static Number _1450e4ab34b1a945(String d);
+
+	///<summary>Returns the integral digits of the specified <see cref="T:System.Decimal" />; any fractional digits are discarded.</summary>
+	[WhiteList("static decimal.Truncate(decimal)", WhiteListOp.Discard)]
+	public extern static String _be8b149ea0e1d76b(String d);
+
+	///<summary>Defines an implicit conversion of an 8-bit unsigned integer to a <see cref="T:System.Decimal" />.</summary>
+	[WhiteList("static decimal.implicit operator decimal(byte)", WhiteListOp.Discard)]
+	public extern static String _c605c67b2cd1973c();
+
+	///<summary>Defines an implicit conversion of an 8-bit signed integer to a <see cref="T:System.Decimal" />. This API is not CLS-compliant.</summary>
+	[WhiteList("static decimal.implicit operator decimal(sbyte)", WhiteListOp.Discard)]
+	public extern static String _e8d5240b7aa52784();
+
+	///<summary>Defines an implicit conversion of a 16-bit signed integer to a <see cref="T:System.Decimal" />.</summary>
+	[WhiteList("static decimal.implicit operator decimal(short)", WhiteListOp.Discard)]
+	public extern static String _8635fe57a74e1249();
+
+	///<summary>Defines an implicit conversion of a 16-bit unsigned integer to a <see cref="T:System.Decimal" />. This API is not CLS-compliant.</summary>
+	[WhiteList("static decimal.implicit operator decimal(ushort)", WhiteListOp.Discard)]
+	public extern static String _7c3cfa0de18bd43c();
+
+	///<summary>Defines an implicit conversion of a Unicode character to a <see cref="T:System.Decimal" />.</summary>
+	[WhiteList("static decimal.implicit operator decimal(char)", WhiteListOp.Discard)]
+	public extern static String _d4af042bf014fd51();
+
+	///<summary>Defines an implicit conversion of a 32-bit signed integer to a <see cref="T:System.Decimal" />.</summary>
+	[WhiteList("static decimal.implicit operator decimal(int)", WhiteListOp.Discard)]
+	public extern static String _f5a5d600ccd38777();
+
+	///<summary>Defines an implicit conversion of a 32-bit unsigned integer to a <see cref="T:System.Decimal" />. This API is not CLS-compliant.</summary>
+	[WhiteList("static decimal.implicit operator decimal(uint)", WhiteListOp.Discard)]
+	public extern static String _d8b659cd861d2409();
+
+	///<summary>Defines an implicit conversion of a 64-bit signed integer to a <see cref="T:System.Decimal" />.</summary>
+	[WhiteList("static decimal.implicit operator decimal(long)", WhiteListOp.Discard)]
+	public extern static String _23103e069358ca06();
+
+	///<summary>Defines an implicit conversion of a 64-bit unsigned integer to a <see cref="T:System.Decimal" />. This API is not CLS-compliant.</summary>
+	[WhiteList("static decimal.implicit operator decimal(ulong)", WhiteListOp.Discard)]
+	public extern static String _7ab8c627f74cb718();
+
+	///<summary>Defines an explicit conversion of a single-precision floating-point number to a <see cref="T:System.Decimal" />.</summary>
+	[WhiteList("static decimal.explicit operator decimal(float)", WhiteListOp.Discard)]
+	public extern static String _f456cac2ae523add();
+
+	///<summary>Defines an explicit conversion of a double-precision floating-point number to a <see cref="T:System.Decimal" />.</summary>
+	[WhiteList("static decimal.explicit operator decimal(double)", WhiteListOp.Discard)]
+	public extern static String _8f3a66f6dc828dff();
+
+	///<summary>Defines an explicit conversion of a <see cref="T:System.Decimal" /> to an 8-bit unsigned integer.</summary>
+	[WhiteList("static decimal.explicit operator byte(decimal)", WhiteListOp.Discard)]
+	public extern static Number _a8bfc1feb93c39cb();
+
+	///<summary>Defines an explicit conversion of a <see cref="T:System.Decimal" /> to an 8-bit signed integer. This API is not CLS-compliant.</summary>
+	[WhiteList("static decimal.explicit operator sbyte(decimal)", WhiteListOp.Discard)]
+	public extern static Number _824c1dbd3e6691ba();
+
+	///<summary>Defines an explicit conversion of a <see cref="T:System.Decimal" /> to a Unicode character.</summary>
+	[WhiteList("static decimal.explicit operator char(decimal)", WhiteListOp.Discard)]
+	public extern static Number _e2c93b47df7960a8();
+
+	///<summary>Defines an explicit conversion of a <see cref="T:System.Decimal" /> to a 16-bit signed integer.</summary>
+	[WhiteList("static decimal.explicit operator short(decimal)", WhiteListOp.Discard)]
+	public extern static Number _8f4ca64a21fb08cc();
+
+	///<summary>Defines an explicit conversion of a <see cref="T:System.Decimal" /> to a 16-bit unsigned integer. This API is not CLS-compliant.</summary>
+	[WhiteList("static decimal.explicit operator ushort(decimal)", WhiteListOp.Discard)]
+	public extern static Number _3e209c4283c6e05e();
+
+	///<summary>Defines an explicit conversion of a <see cref="T:System.Decimal" /> to a 32-bit signed integer.</summary>
+	[WhiteList("static decimal.explicit operator int(decimal)", WhiteListOp.Discard)]
+	public extern static Number _bc03e302b86b6800();
+
+	///<summary>Defines an explicit conversion of a <see cref="T:System.Decimal" /> to a 32-bit unsigned integer. This API is not CLS-compliant.</summary>
+	[WhiteList("static decimal.explicit operator uint(decimal)", WhiteListOp.Discard)]
+	public extern static Number _dea1c1c9c8f2b495();
+
+	///<summary>Defines an explicit conversion of a <see cref="T:System.Decimal" /> to a 64-bit signed integer.</summary>
+	[WhiteList("static decimal.explicit operator long(decimal)", WhiteListOp.Discard)]
+	public extern static BigInt _df6860f57d568704();
+
+	///<summary>Defines an explicit conversion of a <see cref="T:System.Decimal" /> to a 64-bit unsigned integer. This API is not CLS-compliant.</summary>
+	[WhiteList("static decimal.explicit operator ulong(decimal)", WhiteListOp.Discard)]
+	public extern static BigInt _047386be34a2d276();
+
+	///<summary>Defines an explicit conversion of a <see cref="T:System.Decimal" /> to a single-precision floating-point number.</summary>
+	[WhiteList("static decimal.explicit operator float(decimal)", WhiteListOp.Discard)]
+	public extern static Number _2de5f5a183f9455b();
+
+	///<summary>Defines an explicit conversion of a <see cref="T:System.Decimal" /> to a double-precision floating-point number.</summary>
+	[WhiteList("static decimal.explicit operator double(decimal)", WhiteListOp.Discard)]
+	public extern static Number _2db2eb304fe215ee();
+
+	///<summary>Returns the value of the <see cref="T:System.Decimal" /> operand (the sign of the operand is unchanged).</summary>
+	[WhiteList("static decimal.operator +(decimal)", WhiteListOp.Allowed)]
+	public extern static String _53fb6447e19a3943(String d);
+
+	///<summary>Negates the value of the specified <see cref="T:System.Decimal" /> operand.</summary>
+	[WhiteList("static decimal.operator -(decimal)", WhiteListOp.Allowed)]
+	public extern static String _ec128cb5140788f6(String d);
+
+	///<summary>Increments the <xref data-throw-if-not-resolved="true" uid="System.Decimal"></xref> operand by 1.</summary>
+	[WhiteList("static decimal.operator ++(decimal)", WhiteListOp.Allowed)]
+	public extern static String _20e1c565f1757f95(String d);
+
+	///<summary>Decrements the <xref data-throw-if-not-resolved="true" uid="System.Decimal"></xref> operand by one.</summary>
+	[WhiteList("static decimal.operator --(decimal)", WhiteListOp.Allowed)]
+	public extern static String _92103936e252998e(String d);
+
+	///<summary>Adds two specified <see cref="T:System.Decimal" /> values.</summary>
+	[WhiteList("static decimal.operator +(decimal, decimal)", WhiteListOp.Allowed)]
+	public extern static String _6916013808c205d4(String d1, String d2);
+
+	///<summary>Subtracts two specified <see cref="T:System.Decimal" /> values.</summary>
+	[WhiteList("static decimal.operator -(decimal, decimal)", WhiteListOp.Allowed)]
+	public extern static String _7b8c963ebbb0237b(String d1, String d2);
+
+	///<summary>Multiplies two specified <xref data-throw-if-not-resolved="true" uid="System.Decimal"></xref> values.</summary>
+	[WhiteList("static decimal.operator *(decimal, decimal)", WhiteListOp.Allowed)]
+	public extern static String _5794746a3d1c5c7d(String d1, String d2);
+
+	///<summary>Divides two specified <xref data-throw-if-not-resolved="true" uid="System.Decimal"></xref> values.</summary>
+	[WhiteList("static decimal.operator /(decimal, decimal)", WhiteListOp.Allowed)]
+	public extern static String _18540fea4c4d81f3(String d1, String d2);
+
+	///<summary>Returns the remainder resulting from dividing two specified <xref data-throw-if-not-resolved="true" uid="System.Decimal"></xref> values.</summary>
+	[WhiteList("static decimal.operator %(decimal, decimal)", WhiteListOp.Allowed)]
+	public extern static String _cf5ffdcf799ce372(String d1, String d2);
+
+	///<summary>Returns a value that indicates whether two <xref data-throw-if-not-resolved="true" uid="System.Decimal"></xref> values are equal.</summary>
+	[WhiteList("static decimal.operator ==(decimal, decimal)", WhiteListOp.Allowed)]
+	public extern static bool _9831be72bebc3a57(String d1, String d2);
+
+	///<summary>Returns a value that indicates whether two <xref data-throw-if-not-resolved="true" uid="System.Decimal"></xref> objects have different values.</summary>
+	[WhiteList("static decimal.operator !=(decimal, decimal)", WhiteListOp.Allowed)]
+	public extern static bool _6e351e0d21e0ccd9(String d1, String d2);
+
+	///<summary>Returns a value indicating whether a specified <xref data-throw-if-not-resolved="true" uid="System.Decimal"></xref> is less than another specified <xref data-throw-if-not-resolved="true" uid="System.Decimal"></xref>.</summary>
+	[WhiteList("static decimal.operator <(decimal, decimal)", WhiteListOp.Allowed)]
+	public extern static bool _9e3b1978bc32f62a(String d1, String d2);
+
+	///<summary>Returns a value indicating whether a specified <xref data-throw-if-not-resolved="true" uid="System.Decimal"></xref> is less than or equal to another specified <xref data-throw-if-not-resolved="true" uid="System.Decimal"></xref>.</summary>
+	[WhiteList("static decimal.operator <=(decimal, decimal)", WhiteListOp.Allowed)]
+	public extern static bool _01544ed3b8bf9a49(String d1, String d2);
+
+	///<summary>Returns a value indicating whether a specified <xref data-throw-if-not-resolved="true" uid="System.Decimal"></xref> is greater than another specified <xref data-throw-if-not-resolved="true" uid="System.Decimal"></xref>.</summary>
+	[WhiteList("static decimal.operator >(decimal, decimal)", WhiteListOp.Allowed)]
+	public extern static bool _bb8c4bd3620de56b(String d1, String d2);
+
+	///<summary>Returns a value indicating whether a specified <xref data-throw-if-not-resolved="true" uid="System.Decimal"></xref> is greater than or equal to another specified <xref data-throw-if-not-resolved="true" uid="System.Decimal"></xref>.</summary>
+	[WhiteList("static decimal.operator >=(decimal, decimal)", WhiteListOp.Allowed)]
+	public extern static bool _325daf3875076acb(String d1, String d2);
+
+	///<summary>Returns the <see cref="T:System.TypeCode" /> for value type <see cref="T:System.Decimal" />.</summary>
+	[WhiteList("decimal.GetTypeCode()", WhiteListOp.Discard)]
+	public extern static System.TypeCode _323e061741a92593(String instance);
+
+	///<summary>Converts a value to a specified integer type using saturation on overflow</summary>
+	[WhiteList("static decimal.ConvertToInteger<TInteger>(decimal)", WhiteListOp.Discard)]
+	public extern static TInteger _3c8005c9c5a1e322<TInteger>(String value);
+
+	///<summary>Converts a value to a specified integer type using platform specific behavior on overflow.</summary>
+	[WhiteList("static decimal.ConvertToIntegerNative<TInteger>(decimal)", WhiteListOp.Discard)]
+	public extern static TInteger _c3fce0dbb13c48ea<TInteger>(String value);
+
+	///<summary>Clamps a value to an inclusive minimum and maximum value.</summary>
+	[WhiteList("static decimal.Clamp(decimal, decimal, decimal)", WhiteListOp.Discard)]
+	public extern static String _e886400fbfdbdaaa(String value, String min, String max);
+
+	///<summary>Copies the sign of a value to the sign of another value.</summary>
+	[WhiteList("static decimal.CopySign(decimal, decimal)", WhiteListOp.Discard)]
+	public extern static String _30df447725c40575(String value, String sign);
+
+	///<summary>Compares two values to compute which is greater.</summary>
+	[WhiteList("static decimal.Max(decimal, decimal)", WhiteListOp.Discard)]
+	public extern static String _872018e11335480a(String x, String y);
+
+	///<summary>Compares two values to compute which is lesser.</summary>
+	[WhiteList("static decimal.Min(decimal, decimal)", WhiteListOp.Discard)]
+	public extern static String _ceb21f954af742e7(String x, String y);
+
+	///<summary>Computes the sign of a value.</summary>
+	[WhiteList("static decimal.Sign(decimal)", WhiteListOp.Discard)]
+	public extern static Number _ed803cf9c8c052f1(String d);
+
+	///<summary>Computes the absolute of a value.</summary>
+	[WhiteList("static decimal.Abs(decimal)", WhiteListOp.Discard)]
+	public extern static String _e85678b4de2283e8(String value);
+
+	///<summary>Creates an instance of the current type from a value, throwing an overflow exception for any values that fall outside the representable range of the current type.</summary>
+	[WhiteList("static decimal.CreateChecked<TOther>(TOther)", WhiteListOp.Discard)]
+	public extern static String _1db5e716e3d6b295<TOther>(object value);
+
+	///<summary>Creates an instance of the current type from a value, saturating any values that fall outside the representable range of the current type.</summary>
+	[WhiteList("static decimal.CreateSaturating<TOther>(TOther)", WhiteListOp.Discard)]
+	public extern static String _0263284f14d9d42b<TOther>(object value);
+
+	///<summary>Creates an instance of the current type from a value, truncating any values that fall outside the representable range of the current type.</summary>
+	[WhiteList("static decimal.CreateTruncating<TOther>(TOther)", WhiteListOp.Discard)]
+	public extern static String _5c966a3c7ee1bf4c<TOther>(object value);
+
+	///<summary>Determines if a value is in its canonical representation.</summary>
+	[WhiteList("static decimal.IsCanonical(decimal)", WhiteListOp.Discard)]
+	public extern static bool _b80d517d733633a6(String value);
+
+	///<summary>Determines if a value represents an even integral number.</summary>
+	[WhiteList("static decimal.IsEvenInteger(decimal)", WhiteListOp.Discard)]
+	public extern static bool _9d28fa751d24ce2e(String value);
+
+	///<summary>Determines if a value represents an integral number.</summary>
+	[WhiteList("static decimal.IsInteger(decimal)", WhiteListOp.Discard)]
+	public extern static bool _e79590278b446432(String value);
+
+	///<summary>Determines if a value is negative.</summary>
+	[WhiteList("static decimal.IsNegative(decimal)", WhiteListOp.Discard)]
+	public extern static bool _1ad42f1c78dbe014(String value);
+
+	///<summary>Determines if a value represents an odd integral number.</summary>
+	[WhiteList("static decimal.IsOddInteger(decimal)", WhiteListOp.Discard)]
+	public extern static bool _38587400d9c44cb5(String value);
+
+	///<summary>Determines if a value is positive.</summary>
+	[WhiteList("static decimal.IsPositive(decimal)", WhiteListOp.Discard)]
+	public extern static bool _03c325899b0e33f0(String value);
+
+	///<summary>Compares two values to compute which is greater.</summary>
+	[WhiteList("static decimal.MaxMagnitude(decimal, decimal)", WhiteListOp.Discard)]
+	public extern static String _becce0ac49342bb2(String x, String y);
+
+	///<summary>Compares two values to compute which is lesser.</summary>
+	[WhiteList("static decimal.MinMagnitude(decimal, decimal)", WhiteListOp.Discard)]
+	public extern static String _5df17b0a512de878(String x, String y);
+
+	///<summary>Tries to parse a string into a value.</summary>
+	[WhiteList("static decimal.TryParse(string, System.IFormatProvider, out decimal)", WhiteListOp.Discard)]
+	public extern static bool _a3ffdb214a9c82a0(object s, Intl.NumberFormat? provider, Box<String> result);
+
+	///<summary>Parses a span of characters into a value.</summary>
+	[WhiteList("static decimal.Parse(System.ReadOnlySpan<char>, System.IFormatProvider)", WhiteListOp.Discard)]
+	public extern static String _c644fa2b15360347(Uint32Array s, Intl.NumberFormat? provider);
+
+	///<summary>Tries to parse a span of characters into a value.</summary>
+	[WhiteList("static decimal.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, out decimal)", WhiteListOp.Discard)]
+	public extern static bool _7ac8df441c1485cf(Uint32Array s, Intl.NumberFormat? provider, Box<String> result);
+
+	///<summary>Parses a span of UTF-8 characters into a value.</summary>
+	[WhiteList("static decimal.Parse(System.ReadOnlySpan<byte>, System.Globalization.NumberStyles, System.IFormatProvider)", WhiteListOp.Discard)]
+	public extern static String _e81acb76373d457e(Uint8Array utf8Text, object style, Intl.NumberFormat? provider);
+
+	///<summary>Tries to parse a span of UTF-8 characters into a value.</summary>
+	[WhiteList("static decimal.TryParse(System.ReadOnlySpan<byte>, System.Globalization.NumberStyles, System.IFormatProvider, out decimal)", WhiteListOp.Discard)]
+	public extern static bool _acbda6e104ca3de4(Uint8Array utf8Text, object style, Intl.NumberFormat? provider, Box<String> result);
+
+	///<summary>Parses a span of UTF-8 characters into a value.</summary>
+	[WhiteList("static decimal.Parse(System.ReadOnlySpan<byte>, System.IFormatProvider)", WhiteListOp.Discard)]
+	public extern static String _d3d821054d142668(Uint8Array utf8Text, Intl.NumberFormat? provider);
+
+	///<summary>Tries to parse a span of UTF-8 characters into a value.</summary>
+	[WhiteList("static decimal.TryParse(System.ReadOnlySpan<byte>, System.IFormatProvider, out decimal)", WhiteListOp.Discard)]
+	public extern static bool _8122c647766e18ff(Uint8Array utf8Text, Intl.NumberFormat? provider, Box<String> result);
+}

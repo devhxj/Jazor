@@ -925,7 +925,7 @@ public partial class SemanticWalker
 			var message = $"无法提取模式引用对象名称，操作类型：{operation.Kind}。";
 			_report?.Invoke(location, message);
 
-			throw new OperationTransformationException(operation, message);
+			throw new OperationTransformationException(operation.Kind, message);
 		}
 
 		return expr;
@@ -1091,7 +1091,7 @@ public partial class SemanticWalker
 			$"Ensure the record has a Deconstruct method or a matching constructor.";
 		var location = operation.Syntax.GetLocation();
 		_report?.Invoke(location, message);
-		throw new OperationTransformationException(operation, message);
+		throw new OperationTransformationException(operation.Kind, message);
 	}
 
 	/// <summary>

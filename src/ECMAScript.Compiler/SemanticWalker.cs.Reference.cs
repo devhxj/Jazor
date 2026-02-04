@@ -51,7 +51,7 @@ public partial class SemanticWalker
 		return string.IsNullOrEmpty(name) ? symbol.Name : name!;
 	}
 
-	private static string? GetTypeName(ITypeSymbol symbol)
+	private static string? GetTypeConfigOrWhiteListName(ITypeSymbol symbol)
 	{
 		string? name = null;
 
@@ -73,13 +73,13 @@ public partial class SemanticWalker
 		return name;
 	}
 
-	private static Expression? BuildTypeName(ITypeSymbol symbol)
+	private static Expression? BuildFullTypeName(ITypeSymbol symbol)
 	{
 		var queue = new Stack<string>();
 		var type = symbol;
 		while (type is not null)
 		{
-			var name = GetTypeName(type);
+			var name = GetTypeConfigOrWhiteListName(type);
 			if (string.IsNullOrEmpty(name))
 				break;
 			else
@@ -406,7 +406,7 @@ public partial class SemanticWalker
 
 		if (string.IsNullOrEmpty(propertyName))
 			return HandleTransformationFailure<Node>(operation, "");
-				
+
 		var property = new Identifier(propertyName!);
 		if (instance is not null)
 		{
@@ -420,7 +420,7 @@ public partial class SemanticWalker
 		if (operation.Property.IsStatic && operation.Property.ContainingType is not null)
 		{
 			// 生成类型标识符作为对象
-			var containing = BuildTypeName(operation.Property.ContainingType);
+			var containing = BuildFullTypeName(operation.Property.ContainingType);
 			if (containing is not null)
 				return new MemberExpression(containing, property, computed: false, optional: false);
 		}
@@ -439,43 +439,65 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitMethodReference(IMethodReferenceOperation operation, WalkerArgument argument)
 	{
-		// 获取属性名称（支持白名单映射）
-		var configName = GetConfigOrSymbolName(operation.Method);
-		if (string.IsNullOrEmpty(configName))
+		var instance = Translate<Expression>(operation.Instance, argument, null);
+		string? methodName = null;
+		// 检查白名单映射
+		var displayName = operation.Method.OriginalDefinition.ToDisplayString(Util.NameFormat);
+		if (WhiteList.Members.TryGetValue(displayName, out var entry))
 		{
-			// GetMethod肯定不为null
-			// 检查白名单映射
-			var display = operation.Method.ToDisplayString(Util.NameFormat);
-			if (WhiteList.Members.TryGetValue(display, out var entry))
-			{
-				if (entry.Op == WhiteListOp.Import)
-				{
-					// todo：处理导入映射
-					// entry.Value 是导入模块路径
-					configName = entry.Hash;
-				}
-				else if (entry.Op == WhiteListOp.Allowed)
-					configName = operation.Method.Name;
+			if (entry.Op == WhiteListOp.Allowed)
+				methodName = operation.Method.Name;
 
-				else if (entry.Op == WhiteListOp.Replace)
-					configName = entry.Value;
+			else if (entry.Op == WhiteListOp.Replace)
+				methodName = entry.Value;
+
+			else if (entry.Op == WhiteListOp.Import)
+			{
+				if (string.IsNullOrEmpty(entry.Value))
+					return HandleTransformationFailure<Node>(operation, "Import mapping requires a module path.");
+
+				// 生成导入调用
+				var tempId = new Identifier(entry.Hash);
+				argument.MergeImportSpecifier(entry.Value!, new ImportSpecifier(tempId));
+				return tempId;
+			}
+
+			else if (entry.Op == WhiteListOp.Equals || entry.Op == WhiteListOp.CompareTo)
+			{
+
 			}
 		}
-		var property = new Identifier(configName ?? operation.Method.Name);
-		if (operation.Instance is not null)
+		else
+			methodName = GetConfigOrSymbolName(operation.Method);
+
+		if (string.IsNullOrEmpty(methodName))
+			return HandleTransformationFailure<Node>(operation, "Method name cannot be determined for invocation.");
+
+		var property = new Identifier(methodName!);
+		Expression callee = property;
+		if (instance is null)
 		{
-			var expr = Translate<Expression>(operation.Instance, argument);
-			return new MemberExpression(expr, property, computed: false, optional: false);
+			if (operation.Method.IsStatic)
+			{
+				var containing = BuildFullTypeName(operation.Method.ContainingType);
+				if (containing is not null)
+					callee = new MemberExpression(containing, property, computed: false, optional: false);
+			}
+		}
+		else
+		{
+			callee = operation.Method.MethodKind != MethodKind.DelegateInvoke
+				? new MemberExpression(instance, property, computed: false, optional: false)
+				: instance;
+
+			// 若方法内含this访问，需绑定
+			callee = new CallExpression(
+				callee: new MemberExpression(callee, new Identifier("bind"), computed: false, optional: false),
+				args: NodeList.From<Expression>(new ThisExpression()),
+				false);
 		}
 
-		// 静态方法：生成完整的限定名（如 Math.Abs）
-		if (operation.Method.IsStatic && operation.Method.ContainingType is not null)
-		{
-			var typeName = new Identifier(operation.Method.ContainingType.Name);
-			return new MemberExpression(typeName, property, computed: false, optional: false);
-		}
-
-		return property;
+		return callee;
 	}
 
 	/// <summary>
@@ -517,34 +539,32 @@ public partial class SemanticWalker
 	{
 		// 处理方法调用的实例对象
 		var instance = Translate<Expression>(operation.Instance, argument, null);
-		var preExprs = new List<Expression>();
 		var refParas = new Dictionary<MemberExpression, Expression>();
+		var hasReturn = !operation.TargetMethod.ReturnsVoid;
 
 		// 处理方法调用的参数
 		var arguments = new List<Expression>();
 		foreach (var arg in operation.Arguments)
 		{
 			var right = Translate<Expression>(arg.Value, argument);
-
-			// 此处需要使用逗号表达式特殊处理 out ref 参数
-			// 外部定义一个临时空对象来中转
-			// ref 引用 或 out 变量引用
-			if (arg.Parameter?.RefKind == RefKind.Out || arg.Parameter?.RefKind == RefKind.Ref)
+			// ref 引用 或 out 变量引用，外部定义一个临时空对象来中转
+			if (arg.Parameter?.RefKind is RefKind.Out or RefKind.Ref)
 			{
-				var name = GetUniqueName(arg);
-				var temp = new Identifier(name);
-				var init = new ObjectExpression(NodeList.Empty<Node>());
+				var temp = new Identifier(GetUniqueName(arg));
+				var left = new MemberExpression(temp, new Identifier("value"), false, false);
+				// ref 要多一步 ref.value赋值
+				var properties = arg.Parameter.RefKind == RefKind.Ref
+					? NodeList.From<Node>(new ObjectProperty(
+						kind: PropertyKind.Init,
+						key: new Identifier("value"),
+						value: right,
+						computed: false,
+						shorthand: false,
+						method: false))
+					: NodeList.Empty<Node>();
+				var init = new ObjectExpression(properties);
 				var declarator = new VariableDeclarator(temp, init);
 				argument.AddVarDeclarator(declarator, _recursionDepth);
-
-				// ref 要多一步 ref.value赋值
-				var left = new MemberExpression(temp, new Identifier("value"), false, false);
-				if (arg.Parameter.RefKind == RefKind.Ref)
-				{
-					var expr = new AssignmentExpression(Operator.Assignment, left, right);
-					preExprs.Add(expr);
-				}
-
 				refParas.Add(left, right);
 				arguments.Add(temp);
 			}
@@ -552,34 +572,34 @@ public partial class SemanticWalker
 				arguments.Add(right);
 		}
 
-		// 获取方法名称
 		string? methodName = null;
-
 		// 检查白名单映射
 		var displayName = operation.TargetMethod.OriginalDefinition.ToDisplayString(Util.NameFormat);
 		if (WhiteList.Members.TryGetValue(displayName, out var entry))
 		{
 			if (entry.Op == WhiteListOp.Allowed)
 				methodName = operation.TargetMethod.Name;
+
 			else if (entry.Op == WhiteListOp.Replace)
 				methodName = entry.Value;
+
 			else if (entry.Op == WhiteListOp.Import)
 			{
 				if (string.IsNullOrEmpty(entry.Value))
-					return HandleTransformationFailure<Node>(operation,
-						"Import mapping requires a module path.");
+					return HandleTransformationFailure<Node>(operation, "Import mapping requires a module path.");
 
 				// 生成导入调用
-				var id = new Identifier(entry.Hash);
-				argument.MergeImportSpecifier(entry.Value!, new ImportSpecifier(id));
+				var tempId = new Identifier(entry.Hash);
+				argument.MergeImportSpecifier(entry.Value!, new ImportSpecifier(tempId));
 
 				// 如果是实例方法调用，插入实例作为第一个参数
 				if (instance is not null)
 					arguments.Insert(0, instance);
 
-				var temp = new CallExpression(id, NodeList.From(arguments), optional: false);
-				return BuildInvocationExpr(temp, preExprs, refParas, argument);
+				var temp = new CallExpression(tempId, NodeList.From(arguments), optional: false);
+				return BuildInvExpr(hasReturn, temp, refParas, argument);
 			}
+
 			else if (entry.Op == WhiteListOp.Equals || entry.Op == WhiteListOp.CompareTo)
 			{
 				Expression left, right;
@@ -613,82 +633,52 @@ public partial class SemanticWalker
 		else
 			methodName = GetConfigOrSymbolName(operation.TargetMethod);
 
-		if(string.IsNullOrEmpty(methodName))
-			return HandleTransformationFailure<Node>(operation,
-				"Method name cannot be determined for invocation.");
-		
-		var property = new Identifier(methodName!);
+		if (string.IsNullOrEmpty(methodName))
+			return HandleTransformationFailure<Node>(operation, "Method name cannot be determined for invocation.");
+
 		// 判断方法调用的类型
-		Expression callee;
+		var property = new Identifier(methodName!);
+		Expression callee = property;
 		if (instance is null)
 		{
-			// 考虑多次嵌套类的静态方法调用			
-			// 静态方法调用
 			if (operation.TargetMethod.IsStatic)
 			{
-				// 静态方法调用：StaticClass.Method()
-				// 生成类型标识符作为对象
-				var containing = BuildTypeName(operation.TargetMethod.ContainingType);
-				callee = containing is not null
-					? new MemberExpression(containing, property, computed: false, optional: false)
-					: property;
+				var containing = BuildFullTypeName(operation.TargetMethod.ContainingType);
+				if (containing is not null)
+					callee = new MemberExpression(containing, property, computed: false, optional: false);
 			}
-			else
-				callee = property;// 扩展方法调用：ExtensionMethod(arg)
-
 		}
 		else
 		{
-			if (operation.TargetMethod.MethodKind == MethodKind.DelegateInvoke)
-				callee = instance;
-			else
-				callee = new MemberExpression(
-					instance,
-					property,
-					computed: false,
-					optional: false
-				);
+			callee = operation.TargetMethod.MethodKind != MethodKind.DelegateInvoke
+				? new MemberExpression(instance, property, computed: false, optional: false)
+				: instance;
 		}
 
 		var callExpr = new CallExpression(callee, NodeList.From(arguments), optional: false);
-		return BuildInvocationExpr(callExpr, preExprs, refParas, argument);
+		return BuildInvExpr(hasReturn, callExpr, refParas, argument);
 
 
-		Expression BuildInvocationExpr(
-			in Expression e,
-			in List<Expression> p,
-			in Dictionary<MemberExpression, Expression> refParas,
+		Expression BuildInvExpr(bool hasReturns, in Expression expr, in Dictionary<MemberExpression, Expression> paras,
 			in WalkerArgument argument)
 		{
-			// 如果存在ref参数，需要生成逗号表达式
-			if (refParas.Count > 0)
+			var expressions = new List<Expression>();
+			if (paras.Count > 0)
 			{
-				var name = GetUniqueName(operation);
-				var id = new Identifier(name);
-				var declarator = new VariableDeclarator(id, null);
+				// 如果存在ref参数，需要生成逗号表达式，方法调用存临时变量，然后返写参数
+				var tempId = new Identifier(GetUniqueName(operation));
+				var declarator = new VariableDeclarator(tempId, null);
 				argument.AddVarDeclarator(declarator, _recursionDepth);
-
-				// 方法调用存临时变量
-				var expr = new AssignmentExpression(Operator.Assignment, id, e);
-				preExprs.Add(expr);
-
-				// 方法调用后需要返写参数
-				foreach (var pair in refParas)
-				{
-					var writeBackExpr = new AssignmentExpression(Operator.Assignment, pair.Value, pair.Key);
-					p.Add(writeBackExpr);
-				}
-
-				// 最后返回调用结果
-				p.Add(id);
-
-				return new SequenceExpression(NodeList.From(p));
+				expressions.Add(new AssignmentExpression(Operator.Assignment, tempId, expr));
+				foreach (var pair in paras)
+					expressions.Add(new AssignmentExpression(Operator.Assignment, pair.Value, pair.Key));
+				// 最后如果有返回调用结果
+				if (hasReturns)
+					expressions.Add(tempId);
+				return new SequenceExpression(NodeList.From(expressions));
 			}
 
-
-			return e;
-
+			return expr;
 		}
 	}
-
 }

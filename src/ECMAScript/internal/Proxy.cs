@@ -3,7 +3,6 @@ using System.Data;
 
 namespace ECMAScript;
 
-
 /// <summary>
 /// 创建对象的代理
 /// </summary>

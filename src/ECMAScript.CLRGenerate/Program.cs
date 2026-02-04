@@ -7,7 +7,6 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Xml.Linq;
-using static Basic.Reference.Assemblies.Net100;
 
 static string? GetComment(ISymbol? symbol,out string? summary)
 {
@@ -81,11 +80,11 @@ var operatorNames = new Dictionary<string, string>
 var types = new Type[]{
 	// 基本类型
 	//typeof(void),
-	typeof(Console),
-	typeof(Math),
-	typeof(BigInteger),
-	typeof(Object),
-	typeof(Boolean),
+	//typeof(Console),
+	//typeof(Math),
+	//typeof(BigInteger),
+	//typeof(Object),
+	//typeof(Boolean),
 	typeof(Char),
 	typeof(SByte),
 	typeof(Byte),
@@ -110,10 +109,10 @@ var types = new Type[]{
 	typeof(ValueTuple),
 	typeof(WeakReference),
 	typeof(List<>),
-	typeof(Dictionary<,>),
+	//typeof(Dictionary<,>),
 	typeof(HashSet<>),
 	typeof(ReadOnlyCollection),
-	typeof(ReadOnlyDictionary<,>),
+	//typeof(ReadOnlyDictionary<,>),
 	typeof(ReadOnlySet<>),
 	typeof(ConditionalWeakTable<,>),
 	typeof(GregorianCalendar),
@@ -231,12 +230,12 @@ string ConvertParamaterName(IParameterSymbol symbol)
 	if (symbol.RefKind == RefKind.Ref)
 	{
 		key = $"ref {key}";
-		newValue = $"RefValue<{newValue}>";
+		newValue = $"Box<{newValue}>";
 	}
 	else if (symbol.RefKind == RefKind.Out)
 	{
 		key = $"out {key}";
-		newValue = $"OutValue<{newValue}>";
+		newValue = $"Box<{newValue}>";
 	}
 
 
@@ -268,14 +267,12 @@ foreach (var type in types)
 		mapName = fullName;
 	
 	coder.Append(
-$@"using System.Collections;
-using ECMAScript.Common;
-using static ECMAScript.CLRModule;
+$@"using ECMAScript.Common;
 
 namespace ECMAScript;
 
 [ECMAScriptModule]
-[WhiteList(""{fullName}"", WhiteListOp.Allowed)]
+[WhiteList(""{fullName}"", WhiteListOp.Allowed, null,""{type.FullName?.Replace('.', '/')}Module.js"")]
 public static class {typeName}Module
 {{");
 
@@ -329,6 +326,12 @@ public static class {typeName}Module
 					para = method.Parameters.Length > 0
 						? $"{mapName} instance, {string.Join(", ", method.Parameters.Select(ConvertParamaterName))}"
 						: $"{mapName} instance";
+
+					generics = (method.IsGenericMethod || method.ContainingType.TypeParameters.Length > 0)
+						? $"<{string.Join(", ", method.ContainingType.TypeParameters
+							.Concat(method.TypeParameters)
+							.Select(x => x.Name))}>"
+						: string.Empty;
 				}
 				else if (method.MethodKind != MethodKind.Destructor && method.MethodKind != MethodKind.Conversion)
 				{

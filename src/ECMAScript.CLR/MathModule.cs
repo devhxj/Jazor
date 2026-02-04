@@ -64,7 +64,7 @@ public static class MathModule
 	public extern static BigInt _9eceeda3d33f938a(BigInt a, BigInt b);
 
 	[WhiteList("static System.Math.BigMul(long, long, out long)", WhiteListOp.Discard)]
-	public extern static BigInt _1f2b3fb549b0a774(BigInt a, BigInt b, OutValue<BigInt> low);
+	public extern static BigInt _1f2b3fb549b0a774(BigInt a, BigInt b, Box<BigInt> low);
 
 	[WhiteList("static System.Math.BigMul(uint, uint)", WhiteListOp.Discard)]
 	public extern static BigInt _6683ad6f7ac7c14c(Number a, Number b);
@@ -73,7 +73,7 @@ public static class MathModule
 	public extern static BigInt _d2fa7191b8139e97(BigInt a, BigInt b);
 
 	[WhiteList("static System.Math.BigMul(ulong, ulong, out ulong)", WhiteListOp.Discard)]
-	public extern static BigInt _99697fddb05f0646(BigInt a, BigInt b, OutValue<BigInt> low);
+	public extern static BigInt _99697fddb05f0646(BigInt a, BigInt b, Box<BigInt> low);
 
 	[WhiteList("static System.Math.BitDecrement(double)", WhiteListOp.Discard)]
 	public extern static Number _bc28ec82e8385202(Number x);
@@ -148,13 +148,13 @@ public static class MathModule
 	public extern static (int Quotient, int Remainder) _45a4ab35fd8b6be8(Number left, Number right);
 
 	[WhiteList("static System.Math.DivRem(int, int, out int)", WhiteListOp.Discard)]
-	public extern static Number _2a90cb0f64781864(Number a, Number b, OutValue<Number> result);
+	public extern static Number _2a90cb0f64781864(Number a, Number b, Box<Number> result);
 
 	[WhiteList("static System.Math.DivRem(long, long)", WhiteListOp.Discard)]
 	public extern static (long Quotient, long Remainder) _96f1b2c20bd2e40b(BigInt left, BigInt right);
 
 	[WhiteList("static System.Math.DivRem(long, long, out long)", WhiteListOp.Discard)]
-	public extern static BigInt _1961d3558bd76ea4(BigInt a, BigInt b, OutValue<BigInt> result);
+	public extern static BigInt _1961d3558bd76ea4(BigInt a, BigInt b, Box<BigInt> result);
 
 	[WhiteList("static System.Math.DivRem(nint, nint)", WhiteListOp.Discard)]
 	public extern static (nint Quotient, nint Remainder) _98ac53eebed8e823(object left, object right);

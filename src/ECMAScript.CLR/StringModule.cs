@@ -3,7 +3,7 @@ using ECMAScript.Common;
 namespace ECMAScript;
 
 [ECMAScriptModule]
-[WhiteList("string", WhiteListOp.Allowed)]
+[WhiteList("string", WhiteListOp.Allowed, null,"System/StringModule.js")]
 public static class StringModule
 {
 	///<summary>Represents the empty string. This field is read-only.</summary>
@@ -172,11 +172,11 @@ public static class StringModule
 
 	///<summary>Creates a new string by using the specified provider to control the formatting of the specified interpolated string.</summary>
 	[WhiteList("static string.Create(System.IFormatProvider, ref System.Runtime.CompilerServices.DefaultInterpolatedStringHandler)", WhiteListOp.Discard)]
-	public extern static string _af610a42747a747c(Intl.NumberFormat? provider, RefValue<object> handler);
+	public extern static string _af610a42747a747c(Intl.NumberFormat? provider, Box<object> handler);
 
 	///<summary>Creates a new string by using the specified provider to control the formatting of the specified interpolated string.</summary>
 	[WhiteList("static string.Create(System.IFormatProvider, System.Span<char>, ref System.Runtime.CompilerServices.DefaultInterpolatedStringHandler)", WhiteListOp.Discard)]
-	public extern static string _1978314137f5a599(Intl.NumberFormat? provider, Uint32Array initialBuffer, RefValue<object> handler);
+	public extern static string _1978314137f5a599(Intl.NumberFormat? provider, Uint32Array initialBuffer, Box<object> handler);
 
 	///<summary>Defines an implicit conversion of a given string to a read-only span of characters.</summary>
 	[WhiteList("static string.implicit operator System.ReadOnlySpan<char>(string)", WhiteListOp.Discard)]

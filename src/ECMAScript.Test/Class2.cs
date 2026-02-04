@@ -36,9 +36,21 @@ class TestClass
 		var b = TypeOf(a);
 		var c = RegExp("a");
 		Console.Log("Hello, World!");
+
+		var ab = int.TryParse("1", out var bb);
+
+		TryParseDelegate cc = int.TryParse;
+		cc("1", out var dd);
+
 	}
 
-	
+	delegate bool TryParseDelegate(string s, out int result);
+
+	[Description("@#test")]
+	void TestMethod1(int a, string b)
+	{
+
+	}
 
 	class A
 	{

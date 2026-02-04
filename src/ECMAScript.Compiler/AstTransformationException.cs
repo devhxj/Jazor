@@ -1,47 +1,48 @@
 using System;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 public sealed class SymbolTransformationException : Exception
 {
-    public ISymbol Symbol { get; }
+    public SymbolKind Kind { get; }
 
-    public SymbolTransformationException(ISymbol symbol, string? message) : base(message)
+    public SymbolTransformationException(SymbolKind kind, string? message) : base(message)
     {
-        Symbol = symbol;
+        Kind = kind;
     }
 
-    public SymbolTransformationException(ISymbol symbol, string? message, Exception innerException) : base(message, innerException)
+    public SymbolTransformationException(SymbolKind kind, string? message, Exception innerException) : base(message, innerException)
     {
-        Symbol = symbol;
+        Kind = kind;
     }
 }
 
 public sealed class OperationTransformationException : Exception
 {
-    public IOperation? Operation { get; }
+    public OperationKind Kind { get; }
 
-    public OperationTransformationException(IOperation? operation, string? message) : base(message)
+    public OperationTransformationException(OperationKind kind, string? message) : base(message)
     {
-        Operation = operation;
+        Kind = kind;
     }
 
-    public OperationTransformationException(IOperation? operation, string? message, Exception innerException) : base(message, innerException)
+    public OperationTransformationException(OperationKind kind, string? message, Exception innerException) : base(message, innerException)
     {
-        Operation = operation;
+        Kind = kind;
     }
 }
 
 public sealed class SyntaxNodeTransformationException : Exception
 {
-    public SyntaxNode? Node { get; }
+    public SyntaxKind Kind { get; }
 
-    public SyntaxNodeTransformationException(SyntaxNode? node, string? message) : base(message)
+    public SyntaxNodeTransformationException(SyntaxKind kind, string? message) : base(message)
     {
-        Node = node;
+        Kind = kind;
     }
 
-    public SyntaxNodeTransformationException(SyntaxNode? node, string? message, Exception innerException) : base(message, innerException)
+    public SyntaxNodeTransformationException(SyntaxKind kind, string? message, Exception innerException) : base(message, innerException)
     {
-        Node = node;
+        Kind = kind;
     }
 }

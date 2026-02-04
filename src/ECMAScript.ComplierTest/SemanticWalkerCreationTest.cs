@@ -909,7 +909,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitDelegateCreation(delegateCreationOp, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("this.MyMethod", script);
+        Assert.AreEqual("this.MyMethod.bind(this)", script);
     }
 
     [TestMethod]
@@ -1180,7 +1180,7 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToECMAScript();
 
         // 实例方法会带有 this 前缀
-        Assert.AreEqual("this.MyMethod", script);
+        Assert.AreEqual("this.MyMethod.bind(this)", script);
     }
 
     [TestMethod]

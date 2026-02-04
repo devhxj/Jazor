@@ -3,9 +3,10 @@
 namespace ECMAScript.CLR;
 
 [WhiteList("void", WhiteListOp.Allowed)]
+public record VoidModule;
+
 [WhiteList("System.Nullable", WhiteListOp.Allowed)]
-[WhiteList("System.ValueTuple", WhiteListOp.Allowed)]
+public record NullableModule;
+
 [WhiteList("System.Array", WhiteListOp.Allowed)]
-public class AssignModule
-{
-}
+public record ArrayModule;

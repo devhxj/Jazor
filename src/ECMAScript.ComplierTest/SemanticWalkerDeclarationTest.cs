@@ -22,6 +22,7 @@ public sealed class SemanticWalkerDeclarationTest
         global using System.Collections.Generic;
         global using System.Linq;
         global using System.Numerics;
+        global using System.ComponentModel;
 		global using ECMAScript;
 		global using static ECMAScript.Global;";
 
@@ -60,7 +61,7 @@ public sealed class SemanticWalkerDeclarationTest
 
         throw new InvalidOperationException("未找到可分析的操作");
     }
-  
+
 
     /// <summary>
     /// 获取指定索引的操作
@@ -397,7 +398,7 @@ public sealed class SemanticWalkerDeclarationTest
         var variableDeclaration = GetOperationAt<IVariableDeclarationGroupOperation>(block, 0);
         var variableDeclarator = variableDeclaration.Declarations.First().Declarators.First();
         var variableInitializer = variableDeclarator.Initializer!;
-        
+
         var result = walker.VisitVariableInitializer(variableInitializer, new());
         var script = result?.ToKnRECMAScript();
 
@@ -420,7 +421,7 @@ public sealed class SemanticWalkerDeclarationTest
         var walker = new SemanticWalker(true);
         var variableDeclaration = GetOperationAt<IVariableDeclarationGroupOperation>(block, 0);
         var variableDeclarator = variableDeclaration.Declarations.First().Declarators.First();
-        
+
         var result = walker.VisitVariableDeclarator(variableDeclarator, new());
         var script = result?.ToKnRECMAScript();
 
@@ -443,7 +444,7 @@ public sealed class SemanticWalkerDeclarationTest
         var walker = new SemanticWalker(true);
         var variableDeclarationGroup = GetOperationAt<IVariableDeclarationGroupOperation>(block, 0);
         var variableDeclaration = variableDeclarationGroup.Declarations.First();
-        
+
         var result = walker.VisitVariableDeclaration(variableDeclaration, new());
         var script = result?.ToKnRECMAScript();
 
@@ -465,7 +466,7 @@ public sealed class SemanticWalkerDeclarationTest
 
         var walker = new SemanticWalker(true);
         var variableDeclarationGroup = GetOperationAt<IVariableDeclarationGroupOperation>(block, 0);
-        
+
         var result = walker.VisitVariableDeclarationGroup(variableDeclarationGroup, new());
         var script = result?.ToKnRECMAScript();
 
@@ -493,11 +494,54 @@ public sealed class SemanticWalkerDeclarationTest
         var invocationOperation = (IInvocationOperation)ifOperation.Condition;
         var argumentOperation = invocationOperation.Arguments[1];
         var declarationExpression = (IDeclarationExpressionOperation)argumentOperation.Value;
-        
+
         var result = walker.VisitDeclarationExpression(declarationExpression, new());
         var script = result?.ToECMAScript();
 
         Assert.AreEqual("result", script);
     }
 
+    [TestMethod]
+    public void DirectVisit_MethodReference()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var a = TestMethod1;
+                    a(1,""2"");
+
+                    var ab = int.TryParse(""1"", out var bb);
+
+                    TryParseDelegate cc = int.TryParse;
+                    cc(""1"", out var dd);
+                }
+
+                [Description(""@#test"")]
+                void TestMethod1(int a, string b)
+                {
+
+                }        
+
+                delegate bool TryParseDelegate(string s, out int result);        
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let a = this.test.bind(this);
+  a(1, ""2"");
+  let bb, v$0 = {}, v$1;
+  let ab = (v$1 = _16e2a901535b765e(""1"", v$0), bb = v$0.value, v$1);
+  let cc = _16e2a901535b765e;
+  let dd, v$2 = {}, v$3;
+  v$3 = cc(""1"", v$2), dd = v$2.value, v$3;
+}", script);
+
+    }
 }

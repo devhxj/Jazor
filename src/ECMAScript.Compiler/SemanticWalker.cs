@@ -239,7 +239,7 @@ public sealed partial class SemanticWalker : OperationVisitor<WalkerArgument, No
     {
         var location = operation.Syntax.GetLocation();
         _report?.Invoke(location, message);
-        throw new OperationTransformationException(operation, message);
+        throw new OperationTransformationException(operation.Kind, message);
     }
 
     /// <summary>
@@ -253,7 +253,7 @@ public sealed partial class SemanticWalker : OperationVisitor<WalkerArgument, No
     {
         var location = node.GetLocation();
         _report?.Invoke(location, message);
-        throw new SyntaxNodeTransformationException(node, message);
+        throw new SyntaxNodeTransformationException(node.Kind(), message);
     }
 
     /// <summary>
@@ -274,7 +274,7 @@ public sealed partial class SemanticWalker : OperationVisitor<WalkerArgument, No
         var location = operation.Syntax.GetLocation();
         _report?.Invoke(location, message);
 
-        throw new OperationTransformationException(operation, message);
+        throw new OperationTransformationException(operation.Kind, message);
     }
 
     /// <summary>
@@ -299,7 +299,7 @@ public sealed partial class SemanticWalker : OperationVisitor<WalkerArgument, No
         var location = operation.Syntax.GetLocation();
         _report?.Invoke(location, message);
 
-        throw new OperationTransformationException(operation, message);
+        throw new OperationTransformationException(operation.Kind, message);
     }
 
     /// <summary>

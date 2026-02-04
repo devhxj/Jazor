@@ -91,8 +91,7 @@ var  b = (2,4);
 var  c = (2,"a");
 ((int bbb, int ccc),int aaa) = tuple;
 var script = @"
-const a = {};
-a.value = 1;
+const a = this.test.bind(this);
 ";
 var parser = new Parser(new ParserOptions { 
 

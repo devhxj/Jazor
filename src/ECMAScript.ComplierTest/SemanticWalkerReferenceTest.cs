@@ -545,9 +545,11 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
-  let abs = Math.Abs;
+		Assert.AreEqual(
+@"{
+  let abs = Math.abs;
 }", script);
+
 	}
 
 	/// <summary>
@@ -572,9 +574,11 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
-  let action = Console.WriteLine;
+		Assert.AreEqual(
+@"{
+  let action = console.log;
 }", script);
+
 	}
 
 	[TestMethod]

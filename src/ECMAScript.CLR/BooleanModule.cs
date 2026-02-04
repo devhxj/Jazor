@@ -23,7 +23,7 @@ public static class BooleanModule
 
 	///<summary>Tries to format the value of the current boolean instance into the provided span of characters.</summary>
 	[WhiteList("bool.TryFormat(System.Span<char>, out int)", WhiteListOp.Discard)]
-	public extern static bool _811623fcb5eec2f4(Boolean instance, Uint32Array destination, OutValue<Number> charsWritten);
+	public extern static bool _811623fcb5eec2f4(Boolean instance, Uint32Array destination, Box<Number> charsWritten);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
 	[WhiteList("override bool.Equals(object)", WhiteListOp.Equals)]
@@ -81,7 +81,7 @@ public static class BooleanModule
 
 	///<summary>Tries to convert the specified string representation of a logical value to its <see cref="T:System.Boolean" /> equivalent.</summary>
 	[WhiteList("static bool.TryParse(string, out bool)", WhiteListOp.Import)]
-	public static bool _dada4bbdacd7aa19(string? value, OutValue<bool> result)
+	public static bool _dada4bbdacd7aa19(string? value, Box<bool> result)
 	{
 		var str = value?.Trim()?.ToLower();
 		if (str == "true")
@@ -100,7 +100,7 @@ public static class BooleanModule
 
 	///<summary>Tries to convert the specified span representation of a logical value to its <see cref="T:System.Boolean" /> equivalent.</summary>
 	[WhiteList("static bool.TryParse(System.ReadOnlySpan<char>, out bool)", WhiteListOp.Import)]
-	public static bool _619c4d1c94319558(Uint32Array value, OutValue<bool> result)
+	public static bool _619c4d1c94319558(Uint32Array value, Box<bool> result)
 	{
 		// Convert Uint32Array to string
 		var str = "";

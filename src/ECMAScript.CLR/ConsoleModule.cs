@@ -270,7 +270,7 @@ public static class ConsoleModule
 	[WhiteList("static System.Console.Write(ulong)", WhiteListOp.Replace, "log")]
 	public extern static void _e8ba4c4ca492d5a8(BigInt value);
 
-	[WhiteList("static System.Console.WriteLine()", WhiteListOp.Discard)]
+	[WhiteList("static System.Console.WriteLine()", WhiteListOp.Replace, "log")]
 	public extern static void _64a3c7e35feaa9f0();
 
 	[WhiteList("static System.Console.WriteLine(bool)", WhiteListOp.Replace, "log")]

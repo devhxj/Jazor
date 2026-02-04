@@ -231,7 +231,7 @@ public static class BigIntegerModule
 
 	///<summary>Tries to convert the string representation of a number to its <see cref="T:System.Numerics.BigInteger" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
 	[WhiteList("static System.Numerics.BigInteger.TryParse(string, out System.Numerics.BigInteger)", WhiteListOp.Discard)]
-	public static bool _59acea2facdaa757(string? value, OutValue<BigInt?> result)
+	public static bool _59acea2facdaa757(string? value, Box<BigInt?> result)
 	{
 		try
 		{
@@ -248,7 +248,7 @@ public static class BigIntegerModule
 
 	///<summary>Tries to convert the string representation of a number in a specified style and culture-specific format to its <see cref="T:System.Numerics.BigInteger" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
 	[WhiteList("static System.Numerics.BigInteger.TryParse(string, System.Globalization.NumberStyles, System.IFormatProvider, out System.Numerics.BigInteger)", WhiteListOp.Discard)]
-	public extern static bool _85cd9c4a9c2dadf4(string? value, System.Globalization.NumberStyles? style, Intl.NumberFormat? provider, OutValue<BigInt?> result);
+	public extern static bool _85cd9c4a9c2dadf4(string? value, System.Globalization.NumberStyles? style, Intl.NumberFormat? provider, Box<BigInt?> result);
 
 	///<summary>Converts the representation of a number, contained in the specified read-only span of characters, in a specified style to its <see cref="T:System.Numerics.BigInteger" /> equivalent.</summary>
 	[WhiteList("static System.Numerics.BigInteger.Parse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider)", WhiteListOp.Discard)]
@@ -256,11 +256,11 @@ public static class BigIntegerModule
 
 	///<summary>Tries to convert the representation of a number contained in the specified read-only character span, to its <see cref="T:System.Numerics.BigInteger" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
 	[WhiteList("static System.Numerics.BigInteger.TryParse(System.ReadOnlySpan<char>, out System.Numerics.BigInteger)", WhiteListOp.Discard)]
-	public extern static bool _ded03bf84977945f(Uint32Array value, OutValue<BigInt> result);
+	public extern static bool _ded03bf84977945f(Uint32Array value, Box<BigInt> result);
 
 	///<summary>Tries to convert the string representation of a number to its <see cref="T:System.Numerics.BigInteger" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
 	[WhiteList("static System.Numerics.BigInteger.TryParse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider, out System.Numerics.BigInteger)", WhiteListOp.Discard)]
-	public extern static bool _d733f0a0a427d970(Uint32Array value, System.Globalization.NumberStyles style, Intl.NumberFormat? provider, OutValue<BigInt> result);
+	public extern static bool _d733f0a0a427d970(Uint32Array value, System.Globalization.NumberStyles style, Intl.NumberFormat? provider, Box<BigInt> result);
 
 	///<summary>Compares two <see cref="T:System.Numerics.BigInteger" /> values and returns an integer that indicates whether the first value is less than, equal to, or greater than the second value.</summary>
 	[WhiteList("static System.Numerics.BigInteger.Compare(System.Numerics.BigInteger, System.Numerics.BigInteger)", WhiteListOp.CompareTo)]
@@ -313,7 +313,7 @@ public static class BigIntegerModule
 
 	///<summary>Divides one <see cref="T:System.Numerics.BigInteger" /> value by another, returns the result, and returns the remainder in an output parameter.</summary>
 	[WhiteList("static System.Numerics.BigInteger.DivRem(System.Numerics.BigInteger, System.Numerics.BigInteger, out System.Numerics.BigInteger)", WhiteListOp.Allowed)]
-	public static BigInt _598611fb2b8a064a(BigInt dividend, BigInt divisor, OutValue<BigInt> remainder)
+	public static BigInt _598611fb2b8a064a(BigInt dividend, BigInt divisor, Box<BigInt> remainder)
 	{
 		remainder.Value = dividend % divisor;
 		return dividend / divisor;
@@ -625,7 +625,7 @@ public static class BigIntegerModule
 
 	///<summary>Copies the value of this <see cref="T:System.Numerics.BigInteger" /> as little-endian twos-complement bytes, using the fewest number of bytes possible. If the value is zero, outputs one byte whose element is 0x00.</summary>
 	[WhiteList("System.Numerics.BigInteger.TryWriteBytes(System.Span<byte>, out int, bool, bool)", WhiteListOp.Allowed)]
-	public static bool _76ae4e496fc976fd(BigInt instance, Uint8Array destination, OutValue<Number> bytesWritten, bool isUnsigned, bool isBigEndian)
+	public static bool _76ae4e496fc976fd(BigInt instance, Uint8Array destination, Box<Number> bytesWritten, bool isUnsigned, bool isBigEndian)
 	{
 		// 1. 计算所需字节数
 		var requiredBytes = 1; // 至少需要1字节
@@ -806,7 +806,7 @@ public static class BigIntegerModule
 
 	///<summary>Formats this big integer instance into a span of characters.</summary>
 	[WhiteList("System.Numerics.BigInteger.TryFormat(System.Span<char>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)", WhiteListOp.Discard)]
-	public extern static bool _90c190be387330ea(BigInt instance, Uint32Array destination, OutValue<Number> charsWritten, Uint32Array format, Intl.NumberFormat? provider);
+	public extern static bool _90c190be387330ea(BigInt instance, Uint32Array destination, Box<Number> charsWritten, Uint32Array format, Intl.NumberFormat? provider);
 
 	///<summary>Subtracts a <see cref="T:System.Numerics.BigInteger" /> value from another <see cref="T:System.Numerics.BigInteger" /> value.</summary>
 	[WhiteList("static System.Numerics.BigInteger.operator -(System.Numerics.BigInteger, System.Numerics.BigInteger)", WhiteListOp.Import)]
@@ -1481,7 +1481,7 @@ public static class BigIntegerModule
 
 	///<summary>Tries to parse a string into a value.</summary>
 	[WhiteList("static System.Numerics.BigInteger.TryParse(string, System.IFormatProvider, out System.Numerics.BigInteger)", WhiteListOp.Discard)]
-	public extern static bool _10999a356af78aba(string? s, Intl.NumberFormat? provider, OutValue<BigInt?> result);
+	public extern static bool _10999a356af78aba(string? s, Intl.NumberFormat? provider, Box<BigInt?> result);
 
 	///<summary>Shifts a value right by a given amount.</summary>
 	[WhiteList("static System.Numerics.BigInteger.operator >>>(System.Numerics.BigInteger, int)", WhiteListOp.Allowed)]
@@ -1506,5 +1506,5 @@ public static class BigIntegerModule
 
 	///<summary>Tries to parse a span of characters into a value.</summary>
 	[WhiteList("static System.Numerics.BigInteger.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, out System.Numerics.BigInteger)", WhiteListOp.Discard)]
-	public extern static bool _163b02803ece1f0c(Uint32Array s, Intl.NumberFormat? provider, OutValue<BigInt> result);
+	public extern static bool _163b02803ece1f0c(Uint32Array s, Intl.NumberFormat? provider, Box<BigInt> result);
 }
