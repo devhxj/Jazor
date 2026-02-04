@@ -9,12 +9,14 @@ ECMAScript.CLR 是 Jazor 项目的重要组成部分，负责提供：
 1. **白名单定义**：声明哪些 C# 类型和成员可以被编译器使用
 2. **JavaScript 运行时实现**：为白名单中的类型提供 JavaScript 等价实现
 3. **类型映射**：将 C# 类型映射到 JavaScript 类型
+4. **模块导入**：定义 JavaScript 模块路径用于 ES6 import
 
 ### 设计目的
 
 - 将 C# 类型的属性和方法统一转换成可导出的方法
 - 提供类型成员的 JavaScript 运行时实现
 - 通过白名单机制与 Analyzer 和 Compiler 协同工作
+- 支持从外部 JavaScript 模块导入实现
 
 ---
 
@@ -22,16 +24,18 @@ ECMAScript.CLR 是 Jazor 项目的重要组成部分，负责提供：
 
 ```
 ECMAScript.CLR/
-├── 核心基础模块（已启用）
-│   ├── CLRModule.cs              # CLR 运行时支持类型
-│   ├── AssignModule.cs           # 基础类型白名单
+├── 核心基础模块
+│   ├── AssignModule.cs           # 基础类型白名单定义
 │   ├── BooleanModule.cs          # bool 类型实现
 │   ├── StringModule.cs           # string 类型实现
 │   ├── ObjectModule.cs           # object 类型实现
 │   ├── BigIntegerModule.cs       # BigInteger 类型实现
-│   └── ValueTupleModule.cs       # ValueTuple 和 Tuple 实现
+│   ├── ValueTupleModule.cs       # ValueTuple 和 Tuple 实现
+│   ├── ConsoleModule.cs          # System.Console 实现
+│   ├── MathModule.cs             # System.Math 实现
+│   └── ArrayModule.cs            # System.Array 实现
 │
-├── 数值类型模块（已禁用）
+├── 数值类型模块
 │   ├── SByteModule.cs            # sbyte (System.SByte)
 │   ├── ByteModule.cs             # byte (System.Byte)
 │   ├── Int16Module.cs            # short (System.Int16)
@@ -45,7 +49,7 @@ ECMAScript.CLR/
 │   ├── DecimalModule.cs          # decimal (System.Decimal)
 │   └── CharModule.cs             # char (System.Char)
 │
-├── 日期时间模块（已禁用）
+├── 日期时间模块
 │   ├── DateTimeModule.cs         # DateTime
 │   ├── DateOnlyModule.cs         # DateOnly
 │   ├── TimeOnlyModule.cs         # TimeOnly
@@ -54,7 +58,7 @@ ECMAScript.CLR/
 │   ├── GregorianCalendarModule.cs # GregorianCalendar
 │   └── CultureInfoModule.cs      # CultureInfo
 │
-├── 集合类型模块（已禁用）
+├── 集合类型模块
 │   ├── ListModule.cs             # List<T>
 │   ├── DictionaryModule.cs       # Dictionary<K,V>
 │   ├── HashSetModule.cs          # HashSet<T>
@@ -63,12 +67,14 @@ ECMAScript.CLR/
 │   ├── ReadOnlySetModule.cs
 │   └── ConditionalWeakTableModule.cs
 │
-└── 其他工具模块（已禁用）
+└── 其他工具模块
     ├── StringBuilderModule.cs    # StringBuilder
     ├── NullableModule.cs         # Nullable<T>
     ├── WeakReferenceModule.cs    # WeakReference<T>
     └── ExceptionModule.cs        # Exception
 ```
+
+> **注意**：所有模块均已启用，无禁用模块。
 
 ---
 
@@ -76,7 +82,7 @@ ECMAScript.CLR/
 
 ### 核心特性
 
-ECMAScript.CLR 使用三个自定义特性来定义白名单和 JavaScript 实现：
+ECMAScript.CLR 使用三个核心类型来定义白名单和 JavaScript 实现：
 
 #### 1. `[ECMAScriptModule]`
 
@@ -84,6 +90,7 @@ ECMAScript.CLR 使用三个自定义特性来定义白名单和 JavaScript 实�
 
 ```csharp
 [ECMAScriptModule]
+[WhiteList("bool", WhiteListOp.Allowed, null, "System/BooleanModule.js")]
 public static class BooleanModule
 {
     // ...
@@ -91,65 +98,76 @@ public static class BooleanModule
 ```
 
 **参数**：
-- `Import`（可选）：指定导入路径
+- `Import`（可选）：指定导入路径（通过 `WhiteListAttribute` 的 `path` 参数设置）
 
 #### 2. `[WhiteList]`
 
-声明类型或成员的白名单映射名称。
+声明类型或成员的白名单映射名称和处理方式。
 
 ```csharp
-[WhiteList("bool")]                           // 类型白名单
-[WhiteList("override bool.GetHashCode()")]    // 成员白名单
-[WhiteList("static bool.Parse(string)")]      // 方法白名单
+// 类型白名单 - 指定模块路径
+[WhiteList("bool", WhiteListOp.Allowed, null, "System/BooleanModule.js")]
+
+// 成员白名单 - 丢弃（不导入）
+[WhiteList("override bool.GetHashCode()", WhiteListOp.Discard)]
+
+// 成员白名单 - 替换为 JavaScript 原生方法
+[WhiteList("override bool.ToString()", WhiteListOp.Replace, "toString")]
+
+// 成员白名单 - 从 C# 实现导入
+[WhiteList("static bool.Parse(string)", WhiteListOp.Import)]
 ```
 
-**命名规则**：
-- 类型白名单：使用完整类型名（如 `bool`, `string`, `System.Numerics.BigInteger`）
-- 成员白名单：使用 `签名` 格式（如 `override bool.GetHashCode()`, `static bool.Parse(string)`）
+**参数**：
+- `member`：白名单名称（使用 ECMAScript.Common.Util.NameFormat 格式化）
+- `op`：处理方式（`WhiteListOp` 枚举）
+- `value`：当 `op` 是 `Replace` 时，指定替换的 JavaScript 方法名
+- `path`：当是类名时，指定 JavaScript 模块路径
 
-#### 3. `[ECMAScriptLiteral]`
+#### 3. `WhiteListOp` 枚举
 
-直接嵌入 JavaScript 代码片段。
+定义白名单成员的处理方式：
 
-```csharp
-[ECMAScriptLiteral("@#{0} ? 1 : 0")]
-public extern static Number BooleanGetHashCode(bool instance);
-```
-
-**占位符语法**：
-- `@#{0}`, `@#{1}`, ... : 表示方法参数的位置替换
-- 示例：`[ECMAScriptLiteral("@#{0} + @#{1}")]` → 生成 `arg0 + arg1`
+| 值 | 说明 | 用途 |
+|-----|------|------|
+| `Discard` | 不支持，丢弃 | 不导入该成员 |
+| `Allowed` | 支持，无其他操作 | 仅标记为允许使用 |
+| `Replace` | 支持，替换名称 | 替换为 JavaScript 原生方法 |
+| `Import` | 支持，作为模块导入 | 从 C# 实现导入逻辑 |
+| `Equals` | 特殊处理，判断相等 | 用于 `Equals` 方法 |
+| `CompareTo` | 特殊处理，比较大小 | 用于 `CompareTo` 方法 |
 
 ---
 
 ## 实现模式
 
-### 模式 1：直接使用 ECMAScriptLiteral
+### 模式 1：替换为 JavaScript 原生方法
 
-适用于简单的 JavaScript 表达式：
+适用于可以映射到 JavaScript 原生方法的场景：
 
 ```csharp
-[WhiteList("override bool.GetHashCode()")]
-[ECMAScriptLiteral("@#{0} ? 1 : 0")]
-public extern static Number BooleanGetHashCode(bool instance);
+[WhiteList("override bool.ToString()", WhiteListOp.Replace, "toString")]
+public extern static string _d48c2d39317daf8f(Boolean instance);
 
-[WhiteList("override bool.Equals(object)")]
-[ECMAScriptLiteral("@#{0} === @#{1}")]
-public extern static bool BooleanEquals(bool instance, Object? obj);
+[WhiteList("static System.Math.Abs(int)", WhiteListOp.Replace, "abs")]
+public extern static Number _0aaf1073fc70e405(Number value);
+
+[WhiteList("static System.Console.Write(string)", WhiteListOp.Replace, "log")]
+public extern static void _89898d51245a9c64(object value);
 ```
 
 **特点**：
 - 使用 `extern` 关键字声明外部实现
-- JavaScript 代码直接嵌入生成的输出
-- 适用于简单的、纯函数式转换
+- `WhiteListOp.Replace` 指定替换的 JavaScript 方法名
+- 编译器直接生成对 JavaScript 原生方法的调用
 
-### 模式 2：使用 C# 实现复杂逻辑
+### 模式 2：从 C# 实现导入
 
 适用于需要条件判断或复杂逻辑的场景：
 
 ```csharp
-[WhiteList("static bool.Parse(string)")]
-public static bool BooleanParse(string value)
+[WhiteList("static bool.Parse(string)", WhiteListOp.Import)]
+public static bool _5dbf54319ebc8dfe(string value)
 {
     var str = value.Trim().ToLower();
     if (str == "true")
@@ -162,7 +180,7 @@ public static bool BooleanParse(string value)
 ```
 
 **特点**：
-- 使用 C# 实现复杂逻辑
+- 使用 `WhiteListOp.Import` 标记
 - 编译器会将 C# 代码转换为 JavaScript
 - 支持完整的 C# 控制流语句
 
@@ -171,39 +189,90 @@ public static bool BooleanParse(string value)
 明确标记某些成员在 Jazor 中不支持：
 
 ```csharp
-[WhiteList("bool.ToString(System.IFormatProvider)")]
-[Obsolete("Not Support in Jazor", true)]
-public extern static string BooleanToString2(bool instance, Intl.NumberFormat? provider);
+[WhiteList("bool.ToString(System.IFormatProvider)", WhiteListOp.Discard)]
+public extern static string _6e30cb91da447de8(Boolean instance, Intl.NumberFormat? provider);
 ```
 
 **特点**：
-- 使用 `[Obsolete]` 特性标记
-- 第二个参数为 `true` 表示使用时会导致编译错误
+- 使用 `WhiteListOp.Discard` 标记
 - 白名单生成器会自动排除这些项
 
 ---
 
 ## 已启用模块详解
 
-### CLRModule.cs
+### AssignModule.cs
 
-CLR 运行时支持类型，提供特殊类型封装。
+基础类型白名单定义，使用 record 类型声明。
 
 ```csharp
-public sealed class OutValue<T>
-{
-    public T? Value { get; set; }
-}
+[WhiteList("void", WhiteListOp.Allowed)]
+public record VoidModule;
 
-public sealed class RefValue<T>(T value)
-{
-    public T Value { get; set; } = value;
-}
+[WhiteList("System.Nullable", WhiteListOp.Allowed)]
+public record NullableModule;
 ```
 
-**用途**：
-- `OutValue<T>`：封装 `out` 参数
-- `RefValue<T>`：封装 `ref` 参数
+### ConsoleModule.cs
+
+System.Console 的完整实现，映射到 JavaScript 的 `console` 对象。
+
+**白名单类型**：
+```csharp
+[WhiteList("System.Console", WhiteListOp.Replace, "console")]
+```
+
+**支持的成员**：
+- `Write`/`WriteLine` → `console.log`
+- 不支持控制台相关的方法（如 `BackgroundColor`, `CursorVisible` 等）
+
+### MathModule.cs
+
+System.Math 的完整实现，映射到 JavaScript 的 `Math` 对象。
+
+**白名单类型**：
+```csharp
+[WhiteList("System.Math", WhiteListOp.Allowed, null, "System/MathModule.js")]
+```
+
+**支持的成员**：
+| C# 方法 | JavaScript 方法 |
+|---------|-----------------|
+| `Abs` | `Math.abs` |
+| `Acos` | `Math.acos` |
+| `Asin` | `Math.asin` |
+| `Atan` | `Math.atan` |
+| `Atan2` | `Math.atan2` |
+| `Ceiling` | `Math.ceil` |
+| `Cos` | `Math.cos` |
+| `Exp` | `Math.exp` |
+| `Floor` | `Math.floor` |
+| `Log` | `Math.log` |
+| `Max` | `Math.max` |
+| `Min` | `Math.min` |
+| `Pow` | `Math.pow` |
+| `Round` | `Math.round` |
+| `Sin` | `Math.sin` |
+| `Sqrt` | `Math.sqrt` |
+| `Tan` | `Math.tan` |
+| `Truncate` | `Math.trunc` |
+
+### ArrayModule.cs
+
+System.Array 的完整实现，提供数组操作方法。
+
+**白名单类型**：
+```csharp
+[WhiteList("System.Array", WhiteListOp.Allowed, null, "System/ArrayModule.js")]
+```
+
+**支持的功能**：
+- 数组属性：`Length`, `LongLength`, `Rank`
+- 数组创建：`CreateInstance`, `Empty`
+- 数组操作：`Copy`, `Clear`, `Clone`, `Resize`
+- 数组搜索：`IndexOf`, `LastIndexOf`, `BinarySearch`, `Find`, `FindIndex`
+- 数组排序：`Sort`, `Reverse`
+- 数组转换：`ConvertAll`
 
 ### BooleanModule.cs
 
@@ -211,34 +280,36 @@ bool 类型的完整实现。
 
 **白名单类型**：
 ```csharp
-[WhiteList("bool")]
+[WhiteList("bool", WhiteListOp.Allowed, null, "System/BooleanModule.js")]
 ```
 
 **支持的成员**：
-| 成员 | JavaScript 实现 | 说明 |
-|------|---------------|------|
-| `static readonly bool.TrueString` | `'true'` | 字符串常量 |
-| `static readonly bool.FalseString` | `'false'` | 字符串常量 |
-| `override bool.GetHashCode()` | `@#{0} ? 1 : 0` | 哈希码 |
-| `override bool.ToString()` | - | 转字符串 |
-| `override bool.Equals(object)` | `@#{0} === @#{1}` | 相等比较 |
-| `static bool.Parse(string)` | C# 实现 | 解析字符串 |
+| 成员 | WhiteListOp | JavaScript 实现 |
+|------|------------|----------------|
+| `override bool.ToString()` | `Replace` | `toString` |
+| `override bool.Equals(object)` | `Equals` | `===` |
+| `bool.Equals(bool)` | `Equals` | `===` |
+| `bool.CompareTo(object)` | `CompareTo` | - |
+| `bool.CompareTo(bool)` | `CompareTo` | - |
+| `static bool.Parse(string)` | `Import` | C# 实现 |
+| `static bool.TryParse(string, out bool)` | `Import` | C# 实现 |
 
 ### StringModule.cs
 
-string 类型的完整实现（超大文件，>25000 行）。
+string 类型的完整实现。
 
 **白名单类型**：
 ```csharp
-[WhiteList("string")]
+[WhiteList("string", WhiteListOp.Allowed, null, "System/StringModule.js")]
 ```
 
 **支持的功能**：
-- 所有 string 实例方法（Substring, Trim, Replace, Split, ...）
-- 所有 string 静态方法（Concat, Join, Format, IsNullOrEmpty, ...）
-- 字符串操作（PadLeft, PadRight, Remove, Insert, ...）
-- 搜索和比较（IndexOf, LastIndexOf, Contains, StartsWith, EndsWith, ...）
-- 正则表达式相关方法
+- 字符串属性：`Length`
+- 字符串操作：`Substring`, `Trim`, `Replace`, `Split`, `PadLeft`, `PadRight`
+- 字符串搜索：`IndexOf`, `LastIndexOf`, `Contains`, `StartsWith`, `EndsWith`
+- 字符串比较：`Compare`, `CompareTo`, `Equals`
+- 字符串转换：`ToLower`, `ToUpper`, `ToString`
+- 字符串拼接：`Concat`, `Join`, `Format`
 
 ### ObjectModule.cs
 
@@ -258,7 +329,7 @@ object 类型的实现。
 
 ### BigIntegerModule.cs
 
-BigInteger 类型的完整实现（1444 行）。
+BigInteger 类型的完整实现。
 
 **白名单类型**：
 ```csharp
@@ -266,12 +337,12 @@ BigInteger 类型的完整实现（1444 行）。
 ```
 
 **支持的功能**：
-- 基本运算（Add, Subtract, Multiply, Divide, Remainder）
-- 位运算（LeftShift, RightShift, BitwiseAnd, BitwiseOr, BitwiseXor）
-- 数学运算（Log, Log10, Pow, ModPow, GCD）
-- 位操作（RotateLeft, RotateRight, LeadingZeroCount, PopCount）
-- 字节数组转换（ToByteArray, FromByteArray）
-- 类型转换（Parse, ToString, TryParse）
+- 基本运算：`Add`, `Subtract`, `Multiply`, `Divide`, `Remainder`
+- 位运算：`LeftShift`, `RightShift`, `BitwiseAnd`, `BitwiseOr`, `BitwiseXor`
+- 数学运算：`Log`, `Log10`, `Pow`, `ModPow`, `GCD`
+- 位操作：`RotateLeft`, `RotateRight`, `LeadingZeroCount`, `PopCount`
+- 字节数组转换：`ToByteArray`, `FromByteArray`
+- 类型转换：`Parse`, `ToString`, `TryParse`
 
 ### ValueTupleModule.cs
 
@@ -293,10 +364,23 @@ public sealed class Tuple : Array<object?>
 }
 ```
 
-**特点**：
-- 支持 C# ValueTuple 到 JavaScript 对象的转换
-- 支持命名元组元素
-- 实现不可变更新语义
+---
+
+## 方法名编码规则
+
+所有模块方法名都使用 SHA256 哈希编码，确保唯一性：
+
+```csharp
+// 示例方法名
+public extern static Number _80b6c29cc0038969(Boolean instance);  // GetHashCode
+public extern static string _d48c2d39317daf8f(Boolean instance);  // ToString
+public extern static bool _97cc6572c33639b7(Boolean instance, Object? obj);  // Equals
+```
+
+**编码目的**：
+- 避免与方法签名的命名冲突
+- 确保生成的 JavaScript 代码中方法名唯一
+- 便于工具链处理和优化
 
 ---
 
@@ -318,53 +402,30 @@ ECMAScript.CLR 使用源生成器自动生成白名单文件。
 // 伪代码
 foreach (var type in Assembly.GetTypes())
 {
-    if (type.HasCustomAttribute<ECMAScriptModuleAttribute>())
+    if (type.HasCustomAttribute<WhiteListAttribute>())
     {
+        var whiteListAttr = type.GetCustomAttribute<WhiteListAttribute>();
+
         // 添加类型到白名单
-        WhiteList.Types.Add(type.WhiteListName());
+        if (whiteListAttr.Op != WhiteListOp.Discard)
+        {
+            WhiteList.Types.Add(whiteListAttr.Member);
+        }
 
         foreach (var member in type.GetMembers())
         {
             if (member.HasCustomAttribute<WhiteListAttribute>())
             {
-                // 排除标记为 [Obsolete] 的成员
-                if (!member.HasCustomAttribute<ObsoleteAttribute>())
+                var memberAttr = member.GetCustomAttribute<WhiteListAttribute>();
+
+                // 添加成员到白名单（排除 Discard）
+                if (memberAttr.Op != WhiteListOp.Discard)
                 {
-                    // 添加成员到白名单
-                    WhiteList.Members.Add(member.WhiteListName());
+                    WhiteList.Members.Add(memberAttr.Member);
                 }
             }
         }
     }
-}
-```
-
-### 生成的 WhiteList.cs
-
-```csharp
-public static class WhiteList
-{
-    public static readonly HashSet<string> Types = new HashSet<string>
-    {
-        "void",
-        "System.Nullable",
-        "System.ValueTuple",
-        "System.Array",
-        "System.Numerics.BigInteger",
-        "bool",
-        "object",
-        "string"
-    };
-
-    public static readonly HashSet<string> Members = new HashSet<string>
-    {
-        "override bool.GetHashCode()",
-        "override bool.ToString()",
-        "override bool.Equals(object)",
-        "bool.Equals(bool)",
-        "static bool.Parse(string)",
-        // ... 更多成员
-    };
 }
 ```
 
@@ -383,7 +444,9 @@ public static class WhiteList
 │                  ECMAScript.CLR                              │
 │  ┌─────────────────────────────────────────────────────┐   │
 │  │ 1. 定义白名单（[WhiteList] 特性）                    │   │
-│  │ 2. 提供 JavaScript 实现（ECMAScriptLiteral 或 C#）   │   │
+│  │ 2. 指定处理方式（WhiteListOp 枚举）                  │   │
+│  │ 3. 提供 JavaScript 实现（Replace/Import）            │   │
+│  │ 4. 指定模块路径（path 参数）                         │   │
 │  └─────────────────────────────────────────────────────┘   │
 │                     │                                       │
 │                     │ 自动生成 WhiteList.cs                 │
@@ -406,8 +469,12 @@ public static class WhiteList
 │                  ECMAScript.Compiler                          │
 │  ┌─────────────────────────────────────────────────────┐   │
 │  │ 1. 根据白名单中的名称反查 ECMAScript.CLR 实现        │   │
-│  │ 2. 使用 ECMAScriptLiteral 或转换 C# 代码            │   │
-│  │ 3. 生成对应的 ESTree AST 节点                       │   │
+│  │ 2. 根据 WhiteListOp 处理：                           │   │
+│  │    - Replace: 生成对 JavaScript 原生方法的调用       │   │
+│  │    - Import: 转换 C# 实现为 JavaScript              │   │
+│  │    - Equals: 生成 === 比较                           │   │
+│  │    - CompareTo: 生成比较逻辑                         │   │
+│  │ 3. 生成对应的 ESTree AST 节点                        │   │
 │  └─────────────────────────────────────────────────────┘   │
 └────────────────────┬────────────────────────────────────────┘
                      │
@@ -436,14 +503,7 @@ public static class WhiteList
 
   <ItemGroup>
     <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
-  </ItemGroup>
-
-  <!-- 禁用的模块 -->
-  <ItemGroup>
-    <Compile Remove="SByteModule.cs" />
-    <Compile Remove="ByteModule.cs" />
-    <Compile Remove="Int16Module.cs" />
-    <!-- ... 更多已禁用模块 -->
+    <ProjectReference Include="..\ECMAScript.Common\ECMAScript.Common.csproj" />
   </ItemGroup>
 </Project>
 ```
@@ -455,6 +515,7 @@ global using System;
 global using System.Collections.Generic;
 global using System.Globalization;
 global using ECMAScript;
+global using ECMAScript.Common;
 global using static ECMAScript.CLRModule;
 global using static ECMAScript.Global;
 ```
@@ -470,37 +531,33 @@ global using static ECMAScript.Global;
 namespace ECMAScript;
 
 [ECMAScriptModule]
-[WhiteList("YourNamespace.YourType")]
+[WhiteList("YourNamespace.YourType", WhiteListOp.Allowed, null, "System/YourTypeModule.js")]
 public static class YourTypeModule
 {
-    // 使用 ECMAScriptLiteral 实现
-    [WhiteList("static YourType.Method(string)")]
-    [ECMAScriptLiteral("console.log(@#{0})")]
-    public extern static void Method(string value);
+    // 替换为 JavaScript 原生方法
+    [WhiteList("static YourType.Method(string)", WhiteListOp.Replace, "methodName")]
+    public extern static void _hash1234(string value);
 
-    // 使用 C# 实现
-    [WhiteList("static YourType.Parse(string)")]
-    public static YourType Parse(string value)
+    // 从 C# 实现导入
+    [WhiteList("static YourType.Parse(string)", WhiteListOp.Import)]
+    public static YourType _hash5678(string value)
     {
         // 复杂逻辑
         return new YourType();
     }
+
+    // 不支持
+    [WhiteList("YourType.Unsupported()", WhiteListOp.Discard)]
+    public extern static void _hashabcd();
 }
 ```
 
-2. **在项目文件中启用**（如果模块被禁用）：
-```xml
-<ItemGroup>
-  <Compile Remove="" />  <!-- 移除禁用配置 -->
-</ItemGroup>
-```
-
-3. **编译项目**：
+2. **编译项目**：
 ```bash
 dotnet build src/ECMAScript.CLR
 ```
 
-4. **白名单自动更新**：
+3. **白名单自动更新**：
    - `WhiteList.cs` 会在编译时自动生成
    - 位置：`src/ECMAScript.Analyzer/WhiteList.cs`
 
@@ -519,30 +576,28 @@ dotnet build src/ECMAScript.CLR
 
 ## 类型映射表
 
-| C# 类型 | JavaScript 类型 | 模块 |
-|---------|-----------------|------|
-| `void` | `undefined` | AssignModule |
-| `bool` | `boolean` | BooleanModule |
-| `string` | `string` | StringModule |
-| `object` | `object` | ObjectModule |
-| `int` | `number` | Int32Module (禁用) |
-| `long` | `bigint` | Int64Module (禁用) |
-| `BigInteger` | `bigint` | BigIntegerModule |
-| `DateTime` | `Date` | DateTimeModule (禁用) |
-| `TimeSpan` | `bigint` | TimeSpanModule (禁用) |
-| `List<T>` | `Array` | ListModule (禁用) |
-| `Dictionary<K,V>` | `Map` | DictionaryModule (禁用) |
-| `HashSet<T>` | `Set` | HashSetModule (禁用) |
-| `(T1, T2)` | `{Item1, Item2}` | ValueTupleModule |
+| C# 类型 | JavaScript 类型 | WhiteListOp | 模块 |
+|---------|-----------------|-------------|------|
+| `void` | `undefined` | `Allowed` | AssignModule |
+| `bool` | `boolean` | `Allowed` | BooleanModule |
+| `string` | `string` | `Allowed` | StringModule |
+| `object` | `object` | `Allowed` | ObjectModule |
+| `int` | `number` | - | Int32Module |
+| `long` | `bigint` | - | Int64Module |
+| `BigInteger` | `bigint` | `Allowed` | BigIntegerModule |
+| `DateTime` | `Date` | - | DateTimeModule |
+| `TimeSpan` | `bigint` | - | TimeSpanModule |
+| `List<T>` | `Array` | - | ListModule |
+| `Dictionary<K,V>` | `Map` | - | DictionaryModule |
+| `HashSet<T>` | `Set` | - | HashSetModule |
+| `(T1, T2)` | `{Item1, Item2}` | `Allowed` | ValueTupleModule |
+| `System.Console` | `console` | `Replace` | ConsoleModule |
+| `System.Math` | `Math` | `Allowed` | MathModule |
+| `System.Array` | `Array` | `Allowed` | ArrayModule |
 
 ---
 
 ## 注意事项
-
-### 当前限制
-
-1. **已禁用模块**：大部分数值类型、日期时间类型、集合类型模块已被禁用
-2. **渐进式开发**：项目处于渐进式开发状态，核心基础设施已建立，但大部分类型模块的实现还未启用
 
 ### 编译警告
 
@@ -554,17 +609,27 @@ dotnet build src/ECMAScript.CLR
 - `IDE0060`：未使用的参数
 
 这些警告是正常的，因为：
-- `extern` 方法由 `[ECMAScriptLiteral]` 提供实现
+- `extern` 方法由 `WhiteListOp.Replace` 或 `WhiteListOp.Import` 提供实现
 - 命名空间结构是按照功能组织而非文件夹结构
+
+### 方法名编码
+
+所有方法名都使用 SHA256 哈希编码，这是正常的：
+- 确保唯一性
+- 避免命名冲突
+- 便于工具链处理
 
 ---
 
 ## 相关文件
 
+- **特性定义**：`src/ECMAScript.Common/`
+  - `WhiteListKeyAttribute.cs` - 白名单特性
+  - `WhiteListOp.cs` - 白名单操作枚举
+  - `WhiteList.cs` - 生成的白名单
+
 - **特性定义**：`src/ECMAScript/attribute/`
-  - `ECMAScriptModuleAttribute.cs`
-  - `WhiteListKeyAttribute.cs`
-  - `ECMAScriptLiteralAttribute.cs`
+  - `ECMAScriptModuleAttribute.cs` - 模块特性
 
 - **白名单生成器**：`src/ECMAScript.Compiler/WhiteListGenerator.cs`
 
@@ -578,6 +643,6 @@ dotnet build src/ECMAScript.CLR
 
 ---
 
-**文档维护者**：Claude Code
-**最后更新**：2026-01-27
-**文档版本**：v1.0
+**文档维护者**：developerhan
+**最后更新**：2026-02-04
+**文档版本**：v2.0

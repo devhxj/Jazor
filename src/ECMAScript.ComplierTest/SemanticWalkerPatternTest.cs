@@ -1078,10 +1078,12 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let person = { Name: ""John"", Age: 30 };
-  let result = person.hasOwnProperty(""Name"") && person.Name === ""John"";
+  let result = person && Object.prototype.hasOwnProperty.call(person, ""Name"") && person.Name === ""John"";
 }", script);
+
   }
 
   /// <summary>
@@ -1137,8 +1139,9 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let obj = { Name: ""John"", Age: 30 };
-  let result = obj.hasOwnProperty(""Name"") && obj.Name === ""John"" && (obj.hasOwnProperty(""Age"") && obj.Age > 18);
-}", script);
+  let result = obj && Object.prototype.hasOwnProperty.call(obj, ""Name"") && obj.Name === ""John"" && (obj && Object.prototype.hasOwnProperty.call(obj, ""Age"") && obj.Age > 18);
+  }", script);
+
   }
 
   /// <summary>
@@ -1167,7 +1170,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitRecursivePattern(recursivePatternOperation, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"obj.hasOwnProperty(""Name"") && obj.Name === ""John"" && (obj.hasOwnProperty(""Age"") && obj.Age > 18)", script);
+    Assert.AreEqual(@"obj && Object.prototype.hasOwnProperty.call(obj, ""Name"") && obj.Name === ""John"" && (obj && Object.prototype.hasOwnProperty.call(obj, ""Age"") && obj.Age > 18)", script);
   }
 
   /// <summary>
@@ -1762,9 +1765,9 @@ public sealed class SemanticWalkerPatternTest
   let person = { Name: ""John"", Age: 30 };
   let result = (() => {
     const v$0 = person;
-    if (v$0.hasOwnProperty(""Name"") && v$0.Name === ""John"")
+    if (Object.prototype.hasOwnProperty.call(v$0, ""Name"") && v$0.Name === ""John"")
       return ""Hello John"";
-    if (v$0.hasOwnProperty(""Age"") && v$0.Age > 18)
+    if (Object.prototype.hasOwnProperty.call(v$0, ""Age"") && v$0.Age > 18)
       return ""Adult"";
     return ""Unknown"";
   })();
@@ -1829,8 +1832,9 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let data = { Inner: { Value: 42 } };
-  let result = data.hasOwnProperty(""Inner"") && (data.Inner.hasOwnProperty(""Value"") && data.Inner.Value > 0);
+  let result = Object.prototype.hasOwnProperty.call(data, ""Inner"") && (Object.prototype.hasOwnProperty.call(data.Inner, ""Value"") && data.Inner.Value > 0);
 }", script);
+
   }
 
   /// <summary>
@@ -1856,7 +1860,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let obj = ""hello"";
-  let result = typeof obj === ""string"" && (obj.hasOwnProperty(""Length"") && obj.Length > 0);
+  let result = typeof obj === ""string"" && (Object.prototype.hasOwnProperty.call(obj, ""Length"") && obj.Length > 0);
 }", script);
   }
 
@@ -2748,7 +2752,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let obj = { Name: ""Test"", Value: 42 };
-  let result = obj.hasOwnProperty(""Name"") && obj.Name === ""Test"";
+  let result = Object.prototype.hasOwnProperty.call(obj, ""Name"") && obj.Name === ""Test"";
 }", script);
   }
 
@@ -2997,7 +3001,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let data = { Inner: { Value: 42 } };
-  let result = data.hasOwnProperty(""Inner"") && (data.Inner.hasOwnProperty(""Value"") && data.Inner.Value === 42);
+  let result = Object.prototype.hasOwnProperty.call(data, ""Inner"") && (Object.prototype.hasOwnProperty.call(data.Inner, ""Value"") && data.Inner.Value === 42);
 }", script);
   }
 
@@ -3032,9 +3036,9 @@ public sealed class SemanticWalkerPatternTest
   let x;
   let result = (() => {
     const v$0 = obj;
-    if (v$0.hasOwnProperty(""X"") && v$0.X === 1 && (v$0.hasOwnProperty(""Y"") && v$0.Y === 2))
+    if (Object.prototype.hasOwnProperty.call(v$0, ""X"") && v$0.X === 1 && (Object.prototype.hasOwnProperty.call(v$0, ""Y"") && v$0.Y === 2))
       return ""Point (1,2)"";
-    if (v$0.hasOwnProperty(""X"") && (x = v$0.X, true) && x > 0)
+    if (Object.prototype.hasOwnProperty.call(v$0, ""X"") && (x = v$0.X, true) && x > 0)
       return ""Positive X"";
     return ""Other"";
   })();
@@ -3289,7 +3293,7 @@ line2"";
 
     Assert.AreEqual(@"{
   let value = ""hello"";
-  let result = typeof value === ""string"" && (value.hasOwnProperty(""Length"") && (value.Length > 0 && value.Length < 10));
+  let result = typeof value === ""string"" && (Object.prototype.hasOwnProperty.call(value, ""Length"") && (value.Length > 0 && value.Length < 10));
 }", script);
   }
 
@@ -3316,7 +3320,7 @@ line2"";
 
     Assert.AreEqual(@"{
   let value = """";
-  let result = typeof value === ""string"" && (value.hasOwnProperty(""Length"") && value.Length === 0);
+  let result = typeof value === ""string"" && (Object.prototype.hasOwnProperty.call(value, ""Length"") && value.Length === 0);
 }", script);
   }
 
@@ -3747,9 +3751,9 @@ line2"";
   let v;
   let result = (() => {
     const v$0 = obj;
-    if (v$0.hasOwnProperty(""Value"") && (v = v$0.Value, true) && v > 0)
+    if (Object.prototype.hasOwnProperty.call(v$0, ""Value"") && (v = v$0.Value, true) && v > 0)
       return ""Positive"";
-    if (v$0.hasOwnProperty(""Value"") && (v = v$0.Value, true) && v < 0)
+    if (Object.prototype.hasOwnProperty.call(v$0, ""Value"") && (v = v$0.Value, true) && v < 0)
       return ""Negative"";
     return ""Zero"";
   })();
@@ -3875,7 +3879,7 @@ line2"";
 
     Assert.AreEqual(@"{
   let obj = ""hello"";
-  let result = typeof obj === ""string"" && (obj.hasOwnProperty(""Length"") && (obj.Length > 0 && obj.Length < 100));
+  let result = typeof obj === ""string"" && (Object.prototype.hasOwnProperty.call(obj, ""Length"") && (obj.Length > 0 && obj.Length < 100));
 }", script);
   }
 
@@ -3902,7 +3906,7 @@ line2"";
 
     Assert.AreEqual(@"{
   let data = { Outer: { Middle: { Inner: 42 } } };
-  let result = data.hasOwnProperty(""Outer"") && (data.Outer.hasOwnProperty(""Middle"") && (data.Outer.Middle.hasOwnProperty(""Inner"") && data.Outer.Middle.Inner > 0));
+  let result = Object.prototype.hasOwnProperty.call(data, ""Outer"") && (Object.prototype.hasOwnProperty.call(data.Outer, ""Middle"") && (Object.prototype.hasOwnProperty.call(data.Outer.Middle, ""Inner"") && data.Outer.Middle.Inner > 0));
 }", script);
   }
 
@@ -3930,7 +3934,7 @@ line2"";
     Assert.AreEqual(@"{
   let obj = { Items: [1, 2, 3] };
   let first;
-  let result = obj.hasOwnProperty(""Items"") && (Array.isArray(obj.Items) && obj.Items.length >= 1 && (first = obj.Items[0], true) && (Array.isArray(obj.Items) && (obj.Items.hasOwnProperty(""Length"") && obj.Items.Length > 0)));
+  let result = Object.prototype.hasOwnProperty.call(obj, ""Items"") && (Array.isArray(obj.Items) && obj.Items.length >= 1 && (first = obj.Items[0], true) && (Array.isArray(obj.Items) && (Object.prototype.hasOwnProperty.call(obj.Items, ""Length"") && obj.Items.Length > 0)));
 }", script);
   }
 
@@ -3961,7 +3965,7 @@ line2"";
 
     Assert.AreEqual(@"{
   let obj = { Value: null };
-  let result = obj.hasOwnProperty(""Value"") && !(obj.Value === null);
+  let result = Object.prototype.hasOwnProperty.call(obj, ""Value"") && !(obj.Value === null);
 }", script);
   }
 
@@ -3989,7 +3993,7 @@ line2"";
     Assert.AreEqual(@"{
   let obj = { Inner: { Value: 42 } };
   let v;
-  let result = obj.hasOwnProperty(""Inner"") && (obj.Inner.hasOwnProperty(""Value"") && (v = obj.Inner.Value, true));
+  let result = Object.prototype.hasOwnProperty.call(obj, ""Inner"") && (obj.Inner.hasOwnProperty(""Value"") && (v = obj.Inner.Value, true));
 }", script);
   }
 

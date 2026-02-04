@@ -462,10 +462,24 @@ public partial class SemanticWalker
 				return tempId;
 			}
 
-			else if (entry.Op == WhiteListOp.Equals || entry.Op == WhiteListOp.CompareTo)
+			else if (entry.Op == WhiteListOp.Equals)
 			{
-
+				return new MemberExpression(
+					obj: new Identifier("Object"),
+					property: new Identifier("is"), computed: false, optional: false);
 			}
+
+			else if (entry.Op == WhiteListOp.CompareTo)
+			{
+				/*
+				var functionBody = new FunctionBody(NodeList.From(statements), strict: true);
+				var arrowFunction = new ArrowFunctionExpression(
+					NodeList.From<Node>(),
+					functionBody,
+					expression: false,
+					async: false
+				);*/
+			}			
 		}
 		else
 			methodName = GetConfigOrSymbolName(operation.Method);

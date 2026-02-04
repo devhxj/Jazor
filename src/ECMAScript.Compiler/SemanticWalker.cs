@@ -12,6 +12,7 @@ using System.Text;
 using System.Linq;
 using ECMAScript.Common;
 using System.Dynamic;
+using Acornima;
 
 namespace ECMAScript.Compiler;
 
@@ -38,6 +39,22 @@ public sealed partial class SemanticWalker : OperationVisitor<WalkerArgument, No
     private static readonly Identifier Undefined = new("undefined");
 
 	private static readonly MemberExpression IsArrayExpr = new(new Identifier("Array"), new Identifier("isArray"), computed: false, optional: false);
+
+    private static LogicalExpression BuildHasOwnProperty(Expression obj, StringLiteral literal)
+    {
+        // 使用 Object 原型方法（兼容所有环境）
+        // Object.prototype.hasOwnProperty.call(obj, 'key');
+        var callee = new MemberExpression(
+            obj: new MemberExpression(
+                obj: new MemberExpression(
+                    obj: new Identifier("Object"),
+                    property: new Identifier("prototype"), computed: false, optional: false),
+                property: new Identifier("hasOwnProperty"), computed: false, optional: false),
+            property: new Identifier("call"), computed: false, optional: false);
+
+        var callExpr = new CallExpression(callee, NodeList.From(obj, literal), false);
+        return new LogicalExpression(Operator.LogicalAnd, obj, callExpr);
+    }
 
     private static TypeMapper GetMapperType(ITypeSymbol typeSymbol, out string typeName)
     {
@@ -83,7 +100,7 @@ public sealed partial class SemanticWalker : OperationVisitor<WalkerArgument, No
             case SpecialType.System_UInt64:
                 return TypeMapper.BigInt;
             case SpecialType.System_DateTime:
-                typeName = "Date"; 
+                typeName = "Date";
                 return TypeMapper.Date;
             default:
                 {

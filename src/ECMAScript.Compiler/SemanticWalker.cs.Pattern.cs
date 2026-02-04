@@ -344,14 +344,14 @@ public partial class SemanticWalker
 				if (propertySubpattern.Member is IFieldReferenceOperation fieldRef)
 				{
 					var name = fieldRef.Field.Name;
-					var left = BuildHasOwnProperty(targetExpr, name);
+					var left = BuildHasOwnProperty(targetExpr, new StringLiteral(name, $"\"{name}\""));
 					var condition = new LogicalExpression(Operator.LogicalAnd, left, right);
 					conditions.Add(condition);
 				}
 				else if (propertySubpattern.Member is IPropertyReferenceOperation propRef)
 				{
 					var name = propRef.Property.Name;
-					var left = BuildHasOwnProperty(targetExpr, name);
+					var left = BuildHasOwnProperty(targetExpr, new StringLiteral(name, $"\"{name}\""));
 					var condition = new LogicalExpression(Operator.LogicalAnd, left, right);
 					conditions.Add(condition);
 				}
@@ -380,18 +380,6 @@ public partial class SemanticWalker
 
 		// 空模式总是匹配
 		return new BooleanLiteral(true, "true");
-
-		static CallExpression BuildHasOwnProperty(Expression obj,string name)
-		{
-			var member = new StringLiteral(name, $"\"{name}\"");
-			var property = new Identifier("hasOwnProperty");
-			var hasPropcallee = new MemberExpression(obj, property, computed: false, optional: false);
-			return new CallExpression(
-				callee: hasPropcallee,
-				args: NodeList.From<Expression>(member),
-				optional: false
-			);
-		}
 	}
 
 	/// <summary>

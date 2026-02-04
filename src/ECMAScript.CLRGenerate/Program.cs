@@ -102,7 +102,7 @@ var types = new Type[]{
 	//typeof(TimeOnly),
 	//typeof(DateTimeOffset),
 	//typeof(TimeSpan),
-	//typeof(String),
+	typeof(String),
 	//typeof(Exception),
 	//typeof(StringBuilder),
 	//typeof(Nullable),
