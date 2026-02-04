@@ -6,7 +6,7 @@ namespace ECMAScript;
 [WhiteList("System.Array", WhiteListOp.Allowed, null,"System/ArrayModule.js")]
 public static class ArrayModule
 {
-	[WhiteList("System.Array.Length.get", WhiteListOp.Discard)]
+	[WhiteList("System.Array.Length.get", WhiteListOp.Replace, "length")]
 	public extern static Number _fdebc1c5c62f33cc(System.Array instance);
 
 	[WhiteList("System.Array.LongLength.get", WhiteListOp.Discard)]
@@ -184,7 +184,7 @@ public static class ArrayModule
 	public extern static bool _818cd5ec440253da(System.Array instance);
 
 	///<summary>Creates a shallow copy of the <see cref="T:System.Array" />.</summary>
-	[WhiteList("System.Array.Clone()", WhiteListOp.Discard)]
+	[WhiteList("System.Array.Clone()", WhiteListOp.Replace, "slice")]
 	public extern static Object _7b75e1326e081bb2(System.Array instance);
 
 	///<summary>Searches an entire one-dimensional sorted array for a specific element, using the <see cref="T:System.IComparable" /> interface implemented by each element of the array and by the specified object.</summary>
@@ -288,7 +288,7 @@ public static class ArrayModule
 	public extern static void _ad1c39ab55fe27b9<T>(Array<T> array, object action);
 
 	///<summary>Searches for the specified object and returns the index of its first occurrence in a one-dimensional array.</summary>
-	[WhiteList("static System.Array.IndexOf(System.Array, object)", WhiteListOp.Discard)]
+	[WhiteList("static System.Array.IndexOf(System.Array, object)", WhiteListOp.Replace, "indexOf")]
 	public extern static Number _cde8d7a78af8dc9a(object array, Object? value);
 
 	///<summary>Searches for the specified object in a range of elements of a one-dimensional array, and returns the index of its first occurrence. The range extends from a specified index to the end of the array.</summary>
@@ -312,7 +312,7 @@ public static class ArrayModule
 	public extern static Number _e3d80b27a67e8a0d<T>(Array<T> array, object value, Number startIndex, Number count);
 
 	///<summary>Searches for the specified object and returns the index of the last occurrence within the entire one-dimensional <see cref="T:System.Array" />.</summary>
-	[WhiteList("static System.Array.LastIndexOf(System.Array, object)", WhiteListOp.Discard)]
+	[WhiteList("static System.Array.LastIndexOf(System.Array, object)", WhiteListOp.Replace, "lastIndexOf")]
 	public extern static Number _85801a2dbc247f17(object array, Object? value);
 
 	///<summary>Searches for the specified object and returns the index of the last occurrence within the range of elements in the one-dimensional <see cref="T:System.Array" /> that extends from the first element to the specified index.</summary>
@@ -336,7 +336,7 @@ public static class ArrayModule
 	public extern static Number _b5bf131d8947c855<T>(Array<T> array, object value, Number startIndex, Number count);
 
 	///<summary>Reverses the sequence of the elements in the entire one-dimensional <see cref="T:System.Array" />.</summary>
-	[WhiteList("static System.Array.Reverse(System.Array)", WhiteListOp.Discard)]
+	[WhiteList("static System.Array.Reverse(System.Array)", WhiteListOp.Replace, "reverse")]
 	public extern static void _c02ce18f02385f3d(object array);
 
 	///<summary>Reverses the sequence of a subset of the elements in the one-dimensional <see cref="T:System.Array" />.</summary>

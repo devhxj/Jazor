@@ -25,29 +25,29 @@ ECMAScript.CLR 是 Jazor 项目的重要组成部分，负责提供：
 ```
 ECMAScript.CLR/
 ├── 核心基础模块
-│   ├── AssignModule.cs           # 基础类型白名单定义
-│   ├── BooleanModule.cs          # bool 类型实现
-│   ├── StringModule.cs           # string 类型实现
-│   ├── ObjectModule.cs           # object 类型实现
-│   ├── BigIntegerModule.cs       # BigInteger 类型实现
+│   ├── AssignModule.cs           # 基础类型白名单定义（许可类型定义）
+│   ├── BooleanModule.cs          # bool 类型实现（已调整）
+│   ├── StringModule.cs           # string 类型实现（已调整）
+│   ├── ObjectModule.cs           # object 类型实现（已调整）
+│   ├── BigIntegerModule.cs       # BigInteger 类型实现（已调整）
 │   ├── ValueTupleModule.cs       # ValueTuple 和 Tuple 实现
-│   ├── ConsoleModule.cs          # System.Console 实现
-│   ├── MathModule.cs             # System.Math 实现
-│   └── ArrayModule.cs            # System.Array 实现
+│   ├── ConsoleModule.cs          # System.Console 实现（已调整）
+│   ├── MathModule.cs             # System.Math 实现（已调整）
+│   └── ArrayModule.cs            # System.Array 实现（已调整）
 │
-├── 数值类型模块
-│   ├── SByteModule.cs            # sbyte (System.SByte)
-│   ├── ByteModule.cs             # byte (System.Byte)
-│   ├── Int16Module.cs            # short (System.Int16)
-│   ├── UInt16Module.cs           # ushort (System.UInt16)
-│   ├── Int32Module.cs            # int (System.Int32)
-│   ├── UInt32Module.cs           # uint (System.UInt32)
-│   ├── Int64Module.cs            # long (System.Int64)
-│   ├── UInt64Module.cs           # ulong (System.UInt64)
-│   ├── SingleModule.cs           # float (System.Single)
-│   ├── DoubleModule.cs           # double (System.Double)
-│   ├── DecimalModule.cs          # decimal (System.Decimal)
-│   └── CharModule.cs             # char (System.Char)
+├── 数值类型模块（已调整）
+│   ├── SByteModule.cs            # sbyte (System.SByte) ✓
+│   ├── ByteModule.cs             # byte (System.Byte) ✓
+│   ├── Int16Module.cs            # short (System.Int16) ✓
+│   ├── UInt16Module.cs           # ushort (System.UInt16) ✓
+│   ├── Int32Module.cs            # int (System.Int32) ✓
+│   ├── UInt32Module.cs           # uint (System.UInt32) ✓
+│   ├── Int64Module.cs            # long (System.Int64) ✓
+│   ├── UInt64Module.cs           # ulong (System.UInt64) ✓
+│   ├── SingleModule.cs           # float (System.Single) ✓
+│   ├── DoubleModule.cs           # double (System.Double) ✓
+│   ├── DecimalModule.cs          # decimal (System.Decimal) ✓
+│   └── CharModule.cs             # char (System.Char) ✓
 │
 ├── 日期时间模块
 │   ├── DateTimeModule.cs         # DateTime
@@ -645,4 +645,4 @@ dotnet build src/ECMAScript.CLR
 
 **文档维护者**：developerhan
 **最后更新**：2026-02-04
-**文档版本**：v2.0
+**文档版本**：v3.0

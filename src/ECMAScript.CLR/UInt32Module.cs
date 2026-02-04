@@ -3,7 +3,7 @@ using ECMAScript.Common;
 namespace ECMAScript;
 
 [ECMAScriptModule]
-[WhiteList("uint", WhiteListOp.Allowed, null,"System/UInt32Module.js")]
+[WhiteList("uint", WhiteListOp.Allowed, null, "System/UInt32Module.js")]
 public static class UInt32Module
 {
 	//uint.MaxValue = 4294967295;
@@ -18,19 +18,19 @@ public static class UInt32Module
 	public extern static BigInt _e37a28b31d6aed2a(Number left, Number right);
 
 	///<summary>Compares this instance to a specified object and returns an indication of their relative values.</summary>
-	[WhiteList("uint.CompareTo(object)", WhiteListOp.Discard)]
+	[WhiteList("uint.CompareTo(object)", WhiteListOp.CompareTo)]
 	public extern static Number _75ff3ca18f13f709(Number instance, Object? value);
 
 	///<summary>Compares this instance to a specified 32-bit unsigned integer and returns an indication of their relative values.</summary>
-	[WhiteList("uint.CompareTo(uint)", WhiteListOp.Discard)]
+	[WhiteList("uint.CompareTo(uint)", WhiteListOp.CompareTo)]
 	public extern static Number _7a5a26a8548c61fe(Number instance, Number value);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
-	[WhiteList("override uint.Equals(object)", WhiteListOp.Discard)]
+	[WhiteList("override uint.Equals(object)", WhiteListOp.Equals)]
 	public extern static bool _ab3e546a9bf4a9ed(Number instance, Object? obj);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified <see cref="T:System.UInt32" />.</summary>
-	[WhiteList("uint.Equals(uint)", WhiteListOp.Discard)]
+	[WhiteList("uint.Equals(uint)", WhiteListOp.Equals)]
 	public extern static bool _cb191ad5776dddb3(Number instance, Number obj);
 
 	///<summary>Returns the hash code for this instance.</summary>
@@ -38,7 +38,7 @@ public static class UInt32Module
 	public extern static Number _d42f9fcffa604eb2(Number instance);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation.</summary>
-	[WhiteList("override uint.ToString()", WhiteListOp.Discard)]
+	[WhiteList("override uint.ToString()", WhiteListOp.Replace, "toString")]
 	public extern static string _d124667433f8250d(Number instance);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation using the specified culture-specific format information.</summary>
@@ -62,8 +62,11 @@ public static class UInt32Module
 	public extern static bool _b67b688ee02ca4a7(Number instance, Uint8Array utf8Destination, Box<Number> bytesWritten, Uint32Array format, Intl.NumberFormat? provider);
 
 	///<summary>Converts the string representation of a number to its 32-bit unsigned integer equivalent.</summary>
-	[WhiteList("static uint.Parse(string)", WhiteListOp.Discard)]
-	public extern static Number _eb335b8243aba32a(object s);
+	[WhiteList("static uint.Parse(string)", WhiteListOp.Import)]
+	public static Number _eb335b8243aba32a(string s)
+	{
+		return Number(s);
+	}
 
 	///<summary>Converts the string representation of a number in a specified style to its 32-bit unsigned integer equivalent.</summary>
 	[WhiteList("static uint.Parse(string, System.Globalization.NumberStyles)", WhiteListOp.Discard)]
@@ -82,8 +85,19 @@ public static class UInt32Module
 	public extern static Number _88d9113a364b2858(Uint32Array s, object style, Intl.NumberFormat? provider);
 
 	///<summary>Tries to convert the string representation of a number to its 32-bit unsigned integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
-	[WhiteList("static uint.TryParse(string, out uint)", WhiteListOp.Discard)]
-	public extern static bool _ad4f3364f146e5da(object s, Box<Number> result);
+	[WhiteList("static uint.TryParse(string, out uint)", WhiteListOp.Import)]
+	public static bool _ad4f3364f146e5da(string s, Box<Number> result)
+	{
+		try
+		{
+			result.Value = Number(s);
+			return true;
+		}
+		catch
+		{
+			return false;
+		}
+	}
 
 	///<summary>Tries to convert the span representation of a number to its 32-bit unsigned integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[WhiteList("static uint.TryParse(System.ReadOnlySpan<char>, out uint)", WhiteListOp.Discard)]
@@ -142,15 +156,15 @@ public static class UInt32Module
 	public extern static Number _3693c701aa9899c6(Number value, Number min, Number max);
 
 	///<summary>Compares two values to compute which is greater.</summary>
-	[WhiteList("static uint.Max(uint, uint)", WhiteListOp.Discard)]
+	[WhiteList("static uint.Max(uint, uint)", WhiteListOp.Replace, "max")]
 	public extern static Number _f284eae007e1fb6d(Number x, Number y);
 
 	///<summary>Compares two values to compute which is lesser.</summary>
-	[WhiteList("static uint.Min(uint, uint)", WhiteListOp.Discard)]
+	[WhiteList("static uint.Min(uint, uint)", WhiteListOp.Replace, "min")]
 	public extern static Number _4f3e77f684e65319(Number x, Number y);
 
 	///<summary>Computes the sign of a value.</summary>
-	[WhiteList("static uint.Sign(uint)", WhiteListOp.Discard)]
+	[WhiteList("static uint.Sign(uint)", WhiteListOp.Replace, "sign")]
 	public extern static Number _5942eb8a5b8a3bcc(Number value);
 
 	///<summary>Creates an instance of the current type from a value, throwing an overflow exception for any values that fall outside the representable range of the current type.</summary>

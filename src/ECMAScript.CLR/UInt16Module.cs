@@ -3,7 +3,7 @@ using ECMAScript.Common;
 namespace ECMAScript;
 
 [ECMAScriptModule]
-[WhiteList("ushort", WhiteListOp.Allowed, null,"System/UInt16Module.js")]
+[WhiteList("ushort", WhiteListOp.Allowed, null, "System/UInt16Module.js")]
 public static class UInt16Module
 {
 	//ushort.MaxValue = 65535;
@@ -14,19 +14,19 @@ public static class UInt16Module
 	public extern static Number _2b4f1af6b7fc0173();
 
 	///<summary>Compares this instance to a specified object and returns an indication of their relative values.</summary>
-	[WhiteList("ushort.CompareTo(object)", WhiteListOp.Discard)]
+	[WhiteList("ushort.CompareTo(object)", WhiteListOp.CompareTo)]
 	public extern static Number _d8d8b9cba9bd3347(Number instance, Object? value);
 
 	///<summary>Compares this instance to a specified 16-bit unsigned integer and returns an indication of their relative values.</summary>
-	[WhiteList("ushort.CompareTo(ushort)", WhiteListOp.Discard)]
+	[WhiteList("ushort.CompareTo(ushort)", WhiteListOp.CompareTo)]
 	public extern static Number _2ca53dc375a8ff3d(Number instance, Number value);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
-	[WhiteList("override ushort.Equals(object)", WhiteListOp.Discard)]
+	[WhiteList("override ushort.Equals(object)", WhiteListOp.Equals)]
 	public extern static bool _c13e06040702dab1(Number instance, Object? obj);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified <see cref="T:System.UInt16" /> value.</summary>
-	[WhiteList("ushort.Equals(ushort)", WhiteListOp.Discard)]
+	[WhiteList("ushort.Equals(ushort)", WhiteListOp.Equals)]
 	public extern static bool _0faff9447540bf0f(Number instance, Number obj);
 
 	///<summary>Returns the hash code for this instance.</summary>
@@ -34,7 +34,7 @@ public static class UInt16Module
 	public extern static Number _1289c3b26567b431(Number instance);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation.</summary>
-	[WhiteList("override ushort.ToString()", WhiteListOp.Discard)]
+	[WhiteList("override ushort.ToString()", WhiteListOp.Replace, "toString")]
 	public extern static string _97b1f766a137a176(Number instance);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation using the specified culture-specific format information.</summary>
@@ -58,8 +58,11 @@ public static class UInt16Module
 	public extern static bool _c8d9586ea188f250(Number instance, Uint8Array utf8Destination, Box<Number> bytesWritten, Uint32Array format, Intl.NumberFormat? provider);
 
 	///<summary>Converts the string representation of a number to its 16-bit unsigned integer equivalent.</summary>
-	[WhiteList("static ushort.Parse(string)", WhiteListOp.Discard)]
-	public extern static Number _bfae72f49db4f3c9(object s);
+	[WhiteList("static ushort.Parse(string)", WhiteListOp.Import)]
+	public static Number _bfae72f49db4f3c9(string s)
+	{
+		return Number(s);
+	}
 
 	///<summary>Converts the string representation of a number in a specified style to its 16-bit unsigned integer equivalent. This method is not CLS-compliant. The CLS-compliant alternative is <see cref="M:System.Int32.Parse(System.String,System.Globalization.NumberStyles)" />.</summary>
 	[WhiteList("static ushort.Parse(string, System.Globalization.NumberStyles)", WhiteListOp.Discard)]
@@ -78,8 +81,19 @@ public static class UInt16Module
 	public extern static Number _e0537feda3434747(Uint32Array s, object style, Intl.NumberFormat? provider);
 
 	///<summary>Tries to convert the string representation of a number to its 16-bit unsigned integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
-	[WhiteList("static ushort.TryParse(string, out ushort)", WhiteListOp.Discard)]
-	public extern static bool _2efd27d401f7def7(object s, Box<Number> result);
+	[WhiteList("static ushort.TryParse(string, out ushort)", WhiteListOp.Import)]
+	public static bool _2efd27d401f7def7(string s, Box<Number> result)
+	{
+		try
+		{
+			result.Value = Number(s);
+			return true;
+		}
+		catch
+		{
+			return false;
+		}
+	}
 
 	///<summary>Tries to convert the span representation of a number to its 16-bit unsigned integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[WhiteList("static ushort.TryParse(System.ReadOnlySpan<char>, out ushort)", WhiteListOp.Discard)]
@@ -138,15 +152,15 @@ public static class UInt16Module
 	public extern static Number _cfa99d1fe078f42e(Number value, Number min, Number max);
 
 	///<summary>Compares two values to compute which is greater.</summary>
-	[WhiteList("static ushort.Max(ushort, ushort)", WhiteListOp.Discard)]
+	[WhiteList("static ushort.Max(ushort, ushort)", WhiteListOp.Replace, "max")]
 	public extern static Number _baf95be10fbe1b99(Number x, Number y);
 
 	///<summary>Compares two values to compute which is lesser.</summary>
-	[WhiteList("static ushort.Min(ushort, ushort)", WhiteListOp.Discard)]
+	[WhiteList("static ushort.Min(ushort, ushort)", WhiteListOp.Replace, "min")]
 	public extern static Number _5bde9c15f7f8b2f9(Number x, Number y);
 
 	///<summary>Computes the sign of a value.</summary>
-	[WhiteList("static ushort.Sign(ushort)", WhiteListOp.Discard)]
+	[WhiteList("static ushort.Sign(ushort)", WhiteListOp.Replace, "sign")]
 	public extern static Number _40243528ed598d7c(Number value);
 
 	///<summary>Creates an instance of the current type from a value, throwing an overflow exception for any values that fall outside the representable range of the current type.</summary>

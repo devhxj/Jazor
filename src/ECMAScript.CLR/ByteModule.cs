@@ -3,7 +3,7 @@ using ECMAScript.Common;
 namespace ECMAScript;
 
 [ECMAScriptModule]
-[WhiteList("byte", WhiteListOp.Allowed, null,"System/ByteModule.js")]
+[WhiteList("byte", WhiteListOp.Allowed, null, "System/ByteModule.js")]
 public static class ByteModule
 {
 	//byte.MaxValue = 255;
@@ -14,19 +14,19 @@ public static class ByteModule
 	public extern static Number _c16a6a35ab0f1a78();
 
 	///<summary>Compares this instance to a specified object and returns an indication of their relative values.</summary>
-	[WhiteList("byte.CompareTo(object)", WhiteListOp.Discard)]
+	[WhiteList("byte.CompareTo(object)", WhiteListOp.CompareTo)]
 	public extern static Number _7aaf4c67dc6c9c9a(Number instance, Object? value);
 
 	///<summary>Compares this instance to a specified 8-bit unsigned integer and returns an indication of their relative values.</summary>
-	[WhiteList("byte.CompareTo(byte)", WhiteListOp.Discard)]
+	[WhiteList("byte.CompareTo(byte)", WhiteListOp.CompareTo)]
 	public extern static Number _5c935ae4273a32cf(Number instance, Number value);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
-	[WhiteList("override byte.Equals(object)", WhiteListOp.Discard)]
+	[WhiteList("override byte.Equals(object)", WhiteListOp.Equals)]
 	public extern static bool _991f10ab45b84c4a(Number instance, Object? obj);
 
 	///<summary>Returns a value indicating whether this instance and a specified <see cref="T:System.Byte" /> object represent the same value.</summary>
-	[WhiteList("byte.Equals(byte)", WhiteListOp.Discard)]
+	[WhiteList("byte.Equals(byte)", WhiteListOp.Equals)]
 	public extern static bool _4885d24d76ef9f6d(Number instance, Number obj);
 
 	///<summary>Returns the hash code for this instance.</summary>
@@ -34,8 +34,11 @@ public static class ByteModule
 	public extern static Number _0db3f15e7e706cc7(Number instance);
 
 	///<summary>Converts the string representation of a number to its <see cref="T:System.Byte" /> equivalent.</summary>
-	[WhiteList("static byte.Parse(string)", WhiteListOp.Discard)]
-	public extern static Number _8719e4b3055c5188(object s);
+	[WhiteList("static byte.Parse(string)", WhiteListOp.Import)]
+	public static Number _8719e4b3055c5188(string s)
+	{
+		return Number(s);
+	}
 
 	///<summary>Converts the string representation of a number in a specified style to its <see cref="T:System.Byte" /> equivalent.</summary>
 	[WhiteList("static byte.Parse(string, System.Globalization.NumberStyles)", WhiteListOp.Discard)]
@@ -54,8 +57,19 @@ public static class ByteModule
 	public extern static Number _ff08be5970881dca(Uint32Array s, object style, Intl.NumberFormat? provider);
 
 	///<summary>Tries to convert the string representation of a number to its <see cref="T:System.Byte" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
-	[WhiteList("static byte.TryParse(string, out byte)", WhiteListOp.Discard)]
-	public extern static bool _03c07d3f3ee012f9(object s, Box<Number> result);
+	[WhiteList("static byte.TryParse(string, out byte)", WhiteListOp.Import)]
+	public static bool _03c07d3f3ee012f9(string s, Box<Number> result)
+	{
+		try
+		{
+			result.Value = Number(s);
+			return true;
+		}
+		catch
+		{
+			return false;
+		}
+	}
 
 	///<summary>Tries to convert the span representation of a number to its <see cref="T:System.Byte" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
 	[WhiteList("static byte.TryParse(System.ReadOnlySpan<char>, out byte)", WhiteListOp.Discard)]
@@ -74,7 +88,7 @@ public static class ByteModule
 	public extern static bool _761e5b49fdeccb96(Uint32Array s, object style, Intl.NumberFormat? provider, Box<Number> result);
 
 	///<summary>Converts the value of the current <see cref="T:System.Byte" /> object to its equivalent string representation.</summary>
-	[WhiteList("override byte.ToString()", WhiteListOp.Discard)]
+	[WhiteList("override byte.ToString()", WhiteListOp.Replace, "toString")]
 	public extern static string _fe5d1bb114dd9985(Number instance);
 
 	///<summary>Converts the value of the current <see cref="T:System.Byte" /> object to its equivalent string representation using the specified format.</summary>
@@ -138,15 +152,15 @@ public static class ByteModule
 	public extern static Number _d46830318e177655(Number value, Number min, Number max);
 
 	///<summary>Compares two values to compute which is greater.</summary>
-	[WhiteList("static byte.Max(byte, byte)", WhiteListOp.Discard)]
+	[WhiteList("static byte.Max(byte, byte)", WhiteListOp.Replace, "max")]
 	public extern static Number _04555e3eb1c7a9ce(Number x, Number y);
 
 	///<summary>Compares two values to compute which is lesser.</summary>
-	[WhiteList("static byte.Min(byte, byte)", WhiteListOp.Discard)]
+	[WhiteList("static byte.Min(byte, byte)", WhiteListOp.Replace, "min")]
 	public extern static Number _01cc0a43897afd75(Number x, Number y);
 
 	///<summary>Computes the sign of a value.</summary>
-	[WhiteList("static byte.Sign(byte)", WhiteListOp.Discard)]
+	[WhiteList("static byte.Sign(byte)", WhiteListOp.Replace, "sign")]
 	public extern static Number _683fdf4d3120d162(Number value);
 
 	///<summary>Creates an instance of the current type from a value, throwing an overflow exception for any values that fall outside the representable range of the current type.</summary>

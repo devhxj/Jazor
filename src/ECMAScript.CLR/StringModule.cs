@@ -261,7 +261,7 @@ public static class StringModule
 	[WhiteList("string.this[int].get", WhiteListOp.Discard)]
 	public extern static Number _5ad63706a889c294(String instance, Number index);
 
-	[WhiteList("string.Length.get", WhiteListOp.Discard)]
+	[WhiteList("string.Length.get", WhiteListOp.Replace, "length")]
 	public extern static Number _1b0d64005dc28838(String instance);
 
 	///<summary>Creates the string  representation of a specified object.</summary>
@@ -293,7 +293,7 @@ public static class StringModule
 	public extern static string _a2a66aa54427416c(object values);
 
 	///<summary>Concatenates two specified instances of <see cref="T:System.String" />.</summary>
-	[WhiteList("static string.Concat(string, string)", WhiteListOp.Discard)]
+	[WhiteList("static string.Concat(string, string)", WhiteListOp.Replace, "concat")]
 	public extern static string _021d71ef80d7918e(object str0, object str1);
 
 	///<summary>Concatenates three specified instances of <see cref="T:System.String" />.</summary>
@@ -397,7 +397,7 @@ public static class StringModule
 	public extern static string _9f939553178c2ca6(Number separator,  object value);
 
 	///<summary>Concatenates all the elements of a string array, using the specified separator between each element.</summary>
-	[WhiteList("static string.Join(string, params string[])", WhiteListOp.Discard)]
+	[WhiteList("static string.Join(string, params string[])", WhiteListOp.Replace, "join")]
 	public extern static string _f269cd27a4bbd549(object separator,  object value);
 
 	///<summary>Concatenates a span of strings, using the specified separator between each member.</summary>
@@ -537,11 +537,11 @@ public static class StringModule
 	public extern static string _6b947e3ae92ce851(String instance, Number startIndex);
 
 	///<summary>Retrieves a substring from this instance. The substring starts at a specified character position and has a specified length.</summary>
-	[WhiteList("string.Substring(int, int)", WhiteListOp.Discard)]
+	[WhiteList("string.Substring(int, int)", WhiteListOp.Replace, "substr")]
 	public extern static string _ac659b5819c0360c(String instance, Number startIndex, Number length);
 
 	///<summary>Returns a copy of this string converted to lowercase.</summary>
-	[WhiteList("string.ToLower()", WhiteListOp.Discard)]
+	[WhiteList("string.ToLower()", WhiteListOp.Replace, "toLowerCase")]
 	public extern static string _482205d85705de41(String instance);
 
 	///<summary>Returns a copy of this string converted to lowercase, using the casing rules of the specified culture.</summary>
@@ -549,11 +549,11 @@ public static class StringModule
 	public extern static string _8e06da9945efff04(String instance, String? culture);
 
 	///<summary>Returns a copy of this <see cref="T:System.String" /> object converted to lowercase using the casing rules of the invariant culture.</summary>
-	[WhiteList("string.ToLowerInvariant()", WhiteListOp.Discard)]
+	[WhiteList("string.ToLowerInvariant()", WhiteListOp.Replace, "toLowerCase")]
 	public extern static string _3ff043d0307f4917(String instance);
 
 	///<summary>Returns a copy of this string converted to uppercase.</summary>
-	[WhiteList("string.ToUpper()", WhiteListOp.Discard)]
+	[WhiteList("string.ToUpper()", WhiteListOp.Replace, "toUpperCase")]
 	public extern static string _4b84099d877364bd(String instance);
 
 	///<summary>Returns a copy of this string converted to uppercase, using the casing rules of the specified culture.</summary>
@@ -561,11 +561,11 @@ public static class StringModule
 	public extern static string _9369d4b370002404(String instance, String? culture);
 
 	///<summary>Returns a copy of this <see cref="T:System.String" /> object converted to uppercase using the casing rules of the invariant culture.</summary>
-	[WhiteList("string.ToUpperInvariant()", WhiteListOp.Discard)]
+	[WhiteList("string.ToUpperInvariant()", WhiteListOp.Replace, "toUpperCase")]
 	public extern static string _3dc9c0782170eb46(String instance);
 
 	///<summary>Removes all leading and trailing white-space characters from the current string.</summary>
-	[WhiteList("string.Trim()", WhiteListOp.Discard)]
+	[WhiteList("string.Trim()", WhiteListOp.Replace, "trim")]
 	public extern static string _eb98ee79e16b7ad4(String instance);
 
 	///<summary>Removes all leading and trailing instances of a character from the current string.</summary>
@@ -581,7 +581,7 @@ public static class StringModule
 	public extern static string _0e8e4169883e5222(String instance,  Uint32Array trimChars);
 
 	///<summary>Removes all the leading white-space characters from the current string.</summary>
-	[WhiteList("string.TrimStart()", WhiteListOp.Discard)]
+	[WhiteList("string.TrimStart()", WhiteListOp.Replace, "trimStart")]
 	public extern static string _1ca7f6e7edd1e070(String instance);
 
 	///<summary>Removes all the leading occurrences of a specified character from the current string.</summary>
@@ -597,7 +597,7 @@ public static class StringModule
 	public extern static string _f0473806a2e03bb6(String instance,  Uint32Array trimChars);
 
 	///<summary>Removes all the trailing white-space characters from the current string.</summary>
-	[WhiteList("string.TrimEnd()", WhiteListOp.Discard)]
+	[WhiteList("string.TrimEnd()", WhiteListOp.Replace, "trimEnd")]
 	public extern static string _760bdb666072200b(String instance);
 
 	///<summary>Removes all the trailing occurrences of a character from the current string.</summary>
@@ -613,7 +613,7 @@ public static class StringModule
 	public extern static string _4f8d256566de4b17(String instance,  Uint32Array trimChars);
 
 	///<summary>Returns a value indicating whether a specified substring occurs within this string.</summary>
-	[WhiteList("string.Contains(string)", WhiteListOp.Discard)]
+	[WhiteList("string.Contains(string)", WhiteListOp.Replace, "includes")]
 	public extern static bool _c42ed9bafadfb16c(String instance, object value);
 
 	///<summary>Returns a value indicating whether a specified string occurs within this string, using the specified comparison rules.</summary>
@@ -621,7 +621,7 @@ public static class StringModule
 	public extern static bool _d52d7114d5c1b839(String instance, object value, object comparisonType);
 
 	///<summary>Returns a value indicating whether a specified character occurs within this string.</summary>
-	[WhiteList("string.Contains(char)", WhiteListOp.Discard)]
+	[WhiteList("string.Contains(char)", WhiteListOp.Replace, "includes")]
 	public extern static bool _5de05262ccc56b2e(String instance, Number value);
 
 	///<summary>Returns a value indicating whether a specified character occurs within this string, using the specified comparison rules.</summary>
@@ -629,7 +629,7 @@ public static class StringModule
 	public extern static bool _16d4b2b4de019fb2(String instance, Number value, object comparisonType);
 
 	///<summary>Reports the zero-based index of the first occurrence of the specified Unicode character in this string.</summary>
-	[WhiteList("string.IndexOf(char)", WhiteListOp.Discard)]
+	[WhiteList("string.IndexOf(char)", WhiteListOp.Replace, "indexOf")]
 	public extern static Number _9c8b4ffa28964fba(String instance, Number value);
 
 	///<summary>Reports the zero-based index of the first occurrence of the specified Unicode character in this string. The search starts at a specified character position.</summary>
@@ -681,7 +681,7 @@ public static class StringModule
 	public extern static Number _ab22561fc42166db(String instance, object value, Number startIndex, Number count, object comparisonType);
 
 	///<summary>Reports the zero-based index position of the last occurrence of a specified Unicode character within this instance.</summary>
-	[WhiteList("string.LastIndexOf(char)", WhiteListOp.Discard)]
+	[WhiteList("string.LastIndexOf(char)", WhiteListOp.Replace, "lastIndexOf")]
 	public extern static Number _da9a8971cb787f7f(String instance, Number value);
 
 	///<summary>Reports the zero-based index position of the last occurrence of a specified Unicode character within this instance. The search starts at a specified character position and proceeds backward toward the beginning of the string.</summary>

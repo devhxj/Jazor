@@ -3,7 +3,7 @@ using ECMAScript.Common;
 namespace ECMAScript;
 
 [ECMAScriptModule]
-[WhiteList("int", WhiteListOp.Allowed, null,"System/Int32Module.js")]
+[WhiteList("int", WhiteListOp.Allowed, null, "System/Int32Module.js")]
 public static class Int32Module
 {
 	//int.MaxValue = 2147483647;
@@ -18,19 +18,19 @@ public static class Int32Module
 	public extern static BigInt _6f2c27167c45a727(Number left, Number right);
 
 	///<summary>Compares this instance to a specified object and returns an indication of their relative values.</summary>
-	[WhiteList("int.CompareTo(object)", WhiteListOp.Discard)]
+	[WhiteList("int.CompareTo(object)", WhiteListOp.CompareTo)]
 	public extern static Number _b03337a2a71c762d(Number instance, Object? value);
 
 	///<summary>Compares this instance to a specified 32-bit signed integer and returns an indication of their relative values.</summary>
-	[WhiteList("int.CompareTo(int)", WhiteListOp.Discard)]
+	[WhiteList("int.CompareTo(int)", WhiteListOp.CompareTo)]
 	public extern static Number _741df6ab5c9e75bc(Number instance, Number value);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
-	[WhiteList("override int.Equals(object)", WhiteListOp.Discard)]
+	[WhiteList("override int.Equals(object)", WhiteListOp.Equals)]
 	public extern static bool _3f3e17a78ac17712(Number instance, Object? obj);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified <see cref="T:System.Int32" /> value.</summary>
-	[WhiteList("int.Equals(int)", WhiteListOp.Discard)]
+	[WhiteList("int.Equals(int)", WhiteListOp.Equals)]
 	public extern static bool _5e7fb3a45e5a8f45(Number instance, Number obj);
 
 	///<summary>Returns the hash code for this instance.</summary>
@@ -38,7 +38,7 @@ public static class Int32Module
 	public extern static Number _74e858272ce4a15a(Number instance);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation.</summary>
-	[WhiteList("override int.ToString()", WhiteListOp.Discard)]
+	[WhiteList("override int.ToString()", WhiteListOp.Replace, "toString")]
 	public extern static string _0103494bc5e6253f(Number instance);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation, using the specified format.</summary>
@@ -62,8 +62,11 @@ public static class Int32Module
 	public extern static bool _11b66442f91f5212(Number instance, Uint8Array utf8Destination, Box<Number> bytesWritten, Uint32Array format, Intl.NumberFormat? provider);
 
 	///<summary>Converts the string representation of a number to its 32-bit signed integer equivalent.</summary>
-	[WhiteList("static int.Parse(string)", WhiteListOp.Discard)]
-	public extern static Number _151ccc6045162f8f(object s);
+	[WhiteList("static int.Parse(string)", WhiteListOp.Import)]
+	public static Number _151ccc6045162f8f(string s)
+	{
+		return Number(s);
+	}
 
 	///<summary>Converts the string representation of a number in a specified style to its 32-bit signed integer equivalent.</summary>
 	[WhiteList("static int.Parse(string, System.Globalization.NumberStyles)", WhiteListOp.Discard)]
@@ -82,8 +85,19 @@ public static class Int32Module
 	public extern static Number _8791c7bfd3662e63(Uint32Array s, object style, Intl.NumberFormat? provider);
 
 	///<summary>Converts the string representation of a number to its 32-bit signed integer equivalent. A return value indicates whether the conversion succeeded.</summary>
-	[WhiteList("static int.TryParse(string, out int)", WhiteListOp.Discard)]
-	public extern static bool _16e2a901535b765e(object s, Box<Number> result);
+	[WhiteList("static int.TryParse(string, out int)", WhiteListOp.Import)]
+	public static bool _16e2a901535b765e(string s, Box<Number> result)
+	{
+		try
+		{
+			result.Value = Number(s);
+			return true;
+		}
+		catch
+		{
+			return false;
+		}
+	}
 
 	///<summary>Converts the span representation of a number in a culture-specific format to its 32-bit signed integer equivalent. A return value indicates whether the conversion succeeded.</summary>
 	[WhiteList("static int.TryParse(System.ReadOnlySpan<char>, out int)", WhiteListOp.Discard)]
@@ -146,19 +160,19 @@ public static class Int32Module
 	public extern static Number _95793b26c4495935(Number value, Number sign);
 
 	///<summary>Compares two values to compute which is greater.</summary>
-	[WhiteList("static int.Max(int, int)", WhiteListOp.Discard)]
+	[WhiteList("static int.Max(int, int)", WhiteListOp.Replace, "max")]
 	public extern static Number _a98fdc6e84d091b3(Number x, Number y);
 
 	///<summary>Compares two values to compute which is lesser.</summary>
-	[WhiteList("static int.Min(int, int)", WhiteListOp.Discard)]
+	[WhiteList("static int.Min(int, int)", WhiteListOp.Replace, "min")]
 	public extern static Number _a0b140070c2e6328(Number x, Number y);
 
 	///<summary>Computes the sign of a value.</summary>
-	[WhiteList("static int.Sign(int)", WhiteListOp.Discard)]
+	[WhiteList("static int.Sign(int)", WhiteListOp.Replace, "sign")]
 	public extern static Number _ab2e55d493adcdd8(Number value);
 
 	///<summary>Computes the absolute of a value.</summary>
-	[WhiteList("static int.Abs(int)", WhiteListOp.Discard)]
+	[WhiteList("static int.Abs(int)", WhiteListOp.Replace, "abs")]
 	public extern static Number _49bf8261f5cf3a4b(Number value);
 
 	///<summary>Creates an instance of the current type from a value, throwing an overflow exception for any values that fall outside the representable range of the current type.</summary>

@@ -3,7 +3,7 @@ using ECMAScript.Common;
 namespace ECMAScript;
 
 [ECMAScriptModule]
-[WhiteList("ulong", WhiteListOp.Allowed, null,"System/UInt64Module.js")]
+[WhiteList("ulong", WhiteListOp.Allowed, null, "System/UInt64Module.js")]
 public static class UInt64Module
 {
 	//ulong.MaxValue = 18446744073709551615;
@@ -18,19 +18,19 @@ public static class UInt64Module
 	public extern static BigInt _0b66aa6b0604bed0(BigInt left, BigInt right);
 
 	///<summary>Compares this instance to a specified object and returns an indication of their relative values.</summary>
-	[WhiteList("ulong.CompareTo(object)", WhiteListOp.Discard)]
+	[WhiteList("ulong.CompareTo(object)", WhiteListOp.CompareTo)]
 	public extern static Number _b50ba86b85d8ac33(BigInt instance, Object? value);
 
 	///<summary>Compares this instance to a specified 64-bit unsigned integer and returns an indication of their relative values.</summary>
-	[WhiteList("ulong.CompareTo(ulong)", WhiteListOp.Discard)]
+	[WhiteList("ulong.CompareTo(ulong)", WhiteListOp.CompareTo)]
 	public extern static Number _46d8680dadd72b04(BigInt instance, BigInt value);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
-	[WhiteList("override ulong.Equals(object)", WhiteListOp.Discard)]
+	[WhiteList("override ulong.Equals(object)", WhiteListOp.Equals)]
 	public extern static bool _a0651bb3484c4e26(BigInt instance, Object? obj);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified <see cref="T:System.UInt64" /> value.</summary>
-	[WhiteList("ulong.Equals(ulong)", WhiteListOp.Discard)]
+	[WhiteList("ulong.Equals(ulong)", WhiteListOp.Equals)]
 	public extern static bool _aefa4fdc77a1c743(BigInt instance, BigInt obj);
 
 	///<summary>Returns the hash code for this instance.</summary>
@@ -38,7 +38,7 @@ public static class UInt64Module
 	public extern static Number _19d2adbbe01a8cf8(BigInt instance);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation.</summary>
-	[WhiteList("override ulong.ToString()", WhiteListOp.Discard)]
+	[WhiteList("override ulong.ToString()", WhiteListOp.Replace, "toString")]
 	public extern static string _d5be50f364f87ca3(BigInt instance);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation using the specified culture-specific format information.</summary>
@@ -62,8 +62,11 @@ public static class UInt64Module
 	public extern static bool _037cf8cd2c632d87(BigInt instance, Uint8Array utf8Destination, Box<Number> bytesWritten, Uint32Array format, Intl.NumberFormat? provider);
 
 	///<summary>Converts the string representation of a number to its 64-bit unsigned integer equivalent.</summary>
-	[WhiteList("static ulong.Parse(string)", WhiteListOp.Discard)]
-	public extern static BigInt _ab08b15d1ba56047(object s);
+	[WhiteList("static ulong.Parse(string)", WhiteListOp.Import)]
+	public static BigInt _ab08b15d1ba56047(string s)
+	{
+		return BigInt(s);
+	}
 
 	///<summary>Converts the string representation of a number in a specified style to its 64-bit unsigned integer equivalent.</summary>
 	[WhiteList("static ulong.Parse(string, System.Globalization.NumberStyles)", WhiteListOp.Discard)]
@@ -82,8 +85,19 @@ public static class UInt64Module
 	public extern static BigInt _a23571df8c6c19c9(Uint32Array s, object style, Intl.NumberFormat? provider);
 
 	///<summary>Tries to convert the string representation of a number to its 64-bit unsigned integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
-	[WhiteList("static ulong.TryParse(string, out ulong)", WhiteListOp.Discard)]
-	public extern static bool _a2771534d71206bd(object s, Box<BigInt> result);
+	[WhiteList("static ulong.TryParse(string, out ulong)", WhiteListOp.Import)]
+	public static bool _a2771534d71206bd(string s, Box<BigInt> result)
+	{
+		try
+		{
+			result.Value = BigInt(s);
+			return true;
+		}
+		catch
+		{
+			return false;
+		}
+	}
 
 	///<summary>Tries to convert the span representation of a number to its 64-bit unsigned integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[WhiteList("static ulong.TryParse(System.ReadOnlySpan<char>, out ulong)", WhiteListOp.Discard)]
@@ -142,15 +156,15 @@ public static class UInt64Module
 	public extern static BigInt _e24be08e46ae3b3d(BigInt value, BigInt min, BigInt max);
 
 	///<summary>Compares two values to compute which is greater.</summary>
-	[WhiteList("static ulong.Max(ulong, ulong)", WhiteListOp.Discard)]
+	[WhiteList("static ulong.Max(ulong, ulong)", WhiteListOp.Replace, "max")]
 	public extern static BigInt _111d38c016458f17(BigInt x, BigInt y);
 
 	///<summary>Compares two values to compute which is lesser.</summary>
-	[WhiteList("static ulong.Min(ulong, ulong)", WhiteListOp.Discard)]
+	[WhiteList("static ulong.Min(ulong, ulong)", WhiteListOp.Replace, "min")]
 	public extern static BigInt _a48607bf4fa7c1ee(BigInt x, BigInt y);
 
 	///<summary>Computes the sign of a value.</summary>
-	[WhiteList("static ulong.Sign(ulong)", WhiteListOp.Discard)]
+	[WhiteList("static ulong.Sign(ulong)", WhiteListOp.Replace, "sign")]
 	public extern static Number _ab7319ddbba9bccc(BigInt value);
 
 	///<summary>Creates an instance of the current type from a value, throwing an overflow exception for any values that fall outside the representable range of the current type.</summary>

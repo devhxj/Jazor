@@ -18,19 +18,14 @@ public static partial class Global
 	[SpecialCompile]
 	public extern static RegExp RegExp(string value);
 
-	[Description("@#Number")]
 	public extern static Number Number(Number value);
 
-	[Description("@#Number")]
 	public extern static Number Number(BigInt value);
 
-	[Description("@#Number")]
 	public extern static Number Number(string value);
 
-	[Description("@#BigInt")]
 	public extern static BigInt BigInt(Number value);
 
-	[Description("@#BigInt")]
 	public extern static BigInt BigInt(string value);
 
 	[Description("@#document")]

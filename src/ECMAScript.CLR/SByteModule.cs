@@ -3,7 +3,7 @@ using ECMAScript.Common;
 namespace ECMAScript;
 
 [ECMAScriptModule]
-[WhiteList("sbyte", WhiteListOp.Allowed, null,"System/SByteModule.js")]
+[WhiteList("sbyte", WhiteListOp.Allowed, null, "System/SByteModule.js")]
 public static class SByteModule
 {
 	//sbyte.MaxValue = 127;
@@ -14,19 +14,19 @@ public static class SByteModule
 	public extern static Number _0b5843a5a69b4fde();
 
 	///<summary>Compares this instance to a specified object and returns an indication of their relative values.</summary>
-	[WhiteList("sbyte.CompareTo(object)", WhiteListOp.Discard)]
+	[WhiteList("sbyte.CompareTo(object)", WhiteListOp.CompareTo)]
 	public extern static Number _f8a387725694962f(Number instance, Object? obj);
 
 	///<summary>Compares this instance to a specified 8-bit signed integer and returns an indication of their relative values.</summary>
-	[WhiteList("sbyte.CompareTo(sbyte)", WhiteListOp.Discard)]
+	[WhiteList("sbyte.CompareTo(sbyte)", WhiteListOp.CompareTo)]
 	public extern static Number _a0ff7e0ac34c91a8(Number instance, Number value);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
-	[WhiteList("override sbyte.Equals(object)", WhiteListOp.Discard)]
+	[WhiteList("override sbyte.Equals(object)", WhiteListOp.Equals)]
 	public extern static bool _74c9452fa767096f(Number instance, Object? obj);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified <see cref="T:System.SByte" /> value.</summary>
-	[WhiteList("sbyte.Equals(sbyte)", WhiteListOp.Discard)]
+	[WhiteList("sbyte.Equals(sbyte)", WhiteListOp.Equals)]
 	public extern static bool _4105db2840795661(Number instance, Number obj);
 
 	///<summary>Returns the hash code for this instance.</summary>
@@ -34,7 +34,7 @@ public static class SByteModule
 	public extern static Number _5131b1d6df49bbfb(Number instance);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation.</summary>
-	[WhiteList("override sbyte.ToString()", WhiteListOp.Discard)]
+	[WhiteList("override sbyte.ToString()", WhiteListOp.Replace, "toString")]
 	public extern static string _99cd65a77e5cb1e0(Number instance);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation, using the specified format.</summary>
@@ -58,8 +58,11 @@ public static class SByteModule
 	public extern static bool _08ca5484266e1a7b(Number instance, Uint8Array utf8Destination, Box<Number> bytesWritten, Uint32Array format, Intl.NumberFormat? provider);
 
 	///<summary>Converts the string representation of a number to its 8-bit signed integer equivalent.</summary>
-	[WhiteList("static sbyte.Parse(string)", WhiteListOp.Discard)]
-	public extern static Number _fc6fdbb937cb390a(object s);
+	[WhiteList("static sbyte.Parse(string)", WhiteListOp.Import)]
+	public static Number _fc6fdbb937cb390a(string s)
+	{
+		return Number(s);
+	}
 
 	///<summary>Converts the string representation of a number in a specified style to its 8-bit signed integer equivalent.</summary>
 	[WhiteList("static sbyte.Parse(string, System.Globalization.NumberStyles)", WhiteListOp.Discard)]
@@ -78,8 +81,19 @@ public static class SByteModule
 	public extern static Number _49c3ab5496122405(Uint32Array s, object style, Intl.NumberFormat? provider);
 
 	///<summary>Tries to convert the string representation of a number to its <see cref="T:System.SByte" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
-	[WhiteList("static sbyte.TryParse(string, out sbyte)", WhiteListOp.Discard)]
-	public extern static bool _d9082c2537283f95(object s, Box<Number> result);
+	[WhiteList("static sbyte.TryParse(string, out sbyte)", WhiteListOp.Import)]
+	public static bool _d9082c2537283f95(string s, Box<Number> result)
+	{
+		try
+		{
+			result.Value = Number(s);
+			return true;
+		}
+		catch
+		{
+			return false;
+		}
+	}
 
 	///<summary>Tries to convert the span representation of a number to its <see cref="T:System.SByte" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
 	[WhiteList("static sbyte.TryParse(System.ReadOnlySpan<char>, out sbyte)", WhiteListOp.Discard)]
@@ -142,19 +156,19 @@ public static class SByteModule
 	public extern static Number _14e4ea7e74086ad7(Number value, Number sign);
 
 	///<summary>Compares two values to compute which is greater.</summary>
-	[WhiteList("static sbyte.Max(sbyte, sbyte)", WhiteListOp.Discard)]
+	[WhiteList("static sbyte.Max(sbyte, sbyte)", WhiteListOp.Replace, "max")]
 	public extern static Number _77fa5be291628cd5(Number x, Number y);
 
 	///<summary>Compares two values to compute which is lesser.</summary>
-	[WhiteList("static sbyte.Min(sbyte, sbyte)", WhiteListOp.Discard)]
+	[WhiteList("static sbyte.Min(sbyte, sbyte)", WhiteListOp.Replace, "min")]
 	public extern static Number _b9b655261540ef89(Number x, Number y);
 
 	///<summary>Computes the sign of a value.</summary>
-	[WhiteList("static sbyte.Sign(sbyte)", WhiteListOp.Discard)]
+	[WhiteList("static sbyte.Sign(sbyte)", WhiteListOp.Replace, "sign")]
 	public extern static Number _8c50aab12919fd23(Number value);
 
 	///<summary>Computes the absolute of a value.</summary>
-	[WhiteList("static sbyte.Abs(sbyte)", WhiteListOp.Discard)]
+	[WhiteList("static sbyte.Abs(sbyte)", WhiteListOp.Replace, "abs")]
 	public extern static Number _08da3784dbe3da67(Number value);
 
 	///<summary>Creates an instance of the current type from a value, throwing an overflow exception for any values that fall outside the representable range of the current type.</summary>

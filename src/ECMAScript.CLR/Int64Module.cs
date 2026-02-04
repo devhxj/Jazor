@@ -3,7 +3,7 @@ using ECMAScript.Common;
 namespace ECMAScript;
 
 [ECMAScriptModule]
-[WhiteList("long", WhiteListOp.Allowed, null,"System/Int64Module.js")]
+[WhiteList("long", WhiteListOp.Allowed, null, "System/Int64Module.js")]
 public static class Int64Module
 {
 	//long.MaxValue = 9223372036854775807;
@@ -18,19 +18,19 @@ public static class Int64Module
 	public extern static BigInt _62ebef6eaaff4810(BigInt left, BigInt right);
 
 	///<summary>Compares this instance to a specified object and returns an indication of their relative values.</summary>
-	[WhiteList("long.CompareTo(object)", WhiteListOp.Discard)]
+	[WhiteList("long.CompareTo(object)", WhiteListOp.CompareTo)]
 	public extern static Number _a108636b79b7c8d2(BigInt instance, Object? value);
 
 	///<summary>Compares this instance to a specified 64-bit signed integer and returns an indication of their relative values.</summary>
-	[WhiteList("long.CompareTo(long)", WhiteListOp.Discard)]
+	[WhiteList("long.CompareTo(long)", WhiteListOp.CompareTo)]
 	public extern static Number _e862e3c68f06f9e2(BigInt instance, BigInt value);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
-	[WhiteList("override long.Equals(object)", WhiteListOp.Discard)]
+	[WhiteList("override long.Equals(object)", WhiteListOp.Equals)]
 	public extern static bool _3fc2378cd670be8a(BigInt instance, Object? obj);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified <see cref="T:System.Int64" /> value.</summary>
-	[WhiteList("long.Equals(long)", WhiteListOp.Discard)]
+	[WhiteList("long.Equals(long)", WhiteListOp.Equals)]
 	public extern static bool _73c4e4cb572f07f1(BigInt instance, BigInt obj);
 
 	///<summary>Returns the hash code for this instance.</summary>
@@ -38,7 +38,7 @@ public static class Int64Module
 	public extern static Number _a6f06b90e3618c16(BigInt instance);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation.</summary>
-	[WhiteList("override long.ToString()", WhiteListOp.Discard)]
+	[WhiteList("override long.ToString()", WhiteListOp.Replace, "toString")]
 	public extern static string _56beebc0ed49cbc9(BigInt instance);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation using the specified culture-specific format information.</summary>
@@ -62,8 +62,11 @@ public static class Int64Module
 	public extern static bool _a7f530e78a14a037(BigInt instance, Uint8Array utf8Destination, Box<Number> bytesWritten, Uint32Array format, Intl.NumberFormat? provider);
 
 	///<summary>Converts the string representation of a number to its 64-bit signed integer equivalent.</summary>
-	[WhiteList("static long.Parse(string)", WhiteListOp.Discard)]
-	public extern static BigInt _4174bb5b72e448a6(object s);
+	[WhiteList("static long.Parse(string)", WhiteListOp.Import)]
+	public static BigInt _4174bb5b72e448a6(string s)
+	{
+		return BigInt(s);
+	}
 
 	///<summary>Converts the string representation of a number in a specified style to its 64-bit signed integer equivalent.</summary>
 	[WhiteList("static long.Parse(string, System.Globalization.NumberStyles)", WhiteListOp.Discard)]
@@ -82,8 +85,19 @@ public static class Int64Module
 	public extern static BigInt _78d6c19de30b5937(Uint32Array s, object style, Intl.NumberFormat? provider);
 
 	///<summary>Converts the string representation of a number to its 64-bit signed integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
-	[WhiteList("static long.TryParse(string, out long)", WhiteListOp.Discard)]
-	public extern static bool _2cba636c245c1675(object s, Box<BigInt> result);
+	[WhiteList("static long.TryParse(string, out long)", WhiteListOp.Import)]
+	public static bool _2cba636c245c1675(string s, Box<BigInt> result)
+	{
+		try
+		{
+			result.Value = BigInt(s);
+			return true;
+		}
+		catch
+		{
+			return false;
+		}
+	}
 
 	///<summary>Converts the span representation of a number to its 64-bit signed integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[WhiteList("static long.TryParse(System.ReadOnlySpan<char>, out long)", WhiteListOp.Discard)]
@@ -146,19 +160,19 @@ public static class Int64Module
 	public extern static BigInt _dd2c6c8297bd4df3(BigInt value, BigInt sign);
 
 	///<summary>Compares two values to compute which is greater.</summary>
-	[WhiteList("static long.Max(long, long)", WhiteListOp.Discard)]
+	[WhiteList("static long.Max(long, long)", WhiteListOp.Replace, "max")]
 	public extern static BigInt _2c60dae3f93fedef(BigInt x, BigInt y);
 
 	///<summary>Compares two values to compute which is lesser.</summary>
-	[WhiteList("static long.Min(long, long)", WhiteListOp.Discard)]
+	[WhiteList("static long.Min(long, long)", WhiteListOp.Replace, "min")]
 	public extern static BigInt _e9f5fe363044ceda(BigInt x, BigInt y);
 
 	///<summary>Computes the sign of a value.</summary>
-	[WhiteList("static long.Sign(long)", WhiteListOp.Discard)]
+	[WhiteList("static long.Sign(long)", WhiteListOp.Replace, "sign")]
 	public extern static Number _003e583f1faf343b(BigInt value);
 
 	///<summary>Computes the absolute of a value.</summary>
-	[WhiteList("static long.Abs(long)", WhiteListOp.Discard)]
+	[WhiteList("static long.Abs(long)", WhiteListOp.Replace, "abs")]
 	public extern static BigInt _6ae5b36df368d1e5(BigInt value);
 
 	///<summary>Creates an instance of the current type from a value, throwing an overflow exception for any values that fall outside the representable range of the current type.</summary>

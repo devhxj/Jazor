@@ -3,12 +3,12 @@ using ECMAScript.Common;
 namespace ECMAScript;
 
 [ECMAScriptModule]
-[WhiteList("char", WhiteListOp.Allowed, null,"System/CharModule.js")]
+[WhiteList("char", WhiteListOp.Allowed, null, "System/CharModule.js")]
 public static class CharModule
 {
-	//char.MaxValue = ;
+	//char.MaxValue = '\uffff';
 
-	//char.MinValue = ;
+	//char.MinValue = '\0';
 
 	[WhiteList("char.Char()", WhiteListOp.Discard)]
 	public extern static Number _920bd6d3d675c7b2();
@@ -22,23 +22,23 @@ public static class CharModule
 	public extern static Number _5b81ebfb78d5415c(Number instance);
 
 	///<summary>Returns a value that indicates whether this instance is equal to a specified object.</summary>
-	[WhiteList("override char.Equals(object)", WhiteListOp.Discard)]
+	[WhiteList("override char.Equals(object)", WhiteListOp.Equals)]
 	public extern static bool _3f176ca2992b307c(Number instance, Object? obj);
 
 	///<summary>Returns a value that indicates whether this instance is equal to the specified <see cref="T:System.Char" /> object.</summary>
-	[WhiteList("char.Equals(char)", WhiteListOp.Discard)]
+	[WhiteList("char.Equals(char)", WhiteListOp.Equals)]
 	public extern static bool _632690bee0e71964(Number instance, Number obj);
 
 	///<summary>Compares this instance to a specified object and indicates whether this instance precedes, follows, or appears in the same position in the sort order as the specified <see cref="T:System.Object" />.</summary>
-	[WhiteList("char.CompareTo(object)", WhiteListOp.Discard)]
+	[WhiteList("char.CompareTo(object)", WhiteListOp.CompareTo)]
 	public extern static Number _ddf9c5affdc041df(Number instance, Object? value);
 
 	///<summary>Compares this instance to a specified <see cref="T:System.Char" /> object and indicates whether this instance precedes, follows, or appears in the same position in the sort order as the specified <see cref="T:System.Char" /> object.</summary>
-	[WhiteList("char.CompareTo(char)", WhiteListOp.Discard)]
+	[WhiteList("char.CompareTo(char)", WhiteListOp.CompareTo)]
 	public extern static Number _309d33b86c3815d8(Number instance, Number value);
 
 	///<summary>Converts the value of this instance to its equivalent string representation.</summary>
-	[WhiteList("override char.ToString()", WhiteListOp.Discard)]
+	[WhiteList("override char.ToString()", WhiteListOp.Replace, "toString")]
 	public extern static string _4861ba21870a2ec3(Number instance);
 
 	///<summary>Converts the value of this instance to its equivalent string representation using the specified culture-specific format information.</summary>
@@ -46,16 +46,36 @@ public static class CharModule
 	public extern static string _fc3c2436fe7b6197(Number instance, Intl.NumberFormat? provider);
 
 	///<summary>Converts the specified Unicode character to its equivalent string representation.</summary>
-	[WhiteList("static char.ToString(char)", WhiteListOp.Discard)]
+	[WhiteList("static char.ToString(char)", WhiteListOp.Replace, "toString")]
 	public extern static string _f59d4d8b2c441c53(Number c);
 
 	///<summary>Converts the value of the specified string to its equivalent Unicode character.</summary>
-	[WhiteList("static char.Parse(string)", WhiteListOp.Discard)]
-	public extern static Number _d89999df761a6d2e(object s);
+	[WhiteList("static char.Parse(string)", WhiteListOp.Import)]
+	public static Number _d89999df761a6d2e(string s)
+	{
+		if (s is String str && str.Length >= 1)
+			return Number(str[0]);
+		throw new Error("FormatException: String must be exactly one character long.");
+	}
 
 	///<summary>Converts the value of the specified string to its equivalent Unicode character. A return code indicates whether the conversion succeeded or failed.</summary>
-	[WhiteList("static char.TryParse(string, out char)", WhiteListOp.Discard)]
-	public extern static bool _9450f84427428db0(object s, Box<Number> result);
+	[WhiteList("static char.TryParse(string, out char)", WhiteListOp.Import)]
+	public static bool _9450f84427428db0(string s, Box<Number> result)
+	{
+		try
+		{
+			if (s is String str && str.Length >= 1)
+			{
+				result.Value = Number(str[0]);
+				return true;
+			}
+			return false;
+		}
+		catch
+		{
+			return false;
+		}
+	}
 
 	///<summary>Indicates whether a character is categorized as an ASCII letter.</summary>
 	[WhiteList("static char.IsAsciiLetter(char)", WhiteListOp.Discard)]
@@ -126,11 +146,11 @@ public static class CharModule
 	public extern static Number _dd41639bb00c83ab(Number c, String culture);
 
 	///<summary>Converts the value of a Unicode character to its uppercase equivalent.</summary>
-	[WhiteList("static char.ToUpper(char)", WhiteListOp.Discard)]
+	[WhiteList("static char.ToUpper(char)", WhiteListOp.Replace, "toUpperCase")]
 	public extern static Number _2713512e6f5a9312(Number c);
 
 	///<summary>Converts the value of a Unicode character to its uppercase equivalent using the casing rules of the invariant culture.</summary>
-	[WhiteList("static char.ToUpperInvariant(char)", WhiteListOp.Discard)]
+	[WhiteList("static char.ToUpperInvariant(char)", WhiteListOp.Replace, "toUpperCase")]
 	public extern static Number _b0c91aa30cd2a5f7(Number c);
 
 	///<summary>Converts the value of a specified Unicode character to its lowercase equivalent using specified culture-specific formatting information.</summary>
@@ -138,11 +158,11 @@ public static class CharModule
 	public extern static Number _b81ddeb8c6240b72(Number c, String culture);
 
 	///<summary>Converts the value of a Unicode character to its lowercase equivalent.</summary>
-	[WhiteList("static char.ToLower(char)", WhiteListOp.Discard)]
+	[WhiteList("static char.ToLower(char)", WhiteListOp.Replace, "toLowerCase")]
 	public extern static Number _b91d21a936e68017(Number c);
 
 	///<summary>Converts the value of a Unicode character to its lowercase equivalent using the casing rules of the invariant culture.</summary>
-	[WhiteList("static char.ToLowerInvariant(char)", WhiteListOp.Discard)]
+	[WhiteList("static char.ToLowerInvariant(char)", WhiteListOp.Replace, "toLowerCase")]
 	public extern static Number _76274ed9d45c0127(Number c);
 
 	///<summary>Returns the <see cref="T:System.TypeCode" /> for value type <see cref="T:System.Char" />.</summary>
