@@ -1,7 +1,7 @@
 ﻿namespace ECMAScript;
 
 [ECMAScript]
-[SpecialCompile]
+[Jazor]
 public sealed class Box<T>(T? value = default)
 {
 	[Description("@#value")]

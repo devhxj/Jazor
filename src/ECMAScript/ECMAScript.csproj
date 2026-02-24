@@ -1,8 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <LangVersion>preview</LangVersion>
+    <LangVersion>14.0</LangVersion>
     <Nullable>enable</Nullable>
     <NoWarn>CS0626,CS0824,IDE0130,CA1822,IDE0060</NoWarn>
   </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Jazor.Common\Jazor.Common.csproj" />
+  </ItemGroup>
 </Project>

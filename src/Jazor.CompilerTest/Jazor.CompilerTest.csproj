@@ -1,0 +1,29 @@
+<Project Sdk="MSTest.Sdk/4.0.0-preview.25415.9">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UseVSTest>true</UseVSTest>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Jazor.Compiler\Jazor.Compiler.csproj" />
+    <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Acornima" Version="1.2.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" />
+    <PackageReference Include="Acornima.Extras" Version="1.2.0" />
+    <PackageReference Include="coverlet.collector" Version="6.0.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Basic.Reference.Assemblies.Net100" Version="1.8.4" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Update="MSTest.TestFramework" Version="4.0.2" />
+  </ItemGroup>
+</Project>

@@ -2,12 +2,13 @@
 
 [ECMAScript]
 [Description("@#")]
+[Jazor]
 public static partial class Global
 {
 	/// <summary>
 	/// Returns the JavaScript type of the value.
 	/// </summary>
-	[SpecialCompile]
+	[Jazor]
 	public extern static string TypeOf(object? value);
 
 	/// <summary>
@@ -15,7 +16,7 @@ public static partial class Global
 	/// </summary>
 	/// <param name="value"></param>
 	/// <returns></returns>
-	[SpecialCompile]
+	[Jazor]
 	public extern static RegExp RegExp(string value);
 
 	public extern static Number Number(Number value);

@@ -2,18 +2,19 @@
 
 [ECMAScript]
 [Description("@#BigInt")]
+[Jazor]
 public abstract class BigInt
 {
-	[SpecialCompile]
+	[Jazor("0n")]
 	public extern static BigInt Zero { get; }
 
-	[SpecialCompile]
+	[Jazor("1n")]
 	public extern static BigInt One { get; }
 
-	[SpecialCompile]
+	[Jazor("2n")]
 	public extern static BigInt Two { get; }
 
-	[SpecialCompile]
+	[Jazor("-1n")]
 	public extern static BigInt MinusOne { get; }
 
 	/// <summary>
