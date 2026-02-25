@@ -85,8 +85,8 @@ var types = new Type[]{
 	typeof(Console),
 	typeof(Math),
 	typeof(BigInteger),
-	typeof(Object),
-	typeof(Boolean),
+	//typeof(Object),
+	//typeof(Boolean),
 	typeof(Char),
 	typeof(SByte),
 	typeof(Byte),
@@ -119,7 +119,7 @@ var types = new Type[]{
 	typeof(ConditionalWeakTable<,>),
 	typeof(GregorianCalendar),
 	typeof(CultureInfo),
-	typeof(Array)
+	//typeof(Array)
 };
 var typeMaps = new Dictionary<Type, string>()
 {
@@ -339,9 +339,12 @@ public static class {typeName}Module{(typeGenerics.Length > 0 ? typeGenerics : "
 
 				if (method.MethodKind == MethodKind.PropertyGet || method.MethodKind == MethodKind.PropertySet)
 				{
-					para = method.Parameters.Length > 0
-						? $"{mapName} instance, {string.Join(", ", method.Parameters.Select(ConvertParamaterName))}"
-						: $"{mapName} instance";
+					if (method.IsStatic && method.Parameters.Length > 0)
+						para = string.Join(", ", method.Parameters.Select(ConvertParamaterName));
+					else if (!method.IsStatic && method.Parameters.Length > 0)
+						para = $"{mapName} instance, {string.Join(", ", method.Parameters.Select(ConvertParamaterName))}";
+					else if (!method.IsStatic && method.Parameters.Length == 0)
+						para = $"{mapName} instance";
 				}
 				else if (method.MethodKind != MethodKind.Destructor && method.MethodKind != MethodKind.Conversion)
 				{

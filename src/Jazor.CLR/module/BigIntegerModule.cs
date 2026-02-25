@@ -33,21 +33,141 @@ public static class BigIntegerModule
 	public extern static BigInt _f715f85cc5dcfe92(object value);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Numerics.BigInteger" /> structure using the values in a byte array.</summary>
-	[Jazor(Op.Discard ,"System.Numerics.BigInteger.BigInteger(byte[])")]
-	public extern static BigInt _c1e724fa6dbf63eb(object value);
+	[Jazor(Op.Import ,"System.Numerics.BigInteger.BigInteger(byte[])")]
+	public static BigInt _c1e724fa6dbf63eb(Array<byte> value)
+	{
+		// 空白数组处理
+		if (value.Length == 0)
+			return BigInt.Zero;
+
+		var buffer = new ArrayBuffer(value.Length);
+		var array = new Uint8Array(buffer);
+		var view = new DataView(array.Buffer, array.ByteOffset, array.ByteLength);
+		var result = BigInt.Zero;
+		var i = 0u;
+
+		// 每次处理 8 字节（64位）
+		for (; i + 8 <= value.Length; i += 8)
+			result = (result << NewBigInt(64)) | view.GetBigUint64(i, false);
+
+		// 处理剩余字节（最多7字节）
+		if (i < value.Length)
+		{
+			var remaining = BigInt.Zero;
+			for (; i < value.Length; i++)
+				remaining = (remaining << NewBigInt(8)) | NewBigInt(value[i]);
+
+			result = (result << NewBigInt((value.Length - i) * 8u)) | remaining;
+		}
+
+		return result;
+	}	
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Numerics.BigInteger" /> structure using the values in a read-only span of bytes, and optionally indicating the signing encoding and the endianness byte order.</summary>
-	[Jazor(Op.Discard ,"System.Numerics.BigInteger.BigInteger(System.ReadOnlySpan<byte>, bool, bool)")]
-	public extern static BigInt _9c321a7400e5ff9b(Uint8Array value, bool isUnsigned, bool isBigEndian);
+	[Jazor(Op.Import ,"System.Numerics.BigInteger.BigInteger(System.ReadOnlySpan<byte>, bool, bool)")]
+	public static BigInt _9c321a7400e5ff9b(Array<byte> value, bool isUnsigned, bool isBigEndian)
+	{
+		// 处理空字节数组
+		if (value.Length == 0)
+			return BigInt.Zero;
+
+		// 处理1字节特殊情况
+		if (value.Length == 1)
+		{
+			if (isUnsigned)
+			{
+				return NewBigInt(value[0]);
+			}
+			else
+			{
+				// 有符号数：如果最高位为1，则为负数
+				return (value[0] & 0x80) == 0
+					? NewBigInt(value[0])
+					: NewBigInt(value[0]) - NewBigInt(0x100);
+			}
+		}
+
+		// 处理标准长度（2/4/8字节）
+		if (value.Length <= 8)
+		{
+			var buffer = new ArrayBuffer(value.Length);
+			var view = new DataView(buffer);
+			value.ForEach((item, index) => view.SetUint8(index, item));
+
+			return value.Length switch
+			{
+				2 => isUnsigned ?
+					NewBigInt(view.GetUint16(0, !isBigEndian)) :
+					NewBigInt(view.GetInt16(0, !isBigEndian)),
+				4 => isUnsigned ?
+					NewBigInt(view.GetUint32(0, !isBigEndian)) :
+					NewBigInt(view.GetInt32(0, !isBigEndian)),
+				8 => isUnsigned ?
+					view.GetBigUint64(0, !isBigEndian) :
+					view.GetBigInt64(0, !isBigEndian),
+				// 3/5/6/7字节长度使用非标准处理
+				_ => ProcessNonStandardLength(value, isUnsigned, isBigEndian)
+			};
+		}
+
+		// 处理超过8字节以上的非标准长度
+		return ProcessNonStandardLength(value, isUnsigned, isBigEndian);
+
+		// 处理非标准长度字节数组（3-7字节或>8字节）
+		static BigInt ProcessNonStandardLength(Array<byte> bytes, bool isUnsigned, bool isBigEndian)
+		{
+			// 创建字节数组的副本以避免修改原始数据
+			var processedBytes = bytes.Slice(0);
+
+			// 如果需要转换为小端序以便处理
+			if (isBigEndian)
+			{
+				processedBytes.Reverse();
+			}
+
+			// 从小端序字节数组构建无符号大整数
+			var result = BuildBigIntFromLEBytes(processedBytes);
+
+			// 对于有符号数的处理，转换如果最高位为1
+			if (!isUnsigned && (processedBytes[processedBytes.Length - 1] & 0x80) != 0)
+			{
+				// 计算位宽度 = 字节数 * 8
+				var bitWidth = NewBigInt(processedBytes.Length) * NewBigInt(8);
+
+				// 计算2的bitWidth次方作为偏移量
+				var offset = BigInt.One << bitWidth;
+
+				// 转换为有符号补码值
+				result -= offset;
+			}
+
+			return result;
+		}
+
+		// 从小端序字节数组构建无符号大整数
+		static BigInt BuildBigIntFromLEBytes(Array<byte> littleEndianBytes)
+		{
+			var result = BigInt.Zero;
+
+			// 从最低字节开始，按小端序累加，最后一个字节是最高位
+			for (var i = littleEndianBytes.Length - 1; i >= 0; i--)
+			{
+				// 移位8位拼接当前字节值
+				result = (result << NewBigInt(8)) | NewBigInt(littleEndianBytes[i] & 0xFF);
+			}
+
+			return result;
+		}
+	}
 
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.Zero.get")]
-	public extern static BigInt _77fc63f99954f8da(BigInt instance);
+	public extern static BigInt _77fc63f99954f8da();
 
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.One.get")]
-	public extern static BigInt _9c5419989e842d00(BigInt instance);
+	public extern static BigInt _9c5419989e842d00();
 
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.MinusOne.get")]
-	public extern static BigInt _01c112900aa52c82(BigInt instance);
+	public extern static BigInt _01c112900aa52c82();
 
 	[Jazor(Op.Discard ,"System.Numerics.BigInteger.IsPowerOfTwo.get")]
 	public extern static bool _ee8564f940baf789(BigInt instance);
@@ -81,8 +201,17 @@ public static class BigIntegerModule
 	public extern static BigInt _8adf758c3f22af12(string value, object style, Intl.NumberFormat? provider);
 
 	///<summary>Tries to convert the string representation of a number to its <see cref="T:System.Numerics.BigInteger" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.TryParse(string, out System.Numerics.BigInteger)")]
-	public extern static Array<object?> _59acea2facdaa757(string? value, BigInt? result);
+	[Jazor(Op.Import, "static System.Numerics.BigInteger.TryParse(string, out System.Numerics.BigInteger)")]
+	public static Array<object?> _59acea2facdaa757(string? value, BigInt? result)
+	{
+		try
+		{
+			if (value?.Length > 0)
+				return [true, NewBigInt(value)];
+		}
+		catch { }
+		return [false, null];
+	}
 
 	///<summary>Tries to convert the string representation of a number in a specified style and culture-specific format to its <see cref="T:System.Numerics.BigInteger" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.TryParse(string, System.Globalization.NumberStyles, System.IFormatProvider, out System.Numerics.BigInteger)")]
@@ -137,20 +266,87 @@ public static class BigIntegerModule
 	public extern static BigInt _d160232d04d4f8fe(BigInt value);
 
 	///<summary>Returns the natural (base <see langword="e" />) logarithm of a specified number.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.Log(System.Numerics.BigInteger)")]
-	public extern static Number _fb5a811e7a32a324(BigInt value);
+	[Jazor(Op.Import ,"static System.Numerics.BigInteger.Log(System.Numerics.BigInteger)")]
+	public static Number _fb5a811e7a32a324(BigInt value)
+	{
+		if (value <= BigInt.Zero)
+			throw new Error("Logarithm is undefined for non-positive numbers");
+
+		var str = value.ToString()!;
+		var exponent = str.Length - 1;
+		var mantissa = NewNumber(str.Substring(0, 15));
+
+		return Math.Log(mantissa) + exponent * Math.Log(10);
+	}	
 
 	///<summary>Returns the logarithm of a specified number in a specified base.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.Log(System.Numerics.BigInteger, double)")]
-	public extern static Number _acb5aef300c8db0c(BigInt value, Number baseValue);
+	[Jazor(Op.Import ,"static System.Numerics.BigInteger.Log(System.Numerics.BigInteger, double)")]
+	public static Number _acb5aef300c8db0c(BigInt value, Number baseValue)
+	{
+		if (value <= BigInt.Zero)
+			throw new RangeError("Logarithm is undefined for non-positive numbers");
+
+		if (baseValue <= 0 || baseValue == 1)
+			throw new RangeError("Base must be positive and not equal to 1");
+
+		if (value == BigInt.One)
+			return 0;
+
+		if (baseValue == Math.E)
+			return Math.Log(NewNumber(value));
+
+		if (value <= Number.MAX_SAFE_INTEGER)
+			return Math.Log(NewNumber(value)) / Math.log(baseValue);
+
+		var str = value.ToString()!;
+		var digitCount = str.Length;
+		var significantDigits = str.Substring(0, 15);
+		var mantissa = ParseFloat(significantDigits) / Math.Pow(10, significantDigits.Length - 1);
+		var exponent = digitCount - 1;
+		var lnValue = Math.Log(mantissa) + exponent * Math.LN10;
+		var lnBase = Math.Log(baseValue);
+
+		return lnValue / lnBase;
+	}
 
 	///<summary>Returns the base 10 logarithm of a specified number.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.Log10(System.Numerics.BigInteger)")]
-	public extern static Number _f276cbd7c3b305ea(BigInt value);
+	[Jazor(Op.Import ,"static System.Numerics.BigInteger.Log10(System.Numerics.BigInteger)")]
+	public static Number _f276cbd7c3b305ea(BigInt value)
+	{
+		if (value <= BigInt.Zero)
+			throw new RangeError("Logarithm is undefined for non-positive numbers");
+
+		if (value == BigInt.One)
+			return 0;
+
+		var str = value.ToString()!;
+		return (str.Length <= 15)
+			? Math.Log10(NewNumber(value))
+			: Math.Log10(NewNumber(str.Substring(0, 15))) + (str.Length - 15);
+	}	
 
 	///<summary>Finds the greatest common divisor of two <see cref="T:System.Numerics.BigInteger" /> values.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.GreatestCommonDivisor(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
-	public extern static BigInt _7555649a5efc7b79(BigInt left, BigInt right);
+	[Jazor(Op.Import ,"static System.Numerics.BigInteger.GreatestCommonDivisor(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
+	public static BigInt _7555649a5efc7b79(BigInt left, BigInt right)
+	{
+		var a = left < BigInt.Zero ? -left : left;
+		var b = right < BigInt.Zero ? -right : right;
+
+		if (a == BigInt.Zero)
+			return b;
+
+		if (b == BigInt.Zero)
+			return a;
+
+		while (b != BigInt.Zero)
+		{
+			var temp = b;
+			b = a % b;
+			a = temp;
+		}
+
+		return a;
+	}	
 
 	///<summary>Returns the larger of two <see cref="T:System.Numerics.BigInteger" /> values.</summary>
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.Max(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
@@ -161,12 +357,50 @@ public static class BigIntegerModule
 	public extern static BigInt _b3b093dd81ed2d15(BigInt left, BigInt right);
 
 	///<summary>Performs modulus division on a number raised to the power of another number.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.ModPow(System.Numerics.BigInteger, System.Numerics.BigInteger, System.Numerics.BigInteger)")]
-	public extern static BigInt _ec6961a106ca5bf3(BigInt value, BigInt exponent, BigInt modulus);
+	[Jazor(Op.Import ,"static System.Numerics.BigInteger.ModPow(System.Numerics.BigInteger, System.Numerics.BigInteger, System.Numerics.BigInteger)")]
+	public static BigInt _ec6961a106ca5bf3(BigInt value, BigInt exponent, BigInt modulus)
+	{
+		if (modulus == BigInt.One)
+			return BigInt.Zero;
+
+		var result = BigInt.One;
+		var val = value % modulus;
+		var exp = exponent;
+
+		while (exp > BigInt.Zero)
+		{
+			if (exp % BigInt.Two == BigInt.One)
+				result = (result * val) % modulus;
+
+			exp >>= BigInt.One;
+			val = (val * val) % modulus;
+		}
+
+		return result;
+	}	
 
 	///<summary>Raises a <see cref="T:System.Numerics.BigInteger" /> value to the power of a specified value.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.Pow(System.Numerics.BigInteger, int)")]
-	public extern static BigInt _31cf4d89164dee40(BigInt value, Number exponent);
+	[Jazor(Op.Import ,"static System.Numerics.BigInteger.Pow(System.Numerics.BigInteger, int)")]
+	public static BigInt _31cf4d89164dee40(BigInt value, Number exponent)
+	{
+		if (exponent < 0 || !Number.IsInteger(exponent))
+			throw new RangeError("The exponent must be a non-negative integer");
+
+		var result = BigInt.One;
+		var current = value;
+		Number exp = exponent;
+
+		while (exp > 0)
+		{
+			if (exp % 2 == 1)
+				result *= current;
+
+			current *= current;
+			exp = Math.floor(exp / 2);
+		}
+
+		return result;
+	}	
 
 	///<summary>Returns the hash code for the current <see cref="T:System.Numerics.BigInteger" /> object.</summary>
 	[Jazor(Op.Discard ,"override System.Numerics.BigInteger.GetHashCode()")]
@@ -205,28 +439,259 @@ public static class BigIntegerModule
 	public extern static Number _9f7b3705890bed98(BigInt instance, object? obj);
 
 	///<summary>Converts a <see cref="T:System.Numerics.BigInteger" /> value to a byte array.</summary>
-	[Jazor(Op.Discard ,"System.Numerics.BigInteger.ToByteArray()")]
-	public extern static byte[] _ca46777d5c8cc9b9(BigInt instance);
+	[Jazor(Op.Import ,"System.Numerics.BigInteger.ToByteArray()")]
+	public static byte[] _ca46777d5c8cc9b9(BigInt instance)
+	{
+		if (instance == BigInt.Zero)
+			return [0];
+
+		var isNegative = instance < BigInt.Zero;
+		var value = isNegative ? -instance : instance;
+		var bytes = new Array<byte>();
+
+		while (value > BigInt.Zero)
+		{
+			bytes.Unshift(NewNumber(value & NewBigInt(0xFF)));
+			value >>= NewBigInt(8);
+		}
+
+		// 处理负数的补码表示
+		if (isNegative)
+		{
+			// 按位取反
+			for (var i = 0u; i < bytes.Length; i++)
+				bytes[i] = (byte)((~bytes[i]) & 0xFF);
+
+			// 加1（补码）
+			var carry = 1u;
+			for (var i = (uint)bytes.Length - 1; i >= 0 && carry > 0; i--)
+			{
+				var sum = bytes[i] + carry;
+				bytes[i] = (byte)(sum & 0xFF);
+				carry = sum >> 8;
+			}
+
+			// 确保符号位为1（最高位为1）
+			if ((bytes[0] & 0x80) == 0)
+				bytes.Unshift(0xFF);
+		}
+
+		return bytes;
+	}	
 
 	///<summary>Returns the value of this <see cref="T:System.Numerics.BigInteger" /> as a byte array using the fewest number of bytes possible. If the value is zero, returns an array of one byte whose element is 0x00.</summary>
-	[Jazor(Op.Discard ,"System.Numerics.BigInteger.ToByteArray(bool, bool)")]
-	public extern static byte[] _11ed9d474ccf2419(BigInt instance, bool isUnsigned, bool isBigEndian);
+	[Jazor(Op.Import ,"System.Numerics.BigInteger.ToByteArray(bool, bool)")]
+	public static byte[] _11ed9d474ccf2419(BigInt instance, bool isUnsigned, bool isBigEndian)
+	{
+		if (instance == BigInt.Zero)
+			return [0];
+
+		var isNegative = !isUnsigned && instance < BigInt.Zero;
+		var value = isNegative ? -instance - BigInt.One : instance;
+		var bytes = new Array<byte>();
+		var bitLength = 0;
+		var temp = value;
+
+		while (temp > BigInt.Zero)
+		{
+			bitLength++;
+			temp >>= BigInt.One;
+		}
+
+		var minLength = isNegative ? Math.ceil((bitLength + 1) / 8) : Math.ceil(bitLength / 8);
+		var byteLength = Math.max(minLength, 1);
+
+		for (var i = 0; i < byteLength; i++)
+		{
+			var b = NewNumber(value & NewBigInt(0xFF));
+			if (isBigEndian)
+				bytes.Unshift(b);
+			else
+				bytes.Push(b);
+
+			value >>= NewBigInt(8);
+		}
+
+		if (isNegative)
+		{
+			for (var i = 0u; i < bytes.Length; i++)
+				bytes[i] = (byte)((~bytes[i]) & 0xFF);
+
+			if (isBigEndian && (bytes[0] & 0x80) == 0)
+				bytes.Unshift(0xFF);
+
+			else if (!isBigEndian && (bytes[bytes.Length - 1] & 0x80) == 0)
+				bytes.Push(0xFF);
+		}
+
+		return bytes;
+	}
 
 	///<summary>Copies the value of this <see cref="T:System.Numerics.BigInteger" /> as little-endian twos-complement bytes, using the fewest number of bytes possible. If the value is zero, outputs one byte whose element is 0x00.</summary>
-	[Jazor(Op.Discard ,"System.Numerics.BigInteger.TryWriteBytes(System.Span<byte>, out int, bool, bool)")]
-	public extern static Array<object?> _76ae4e496fc976fd(BigInt instance, Uint8Array destination, Number bytesWritten, bool isUnsigned, bool isBigEndian);
+	[Jazor(Op.Import, "System.Numerics.BigInteger.TryWriteBytes(System.Span<byte>, out int, bool, bool)")]
+	public static Array<object?> _76ae4e496fc976fd(BigInt instance, Uint8Array destination, Number bytesWritten, bool isUnsigned, bool isBigEndian)
+	{
+		// 1. 计算所需字节数
+		var requiredBytes = 1; // 至少需要1字节
+		if (instance != BigInt.Zero)
+		{
+			var isNegative = !isUnsigned && instance < BigInt.Zero;
+			var value = isNegative ? (isUnsigned ? instance : -instance - BigInt.One) : instance;
+			var bitLength = 0u;
+
+			// 计算位长度
+			while (value > BigInt.Zero)
+			{
+				bitLength++;
+				value >>= BigInt.One;
+			}
+
+			// 计算所需字节数
+			requiredBytes = isUnsigned
+				? Math.max(1, Math.ceil(bitLength / 8))
+				: Math.max(1, Math.ceil((bitLength + 1) / 8));
+		}
+
+		// 2. 检查缓冲区大小
+		if (destination.Length < requiredBytes)
+			return [false, 0];
+
+		// 3. 转换为字节数组
+		var bytes = new Array<byte>();
+		if (instance == BigInt.Zero)
+			bytes.Push(0);
+		else
+		{
+			var isNegative = !isUnsigned && instance < BigInt.Zero;
+			var value = isNegative ? -instance - BigInt.One : instance;
+
+			// 按实际需要生成字节数
+			var byteCount = requiredBytes;
+			while (byteCount-- > 0)
+			{
+				var b = NewNumber(value & NewBigInt(0xFF));
+				if (isBigEndian)
+					bytes.Unshift(b);
+				else
+					bytes.Push(b);
+
+				value >>= NewBigInt(8);
+			}
+
+			// 处理负数的补码
+			if (isNegative)
+			{
+				for (var i = 0u; i < bytes.Length; i++)
+					bytes[i] = (byte)((~bytes[i]) & 0xFF);
+
+				// 确保符号位正确
+				if (isBigEndian && (bytes[0] & 0x80) == 0)
+				{
+					bytes.Unshift(0xFF);
+					requiredBytes++;
+				}
+				else if (!isBigEndian && (bytes[bytes.Length - 1] & 0x80) == 0)
+				{
+					bytes.Push(0xFF);
+					requiredBytes++;
+				}
+			}
+		}
+
+		// 4. 检查结果字节数是否超出缓冲区
+		if (bytes.Length > destination.Length)
+			return [false, 0];
+
+		// 5. 写入目标缓冲区
+		for (var i = 0u; i < bytes.Length; i++)
+			destination[i] = bytes[i];
+
+		// 6. 填充剩余字节（如果需要）
+		var fillByte = !isUnsigned && instance < BigInt.Zero ? 0xFF : 0;
+		for (var i = bytes.Length; i < destination.Length; i++)
+			destination[i] = (byte)fillByte;
+
+		return [true, bytes.Length];
+	}
 
 	///<summary>Gets the number of bytes that will be output by <see cref="M:System.Numerics.BigInteger.ToByteArray(System.Boolean,System.Boolean)" /> and <see cref="M:System.Numerics.BigInteger.TryWriteBytes(System.Span{System.Byte},System.Int32@,System.Boolean,System.Boolean)" />.</summary>
-	[Jazor(Op.Discard ,"System.Numerics.BigInteger.GetByteCount(bool)")]
-	public extern static Number _c1393b267008395c(BigInt instance, bool isUnsigned);
+	[Jazor(Op.Import ,"System.Numerics.BigInteger.GetByteCount(bool)")]
+	public static Number _c1393b267008395c(BigInt instance, bool isUnsigned)
+	{
+		if (instance == BigInt.Zero)
+			return 1;
+
+		var isNegative = !isUnsigned && instance < BigInt.Zero;
+		var value = isNegative ? -instance : instance;
+		var bitLength = 0;
+
+		while (value > BigInt.Zero)
+		{
+			bitLength++;
+			value >>= BigInt.One;
+		}
+
+		if (isUnsigned)
+			return Math.max(1, Math.ceil(bitLength / 8));
+		else
+			return isNegative
+				? Math.max(1, Math.ceil((bitLength + 1) / 8))  // 负数需要符号位
+				: Math.max(1, Math.ceil(bitLength / 8));        // 正数不需要符号位
+	}	
 
 	///<summary>Converts the numeric value of the current <see cref="T:System.Numerics.BigInteger" /> object to its equivalent string representation.</summary>
 	[Jazor(Op.Discard ,"override System.Numerics.BigInteger.ToString()")]
 	public extern static string _a7388cc0c5bc22ad(BigInt instance);
 
 	///<summary>Converts the numeric value of the current <see cref="T:System.Numerics.BigInteger" /> object to its equivalent string representation by using the specified culture-specific formatting information.</summary>
-	[Jazor(Op.Discard ,"System.Numerics.BigInteger.ToString(System.IFormatProvider)")]
-	public extern static string _fe4c3211e57446e7(BigInt instance, Intl.NumberFormat? provider);
+	[Jazor(Op.Import ,"System.Numerics.BigInteger.ToString(System.IFormatProvider)")]
+	public static string? _fe4c3211e57446e7(BigInt instance, Intl.NumberFormat? provider)
+	{
+		if (provider is null)
+			return instance.ToString();
+
+		var isNegative = instance < BigInt.Zero;
+		var absValue = isNegative ? -instance : instance;
+		var strValue = absValue.ToString()!;
+
+		try
+		{
+			// 对于可以直接使用Intl.NumberFormat的范围（在安全整数范围内）
+			if (absValue <= NewBigInt(Number.MAX_SAFE_INTEGER))
+			{
+				var formatted = provider.Format(NewNumber(absValue));
+				return isNegative ? $"-{formatted}" : formatted;
+			}
+
+			// 对于长数字手动实现本地化分组格式
+			var sample = provider.Format(1000.1);
+			var groupChar = sample.Includes("1,000") ? "," :
+							 sample.Includes("1.000") ? "." :
+							 sample.Includes("1 000") ? " " : ",";
+
+			// 从右到左添加分组分隔符
+			var result = "";
+			var i = strValue.Length;
+			var groupCount = 0;
+
+			while (i > 0)
+			{
+				if (groupCount > 0 && groupCount % 3 == 0)
+				{
+					result = groupChar + result;
+				}
+				result = strValue[--i] + result;
+				groupCount++;
+			}
+
+			return isNegative ? $"-{result}" : result;
+
+		}
+		catch
+		{
+			return instance.ToString();
+		}
+	}	
 
 	///<summary>Converts the numeric value of the current <see cref="T:System.Numerics.BigInteger" /> object to its equivalent string representation by using the specified format.</summary>
 	[Jazor(Op.Discard ,"System.Numerics.BigInteger.ToString(string)")]
@@ -561,52 +1026,277 @@ public static class BigIntegerModule
 	public extern static bool _ac5266c1db09af16(BigInt left, BigInt right);
 
 	///<summary>Gets the number of bits required for shortest two's complement representation of the current instance without the sign bit.</summary>
-	[Jazor(Op.Discard ,"System.Numerics.BigInteger.GetBitLength()")]
-	public extern static BigInt _41fe76dfb4ee2ab2(BigInt instance);
+	[Jazor(Op.Import, "System.Numerics.BigInteger.GetBitLength()")]
+	public static BigInt _41fe76dfb4ee2ab2(BigInt instance)
+	{
+		if (instance == BigInt.Zero)
+			return BigInt.Zero;
+
+		var isNegative = instance < BigInt.Zero;
+		var value = isNegative ? -instance - BigInt.One : instance;
+		var bitLength = BigInt.Zero;
+
+		while (value > BigInt.Zero)
+		{
+			bitLength += BigInt.One;
+			value >>= BigInt.One;
+		}
+
+		return bitLength;
+	}
 
 	///<summary>Computes the quotient and remainder of two values.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.DivRem(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
-	public extern static (System.Numerics.BigInteger, System.Numerics.BigInteger) _22a21ffe19479f32(BigInt left, BigInt right);
+	[Jazor(Op.Import, "static System.Numerics.BigInteger.DivRem(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
+	public static Array<BigInt> _22a21ffe19479f32(BigInt left, BigInt right)
+	{
+		if (right == BigInt.Zero)
+			throw new RangeError("Division by zero");
+
+		var quotient = left / right;
+		var remainder = left % right;
+
+		return [quotient, remainder];
+	}
 
 	///<summary>Computes the number of leading zeros in a value.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.LeadingZeroCount(System.Numerics.BigInteger)")]
-	public extern static BigInt _276680abacb93277(BigInt value);
+	[Jazor(Op.Import ,"static System.Numerics.BigInteger.LeadingZeroCount(System.Numerics.BigInteger)")]
+	public static BigInt _276680abacb93277(BigInt value)
+	{
+		if (value == BigInt.Zero)
+			return BigInt.Zero;
+
+		// BigInt 是任意精度，没有固定的位宽，因此没有前导零的概念
+		// 返回 0 表示值是从第一位开始的
+		return BigInt.Zero;
+	}	
 
 	///<summary>Computes the number of bits that are set in a value.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.PopCount(System.Numerics.BigInteger)")]
-	public extern static BigInt _5e476c376aca56ae(BigInt value);
+	[Jazor(Op.Import ,"static System.Numerics.BigInteger.PopCount(System.Numerics.BigInteger)")]
+	public static BigInt _5e476c376aca56ae(BigInt value)
+	{
+		if (value == BigInt.Zero)
+			return BigInt.Zero;
+
+		var count = BigInt.Zero;
+		var n = value < BigInt.Zero ? -value - BigInt.One : value;
+
+		// Brian Kernighan算法
+		while (n > BigInt.Zero)
+		{
+			n &= n - BigInt.One;
+			count += BigInt.One;
+		}
+
+		return count;
+	}	
 
 	///<summary>Rotates a value left by a given amount.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.RotateLeft(System.Numerics.BigInteger, int)")]
-	public extern static BigInt _ae7b1dd18af32f04(BigInt value, Number rotateAmount);
+	[Jazor(Op.Import ,"static System.Numerics.BigInteger.RotateLeft(System.Numerics.BigInteger, int)")]
+	public static BigInt _ae7b1dd18af32f04(BigInt value, Number rotateAmount)
+	{
+		if (value == BigInt.Zero)
+			return BigInt.Zero;
+
+		var bitLength = value.ToString(2).Length;
+
+		var ra = rotateAmount % bitLength;
+		if (ra < 0)
+			ra += bitLength;
+
+		if (ra == 0)
+			return value;
+
+		var mask = (BigInt.One << NewBigInt(ra)) - BigInt.One;
+		var rotatedOutBits = (value >> NewBigInt(bitLength - ra)) & mask;
+		var result = ((value << NewBigInt(ra)) | rotatedOutBits) & ((BigInt.One << NewBigInt(bitLength)) - BigInt.One);
+
+		return result;
+	}	
 
 	///<summary>Rotates a value right by a given amount.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.RotateRight(System.Numerics.BigInteger, int)")]
-	public extern static BigInt _dc8cc860511e78b3(BigInt value, Number rotateAmount);
+	[Jazor(Op.Import ,"static System.Numerics.BigInteger.RotateRight(System.Numerics.BigInteger, int)")]
+	public static BigInt _dc8cc860511e78b3(BigInt value, Number rotateAmount)
+	{
+		if (rotateAmount == 0)
+			return value;
+
+		// Handle zero value
+		if (value == BigInt.Zero)
+			return BigInt.Zero;
+
+
+		// Calculate the number of bits
+		var temp = value;
+		var bitLength = 0;
+		while (temp > BigInt.Zero)
+		{
+			bitLength++;
+			temp >>= BigInt.One;
+		}
+
+		// Handle negative rotateAmount (convert to left rotation)
+		if (rotateAmount < 0)
+		{
+			var absAmount = -rotateAmount;
+			absAmount %= bitLength;
+			if (absAmount == 0)
+				return value;
+
+			return (value << NewBigInt(absAmount)) | (value >> NewBigInt(bitLength - absAmount));
+		}
+
+		// Normalize rotateAmount to be within [0, bitLength)
+		var ra = rotateAmount % bitLength;
+		if (ra == 0)
+			return value;
+
+		// Perform right rotation
+		var rightPart = value >> NewBigInt(ra);
+		var leftPart = value & ((BigInt.One << NewBigInt(ra)) - BigInt.One);
+		var rotated = (leftPart << NewBigInt(bitLength - ra)) | rightPart;
+
+		return rotated;
+	}	
 
 	///<summary>Computes the number of trailing zeros in a value.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.TrailingZeroCount(System.Numerics.BigInteger)")]
-	public extern static BigInt _696502aae4b6e182(BigInt value);
+	[Jazor(Op.Import ,"static System.Numerics.BigInteger.TrailingZeroCount(System.Numerics.BigInteger)")]
+	public static BigInt _696502aae4b6e182(BigInt value)
+	{
+		// Handle zero value
+		if (value == BigInt.Zero)
+			return BigInt.Zero;
+
+		var count = BigInt.Zero;
+		var temp = value;
+
+		// Count trailing zeros by repeatedly shifting right until the least significant bit is 1
+		while ((temp & BigInt.One) == BigInt.Zero)
+		{
+			count++;
+			temp >>= BigInt.One;
+		}
+
+		return count;
+	}	
 
 	///<summary>Determines if a value is a power of two.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.IsPow2(System.Numerics.BigInteger)")]
-	public extern static bool _c0651d019a4b12b1(BigInt value);
+	[Jazor(Op.Import ,"static System.Numerics.BigInteger.IsPow2(System.Numerics.BigInteger)")]
+	public static bool _c0651d019a4b12b1(BigInt value)
+	{
+		// Negative numbers and zero are not powers of two
+		if (value <= BigInt.Zero)
+			return false;
+
+		// A number is a power of two if it has exactly one bit set
+		// Check using: (value & (value - 1n)) === 0n
+		var minusOne = value - BigInt.One;
+		var result = (value & minusOne) == BigInt.Zero;
+
+		return result;
+	}	
 
 	///<summary>Computes the log2 of a value.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.Log2(System.Numerics.BigInteger)")]
-	public extern static BigInt _c29a05a989ec3b33(BigInt value);
+	[Jazor(Op.Import ,"static System.Numerics.BigInteger.Log2(System.Numerics.BigInteger)")]
+	public static BigInt _c29a05a989ec3b33(BigInt value)
+	{
+		// Logarithm is undefined for non-positive numbers
+		if (value <= BigInt.Zero)
+			throw new RangeError("value must be positive");
+
+		var result = BigInt.Zero;
+		var temp = value;
+
+		// Count how many times we can divide by 2 until we reach 1
+		while (temp > BigInt.One)
+		{
+			result++;
+			temp >>= BigInt.One;
+		}
+
+		return result;
+	}	
 
 	///<summary>Clamps a value to an inclusive minimum and maximum value.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.Clamp(System.Numerics.BigInteger, System.Numerics.BigInteger, System.Numerics.BigInteger)")]
-	public extern static BigInt _8548cc83c4d947f5(BigInt value, BigInt min, BigInt max);
+	[Jazor(Op.Import ,"static System.Numerics.BigInteger.Clamp(System.Numerics.BigInteger, System.Numerics.BigInteger, System.Numerics.BigInteger)")]
+	public static BigInt _8548cc83c4d947f5(BigInt value, BigInt min, BigInt max)
+	{
+		// Validate that min <= max
+		if (min > max)
+			throw new RangeError("min must be less than or equal to max");
+
+		var result = value;
+
+		// Clamp to minimum
+		if (result < min)
+			result = min;
+
+		// Clamp to maximum
+		if (result > max)
+			result = max;
+
+		return result;
+	}	
 
 	///<summary>Copies the sign of a value to the sign of another value.</summary>
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.CopySign(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
 	public extern static BigInt _aa45b92454e3abaa(BigInt value, BigInt sign);
 
 	///<summary>Creates an instance of the current type from a value, throwing an overflow exception for any values that fall outside the representable range of the current type.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.CreateChecked<TOther>(TOther)")]
-	public extern static BigInt _8cbca5624f4a6cc0<TOther>(object value);
+	[Jazor(Op.Import ,"static System.Numerics.BigInteger.CreateChecked<TOther>(TOther)")]
+	public static BigInt _8cbca5624f4a6cc0<TOther>(object value)
+	{
+		// Handle BigInt input directly
+		if (value is BigInt b)
+			return b;
+
+		// Handle number input
+		if (value is Number n)
+		{
+			// Check for non-integer numbers
+			if (!Number.IsInteger(n))
+				throw new RangeError("Value must be an integer");
+
+			// Check for safe integer range
+			if (n < Number.MIN_SAFE_INTEGER || n > Number.MAX_SAFE_INTEGER)
+				throw new RangeError("Value is outside safe integer range");
+
+			// Convert to BigInt
+			return NewBigInt(n);
+		}
+
+		// Handle string input
+		if (value is string s)
+		{
+			// Trim whitespace
+			var trimmed = s.Trim();
+
+			// Validate integer format (optional sign + digits)
+			if (!RegExp(@"^-?\d+$").Test(trimmed))
+				throw new RangeError("String must represent a valid integer");
+
+			// Convert to BigInt
+			try
+			{
+				return NewBigInt(trimmed);
+			}
+			catch
+			{
+				throw new RangeError("Invalid integer string");
+			}
+		}
+
+		// Handle boolean input
+		if (value is bool bl)
+			return bl ? BigInt.One : BigInt.Zero;
+
+
+		// Handle null/undefined
+		if (value is null)
+			throw new RangeError("Value cannot be null or undefined");
+
+		// Handle other types (objects, symbols, etc.)
+		throw new RangeError("Unsupported type for conversion to BigInt");
+	}	
 
 	///<summary>Creates an instance of the current type from a value, saturating any values that fall outside the representable range of the current type.</summary>
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.CreateSaturating<TOther>(TOther)")]
@@ -645,8 +1335,21 @@ public static class BigIntegerModule
 	public extern static Array<object?> _10999a356af78aba(string? s, Intl.NumberFormat? provider, BigInt? result);
 
 	///<summary>Shifts a value right by a given amount.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.operator >>>(System.Numerics.BigInteger, int)")]
-	public extern static BigInt _49adf7adfc1228f8(BigInt value, Number shiftAmount);
+	[Jazor(Op.Import ,"static System.Numerics.BigInteger.operator >>>(System.Numerics.BigInteger, int)")]
+	public static BigInt _49adf7adfc1228f8(BigInt value, Number shiftAmount)
+	{
+		if (shiftAmount < 0)
+			throw new RangeError("Shift amount must be non-negative");
+
+		var shift = NewBigInt(shiftAmount);
+
+		if (value >= BigInt.Zero)
+			return value >> shift;
+
+		// BigInt 没有原生的 >>> 运算符（JavaScript 的 >>> 仅适用于 Number）
+		// 对于负数，抛出异常说明不支持
+		throw new Error("Unsigned right shift (>>>) is not supported for BigInt in JavaScript");
+	}	
 
 	///<summary>Parses a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.Parse(System.ReadOnlySpan<char>, System.IFormatProvider)")]

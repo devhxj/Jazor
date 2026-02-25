@@ -19,15 +19,20 @@ public static partial class Global
 	[Jazor]
 	public extern static RegExp RegExp(string value);
 
-	public extern static Number Number(Number value);
+	[Description("@#Number")]
+	public extern static Number NewNumber(Number value);
 
-	public extern static Number Number(BigInt value);
+	[Description("@#Number")]
+	public extern static Number NewNumber(BigInt value);
 
-	public extern static Number Number(string value);
+	[Description("@#Number")]
+	public extern static Number NewNumber(string value);
 
-	public extern static BigInt BigInt(Number value);
+	[Description("@#BigInt")]
+	public extern static BigInt NewBigInt(Number value);
 
-	public extern static BigInt BigInt(string value);
+	[Description("@#BigInt")]
+	public extern static BigInt NewBigInt(string value);
 
 	[Description("@#document")]
 	public extern static Document Document { get; }

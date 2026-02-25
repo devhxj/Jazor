@@ -8,10 +8,10 @@ public static class TimeOnlyModule
 	public extern static Number _9f78f92d0753f4cf();
 
 	[Jazor(Op.Discard ,"static System.TimeOnly.MinValue.get")]
-	public extern static Number _5a02197e2ef2252f(Number instance);
+	public extern static Number _5a02197e2ef2252f();
 
 	[Jazor(Op.Discard ,"static System.TimeOnly.MaxValue.get")]
-	public extern static Number _b1d0e19d91dbb54a(Number instance);
+	public extern static Number _b1d0e19d91dbb54a();
 
 	///<summary>Initializes a new instance of the <see cref="T:System.TimeOnly" /> structure to the specified hour and the minute.</summary>
 	[Jazor(Op.Discard ,"System.TimeOnly.TimeOnly(int, int)")]

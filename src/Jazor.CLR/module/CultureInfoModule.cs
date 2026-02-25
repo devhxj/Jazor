@@ -25,34 +25,34 @@ public static class CultureInfoModule
 	public extern static String _a078d5ccbbf2345a(string name);
 
 	[Jazor(Op.Discard ,"static System.Globalization.CultureInfo.CurrentCulture.get")]
-	public extern static String _1a26e2e2e4e0ca1d(string instance);
+	public extern static String _1a26e2e2e4e0ca1d();
 
 	[Jazor(Op.Discard ,"static System.Globalization.CultureInfo.CurrentCulture.set")]
-	public extern static void _82cfca57d721204e(string instance, String value);
+	public extern static void _82cfca57d721204e(String value);
 
 	[Jazor(Op.Discard ,"static System.Globalization.CultureInfo.CurrentUICulture.get")]
-	public extern static String _eca32c250ead7de9(string instance);
+	public extern static String _eca32c250ead7de9();
 
 	[Jazor(Op.Discard ,"static System.Globalization.CultureInfo.CurrentUICulture.set")]
-	public extern static void _7e355a1a63351619(string instance, String value);
+	public extern static void _7e355a1a63351619(String value);
 
 	[Jazor(Op.Discard ,"static System.Globalization.CultureInfo.InstalledUICulture.get")]
-	public extern static String _98e743867688a06d(string instance);
+	public extern static String _98e743867688a06d();
 
 	[Jazor(Op.Discard ,"static System.Globalization.CultureInfo.DefaultThreadCurrentCulture.get")]
-	public extern static String? _3c1fdac9ccc43427(string instance);
+	public extern static String? _3c1fdac9ccc43427();
 
 	[Jazor(Op.Discard ,"static System.Globalization.CultureInfo.DefaultThreadCurrentCulture.set")]
-	public extern static void _96d14148886217cb(string instance, String? value);
+	public extern static void _96d14148886217cb(String? value);
 
 	[Jazor(Op.Discard ,"static System.Globalization.CultureInfo.DefaultThreadCurrentUICulture.get")]
-	public extern static String? _abdb5d2bfd934cfc(string instance);
+	public extern static String? _abdb5d2bfd934cfc();
 
 	[Jazor(Op.Discard ,"static System.Globalization.CultureInfo.DefaultThreadCurrentUICulture.set")]
-	public extern static void _12da8bfb928d7414(string instance, String? value);
+	public extern static void _12da8bfb928d7414(String? value);
 
 	[Jazor(Op.Discard ,"static System.Globalization.CultureInfo.InvariantCulture.get")]
-	public extern static String _e4c4d53d69e72382(string instance);
+	public extern static String _e4c4d53d69e72382();
 
 	[Jazor(Op.Discard ,"virtual System.Globalization.CultureInfo.Parent.get")]
 	public extern static String _cd29576576563da3(string instance);

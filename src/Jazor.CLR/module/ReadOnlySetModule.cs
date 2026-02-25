@@ -9,7 +9,7 @@ public static class ReadOnlySetModule<T>
 	public extern static Set<T> _aede400efbd05842(Set<T> set);
 
 	[Jazor(Op.Discard ,"static System.Collections.ObjectModel.ReadOnlySet<T>.Empty.get")]
-	public extern static System.Collections.ObjectModel.ReadOnlySet<T> _843cd8664672a9f8(Set<T> instance);
+	public extern static System.Collections.ObjectModel.ReadOnlySet<T> _843cd8664672a9f8();
 
 	[Jazor(Op.Discard ,"System.Collections.ObjectModel.ReadOnlySet<T>.Count.get")]
 	public extern static Number _ede23209845683c4(Set<T> instance);

@@ -56,7 +56,7 @@ public static class DateTimeOffsetModule
 	public extern static Date _d027561c1f6af451(Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond, Number microsecond, GregorianCalendar calendar, BigInt offset);
 
 	[Jazor(Op.Discard ,"static System.DateTimeOffset.UtcNow.get")]
-	public extern static Date _7f444d9ce7391e15(Date instance);
+	public extern static Date _7f444d9ce7391e15();
 
 	[Jazor(Op.Discard ,"System.DateTimeOffset.DateTime.get")]
 	public extern static Date _2b7dd675863ae961(Date instance);
@@ -379,5 +379,5 @@ public static class DateTimeOffsetModule
 	public extern static Array<object?> _c9e042e683205a8b(Uint32Array s, Intl.NumberFormat? provider, Date result);
 
 	[Jazor(Op.Discard ,"static System.DateTimeOffset.Now.get")]
-	public extern static Date _e679a7abf50cf648(Date instance);
+	public extern static Date _e679a7abf50cf648();
 }

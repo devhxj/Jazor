@@ -3,3 +3,4 @@ global using System.Collections.Generic;
 global using System.Globalization;
 global using Jazor.Common;
 global using ECMAScript;
+global using static ECMAScript.Global;

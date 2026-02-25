@@ -8,10 +8,10 @@ public static class DateOnlyModule
 	public extern static Date _5f8053a9657a0844();
 
 	[Jazor(Op.Discard ,"static System.DateOnly.MinValue.get")]
-	public extern static Date _4ab7a6677b34a52b(Date instance);
+	public extern static Date _4ab7a6677b34a52b();
 
 	[Jazor(Op.Discard ,"static System.DateOnly.MaxValue.get")]
-	public extern static Date _d3542025e0317ea5(Date instance);
+	public extern static Date _d3542025e0317ea5();
 
 	///<summary>Creates a new instance of the <see cref="T:System.DateOnly" /> structure to the specified year, month, and day.</summary>
 	[Jazor(Op.Discard ,"System.DateOnly.DateOnly(int, int, int)")]

@@ -9,7 +9,7 @@ public static class ReadOnlyDictionaryModule<TKey, TValue>
 	public extern static Map<TKey,TValue> _b22e987e1be225aa(object dictionary);
 
 	[Jazor(Op.Discard ,"static System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.Empty.get")]
-	public extern static System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue> _43b396f1b8e0a68f(Map<TKey,TValue> instance);
+	public extern static System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue> _43b396f1b8e0a68f();
 
 	[Jazor(Op.Discard ,"System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.Keys.get")]
 	public extern static System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.KeyCollection _4044dececdd2d744(Map<TKey,TValue> instance);

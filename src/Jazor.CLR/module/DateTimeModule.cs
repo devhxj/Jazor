@@ -221,7 +221,7 @@ public static class DateTimeModule
 	public extern static Number _a8a6b6e36a0ea736(Date instance);
 
 	[Jazor(Op.Discard ,"static System.DateTime.Now.get")]
-	public extern static Date _ee9dd166a34a2fa5(Date instance);
+	public extern static Date _ee9dd166a34a2fa5();
 
 	[Jazor(Op.Discard ,"System.DateTime.Second.get")]
 	public extern static Number _10a94eacb3b7fd2d(Date instance);
@@ -233,7 +233,7 @@ public static class DateTimeModule
 	public extern static BigInt _2efdc237be2f31aa(Date instance);
 
 	[Jazor(Op.Discard ,"static System.DateTime.Today.get")]
-	public extern static Date _4b250155b7c688bb(Date instance);
+	public extern static Date _4b250155b7c688bb();
 
 	[Jazor(Op.Discard ,"System.DateTime.Year.get")]
 	public extern static Number _9d56b09432f81c05(Date instance);
@@ -455,5 +455,5 @@ public static class DateTimeModule
 	public extern static Array<object?> _63fd53f09ba16132(Uint32Array s, Intl.NumberFormat? provider, Date result);
 
 	[Jazor(Op.Discard ,"static System.DateTime.UtcNow.get")]
-	public extern static Date _d4c39bdf47f391cf(Date instance);
+	public extern static Date _d4c39bdf47f391cf();
 }

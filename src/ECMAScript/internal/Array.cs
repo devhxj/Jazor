@@ -136,6 +136,8 @@ public partial class Array<T>: object, IArray<T>
 
 	public extern static implicit operator Array<T>(ReadOnlySet<T> array);
 
+	public extern static implicit operator Array<T>(Array array);
+
 	public extern T this[uint index] { get; set; }
 
 	/// <summary>
@@ -308,6 +310,9 @@ public partial class Array<T>: object, IArray<T>
 	/// <returns></returns>
 	[Description("@#some")]
 	public extern bool Some(Predicate<T, object?> predicate, object? thisArg = null);
+
+	[Description("@#some")]
+	public extern bool Some(Predicate<T> predicate, object? thisArg = null);
 
 	/// <summary>
 	/// Performs the specified action for each element in an array.
