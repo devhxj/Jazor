@@ -9,17 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
-    <!-- 源生成器依赖：需要引用 Jazor.Name 以确保分析器运行时可用 -->
+    <Compile Remove="doc\**" />
+    <EmbeddedResource Remove="doc\**" />
   </ItemGroup>
 
-  <!-- 配置编译后生成代码文件 -->
-  <!--
-  <UsingTask TaskName="ExtractorTask" AssemblyFile="$(SolutionDir)\src\Jazor.Compiler.Extractor\bin\$(Configuration)\netstandard2.0\Jazor.Compiler.Extractor.dll" />
-
-  <Target Name="RunJazorCompilerExtractor" AfterTargets="Build" Condition="'$(TargetPath)' != ''">
-    <Message Text="[JazorCompilerExtractor] Starting extraction..." Importance="High" />
-    <ExtractorTask AssemblyPath="$(TargetPath)" WhiteListPath="$(WhiteListPath)" SpecialCompilePath="$(SpecialCompilePath)" />
-  </Target>
-  -->
+  <ItemGroup>
+    <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
+  </ItemGroup>
 </Project>

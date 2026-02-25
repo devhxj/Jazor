@@ -36,6 +36,17 @@ public partial class SemanticWalker
 	}
 
 	/// <summary>
+	/// static System.Numerics.BigInteger.Compare(System.Numerics.BigInteger, System.Numerics.BigInteger)
+	/// </summary>
+	/// <param name="handler"></param>
+	/// <param name="args"></param>
+	/// <returns></returns>
+	public Expression? Compile_0a6134f61ab96205(Expression? handler, Expression?[] args)
+	{	
+		return null;
+	}
+
+	/// <summary>
 	/// override bool.Equals(object)
 	/// </summary>
 	/// <param name="handler"></param>

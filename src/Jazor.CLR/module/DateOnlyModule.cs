@@ -81,7 +81,7 @@ public static class DateOnlyModule
 
 	///<summary>Deconstructs <see cref="T:System.DateOnly" /> by <see cref="P:System.DateOnly.Year" />, <see cref="P:System.DateOnly.Month" />, and <see cref="P:System.DateOnly.Day" />.</summary>
 	[Jazor(Op.Discard ,"System.DateOnly.Deconstruct(out int, out int, out int)")]
-	public extern static void _87be25300884e7c8(Date instance, Box<Number> year, Box<Number> month, Box<Number> day);
+	public extern static Array<object?> _87be25300884e7c8(Date instance, out Number year, out Number month, out Number day);
 
 	///<summary>Returns a <see cref="T:System.DateTime" /> that is set to the date of this <see cref="T:System.DateOnly" /> instance and the time of specified input time.</summary>
 	[Jazor(Op.Discard ,"System.DateOnly.ToDateTime(System.TimeOnly)")]
@@ -101,7 +101,7 @@ public static class DateOnlyModule
 
 	///<summary>Compares the value of this instance to a specified object that contains a specified <see cref="T:System.DateOnly" /> value, and returns an integer that indicates whether this instance is earlier than, the same as, or later than the specified <see cref="T:System.DateOnly" /> value.</summary>
 	[Jazor(Op.Discard ,"System.DateOnly.CompareTo(object)")]
-	public extern static Number _519a37b30f165f47(Date instance, Object? value);
+	public extern static Number _519a37b30f165f47(Date instance, object? value);
 
 	///<summary>Returns a value indicating whether the value of this instance is equal to the value of the specified <see cref="T:System.DateOnly" /> instance.</summary>
 	[Jazor(Op.Discard ,"System.DateOnly.Equals(System.DateOnly)")]
@@ -109,7 +109,7 @@ public static class DateOnlyModule
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
 	[Jazor(Op.Discard ,"override System.DateOnly.Equals(object)")]
-	public extern static bool _48e30250a65786cc(Date instance, Object? value);
+	public extern static bool _48e30250a65786cc(Date instance, object? value);
 
 	///<summary>Returns the hash code for this instance.</summary>
 	[Jazor(Op.Discard ,"override System.DateOnly.GetHashCode()")]
@@ -133,75 +133,75 @@ public static class DateOnlyModule
 
 	///<summary>Converts a string that contains string representation of a date to its <see cref="T:System.DateOnly" /> equivalent by using the conventions of the current culture.</summary>
 	[Jazor(Op.Discard ,"static System.DateOnly.Parse(string)")]
-	public extern static Date _e2640560d207afce(object s);
+	public extern static Date _e2640560d207afce(string s);
 
 	///<summary>Converts a string that contains string representation of a date to its <see cref="T:System.DateOnly" /> equivalent by using culture-specific format information and a formatting style.</summary>
 	[Jazor(Op.Discard ,"static System.DateOnly.Parse(string, System.IFormatProvider, System.Globalization.DateTimeStyles)")]
-	public extern static Date _60b758dae2c14037(object s, Intl.NumberFormat? provider, object style);
+	public extern static Date _60b758dae2c14037(string s, Intl.NumberFormat? provider, object style);
 
 	///<summary>Converts the specified string representation of a date to its <see cref="T:System.DateOnly" /> equivalent using the specified format.            The format of the string representation must match the specified format exactly or an exception is thrown.</summary>
 	[Jazor(Op.Discard ,"static System.DateOnly.ParseExact(string, string)")]
-	public extern static Date _350d290351e50952(object s, object format);
+	public extern static Date _350d290351e50952(string s, string format);
 
 	///<summary>Converts the specified string representation of a date to its <see cref="T:System.DateOnly" /> equivalent using the specified format, culture-specific format information, and style.            The format of the string representation must match the specified format exactly or an exception is thrown.</summary>
 	[Jazor(Op.Discard ,"static System.DateOnly.ParseExact(string, string, System.IFormatProvider, System.Globalization.DateTimeStyles)")]
-	public extern static Date _f626c308f69f76e8(object s, object format, Intl.NumberFormat? provider, object style);
+	public extern static Date _f626c308f69f76e8(string s, string format, Intl.NumberFormat? provider, object style);
 
 	///<summary>Converts the specified span representation of a date to its <see cref="T:System.DateOnly" /> equivalent using the specified array of formats.            The format of the string representation must match at least one of the specified formats exactly or an exception is thrown.</summary>
 	[Jazor(Op.Discard ,"static System.DateOnly.ParseExact(string, string[])")]
-	public extern static Date _cf94a659a6885bb2(object s, object formats);
+	public extern static Date _cf94a659a6885bb2(string s, object formats);
 
 	///<summary>Converts the specified string representation of a date to its <see cref="T:System.DateOnly" /> equivalent using the specified array of formats, culture-specific format information, and style.            The format of the string representation must match at least one of the specified formats exactly or an exception is thrown.</summary>
 	[Jazor(Op.Discard ,"static System.DateOnly.ParseExact(string, string[], System.IFormatProvider, System.Globalization.DateTimeStyles)")]
-	public extern static Date _930ff81377f0d857(object s, object formats, Intl.NumberFormat? provider, object style);
+	public extern static Date _930ff81377f0d857(string s, object formats, Intl.NumberFormat? provider, object style);
 
 	///<summary>Converts the specified span representation of a date to its <see cref="T:System.DateOnly" /> equivalent and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.DateOnly.TryParse(System.ReadOnlySpan<char>, out System.DateOnly)")]
-	public extern static bool _589f2bd8e9539a93(Uint32Array s, Box<Date> result);
+	public extern static Array<object?> _589f2bd8e9539a93(Uint32Array s, out Date result);
 
 	///<summary>Converts the specified span representation of a date to its <see cref="T:System.DateOnly" /> equivalent using the specified array of formats, culture-specific format information, and style. And returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.DateOnly.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, System.Globalization.DateTimeStyles, out System.DateOnly)")]
-	public extern static bool _0df2e2de9cba3b73(Uint32Array s, Intl.NumberFormat? provider, object style, Box<Date> result);
+	public extern static Array<object?> _0df2e2de9cba3b73(Uint32Array s, Intl.NumberFormat? provider, object style, out Date result);
 
 	///<summary>Converts the specified span representation of a date to its <see cref="T:System.DateOnly" /> equivalent using the specified format and style.            The format of the string representation must match the specified format exactly. The method returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.DateOnly.TryParseExact(System.ReadOnlySpan<char>, System.ReadOnlySpan<char>, out System.DateOnly)")]
-	public extern static bool _73f1ae967191e31e(Uint32Array s, Uint32Array format, Box<Date> result);
+	public extern static Array<object?> _73f1ae967191e31e(Uint32Array s, Uint32Array format, out Date result);
 
 	///<summary>Converts the specified span representation of a date to its <see cref="T:System.DateOnly" />equivalent using the specified format, culture-specific format information, and style.            The format of the string representation must match the specified format exactly. The method returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.DateOnly.TryParseExact(System.ReadOnlySpan<char>, System.ReadOnlySpan<char>, System.IFormatProvider, System.Globalization.DateTimeStyles, out System.DateOnly)")]
-	public extern static bool _c9bb733ce9acfea6(Uint32Array s, Uint32Array format, Intl.NumberFormat? provider, object style, Box<Date> result);
+	public extern static Array<object?> _c9bb733ce9acfea6(Uint32Array s, Uint32Array format, Intl.NumberFormat? provider, object style, out Date result);
 
 	///<summary>Converts the specified char span of a date to its <see cref="T:System.DateOnly" /> equivalent and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.DateOnly.TryParseExact(System.ReadOnlySpan<char>, string[], out System.DateOnly)")]
-	public extern static bool _8f1847f9d4121feb(Uint32Array s, object formats, Box<Date> result);
+	public extern static Array<object?> _8f1847f9d4121feb(Uint32Array s, object formats, out Date result);
 
 	///<summary>Converts the specified char span of a date to its <see cref="T:System.DateOnly" /> equivalent and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.DateOnly.TryParseExact(System.ReadOnlySpan<char>, string[], System.IFormatProvider, System.Globalization.DateTimeStyles, out System.DateOnly)")]
-	public extern static bool _de5feefce32f12d9(Uint32Array s, object formats, Intl.NumberFormat? provider, object style, Box<Date> result);
+	public extern static Array<object?> _de5feefce32f12d9(Uint32Array s, object formats, Intl.NumberFormat? provider, object style, out Date result);
 
 	///<summary>Converts the specified string representation of a date to its <see cref="T:System.DateOnly" /> equivalent and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.DateOnly.TryParse(string, out System.DateOnly)")]
-	public extern static bool _b14e4d5a572477d0(object s, Box<Date> result);
+	public extern static Array<object?> _b14e4d5a572477d0(string? s, out Date result);
 
 	///<summary>Converts the specified string representation of a date to its <see cref="T:System.DateOnly" /> equivalent using the specified array of formats, culture-specific format information, and style. And returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.DateOnly.TryParse(string, System.IFormatProvider, System.Globalization.DateTimeStyles, out System.DateOnly)")]
-	public extern static bool _025d467c3006d36b(object s, Intl.NumberFormat? provider, object style, Box<Date> result);
+	public extern static Array<object?> _025d467c3006d36b(string? s, Intl.NumberFormat? provider, object style, out Date result);
 
 	///<summary>Converts the specified string representation of a date to its <see cref="T:System.DateOnly" /> equivalent using the specified format and style.            The format of the string representation must match the specified format exactly. The method returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.DateOnly.TryParseExact(string, string, out System.DateOnly)")]
-	public extern static bool _7c0f60b3f5622bbb(object s, object format, Box<Date> result);
+	public extern static Array<object?> _7c0f60b3f5622bbb(string? s, string? format, out Date result);
 
 	///<summary>Converts the specified span representation of a date to its <see cref="T:System.DateOnly" /> equivalent using the specified format, culture-specific format information, and style.            The format of the string representation must match the specified format exactly. The method returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.DateOnly.TryParseExact(string, string, System.IFormatProvider, System.Globalization.DateTimeStyles, out System.DateOnly)")]
-	public extern static bool _19011c99380ebcfa(object s, object format, Intl.NumberFormat? provider, object style, Box<Date> result);
+	public extern static Array<object?> _19011c99380ebcfa(string? s, string? format, Intl.NumberFormat? provider, object style, out Date result);
 
 	///<summary>Converts the specified string of a date to its <see cref="T:System.DateOnly" /> equivalent and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.DateOnly.TryParseExact(string, string[], out System.DateOnly)")]
-	public extern static bool _c86325a1740751c5(object s, object formats, Box<Date> result);
+	public extern static Array<object?> _c86325a1740751c5(string? s, object formats, out Date result);
 
 	///<summary>Converts the specified string of a date to its <see cref="T:System.DateOnly" /> equivalent and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.DateOnly.TryParseExact(string, string[], System.IFormatProvider, System.Globalization.DateTimeStyles, out System.DateOnly)")]
-	public extern static bool _5326a681dc11fed4(object s, object formats, Intl.NumberFormat? provider, object style, Box<Date> result);
+	public extern static Array<object?> _5326a681dc11fed4(string? s, object formats, Intl.NumberFormat? provider, object style, out Date result);
 
 	///<summary>Converts the value of the current <see cref="T:System.DateOnly" /> object to its equivalent long date string representation.</summary>
 	[Jazor(Op.Discard ,"System.DateOnly.ToLongDateString()")]
@@ -217,7 +217,7 @@ public static class DateOnlyModule
 
 	///<summary>Converts the value of the current <see cref="T:System.DateOnly" /> object to its equivalent string representation using the specified format and the formatting conventions of the current culture.</summary>
 	[Jazor(Op.Discard ,"System.DateOnly.ToString(string)")]
-	public extern static string _5dd96e58e55f801c(Date instance, object format);
+	public extern static string _5dd96e58e55f801c(Date instance, string? format);
 
 	///<summary>Converts the value of the current <see cref="T:System.DateOnly" /> object to its equivalent string representation using the specified culture-specific format information.</summary>
 	[Jazor(Op.Discard ,"System.DateOnly.ToString(System.IFormatProvider)")]
@@ -225,23 +225,23 @@ public static class DateOnlyModule
 
 	///<summary>Converts the value of the current <see cref="T:System.DateOnly" /> object to its equivalent string representation using the specified culture-specific format information.</summary>
 	[Jazor(Op.Discard ,"System.DateOnly.ToString(string, System.IFormatProvider)")]
-	public extern static string _6135867fb7290a07(Date instance, object format, Intl.NumberFormat? provider);
+	public extern static string _6135867fb7290a07(Date instance, string? format, Intl.NumberFormat? provider);
 
 	///<summary>Tries to format the value of the current <see cref="T:System.DateOnly" /> instance into the provided span of characters.</summary>
 	[Jazor(Op.Discard ,"System.DateOnly.TryFormat(System.Span<char>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)")]
-	public extern static bool _7bef8f375eb344b2(Date instance, Uint32Array destination, Box<Number> charsWritten, Uint32Array format, Intl.NumberFormat? provider);
+	public extern static Array<object?> _7bef8f375eb344b2(Date instance, Uint32Array destination, out Number charsWritten, Uint32Array format, Intl.NumberFormat? provider);
 
 	///<summary>Tries to format the value of the current instance as UTF-8 into the provided span of bytes.</summary>
 	[Jazor(Op.Discard ,"System.DateOnly.TryFormat(System.Span<byte>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)")]
-	public extern static bool _435ac9e098a3389c(Date instance, Uint8Array utf8Destination, Box<Number> bytesWritten, Uint32Array format, Intl.NumberFormat? provider);
+	public extern static Array<object?> _435ac9e098a3389c(Date instance, Uint8Array utf8Destination, out Number bytesWritten, Uint32Array format, Intl.NumberFormat? provider);
 
 	///<summary>Parses a string into a value.</summary>
 	[Jazor(Op.Discard ,"static System.DateOnly.Parse(string, System.IFormatProvider)")]
-	public extern static Date _90dcc7a43f944613(object s, Intl.NumberFormat? provider);
+	public extern static Date _90dcc7a43f944613(string s, Intl.NumberFormat? provider);
 
 	///<summary>Tries to parse a string into a value.</summary>
 	[Jazor(Op.Discard ,"static System.DateOnly.TryParse(string, System.IFormatProvider, out System.DateOnly)")]
-	public extern static bool _09af445002e82710(object s, Intl.NumberFormat? provider, Box<Date> result);
+	public extern static Array<object?> _09af445002e82710(string? s, Intl.NumberFormat? provider, out Date result);
 
 	///<summary>Parses a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static System.DateOnly.Parse(System.ReadOnlySpan<char>, System.IFormatProvider)")]
@@ -249,5 +249,5 @@ public static class DateOnlyModule
 
 	///<summary>Tries to parse a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static System.DateOnly.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, out System.DateOnly)")]
-	public extern static bool _e876a9d582a79f6a(Uint32Array s, Intl.NumberFormat? provider, Box<Date> result);
+	public extern static Array<object?> _e876a9d582a79f6a(Uint32Array s, Intl.NumberFormat? provider, out Date result);
 }

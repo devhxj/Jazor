@@ -2,7 +2,7 @@ namespace Jazor.CLR;
 
 [ECMAScriptModule]
 [Jazor(Op.Import, "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>","System/Collections/ObjectModel/ReadOnlyDictionaryModule.js")]
-public static class ReadOnlyDictionaryModule<TKey, TValue> where TKey : notnull
+public static class ReadOnlyDictionaryModule<TKey, TValue>
 {
 	///<summary>Initializes a new instance of the <see cref="T:System.Collections.ObjectModel.ReadOnlyDictionary`2" /> class that is a wrapper around the specified dictionary.</summary>
 	[Jazor(Op.Discard ,"System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.ReadOnlyDictionary(System.Collections.Generic.IDictionary<TKey, TValue>)")]
@@ -23,7 +23,7 @@ public static class ReadOnlyDictionaryModule<TKey, TValue> where TKey : notnull
 
 	///<summary>Retrieves the value that is associated with the specified key.</summary>
 	[Jazor(Op.Discard ,"System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.TryGetValue(TKey, out TValue)")]
-	public extern static bool _19af957975f1546f(Map<TKey,TValue> instance, object key, Box<object> value);
+	public extern static Array<object?> _19af957975f1546f(Map<TKey,TValue> instance, object key, out object value);
 
 	[Jazor(Op.Discard ,"System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.this[TKey].get")]
 	public extern static TValue _ed4a7913b74bfd87(Map<TKey,TValue> instance, object key);

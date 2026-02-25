@@ -19,7 +19,7 @@ internal sealed class JazorAttribute : Attribute
 	public string? Value { get; }
 
 	/// <summary>
-	/// 指定需要Jazor编译器进行特殊处理
+	/// 无参构造函数：指定需要Jazor编译器进行特殊处理
 	/// </summary>
 	public JazorAttribute()
 	{
@@ -29,7 +29,7 @@ internal sealed class JazorAttribute : Attribute
 	}
 
 	/// <summary>
-	/// 指定为内联代码调用
+	/// 1个字符串参数构造函数：指定为内联代码调用
 	/// </summary>
 	public JazorAttribute(string value)
 	{
@@ -38,6 +38,9 @@ internal sealed class JazorAttribute : Attribute
 		Value = value;
 	}
 
+	/// <summary>
+	/// 2或3个参数构造函数：详细指定
+	/// </summary>
 	public JazorAttribute(Op op, string member, string? value = null)
 	{
 		Op = op;

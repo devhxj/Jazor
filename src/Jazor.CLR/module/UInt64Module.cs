@@ -17,7 +17,7 @@ public static class UInt64Module
 
 	///<summary>Compares this instance to a specified object and returns an indication of their relative values.</summary>
 	[Jazor(Op.Discard ,"ulong.CompareTo(object)")]
-	public extern static Number _b50ba86b85d8ac33(BigInt instance, Object? value);
+	public extern static Number _b50ba86b85d8ac33(BigInt instance, object? value);
 
 	///<summary>Compares this instance to a specified 64-bit unsigned integer and returns an indication of their relative values.</summary>
 	[Jazor(Op.Discard ,"ulong.CompareTo(ulong)")]
@@ -25,7 +25,7 @@ public static class UInt64Module
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
 	[Jazor(Op.Discard ,"override ulong.Equals(object)")]
-	public extern static bool _a0651bb3484c4e26(BigInt instance, Object? obj);
+	public extern static bool _a0651bb3484c4e26(BigInt instance, object? obj);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified <see cref="T:System.UInt64" /> value.</summary>
 	[Jazor(Op.Discard ,"ulong.Equals(ulong)")]
@@ -45,35 +45,35 @@ public static class UInt64Module
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation using the specified format.</summary>
 	[Jazor(Op.Discard ,"ulong.ToString(string)")]
-	public extern static string _78f33051a5a46010(BigInt instance, object format);
+	public extern static string _78f33051a5a46010(BigInt instance, string? format);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation using the specified format and culture-specific format information.</summary>
 	[Jazor(Op.Discard ,"ulong.ToString(string, System.IFormatProvider)")]
-	public extern static string _495c383939d1c12a(BigInt instance, object format, Intl.NumberFormat? provider);
+	public extern static string _495c383939d1c12a(BigInt instance, string? format, Intl.NumberFormat? provider);
 
 	///<summary>Tries to format the value of the current unsigned long number instance into the provided span of characters.</summary>
 	[Jazor(Op.Discard ,"ulong.TryFormat(System.Span<char>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)")]
-	public extern static bool _ac73c989b7c43bd0(BigInt instance, Uint32Array destination, Box<Number> charsWritten, Uint32Array format, Intl.NumberFormat? provider);
+	public extern static Array<object?> _ac73c989b7c43bd0(BigInt instance, Uint32Array destination, out Number charsWritten, Uint32Array format, Intl.NumberFormat? provider);
 
 	///<summary>Tries to format the value of the current instance as UTF-8 into the provided span of bytes.</summary>
 	[Jazor(Op.Discard ,"ulong.TryFormat(System.Span<byte>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)")]
-	public extern static bool _037cf8cd2c632d87(BigInt instance, Uint8Array utf8Destination, Box<Number> bytesWritten, Uint32Array format, Intl.NumberFormat? provider);
+	public extern static Array<object?> _037cf8cd2c632d87(BigInt instance, Uint8Array utf8Destination, out Number bytesWritten, Uint32Array format, Intl.NumberFormat? provider);
 
 	///<summary>Converts the string representation of a number to its 64-bit unsigned integer equivalent.</summary>
 	[Jazor(Op.Discard ,"static ulong.Parse(string)")]
-	public extern static BigInt _ab08b15d1ba56047(object s);
+	public extern static BigInt _ab08b15d1ba56047(string s);
 
 	///<summary>Converts the string representation of a number in a specified style to its 64-bit unsigned integer equivalent.</summary>
 	[Jazor(Op.Discard ,"static ulong.Parse(string, System.Globalization.NumberStyles)")]
-	public extern static BigInt _a65275d8a812ca38(object s, object style);
+	public extern static BigInt _a65275d8a812ca38(string s, object style);
 
 	///<summary>Converts the string representation of a number in a specified culture-specific format to its 64-bit unsigned integer equivalent.</summary>
 	[Jazor(Op.Discard ,"static ulong.Parse(string, System.IFormatProvider)")]
-	public extern static BigInt _4e58859b2b591f89(object s, Intl.NumberFormat? provider);
+	public extern static BigInt _4e58859b2b591f89(string s, Intl.NumberFormat? provider);
 
 	///<summary>Converts the string representation of a number in a specified style and culture-specific format to its 64-bit unsigned integer equivalent.</summary>
 	[Jazor(Op.Discard ,"static ulong.Parse(string, System.Globalization.NumberStyles, System.IFormatProvider)")]
-	public extern static BigInt _a7ca48cb01ea9685(object s, object style, Intl.NumberFormat? provider);
+	public extern static BigInt _a7ca48cb01ea9685(string s, object style, Intl.NumberFormat? provider);
 
 	///<summary>Converts the span representation of a number in a specified style and culture-specific format to its 64-bit unsigned integer equivalent.</summary>
 	[Jazor(Op.Discard ,"static ulong.Parse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider)")]
@@ -81,23 +81,23 @@ public static class UInt64Module
 
 	///<summary>Tries to convert the string representation of a number to its 64-bit unsigned integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static ulong.TryParse(string, out ulong)")]
-	public extern static bool _a2771534d71206bd(object s, Box<BigInt> result);
+	public extern static Array<object?> _a2771534d71206bd(string? s, out BigInt result);
 
 	///<summary>Tries to convert the span representation of a number to its 64-bit unsigned integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static ulong.TryParse(System.ReadOnlySpan<char>, out ulong)")]
-	public extern static bool _6563986efd5413c0(Uint32Array s, Box<BigInt> result);
+	public extern static Array<object?> _6563986efd5413c0(Uint32Array s, out BigInt result);
 
 	///<summary>Tries to convert a UTF-8 character span containing the string representation of a number to its 64-bit unsigned integer equivalent.</summary>
 	[Jazor(Op.Discard ,"static ulong.TryParse(System.ReadOnlySpan<byte>, out ulong)")]
-	public extern static bool _908c702d612b8a82(Uint8Array utf8Text, Box<BigInt> result);
+	public extern static Array<object?> _908c702d612b8a82(Uint8Array utf8Text, out BigInt result);
 
 	///<summary>Tries to convert the string representation of a number in a specified style and culture-specific format to its 64-bit unsigned integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static ulong.TryParse(string, System.Globalization.NumberStyles, System.IFormatProvider, out ulong)")]
-	public extern static bool _3013e933b3a2fe7d(object s, object style, Intl.NumberFormat? provider, Box<BigInt> result);
+	public extern static Array<object?> _3013e933b3a2fe7d(string? s, object style, Intl.NumberFormat? provider, out BigInt result);
 
 	///<summary>Tries to convert the span representation of a number in a specified style and culture-specific format to its 64-bit unsigned integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static ulong.TryParse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider, out ulong)")]
-	public extern static bool _988cf0fe6e5934e4(Uint32Array s, object style, Intl.NumberFormat? provider, Box<BigInt> result);
+	public extern static Array<object?> _988cf0fe6e5934e4(Uint32Array s, object style, Intl.NumberFormat? provider, out BigInt result);
 
 	///<summary>Returns the <see cref="T:System.TypeCode" /> for value type <see cref="T:System.UInt64" />.</summary>
 	[Jazor(Op.Discard ,"ulong.GetTypeCode()")]
@@ -173,7 +173,7 @@ public static class UInt64Module
 
 	///<summary>Tries to parse a string into a value.</summary>
 	[Jazor(Op.Discard ,"static ulong.TryParse(string, System.IFormatProvider, out ulong)")]
-	public extern static bool _21e729b071b97244(object s, Intl.NumberFormat? provider, Box<BigInt> result);
+	public extern static Array<object?> _21e729b071b97244(string? s, Intl.NumberFormat? provider, out BigInt result);
 
 	///<summary>Parses a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static ulong.Parse(System.ReadOnlySpan<char>, System.IFormatProvider)")]
@@ -181,7 +181,7 @@ public static class UInt64Module
 
 	///<summary>Tries to parse a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static ulong.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, out ulong)")]
-	public extern static bool _7710533f2f6f68a2(Uint32Array s, Intl.NumberFormat? provider, Box<BigInt> result);
+	public extern static Array<object?> _7710533f2f6f68a2(Uint32Array s, Intl.NumberFormat? provider, out BigInt result);
 
 	///<summary>Parses a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static ulong.Parse(System.ReadOnlySpan<byte>, System.Globalization.NumberStyles, System.IFormatProvider)")]
@@ -189,7 +189,7 @@ public static class UInt64Module
 
 	///<summary>Tries to parse a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static ulong.TryParse(System.ReadOnlySpan<byte>, System.Globalization.NumberStyles, System.IFormatProvider, out ulong)")]
-	public extern static bool _81e9cf07471323b0(Uint8Array utf8Text, object style, Intl.NumberFormat? provider, Box<BigInt> result);
+	public extern static Array<object?> _81e9cf07471323b0(Uint8Array utf8Text, object style, Intl.NumberFormat? provider, out BigInt result);
 
 	///<summary>Parses a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static ulong.Parse(System.ReadOnlySpan<byte>, System.IFormatProvider)")]
@@ -197,5 +197,5 @@ public static class UInt64Module
 
 	///<summary>Tries to parse a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static ulong.TryParse(System.ReadOnlySpan<byte>, System.IFormatProvider, out ulong)")]
-	public extern static bool _eeed90f8132830af(Uint8Array utf8Text, Intl.NumberFormat? provider, Box<BigInt> result);
+	public extern static Array<object?> _eeed90f8132830af(Uint8Array utf8Text, Intl.NumberFormat? provider, out BigInt result);
 }

@@ -14,15 +14,15 @@ public static class StringBuilderModule
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Text.StringBuilder" /> class using the specified string.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.StringBuilder(string)")]
-	public extern static System.Text.StringBuilder _c2c8c4778873ccdc(object value);
+	public extern static System.Text.StringBuilder _c2c8c4778873ccdc(string? value);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Text.StringBuilder" /> class using the specified string and capacity.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.StringBuilder(string, int)")]
-	public extern static System.Text.StringBuilder _8ddc5378f62c27cc(object value, Number capacity);
+	public extern static System.Text.StringBuilder _8ddc5378f62c27cc(string? value, Number capacity);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Text.StringBuilder" /> class from the specified substring and capacity.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.StringBuilder(string, int, int, int)")]
-	public extern static System.Text.StringBuilder _70c61ab8ef3313c3(object value, Number startIndex, Number length, Number capacity);
+	public extern static System.Text.StringBuilder _70c61ab8ef3313c3(string? value, Number startIndex, Number length, Number capacity);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Text.StringBuilder" /> class that starts with a specified capacity and can grow to a specified maximum.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.StringBuilder(int, int)")]
@@ -79,11 +79,11 @@ public static class StringBuilderModule
 
 	///<summary>Appends a copy of the specified string to this instance.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Append(string)")]
-	public extern static System.Text.StringBuilder _2879b76db56f25fb(System.Text.StringBuilder instance, object value);
+	public extern static System.Text.StringBuilder _2879b76db56f25fb(System.Text.StringBuilder instance, string? value);
 
 	///<summary>Appends a copy of a specified substring to this instance.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Append(string, int, int)")]
-	public extern static System.Text.StringBuilder _643a38ba616afd42(System.Text.StringBuilder instance, object value, Number startIndex, Number count);
+	public extern static System.Text.StringBuilder _643a38ba616afd42(System.Text.StringBuilder instance, string? value, Number startIndex, Number count);
 
 	///<summary>Appends the string representation of a specified string builder to this instance.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Append(System.Text.StringBuilder)")]
@@ -99,7 +99,7 @@ public static class StringBuilderModule
 
 	///<summary>Appends a copy of the specified string followed by the default line terminator to the end of the current <see cref="T:System.Text.StringBuilder" /> object.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendLine(string)")]
-	public extern static System.Text.StringBuilder _c06aaa44e213e405(System.Text.StringBuilder instance, object value);
+	public extern static System.Text.StringBuilder _c06aaa44e213e405(System.Text.StringBuilder instance, string? value);
 
 	///<summary>Copies the characters from a specified segment of this instance to a specified segment of a destination <see cref="T:System.Char" /> array.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.CopyTo(int, char[], int, int)")]
@@ -111,7 +111,7 @@ public static class StringBuilderModule
 
 	///<summary>Inserts one or more copies of a specified string into this instance at the specified character position.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Insert(int, string, int)")]
-	public extern static System.Text.StringBuilder _da897479d9bd6139(System.Text.StringBuilder instance, Number index, object value, Number count);
+	public extern static System.Text.StringBuilder _da897479d9bd6139(System.Text.StringBuilder instance, Number index, string? value, Number count);
 
 	///<summary>Removes the specified range of characters from this instance.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Remove(int, int)")]
@@ -155,7 +155,7 @@ public static class StringBuilderModule
 
 	///<summary>Appends the string representation of a specified decimal number to this instance.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Append(decimal)")]
-	public extern static System.Text.StringBuilder _f07022820ca3881f(System.Text.StringBuilder instance, String value);
+	public extern static System.Text.StringBuilder _f07022820ca3881f(System.Text.StringBuilder instance, string value);
 
 	///<summary>Appends the string representation of a specified 16-bit unsigned integer to this instance.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Append(ushort)")]
@@ -171,7 +171,7 @@ public static class StringBuilderModule
 
 	///<summary>Appends the string representation of a specified object to this instance.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Append(object)")]
-	public extern static System.Text.StringBuilder _06379efa8addb10d(System.Text.StringBuilder instance, Object? value);
+	public extern static System.Text.StringBuilder _06379efa8addb10d(System.Text.StringBuilder instance, object? value);
 
 	///<summary>Appends the string representation of the Unicode characters in a specified array to this instance.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Append(char[])")]
@@ -187,39 +187,39 @@ public static class StringBuilderModule
 
 	///<summary>Appends the specified interpolated string to this instance.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Append(ref System.Text.StringBuilder.AppendInterpolatedStringHandler)")]
-	public extern static System.Text.StringBuilder _b753ce137296837a(System.Text.StringBuilder instance, Box<object> handler);
+	public extern static Array<object?> _b753ce137296837a(System.Text.StringBuilder instance, ref object handler);
 
 	///<summary>Appends the specified interpolated string to this instance using the specified format.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Append(System.IFormatProvider, ref System.Text.StringBuilder.AppendInterpolatedStringHandler)")]
-	public extern static System.Text.StringBuilder _c38a3237ddfa0a19(System.Text.StringBuilder instance, Intl.NumberFormat? provider, Box<object> handler);
+	public extern static Array<object?> _c38a3237ddfa0a19(System.Text.StringBuilder instance, Intl.NumberFormat? provider, ref object handler);
 
 	///<summary>Appends the specified interpolated string followed by the default line terminator to the end of the current StringBuilder object.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendLine(ref System.Text.StringBuilder.AppendInterpolatedStringHandler)")]
-	public extern static System.Text.StringBuilder _c52ed5039c53253f(System.Text.StringBuilder instance, Box<object> handler);
+	public extern static Array<object?> _c52ed5039c53253f(System.Text.StringBuilder instance, ref object handler);
 
 	///<summary>Appends the specified interpolated string using the specified format, followed by the default line terminator, to the end of the current StringBuilder object.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendLine(System.IFormatProvider, ref System.Text.StringBuilder.AppendInterpolatedStringHandler)")]
-	public extern static System.Text.StringBuilder _0192e43c680249a7(System.Text.StringBuilder instance, Intl.NumberFormat? provider, Box<object> handler);
+	public extern static Array<object?> _0192e43c680249a7(System.Text.StringBuilder instance, Intl.NumberFormat? provider, ref object handler);
 
 	///<summary>Concatenates the string representations of the elements in the provided array of objects, using the specified separator between each member, then appends the result to the current instance of the string builder.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendJoin(string, params object[])")]
-	public extern static System.Text.StringBuilder _8bc8cc43c6d93195(System.Text.StringBuilder instance, object separator,  object values);
+	public extern static System.Text.StringBuilder _8bc8cc43c6d93195(System.Text.StringBuilder instance, string? separator,  object values);
 
 	///<summary>Concatenates the string representations of the elements in the provided span of objects, using the specified separator between each member, then appends the result to the current instance of the string builder.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendJoin(string, params System.ReadOnlySpan<object>)")]
-	public extern static System.Text.StringBuilder _f4377679fddd51ad(System.Text.StringBuilder instance, object separator,  object values);
+	public extern static System.Text.StringBuilder _f4377679fddd51ad(System.Text.StringBuilder instance, string? separator,  object values);
 
 	///<summary>Concatenates and appends the members of a collection, using the specified separator between each member.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendJoin<T>(string, System.Collections.Generic.IEnumerable<T>)")]
-	public extern static System.Text.StringBuilder _8d04089684a00c7b<T>(System.Text.StringBuilder instance, object separator, IEnumerable<T> values);
+	public extern static System.Text.StringBuilder _8d04089684a00c7b<T>(System.Text.StringBuilder instance, string? separator, Array<T> values);
 
 	///<summary>Concatenates the strings of the provided array, using the specified separator between each string, then appends the result to the current instance of the string builder.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendJoin(string, params string[])")]
-	public extern static System.Text.StringBuilder _6ceea7a4bfd233b6(System.Text.StringBuilder instance, object separator,  object values);
+	public extern static System.Text.StringBuilder _6ceea7a4bfd233b6(System.Text.StringBuilder instance, string? separator,  object values);
 
 	///<summary>Concatenates the strings of the provided span, using the specified separator between each string, then appends the result to the current instance of the string builder.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendJoin(string, params System.ReadOnlySpan<string>)")]
-	public extern static System.Text.StringBuilder _035c615b56218700(System.Text.StringBuilder instance, object separator,  object values);
+	public extern static System.Text.StringBuilder _035c615b56218700(System.Text.StringBuilder instance, string? separator,  object values);
 
 	///<summary>Concatenates the string representations of the elements in the provided array of objects, using the specified char separator between each member, then appends the result to the current instance of the string builder.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendJoin(char, params object[])")]
@@ -231,7 +231,7 @@ public static class StringBuilderModule
 
 	///<summary>Concatenates and appends the members of a collection, using the specified char separator between each member.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendJoin<T>(char, System.Collections.Generic.IEnumerable<T>)")]
-	public extern static System.Text.StringBuilder _3510fcab582042e0<T>(System.Text.StringBuilder instance, Number separator, IEnumerable<T> values);
+	public extern static System.Text.StringBuilder _3510fcab582042e0<T>(System.Text.StringBuilder instance, Number separator, Array<T> values);
 
 	///<summary>Concatenates the strings of the provided array, using the specified char separator between each string, then appends the result to the current instance of the string builder.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendJoin(char, params string[])")]
@@ -243,7 +243,7 @@ public static class StringBuilderModule
 
 	///<summary>Inserts a string into this instance at the specified character position.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Insert(int, string)")]
-	public extern static System.Text.StringBuilder _40a305d0112c40d9(System.Text.StringBuilder instance, Number index, object value);
+	public extern static System.Text.StringBuilder _40a305d0112c40d9(System.Text.StringBuilder instance, Number index, string? value);
 
 	///<summary>Inserts the string representation of a Boolean value into this instance at the specified character position.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Insert(int, bool)")]
@@ -291,7 +291,7 @@ public static class StringBuilderModule
 
 	///<summary>Inserts the string representation of a decimal number into this instance at the specified character position.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Insert(int, decimal)")]
-	public extern static System.Text.StringBuilder _7244d40cd7bdaa7a(System.Text.StringBuilder instance, Number index, String value);
+	public extern static System.Text.StringBuilder _7244d40cd7bdaa7a(System.Text.StringBuilder instance, Number index, string value);
 
 	///<summary>Inserts the string representation of a 16-bit unsigned integer into this instance at the specified character position.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Insert(int, ushort)")]
@@ -307,7 +307,7 @@ public static class StringBuilderModule
 
 	///<summary>Inserts the string representation of an object into this instance at the specified character position.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Insert(int, object)")]
-	public extern static System.Text.StringBuilder _463fe06f693b73f1(System.Text.StringBuilder instance, Number index, Object? value);
+	public extern static System.Text.StringBuilder _463fe06f693b73f1(System.Text.StringBuilder instance, Number index, object? value);
 
 	///<summary>Inserts the sequence of characters into this instance at the specified character position.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Insert(int, System.ReadOnlySpan<char>)")]
@@ -315,43 +315,43 @@ public static class StringBuilderModule
 
 	///<summary>Appends the string returned by processing a composite format string, which contains zero or more format items, to this instance. Each format item is replaced by the string representation of a single argument.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendFormat(string, object)")]
-	public extern static System.Text.StringBuilder _77a7606b3d9eca3e(System.Text.StringBuilder instance, object format, Object? arg0);
+	public extern static System.Text.StringBuilder _77a7606b3d9eca3e(System.Text.StringBuilder instance, string format, object? arg0);
 
 	///<summary>Appends the string returned by processing a composite format string, which contains zero or more format items, to this instance. Each format item is replaced by the string representation of either of two arguments.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendFormat(string, object, object)")]
-	public extern static System.Text.StringBuilder _e3954878ec607794(System.Text.StringBuilder instance, object format, Object? arg0, Object? arg1);
+	public extern static System.Text.StringBuilder _e3954878ec607794(System.Text.StringBuilder instance, string format, object? arg0, object? arg1);
 
 	///<summary>Appends the string returned by processing a composite format string, which contains zero or more format items, to this instance. Each format item is replaced by the string representation of either of three arguments.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendFormat(string, object, object, object)")]
-	public extern static System.Text.StringBuilder _5ba4a5dce6c59d24(System.Text.StringBuilder instance, object format, Object? arg0, Object? arg1, Object? arg2);
+	public extern static System.Text.StringBuilder _5ba4a5dce6c59d24(System.Text.StringBuilder instance, string format, object? arg0, object? arg1, object? arg2);
 
 	///<summary>Appends the string returned by processing a composite format string, which contains zero or more format items, to this instance. Each format item is replaced by the string representation of a corresponding argument in a parameter array.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendFormat(string, params object[])")]
-	public extern static System.Text.StringBuilder _6fc54e5431a32faa(System.Text.StringBuilder instance, object format,  object args);
+	public extern static System.Text.StringBuilder _6fc54e5431a32faa(System.Text.StringBuilder instance, string format,  object args);
 
 	///<summary>Appends the string returned by processing a composite format string, which contains zero or more format items, to this instance. Each format item is replaced by the string representation of a corresponding argument in a parameter span.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendFormat(string, params System.ReadOnlySpan<object>)")]
-	public extern static System.Text.StringBuilder _79714193eef28be4(System.Text.StringBuilder instance, object format,  object args);
+	public extern static System.Text.StringBuilder _79714193eef28be4(System.Text.StringBuilder instance, string format,  object args);
 
 	///<summary>Appends the string returned by processing a composite format string, which contains zero or more format items, to this instance. Each format item is replaced by the string representation of a single argument using a specified format provider.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendFormat(System.IFormatProvider, string, object)")]
-	public extern static System.Text.StringBuilder _d2a6136c3496706f(System.Text.StringBuilder instance, Intl.NumberFormat? provider, object format, Object? arg0);
+	public extern static System.Text.StringBuilder _d2a6136c3496706f(System.Text.StringBuilder instance, Intl.NumberFormat? provider, string format, object? arg0);
 
 	///<summary>Appends the string returned by processing a composite format string, which contains zero or more format items, to this instance. Each format item is replaced by the string representation of either of two arguments using a specified format provider.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendFormat(System.IFormatProvider, string, object, object)")]
-	public extern static System.Text.StringBuilder _46fad2ab5d282d81(System.Text.StringBuilder instance, Intl.NumberFormat? provider, object format, Object? arg0, Object? arg1);
+	public extern static System.Text.StringBuilder _46fad2ab5d282d81(System.Text.StringBuilder instance, Intl.NumberFormat? provider, string format, object? arg0, object? arg1);
 
 	///<summary>Appends the string returned by processing a composite format string, which contains zero or more format items, to this instance. Each format item is replaced by the string representation of either of three arguments using a specified format provider.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendFormat(System.IFormatProvider, string, object, object, object)")]
-	public extern static System.Text.StringBuilder _1b411bcc9ec45bf7(System.Text.StringBuilder instance, Intl.NumberFormat? provider, object format, Object? arg0, Object? arg1, Object? arg2);
+	public extern static System.Text.StringBuilder _1b411bcc9ec45bf7(System.Text.StringBuilder instance, Intl.NumberFormat? provider, string format, object? arg0, object? arg1, object? arg2);
 
 	///<summary>Appends the string returned by processing a composite format string, which contains zero or more format items, to this instance. Each format item is replaced by the string representation of a corresponding argument in a parameter array using a specified format provider.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendFormat(System.IFormatProvider, string, params object[])")]
-	public extern static System.Text.StringBuilder _7b93ea5668c90df3(System.Text.StringBuilder instance, Intl.NumberFormat? provider, object format,  object args);
+	public extern static System.Text.StringBuilder _7b93ea5668c90df3(System.Text.StringBuilder instance, Intl.NumberFormat? provider, string format,  object args);
 
 	///<summary>Appends the string returned by processing a composite format string, which contains zero or more format items, to this instance. Each format item is replaced by the string representation of a corresponding argument in a parameter span using a specified format provider.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendFormat(System.IFormatProvider, string, params System.ReadOnlySpan<object>)")]
-	public extern static System.Text.StringBuilder _99e92b2a2bb0066c(System.Text.StringBuilder instance, Intl.NumberFormat? provider, object format,  object args);
+	public extern static System.Text.StringBuilder _99e92b2a2bb0066c(System.Text.StringBuilder instance, Intl.NumberFormat? provider, string format,  object args);
 
 	///<summary>Appends the string returned by processing a composite format string, which contains zero or more format items, to this instance.            Each format item is replaced by the string representation of any of the arguments using a specified format provider.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendFormat<TArg0>(System.IFormatProvider, System.Text.CompositeFormat, TArg0)")]
@@ -375,7 +375,7 @@ public static class StringBuilderModule
 
 	///<summary>Replaces all occurrences of a specified string in this instance with another specified string.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Replace(string, string)")]
-	public extern static System.Text.StringBuilder _e11a2e954631c69a(System.Text.StringBuilder instance, object oldValue, object newValue);
+	public extern static System.Text.StringBuilder _e11a2e954631c69a(System.Text.StringBuilder instance, string oldValue, string? newValue);
 
 	///<summary>Replaces all instances of one read-only character span with another in this builder.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Replace(System.ReadOnlySpan<char>, System.ReadOnlySpan<char>)")]
@@ -391,7 +391,7 @@ public static class StringBuilderModule
 
 	///<summary>Replaces, within a substring of this instance, all occurrences of a specified string with another specified string.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Replace(string, string, int, int)")]
-	public extern static System.Text.StringBuilder _34859fdec187084f(System.Text.StringBuilder instance, object oldValue, object newValue, Number startIndex, Number count);
+	public extern static System.Text.StringBuilder _34859fdec187084f(System.Text.StringBuilder instance, string oldValue, string? newValue, Number startIndex, Number count);
 
 	///<summary>Replaces all instances of one read-only character span with another in part of this builder.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Replace(System.ReadOnlySpan<char>, System.ReadOnlySpan<char>, int, int)")]

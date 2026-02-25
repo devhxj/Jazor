@@ -13,11 +13,11 @@ public static class ExceptionModule
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Exception" /> class with a specified error message.</summary>
 	[Jazor(Op.Discard ,"System.Exception.Exception(string)")]
-	public extern static Error _2cf200c538022157(object message);
+	public extern static Error _2cf200c538022157(string? message);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Exception" /> class with a specified error message and a reference to the inner exception that is the cause of this exception.</summary>
 	[Jazor(Op.Discard ,"System.Exception.Exception(string, System.Exception)")]
-	public extern static Error _553ffa41c7b954da(object message, object innerException);
+	public extern static Error _553ffa41c7b954da(string? message, object innerException);
 
 	[Jazor(Op.Discard ,"virtual System.Exception.Message.get")]
 	public extern static string _254136af38922fd7(Error instance);
@@ -36,13 +36,13 @@ public static class ExceptionModule
 	public extern static string? _cbc65d16d0767d67(Error instance);
 
 	[Jazor(Op.Discard ,"virtual System.Exception.HelpLink.set")]
-	public extern static void _30c969b3bbd3fa2e(Error instance, object value);
+	public extern static void _30c969b3bbd3fa2e(Error instance, string? value);
 
 	[Jazor(Op.Discard ,"virtual System.Exception.Source.get")]
 	public extern static string? _21e71d416a10c806(Error instance);
 
 	[Jazor(Op.Discard ,"virtual System.Exception.Source.set")]
-	public extern static void _48095d5ec6492dcb(Error instance, object value);
+	public extern static void _48095d5ec6492dcb(Error instance, string? value);
 
 	///<summary>When overridden in a derived class, sets the <see cref="T:System.Runtime.Serialization.SerializationInfo" /> with information about the exception.</summary>
 	[Jazor(Op.Discard ,"virtual System.Exception.GetObjectData(System.Runtime.Serialization.SerializationInfo, System.Runtime.Serialization.StreamingContext)")]

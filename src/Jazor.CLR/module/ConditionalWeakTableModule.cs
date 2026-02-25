@@ -10,7 +10,7 @@ public static class ConditionalWeakTableModule<TKey, TValue>
 
 	///<summary>Gets the value of the specified key.</summary>
 	[Jazor(Op.Discard ,"System.Runtime.CompilerServices.ConditionalWeakTable<TKey, TValue>.TryGetValue(TKey, out TValue)")]
-	public extern static bool _8360443cbe5b1f88(WeakMap<TKey,TValue> instance, object key, Box<object> value);
+	public extern static Array<object?> _8360443cbe5b1f88(WeakMap<TKey,TValue> instance, object key, out object value);
 
 	///<summary>Adds a key to the table.</summary>
 	[Jazor(Op.Discard ,"System.Runtime.CompilerServices.ConditionalWeakTable<TKey, TValue>.Add(TKey, TValue)")]
@@ -29,7 +29,7 @@ public static class ConditionalWeakTableModule<TKey, TValue>
 	public extern static bool _0b5841f143b2e9e7(WeakMap<TKey,TValue> instance, object key);
 
 	[Jazor(Op.Discard ,"System.Runtime.CompilerServices.ConditionalWeakTable<TKey, TValue>.Remove(TKey, out TValue)")]
-	public extern static bool _14e40010b1fd2993(WeakMap<TKey,TValue> instance, object key, Box<object> value);
+	public extern static Array<object?> _14e40010b1fd2993(WeakMap<TKey,TValue> instance, object key, out object value);
 
 	///<summary>Clears all the key/value pairs.</summary>
 	[Jazor(Op.Discard ,"System.Runtime.CompilerServices.ConditionalWeakTable<TKey, TValue>.Clear()")]

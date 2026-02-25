@@ -6,123 +6,123 @@ public static class StringModule
 {
 	///<summary>Represents the empty string. This field is read-only.</summary>
 	[Jazor(Op.Discard ,"static readonly string.Empty")]
-	public extern static String _b16f79dc7b155be3();
+	public extern static string _b16f79dc7b155be3();
 
 	///<summary>Retrieves the system's reference to the specified <see cref="T:System.String" />.</summary>
 	[Jazor(Op.Discard ,"static string.Intern(string)")]
-	public extern static string _1234444e218b96c3(object str);
+	public extern static string _1234444e218b96c3(string str);
 
 	///<summary>Retrieves a reference to a specified <see cref="T:System.String" />.</summary>
 	[Jazor(Op.Discard ,"static string.IsInterned(string)")]
-	public extern static string? _0af8a50f6d6b3e26(object str);
+	public extern static string? _0af8a50f6d6b3e26(string str);
 
 	///<summary>Compares two specified <see cref="T:System.String" /> objects and returns an integer that indicates their relative position in the sort order.</summary>
 	[Jazor(Op.Discard ,"static string.Compare(string, string)")]
-	public extern static Number _e16eea9fe3891a62(object strA, object strB);
+	public extern static Number _e16eea9fe3891a62(string? strA, string? strB);
 
 	///<summary>Compares two specified <see cref="T:System.String" /> objects, ignoring or honoring their case, and returns an integer that indicates their relative position in the sort order.</summary>
 	[Jazor(Op.Discard ,"static string.Compare(string, string, bool)")]
-	public extern static Number _20874c0b43640318(object strA, object strB, object ignoreCase);
+	public extern static Number _20874c0b43640318(string? strA, string? strB, object ignoreCase);
 
 	///<summary>Compares two specified <see cref="T:System.String" /> objects using the specified rules, and returns an integer that indicates their relative position in the sort order.</summary>
 	[Jazor(Op.Discard ,"static string.Compare(string, string, System.StringComparison)")]
-	public extern static Number _9d940114ace1198f(object strA, object strB, object comparisonType);
+	public extern static Number _9d940114ace1198f(string? strA, string? strB, object comparisonType);
 
 	///<summary>Compares two specified <see cref="T:System.String" /> objects using the specified comparison options and culture-specific information to influence the comparison, and returns an integer that indicates the relationship of the two strings to each other in the sort order.</summary>
 	[Jazor(Op.Discard ,"static string.Compare(string, string, System.Globalization.CultureInfo, System.Globalization.CompareOptions)")]
-	public extern static Number _3df4c7373f0b47b6(object strA, object strB, String? culture, object options);
+	public extern static Number _3df4c7373f0b47b6(string? strA, string? strB, String? culture, object options);
 
 	///<summary>Compares two specified <see cref="T:System.String" /> objects, ignoring or honoring their case, and using culture-specific information to influence the comparison, and returns an integer that indicates their relative position in the sort order.</summary>
 	[Jazor(Op.Discard ,"static string.Compare(string, string, bool, System.Globalization.CultureInfo)")]
-	public extern static Number _7349ec2403e9750d(object strA, object strB, object ignoreCase, String? culture);
+	public extern static Number _7349ec2403e9750d(string? strA, string? strB, object ignoreCase, String? culture);
 
 	///<summary>Compares substrings of two specified <see cref="T:System.String" /> objects and returns an integer that indicates their relative position in the sort order.</summary>
 	[Jazor(Op.Discard ,"static string.Compare(string, int, string, int, int)")]
-	public extern static Number _27da56ab23a965a9(object strA, Number indexA, object strB, Number indexB, Number length);
+	public extern static Number _27da56ab23a965a9(string? strA, Number indexA, string? strB, Number indexB, Number length);
 
 	///<summary>Compares substrings of two specified <see cref="T:System.String" /> objects, ignoring or honoring their case, and returns an integer that indicates their relative position in the sort order.</summary>
 	[Jazor(Op.Discard ,"static string.Compare(string, int, string, int, int, bool)")]
-	public extern static Number _ae9588dc995de641(object strA, Number indexA, object strB, Number indexB, Number length, object ignoreCase);
+	public extern static Number _ae9588dc995de641(string? strA, Number indexA, string? strB, Number indexB, Number length, object ignoreCase);
 
 	///<summary>Compares substrings of two specified <see cref="T:System.String" /> objects, ignoring or honoring their case and using culture-specific information to influence the comparison, and returns an integer that indicates their relative position in the sort order.</summary>
 	[Jazor(Op.Discard ,"static string.Compare(string, int, string, int, int, bool, System.Globalization.CultureInfo)")]
-	public extern static Number _e926c87c90eaf4a5(object strA, Number indexA, object strB, Number indexB, Number length, object ignoreCase, String? culture);
+	public extern static Number _e926c87c90eaf4a5(string? strA, Number indexA, string? strB, Number indexB, Number length, object ignoreCase, String? culture);
 
 	///<summary>Compares substrings of two specified <see cref="T:System.String" /> objects using the specified comparison options and culture-specific information to influence the comparison, and returns an integer that indicates the relationship of the two substrings to each other in the sort order.</summary>
 	[Jazor(Op.Discard ,"static string.Compare(string, int, string, int, int, System.Globalization.CultureInfo, System.Globalization.CompareOptions)")]
-	public extern static Number _6de73d4e145d51a4(object strA, Number indexA, object strB, Number indexB, Number length, String? culture, object options);
+	public extern static Number _6de73d4e145d51a4(string? strA, Number indexA, string? strB, Number indexB, Number length, String? culture, object options);
 
 	///<summary>Compares substrings of two specified <see cref="T:System.String" /> objects using the specified rules, and returns an integer that indicates their relative position in the sort order.</summary>
 	[Jazor(Op.Discard ,"static string.Compare(string, int, string, int, int, System.StringComparison)")]
-	public extern static Number _d78fb9d76fca75e4(object strA, Number indexA, object strB, Number indexB, Number length, object comparisonType);
+	public extern static Number _d78fb9d76fca75e4(string? strA, Number indexA, string? strB, Number indexB, Number length, object comparisonType);
 
 	///<summary>Compares two specified <see cref="T:System.String" /> objects by evaluating the numeric values of the corresponding <see cref="T:System.Char" /> objects in each string.</summary>
 	[Jazor(Op.Discard ,"static string.CompareOrdinal(string, string)")]
-	public extern static Number _a55d307de6e31c7b(object strA, object strB);
+	public extern static Number _a55d307de6e31c7b(string? strA, string? strB);
 
 	///<summary>Compares substrings of two specified <see cref="T:System.String" /> objects by evaluating the numeric values of the corresponding <see cref="T:System.Char" /> objects in each substring.</summary>
 	[Jazor(Op.Discard ,"static string.CompareOrdinal(string, int, string, int, int)")]
-	public extern static Number _dc789454b6ef6bcb(object strA, Number indexA, object strB, Number indexB, Number length);
+	public extern static Number _dc789454b6ef6bcb(string? strA, Number indexA, string? strB, Number indexB, Number length);
 
 	///<summary>Compares this instance with a specified <see cref="T:System.Object" /> and indicates whether this instance precedes, follows, or appears in the same position in the sort order as the specified <see cref="T:System.Object" />.</summary>
 	[Jazor(Op.Discard ,"string.CompareTo(object)")]
-	public extern static Number _629b0613344d82e7(String instance, Object? value);
+	public extern static Number _629b0613344d82e7(string instance, object? value);
 
 	///<summary>Compares this instance with a specified <see cref="T:System.String" /> object and indicates whether this instance precedes, follows, or appears in the same position in the sort order as the specified string.</summary>
 	[Jazor(Op.Discard ,"string.CompareTo(string)")]
-	public extern static Number _380e7c7649d703f0(String instance, object strB);
+	public extern static Number _380e7c7649d703f0(string instance, string? strB);
 
 	///<summary>Determines whether the end of this string instance matches the specified string.</summary>
 	[Jazor(Op.Discard ,"string.EndsWith(string)")]
-	public extern static bool _33de316681320ec7(String instance, object value);
+	public extern static bool _33de316681320ec7(string instance, string value);
 
 	///<summary>Determines whether the end of this string instance matches the specified string when compared using the specified comparison option.</summary>
 	[Jazor(Op.Discard ,"string.EndsWith(string, System.StringComparison)")]
-	public extern static bool _946b7129a48c8114(String instance, object value, object comparisonType);
+	public extern static bool _946b7129a48c8114(string instance, string value, object comparisonType);
 
 	///<summary>Determines whether the end of this string instance matches the specified string when compared using the specified culture.</summary>
 	[Jazor(Op.Discard ,"string.EndsWith(string, bool, System.Globalization.CultureInfo)")]
-	public extern static bool _679207cac049d3c6(String instance, object value, object ignoreCase, String? culture);
+	public extern static bool _679207cac049d3c6(string instance, string value, object ignoreCase, String? culture);
 
 	///<summary>Determines whether the end of this string instance matches the specified character.</summary>
 	[Jazor(Op.Discard ,"string.EndsWith(char)")]
-	public extern static bool _7619ce4eda48c8e8(String instance, Number value);
+	public extern static bool _7619ce4eda48c8e8(string instance, Number value);
 
 	///<summary>Determines whether this instance and a specified object, which must also be a <see cref="T:System.String" /> object, have the same value.</summary>
 	[Jazor(Op.Discard ,"override string.Equals(object)")]
-	public extern static bool _def18c2802a57249(String instance, Object? obj);
+	public extern static bool _def18c2802a57249(string instance, object? obj);
 
 	///<summary>Determines whether this instance and another specified <see cref="T:System.String" /> object have the same value.</summary>
 	[Jazor(Op.Discard ,"string.Equals(string)")]
-	public extern static bool _6ee9bc86e4384225(String instance, object value);
+	public extern static bool _6ee9bc86e4384225(string instance, string? value);
 
 	///<summary>Determines whether this string and a specified <see cref="T:System.String" /> object have the same value. A parameter specifies the culture, case, and sort rules used in the comparison.</summary>
 	[Jazor(Op.Discard ,"string.Equals(string, System.StringComparison)")]
-	public extern static bool _f8e1e01e8c17e8bb(String instance, object value, object comparisonType);
+	public extern static bool _f8e1e01e8c17e8bb(string instance, string? value, object comparisonType);
 
 	///<summary>Determines whether two specified <see cref="T:System.String" /> objects have the same value.</summary>
 	[Jazor(Op.Discard ,"static string.Equals(string, string)")]
-	public extern static bool _e6b1648151c863d5(object a, object b);
+	public extern static bool _e6b1648151c863d5(string? a, string? b);
 
 	///<summary>Determines whether two specified <see cref="T:System.String" /> objects have the same value. A parameter specifies the culture, case, and sort rules used in the comparison.</summary>
 	[Jazor(Op.Discard ,"static string.Equals(string, string, System.StringComparison)")]
-	public extern static bool _b7c36408f0f172e9(object a, object b, object comparisonType);
+	public extern static bool _b7c36408f0f172e9(string? a, string? b, object comparisonType);
 
 	///<summary>Determines whether two specified strings have the same value.</summary>
 	[Jazor(Op.Allowed ,"static string.operator ==(string, string)")]
-	public extern static bool _ee27dec45b308755(object a, object b);
+	public extern static bool _ee27dec45b308755(string? a, string? b);
 
 	///<summary>Determines whether two specified strings have different values.</summary>
 	[Jazor(Op.Allowed ,"static string.operator !=(string, string)")]
-	public extern static bool _1573803c425863d3(object a, object b);
+	public extern static bool _1573803c425863d3(string? a, string? b);
 
 	///<summary>Returns the hash code for this string.</summary>
 	[Jazor(Op.Discard ,"override string.GetHashCode()")]
-	public extern static Number _bccdd3f386a6fbbc(String instance);
+	public extern static Number _bccdd3f386a6fbbc(string instance);
 
 	///<summary>Returns the hash code for this string using the specified rules.</summary>
 	[Jazor(Op.Discard ,"string.GetHashCode(System.StringComparison)")]
-	public extern static Number _04edfc3090710ca7(String instance, object comparisonType);
+	public extern static Number _04edfc3090710ca7(string instance, object comparisonType);
 
 	///<summary>Returns the hash code for the provided read-only character span.</summary>
 	[Jazor(Op.Discard ,"static string.GetHashCode(System.ReadOnlySpan<char>)")]
@@ -134,35 +134,35 @@ public static class StringModule
 
 	///<summary>Determines whether the beginning of this string instance matches the specified string.</summary>
 	[Jazor(Op.Discard ,"string.StartsWith(string)")]
-	public extern static bool _1cda198f8257d023(String instance, object value);
+	public extern static bool _1cda198f8257d023(string instance, string value);
 
 	///<summary>Determines whether the beginning of this string instance matches the specified string when compared using the specified comparison option.</summary>
 	[Jazor(Op.Discard ,"string.StartsWith(string, System.StringComparison)")]
-	public extern static bool _0333a0fd5f67d8a0(String instance, object value, object comparisonType);
+	public extern static bool _0333a0fd5f67d8a0(string instance, string value, object comparisonType);
 
 	///<summary>Determines whether the beginning of this string instance matches the specified string when compared using the specified culture.</summary>
 	[Jazor(Op.Discard ,"string.StartsWith(string, bool, System.Globalization.CultureInfo)")]
-	public extern static bool _16d66a076936ebd2(String instance, object value, object ignoreCase, String? culture);
+	public extern static bool _16d66a076936ebd2(string instance, string value, object ignoreCase, String? culture);
 
 	///<summary>Determines whether this string instance starts with the specified character.</summary>
 	[Jazor(Op.Discard ,"string.StartsWith(char)")]
-	public extern static bool _ef46304ffa6d6ccf(String instance, Number value);
+	public extern static bool _ef46304ffa6d6ccf(string instance, Number value);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.String" /> class to the Unicode characters indicated in the specified character array.</summary>
 	[Jazor(Op.Discard ,"string.String(char[])")]
-	public extern static String _6651b0a853e8e991(object value);
+	public extern static string _6651b0a853e8e991(object value);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.String" /> class to the value indicated by an array of Unicode characters, a starting character position within that array, and a length.</summary>
 	[Jazor(Op.Discard ,"string.String(char[], int, int)")]
-	public extern static String _ddce1a944159fc8b(object value, Number startIndex, Number length);
+	public extern static string _ddce1a944159fc8b(object value, Number startIndex, Number length);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.String" /> class to the value indicated by a specified Unicode character repeated a specified number of times.</summary>
 	[Jazor(Op.Discard ,"string.String(char, int)")]
-	public extern static String _0ce0d88e18c041c8(Number c, Number count);
+	public extern static string _0ce0d88e18c041c8(Number c, Number count);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.String" /> class to the Unicode characters indicated in the specified read-only span.</summary>
 	[Jazor(Op.Discard ,"string.String(System.ReadOnlySpan<char>)")]
-	public extern static String _009fee2e166a416d(Uint32Array value);
+	public extern static string _009fee2e166a416d(Uint32Array value);
 
 	///<summary>Creates a new string with a specific length and initializes it after creation by using the specified callback.</summary>
 	[Jazor(Op.Discard ,"static string.Create<TState>(int, TState, System.Buffers.SpanAction<char, TState>)")]
@@ -170,11 +170,11 @@ public static class StringModule
 
 	///<summary>Creates a new string by using the specified provider to control the formatting of the specified interpolated string.</summary>
 	[Jazor(Op.Discard ,"static string.Create(System.IFormatProvider, ref System.Runtime.CompilerServices.DefaultInterpolatedStringHandler)")]
-	public extern static string _af610a42747a747c(Intl.NumberFormat? provider, Box<object> handler);
+	public extern static Array<object?> _af610a42747a747c(Intl.NumberFormat? provider, ref object handler);
 
 	///<summary>Creates a new string by using the specified provider to control the formatting of the specified interpolated string.</summary>
 	[Jazor(Op.Discard ,"static string.Create(System.IFormatProvider, System.Span<char>, ref System.Runtime.CompilerServices.DefaultInterpolatedStringHandler)")]
-	public extern static string _1978314137f5a599(Intl.NumberFormat? provider, Uint32Array initialBuffer, Box<object> handler);
+	public extern static Array<object?> _1978314137f5a599(Intl.NumberFormat? provider, Uint32Array initialBuffer, ref object handler);
 
 	///<summary>Defines an implicit conversion of a given string to a read-only span of characters.</summary>
 	[Jazor(Op.Discard ,"static string.implicit operator System.ReadOnlySpan<char>(string)")]
@@ -182,97 +182,97 @@ public static class StringModule
 
 	///<summary>Returns a reference to this instance of <see cref="T:System.String" />.</summary>
 	[Jazor(Op.Discard ,"string.Clone()")]
-	public extern static Object _488d7e5ec582c6fb(String instance);
+	public extern static object _488d7e5ec582c6fb(string instance);
 
 	///<summary>Creates a new instance of <see cref="T:System.String" /> with the same value as a specified <see cref="T:System.String" />.</summary>
 	[Jazor(Op.Discard ,"static string.Copy(string)")]
-	public extern static string _0dc0a16fd99401f8(object str);
+	public extern static string _0dc0a16fd99401f8(string str);
 
 	///<summary>Copies a specified number of characters from a specified position in this instance to a specified position in an array of Unicode characters.</summary>
 	[Jazor(Op.Discard ,"string.CopyTo(int, char[], int, int)")]
-	public extern static void _45bb6097c28a2f1e(String instance, Number sourceIndex, object destination, Number destinationIndex, Number count);
+	public extern static void _45bb6097c28a2f1e(string instance, Number sourceIndex, object destination, Number destinationIndex, Number count);
 
 	///<summary>Copies the contents of this string into the destination span.</summary>
 	[Jazor(Op.Discard ,"string.CopyTo(System.Span<char>)")]
-	public extern static void _2b86529e4a090aee(String instance, Uint32Array destination);
+	public extern static void _2b86529e4a090aee(string instance, Uint32Array destination);
 
 	///<summary>Copies the contents of this string into the destination span.</summary>
 	[Jazor(Op.Discard ,"string.TryCopyTo(System.Span<char>)")]
-	public extern static bool _b0ab2eeef447828c(String instance, Uint32Array destination);
+	public extern static bool _b0ab2eeef447828c(string instance, Uint32Array destination);
 
 	///<summary>Copies the characters in this instance to a Unicode character array.</summary>
 	[Jazor(Op.Discard ,"string.ToCharArray()")]
-	public extern static char[] _7b8eb7b3d52c463d(String instance);
+	public extern static char[] _7b8eb7b3d52c463d(string instance);
 
 	///<summary>Copies the characters in a specified substring in this instance to a Unicode character array.</summary>
 	[Jazor(Op.Discard ,"string.ToCharArray(int, int)")]
-	public extern static char[] _53042938adf57f41(String instance, Number startIndex, Number length);
+	public extern static char[] _53042938adf57f41(string instance, Number startIndex, Number length);
 
 	///<summary>Indicates whether the specified string is <see langword="null" /> or an empty string ("").</summary>
 	[Jazor(Op.Discard ,"static string.IsNullOrEmpty(string)")]
-	public extern static bool _f6e1cc63ac93e98f(object value);
+	public extern static bool _f6e1cc63ac93e98f(string? value);
 
 	///<summary>Indicates whether a specified string is <see langword="null" />, empty, or consists only of white-space characters.</summary>
 	[Jazor(Op.Discard ,"static string.IsNullOrWhiteSpace(string)")]
-	public extern static bool _257a1a64b4d0f7d2(object value);
+	public extern static bool _257a1a64b4d0f7d2(string? value);
 
 	///<summary>Returns a reference to the element of the string at index zero.This method is intended to support .NET compilers and is not intended to be called by user code.</summary>
 	[Jazor(Op.Discard ,"string.GetPinnableReference()")]
-	public extern static Number _519728f02e3ba627(String instance);
+	public extern static Number _519728f02e3ba627(string instance);
 
 	///<summary>Returns this instance of <see cref="T:System.String" />; no actual conversion is performed.</summary>
 	[Jazor(Op.Discard ,"override string.ToString()")]
-	public extern static string _3158320a4854cc16(String instance);
+	public extern static string _3158320a4854cc16(string instance);
 
 	///<summary>Returns this instance of <see cref="T:System.String" />; no actual conversion is performed.</summary>
 	[Jazor(Op.Discard ,"string.ToString(System.IFormatProvider)")]
-	public extern static string _555baf594c383de9(String instance, Intl.NumberFormat? provider);
+	public extern static string _555baf594c383de9(string instance, Intl.NumberFormat? provider);
 
 	///<summary>Retrieves an object that can iterate through the individual characters in this string.</summary>
 	[Jazor(Op.Discard ,"string.GetEnumerator()")]
-	public extern static System.CharEnumerator _b5d8c191b0b746ca(String instance);
+	public extern static System.CharEnumerator _b5d8c191b0b746ca(string instance);
 
 	///<summary>Returns an enumeration of <see cref="T:System.Text.Rune" /> from this string.</summary>
 	[Jazor(Op.Discard ,"string.EnumerateRunes()")]
-	public extern static System.Text.StringRuneEnumerator _1e33e6a38a2179d0(String instance);
+	public extern static System.Text.StringRuneEnumerator _1e33e6a38a2179d0(string instance);
 
 	///<summary>Returns the <see cref="T:System.TypeCode" /> for the <see cref="T:System.String" /> class.</summary>
 	[Jazor(Op.Discard ,"string.GetTypeCode()")]
-	public extern static System.TypeCode _b4f593c93e2f2c61(String instance);
+	public extern static System.TypeCode _b4f593c93e2f2c61(string instance);
 
 	///<summary>Indicates whether this string is in Unicode normalization form C.</summary>
 	[Jazor(Op.Discard ,"string.IsNormalized()")]
-	public extern static bool _f645a0207f41fd4a(String instance);
+	public extern static bool _f645a0207f41fd4a(string instance);
 
 	///<summary>Indicates whether this string is in the specified Unicode normalization form.</summary>
 	[Jazor(Op.Discard ,"string.IsNormalized(System.Text.NormalizationForm)")]
-	public extern static bool _30d0ce62702ae938(String instance, object normalizationForm);
+	public extern static bool _30d0ce62702ae938(string instance, object normalizationForm);
 
 	///<summary>Returns a new string whose textual value is the same as this string, but whose binary representation is in Unicode normalization form C.</summary>
 	[Jazor(Op.Discard ,"string.Normalize()")]
-	public extern static string _967ef647d59f3e39(String instance);
+	public extern static string _967ef647d59f3e39(string instance);
 
 	///<summary>Returns a new string whose textual value is the same as this string, but whose binary representation is in the specified Unicode normalization form.</summary>
 	[Jazor(Op.Discard ,"string.Normalize(System.Text.NormalizationForm)")]
-	public extern static string _59b116010f03241b(String instance, object normalizationForm);
+	public extern static string _59b116010f03241b(string instance, object normalizationForm);
 
 	[Jazor(Op.Discard ,"string.this[int].get")]
-	public extern static Number _5ad63706a889c294(String instance, Number index);
+	public extern static Number _5ad63706a889c294(string instance, Number index);
 
 	[Jazor(Op.Discard ,"string.Length.get")]
-	public extern static Number _1b0d64005dc28838(String instance);
+	public extern static Number _1b0d64005dc28838(string instance);
 
 	///<summary>Creates the string  representation of a specified object.</summary>
 	[Jazor(Op.Discard ,"static string.Concat(object)")]
-	public extern static string _db938b9c2eb90d32(Object? arg0);
+	public extern static string _db938b9c2eb90d32(object? arg0);
 
 	///<summary>Concatenates the string representations of two specified objects.</summary>
 	[Jazor(Op.Discard ,"static string.Concat(object, object)")]
-	public extern static string _d330ca25546acf36(Object? arg0, Object? arg1);
+	public extern static string _d330ca25546acf36(object? arg0, object? arg1);
 
 	///<summary>Concatenates the string representations of three specified objects.</summary>
 	[Jazor(Op.Discard ,"static string.Concat(object, object, object)")]
-	public extern static string _dab9155adbef8f67(Object? arg0, Object? arg1, Object? arg2);
+	public extern static string _dab9155adbef8f67(object? arg0, object? arg1, object? arg2);
 
 	///<summary>Concatenates the string representations of the elements in a specified <see cref="T:System.Object" /> array.</summary>
 	[Jazor(Op.Discard ,"static string.Concat(params object[])")]
@@ -284,7 +284,7 @@ public static class StringModule
 
 	///<summary>Concatenates the members of an <see cref="T:System.Collections.Generic.IEnumerable`1" /> implementation.</summary>
 	[Jazor(Op.Discard ,"static string.Concat<T>(System.Collections.Generic.IEnumerable<T>)")]
-	public extern static string _68574aee669f440f<T>(IEnumerable<T> values);
+	public extern static string _68574aee669f440f<T>(Array<T> values);
 
 	///<summary>Concatenates the members of a constructed <see cref="T:System.Collections.Generic.IEnumerable`1" /> collection of type <see cref="T:System.String" />.</summary>
 	[Jazor(Op.Discard ,"static string.Concat(System.Collections.Generic.IEnumerable<string>)")]
@@ -292,15 +292,15 @@ public static class StringModule
 
 	///<summary>Concatenates two specified instances of <see cref="T:System.String" />.</summary>
 	[Jazor(Op.Discard ,"static string.Concat(string, string)")]
-	public extern static string _021d71ef80d7918e(object str0, object str1);
+	public extern static string _021d71ef80d7918e(string? str0, string? str1);
 
 	///<summary>Concatenates three specified instances of <see cref="T:System.String" />.</summary>
 	[Jazor(Op.Discard ,"static string.Concat(string, string, string)")]
-	public extern static string _ccc7897cb6f89406(object str0, object str1, object str2);
+	public extern static string _ccc7897cb6f89406(string? str0, string? str1, string? str2);
 
 	///<summary>Concatenates four specified instances of <see cref="T:System.String" />.</summary>
 	[Jazor(Op.Discard ,"static string.Concat(string, string, string, string)")]
-	public extern static string _abe4ba2b38df2f54(object str0, object str1, object str2, object str3);
+	public extern static string _abe4ba2b38df2f54(string? str0, string? str1, string? str2, string? str3);
 
 	///<summary>Concatenates the string representations of two specified read-only character spans.</summary>
 	[Jazor(Op.Discard ,"static string.Concat(System.ReadOnlySpan<char>, System.ReadOnlySpan<char>)")]
@@ -324,43 +324,43 @@ public static class StringModule
 
 	///<summary>Replaces one or more format items in a string with the string representation of a specified object.</summary>
 	[Jazor(Op.Discard ,"static string.Format(string, object)")]
-	public extern static string _980dff69bc3b8afa(object format, Object? arg0);
+	public extern static string _980dff69bc3b8afa(string format, object? arg0);
 
 	///<summary>Replaces the format items in a string with the string representation of two specified objects.</summary>
 	[Jazor(Op.Discard ,"static string.Format(string, object, object)")]
-	public extern static string _8606f3cc36d1f8ed(object format, Object? arg0, Object? arg1);
+	public extern static string _8606f3cc36d1f8ed(string format, object? arg0, object? arg1);
 
 	///<summary>Replaces the format items in a string with the string representation of three specified objects.</summary>
 	[Jazor(Op.Discard ,"static string.Format(string, object, object, object)")]
-	public extern static string _cda0978188193522(object format, Object? arg0, Object? arg1, Object? arg2);
+	public extern static string _cda0978188193522(string format, object? arg0, object? arg1, object? arg2);
 
 	///<summary>Replaces the format item in a specified string with the string representation of a corresponding object in a specified array.</summary>
 	[Jazor(Op.Discard ,"static string.Format(string, params object[])")]
-	public extern static string _99b8bed2ce27774c(object format,  object args);
+	public extern static string _99b8bed2ce27774c(string format,  object args);
 
 	///<summary>Replaces the format item in a specified string with the string representation of a corresponding object in a specified span.</summary>
 	[Jazor(Op.Discard ,"static string.Format(string, params System.ReadOnlySpan<object>)")]
-	public extern static string _38dfe358e33e2c5d(object format,  object args);
+	public extern static string _38dfe358e33e2c5d(string format,  object args);
 
 	///<summary>Replaces the format item or items in a specified string with the string representation of the corresponding object. A parameter supplies culture-specific formatting information.</summary>
 	[Jazor(Op.Discard ,"static string.Format(System.IFormatProvider, string, object)")]
-	public extern static string _03246c01949cf478(Intl.NumberFormat? provider, object format, Object? arg0);
+	public extern static string _03246c01949cf478(Intl.NumberFormat? provider, string format, object? arg0);
 
 	///<summary>Replaces the format items in a string with the string representation of two specified objects. A parameter supplies culture-specific formatting information.</summary>
 	[Jazor(Op.Discard ,"static string.Format(System.IFormatProvider, string, object, object)")]
-	public extern static string _661214177662ec13(Intl.NumberFormat? provider, object format, Object? arg0, Object? arg1);
+	public extern static string _661214177662ec13(Intl.NumberFormat? provider, string format, object? arg0, object? arg1);
 
 	///<summary>Replaces the format items in a string with the string representation of three specified objects. An parameter supplies culture-specific formatting information.</summary>
 	[Jazor(Op.Discard ,"static string.Format(System.IFormatProvider, string, object, object, object)")]
-	public extern static string _915cdc23ed4c4425(Intl.NumberFormat? provider, object format, Object? arg0, Object? arg1, Object? arg2);
+	public extern static string _915cdc23ed4c4425(Intl.NumberFormat? provider, string format, object? arg0, object? arg1, object? arg2);
 
 	///<summary>Replaces the format items in a string with the string representations of corresponding objects in a specified array. A parameter supplies culture-specific formatting information.</summary>
 	[Jazor(Op.Discard ,"static string.Format(System.IFormatProvider, string, params object[])")]
-	public extern static string _2b199e5bf9c94fc2(Intl.NumberFormat? provider, object format,  object args);
+	public extern static string _2b199e5bf9c94fc2(Intl.NumberFormat? provider, string format,  object args);
 
 	///<summary>Replaces the format items in a string with the string representations of corresponding objects in a specified span. A parameter supplies culture-specific formatting information.</summary>
 	[Jazor(Op.Discard ,"static string.Format(System.IFormatProvider, string, params System.ReadOnlySpan<object>)")]
-	public extern static string _8a09a1f92212621f(Intl.NumberFormat? provider, object format,  object args);
+	public extern static string _8a09a1f92212621f(Intl.NumberFormat? provider, string format,  object args);
 
 	///<summary>Replaces the format item or items in a <see cref="T:System.Text.CompositeFormat" /> with the string representation of the corresponding objects in the specified format.</summary>
 	[Jazor(Op.Discard ,"static string.Format<TArg0>(System.IFormatProvider, System.Text.CompositeFormat, TArg0)")]
@@ -384,7 +384,7 @@ public static class StringModule
 
 	///<summary>Returns a new string in which a specified string is inserted at a specified index position in this instance.</summary>
 	[Jazor(Op.Discard ,"string.Insert(int, string)")]
-	public extern static string _91223088dad76801(String instance, Number startIndex, object value);
+	public extern static string _91223088dad76801(string instance, Number startIndex, string value);
 
 	///<summary>Concatenates an array of strings, using the specified separator between each member.</summary>
 	[Jazor(Op.Discard ,"static string.Join(char, params string[])")]
@@ -396,11 +396,11 @@ public static class StringModule
 
 	///<summary>Concatenates all the elements of a string array, using the specified separator between each element.</summary>
 	[Jazor(Op.Discard ,"static string.Join(string, params string[])")]
-	public extern static string _f269cd27a4bbd549(object separator,  object value);
+	public extern static string _f269cd27a4bbd549(string? separator,  object value);
 
 	///<summary>Concatenates a span of strings, using the specified separator between each member.</summary>
 	[Jazor(Op.Discard ,"static string.Join(string, params System.ReadOnlySpan<string>)")]
-	public extern static string _224682d778b9facf(object separator,  object value);
+	public extern static string _224682d778b9facf(string? separator,  object value);
 
 	///<summary>Concatenates an array of strings, using the specified separator between each member, starting with the element in <paramref name="value" /> located at the <paramref name="startIndex" /> position, and concatenating up to <paramref name="count" /> elements.</summary>
 	[Jazor(Op.Discard ,"static string.Join(char, string[], int, int)")]
@@ -408,11 +408,11 @@ public static class StringModule
 
 	///<summary>Concatenates the specified elements of a string array, using the specified separator between each element.</summary>
 	[Jazor(Op.Discard ,"static string.Join(string, string[], int, int)")]
-	public extern static string _f1ad756b7baec84b(object separator, object value, Number startIndex, Number count);
+	public extern static string _f1ad756b7baec84b(string? separator, object value, Number startIndex, Number count);
 
 	///<summary>Concatenates the members of a constructed <see cref="T:System.Collections.Generic.IEnumerable`1" /> collection of type <see cref="T:System.String" />, using the specified separator between each member.</summary>
 	[Jazor(Op.Discard ,"static string.Join(string, System.Collections.Generic.IEnumerable<string>)")]
-	public extern static string _d8814705c8078096(object separator, object values);
+	public extern static string _d8814705c8078096(string? separator, object values);
 
 	///<summary>Concatenates the string representations of an array of objects, using the specified separator between each member.</summary>
 	[Jazor(Op.Discard ,"static string.Join(char, params object[])")]
@@ -424,305 +424,305 @@ public static class StringModule
 
 	///<summary>Concatenates the elements of an object array, using the specified separator between each element.</summary>
 	[Jazor(Op.Discard ,"static string.Join(string, params object[])")]
-	public extern static string _c69ae51b8f3b72f0(object separator,  object values);
+	public extern static string _c69ae51b8f3b72f0(string? separator,  object values);
 
 	///<summary>Concatenates the string representations of a span of objects, using the specified separator between each member.</summary>
 	[Jazor(Op.Discard ,"static string.Join(string, params System.ReadOnlySpan<object>)")]
-	public extern static string _f8903c473c9e5f05(object separator,  object values);
+	public extern static string _f8903c473c9e5f05(string? separator,  object values);
 
 	///<summary>Concatenates the members of a collection, using the specified separator between each member.</summary>
 	[Jazor(Op.Discard ,"static string.Join<T>(char, System.Collections.Generic.IEnumerable<T>)")]
-	public extern static string _1c599eccbbc8f2b8<T>(Number separator, IEnumerable<T> values);
+	public extern static string _1c599eccbbc8f2b8<T>(Number separator, Array<T> values);
 
 	///<summary>Concatenates the members of a collection, using the specified separator between each member.</summary>
 	[Jazor(Op.Discard ,"static string.Join<T>(string, System.Collections.Generic.IEnumerable<T>)")]
-	public extern static string _c78854b22e947a4f<T>(object separator, IEnumerable<T> values);
+	public extern static string _c78854b22e947a4f<T>(string? separator, Array<T> values);
 
 	///<summary>Returns a new string that right-aligns the characters in this instance by padding them with spaces on the left, for a specified total length.</summary>
 	[Jazor(Op.Discard ,"string.PadLeft(int)")]
-	public extern static string _26620c4bafb4f435(String instance, Number totalWidth);
+	public extern static string _26620c4bafb4f435(string instance, Number totalWidth);
 
 	///<summary>Returns a new string that right-aligns the characters in this instance by padding them on the left with a specified Unicode character, for a specified total length.</summary>
 	[Jazor(Op.Discard ,"string.PadLeft(int, char)")]
-	public extern static string _7894e0294f780eb5(String instance, Number totalWidth, Number paddingChar);
+	public extern static string _7894e0294f780eb5(string instance, Number totalWidth, Number paddingChar);
 
 	///<summary>Returns a new string that left-aligns the characters in this string by padding them with spaces on the right, for a specified total length.</summary>
 	[Jazor(Op.Discard ,"string.PadRight(int)")]
-	public extern static string _0e8f0a28fc1de8c2(String instance, Number totalWidth);
+	public extern static string _0e8f0a28fc1de8c2(string instance, Number totalWidth);
 
 	///<summary>Returns a new string that left-aligns the characters in this string by padding them on the right with a specified Unicode character, for a specified total length.</summary>
 	[Jazor(Op.Discard ,"string.PadRight(int, char)")]
-	public extern static string _685227781124d327(String instance, Number totalWidth, Number paddingChar);
+	public extern static string _685227781124d327(string instance, Number totalWidth, Number paddingChar);
 
 	///<summary>Returns a new string in which a specified number of characters in the current instance beginning at a specified position have been deleted.</summary>
 	[Jazor(Op.Discard ,"string.Remove(int, int)")]
-	public extern static string _ac075983805231a6(String instance, Number startIndex, Number count);
+	public extern static string _ac075983805231a6(string instance, Number startIndex, Number count);
 
 	///<summary>Returns a new string in which all the characters in the current instance, beginning at a specified position and continuing through the last position, have been deleted.</summary>
 	[Jazor(Op.Discard ,"string.Remove(int)")]
-	public extern static string _d258363cef56cdfb(String instance, Number startIndex);
+	public extern static string _d258363cef56cdfb(string instance, Number startIndex);
 
 	///<summary>Returns a new string in which all occurrences of a specified string in the current instance are replaced with another specified string, using the provided culture and case sensitivity.</summary>
 	[Jazor(Op.Discard ,"string.Replace(string, string, bool, System.Globalization.CultureInfo)")]
-	public extern static string _80ebf2c83f8072e2(String instance, object oldValue, object newValue, object ignoreCase, String? culture);
+	public extern static string _80ebf2c83f8072e2(string instance, string oldValue, string? newValue, object ignoreCase, String? culture);
 
 	///<summary>Returns a new string in which all occurrences of a specified string in the current instance are replaced with another specified string, using the provided comparison type.</summary>
 	[Jazor(Op.Discard ,"string.Replace(string, string, System.StringComparison)")]
-	public extern static string _8a7510653022a974(String instance, object oldValue, object newValue, object comparisonType);
+	public extern static string _8a7510653022a974(string instance, string oldValue, string? newValue, object comparisonType);
 
 	///<summary>Returns a new string in which all occurrences of a specified Unicode character in this instance are replaced with another specified Unicode character.</summary>
 	[Jazor(Op.Discard ,"string.Replace(char, char)")]
-	public extern static string _7d7cb13bbbbb83c8(String instance, Number oldChar, Number newChar);
+	public extern static string _7d7cb13bbbbb83c8(string instance, Number oldChar, Number newChar);
 
 	///<summary>Returns a new string in which all occurrences of a specified string in the current instance are replaced with another specified string.</summary>
 	[Jazor(Op.Discard ,"string.Replace(string, string)")]
-	public extern static string _78a0e353c29afbc9(String instance, object oldValue, object newValue);
+	public extern static string _78a0e353c29afbc9(string instance, string oldValue, string? newValue);
 
 	///<summary>Replaces all newline sequences in the current string with <see cref="P:System.Environment.NewLine" />.</summary>
 	[Jazor(Op.Discard ,"string.ReplaceLineEndings()")]
-	public extern static string _3720e4de26fa4c1b(String instance);
+	public extern static string _3720e4de26fa4c1b(string instance);
 
 	///<summary>Replaces all newline sequences in the current string with <paramref name="replacementText" />.</summary>
 	[Jazor(Op.Discard ,"string.ReplaceLineEndings(string)")]
-	public extern static string _35041c0250b36108(String instance, object replacementText);
+	public extern static string _35041c0250b36108(string instance, string replacementText);
 
 	///<summary>Splits a string into substrings based on a specified delimiting character and, optionally, options.</summary>
 	[Jazor(Op.Discard ,"string.Split(char, System.StringSplitOptions)")]
-	public extern static string[] _d8080c573d45b4b4(String instance, Number separator, object options);
+	public extern static string[] _d8080c573d45b4b4(string instance, Number separator, object options);
 
 	///<summary>Splits a string into a maximum number of substrings based on a specified delimiting character and, optionally, options.        Splits a string into a maximum number of substrings based on the provided character separator, optionally omitting empty substrings from the result.</summary>
 	[Jazor(Op.Discard ,"string.Split(char, int, System.StringSplitOptions)")]
-	public extern static string[] _aaa73a4811837ec7(String instance, Number separator, Number count, object options);
+	public extern static string[] _aaa73a4811837ec7(string instance, Number separator, Number count, object options);
 
 	///<summary>Splits a string into substrings based on specified delimiting characters.</summary>
 	[Jazor(Op.Discard ,"string.Split(params char[])")]
-	public extern static string[] _62c8810ea13dba45(String instance,  object separator);
+	public extern static string[] _62c8810ea13dba45(string instance,  object separator);
 
 	///<summary>Splits a string into substrings based on specified delimiting characters.</summary>
 	[Jazor(Op.Discard ,"string.Split(params System.ReadOnlySpan<char>)")]
-	public extern static string[] _5417a93b3075813a(String instance,  Uint32Array separator);
+	public extern static string[] _5417a93b3075813a(string instance,  Uint32Array separator);
 
 	///<summary>Splits a string into a maximum number of substrings based on specified delimiting characters.</summary>
 	[Jazor(Op.Discard ,"string.Split(char[], int)")]
-	public extern static string[] _d03d120228c0c4ed(String instance, object separator, Number count);
+	public extern static string[] _d03d120228c0c4ed(string instance, object separator, Number count);
 
 	///<summary>Splits a string into substrings based on specified delimiting characters and options.</summary>
 	[Jazor(Op.Discard ,"string.Split(char[], System.StringSplitOptions)")]
-	public extern static string[] _25c1f15b0ed2cb6e(String instance, object separator, object options);
+	public extern static string[] _25c1f15b0ed2cb6e(string instance, object separator, object options);
 
 	///<summary>Splits a string into a maximum number of substrings based on specified delimiting characters and, optionally, options.</summary>
 	[Jazor(Op.Discard ,"string.Split(char[], int, System.StringSplitOptions)")]
-	public extern static string[] _c8e5ceed33c6c638(String instance, object separator, Number count, object options);
+	public extern static string[] _c8e5ceed33c6c638(string instance, object separator, Number count, object options);
 
 	///<summary>Splits a string into substrings that are based on the provided string separator.</summary>
 	[Jazor(Op.Discard ,"string.Split(string, System.StringSplitOptions)")]
-	public extern static string[] _189761f781df8770(String instance, object separator, object options);
+	public extern static string[] _189761f781df8770(string instance, string? separator, object options);
 
 	///<summary>Splits a string into a maximum number of substrings based on a specified delimiting string and, optionally, options.</summary>
 	[Jazor(Op.Discard ,"string.Split(string, int, System.StringSplitOptions)")]
-	public extern static string[] _96eb0a23afa7fdfb(String instance, object separator, Number count, object options);
+	public extern static string[] _96eb0a23afa7fdfb(string instance, string? separator, Number count, object options);
 
 	///<summary>Splits a string into substrings based on a specified delimiting string and, optionally, options.</summary>
 	[Jazor(Op.Discard ,"string.Split(string[], System.StringSplitOptions)")]
-	public extern static string[] _fff99c96206a241e(String instance, object separator, object options);
+	public extern static string[] _fff99c96206a241e(string instance, object separator, object options);
 
 	///<summary>Splits a string into a maximum number of substrings based on specified delimiting strings and, optionally, options.</summary>
 	[Jazor(Op.Discard ,"string.Split(string[], int, System.StringSplitOptions)")]
-	public extern static string[] _f3c7edcc7cc89a4a(String instance, object separator, Number count, object options);
+	public extern static string[] _f3c7edcc7cc89a4a(string instance, object separator, Number count, object options);
 
 	///<summary>Retrieves a substring from this instance. The substring starts at a specified character position and continues to the end of the string.</summary>
 	[Jazor(Op.Discard ,"string.Substring(int)")]
-	public extern static string _6b947e3ae92ce851(String instance, Number startIndex);
+	public extern static string _6b947e3ae92ce851(string instance, Number startIndex);
 
 	///<summary>Retrieves a substring from this instance. The substring starts at a specified character position and has a specified length.</summary>
 	[Jazor(Op.Discard ,"string.Substring(int, int)")]
-	public extern static string _ac659b5819c0360c(String instance, Number startIndex, Number length);
+	public extern static string _ac659b5819c0360c(string instance, Number startIndex, Number length);
 
 	///<summary>Returns a copy of this string converted to lowercase.</summary>
 	[Jazor(Op.Discard ,"string.ToLower()")]
-	public extern static string _482205d85705de41(String instance);
+	public extern static string _482205d85705de41(string instance);
 
 	///<summary>Returns a copy of this string converted to lowercase, using the casing rules of the specified culture.</summary>
 	[Jazor(Op.Discard ,"string.ToLower(System.Globalization.CultureInfo)")]
-	public extern static string _8e06da9945efff04(String instance, String? culture);
+	public extern static string _8e06da9945efff04(string instance, String? culture);
 
 	///<summary>Returns a copy of this <see cref="T:System.String" /> object converted to lowercase using the casing rules of the invariant culture.</summary>
 	[Jazor(Op.Discard ,"string.ToLowerInvariant()")]
-	public extern static string _3ff043d0307f4917(String instance);
+	public extern static string _3ff043d0307f4917(string instance);
 
 	///<summary>Returns a copy of this string converted to uppercase.</summary>
 	[Jazor(Op.Discard ,"string.ToUpper()")]
-	public extern static string _4b84099d877364bd(String instance);
+	public extern static string _4b84099d877364bd(string instance);
 
 	///<summary>Returns a copy of this string converted to uppercase, using the casing rules of the specified culture.</summary>
 	[Jazor(Op.Discard ,"string.ToUpper(System.Globalization.CultureInfo)")]
-	public extern static string _9369d4b370002404(String instance, String? culture);
+	public extern static string _9369d4b370002404(string instance, String? culture);
 
 	///<summary>Returns a copy of this <see cref="T:System.String" /> object converted to uppercase using the casing rules of the invariant culture.</summary>
 	[Jazor(Op.Discard ,"string.ToUpperInvariant()")]
-	public extern static string _3dc9c0782170eb46(String instance);
+	public extern static string _3dc9c0782170eb46(string instance);
 
 	///<summary>Removes all leading and trailing white-space characters from the current string.</summary>
 	[Jazor(Op.Discard ,"string.Trim()")]
-	public extern static string _eb98ee79e16b7ad4(String instance);
+	public extern static string _eb98ee79e16b7ad4(string instance);
 
 	///<summary>Removes all leading and trailing instances of a character from the current string.</summary>
 	[Jazor(Op.Discard ,"string.Trim(char)")]
-	public extern static string _5d7e005b9dcb67de(String instance, Number trimChar);
+	public extern static string _5d7e005b9dcb67de(string instance, Number trimChar);
 
 	///<summary>Removes all leading and trailing occurrences of a set of characters specified in an array from the current string.</summary>
 	[Jazor(Op.Discard ,"string.Trim(params char[])")]
-	public extern static string _c6c444b4e71e14f7(String instance,  object trimChars);
+	public extern static string _c6c444b4e71e14f7(string instance,  object trimChars);
 
 	///<summary>Removes all leading and trailing occurrences of a set of characters specified in a span from the current string.</summary>
 	[Jazor(Op.Discard ,"string.Trim(params System.ReadOnlySpan<char>)")]
-	public extern static string _0e8e4169883e5222(String instance,  Uint32Array trimChars);
+	public extern static string _0e8e4169883e5222(string instance,  Uint32Array trimChars);
 
 	///<summary>Removes all the leading white-space characters from the current string.</summary>
 	[Jazor(Op.Discard ,"string.TrimStart()")]
-	public extern static string _1ca7f6e7edd1e070(String instance);
+	public extern static string _1ca7f6e7edd1e070(string instance);
 
 	///<summary>Removes all the leading occurrences of a specified character from the current string.</summary>
 	[Jazor(Op.Discard ,"string.TrimStart(char)")]
-	public extern static string _561fe737e62cf332(String instance, Number trimChar);
+	public extern static string _561fe737e62cf332(string instance, Number trimChar);
 
 	///<summary>Removes all the leading occurrences of a set of characters specified in an array from the current string.</summary>
 	[Jazor(Op.Discard ,"string.TrimStart(params char[])")]
-	public extern static string _98731360726c6976(String instance,  object trimChars);
+	public extern static string _98731360726c6976(string instance,  object trimChars);
 
 	///<summary>Removes all the leading occurrences of a set of characters specified in a span from the current string.</summary>
 	[Jazor(Op.Discard ,"string.TrimStart(params System.ReadOnlySpan<char>)")]
-	public extern static string _f0473806a2e03bb6(String instance,  Uint32Array trimChars);
+	public extern static string _f0473806a2e03bb6(string instance,  Uint32Array trimChars);
 
 	///<summary>Removes all the trailing white-space characters from the current string.</summary>
 	[Jazor(Op.Discard ,"string.TrimEnd()")]
-	public extern static string _760bdb666072200b(String instance);
+	public extern static string _760bdb666072200b(string instance);
 
 	///<summary>Removes all the trailing occurrences of a character from the current string.</summary>
 	[Jazor(Op.Discard ,"string.TrimEnd(char)")]
-	public extern static string _eb362a090d734099(String instance, Number trimChar);
+	public extern static string _eb362a090d734099(string instance, Number trimChar);
 
 	///<summary>Removes all the trailing occurrences of a set of characters specified in an array from the current string.</summary>
 	[Jazor(Op.Discard ,"string.TrimEnd(params char[])")]
-	public extern static string _a62862c1fbaa21c3(String instance,  object trimChars);
+	public extern static string _a62862c1fbaa21c3(string instance,  object trimChars);
 
 	///<summary>Removes all the trailing occurrences of a set of characters specified in a span from the current string.</summary>
 	[Jazor(Op.Discard ,"string.TrimEnd(params System.ReadOnlySpan<char>)")]
-	public extern static string _4f8d256566de4b17(String instance,  Uint32Array trimChars);
+	public extern static string _4f8d256566de4b17(string instance,  Uint32Array trimChars);
 
 	///<summary>Returns a value indicating whether a specified substring occurs within this string.</summary>
 	[Jazor(Op.Discard ,"string.Contains(string)")]
-	public extern static bool _c42ed9bafadfb16c(String instance, object value);
+	public extern static bool _c42ed9bafadfb16c(string instance, string value);
 
 	///<summary>Returns a value indicating whether a specified string occurs within this string, using the specified comparison rules.</summary>
 	[Jazor(Op.Discard ,"string.Contains(string, System.StringComparison)")]
-	public extern static bool _d52d7114d5c1b839(String instance, object value, object comparisonType);
+	public extern static bool _d52d7114d5c1b839(string instance, string value, object comparisonType);
 
 	///<summary>Returns a value indicating whether a specified character occurs within this string.</summary>
 	[Jazor(Op.Discard ,"string.Contains(char)")]
-	public extern static bool _5de05262ccc56b2e(String instance, Number value);
+	public extern static bool _5de05262ccc56b2e(string instance, Number value);
 
 	///<summary>Returns a value indicating whether a specified character occurs within this string, using the specified comparison rules.</summary>
 	[Jazor(Op.Discard ,"string.Contains(char, System.StringComparison)")]
-	public extern static bool _16d4b2b4de019fb2(String instance, Number value, object comparisonType);
+	public extern static bool _16d4b2b4de019fb2(string instance, Number value, object comparisonType);
 
 	///<summary>Reports the zero-based index of the first occurrence of the specified Unicode character in this string.</summary>
 	[Jazor(Op.Discard ,"string.IndexOf(char)")]
-	public extern static Number _9c8b4ffa28964fba(String instance, Number value);
+	public extern static Number _9c8b4ffa28964fba(string instance, Number value);
 
 	///<summary>Reports the zero-based index of the first occurrence of the specified Unicode character in this string. The search starts at a specified character position.</summary>
 	[Jazor(Op.Discard ,"string.IndexOf(char, int)")]
-	public extern static Number _c98394955f62f130(String instance, Number value, Number startIndex);
+	public extern static Number _c98394955f62f130(string instance, Number value, Number startIndex);
 
 	///<summary>Reports the zero-based index of the first occurrence of the specified Unicode character in this string. A parameter specifies the type of search to use for the specified character.</summary>
 	[Jazor(Op.Discard ,"string.IndexOf(char, System.StringComparison)")]
-	public extern static Number _5331447e2c855a66(String instance, Number value, object comparisonType);
+	public extern static Number _5331447e2c855a66(string instance, Number value, object comparisonType);
 
 	///<summary>Reports the zero-based index of the first occurrence of the specified character in this instance. The search starts at a specified character position and examines a specified number of character positions.</summary>
 	[Jazor(Op.Discard ,"string.IndexOf(char, int, int)")]
-	public extern static Number _d2873e605fbed764(String instance, Number value, Number startIndex, Number count);
+	public extern static Number _d2873e605fbed764(string instance, Number value, Number startIndex, Number count);
 
 	///<summary>Reports the zero-based index of the first occurrence in this instance of any character in a specified array of Unicode characters.</summary>
 	[Jazor(Op.Discard ,"string.IndexOfAny(char[])")]
-	public extern static Number _69b749a1c6cbae78(String instance, object anyOf);
+	public extern static Number _69b749a1c6cbae78(string instance, object anyOf);
 
 	///<summary>Reports the zero-based index of the first occurrence in this instance of any character in a specified array of Unicode characters. The search starts at a specified character position.</summary>
 	[Jazor(Op.Discard ,"string.IndexOfAny(char[], int)")]
-	public extern static Number _63633a5f3b85c5a9(String instance, object anyOf, Number startIndex);
+	public extern static Number _63633a5f3b85c5a9(string instance, object anyOf, Number startIndex);
 
 	///<summary>Reports the zero-based index of the first occurrence in this instance of any character in a specified array of Unicode characters. The search starts at a specified character position and examines a specified number of character positions.</summary>
 	[Jazor(Op.Discard ,"string.IndexOfAny(char[], int, int)")]
-	public extern static Number _cb863079aae72451(String instance, object anyOf, Number startIndex, Number count);
+	public extern static Number _cb863079aae72451(string instance, object anyOf, Number startIndex, Number count);
 
 	///<summary>Reports the zero-based index of the first occurrence of the specified string in this instance.</summary>
 	[Jazor(Op.Discard ,"string.IndexOf(string)")]
-	public extern static Number _6fd03b0f0c2de338(String instance, object value);
+	public extern static Number _6fd03b0f0c2de338(string instance, string value);
 
 	///<summary>Reports the zero-based index of the first occurrence of the specified string in this instance. The search starts at a specified character position.</summary>
 	[Jazor(Op.Discard ,"string.IndexOf(string, int)")]
-	public extern static Number _8c391718b5fbe536(String instance, object value, Number startIndex);
+	public extern static Number _8c391718b5fbe536(string instance, string value, Number startIndex);
 
 	///<summary>Reports the zero-based index of the first occurrence of the specified string in this instance. The search starts at a specified character position and examines a specified number of character positions.</summary>
 	[Jazor(Op.Discard ,"string.IndexOf(string, int, int)")]
-	public extern static Number _ff549d811898fb56(String instance, object value, Number startIndex, Number count);
+	public extern static Number _ff549d811898fb56(string instance, string value, Number startIndex, Number count);
 
 	///<summary>Reports the zero-based index of the first occurrence of the specified string in the current <see cref="T:System.String" /> object. A parameter specifies the type of search to use for the specified string.</summary>
 	[Jazor(Op.Discard ,"string.IndexOf(string, System.StringComparison)")]
-	public extern static Number _3ae4900da2b07b27(String instance, object value, object comparisonType);
+	public extern static Number _3ae4900da2b07b27(string instance, string value, object comparisonType);
 
 	///<summary>Reports the zero-based index of the first occurrence of the specified string in the current <see cref="T:System.String" /> object. Parameters specify the starting search position in the current string and the type of search to use for the specified string.</summary>
 	[Jazor(Op.Discard ,"string.IndexOf(string, int, System.StringComparison)")]
-	public extern static Number _2fabe2b831abe71e(String instance, object value, Number startIndex, object comparisonType);
+	public extern static Number _2fabe2b831abe71e(string instance, string value, Number startIndex, object comparisonType);
 
 	///<summary>Reports the zero-based index of the first occurrence of the specified string in the current <see cref="T:System.String" /> object. Parameters specify the starting search position in the current string, the number of characters in the current string to search, and the type of search to use for the specified string.</summary>
 	[Jazor(Op.Discard ,"string.IndexOf(string, int, int, System.StringComparison)")]
-	public extern static Number _ab22561fc42166db(String instance, object value, Number startIndex, Number count, object comparisonType);
+	public extern static Number _ab22561fc42166db(string instance, string value, Number startIndex, Number count, object comparisonType);
 
 	///<summary>Reports the zero-based index position of the last occurrence of a specified Unicode character within this instance.</summary>
 	[Jazor(Op.Discard ,"string.LastIndexOf(char)")]
-	public extern static Number _da9a8971cb787f7f(String instance, Number value);
+	public extern static Number _da9a8971cb787f7f(string instance, Number value);
 
 	///<summary>Reports the zero-based index position of the last occurrence of a specified Unicode character within this instance. The search starts at a specified character position and proceeds backward toward the beginning of the string.</summary>
 	[Jazor(Op.Discard ,"string.LastIndexOf(char, int)")]
-	public extern static Number _b21118cfc4c55581(String instance, Number value, Number startIndex);
+	public extern static Number _b21118cfc4c55581(string instance, Number value, Number startIndex);
 
 	///<summary>Reports the zero-based index position of the last occurrence of the specified Unicode character in a substring within this instance. The search starts at a specified character position and proceeds backward toward the beginning of the string for a specified number of character positions.</summary>
 	[Jazor(Op.Discard ,"string.LastIndexOf(char, int, int)")]
-	public extern static Number _dbdd57f8d259ce66(String instance, Number value, Number startIndex, Number count);
+	public extern static Number _dbdd57f8d259ce66(string instance, Number value, Number startIndex, Number count);
 
 	///<summary>Reports the zero-based index position of the last occurrence in this instance of one or more characters specified in a Unicode array.</summary>
 	[Jazor(Op.Discard ,"string.LastIndexOfAny(char[])")]
-	public extern static Number _c0212f4213a99019(String instance, object anyOf);
+	public extern static Number _c0212f4213a99019(string instance, object anyOf);
 
 	///<summary>Reports the zero-based index position of the last occurrence in this instance of one or more characters specified in a Unicode array. The search starts at a specified character position and proceeds backward toward the beginning of the string.</summary>
 	[Jazor(Op.Discard ,"string.LastIndexOfAny(char[], int)")]
-	public extern static Number _c401e64318e768c4(String instance, object anyOf, Number startIndex);
+	public extern static Number _c401e64318e768c4(string instance, object anyOf, Number startIndex);
 
 	///<summary>Reports the zero-based index position of the last occurrence in this instance of one or more characters specified in a Unicode array. The search starts at a specified character position and proceeds backward toward the beginning of the string for a specified number of character positions.</summary>
 	[Jazor(Op.Discard ,"string.LastIndexOfAny(char[], int, int)")]
-	public extern static Number _3c17fcef5615e7a3(String instance, object anyOf, Number startIndex, Number count);
+	public extern static Number _3c17fcef5615e7a3(string instance, object anyOf, Number startIndex, Number count);
 
 	///<summary>Reports the zero-based index position of the last occurrence of a specified string within this instance.</summary>
 	[Jazor(Op.Discard ,"string.LastIndexOf(string)")]
-	public extern static Number _ed4ccee87d9df9fc(String instance, object value);
+	public extern static Number _ed4ccee87d9df9fc(string instance, string value);
 
 	///<summary>Reports the zero-based index position of the last occurrence of a specified string within this instance. The search starts at a specified character position and proceeds backward toward the beginning of the string.</summary>
 	[Jazor(Op.Discard ,"string.LastIndexOf(string, int)")]
-	public extern static Number _404d5ed27b7e190a(String instance, object value, Number startIndex);
+	public extern static Number _404d5ed27b7e190a(string instance, string value, Number startIndex);
 
 	///<summary>Reports the zero-based index position of the last occurrence of a specified string within this instance. The search starts at a specified character position and proceeds backward toward the beginning of the string for a specified number of character positions.</summary>
 	[Jazor(Op.Discard ,"string.LastIndexOf(string, int, int)")]
-	public extern static Number _c4ee024d06ee238c(String instance, object value, Number startIndex, Number count);
+	public extern static Number _c4ee024d06ee238c(string instance, string value, Number startIndex, Number count);
 
 	///<summary>Reports the zero-based index of the last occurrence of a specified string within the current <see cref="T:System.String" /> object. A parameter specifies the type of search to use for the specified string.</summary>
 	[Jazor(Op.Discard ,"string.LastIndexOf(string, System.StringComparison)")]
-	public extern static Number _78449c135e18c4bc(String instance, object value, object comparisonType);
+	public extern static Number _78449c135e18c4bc(string instance, string value, object comparisonType);
 
 	///<summary>Reports the zero-based index of the last occurrence of a specified string within the current <see cref="T:System.String" /> object. The search starts at a specified character position and proceeds backward toward the beginning of the string. A parameter specifies the type of comparison to perform when searching for the specified string.</summary>
 	[Jazor(Op.Discard ,"string.LastIndexOf(string, int, System.StringComparison)")]
-	public extern static Number _359dbce44ce4a4da(String instance, object value, Number startIndex, object comparisonType);
+	public extern static Number _359dbce44ce4a4da(string instance, string value, Number startIndex, object comparisonType);
 
 	///<summary>Reports the zero-based index position of the last occurrence of a specified string within this instance. The search starts at a specified character position and proceeds backward toward the beginning of the string for the specified number of character positions. A parameter specifies the type of comparison to perform when searching for the specified string.</summary>
 	[Jazor(Op.Discard ,"string.LastIndexOf(string, int, int, System.StringComparison)")]
-	public extern static Number _c911a06f021bd138(String instance, object value, Number startIndex, Number count, object comparisonType);
+	public extern static Number _c911a06f021bd138(string instance, string value, Number startIndex, Number count, object comparisonType);
 }

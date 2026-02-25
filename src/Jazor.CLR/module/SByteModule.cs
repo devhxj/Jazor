@@ -13,7 +13,7 @@ public static class SByteModule
 
 	///<summary>Compares this instance to a specified object and returns an indication of their relative values.</summary>
 	[Jazor(Op.Discard ,"sbyte.CompareTo(object)")]
-	public extern static Number _f8a387725694962f(Number instance, Object? obj);
+	public extern static Number _f8a387725694962f(Number instance, object? obj);
 
 	///<summary>Compares this instance to a specified 8-bit signed integer and returns an indication of their relative values.</summary>
 	[Jazor(Op.Discard ,"sbyte.CompareTo(sbyte)")]
@@ -21,7 +21,7 @@ public static class SByteModule
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
 	[Jazor(Op.Discard ,"override sbyte.Equals(object)")]
-	public extern static bool _74c9452fa767096f(Number instance, Object? obj);
+	public extern static bool _74c9452fa767096f(Number instance, object? obj);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified <see cref="T:System.SByte" /> value.</summary>
 	[Jazor(Op.Discard ,"sbyte.Equals(sbyte)")]
@@ -37,7 +37,7 @@ public static class SByteModule
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation, using the specified format.</summary>
 	[Jazor(Op.Discard ,"sbyte.ToString(string)")]
-	public extern static string _f1581e4c3d9629b5(Number instance, object format);
+	public extern static string _f1581e4c3d9629b5(Number instance, string? format);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation using the specified culture-specific format information.</summary>
 	[Jazor(Op.Discard ,"sbyte.ToString(System.IFormatProvider)")]
@@ -45,31 +45,31 @@ public static class SByteModule
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation using the specified format and culture-specific format information.</summary>
 	[Jazor(Op.Discard ,"sbyte.ToString(string, System.IFormatProvider)")]
-	public extern static string _e06a6af137f4a848(Number instance, object format, Intl.NumberFormat? provider);
+	public extern static string _e06a6af137f4a848(Number instance, string? format, Intl.NumberFormat? provider);
 
 	///<summary>Tries to format the value of the current 8-bit signed integer instance into the provided span of characters.</summary>
 	[Jazor(Op.Discard ,"sbyte.TryFormat(System.Span<char>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)")]
-	public extern static bool _cc044b52a705b83a(Number instance, Uint32Array destination, Box<Number> charsWritten, Uint32Array format, Intl.NumberFormat? provider);
+	public extern static Array<object?> _cc044b52a705b83a(Number instance, Uint32Array destination, out Number charsWritten, Uint32Array format, Intl.NumberFormat? provider);
 
 	///<summary>Tries to format the value of the current instance as UTF-8 into the provided span of bytes.</summary>
 	[Jazor(Op.Discard ,"sbyte.TryFormat(System.Span<byte>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)")]
-	public extern static bool _08ca5484266e1a7b(Number instance, Uint8Array utf8Destination, Box<Number> bytesWritten, Uint32Array format, Intl.NumberFormat? provider);
+	public extern static Array<object?> _08ca5484266e1a7b(Number instance, Uint8Array utf8Destination, out Number bytesWritten, Uint32Array format, Intl.NumberFormat? provider);
 
 	///<summary>Converts the string representation of a number to its 8-bit signed integer equivalent.</summary>
 	[Jazor(Op.Discard ,"static sbyte.Parse(string)")]
-	public extern static Number _fc6fdbb937cb390a(object s);
+	public extern static Number _fc6fdbb937cb390a(string s);
 
 	///<summary>Converts the string representation of a number in a specified style to its 8-bit signed integer equivalent.</summary>
 	[Jazor(Op.Discard ,"static sbyte.Parse(string, System.Globalization.NumberStyles)")]
-	public extern static Number _302c7b4fcff325d8(object s, object style);
+	public extern static Number _302c7b4fcff325d8(string s, object style);
 
 	///<summary>Converts the string representation of a number in a specified culture-specific format to its 8-bit signed integer equivalent.</summary>
 	[Jazor(Op.Discard ,"static sbyte.Parse(string, System.IFormatProvider)")]
-	public extern static Number _28a6ad10aa689a4f(object s, Intl.NumberFormat? provider);
+	public extern static Number _28a6ad10aa689a4f(string s, Intl.NumberFormat? provider);
 
 	///<summary>Converts the string representation of a number that is in a specified style and culture-specific format to its 8-bit signed equivalent.</summary>
 	[Jazor(Op.Discard ,"static sbyte.Parse(string, System.Globalization.NumberStyles, System.IFormatProvider)")]
-	public extern static Number _8885d6602b6a8ecd(object s, object style, Intl.NumberFormat? provider);
+	public extern static Number _8885d6602b6a8ecd(string s, object style, Intl.NumberFormat? provider);
 
 	///<summary>Converts the span representation of a number that is in a specified style and culture-specific format to its 8-bit signed equivalent.</summary>
 	[Jazor(Op.Discard ,"static sbyte.Parse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider)")]
@@ -77,23 +77,23 @@ public static class SByteModule
 
 	///<summary>Tries to convert the string representation of a number to its <see cref="T:System.SByte" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static sbyte.TryParse(string, out sbyte)")]
-	public extern static bool _d9082c2537283f95(object s, Box<Number> result);
+	public extern static Array<object?> _d9082c2537283f95(string? s, out Number result);
 
 	///<summary>Tries to convert the span representation of a number to its <see cref="T:System.SByte" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static sbyte.TryParse(System.ReadOnlySpan<char>, out sbyte)")]
-	public extern static bool _a3ccaa03549862bc(Uint32Array s, Box<Number> result);
+	public extern static Array<object?> _a3ccaa03549862bc(Uint32Array s, out Number result);
 
 	///<summary>Tries to convert a UTF-8 character span containing the string representation of a number to its 8-bit signed integer equivalent.</summary>
 	[Jazor(Op.Discard ,"static sbyte.TryParse(System.ReadOnlySpan<byte>, out sbyte)")]
-	public extern static bool _f25602df99a7ca89(Uint8Array utf8Text, Box<Number> result);
+	public extern static Array<object?> _f25602df99a7ca89(Uint8Array utf8Text, out Number result);
 
 	///<summary>Tries to convert the string representation of a number in a specified style and culture-specific format to its <see cref="T:System.SByte" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static sbyte.TryParse(string, System.Globalization.NumberStyles, System.IFormatProvider, out sbyte)")]
-	public extern static bool _b5d3ab86487e1092(object s, object style, Intl.NumberFormat? provider, Box<Number> result);
+	public extern static Array<object?> _b5d3ab86487e1092(string? s, object style, Intl.NumberFormat? provider, out Number result);
 
 	///<summary>Tries to convert the span representation of a number in a specified style and culture-specific format to its <see cref="T:System.SByte" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static sbyte.TryParse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider, out sbyte)")]
-	public extern static bool _9d5e37148ebfe7f5(Uint32Array s, object style, Intl.NumberFormat? provider, Box<Number> result);
+	public extern static Array<object?> _9d5e37148ebfe7f5(Uint32Array s, object style, Intl.NumberFormat? provider, out Number result);
 
 	///<summary>Returns the <see cref="T:System.TypeCode" /> for value type <see cref="T:System.SByte" />.</summary>
 	[Jazor(Op.Discard ,"sbyte.GetTypeCode()")]
@@ -193,7 +193,7 @@ public static class SByteModule
 
 	///<summary>Tries to parse a string into a value.</summary>
 	[Jazor(Op.Discard ,"static sbyte.TryParse(string, System.IFormatProvider, out sbyte)")]
-	public extern static bool _eb0b5e4bda3cf5a8(object s, Intl.NumberFormat? provider, Box<Number> result);
+	public extern static Array<object?> _eb0b5e4bda3cf5a8(string? s, Intl.NumberFormat? provider, out Number result);
 
 	///<summary>Parses a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static sbyte.Parse(System.ReadOnlySpan<char>, System.IFormatProvider)")]
@@ -201,7 +201,7 @@ public static class SByteModule
 
 	///<summary>Tries to parse a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static sbyte.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, out sbyte)")]
-	public extern static bool _9c15d03f28f55ad0(Uint32Array s, Intl.NumberFormat? provider, Box<Number> result);
+	public extern static Array<object?> _9c15d03f28f55ad0(Uint32Array s, Intl.NumberFormat? provider, out Number result);
 
 	///<summary>Parses a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static sbyte.Parse(System.ReadOnlySpan<byte>, System.Globalization.NumberStyles, System.IFormatProvider)")]
@@ -209,7 +209,7 @@ public static class SByteModule
 
 	///<summary>Tries to parse a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static sbyte.TryParse(System.ReadOnlySpan<byte>, System.Globalization.NumberStyles, System.IFormatProvider, out sbyte)")]
-	public extern static bool _bb5b59fba854851f(Uint8Array utf8Text, object style, Intl.NumberFormat? provider, Box<Number> result);
+	public extern static Array<object?> _bb5b59fba854851f(Uint8Array utf8Text, object style, Intl.NumberFormat? provider, out Number result);
 
 	///<summary>Parses a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static sbyte.Parse(System.ReadOnlySpan<byte>, System.IFormatProvider)")]
@@ -217,5 +217,5 @@ public static class SByteModule
 
 	///<summary>Tries to parse a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static sbyte.TryParse(System.ReadOnlySpan<byte>, System.IFormatProvider, out sbyte)")]
-	public extern static bool _88a4e6839132acad(Uint8Array utf8Text, Intl.NumberFormat? provider, Box<Number> result);
+	public extern static Array<object?> _88a4e6839132acad(Uint8Array utf8Text, Intl.NumberFormat? provider, out Number result);
 }

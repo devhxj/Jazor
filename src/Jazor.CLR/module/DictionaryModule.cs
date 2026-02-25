@@ -2,7 +2,7 @@ namespace Jazor.CLR;
 
 [ECMAScriptModule]
 [Jazor(Op.Import, "System.Collections.Generic.Dictionary<TKey, TValue>","System/Collections/Generic/DictionaryModule.js")]
-public static class DictionaryModule<TKey, TValue> where TKey : notnull
+public static class DictionaryModule<TKey, TValue>
 {
 	///<summary>Initializes a new instance of the <see cref="T:System.Collections.Generic.Dictionary`2" /> class that is empty, has the default initial capacity, and uses the default equality comparer for the key type.</summary>
 	[Jazor(Op.Discard ,"System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary()")]
@@ -83,15 +83,15 @@ public static class DictionaryModule<TKey, TValue> where TKey : notnull
 
 	///<summary>Gets an instance of a type that can be used to perform operations on the current <see cref="T:System.Collections.Generic.Dictionary`2" /> using a <typeparamref name="TAlternateKey" /> as a key instead of a <typeparamref name="TKey" />.</summary>
 	[Jazor(Op.Discard ,"System.Collections.Generic.Dictionary<TKey, TValue>.GetAlternateLookup<TAlternateKey>()")]
-	public extern static Dictionary<TKey, TValue>.AlternateLookup<TAlternateKey> _81045d6b89c31295<TAlternateKey>(Map<TKey,TValue> instance) where TAlternateKey : notnull;
+	public extern static Dictionary<TKey, TValue>.AlternateLookup<TAlternateKey> _81045d6b89c31295<TAlternateKey>(Map<TKey,TValue> instance);
 
 	///<summary>Gets an instance of a type that can be used to perform operations on the current <see cref="T:System.Collections.Generic.Dictionary`2" /> using a <typeparamref name="TAlternateKey" /> as a key instead of a <typeparamref name="TKey" />.</summary>
 	[Jazor(Op.Discard ,"System.Collections.Generic.Dictionary<TKey, TValue>.TryGetAlternateLookup<TAlternateKey>(out System.Collections.Generic.Dictionary<TKey, TValue>.AlternateLookup<TAlternateKey>)")]
-	public extern static bool _e3413e985c488b3f<TAlternateKey>(Map<TKey,TValue> instance, Box<Dictionary<TKey, TValue>.AlternateLookup<TAlternateKey>> lookup) where TAlternateKey : notnull;
+	public extern static Array<object?> _e3413e985c488b3f<TAlternateKey>(Map<TKey,TValue> instance, out Dictionary<TKey, TValue>.AlternateLookup<TAlternateKey> lookup);
 
 	///<summary>Implements the <see cref="T:System.Runtime.Serialization.ISerializable" /> interface and raises the deserialization event when the deserialization is complete.</summary>
 	[Jazor(Op.Discard ,"virtual System.Collections.Generic.Dictionary<TKey, TValue>.OnDeserialization(object)")]
-	public extern static void _2a84c2ff8bbcd82f(Map<TKey,TValue> instance, Object? sender);
+	public extern static void _2a84c2ff8bbcd82f(Map<TKey,TValue> instance, object? sender);
 
 	///<summary>Removes the value with the specified key from the <see cref="T:System.Collections.Generic.Dictionary`2" />.</summary>
 	[Jazor(Op.Discard ,"System.Collections.Generic.Dictionary<TKey, TValue>.Remove(TKey)")]
@@ -99,11 +99,11 @@ public static class DictionaryModule<TKey, TValue> where TKey : notnull
 
 	///<summary>Removes the value with the specified key from the <see cref="T:System.Collections.Generic.Dictionary`2" />, and copies the element to the <paramref name="value" /> parameter.</summary>
 	[Jazor(Op.Discard ,"System.Collections.Generic.Dictionary<TKey, TValue>.Remove(TKey, out TValue)")]
-	public extern static bool _d6ac89338dff5e3b(Map<TKey,TValue> instance, object key, Box<object> value);
+	public extern static Array<object?> _d6ac89338dff5e3b(Map<TKey,TValue> instance, object key, out object value);
 
 	///<summary>Gets the value associated with the specified key.</summary>
 	[Jazor(Op.Discard ,"System.Collections.Generic.Dictionary<TKey, TValue>.TryGetValue(TKey, out TValue)")]
-	public extern static bool _7db4d9112b4ba3c4(Map<TKey,TValue> instance, object key, Box<object> value);
+	public extern static Array<object?> _7db4d9112b4ba3c4(Map<TKey,TValue> instance, object key, out object value);
 
 	///<summary>Attempts to add the specified key and value to the dictionary.</summary>
 	[Jazor(Op.Discard ,"System.Collections.Generic.Dictionary<TKey, TValue>.TryAdd(TKey, TValue)")]

@@ -82,11 +82,11 @@ var operatorNames = new Dictionary<string, string>
 var types = new Type[]{
 	// 基本类型
 	//typeof(void),
-	//typeof(Console),
+	typeof(Console),
 	typeof(Math),
 	typeof(BigInteger),
-	//typeof(Object),
-	//typeof(Boolean),
+	typeof(Object),
+	typeof(Boolean),
 	typeof(Char),
 	typeof(SByte),
 	typeof(Byte),
@@ -124,7 +124,7 @@ var types = new Type[]{
 var typeMaps = new Dictionary<Type, string>()
 {
 	//{typeof(void),"void"},
-	{typeof(Object),"Object"},
+	{typeof(Object),"object"},
 	{typeof(Boolean),"Boolean"},
 	{typeof(Char),"Number"},
 	{typeof(SByte),"Number"},
@@ -145,8 +145,8 @@ var typeMaps = new Dictionary<Type, string>()
 	{typeof(UInt128),"BigInt"},
 	{typeof(TimeSpan),"BigInt"},
 	{typeof(BigInteger),"BigInt"},
-	{typeof(Decimal),"String"},
-	{typeof(String),"String"},
+	{typeof(Decimal),"string"},
+	{typeof(String),"string"},
 	{typeof(Exception),"Error"},
 	//{typeof(StringBuilder),""},
 	//{typeof(Nullable),"null"},
@@ -162,7 +162,8 @@ var typeMaps = new Dictionary<Type, string>()
 	{typeof(ReadOnlySet<>),"Set<T>"},
 	{typeof(ConditionalWeakTable<,>),"WeakMap<TKey,TValue>"},
 	{typeof(Calendar),"GregorianCalendar"},
-	{typeof(CultureInfo),"String"},
+	{typeof(CultureInfo),"string"},
+	{typeof(Console),"object"},
 };
 var nameMaps = new Dictionary<string, string>()
 {
@@ -192,31 +193,37 @@ var nameMaps = new Dictionary<string, string>()
 	{"uint","Number"},
 	{"float","Number"},
 	{"double","Number"},
-	{"decimal","String"},
-	{"object","Object"},
+	{"decimal","string"},
+	{"object","object"},
+	{"string","string"},
 
 	{"System.DateTime","Date"},
 	{"System.DateOnly","Date"},
 	{"System.TimeOnly","Number"},
 	{"System.DateTimeOffset","Date"},
+	{"System.Console","object"},
 
 	{"System.Span<char>","Uint32Array"},
 	{"System.ReadOnlySpan<char>","Uint32Array"},
 	{"System.Span<byte>","Uint8Array"},
 	{"System.ReadOnlySpan<byte>","Uint8Array"},
 	{"System.Collections.ObjectModel.ReadOnlyCollection<T>","Array<T>" },
+	{"System.Collections.Generic.List<T>","Array<T>" },
 	{"T[]","Array<T>"},
 	{"System.Predicate<T>","Predicate<T>" },
-	{"System.Collections.Generic.IEnumerable<T>","IEnumerable<T>" },
+	{"System.Collections.Generic.ICollection<T>","Array<T>" },
+	{"System.Collections.Generic.IList","Array<object?>" },
+	{"System.Collections.Generic.IList<T>","Array<T>" },
+	{"System.Collections.Generic.IEnumerable<T>","Array<T>" },
 	{"System.Collections.Generic.IComparer<T>","IComparer<T>" },
 	{"System.Comparison<T>","Comparison<T>" },
-	{"System.Collections.Generic.ISet<T>","ISet<T>" },
+	{"System.Collections.Generic.ISet<T>","Set<T>" },
 	{"System.Globalization.Calendar","GregorianCalendar" },
 	{"System.Globalization.GregorianCalendar","GregorianCalendar" },
 	{"System.Collections.Generic.Dictionary<TKey, TValue>.KeyCollection","IArray<TKey>" },
 	{"System.Collections.Generic.Dictionary<TKey, TValue>.ValueCollection","IArray<TValue>" },
 	{"System.Collections.Generic.Dictionary<TKey, TValue>.AlternateLookup<TAlternateKey>","Dictionary<TKey, TValue>.AlternateLookup<TAlternateKey>" },
-	{"System.Collections.Generic.IEnumerator<T>","IEnumerator<T>" },
+	{"System.Collections.Generic.IEnumerator<T>","Array<T>" },
 	{"System.Globalization.CultureInfo","String"}
 };
 
@@ -230,18 +237,6 @@ string ConvertParamaterName(IParameterSymbol symbol)
 	else
 		newValue = "object";
 
-	if (symbol.RefKind == RefKind.Ref)
-	{
-		key = $"ref {key}";
-		newValue = $"Box<{newValue}>";
-	}
-	else if (symbol.RefKind == RefKind.Out)
-	{
-		key = $"out {key}";
-		newValue = $"Box<{newValue}>";
-	}
-
-
 	var r = name.Replace(key, newValue);
 	if (symbol.IsParams)
 		r = r.Replace("params", "");
@@ -251,12 +246,16 @@ string ConvertParamaterName(IParameterSymbol symbol)
 //var directory = Path.Combine(Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory)!.Parent!.Parent!.Parent!.FullName, "generate");
 var dir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "generate");
 var doc = Path.Combine(dir, "doc");
+var module = Path.Combine(dir, "module");
 
 if (!Directory.Exists(dir))
 	Directory.CreateDirectory(dir);
 
 if (!Directory.Exists(doc))
-	Directory.CreateDirectory(doc);	
+	Directory.CreateDirectory(doc);
+
+if (!Directory.Exists(module))
+	Directory.CreateDirectory(module);
 
 foreach (var type in types)
 {
@@ -345,6 +344,9 @@ public static class {typeName}Module{(typeGenerics.Length > 0 ? typeGenerics : "
 					para = method.IsStatic || method.MethodKind == MethodKind.Constructor
 						? string.Join(", ", method.Parameters.Select(ConvertParamaterName))
 						: $"{mapName} instance{(method.Parameters.Length > 0 ? ", " : "")}{string.Join(", ", method.Parameters.Select(ConvertParamaterName))}";
+
+					if (method.Parameters.Any(x => x.RefKind == RefKind.Ref || x.RefKind == RefKind.Out))
+						returnType = "Array<object?>";
 				}
 
 				var methodGenericNames = method.OriginalDefinition.TypeParameters
@@ -387,7 +389,7 @@ $@"**成员**：{display}</br>
 	}
 
 	coder.AppendLine("}");
-	File.WriteAllText(Path.Combine(dir, $"{typeName}Module.cs"), coder.ToString());
+	File.WriteAllText(Path.Combine(module, $"{typeName}Module.cs"), coder.ToString());
 	File.WriteAllText(Path.Combine(doc, $"{typeName}Module.md"), noter.ToString());
 	Console.WriteLine(typeName);
 }

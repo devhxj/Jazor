@@ -9,7 +9,7 @@ public static class ValueTupleModule
 
 	///<summary>Returns a value that indicates whether the current <see cref="T:System.ValueTuple" /> instance is equal to a specified object.</summary>
 	[Jazor(Op.Discard ,"override System.ValueTuple.Equals(object)")]
-	public extern static bool _f405bb1d41845d0a(System.ValueTuple instance, Object? obj);
+	public extern static bool _f405bb1d41845d0a(System.ValueTuple instance, object? obj);
 
 	///<summary>Determines whether two <see cref="T:System.ValueTuple" /> instances are equal. This method always returns <see langword="true" />.</summary>
 	[Jazor(Op.Discard ,"System.ValueTuple.Equals(System.ValueTuple)")]

@@ -13,7 +13,7 @@ public static class UInt16Module
 
 	///<summary>Compares this instance to a specified object and returns an indication of their relative values.</summary>
 	[Jazor(Op.Discard ,"ushort.CompareTo(object)")]
-	public extern static Number _d8d8b9cba9bd3347(Number instance, Object? value);
+	public extern static Number _d8d8b9cba9bd3347(Number instance, object? value);
 
 	///<summary>Compares this instance to a specified 16-bit unsigned integer and returns an indication of their relative values.</summary>
 	[Jazor(Op.Discard ,"ushort.CompareTo(ushort)")]
@@ -21,7 +21,7 @@ public static class UInt16Module
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
 	[Jazor(Op.Discard ,"override ushort.Equals(object)")]
-	public extern static bool _c13e06040702dab1(Number instance, Object? obj);
+	public extern static bool _c13e06040702dab1(Number instance, object? obj);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified <see cref="T:System.UInt16" /> value.</summary>
 	[Jazor(Op.Discard ,"ushort.Equals(ushort)")]
@@ -41,35 +41,35 @@ public static class UInt16Module
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation using the specified format.</summary>
 	[Jazor(Op.Discard ,"ushort.ToString(string)")]
-	public extern static string _6f22376b1343fe81(Number instance, object format);
+	public extern static string _6f22376b1343fe81(Number instance, string? format);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation using the specified format and culture-specific format information.</summary>
 	[Jazor(Op.Discard ,"ushort.ToString(string, System.IFormatProvider)")]
-	public extern static string _a995cb7019a823da(Number instance, object format, Intl.NumberFormat? provider);
+	public extern static string _a995cb7019a823da(Number instance, string? format, Intl.NumberFormat? provider);
 
 	///<summary>Tries to format the value of the current unsigned short number instance into the provided span of characters.</summary>
 	[Jazor(Op.Discard ,"ushort.TryFormat(System.Span<char>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)")]
-	public extern static bool _72607726c0ca8cb0(Number instance, Uint32Array destination, Box<Number> charsWritten, Uint32Array format, Intl.NumberFormat? provider);
+	public extern static Array<object?> _72607726c0ca8cb0(Number instance, Uint32Array destination, out Number charsWritten, Uint32Array format, Intl.NumberFormat? provider);
 
 	///<summary>Tries to format the value of the current instance as UTF-8 into the provided span of bytes.</summary>
 	[Jazor(Op.Discard ,"ushort.TryFormat(System.Span<byte>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)")]
-	public extern static bool _c8d9586ea188f250(Number instance, Uint8Array utf8Destination, Box<Number> bytesWritten, Uint32Array format, Intl.NumberFormat? provider);
+	public extern static Array<object?> _c8d9586ea188f250(Number instance, Uint8Array utf8Destination, out Number bytesWritten, Uint32Array format, Intl.NumberFormat? provider);
 
 	///<summary>Converts the string representation of a number to its 16-bit unsigned integer equivalent.</summary>
 	[Jazor(Op.Discard ,"static ushort.Parse(string)")]
-	public extern static Number _bfae72f49db4f3c9(object s);
+	public extern static Number _bfae72f49db4f3c9(string s);
 
 	///<summary>Converts the string representation of a number in a specified style to its 16-bit unsigned integer equivalent. This method is not CLS-compliant. The CLS-compliant alternative is <see cref="M:System.Int32.Parse(System.String,System.Globalization.NumberStyles)" />.</summary>
 	[Jazor(Op.Discard ,"static ushort.Parse(string, System.Globalization.NumberStyles)")]
-	public extern static Number _fa01aff4be2733da(object s, object style);
+	public extern static Number _fa01aff4be2733da(string s, object style);
 
 	///<summary>Converts the string representation of a number in a specified culture-specific format to its 16-bit unsigned integer equivalent.</summary>
 	[Jazor(Op.Discard ,"static ushort.Parse(string, System.IFormatProvider)")]
-	public extern static Number _c90f18e22ef793ae(object s, Intl.NumberFormat? provider);
+	public extern static Number _c90f18e22ef793ae(string s, Intl.NumberFormat? provider);
 
 	///<summary>Converts the string representation of a number in a specified style and culture-specific format to its 16-bit unsigned integer equivalent.</summary>
 	[Jazor(Op.Discard ,"static ushort.Parse(string, System.Globalization.NumberStyles, System.IFormatProvider)")]
-	public extern static Number _2d47dd2f7572ac82(object s, object style, Intl.NumberFormat? provider);
+	public extern static Number _2d47dd2f7572ac82(string s, object style, Intl.NumberFormat? provider);
 
 	///<summary>Converts the span representation of a number in a specified style and culture-specific format to its 16-bit unsigned integer equivalent.</summary>
 	[Jazor(Op.Discard ,"static ushort.Parse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider)")]
@@ -77,23 +77,23 @@ public static class UInt16Module
 
 	///<summary>Tries to convert the string representation of a number to its 16-bit unsigned integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static ushort.TryParse(string, out ushort)")]
-	public extern static bool _2efd27d401f7def7(object s, Box<Number> result);
+	public extern static Array<object?> _2efd27d401f7def7(string? s, out Number result);
 
 	///<summary>Tries to convert the span representation of a number to its 16-bit unsigned integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static ushort.TryParse(System.ReadOnlySpan<char>, out ushort)")]
-	public extern static bool _0103a8bec9e9dfd7(Uint32Array s, Box<Number> result);
+	public extern static Array<object?> _0103a8bec9e9dfd7(Uint32Array s, out Number result);
 
 	///<summary>Tries to convert a UTF-8 character span containing the string representation of a number to its 16-bit unsigned integer equivalent.</summary>
 	[Jazor(Op.Discard ,"static ushort.TryParse(System.ReadOnlySpan<byte>, out ushort)")]
-	public extern static bool _f90ee83a31a4d447(Uint8Array utf8Text, Box<Number> result);
+	public extern static Array<object?> _f90ee83a31a4d447(Uint8Array utf8Text, out Number result);
 
 	///<summary>Tries to convert the string representation of a number in a specified style and culture-specific format to its 16-bit unsigned integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static ushort.TryParse(string, System.Globalization.NumberStyles, System.IFormatProvider, out ushort)")]
-	public extern static bool _0427e1fa823cd14c(object s, object style, Intl.NumberFormat? provider, Box<Number> result);
+	public extern static Array<object?> _0427e1fa823cd14c(string? s, object style, Intl.NumberFormat? provider, out Number result);
 
 	///<summary>Tries to convert the span representation of a number in a specified style and culture-specific format to its 16-bit unsigned integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static ushort.TryParse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider, out ushort)")]
-	public extern static bool _e1ac1ed9e4df0694(Uint32Array s, object style, Intl.NumberFormat? provider, Box<Number> result);
+	public extern static Array<object?> _e1ac1ed9e4df0694(Uint32Array s, object style, Intl.NumberFormat? provider, out Number result);
 
 	///<summary>Returns the <see cref="T:System.TypeCode" /> for value type <see cref="T:System.UInt16" />.</summary>
 	[Jazor(Op.Discard ,"ushort.GetTypeCode()")]
@@ -169,7 +169,7 @@ public static class UInt16Module
 
 	///<summary>Tries to parse a string into a value.</summary>
 	[Jazor(Op.Discard ,"static ushort.TryParse(string, System.IFormatProvider, out ushort)")]
-	public extern static bool _815a123a217a57dc(object s, Intl.NumberFormat? provider, Box<Number> result);
+	public extern static Array<object?> _815a123a217a57dc(string? s, Intl.NumberFormat? provider, out Number result);
 
 	///<summary>Parses a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static ushort.Parse(System.ReadOnlySpan<char>, System.IFormatProvider)")]
@@ -177,7 +177,7 @@ public static class UInt16Module
 
 	///<summary>Tries to parse a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static ushort.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, out ushort)")]
-	public extern static bool _57f6f9049f0201c4(Uint32Array s, Intl.NumberFormat? provider, Box<Number> result);
+	public extern static Array<object?> _57f6f9049f0201c4(Uint32Array s, Intl.NumberFormat? provider, out Number result);
 
 	///<summary>Parses a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static ushort.Parse(System.ReadOnlySpan<byte>, System.Globalization.NumberStyles, System.IFormatProvider)")]
@@ -185,7 +185,7 @@ public static class UInt16Module
 
 	///<summary>Tries to parse a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static ushort.TryParse(System.ReadOnlySpan<byte>, System.Globalization.NumberStyles, System.IFormatProvider, out ushort)")]
-	public extern static bool _8b4f59ba7c1bec8d(Uint8Array utf8Text, object style, Intl.NumberFormat? provider, Box<Number> result);
+	public extern static Array<object?> _8b4f59ba7c1bec8d(Uint8Array utf8Text, object style, Intl.NumberFormat? provider, out Number result);
 
 	///<summary>Parses a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static ushort.Parse(System.ReadOnlySpan<byte>, System.IFormatProvider)")]
@@ -193,5 +193,5 @@ public static class UInt16Module
 
 	///<summary>Tries to parse a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static ushort.TryParse(System.ReadOnlySpan<byte>, System.IFormatProvider, out ushort)")]
-	public extern static bool _9a6ea927f4cb63da(Uint8Array utf8Text, Intl.NumberFormat? provider, Box<Number> result);
+	public extern static Array<object?> _9a6ea927f4cb63da(Uint8Array utf8Text, Intl.NumberFormat? provider, out Number result);
 }

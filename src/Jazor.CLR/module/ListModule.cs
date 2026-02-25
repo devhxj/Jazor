@@ -14,7 +14,7 @@ public static class ListModule<T>
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Collections.Generic.List`1" /> class that contains elements copied from the specified collection and has sufficient capacity to accommodate the number of elements copied.</summary>
 	[Jazor(Op.Discard ,"System.Collections.Generic.List<T>.List(System.Collections.Generic.IEnumerable<T>)")]
-	public extern static Array<T> _ea4c991aac8688c0(IEnumerable<T> collection);
+	public extern static Array<T> _ea4c991aac8688c0(Array<T> collection);
 
 	[Jazor(Op.Discard ,"System.Collections.Generic.List<T>.Capacity.get")]
 	public extern static Number _ffa580d06e0078ae(Array<T> instance);
@@ -37,7 +37,7 @@ public static class ListModule<T>
 
 	///<summary>Adds the elements of the specified collection to the end of the <see cref="T:System.Collections.Generic.List`1" />.</summary>
 	[Jazor(Op.Discard ,"System.Collections.Generic.List<T>.AddRange(System.Collections.Generic.IEnumerable<T>)")]
-	public extern static void _a2660853a4ebc1f6(Array<T> instance, IEnumerable<T> collection);
+	public extern static void _a2660853a4ebc1f6(Array<T> instance, Array<T> collection);
 
 	///<summary>Returns a read-only <see cref="T:System.Collections.ObjectModel.ReadOnlyCollection`1" /> wrapper for the current collection.</summary>
 	[Jazor(Op.Discard ,"System.Collections.Generic.List<T>.AsReadOnly()")]
@@ -93,7 +93,7 @@ public static class ListModule<T>
 
 	///<summary>Retrieves all the elements that match the conditions defined by the specified predicate.</summary>
 	[Jazor(Op.Discard ,"System.Collections.Generic.List<T>.FindAll(System.Predicate<T>)")]
-	public extern static System.Collections.Generic.List<T> _d8e500da425f2be5(Array<T> instance, Predicate<T> match);
+	public extern static Array<T> _d8e500da425f2be5(Array<T> instance, Predicate<T> match);
 
 	///<summary>Searches for an element that matches the conditions defined by the specified predicate, and returns the zero-based index of the first occurrence within the entire <see cref="T:System.Collections.Generic.List`1" />.</summary>
 	[Jazor(Op.Discard ,"System.Collections.Generic.List<T>.FindIndex(System.Predicate<T>)")]
@@ -133,11 +133,11 @@ public static class ListModule<T>
 
 	///<summary>Creates a shallow copy of a range of elements in the source <see cref="T:System.Collections.Generic.List`1" />.</summary>
 	[Jazor(Op.Discard ,"System.Collections.Generic.List<T>.GetRange(int, int)")]
-	public extern static System.Collections.Generic.List<T> _c35c9c99a23ff96a(Array<T> instance, Number index, Number count);
+	public extern static Array<T> _c35c9c99a23ff96a(Array<T> instance, Number index, Number count);
 
 	///<summary>Creates a shallow copy of a range of elements in the source <see cref="T:System.Collections.Generic.List`1" />.</summary>
 	[Jazor(Op.Discard ,"System.Collections.Generic.List<T>.Slice(int, int)")]
-	public extern static System.Collections.Generic.List<T> _adcf2df90da54ec8(Array<T> instance, Number start, Number length);
+	public extern static Array<T> _adcf2df90da54ec8(Array<T> instance, Number start, Number length);
 
 	///<summary>Searches for the specified object and returns the zero-based index of the first occurrence within the entire <see cref="T:System.Collections.Generic.List`1" />.</summary>
 	[Jazor(Op.Discard ,"System.Collections.Generic.List<T>.IndexOf(T)")]
@@ -157,7 +157,7 @@ public static class ListModule<T>
 
 	///<summary>Inserts the elements of a collection into the <see cref="T:System.Collections.Generic.List`1" /> at the specified index.</summary>
 	[Jazor(Op.Discard ,"System.Collections.Generic.List<T>.InsertRange(int, System.Collections.Generic.IEnumerable<T>)")]
-	public extern static void _56ef9aefabac7c09(Array<T> instance, Number index, IEnumerable<T> collection);
+	public extern static void _56ef9aefabac7c09(Array<T> instance, Number index, Array<T> collection);
 
 	///<summary>Searches for the specified object and returns the zero-based index of the last occurrence within the entire <see cref="T:System.Collections.Generic.List`1" />.</summary>
 	[Jazor(Op.Discard ,"System.Collections.Generic.List<T>.LastIndexOf(T)")]

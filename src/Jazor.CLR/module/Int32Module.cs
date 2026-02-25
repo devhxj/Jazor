@@ -17,7 +17,7 @@ public static class Int32Module
 
 	///<summary>Compares this instance to a specified object and returns an indication of their relative values.</summary>
 	[Jazor(Op.Discard ,"int.CompareTo(object)")]
-	public extern static Number _b03337a2a71c762d(Number instance, Object? value);
+	public extern static Number _b03337a2a71c762d(Number instance, object? value);
 
 	///<summary>Compares this instance to a specified 32-bit signed integer and returns an indication of their relative values.</summary>
 	[Jazor(Op.Discard ,"int.CompareTo(int)")]
@@ -25,7 +25,7 @@ public static class Int32Module
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
 	[Jazor(Op.Discard ,"override int.Equals(object)")]
-	public extern static bool _3f3e17a78ac17712(Number instance, Object? obj);
+	public extern static bool _3f3e17a78ac17712(Number instance, object? obj);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified <see cref="T:System.Int32" /> value.</summary>
 	[Jazor(Op.Discard ,"int.Equals(int)")]
@@ -41,7 +41,7 @@ public static class Int32Module
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation, using the specified format.</summary>
 	[Jazor(Op.Discard ,"int.ToString(string)")]
-	public extern static string _2d79e025317a398b(Number instance, object format);
+	public extern static string _2d79e025317a398b(Number instance, string? format);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation using the specified culture-specific format information.</summary>
 	[Jazor(Op.Discard ,"int.ToString(System.IFormatProvider)")]
@@ -49,31 +49,31 @@ public static class Int32Module
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation using the specified format and culture-specific format information.</summary>
 	[Jazor(Op.Discard ,"int.ToString(string, System.IFormatProvider)")]
-	public extern static string _f57247af306a3082(Number instance, object format, Intl.NumberFormat? provider);
+	public extern static string _f57247af306a3082(Number instance, string? format, Intl.NumberFormat? provider);
 
 	///<summary>Tries to format the value of the current integer number instance into the provided span of characters.</summary>
 	[Jazor(Op.Discard ,"int.TryFormat(System.Span<char>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)")]
-	public extern static bool _bf6eee9bbd850f13(Number instance, Uint32Array destination, Box<Number> charsWritten, Uint32Array format, Intl.NumberFormat? provider);
+	public extern static Array<object?> _bf6eee9bbd850f13(Number instance, Uint32Array destination, out Number charsWritten, Uint32Array format, Intl.NumberFormat? provider);
 
 	///<summary>Tries to format the value of the current instance as UTF-8 into the provided span of bytes.</summary>
 	[Jazor(Op.Discard ,"int.TryFormat(System.Span<byte>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)")]
-	public extern static bool _11b66442f91f5212(Number instance, Uint8Array utf8Destination, Box<Number> bytesWritten, Uint32Array format, Intl.NumberFormat? provider);
+	public extern static Array<object?> _11b66442f91f5212(Number instance, Uint8Array utf8Destination, out Number bytesWritten, Uint32Array format, Intl.NumberFormat? provider);
 
 	///<summary>Converts the string representation of a number to its 32-bit signed integer equivalent.</summary>
 	[Jazor(Op.Discard ,"static int.Parse(string)")]
-	public extern static Number _151ccc6045162f8f(object s);
+	public extern static Number _151ccc6045162f8f(string s);
 
 	///<summary>Converts the string representation of a number in a specified style to its 32-bit signed integer equivalent.</summary>
 	[Jazor(Op.Discard ,"static int.Parse(string, System.Globalization.NumberStyles)")]
-	public extern static Number _976d6e5278dfc58f(object s, object style);
+	public extern static Number _976d6e5278dfc58f(string s, object style);
 
 	///<summary>Converts the string representation of a number in a specified culture-specific format to its 32-bit signed integer equivalent.</summary>
 	[Jazor(Op.Discard ,"static int.Parse(string, System.IFormatProvider)")]
-	public extern static Number _bb24095a38bb9666(object s, Intl.NumberFormat? provider);
+	public extern static Number _bb24095a38bb9666(string s, Intl.NumberFormat? provider);
 
 	///<summary>Converts the string representation of a number in a specified style and culture-specific format to its 32-bit signed integer equivalent.</summary>
 	[Jazor(Op.Discard ,"static int.Parse(string, System.Globalization.NumberStyles, System.IFormatProvider)")]
-	public extern static Number _377c7ab241784b5b(object s, object style, Intl.NumberFormat? provider);
+	public extern static Number _377c7ab241784b5b(string s, object style, Intl.NumberFormat? provider);
 
 	///<summary>Converts the span representation of a number in a specified style and culture-specific format to its 32-bit signed integer equivalent.</summary>
 	[Jazor(Op.Discard ,"static int.Parse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider)")]
@@ -81,23 +81,23 @@ public static class Int32Module
 
 	///<summary>Converts the string representation of a number to its 32-bit signed integer equivalent. A return value indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static int.TryParse(string, out int)")]
-	public extern static bool _16e2a901535b765e(object s, Box<Number> result);
+	public extern static Array<object?> _16e2a901535b765e(string? s, out Number result);
 
 	///<summary>Converts the span representation of a number in a culture-specific format to its 32-bit signed integer equivalent. A return value indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static int.TryParse(System.ReadOnlySpan<char>, out int)")]
-	public extern static bool _f6a664534980b0f4(Uint32Array s, Box<Number> result);
+	public extern static Array<object?> _f6a664534980b0f4(Uint32Array s, out Number result);
 
 	///<summary>Tries to convert a UTF-8 character span containing the string representation of a number to its 32-bit signed integer equivalent.</summary>
 	[Jazor(Op.Discard ,"static int.TryParse(System.ReadOnlySpan<byte>, out int)")]
-	public extern static bool _2acff5418dba43bd(Uint8Array utf8Text, Box<Number> result);
+	public extern static Array<object?> _2acff5418dba43bd(Uint8Array utf8Text, out Number result);
 
 	///<summary>Converts the string representation of a number in a specified style and culture-specific format to its 32-bit signed integer equivalent. A return value indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static int.TryParse(string, System.Globalization.NumberStyles, System.IFormatProvider, out int)")]
-	public extern static bool _69f925b0bfe7fa2a(object s, object style, Intl.NumberFormat? provider, Box<Number> result);
+	public extern static Array<object?> _69f925b0bfe7fa2a(string? s, object style, Intl.NumberFormat? provider, out Number result);
 
 	///<summary>Converts the span representation of a number in a specified style and culture-specific format to its 32-bit signed integer equivalent. A return value indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static int.TryParse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider, out int)")]
-	public extern static bool _b745c572061e8b30(Uint32Array s, object style, Intl.NumberFormat? provider, Box<Number> result);
+	public extern static Array<object?> _b745c572061e8b30(Uint32Array s, object style, Intl.NumberFormat? provider, out Number result);
 
 	///<summary>Returns the <see cref="T:System.TypeCode" /> for value type <see cref="T:System.Int32" />.</summary>
 	[Jazor(Op.Discard ,"int.GetTypeCode()")]
@@ -197,7 +197,7 @@ public static class Int32Module
 
 	///<summary>Tries to parse a string into a value.</summary>
 	[Jazor(Op.Discard ,"static int.TryParse(string, System.IFormatProvider, out int)")]
-	public extern static bool _a1335dcbd870906d(object s, Intl.NumberFormat? provider, Box<Number> result);
+	public extern static Array<object?> _a1335dcbd870906d(string? s, Intl.NumberFormat? provider, out Number result);
 
 	///<summary>Parses a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static int.Parse(System.ReadOnlySpan<char>, System.IFormatProvider)")]
@@ -205,7 +205,7 @@ public static class Int32Module
 
 	///<summary>Tries to parse a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static int.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, out int)")]
-	public extern static bool _635895827c275362(Uint32Array s, Intl.NumberFormat? provider, Box<Number> result);
+	public extern static Array<object?> _635895827c275362(Uint32Array s, Intl.NumberFormat? provider, out Number result);
 
 	///<summary>Parses a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static int.Parse(System.ReadOnlySpan<byte>, System.Globalization.NumberStyles, System.IFormatProvider)")]
@@ -213,7 +213,7 @@ public static class Int32Module
 
 	///<summary>Tries to parse a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static int.TryParse(System.ReadOnlySpan<byte>, System.Globalization.NumberStyles, System.IFormatProvider, out int)")]
-	public extern static bool _e40b4c4d3f2f631c(Uint8Array utf8Text, object style, Intl.NumberFormat? provider, Box<Number> result);
+	public extern static Array<object?> _e40b4c4d3f2f631c(Uint8Array utf8Text, object style, Intl.NumberFormat? provider, out Number result);
 
 	///<summary>Parses a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static int.Parse(System.ReadOnlySpan<byte>, System.IFormatProvider)")]
@@ -221,5 +221,5 @@ public static class Int32Module
 
 	///<summary>Tries to parse a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static int.TryParse(System.ReadOnlySpan<byte>, System.IFormatProvider, out int)")]
-	public extern static bool _b1fd33b593bc8df8(Uint8Array utf8Text, Intl.NumberFormat? provider, Box<Number> result);
+	public extern static Array<object?> _b1fd33b593bc8df8(Uint8Array utf8Text, Intl.NumberFormat? provider, out Number result);
 }

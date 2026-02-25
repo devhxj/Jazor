@@ -61,7 +61,7 @@ public static class SingleModule
 
 	///<summary>Compares this instance to a specified object and returns an integer that indicates whether the value of this instance is less than, equal to, or greater than the value of the specified object.</summary>
 	[Jazor(Op.Discard ,"float.CompareTo(object)")]
-	public extern static Number _0b80f2f2f1a3c1a6(Number instance, Object? value);
+	public extern static Number _0b80f2f2f1a3c1a6(Number instance, object? value);
 
 	///<summary>Compares this instance to a specified single-precision floating-point number and returns an integer that indicates whether the value of this instance is less than, equal to, or greater than the value of the specified single-precision floating-point number.</summary>
 	[Jazor(Op.Discard ,"float.CompareTo(float)")]
@@ -93,7 +93,7 @@ public static class SingleModule
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
 	[Jazor(Op.Discard ,"override float.Equals(object)")]
-	public extern static bool _eb69b50c7032a809(Number instance, Object? obj);
+	public extern static bool _eb69b50c7032a809(Number instance, object? obj);
 
 	///<summary>Returns a value indicating whether this instance and a specified <see cref="T:System.Single" /> object represent the same value.</summary>
 	[Jazor(Op.Discard ,"float.Equals(float)")]
@@ -113,35 +113,35 @@ public static class SingleModule
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation, using the specified format.</summary>
 	[Jazor(Op.Discard ,"float.ToString(string)")]
-	public extern static string _fe0300c4411a1f62(Number instance, object format);
+	public extern static string _fe0300c4411a1f62(Number instance, string? format);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation using the specified format and culture-specific format information.</summary>
 	[Jazor(Op.Discard ,"float.ToString(string, System.IFormatProvider)")]
-	public extern static string _d0d4042bef295e49(Number instance, object format, Intl.NumberFormat? provider);
+	public extern static string _d0d4042bef295e49(Number instance, string? format, Intl.NumberFormat? provider);
 
 	///<summary>Tries to format the value of the current float number instance into the provided span of characters.</summary>
 	[Jazor(Op.Discard ,"float.TryFormat(System.Span<char>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)")]
-	public extern static bool _3f2b511e96922b72(Number instance, Uint32Array destination, Box<Number> charsWritten, Uint32Array format, Intl.NumberFormat? provider);
+	public extern static Array<object?> _3f2b511e96922b72(Number instance, Uint32Array destination, out Number charsWritten, Uint32Array format, Intl.NumberFormat? provider);
 
 	///<summary>Tries to format the value of the current instance as UTF-8 into the provided span of bytes.</summary>
 	[Jazor(Op.Discard ,"float.TryFormat(System.Span<byte>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)")]
-	public extern static bool _bfce4d32c259361c(Number instance, Uint8Array utf8Destination, Box<Number> bytesWritten, Uint32Array format, Intl.NumberFormat? provider);
+	public extern static Array<object?> _bfce4d32c259361c(Number instance, Uint8Array utf8Destination, out Number bytesWritten, Uint32Array format, Intl.NumberFormat? provider);
 
 	///<summary>Converts the string representation of a number to its single-precision floating-point number equivalent.</summary>
 	[Jazor(Op.Discard ,"static float.Parse(string)")]
-	public extern static Number _d0492a7790d81596(object s);
+	public extern static Number _d0492a7790d81596(string s);
 
 	///<summary>Converts the string representation of a number in a specified style to its single-precision floating-point number equivalent.</summary>
 	[Jazor(Op.Discard ,"static float.Parse(string, System.Globalization.NumberStyles)")]
-	public extern static Number _77fa7745f751ec69(object s, object style);
+	public extern static Number _77fa7745f751ec69(string s, object style);
 
 	///<summary>Converts the string representation of a number in a specified culture-specific format to its single-precision floating-point number equivalent.</summary>
 	[Jazor(Op.Discard ,"static float.Parse(string, System.IFormatProvider)")]
-	public extern static Number _2aab5ef8cfa9accc(object s, Intl.NumberFormat? provider);
+	public extern static Number _2aab5ef8cfa9accc(string s, Intl.NumberFormat? provider);
 
 	///<summary>Converts the string representation of a number in a specified style and culture-specific format to its single-precision floating-point number equivalent.</summary>
 	[Jazor(Op.Discard ,"static float.Parse(string, System.Globalization.NumberStyles, System.IFormatProvider)")]
-	public extern static Number _cddcce796b50f037(object s, object style, Intl.NumberFormat? provider);
+	public extern static Number _cddcce796b50f037(string s, object style, Intl.NumberFormat? provider);
 
 	///<summary>Converts a character span that contains the string representation of a number in a specified style and culture-specific format to its single-precision floating-point number equivalent.</summary>
 	[Jazor(Op.Discard ,"static float.Parse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider)")]
@@ -149,23 +149,23 @@ public static class SingleModule
 
 	///<summary>Converts the string representation of a number to its single-precision floating-point number equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static float.TryParse(string, out float)")]
-	public extern static bool _ced8b209dbd75890(object s, Box<Number> result);
+	public extern static Array<object?> _ced8b209dbd75890(string? s, out Number result);
 
 	///<summary>Converts the string representation of a number in a character span to its single-precision floating-point number equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static float.TryParse(System.ReadOnlySpan<char>, out float)")]
-	public extern static bool _8f337f9f610204bb(Uint32Array s, Box<Number> result);
+	public extern static Array<object?> _8f337f9f610204bb(Uint32Array s, out Number result);
 
 	///<summary>Tries to convert a UTF-8 character span containing the string representation of a number to its single-precision floating-point number equivalent.</summary>
 	[Jazor(Op.Discard ,"static float.TryParse(System.ReadOnlySpan<byte>, out float)")]
-	public extern static bool _35fa5333706d7ec4(Uint8Array utf8Text, Box<Number> result);
+	public extern static Array<object?> _35fa5333706d7ec4(Uint8Array utf8Text, out Number result);
 
 	///<summary>Converts the string representation of a number in a specified style and culture-specific format to its single-precision floating-point number equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static float.TryParse(string, System.Globalization.NumberStyles, System.IFormatProvider, out float)")]
-	public extern static bool _6b58aaed45e38509(object s, object style, Intl.NumberFormat? provider, Box<Number> result);
+	public extern static Array<object?> _6b58aaed45e38509(string? s, object style, Intl.NumberFormat? provider, out Number result);
 
 	///<summary>Converts the span representation of a number in a specified style and culture-specific format to its single-precision floating-point number equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static float.TryParse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider, out float)")]
-	public extern static bool _3a7ff2c98489b96d(Uint32Array s, object style, Intl.NumberFormat? provider, Box<Number> result);
+	public extern static Array<object?> _3a7ff2c98489b96d(Uint32Array s, object style, Intl.NumberFormat? provider, out Number result);
 
 	///<summary>Returns the <see cref="T:System.TypeCode" /> for value type <see cref="T:System.Single" />.</summary>
 	[Jazor(Op.Discard ,"float.GetTypeCode()")]
@@ -426,7 +426,7 @@ public static class SingleModule
 
 	///<summary>Tries to parse a string into a value.</summary>
 	[Jazor(Op.Discard ,"static float.TryParse(string, System.IFormatProvider, out float)")]
-	public extern static bool _c6cd666235929784(object s, Intl.NumberFormat? provider, Box<Number> result);
+	public extern static Array<object?> _c6cd666235929784(string? s, Intl.NumberFormat? provider, out Number result);
 
 	///<summary>Computes a value raised to a given power.</summary>
 	[Jazor(Op.Discard ,"static float.Pow(float, float)")]
@@ -454,7 +454,7 @@ public static class SingleModule
 
 	///<summary>Tries to parse a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static float.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, out float)")]
-	public extern static bool _c3b1663d39b1d889(Uint32Array s, Intl.NumberFormat? provider, Box<Number> result);
+	public extern static Array<object?> _c3b1663d39b1d889(Uint32Array s, Intl.NumberFormat? provider, out Number result);
 
 	///<summary>Computes the arc-cosine of a value.</summary>
 	[Jazor(Op.Discard ,"static float.Acos(float)")]
@@ -526,7 +526,7 @@ public static class SingleModule
 
 	///<summary>Tries to parse a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static float.TryParse(System.ReadOnlySpan<byte>, System.Globalization.NumberStyles, System.IFormatProvider, out float)")]
-	public extern static bool _b381be81bd5cd295(Uint8Array utf8Text, object style, Intl.NumberFormat? provider, Box<Number> result);
+	public extern static Array<object?> _b381be81bd5cd295(Uint8Array utf8Text, object style, Intl.NumberFormat? provider, out Number result);
 
 	///<summary>Parses a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static float.Parse(System.ReadOnlySpan<byte>, System.IFormatProvider)")]
@@ -534,5 +534,5 @@ public static class SingleModule
 
 	///<summary>Tries to parse a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static float.TryParse(System.ReadOnlySpan<byte>, System.IFormatProvider, out float)")]
-	public extern static bool _e76b3bd6230a30ba(Uint8Array utf8Text, Intl.NumberFormat? provider, Box<Number> result);
+	public extern static Array<object?> _e76b3bd6230a30ba(Uint8Array utf8Text, Intl.NumberFormat? provider, out Number result);
 }

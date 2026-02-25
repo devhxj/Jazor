@@ -60,7 +60,7 @@ public static class TimeOnlyModule
 
 	///<summary>Returns a new <see cref="T:System.TimeOnly" /> that adds the value of the specified time span to the value of this instance.            If the result wraps past the end of the day, this method returns the number of excess days as an out parameter.</summary>
 	[Jazor(Op.Discard ,"System.TimeOnly.Add(System.TimeSpan, out int)")]
-	public extern static Number _31bb07d031379025(Number instance, BigInt value, Box<Number> wrappedDays);
+	public extern static Array<object?> _31bb07d031379025(Number instance, BigInt value, out Number wrappedDays);
 
 	///<summary>Returns a new <see cref="T:System.TimeOnly" /> that adds the specified number of hours to the value of this instance.</summary>
 	[Jazor(Op.Discard ,"System.TimeOnly.AddHours(double)")]
@@ -68,7 +68,7 @@ public static class TimeOnlyModule
 
 	///<summary>Returns a new <see cref="T:System.TimeOnly" /> that adds the specified number of hours to the value of this instance.            If the result wraps past the end of the day, this method returns the number of excess days as an out parameter.</summary>
 	[Jazor(Op.Discard ,"System.TimeOnly.AddHours(double, out int)")]
-	public extern static Number _ad6cad38823a5ef6(Number instance, Number value, Box<Number> wrappedDays);
+	public extern static Array<object?> _ad6cad38823a5ef6(Number instance, Number value, out Number wrappedDays);
 
 	///<summary>Returns a new <see cref="T:System.TimeOnly" /> that adds the specified number of minutes to the value of this instance.</summary>
 	[Jazor(Op.Discard ,"System.TimeOnly.AddMinutes(double)")]
@@ -76,7 +76,7 @@ public static class TimeOnlyModule
 
 	///<summary>Returns a new <see cref="T:System.TimeOnly" /> that adds the specified number of minutes to the value of this instance.            If the result wraps past the end of the day, this method returns the number of excess days as an out parameter.</summary>
 	[Jazor(Op.Discard ,"System.TimeOnly.AddMinutes(double, out int)")]
-	public extern static Number _e698cb9920401887(Number instance, Number value, Box<Number> wrappedDays);
+	public extern static Array<object?> _e698cb9920401887(Number instance, Number value, out Number wrappedDays);
 
 	///<summary>Determines if a time falls within the range provided.            Supports both "normal" ranges such as 10:00-12:00, and ranges that span midnight such as 23:00-01:00.</summary>
 	[Jazor(Op.Discard ,"System.TimeOnly.IsBetween(System.TimeOnly, System.TimeOnly)")]
@@ -112,19 +112,19 @@ public static class TimeOnlyModule
 
 	///<summary>Deconstructs this <see cref="T:System.TimeOnly" /> instance into <see cref="P:System.TimeOnly.Hour" /> and <see cref="P:System.TimeOnly.Minute" />.</summary>
 	[Jazor(Op.Discard ,"System.TimeOnly.Deconstruct(out int, out int)")]
-	public extern static void _d6170153a1f10bc3(Number instance, Box<Number> hour, Box<Number> minute);
+	public extern static Array<object?> _d6170153a1f10bc3(Number instance, out Number hour, out Number minute);
 
 	///<summary>Deconstructs this <see cref="T:System.TimeOnly" /> instance into <see cref="P:System.TimeOnly.Hour" />, <see cref="P:System.TimeOnly.Minute" />, and <see cref="P:System.TimeOnly.Second" />.</summary>
 	[Jazor(Op.Discard ,"System.TimeOnly.Deconstruct(out int, out int, out int)")]
-	public extern static void _d36793074735968e(Number instance, Box<Number> hour, Box<Number> minute, Box<Number> second);
+	public extern static Array<object?> _d36793074735968e(Number instance, out Number hour, out Number minute, out Number second);
 
 	///<summary>Deconstructs this <see cref="T:System.TimeOnly" /> instance into <see cref="P:System.TimeOnly.Hour" />, <see cref="P:System.TimeOnly.Minute" />, <see cref="P:System.TimeOnly.Second" />, and <see cref="P:System.TimeOnly.Millisecond" />.</summary>
 	[Jazor(Op.Discard ,"System.TimeOnly.Deconstruct(out int, out int, out int, out int)")]
-	public extern static void _b349a5fd892d33be(Number instance, Box<Number> hour, Box<Number> minute, Box<Number> second, Box<Number> millisecond);
+	public extern static Array<object?> _b349a5fd892d33be(Number instance, out Number hour, out Number minute, out Number second, out Number millisecond);
 
 	///<summary>Deconstructs this <see cref="T:System.TimeOnly" /> instance into <see cref="P:System.TimeOnly.Hour" />, <see cref="P:System.TimeOnly.Minute" />, <see cref="P:System.TimeOnly.Second" />, <see cref="P:System.TimeOnly.Millisecond" />, and <see cref="P:System.TimeOnly.Microsecond" />.</summary>
 	[Jazor(Op.Discard ,"System.TimeOnly.Deconstruct(out int, out int, out int, out int, out int)")]
-	public extern static void _1f5bb15cea73f15b(Number instance, Box<Number> hour, Box<Number> minute, Box<Number> second, Box<Number> millisecond, Box<Number> microsecond);
+	public extern static Array<object?> _1f5bb15cea73f15b(Number instance, out Number hour, out Number minute, out Number second, out Number millisecond, out Number microsecond);
 
 	///<summary>Constructs a <see cref="T:System.TimeOnly" /> object from a time span representing the time elapsed since midnight.</summary>
 	[Jazor(Op.Discard ,"static System.TimeOnly.FromTimeSpan(System.TimeSpan)")]
@@ -144,7 +144,7 @@ public static class TimeOnlyModule
 
 	///<summary>Compares the value of this instance to a specified object that contains a specified <see cref="T:System.TimeOnly" /> value, and returns an integer that indicates whether this instance is earlier than, the same as, or later than the specified <see cref="T:System.TimeOnly" /> value.</summary>
 	[Jazor(Op.Discard ,"System.TimeOnly.CompareTo(object)")]
-	public extern static Number _fa5c092641b8d1d5(Number instance, Object? value);
+	public extern static Number _fa5c092641b8d1d5(Number instance, object? value);
 
 	///<summary>Returns a value indicating whether the value of this instance is equal to the value of the specified <see cref="T:System.TimeOnly" /> instance.</summary>
 	[Jazor(Op.Discard ,"System.TimeOnly.Equals(System.TimeOnly)")]
@@ -152,7 +152,7 @@ public static class TimeOnlyModule
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
 	[Jazor(Op.Discard ,"override System.TimeOnly.Equals(object)")]
-	public extern static bool _f70c423884fcb611(Number instance, Object? value);
+	public extern static bool _f70c423884fcb611(Number instance, object? value);
 
 	///<summary>Returns the hash code for this instance.</summary>
 	[Jazor(Op.Discard ,"override System.TimeOnly.GetHashCode()")]
@@ -176,75 +176,75 @@ public static class TimeOnlyModule
 
 	///<summary>Converts the string representation of a time to its <see cref="T:System.TimeOnly" /> equivalent by using the conventions of the current culture.</summary>
 	[Jazor(Op.Discard ,"static System.TimeOnly.Parse(string)")]
-	public extern static Number _c2335ab7e556bf0b(object s);
+	public extern static Number _c2335ab7e556bf0b(string s);
 
 	///<summary>Converts the string representation of a time to its <see cref="T:System.TimeOnly" /> equivalent by using culture-specific format information and a formatting style.</summary>
 	[Jazor(Op.Discard ,"static System.TimeOnly.Parse(string, System.IFormatProvider, System.Globalization.DateTimeStyles)")]
-	public extern static Number _b10aeed232e37ce3(object s, Intl.NumberFormat? provider, object style);
+	public extern static Number _b10aeed232e37ce3(string s, Intl.NumberFormat? provider, object style);
 
 	///<summary>Converts the specified string representation of a time to its <see cref="T:System.TimeOnly" /> equivalent using the specified format.            The format of the string representation must match the specified format exactly or an exception is thrown.</summary>
 	[Jazor(Op.Discard ,"static System.TimeOnly.ParseExact(string, string)")]
-	public extern static Number _716638d6af9e1f50(object s, object format);
+	public extern static Number _716638d6af9e1f50(string s, string format);
 
 	///<summary>Converts the specified string representation of a time to its <see cref="T:System.TimeOnly" /> equivalent using the specified format, culture-specific format information, and style.            The format of the string representation must match the specified format exactly or an exception is thrown.</summary>
 	[Jazor(Op.Discard ,"static System.TimeOnly.ParseExact(string, string, System.IFormatProvider, System.Globalization.DateTimeStyles)")]
-	public extern static Number _464a80539f893705(object s, object format, Intl.NumberFormat? provider, object style);
+	public extern static Number _464a80539f893705(string s, string format, Intl.NumberFormat? provider, object style);
 
 	///<summary>Converts the specified span to a <see cref="T:System.TimeOnly" /> equivalent using the specified array of formats.            The format of the string representation must match at least one of the specified formats exactly or an exception is thrown.</summary>
 	[Jazor(Op.Discard ,"static System.TimeOnly.ParseExact(string, string[])")]
-	public extern static Number _732d047579691da6(object s, object formats);
+	public extern static Number _732d047579691da6(string s, object formats);
 
 	///<summary>Converts the specified string representation of a time to its <see cref="T:System.TimeOnly" /> equivalent using the specified array of formats, culture-specific format information, and style.            The format of the string representation must match at least one of the specified formats exactly or an exception is thrown.</summary>
 	[Jazor(Op.Discard ,"static System.TimeOnly.ParseExact(string, string[], System.IFormatProvider, System.Globalization.DateTimeStyles)")]
-	public extern static Number _a753be3cfd781575(object s, object formats, Intl.NumberFormat? provider, object style);
+	public extern static Number _a753be3cfd781575(string s, object formats, Intl.NumberFormat? provider, object style);
 
 	///<summary>Converts the specified span representation of a time to its TimeOnly equivalent and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.TimeOnly.TryParse(System.ReadOnlySpan<char>, out System.TimeOnly)")]
-	public extern static bool _94c68599373e4134(Uint32Array s, Box<Number> result);
+	public extern static Array<object?> _94c68599373e4134(Uint32Array s, out Number result);
 
 	///<summary>Converts the specified span representation of a time to its <xref data-throw-if-not-resolved="true" uid="System.TimeOnly"></xref> equivalent using the specified array of formats, culture-specific format information and style, and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.TimeOnly.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, System.Globalization.DateTimeStyles, out System.TimeOnly)")]
-	public extern static bool _33c24989822cc33a(Uint32Array s, Intl.NumberFormat? provider, object style, Box<Number> result);
+	public extern static Array<object?> _33c24989822cc33a(Uint32Array s, Intl.NumberFormat? provider, object style, out Number result);
 
 	///<summary>Converts the specified span representation of a time to its <see cref="T:System.TimeOnly" /> equivalent using the specified format and style.            The format of the string representation must match the specified format exactly. The method returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.TimeOnly.TryParseExact(System.ReadOnlySpan<char>, System.ReadOnlySpan<char>, out System.TimeOnly)")]
-	public extern static bool _e2de5093ab6411a5(Uint32Array s, Uint32Array format, Box<Number> result);
+	public extern static Array<object?> _e2de5093ab6411a5(Uint32Array s, Uint32Array format, out Number result);
 
 	///<summary>Converts the specified span representation of a time to its <see cref="T:System.TimeOnly" /> equivalent using the specified format, culture-specific format information, and style.            The format of the string representation must match the specified format exactly. The method returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.TimeOnly.TryParseExact(System.ReadOnlySpan<char>, System.ReadOnlySpan<char>, System.IFormatProvider, System.Globalization.DateTimeStyles, out System.TimeOnly)")]
-	public extern static bool _533e30052a71b943(Uint32Array s, Uint32Array format, Intl.NumberFormat? provider, object style, Box<Number> result);
+	public extern static Array<object?> _533e30052a71b943(Uint32Array s, Uint32Array format, Intl.NumberFormat? provider, object style, out Number result);
 
 	///<summary>Converts the specified character span of a time to its <see cref="T:System.TimeOnly" /> equivalent and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.TimeOnly.TryParseExact(System.ReadOnlySpan<char>, string[], out System.TimeOnly)")]
-	public extern static bool _7949d623f32a801f(Uint32Array s, object formats, Box<Number> result);
+	public extern static Array<object?> _7949d623f32a801f(Uint32Array s, object formats, out Number result);
 
 	///<summary>Converts the specified character span of a time to its <see cref="T:System.TimeOnly" /> equivalent and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.TimeOnly.TryParseExact(System.ReadOnlySpan<char>, string[], System.IFormatProvider, System.Globalization.DateTimeStyles, out System.TimeOnly)")]
-	public extern static bool _c88c8d59055208af(Uint32Array s, object formats, Intl.NumberFormat? provider, object style, Box<Number> result);
+	public extern static Array<object?> _c88c8d59055208af(Uint32Array s, object formats, Intl.NumberFormat? provider, object style, out Number result);
 
 	///<summary>Converts the specified string representation of a time to its <see cref="T:System.TimeOnly" /> equivalent and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.TimeOnly.TryParse(string, out System.TimeOnly)")]
-	public extern static bool _ee7de3e005ab6751(object s, Box<Number> result);
+	public extern static Array<object?> _ee7de3e005ab6751(string? s, out Number result);
 
 	///<summary>Converts the specified string representation of a time to its <see cref="T:System.TimeOnly" /> equivalent using the specified array of formats, culture-specific format information and style, and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.TimeOnly.TryParse(string, System.IFormatProvider, System.Globalization.DateTimeStyles, out System.TimeOnly)")]
-	public extern static bool _c9d76d7d723eb7f2(object s, Intl.NumberFormat? provider, object style, Box<Number> result);
+	public extern static Array<object?> _c9d76d7d723eb7f2(string? s, Intl.NumberFormat? provider, object style, out Number result);
 
 	///<summary>Converts the specified string representation of a time to its <see cref="T:System.TimeOnly" /> equivalent using the specified format and style.            The format of the string representation must match the specified format exactly. The method returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.TimeOnly.TryParseExact(string, string, out System.TimeOnly)")]
-	public extern static bool _635f76a219a898ce(object s, object format, Box<Number> result);
+	public extern static Array<object?> _635f76a219a898ce(string? s, string? format, out Number result);
 
 	///<summary>Converts the specified span representation of a time to its <see cref="T:System.TimeOnly" /> equivalent using the specified format, culture-specific format information, and style.            The format of the string representation must match the specified format exactly. The method returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.TimeOnly.TryParseExact(string, string, System.IFormatProvider, System.Globalization.DateTimeStyles, out System.TimeOnly)")]
-	public extern static bool _5d909e2eac7e90ea(object s, object format, Intl.NumberFormat? provider, object style, Box<Number> result);
+	public extern static Array<object?> _5d909e2eac7e90ea(string? s, string? format, Intl.NumberFormat? provider, object style, out Number result);
 
 	///<summary>Converts the specified string representation of a time to its <see cref="T:System.TimeOnly" /> equivalent and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.TimeOnly.TryParseExact(string, string[], out System.TimeOnly)")]
-	public extern static bool _c464924dd070f03b(object s, object formats, Box<Number> result);
+	public extern static Array<object?> _c464924dd070f03b(string? s, object formats, out Number result);
 
 	///<summary>Converts the specified string representation of a time to its <see cref="T:System.TimeOnly" /> equivalent and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.TimeOnly.TryParseExact(string, string[], System.IFormatProvider, System.Globalization.DateTimeStyles, out System.TimeOnly)")]
-	public extern static bool _a8c2964fb6e24ce0(object s, object formats, Intl.NumberFormat? provider, object style, Box<Number> result);
+	public extern static Array<object?> _a8c2964fb6e24ce0(string? s, object formats, Intl.NumberFormat? provider, object style, out Number result);
 
 	///<summary>Converts the value of the current <see cref="T:System.TimeOnly" /> instance to its equivalent long date string representation.</summary>
 	[Jazor(Op.Discard ,"System.TimeOnly.ToLongTimeString()")]
@@ -260,7 +260,7 @@ public static class TimeOnlyModule
 
 	///<summary>Converts the current <see cref="T:System.TimeOnly" /> instance to its equivalent string representation using the specified format and the formatting conventions of the current culture.</summary>
 	[Jazor(Op.Discard ,"System.TimeOnly.ToString(string)")]
-	public extern static string _b95bf75d8e4cc6af(Number instance, object format);
+	public extern static string _b95bf75d8e4cc6af(Number instance, string? format);
 
 	///<summary>Converts the value of the current <see cref="T:System.TimeOnly" /> instance to its equivalent string representation using the specified culture-specific format information.</summary>
 	[Jazor(Op.Discard ,"System.TimeOnly.ToString(System.IFormatProvider)")]
@@ -268,23 +268,23 @@ public static class TimeOnlyModule
 
 	///<summary>Converts the value of the current <see cref="T:System.TimeOnly" /> instance to its equivalent string representation using the specified culture-specific format information.</summary>
 	[Jazor(Op.Discard ,"System.TimeOnly.ToString(string, System.IFormatProvider)")]
-	public extern static string _dd80539f727e11c1(Number instance, object format, Intl.NumberFormat? provider);
+	public extern static string _dd80539f727e11c1(Number instance, string? format, Intl.NumberFormat? provider);
 
 	///<summary>Tries to format the value of the current TimeOnly instance into the provided span of characters.</summary>
 	[Jazor(Op.Discard ,"System.TimeOnly.TryFormat(System.Span<char>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)")]
-	public extern static bool _d3c7ece118e478fa(Number instance, Uint32Array destination, Box<Number> charsWritten, Uint32Array format, Intl.NumberFormat? provider);
+	public extern static Array<object?> _d3c7ece118e478fa(Number instance, Uint32Array destination, out Number charsWritten, Uint32Array format, Intl.NumberFormat? provider);
 
 	///<summary>Tries to format the value of the current instance as UTF-8 into the provided span of bytes.</summary>
 	[Jazor(Op.Discard ,"System.TimeOnly.TryFormat(System.Span<byte>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)")]
-	public extern static bool _98dcae3d77df54e1(Number instance, Uint8Array utf8Destination, Box<Number> bytesWritten, Uint32Array format, Intl.NumberFormat? provider);
+	public extern static Array<object?> _98dcae3d77df54e1(Number instance, Uint8Array utf8Destination, out Number bytesWritten, Uint32Array format, Intl.NumberFormat? provider);
 
 	///<summary>Parses a string into a value.</summary>
 	[Jazor(Op.Discard ,"static System.TimeOnly.Parse(string, System.IFormatProvider)")]
-	public extern static Number _ef54bbdfdbe24915(object s, Intl.NumberFormat? provider);
+	public extern static Number _ef54bbdfdbe24915(string s, Intl.NumberFormat? provider);
 
 	///<summary>Tries to parse a string into a value.</summary>
 	[Jazor(Op.Discard ,"static System.TimeOnly.TryParse(string, System.IFormatProvider, out System.TimeOnly)")]
-	public extern static bool _8fea7e8fcaae2f91(object s, Intl.NumberFormat? provider, Box<Number> result);
+	public extern static Array<object?> _8fea7e8fcaae2f91(string? s, Intl.NumberFormat? provider, out Number result);
 
 	///<summary>Parses a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static System.TimeOnly.Parse(System.ReadOnlySpan<char>, System.IFormatProvider)")]
@@ -292,5 +292,5 @@ public static class TimeOnlyModule
 
 	///<summary>Tries to parse a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static System.TimeOnly.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, out System.TimeOnly)")]
-	public extern static bool _1c2553fed0fac496(Uint32Array s, Intl.NumberFormat? provider, Box<Number> result);
+	public extern static Array<object?> _1c2553fed0fac496(Uint32Array s, Intl.NumberFormat? provider, out Number result);
 }

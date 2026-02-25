@@ -23,7 +23,7 @@ public static class ArrayModule
 
 	///<summary>Changes the number of elements of a one-dimensional array to the specified new size.</summary>
 	[Jazor(Op.Discard ,"static System.Array.Resize<T>(ref T[], int)")]
-	public extern static void _127013d39cf5bff9<T>(Box<Array<T>?> array, Number newSize);
+	public extern static Array<object?> _127013d39cf5bff9<T>(ref Array<T>? array, Number newSize);
 
 	///<summary>Creates a one-dimensional <see cref="T:System.Array" /> of the specified <see cref="T:System.Type" /> and length, with zero-based indexing.</summary>
 	[Jazor(Op.Discard ,"static System.Array.CreateInstance(System.Type, int)")]
@@ -103,74 +103,74 @@ public static class ArrayModule
 
 	///<summary>Gets the value at the specified position in the multidimensional <see cref="T:System.Array" />. The indexes are specified as an array of 32-bit integers.</summary>
 	[Jazor(Op.Discard ,"System.Array.GetValue(params int[])")]
-	public extern static Object? _e938260256ca4a08(System.Array instance,  object indices);
+	public extern static object? _e938260256ca4a08(System.Array instance,  object indices);
 
 	///<summary>Gets the value at the specified position in the one-dimensional <see cref="T:System.Array" />. The index is specified as a 32-bit integer.</summary>
 	[Jazor(Op.Discard ,"System.Array.GetValue(int)")]
-	public extern static Object? _eba14f0435c17445(System.Array instance, Number index);
+	public extern static object? _eba14f0435c17445(System.Array instance, Number index);
 
 	///<summary>Gets the value at the specified position in the two-dimensional <see cref="T:System.Array" />. The indexes are specified as 32-bit integers.</summary>
 	[Jazor(Op.Discard ,"System.Array.GetValue(int, int)")]
-	public extern static Object? _c479de104d41183c(System.Array instance, Number index1, Number index2);
+	public extern static object? _c479de104d41183c(System.Array instance, Number index1, Number index2);
 
 	///<summary>Gets the value at the specified position in the three-dimensional <see cref="T:System.Array" />. The indexes are specified as 32-bit integers.</summary>
 	[Jazor(Op.Discard ,"System.Array.GetValue(int, int, int)")]
-	public extern static Object? _a9dc664f06ce55a4(System.Array instance, Number index1, Number index2, Number index3);
+	public extern static object? _a9dc664f06ce55a4(System.Array instance, Number index1, Number index2, Number index3);
 
 	///<summary>Sets a value to the element at the specified position in the one-dimensional <see cref="T:System.Array" />. The index is specified as a 32-bit integer.</summary>
 	[Jazor(Op.Discard ,"System.Array.SetValue(object, int)")]
-	public extern static void _1f2a45eb847a2ec4(System.Array instance, Object? value, Number index);
+	public extern static void _1f2a45eb847a2ec4(System.Array instance, object? value, Number index);
 
 	///<summary>Sets a value to the element at the specified position in the two-dimensional <see cref="T:System.Array" />. The indexes are specified as 32-bit integers.</summary>
 	[Jazor(Op.Discard ,"System.Array.SetValue(object, int, int)")]
-	public extern static void _7ca03dfc64fd5640(System.Array instance, Object? value, Number index1, Number index2);
+	public extern static void _7ca03dfc64fd5640(System.Array instance, object? value, Number index1, Number index2);
 
 	///<summary>Sets a value to the element at the specified position in the three-dimensional <see cref="T:System.Array" />. The indexes are specified as 32-bit integers.</summary>
 	[Jazor(Op.Discard ,"System.Array.SetValue(object, int, int, int)")]
-	public extern static void _a8dff91417f83303(System.Array instance, Object? value, Number index1, Number index2, Number index3);
+	public extern static void _a8dff91417f83303(System.Array instance, object? value, Number index1, Number index2, Number index3);
 
 	///<summary>Sets a value to the element at the specified position in the multidimensional <see cref="T:System.Array" />. The indexes are specified as an array of 32-bit integers.</summary>
 	[Jazor(Op.Discard ,"System.Array.SetValue(object, params int[])")]
-	public extern static void _8752076a83fbb3f1(System.Array instance, Object? value,  object indices);
+	public extern static void _8752076a83fbb3f1(System.Array instance, object? value,  object indices);
 
 	///<summary>Gets the value at the specified position in the one-dimensional <see cref="T:System.Array" />. The index is specified as a 64-bit integer.</summary>
 	[Jazor(Op.Discard ,"System.Array.GetValue(long)")]
-	public extern static Object? _99c592f7140b4f20(System.Array instance, BigInt index);
+	public extern static object? _99c592f7140b4f20(System.Array instance, BigInt index);
 
 	///<summary>Gets the value at the specified position in the two-dimensional <see cref="T:System.Array" />. The indexes are specified as 64-bit integers.</summary>
 	[Jazor(Op.Discard ,"System.Array.GetValue(long, long)")]
-	public extern static Object? _2bad686c503b1e40(System.Array instance, BigInt index1, BigInt index2);
+	public extern static object? _2bad686c503b1e40(System.Array instance, BigInt index1, BigInt index2);
 
 	///<summary>Gets the value at the specified position in the three-dimensional <see cref="T:System.Array" />. The indexes are specified as 64-bit integers.</summary>
 	[Jazor(Op.Discard ,"System.Array.GetValue(long, long, long)")]
-	public extern static Object? _8e8e4b0752cd3155(System.Array instance, BigInt index1, BigInt index2, BigInt index3);
+	public extern static object? _8e8e4b0752cd3155(System.Array instance, BigInt index1, BigInt index2, BigInt index3);
 
 	///<summary>Gets the value at the specified position in the multidimensional <see cref="T:System.Array" />. The indexes are specified as an array of 64-bit integers.</summary>
 	[Jazor(Op.Discard ,"System.Array.GetValue(params long[])")]
-	public extern static Object? _6a12948779406121(System.Array instance,  object indices);
+	public extern static object? _6a12948779406121(System.Array instance,  object indices);
 
 	///<summary>Sets a value to the element at the specified position in the one-dimensional <see cref="T:System.Array" />. The index is specified as a 64-bit integer.</summary>
 	[Jazor(Op.Discard ,"System.Array.SetValue(object, long)")]
-	public extern static void _d845170315112950(System.Array instance, Object? value, BigInt index);
+	public extern static void _d845170315112950(System.Array instance, object? value, BigInt index);
 
 	///<summary>Sets a value to the element at the specified position in the two-dimensional <see cref="T:System.Array" />. The indexes are specified as 64-bit integers.</summary>
 	[Jazor(Op.Discard ,"System.Array.SetValue(object, long, long)")]
-	public extern static void _24864536d32c0b93(System.Array instance, Object? value, BigInt index1, BigInt index2);
+	public extern static void _24864536d32c0b93(System.Array instance, object? value, BigInt index1, BigInt index2);
 
 	///<summary>Sets a value to the element at the specified position in the three-dimensional <see cref="T:System.Array" />. The indexes are specified as 64-bit integers.</summary>
 	[Jazor(Op.Discard ,"System.Array.SetValue(object, long, long, long)")]
-	public extern static void _314db333058e554d(System.Array instance, Object? value, BigInt index1, BigInt index2, BigInt index3);
+	public extern static void _314db333058e554d(System.Array instance, object? value, BigInt index1, BigInt index2, BigInt index3);
 
 	///<summary>Sets a value to the element at the specified position in the multidimensional <see cref="T:System.Array" />. The indexes are specified as an array of 64-bit integers.</summary>
 	[Jazor(Op.Discard ,"System.Array.SetValue(object, params long[])")]
-	public extern static void _e3923681669a96b5(System.Array instance, Object? value,  object indices);
+	public extern static void _e3923681669a96b5(System.Array instance, object? value,  object indices);
 
 	///<summary>Gets a 64-bit integer that represents the number of elements in the specified dimension of the <see cref="T:System.Array" />.</summary>
 	[Jazor(Op.Discard ,"System.Array.GetLongLength(int)")]
 	public extern static BigInt _b529d6e54112cf3e(System.Array instance, Number dimension);
 
 	[Jazor(Op.Discard ,"System.Array.SyncRoot.get")]
-	public extern static Object _5df324fc2064bf14(System.Array instance);
+	public extern static object _5df324fc2064bf14(System.Array instance);
 
 	[Jazor(Op.Discard ,"System.Array.IsReadOnly.get")]
 	public extern static bool _957efa892fba2b42(System.Array instance);
@@ -183,23 +183,23 @@ public static class ArrayModule
 
 	///<summary>Creates a shallow copy of the <see cref="T:System.Array" />.</summary>
 	[Jazor(Op.Discard ,"System.Array.Clone()")]
-	public extern static Object _7b75e1326e081bb2(System.Array instance);
+	public extern static object _7b75e1326e081bb2(System.Array instance);
 
 	///<summary>Searches an entire one-dimensional sorted array for a specific element, using the <see cref="T:System.IComparable" /> interface implemented by each element of the array and by the specified object.</summary>
 	[Jazor(Op.Discard ,"static System.Array.BinarySearch(System.Array, object)")]
-	public extern static Number _0c9e99640a975a5b(object array, Object? value);
+	public extern static Number _0c9e99640a975a5b(object array, object? value);
 
 	///<summary>Searches a range of elements in a one-dimensional sorted array for a value, using the <see cref="T:System.IComparable" /> interface implemented by each element of the array and by the specified value.</summary>
 	[Jazor(Op.Discard ,"static System.Array.BinarySearch(System.Array, int, int, object)")]
-	public extern static Number _fa538add1f784012(object array, Number index, Number length, Object? value);
+	public extern static Number _fa538add1f784012(object array, Number index, Number length, object? value);
 
 	///<summary>Searches an entire one-dimensional sorted array for a value using the specified <see cref="T:System.Collections.IComparer" /> interface.</summary>
 	[Jazor(Op.Discard ,"static System.Array.BinarySearch(System.Array, object, System.Collections.IComparer)")]
-	public extern static Number _c453dd981ecbb5c5(object array, Object? value, object comparer);
+	public extern static Number _c453dd981ecbb5c5(object array, object? value, object comparer);
 
 	///<summary>Searches a range of elements in a one-dimensional sorted array for a value, using the specified <see cref="T:System.Collections.IComparer" /> interface.</summary>
 	[Jazor(Op.Discard ,"static System.Array.BinarySearch(System.Array, int, int, object, System.Collections.IComparer)")]
-	public extern static Number _f1fb5c20cf9ffd4d(object array, Number index, Number length, Object? value, object comparer);
+	public extern static Number _f1fb5c20cf9ffd4d(object array, Number index, Number length, object? value, object comparer);
 
 	///<summary>Searches an entire one-dimensional sorted array for a specific element, using the <see cref="T:System.IComparable`1" /> generic interface implemented by each element of the <see cref="T:System.Array" /> and by the specified object.</summary>
 	[Jazor(Op.Discard ,"static System.Array.BinarySearch<T>(T[], T)")]
@@ -287,15 +287,15 @@ public static class ArrayModule
 
 	///<summary>Searches for the specified object and returns the index of its first occurrence in a one-dimensional array.</summary>
 	[Jazor(Op.Discard ,"static System.Array.IndexOf(System.Array, object)")]
-	public extern static Number _cde8d7a78af8dc9a(object array, Object? value);
+	public extern static Number _cde8d7a78af8dc9a(object array, object? value);
 
 	///<summary>Searches for the specified object in a range of elements of a one-dimensional array, and returns the index of its first occurrence. The range extends from a specified index to the end of the array.</summary>
 	[Jazor(Op.Discard ,"static System.Array.IndexOf(System.Array, object, int)")]
-	public extern static Number _2151f4cd0a63b0a2(object array, Object? value, Number startIndex);
+	public extern static Number _2151f4cd0a63b0a2(object array, object? value, Number startIndex);
 
 	///<summary>Searches for the specified object in a range of elements of a one-dimensional array, and returns the index of ifs first occurrence. The range extends from a specified index for a specified number of elements.</summary>
 	[Jazor(Op.Discard ,"static System.Array.IndexOf(System.Array, object, int, int)")]
-	public extern static Number _c419efc216312a6a(object array, Object? value, Number startIndex, Number count);
+	public extern static Number _c419efc216312a6a(object array, object? value, Number startIndex, Number count);
 
 	///<summary>Searches for the specified object and returns the index of its first occurrence in a one-dimensional array.</summary>
 	[Jazor(Op.Discard ,"static System.Array.IndexOf<T>(T[], T)")]
@@ -311,15 +311,15 @@ public static class ArrayModule
 
 	///<summary>Searches for the specified object and returns the index of the last occurrence within the entire one-dimensional <see cref="T:System.Array" />.</summary>
 	[Jazor(Op.Discard ,"static System.Array.LastIndexOf(System.Array, object)")]
-	public extern static Number _85801a2dbc247f17(object array, Object? value);
+	public extern static Number _85801a2dbc247f17(object array, object? value);
 
 	///<summary>Searches for the specified object and returns the index of the last occurrence within the range of elements in the one-dimensional <see cref="T:System.Array" /> that extends from the first element to the specified index.</summary>
 	[Jazor(Op.Discard ,"static System.Array.LastIndexOf(System.Array, object, int)")]
-	public extern static Number _6b23455f7b2f95ff(object array, Object? value, Number startIndex);
+	public extern static Number _6b23455f7b2f95ff(object array, object? value, Number startIndex);
 
 	///<summary>Searches for the specified object and returns the index of the last occurrence within the range of elements in the one-dimensional <see cref="T:System.Array" /> that contains the specified number of elements and ends at the specified index.</summary>
 	[Jazor(Op.Discard ,"static System.Array.LastIndexOf(System.Array, object, int, int)")]
-	public extern static Number _7f5af90fd2a084fe(object array, Object? value, Number startIndex, Number count);
+	public extern static Number _7f5af90fd2a084fe(object array, object? value, Number startIndex, Number count);
 
 	///<summary>Searches for the specified object and returns the index of the last occurrence within the entire <see cref="T:System.Array" />.</summary>
 	[Jazor(Op.Discard ,"static System.Array.LastIndexOf<T>(T[], T)")]
