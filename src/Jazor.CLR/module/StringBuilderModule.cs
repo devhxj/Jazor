@@ -119,7 +119,7 @@ public static class StringBuilderModule
 
 	///<summary>Appends the string representation of a specified Boolean value to this instance.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Append(bool)")]
-	public extern static System.Text.StringBuilder _dded353c61620d12(System.Text.StringBuilder instance, object value);
+	public extern static System.Text.StringBuilder _dded353c61620d12(System.Text.StringBuilder instance, bool value);
 
 	///<summary>Appends the string representation of a specified <see cref="T:System.Char" /> object to this instance.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Append(char)")]
@@ -187,19 +187,19 @@ public static class StringBuilderModule
 
 	///<summary>Appends the specified interpolated string to this instance.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Append(ref System.Text.StringBuilder.AppendInterpolatedStringHandler)")]
-	public extern static Array<object?> _b753ce137296837a(System.Text.StringBuilder instance, ref object handler);
+	public extern static Array<object?> _b753ce137296837a(System.Text.StringBuilder instance, object handler);
 
 	///<summary>Appends the specified interpolated string to this instance using the specified format.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Append(System.IFormatProvider, ref System.Text.StringBuilder.AppendInterpolatedStringHandler)")]
-	public extern static Array<object?> _c38a3237ddfa0a19(System.Text.StringBuilder instance, Intl.NumberFormat? provider, ref object handler);
+	public extern static Array<object?> _c38a3237ddfa0a19(System.Text.StringBuilder instance, Intl.NumberFormat? provider, object handler);
 
 	///<summary>Appends the specified interpolated string followed by the default line terminator to the end of the current StringBuilder object.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendLine(ref System.Text.StringBuilder.AppendInterpolatedStringHandler)")]
-	public extern static Array<object?> _c52ed5039c53253f(System.Text.StringBuilder instance, ref object handler);
+	public extern static Array<object?> _c52ed5039c53253f(System.Text.StringBuilder instance, object handler);
 
 	///<summary>Appends the specified interpolated string using the specified format, followed by the default line terminator, to the end of the current StringBuilder object.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendLine(System.IFormatProvider, ref System.Text.StringBuilder.AppendInterpolatedStringHandler)")]
-	public extern static Array<object?> _0192e43c680249a7(System.Text.StringBuilder instance, Intl.NumberFormat? provider, ref object handler);
+	public extern static Array<object?> _0192e43c680249a7(System.Text.StringBuilder instance, Intl.NumberFormat? provider, object handler);
 
 	///<summary>Concatenates the string representations of the elements in the provided array of objects, using the specified separator between each member, then appends the result to the current instance of the string builder.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendJoin(string, params object[])")]
@@ -247,7 +247,7 @@ public static class StringBuilderModule
 
 	///<summary>Inserts the string representation of a Boolean value into this instance at the specified character position.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Insert(int, bool)")]
-	public extern static System.Text.StringBuilder _2e7808d3cd4780e8(System.Text.StringBuilder instance, Number index, object value);
+	public extern static System.Text.StringBuilder _2e7808d3cd4780e8(System.Text.StringBuilder instance, Number index, bool value);
 
 	///<summary>Inserts the string representation of a specified 8-bit signed integer into this instance at the specified character position.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Insert(int, sbyte)")]

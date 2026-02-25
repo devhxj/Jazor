@@ -148,11 +148,11 @@ public static class MathModule
 
 	///<summary>Produces the full product of two unsigned 64-bit numbers.</summary>
 	[Jazor(Op.Discard ,"static System.Math.BigMul(ulong, ulong, out ulong)")]
-	public extern static Array<object?> _99697fddb05f0646(BigInt a, BigInt b, out BigInt low);
+	public extern static Array<object?> _99697fddb05f0646(BigInt a, BigInt b, BigInt low);
 
 	///<summary>Produces the full product of two 64-bit numbers.</summary>
 	[Jazor(Op.Discard ,"static System.Math.BigMul(long, long, out long)")]
-	public extern static Array<object?> _1f2b3fb549b0a774(BigInt a, BigInt b, out BigInt low);
+	public extern static Array<object?> _1f2b3fb549b0a774(BigInt a, BigInt b, BigInt low);
 
 	///<summary>Produces the full product of two unsigned 64-bit numbers.</summary>
 	[Jazor(Op.Discard ,"static System.Math.BigMul(ulong, ulong)")]
@@ -176,11 +176,11 @@ public static class MathModule
 
 	///<summary>Calculates the quotient of two 32-bit signed integers and also returns the remainder in an output parameter.</summary>
 	[Jazor(Op.Discard ,"static System.Math.DivRem(int, int, out int)")]
-	public extern static Array<object?> _2a90cb0f64781864(Number a, Number b, out Number result);
+	public extern static Array<object?> _2a90cb0f64781864(Number a, Number b, Number result);
 
 	///<summary>Calculates the quotient of two 64-bit signed integers and also returns the remainder in an output parameter.</summary>
 	[Jazor(Op.Discard ,"static System.Math.DivRem(long, long, out long)")]
-	public extern static Array<object?> _1961d3558bd76ea4(BigInt a, BigInt b, out BigInt result);
+	public extern static Array<object?> _1961d3558bd76ea4(BigInt a, BigInt b, BigInt result);
 
 	///<summary>Produces the quotient and the remainder of two signed 8-bit numbers.</summary>
 	[Jazor(Op.Discard ,"static System.Math.DivRem(sbyte, sbyte)")]

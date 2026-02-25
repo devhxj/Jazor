@@ -280,11 +280,11 @@ public static class DateTimeOffsetModule
 
 	///<summary>Tries to format the value of the current datetime offset instance into the provided span of characters.</summary>
 	[Jazor(Op.Discard ,"System.DateTimeOffset.TryFormat(System.Span<char>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)")]
-	public extern static Array<object?> _f899d2eb7dcfcfe9(Date instance, Uint32Array destination, out Number charsWritten, Uint32Array format, Intl.NumberFormat? formatProvider);
+	public extern static Array<object?> _f899d2eb7dcfcfe9(Date instance, Uint32Array destination, Number charsWritten, Uint32Array format, Intl.NumberFormat? formatProvider);
 
 	///<summary>Tries to format the value of the current instance as UTF-8 into the provided span of bytes.</summary>
 	[Jazor(Op.Discard ,"System.DateTimeOffset.TryFormat(System.Span<byte>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)")]
-	public extern static Array<object?> _ec001bad537a3ce9(Date instance, Uint8Array utf8Destination, out Number bytesWritten, Uint32Array format, Intl.NumberFormat? formatProvider);
+	public extern static Array<object?> _ec001bad537a3ce9(Date instance, Uint8Array utf8Destination, Number bytesWritten, Uint32Array format, Intl.NumberFormat? formatProvider);
 
 	///<summary>Converts the current <see cref="T:System.DateTimeOffset" /> object to a <see cref="T:System.DateTimeOffset" /> value that represents the Coordinated Universal Time (UTC).</summary>
 	[Jazor(Op.Discard ,"System.DateTimeOffset.ToUniversalTime()")]
@@ -292,35 +292,35 @@ public static class DateTimeOffsetModule
 
 	///<summary>Tries to converts a specified string representation of a date and time to its <see cref="T:System.DateTimeOffset" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.DateTimeOffset.TryParse(string, out System.DateTimeOffset)")]
-	public extern static Array<object?> _2fd90dc37b274014(string? input, out Date result);
+	public extern static Array<object?> _2fd90dc37b274014(string? input, Date result);
 
 	///<summary>Tries to convert a specified span representation of a date and time to its <see cref="T:System.DateTimeOffset" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.DateTimeOffset.TryParse(System.ReadOnlySpan<char>, out System.DateTimeOffset)")]
-	public extern static Array<object?> _c7957aa2e68f8218(Uint32Array input, out Date result);
+	public extern static Array<object?> _c7957aa2e68f8218(Uint32Array input, Date result);
 
 	///<summary>Tries to convert a specified string representation of a date and time to its <see cref="T:System.DateTimeOffset" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.DateTimeOffset.TryParse(string, System.IFormatProvider, System.Globalization.DateTimeStyles, out System.DateTimeOffset)")]
-	public extern static Array<object?> _62fe5aa144f2c9e1(string? input, Intl.NumberFormat? formatProvider, object styles, out Date result);
+	public extern static Array<object?> _62fe5aa144f2c9e1(string? input, Intl.NumberFormat? formatProvider, object styles, Date result);
 
 	///<summary>Tries to convert a specified span representation of a date and time to its <see cref="T:System.DateTimeOffset" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.DateTimeOffset.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, System.Globalization.DateTimeStyles, out System.DateTimeOffset)")]
-	public extern static Array<object?> _9dd0fca0c6a9a4de(Uint32Array input, Intl.NumberFormat? formatProvider, object styles, out Date result);
+	public extern static Array<object?> _9dd0fca0c6a9a4de(Uint32Array input, Intl.NumberFormat? formatProvider, object styles, Date result);
 
 	///<summary>Converts the specified string representation of a date and time to its <see cref="T:System.DateTimeOffset" /> equivalent using the specified format, culture-specific format information, and style. The format of the string representation must match the specified format exactly.</summary>
 	[Jazor(Op.Discard ,"static System.DateTimeOffset.TryParseExact(string, string, System.IFormatProvider, System.Globalization.DateTimeStyles, out System.DateTimeOffset)")]
-	public extern static Array<object?> _a99669f1d632e166(string? input, string? format, Intl.NumberFormat? formatProvider, object styles, out Date result);
+	public extern static Array<object?> _a99669f1d632e166(string? input, string? format, Intl.NumberFormat? formatProvider, object styles, Date result);
 
 	///<summary>Converts the representation of a date and time in a character span to its <see cref="T:System.DateTimeOffset" /> equivalent using the specified format, culture-specific format information, and style. The format of the date and time representation must match the specified format exactly.</summary>
 	[Jazor(Op.Discard ,"static System.DateTimeOffset.TryParseExact(System.ReadOnlySpan<char>, System.ReadOnlySpan<char>, System.IFormatProvider, System.Globalization.DateTimeStyles, out System.DateTimeOffset)")]
-	public extern static Array<object?> _639a2d041804058b(Uint32Array input, Uint32Array format, Intl.NumberFormat? formatProvider, object styles, out Date result);
+	public extern static Array<object?> _639a2d041804058b(Uint32Array input, Uint32Array format, Intl.NumberFormat? formatProvider, object styles, Date result);
 
 	///<summary>Converts the specified string representation of a date and time to its <see cref="T:System.DateTimeOffset" /> equivalent using the specified array of formats, culture-specific format information, and style. The format of the string representation must match one of the specified formats exactly.</summary>
 	[Jazor(Op.Discard ,"static System.DateTimeOffset.TryParseExact(string, string[], System.IFormatProvider, System.Globalization.DateTimeStyles, out System.DateTimeOffset)")]
-	public extern static Array<object?> _39ec2cd456e46b13(string? input, object formats, Intl.NumberFormat? formatProvider, object styles, out Date result);
+	public extern static Array<object?> _39ec2cd456e46b13(string? input, object formats, Intl.NumberFormat? formatProvider, object styles, Date result);
 
 	///<summary>Converts the representation of a date and time in a character span to its <see cref="T:System.DateTimeOffset" /> equivalent using the specified formats, culture-specific format information, and style. The format of the date and time representation must match one of the specified formats exactly.</summary>
 	[Jazor(Op.Discard ,"static System.DateTimeOffset.TryParseExact(System.ReadOnlySpan<char>, string[], System.IFormatProvider, System.Globalization.DateTimeStyles, out System.DateTimeOffset)")]
-	public extern static Array<object?> _d09753e75937de75(Uint32Array input, object formats, Intl.NumberFormat? formatProvider, object styles, out Date result);
+	public extern static Array<object?> _d09753e75937de75(Uint32Array input, object formats, Intl.NumberFormat? formatProvider, object styles, Date result);
 
 	///<summary>Defines an implicit conversion of a <see cref="T:System.DateTime" /> object to a <see cref="T:System.DateTimeOffset" /> object.</summary>
 	[Jazor(Op.Discard ,"static System.DateTimeOffset.implicit operator System.DateTimeOffset(System.DateTime)")]
@@ -364,11 +364,11 @@ public static class DateTimeOffsetModule
 
 	///<summary>Deconstructs this <see cref="T:System.DateTimeOffset" /> instance by <see cref="T:System.DateOnly" />, <see cref="T:System.TimeOnly" />, and <see cref="T:System.TimeSpan" />.</summary>
 	[Jazor(Op.Discard ,"System.DateTimeOffset.Deconstruct(out System.DateOnly, out System.TimeOnly, out System.TimeSpan)")]
-	public extern static Array<object?> _6ec7dc3f674ff16c(Date instance, out Date date, out Number time, out BigInt offset);
+	public extern static Array<object?> _6ec7dc3f674ff16c(Date instance, Date date, Number time, BigInt offset);
 
 	///<summary>Tries to parse a string into a value.</summary>
 	[Jazor(Op.Discard ,"static System.DateTimeOffset.TryParse(string, System.IFormatProvider, out System.DateTimeOffset)")]
-	public extern static Array<object?> _61ef673e0dd00ab0(string? s, Intl.NumberFormat? provider, out Date result);
+	public extern static Array<object?> _61ef673e0dd00ab0(string? s, Intl.NumberFormat? provider, Date result);
 
 	///<summary>Parses a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static System.DateTimeOffset.Parse(System.ReadOnlySpan<char>, System.IFormatProvider)")]
@@ -376,7 +376,7 @@ public static class DateTimeOffsetModule
 
 	///<summary>Tries to parse a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static System.DateTimeOffset.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, out System.DateTimeOffset)")]
-	public extern static Array<object?> _c9e042e683205a8b(Uint32Array s, Intl.NumberFormat? provider, out Date result);
+	public extern static Array<object?> _c9e042e683205a8b(Uint32Array s, Intl.NumberFormat? provider, Date result);
 
 	[Jazor(Op.Discard ,"static System.DateTimeOffset.Now.get")]
 	public extern static Date _e679a7abf50cf648(Date instance);

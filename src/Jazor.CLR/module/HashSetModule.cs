@@ -52,7 +52,7 @@ public static class HashSetModule<T>
 
 	///<summary>Gets an instance of a type that can be used to perform operations on the current <see cref="T:System.Collections.Generic.HashSet`1" /> using a <typeparamref name="TAlternate" /> instead of a <typeparamref name="T" />.</summary>
 	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.TryGetAlternateLookup<TAlternate>(out System.Collections.Generic.HashSet<T>.AlternateLookup<TAlternate>)")]
-	public extern static Array<object?> _859aac4462f2d063<TAlternate>(Set<T> instance, out object lookup);
+	public extern static Array<object?> _859aac4462f2d063<TAlternate>(Set<T> instance, object lookup);
 
 	///<summary>Returns an enumerator that iterates through a <see cref="T:System.Collections.Generic.HashSet`1" /> object.</summary>
 	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.GetEnumerator()")]
@@ -72,7 +72,7 @@ public static class HashSetModule<T>
 
 	///<summary>Searches the set for a given value and returns the equal value it finds, if any.</summary>
 	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.TryGetValue(T, out T)")]
-	public extern static Array<object?> _20eb460b32c63404(Set<T> instance, object equalValue, out object actualValue);
+	public extern static Array<object?> _20eb460b32c63404(Set<T> instance, object equalValue, object actualValue);
 
 	///<summary>Modifies the current <see cref="T:System.Collections.Generic.HashSet`1" /> object to contain all elements that are present in itself, the specified collection, or both.</summary>
 	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.UnionWith(System.Collections.Generic.IEnumerable<T>)")]

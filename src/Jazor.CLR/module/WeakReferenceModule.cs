@@ -10,7 +10,7 @@ public static class WeakReferenceModule
 
 	///<summary>Initializes a new instance of the <see cref="T:System.WeakReference" /> class, referencing the specified object and using the specified resurrection tracking.</summary>
 	[Jazor(Op.Discard ,"System.WeakReference.WeakReference(object, bool)")]
-	public extern static WeakRef _bb3cf7219c9626be(object? target, object trackResurrection);
+	public extern static WeakRef _bb3cf7219c9626be(object? target, bool trackResurrection);
 
 	///<summary>Populates a <see cref="T:System.Runtime.Serialization.SerializationInfo" /> object with all the data needed to serialize the current <see cref="T:System.WeakReference" /> object.</summary>
 	[Jazor(Op.Discard ,"virtual System.WeakReference.GetObjectData(System.Runtime.Serialization.SerializationInfo, System.Runtime.Serialization.StreamingContext)")]

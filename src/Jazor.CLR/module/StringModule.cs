@@ -22,7 +22,7 @@ public static class StringModule
 
 	///<summary>Compares two specified <see cref="T:System.String" /> objects, ignoring or honoring their case, and returns an integer that indicates their relative position in the sort order.</summary>
 	[Jazor(Op.Discard ,"static string.Compare(string, string, bool)")]
-	public extern static Number _20874c0b43640318(string? strA, string? strB, object ignoreCase);
+	public extern static Number _20874c0b43640318(string? strA, string? strB, bool ignoreCase);
 
 	///<summary>Compares two specified <see cref="T:System.String" /> objects using the specified rules, and returns an integer that indicates their relative position in the sort order.</summary>
 	[Jazor(Op.Discard ,"static string.Compare(string, string, System.StringComparison)")]
@@ -34,7 +34,7 @@ public static class StringModule
 
 	///<summary>Compares two specified <see cref="T:System.String" /> objects, ignoring or honoring their case, and using culture-specific information to influence the comparison, and returns an integer that indicates their relative position in the sort order.</summary>
 	[Jazor(Op.Discard ,"static string.Compare(string, string, bool, System.Globalization.CultureInfo)")]
-	public extern static Number _7349ec2403e9750d(string? strA, string? strB, object ignoreCase, String? culture);
+	public extern static Number _7349ec2403e9750d(string? strA, string? strB, bool ignoreCase, String? culture);
 
 	///<summary>Compares substrings of two specified <see cref="T:System.String" /> objects and returns an integer that indicates their relative position in the sort order.</summary>
 	[Jazor(Op.Discard ,"static string.Compare(string, int, string, int, int)")]
@@ -42,11 +42,11 @@ public static class StringModule
 
 	///<summary>Compares substrings of two specified <see cref="T:System.String" /> objects, ignoring or honoring their case, and returns an integer that indicates their relative position in the sort order.</summary>
 	[Jazor(Op.Discard ,"static string.Compare(string, int, string, int, int, bool)")]
-	public extern static Number _ae9588dc995de641(string? strA, Number indexA, string? strB, Number indexB, Number length, object ignoreCase);
+	public extern static Number _ae9588dc995de641(string? strA, Number indexA, string? strB, Number indexB, Number length, bool ignoreCase);
 
 	///<summary>Compares substrings of two specified <see cref="T:System.String" /> objects, ignoring or honoring their case and using culture-specific information to influence the comparison, and returns an integer that indicates their relative position in the sort order.</summary>
 	[Jazor(Op.Discard ,"static string.Compare(string, int, string, int, int, bool, System.Globalization.CultureInfo)")]
-	public extern static Number _e926c87c90eaf4a5(string? strA, Number indexA, string? strB, Number indexB, Number length, object ignoreCase, String? culture);
+	public extern static Number _e926c87c90eaf4a5(string? strA, Number indexA, string? strB, Number indexB, Number length, bool ignoreCase, String? culture);
 
 	///<summary>Compares substrings of two specified <see cref="T:System.String" /> objects using the specified comparison options and culture-specific information to influence the comparison, and returns an integer that indicates the relationship of the two substrings to each other in the sort order.</summary>
 	[Jazor(Op.Discard ,"static string.Compare(string, int, string, int, int, System.Globalization.CultureInfo, System.Globalization.CompareOptions)")]
@@ -82,7 +82,7 @@ public static class StringModule
 
 	///<summary>Determines whether the end of this string instance matches the specified string when compared using the specified culture.</summary>
 	[Jazor(Op.Discard ,"string.EndsWith(string, bool, System.Globalization.CultureInfo)")]
-	public extern static bool _679207cac049d3c6(string instance, string value, object ignoreCase, String? culture);
+	public extern static bool _679207cac049d3c6(string instance, string value, bool ignoreCase, String? culture);
 
 	///<summary>Determines whether the end of this string instance matches the specified character.</summary>
 	[Jazor(Op.Discard ,"string.EndsWith(char)")]
@@ -142,7 +142,7 @@ public static class StringModule
 
 	///<summary>Determines whether the beginning of this string instance matches the specified string when compared using the specified culture.</summary>
 	[Jazor(Op.Discard ,"string.StartsWith(string, bool, System.Globalization.CultureInfo)")]
-	public extern static bool _16d66a076936ebd2(string instance, string value, object ignoreCase, String? culture);
+	public extern static bool _16d66a076936ebd2(string instance, string value, bool ignoreCase, String? culture);
 
 	///<summary>Determines whether this string instance starts with the specified character.</summary>
 	[Jazor(Op.Discard ,"string.StartsWith(char)")]
@@ -170,11 +170,11 @@ public static class StringModule
 
 	///<summary>Creates a new string by using the specified provider to control the formatting of the specified interpolated string.</summary>
 	[Jazor(Op.Discard ,"static string.Create(System.IFormatProvider, ref System.Runtime.CompilerServices.DefaultInterpolatedStringHandler)")]
-	public extern static Array<object?> _af610a42747a747c(Intl.NumberFormat? provider, ref object handler);
+	public extern static Array<object?> _af610a42747a747c(Intl.NumberFormat? provider, object handler);
 
 	///<summary>Creates a new string by using the specified provider to control the formatting of the specified interpolated string.</summary>
 	[Jazor(Op.Discard ,"static string.Create(System.IFormatProvider, System.Span<char>, ref System.Runtime.CompilerServices.DefaultInterpolatedStringHandler)")]
-	public extern static Array<object?> _1978314137f5a599(Intl.NumberFormat? provider, Uint32Array initialBuffer, ref object handler);
+	public extern static Array<object?> _1978314137f5a599(Intl.NumberFormat? provider, Uint32Array initialBuffer, object handler);
 
 	///<summary>Defines an implicit conversion of a given string to a read-only span of characters.</summary>
 	[Jazor(Op.Discard ,"static string.implicit operator System.ReadOnlySpan<char>(string)")]
@@ -464,7 +464,7 @@ public static class StringModule
 
 	///<summary>Returns a new string in which all occurrences of a specified string in the current instance are replaced with another specified string, using the provided culture and case sensitivity.</summary>
 	[Jazor(Op.Discard ,"string.Replace(string, string, bool, System.Globalization.CultureInfo)")]
-	public extern static string _80ebf2c83f8072e2(string instance, string oldValue, string? newValue, object ignoreCase, String? culture);
+	public extern static string _80ebf2c83f8072e2(string instance, string oldValue, string? newValue, bool ignoreCase, String? culture);
 
 	///<summary>Returns a new string in which all occurrences of a specified string in the current instance are replaced with another specified string, using the provided comparison type.</summary>
 	[Jazor(Op.Discard ,"string.Replace(string, string, System.StringComparison)")]

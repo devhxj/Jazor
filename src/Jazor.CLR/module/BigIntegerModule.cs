@@ -38,7 +38,7 @@ public static class BigIntegerModule
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Numerics.BigInteger" /> structure using the values in a read-only span of bytes, and optionally indicating the signing encoding and the endianness byte order.</summary>
 	[Jazor(Op.Discard ,"System.Numerics.BigInteger.BigInteger(System.ReadOnlySpan<byte>, bool, bool)")]
-	public extern static BigInt _9c321a7400e5ff9b(Uint8Array value, object isUnsigned, object isBigEndian);
+	public extern static BigInt _9c321a7400e5ff9b(Uint8Array value, bool isUnsigned, bool isBigEndian);
 
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.Zero.get")]
 	public extern static BigInt _77fc63f99954f8da(BigInt instance);
@@ -82,11 +82,11 @@ public static class BigIntegerModule
 
 	///<summary>Tries to convert the string representation of a number to its <see cref="T:System.Numerics.BigInteger" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.TryParse(string, out System.Numerics.BigInteger)")]
-	public extern static Array<object?> _59acea2facdaa757(string? value, out BigInt? result);
+	public extern static Array<object?> _59acea2facdaa757(string? value, BigInt? result);
 
 	///<summary>Tries to convert the string representation of a number in a specified style and culture-specific format to its <see cref="T:System.Numerics.BigInteger" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.TryParse(string, System.Globalization.NumberStyles, System.IFormatProvider, out System.Numerics.BigInteger)")]
-	public extern static Array<object?> _85cd9c4a9c2dadf4(string? value, object style, Intl.NumberFormat? provider, out BigInt? result);
+	public extern static Array<object?> _85cd9c4a9c2dadf4(string? value, object style, Intl.NumberFormat? provider, BigInt? result);
 
 	///<summary>Converts the representation of a number, contained in the specified read-only span of characters, in a specified style to its <see cref="T:System.Numerics.BigInteger" /> equivalent.</summary>
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.Parse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider)")]
@@ -94,11 +94,11 @@ public static class BigIntegerModule
 
 	///<summary>Tries to convert the representation of a number contained in the specified read-only character span, to its <see cref="T:System.Numerics.BigInteger" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.TryParse(System.ReadOnlySpan<char>, out System.Numerics.BigInteger)")]
-	public extern static Array<object?> _ded03bf84977945f(Uint32Array value, out BigInt result);
+	public extern static Array<object?> _ded03bf84977945f(Uint32Array value, BigInt result);
 
 	///<summary>Tries to convert the string representation of a number to its <see cref="T:System.Numerics.BigInteger" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.TryParse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider, out System.Numerics.BigInteger)")]
-	public extern static Array<object?> _d733f0a0a427d970(Uint32Array value, object style, Intl.NumberFormat? provider, out BigInt result);
+	public extern static Array<object?> _d733f0a0a427d970(Uint32Array value, object style, Intl.NumberFormat? provider, BigInt result);
 
 	///<summary>Compares two <see cref="T:System.Numerics.BigInteger" /> values and returns an integer that indicates whether the first value is less than, equal to, or greater than the second value.</summary>
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.Compare(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
@@ -130,7 +130,7 @@ public static class BigIntegerModule
 
 	///<summary>Divides one <see cref="T:System.Numerics.BigInteger" /> value by another, returns the result, and returns the remainder in an output parameter.</summary>
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.DivRem(System.Numerics.BigInteger, System.Numerics.BigInteger, out System.Numerics.BigInteger)")]
-	public extern static Array<object?> _598611fb2b8a064a(BigInt dividend, BigInt divisor, out BigInt remainder);
+	public extern static Array<object?> _598611fb2b8a064a(BigInt dividend, BigInt divisor, BigInt remainder);
 
 	///<summary>Negates a specified <see cref="T:System.Numerics.BigInteger" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.Negate(System.Numerics.BigInteger)")]
@@ -210,15 +210,15 @@ public static class BigIntegerModule
 
 	///<summary>Returns the value of this <see cref="T:System.Numerics.BigInteger" /> as a byte array using the fewest number of bytes possible. If the value is zero, returns an array of one byte whose element is 0x00.</summary>
 	[Jazor(Op.Discard ,"System.Numerics.BigInteger.ToByteArray(bool, bool)")]
-	public extern static byte[] _11ed9d474ccf2419(BigInt instance, object isUnsigned, object isBigEndian);
+	public extern static byte[] _11ed9d474ccf2419(BigInt instance, bool isUnsigned, bool isBigEndian);
 
 	///<summary>Copies the value of this <see cref="T:System.Numerics.BigInteger" /> as little-endian twos-complement bytes, using the fewest number of bytes possible. If the value is zero, outputs one byte whose element is 0x00.</summary>
 	[Jazor(Op.Discard ,"System.Numerics.BigInteger.TryWriteBytes(System.Span<byte>, out int, bool, bool)")]
-	public extern static Array<object?> _76ae4e496fc976fd(BigInt instance, Uint8Array destination, out Number bytesWritten, object isUnsigned, object isBigEndian);
+	public extern static Array<object?> _76ae4e496fc976fd(BigInt instance, Uint8Array destination, Number bytesWritten, bool isUnsigned, bool isBigEndian);
 
 	///<summary>Gets the number of bytes that will be output by <see cref="M:System.Numerics.BigInteger.ToByteArray(System.Boolean,System.Boolean)" /> and <see cref="M:System.Numerics.BigInteger.TryWriteBytes(System.Span{System.Byte},System.Int32@,System.Boolean,System.Boolean)" />.</summary>
 	[Jazor(Op.Discard ,"System.Numerics.BigInteger.GetByteCount(bool)")]
-	public extern static Number _c1393b267008395c(BigInt instance, object isUnsigned);
+	public extern static Number _c1393b267008395c(BigInt instance, bool isUnsigned);
 
 	///<summary>Converts the numeric value of the current <see cref="T:System.Numerics.BigInteger" /> object to its equivalent string representation.</summary>
 	[Jazor(Op.Discard ,"override System.Numerics.BigInteger.ToString()")]
@@ -238,7 +238,7 @@ public static class BigIntegerModule
 
 	///<summary>Formats this big integer instance into a span of characters.</summary>
 	[Jazor(Op.Discard ,"System.Numerics.BigInteger.TryFormat(System.Span<char>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)")]
-	public extern static Array<object?> _90c190be387330ea(BigInt instance, Uint32Array destination, out Number charsWritten, Uint32Array format, Intl.NumberFormat? provider);
+	public extern static Array<object?> _90c190be387330ea(BigInt instance, Uint32Array destination, Number charsWritten, Uint32Array format, Intl.NumberFormat? provider);
 
 	///<summary>Subtracts a <see cref="T:System.Numerics.BigInteger" /> value from another <see cref="T:System.Numerics.BigInteger" /> value.</summary>
 	[Jazor(Op.Allowed ,"static System.Numerics.BigInteger.operator -(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
@@ -642,7 +642,7 @@ public static class BigIntegerModule
 
 	///<summary>Tries to parse a string into a value.</summary>
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.TryParse(string, System.IFormatProvider, out System.Numerics.BigInteger)")]
-	public extern static Array<object?> _10999a356af78aba(string? s, Intl.NumberFormat? provider, out BigInt? result);
+	public extern static Array<object?> _10999a356af78aba(string? s, Intl.NumberFormat? provider, BigInt? result);
 
 	///<summary>Shifts a value right by a given amount.</summary>
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.operator >>>(System.Numerics.BigInteger, int)")]
@@ -654,5 +654,5 @@ public static class BigIntegerModule
 
 	///<summary>Tries to parse a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, out System.Numerics.BigInteger)")]
-	public extern static Array<object?> _163b02803ece1f0c(Uint32Array s, Intl.NumberFormat? provider, out BigInt result);
+	public extern static Array<object?> _163b02803ece1f0c(Uint32Array s, Intl.NumberFormat? provider, BigInt result);
 }

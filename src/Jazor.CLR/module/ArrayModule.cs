@@ -23,7 +23,7 @@ public static class ArrayModule
 
 	///<summary>Changes the number of elements of a one-dimensional array to the specified new size.</summary>
 	[Jazor(Op.Discard ,"static System.Array.Resize<T>(ref T[], int)")]
-	public extern static Array<object?> _127013d39cf5bff9<T>(ref Array<T>? array, Number newSize);
+	public extern static Array<object?> _127013d39cf5bff9<T>(Array<T>? array, Number newSize);
 
 	///<summary>Creates a one-dimensional <see cref="T:System.Array" /> of the specified <see cref="T:System.Type" /> and length, with zero-based indexing.</summary>
 	[Jazor(Op.Discard ,"static System.Array.CreateInstance(System.Type, int)")]

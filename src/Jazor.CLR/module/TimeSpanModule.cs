@@ -293,51 +293,51 @@ public static class TimeSpanModule
 
 	///<summary>Converts the string representation of a time interval to its <see cref="T:System.TimeSpan" /> equivalent and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.TimeSpan.TryParse(string, out System.TimeSpan)")]
-	public extern static Array<object?> _6fb85ef4d11b9143(string? s, out BigInt result);
+	public extern static Array<object?> _6fb85ef4d11b9143(string? s, BigInt result);
 
 	///<summary>Converts the span representation of a time interval to its <see cref="T:System.TimeSpan" /> equivalent and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.TimeSpan.TryParse(System.ReadOnlySpan<char>, out System.TimeSpan)")]
-	public extern static Array<object?> _11fc2c166b0126e3(Uint32Array s, out BigInt result);
+	public extern static Array<object?> _11fc2c166b0126e3(Uint32Array s, BigInt result);
 
 	///<summary>Converts the string representation of a time interval to its <see cref="T:System.TimeSpan" /> equivalent by using the specified culture-specific formatting information, and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.TimeSpan.TryParse(string, System.IFormatProvider, out System.TimeSpan)")]
-	public extern static Array<object?> _0d5a8bac05463d1f(string? input, Intl.NumberFormat? formatProvider, out BigInt result);
+	public extern static Array<object?> _0d5a8bac05463d1f(string? input, Intl.NumberFormat? formatProvider, BigInt result);
 
 	///<summary>Converts the span representation of a time interval to its <see cref="T:System.TimeSpan" /> equivalent by using the specified culture-specific formatting information, and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.TimeSpan.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, out System.TimeSpan)")]
-	public extern static Array<object?> _5eae656c46346343(Uint32Array input, Intl.NumberFormat? formatProvider, out BigInt result);
+	public extern static Array<object?> _5eae656c46346343(Uint32Array input, Intl.NumberFormat? formatProvider, BigInt result);
 
 	///<summary>Converts the string representation of a time interval to its <see cref="T:System.TimeSpan" /> equivalent by using the specified format and culture-specific format information. The format of the string representation must match the specified format exactly.</summary>
 	[Jazor(Op.Discard ,"static System.TimeSpan.TryParseExact(string, string, System.IFormatProvider, out System.TimeSpan)")]
-	public extern static Array<object?> _2b2eb2e3db30b277(string? input, string? format, Intl.NumberFormat? formatProvider, out BigInt result);
+	public extern static Array<object?> _2b2eb2e3db30b277(string? input, string? format, Intl.NumberFormat? formatProvider, BigInt result);
 
 	///<summary>Converts the specified span representation of a time interval to its <see cref="T:System.TimeSpan" /> equivalent by using the specified format and culture-specific format information. The format of the string representation must match the specified format exactly.</summary>
 	[Jazor(Op.Discard ,"static System.TimeSpan.TryParseExact(System.ReadOnlySpan<char>, System.ReadOnlySpan<char>, System.IFormatProvider, out System.TimeSpan)")]
-	public extern static Array<object?> _864eccd29dc703e8(Uint32Array input, Uint32Array format, Intl.NumberFormat? formatProvider, out BigInt result);
+	public extern static Array<object?> _864eccd29dc703e8(Uint32Array input, Uint32Array format, Intl.NumberFormat? formatProvider, BigInt result);
 
 	///<summary>Converts the specified string representation of a time interval to its <see cref="T:System.TimeSpan" /> equivalent by using the specified formats and culture-specific format information. The format of the string representation must match one of the specified formats exactly.</summary>
 	[Jazor(Op.Discard ,"static System.TimeSpan.TryParseExact(string, string[], System.IFormatProvider, out System.TimeSpan)")]
-	public extern static Array<object?> _c7fd68b8fa43fc42(string? input, object formats, Intl.NumberFormat? formatProvider, out BigInt result);
+	public extern static Array<object?> _c7fd68b8fa43fc42(string? input, object formats, Intl.NumberFormat? formatProvider, BigInt result);
 
 	///<summary>Converts the specified span representation of a time interval to its <see cref="T:System.TimeSpan" /> equivalent by using the specified formats and culture-specific format information. The format of the string representation must match one of the specified formats exactly.</summary>
 	[Jazor(Op.Discard ,"static System.TimeSpan.TryParseExact(System.ReadOnlySpan<char>, string[], System.IFormatProvider, out System.TimeSpan)")]
-	public extern static Array<object?> _2dcb055dc5bc064e(Uint32Array input, object formats, Intl.NumberFormat? formatProvider, out BigInt result);
+	public extern static Array<object?> _2dcb055dc5bc064e(Uint32Array input, object formats, Intl.NumberFormat? formatProvider, BigInt result);
 
 	///<summary>Converts the string representation of a time interval to its <see cref="T:System.TimeSpan" /> equivalent by using the specified format, culture-specific format information and styles. The format of the string representation must match the specified format exactly.</summary>
 	[Jazor(Op.Discard ,"static System.TimeSpan.TryParseExact(string, string, System.IFormatProvider, System.Globalization.TimeSpanStyles, out System.TimeSpan)")]
-	public extern static Array<object?> _e8b6d8dc1990db2c(string? input, string? format, Intl.NumberFormat? formatProvider, object styles, out BigInt result);
+	public extern static Array<object?> _e8b6d8dc1990db2c(string? input, string? format, Intl.NumberFormat? formatProvider, object styles, BigInt result);
 
 	///<summary>Converts the specified span representation of a time interval to its <see cref="T:System.TimeSpan" /> equivalent by using the specified format, culture-specific format information, and styles, and returns a value that indicates whether the conversion succeeded. The format of the string representation must match the specified format exactly.</summary>
 	[Jazor(Op.Discard ,"static System.TimeSpan.TryParseExact(System.ReadOnlySpan<char>, System.ReadOnlySpan<char>, System.IFormatProvider, System.Globalization.TimeSpanStyles, out System.TimeSpan)")]
-	public extern static Array<object?> _277b3d9d45b63643(Uint32Array input, Uint32Array format, Intl.NumberFormat? formatProvider, object styles, out BigInt result);
+	public extern static Array<object?> _277b3d9d45b63643(Uint32Array input, Uint32Array format, Intl.NumberFormat? formatProvider, object styles, BigInt result);
 
 	///<summary>Converts the specified string representation of a time interval to its <see cref="T:System.TimeSpan" /> equivalent by using the specified formats, culture-specific format information and styles. The format of the string representation must match one of the specified formats exactly.</summary>
 	[Jazor(Op.Discard ,"static System.TimeSpan.TryParseExact(string, string[], System.IFormatProvider, System.Globalization.TimeSpanStyles, out System.TimeSpan)")]
-	public extern static Array<object?> _0a5d629d630a904a(string? input, object formats, Intl.NumberFormat? formatProvider, object styles, out BigInt result);
+	public extern static Array<object?> _0a5d629d630a904a(string? input, object formats, Intl.NumberFormat? formatProvider, object styles, BigInt result);
 
 	///<summary>Converts the specified span representation of a time interval to its <see cref="T:System.TimeSpan" /> equivalent by using the specified formats, culture-specific format information and styles. The format of the string representation must match one of the specified formats exactly.</summary>
 	[Jazor(Op.Discard ,"static System.TimeSpan.TryParseExact(System.ReadOnlySpan<char>, string[], System.IFormatProvider, System.Globalization.TimeSpanStyles, out System.TimeSpan)")]
-	public extern static Array<object?> _cd955c1ba8f6a113(Uint32Array input, object formats, Intl.NumberFormat? formatProvider, object styles, out BigInt result);
+	public extern static Array<object?> _cd955c1ba8f6a113(Uint32Array input, object formats, Intl.NumberFormat? formatProvider, object styles, BigInt result);
 
 	///<summary>Converts the value of the current <see cref="T:System.TimeSpan" /> object to its equivalent string representation.</summary>
 	[Jazor(Op.Discard ,"override System.TimeSpan.ToString()")]
@@ -353,11 +353,11 @@ public static class TimeSpanModule
 
 	///<summary>Tries to format the value of the current timespan number instance into the provided span of characters.</summary>
 	[Jazor(Op.Discard ,"System.TimeSpan.TryFormat(System.Span<char>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)")]
-	public extern static Array<object?> _9f800f3ed3ef2b88(BigInt instance, Uint32Array destination, out Number charsWritten, Uint32Array format, Intl.NumberFormat? formatProvider);
+	public extern static Array<object?> _9f800f3ed3ef2b88(BigInt instance, Uint32Array destination, Number charsWritten, Uint32Array format, Intl.NumberFormat? formatProvider);
 
 	///<summary>Tries to format the value of the current instance as UTF-8 into the provided span of bytes.</summary>
 	[Jazor(Op.Discard ,"System.TimeSpan.TryFormat(System.Span<byte>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)")]
-	public extern static Array<object?> _2d87ae3016019fc2(BigInt instance, Uint8Array utf8Destination, out Number bytesWritten, Uint32Array format, Intl.NumberFormat? formatProvider);
+	public extern static Array<object?> _2d87ae3016019fc2(BigInt instance, Uint8Array utf8Destination, Number bytesWritten, Uint32Array format, Intl.NumberFormat? formatProvider);
 
 	///<summary>Returns a <see cref="T:System.TimeSpan" /> whose value is the negated value of the specified instance.</summary>
 	[Jazor(Op.Allowed ,"static System.TimeSpan.operator -(System.TimeSpan)")]

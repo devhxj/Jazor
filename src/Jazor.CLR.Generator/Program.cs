@@ -196,6 +196,7 @@ var nameMaps = new Dictionary<string, string>()
 	{"decimal","string"},
 	{"object","object"},
 	{"string","string"},
+	{"bool","bool"},
 
 	{"System.DateTime","Date"},
 	{"System.DateOnly","Date"},
@@ -237,6 +238,12 @@ string ConvertParamaterName(IParameterSymbol symbol)
 	else
 		newValue = "object";
 
+	if (symbol.RefKind == RefKind.Ref)
+		key = $"ref {key}";
+	
+	else if (symbol.RefKind == RefKind.Out)
+		key = $"out {key}";
+	
 	var r = name.Replace(key, newValue);
 	if (symbol.IsParams)
 		r = r.Replace("params", "");

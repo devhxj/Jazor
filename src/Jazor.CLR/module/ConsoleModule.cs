@@ -26,7 +26,7 @@ public static class ConsoleModule
 	public extern static System.ConsoleKeyInfo _cdfbb2b6c7857da4();
 
 	[Jazor(Op.Discard ,"static System.Console.ReadKey(bool)")]
-	public extern static System.ConsoleKeyInfo _009c6d5dd94f0728(object intercept);
+	public extern static System.ConsoleKeyInfo _009c6d5dd94f0728(bool intercept);
 
 	[Jazor(Op.Discard ,"static System.Console.Out.get")]
 	public extern static System.IO.TextWriter _2cd9efaaec703efd(object instance);
@@ -125,7 +125,7 @@ public static class ConsoleModule
 	public extern static bool _2eac576eada0d018(object instance);
 
 	[Jazor(Op.Discard ,"static System.Console.CursorVisible.set")]
-	public extern static void _9992e675f25ec4f0(object instance, object value);
+	public extern static void _9992e675f25ec4f0(object instance, bool value);
 
 	[Jazor(Op.Discard ,"static System.Console.CursorLeft.get")]
 	public extern static Number _9e7c51b7e5446aa6(object instance);
@@ -176,7 +176,7 @@ public static class ConsoleModule
 	public extern static bool _8ab46f86bbb99616(object instance);
 
 	[Jazor(Op.Discard ,"static System.Console.TreatControlCAsInput.set")]
-	public extern static void _7cebd43b37fb9744(object instance, object value);
+	public extern static void _7cebd43b37fb9744(object instance, bool value);
 
 	[Jazor(Op.Discard ,"static System.Console.OpenStandardInput()")]
 	public extern static System.IO.Stream _dc750bd876ac132a();
@@ -215,7 +215,7 @@ public static class ConsoleModule
 	public extern static void _64a3c7e35feaa9f0();
 
 	[Jazor(Op.Discard ,"static System.Console.WriteLine(bool)")]
-	public extern static void _0657067880cafdd2(object value);
+	public extern static void _0657067880cafdd2(bool value);
 
 	[Jazor(Op.Discard ,"static System.Console.WriteLine(char)")]
 	public extern static void _5a138b02870324cb(Number value);
@@ -287,7 +287,7 @@ public static class ConsoleModule
 	public extern static void _4a291949ebb466b9(string format,  object arg);
 
 	[Jazor(Op.Discard ,"static System.Console.Write(bool)")]
-	public extern static void _a4ba329944e98b1c(object value);
+	public extern static void _a4ba329944e98b1c(bool value);
 
 	[Jazor(Op.Discard ,"static System.Console.Write(char)")]
 	public extern static void _c61ec50b9f9538a3(Number value);

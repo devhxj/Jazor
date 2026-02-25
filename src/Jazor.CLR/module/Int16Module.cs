@@ -49,11 +49,11 @@ public static class Int16Module
 
 	///<summary>Tries to format the value of the current short number instance into the provided span of characters.</summary>
 	[Jazor(Op.Discard ,"short.TryFormat(System.Span<char>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)")]
-	public extern static Array<object?> _545cfe8d9fec0470(Number instance, Uint32Array destination, out Number charsWritten, Uint32Array format, Intl.NumberFormat? provider);
+	public extern static Array<object?> _545cfe8d9fec0470(Number instance, Uint32Array destination, Number charsWritten, Uint32Array format, Intl.NumberFormat? provider);
 
 	///<summary>Tries to format the value of the current instance as UTF-8 into the provided span of bytes.</summary>
 	[Jazor(Op.Discard ,"short.TryFormat(System.Span<byte>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)")]
-	public extern static Array<object?> _cf56eee1e0199bff(Number instance, Uint8Array utf8Destination, out Number bytesWritten, Uint32Array format, Intl.NumberFormat? provider);
+	public extern static Array<object?> _cf56eee1e0199bff(Number instance, Uint8Array utf8Destination, Number bytesWritten, Uint32Array format, Intl.NumberFormat? provider);
 
 	///<summary>Converts the string representation of a number to its 16-bit signed integer equivalent.</summary>
 	[Jazor(Op.Discard ,"static short.Parse(string)")]
@@ -77,23 +77,23 @@ public static class Int16Module
 
 	///<summary>Converts the string representation of a number to its 16-bit signed integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static short.TryParse(string, out short)")]
-	public extern static Array<object?> _65bc2566851a5ef7(string? s, out Number result);
+	public extern static Array<object?> _65bc2566851a5ef7(string? s, Number result);
 
 	///<summary>Converts the span representation of a number in a culture-specific format to its 16-bit signed integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static short.TryParse(System.ReadOnlySpan<char>, out short)")]
-	public extern static Array<object?> _f06bf367c8a26691(Uint32Array s, out Number result);
+	public extern static Array<object?> _f06bf367c8a26691(Uint32Array s, Number result);
 
 	///<summary>Tries to convert a UTF-8 character span containing the string representation of a number to its 16-bit signed integer equivalent.</summary>
 	[Jazor(Op.Discard ,"static short.TryParse(System.ReadOnlySpan<byte>, out short)")]
-	public extern static Array<object?> _af732a8ac69b6f6e(Uint8Array utf8Text, out Number result);
+	public extern static Array<object?> _af732a8ac69b6f6e(Uint8Array utf8Text, Number result);
 
 	///<summary>Converts the string representation of a number in a specified style and culture-specific format to its 16-bit signed integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static short.TryParse(string, System.Globalization.NumberStyles, System.IFormatProvider, out short)")]
-	public extern static Array<object?> _cb5aaf07104e3199(string? s, object style, Intl.NumberFormat? provider, out Number result);
+	public extern static Array<object?> _cb5aaf07104e3199(string? s, object style, Intl.NumberFormat? provider, Number result);
 
 	///<summary>Converts the span representation of a number in a specified style and culture-specific format to its 16-bit signed integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static short.TryParse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider, out short)")]
-	public extern static Array<object?> _74bca5547a182d94(Uint32Array s, object style, Intl.NumberFormat? provider, out Number result);
+	public extern static Array<object?> _74bca5547a182d94(Uint32Array s, object style, Intl.NumberFormat? provider, Number result);
 
 	///<summary>Returns the <see cref="T:System.TypeCode" /> for value type <see cref="T:System.Int16" />.</summary>
 	[Jazor(Op.Discard ,"short.GetTypeCode()")]
@@ -193,7 +193,7 @@ public static class Int16Module
 
 	///<summary>Tries to parse a string into a value.</summary>
 	[Jazor(Op.Discard ,"static short.TryParse(string, System.IFormatProvider, out short)")]
-	public extern static Array<object?> _1726573b3ed2620b(string? s, Intl.NumberFormat? provider, out Number result);
+	public extern static Array<object?> _1726573b3ed2620b(string? s, Intl.NumberFormat? provider, Number result);
 
 	///<summary>Parses a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static short.Parse(System.ReadOnlySpan<char>, System.IFormatProvider)")]
@@ -201,7 +201,7 @@ public static class Int16Module
 
 	///<summary>Tries to parse a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static short.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, out short)")]
-	public extern static Array<object?> _5849d879c5ca8c59(Uint32Array s, Intl.NumberFormat? provider, out Number result);
+	public extern static Array<object?> _5849d879c5ca8c59(Uint32Array s, Intl.NumberFormat? provider, Number result);
 
 	///<summary>Parses a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static short.Parse(System.ReadOnlySpan<byte>, System.Globalization.NumberStyles, System.IFormatProvider)")]
@@ -209,7 +209,7 @@ public static class Int16Module
 
 	///<summary>Tries to parse a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static short.TryParse(System.ReadOnlySpan<byte>, System.Globalization.NumberStyles, System.IFormatProvider, out short)")]
-	public extern static Array<object?> _c09ca931ddd2f2ca(Uint8Array utf8Text, object style, Intl.NumberFormat? provider, out Number result);
+	public extern static Array<object?> _c09ca931ddd2f2ca(Uint8Array utf8Text, object style, Intl.NumberFormat? provider, Number result);
 
 	///<summary>Parses a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static short.Parse(System.ReadOnlySpan<byte>, System.IFormatProvider)")]
@@ -217,5 +217,5 @@ public static class Int16Module
 
 	///<summary>Tries to parse a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static short.TryParse(System.ReadOnlySpan<byte>, System.IFormatProvider, out short)")]
-	public extern static Array<object?> _91d5e9e62716bef1(Uint8Array utf8Text, Intl.NumberFormat? provider, out Number result);
+	public extern static Array<object?> _91d5e9e62716bef1(Uint8Array utf8Text, Intl.NumberFormat? provider, Number result);
 }

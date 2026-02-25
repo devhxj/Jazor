@@ -10,7 +10,7 @@ public static class CultureInfoModule
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Globalization.CultureInfo" /> class based on the culture specified by name and on a value that specifies whether to use the user-selected culture settings from Windows.</summary>
 	[Jazor(Op.Discard ,"System.Globalization.CultureInfo.CultureInfo(string, bool)")]
-	public extern static string _df21a93fd9f84197(string name, object useUserOverride);
+	public extern static string _df21a93fd9f84197(string name, bool useUserOverride);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Globalization.CultureInfo" /> class based on the culture specified by the culture identifier.</summary>
 	[Jazor(Op.Discard ,"System.Globalization.CultureInfo.CultureInfo(int)")]
@@ -18,7 +18,7 @@ public static class CultureInfoModule
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Globalization.CultureInfo" /> class based on the culture specified by the culture identifier and on a value that specifies whether to use the user-selected culture settings from Windows.</summary>
 	[Jazor(Op.Discard ,"System.Globalization.CultureInfo.CultureInfo(int, bool)")]
-	public extern static string _d0948ef9f698ec85(Number culture, object useUserOverride);
+	public extern static string _d0948ef9f698ec85(Number culture, bool useUserOverride);
 
 	///<summary>Creates a <see cref="T:System.Globalization.CultureInfo" /> that represents the specific culture that is associated with the specified name.</summary>
 	[Jazor(Op.Discard ,"static System.Globalization.CultureInfo.CreateSpecificCulture(string)")]
@@ -173,7 +173,7 @@ public static class CultureInfoModule
 
 	///<summary>Retrieves a cached, read-only instance of a culture.</summary>
 	[Jazor(Op.Discard ,"static System.Globalization.CultureInfo.GetCultureInfo(string, bool)")]
-	public extern static String _a43a2bb07ef29293(string name, object predefinedOnly);
+	public extern static String _a43a2bb07ef29293(string name, bool predefinedOnly);
 
 	///<summary>Deprecated. Retrieves a read-only <see cref="T:System.Globalization.CultureInfo" /> object having linguistic characteristics that are identified by the specified RFC 4646 language tag.</summary>
 	[Jazor(Op.Discard ,"static System.Globalization.CultureInfo.GetCultureInfoByIetfLanguageTag(string)")]

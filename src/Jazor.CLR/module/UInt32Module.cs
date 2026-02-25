@@ -53,11 +53,11 @@ public static class UInt32Module
 
 	///<summary>Tries to format the value of the current unsigned integer number instance into the provided span of characters.</summary>
 	[Jazor(Op.Discard ,"uint.TryFormat(System.Span<char>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)")]
-	public extern static Array<object?> _519529f606407c2c(Number instance, Uint32Array destination, out Number charsWritten, Uint32Array format, Intl.NumberFormat? provider);
+	public extern static Array<object?> _519529f606407c2c(Number instance, Uint32Array destination, Number charsWritten, Uint32Array format, Intl.NumberFormat? provider);
 
 	///<summary>Tries to format the value of the current instance as UTF-8 into the provided span of bytes.</summary>
 	[Jazor(Op.Discard ,"uint.TryFormat(System.Span<byte>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)")]
-	public extern static Array<object?> _b67b688ee02ca4a7(Number instance, Uint8Array utf8Destination, out Number bytesWritten, Uint32Array format, Intl.NumberFormat? provider);
+	public extern static Array<object?> _b67b688ee02ca4a7(Number instance, Uint8Array utf8Destination, Number bytesWritten, Uint32Array format, Intl.NumberFormat? provider);
 
 	///<summary>Converts the string representation of a number to its 32-bit unsigned integer equivalent.</summary>
 	[Jazor(Op.Discard ,"static uint.Parse(string)")]
@@ -81,23 +81,23 @@ public static class UInt32Module
 
 	///<summary>Tries to convert the string representation of a number to its 32-bit unsigned integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static uint.TryParse(string, out uint)")]
-	public extern static Array<object?> _ad4f3364f146e5da(string? s, out Number result);
+	public extern static Array<object?> _ad4f3364f146e5da(string? s, Number result);
 
 	///<summary>Tries to convert the span representation of a number to its 32-bit unsigned integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static uint.TryParse(System.ReadOnlySpan<char>, out uint)")]
-	public extern static Array<object?> _104b334d48c2aecd(Uint32Array s, out Number result);
+	public extern static Array<object?> _104b334d48c2aecd(Uint32Array s, Number result);
 
 	///<summary>Tries to convert a UTF-8 character span containing the string representation of a number to its 32-bit unsigned integer equivalent.</summary>
 	[Jazor(Op.Discard ,"static uint.TryParse(System.ReadOnlySpan<byte>, out uint)")]
-	public extern static Array<object?> _2526f7e27fec4657(Uint8Array utf8Text, out Number result);
+	public extern static Array<object?> _2526f7e27fec4657(Uint8Array utf8Text, Number result);
 
 	///<summary>Tries to convert the string representation of a number in a specified style and culture-specific format to its 32-bit unsigned integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static uint.TryParse(string, System.Globalization.NumberStyles, System.IFormatProvider, out uint)")]
-	public extern static Array<object?> _b3e8340b7e951baf(string? s, object style, Intl.NumberFormat? provider, out Number result);
+	public extern static Array<object?> _b3e8340b7e951baf(string? s, object style, Intl.NumberFormat? provider, Number result);
 
 	///<summary>Tries to convert the span representation of a number in a specified style and culture-specific format to its 32-bit unsigned integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static uint.TryParse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider, out uint)")]
-	public extern static Array<object?> _11ae080219d3fb62(Uint32Array s, object style, Intl.NumberFormat? provider, out Number result);
+	public extern static Array<object?> _11ae080219d3fb62(Uint32Array s, object style, Intl.NumberFormat? provider, Number result);
 
 	///<summary>Returns the <see cref="T:System.TypeCode" /> for value type <see cref="T:System.UInt32" />.</summary>
 	[Jazor(Op.Discard ,"uint.GetTypeCode()")]
@@ -173,7 +173,7 @@ public static class UInt32Module
 
 	///<summary>Tries to parse a string into a value.</summary>
 	[Jazor(Op.Discard ,"static uint.TryParse(string, System.IFormatProvider, out uint)")]
-	public extern static Array<object?> _69bfc426d401ae5e(string? s, Intl.NumberFormat? provider, out Number result);
+	public extern static Array<object?> _69bfc426d401ae5e(string? s, Intl.NumberFormat? provider, Number result);
 
 	///<summary>Parses a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static uint.Parse(System.ReadOnlySpan<char>, System.IFormatProvider)")]
@@ -181,7 +181,7 @@ public static class UInt32Module
 
 	///<summary>Tries to parse a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static uint.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, out uint)")]
-	public extern static Array<object?> _2a0e1fb1dbc0c5ec(Uint32Array s, Intl.NumberFormat? provider, out Number result);
+	public extern static Array<object?> _2a0e1fb1dbc0c5ec(Uint32Array s, Intl.NumberFormat? provider, Number result);
 
 	///<summary>Parses a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static uint.Parse(System.ReadOnlySpan<byte>, System.Globalization.NumberStyles, System.IFormatProvider)")]
@@ -189,7 +189,7 @@ public static class UInt32Module
 
 	///<summary>Tries to parse a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static uint.TryParse(System.ReadOnlySpan<byte>, System.Globalization.NumberStyles, System.IFormatProvider, out uint)")]
-	public extern static Array<object?> _fdfb10ed1305e83d(Uint8Array utf8Text, object style, Intl.NumberFormat? provider, out Number result);
+	public extern static Array<object?> _fdfb10ed1305e83d(Uint8Array utf8Text, object style, Intl.NumberFormat? provider, Number result);
 
 	///<summary>Parses a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static uint.Parse(System.ReadOnlySpan<byte>, System.IFormatProvider)")]
@@ -197,5 +197,5 @@ public static class UInt32Module
 
 	///<summary>Tries to parse a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static uint.TryParse(System.ReadOnlySpan<byte>, System.IFormatProvider, out uint)")]
-	public extern static Array<object?> _515b8388710d931d(Uint8Array utf8Text, Intl.NumberFormat? provider, out Number result);
+	public extern static Array<object?> _515b8388710d931d(Uint8Array utf8Text, Intl.NumberFormat? provider, Number result);
 }

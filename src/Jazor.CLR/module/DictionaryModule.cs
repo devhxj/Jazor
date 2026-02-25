@@ -87,7 +87,7 @@ public static class DictionaryModule<TKey, TValue>
 
 	///<summary>Gets an instance of a type that can be used to perform operations on the current <see cref="T:System.Collections.Generic.Dictionary`2" /> using a <typeparamref name="TAlternateKey" /> as a key instead of a <typeparamref name="TKey" />.</summary>
 	[Jazor(Op.Discard ,"System.Collections.Generic.Dictionary<TKey, TValue>.TryGetAlternateLookup<TAlternateKey>(out System.Collections.Generic.Dictionary<TKey, TValue>.AlternateLookup<TAlternateKey>)")]
-	public extern static Array<object?> _e3413e985c488b3f<TAlternateKey>(Map<TKey,TValue> instance, out Dictionary<TKey, TValue>.AlternateLookup<TAlternateKey> lookup);
+	public extern static Array<object?> _e3413e985c488b3f<TAlternateKey>(Map<TKey,TValue> instance, Dictionary<TKey, TValue>.AlternateLookup<TAlternateKey> lookup);
 
 	///<summary>Implements the <see cref="T:System.Runtime.Serialization.ISerializable" /> interface and raises the deserialization event when the deserialization is complete.</summary>
 	[Jazor(Op.Discard ,"virtual System.Collections.Generic.Dictionary<TKey, TValue>.OnDeserialization(object)")]
@@ -99,11 +99,11 @@ public static class DictionaryModule<TKey, TValue>
 
 	///<summary>Removes the value with the specified key from the <see cref="T:System.Collections.Generic.Dictionary`2" />, and copies the element to the <paramref name="value" /> parameter.</summary>
 	[Jazor(Op.Discard ,"System.Collections.Generic.Dictionary<TKey, TValue>.Remove(TKey, out TValue)")]
-	public extern static Array<object?> _d6ac89338dff5e3b(Map<TKey,TValue> instance, object key, out object value);
+	public extern static Array<object?> _d6ac89338dff5e3b(Map<TKey,TValue> instance, object key, object value);
 
 	///<summary>Gets the value associated with the specified key.</summary>
 	[Jazor(Op.Discard ,"System.Collections.Generic.Dictionary<TKey, TValue>.TryGetValue(TKey, out TValue)")]
-	public extern static Array<object?> _7db4d9112b4ba3c4(Map<TKey,TValue> instance, object key, out object value);
+	public extern static Array<object?> _7db4d9112b4ba3c4(Map<TKey,TValue> instance, object key, object value);
 
 	///<summary>Attempts to add the specified key and value to the dictionary.</summary>
 	[Jazor(Op.Discard ,"System.Collections.Generic.Dictionary<TKey, TValue>.TryAdd(TKey, TValue)")]

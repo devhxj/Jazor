@@ -23,7 +23,7 @@ public static class ReadOnlyDictionaryModule<TKey, TValue>
 
 	///<summary>Retrieves the value that is associated with the specified key.</summary>
 	[Jazor(Op.Discard ,"System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.TryGetValue(TKey, out TValue)")]
-	public extern static Array<object?> _19af957975f1546f(Map<TKey,TValue> instance, object key, out object value);
+	public extern static Array<object?> _19af957975f1546f(Map<TKey,TValue> instance, object key, object value);
 
 	[Jazor(Op.Discard ,"System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.this[TKey].get")]
 	public extern static TValue _ed4a7913b74bfd87(Map<TKey,TValue> instance, object key);
