@@ -49,7 +49,7 @@ public static class ByteModule
 
 	///<summary>Converts the span representation of a number in a specified style and culture-specific format to its <see cref="T:System.Byte" /> equivalent.</summary>
 	[Jazor(Op.Discard ,"static byte.Parse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider)")]
-	public extern static Number _ff08be5970881dca(Uint32Array s, object style, Intl.NumberFormat? provider);
+	public extern static Number _ff08be5970881dca(string s, object style, Intl.NumberFormat? provider);
 
 	///<summary>Tries to convert the string representation of a number to its <see cref="T:System.Byte" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static byte.TryParse(string, out byte)")]
@@ -57,7 +57,7 @@ public static class ByteModule
 
 	///<summary>Tries to convert the span representation of a number to its <see cref="T:System.Byte" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static byte.TryParse(System.ReadOnlySpan<char>, out byte)")]
-	public extern static Array<object?> _413c6f7752002edf(Uint32Array s, Number result);
+	public extern static Array<object?> _413c6f7752002edf(string s, Number result);
 
 	///<summary>Tries to convert a UTF-8 character span containing the string representation of a number to its 8-bit unsigned integer equivalent.</summary>
 	[Jazor(Op.Discard ,"static byte.TryParse(System.ReadOnlySpan<byte>, out byte)")]
@@ -69,7 +69,7 @@ public static class ByteModule
 
 	///<summary>Converts the span representation of a number in a specified style and culture-specific format to its <see cref="T:System.Byte" /> equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static byte.TryParse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider, out byte)")]
-	public extern static Array<object?> _761e5b49fdeccb96(Uint32Array s, object style, Intl.NumberFormat? provider, Number result);
+	public extern static Array<object?> _761e5b49fdeccb96(string s, object style, Intl.NumberFormat? provider, Number result);
 
 	///<summary>Converts the value of the current <see cref="T:System.Byte" /> object to its equivalent string representation.</summary>
 	[Jazor(Op.Discard ,"override byte.ToString()")]
@@ -173,11 +173,11 @@ public static class ByteModule
 
 	///<summary>Parses a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static byte.Parse(System.ReadOnlySpan<char>, System.IFormatProvider)")]
-	public extern static Number _f09faa9402018245(Uint32Array s, Intl.NumberFormat? provider);
+	public extern static Number _f09faa9402018245(string s, Intl.NumberFormat? provider);
 
 	///<summary>Tries to parse a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static byte.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, out byte)")]
-	public extern static Array<object?> _44dd755bac10b090(Uint32Array s, Intl.NumberFormat? provider, Number result);
+	public extern static Array<object?> _44dd755bac10b090(string s, Intl.NumberFormat? provider, Number result);
 
 	///<summary>Parses a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static byte.Parse(System.ReadOnlySpan<byte>, System.Globalization.NumberStyles, System.IFormatProvider)")]

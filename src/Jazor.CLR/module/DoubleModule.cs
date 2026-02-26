@@ -145,7 +145,7 @@ public static class DoubleModule
 
 	///<summary>Converts a character span that contains the string representation of a number in a specified style and culture-specific format to its double-precision floating-point number equivalent.</summary>
 	[Jazor(Op.Discard ,"static double.Parse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider)")]
-	public extern static Number _1566d690221e91c2(Uint32Array s, object style, Intl.NumberFormat? provider);
+	public extern static Number _1566d690221e91c2(string s, object style, Intl.NumberFormat? provider);
 
 	///<summary>Converts the string representation of a number to its double-precision floating-point number equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static double.TryParse(string, out double)")]
@@ -153,7 +153,7 @@ public static class DoubleModule
 
 	///<summary>Converts the span representation of a number in a specified style and culture-specific format to its double-precision floating-point number equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static double.TryParse(System.ReadOnlySpan<char>, out double)")]
-	public extern static Array<object?> _059799e0a3b763c1(Uint32Array s, Number result);
+	public extern static Array<object?> _059799e0a3b763c1(string s, Number result);
 
 	///<summary>Tries to convert a UTF-8 character span containing the string representation of a number to its double-precision floating-point number equivalent.</summary>
 	[Jazor(Op.Discard ,"static double.TryParse(System.ReadOnlySpan<byte>, out double)")]
@@ -165,7 +165,7 @@ public static class DoubleModule
 
 	///<summary>Converts a character span containing the string representation of a number in a specified style and culture-specific format to its double-precision floating-point number equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static double.TryParse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider, out double)")]
-	public extern static Array<object?> _632e234f0359bd6f(Uint32Array s, object style, Intl.NumberFormat? provider, Number result);
+	public extern static Array<object?> _632e234f0359bd6f(string s, object style, Intl.NumberFormat? provider, Number result);
 
 	///<summary>Returns the <see cref="T:System.TypeCode" /> for value type <see cref="T:System.Double" />.</summary>
 	[Jazor(Op.Discard ,"double.GetTypeCode()")]
@@ -450,11 +450,11 @@ public static class DoubleModule
 
 	///<summary>Parses a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static double.Parse(System.ReadOnlySpan<char>, System.IFormatProvider)")]
-	public extern static Number _ffac89005f82f8e5(Uint32Array s, Intl.NumberFormat? provider);
+	public extern static Number _ffac89005f82f8e5(string s, Intl.NumberFormat? provider);
 
 	///<summary>Tries to parse a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static double.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, out double)")]
-	public extern static Array<object?> _55ffdd4c4ffdc9a8(Uint32Array s, Intl.NumberFormat? provider, Number result);
+	public extern static Array<object?> _55ffdd4c4ffdc9a8(string s, Intl.NumberFormat? provider, Number result);
 
 	///<summary>Computes the arc-cosine of a value.</summary>
 	[Jazor(Op.Discard ,"static double.Acos(double)")]

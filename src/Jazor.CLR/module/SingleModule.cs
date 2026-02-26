@@ -145,7 +145,7 @@ public static class SingleModule
 
 	///<summary>Converts a character span that contains the string representation of a number in a specified style and culture-specific format to its single-precision floating-point number equivalent.</summary>
 	[Jazor(Op.Discard ,"static float.Parse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider)")]
-	public extern static Number _d9762c1528057110(Uint32Array s, object style, Intl.NumberFormat? provider);
+	public extern static Number _d9762c1528057110(string s, object style, Intl.NumberFormat? provider);
 
 	///<summary>Converts the string representation of a number to its single-precision floating-point number equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static float.TryParse(string, out float)")]
@@ -153,7 +153,7 @@ public static class SingleModule
 
 	///<summary>Converts the string representation of a number in a character span to its single-precision floating-point number equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static float.TryParse(System.ReadOnlySpan<char>, out float)")]
-	public extern static Array<object?> _8f337f9f610204bb(Uint32Array s, Number result);
+	public extern static Array<object?> _8f337f9f610204bb(string s, Number result);
 
 	///<summary>Tries to convert a UTF-8 character span containing the string representation of a number to its single-precision floating-point number equivalent.</summary>
 	[Jazor(Op.Discard ,"static float.TryParse(System.ReadOnlySpan<byte>, out float)")]
@@ -165,7 +165,7 @@ public static class SingleModule
 
 	///<summary>Converts the span representation of a number in a specified style and culture-specific format to its single-precision floating-point number equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static float.TryParse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider, out float)")]
-	public extern static Array<object?> _3a7ff2c98489b96d(Uint32Array s, object style, Intl.NumberFormat? provider, Number result);
+	public extern static Array<object?> _3a7ff2c98489b96d(string s, object style, Intl.NumberFormat? provider, Number result);
 
 	///<summary>Returns the <see cref="T:System.TypeCode" /> for value type <see cref="T:System.Single" />.</summary>
 	[Jazor(Op.Discard ,"float.GetTypeCode()")]
@@ -450,11 +450,11 @@ public static class SingleModule
 
 	///<summary>Parses a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static float.Parse(System.ReadOnlySpan<char>, System.IFormatProvider)")]
-	public extern static Number _347eb552b6176fde(Uint32Array s, Intl.NumberFormat? provider);
+	public extern static Number _347eb552b6176fde(string s, Intl.NumberFormat? provider);
 
 	///<summary>Tries to parse a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static float.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, out float)")]
-	public extern static Array<object?> _c3b1663d39b1d889(Uint32Array s, Intl.NumberFormat? provider, Number result);
+	public extern static Array<object?> _c3b1663d39b1d889(string s, Intl.NumberFormat? provider, Number result);
 
 	///<summary>Computes the arc-cosine of a value.</summary>
 	[Jazor(Op.Discard ,"static float.Acos(float)")]

@@ -150,7 +150,7 @@ public static class DecimalModule
 
 	///<summary>Converts the span representation of a number to its <see cref="T:System.Decimal" /> equivalent using the specified style and culture-specific format.</summary>
 	[Jazor(Op.Discard ,"static decimal.Parse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider)")]
-	public extern static string _8e0c949ee2411c7f(Uint32Array s, object style, Intl.NumberFormat? provider);
+	public extern static string _8e0c949ee2411c7f(string s, object style, Intl.NumberFormat? provider);
 
 	///<summary>Converts the string representation of a number to its <see cref="T:System.Decimal" /> equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static decimal.TryParse(string, out decimal)")]
@@ -158,7 +158,7 @@ public static class DecimalModule
 
 	///<summary>Converts the span representation of a number to its <see cref="T:System.Decimal" /> equivalent using the culture-specific format. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static decimal.TryParse(System.ReadOnlySpan<char>, out decimal)")]
-	public extern static Array<object?> _5f6432cf52162431(Uint32Array s, string result);
+	public extern static Array<object?> _5f6432cf52162431(string s, string result);
 
 	///<summary>Tries to convert a UTF-8 character span containing the string representation of a number to its signed decimal equivalent.</summary>
 	[Jazor(Op.Discard ,"static decimal.TryParse(System.ReadOnlySpan<byte>, out decimal)")]
@@ -170,7 +170,7 @@ public static class DecimalModule
 
 	///<summary>Converts the span representation of a number to its <see cref="T:System.Decimal" /> equivalent using the specified style and culture-specific format. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static decimal.TryParse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider, out decimal)")]
-	public extern static Array<object?> _ed6b24306e2ef5cd(Uint32Array s, object style, Intl.NumberFormat? provider, string result);
+	public extern static Array<object?> _ed6b24306e2ef5cd(string s, object style, Intl.NumberFormat? provider, string result);
 
 	///<summary>Converts the value of a specified instance of <see cref="T:System.Decimal" /> to its equivalent binary representation.</summary>
 	[Jazor(Op.Discard ,"static decimal.GetBits(decimal)")]
@@ -494,11 +494,11 @@ public static class DecimalModule
 
 	///<summary>Parses a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static decimal.Parse(System.ReadOnlySpan<char>, System.IFormatProvider)")]
-	public extern static string _c644fa2b15360347(Uint32Array s, Intl.NumberFormat? provider);
+	public extern static string _c644fa2b15360347(string s, Intl.NumberFormat? provider);
 
 	///<summary>Tries to parse a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static decimal.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, out decimal)")]
-	public extern static Array<object?> _7ac8df441c1485cf(Uint32Array s, Intl.NumberFormat? provider, string result);
+	public extern static Array<object?> _7ac8df441c1485cf(string s, Intl.NumberFormat? provider, string result);
 
 	///<summary>Parses a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static decimal.Parse(System.ReadOnlySpan<byte>, System.Globalization.NumberStyles, System.IFormatProvider)")]

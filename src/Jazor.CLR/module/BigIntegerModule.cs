@@ -1353,9 +1353,9 @@ public static class BigIntegerModule
 
 	///<summary>Parses a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.Parse(System.ReadOnlySpan<char>, System.IFormatProvider)")]
-	public extern static BigInt _8bbfd46a98ce5419(Uint32Array s, Intl.NumberFormat? provider);
+	public extern static BigInt _8bbfd46a98ce5419(string s, Intl.NumberFormat? provider);
 
 	///<summary>Tries to parse a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, out System.Numerics.BigInteger)")]
-	public extern static Array<object?> _163b02803ece1f0c(Uint32Array s, Intl.NumberFormat? provider, BigInt result);
+	public extern static Array<object?> _163b02803ece1f0c(string s, Intl.NumberFormat? provider, BigInt result);
 }

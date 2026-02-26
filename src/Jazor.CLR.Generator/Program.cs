@@ -204,8 +204,8 @@ var nameMaps = new Dictionary<string, string>()
 	{"System.DateTimeOffset","Date"},
 	{"System.Console","object"},
 
-	{"System.Span<char>","Uint32Array"},
-	{"System.ReadOnlySpan<char>","Uint32Array"},
+	{"System.Span<char>","string"},
+	{"System.ReadOnlySpan<char>","string"},
 	{"System.Span<byte>","Uint8Array"},
 	{"System.ReadOnlySpan<byte>","Uint8Array"},
 	{"System.Collections.ObjectModel.ReadOnlyCollection<T>","Array<T>" },
