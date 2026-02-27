@@ -25,6 +25,8 @@
 13. [注意事项](#13-注意事项)
 14. [模块分类](#14-模块分类)
 15. [扩展内容](#15-扩展内容)
+16. [快速参考表](#16-快速参考表)
+17. [附录](#17-附录)
 
 ---
 
@@ -359,33 +361,30 @@ public static Array<object?> _dada4bbdacd7aa19(string? value, bool result)
 
 使用场景：
 - 编译器有内置的特殊处理逻辑
-- 静态常量字段（如 `int.MaxValue`, `int.MinValue`）
 - 需要编译器根据上下文生成不同代码的场景
 - `[Jazor]` 无参构造函数就是 `Op.Compile`
 - **编译时常量表达式** - 编译器直接内联常量值
 - **特殊语法转换** - 需要编译器识别并生成特定代码模式
 
-```csharp
-// 示例：静态常量字段由编译器直接处理
-
-// 示例：int.MaxValue 映射为 JavaScript 的 Number.MAX_SAFE_INTEGER
-[Jazor(Op.Compile, "static int.MaxValue")]
-public extern static int _hash();
-// 生成的 JS：Number.MAX_SAFE_INTEGER
-
-// 示例：int.MinValue 映射为 JavaScript 的 Number.MIN_SAFE_INTEGER
-[Jazor(Op.Compile, "static int.MinValue")]
-public extern static int _hash();
-// 生成的 JS：Number.MIN_SAFE_INTEGER
-```
-
 **Op.Compile 的典型使用场景**：
 
 | 场景 | 说明 | 示例 |
 |------|------|------|
-| 编译期常量 | 由编译器直接替换为常量值 | `int.MaxValue` → `Number.MAX_SAFE_INTEGER` |
+| 编译期常量 | 由编译器直接替换为常量值 | 某些内部常量 |
 | 内置操作符 | 编译器识别并生成对应操作符 | `+` `-` `*` `/` 等 |
 | 特殊类型转换 | 需要编译器处理类型转换逻辑 | 枚举转换、可空类型展开 |
+
+**注意**：对于简单的静态常量（如 `int.MaxValue`），推荐使用 `Op.Inline` 直接内联值，而非 `Op.Compile`。
+
+**与 Op.Inline 的区别**：
+
+| 特性 | Op.Inline | Op.Compile |
+|------|-----------|------------|
+| 处理时机 | 代码生成阶段 | 编译器内部处理 |
+| 灵活性 | 固定代码模板 | 可动态生成代码 |
+| 占位符 | 支持 `@#{n}` | 由编译器决定 |
+| 适用场景 | 简单表达式替换 | 复杂逻辑、编译器内置处理 |
+| 典型示例 | `int.MaxValue` → `2147483647` | 特殊类型转换 |
 
 ### 3.8 Op 选择决策树
 
@@ -410,47 +409,8 @@ public extern static int _hash();
 | `bool.ToString()` | 不需要实现 + 名称不同 | `Op.Replace` → `toString` |
 | `bool.Equals()` | 不需要实现 + 简单表达式 | `Op.Inline` → `(@#{0} === @#{1})` |
 | `bool.Parse()` | 需要实现 + 复杂逻辑 | `Op.Import` |
-| `int.MaxValue` | 编译器特殊处理 | `Op.Compile` |
-| `GetHashCode()` | 概念不存在 | `Op.Discard` |
-
-- **编译器内置**：具体行为由编译器代码决定
-- **放置在类上**：等同于 `Allowed`
-- **放置在属性/方法上**：触发编译器特殊处理逻辑
-- **常量优化**：编译时常量会被直接内联到调用处
-
-**Op.Compile 的典型使用场景**：
-
-| 场景 | 说明 | 示例 |
-|------|------|------|
-| 编译期常量 | 由编译器直接替换为常量值 | `int.MaxValue` → `Number.MAX_SAFE_INTEGER` |
-| 内置操作符 | 编译器识别并生成对应操作符 | `+` `-` `*` `/` 等 |
-| 特殊类型转换 | 需要编译器处理类型转换逻辑 | 枚举转换、可空类型展开 |
-
-**与 Op.Inline 的区别**：
-
-| 特性 | Op.Inline | Op.Compile |
-|------|-----------|------------|
-| 处理时机 | 代码生成阶段 | 编译器内部处理 |
-| 灵活性 | 固定代码模板 | 可动态生成代码 |
-| 占位符 | 支持 `@#{n}` | 由编译器决定 |
-| 适用场景 | 简单表达式替换 | 复杂逻辑、常量优化 |
-| 特殊类型转换 | 需要编译器特殊处理的类型 | `object` 默认构造函数 |
-
-### 3.8 Op 类型选择决策树
-
-```
-选择 Op 类型的决策流程：
-
-1. JavaScript 是否有直接等价物？
-   ├── 否 → 检查是否属于以下情况：
-   │         ├── 无对应概念 → Op.Discard
-   │         └── 需要复杂实现 → Op.Import
-   └── 是 → 检查等价方式：
-             ├── 同名同行为 → Op.Allowed
-             ├── 名不同但行为同 → Op.Replace
-             ├── 可用操作符/表达式内联 → Op.Inline
-             └── 需要编译器特殊处理 → Op.Compile
-```
+| `int.MaxValue` | 简单常量值内联 | `Op.Inline` → `2147483647` |
+| `bool.GetHashCode()` | 概念不存在 | `Op.Discard` |
 
 ---
 
@@ -1045,7 +1005,48 @@ Jazor.CLR/
 | `static object.ReferenceEquals(object, object)` | Inline | `(@#{0} === @#{1})` | `(a === b)` |
 | `virtual object.GetHashCode()` | Discard | - | 不支持 |
 
-### 10.3 Console 类型
+### 10.3 Int32 类型
+
+| C# 成员 | Op | 替换/内联值 | JavaScript 结果 |
+|---------|-----|-------------|-----------------|
+| `static int.MaxValue` | Inline | `2147483647` | 数字字面量 |
+| `static int.MinValue` | Inline | `-2147483648` | 数字字面量 |
+| `int.Int32()` | Discard | - | 不需要构造函数 |
+| `override int.ToString()` | Replace | `toString` | `instance.toString()` |
+| `override int.Equals(object)` | Inline | `(@#{0} === @#{1})` | `(a === b)` |
+| `int.CompareTo(int)` | Inline | `(@#{0} - @#{1})` | 差值 |
+| `static int.Parse(string)` | Import | - | 模块函数，带验证 |
+| `static int.TryParse(string, out int)` | Import | - | 返回 `[success, value]` |
+| `static int.Max(int, int)` | Replace | `max` | `Math.max(a, b)` |
+| `static int.Min(int, int)` | Replace | `min` | `Math.min(a, b)` |
+| `static int.Abs(int)` | Replace | `abs` | `Math.abs(value)` |
+| `static int.Sign(int)` | Replace | `sign` | `Math.sign(value)` |
+| `static int.Clamp(int, int, int)` | Inline | `Math.min(Math.max(@#{0}, @#{1}), @#{2})` | 限制范围 |
+| `override int.GetHashCode()` | Discard | - | 不支持 |
+
+### 10.4 String 类型
+
+| C# 成员 | Op | 替换/内联值 | JavaScript 结果 |
+|---------|-----|-------------|-----------------|
+| `static readonly string.Empty` | Inline | `""` | 空字符串字面量 |
+| `string.get_Length()` | Replace | `length` | `str.length` |
+| `string.get_Chars(int)` | Inline | `(@#{0}.charCodeAt(@#{1}))` | `str.charCodeAt(i)` |
+| `string.Contains(string)` | Replace | `includes` | `str.includes(value)` |
+| `string.StartsWith(string)` | Replace | `startsWith` | `str.startsWith(value)` |
+| `string.EndsWith(string)` | Replace | `endsWith` | `str.endsWith(value)` |
+| `string.IndexOf(string)` | Replace | `indexOf` | `str.indexOf(value)` |
+| `string.Substring(int)` | Replace | `substring` | `str.substring(start)` |
+| `string.ToLower()` | Replace | `toLowerCase` | `str.toLowerCase()` |
+| `string.ToUpper()` | Replace | `toUpperCase` | `str.toUpperCase()` |
+| `string.Trim()` | Replace | `trim` | `str.trim()` |
+| `string.Replace(string, string)` | Replace | `replaceAll` | `str.replaceAll(old, new)` |
+| `string.Split(params char[])` | Import | - | 需要转换参数 |
+| `static string.IsNullOrEmpty(string)` | Inline | `(!@#{0})` | `!value` |
+| `static string.IsNullOrWhiteSpace(string)` | Inline | `(!@#{0} \|\| !@#{0}.trim())` | `!value \|\| !value.trim()` |
+| `override string.GetHashCode()` | Import | - | 需要实现哈希算法 |
+| `static string.CompareOrdinal(string, string)` | Import | - | 需要实现比较逻辑 |
+
+### 10.5 Console 类型
 
 | C# 成员 | Op | 替换值 | 说明 |
 |---------|-----|--------|------|
@@ -1062,11 +1063,17 @@ Jazor.CLR/
 
 ## 11. 设计原则
 
-### 11.1 为什么 GetHashCode 被丢弃？
+### 11.1 为什么 GetHashCode 处理方式不同？
 
-- JavaScript 没有统一的 `GetHashCode` 机制
-- `Map` 和 `Set` 使用引用相等或值相等，不需要哈希码
-- 布尔值的哈希码（0 或 1）在 JavaScript 中无实际用途
+不同类型对 `GetHashCode` 的处理方式不同：
+
+- **`bool.GetHashCode()`** → `Op.Discard`：JavaScript 没有统一的哈希码机制，布尔值的哈希码（0 或 1）无实际用途
+- **`object.GetHashCode()`** → `Op.Discard`：JavaScript 的 `Map` 和 `Set` 使用引用相等或值相等，不需要哈希码
+- **`string.GetHashCode()`** → `Op.Import`：字符串哈希在 JavaScript 中有实际用途（如实现字典），需要提供实现
+
+**设计原则**：
+- 无实际用途的类型使用 `Op.Discard`
+- 有实际用途的类型使用 `Op.Import` 提供实现
 
 ### 11.2 为什么 ToString 使用 Replace 而非 Inline？
 
@@ -1347,10 +1354,10 @@ public static (bool, bool) _hash(string? value, bool result = false);
 | JS 原生支持，无需处理 | `Allowed` | ✅ 是 | `object.Object()` |
 | JS 有同名方法 | `Allowed` | ✅ 是 | `string.ToString()` → `toString()` |
 | JS 有类似方法但名称不同 | `Replace` | ✅ 是 | `ToString()` → `toString` |
-| 可用简单表达式实现 | `Inline` | ✅ 是 | `(@#{0} === @#{1})` |
-| 需要完整实现 | `Import` | ❌ 否 | `bool.Parse(string)` |
-| 编译器特殊处理 | `Compile` | ✅ 是 | `int.MaxValue` |
-| 不支持 | `Discard` | ✅ 是 | `GetHashCode()` |
+| 可用简单表达式实现 | `Inline` | ✅ 是 | `(@#{0} === @#{1})`、`int.MaxValue` → `2147483647` |
+| 需要完整实现 | `Import` | ❌ 否 | `bool.Parse(string)`、`string.GetHashCode()` |
+| 编译器特殊处理 | `Compile` | ✅ 是 | 特殊类型转换 |
+| 不支持 | `Discard` | ✅ 是 | `bool.GetHashCode()` |
 
 ### 16.2 占位符速查表
 
@@ -1426,6 +1433,7 @@ public static Array<object?> _hash(string? value, Type result)
 
 | 版本 | 日期 | 变更说明 |
 |------|------|----------|
+| v3.2 | 2026-02-27 | 修复章节编号重复，完善目录，修正 Op.Compile 示例 |
 | v3.1 | 2026-02-26 | 完善 Op.Compile 说明，添加快速参考表 |
 | v3.0 | 2026-01-23 | 重构文档结构，完善类型映射规则 |
 | v2.0 | 2025-12-15 | 添加泛型方法和异步方法映射 |
@@ -1434,5 +1442,5 @@ public static Array<object?> _hash(string? value, Type result)
 ---
 
 **文档维护者**：developerhan
-**最后更新**：2026-02-26
+**最后更新**：2026-02-27
 **文档版本**：v3.2
