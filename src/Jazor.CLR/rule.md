@@ -40,6 +40,12 @@
 | `[ECMAScript]` | `ECMAScript` | 标记可被编译器识别的资源型类型 |
 | `[ECMAScriptIgnore]` | `ECMAScript` | 标记被编译器忽略的成员 |
 | `[ECMAScriptInline]` | `ECMAScript` | 标记方法直接使用内联代码（参数为完整函数代码） |
+| `[ECMAScriptName]` | `ECMAScript` | 标记编译时别称，为空字符串时不转译 |
+| `[Description]` | `System.ComponentModel` | 以@#开头表示标记编译时别称，除去@#为空字符串时不转译 |
+
+**注意**：
+
+- [ECMAScriptName] 优先级大于[Description]
 
 **编译器处理规则**：
 Jazor 编译器只处理以下情况：
@@ -88,6 +94,9 @@ C# 静态方法 ──► 静态方法（保持原参数）
 C# 属性 get ──► 静态方法（实例作为第一个参数）
 C# 属性 set ──► 静态方法（实例作为第一个参数，值作为第二个参数）
 ```
+**注意**：
+
+- 所有需要扁平化处理的方法都已经在对应doc文档中定义好了
 
 ### 2.2 基本结构
 
@@ -358,17 +367,15 @@ public static Array<object?> _dada4bbdacd7aa19(string? value, bool result)
 
 ```csharp
 // 示例：静态常量字段由编译器直接处理
-[Jazor]
-public extern static int _xxx();
 
 // 示例：int.MaxValue 映射为 JavaScript 的 Number.MAX_SAFE_INTEGER
 [Jazor(Op.Compile, "static int.MaxValue")]
-public extern static int _intMaxValue();
+public extern static int _hash();
 // 生成的 JS：Number.MAX_SAFE_INTEGER
 
 // 示例：int.MinValue 映射为 JavaScript 的 Number.MIN_SAFE_INTEGER
 [Jazor(Op.Compile, "static int.MinValue")]
-public extern static int _intMinValue();
+public extern static int _hash();
 // 生成的 JS：Number.MIN_SAFE_INTEGER
 ```
 
@@ -512,7 +519,7 @@ C# 异常类型映射为 JavaScript 的 `Error` 类及其子类。
 ```csharp
 // C# 实现中使用 throw new Error()
 [Jazor(Op.Import, "static bool.Parse(string)")]
-public static bool _xxx(string? value)
+public static bool _hash(string? value)
 {
     var str = value?.Trim()?.ToLower();
     if (str == "true")
@@ -527,7 +534,7 @@ public static bool _xxx(string? value)
 **生成的 JavaScript**：
 
 ```javascript
-export function _xxx(value) {
+export function _hash(value) {
     const str = value?.trim()?.toLowerCase();
     if (str === "true")
         return true;
@@ -595,7 +602,7 @@ export function _xxx(value) {
 ```csharp
 // C# 属性：instance.Length
 [Jazor(Op.Replace, "string.get_Length()", "length")]
-public extern static int _xxx(string instance); // @#{0} = instance
+public extern static int _hash(string instance); // @#{0} = instance
 
 // 生成的 JS：instance.length
 ```
@@ -625,13 +632,13 @@ public extern static int _xxx(string instance); // @#{0} = instance
 ```csharp
 // C# 索引器：list[0]
 [Jazor(Op.Replace, "List`1.get_Item(int)", "@#{0}[@#{1}]")]
-public extern static T _xxx(List<T> instance, int index);
+public extern static T _hash(List<T> instance, int index);
 
 // 生成的 JS：list[0]
 
 // C# 索引器：dict[key] = value
 [Jazor(Op.Replace, "Dictionary`2.set_Item(TKey, TValue)", "(@#{0}[@#{1}] = @#{2})")]
-public extern static void _xxx(Dictionary<K, V> instance, K key, V value);
+public extern static void _hash(Dictionary<K, V> instance, K key, V value);
 
 // 生成的 JS：dict[key] = value
 ```
@@ -722,7 +729,7 @@ public static IEnumerable<TResult> Select<TSource, TResult>(
 
 // Jazor 签名
 [Jazor(Op.Import, "System.Linq.Enumerable.`2.Select[TSource,TResult](System.Collections.Generic.IEnumerable{TSource}, System.Func{TSource,TResult})")]
-public static Array _xxx(Array source, Function selector) { ... }
+public static Array _hash(Array source, Function selector) { ... }
 ```
 
 #### 5.9.4 注意事项
@@ -859,7 +866,7 @@ public static Array<object?> _dada4bbdacd7aa19(string? value, bool result)
 
 // ref 参数示例
 [Jazor(Op.Import, "static void Increment(ref int)")]
-public static Array<object?> _xxx(int value)
+public static Array<object?> _hash(int value)
 {
     // 返回 [void, incrementedValue]
     return [null, value + 1];
@@ -892,14 +899,14 @@ Increment(ref counter);
 // out 参数
 let result = false;
 let $0;
-if (($0 = TryParse(input, result), result = $0[1], $0[0])) {
+if (($0 = _hash(input, result), result = $0[1], $0[0])) {
     console.log(result);
 }
 
 // ref 参数
 let counter = 0;
 let $1;
-$1 = Increment(counter), counter = $1[1];
+$1 = _hash(counter), counter = $1[1];
 ```
 
 **规则总结**：
@@ -930,7 +937,7 @@ public static bool _xxx(string? value)  // 使用 string? 保持语义
 
 ```csharp
 [Jazor(Op.Import, "static bool.Parse(string?)")]
-public static bool _xxx(string? value)
+public static bool _hash(string? value)
 {
     // 使用可选链处理可空值
     var str = value?.Trim()?.ToLower();
@@ -944,7 +951,7 @@ public static bool _xxx(string? value)
 
 ```csharp
 [Jazor(Op.Import, "static bool.TryParse(string?, out bool)")]
-public static Array<object?> _xxx(string? value, bool result = false)
+public static Array<object?> _hash(string? value, bool result = false)
 ```
 
 ---
@@ -1290,17 +1297,17 @@ const DayOfWeek = {
 ```csharp
 // 正确 ✅
 [Jazor(Op.Import, "static bool.TryParse(string?, out bool)")]
-public static Array<object?> _xxx(string? value, bool result)
+public static Array<object?> _hash(string? value, bool result)
 {
     // 返回 [success, result]
     return [true, parsedValue];
 }
 
 // 错误 ❌ - 不要使用泛型 Array<T>
-public static Array<bool> _xxx(string? value, bool result);
+public static Array<bool> _hash(string? value, bool result);
 
 // 错误 ❌ - 不要使用元组语法
-public static (bool, bool) _xxx(string? value, bool result = false);
+public static (bool, bool) _hash(string? value, bool result = false);
 ```
 
 **规范**：

@@ -400,3 +400,4 @@ FodyWeavers.xsd
 *.sln.iml
 .kilocode
 CLAUDE.md
+.omc/
