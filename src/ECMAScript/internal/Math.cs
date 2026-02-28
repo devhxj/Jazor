@@ -160,7 +160,8 @@ public static partial class Global
 		/// </summary>
 		/// <param name="x">A numeric expression.</param>
 		/// <returns></returns>
-		public extern static Number floor(Number x);
+		[Description("@#floor")]
+		public extern static Number JFloor(Number x);
 
 		/// <summary>
 		/// returns the nearest 32-bit single precision float representation of a number.

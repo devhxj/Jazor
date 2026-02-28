@@ -215,8 +215,10 @@ public static bool _5dbf54319ebc8dfe(string? value)
 ```
 
 **注意**：
-- Op.Import 必须使用 JavaScript 原生实现，禁止调用被映射的 C# 方法（避免循环调用）
-- Op.Import 实现的方法体必须健壮，不能简写
+- `Op.Import` 必须使用 JavaScript 原生实现，尽量调用映射后的方法（避免调用 C#原生方法以防止编译时循环调用）
+- `Op.Import` 实现的方法体必须健壮，不能简写
+- C#没有`===`，使用`object.Equal`实现`===`，也可以用object.Is
+- `ECMAScript.Global`映射的js的`GlobalThis`对象
 
 ### 3.7 Op.Compile - 编译器特殊处理
 
