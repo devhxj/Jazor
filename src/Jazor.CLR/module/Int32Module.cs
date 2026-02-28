@@ -101,13 +101,23 @@ public static class Int32Module
 	/// JS: parseInt(s, 10) with validation
 	/// </summary>
 	[Jazor(Op.Import, "static int.Parse(string)")]
-	public static Number _151ccc6045162f8f(string s)
+	public static Number _151ccc6045162f8f(string? s)
 	{
 		if (s == null)
 			throw new Error("ArgumentNullException: String cannot be null.");
 
-		// 使用 C# int.Parse 验证
-		return int.Parse(s);
+		var trimmed = s.Trim();
+		var num = ParseInt(trimmed, 10);
+
+		// Check if parsing succeeded
+		if (IsNaN(num))
+			throw new Error($"FormatException: String '{s}' was not recognized as a valid Int32.");
+
+		// Check int range: -2147483648 to 2147483647
+		if (num < -2147483648 || num > 2147483647)
+			throw new Error($"OverflowException: Value '{s}' was either too large or too small for an Int32.");
+
+		return num;
 	}
 
 	[Jazor(Op.Discard, "static int.Parse(string, System.Globalization.NumberStyles)")]
@@ -132,10 +142,18 @@ public static class Int32Module
 		if (s == null)
 			return [false, 0];
 
-		if (int.TryParse(s, out int parsedValue))
-			return [true, parsedValue];
+		var trimmed = s.Trim();
+		var num = ParseInt(trimmed, 10);
 
-		return [false, 0];
+		// Check if parsing succeeded
+		if (IsNaN(num))
+			return [false, 0];
+
+		// Check int range: -2147483648 to 2147483647
+		if (num < -2147483648 || num > 2147483647)
+			return [false, 0];
+
+		return [true, num];
 	}
 
 	[Jazor(Op.Discard, "static int.TryParse(System.ReadOnlySpan<char>, out int)")]
@@ -162,9 +180,9 @@ public static class Int32Module
 	{
 		if (right == 0)
 			throw new Error("DivideByZeroException");
-		var quotient = (int)Math.Floor((double)(left / right));
-		var remainder = (int)(left % right);
-		return (quotient, remainder);
+		var quotient = Math.Floor_(left / right);
+		var remainder = left % right;
+		return ((int)quotient, (int)remainder);
 	}
 
 	/// <summary>
@@ -176,19 +194,20 @@ public static class Int32Module
 
 	/// <summary>
 	/// C#: int.PopCount(value)
-	/// JS: 使用位运算计算
+	/// JS: 使用位运算计算 (汉明权重算法)
 	/// </summary>
 	[Jazor(Op.Import, "static int.PopCount(int)")]
 	public static Number _e04660fe6cb92bf1(Number value)
 	{
-		// 汉明权重算法
-		uint v = (uint)(int)value;
-		v = v - ((v >> 1) & 0x55555555);
-		v = (v & 0x33333333) + ((v >> 2) & 0x33333333);
-		v = (v + (v >> 4)) & 0x0F0F0F0F;
-		v = v + (v >> 8);
-		v = v + (v >> 16);
-		return (int)(v & 0x3F);
+		// 汉明权重算法 - 使用 JavaScript 位运算
+		// C# 代码将被编译为 JavaScript
+		var v = value;
+		v = v - (((int)v >> 1) & 0x55555555);
+		v = (v & 0x33333333) + (((int)v >> 2) & 0x33333333);
+		v = (v + ((int)v >> 4)) & 0x0F0F0F0F;
+		v = v + ((int)v >> 8);
+		v = v + ((int)v >> 16);
+		return (int)v & 0x3F;
 	}
 
 	/// <summary>
@@ -207,7 +226,7 @@ public static class Int32Module
 
 	/// <summary>
 	/// C#: int.TrailingZeroCount(value)
-	/// JS: 使用位运算
+	/// JS: 使用位运算 (使用 ctz 算法)
 	/// </summary>
 	[Jazor(Op.Import, "static int.TrailingZeroCount(int)")]
 	public static Number _43a8a807a2b103c8(Number value)
@@ -215,7 +234,8 @@ public static class Int32Module
 		if (value == 0)
 			return 32;
 
-		uint v = (uint)(int)value;
+		// 使用位运算
+		int v = (int)value;
 		int count = 0;
 		while ((v & 1) == 0)
 		{

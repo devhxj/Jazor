@@ -219,6 +219,7 @@ public static bool _5dbf54319ebc8dfe(string? value)
 - `Op.Import` 实现的方法体必须健壮，不能简写
 - C#没有`===`，使用`object.Equal`实现`===`，也可以用object.Is
 - `ECMAScript.Global`映射的js的`GlobalThis`对象
+- 避免调用 C#原生方法如`int.Parse`，强转如`(int)a`，而是使用js映射方法如`ParseInt`和`Number`类型
 
 ### 3.7 Op.Compile - 编译器特殊处理
 

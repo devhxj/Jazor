@@ -18,20 +18,6 @@ namespace Jazor.CLR;
 [Jazor(Op.Import, "byte","System/ByteModule.js")]
 public static class ByteModule
 {
-	/// <summary>
-	/// C#: byte.MaxValue
-	/// JS: 255
-	/// </summary>
-	[Jazor(Op.Inline, "static byte.MaxValue", "255")]
-	public extern static Number _maxValue();
-
-	/// <summary>
-	/// C#: byte.MinValue
-	/// JS: 0
-	/// </summary>
-	[Jazor(Op.Inline, "static byte.MinValue", "0")]
-	public extern static Number _minValue();
-
 	[Jazor(Op.Discard ,"byte.Byte()")]
 	public extern static Number _c16a6a35ab0f1a78();
 
@@ -162,10 +148,24 @@ public static class ByteModule
 	{
 		if (right == 0)
 			throw new Error("DivideByZeroException");
-		var quotient = Math.JFloor(left / right);
+		var quotient = Math.Floor_(left / right);
 		var remainder = left % right;
 		return (quotient, remainder);
 	}
+
+	/// <summary>
+	/// C#: byte.MaxValue
+	/// JS: 255
+	/// </summary>
+	[Jazor(Op.Inline, "static byte.MaxValue", "255")]
+	public extern static Number _3d6e5c7f8a9b1234();
+
+	/// <summary>
+	/// C#: byte.MinValue
+	/// JS: 0
+	/// </summary>
+	[Jazor(Op.Inline, "static byte.MinValue", "0")]
+	public extern static Number _4e7f6d8c9b0a2345();
 
 	/// <summary>
 	/// C#: byte.LeadingZeroCount(value)

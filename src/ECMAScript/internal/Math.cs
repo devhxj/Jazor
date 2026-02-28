@@ -50,42 +50,48 @@ public static partial class Global
 		/// </summary>
 		/// <param name="x">A numeric expression for which the absolute value is needed.</param>
 		/// <returns></returns>
-		public extern static Number abs(Number x);
+		[Description("@#abs")]
+		public extern static Number Abs_(Number x);
 
 		/// <summary>
 		/// Returns the arc cosine (or inverse cosine) of a number.
 		/// </summary>
 		/// <param name="x">A numeric expression.</param>
 		/// <returns></returns>
-		public extern static Number acos(Number x);
+		[Description("@#acos")]
+		public extern static Number Acos_(Number x);
 
 		/// <summary>
 		/// 返回一个数的反双曲余弦值
 		/// </summary>
 		/// <param name="x">A numeric expression.</param>
 		/// <returns></returns>
-		public extern static Number acosh(Number x);
+		[Description("@#acosh")]
+		public extern static Number Acosh_(Number x);
 
 		/// <summary>
 		/// Returns the arcsine of a number.
 		/// </summary>
 		/// <param name="x">A numeric expression.</param>
 		/// <returns></returns>
-		public extern static Number asin(Number x);
+		[Description("@#asin")]
+		public extern static Number Asin_(Number x);
 
 		/// <summary>
 		/// 返回一个数值的反双曲正弦值
 		/// </summary>
 		/// <param name="x"></param>
 		/// <returns></returns>
-		public extern static Number asinh(Number x);
+		[Description("@#asinh")]
+		public extern static Number Asinh_(Number x);
 
 		/// <summary>
 		/// Returns the arctangent of a number.
 		/// </summary>
 		/// <param name="x">A numeric expression for which the arctangent is needed.</param>
 		/// <returns></returns>
-		public extern static Number atan(Number x);
+		[Description("@#atan")]
+		public extern static Number Atan_(Number x);
 
 		/// <summary>
 		/// Returns the angle (in radians) between the X axis and the line going through both the origin and the given point.
@@ -93,56 +99,64 @@ public static partial class Global
 		/// <param name="y">A numeric expression representing the cartesian y-coordinate.</param>
 		/// <param name="x">A numeric expression representing the cartesian x-coordinate.</param>
 		/// <returns></returns>
-		public extern static Number atan2(Number y, Number x);
+		[Description("@#atan2")]
+		public extern static Number Atan2_(Number y, Number x);
 
 		/// <summary>
 		/// 返回一个数值反双曲正切值
 		/// </summary>
 		/// <param name="x"></param>
 		/// <returns></returns>
-		public extern static Number atanh(Number x);
+		[Description("@#atanh")]
+		public extern static Number Atanh_(Number x);
 
 		/// <summary>
 		/// 返回任意数字的立方根
 		/// </summary>
 		/// <param name="x"></param>
 		/// <returns></returns>
-		public extern static Number cbrt(Number x);
+		[Description("@#cbrt")]
+		public extern static Number Cbrt_(Number x);
 
 		/// <summary>
 		/// Returns the smallest integer greater than or equal to its numeric argument.
 		/// </summary>
 		/// <param name="x">A numeric expression.</param>
 		/// <returns></returns>
-		public extern static Number ceil(Number x);
+		[Description("@#ceil")]
+		public extern static Number Ceil_(Number x);
 
 		/// <summary>
 		/// Returns the number of leading zero bits in the 32-bit binary representation of a number.
 		/// </summary>
 		/// <param name="x"></param>
 		/// <returns></returns>
-		public extern static Number clz32(Number x);
+		[Description("@#clz32")]
+		public extern static Number Clz32_(Number x);
 
 		/// <summary>
 		/// Returns the cosine of a number.
 		/// </summary>
 		/// <param name="x">A numeric expression that contains an angle measured in radians.</param>
 		/// <returns></returns>
-		public extern static Number cos(Number x);
+		[Description("@#cos")]
+		public extern static Number Cos_(Number x);
 
 		/// <summary>
 		/// 返回数值的双曲余弦函数
 		/// </summary>
 		/// <param name="x"></param>
 		/// <returns></returns>
-		public extern static Number cosh(Number x);
+		[Description("@#cosh")]
+		public extern static Number cosh_(Number x);
 
 		/// <summary>
 		/// Returns e (the base of natural logarithms) raised to a power.
 		/// </summary>
 		/// <param name="x">A numeric expression representing the power of e.</param>
 		/// <returns></returns>
-		public extern static Number exp(Number x);
+		[Description("@#exp")]
+		public extern static Number Exp_(Number x);
 
 		/// <summary>
 		/// Calculates e^x - 1, where e is the base of natural logarithms.
@@ -153,15 +167,16 @@ public static partial class Global
 		/// <returns>The result of e^x - 1. Returns <see cref="double.NaN"/> if <paramref name="x"/> is <see cref="double.NaN"/>.
 		/// Returns <see cref="double.PositiveInfinity"/> if <paramref name="x"/> is positive infinity. Returns -1 if <paramref
 		/// name="x"/> is negative infinity.</returns>
-		public extern static Number expm1(Number x);
+		[Description("@#expm1")]
+		public extern static Number Expm1_(Number x);
 
 		/// <summary>
 		/// Returns the greatest integer less than or equal to its numeric argument.
 		/// </summary>
 		/// <param name="x">A numeric expression.</param>
 		/// <returns></returns>
-		[Description("@#floor")]
-		public extern static Number JFloor(Number x);
+		[Description("@#Floor")]
+		public extern static Number Floor_(Number x);
 
 		/// <summary>
 		/// returns the nearest 32-bit single precision float representation of a number.
@@ -173,14 +188,16 @@ public static partial class Global
 		/// </summary>
 		/// <param name="x"></param>
 		/// <returns></returns>
-		public extern static Number fround(Number x);
+		[Description("@#fround")]
+		public extern static Number Fround_(Number x);
 
 		/// <summary>
 		/// returns the square root of the sum of squares of its arguments.
 		/// </summary>
 		/// <param name="values"></param>
 		/// <returns></returns>
-		public extern static Number hypot(params Number[] values);
+		[Description("@#hypot")]
+		public extern static Number Hypotj(params Number[] values);
 
 		/// <summary>
 		/// Returns the result of the C-like 32-bit multiplication of the two parameters.
@@ -188,35 +205,40 @@ public static partial class Global
 		/// <param name="a">First number.</param>
 		/// <param name="b">Second number.</param>
 		/// <returns></returns>
-		public extern static Number imul(Number a, Number b);
+		[Description("@#imul")]
+		public extern static Number Imul_(Number a, Number b);
 
 		/// <summary>
 		/// Returns the natural logarithm (base e) of a number.
 		/// </summary>
 		/// <param name="x">A numeric expression.</param>
 		/// <returns></returns>
-		public extern static Number log(Number x);
+		[Description("@#logj")]
+		public extern static Number Log_(Number x);
 
 		/// <summary>
 		/// Returns the base 10 logarithm of a number. 
 		/// </summary>
 		/// <param name="x"></param>
 		/// <returns></returns>
-		public extern static Number log10(Number x);
+		[Description("@#log10")]
+		public extern static Number Log10_(Number x);
 
 		/// <summary>
 		/// Returns the natural logarithm (base e) of 1 + x, where x is the argument.
 		/// </summary>
 		/// <param name="x"></param>
 		/// <returns></returns>
-		public extern static Number log1p(Number x);
+		[Description("@#log1p")]
+		public extern static Number Log1p_(Number x);
 
 		/// <summary>
 		/// Returns the base 2 logarithm of a number. 
 		/// </summary>
 		/// <param name="x"></param>
 		/// <returns></returns>
-		public extern static Number log2(Number x);
+		[Description("@#log2")]
+		public extern static Number Log2_(Number x);
 
 		/// <summary>
 		/// Returns the larger of a set of supplied numeric expressions.
@@ -224,21 +246,24 @@ public static partial class Global
 		/// <param name="val1">Numeric expressions to be evaluated.</param>
 		/// <param name="val2">Numeric expressions to be evaluated.</param>
 		/// <returns></returns>
-		public extern static Number max(Number val1, Number val2);
+		[Description("@#max")]
+		public extern static Number Max_(Number val1, Number val2);
 
 		/// <summary>
 		/// Returns the larger of a set of supplied numeric expressions.
 		/// </summary>
 		/// <param name="values">Numeric expressions to be evaluated.</param>
 		/// <returns></returns>
-		public extern static Number max(params Number[] values);
+		[Description("@#max")]
+		public extern static Number Maxj(params Number[] values);
 
 		/// <summary>
 		/// Returns the smaller of a set of supplied numeric expressions.
 		/// </summary>
 		/// <param name="values">Numeric expressions to be evaluated.</param>
 		/// <returns></returns>
-		public extern static Number min(params Number[] values);
+		[Description("@#min")]
+		public extern static Number Minj(params Number[] values);
 
 		/// <summary>
 		/// Returns the value of a base expression taken to a specified power.
@@ -246,68 +271,78 @@ public static partial class Global
 		/// <param name="x">The base value of the expression.</param>
 		/// <param name="y">The exponent value of the expression.</param>
 		/// <returns></returns>
-		public extern static Number pow(Number x, Number y);
+		[Description("@#pow")]
+		public extern static Number Pow_(Number x, Number y);
 
 		/// <summary>
 		/// Returns a pseudorandom number between 0 and 1.
 		/// </summary>
 		/// <returns></returns>
-		public extern static Number random();
+		[Description("@#random")]
+		public extern static Number Randomj();
 
 		/// <summary>
 		/// Returns a supplied numeric expression rounded to the nearest integer.
 		/// </summary>
 		/// <param name="x">The value to be rounded to the nearest integer.</param>
 		/// <returns></returns>
-		public extern static Number round(Number x);
+		[Description("@#round")]
+		public extern static Number Round_(Number x);
 
 		/// <summary>
 		/// Returns 1 or -1, indicating the sign of the number passed as argument. If the input is 0 or -0, it will be returned as-is.
 		/// </summary>
 		/// <param name="x"></param>
 		/// <returns></returns>
-		public extern static Number sign(Number x);
+		[Description("@#sign")]
+		public extern static Number Sign_(Number x);
 
 		/// <summary>
 		/// Returns the sine of a number.
 		/// </summary>
 		/// <param name="x">A numeric expression that contains an angle measured in radians.</param>
 		/// <returns></returns>
-		public extern static Number sin(Number x);
+		[Description("@#sin")]
+		public extern static Number Sin_(Number x);
 
 		/// <summary>
 		/// Returns the hyperbolic sine of a number. 
 		/// </summary>
 		/// <param name="x"></param>
 		/// <returns></returns>
-		public extern static Number sinh(Number x);
+		[Description("@#sinh")]
+		public extern static Number Sinh_(Number x);
 
 		/// <summary>
 		/// Returns the square root of a number.
 		/// </summary>
 		/// <param name="x">A numeric expression.</param>
 		/// <returns></returns>
-		public extern static Number sqrt(Number x);
+		[Description("@#sqrt")]
+		public extern static Number Sqrt_(Number x);
 
 		/// <summary>
 		/// Returns the tangent of a number.
 		/// </summary>
 		/// <param name="x">A numeric expression that contains an angle measured in radians.</param>
 		/// <returns></returns>
-		public extern static Number tan(Number x);
+		[Description("@#tan")]
+		public extern static Number Tan_(Number x);
 
 		/// <summary>
 		/// Returns the hyperbolic tangent of a number. 
 		/// </summary>
 		/// <param name="x"></param>
 		/// <returns></returns>
-		public extern static Number tanh(Number x);
+		[Description("@#tanh")]
+		public extern static Number Tanh_(Number x);
 
 		/// <summary>
 		/// Returns the integer part of a number by removing any fractional digits.
 		/// </summary>
 		/// <param name="x"></param>
 		/// <returns></returns>
-		public extern static Number trunc(Number x);
+		[Description("@#trunc")]
+		public extern static Number Trunc_(Number x);
 	}
 }
