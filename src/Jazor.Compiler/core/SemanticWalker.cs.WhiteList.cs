@@ -122,4 +122,10 @@ public partial class SemanticWalker
 	{
 		return null;
 	}
+
+	public Expression? Compile_eb6a23c2a874fdf1(Expression? handler, Expression?[] args)
+	{
+		return null;
+	}
+	
 }

@@ -29,10 +29,10 @@ public static class BooleanModule
 
 	///<summary>Tries to format the value of the current boolean instance into the provided span of characters.</summary>
 	[Jazor(Op.Discard, "bool.TryFormat(System.Span<char>, out int)")]
-	public extern static Array<object?> _811623fcb5eec2f4(bool instance, Uint32Array destination, out Number charsWritten);
+	public extern static Array<object?> _811623fcb5eec2f4(bool instance, string destination, Number charsWritten);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
-	[Jazor(Op.Inline, "override bool.Equals(object)","(@#{0} === @#{1})")]
+	[Jazor(Op.Inline, "override bool.Equals(object)", "(@#{0} === @#{1})")]
 	public extern static bool _97cc6572c33639b7(bool instance, object? obj);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified <see cref="T:System.Boolean" /> object.</summary>
@@ -62,26 +62,7 @@ public static class BooleanModule
 
 	///<summary>Converts the specified span representation of a logical value to its <see cref="T:System.Boolean" /> equivalent.</summary>
 	[Jazor(Op.Import, "static bool.Parse(System.ReadOnlySpan<char>)")]
-	public static bool _c3ccfdf8f687d2bf(Uint32Array value)
-	{
-		// Convert Uint32Array to string
-		var str = "";
-		for (uint i = 0; i < value.Length; i++)
-			str += string.FromCodePoint(value[i]);
-
-		// Trim whitespace (consistent with .NET Boolean.Parse behavior)
-		str = str.Trim().ToLower();
-
-		// Case-sensitive comparison with "True" and "False"
-		if (str == "true")
-			return true;
-
-		else if (str == "false")
-			return false;
-
-		// Throw exception for invalid values
-		throw new Error("String was not recognized as a valid Boolean.");
-	}
+	public static bool _c3ccfdf8f687d2bf(string value) => _5dbf54319ebc8dfe(value);
 
 	///<summary>Tries to convert the specified string representation of a logical value to its <see cref="T:System.Boolean" /> equivalent.</summary>
 	[Jazor(Op.Import, "static bool.TryParse(string, out bool)")]
@@ -98,23 +79,9 @@ public static class BooleanModule
 
 	///<summary>Tries to convert the specified span representation of a logical value to its <see cref="T:System.Boolean" /> equivalent.</summary>
 	[Jazor(Op.Import, "static bool.TryParse(System.ReadOnlySpan<char>, out bool)")]
-	public static Array<object?> _619c4d1c94319558(Uint32Array value, bool result)
-	{
-		// Convert Uint32Array to string
-		var str = "";
-		for (uint i = 0; i < value.Length; i++)
-			str += string.FromCodePoint(value[i]);
-
-		// Trim whitespace (consistent with .NET Boolean.Parse behavior)
-		if (str == "true")
-			return [true, true];
-		else if (str == "false")
-			return [true, false];
-
-		return [false, false];
-	}
+	public static Array<object?> _619c4d1c94319558(string value, bool result) => _dada4bbdacd7aa19(value, result);
 
 	///<summary>Returns the type code for the <see cref="T:System.Boolean" /> value type.</summary>
-	[Jazor(Op.Discard, "bool.GetTypeCode()")]
+	[Jazor(Op.Compile, "bool.GetTypeCode()")]
 	public extern static System.TypeCode _eb6a23c2a874fdf1(bool instance);
 }

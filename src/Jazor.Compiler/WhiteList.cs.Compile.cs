@@ -26,67 +26,11 @@ partial interface IWhiteList
 	Expression? Compile_42dc478b4386197f(Expression? handler, Expression?[] args);
 
 	/// <summary>
-	/// static System.Numerics.BigInteger.Compare(System.Numerics.BigInteger, System.Numerics.BigInteger)
+	/// bool.GetTypeCode()
 	/// </summary>
 	/// <param name="handler"></param>
 	/// <param name="args"></param>
 	/// <returns></returns>
-	Expression? Compile_0a6134f61ab96205(Expression? handler, Expression?[] args);
-
-	/// <summary>
-	/// override bool.Equals(object)
-	/// </summary>
-	/// <param name="handler"></param>
-	/// <param name="args"></param>
-	/// <returns></returns>
-	Expression? Compile_97cc6572c33639b7(Expression? handler, Expression?[] args);
-
-	/// <summary>
-	/// bool.Equals(bool)
-	/// </summary>
-	/// <param name="handler"></param>
-	/// <param name="args"></param>
-	/// <returns></returns>
-	Expression? Compile_22566f8453458531(Expression? handler, Expression?[] args);
-
-	/// <summary>
-	/// bool.CompareTo(object)
-	/// </summary>
-	/// <param name="handler"></param>
-	/// <param name="args"></param>
-	/// <returns></returns>
-	Expression? Compile_f877237b160159b0(Expression? handler, Expression?[] args);
-
-	/// <summary>
-	/// bool.CompareTo(bool)
-	/// </summary>
-	/// <param name="handler"></param>
-	/// <param name="args"></param>
-	/// <returns></returns>
-	Expression? Compile_52e94ceda3f9af79(Expression? handler, Expression?[] args);
-
-	/// <summary>
-	/// virtual object.Equals(object)
-	/// </summary>
-	/// <param name="handler"></param>
-	/// <param name="args"></param>
-	/// <returns></returns>
-	Expression? Compile_bfe118282c0f0f45(Expression? handler, Expression?[] args);
-
-	/// <summary>
-	/// static object.Equals(object, object)
-	/// </summary>
-	/// <param name="handler"></param>
-	/// <param name="args"></param>
-	/// <returns></returns>
-	Expression? Compile_cfcace6be1500e0f(Expression? handler, Expression?[] args);
-
-	/// <summary>
-	/// static object.ReferenceEquals(object, object)
-	/// </summary>
-	/// <param name="handler"></param>
-	/// <param name="args"></param>
-	/// <returns></returns>
-	Expression? Compile_b7bcdcecb3f79c07(Expression? handler, Expression?[] args);
+	Expression? Compile_eb6a23c2a874fdf1(Expression? handler, Expression?[] args);
 
 }
