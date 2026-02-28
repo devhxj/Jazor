@@ -48,6 +48,10 @@ public static partial class Global
 {
 	extension(object obj)
 	{
+		public extern static bool operator ==(object? a, object? b);
+		
+		public extern static bool operator !=(object? a, object? b);
+
 		/// <summary>
 		/// 仅能在构造函数中使用，调用当前对象的父类构造函数
 		/// </summary>
@@ -81,8 +85,28 @@ public static partial class Global
 		[Description("@#create")]
 		public extern static IObject<TPrototype>? Create<TPrototype>(TPrototype? proto, PropertyDescriptorMap propertiesObject);
 
+		/// <summary>
+		///  确定两个值是否为相同值。如果以下其中一项成立，则两个值相同：<br/>
+		///  --1、都是 undefined<br/>
+		///  --2、都是 null<br/>
+		///  --3、都是 true 或者都是 false<br/>
+		///  --4、都是长度相同、字符相同、顺序相同的字符串<br/>
+		///  --5、都是相同的对象（意味着两个值都引用了内存中的同一对象）<br/>
+		///  --6、都是 BigInt 且具有相同的数值<br/>
+		///  --7、都是 symbol 且引用相同的 symbol 值<br/>
+		///  --8、都是数字且<br/>
+		///  --9、都是 +0<br/>
+		///  --10、都是 -0<br/>
+		///  --11、都是 NaN<br/>
+		///  --12、都有相同的值，非零且都不是 NaN<br/>
+		///  Object.is() 与 == 运算符并不等价。== 运算符在测试相等性之前，会对两个操作数进行类型转换（如果它们不是相同的类型），这可能会导致一些非预期的行为，例如 "" == false 的结果是 true，但是 Object.is() 不会对其操作数进行类型转换。<br/>
+		///  Object.is() 也不等价于 === 运算符。Object.is() 和 === 之间的唯一区别在于它们处理带符号的 0 和 NaN 值的时候。=== 运算符（和 == 运算符）将数值 -0 和 +0 视为相等，但是会将 NaN 视为彼此不相等。
+		/// </summary>
+		/// <param name="value1"></param>
+		/// <param name="value2"></param>
+		/// <returns></returns>
 		[Description("@#is")]
-		public extern static bool Is(object? value1, object value2);
+		public extern static bool Is(object? value1, object? value2);	
 
 		/// <summary>
 		/// Adds a property to an object, or modifies attributes of an existing property.

@@ -20,19 +20,19 @@ public static partial class Global
 	public extern static RegExp RegExp(string value);
 
 	[Description("@#Number")]
-	public extern static Number NewNumber(Number value);
+	public extern static Number JNumber(Number value);
 
 	[Description("@#Number")]
-	public extern static Number NewNumber(BigInt value);
+	public extern static Number JNumber(BigInt value);
 
 	[Description("@#Number")]
-	public extern static Number NewNumber(string value);
+	public extern static Number JNumber(string value);
 
 	[Description("@#BigInt")]
-	public extern static BigInt NewBigInt(Number value);
+	public extern static BigInt JBigInt(Number value);
 
 	[Description("@#BigInt")]
-	public extern static BigInt NewBigInt(string value);
+	public extern static BigInt JBigInt(string value);
 
 	[Description("@#document")]
 	public extern static Document Document { get; }

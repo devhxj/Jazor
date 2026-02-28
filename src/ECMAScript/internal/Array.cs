@@ -12,8 +12,6 @@ namespace ECMAScript;
 /// <returns></returns>
 [ECMAScript]
 public delegate S Predicate<T, S>(T value, uint index, Array<T> array);
-[ECMAScript]
-public delegate T Predicate1<T>(T value);
 
 /// <summary>
 /// A function that accepts up to three arguments. The map method calls the callbackfn function one time for each element in the array.
@@ -112,7 +110,7 @@ public interface IArray<T> : IArray
 /// <typeparam name="T"></typeparam>
 [ECMAScript]
 [Description("@#Array")]
-public partial class Array<T>: object, IArray<T>
+public partial class Array<T> : object, IArray<T>
 {
 	public extern Array();
 
@@ -238,6 +236,9 @@ public partial class Array<T>: object, IArray<T>
 	[Description("@#sort")]
 	public extern Array<T> Sort(Func<T, T, double>? compareFn = null);
 
+	[Description("@#sort")]
+	public extern Array<T> Sort(Comparison<T> compareFn);
+
 	/// <summary>
 	/// Removes elements from an array and, if necessary, inserts new elements in their place, returning the deleted elements.
 	/// </summary>
@@ -272,7 +273,7 @@ public partial class Array<T>: object, IArray<T>
 	/// <param name="fromIndex">The array index at which to begin the search.If fromIndex is omitted, the search starts at index 0.</param>
 	/// <returns></returns>
 	[Description("@#indexOf")]
-	public extern double IndexOf(T searchElement, double? fromIndex);
+	public extern double IndexOf(T searchElement, double? fromIndex = null);
 
 	/// <summary>
 	/// Returns the index of the last occurrence of a specified value in an array, or -1 if it is not present.
@@ -281,7 +282,7 @@ public partial class Array<T>: object, IArray<T>
 	/// <param name="fromIndex">The array index at which to begin searching backward.If fromIndex is omitted, the search starts at the last index in the array.</param>
 	/// <returns></returns>
 	[Description("@#lastIndexOf")]
-	public extern double LastIndexOf(T searchElement, double? fromIndex);
+	public extern double LastIndexOf(T searchElement, double? fromIndex = null);
 
 	/// <summary>
 	/// Determines whether all the members of an array satisfy the specified test.
@@ -301,6 +302,9 @@ public partial class Array<T>: object, IArray<T>
 	/// <returns></returns>
 	[Description("@#every")]
 	public extern bool Every(Predicate<T, object?> predicate, object? thisArg = null);
+
+	[Description("@#every")]
+	public extern bool Every(Predicate<T> predicate, object? thisArg = null);
 
 	/// <summary>
 	/// Determines whether the specified callback function returns true for any element of an array.
@@ -332,6 +336,9 @@ public partial class Array<T>: object, IArray<T>
 	[Description("@#forEach")]
 	public extern void ForEach(CallbackFunc5<T, uint> callbackfn, object? thisArg = null);
 
+	[Description("@#forEach")]
+	public extern void ForEach(Action<T> callbackfn, object? thisArg = null);
+
 	/// <summary>
 	/// Calls a defined callback function on each element of an array, and returns an array that contains the results.
 	/// </summary>
@@ -341,8 +348,10 @@ public partial class Array<T>: object, IArray<T>
 	/// <returns></returns>
 	[Description("@#map")]
 	public extern Array<U> Map<U>(CallbackFunc<T, U> callbackfn, object? thisArg = null);
+
 	[Description("@#map")]
 	public extern Array<U> Map<U>(CallbackFunc2<T, U> callbackfn, object? thisArg = null);
+
 	[Description("@#map")]
 	public extern Array<U> Map<U>(CallbackFunc5<T, U> callbackfn, object? thisArg = null);
 
@@ -355,6 +364,9 @@ public partial class Array<T>: object, IArray<T>
 	/// <returns></returns>
 	[Description("@#filter")]
 	public extern Array<S> Filter<S>(Predicate<T, S> predicate, object? thisArg = null) where S : T;
+
+	[Description("@#filter")]
+	public extern Array<S> Filter<S>(Predicate<T> predicate, object? thisArg = null) where S : T;
 
 	/// <summary>
 	/// Returns the elements of an array that meet the condition specified in a callback function.
@@ -370,7 +382,7 @@ public partial class Array<T>: object, IArray<T>
 	public extern T? Find<S>(Predicate<T, S> predicate, object? thisArg = null);
 
 	[Description("@#find")]
-	public extern T? Find(Predicate1<T> predicate, object? thisArg = null);
+	public extern T? Find(Predicate<T> predicate, object? thisArg = null);
 
 	/// <summary>
 	/// Calls the specified callback function for all the elements in an array.The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
@@ -391,6 +403,34 @@ public partial class Array<T>: object, IArray<T>
 	/// <returns></returns>
 	[Description("@#reduceRight")]
 	public extern U ReduceRight<U>(ReduceFunc<T, U> callbackfn, U initialValue);
+
+	/// <summary>
+	/// 用一个固定值填充一个数组中从起始索引（默认为 0）到终止索引（默认为 array.length）内的全部元素。它返回修改后的数组。
+	/// </summary>
+	/// <typeparam name="U"></typeparam>
+	/// <param name="value">用来填充数组元素的值。注意所有数组中的元素都将是这个确定的值：如果 value 是个对象，那么数组的每一项都会引用这个元素。</param>
+	/// <param name="start">
+	/// 基于零的索引，从此开始填充，转换为整数。
+	/// 负数索引从数组的末端开始计算，如果 start < 0，则使用 start + array.length。
+	/// 如果 start < -array.length 或 start 被省略，则使用 0。
+	/// 如果 start >= array.length，没有索引被填充。
+	/// </param>
+	/// <param name="end">
+	/// 基于零的索引，在此结束填充，转换为整数。fill() 填充到但不包含 end 索引。
+	/// 负数索引从数组的末端开始计算，如果 end < 0，则使用 end + array.length。
+	/// 如果 end < -array.length，则使用 0。
+	/// 如果 end >= array.length 或 end 被省略，则使用 array.length，导致所有索引都被填充。
+	/// 如果经标准化后，end 的位置在 start 之前或之上，没有索引被填充。
+	/// </param>
+	/// <returns>经 value 填充修改后的数组。</returns>
+	[Description("@#fill")]
+	public extern Array<U> Fill<U>(U value, uint? start = null, uint? end = null);
+
+	[Description("@#findIndex")]
+	public extern Number FindIndex<U>(ReduceFunc<T, U> callbackfn, object? thisArg = null);
+
+	[Description("@#findIndex")]
+	public extern Number FindIndex(Predicate<T> callbackfn);
 
 	public extern static IEnumerable<T> From(IEnumerable<T> arrayLike);
 
@@ -437,12 +477,18 @@ public partial class Array<T>: object, IArray<T>
 	extern IEnumerator IEnumerable.GetEnumerator();
 
 	//extern IEnumerator<T> IEnumerable<T>.GetEnumerator();
+
+	[Jazor("[]")]
+	public extern static Array<T> Empty { get; }
 }
 
 public static partial class Global
 {
 	extension(Array array)
 	{
-		public static bool IsArray(object? obj) => default;
+		public extern static bool IsArray(object? obj);
+
+		[Jazor("[]")]
+		public extern static bool Empty { get; }
 	}
 }

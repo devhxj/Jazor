@@ -48,16 +48,16 @@ public static class BigIntegerModule
 
 		// 每次处理 8 字节（64位）
 		for (; i + 8 <= value.Length; i += 8)
-			result = (result << NewBigInt(64)) | view.GetBigUint64(i, false);
+			result = (result << JBigInt(64)) | view.GetBigUint64(i, false);
 
 		// 处理剩余字节（最多7字节）
 		if (i < value.Length)
 		{
 			var remaining = BigInt.Zero;
 			for (; i < value.Length; i++)
-				remaining = (remaining << NewBigInt(8)) | NewBigInt(value[i]);
+				remaining = (remaining << JBigInt(8)) | JBigInt(value[i]);
 
-			result = (result << NewBigInt((value.Length - i) * 8u)) | remaining;
+			result = (result << JBigInt((value.Length - i) * 8u)) | remaining;
 		}
 
 		return result;
@@ -76,14 +76,14 @@ public static class BigIntegerModule
 		{
 			if (isUnsigned)
 			{
-				return NewBigInt(value[0]);
+				return JBigInt(value[0]);
 			}
 			else
 			{
 				// 有符号数：如果最高位为1，则为负数
 				return (value[0] & 0x80) == 0
-					? NewBigInt(value[0])
-					: NewBigInt(value[0]) - NewBigInt(0x100);
+					? JBigInt(value[0])
+					: JBigInt(value[0]) - JBigInt(0x100);
 			}
 		}
 
@@ -97,11 +97,11 @@ public static class BigIntegerModule
 			return value.Length switch
 			{
 				2 => isUnsigned ?
-					NewBigInt(view.GetUint16(0, !isBigEndian)) :
-					NewBigInt(view.GetInt16(0, !isBigEndian)),
+					JBigInt(view.GetUint16(0, !isBigEndian)) :
+					JBigInt(view.GetInt16(0, !isBigEndian)),
 				4 => isUnsigned ?
-					NewBigInt(view.GetUint32(0, !isBigEndian)) :
-					NewBigInt(view.GetInt32(0, !isBigEndian)),
+					JBigInt(view.GetUint32(0, !isBigEndian)) :
+					JBigInt(view.GetInt32(0, !isBigEndian)),
 				8 => isUnsigned ?
 					view.GetBigUint64(0, !isBigEndian) :
 					view.GetBigInt64(0, !isBigEndian),
@@ -132,7 +132,7 @@ public static class BigIntegerModule
 			if (!isUnsigned && (processedBytes[processedBytes.Length - 1] & 0x80) != 0)
 			{
 				// 计算位宽度 = 字节数 * 8
-				var bitWidth = NewBigInt(processedBytes.Length) * NewBigInt(8);
+				var bitWidth = JBigInt(processedBytes.Length) * JBigInt(8);
 
 				// 计算2的bitWidth次方作为偏移量
 				var offset = BigInt.One << bitWidth;
@@ -153,7 +153,7 @@ public static class BigIntegerModule
 			for (var i = littleEndianBytes.Length - 1; i >= 0; i--)
 			{
 				// 移位8位拼接当前字节值
-				result = (result << NewBigInt(8)) | NewBigInt(littleEndianBytes[i] & 0xFF);
+				result = (result << JBigInt(8)) | JBigInt(littleEndianBytes[i] & 0xFF);
 			}
 
 			return result;
@@ -207,7 +207,7 @@ public static class BigIntegerModule
 		try
 		{
 			if (value?.Length > 0)
-				return [true, NewBigInt(value)];
+				return [true, JBigInt(value)];
 		}
 		catch { }
 		return [false, null];
@@ -274,7 +274,7 @@ public static class BigIntegerModule
 
 		var str = value.ToString()!;
 		var exponent = str.Length - 1;
-		var mantissa = NewNumber(str.Substring(0, 15));
+		var mantissa = JNumber(str.Substring(0, 15));
 
 		return Math.Log(mantissa) + exponent * Math.Log(10);
 	}	
@@ -293,10 +293,10 @@ public static class BigIntegerModule
 			return 0;
 
 		if (baseValue == Math.E)
-			return Math.Log(NewNumber(value));
+			return Math.Log(JNumber(value));
 
 		if (value <= Number.MAX_SAFE_INTEGER)
-			return Math.Log(NewNumber(value)) / Math.log(baseValue);
+			return Math.Log(JNumber(value)) / Math.log(baseValue);
 
 		var str = value.ToString()!;
 		var digitCount = str.Length;
@@ -321,8 +321,8 @@ public static class BigIntegerModule
 
 		var str = value.ToString()!;
 		return (str.Length <= 15)
-			? Math.Log10(NewNumber(value))
-			: Math.Log10(NewNumber(str.Substring(0, 15))) + (str.Length - 15);
+			? Math.Log10(JNumber(value))
+			: Math.Log10(JNumber(str.Substring(0, 15))) + (str.Length - 15);
 	}	
 
 	///<summary>Finds the greatest common divisor of two <see cref="T:System.Numerics.BigInteger" /> values.</summary>
@@ -451,8 +451,8 @@ public static class BigIntegerModule
 
 		while (value > BigInt.Zero)
 		{
-			bytes.Unshift(NewNumber(value & NewBigInt(0xFF)));
-			value >>= NewBigInt(8);
+			bytes.Unshift(JNumber(value & JBigInt(0xFF)));
+			value >>= JBigInt(8);
 		}
 
 		// 处理负数的补码表示
@@ -503,13 +503,13 @@ public static class BigIntegerModule
 
 		for (var i = 0; i < byteLength; i++)
 		{
-			var b = NewNumber(value & NewBigInt(0xFF));
+			var b = JNumber(value & JBigInt(0xFF));
 			if (isBigEndian)
 				bytes.Unshift(b);
 			else
 				bytes.Push(b);
 
-			value >>= NewBigInt(8);
+			value >>= JBigInt(8);
 		}
 
 		if (isNegative)
@@ -569,13 +569,13 @@ public static class BigIntegerModule
 			var byteCount = requiredBytes;
 			while (byteCount-- > 0)
 			{
-				var b = NewNumber(value & NewBigInt(0xFF));
+				var b = JNumber(value & JBigInt(0xFF));
 				if (isBigEndian)
 					bytes.Unshift(b);
 				else
 					bytes.Push(b);
 
-				value >>= NewBigInt(8);
+				value >>= JBigInt(8);
 			}
 
 			// 处理负数的补码
@@ -657,9 +657,9 @@ public static class BigIntegerModule
 		try
 		{
 			// 对于可以直接使用Intl.NumberFormat的范围（在安全整数范围内）
-			if (absValue <= NewBigInt(Number.MAX_SAFE_INTEGER))
+			if (absValue <= JBigInt(Number.MAX_SAFE_INTEGER))
 			{
-				var formatted = provider.Format(NewNumber(absValue));
+				var formatted = provider.Format(JNumber(absValue));
 				return isNegative ? $"-{formatted}" : formatted;
 			}
 
@@ -1106,9 +1106,9 @@ public static class BigIntegerModule
 		if (ra == 0)
 			return value;
 
-		var mask = (BigInt.One << NewBigInt(ra)) - BigInt.One;
-		var rotatedOutBits = (value >> NewBigInt(bitLength - ra)) & mask;
-		var result = ((value << NewBigInt(ra)) | rotatedOutBits) & ((BigInt.One << NewBigInt(bitLength)) - BigInt.One);
+		var mask = (BigInt.One << JBigInt(ra)) - BigInt.One;
+		var rotatedOutBits = (value >> JBigInt(bitLength - ra)) & mask;
+		var result = ((value << JBigInt(ra)) | rotatedOutBits) & ((BigInt.One << JBigInt(bitLength)) - BigInt.One);
 
 		return result;
 	}	
@@ -1142,7 +1142,7 @@ public static class BigIntegerModule
 			if (absAmount == 0)
 				return value;
 
-			return (value << NewBigInt(absAmount)) | (value >> NewBigInt(bitLength - absAmount));
+			return (value << JBigInt(absAmount)) | (value >> JBigInt(bitLength - absAmount));
 		}
 
 		// Normalize rotateAmount to be within [0, bitLength)
@@ -1151,9 +1151,9 @@ public static class BigIntegerModule
 			return value;
 
 		// Perform right rotation
-		var rightPart = value >> NewBigInt(ra);
-		var leftPart = value & ((BigInt.One << NewBigInt(ra)) - BigInt.One);
-		var rotated = (leftPart << NewBigInt(bitLength - ra)) | rightPart;
+		var rightPart = value >> JBigInt(ra);
+		var leftPart = value & ((BigInt.One << JBigInt(ra)) - BigInt.One);
+		var rotated = (leftPart << JBigInt(bitLength - ra)) | rightPart;
 
 		return rotated;
 	}	
@@ -1261,7 +1261,7 @@ public static class BigIntegerModule
 				throw new RangeError("Value is outside safe integer range");
 
 			// Convert to BigInt
-			return NewBigInt(n);
+			return JBigInt(n);
 		}
 
 		// Handle string input
@@ -1277,7 +1277,7 @@ public static class BigIntegerModule
 			// Convert to BigInt
 			try
 			{
-				return NewBigInt(trimmed);
+				return JBigInt(trimmed);
 			}
 			catch
 			{
@@ -1341,7 +1341,7 @@ public static class BigIntegerModule
 		if (shiftAmount < 0)
 			throw new RangeError("Shift amount must be non-negative");
 
-		var shift = NewBigInt(shiftAmount);
+		var shift = JBigInt(shiftAmount);
 
 		if (value >= BigInt.Zero)
 			return value >> shift;
