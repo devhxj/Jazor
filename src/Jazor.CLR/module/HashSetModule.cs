@@ -1,11 +1,27 @@
 namespace Jazor.CLR;
 
+/// <summary>
+/// System.Collections.Generic.HashSet<T> 类型模块映射规则
+///
+/// C# HashSet<T> 与 JavaScript Set 的对应关系：
+/// - 都表示不重复元素的集合
+/// - 大部分方法可以直接映射
+///
+/// Op 类型选择原则：
+/// - Inline: 简单构造
+/// - Replace: JS Set 原生方法（如 has、add、delete）
+/// - Import: 需要完整实现的复杂逻辑
+/// - Discard: 不支持或极少使用
+/// </summary>
 [ECMAScriptModule]
 [Jazor(Op.Import, "System.Collections.Generic.HashSet<T>","System/Collections/Generic/HashSetModule.js")]
 public static class HashSetModule<T>
 {
-	///<summary>Initializes a new instance of the <see cref="T:System.Collections.Generic.HashSet`1" /> class that is empty and uses the default equality comparer for the set type.</summary>
-	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.HashSet()")]
+	/// <summary>
+	/// C#: new HashSet<T>()
+	/// JS: new Set()
+	/// </summary>
+	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.HashSet()", "new Set()")]
 	public extern static Set<T> _55c044d94c5b0ca8();
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Collections.Generic.HashSet`1" /> class that is empty and uses the specified equality comparer for the set type.</summary>
@@ -16,8 +32,11 @@ public static class HashSetModule<T>
 	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.HashSet(int)")]
 	public extern static Set<T> _304904fb5a22f950(Number capacity);
 
-	///<summary>Initializes a new instance of the <see cref="T:System.Collections.Generic.HashSet`1" /> class that uses the default equality comparer for the set type, contains elements copied from the specified collection, and has sufficient capacity to accommodate the number of elements copied.</summary>
-	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.HashSet(System.Collections.Generic.IEnumerable<T>)")]
+	/// <summary>
+	/// C#: new HashSet<T>(collection)
+	/// JS: new Set(collection)
+	/// </summary>
+	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.HashSet(System.Collections.Generic.IEnumerable<T>)", "new Set(@#{0})")]
 	public extern static Set<T> _1bd2e054852d9d5f(Array<T> collection);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Collections.Generic.HashSet`1" /> class that uses the specified equality comparer for the set type, contains elements copied from the specified collection, and has sufficient capacity to accommodate the number of elements copied.</summary>
@@ -28,19 +47,32 @@ public static class HashSetModule<T>
 	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.HashSet(int, System.Collections.Generic.IEqualityComparer<T>)")]
 	public extern static Set<T> _baf729bee477b2e7(Number capacity, object comparer);
 
-	///<summary>Removes all elements from a <see cref="T:System.Collections.Generic.HashSet`1" /> object.</summary>
-	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.Clear()")]
+	/// <summary>
+	/// C#: set.Clear()
+	/// JS: set.clear()
+	/// </summary>
+	[Jazor(Op.Replace, "System.Collections.Generic.HashSet<T>.Clear()", "clear")]
 	public extern static void _56d632bf48c92530(Set<T> instance);
 
-	///<summary>Determines whether a <see cref="T:System.Collections.Generic.HashSet`1" /> object contains the specified element.</summary>
-	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.Contains(T)")]
-	public extern static bool _32b989c96ea23e8c(Set<T> instance, object item);
+	/// <summary>
+	/// C#: set.Contains(item)
+	/// JS: set.has(item)
+	/// </summary>
+	[Jazor(Op.Replace, "System.Collections.Generic.HashSet<T>.Contains(T)", "has")]
+	public extern static bool _32b989c96ea23e8c(Set<T> instance, T item);
 
-	///<summary>Removes the specified element from a <see cref="T:System.Collections.Generic.HashSet`1" /> object.</summary>
-	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.Remove(T)")]
-	public extern static bool _cfb963650cb3dabd(Set<T> instance, object item);
+	/// <summary>
+	/// C#: set.Remove(item)
+	/// JS: set.delete(item)
+	/// </summary>
+	[Jazor(Op.Replace, "System.Collections.Generic.HashSet<T>.Remove(T)", "delete")]
+	public extern static bool _cfb963650cb3dabd(Set<T> instance, T item);
 
-	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.Count.get")]
+	/// <summary>
+	/// C#: set.Count
+	/// JS: set.size
+	/// </summary>
+	[Jazor(Op.Replace, "System.Collections.Generic.HashSet<T>.Count.get", "size")]
 	public extern static Number _4bec0b4d27073edb(Set<T> instance);
 
 	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.Capacity.get")]
@@ -66,52 +98,90 @@ public static class HashSetModule<T>
 	[Jazor(Op.Discard ,"virtual System.Collections.Generic.HashSet<T>.OnDeserialization(object)")]
 	public extern static void _26975bd136a2f896(Set<T> instance, object? sender);
 
-	///<summary>Adds the specified element to a set.</summary>
-	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.Add(T)")]
-	public extern static bool _e1d2ba750a2788cb(Set<T> instance, object item);
+	/// <summary>
+	/// C#: set.Add(item)
+	/// JS: set.add(item) - returns the Set, but C# returns bool
+	/// </summary>
+	[Jazor(Op.Import, "System.Collections.Generic.HashSet<T>.Add(T)")]
+	public static bool _e1d2ba750a2788cb(Set<T> instance, T item)
+	{
+		var size = instance.Size;
+		instance.Add(item);
+		return instance.Size > size;  // Returns true if item was added (not already present)
+	}
 
 	///<summary>Searches the set for a given value and returns the equal value it finds, if any.</summary>
 	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.TryGetValue(T, out T)")]
 	public extern static Array<object?> _20eb460b32c63404(Set<T> instance, object equalValue, object actualValue);
 
-	///<summary>Modifies the current <see cref="T:System.Collections.Generic.HashSet`1" /> object to contain all elements that are present in itself, the specified collection, or both.</summary>
-	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.UnionWith(System.Collections.Generic.IEnumerable<T>)")]
+	/// <summary>
+	/// C#: set.UnionWith(other)
+	/// JS: 遍历 other，添加所有元素
+	/// </summary>
+	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.UnionWith(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { for (var item of other) set.add(item); })(@#{0}, @#{1})")]
 	public extern static void _b2bd5d22aadd44a8(Set<T> instance, Array<T> other);
 
-	///<summary>Modifies the current <see cref="T:System.Collections.Generic.HashSet`1" /> object to contain only elements that are present in that object and in the specified collection.</summary>
-	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.IntersectWith(System.Collections.Generic.IEnumerable<T>)")]
+	/// <summary>
+	/// C#: set.IntersectWith(other)
+	/// JS: 保留同时存在于两个集合中的元素
+	/// </summary>
+	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.IntersectWith(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { for (var item of set) { var found = false; for (var o of other) { if (o === item) { found = true; break; } } if (!found) set.delete(item); } })(@#{0}, @#{1})")]
 	public extern static void _3a6a072035334578(Set<T> instance, Array<T> other);
 
-	///<summary>Removes all elements in the specified collection from the current <see cref="T:System.Collections.Generic.HashSet`1" /> object.</summary>
-	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.ExceptWith(System.Collections.Generic.IEnumerable<T>)")]
+	/// <summary>
+	/// C#: set.ExceptWith(other)
+	/// JS: 从 instance 中删除 other 中的所有元素
+	/// </summary>
+	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.ExceptWith(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { for (var item of other) set.delete(item); })(@#{0}, @#{1})")]
 	public extern static void _373e2e9ed1fb3f5b(Set<T> instance, Array<T> other);
 
-	///<summary>Modifies the current <see cref="T:System.Collections.Generic.HashSet`1" /> object to contain only elements that are present either in that object or in the specified collection, but not both.</summary>
-	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.SymmetricExceptWith(System.Collections.Generic.IEnumerable<T>)")]
+	/// <summary>
+	/// C#: set.SymmetricExceptWith(other)
+	/// JS: 保留只存在于一个集合中的元素
+	/// </summary>
+	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.SymmetricExceptWith(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { for (var item of other) { if (set.has(item)) set.delete(item); else set.add(item); } })(@#{0}, @#{1})")]
 	public extern static void _a22fe44dc0ae9ad2(Set<T> instance, Array<T> other);
 
-	///<summary>Determines whether a <see cref="T:System.Collections.Generic.HashSet`1" /> object is a subset of the specified collection.</summary>
-	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.IsSubsetOf(System.Collections.Generic.IEnumerable<T>)")]
+	/// <summary>
+	/// C#: set.IsSubsetOf(other)
+	/// JS: 检查 instance 是否是 other 的子集
+	/// </summary>
+	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.IsSubsetOf(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { for (var item of set) { var found = false; for (var o of other) { if (o === item) { found = true; break; } } if (!found) return false; } return true; })(@#{0}, @#{1})")]
 	public extern static bool _23c8bcfc6b71d2b1(Set<T> instance, Array<T> other);
 
-	///<summary>Determines whether a <see cref="T:System.Collections.Generic.HashSet`1" /> object is a proper subset of the specified collection.</summary>
-	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.IsProperSubsetOf(System.Collections.Generic.IEnumerable<T>)")]
+	/// <summary>
+	/// C#: set.IsProperSubsetOf(other)
+	/// JS: 检查 instance 是否是 other 的真子集
+	/// </summary>
+	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.IsProperSubsetOf(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { var otherSize = 0; for (var _ of other) otherSize++; if (set.size >= otherSize) return false; for (var item of set) { var found = false; for (var o of other) { if (o === item) { found = true; break; } } if (!found) return false; } return true; })(@#{0}, @#{1})")]
 	public extern static bool _fb8566ae66aa9591(Set<T> instance, Array<T> other);
 
-	///<summary>Determines whether a <see cref="T:System.Collections.Generic.HashSet`1" /> object is a superset of the specified collection.</summary>
-	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.IsSupersetOf(System.Collections.Generic.IEnumerable<T>)")]
+	/// <summary>
+	/// C#: set.IsSupersetOf(other)
+	/// JS: 检查 instance 是否是 other 的超集
+	/// </summary>
+	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.IsSupersetOf(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { for (var item of other) { if (!set.has(item)) return false; } return true; })(@#{0}, @#{1})")]
 	public extern static bool _3be7fbb1d68799fb(Set<T> instance, Array<T> other);
 
-	///<summary>Determines whether a <see cref="T:System.Collections.Generic.HashSet`1" /> object is a proper superset of the specified collection.</summary>
-	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.IsProperSupersetOf(System.Collections.Generic.IEnumerable<T>)")]
+	/// <summary>
+	/// C#: set.IsProperSupersetOf(other)
+	/// JS: 检查 instance 是否是 other 的真超集
+	/// </summary>
+	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.IsProperSupersetOf(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { var otherSize = 0; for (var _ of other) otherSize++; if (set.size <= otherSize) return false; for (var item of other) { if (!set.has(item)) return false; } return true; })(@#{0}, @#{1})")]
 	public extern static bool _cc0cc2d0f5be70db(Set<T> instance, Array<T> other);
 
-	///<summary>Determines whether the current <see cref="T:System.Collections.Generic.HashSet`1" /> object and a specified collection share common elements.</summary>
-	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.Overlaps(System.Collections.Generic.IEnumerable<T>)")]
+	/// <summary>
+	/// C#: set.Overlaps(other)
+	/// JS: 检查是否有交集
+	/// </summary>
+	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.Overlaps(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { for (var item of other) { if (set.has(item)) return true; } return false; })(@#{0}, @#{1})")]
 	public extern static bool _84709aa8ff70a52a(Set<T> instance, Array<T> other);
 
-	///<summary>Determines whether a <see cref="T:System.Collections.Generic.HashSet`1" /> object and the specified collection contain the same elements.</summary>
-	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.SetEquals(System.Collections.Generic.IEnumerable<T>)")]
+	/// <summary>
+	/// C#: set.SetEquals(other)
+	/// JS: 检查两个集合是否相等
+	/// </summary>
+	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.SetEquals(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { var otherSize = 0; for (var _ of other) otherSize++; if (set.size !== otherSize) return false; for (var item of other) { if (!set.has(item)) return false; } return true; })(@#{0}, @#{1})")]
 	public extern static bool _55425d259e5f54ea(Set<T> instance, Array<T> other);
 
 	///<summary>Copies the elements of a <see cref="T:System.Collections.Generic.HashSet`1" /> object to an array.</summary>

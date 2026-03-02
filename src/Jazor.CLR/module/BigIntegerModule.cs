@@ -160,33 +160,90 @@ public static class BigIntegerModule
 		}
 	}
 
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.Zero.get")]
+	/// <summary>
+	/// C#: BigInteger.Zero
+	/// JS: 0n
+	/// </summary>
+	[Jazor(Op.Inline, "static System.Numerics.BigInteger.Zero.get", "0n")]
 	public extern static BigInt _77fc63f99954f8da();
 
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.One.get")]
+	/// <summary>
+	/// C#: BigInteger.One
+	/// JS: 1n
+	/// </summary>
+	[Jazor(Op.Inline, "static System.Numerics.BigInteger.One.get", "1n")]
 	public extern static BigInt _9c5419989e842d00();
 
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.MinusOne.get")]
+	/// <summary>
+	/// C#: BigInteger.MinusOne
+	/// JS: -1n
+	/// </summary>
+	[Jazor(Op.Inline, "static System.Numerics.BigInteger.MinusOne.get", "-1n")]
 	public extern static BigInt _01c112900aa52c82();
 
-	[Jazor(Op.Discard ,"System.Numerics.BigInteger.IsPowerOfTwo.get")]
+	/// <summary>
+	/// C#: bigint.IsPowerOfTwo
+	/// JS: instance > 0n && (instance & (instance - 1n)) === 0n
+	/// </summary>
+	[Jazor(Op.Inline, "System.Numerics.BigInteger.IsPowerOfTwo.get", "(@#{0} > 0n && (@#{0} & (@#{0} - 1n)) === 0n)")]
 	public extern static bool _ee8564f940baf789(BigInt instance);
 
-	[Jazor(Op.Discard ,"System.Numerics.BigInteger.IsZero.get")]
+	/// <summary>
+	/// C#: bigint.IsZero
+	/// JS: instance === 0n
+	/// </summary>
+	[Jazor(Op.Inline, "System.Numerics.BigInteger.IsZero.get", "(@#{0} === 0n)")]
 	public extern static bool _c138b3f4dd057592(BigInt instance);
 
-	[Jazor(Op.Discard ,"System.Numerics.BigInteger.IsOne.get")]
+	/// <summary>
+	/// C#: bigint.IsOne
+	/// JS: instance === 1n
+	/// </summary>
+	[Jazor(Op.Inline, "System.Numerics.BigInteger.IsOne.get", "(@#{0} === 1n)")]
 	public extern static bool _2aa0739f87c79906(BigInt instance);
 
-	[Jazor(Op.Discard ,"System.Numerics.BigInteger.IsEven.get")]
+	/// <summary>
+	/// C#: bigint.IsEven
+	/// JS: instance % 2n === 0n
+	/// </summary>
+	[Jazor(Op.Inline, "System.Numerics.BigInteger.IsEven.get", "(@#{0} % 2n === 0n)")]
 	public extern static bool _4a465705ad4dc8ca(BigInt instance);
 
-	[Jazor(Op.Discard ,"System.Numerics.BigInteger.Sign.get")]
-	public extern static Number _734290a188c5bc5a(BigInt instance);
+	/// <summary>
+	/// C#: bigint.Sign
+	/// JS: Returns -1, 0, or 1 indicating the sign
+	/// </summary>
+	[Jazor(Op.Import, "System.Numerics.BigInteger.Sign.get")]
+	public static Number _734290a188c5bc5a(BigInt instance)
+	{
+		if (instance > BigInt.Zero) return 1;
+		if (instance < BigInt.Zero) return -1;
+		return 0;
+	}
 
-	///<summary>Converts the string representation of a number to its <see cref="T:System.Numerics.BigInteger" /> equivalent.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.Parse(string)")]
-	public extern static BigInt _155212572c9a3297(string value);
+	/// <summary>
+	/// C#: BigInteger.Parse(value)
+	/// JS: BigInt(value.trim()) with validation
+	/// </summary>
+	[Jazor(Op.Import, "static System.Numerics.BigInteger.Parse(string)")]
+	public static BigInt _155212572c9a3297(string? value)
+	{
+		if (value == null)
+			throw new Error("ArgumentNullException: String cannot be null.");
+
+		var trimmed = value.Trim();
+		if (trimmed.Length == 0)
+			throw new Error("FormatException: The input string was not in a correct format.");
+
+		try
+		{
+			return BigInt_(trimmed);
+		}
+		catch
+		{
+			throw new Error($"FormatException: The input string '{value}' was not in a correct format.");
+		}
+	}
 
 	///<summary>Converts the string representation of a number in a specified style to its <see cref="T:System.Numerics.BigInteger" /> equivalent.</summary>
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.Parse(string, System.Globalization.NumberStyles)")]
@@ -204,13 +261,21 @@ public static class BigIntegerModule
 	[Jazor(Op.Import, "static System.Numerics.BigInteger.TryParse(string, out System.Numerics.BigInteger)")]
 	public static Array<object?> _59acea2facdaa757(string? value, BigInt? result)
 	{
+		if (value == null || value.Length == 0)
+			return [false, BigInt.Zero];
+
 		try
 		{
-			if (value?.Length > 0)
-				return [true, BigInt_(value)];
+			var trimmed = value.Trim();
+			if (trimmed.Length == 0)
+				return [false, BigInt.Zero];
+
+			return [true, BigInt_(trimmed)];
 		}
-		catch { }
-		return [false, null];
+		catch
+		{
+			return [false, BigInt.Zero];
+		}
 	}
 
 	///<summary>Tries to convert the string representation of a number in a specified style and culture-specific format to its <see cref="T:System.Numerics.BigInteger" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
@@ -296,7 +361,7 @@ public static class BigIntegerModule
 			return Math.Log(Number_(value));
 
 		if (value <= Number.MAX_SAFE_INTEGER)
-			return Math.Log(Number_(value)) / Math.log(baseValue);
+			return Math.Log(Number_(value)) / Math.Log_(baseValue);
 
 		var str = value.ToString()!;
 		var digitCount = str.Length;
@@ -498,8 +563,8 @@ public static class BigIntegerModule
 			temp >>= BigInt.One;
 		}
 
-		var minLength = isNegative ? Math.ceil((bitLength + 1) / 8) : Math.ceil(bitLength / 8);
-		var byteLength = Math.max(minLength, 1);
+		var minLength = isNegative ? Math.Ceil_((bitLength + 1) / 8) : Math.Ceil_(bitLength / 8);
+		var byteLength = Math.Max_(minLength, 1);
 
 		for (var i = 0; i < byteLength; i++)
 		{
@@ -548,8 +613,8 @@ public static class BigIntegerModule
 
 			// 计算所需字节数
 			requiredBytes = isUnsigned
-				? Math.max(1, Math.ceil(bitLength / 8))
-				: Math.max(1, Math.ceil((bitLength + 1) / 8));
+				? Math.Max_(1, Math.Ceil_(bitLength / 8))
+				: Math.Max_(1, Math.Ceil_((bitLength + 1) / 8));
 		}
 
 		// 2. 检查缓冲区大小
@@ -632,11 +697,11 @@ public static class BigIntegerModule
 		}
 
 		if (isUnsigned)
-			return Math.max(1, Math.ceil(bitLength / 8));
+			return Math.Max_(1, Math.Ceil_(bitLength / 8));
 		else
 			return isNegative
-				? Math.max(1, Math.ceil((bitLength + 1) / 8))  // 负数需要符号位
-				: Math.max(1, Math.ceil(bitLength / 8));        // 正数不需要符号位
+				? Math.Max_(1, Math.Ceil_((bitLength + 1) / 8))  // 负数需要符号位
+				: Math.Max_(1, Math.Ceil_(bitLength / 8));        // 正数不需要符号位
 	}	
 
 	///<summary>Converts the numeric value of the current <see cref="T:System.Numerics.BigInteger" /> object to its equivalent string representation.</summary>

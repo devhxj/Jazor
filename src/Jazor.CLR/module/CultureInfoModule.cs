@@ -4,39 +4,66 @@ namespace Jazor.CLR;
 [Jazor(Op.Import, "System.Globalization.CultureInfo","System/Globalization/CultureInfoModule.js")]
 public static class CultureInfoModule
 {
-	///<summary>Initializes a new instance of the <see cref="T:System.Globalization.CultureInfo" /> class based on the culture specified by name.</summary>
-	[Jazor(Op.Discard ,"System.Globalization.CultureInfo.CultureInfo(string)")]
+	/// <summary>
+	/// C#: new CultureInfo(name)
+	/// JS: name (culture name as string)
+	/// </summary>
+	[Jazor(Op.Inline, "System.Globalization.CultureInfo.CultureInfo(string)", "@#{0}")]
 	public extern static string _b7486264ae338f27(string name);
 
-	///<summary>Initializes a new instance of the <see cref="T:System.Globalization.CultureInfo" /> class based on the culture specified by name and on a value that specifies whether to use the user-selected culture settings from Windows.</summary>
-	[Jazor(Op.Discard ,"System.Globalization.CultureInfo.CultureInfo(string, bool)")]
+	/// <summary>
+	/// C#: new CultureInfo(name, useUserOverride)
+	/// JS: name (culture name as string, ignore useUserOverride in JS)
+	/// </summary>
+	[Jazor(Op.Inline, "System.Globalization.CultureInfo.CultureInfo(string, bool)", "@#{0}")]
 	public extern static string _df21a93fd9f84197(string name, bool useUserOverride);
 
-	///<summary>Initializes a new instance of the <see cref="T:System.Globalization.CultureInfo" /> class based on the culture specified by the culture identifier.</summary>
-	[Jazor(Op.Discard ,"System.Globalization.CultureInfo.CultureInfo(int)")]
+	/// <summary>
+	/// C#: new CultureInfo(culture)
+	/// JS: culture.toString() (culture ID as string)
+	/// </summary>
+	[Jazor(Op.Inline, "System.Globalization.CultureInfo.CultureInfo(int)", "String(@#{0})")]
 	public extern static string _22aaac09e253b1f9(Number culture);
 
-	///<summary>Initializes a new instance of the <see cref="T:System.Globalization.CultureInfo" /> class based on the culture specified by the culture identifier and on a value that specifies whether to use the user-selected culture settings from Windows.</summary>
-	[Jazor(Op.Discard ,"System.Globalization.CultureInfo.CultureInfo(int, bool)")]
+	/// <summary>
+	/// C#: new CultureInfo(culture, useUserOverride)
+	/// JS: culture.toString()
+	/// </summary>
+	[Jazor(Op.Inline, "System.Globalization.CultureInfo.CultureInfo(int, bool)", "String(@#{0})")]
 	public extern static string _d0948ef9f698ec85(Number culture, bool useUserOverride);
 
-	///<summary>Creates a <see cref="T:System.Globalization.CultureInfo" /> that represents the specific culture that is associated with the specified name.</summary>
-	[Jazor(Op.Discard ,"static System.Globalization.CultureInfo.CreateSpecificCulture(string)")]
+	/// <summary>
+	/// C#: CultureInfo.CreateSpecificCulture(name)
+	/// JS: name
+	/// </summary>
+	[Jazor(Op.Inline, "static System.Globalization.CultureInfo.CreateSpecificCulture(string)", "@#{0}")]
 	public extern static String _a078d5ccbbf2345a(string name);
 
-	[Jazor(Op.Discard ,"static System.Globalization.CultureInfo.CurrentCulture.get")]
+	/// <summary>
+	/// C#: CultureInfo.CurrentCulture
+	/// JS: Intl.DateTimeFormat().resolvedOptions().locale
+	/// </summary>
+	[Jazor(Op.Inline, "static System.Globalization.CultureInfo.CurrentCulture.get", "Intl.DateTimeFormat().resolvedOptions().locale")]
 	public extern static String _1a26e2e2e4e0ca1d();
 
 	[Jazor(Op.Discard ,"static System.Globalization.CultureInfo.CurrentCulture.set")]
 	public extern static void _82cfca57d721204e(String value);
 
-	[Jazor(Op.Discard ,"static System.Globalization.CultureInfo.CurrentUICulture.get")]
+	/// <summary>
+	/// C#: CultureInfo.CurrentUICulture
+	/// JS: navigator.language || 'en'
+	/// </summary>
+	[Jazor(Op.Inline, "static System.Globalization.CultureInfo.CurrentUICulture.get", "(typeof navigator !== 'undefined' ? navigator.language : 'en')")]
 	public extern static String _eca32c250ead7de9();
 
 	[Jazor(Op.Discard ,"static System.Globalization.CultureInfo.CurrentUICulture.set")]
 	public extern static void _7e355a1a63351619(String value);
 
-	[Jazor(Op.Discard ,"static System.Globalization.CultureInfo.InstalledUICulture.get")]
+	/// <summary>
+	/// C#: CultureInfo.InstalledUICulture
+	/// JS: 'en' (default)
+	/// </summary>
+	[Jazor(Op.Inline, "static System.Globalization.CultureInfo.InstalledUICulture.get", "'en'")]
 	public extern static String _98e743867688a06d();
 
 	[Jazor(Op.Discard ,"static System.Globalization.CultureInfo.DefaultThreadCurrentCulture.get")]
@@ -51,44 +78,92 @@ public static class CultureInfoModule
 	[Jazor(Op.Discard ,"static System.Globalization.CultureInfo.DefaultThreadCurrentUICulture.set")]
 	public extern static void _12da8bfb928d7414(String? value);
 
-	[Jazor(Op.Discard ,"static System.Globalization.CultureInfo.InvariantCulture.get")]
+	/// <summary>
+	/// C#: CultureInfo.InvariantCulture
+	/// JS: 'en-US' (invariant culture)
+	/// </summary>
+	[Jazor(Op.Inline, "static System.Globalization.CultureInfo.InvariantCulture.get", "'en-US'")]
 	public extern static String _e4c4d53d69e72382();
 
-	[Jazor(Op.Discard ,"virtual System.Globalization.CultureInfo.Parent.get")]
+	/// <summary>
+	/// C#: instance.Parent
+	/// JS: instance.split('-')[0] (get parent culture)
+	/// </summary>
+	[Jazor(Op.Inline, "virtual System.Globalization.CultureInfo.Parent.get", "@#{0}.split('-')[0]")]
 	public extern static String _cd29576576563da3(string instance);
 
-	[Jazor(Op.Discard ,"virtual System.Globalization.CultureInfo.LCID.get")]
+	/// <summary>
+	/// C#: instance.LCID
+	/// JS: 0 (locale ID not available in JS)
+	/// </summary>
+	[Jazor(Op.Inline, "virtual System.Globalization.CultureInfo.LCID.get", "0")]
 	public extern static Number _9152aa33e0560712(string instance);
 
-	[Jazor(Op.Discard ,"virtual System.Globalization.CultureInfo.KeyboardLayoutId.get")]
+	/// <summary>
+	/// C#: instance.KeyboardLayoutId
+	/// JS: 0 (not available in JS)
+	/// </summary>
+	[Jazor(Op.Inline, "virtual System.Globalization.CultureInfo.KeyboardLayoutId.get", "0")]
 	public extern static Number _13b0607d8916da7b(string instance);
 
 	///<summary>Gets the list of supported cultures filtered by the specified <see cref="T:System.Globalization.CultureTypes" /> parameter.</summary>
 	[Jazor(Op.Discard ,"static System.Globalization.CultureInfo.GetCultures(System.Globalization.CultureTypes)")]
 	public extern static System.Globalization.CultureInfo[] _40087650ec4f5285(object types);
 
-	[Jazor(Op.Discard ,"virtual System.Globalization.CultureInfo.Name.get")]
+	/// <summary>
+	/// C#: instance.Name
+	/// JS: instance
+	/// </summary>
+	[Jazor(Op.Inline, "virtual System.Globalization.CultureInfo.Name.get", "@#{0}")]
 	public extern static string _822a986168c7c539(string instance);
 
-	[Jazor(Op.Discard ,"System.Globalization.CultureInfo.IetfLanguageTag.get")]
+	/// <summary>
+	/// C#: instance.IetfLanguageTag
+	/// JS: instance
+	/// </summary>
+	[Jazor(Op.Inline, "System.Globalization.CultureInfo.IetfLanguageTag.get", "@#{0}")]
 	public extern static string _9c9f6e469362911e(string instance);
 
-	[Jazor(Op.Discard ,"virtual System.Globalization.CultureInfo.DisplayName.get")]
+	/// <summary>
+	/// C#: instance.DisplayName
+	/// JS: instance (use name as display name)
+	/// </summary>
+	[Jazor(Op.Inline, "virtual System.Globalization.CultureInfo.DisplayName.get", "@#{0}")]
 	public extern static string _59b041331098ad55(string instance);
 
-	[Jazor(Op.Discard ,"virtual System.Globalization.CultureInfo.NativeName.get")]
+	/// <summary>
+	/// C#: instance.NativeName
+	/// JS: instance
+	/// </summary>
+	[Jazor(Op.Inline, "virtual System.Globalization.CultureInfo.NativeName.get", "@#{0}")]
 	public extern static string _a4804f687bfc0013(string instance);
 
-	[Jazor(Op.Discard ,"virtual System.Globalization.CultureInfo.EnglishName.get")]
+	/// <summary>
+	/// C#: instance.EnglishName
+	/// JS: instance
+	/// </summary>
+	[Jazor(Op.Inline, "virtual System.Globalization.CultureInfo.EnglishName.get", "@#{0}")]
 	public extern static string _97ad9637d1f75e7c(string instance);
 
-	[Jazor(Op.Discard ,"virtual System.Globalization.CultureInfo.TwoLetterISOLanguageName.get")]
+	/// <summary>
+	/// C#: instance.TwoLetterISOLanguageName
+	/// JS: instance.split('-')[0]
+	/// </summary>
+	[Jazor(Op.Inline, "virtual System.Globalization.CultureInfo.TwoLetterISOLanguageName.get", "@#{0}.split('-')[0]")]
 	public extern static string _112fba1dc945fa1a(string instance);
 
-	[Jazor(Op.Discard ,"virtual System.Globalization.CultureInfo.ThreeLetterISOLanguageName.get")]
+	/// <summary>
+	/// C#: instance.ThreeLetterISOLanguageName
+	/// JS: instance.split('-')[0]
+	/// </summary>
+	[Jazor(Op.Inline, "virtual System.Globalization.CultureInfo.ThreeLetterISOLanguageName.get", "@#{0}.split('-')[0]")]
 	public extern static string _285ede13a469ce7b(string instance);
 
-	[Jazor(Op.Discard ,"virtual System.Globalization.CultureInfo.ThreeLetterWindowsLanguageName.get")]
+	/// <summary>
+	/// C#: instance.ThreeLetterWindowsLanguageName
+	/// JS: instance.split('-')[0]
+	/// </summary>
+	[Jazor(Op.Inline, "virtual System.Globalization.CultureInfo.ThreeLetterWindowsLanguageName.get", "@#{0}.split('-')[0]")]
 	public extern static string _1f981ccac713f3d9(string instance);
 
 	[Jazor(Op.Discard ,"virtual System.Globalization.CultureInfo.CompareInfo.get")]

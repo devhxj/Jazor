@@ -4,16 +4,25 @@ namespace Jazor.CLR;
 [Jazor(Op.Import, "System.DateTimeOffset","System/DateTimeOffsetModule.js")]
 public static class DateTimeOffsetModule
 {
-	///<summary>Represents the earliest possible <see cref="T:System.DateTimeOffset" /> value. This field is read-only.</summary>
-	[Jazor(Op.Discard ,"static readonly System.DateTimeOffset.MinValue")]
+	/// <summary>
+	/// C#: DateTimeOffset.MinValue
+	/// JS: new Date(-8640000000000000)
+	/// </summary>
+	[Jazor(Op.Inline, "static readonly System.DateTimeOffset.MinValue", "new Date(-8640000000000000)")]
 	public extern static Date _77107f0c23675b69();
 
-	///<summary>Represents the greatest possible value of <see cref="T:System.DateTimeOffset" />. This field is read-only.</summary>
-	[Jazor(Op.Discard ,"static readonly System.DateTimeOffset.MaxValue")]
+	/// <summary>
+	/// C#: DateTimeOffset.MaxValue
+	/// JS: new Date(8640000000000000)
+	/// </summary>
+	[Jazor(Op.Inline, "static readonly System.DateTimeOffset.MaxValue", "new Date(8640000000000000)")]
 	public extern static Date _d45d439f0b97ae0e();
 
-	///<summary>The value of this constant is equivalent to 00:00:00.0000000 UTC, January 1, 1970, in the Gregorian calendar. <see cref="F:System.DateTimeOffset.UnixEpoch" /> defines the point in time when Unix time is equal to 0.</summary>
-	[Jazor(Op.Discard ,"static readonly System.DateTimeOffset.UnixEpoch")]
+	/// <summary>
+	/// C#: DateTimeOffset.UnixEpoch
+	/// JS: new Date(0)
+	/// </summary>
+	[Jazor(Op.Inline, "static readonly System.DateTimeOffset.UnixEpoch", "new Date(0)")]
 	public extern static Date _087cabaedc1b5cc2();
 
 	[Jazor(Op.Discard ,"System.DateTimeOffset.DateTimeOffset()")]
@@ -55,112 +64,245 @@ public static class DateTimeOffsetModule
 	[Jazor(Op.Discard ,"System.DateTimeOffset.DateTimeOffset(int, int, int, int, int, int, int, int, System.Globalization.Calendar, System.TimeSpan)")]
 	public extern static Date _d027561c1f6af451(Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond, Number microsecond, GregorianCalendar calendar, BigInt offset);
 
-	[Jazor(Op.Discard ,"static System.DateTimeOffset.UtcNow.get")]
+	/// <summary>
+	/// C#: DateTimeOffset.UtcNow
+	/// JS: new Date() - current UTC time
+	/// </summary>
+	[Jazor(Op.Inline, "static System.DateTimeOffset.UtcNow.get", "new Date()")]
 	public extern static Date _7f444d9ce7391e15();
 
-	[Jazor(Op.Discard ,"System.DateTimeOffset.DateTime.get")]
+	/// <summary>
+	/// C#: instance.DateTime
+	/// JS: instance (Date object)
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateTimeOffset.DateTime.get", "@#{0}")]
 	public extern static Date _2b7dd675863ae961(Date instance);
 
-	[Jazor(Op.Discard ,"System.DateTimeOffset.UtcDateTime.get")]
+	/// <summary>
+	/// C#: instance.UtcDateTime
+	/// JS: new Date(instance.getTime()) - convert to UTC
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateTimeOffset.UtcDateTime.get", "new Date(@#{0}.getTime())")]
 	public extern static Date _703902cecd7f61dd(Date instance);
 
-	[Jazor(Op.Discard ,"System.DateTimeOffset.LocalDateTime.get")]
+	/// <summary>
+	/// C#: instance.LocalDateTime
+	/// JS: new Date(instance.getTime() + new Date().getTimezoneOffset() * 60000)
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateTimeOffset.LocalDateTime.get", "new Date(@#{0}.getTime() - @#{0}.getTimezoneOffset() * 60000)")]
 	public extern static Date _ffbfe7b660ff0527(Date instance);
 
-	///<summary>Converts the value of the current <see cref="T:System.DateTimeOffset" /> object to the date and time specified by an offset value.</summary>
-	[Jazor(Op.Discard ,"System.DateTimeOffset.ToOffset(System.TimeSpan)")]
+	/// <summary>
+	/// C#: instance.ToOffset(offset)
+	/// JS: new Date(instance.getTime() + offset)
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateTimeOffset.ToOffset(System.TimeSpan)", "new Date(@#{0}.getTime() + Number(@#{1}) / 10000)")]
 	public extern static Date _d1996f02ed3fa243(Date instance, BigInt offset);
 
-	[Jazor(Op.Discard ,"System.DateTimeOffset.Date.get")]
+	/// <summary>
+	/// C#: instance.Date
+	/// JS: new Date(instance.getFullYear(), instance.getMonth(), instance.getDate())
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateTimeOffset.Date.get", "new Date(@#{0}.getFullYear(), @#{0}.getMonth(), @#{0}.getDate())")]
 	public extern static Date _d7098a1eabebc945(Date instance);
 
-	[Jazor(Op.Discard ,"System.DateTimeOffset.Day.get")]
+	/// <summary>
+	/// C#: instance.Day
+	/// JS: instance.getDate()
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateTimeOffset.Day.get", "@#{0}.getDate()")]
 	public extern static Number _ba8df912681fe784(Date instance);
 
-	[Jazor(Op.Discard ,"System.DateTimeOffset.DayOfWeek.get")]
+	/// <summary>
+	/// C#: instance.DayOfWeek
+	/// JS: instance.getDay()
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateTimeOffset.DayOfWeek.get", "@#{0}.getDay()")]
 	public extern static System.DayOfWeek _17d30a204818ce34(Date instance);
 
-	[Jazor(Op.Discard ,"System.DateTimeOffset.DayOfYear.get")]
-	public extern static Number _b69ef2b7d0abde1a(Date instance);
+	/// <summary>
+	/// C#: instance.DayOfYear
+	/// JS: 计算一年中的第几天
+	/// </summary>
+	[Jazor(Op.Import, "System.DateTimeOffset.DayOfYear.get")]
+	public static Number _b69ef2b7d0abde1a(Date instance)
+	{
+		var start = new Date(instance.GetFullYear(), 0, 0);
+		var diff = instance.GetTime() - start.GetTime();
+		var oneDay = 1000 * 60 * 60 * 24;
+		return Math.Floor_(diff / oneDay);
+	}
 
-	[Jazor(Op.Discard ,"System.DateTimeOffset.Hour.get")]
+	/// <summary>
+	/// C#: instance.Hour
+	/// JS: instance.getHours()
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateTimeOffset.Hour.get", "@#{0}.getHours()")]
 	public extern static Number _b7fc65477ef4df45(Date instance);
 
-	[Jazor(Op.Discard ,"System.DateTimeOffset.Millisecond.get")]
+	/// <summary>
+	/// C#: instance.Millisecond
+	/// JS: instance.getMilliseconds()
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateTimeOffset.Millisecond.get", "@#{0}.getMilliseconds()")]
 	public extern static Number _0c1b2675cd7a2faa(Date instance);
 
-	[Jazor(Op.Discard ,"System.DateTimeOffset.Microsecond.get")]
+	/// <summary>
+	/// C#: instance.Microsecond
+	/// JS: instance.getMilliseconds() * 1000 (approximation)
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateTimeOffset.Microsecond.get", "(@#{0}.getMilliseconds() % 1) * 1000")]
 	public extern static Number _ae3a48995f0953ed(Date instance);
 
-	[Jazor(Op.Discard ,"System.DateTimeOffset.Nanosecond.get")]
+	/// <summary>
+	/// C#: instance.Nanosecond
+	/// JS: 0 (JavaScript Date does not support nanoseconds)
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateTimeOffset.Nanosecond.get", "0")]
 	public extern static Number _f9acef215c7d5168(Date instance);
 
-	[Jazor(Op.Discard ,"System.DateTimeOffset.Minute.get")]
+	/// <summary>
+	/// C#: instance.Minute
+	/// JS: instance.getMinutes()
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateTimeOffset.Minute.get", "@#{0}.getMinutes()")]
 	public extern static Number _0fe8054b55f9f1c7(Date instance);
 
-	[Jazor(Op.Discard ,"System.DateTimeOffset.Month.get")]
+	/// <summary>
+	/// C#: instance.Month
+	/// JS: instance.getMonth() + 1
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateTimeOffset.Month.get", "(@#{0}.getMonth() + 1)")]
 	public extern static Number _79eb4c93cea58d59(Date instance);
 
-	[Jazor(Op.Discard ,"System.DateTimeOffset.Offset.get")]
+	/// <summary>
+	/// C#: instance.Offset
+	/// JS: instance.getTimezoneOffset() * -600000000 (ticks)
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateTimeOffset.Offset.get", "BigInt(@#{0}.getTimezoneOffset() * -600000000)")]
 	public extern static BigInt _2400298964c553b6(Date instance);
 
-	[Jazor(Op.Discard ,"System.DateTimeOffset.TotalOffsetMinutes.get")]
+	/// <summary>
+	/// C#: instance.TotalOffsetMinutes
+	/// JS: -instance.getTimezoneOffset()
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateTimeOffset.TotalOffsetMinutes.get", "(-@#{0}.getTimezoneOffset())")]
 	public extern static Number _cad0683315440ded(Date instance);
 
-	[Jazor(Op.Discard ,"System.DateTimeOffset.Second.get")]
+	/// <summary>
+	/// C#: instance.Second
+	/// JS: instance.getSeconds()
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateTimeOffset.Second.get", "@#{0}.getSeconds()")]
 	public extern static Number _822de224fed5bb6b(Date instance);
 
-	[Jazor(Op.Discard ,"System.DateTimeOffset.Ticks.get")]
+	/// <summary>
+	/// C#: instance.Ticks
+	/// JS: BigInt(instance.getTime()) * 10000n + 621355968000000000n
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateTimeOffset.Ticks.get", "(BigInt(@#{0}.getTime()) * 10000n + 621355968000000000n)")]
 	public extern static BigInt _584068ab15dcf3c9(Date instance);
 
-	[Jazor(Op.Discard ,"System.DateTimeOffset.UtcTicks.get")]
+	/// <summary>
+	/// C#: instance.UtcTicks
+	/// JS: BigInt(instance.getTime()) * 10000n + 621355968000000000n
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateTimeOffset.UtcTicks.get", "(BigInt(@#{0}.getTime()) * 10000n + 621355968000000000n)")]
 	public extern static BigInt _056adc0ac251ebd3(Date instance);
 
-	[Jazor(Op.Discard ,"System.DateTimeOffset.TimeOfDay.get")]
+	/// <summary>
+	/// C#: instance.TimeOfDay
+	/// JS: (instance.getTime() % 86400000) * 10000n
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateTimeOffset.TimeOfDay.get", "(BigInt(@#{0}.getTime() % 86400000) * 10000n)")]
 	public extern static BigInt _90401f92f6a9141e(Date instance);
 
-	[Jazor(Op.Discard ,"System.DateTimeOffset.Year.get")]
+	/// <summary>
+	/// C#: instance.Year
+	/// JS: instance.getFullYear()
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateTimeOffset.Year.get", "@#{0}.getFullYear()")]
 	public extern static Number _127105b7a40a7665(Date instance);
 
-	///<summary>Returns a new <see cref="T:System.DateTimeOffset" /> object that adds a specified time interval to the value of this instance.</summary>
-	[Jazor(Op.Discard ,"System.DateTimeOffset.Add(System.TimeSpan)")]
+	/// <summary>
+	/// C#: instance.Add(timeSpan)
+	/// JS: new Date(instance.getTime() + Number(timeSpan) / 10000)
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateTimeOffset.Add(System.TimeSpan)", "new Date(@#{0}.getTime() + Number(@#{1}) / 10000)")]
 	public extern static Date _09a94b0e7945eda6(Date instance, BigInt timeSpan);
 
-	///<summary>Returns a new <see cref="T:System.DateTimeOffset" /> object that adds a specified number of whole and fractional days to the value of this instance.</summary>
-	[Jazor(Op.Discard ,"System.DateTimeOffset.AddDays(double)")]
+	/// <summary>
+	/// C#: instance.AddDays(days)
+	/// JS: new Date(instance.getTime() + days * 86400000)
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateTimeOffset.AddDays(double)", "new Date(@#{0}.getTime() + @#{1} * 86400000)")]
 	public extern static Date _7fd735ce2102a3cc(Date instance, Number days);
 
-	///<summary>Returns a new <see cref="T:System.DateTimeOffset" /> object that adds a specified number of whole and fractional hours to the value of this instance.</summary>
-	[Jazor(Op.Discard ,"System.DateTimeOffset.AddHours(double)")]
+	/// <summary>
+	/// C#: instance.AddHours(hours)
+	/// JS: new Date(instance.getTime() + hours * 3600000)
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateTimeOffset.AddHours(double)", "new Date(@#{0}.getTime() + @#{1} * 3600000)")]
 	public extern static Date _309c83b8a2fbc988(Date instance, Number hours);
 
-	///<summary>Returns a new <see cref="T:System.DateTimeOffset" /> object that adds a specified number of milliseconds to the value of this instance.</summary>
-	[Jazor(Op.Discard ,"System.DateTimeOffset.AddMilliseconds(double)")]
+	/// <summary>
+	/// C#: instance.AddMilliseconds(milliseconds)
+	/// JS: new Date(instance.getTime() + milliseconds)
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateTimeOffset.AddMilliseconds(double)", "new Date(@#{0}.getTime() + @#{1})")]
 	public extern static Date _1528b452af6dd41d(Date instance, Number milliseconds);
 
-	///<summary>Returns a new <see cref="T:System.DateTimeOffset" /> object that adds a specified number of microseconds to the value of this instance.</summary>
-	[Jazor(Op.Discard ,"System.DateTimeOffset.AddMicroseconds(double)")]
+	/// <summary>
+	/// C#: instance.AddMicroseconds(microseconds)
+	/// JS: new Date(instance.getTime() + microseconds / 1000)
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateTimeOffset.AddMicroseconds(double)", "new Date(@#{0}.getTime() + @#{1} / 1000)")]
 	public extern static Date _4775ccfee8ed671f(Date instance, Number microseconds);
 
-	///<summary>Returns a new <see cref="T:System.DateTimeOffset" /> object that adds a specified number of whole and fractional minutes to the value of this instance.</summary>
-	[Jazor(Op.Discard ,"System.DateTimeOffset.AddMinutes(double)")]
+	/// <summary>
+	/// C#: instance.AddMinutes(minutes)
+	/// JS: new Date(instance.getTime() + minutes * 60000)
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateTimeOffset.AddMinutes(double)", "new Date(@#{0}.getTime() + @#{1} * 60000)")]
 	public extern static Date _97aff1e2f4740394(Date instance, Number minutes);
 
-	///<summary>Returns a new <see cref="T:System.DateTimeOffset" /> object that adds a specified number of months to the value of this instance.</summary>
-	[Jazor(Op.Discard ,"System.DateTimeOffset.AddMonths(int)")]
-	public extern static Date _db8ffdb562d3ac68(Date instance, Number months);
+	/// <summary>
+	/// C#: instance.AddMonths(months)
+	/// JS: new Date(instance.setMonth(instance.getMonth() + months))
+	/// </summary>
+	[Jazor(Op.Import, "System.DateTimeOffset.AddMonths(int)")]
+	public static Date _db8ffdb562d3ac68(Date instance, Number months)
+	{
+		var result = new Date(instance.GetTime());
+		result.SetMonth(result.GetMonth() + months);
+		return result;
+	}
 
-	///<summary>Returns a new <see cref="T:System.DateTimeOffset" /> object that adds a specified number of whole and fractional seconds to the value of this instance.</summary>
-	[Jazor(Op.Discard ,"System.DateTimeOffset.AddSeconds(double)")]
+	/// <summary>
+	/// C#: instance.AddSeconds(seconds)
+	/// JS: new Date(instance.getTime() + seconds * 1000)
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateTimeOffset.AddSeconds(double)", "new Date(@#{0}.getTime() + @#{1} * 1000)")]
 	public extern static Date _54a4d6d554458fdb(Date instance, Number seconds);
 
-	///<summary>Returns a new <see cref="T:System.DateTimeOffset" /> object that adds a specified number of ticks to the value of this instance.</summary>
-	[Jazor(Op.Discard ,"System.DateTimeOffset.AddTicks(long)")]
+	/// <summary>
+	/// C#: instance.AddTicks(ticks)
+	/// JS: new Date(instance.getTime() + Number(ticks) / 10000)
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateTimeOffset.AddTicks(long)", "new Date(@#{0}.getTime() + Number(@#{1}) / 10000)")]
 	public extern static Date _804f8bd2dc1e9443(Date instance, BigInt ticks);
 
-	///<summary>Returns a new <see cref="T:System.DateTimeOffset" /> object that adds a specified number of years to the value of this instance.</summary>
-	[Jazor(Op.Discard ,"System.DateTimeOffset.AddYears(int)")]
-	public extern static Date _f4ea4e123d38eaa5(Date instance, Number years);
+	/// <summary>
+	/// C#: instance.AddYears(years)
+	/// JS: new Date(instance.setFullYear(instance.getFullYear() + years))
+	/// </summary>
+	[Jazor(Op.Import, "System.DateTimeOffset.AddYears(int)")]
+	public static Date _f4ea4e123d38eaa5(Date instance, Number years)
+	{
+		var result = new Date(instance.GetTime());
+		result.SetFullYear(result.GetFullYear() + years);
+		return result;
+	}
 
 	///<summary>Compares two <see cref="T:System.DateTimeOffset" /> objects and indicates whether the first is earlier than the second, equal to the second, or later than the second.</summary>
 	[Jazor(Op.Discard ,"static System.DateTimeOffset.Compare(System.DateTimeOffset, System.DateTimeOffset)")]

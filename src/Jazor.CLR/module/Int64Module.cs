@@ -44,8 +44,9 @@ public static class Int64Module
 	{
 		if (value == null)
 			return 1;
-		if (value is BigInt bigInt)
-			return instance < bigInt ? -1 : (instance > bigInt ? 1 : 0);
+		// Check if value is a BigInt
+		if (value is BigInt bigIntValue)
+			return instance < bigIntValue ? -1 : (instance > bigIntValue ? 1 : 0);
 		throw new Error("ArgumentException: Object must be of type Int64.");
 	}
 

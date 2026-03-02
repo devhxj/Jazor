@@ -48,16 +48,27 @@ public static class TimeSpanModule
 
 	//System.TimeSpan.HoursPerDay = 24;
 
-	///<summary>Represents the zero <see cref="T:System.TimeSpan" /> value. This field is read-only.</summary>
-	[Jazor(Op.Discard ,"static readonly System.TimeSpan.Zero")]
+	// 常量字段 - 使用 Op.Inline 内联 BigInt 字面量
+
+	/// <summary>
+	/// C#: TimeSpan.Zero
+	/// JS: 0n
+	/// </summary>
+	[Jazor(Op.Inline, "static readonly System.TimeSpan.Zero", "0n")]
 	public extern static BigInt _e5548fcde33957a6();
 
-	///<summary>Represents the maximum <see cref="T:System.TimeSpan" /> value. This field is read-only.</summary>
-	[Jazor(Op.Discard ,"static readonly System.TimeSpan.MaxValue")]
+	/// <summary>
+	/// C#: TimeSpan.MaxValue
+	/// JS: 9223372036854775807n (TimeSpan.MaxValue.Ticks)
+	/// </summary>
+	[Jazor(Op.Inline, "static readonly System.TimeSpan.MaxValue", "9223372036854775807n")]
 	public extern static BigInt _15e7c0dd01e25108();
 
-	///<summary>Represents the minimum <see cref="T:System.TimeSpan" /> value. This field is read-only.</summary>
-	[Jazor(Op.Discard ,"static readonly System.TimeSpan.MinValue")]
+	/// <summary>
+	/// C#: TimeSpan.MinValue
+	/// JS: -9223372036854775808n (TimeSpan.MinValue.Ticks)
+	/// </summary>
+	[Jazor(Op.Inline, "static readonly System.TimeSpan.MinValue", "-9223372036854775808n")]
 	public extern static BigInt _3205534506581110();
 
 	[Jazor(Op.Discard ,"System.TimeSpan.TimeSpan()")]
@@ -83,50 +94,166 @@ public static class TimeSpanModule
 	[Jazor(Op.Discard ,"System.TimeSpan.TimeSpan(int, int, int, int, int, int)")]
 	public extern static BigInt _baceecc82b7d48ba(Number days, Number hours, Number minutes, Number seconds, Number milliseconds, Number microseconds);
 
-	[Jazor(Op.Discard ,"System.TimeSpan.Ticks.get")]
+	/// <summary>
+	/// C#: TimeSpan.Ticks
+	/// JS: instance (TimeSpan在JS中用BigInt表示ticks)
+	/// </summary>
+	[Jazor(Op.Inline, "System.TimeSpan.Ticks.get", "@#{0}")]
 	public extern static BigInt _72d4a471ef1a968f(BigInt instance);
 
-	[Jazor(Op.Discard ,"System.TimeSpan.Days.get")]
-	public extern static Number _a980180cac17c195(BigInt instance);
+	/// <summary>
+	/// C#: TimeSpan.Days
+	/// JS: Number(instance / 864000000000n)
+	/// </summary>
+	[Jazor(Op.Import, "System.TimeSpan.Days.get")]
+	public static Number _a980180cac17c195(BigInt instance)
+	{
+		// TicksPerDay = 864000000000
+		return Number_(instance / BigInt_("864000000000"));
+	}
 
-	[Jazor(Op.Discard ,"System.TimeSpan.Hours.get")]
-	public extern static Number _e1126ea3789ed210(BigInt instance);
+	/// <summary>
+	/// C#: TimeSpan.Hours
+	/// JS: (instance / 36000000000n) % 24n
+	/// </summary>
+	[Jazor(Op.Import, "System.TimeSpan.Hours.get")]
+	public static Number _e1126ea3789ed210(BigInt instance)
+	{
+		// TicksPerHour = 36000000000, HoursPerDay = 24
+		return Number_((instance / BigInt_("36000000000")) % BigInt_("24"));
+	}
 
-	[Jazor(Op.Discard ,"System.TimeSpan.Milliseconds.get")]
-	public extern static Number _af6dae8b5cdc7078(BigInt instance);
+	/// <summary>
+	/// C#: TimeSpan.Milliseconds
+	/// JS: (instance / 10000n) % 1000n
+	/// </summary>
+	[Jazor(Op.Import, "System.TimeSpan.Milliseconds.get")]
+	public static Number _af6dae8b5cdc7078(BigInt instance)
+	{
+		// TicksPerMillisecond = 10000, MillisecondsPerSecond = 1000
+		return Number_((instance / BigInt_(10000)) % BigInt_(1000));
+	}
 
-	[Jazor(Op.Discard ,"System.TimeSpan.Microseconds.get")]
-	public extern static Number _b5ff892bced87c7a(BigInt instance);
+	/// <summary>
+	/// C#: TimeSpan.Microseconds
+	/// JS: (instance / 10n) % 1000000n
+	/// </summary>
+	[Jazor(Op.Import, "System.TimeSpan.Microseconds.get")]
+	public static Number _b5ff892bced87c7a(BigInt instance)
+	{
+		// TicksPerMicrosecond = 10, MicrosecondsPerSecond = 1000000
+		return Number_((instance / BigInt_(10)) % BigInt_(1000000));
+	}
 
-	[Jazor(Op.Discard ,"System.TimeSpan.Nanoseconds.get")]
-	public extern static Number _95472c42904823fa(BigInt instance);
+	/// <summary>
+	/// C#: TimeSpan.Nanoseconds
+	/// JS: (instance * 100n) % 1000000000n
+	/// </summary>
+	[Jazor(Op.Import, "System.TimeSpan.Nanoseconds.get")]
+	public static Number _95472c42904823fa(BigInt instance)
+	{
+		// NanosecondsPerTick = 100, NanosecondsPerSecond = 1000000000
+		return Number_((instance * BigInt_(100)) % BigInt_(1000000000));
+	}
 
-	[Jazor(Op.Discard ,"System.TimeSpan.Minutes.get")]
-	public extern static Number _f84ed3952defaf6d(BigInt instance);
+	/// <summary>
+	/// C#: TimeSpan.Minutes
+	/// JS: (instance / 600000000n) % 60n
+	/// </summary>
+	[Jazor(Op.Import, "System.TimeSpan.Minutes.get")]
+	public static Number _f84ed3952defaf6d(BigInt instance)
+	{
+		// TicksPerMinute = 600000000, MinutesPerHour = 60
+		return Number_((instance / BigInt_(600000000)) % BigInt_(60));
+	}
 
-	[Jazor(Op.Discard ,"System.TimeSpan.Seconds.get")]
-	public extern static Number _f3cdc3642c68ede1(BigInt instance);
+	/// <summary>
+	/// C#: TimeSpan.Seconds
+	/// JS: (instance / 10000000n) % 60n
+	/// </summary>
+	[Jazor(Op.Import, "System.TimeSpan.Seconds.get")]
+	public static Number _f3cdc3642c68ede1(BigInt instance)
+	{
+		// TicksPerSecond = 10000000, SecondsPerMinute = 60
+		return Number_((instance / BigInt_(10000000)) % BigInt_(60));
+	}
 
-	[Jazor(Op.Discard ,"System.TimeSpan.TotalDays.get")]
-	public extern static Number _3709bd5d7e02854b(BigInt instance);
+	/// <summary>
+	/// C#: TimeSpan.TotalDays
+	/// JS: Number(instance) / 864000000000
+	/// </summary>
+	[Jazor(Op.Import, "System.TimeSpan.TotalDays.get")]
+	public static Number _3709bd5d7e02854b(BigInt instance)
+	{
+		// TicksPerDay = 864000000000
+		return Number_(instance) / 864000000000d;
+	}
 
-	[Jazor(Op.Discard ,"System.TimeSpan.TotalHours.get")]
-	public extern static Number _b4c8b94ce8b8d996(BigInt instance);
+	/// <summary>
+	/// C#: TimeSpan.TotalHours
+	/// JS: Number(instance) / 36000000000
+	/// </summary>
+	[Jazor(Op.Import, "System.TimeSpan.TotalHours.get")]
+	public static Number _b4c8b94ce8b8d996(BigInt instance)
+	{
+		// TicksPerHour = 36000000000
+		return Number_(instance) / 36000000000d;
+	}
 
-	[Jazor(Op.Discard ,"System.TimeSpan.TotalMilliseconds.get")]
-	public extern static Number _b73ebb6b17996726(BigInt instance);
+	/// <summary>
+	/// C#: TimeSpan.TotalMilliseconds
+	/// JS: Number(instance) / 10000
+	/// </summary>
+	[Jazor(Op.Import, "System.TimeSpan.TotalMilliseconds.get")]
+	public static Number _b73ebb6b17996726(BigInt instance)
+	{
+		// TicksPerMillisecond = 10000
+		return Number_(instance) / 10000;
+	}
 
-	[Jazor(Op.Discard ,"System.TimeSpan.TotalMicroseconds.get")]
-	public extern static Number _48066d805fb56409(BigInt instance);
+	/// <summary>
+	/// C#: TimeSpan.TotalMicroseconds
+	/// JS: Number(instance) / 10
+	/// </summary>
+	[Jazor(Op.Import, "System.TimeSpan.TotalMicroseconds.get")]
+	public static Number _48066d805fb56409(BigInt instance)
+	{
+		// TicksPerMicrosecond = 10
+		return Number_(instance) / 10;
+	}
 
-	[Jazor(Op.Discard ,"System.TimeSpan.TotalNanoseconds.get")]
-	public extern static Number _c34f00910f115965(BigInt instance);
+	/// <summary>
+	/// C#: TimeSpan.TotalNanoseconds
+	/// JS: Number(instance) * 100
+	/// </summary>
+	[Jazor(Op.Import, "System.TimeSpan.TotalNanoseconds.get")]
+	public static Number _c34f00910f115965(BigInt instance)
+	{
+		// NanosecondsPerTick = 100
+		return Number_(instance) * 100;
+	}
 
-	[Jazor(Op.Discard ,"System.TimeSpan.TotalMinutes.get")]
-	public extern static Number _265f245f5ef9d2ed(BigInt instance);
+	/// <summary>
+	/// C#: TimeSpan.TotalMinutes
+	/// JS: Number(instance) / 600000000
+	/// </summary>
+	[Jazor(Op.Import, "System.TimeSpan.TotalMinutes.get")]
+	public static Number _265f245f5ef9d2ed(BigInt instance)
+	{
+		// TicksPerMinute = 600000000
+		return Number_(instance) / 600000000;
+	}
 
-	[Jazor(Op.Discard ,"System.TimeSpan.TotalSeconds.get")]
-	public extern static Number _d3a0d6dab09b85a6(BigInt instance);
+	/// <summary>
+	/// C#: TimeSpan.TotalSeconds
+	/// JS: Number(instance) / 10000000
+	/// </summary>
+	[Jazor(Op.Import, "System.TimeSpan.TotalSeconds.get")]
+	public static Number _d3a0d6dab09b85a6(BigInt instance)
+	{
+		// TicksPerSecond = 10000000
+		return Number_(instance) / 10000000;
+	}
 
 	///<summary>Returns a new <see cref="T:System.TimeSpan" /> object whose value is the sum of the specified <see cref="T:System.TimeSpan" /> object and this instance.</summary>
 	[Jazor(Op.Discard ,"System.TimeSpan.Add(System.TimeSpan)")]
@@ -144,9 +271,16 @@ public static class TimeSpanModule
 	[Jazor(Op.Discard ,"System.TimeSpan.CompareTo(System.TimeSpan)")]
 	public extern static Number _810426c1d7c3f64f(BigInt instance, BigInt value);
 
-	///<summary>Returns a <see cref="T:System.TimeSpan" /> that represents a specified number of days, where the specification is accurate to the nearest millisecond.</summary>
-	[Jazor(Op.Discard ,"static System.TimeSpan.FromDays(double)")]
-	public extern static BigInt _174093cb4f47884f(Number value);
+	/// <summary>
+	/// C#: TimeSpan.FromDays(double)
+	/// JS: BigInt(Math.floor(value * 864000000000))
+	/// </summary>
+	[Jazor(Op.Import, "static System.TimeSpan.FromDays(double)")]
+	public static BigInt _174093cb4f47884f(Number value)
+	{
+		// TicksPerDay = 864000000000
+		return BigInt_(Math.Floor_(value * 864000000000d));
+	}
 
 	///<summary>Returns a new <see cref="T:System.TimeSpan" /> object whose value is the absolute value of the current <see cref="T:System.TimeSpan" /> object.</summary>
 	[Jazor(Op.Discard ,"System.TimeSpan.Duration()")]
@@ -211,29 +345,64 @@ public static class TimeSpanModule
 	[Jazor(Op.Discard ,"static System.TimeSpan.FromMicroseconds(long)")]
 	public extern static BigInt _5864e2e6b3820640(BigInt microseconds);
 
-	///<summary>Returns a <see cref="T:System.TimeSpan" /> that represents a specified number of hours, where the specification is accurate to the nearest millisecond.</summary>
-	[Jazor(Op.Discard ,"static System.TimeSpan.FromHours(double)")]
-	public extern static BigInt _105dc0462f9876d6(Number value);
+	/// <summary>
+	/// C#: TimeSpan.FromHours(double)
+	/// JS: BigInt(Math.floor(value * 36000000000))
+	/// </summary>
+	[Jazor(Op.Import, "static System.TimeSpan.FromHours(double)")]
+	public static BigInt _105dc0462f9876d6(Number value)
+	{
+		// TicksPerHour = 36000000000
+		return BigInt_(Math.Floor_(value * 36000000000d));
+	}
 
-	///<summary>Returns a <see cref="T:System.TimeSpan" /> that represents a specified number of milliseconds.</summary>
-	[Jazor(Op.Discard ,"static System.TimeSpan.FromMilliseconds(double)")]
-	public extern static BigInt _a6de3a3b561d553b(Number value);
+	/// <summary>
+	/// C#: TimeSpan.FromMilliseconds(double)
+	/// JS: BigInt(Math.floor(value * 10000))
+	/// </summary>
+	[Jazor(Op.Import, "static System.TimeSpan.FromMilliseconds(double)")]
+	public static BigInt _a6de3a3b561d553b(Number value)
+	{
+		// TicksPerMillisecond = 10000
+		return BigInt_(Math.Floor_(value * 10000d));
+	}
 
-	///<summary>Returns a <see cref="T:System.TimeSpan" /> that represents a specified number of microseconds.</summary>
-	[Jazor(Op.Discard ,"static System.TimeSpan.FromMicroseconds(double)")]
-	public extern static BigInt _e05c52466faba973(Number value);
+	/// <summary>
+	/// C#: TimeSpan.FromMicroseconds(double)
+	/// JS: BigInt(Math.floor(value * 10))
+	/// </summary>
+	[Jazor(Op.Import, "static System.TimeSpan.FromMicroseconds(double)")]
+	public static BigInt _e05c52466faba973(Number value)
+	{
+		// TicksPerMicrosecond = 10
+		return BigInt_(Math.Floor_(value * 10d));
+	}
 
-	///<summary>Returns a <see cref="T:System.TimeSpan" /> that represents a specified number of minutes, where the specification is accurate to the nearest millisecond.</summary>
-	[Jazor(Op.Discard ,"static System.TimeSpan.FromMinutes(double)")]
-	public extern static BigInt _2af67432bdd77d15(Number value);
+	/// <summary>
+	/// C#: TimeSpan.FromMinutes(double)
+	/// JS: BigInt(Math.floor(value * 600000000))
+	/// </summary>
+	[Jazor(Op.Import, "static System.TimeSpan.FromMinutes(double)")]
+	public static BigInt _2af67432bdd77d15(Number value)
+	{
+		// TicksPerMinute = 600000000
+		return BigInt_(Math.Floor_(value * 600000000d));
+	}
 
 	///<summary>Returns a new <see cref="T:System.TimeSpan" /> object whose value is the negated value of this instance.</summary>
 	[Jazor(Op.Discard ,"System.TimeSpan.Negate()")]
 	public extern static BigInt _63a8d2e980965d93(BigInt instance);
 
-	///<summary>Returns a <see cref="T:System.TimeSpan" /> that represents a specified number of seconds, where the specification is accurate to the nearest millisecond.</summary>
-	[Jazor(Op.Discard ,"static System.TimeSpan.FromSeconds(double)")]
-	public extern static BigInt _77a04fa2e0b66990(Number value);
+	/// <summary>
+	/// C#: TimeSpan.FromSeconds(double)
+	/// JS: BigInt(Math.floor(value * 10000000))
+	/// </summary>
+	[Jazor(Op.Import, "static System.TimeSpan.FromSeconds(double)")]
+	public static BigInt _77a04fa2e0b66990(Number value)
+	{
+		// TicksPerSecond = 10000000
+		return BigInt_(Math.Floor_(value * 10000000));
+	}
 
 	///<summary>Returns a new <see cref="T:System.TimeSpan" /> object whose value is the difference between the specified <see cref="T:System.TimeSpan" /> object and this instance.</summary>
 	[Jazor(Op.Discard ,"System.TimeSpan.Subtract(System.TimeSpan)")]
@@ -251,8 +420,11 @@ public static class TimeSpanModule
 	[Jazor(Op.Discard ,"System.TimeSpan.Divide(System.TimeSpan)")]
 	public extern static Number _ca7e20ad5bf4a61a(BigInt instance, BigInt ts);
 
-	///<summary>Returns a <see cref="T:System.TimeSpan" /> that represents a specified time, where the specification is in units of ticks.</summary>
-	[Jazor(Op.Discard ,"static System.TimeSpan.FromTicks(long)")]
+	/// <summary>
+	/// C#: TimeSpan.FromTicks(long)
+	/// JS: value (TimeSpan在JS中直接用BigInt表示ticks)
+	/// </summary>
+	[Jazor(Op.Inline, "static System.TimeSpan.FromTicks(long)", "@#{0}")]
 	public extern static BigInt _a43571552d95203d(BigInt value);
 
 	///<summary>Converts the string representation of a time interval to its <see cref="T:System.TimeSpan" /> equivalent.</summary>

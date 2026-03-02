@@ -7,79 +7,185 @@ public static class TimeOnlyModule
 	[Jazor(Op.Discard ,"System.TimeOnly.TimeOnly()")]
 	public extern static Number _9f78f92d0753f4cf();
 
-	[Jazor(Op.Discard ,"static System.TimeOnly.MinValue.get")]
+	/// <summary>
+	/// C#: TimeOnly.MinValue (00:00:00)
+	/// JS: 0 (ticks as Number)
+	/// </summary>
+	[Jazor(Op.Inline, "static System.TimeOnly.MinValue.get", "0")]
 	public extern static Number _5a02197e2ef2252f();
 
-	[Jazor(Op.Discard ,"static System.TimeOnly.MaxValue.get")]
+	/// <summary>
+	/// C#: TimeOnly.MaxValue (23:59:59.9999999)
+	/// JS: 863999999999 (ticks as Number, but exceeds Number precision, use BigInt)
+	/// Note: TimeOnly maps to Number (milliseconds) for simplicity, MaxValue may lose precision
+	/// </summary>
+	[Jazor(Op.Inline, "static System.TimeOnly.MaxValue.get", "863999999999")]
 	public extern static Number _b1d0e19d91dbb54a();
 
-	///<summary>Initializes a new instance of the <see cref="T:System.TimeOnly" /> structure to the specified hour and the minute.</summary>
-	[Jazor(Op.Discard ,"System.TimeOnly.TimeOnly(int, int)")]
+	/// <summary>
+	/// C#: new TimeOnly(hour, minute)
+	/// JS: hour * 3600000 + minute * 60000 (milliseconds since midnight)
+	/// </summary>
+	[Jazor(Op.Inline, "System.TimeOnly.TimeOnly(int, int)", "(@#{0} * 3600000 + @#{1} * 60000)")]
 	public extern static Number _62d395c56c4c299d(Number hour, Number minute);
 
-	///<summary>Initializes a new instance of the <see cref="T:System.TimeOnly" /> structure to the specified hour, minute, and second.</summary>
-	[Jazor(Op.Discard ,"System.TimeOnly.TimeOnly(int, int, int)")]
+	/// <summary>
+	/// C#: new TimeOnly(hour, minute, second)
+	/// JS: hour * 3600000 + minute * 60000 + second * 1000
+	/// </summary>
+	[Jazor(Op.Inline, "System.TimeOnly.TimeOnly(int, int, int)", "(@#{0} * 3600000 + @#{1} * 60000 + @#{2} * 1000)")]
 	public extern static Number _e9a3481b3456aad4(Number hour, Number minute, Number second);
 
-	///<summary>Initializes a new instance of the <see cref="T:System.TimeOnly" /> structure to the specified hour, minute, second, and millisecond.</summary>
-	[Jazor(Op.Discard ,"System.TimeOnly.TimeOnly(int, int, int, int)")]
+	/// <summary>
+	/// C#: new TimeOnly(hour, minute, second, millisecond)
+	/// JS: hour * 3600000 + minute * 60000 + second * 1000 + millisecond
+	/// </summary>
+	[Jazor(Op.Inline, "System.TimeOnly.TimeOnly(int, int, int, int)", "(@#{0} * 3600000 + @#{1} * 60000 + @#{2} * 1000 + @#{3})")]
 	public extern static Number _335167098e226ccf(Number hour, Number minute, Number second, Number millisecond);
 
-	///<summary>Initializes a new instance of the <see cref="T:System.TimeOnly" /> structure to the specified hour, minute, second, millisecond, and microsecond.</summary>
-	[Jazor(Op.Discard ,"System.TimeOnly.TimeOnly(int, int, int, int, int)")]
+	/// <summary>
+	/// C#: new TimeOnly(hour, minute, second, millisecond, microsecond)
+	/// JS: hour * 3600000 + minute * 60000 + second * 1000 + millisecond + microsecond / 1000
+	/// </summary>
+	[Jazor(Op.Inline, "System.TimeOnly.TimeOnly(int, int, int, int, int)", "(@#{0} * 3600000 + @#{1} * 60000 + @#{2} * 1000 + @#{3} + @#{4} / 1000)")]
 	public extern static Number _28c8cb012fe0e547(Number hour, Number minute, Number second, Number millisecond, Number microsecond);
 
-	///<summary>Initializes a new instance of the <see cref="T:System.TimeOnly" /> structure using a specified number of ticks.</summary>
-	[Jazor(Op.Discard ,"System.TimeOnly.TimeOnly(long)")]
+	/// <summary>
+	/// C#: new TimeOnly(ticks)
+	/// JS: Number(ticks) / 10000 (convert ticks to milliseconds)
+	/// </summary>
+	[Jazor(Op.Inline, "System.TimeOnly.TimeOnly(long)", "Number(@#{0}) / 10000")]
 	public extern static Number _b8b3b95e8b848f44(BigInt ticks);
 
-	[Jazor(Op.Discard ,"System.TimeOnly.Hour.get")]
+	/// <summary>
+	/// C#: instance.Hour
+	/// JS: Math.floor(instance / 3600000) % 24
+	/// </summary>
+	[Jazor(Op.Inline, "System.TimeOnly.Hour.get", "(Math.floor(@#{0} / 3600000) % 24)")]
 	public extern static Number _201ef41481f4e3fb(Number instance);
 
-	[Jazor(Op.Discard ,"System.TimeOnly.Minute.get")]
+	/// <summary>
+	/// C#: instance.Minute
+	/// JS: Math.floor(instance / 60000) % 60
+	/// </summary>
+	[Jazor(Op.Inline, "System.TimeOnly.Minute.get", "(Math.floor(@#{0} / 60000) % 60)")]
 	public extern static Number _009addd612610031(Number instance);
 
-	[Jazor(Op.Discard ,"System.TimeOnly.Second.get")]
+	/// <summary>
+	/// C#: instance.Second
+	/// JS: Math.floor(instance / 1000) % 60
+	/// </summary>
+	[Jazor(Op.Inline, "System.TimeOnly.Second.get", "(Math.floor(@#{0} / 1000) % 60)")]
 	public extern static Number _b9481eedd6cbeb99(Number instance);
 
-	[Jazor(Op.Discard ,"System.TimeOnly.Millisecond.get")]
+	/// <summary>
+	/// C#: instance.Millisecond
+	/// JS: instance % 1000
+	/// </summary>
+	[Jazor(Op.Inline, "System.TimeOnly.Millisecond.get", "(@#{0} % 1000)")]
 	public extern static Number _3c789a48d39d0010(Number instance);
 
-	[Jazor(Op.Discard ,"System.TimeOnly.Microsecond.get")]
+	/// <summary>
+	/// C#: instance.Microsecond
+	/// JS: (instance % 1) * 1000
+	/// </summary>
+	[Jazor(Op.Inline, "System.TimeOnly.Microsecond.get", "((@#{0} % 1) * 1000)")]
 	public extern static Number _a091b803b851e27e(Number instance);
 
-	[Jazor(Op.Discard ,"System.TimeOnly.Nanosecond.get")]
+	/// <summary>
+	/// C#: instance.Nanosecond
+	/// JS: 0 (not supported in JS)
+	/// </summary>
+	[Jazor(Op.Inline, "System.TimeOnly.Nanosecond.get", "0")]
 	public extern static Number _656df0ee12e92399(Number instance);
 
-	[Jazor(Op.Discard ,"System.TimeOnly.Ticks.get")]
+	/// <summary>
+	/// C#: instance.Ticks
+	/// JS: BigInt(instance) * 10000n
+	/// </summary>
+	[Jazor(Op.Inline, "System.TimeOnly.Ticks.get", "(BigInt(@#{0}) * 10000n)")]
 	public extern static BigInt _2fd46050126234ac(Number instance);
 
-	///<summary>Returns a new <see cref="T:System.TimeOnly" /> that adds the value of the specified time span to the value of this instance.</summary>
-	[Jazor(Op.Discard ,"System.TimeOnly.Add(System.TimeSpan)")]
+	/// <summary>
+	/// C#: instance.Add(value)
+	/// JS: (instance + Number(value) / 10000) % 86400000
+	/// </summary>
+	[Jazor(Op.Inline, "System.TimeOnly.Add(System.TimeSpan)", "((@#{0} + Number(@#{1}) / 10000) % 86400000)")]
 	public extern static Number _4c935b985e7b6e02(Number instance, BigInt value);
 
-	///<summary>Returns a new <see cref="T:System.TimeOnly" /> that adds the value of the specified time span to the value of this instance.            If the result wraps past the end of the day, this method returns the number of excess days as an out parameter.</summary>
-	[Jazor(Op.Discard ,"System.TimeOnly.Add(System.TimeSpan, out int)")]
-	public extern static Array<object?> _31bb07d031379025(Number instance, BigInt value, Number wrappedDays);
+	/// <summary>
+	/// C#: instance.Add(value, out wrappedDays)
+	/// JS: 返回 [result, wrappedDays]
+	/// </summary>
+	[Jazor(Op.Import, "System.TimeOnly.Add(System.TimeSpan, out int)")]
+	public static Array<object?> _31bb07d031379025(Number instance, BigInt value, Number wrappedDays)
+	{
+		var total = instance + Number_(value) / 10000;
+		var wrapped = Math.Floor_(total / 86400000);
+		var result = total % 86400000;
+		if (result < 0)
+		{
+			result = result + 86400000;
+			wrapped = wrapped - 1;
+		}
+		return [result, wrapped];
+	}
 
-	///<summary>Returns a new <see cref="T:System.TimeOnly" /> that adds the specified number of hours to the value of this instance.</summary>
-	[Jazor(Op.Discard ,"System.TimeOnly.AddHours(double)")]
+	/// <summary>
+	/// C#: instance.AddHours(value)
+	/// JS: (instance + value * 3600000) % 86400000
+	/// </summary>
+	[Jazor(Op.Inline, "System.TimeOnly.AddHours(double)", "((@#{0} + @#{1} * 3600000) % 86400000)")]
 	public extern static Number _8e71fa0d2695e84f(Number instance, Number value);
 
-	///<summary>Returns a new <see cref="T:System.TimeOnly" /> that adds the specified number of hours to the value of this instance.            If the result wraps past the end of the day, this method returns the number of excess days as an out parameter.</summary>
-	[Jazor(Op.Discard ,"System.TimeOnly.AddHours(double, out int)")]
-	public extern static Array<object?> _ad6cad38823a5ef6(Number instance, Number value, Number wrappedDays);
+	/// <summary>
+	/// C#: instance.AddHours(value, out wrappedDays)
+	/// JS: 返回 [result, wrappedDays]
+	/// </summary>
+	[Jazor(Op.Import, "System.TimeOnly.AddHours(double, out int)")]
+	public static Array<object?> _ad6cad38823a5ef6(Number instance, Number value, Number wrappedDays)
+	{
+		var total = instance + value * 3600000;
+		var wrapped = Math.Floor_(total / 86400000);
+		var result = total % 86400000;
+		if (result < 0)
+		{
+			result = result + 86400000;
+			wrapped = wrapped - 1;
+		}
+		return [result, wrapped];
+	}
 
-	///<summary>Returns a new <see cref="T:System.TimeOnly" /> that adds the specified number of minutes to the value of this instance.</summary>
-	[Jazor(Op.Discard ,"System.TimeOnly.AddMinutes(double)")]
+	/// <summary>
+	/// C#: instance.AddMinutes(value)
+	/// JS: (instance + value * 60000) % 86400000
+	/// </summary>
+	[Jazor(Op.Inline, "System.TimeOnly.AddMinutes(double)", "((@#{0} + @#{1} * 60000) % 86400000)")]
 	public extern static Number _77bd7db30cbf3bc9(Number instance, Number value);
 
-	///<summary>Returns a new <see cref="T:System.TimeOnly" /> that adds the specified number of minutes to the value of this instance.            If the result wraps past the end of the day, this method returns the number of excess days as an out parameter.</summary>
-	[Jazor(Op.Discard ,"System.TimeOnly.AddMinutes(double, out int)")]
-	public extern static Array<object?> _e698cb9920401887(Number instance, Number value, Number wrappedDays);
+	/// <summary>
+	/// C#: instance.AddMinutes(value, out wrappedDays)
+	/// JS: 返回 [result, wrappedDays]
+	/// </summary>
+	[Jazor(Op.Import, "System.TimeOnly.AddMinutes(double, out int)")]
+	public static Array<object?> _e698cb9920401887(Number instance, Number value, Number wrappedDays)
+	{
+		var total = instance + value * 60000;
+		var wrapped = Math.Floor_(total / 86400000);
+		var result = total % 86400000;
+		if (result < 0)
+		{
+			result = result + 86400000;
+			wrapped = wrapped - 1;
+		}
+		return [result, wrapped];
+	}
 
-	///<summary>Determines if a time falls within the range provided.            Supports both "normal" ranges such as 10:00-12:00, and ranges that span midnight such as 23:00-01:00.</summary>
-	[Jazor(Op.Discard ,"System.TimeOnly.IsBetween(System.TimeOnly, System.TimeOnly)")]
+	/// <summary>
+	/// C#: instance.IsBetween(start, end)
+	/// JS: 支持跨午夜的范围检查
+	/// </summary>
+	[Jazor(Op.Inline, "System.TimeOnly.IsBetween(System.TimeOnly, System.TimeOnly)", "(@#{1} < @#{2} ? (@#{0} >= @#{1} && @#{0} < @#{2}) : (@#{0} >= @#{1} || @#{0} < @#{2}))")]
 	public extern static bool _da64e8d379a7e47c(Number instance, Number start, Number end);
 
 	///<summary>Determines whether two specified instances of <xref data-throw-if-not-resolved="true" uid="System.TimeOnly"></xref>are equal.</summary>

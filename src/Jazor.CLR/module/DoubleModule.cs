@@ -126,14 +126,21 @@ public static class DoubleModule
 	public extern static string _3ab59f70a1114579(Number instance, string? format, Intl.NumberFormat? provider);
 
 	// Parse/TryParse
+	/// <summary>
+	/// C#: double.Parse(s)
+	/// JS: Number(s) with validation
+	/// </summary>
 	[Jazor(Op.Import, "static double.Parse(string)")]
-	public static Number _5810f85a3710b88d(string s)
+	public static Number _5810f85a3710b88d(string? s)
 	{
 		if (s == null)
-			throw new Error("ArgumentNullException");
-		var result = double.Parse(s);
-		if (double.IsNaN(result))
-			throw new Error("FormatException");
+			throw new Error("ArgumentNullException: String cannot be null.");
+		var trimmed = s.Trim();
+		if (trimmed.Length == 0)
+			throw new Error("FormatException: The input string was not in a correct format.");
+		var result = Number_(trimmed);
+		if (IsNaN(result))
+			throw new Error($"FormatException: The input string '{s}' was not in a correct format.");
 		return result;
 	}
 
@@ -149,14 +156,29 @@ public static class DoubleModule
 	[Jazor(Op.Discard, "static double.Parse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider)")]
 	public extern static Number _1566d690221e91c2(string s, object style, Intl.NumberFormat? provider);
 
+	/// <summary>
+	/// C#: double.TryParse(s, out result)
+	/// JS: 返回 [success, parsedValue]
+	/// </summary>
 	[Jazor(Op.Import, "static double.TryParse(string, out double)")]
 	public static Array<object?> _a29d389185c5e37d(string? s, Number result)
 	{
-		if (s == null)
+		if (s == null || s.Length == 0)
 			return [false, 0];
-		if (double.TryParse(s, out var val))
+		try
+		{
+			var trimmed = s.Trim();
+			if (trimmed.Length == 0)
+				return [false, 0];
+			var val = Number_(trimmed);
+			if (IsNaN(val))
+				return [false, 0];
 			return [true, val];
-		return [false, 0];
+		}
+		catch
+		{
+			return [false, 0];
+		}
 	}
 
 	[Jazor(Op.Discard, "static double.TryParse(System.ReadOnlySpan<char>, out double)")]
@@ -370,11 +392,22 @@ public static class DoubleModule
 	[Jazor(Op.Import, "static double.TryParse(string, System.IFormatProvider, out double)")]
 	public static Array<object?> _f1644d5121fae09c(string? s, Intl.NumberFormat? provider, Number result)
 	{
-		if (s == null)
+		if (s == null || s.Length == 0)
 			return [false, 0];
-		if (double.TryParse(s, out var val))
+		try
+		{
+			var trimmed = s.Trim();
+			if (trimmed.Length == 0)
+				return [false, 0];
+			var val = Number_(trimmed);
+			if (IsNaN(val))
+				return [false, 0];
 			return [true, val];
-		return [false, 0];
+		}
+		catch
+		{
+			return [false, 0];
+		}
 	}
 
 	[Jazor(Op.Replace, "static double.Pow(double, double)", "pow")]

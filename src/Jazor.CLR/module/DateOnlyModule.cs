@@ -7,53 +7,125 @@ public static class DateOnlyModule
 	[Jazor(Op.Discard ,"System.DateOnly.DateOnly()")]
 	public extern static Date _5f8053a9657a0844();
 
-	[Jazor(Op.Discard ,"static System.DateOnly.MinValue.get")]
+	/// <summary>
+	/// C#: DateOnly.MinValue (0001-01-01)
+	/// JS: new Date(1, 0, 1)
+	/// </summary>
+	[Jazor(Op.Inline, "static System.DateOnly.MinValue.get", "new Date(1, 0, 1)")]
 	public extern static Date _4ab7a6677b34a52b();
 
-	[Jazor(Op.Discard ,"static System.DateOnly.MaxValue.get")]
+	/// <summary>
+	/// C#: DateOnly.MaxValue (9999-12-31)
+	/// JS: new Date(9999, 11, 31)
+	/// </summary>
+	[Jazor(Op.Inline, "static System.DateOnly.MaxValue.get", "new Date(9999, 11, 31)")]
 	public extern static Date _d3542025e0317ea5();
 
-	///<summary>Creates a new instance of the <see cref="T:System.DateOnly" /> structure to the specified year, month, and day.</summary>
-	[Jazor(Op.Discard ,"System.DateOnly.DateOnly(int, int, int)")]
+	/// <summary>
+	/// C#: new DateOnly(year, month, day)
+	/// JS: new Date(year, month - 1, day)
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateOnly.DateOnly(int, int, int)", "new Date(@#{0}, @#{1} - 1, @#{2})")]
 	public extern static Date _8c5a25d777626c6c(Number year, Number month, Number day);
 
-	///<summary>Creates a new instance of the <see cref="T:System.DateOnly" /> structure to the specified year, month, and day for the specified calendar.</summary>
-	[Jazor(Op.Discard ,"System.DateOnly.DateOnly(int, int, int, System.Globalization.Calendar)")]
+	/// <summary>
+	/// C#: new DateOnly(year, month, day, calendar)
+	/// JS: new Date(year, month - 1, day)
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateOnly.DateOnly(int, int, int, System.Globalization.Calendar)", "new Date(@#{0}, @#{1} - 1, @#{2})")]
 	public extern static Date _c0568bfa1df0ef59(Number year, Number month, Number day, GregorianCalendar calendar);
 
-	///<summary>Creates a new instance of the <see cref="T:System.DateOnly" /> structure to the specified number of days.</summary>
-	[Jazor(Op.Discard ,"static System.DateOnly.FromDayNumber(int)")]
+	/// <summary>
+	/// C#: DateOnly.FromDayNumber(dayNumber)
+	/// JS: new Date(1, 0, 1 + dayNumber)
+	/// </summary>
+	[Jazor(Op.Inline, "static System.DateOnly.FromDayNumber(int)", "new Date(1, 0, 1 + @#{0})")]
 	public extern static Date _96a80b211a70154c(Number dayNumber);
 
-	[Jazor(Op.Discard ,"System.DateOnly.Year.get")]
+	/// <summary>
+	/// C#: instance.Year
+	/// JS: instance.getFullYear()
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateOnly.Year.get", "@#{0}.getFullYear()")]
 	public extern static Number _eeb6f43b5386f459(Date instance);
 
-	[Jazor(Op.Discard ,"System.DateOnly.Month.get")]
+	/// <summary>
+	/// C#: instance.Month
+	/// JS: instance.getMonth() + 1
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateOnly.Month.get", "(@#{0}.getMonth() + 1)")]
 	public extern static Number _c189199a72fa745c(Date instance);
 
-	[Jazor(Op.Discard ,"System.DateOnly.Day.get")]
+	/// <summary>
+	/// C#: instance.Day
+	/// JS: instance.getDate()
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateOnly.Day.get", "@#{0}.getDate()")]
 	public extern static Number _fa637ab5d7ac92a4(Date instance);
 
-	[Jazor(Op.Discard ,"System.DateOnly.DayOfWeek.get")]
+	/// <summary>
+	/// C#: instance.DayOfWeek
+	/// JS: instance.getDay()
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateOnly.DayOfWeek.get", "@#{0}.getDay()")]
 	public extern static System.DayOfWeek _faf7aaba77d4de0c(Date instance);
 
-	[Jazor(Op.Discard ,"System.DateOnly.DayOfYear.get")]
-	public extern static Number _6eb4f28206445ae2(Date instance);
+	/// <summary>
+	/// C#: instance.DayOfYear
+	/// JS: 计算一年中的第几天
+	/// </summary>
+	[Jazor(Op.Import, "System.DateOnly.DayOfYear.get")]
+	public static Number _6eb4f28206445ae2(Date instance)
+	{
+		var start = new Date(instance.GetFullYear(), 0, 0);
+		var diff = instance.GetTime() - start.GetTime();
+		var oneDay = 1000 * 60 * 60 * 24;
+		return Math.Floor_(diff / oneDay);
+	}
 
-	[Jazor(Op.Discard ,"System.DateOnly.DayNumber.get")]
-	public extern static Number _04663ba34bb3359d(Date instance);
+	/// <summary>
+	/// C#: instance.DayNumber
+	/// JS: 计算从0001-01-01开始的天数
+	/// </summary>
+	[Jazor(Op.Import, "System.DateOnly.DayNumber.get")]
+	public static Number _04663ba34bb3359d(Date instance)
+	{
+		var start = new Date(1, 0, 1);
+		var diff = instance.GetTime() - start.GetTime();
+		var oneDay = 1000 * 60 * 60 * 24;
+		return Math.Floor_(diff / oneDay);
+	}
 
-	///<summary>Adds the specified number of days to the value of this instance.</summary>
-	[Jazor(Op.Discard ,"System.DateOnly.AddDays(int)")]
+	/// <summary>
+	/// C#: instance.AddDays(value)
+	/// JS: new Date(instance.getTime() + value * 86400000)
+	/// </summary>
+	[Jazor(Op.Inline, "System.DateOnly.AddDays(int)", "new Date(@#{0}.getTime() + @#{1} * 86400000)")]
 	public extern static Date _cb25738994c034e6(Date instance, Number value);
 
-	///<summary>Adds the specified number of months to the value of this instance.</summary>
-	[Jazor(Op.Discard ,"System.DateOnly.AddMonths(int)")]
-	public extern static Date _48134214e63fd9f3(Date instance, Number value);
+	/// <summary>
+	/// C#: instance.AddMonths(value)
+	/// JS: new Date(instance.setMonth(instance.getMonth() + value))
+	/// </summary>
+	[Jazor(Op.Import, "System.DateOnly.AddMonths(int)")]
+	public static Date _48134214e63fd9f3(Date instance, Number value)
+	{
+		var result = new Date(instance.GetTime());
+		result.SetMonth(result.GetMonth() + value);
+		return result;
+	}
 
-	///<summary>Adds the specified number of years to the value of this instance.</summary>
-	[Jazor(Op.Discard ,"System.DateOnly.AddYears(int)")]
-	public extern static Date _267d01eded65ff1c(Date instance, Number value);
+	/// <summary>
+	/// C#: instance.AddYears(value)
+	/// JS: new Date(instance.setFullYear(instance.getFullYear() + value))
+	/// </summary>
+	[Jazor(Op.Import, "System.DateOnly.AddYears(int)")]
+	public static Date _267d01eded65ff1c(Date instance, Number value)
+	{
+		var result = new Date(instance.GetTime());
+		result.SetFullYear(result.GetFullYear() + value);
+		return result;
+	}
 
 	///<summary>Determines whether two specified instances of <see cref="T:System.DateOnly" /> are equal.</summary>
 	[Jazor(Op.Allowed ,"static System.DateOnly.operator ==(System.DateOnly, System.DateOnly)")]

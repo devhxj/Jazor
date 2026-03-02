@@ -1,5 +1,18 @@
 namespace Jazor.CLR;
 
+/// <summary>
+/// System.Exception 类型模块映射规则
+///
+/// C# Exception 与 JavaScript Error 的对应关系：
+/// - C# Exception 是所有异常的基类
+/// - JavaScript Error 是所有错误的基类
+/// - 大部分属性可以直接映射
+///
+/// Op 类型选择原则：
+/// - Inline: 简单属性访问（如 message、stack）
+/// - Import: 需要完整实现的构造函数
+/// - Discard: 不支持或极少使用的功能
+/// </summary>
 [ECMAScriptModule]
 [Jazor(Op.Import, "System.Exception","System/ExceptionModule.js")]
 public static class ExceptionModule
@@ -7,19 +20,33 @@ public static class ExceptionModule
 	[Jazor(Op.Discard ,"System.Exception.TargetSite.get")]
 	public extern static System.Reflection.MethodBase? _1645aa9cae2c858e(Error instance);
 
-	///<summary>Initializes a new instance of the <see cref="T:System.Exception" /> class.</summary>
-	[Jazor(Op.Discard ,"System.Exception.Exception()")]
+	/// <summary>
+	/// C#: new Exception()
+	/// JS: new Error()
+	/// </summary>
+	[Jazor(Op.Inline, "System.Exception.Exception()", "new Error()")]
 	public extern static Error _984704ccb6ce2252();
 
-	///<summary>Initializes a new instance of the <see cref="T:System.Exception" /> class with a specified error message.</summary>
-	[Jazor(Op.Discard ,"System.Exception.Exception(string)")]
+	/// <summary>
+	/// C#: new Exception(string message)
+	/// JS: new Error(message)
+	/// </summary>
+	[Jazor(Op.Inline, "System.Exception.Exception(string)", "new Error(@#{0})")]
 	public extern static Error _2cf200c538022157(string? message);
 
-	///<summary>Initializes a new instance of the <see cref="T:System.Exception" /> class with a specified error message and a reference to the inner exception that is the cause of this exception.</summary>
+	/// <summary>
+	/// C#: new Exception(string message, Exception innerException)
+	/// JS: new Error(message, { cause: innerException }) (ES2022+)
+	/// Note: JavaScript Error cause is an optional feature
+	/// </summary>
 	[Jazor(Op.Discard ,"System.Exception.Exception(string, System.Exception)")]
-	public extern static Error _553ffa41c7b954da(string? message, object innerException);
+	public extern static Error _553ffa41c7b954da(string? message, Error? innerException);
 
-	[Jazor(Op.Discard ,"virtual System.Exception.Message.get")]
+	/// <summary>
+	/// C#: Exception.Message
+	/// JS: error.message
+	/// </summary>
+	[Jazor(Op.Inline, "virtual System.Exception.Message.get", "@#{0}.message")]
 	public extern static string _254136af38922fd7(Error instance);
 
 	[Jazor(Op.Discard ,"virtual System.Exception.Data.get")]
@@ -48,8 +75,11 @@ public static class ExceptionModule
 	[Jazor(Op.Discard ,"virtual System.Exception.GetObjectData(System.Runtime.Serialization.SerializationInfo, System.Runtime.Serialization.StreamingContext)")]
 	public extern static void _c4f98e62762f67b4(Error instance, object info, object context);
 
-	///<summary>Creates and returns a string representation of the current exception.</summary>
-	[Jazor(Op.Discard ,"override System.Exception.ToString()")]
+	/// <summary>
+	/// C#: Exception.ToString()
+	/// JS: error.toString() 或 error.message
+	/// </summary>
+	[Jazor(Op.Replace, "override System.Exception.ToString()", "toString")]
 	public extern static string _d02b6e28875d5f19(Error instance);
 
 	[Jazor(Op.Discard ,"System.Exception.HResult.get")]
@@ -58,10 +88,17 @@ public static class ExceptionModule
 	[Jazor(Op.Discard ,"System.Exception.HResult.set")]
 	public extern static void _9585e24a6bef548d(Error instance, Number value);
 
-	///<summary>Gets the runtime type of the current instance.</summary>
-	[Jazor(Op.Discard ,"System.Exception.GetType()")]
+	/// <summary>
+	/// C#: Exception.GetType()
+	/// JS: error.constructor.name 或 error.name
+	/// </summary>
+	[Jazor(Op.Inline, "System.Exception.GetType()", "@#{0}.constructor")]
 	public extern static System.Type _352db97ff685dc43(Error instance);
 
-	[Jazor(Op.Discard ,"virtual System.Exception.StackTrace.get")]
+	/// <summary>
+	/// C#: Exception.StackTrace
+	/// JS: error.stack
+	/// </summary>
+	[Jazor(Op.Inline, "virtual System.Exception.StackTrace.get", "@#{0}.stack")]
 	public extern static string? _699c881cddeae353(Error instance);
 }

@@ -4,16 +4,22 @@ namespace Jazor.CLR;
 [Jazor(Op.Import, "System.Text.StringBuilder","System/Text/StringBuilderModule.js")]
 public static class StringBuilderModule
 {
-	///<summary>Initializes a new instance of the <see cref="T:System.Text.StringBuilder" /> class.</summary>
-	[Jazor(Op.Discard ,"System.Text.StringBuilder.StringBuilder()")]
+	/// <summary>
+	/// C#: new StringBuilder()
+	/// JS: [] (空数组)
+	/// </summary>
+	[Jazor(Op.Inline, "System.Text.StringBuilder.StringBuilder()", "[]")]
 	public extern static System.Text.StringBuilder _2154365d1f9a2abf();
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Text.StringBuilder" /> class using the specified capacity.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.StringBuilder(int)")]
 	public extern static System.Text.StringBuilder _404c94878c905b27(Number capacity);
 
-	///<summary>Initializes a new instance of the <see cref="T:System.Text.StringBuilder" /> class using the specified string.</summary>
-	[Jazor(Op.Discard ,"System.Text.StringBuilder.StringBuilder(string)")]
+	/// <summary>
+	/// C#: new StringBuilder(string)
+	/// JS: (value ?? "").split('')
+	/// </summary>
+	[Jazor(Op.Inline, "System.Text.StringBuilder.StringBuilder(string)", "(@#{0} ?? '').split('')")]
 	public extern static System.Text.StringBuilder _c2c8c4778873ccdc(string? value);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Text.StringBuilder" /> class using the specified string and capacity.</summary>
@@ -41,19 +47,29 @@ public static class StringBuilderModule
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.EnsureCapacity(int)")]
 	public extern static Number _e957bcfaa166161c(System.Text.StringBuilder instance, Number capacity);
 
-	///<summary>Converts the value of this instance to a <see cref="T:System.String" />.</summary>
-	[Jazor(Op.Discard ,"override System.Text.StringBuilder.ToString()")]
-	public extern static string _010347a06fe9584c(System.Text.StringBuilder instance);
+	/// <summary>
+	/// C#: sb.ToString()
+	/// JS: instance.join('')
+	/// </summary>
+	[Jazor(Op.Inline, "override System.Text.StringBuilder.ToString()", "@#{0}.join('')")]
+	public extern static string _010347a06fe9584c(Array<string> instance);
 
 	///<summary>Converts the value of a substring of this instance to a <see cref="T:System.String" />.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.ToString(int, int)")]
 	public extern static string _4941946dde4f03f0(System.Text.StringBuilder instance, Number startIndex, Number length);
 
-	///<summary>Removes all characters from the current <see cref="T:System.Text.StringBuilder" /> instance.</summary>
-	[Jazor(Op.Discard ,"System.Text.StringBuilder.Clear()")]
+	/// <summary>
+	/// C#: sb.Clear()
+	/// JS: instance.length = 0; return instance
+	/// </summary>
+	[Jazor(Op.Inline, "System.Text.StringBuilder.Clear()", "(@#{0}.length = 0, @#{0})")]
 	public extern static System.Text.StringBuilder _3b8e77fc2c4d5f63(System.Text.StringBuilder instance);
 
-	[Jazor(Op.Discard ,"System.Text.StringBuilder.Length.get")]
+	/// <summary>
+	/// C#: sb.Length
+	/// JS: instance.length
+	/// </summary>
+	[Jazor(Op.Inline, "System.Text.StringBuilder.Length.get", "@#{0}.length")]
 	public extern static Number _76a78d5aa26cb6e0(System.Text.StringBuilder instance);
 
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Length.set")]
@@ -77,9 +93,12 @@ public static class StringBuilderModule
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Append(char[], int, int)")]
 	public extern static System.Text.StringBuilder _76a6be47564b1442(System.Text.StringBuilder instance, object value, Number startIndex, Number charCount);
 
-	///<summary>Appends a copy of the specified string to this instance.</summary>
-	[Jazor(Op.Discard ,"System.Text.StringBuilder.Append(string)")]
-	public extern static System.Text.StringBuilder _2879b76db56f25fb(System.Text.StringBuilder instance, string? value);
+	/// <summary>
+	/// C#: sb.Append(string)
+	/// JS: 将字符串追加到数组末尾
+	/// </summary>
+	[Jazor(Op.Inline, "System.Text.StringBuilder.Append(string)", "(@#{1} != null ? @#{0}.push(...@#{1}.split('')) : @#{0}, @#{0})")]
+	public extern static Array<string> _2879b76db56f25fb(Array<string> instance, string? value);
 
 	///<summary>Appends a copy of a specified substring to this instance.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Append(string, int, int)")]
@@ -93,13 +112,19 @@ public static class StringBuilderModule
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Append(System.Text.StringBuilder, int, int)")]
 	public extern static System.Text.StringBuilder _2a75c7a6bec12592(System.Text.StringBuilder instance, object value, Number startIndex, Number count);
 
-	///<summary>Appends the default line terminator to the end of the current <see cref="T:System.Text.StringBuilder" /> object.</summary>
-	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendLine()")]
-	public extern static System.Text.StringBuilder _35fe8bcf463e879b(System.Text.StringBuilder instance);
+	/// <summary>
+	/// C#: sb.AppendLine()
+	/// JS: instance.push('\n')
+	/// </summary>
+	[Jazor(Op.Inline, "System.Text.StringBuilder.AppendLine()", "(@#{0}.push('\\n'), @#{0})")]
+	public extern static Array<string> _35fe8bcf463e879b(Array<string> instance);
 
-	///<summary>Appends a copy of the specified string followed by the default line terminator to the end of the current <see cref="T:System.Text.StringBuilder" /> object.</summary>
-	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendLine(string)")]
-	public extern static System.Text.StringBuilder _c06aaa44e213e405(System.Text.StringBuilder instance, string? value);
+	/// <summary>
+	/// C#: sb.AppendLine(string)
+	/// JS: 先 Append(value)，再 push('\n')
+	/// </summary>
+	[Jazor(Op.Inline, "System.Text.StringBuilder.AppendLine(string)", "(@#{1} != null ? @#{0}.push(...@#{1}.split('')) : @#{0}, @#{0}.push('\\n'), @#{0})")]
+	public extern static Array<string> _c06aaa44e213e405(Array<string> instance, string? value);
 
 	///<summary>Copies the characters from a specified segment of this instance to a specified segment of a destination <see cref="T:System.Char" /> array.</summary>
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.CopyTo(int, char[], int, int)")]

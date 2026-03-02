@@ -1,70 +1,118 @@
 namespace Jazor.CLR;
 
+/// <summary>
+/// System.Single (float) 类型模块映射规则
+///
+/// C# float 与 JavaScript Number 的对应关系：
+/// - 都使用 IEEE 754 浮点数
+/// - 可以直接映射
+///
+/// Op 类型选择原则：
+/// - Inline: 简单表达式和常量
+/// - Replace: JS 原生方法
+/// - Import: 需要验证的 Parse/TryParse
+/// - Discard: 不常用或平台特定的方法
+/// </summary>
 [ECMAScriptModule]
 [Jazor(Op.Import, "float","System/SingleModule.js")]
 public static class SingleModule
 {
-	//float.MinValue = -3.4028235E+38;
+	// 常量 - 使用 Op.Inline
+	[Jazor(Op.Inline, "static float.MinValue", "-3.4028235E+38")]
+	public extern static Number _minValue();
 
-	//float.MaxValue = 3.4028235E+38;
+	[Jazor(Op.Inline, "static float.MaxValue", "3.4028235E+38")]
+	public extern static Number _maxValue();
 
-	//float.Epsilon = 1E-45;
+	[Jazor(Op.Inline, "static float.Epsilon", "1E-45")]
+	public extern static Number _epsilon();
 
-	//float.NegativeInfinity = -∞;
+	[Jazor(Op.Inline, "static float.NegativeInfinity", "-Infinity")]
+	public extern static Number _negativeInfinity();
 
-	//float.PositiveInfinity = ∞;
+	[Jazor(Op.Inline, "static float.PositiveInfinity", "Infinity")]
+	public extern static Number _positiveInfinity();
 
-	//float.NaN = NaN;
+	[Jazor(Op.Inline, "static float.NaN", "NaN")]
+	public extern static Number _nan();
 
-	//float.NegativeZero = -0;
+	[Jazor(Op.Inline, "static float.NegativeZero", "-0")]
+	public extern static Number _negativeZero();
 
-	//float.E = 2.7182817;
+	[Jazor(Op.Inline, "static float.E", "Math.E")]
+	public extern static Number _e();
 
-	//float.Pi = 3.1415927;
+	[Jazor(Op.Inline, "static float.Pi", "Math.PI")]
+	public extern static Number _pi();
 
-	//float.Tau = 6.2831855;
+	[Jazor(Op.Inline, "static float.Tau", "(Math.PI * 2)")]
+	public extern static Number _tau();
 
 	[Jazor(Op.Discard ,"float.Single()")]
 	public extern static Number _a6b96ca392da4917();
 
-	///<summary>Determines whether the specified value is finite (zero, subnormal or normal).</summary>
-	[Jazor(Op.Discard ,"static float.IsFinite(float)")]
+	/// <summary>
+	/// C#: float.IsFinite(f)
+	/// JS: isFinite(f)
+	/// </summary>
+	[Jazor(Op.Replace, "static float.IsFinite(float)", "isFinite")]
 	public extern static bool _00118f159d09918d(Number f);
 
-	///<summary>Returns a value indicating whether the specified number evaluates to negative or positive infinity.</summary>
-	[Jazor(Op.Discard ,"static float.IsInfinity(float)")]
+	/// <summary>
+	/// C#: float.IsInfinity(f)
+	/// JS: !isFinite(f)
+	/// </summary>
+	[Jazor(Op.Inline, "static float.IsInfinity(float)", "!isFinite(@#{0})")]
 	public extern static bool _47887f5e1e35e199(Number f);
 
-	///<summary>Returns a value that indicates whether the specified value is not a number (<see cref="F:System.Single.NaN" />).</summary>
-	[Jazor(Op.Discard ,"static float.IsNaN(float)")]
+	/// <summary>
+	/// C#: float.IsNaN(f)
+	/// JS: isNaN(f)
+	/// </summary>
+	[Jazor(Op.Replace, "static float.IsNaN(float)", "isNaN")]
 	public extern static bool _8c3d7a2e3b690c9a(Number f);
 
-	///<summary>Determines whether the specified value is negative.</summary>
-	[Jazor(Op.Discard ,"static float.IsNegative(float)")]
+	/// <summary>
+	/// C#: float.IsNegative(f)
+	/// JS: Object.is(f, -0) || f < 0
+	/// </summary>
+	[Jazor(Op.Inline, "static float.IsNegative(float)", "(Object.is(@#{0}, -0) || @#{0} < 0)")]
 	public extern static bool _846e9450c3f550b6(Number f);
 
-	///<summary>Returns a value indicating whether the specified number evaluates to negative infinity.</summary>
-	[Jazor(Op.Discard ,"static float.IsNegativeInfinity(float)")]
+	/// <summary>
+	/// C#: float.IsNegativeInfinity(f)
+	/// JS: f === -Infinity
+	/// </summary>
+	[Jazor(Op.Inline, "static float.IsNegativeInfinity(float)", "(@#{0} === -Infinity)")]
 	public extern static bool _8b4a47cad79ef70b(Number f);
 
 	///<summary>Determines whether the specified value is normal.</summary>
 	[Jazor(Op.Discard ,"static float.IsNormal(float)")]
 	public extern static bool _cbc5abbbccc623b6(Number f);
 
-	///<summary>Returns a value indicating whether the specified number evaluates to positive infinity.</summary>
-	[Jazor(Op.Discard ,"static float.IsPositiveInfinity(float)")]
+	/// <summary>
+	/// C#: float.IsPositiveInfinity(f)
+	/// JS: f === Infinity
+	/// </summary>
+	[Jazor(Op.Inline, "static float.IsPositiveInfinity(float)", "(@#{0} === Infinity)")]
 	public extern static bool _b2b89b81c87952dc(Number f);
 
 	///<summary>Determines whether the specified value is subnormal.</summary>
 	[Jazor(Op.Discard ,"static float.IsSubnormal(float)")]
 	public extern static bool _8e1067f50ae732cb(Number f);
 
-	///<summary>Compares this instance to a specified object and returns an integer that indicates whether the value of this instance is less than, equal to, or greater than the value of the specified object.</summary>
-	[Jazor(Op.Discard ,"float.CompareTo(object)")]
+	/// <summary>
+	/// C#: float.CompareTo(object)
+	/// JS: instance - (value ?? 0)
+	/// </summary>
+	[Jazor(Op.Inline, "float.CompareTo(object)", "(@#{0} - (@#{1} ?? 0))")]
 	public extern static Number _0b80f2f2f1a3c1a6(Number instance, object? value);
 
-	///<summary>Compares this instance to a specified single-precision floating-point number and returns an integer that indicates whether the value of this instance is less than, equal to, or greater than the value of the specified single-precision floating-point number.</summary>
-	[Jazor(Op.Discard ,"float.CompareTo(float)")]
+	/// <summary>
+	/// C#: float.CompareTo(float)
+	/// JS: instance - value
+	/// </summary>
+	[Jazor(Op.Inline, "float.CompareTo(float)", "(@#{0} - @#{1})")]
 	public extern static Number _f6880f77edc2efe5(Number instance, Number value);
 
 	///<summary>Returns a value that indicates whether two specified <xref data-throw-if-not-resolved="true" uid="System.Single"></xref> values are equal.</summary>
@@ -91,20 +139,29 @@ public static class SingleModule
 	[Jazor(Op.Allowed ,"static float.operator >=(float, float)")]
 	public extern static bool _de450491712f7a22(Number left, Number right);
 
-	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
-	[Jazor(Op.Discard ,"override float.Equals(object)")]
+	/// <summary>
+	/// C#: float.Equals(object)
+	/// JS: instance === obj
+	/// </summary>
+	[Jazor(Op.Inline, "override float.Equals(object)", "(@#{0} === @#{1})")]
 	public extern static bool _eb69b50c7032a809(Number instance, object? obj);
 
-	///<summary>Returns a value indicating whether this instance and a specified <see cref="T:System.Single" /> object represent the same value.</summary>
-	[Jazor(Op.Discard ,"float.Equals(float)")]
+	/// <summary>
+	/// C#: float.Equals(float)
+	/// JS: instance === obj
+	/// </summary>
+	[Jazor(Op.Inline, "float.Equals(float)", "(@#{0} === @#{1})")]
 	public extern static bool _5c45db76bd764c38(Number instance, Number obj);
 
 	///<summary>Returns the hash code for this instance.</summary>
 	[Jazor(Op.Discard ,"override float.GetHashCode()")]
 	public extern static Number _96e065ea302b67da(Number instance);
 
-	///<summary>Converts the numeric value of this instance to its equivalent string representation.</summary>
-	[Jazor(Op.Discard ,"override float.ToString()")]
+	/// <summary>
+	/// C#: float.ToString()
+	/// JS: instance.toString()
+	/// </summary>
+	[Jazor(Op.Replace, "override float.ToString()", "toString")]
 	public extern static string _a036f8edeee45300(Number instance);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation using the specified culture-specific format information.</summary>
@@ -127,9 +184,23 @@ public static class SingleModule
 	[Jazor(Op.Discard ,"float.TryFormat(System.Span<byte>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)")]
 	public extern static Array<object?> _bfce4d32c259361c(Number instance, Uint8Array utf8Destination, Number bytesWritten, Uint32Array format, Intl.NumberFormat? provider);
 
-	///<summary>Converts the string representation of a number to its single-precision floating-point number equivalent.</summary>
-	[Jazor(Op.Discard ,"static float.Parse(string)")]
-	public extern static Number _d0492a7790d81596(string s);
+	/// <summary>
+	/// C#: float.Parse(s)
+	/// JS: Number(s) with validation
+	/// </summary>
+	[Jazor(Op.Import, "static float.Parse(string)")]
+	public static Number _d0492a7790d81596(string? s)
+	{
+		if (s == null)
+			throw new Error("ArgumentNullException: String cannot be null.");
+		var trimmed = s.Trim();
+		if (trimmed.Length == 0)
+			throw new Error("FormatException: The input string was not in a correct format.");
+		var result = Number_(trimmed);
+		if (IsNaN(result))
+			throw new Error($"FormatException: The input string '{s}' was not in a correct format.");
+		return result;
+	}
 
 	///<summary>Converts the string representation of a number in a specified style to its single-precision floating-point number equivalent.</summary>
 	[Jazor(Op.Discard ,"static float.Parse(string, System.Globalization.NumberStyles)")]
@@ -147,9 +218,30 @@ public static class SingleModule
 	[Jazor(Op.Discard ,"static float.Parse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider)")]
 	public extern static Number _d9762c1528057110(string s, object style, Intl.NumberFormat? provider);
 
-	///<summary>Converts the string representation of a number to its single-precision floating-point number equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
-	[Jazor(Op.Discard ,"static float.TryParse(string, out float)")]
-	public extern static Array<object?> _ced8b209dbd75890(string? s, Number result);
+	/// <summary>
+	/// C#: float.TryParse(s, out result)
+	/// JS: 返回 [success, parsedValue]
+	/// </summary>
+	[Jazor(Op.Import, "static float.TryParse(string, out float)")]
+	public static Array<object?> _ced8b209dbd75890(string? s, Number result)
+	{
+		if (s == null || s.Length == 0)
+			return [false, 0];
+		try
+		{
+			var trimmed = s.Trim();
+			if (trimmed.Length == 0)
+				return [false, 0];
+			var val = Number_(trimmed);
+			if (IsNaN(val))
+				return [false, 0];
+			return [true, val];
+		}
+		catch
+		{
+			return [false, 0];
+		}
+	}
 
 	///<summary>Converts the string representation of a number in a character span to its single-precision floating-point number equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static float.TryParse(System.ReadOnlySpan<char>, out float)")]

@@ -70,7 +70,7 @@ public static class ByteModule
 	/// JS: parseInt(s, 10) with validation
 	/// </summary>
 	[Jazor(Op.Import, "static byte.Parse(string)")]
-	public static Number _8719e4b3055c5188(string s)
+	public static Number _8719e4b3055c5188(string? s)
 	{
 		if (s == null)
 			throw new Error("ArgumentNullException: String cannot be null.");
@@ -78,8 +78,12 @@ public static class ByteModule
 		var trimmed = s.Trim();
 		var num = ParseInt(trimmed, 10);
 
+		// Check if parsing succeeded
+		if (IsNaN(num))
+			throw new Error($"FormatException: String '{s}' was not recognized as a valid Byte.");
+
 		// 验证 byte 范围: 0-255
-		if (num < 0 || num > 255 || !double.IsFinite(num))
+		if (num < 0 || num > 255)
 			throw new Error($"OverflowException: Value '{s}' was either too large or too small for a Byte.");
 
 		return num;
@@ -113,6 +117,12 @@ public static class ByteModule
 
 		var trimmed = s.Trim();
 		var v = ParseInt(trimmed, 10);
+
+		// Check if parsing succeeded
+		if (IsNaN(v))
+			return [false, 0];
+
+		// 验证 byte 范围: 0-255
 		if (v >= 0 && v <= 255)
 			return [true, v];
 

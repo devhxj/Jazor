@@ -1,12 +1,35 @@
 namespace Jazor.CLR;
 
+/// <summary>
+/// System.UInt32 (uint) 类型模块映射规则
+///
+/// C# uint 与 JavaScript Number 的对应关系：
+/// - C# uint 是 32 位无符号整数 (0 到 4294967295)
+/// - JavaScript Number 可以精确表示 32 位整数
+///
+/// Op 类型选择原则：
+/// - Inline: 简单比较和运算
+/// - Replace: JS Number 方法
+/// - Import: 需要完整实现的复杂逻辑（Parse/TryParse）
+/// - Discard: 不支持的功能
+/// </summary>
 [ECMAScriptModule]
 [Jazor(Op.Import, "uint","System/UInt32Module.js")]
 public static class UInt32Module
 {
-	//uint.MaxValue = 4294967295;
+	/// <summary>
+	/// C#: uint.MaxValue
+	/// JS: 4294967295
+	/// </summary>
+	[Jazor(Op.Inline, "static uint.MaxValue", "4294967295")]
+	public extern static Number _8aa4e14b6f65b46f();
 
-	//uint.MinValue = 0;
+	/// <summary>
+	/// C#: uint.MinValue
+	/// JS: 0
+	/// </summary>
+	[Jazor(Op.Inline, "static uint.MinValue", "0")]
+	public extern static Number _0e4e92f6bb2f0389();
 
 	[Jazor(Op.Discard ,"uint.UInt32()")]
 	public extern static Number _3221bd6546b20843();
@@ -16,19 +39,27 @@ public static class UInt32Module
 	public extern static BigInt _e37a28b31d6aed2a(Number left, Number right);
 
 	///<summary>Compares this instance to a specified object and returns an indication of their relative values.</summary>
-	[Jazor(Op.Discard ,"uint.CompareTo(object)")]
-	public extern static Number _75ff3ca18f13f709(Number instance, object? value);
+	[Jazor(Op.Import, "uint.CompareTo(object)")]
+	public static Number _75ff3ca18f13f709(Number instance, object? value)
+	{
+		if (value == null)
+			return 1;
+		// Check if value is a Number
+		if (value is Number numValue)
+			return instance < numValue ? -1 : (instance > numValue ? 1 : 0);
+		throw new Error("ArgumentException: Object must be of type UInt32.");
+	}
 
 	///<summary>Compares this instance to a specified 32-bit unsigned integer and returns an indication of their relative values.</summary>
-	[Jazor(Op.Discard ,"uint.CompareTo(uint)")]
+	[Jazor(Op.Inline, "uint.CompareTo(uint)", "(@#{0} < @#{1} ? -1 : (@#{0} > @#{1} ? 1 : 0))")]
 	public extern static Number _7a5a26a8548c61fe(Number instance, Number value);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
-	[Jazor(Op.Discard ,"override uint.Equals(object)")]
+	[Jazor(Op.Inline, "override uint.Equals(object)", "(@#{0} === @#{1})")]
 	public extern static bool _ab3e546a9bf4a9ed(Number instance, object? obj);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified <see cref="T:System.UInt32" />.</summary>
-	[Jazor(Op.Discard ,"uint.Equals(uint)")]
+	[Jazor(Op.Inline, "uint.Equals(uint)", "(@#{0} === @#{1})")]
 	public extern static bool _cb191ad5776dddb3(Number instance, Number obj);
 
 	///<summary>Returns the hash code for this instance.</summary>
@@ -36,7 +67,7 @@ public static class UInt32Module
 	public extern static Number _d42f9fcffa604eb2(Number instance);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation.</summary>
-	[Jazor(Op.Discard ,"override uint.ToString()")]
+	[Jazor(Op.Replace, "override uint.ToString()", "toString")]
 	public extern static string _d124667433f8250d(Number instance);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation using the specified culture-specific format information.</summary>
@@ -59,9 +90,26 @@ public static class UInt32Module
 	[Jazor(Op.Discard ,"uint.TryFormat(System.Span<byte>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)")]
 	public extern static Array<object?> _b67b688ee02ca4a7(Number instance, Uint8Array utf8Destination, Number bytesWritten, Uint32Array format, Intl.NumberFormat? provider);
 
-	///<summary>Converts the string representation of a number to its 32-bit unsigned integer equivalent.</summary>
-	[Jazor(Op.Discard ,"static uint.Parse(string)")]
-	public extern static Number _eb335b8243aba32a(string s);
+	/// <summary>
+	/// C#: uint.Parse(s)
+	/// JS: ParseInt(s, 10) with validation
+	/// </summary>
+	[Jazor(Op.Import, "static uint.Parse(string)")]
+	public static Number _eb335b8243aba32a(string? s)
+	{
+		if (s == null)
+			throw new Error("ArgumentNullException: String cannot be null.");
+
+		var trimmed = s.Trim();
+		var result = ParseInt(trimmed, 10);
+		// Check if it's a valid number
+		if (IsNaN(result))
+			throw new Error($"FormatException: String '{s}' was not recognized as a valid UInt32.");
+		// Check uint range: 0 to 4294967295
+		if (result < 0 || result > 4294967295)
+			throw new Error($"OverflowException: Value '{s}' was either too large or too small for a UInt32.");
+		return result;
+	}
 
 	///<summary>Converts the string representation of a number in a specified style to its 32-bit unsigned integer equivalent.</summary>
 	[Jazor(Op.Discard ,"static uint.Parse(string, System.Globalization.NumberStyles)")]
@@ -79,9 +127,26 @@ public static class UInt32Module
 	[Jazor(Op.Discard ,"static uint.Parse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider)")]
 	public extern static Number _88d9113a364b2858(Uint32Array s, object style, Intl.NumberFormat? provider);
 
-	///<summary>Tries to convert the string representation of a number to its 32-bit unsigned integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
-	[Jazor(Op.Discard ,"static uint.TryParse(string, out uint)")]
-	public extern static Array<object?> _ad4f3364f146e5da(string? s, Number result);
+	/// <summary>
+	/// C#: uint.TryParse(s, out result)
+	/// JS: 返回 [success, parsedValue]
+	/// </summary>
+	[Jazor(Op.Import, "static uint.TryParse(string, out uint)")]
+	public static Array<object?> _ad4f3364f146e5da(string? s, Number result)
+	{
+		if (s == null)
+			return [false, 0];
+
+		var trimmed = s.Trim();
+		var parsed = ParseInt(trimmed, 10);
+		// Check if it's a valid number
+		if (IsNaN(parsed))
+			return [false, 0];
+		// Check uint range: 0 to 4294967295
+		if (parsed < 0 || parsed > 4294967295)
+			return [false, 0];
+		return [true, parsed];
+	}
 
 	///<summary>Tries to convert the span representation of a number to its 32-bit unsigned integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static uint.TryParse(System.ReadOnlySpan<char>, out uint)")]

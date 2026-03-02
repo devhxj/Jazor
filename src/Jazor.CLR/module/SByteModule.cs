@@ -1,38 +1,66 @@
 namespace Jazor.CLR;
 
+/// <summary>
+/// System.SByte (sbyte) 类型模块映射规则
+/// </summary>
 [ECMAScriptModule]
 [Jazor(Op.Import, "sbyte","System/SByteModule.js")]
 public static class SByteModule
 {
-	//sbyte.MaxValue = 127;
+	/// <summary>
+	/// C#: sbyte.MaxValue
+	/// JS: 127
+	/// </summary>
+	[Jazor(Op.Inline, "static sbyte.MaxValue", "127")]
+	public extern static Number _maxValue();
 
-	//sbyte.MinValue = -128;
+	/// <summary>
+	/// C#: sbyte.MinValue
+	/// JS: -128
+	/// </summary>
+	[Jazor(Op.Inline, "static sbyte.MinValue", "-128")]
+	public extern static Number _minValue();
 
 	[Jazor(Op.Discard ,"sbyte.SByte()")]
 	public extern static Number _0b5843a5a69b4fde();
 
-	///<summary>Compares this instance to a specified object and returns an indication of their relative values.</summary>
-	[Jazor(Op.Discard ,"sbyte.CompareTo(object)")]
+	/// <summary>
+	/// C#: sbyte.CompareTo(object)
+	/// JS: instance - (obj ?? 0)
+	/// </summary>
+	[Jazor(Op.Inline, "sbyte.CompareTo(object)", "(@#{0} - (@#{1} ?? 0))")]
 	public extern static Number _f8a387725694962f(Number instance, object? obj);
 
-	///<summary>Compares this instance to a specified 8-bit signed integer and returns an indication of their relative values.</summary>
-	[Jazor(Op.Discard ,"sbyte.CompareTo(sbyte)")]
+	/// <summary>
+	/// C#: sbyte.CompareTo(sbyte)
+	/// JS: instance - value
+	/// </summary>
+	[Jazor(Op.Inline, "sbyte.CompareTo(sbyte)", "(@#{0} - @#{1})")]
 	public extern static Number _a0ff7e0ac34c91a8(Number instance, Number value);
 
-	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
-	[Jazor(Op.Discard ,"override sbyte.Equals(object)")]
+	/// <summary>
+	/// C#: sbyte.Equals(object)
+	/// JS: instance === obj
+	/// </summary>
+	[Jazor(Op.Inline, "override sbyte.Equals(object)", "(@#{0} === @#{1})")]
 	public extern static bool _74c9452fa767096f(Number instance, object? obj);
 
-	///<summary>Returns a value indicating whether this instance is equal to a specified <see cref="T:System.SByte" /> value.</summary>
-	[Jazor(Op.Discard ,"sbyte.Equals(sbyte)")]
+	/// <summary>
+	/// C#: sbyte.Equals(sbyte)
+	/// JS: instance === obj
+	/// </summary>
+	[Jazor(Op.Inline, "sbyte.Equals(sbyte)", "(@#{0} === @#{1})")]
 	public extern static bool _4105db2840795661(Number instance, Number obj);
 
 	///<summary>Returns the hash code for this instance.</summary>
 	[Jazor(Op.Discard ,"override sbyte.GetHashCode()")]
 	public extern static Number _5131b1d6df49bbfb(Number instance);
 
-	///<summary>Converts the numeric value of this instance to its equivalent string representation.</summary>
-	[Jazor(Op.Discard ,"override sbyte.ToString()")]
+	/// <summary>
+	/// C#: sbyte.ToString()
+	/// JS: instance.toString()
+	/// </summary>
+	[Jazor(Op.Replace, "override sbyte.ToString()", "toString")]
 	public extern static string _99cd65a77e5cb1e0(Number instance);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation, using the specified format.</summary>
@@ -55,9 +83,23 @@ public static class SByteModule
 	[Jazor(Op.Discard ,"sbyte.TryFormat(System.Span<byte>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)")]
 	public extern static Array<object?> _08ca5484266e1a7b(Number instance, Uint8Array utf8Destination, Number bytesWritten, Uint32Array format, Intl.NumberFormat? provider);
 
-	///<summary>Converts the string representation of a number to its 8-bit signed integer equivalent.</summary>
-	[Jazor(Op.Discard ,"static sbyte.Parse(string)")]
-	public extern static Number _fc6fdbb937cb390a(string s);
+	/// <summary>
+	/// C#: sbyte.Parse(s)
+	/// JS: parseInt(s, 10) with validation (-128 to 127)
+	/// </summary>
+	[Jazor(Op.Import, "static sbyte.Parse(string)")]
+	public static Number _fc6fdbb937cb390a(string? s)
+	{
+		if (s == null)
+			throw new Error("ArgumentNullException: String cannot be null.");
+		var trimmed = s.Trim();
+		var num = ParseInt(trimmed, 10);
+		if (IsNaN(num))
+			throw new Error($"FormatException: String '{s}' was not recognized as a valid SByte.");
+		if (num < -128 || num > 127)
+			throw new Error($"OverflowException: Value '{s}' was either too large or too small for an SByte.");
+		return num;
+	}
 
 	///<summary>Converts the string representation of a number in a specified style to its 8-bit signed integer equivalent.</summary>
 	[Jazor(Op.Discard ,"static sbyte.Parse(string, System.Globalization.NumberStyles)")]
@@ -75,9 +117,21 @@ public static class SByteModule
 	[Jazor(Op.Discard ,"static sbyte.Parse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider)")]
 	public extern static Number _49c3ab5496122405(Uint32Array s, object style, Intl.NumberFormat? provider);
 
-	///<summary>Tries to convert the string representation of a number to its <see cref="T:System.SByte" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
-	[Jazor(Op.Discard ,"static sbyte.TryParse(string, out sbyte)")]
-	public extern static Array<object?> _d9082c2537283f95(string? s, Number result);
+	/// <summary>
+	/// C#: sbyte.TryParse(s, out result)
+	/// JS: 返回 [success, parsedValue]
+	/// </summary>
+	[Jazor(Op.Import, "static sbyte.TryParse(string, out sbyte)")]
+	public static Array<object?> _d9082c2537283f95(string? s, Number result)
+	{
+		if (s == null)
+			return [false, 0];
+		var trimmed = s.Trim();
+		var num = ParseInt(trimmed, 10);
+		if (IsNaN(num) || num < -128 || num > 127)
+			return [false, 0];
+		return [true, num];
+	}
 
 	///<summary>Tries to convert the span representation of a number to its <see cref="T:System.SByte" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static sbyte.TryParse(System.ReadOnlySpan<char>, out sbyte)")]
@@ -93,129 +147,9 @@ public static class SByteModule
 
 	///<summary>Tries to convert the span representation of a number in a specified style and culture-specific format to its <see cref="T:System.SByte" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static sbyte.TryParse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider, out sbyte)")]
-	public extern static Array<object?> _9d5e37148ebfe7f5(Uint32Array s, object style, Intl.NumberFormat? provider, Number result);
+	public extern static Array<object?> _9d5e37148ebfe7f5(Uint32Array s, object style, Intl.NumberFormat? provider);
 
 	///<summary>Returns the <see cref="T:System.TypeCode" /> for value type <see cref="T:System.SByte" />.</summary>
 	[Jazor(Op.Discard ,"sbyte.GetTypeCode()")]
 	public extern static System.TypeCode _05739d4cc5ffd426(Number instance);
-
-	///<summary>Computes the quotient and remainder of two values.</summary>
-	[Jazor(Op.Discard ,"static sbyte.DivRem(sbyte, sbyte)")]
-	public extern static (sbyte Quotient, sbyte Remainder) _b77d7bfe141b3f05(Number left, Number right);
-
-	///<summary>Computes the number of leading zeros in a value.</summary>
-	[Jazor(Op.Discard ,"static sbyte.LeadingZeroCount(sbyte)")]
-	public extern static Number _b15d784594c3c77a(Number value);
-
-	///<summary>Computes the number of bits that are set in a value.</summary>
-	[Jazor(Op.Discard ,"static sbyte.PopCount(sbyte)")]
-	public extern static Number _18bf827131a4d1f2(Number value);
-
-	///<summary>Rotates a value left by a given amount.</summary>
-	[Jazor(Op.Discard ,"static sbyte.RotateLeft(sbyte, int)")]
-	public extern static Number _a156afdf9d66378b(Number value, Number rotateAmount);
-
-	///<summary>Rotates a value right by a given amount.</summary>
-	[Jazor(Op.Discard ,"static sbyte.RotateRight(sbyte, int)")]
-	public extern static Number _a8c2cb9a92de8efd(Number value, Number rotateAmount);
-
-	///<summary>Computes the number of trailing zeros in a value.</summary>
-	[Jazor(Op.Discard ,"static sbyte.TrailingZeroCount(sbyte)")]
-	public extern static Number _c68b30466f995072(Number value);
-
-	///<summary>Determines if a value is a power of two.</summary>
-	[Jazor(Op.Discard ,"static sbyte.IsPow2(sbyte)")]
-	public extern static bool _25fac8c1c0089367(Number value);
-
-	///<summary>Computes the log2 of a value.</summary>
-	[Jazor(Op.Discard ,"static sbyte.Log2(sbyte)")]
-	public extern static Number _dba579eec9ba3de5(Number value);
-
-	///<summary>Clamps a value to an inclusive minimum and maximum value.</summary>
-	[Jazor(Op.Discard ,"static sbyte.Clamp(sbyte, sbyte, sbyte)")]
-	public extern static Number _b8fd62c157dfa221(Number value, Number min, Number max);
-
-	///<summary>Copies the sign of a value to the sign of another value.</summary>
-	[Jazor(Op.Discard ,"static sbyte.CopySign(sbyte, sbyte)")]
-	public extern static Number _14e4ea7e74086ad7(Number value, Number sign);
-
-	///<summary>Compares two values to compute which is greater.</summary>
-	[Jazor(Op.Discard ,"static sbyte.Max(sbyte, sbyte)")]
-	public extern static Number _77fa5be291628cd5(Number x, Number y);
-
-	///<summary>Compares two values to compute which is lesser.</summary>
-	[Jazor(Op.Discard ,"static sbyte.Min(sbyte, sbyte)")]
-	public extern static Number _b9b655261540ef89(Number x, Number y);
-
-	///<summary>Computes the sign of a value.</summary>
-	[Jazor(Op.Discard ,"static sbyte.Sign(sbyte)")]
-	public extern static Number _8c50aab12919fd23(Number value);
-
-	///<summary>Computes the absolute of a value.</summary>
-	[Jazor(Op.Discard ,"static sbyte.Abs(sbyte)")]
-	public extern static Number _08da3784dbe3da67(Number value);
-
-	///<summary>Creates an instance of the current type from a value, throwing an overflow exception for any values that fall outside the representable range of the current type.</summary>
-	[Jazor(Op.Discard ,"static sbyte.CreateChecked<TOther>(TOther)")]
-	public extern static Number _501bd486a2bc7fa1<TOther>(object value);
-
-	///<summary>Creates an instance of the current type from a value, saturating any values that fall outside the representable range of the current type.</summary>
-	[Jazor(Op.Discard ,"static sbyte.CreateSaturating<TOther>(TOther)")]
-	public extern static Number _ee8e2108052a9077<TOther>(object value);
-
-	///<summary>Creates an instance of the current type from a value, truncating any values that fall outside the representable range of the current type.</summary>
-	[Jazor(Op.Discard ,"static sbyte.CreateTruncating<TOther>(TOther)")]
-	public extern static Number _af0b5dd1926072c2<TOther>(object value);
-
-	///<summary>Determines if a value represents an even integral number.</summary>
-	[Jazor(Op.Discard ,"static sbyte.IsEvenInteger(sbyte)")]
-	public extern static bool _774b4b6369e38721(Number value);
-
-	///<summary>Determines if a value is negative.</summary>
-	[Jazor(Op.Discard ,"static sbyte.IsNegative(sbyte)")]
-	public extern static bool _05e5ab5a1229717a(Number value);
-
-	///<summary>Determines if a value represents an odd integral number.</summary>
-	[Jazor(Op.Discard ,"static sbyte.IsOddInteger(sbyte)")]
-	public extern static bool _6166df44a8170b3d(Number value);
-
-	///<summary>Determines if a value is positive.</summary>
-	[Jazor(Op.Discard ,"static sbyte.IsPositive(sbyte)")]
-	public extern static bool _6d4962564b03c732(Number value);
-
-	///<summary>Compares two values to compute which is greater.</summary>
-	[Jazor(Op.Discard ,"static sbyte.MaxMagnitude(sbyte, sbyte)")]
-	public extern static Number _739529a82a66a4ac(Number x, Number y);
-
-	///<summary>Compares two values to compute which is lesser.</summary>
-	[Jazor(Op.Discard ,"static sbyte.MinMagnitude(sbyte, sbyte)")]
-	public extern static Number _2b180f3969fde348(Number x, Number y);
-
-	///<summary>Tries to parse a string into a value.</summary>
-	[Jazor(Op.Discard ,"static sbyte.TryParse(string, System.IFormatProvider, out sbyte)")]
-	public extern static Array<object?> _eb0b5e4bda3cf5a8(string? s, Intl.NumberFormat? provider, Number result);
-
-	///<summary>Parses a span of characters into a value.</summary>
-	[Jazor(Op.Discard ,"static sbyte.Parse(System.ReadOnlySpan<char>, System.IFormatProvider)")]
-	public extern static Number _f0c24922fba904dc(Uint32Array s, Intl.NumberFormat? provider);
-
-	///<summary>Tries to parse a span of characters into a value.</summary>
-	[Jazor(Op.Discard ,"static sbyte.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, out sbyte)")]
-	public extern static Array<object?> _9c15d03f28f55ad0(Uint32Array s, Intl.NumberFormat? provider, Number result);
-
-	///<summary>Parses a span of UTF-8 characters into a value.</summary>
-	[Jazor(Op.Discard ,"static sbyte.Parse(System.ReadOnlySpan<byte>, System.Globalization.NumberStyles, System.IFormatProvider)")]
-	public extern static Number _da4b7921ed508906(Uint8Array utf8Text, object style, Intl.NumberFormat? provider);
-
-	///<summary>Tries to parse a span of UTF-8 characters into a value.</summary>
-	[Jazor(Op.Discard ,"static sbyte.TryParse(System.ReadOnlySpan<byte>, System.Globalization.NumberStyles, System.IFormatProvider, out sbyte)")]
-	public extern static Array<object?> _bb5b59fba854851f(Uint8Array utf8Text, object style, Intl.NumberFormat? provider, Number result);
-
-	///<summary>Parses a span of UTF-8 characters into a value.</summary>
-	[Jazor(Op.Discard ,"static sbyte.Parse(System.ReadOnlySpan<byte>, System.IFormatProvider)")]
-	public extern static Number _fad48943b004f2cf(Uint8Array utf8Text, Intl.NumberFormat? provider);
-
-	///<summary>Tries to parse a span of UTF-8 characters into a value.</summary>
-	[Jazor(Op.Discard ,"static sbyte.TryParse(System.ReadOnlySpan<byte>, System.IFormatProvider, out sbyte)")]
-	public extern static Array<object?> _88a4e6839132acad(Uint8Array utf8Text, Intl.NumberFormat? provider, Number result);
 }

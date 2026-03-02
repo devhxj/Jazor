@@ -4,6 +4,34 @@ namespace Jazor.CLR;
 [Jazor(Op.Import, "System.Nullable","System/NullableModule.js")]
 public static class NullableModule
 {
+	/// <summary>
+	/// C#: nullable.HasValue
+	/// JS: value !== null && value !== undefined
+	/// </summary>
+	[Jazor(Op.Inline, "System.Nullable<T>.HasValue.get", "(@#{0} !== null && @#{0} !== undefined)")]
+	public extern static bool _hasValue<T>(T? instance);
+
+	/// <summary>
+	/// C#: nullable.Value
+	/// JS: value (throws if null)
+	/// </summary>
+	[Jazor(Op.Inline, "System.Nullable<T>.Value.get", "@#{0}")]
+	public extern static T _value<T>(T? instance);
+
+	/// <summary>
+	/// C#: nullable.GetValueOrDefault()
+	/// JS: value ?? default(T)
+	/// </summary>
+	[Jazor(Op.Inline, "System.Nullable<T>.GetValueOrDefault()", "(@#{0} ?? null)")]
+	public extern static T? _getValueOrDefault<T>(T? instance);
+
+	/// <summary>
+	/// C#: nullable.GetValueOrDefault(defaultValue)
+	/// JS: value ?? defaultValue
+	/// </summary>
+	[Jazor(Op.Inline, "System.Nullable<T>.GetValueOrDefault(T)", "(@#{0} ?? @#{1})")]
+	public extern static T _getValueOrDefaultWithDefault<T>(T? instance, T defaultValue);
+
 	///<summary>Compares the relative values of two <see cref="T:System.Nullable`1" /> objects.</summary>
 	[Jazor(Op.Discard ,"static System.Nullable.Compare<T>(T?, T?)")]
 	public extern static Number _fcbe94e0f2cfc6f4<T>(object n1, object n2);

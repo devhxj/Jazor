@@ -173,7 +173,11 @@ public static class CharModule
 	[Jazor(Op.Inline, "static char.IsBetween(char, char, char)", "(@#{0} &gt;= @#{1} &amp;&amp; @#{0} &lt;= @#{2})")]
 	public extern static bool _dfb76865a7840d43(Number c, Number minInclusive, Number maxInclusive);
 
-	[Jazor(Op.Discard, "static char.IsLetter(char)")]
+	/// <summary>
+	/// C#: char.IsLetter(c)
+	/// JS: /[a-zA-Z]/.test(String.fromCharCode(c))
+	/// </summary>
+	[Jazor(Op.Inline, "static char.IsLetter(char)", "/[a-zA-Z]/.test(String.fromCharCode(@#{0}))")]
 	public extern static bool _38721338a529a8d7(Number c);
 
 	/// <summary>
@@ -184,16 +188,32 @@ public static class CharModule
 	[Jazor(Op.Inline, "static char.IsWhiteSpace(char)", "(@#{0} == 32 || @#{0} == 9 || @#{0} == 10 || @#{0} == 13 || @#{0} == 12)")]
 	public extern static bool _16e351e6f7b127f7(Number c);
 
-	[Jazor(Op.Discard, "static char.IsUpper(char)")]
+	/// <summary>
+	/// C#: char.IsUpper(c)
+	/// JS: /[A-Z]/.test(String.fromCharCode(c))
+	/// </summary>
+	[Jazor(Op.Inline, "static char.IsUpper(char)", "/[A-Z]/.test(String.fromCharCode(@#{0}))")]
 	public extern static bool _7d70d8021ab255a8(Number c);
 
-	[Jazor(Op.Discard, "static char.IsLower(char)")]
+	/// <summary>
+	/// C#: char.IsLower(c)
+	/// JS: /[a-z]/.test(String.fromCharCode(c))
+	/// </summary>
+	[Jazor(Op.Inline, "static char.IsLower(char)", "/[a-z]/.test(String.fromCharCode(@#{0}))")]
 	public extern static bool _b344d14ce0e33570(Number c);
 
-	[Jazor(Op.Discard, "static char.IsPunctuation(char)")]
+	/// <summary>
+	/// C#: char.IsPunctuation(c)
+	/// JS: 常见标点符号范围检查
+	/// </summary>
+	[Jazor(Op.Inline, "static char.IsPunctuation(char)", "/[!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~]/.test(String.fromCharCode(@#{0}))")]
 	public extern static bool _ce3de1c060963041(Number c);
 
-	[Jazor(Op.Discard, "static char.IsLetterOrDigit(char)")]
+	/// <summary>
+	/// C#: char.IsLetterOrDigit(c)
+	/// JS: /[a-zA-Z0-9]/.test(String.fromCharCode(c))
+	/// </summary>
+	[Jazor(Op.Inline, "static char.IsLetterOrDigit(char)", "/[a-zA-Z0-9]/.test(String.fromCharCode(@#{0}))")]
 	public extern static bool _49432dd2165d98f0(Number c);
 
 	/// <summary>

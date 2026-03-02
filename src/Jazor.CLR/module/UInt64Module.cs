@@ -1,42 +1,73 @@
 namespace Jazor.CLR;
 
+/// <summary>
+/// System.UInt64 (ulong) 类型模块映射规则
+///
+/// C# ulong 与 JavaScript BigInt 的对应关系：
+/// - C# ulong 是 64 位无符号整数
+/// - JavaScript BigInt 可以精确表示任意大小的整数
+///
+/// Op 类型选择原则：
+/// - Inline: 简单比较和运算
+/// - Replace: JS BigInt 方法
+/// - Import: 需要完整实现的复杂逻辑（Parse/TryParse）
+/// - Discard: 不支持的功能
+/// </summary>
 [ECMAScriptModule]
 [Jazor(Op.Import, "ulong","System/UInt64Module.js")]
 public static class UInt64Module
 {
-	//ulong.MaxValue = 18446744073709551615;
+	/// <summary>
+	/// C#: ulong.MaxValue
+	/// JS: 18446744073709551615n
+	/// </summary>
+	[Jazor(Op.Inline, "static ulong.MaxValue", "18446744073709551615n")]
+	public extern static BigInt _8aa4e14b6f65b46f();
 
-	//ulong.MinValue = 0;
+	/// <summary>
+	/// C#: ulong.MinValue
+	/// JS: 0n
+	/// </summary>
+	[Jazor(Op.Inline, "static ulong.MinValue", "0n")]
+	public extern static BigInt _0e4e92f6bb2f0389();
 
 	[Jazor(Op.Discard ,"ulong.UInt64()")]
 	public extern static BigInt _6e7ac89a8d6e0188();
 
 	///<summary>Produces the full product of two unsigned 64-bit numbers.</summary>
-	[Jazor(Op.Discard ,"static ulong.BigMul(ulong, ulong)")]
+	[Jazor(Op.Inline, "static ulong.BigMul(ulong, ulong)", "(@#{0} * @#{1})")]
 	public extern static BigInt _0b66aa6b0604bed0(BigInt left, BigInt right);
 
 	///<summary>Compares this instance to a specified object and returns an indication of their relative values.</summary>
-	[Jazor(Op.Discard ,"ulong.CompareTo(object)")]
-	public extern static Number _b50ba86b85d8ac33(BigInt instance, object? value);
+	[Jazor(Op.Import, "ulong.CompareTo(object)")]
+	public static Number _b50ba86b85d8ac33(BigInt instance, object? value)
+	{
+		if (value == null)
+			return 1;
+		// Check if value is a BigInt
+		if (value is BigInt bigIntValue)
+			return instance < bigIntValue ? -1 : (instance > bigIntValue ? 1 : 0);
+		throw new Error("ArgumentException: Object must be of type UInt64.");
+	}
 
 	///<summary>Compares this instance to a specified 64-bit unsigned integer and returns an indication of their relative values.</summary>
-	[Jazor(Op.Discard ,"ulong.CompareTo(ulong)")]
+	[Jazor(Op.Inline, "ulong.CompareTo(ulong)", "(@#{0} < @#{1} ? -1 : (@#{0} > @#{1} ? 1 : 0))")]
 	public extern static Number _46d8680dadd72b04(BigInt instance, BigInt value);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
-	[Jazor(Op.Discard ,"override ulong.Equals(object)")]
+	[Jazor(Op.Inline, "override ulong.Equals(object)", "(@#{0} === @#{1})")]
 	public extern static bool _a0651bb3484c4e26(BigInt instance, object? obj);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified <see cref="T:System.UInt64" /> value.</summary>
-	[Jazor(Op.Discard ,"ulong.Equals(ulong)")]
+	[Jazor(Op.Inline, "ulong.Equals(ulong)", "(@#{0} === @#{1})")]
 	public extern static bool _aefa4fdc77a1c743(BigInt instance, BigInt obj);
 
 	///<summary>Returns the hash code for this instance.</summary>
-	[Jazor(Op.Discard ,"override ulong.GetHashCode()")]
+	[Jazor(Op.Discard, "override ulong.GetHashCode()")]
 	public extern static Number _19d2adbbe01a8cf8(BigInt instance);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation.</summary>
-	[Jazor(Op.Discard ,"override ulong.ToString()")]
+	[Jazor(Op.Replace, "override ulong.ToString()", "toString")]
 	public extern static string _d5be50f364f87ca3(BigInt instance);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation using the specified culture-specific format information.</summary>
@@ -59,9 +90,32 @@ public static class UInt64Module
 	[Jazor(Op.Discard ,"ulong.TryFormat(System.Span<byte>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)")]
 	public extern static Array<object?> _037cf8cd2c632d87(BigInt instance, Uint8Array utf8Destination, Number bytesWritten, Uint32Array format, Intl.NumberFormat? provider);
 
-	///<summary>Converts the string representation of a number to its 64-bit unsigned integer equivalent.</summary>
-	[Jazor(Op.Discard ,"static ulong.Parse(string)")]
-	public extern static BigInt _ab08b15d1ba56047(string s);
+	/// <summary>
+	/// C#: ulong.Parse(s)
+	/// JS: BigInt_(s) with validation
+	/// </summary>
+	[Jazor(Op.Import, "static ulong.Parse(string)")]
+	public static BigInt _ab08b15d1ba56047(string? s)
+	{
+		if (s == null)
+			throw new Error("ArgumentNullException: String cannot be null.");
+
+		var trimmed = s.Trim();
+		try
+		{
+			var result = BigInt_(trimmed);
+			// Check ulong range: 0 to 18446744073709551615
+			var minValue = BigInt_("0");
+			var maxValue = BigInt_("18446744073709551615");
+			if (result < minValue || result > maxValue)
+				throw new Error($"OverflowException: Value '{s}' was either too large or too small for a UInt64.");
+			return result;
+		}
+		catch
+		{
+			throw new Error($"FormatException: String '{s}' was not recognized as a valid UInt64.");
+		}
+	}
 
 	///<summary>Converts the string representation of a number in a specified style to its 64-bit unsigned integer equivalent.</summary>
 	[Jazor(Op.Discard ,"static ulong.Parse(string, System.Globalization.NumberStyles)")]
@@ -79,9 +133,32 @@ public static class UInt64Module
 	[Jazor(Op.Discard ,"static ulong.Parse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider)")]
 	public extern static BigInt _a23571df8c6c19c9(Uint32Array s, object style, Intl.NumberFormat? provider);
 
-	///<summary>Tries to convert the string representation of a number to its 64-bit unsigned integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
-	[Jazor(Op.Discard ,"static ulong.TryParse(string, out ulong)")]
-	public extern static Array<object?> _a2771534d71206bd(string? s, BigInt result);
+	/// <summary>
+	/// C#: ulong.TryParse(s, out result)
+	/// JS: 返回 [success, parsedValue]
+	/// </summary>
+	[Jazor(Op.Import, "static ulong.TryParse(string, out ulong)")]
+	public static Array<object?> _a2771534d71206bd(string? s, BigInt result)
+	{
+		if (s == null)
+			return [false, BigInt.Zero];
+
+		var trimmed = s.Trim();
+		try
+		{
+			var parsed = BigInt_(trimmed);
+			// Check ulong range: 0 to 18446744073709551615
+			var minValue = BigInt_("0");
+			var maxValue = BigInt_("18446744073709551615");
+			if (parsed < minValue || parsed > maxValue)
+				return [false, BigInt.Zero];
+			return [true, parsed];
+		}
+		catch
+		{
+			return [false, BigInt.Zero];
+		}
+	}
 
 	///<summary>Tries to convert the span representation of a number to its 64-bit unsigned integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static ulong.TryParse(System.ReadOnlySpan<char>, out ulong)")]
