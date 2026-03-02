@@ -456,10 +456,12 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		Assert.AreEqual(
+@"{
   let str = ""hello"";
-  let len = str.Length;
+  let len = str.length;
 }", script);
+
 	}
 
 	/// <summary>
@@ -484,9 +486,11 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
-  let now = DateTime.Now;
+		Assert.AreEqual(
+@"{
+  let now = new Date;
 }", script);
+
 	}
 
 	/// <summary>
@@ -616,13 +620,13 @@ public sealed class SemanticWalkerReferenceTest
 		Assert.AreEqual(
 @"{
   let x = BigInt(100);
-  let y = _77fc63f99954f8da();
+  let y = 0n;
   let z = _155212572c9a3297(""33"");
   let w = y++;
   let v = z * BigInt(33);
-  let a = y === y ? 0 : y > y ? 1 : -1;
-  let b = z.toString();
-  let c = w === v;
+  let a = y.CompareTo(y);
+  let b = z.ToString();
+  let c = w.Equals(v);
   console.log(z);
   this.TestMethod(x, y);
 }", script);

@@ -206,7 +206,7 @@ public static class CharModule
 	/// C#: char.IsPunctuation(c)
 	/// JS: 常见标点符号范围检查
 	/// </summary>
-	[Jazor(Op.Inline, "static char.IsPunctuation(char)", "/[!\\\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~]/.test(String.fromCharCode(@#{0}))")]
+	[Jazor(Op.Inline, "static char.IsPunctuation(char)", "/[!\\\"#$%&'()*+,-./:;<=>?@[\\\\]^_`{|}~]/.test(String.fromCharCode(@#{0}))")]
 	public extern static bool _ce3de1c060963041(Number c);
 
 	/// <summary>

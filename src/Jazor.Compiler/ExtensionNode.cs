@@ -23,7 +23,7 @@ public sealed class LineComment : Statement
 /// </summary>
 public sealed class UnsafeRawExpression : Expression
 {
-    private UnsafeRawExpression(in string unsafeRaw) : base(NodeType.Extension) => UnsafeRaw = unsafeRaw;
+    public UnsafeRawExpression(in string unsafeRaw) : base(NodeType.Extension) => UnsafeRaw = unsafeRaw;
 
     public string UnsafeRaw { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 

@@ -1243,7 +1243,7 @@ public sealed class SemanticWalkerCreationTest
         Assert.AreEqual(
 @"{
   let list = [];
-  list.Add((() => {
+  list.push((() => {
     let v$0 = new Outer;
     v$0.Inner = new Inner;
     v$0.Inner.Value = 42;
@@ -1684,7 +1684,7 @@ public sealed class SemanticWalkerCreationTest
         Assert.AreEqual(
 @"{
   let list = [];
-  list.Add((new Outer).Value);
+  list.push((new Outer).Value);
 }", script);
 
     }

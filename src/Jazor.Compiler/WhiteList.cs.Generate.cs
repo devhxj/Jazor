@@ -23,7 +23,6 @@ internal static partial class WhiteList
 		types["decimal"] = new(Op.Import, "System/DecimalModule.js");
 		types["System.Collections.Generic.Dictionary<TKey, TValue>"] = new(Op.Import, "System/Collections/Generic/DictionaryModule.js");
 		types["double"] = new(Op.Import, "System/DoubleModule.js");
-		types["System.Exception"] = new(Op.Import, "System/ExceptionModule.js");
 		types["System.Globalization.GregorianCalendar"] = new(Op.Import, "System/Globalization/GregorianCalendarModule.js");
 		types["System.Collections.Generic.HashSet<T>"] = new(Op.Import, "System/Collections/Generic/HashSetModule.js");
 		types["short"] = new(Op.Import, "System/Int16Module.js");
@@ -47,6 +46,7 @@ internal static partial class WhiteList
 		types["System.ValueTuple"] = new(Op.Import, "System/ValueTupleModule.js");
 		types["System.WeakReference"] = new(Op.Import, "System/WeakReferenceModule.js");
 		types["System.Console"] = new(Op.Replace, "console");
+		types["System.Exception"] = new(Op.Replace, "Error");
 		types["System.Math"] = new(Op.Replace, "Math");
 		
 		// 初始化成员
@@ -275,7 +275,7 @@ internal static partial class WhiteList
 		members["static char.IsWhiteSpace(char)"] = new(Op.Inline, "(@#{0} == 32 || @#{0} == 9 || @#{0} == 10 || @#{0} == 13 || @#{0} == 12)");
 		members["static char.IsUpper(char)"] = new(Op.Inline, "/[A-Z]/.test(String.fromCharCode(@#{0}))");
 		members["static char.IsLower(char)"] = new(Op.Inline, "/[a-z]/.test(String.fromCharCode(@#{0}))");
-		members["static char.IsPunctuation(char)"] = new(Op.Inline, "/[!\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]/.test(String.fromCharCode(@#{0}))");
+		members["static char.IsPunctuation(char)"] = new(Op.Inline, "/[!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~]/.test(String.fromCharCode(@#{0}))");
 		members["static char.IsLetterOrDigit(char)"] = new(Op.Inline, "/[a-zA-Z0-9]/.test(String.fromCharCode(@#{0}))");
 		members["static char.ToUpper(char, System.Globalization.CultureInfo)"] = new(Op.Inline, "String.fromCharCode(@#{0}).toUpperCase().charCodeAt(0)");
 		members["static char.ToUpper(char)"] = new(Op.Inline, "String.fromCharCode(@#{0}).toUpperCase().charCodeAt(0)");
@@ -931,7 +931,7 @@ internal static partial class WhiteList
 		members["System.Text.StringBuilder.Append(string)"] = new(Op.Inline, "(@#{1} != null ? @#{0}.push(...@#{1}.split('')) : @#{0}, @#{0})");
 		members["System.Text.StringBuilder.AppendLine()"] = new(Op.Inline, "(@#{0}.push('\n'), @#{0})");
 		members["System.Text.StringBuilder.AppendLine(string)"] = new(Op.Inline, "(@#{1} != null ? @#{0}.push(...@#{1}.split('')) : @#{0}, @#{0}.push('\n'), @#{0})");
-		members["static readonly string.Empty"] = new(Op.Inline, """");
+		members["static readonly string.Empty"] = new(Op.Inline, "\"\"");
 		members["static string.Compare(string, string)"] = new(Op.Import, "_e16eea9fe3891a62", "System/StringModule.js");
 		members["static string.Compare(string, string, bool)"] = new(Op.Import, "_20874c0b43640318", "System/StringModule.js");
 		members["string.EndsWith(string)"] = new(Op.Replace, "endsWith");

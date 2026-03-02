@@ -45,15 +45,11 @@ public partial class SemanticWalker
         {
             // 定义catch使用的param
             var tryParam = new Identifier(GetUniqueName(operation));
-            var queue = new Stack<ICatchClauseOperation>();
+            List<Statement> alternates = [];
             foreach (var @catch in operation.Catches)
-                queue.Push(@catch);
-
-            Statement? alternate = null;
-            while (queue.Count > 0)
             {
-                var @catch = queue.Pop();
-                var right = new Identifier(@catch.ExceptionType.Name);
+                var mapper = GetMapperType(@catch.ExceptionType);
+                var right = mapper.Expression;
                 // 传递 tryParam 作为 exceptionParam，用于 when 条件检查
                 var statements = ExtractCatchClauseBody(@catch, argument, tryParam);
                 var param = ExtractCatchClauseParam(@catch);
@@ -68,13 +64,13 @@ public partial class SemanticWalker
                 }
                 var body = new NestedBlockStatement(NodeList.From(statements));
                 var test = new NonLogicalBinaryExpression(Operator.InstanceOf, tryParam, right);
-                alternate = new IfStatement(test, body, alternate: alternate);
+                alternates.Add(new IfStatement(test, body, null));
             }
 
-            if (alternate is null)
+            if (alternates.Count == 0)
                 return HandleTransformationFailure<Node>(operation, "Try statement catch clause could not be translated to JavaScript.");
 
-            var catchBody = new NestedBlockStatement(NodeList.From(alternate));
+            var catchBody = new NestedBlockStatement(NodeList.From(alternates));
             handler = new CatchClause(tryParam, catchBody);
         }
 
@@ -123,6 +119,10 @@ public partial class SemanticWalker
             }
         }
 
+        // 如果没有异常变量名，使用父级try的唯一名称作为参数名
+        if(param is null && operation.Parent is not null)
+            param = new Identifier(GetUniqueName(operation));
+        
         return param;
     }
 
@@ -213,8 +213,9 @@ public partial class SemanticWalker
 		Expression expr;
 		if (operation.Exception is not null)
 			expr = Translate<Expression>(operation.Exception, argument);
-		else
-			expr = new Identifier(GetUniqueName(operation));
+        else
+            // 重新抛出当前异常，使用父级try的异常参数
+			expr = new Identifier(GetUniqueName(operation.Parent!.Parent!)); 
 
 		return new ThrowStatement(expr);
 	}

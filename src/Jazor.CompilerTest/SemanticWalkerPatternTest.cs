@@ -1081,7 +1081,7 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(
 @"{
   let person = { Name: ""John"", Age: 30 };
-  let result = person && Object.prototype.hasOwnProperty.call(person, ""Name"") && person.Name === ""John"";
+  let result = person != null && (""Name"" in person && person.Name === ""John"");
 }", script);
 
   }
@@ -1137,10 +1137,11 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let obj = { Name: ""John"", Age: 30 };
-  let result = obj && Object.prototype.hasOwnProperty.call(obj, ""Name"") && obj.Name === ""John"" && (obj && Object.prototype.hasOwnProperty.call(obj, ""Age"") && obj.Age > 18);
-  }", script);
+  let result = obj != null && ""Name"" in obj && obj.Name === ""John"" && ""Age"" in obj && obj.Age > 18;
+}", script);
 
   }
 
@@ -1170,7 +1171,9 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitRecursivePattern(recursivePatternOperation, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"obj && Object.prototype.hasOwnProperty.call(obj, ""Name"") && obj.Name === ""John"" && (obj && Object.prototype.hasOwnProperty.call(obj, ""Age"") && obj.Age > 18)", script);
+    Assert.AreEqual(
+@"obj != null && (""Name"" in obj && obj.Name === ""John"") && (obj != null && (""Age"" in obj && obj.Age > 18))", script);
+
   }
 
   /// <summary>
@@ -1337,11 +1340,12 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let array = [1, 2, 3, 4, 5];
   let rest;
   if (Array.isArray(array) && array.length >= 0 && (rest = array.slice(0), true)) {
-    console.log(rest.Length);
+    console.log(rest.length);
   }
 }", script);
 
@@ -1488,14 +1492,16 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let array = [1, 2, 3, 4, 5];
   let first, rest;
   if (Array.isArray(array) && array.length >= 1 && (first = array[0], true) && (rest = array.slice(1), true)) {
     console.log(first);
-    console.log(rest.Length);
+    console.log(rest.length);
   }
 }", script);
+
   }
 
   /// <summary>
@@ -1761,17 +1767,19 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let person = { Name: ""John"", Age: 30 };
   let result = (() => {
     const v$0 = person;
-    if (Object.prototype.hasOwnProperty.call(v$0, ""Name"") && v$0.Name === ""John"")
+    if (v$0 != null && (""Name"" in v$0 && v$0.Name === ""John""))
       return ""Hello John"";
-    if (Object.prototype.hasOwnProperty.call(v$0, ""Age"") && v$0.Age > 18)
+    if (v$0 != null && (""Age"" in v$0 && v$0.Age > 18))
       return ""Adult"";
     return ""Unknown"";
   })();
 }", script);
+
   }
 
   /// <summary>
@@ -1799,7 +1807,8 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let array = [1, 2, 3, 4, 5];
   let first, second, rest;
   if (Array.isArray(array) && array.length >= 2 && (first = array[0], true) && (second = array[1], true) && (rest = array.slice(2), true)) {
@@ -1807,6 +1816,7 @@ public sealed class SemanticWalkerPatternTest
     console.log(second);
   }
 }", script);
+
   }
 
   /// <summary>
@@ -1830,9 +1840,10 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let data = { Inner: { Value: 42 } };
-  let result = Object.prototype.hasOwnProperty.call(data, ""Inner"") && (Object.prototype.hasOwnProperty.call(data.Inner, ""Value"") && data.Inner.Value > 0);
+  let result = data != null && (""Inner"" in data && (data.Inner != null && (""Value"" in data.Inner && data.Inner.Value > 0)));
 }", script);
 
   }
@@ -1858,10 +1869,12 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let obj = ""hello"";
-  let result = typeof obj === ""string"" && (Object.prototype.hasOwnProperty.call(obj, ""Length"") && obj.Length > 0);
+  let result = typeof obj === ""string"" && (obj != null && (""length"" in obj && obj.length > 0));
 }", script);
+
   }
 
   /// <summary>
@@ -2027,10 +2040,12 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
-  let obj = DateTime.Now;
+    Assert.AreEqual(
+@"{
+  let obj = new Date;
   let result = obj instanceof Date;
 }", script);
+
   }
 
   /// <summary>
@@ -2536,7 +2551,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitPatternCaseClause(patternCaseClause, new());
     var script = node?.ToECMAScript();
 
-    Assert.AreEqual(@"typeof v$0===""string""&&(s=v$0,true)&&s.Length>0", script);
+    Assert.AreEqual(@"typeof v$0===""string""&&(s=v$0,true)&&s.length>0", script);
   }
 
   /// <summary>
@@ -2750,10 +2765,12 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let obj = { Name: ""Test"", Value: 42 };
-  let result = Object.prototype.hasOwnProperty.call(obj, ""Name"") && obj.Name === ""Test"";
+  let result = obj != null && (""Name"" in obj && obj.Name === ""Test"");
 }", script);
+
   }
 
   /// <summary>
@@ -2999,10 +3016,12 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let data = { Inner: { Value: 42 } };
-  let result = Object.prototype.hasOwnProperty.call(data, ""Inner"") && (Object.prototype.hasOwnProperty.call(data.Inner, ""Value"") && data.Inner.Value === 42);
+  let result = data != null && (""Inner"" in data && (data.Inner != null && (""Value"" in data.Inner && data.Inner.Value === 42)));
 }", script);
+
   }
 
   /// <summary>
@@ -3031,18 +3050,20 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let obj = { X: 1, Y: 2 };
   let x;
   let result = (() => {
     const v$0 = obj;
-    if (Object.prototype.hasOwnProperty.call(v$0, ""X"") && v$0.X === 1 && (Object.prototype.hasOwnProperty.call(v$0, ""Y"") && v$0.Y === 2))
+    if (v$0 != null && (""X"" in v$0 && v$0.X === 1) && (v$0 != null && (""Y"" in v$0 && v$0.Y === 2)))
       return ""Point (1,2)"";
-    if (Object.prototype.hasOwnProperty.call(v$0, ""X"") && (x = v$0.X, true) && x > 0)
+    if (v$0 != null && (""X"" in v$0 && (x = v$0.X, true)) && x > 0)
       return ""Positive X"";
     return ""Other"";
   })();
 }", script);
+
   }
 
   #region 边界情况测试 - 特殊数值
@@ -3291,10 +3312,12 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let value = ""hello"";
-  let result = typeof value === ""string"" && (Object.prototype.hasOwnProperty.call(value, ""Length"") && (value.Length > 0 && value.Length < 10));
+  let result = typeof value === ""string"" && (value != null && (""length"" in value && (value.length > 0 && value.length < 10)));
 }", script);
+
   }
 
   /// <summary>
@@ -3318,10 +3341,12 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let value = """";
   let result = typeof value === ""string"" && (Object.prototype.hasOwnProperty.call(value, ""Length"") && value.Length === 0);
 }", script);
+
   }
 
   #endregion

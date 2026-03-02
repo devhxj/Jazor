@@ -222,14 +222,14 @@ public partial class SemanticWalker
 			return null;
 
 		var valueStr = Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture);
-		var mapper = GetMapperType(type, out var displayName);
+		var mapper = GetMapperType(type);
 
 		// 布尔值字面量：true / false
-		if (mapper == TypeMapper.Boolean)
+		if (mapper.Mapper == TypeMapper.Boolean)
 			return new BooleanLiteral((bool)value, ((bool)value).ToString().ToLowerInvariant());
 
 		// 字符串和字符字面量
-		else if (mapper == TypeMapper.String)
+		else if (mapper.Mapper == TypeMapper.String)
 		{
 			if (string.IsNullOrEmpty(valueStr))
 				return new StringLiteral("", "\"\"");
@@ -289,7 +289,7 @@ public partial class SemanticWalker
 		}
 
 		//  数值字面量：42 / 3.14
-		else if (mapper == TypeMapper.Number)
+		else if (mapper.Mapper == TypeMapper.Number)
 		{
 			// 对于 decimal 类型，需要处理精度损失问题
 			// decimal 范围约为 ±7.9×10²⁸，double 范围约为 ±1.7×10³⁰⁸
@@ -348,7 +348,7 @@ public partial class SemanticWalker
 		}
 
 		// BigInt 字面量：42L / 100UL / -42L -> 42n / 100n / -42n
-		else if (mapper == TypeMapper.BigInt)
+		else if (mapper.Mapper == TypeMapper.BigInt)
 		{
 			// 处理 ulong 类型（无符号 64 位整数）
 			if (type.SpecialType == SpecialType.System_UInt64)
@@ -483,24 +483,16 @@ public partial class SemanticWalker
 		// 处理 Number 与 BigInt 之间的显式转换
 		if (operation.Type is not null && operation.Operand.Type is not null)
 		{
-			var targetType = GetMapperType(operation.Type, out var _);
-			var operandType = GetMapperType(operation.Operand.Type, out var _);
+			var targetType = GetMapperType(operation.Type);
+			var operandType = GetMapperType(operation.Operand.Type);
 
 			// Number → BigInt: (long)1 → BigInt(1)
-			if (operandType == TypeMapper.Number && targetType == TypeMapper.BigInt)
-				return new CallExpression(
-					new Identifier("BigInt"),
-					NodeList.From(expr),
-					optional: false
-				);
+			if (operandType.Mapper == TypeMapper.Number && targetType.Mapper == TypeMapper.BigInt)
+				return new CallExpression(new Identifier("BigInt"), NodeList.From(expr), optional: false);
 
 			// BigInt → Number: (int)someLong → Number(someLong)
-			if (operandType == TypeMapper.BigInt && targetType == TypeMapper.Number)
-				return new CallExpression(
-					new Identifier("Number"),
-					NodeList.From(expr),
-					optional: false
-				);
+			if (operandType.Mapper == TypeMapper.BigInt && targetType.Mapper == TypeMapper.Number)
+				return new CallExpression(new Identifier("Number"), NodeList.From(expr), optional: false);
 		}
 
 		// 其他情况：直接返回操作数（JavaScript 是动态类型）

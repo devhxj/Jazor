@@ -91,7 +91,13 @@ var  b = (2,4);
 var  c = (2,"a");
 ((int bbb, int ccc),int aaa) = tuple;
 var script = @"
-const a = this.test.bind(this);
+try {
+  throw new Error(""error"");
+} catch(v$0) {
+  if (!true)
+    throw a;
+  let msg = ""caught"";
+}
 ";
 var parser = new Parser(new ParserOptions { 
 

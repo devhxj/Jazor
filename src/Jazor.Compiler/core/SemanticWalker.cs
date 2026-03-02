@@ -51,7 +51,7 @@ public sealed partial class SemanticWalker : OperationVisitor<WalkerArgument, No
         return new LogicalExpression(Operator.LogicalAnd, obj, callExpr);
     }
 
-    private static TypeMapper GetMapperType(ITypeSymbol typeSymbol, out string typeName)
+    private static (TypeMapper Mapper, string TypeName, Expression Expression, bool IsWhiteList) GetMapperType(ITypeSymbol typeSymbol, IList<Expression>? arguments = null)
     {
         // 类型映射
         // object、匿名类型、元组类型 -> js object
@@ -65,18 +65,16 @@ public sealed partial class SemanticWalker : OperationVisitor<WalkerArgument, No
         // 其他 class -> js class
         // 其他类型不支持 -> Unknown
 
-        typeName = typeSymbol.Name;
         var displayName = typeSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
-
         if (typeSymbol.IsTupleType || typeSymbol.IsAnonymousType)
-            return TypeMapper.Object;
+            return (TypeMapper.Object, "Object", new Identifier("Object"), false);
 
         // 使用 SpecialType 进行基础类型检查，更加类型安全和高效
         switch (typeSymbol.OriginalDefinition.SpecialType)
         {
             case SpecialType.System_Char:
             case SpecialType.System_String:
-                return TypeMapper.String;
+                return (TypeMapper.String, "String", new Identifier("String"), false);
             case SpecialType.System_SByte:
             case SpecialType.System_Byte:
             case SpecialType.System_Int16:
@@ -86,59 +84,47 @@ public sealed partial class SemanticWalker : OperationVisitor<WalkerArgument, No
             case SpecialType.System_Single:
             case SpecialType.System_Double:
             case SpecialType.System_Decimal:
-                return TypeMapper.Number;
+                return (TypeMapper.Number, "Number", new Identifier("Number"), false);
             case SpecialType.System_Boolean:
-                return TypeMapper.Boolean;
+                return (TypeMapper.Boolean, "Boolean", new Identifier("Boolean"), false);
             case SpecialType.System_Object:
-                return TypeMapper.Object;
+                return (TypeMapper.Object, "Object", new Identifier("Object"), false);
             case SpecialType.System_Int64:
             case SpecialType.System_UInt64:
-                return TypeMapper.BigInt;
+                return (TypeMapper.BigInt, "BigInt", new Identifier("BigInt"), false);
             case SpecialType.System_DateTime:
-                typeName = "Date";
-                return TypeMapper.Date;
+                return (TypeMapper.Date, "Date", new Identifier("Date"), false);
             default:
                 {
                     // Array 类型检查
                     if (typeSymbol.TypeKind == TypeKind.Array)
-                        return TypeMapper.Array;
+                        return (TypeMapper.Array, "Array", new Identifier("Array"), false);
 
                     // Enum 类型映射到 Number
                     else if (typeSymbol.TypeKind == TypeKind.Enum)
-                        return TypeMapper.Number;
+                        return (TypeMapper.Number, "Number", new Identifier("Number"), false);
 
                     // Date 相关类型（SpecialType 只包含 DateTime）
                     else if (displayName == "System.DateTimeOffset" ||
                         displayName == "System.DateOnly" ||
                         displayName == "System.TimeOnly")
-                    {
-                        typeName = "Date";
-                        return TypeMapper.Date;
-                    }
+                        return (TypeMapper.Date, "Date", new Identifier("Date"), false);
 
                     // BigInt 相关类型（SpecialType 只包含 Int64/UInt64）
                     else if (displayName == "System.Int128" ||
                         displayName == "System.UInt128" ||
                         displayName == "System.TimeSpan" ||
                         displayName == "System.Numerics.BigInteger")
-                    {
-                        typeName = "BigInt";
-                        return TypeMapper.BigInt;
-                    }
+                        return (TypeMapper.BigInt, "BigInt", new Identifier("BigInt"), false);
 
                     else if (
                         displayName == "System.Collections.Generic.Dictionary<TKey, TValue>" ||
                         displayName == "System.Collections.Generic.IDictionary<TKey, TValue>")
-                    {
-                        typeName = "Map";
-                        return TypeMapper.Map;
-                    }
+                        return (TypeMapper.Map, "Map", new Identifier("Map"), false);
+
 
                     else if (displayName == "System.Collections.Generic.HashSet<T>")
-                    {
-                        typeName = "Set";
-                        return TypeMapper.Set;
-                    }
+                        return (TypeMapper.Set, "Set", new Identifier("Set"), false);
 
                     // 集合类型检查
                     else if (displayName == "System.Collections.Generic.List<T>" ||
@@ -147,24 +133,44 @@ public sealed partial class SemanticWalker : OperationVisitor<WalkerArgument, No
                         displayName == "System.Collections.Generic.IEnumerable" ||
                         displayName == "System.Collections.Generic.IEnumerable<T>" ||
                         displayName == "System.Collections.Generic.ICollection<T>")
-                    {
-                        typeName = "Array";
-                        return TypeMapper.Array;
-                    }
-
-                    // Struct 类型映射到 Object
-                    else if (typeSymbol.TypeKind == TypeKind.Struct)
-                        return TypeMapper.Class;
+                        return (TypeMapper.Array, "Array", new Identifier("Array"), false);
 
                     // 对于自定义类型，使用instanceof检查（优先于接口检查）
-                    else if (typeSymbol.TypeKind == TypeKind.Class)
-                        return TypeMapper.Class;
+                    else if (typeSymbol.TypeKind == TypeKind.Struct || typeSymbol.TypeKind == TypeKind.Class)
+                    {
+                        Expression expression = new Identifier(typeSymbol.Name);
+                        var isWhiteList = false;
+                        if (WhiteList.Types.TryGetValue(displayName, out var whiteList))
+                        {
+                            if (whiteList.Op == Common.Op.Replace)
+                                expression = new Identifier(whiteList.Value!);
+
+                            else if (whiteList.Op == Common.Op.Inline)
+                            {
+                                var raw = whiteList.Value!;
+                                if (arguments?.Count > 0)
+                                {
+                                    for (var i = 0; i < arguments.Count; i++)
+                                    {
+                                        var arg = arguments[i];
+                                        raw = raw.Replace($"@#{{{i}}}", arg.ToKnRECMAScript());
+                                    }
+                                }
+                                expression = _parser.ParseExpression(raw, null, true);
+                            }
+                            isWhiteList = true;
+                        }
+
+                        return (TypeMapper.Class, typeSymbol.Name, expression, isWhiteList);
+                    }
                 }
                 break;
         }
 
-        return TypeMapper.Unknown;
+        return (TypeMapper.Unknown, typeSymbol.Name, new Identifier(typeSymbol.Name), false);
     }
+
+    private static readonly Parser _parser = new();
 
     private int _recursionDepth;
 

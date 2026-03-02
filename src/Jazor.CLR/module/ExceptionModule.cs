@@ -14,7 +14,7 @@ namespace Jazor.CLR;
 /// - Discard: 不支持或极少使用的功能
 /// </summary>
 [ECMAScriptModule]
-[Jazor(Op.Import, "System.Exception","System/ExceptionModule.js")]
+[Jazor(Op.Replace, "System.Exception","Error")]
 public static class ExceptionModule
 {
 	[Jazor(Op.Discard ,"System.Exception.TargetSite.get")]

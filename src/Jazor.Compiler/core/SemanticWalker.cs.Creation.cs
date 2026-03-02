@@ -22,19 +22,22 @@ public partial class SemanticWalker
 		if (operation.Type is null)
 			return HandleTransformationFailure<Expression>(operation, "Object creation type could not be translated to JavaScript.");
 
-		// 普通对象创建
-		var mapper = GetMapperType(operation.Type, out var typeName);
-		var callee = new Identifier(typeName);
 		var arguments = new List<Expression>();
-
 		foreach (var arg in operation.Arguments)
 			Translate(arguments, arg.Value, argument);
 
+		// 普通对象创建
+		var mapper = GetMapperType(operation.Type, arguments);
+		if (mapper.IsWhiteList)
+			return mapper.Expression;
+			
+		var typeName = mapper.TypeName;
+		var callee = new Identifier(typeName);
 		Expression expr = new NewExpression(callee, NodeList.From(arguments));
-		if (mapper == TypeMapper.BigInt)
+		if (mapper.Mapper == TypeMapper.BigInt)
 			expr = new CallExpression(callee, NodeList.From(arguments), false);
 
-		else if (mapper == TypeMapper.Array)
+		else if (mapper.Mapper == TypeMapper.Array)
 			expr = new ArrayExpression(NodeList.From<Expression?>(arguments));
 
 		if (assignObj is not null)

@@ -383,6 +383,26 @@ public partial class SemanticWalker
 			else if (entry.Op == Op.Replace)
 				propertyName = entry.Value;
 
+			else if (entry.Op == Op.Inline)
+			{
+				if (string.IsNullOrEmpty(entry.Value))
+					return HandleTransformationFailure<Node>(operation, "Inline mapping requires a template.");
+
+				// 如果是实例方法调用，插入实例作为第一个参数	
+				var arguments = new List<Expression>();
+				if (instance is not null)
+					arguments.Insert(0, instance);
+
+				var raw = entry.Value!;
+				for (var i = 0; i < arguments.Count; i++)
+				{
+					var arg = arguments[i];
+					raw = raw.Replace($"@#{{{i}}}", arg.ToKnRECMAScript());
+				}
+
+				return _parser.ParseExpression(raw, null, true); //new UnsafeRawExpression(raw);
+			}
+
 			else if (entry.Op == Op.Import)
 			{
 				if (string.IsNullOrEmpty(entry.Value))
@@ -390,7 +410,7 @@ public partial class SemanticWalker
 						"Import mapping requires a module path.");
 
 				// 生成导入调用
-				var id = new Identifier(entry.Value);
+				var id = new Identifier(entry.Value!);
 				argument.MergeImportSpecifier(entry.Value!, new ImportSpecifier(id));
 
 				// 如果是实例属性调用，插入实例作为第一个参数
@@ -457,7 +477,7 @@ public partial class SemanticWalker
 					return HandleTransformationFailure<Node>(operation, "Import mapping requires a module path.");
 
 				// 生成导入调用
-				var tempId = new Identifier(entry.Value);
+				var tempId = new Identifier(entry.Value!);
 				argument.MergeImportSpecifier(entry.Value!, new ImportSpecifier(tempId));
 				return tempId;
 			}
@@ -597,13 +617,33 @@ public partial class SemanticWalker
 			else if (entry.Op == Op.Replace)
 				methodName = entry.Value;
 
+			else if (entry.Op == Op.Inline)
+			{
+				if (string.IsNullOrEmpty(entry.Value))
+					return HandleTransformationFailure<Node>(operation, "Inline mapping requires a template.");
+
+				// 如果是实例方法调用，插入实例作为第一个参数
+				if (instance is not null)
+					arguments.Insert(0, instance);
+
+				var raw = entry.Value!;
+				for (var i = 0; i < arguments.Count; i++)
+				{
+					var arg = arguments[i];
+					raw = raw.Replace($"@#{{{i}}}", arg.ToKnRECMAScript());
+				}
+
+				var temp = _parser.ParseExpression(raw, null, true);//new UnsafeRawExpression(raw);
+				return BuildInvExpr(hasReturn, temp, refParas, argument);
+			}
+
 			else if (entry.Op == Op.Import)
 			{
 				if (string.IsNullOrEmpty(entry.Value))
 					return HandleTransformationFailure<Node>(operation, "Import mapping requires a module path.");
 
 				// 生成导入调用
-				var tempId = new Identifier(entry.Value);
+				var tempId = new Identifier(entry.Value!);
 				argument.MergeImportSpecifier(entry.Value!, new ImportSpecifier(tempId));
 
 				// 如果是实例方法调用，插入实例作为第一个参数

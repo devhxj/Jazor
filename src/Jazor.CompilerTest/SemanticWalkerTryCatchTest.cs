@@ -259,17 +259,19 @@ public sealed class SemanticWalkerTryCatchTest
         var script = node?.ToKnRECMAScript();
 
         Assert.AreEqual(
-            @"try {
+@"try {
   let x = 1;
 } catch (v$0) {
   if (v$0 instanceof ArgumentException) {
     const ex = v$0;
     let y = 2;
-  } else if (v$0 instanceof InvalidOperationException) {
+  }
+  if (v$0 instanceof InvalidOperationException) {
     const ex = v$0;
     let z = 3;
   }
 }", script);
+
     }
 
     /// <summary>
@@ -323,19 +325,21 @@ public sealed class SemanticWalkerTryCatchTest
         var script = node?.ToKnRECMAScript();
 
         Assert.AreEqual(
-            @"try {
+@"try {
   let x = 1;
 } catch (v$0) {
   if (v$0 instanceof ArgumentException) {
     const ex = v$0;
     let y = 2;
-  } else if (v$0 instanceof Exception) {
+  }
+  if (v$0 instanceof Error) {
     const ex = v$0;
     let z = 3;
   }
 } finally {
   let w = 4;
 }", script);
+
     }
 
     #endregion
@@ -367,7 +371,7 @@ public sealed class SemanticWalkerTryCatchTest
         var script = node?.ToKnRECMAScript();
 
         Assert.AreEqual(
-            @"throw new Exception(""error"")", script);
+            @"throw new Error(""error"")", script);
     }
 
     /// <summary>
@@ -395,7 +399,7 @@ public sealed class SemanticWalkerTryCatchTest
         var script = node?.ToKnRECMAScript();
 
         Assert.AreEqual(
-            @"throw new Exception(""test message"")", script);
+            @"throw new Error(""test message"")", script);
     }
 
     /// <summary>
@@ -434,11 +438,12 @@ public sealed class SemanticWalkerTryCatchTest
         var script = node?.ToKnRECMAScript();
 
         Assert.AreEqual(
-            @"try {
-  throw new Exception(""error"");
+@"try {
+  throw new Error(""error"");
 } catch (ex) {
   let x = 1;
 }", script);
+
     }
 
     /// <summary>
@@ -477,11 +482,12 @@ public sealed class SemanticWalkerTryCatchTest
         var script = node?.ToKnRECMAScript();
 
         Assert.AreEqual(
-            @"try {
+@"try {
   let x = 1;
 } catch (ex) {
   throw v$0;
 }", script);
+
     }
 
     #endregion
@@ -535,7 +541,7 @@ public sealed class SemanticWalkerTryCatchTest
         var script = node?.ToKnRECMAScript();
 
         Assert.AreEqual(
-            @"try {
+@"try {
   try {
     let x = 1;
   } catch (ex) {
@@ -544,6 +550,7 @@ public sealed class SemanticWalkerTryCatchTest
 } catch (ex) {
   let z = 3;
 }", script);
+
     }
 
     #endregion
@@ -585,9 +592,10 @@ public sealed class SemanticWalkerTryCatchTest
         var script = node?.ToKnRECMAScript();
 
         Assert.AreEqual(
-            @"(ex) {
+@"(ex) {
   let x = 1;
 }", script);
+
     }
 
     #endregion
@@ -628,10 +636,11 @@ public sealed class SemanticWalkerTryCatchTest
         var script = node?.ToKnRECMAScript();
 
         Assert.AreEqual(
-            @"try { }
+@"try { }
 catch (ex) {
   let x = 1;
 }", script);
+
     }
 
     /// <summary>
@@ -668,9 +677,10 @@ catch (ex) {
         var script = node?.ToKnRECMAScript();
 
         Assert.AreEqual(
-            @"try {
+@"try {
   let x = 1;
 } catch (ex) { }", script);
+
     }
 
     /// <summary>
@@ -707,9 +717,10 @@ catch (ex) {
         var script = node?.ToKnRECMAScript();
 
         Assert.AreEqual(
-            @"try {
+@"try {
   let x = 1;
 } finally { }", script);
+
     }
 
     /// <summary>
@@ -748,11 +759,12 @@ catch (ex) {
         var script = node?.ToKnRECMAScript();
 
         Assert.AreEqual(
-            @"try {
-  throw new Exception(""error"");
+@"try {
+  throw new Error(""error"");
 } catch (ex) {
-  let msg = ex.Message;
+  let msg = ex.message;
 }", script);
+
     }
 
     #endregion
@@ -799,13 +811,14 @@ catch (ex) {
         // Console.WriteLine("=== End Output ===");
 
         Assert.AreEqual(
-            @"try {
-  throw new Exception(""error"");
+@"try {
+  throw new Error(""error"");
 } catch (ex) {
-  if (!ex.Message.Contains(""error""))
+  if (!ex.message.includes(""error""))
     throw ex;
-  let msg = ex.Message;
+  let msg = ex.message;
 }", script);
+
     }
 
     /// <summary>
@@ -845,13 +858,14 @@ catch (ex) {
 
         // C# 的 != 被转换为 JavaScript 的 !=
         Assert.AreEqual(
-            @"try {
-  throw new Exception(""error"");
+@"try {
+  throw new Error(""error"");
 } catch (ex) {
   if (!(ex != null))
     throw ex;
-  let msg = ex.Message;
+  let msg = ex.message;
 }", script);
+
     }
 
     /// <summary>
@@ -891,13 +905,14 @@ catch (ex) {
         // C# 的 != 被转换为 JavaScript 的 !=
         // C# 的 Length 属性被转换为 JavaScript 的 Length（由白名单处理）
         Assert.AreEqual(
-            @"try {
-  throw new Exception(""error"");
+@"try {
+  throw new Error(""error"");
 } catch (ex) {
-  if (!(ex != null && ex.Message.Length > 0))
+  if (!(ex != null && ex.message.length > 0))
     throw ex;
-  let msg = ex.Message;
+  let msg = ex.message;
 }", script);
+
     }
 
     /// <summary>
@@ -923,7 +938,11 @@ catch (ex) {
                     }
                     catch (Exception) when (true)
                     {
-                        string msg = ""caught"";
+                        string msg = ""a"";
+                    }
+                    catch (RangeError ex) when (true)
+                    {
+                        string msg = ""b"";
                     }
                 }
             }
@@ -934,16 +953,15 @@ catch (ex) {
         var node = walker.VisitTry(tryOp, new());
         var script = node?.ToKnRECMAScript();
 
-        // 没有 catch 参数时，重新抛出使用唯一标识符
-        // 注意：if 语句主体只有一个语句时，不会生成花括号
         Assert.AreEqual(
-            @"try {
-  throw new Exception(""error"");
-} catch {
+@"try {
+  throw new Error(""error"");
+} catch(v$0) {
   if (!true)
     throw v$0;
   let msg = ""caught"";
 }", script);
+
     }
 
     #endregion

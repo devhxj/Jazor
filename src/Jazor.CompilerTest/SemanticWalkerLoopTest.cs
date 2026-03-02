@@ -993,7 +993,7 @@ public sealed class SemanticWalkerLoopTest
     Assert.AreEqual(@"{
   let matrix = [[1, 2], [3, 4]];
   for (row of matrix) {
-    for (let j = 0; j < row.Length; j++) {
+    for (let j = 0; j < row.length; j++) {
       console.log(row[j]);
     }
   }

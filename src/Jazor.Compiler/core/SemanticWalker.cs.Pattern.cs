@@ -176,7 +176,8 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitIsPattern(IIsPatternOperation operation, WalkerArgument argument)
 	{
-		return Translate<Expression>(operation.Pattern, argument);
+		var expr = Translate<Expression>(operation.Pattern, argument);
+		return Optimizer.OptimizeLogical(expr);
 	}
 
 	/// <summary>
@@ -341,19 +342,13 @@ public partial class SemanticWalker
 				var right = Translate<Expression>(propertySubpattern, argument);
 
 				// todo：需要完善判断是否检测属性存在，比如有些固定属性不需要检测
-				if (propertySubpattern.Member is IFieldReferenceOperation fieldRef)
+				if (propertySubpattern.Member is IMemberReferenceOperation m)
 				{
-					var name = fieldRef.Field.Name;
-					var left = BuildHasOwnProperty(targetExpr, new StringLiteral(name, $"\"{name}\""));
+					var name = m.Member.Name;
+					var left = new NonLogicalBinaryExpression(Operator.In, new StringLiteral(name, $"\"{name}\""), targetExpr);
 					var condition = new LogicalExpression(Operator.LogicalAnd, left, right);
-					conditions.Add(condition);
-				}
-				else if (propertySubpattern.Member is IPropertyReferenceOperation propRef)
-				{
-					var name = propRef.Property.Name;
-					var left = BuildHasOwnProperty(targetExpr, new StringLiteral(name, $"\"{name}\""));
-					var condition = new LogicalExpression(Operator.LogicalAnd, left, right);
-					conditions.Add(condition);
+					var notNull = new NonLogicalBinaryExpression(Operator.Inequality, targetExpr, Null);
+					conditions.Add(new LogicalExpression(Operator.LogicalAnd, notNull, condition));		
 				}
 				else
 					conditions.Add(right);
@@ -935,21 +930,23 @@ public partial class SemanticWalker
 
 		else
 		{
-			var mapper = GetMapperType(typeSymbol, out _);
-			result = mapper switch
-			{
-				TypeMapper.String => TypeOfExpr(value, new StringLiteral("string", "\"string\"")),
-				TypeMapper.Number => TypeOfExpr(value, new StringLiteral("number", "\"number\"")),
-				TypeMapper.BigInt => TypeOfExpr(value, new StringLiteral("bigint", "\"bigint\"")),
-				TypeMapper.Object => TypeOfExpr(value, new StringLiteral("object", "\"object\"")),
-				TypeMapper.Boolean => TypeOfExpr(value, new StringLiteral("boolean", "\"boolean\"")),
-				TypeMapper.Date => InstanceOfExpr(value, new Identifier("Date")),
-				TypeMapper.Map => InstanceOfExpr(value, new Identifier("Map")),
-				TypeMapper.Set => InstanceOfExpr(value, new Identifier("Set")),
-				TypeMapper.Class => InstanceOfExpr(value, new Identifier(typeSymbol.Name)),
-				TypeMapper.Array => new CallExpression(IsArrayExpr, NodeList.From(value), optional: false),
-				_ => null
-			};
+			var mapper = GetMapperType(typeSymbol);
+			if (mapper.Mapper == TypeMapper.Class)
+				return InstanceOfExpr(value, mapper.Expression);
+			else
+				result = mapper.Mapper switch
+				{
+					TypeMapper.String => TypeOfExpr(value, new StringLiteral("string", "\"string\"")),
+					TypeMapper.Number => TypeOfExpr(value, new StringLiteral("number", "\"number\"")),
+					TypeMapper.BigInt => TypeOfExpr(value, new StringLiteral("bigint", "\"bigint\"")),
+					TypeMapper.Object => TypeOfExpr(value, new StringLiteral("object", "\"object\"")),
+					TypeMapper.Boolean => TypeOfExpr(value, new StringLiteral("boolean", "\"boolean\"")),
+					TypeMapper.Date => InstanceOfExpr(value, new Identifier("Date")),
+					TypeMapper.Map => InstanceOfExpr(value, new Identifier("Map")),
+					TypeMapper.Set => InstanceOfExpr(value, new Identifier("Set")),
+					TypeMapper.Array => new CallExpression(IsArrayExpr, NodeList.From(value), optional: false),
+					_ => null
+				};
 		}
 
 		// 判断可空

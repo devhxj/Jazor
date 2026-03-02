@@ -273,7 +273,7 @@ public sealed class SemanticWalkerStringTest
 
 		Assert.AreEqual(@"{
   let name = ""John"";
-  let message = `Length: ${name.Length}`;
+  let message = `Length: ${name.length}`;
 }", script);
 	}
 
@@ -362,7 +362,7 @@ public sealed class SemanticWalkerStringTest
 
 		Assert.AreEqual(@"{
   let str = ""Hello"";
-  let message = `Length: ${str.Length}`;
+  let message = `Length: ${str.length}`;
 }", script);
 	}
 

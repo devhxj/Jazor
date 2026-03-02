@@ -464,7 +464,7 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.AreEqual(@"{
   let str = ""Hello"";
-  let length = str.Length;
+  let length = str.length;
 }", script);
 
   }
@@ -518,7 +518,7 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.AreEqual(@"{
   let str = null;
-  let length = str?.Length;
+  let length = str?.length;
 }", script);
 
   }
@@ -1121,7 +1121,7 @@ public sealed class SemanticWalkerOrdinaryTest
   let d = 3.14;
   let i = d;
   let testStr = null;
-  let length = testStr?.Length;
+  let length = testStr?.length;
   return;
 }", script);
 
@@ -1166,10 +1166,11 @@ public sealed class SemanticWalkerOrdinaryTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let absValue = Math.abs(-5);
   let text = ""Hello World"";
-  let upperText = text.ToUpper();
+  let upperText = text.toUpperCase();
   function LocalFunction(param) {
     console.log(param);
     return;
@@ -1179,7 +1180,7 @@ public sealed class SemanticWalkerOrdinaryTest
     return a + b;
   };
   let result = add(3, 4);
-  let sub = text.Substring(0, 5);
+  let sub = text.substring(0, 0 + 5);
 }", script);
 
   }
@@ -2069,10 +2070,12 @@ public sealed class SemanticWalkerOrdinaryTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let text = ""  Hello  "";
-  let result = text.Trim().ToUpper();
+  let result = text.trim().toUpperCase();
 }", script);
+
   }
 
   /// <summary>
@@ -2096,10 +2099,12 @@ public sealed class SemanticWalkerOrdinaryTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let text = ""Hello World"";
-  let sub = text.Substring(0, 5);
+  let sub = text.substring(0, 0 + 5);
 }", script);
+
   }
 
   #endregion
