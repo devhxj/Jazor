@@ -25,7 +25,7 @@ public static class CharModule
 	/// C#: char.IsAscii(c)
 	/// JS: c &lt;= 127
 	/// </summary>
-	[Jazor(Op.Inline, "static char.IsAscii(char)", "(@#{0} &lt;= 127)")]
+	[Jazor(Op.Inline, "static char.IsAscii(char)", "(@#{0} <= 127)")]
 	public extern static bool _39826354b8bd0f55(Number c);
 
 	[Jazor(Op.Discard, "override char.GetHashCode()")]
@@ -106,56 +106,56 @@ public static class CharModule
 	/// C#: char.IsAsciiLetter(c)
 	/// JS: (c &gt;= 65 &amp;&amp; c &lt;= 90) || (c &gt;= 97 &amp;&amp; c &lt;= 122)
 	/// </summary>
-	[Jazor(Op.Inline, "static char.IsAsciiLetter(char)", "((@#{0} &gt;= 65 &amp;&amp; @#{0} &lt;= 90) || (@#{0} &gt;= 97 &amp;&amp; @#{0} &lt;= 122))")]
+	[Jazor(Op.Inline, "static char.IsAsciiLetter(char)", "((@#{0} >= 65 && @#{0} <= 90) || (@#{0} >= 97 && @#{0} <= 122))")]
 	public extern static bool _1737fc6cbaca1038(Number c);
 
 	/// <summary>
 	/// C#: char.IsAsciiLetterLower(c)
 	/// JS: c &gt;= 97 &amp;&amp; c &lt;= 122
 	/// </summary>
-	[Jazor(Op.Inline, "static char.IsAsciiLetterLower(char)", "(@#{0} &gt;= 97 &amp;&amp; @#{0} &lt;= 122)")]
+	[Jazor(Op.Inline, "static char.IsAsciiLetterLower(char)", "(@#{0} >= 97 && @#{0} <= 122)")]
 	public extern static bool _d0f415a83ae10d8a(Number c);
 
 	/// <summary>
 	/// C#: char.IsAsciiLetterUpper(c)
 	/// JS: c &gt;= 65 &amp;&amp; c &lt;= 90
 	/// </summary>
-	[Jazor(Op.Inline, "static char.IsAsciiLetterUpper(char)", "(@#{0} &gt;= 65 &amp;&amp; @#{0} &lt;= 90)")]
+	[Jazor(Op.Inline, "static char.IsAsciiLetterUpper(char)", "(@#{0} >= 65 && @#{0} <= 90)")]
 	public extern static bool _30f49ccd6f1f8b2d(Number c);
 
 	/// <summary>
 	/// C#: char.IsAsciiDigit(c)
 	/// JS: c &gt;= 48 &amp;&amp; c &lt;= 57
 	/// </summary>
-	[Jazor(Op.Inline, "static char.IsAsciiDigit(char)", "(@#{0} &gt;= 48 &amp;&amp; @#{0} &lt;= 57)")]
+	[Jazor(Op.Inline, "static char.IsAsciiDigit(char)", "(@#{0} >= 48 && @#{0} <= 57)")]
 	public extern static bool _266ce5f0f0db2958(Number c);
 
 	/// <summary>
 	/// C#: char.IsAsciiLetterOrDigit(c)
 	/// JS: IsAsciiLetter(c) || IsAsciiDigit(c)
 	/// </summary>
-	[Jazor(Op.Inline, "static char.IsAsciiLetterOrDigit(char)", "((@#{0} &gt;= 65 &amp;&amp; @#{0} &lt;= 90) || (@#{0} &gt;= 97 &amp;&amp; @#{0} &lt;= 122) || (@#{0} &gt;= 48 &amp;&amp; @#{0} &lt;= 57))")]
+	[Jazor(Op.Inline, "static char.IsAsciiLetterOrDigit(char)", "((@#{0} >= 65 && @#{0} <= 90) || (@#{0} >= 97 && @#{0} <= 122) || (@#{0} >= 48 && @#{0} <= 57))")]
 	public extern static bool _3f3a99864b7042e9(Number c);
 
 	/// <summary>
 	/// C#: char.IsAsciiHexDigit(c)
 	/// JS: (c &gt;= 48 &amp;&amp; c &lt;= 57) || (c &gt;= 65 &amp;&amp; c &lt;= 70) || (c &gt;= 97 &amp;&amp; c &lt;= 102)
 	/// </summary>
-	[Jazor(Op.Inline, "static char.IsAsciiHexDigit(char)", "((@#{0} &gt;= 48 &amp;&amp; @#{0} &lt;= 57) || (@#{0} &gt;= 65 &amp;&amp; @#{0} &lt;= 70) || (@#{0} &gt;= 97 &amp;&amp; @#{0} &lt;= 102))")]
+	[Jazor(Op.Inline, "static char.IsAsciiHexDigit(char)", "((@#{0} >= 48 && @#{0} <= 57) || (@#{0} >= 65 && @#{0} <= 70) || (@#{0} >= 97 && @#{0} <= 102))")]
 	public extern static bool _8ebed700a57241d2(Number c);
 
 	/// <summary>
 	/// C#: char.IsAsciiHexDigitUpper(c)
 	/// JS: (c &gt;= 48 &amp;&amp; c &lt;= 57) || (c &gt;= 65 &amp;&amp; c &lt;= 70)
 	/// </summary>
-	[Jazor(Op.Inline, "static char.IsAsciiHexDigitUpper(char)", "((@#{0} &gt;= 48 &amp;&amp; @#{0} &lt;= 57) || (@#{0} &gt;= 65 &amp;&amp; @#{0} &lt;= 70))")]
+	[Jazor(Op.Inline, "static char.IsAsciiHexDigitUpper(char)", "((@#{0} >= 48 && @#{0} <= 57) || (@#{0} >= 65 && @#{0} <= 70))")]
 	public extern static bool _47cc49555e21ab3b(Number c);
 
 	/// <summary>
 	/// C#: char.IsAsciiHexDigitLower(c)
 	/// JS: (c &gt;= 48 &amp;&amp; c &lt;= 57) || (c &gt;= 97 &amp;&amp; c &lt;= 102)
 	/// </summary>
-	[Jazor(Op.Inline, "static char.IsAsciiHexDigitLower(char)", "((@#{0} &gt;= 48 &amp;&amp; @#{0} &lt;= 57) || (@#{0} &gt;= 97 &amp;&amp; @#{0} &lt;= 102))")]
+	[Jazor(Op.Inline, "static char.IsAsciiHexDigitLower(char)", "((@#{0} >= 48 && @#{0} <= 57) || (@#{0} >= 97 && @#{0} <= 102))")]
 	public extern static bool _c082c46f951a0c9f(Number c);
 
 	/// <summary>
@@ -163,14 +163,14 @@ public static class CharModule
 	/// JS: 使用正则 /\d/.test(String.fromCharCode(c))
 	/// 简化实现：仅支持 ASCII 数字
 	/// </summary>
-	[Jazor(Op.Inline, "static char.IsDigit(char)", "(@#{0} &gt;= 48 &amp;&amp; @#{0} &lt;= 57)")]
+	[Jazor(Op.Inline, "static char.IsDigit(char)", "(@#{0} >= 48 && @#{0} <= 57)")]
 	public extern static bool _91a882221d295c32(Number c);
 
 	/// <summary>
 	/// C#: char.IsBetween(c, min, max)
 	/// JS: c &gt;= min &amp;&amp; c &lt;= max
 	/// </summary>
-	[Jazor(Op.Inline, "static char.IsBetween(char, char, char)", "(@#{0} &gt;= @#{1} &amp;&amp; @#{0} &lt;= @#{2})")]
+	[Jazor(Op.Inline, "static char.IsBetween(char, char, char)", "(@#{0} >= @#{1} && @#{0} <= @#{2})")]
 	public extern static bool _dfb76865a7840d43(Number c, Number minInclusive, Number maxInclusive);
 
 	/// <summary>
@@ -206,7 +206,7 @@ public static class CharModule
 	/// C#: char.IsPunctuation(c)
 	/// JS: 常见标点符号范围检查
 	/// </summary>
-	[Jazor(Op.Inline, "static char.IsPunctuation(char)", "/[!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~]/.test(String.fromCharCode(@#{0}))")]
+	[Jazor(Op.Inline, "static char.IsPunctuation(char)", "/[!\\\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~]/.test(String.fromCharCode(@#{0}))")]
 	public extern static bool _ce3de1c060963041(Number c);
 
 	/// <summary>
@@ -265,7 +265,7 @@ public static class CharModule
 	/// C#: char.IsControl(c)
 	/// JS: c &lt; 32 || c === 127
 	/// </summary>
-	[Jazor(Op.Inline, "static char.IsControl(char)", "(@#{0} &lt; 32 || @#{0} == 127)")]
+	[Jazor(Op.Inline, "static char.IsControl(char)", "(@#{0} < 32 || @#{0} == 127)")]
 	public extern static bool _c12d0a40e2ed8650(Number c);
 
 	/// <summary>
@@ -339,7 +339,7 @@ public static class CharModule
 	/// C#: char.IsSurrogate(c)
 	/// JS: c &gt;= 0xD800 &amp;&amp; c &lt;= 0xDFFF
 	/// </summary>
-	[Jazor(Op.Inline, "static char.IsSurrogate(char)", "(@#{0} &gt;= 55296 &amp;&amp; @#{0} &lt;= 57343)")]
+	[Jazor(Op.Inline, "static char.IsSurrogate(char)", "(@#{0} >= 55296 && @#{0} <= 57343)")]
 	public extern static bool _e5949fe4a1738a38(Number c);
 
 	/// <summary>
@@ -432,7 +432,7 @@ public static class CharModule
 	/// C#: char.IsHighSurrogate(c)
 	/// JS: c &gt;= 0xD800 &amp;&amp; c &lt;= 0xDBFF
 	/// </summary>
-	[Jazor(Op.Inline, "static char.IsHighSurrogate(char)", "(@#{0} &gt;= 55296 &amp;&amp; @#{0} &lt;= 56319)")]
+	[Jazor(Op.Inline, "static char.IsHighSurrogate(char)", "(@#{0} >= 55296 && @#{0} <= 56319)")]
 	public extern static bool _4c066834beda061c(Number c);
 
 	/// <summary>
@@ -454,7 +454,7 @@ public static class CharModule
 	/// C#: char.IsLowSurrogate(c)
 	/// JS: c &gt;= 0xDC00 &amp;&amp; c &lt;= 0xDFFF
 	/// </summary>
-	[Jazor(Op.Inline, "static char.IsLowSurrogate(char)", "(@#{0} &gt;= 56320 &amp;&amp; @#{0} &lt;= 57343)")]
+	[Jazor(Op.Inline, "static char.IsLowSurrogate(char)", "(@#{0} >= 56320 && @#{0} <= 57343)")]
 	public extern static bool _7761ca7b99042e8a(Number c);
 
 	/// <summary>
@@ -492,7 +492,7 @@ public static class CharModule
 	/// C#: char.IsSurrogatePair(highSurrogate, lowSurrogate)
 	/// JS: IsHighSurrogate(highSurrogate) &amp;&amp; IsLowSurrogate(lowSurrogate)
 	/// </summary>
-	[Jazor(Op.Inline, "static char.IsSurrogatePair(char, char)", "((@#{0} &gt;= 55296 &amp;&amp; @#{0} &lt;= 56319) &amp;&amp; (@#{1} &gt;= 56320 &amp;&amp; @#{1} &lt;= 57343))")]
+	[Jazor(Op.Inline, "static char.IsSurrogatePair(char, char)", "((@#{0} >= 55296 && @#{0} <= 56319) && (@#{1} >= 56320 && @#{1} <= 57343))")]
 	public extern static bool _efe9c9b601517069(Number highSurrogate, Number lowSurrogate);
 
 	/// <summary>
@@ -506,7 +506,7 @@ public static class CharModule
 	/// C#: char.ConvertToUtf32(highSurrogate, lowSurrogate)
 	/// JS: ((highSurrogate - 0xD800) &lt;&lt; 10) + (lowSurrogate - 0xDC00) + 0x10000
 	/// </summary>
-	[Jazor(Op.Inline, "static char.ConvertToUtf32(char, char)", "(((@#{0} - 55296) &lt;&lt; 10) + (@#{1} - 56320) + 65536)")]
+	[Jazor(Op.Inline, "static char.ConvertToUtf32(char, char)", "(((@#{0} - 55296) << 10) + (@#{1} - 56320) + 65536)")]
 	public extern static Number _f842e9b2f7fea133(Number highSurrogate, Number lowSurrogate);
 
 	/// <summary>

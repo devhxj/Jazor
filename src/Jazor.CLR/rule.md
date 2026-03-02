@@ -979,6 +979,37 @@ public static class ReadOnlyDictionaryModule<TKey, TValue> where TKey : notnull
 7. **泛型类型路径**：使用 `` `n `` 标记参数数量，如 `List`1Module.js`
 8. **方法重载**：JS 不支持重载，不同重载需不同哈希名
 9. **循环引用**：避免 `Op.Import` 方法互相调用
+10. **XML 注释与 Jazor 特性的转义规则**：
+
+**XML 注释与 Jazor 特性的转义规则**：
+
+| 位置 | `<` | `>` | `&` | 说明 |
+|------|-----|-----|-----|------|
+| XML 注释 (`/// <summary>`) | `&lt;` | `&gt;` | `&amp;` | XML 格式要求，必须使用 HTML 实体 |
+| Jazor 特性值 (`[Jazor(Op.Inline, ..., "code")]`) | `<` | `>` | `&&` 或 `&` | 直接使用 JavaScript 代码字符 |
+
+**正确示例**：
+```csharp
+/// <summary>
+/// C#: char.IsAsciiLetter(c)
+/// JS: (c &gt;= 65 &amp;&amp; c &lt;= 90) || (c &gt;= 97 &amp;&amp; c &lt;= 122)
+/// </summary>
+[Jazor(Op.Inline, "static char.IsAsciiLetter(char)", "((@#{0} >= 65 && @#{0} <= 90) || (@#{0} >= 97 && @#{0} <= 122))")]
+public extern static bool _hash(Number c);
+```
+
+**错误示例**（Jazor 特性值中错误使用 HTML 实体）：
+```csharp
+// ❌ 错误：Jazor 特性值中使用了 HTML 实体
+[Jazor(Op.Inline, "static char.IsAsciiLetter(char)", "((@#{0} &gt;= 65 &amp;&amp; @#{0} &lt;= 90))")]
+
+// ✅ 正确：Jazor 特性值中使用实际的 JavaScript 字符
+[Jazor(Op.Inline, "static char.IsAsciiLetter(char)", "((@#{0} >= 65 && @#{0} <= 90))")]
+```
+
+**原因**：
+- XML 注释是 XML 格式，`<` `>` `&` 是 XML 特殊字符，必须转义
+- Jazor 特性值是 JavaScript 代码字符串，会被直接嵌入生成的 JavaScript 代码中，不需要转义
 
 ### 13.5 边界情况处理
 

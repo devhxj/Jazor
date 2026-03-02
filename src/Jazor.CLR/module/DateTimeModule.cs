@@ -215,7 +215,7 @@ public static class DateTimeModule
 	}
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
-	[Jazor(Op.Inline, "override System.DateTime.Equals(object)", "(@#{0} instanceof Date &amp;&amp; @#{0}.getTime() === (@#{1}?.getTime?.() ?? NaN))")]
+	[Jazor(Op.Inline, "override System.DateTime.Equals(object)", "(@#{0} instanceof Date && @#{0}.getTime() === (@#{1}?.getTime?.() ?? NaN))")]
 	public extern static bool _f6903c1af8944917(Date instance, object? value);
 
 	///<summary>Returns a value indicating whether the value of this instance is equal to the value of the specified <see cref="T:System.DateTime" /> instance.</summary>

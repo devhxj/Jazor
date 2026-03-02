@@ -13,7 +13,7 @@ namespace Jazor.CLR;
 /// - Discard: 不支持的方法（如某些重载）
 /// </summary>
 [ECMAScriptModule]
-[Jazor(Op.Import, "System.Math","System/MathModule.js")]
+[Jazor(Op.Replace, "System.Math", "Math")]
 public static class MathModule
 {
 	// 常量 - 使用 Op.Inline
@@ -143,7 +143,7 @@ public static class MathModule
 	public extern static Number _0aaf1073fc70e405(Number value);
 
 	///<summary>Returns the absolute value of a 64-bit signed integer.</summary>
-	[Jazor(Op.Inline, "static System.Math.Abs(long)", "((@#{0} &lt; 0n) ? -@#{0} : @#{0})")]
+	[Jazor(Op.Inline, "static System.Math.Abs(long)", "((@#{0} < 0n) ? -@#{0} : @#{0})")]
 	public extern static BigInt _2f5b0b713dde9501(BigInt value);
 
 	///<summary>Returns the absolute value of a native signed integer.</summary>
@@ -375,7 +375,7 @@ public static class MathModule
 	public extern static nuint _7f3becc9b24d51d3(object val1, object val2);
 
 	///<summary>Returns the larger magnitude of two double-precision floating-point numbers.</summary>
-	[Jazor(Op.Inline, "static System.Math.MaxMagnitude(double, double)", "((Math.abs(@#{0}) &gt;= Math.abs(@#{1})) ? @#{0} : @#{1})")]
+	[Jazor(Op.Inline, "static System.Math.MaxMagnitude(double, double)", "((Math.abs(@#{0}) >= Math.abs(@#{1})) ? @#{0} : @#{1})")]
 	public extern static Number _7922e74207558715(Number x, Number y);
 
 	///<summary>Returns the smaller of two 8-bit unsigned integers.</summary>
@@ -431,7 +431,7 @@ public static class MathModule
 	public extern static nuint _c03fe2f175939d3a(object val1, object val2);
 
 	///<summary>Returns the smaller magnitude of two double-precision floating-point numbers.</summary>
-	[Jazor(Op.Inline, "static System.Math.MinMagnitude(double, double)", "((Math.abs(@#{0}) &lt;= Math.abs(@#{1})) ? @#{0} : @#{1})")]
+	[Jazor(Op.Inline, "static System.Math.MinMagnitude(double, double)", "((Math.abs(@#{0}) <= Math.abs(@#{1})) ? @#{0} : @#{1})")]
 	public extern static Number _44776725ec896ede(Number x, Number y);
 
 	///<summary>Returns an estimate of the reciprocal of a specified number.</summary>

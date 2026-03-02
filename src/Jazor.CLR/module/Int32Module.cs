@@ -249,7 +249,7 @@ public static class Int32Module
 	/// C#: int.IsPow2(value)
 	/// JS: value > 0 && (value & (value - 1)) === 0
 	/// </summary>
-	[Jazor(Op.Inline, "static int.IsPow2(int)", "(@#{0} > 0 &amp;&amp; (@#{0} &amp; (@#{0} - 1)) === 0)")]
+	[Jazor(Op.Inline, "static int.IsPow2(int)", "(@#{0} > 0 && (@#{0} & (@#{0} - 1)) === 0)")]
 	public extern static bool _8157179708f5a6c3(Number value);
 
 	/// <summary>
@@ -314,42 +314,42 @@ public static class Int32Module
 	/// C#: int.IsEvenInteger(value)
 	/// JS: (value & 1) === 0
 	/// </summary>
-	[Jazor(Op.Inline, "static int.IsEvenInteger(int)", "((@#{0} &amp; 1) === 0)")]
+	[Jazor(Op.Inline, "static int.IsEvenInteger(int)", "((@#{0} & 1) === 0)")]
 	public extern static bool _4cbed0ce3a7f9c5f(Number value);
 
 	/// <summary>
 	/// C#: int.IsNegative(value)
 	/// JS: value < 0
 	/// </summary>
-	[Jazor(Op.Inline, "static int.IsNegative(int)", "(@#{0} &lt; 0)")]
+	[Jazor(Op.Inline, "static int.IsNegative(int)", "(@#{0} < 0)")]
 	public extern static bool _3d1db358d3f6d96f(Number value);
 
 	/// <summary>
 	/// C#: int.IsOddInteger(value)
 	/// JS: (value & 1) !== 0
 	/// </summary>
-	[Jazor(Op.Inline, "static int.IsOddInteger(int)", "((@#{0} &amp; 1) !== 0)")]
+	[Jazor(Op.Inline, "static int.IsOddInteger(int)", "((@#{0} & 1) !== 0)")]
 	public extern static bool _0f92a85f87224c94(Number value);
 
 	/// <summary>
 	/// C#: int.IsPositive(value)
 	/// JS: value > 0
 	/// </summary>
-	[Jazor(Op.Inline, "static int.IsPositive(int)", "(@#{0} &gt; 0)")]
+	[Jazor(Op.Inline, "static int.IsPositive(int)", "(@#{0} > 0)")]
 	public extern static bool _280b1b013a39c514(Number value);
 
 	/// <summary>
 	/// C#: int.MaxMagnitude(x, y)
 	/// JS: Math.abs(x) > Math.abs(y) ? x : y
 	/// </summary>
-	[Jazor(Op.Inline, "static int.MaxMagnitude(int, int)", "(Math.abs(@#{0}) &gt; Math.abs(@#{1}) ? @#{0} : @#{1})")]
+	[Jazor(Op.Inline, "static int.MaxMagnitude(int, int)", "(Math.abs(@#{0}) > Math.abs(@#{1}) ? @#{0} : @#{1})")]
 	public extern static Number _a36b4a6dbd50fa77(Number x, Number y);
 
 	/// <summary>
 	/// C#: int.MinMagnitude(x, y)
 	/// JS: Math.abs(x) < Math.abs(y) ? x : y
 	/// </summary>
-	[Jazor(Op.Inline, "static int.MinMagnitude(int, int)", "(Math.abs(@#{0}) &lt; Math.abs(@#{1}) ? @#{0} : @#{1})")]
+	[Jazor(Op.Inline, "static int.MinMagnitude(int, int)", "(Math.abs(@#{0}) < Math.abs(@#{1}) ? @#{0} : @#{1})")]
 	public extern static Number _d0c6a74fd11d24bf(Number x, Number y);
 
 	[Jazor(Op.Discard, "static int.TryParse(string, System.IFormatProvider, out int)")]

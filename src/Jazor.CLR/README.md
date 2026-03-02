@@ -2,7 +2,7 @@
 
 ## 项目概述
 
-Jazor.CLR 是 Jazor 编译器项目的 CLR 运行时支持层。它使用 C# 编写（语法贴合 JavaScript）来实现 .NET 类型对应的 ES6 module，为 C# 到 JavaScript 的编译提供类型成员的 JavaScript 运行时实现。
+Jazor.CLR 是 Jazor 编译器项目的 CLR 运行时支持层，使用 C# 编写（语法贴合 JavaScript）来实现 .NET 类型对应的 ES6 module，为 C# 到 JavaScript 的编译提供类型成员的 JavaScript 运行时实现。
 
 ### 核心职责
 
@@ -11,12 +11,40 @@ Jazor.CLR 是 Jazor 编译器项目的 CLR 运行时支持层。它使用 C# 编
 - **白名单机制**：通过 `[Jazor]` 特性与 Analyzer 和 Compiler 协同工作
 - **模块导出**：标记可导出的模块供 JavaScript 使用
 
+### 项目状态
+
+| 指标 | 状态 |
+|------|------|
+| 模块总数 | 39 |
+| 完善模块 (9/10) | 27 |
+| 部分完善 (7-8/10) | 12 |
+| 需完善 (< 7/10) | 0 |
+| 构建状态 | ✅ 成功 (0 warnings, 0 errors) |
+
+---
+
+## 目录
+
+1. [目录结构](#目录结构)
+2. [核心概念](#核心概念)
+3. [Op 枚举详解](#op-枚举详解)
+4. [模块分类](#模块分类)
+5. [类型映射](#类型映射)
+6. [out/ref 参数处理](#outref-参数处理)
+7. [白名单机制](#白名单机制)
+8. [开发指南](#开发指南)
+9. [错误处理与调试](#错误处理与调试)
+10. [快速参考](#快速参考)
+
 ## 目录结构
 
 ```text
 Jazor.CLR/
 ├── GlobalUsings.cs          # 全局 using 声明
 ├── Jazor.CLR.csproj         # 项目配置
+├── rule.md                  # 开发规则文档
+├── task.md                  # 任务完成状态
+├── readme.md                # 本文档
 ├── module/                  # 模块实现目录
 │   ├── ArrayModule.cs
 │   ├── BigIntegerModule.cs
@@ -27,8 +55,7 @@ Jazor.CLR/
 │   ├── DictionaryModule.cs
 │   ├── ListModule.cs
 │   ├── StringModule.cs
-│   ├── ...
-│   └── VoidModule.cs
+│   └── ...（共39个模块）
 └── doc/                     # 文档目录（记录成员签名）
     ├── BooleanModule.md
     ├── ConsoleModule.md
@@ -37,81 +64,53 @@ Jazor.CLR/
 
 ## 核心概念
 
-### 1. `[ECMAScriptModule]` 特性
+### [Jazor] 特性
+
+控制编译器对成员的处理方式，定义在 [JazorAttribute](../Jazor.Common/JazorAttribute.cs) 中。
+
+**构造方法**：
+
+```csharp
+// 无参：Op = Op.Compile（编译器特殊处理）
+[Jazor]
+
+// 单字符串：Op = Op.Inline（内联代码）
+[Jazor("内联代码模板")]
+
+// 三参数：完整指定（Jazor.CLR 专用）
+[Jazor(Op op, string member, string? value = null)]
+```
+
+**参数说明**：
+
+- `op`：操作类型（见 [Op 枚举详解](#op-枚举详解)）
+- `member`：完整的 C# 成员签名，用于白名单生成和哈希计算
+- `value`：
+  - `Op.Replace`：JavaScript 方法名（如 `toString`）
+  - `Op.Inline`：内联代码模板（如 `(@#{0} === @#{1})`）
+
+### [ECMAScriptModule] 特性
 
 标记类为可导出的 ES6 模块：
 
 ```csharp
 [ECMAScriptModule]
+[Jazor(Op.Import, "bool", "System/BooleanModule.js")]
 public static class BooleanModule
 {
     // ...
 }
 ```
 
-### 2. `[Jazor]` 特性
+### 方法签名命名规则
 
-控制编译器对成员的处理方式，定义在 [JazorAttribute](../Jazor.Common/JazorAttribute.cs) 中。
+所有方法名采用哈希签名格式：`_` + 16位十六进制。
 
-#### 操作类型 (Op)
+**重要**：哈希值由 `doc/` 目录下的文档预先定义，开发者必须使用文档中指定的哈希值，**切勿自行计算**。
 
-| Op 值 | 说明 | 用途 |
-| :--- | :--- | :--- |
-| `Discard` | 不支持，丢弃 | 标记不需要转换到 JavaScript 的成员 |
-| `Allowed` | 支持，无其他操作 | 允许使用，按默认方式处理 |
-| `Replace` | 支持，替换名称 | 用指定名称替换原成员名 |
-| `Import` | 支持，作为模块导入 | 类上表示模块引用，方法上表示必须有实现 |
-| `Inline` | 支持，内联代码 | 字符串表示内联调用的代码 |
-| `Compile` | 支持，编译器特殊处理 | 属性/方法上的特殊处理标记 |
-
-#### 用法示例
-
-```csharp
-// 类级别：整个类替换为 console
-[Jazor(Op.Replace, "System.Console", "console")]
-public static class ConsoleModule
-{
-    // 方法级别：替换为 log
-    [Jazor(Op.Replace, "static System.Console.WriteLine(string)", "log")]
-    public extern static void _19f2583beee4f7fb(object value);
-
-    // 方法级别：丢弃，不转换
-    [Jazor(Op.Discard, "static System.Console.Clear()")]
-    public extern static void _7779d957d8f16481();
-}
-```
-
-```csharp
-// 类级别：导入模块
-[ECMAScriptModule]
-[Jazor(Op.Import, "bool", "System/BooleanModule.js")]
-public static class BooleanModule
-{
-    // 方法级别：必须有实现（C# 代码）
-    [Jazor(Op.Import, "static bool.Parse(string)")]
-    public static bool _5dbf54319ebc8dfe(string value)
-    {
-        var str = value.Trim().ToLower();
-        if (str == "true")
-            return true;
-        else if (str == "false")
-            return false;
-        else
-            throw new Error($"FormatException: String '{value}' was not recognized as a valid Boolean.");
-    }
-}
-```
-
-### 3. 方法签名命名规则
-
-所有方法名采用混淆签名格式：`_` + SHA256 哈希值。
-
-**生成规则**：`_` + SHA256Hash(成员名称)
-
-**示例**：
 ```csharp
 // 成员: static bool.Parse(string)
-// 签名: _5dbf54319ebc8dfe
+// 签名: _5dbf54319ebc8dfe（来自 doc/BooleanModule.md）
 [Jazor(Op.Import, "static bool.Parse(string)")]
 public static bool _5dbf54319ebc8dfe(string value)
 {
@@ -119,90 +118,313 @@ public static bool _5dbf54319ebc8dfe(string value)
 }
 ```
 
-doc 目录中的文件记录了各模块成员的签名映射。
+---
 
-### 4. extern 方法
+## Op 枚举详解
 
-使用 `extern` 关键字声明外部实现：
+### Op 类型概览
 
-```csharp
-[Jazor(Op.Discard, "override bool.GetHashCode()")]
-public extern static Number _80b6c29cc0038969(Boolean instance);
+| Op 类型 | extern? | 编译到 CLR module? | 白名单行为 | 说明 |
+|---------|---------|-------------------|-----------|------|
+| `Discard` | ✅ | ❌ | 记录但标记为不支持 | JavaScript 无对应概念 |
+| `Allowed` | ✅ | ❌ | 记录为允许 | JavaScript 原生支持，无需处理 |
+| `Replace` | ✅ | ❌ | 记录为允许 | JS 有类似方法但名称不同 |
+| `Inline` | ✅ | ❌ | 记录为允许 | 简单表达式可直接内联 |
+| `Import` | ❌ | ✅ | 记录为允许 | 需要完整 JavaScript 实现 |
+| `Compile` | ✅ | ❌ | 记录为允许 | 编译器特殊处理 |
+
+**核心原则**：
+- `extern` = 方法不需要 C# 实现，只在白名单中标记
+- **只有 `Op.Import` 方法会被编译到 CLR module**（因为有方法体）
+
+### Op 类型选择决策
+
+```
+JS 有原生对应？
+├── 是，名称相同 → Allowed
+├── 是，名称不同 → Replace
+└── 否 → JS 有概念？
+    ├── 否 → Discard
+    ├── 简单表达式 → Inline
+    ├── 复杂逻辑 → Import
+    └── 编译器处理 → Compile
 ```
 
-- `extern` 方法没有方法体
-- 由编译器根据 Op 类型进行处理
-- 可能被丢弃、替换或内联
+### 详细示例
+
+#### Op.Discard - 不支持
+
+JavaScript 无对应概念：
+
+```csharp
+// JavaScript 无哈希码机制
+[Jazor(Op.Discard, "override bool.GetHashCode()")]
+public extern static Number _80b6c29cc0038969(bool instance);
+```
+
+#### Op.Allowed - 无操作
+
+JavaScript 原生支持，默认行为正确：
+
+```csharp
+// 布尔默认构造（JS 布尔是原始类型）
+[Jazor(Op.Allowed, "bool.Boolean()")]
+public extern static bool _2bd9618624257446();
+```
+
+#### Op.Replace - 方法名替换
+
+JS 有原生方法但名称不同：
+
+```csharp
+[Jazor(Op.Replace, "override bool.ToString()", "toString")]
+public extern static string _d48c2d39317daf8f(bool instance);
+// 编译时直接生成：instance.toString()
+```
+
+#### Op.Inline - 内联代码
+
+用占位符模板生成 JavaScript 表达式：
+
+```csharp
+// Equals → 严格相等
+[Jazor(Op.Inline, "override bool.Equals(object)", "(@#{0} === @#{1})")]
+public extern static bool _hash(bool instance, object? obj);
+```
+
+**占位符规则**：
+
+| 方法类型 | @#{0} | @#{1} | @#{2} |
+|----------|-------|-------|-------|
+| 实例方法 | 实例 | 参数1 | 参数2 |
+| 静态方法 | 参数1 | 参数2 | 参数3 |
+| 扩展方法 | 被扩展对象 | 参数1 | 参数2 |
+
+#### Op.Import - 模块导入
+
+需要完整 JavaScript 实现，**必须有方法体**：
+
+```csharp
+[Jazor(Op.Import, "static bool.Parse(string)")]
+public static bool _5dbf54319ebc8dfe(string? value)
+{
+    var str = value?.Trim()?.ToLower();
+    if (str == "true") return true;
+    if (str == "false") return false;
+    throw new Error($"FormatException: String '{value}' was not recognized as a valid Boolean.");
+}
+```
+
+**注意**：
+- 必须使用 JavaScript 原生实现，尽量调用映射后的方法
+- 避免调用 C# 原生方法如 `int.Parse`，而是使用 `ParseInt` 和 `Number` 类型
 
 ## 模块分类
 
 ### 基础类型模块
 
-| 模块 | .NET 类型 | JavaScript 类型 |
-| :--- | :--- | :--- |
-| `VoidModule` | `void` | `undefined` |
-| `BooleanModule` | `bool` | `boolean` |
-| `CharModule` | `char` | `string` |
-| `ObjectModule` | `object` | `object` |
+| 模块 | .NET 类型 | JavaScript 类型 | 状态 |
+| :--- | :--- | :--- | :--- |
+| `VoidModule` | `void` | `undefined` | ✅ |
+| `BooleanModule` | `bool` | `boolean` | ✅ 完善 |
+| `CharModule` | `char` | `string` | ⚠️ 部分完善 |
+| `ObjectModule` | `object` | `object` | ⚠️ 部分完善 |
 
 ### 数值类型模块
 
-| 模块 | .NET 类型 | JavaScript 类型 |
-| :--- | :--- | :--- |
-| `SByteModule` | `sbyte` | `number` |
-| `ByteModule` | `byte` | `number` |
-| `Int16Module` | `short` | `number` |
-| `UInt16Module` | `ushort` | `number` |
-| `Int32Module` | `int` | `number` |
-| `UInt32Module` | `uint` | `number` |
-| `SingleModule` | `float` | `number` |
-| `DoubleModule` | `double` | `number` |
-| `DecimalModule` | `decimal` | `number` |
-| `Int64Module` | `long` | `bigint` |
-| `UInt64Module` | `ulong` | `bigint` |
-| `BigIntegerModule` | `BigInteger` | `bigint` |
+| 模块 | .NET 类型 | JavaScript 类型 | 状态 |
+| :--- | :--- | :--- | :--- |
+| `SByteModule` | `sbyte` | `number` | ⚠️ 部分完善 |
+| `ByteModule` | `byte` | `number` | ⚠️ 部分完善 |
+| `Int16Module` | `short` | `number` | ✅ 完善 |
+| `UInt16Module` | `ushort` | `number` | ✅ 完善 |
+| `Int32Module` | `int` | `number` | ⚠️ 部分完善 |
+| `UInt32Module` | `uint` | `number` | ✅ 完善 |
+| `SingleModule` | `float` | `number` | ✅ 完善 |
+| `DoubleModule` | `double` | `number` | ✅ 完善 |
+| `DecimalModule` | `decimal` | `number` | ✅ 完善 |
+| `Int64Module` | `long` | `bigint` | ⚠️ 部分完善 |
+| `UInt64Module` | `ulong` | `bigint` | ✅ 完善 |
+| `BigIntegerModule` | `BigInteger` | `bigint` | ⚠️ 部分完善 |
 
 ### 日期时间模块
 
-| 模块 | .NET 类型 | JavaScript 类型 |
-| :--- | :--- | :--- |
-| `DateTimeModule` | `DateTime` | `Date` |
-| `DateTimeOffsetModule` | `DateTimeOffset` | `Date` |
-| `DateOnlyModule` | `DateOnly` | `Date` |
-| `TimeOnlyModule` | `TimeOnly` | `number` |
-| `TimeSpanModule` | `TimeSpan` | `bigint` |
+| 模块 | .NET 类型 | JavaScript 类型 | 状态 |
+| :--- | :--- | :--- | :--- |
+| `DateTimeModule` | `DateTime` | `Date` | ✅ 完善 |
+| `DateTimeOffsetModule` | `DateTimeOffset` | `Date` | ✅ 完善 |
+| `DateOnlyModule` | `DateOnly` | `Date` | ✅ 完善 |
+| `TimeOnlyModule` | `TimeOnly` | `number` | ✅ 完善 |
+| `TimeSpanModule` | `TimeSpan` | `bigint` | ✅ 完善 |
 
 ### 集合类型模块
 
-| 模块 | .NET 类型 | JavaScript 类型 |
-| :--- | :--- | :--- |
-| `ArrayModule` | `Array<T>` | `Array` |
-| `ListModule` | `List<T>` | `Array` |
-| `DictionaryModule` | `Dictionary<K,V>` | `Map` |
-| `HashSetModule` | `HashSet<T>` | `Set` |
-| `ReadOnlyCollectionModule` | `ReadOnlyCollection<T>` | `readonly Array` |
-| `ReadOnlyDictionaryModule` | `ReadOnlyDictionary<K,V>` | `readonly Map` |
-| `ReadOnlySetModule` | `ReadOnlySet<T>` | `readonly Set` |
+| 模块 | .NET 类型 | JavaScript 类型 | 状态 |
+| :--- | :--- | :--- | :--- |
+| `ArrayModule` | `Array<T>` | `Array` | ✅ 完善 |
+| `ListModule` | `List<T>` | `Array` | ✅ 完善 |
+| `DictionaryModule` | `Dictionary<K,V>` | `Map` | ✅ 完善 |
+| `HashSetModule` | `HashSet<T>` | `Set` | ⚠️ 部分完善 |
+| `ReadOnlyCollectionModule` | `ReadOnlyCollection<T>` | `readonly Array` | ✅ 完善 |
+| `ReadOnlyDictionaryModule` | `ReadOnlyDictionary<K,V>` | `readonly Map` | ✅ 完善 |
+| `ReadOnlySetModule` | `ReadOnlySet<T>` | `readonly Set` | ✅ 完善 |
 
 ### 其他模块
 
-| 模块 | 说明 |
-| :--- | :--- |
-| `StringModule` | 字符串操作 |
-| `StringBuilderModule` | 字符串构建器 |
-| `ConsoleModule` | 控制台输出 |
-| `MathModule` | 数学运算 |
-| `NullableModule` | 可空类型支持 |
-| `ValueTupleModule` | 值元组 |
-| `ExceptionModule` | 异常处理 |
-| `ConditionalWeakTableModule` | 条件弱表 |
-| `WeakReferenceModule` | 弱引用 |
-| `CultureInfoModule` | 文化信息 |
-| `GregorianCalendarModule` | 格里高利历 |
+| 模块 | 说明 | 状态 |
+| :--- | :--- | :--- |
+| `StringModule` | 字符串操作 | ✅ 完善 |
+| `StringBuilderModule` | 字符串构建器 | ⚠️ 部分完善 |
+| `ConsoleModule` | 控制台输出 | ✅ 完善 |
+| `MathModule` | 数学运算 | ✅ 完善 |
+| `NullableModule` | 可空类型支持 | ⚠️ 部分完善 |
+| `ValueTupleModule` | 值元组 | ✅ 完善 |
+| `ExceptionModule` | 异常处理 | ✅ 完善 |
+| `ConditionalWeakTableModule` | 条件弱表 | ✅ 完善 |
+| `WeakReferenceModule` | 弱引用 | ✅ 完善 |
+| `CultureInfoModule` | 文化信息 | ✅ 完善 |
+| `GregorianCalendarModule` | 格里高利历 | ✅ 完善 |
 
-## 与其他项目的协作
+## 类型映射
 
-### Jazor.CLR 在编译流程中的位置
+### C# 到 JavaScript 的类型映射
+
+| C# 类型 | JavaScript 类型 | 类型检查方式 |
+| :--- | :--- | :--- |
+| `void` | `undefined` | - |
+| `bool` | `boolean` | `typeof x === "boolean"` |
+| `char` | `string` | `typeof x === "string"` |
+| `string` | `string` | `typeof x === "string"` |
+| `byte/sbyte/short/ushort/int/uint/float/double/decimal` | `number` | `typeof x === "number"` |
+| `long/ulong/BigInteger` | `bigint` | `typeof x === "bigint"` |
+| `DateTime/DateTimeOffset/DateOnly` | `Date` | `x instanceof Date` |
+| `TimeOnly` | `number` | `typeof x === "number"` |
+| `TimeSpan` | `bigint` | `typeof x === "bigint"` |
+| `Array<T>/List<T>` | `Array` | `Array.isArray(x)` |
+| `Dictionary<K,V>` | `Map` | `x instanceof Map` |
+| `HashSet<T>` | `Set` | `x instanceof Set` |
+| `object` | `object` | `typeof x === "object"` |
+
+### 参数类型映射（C# → Jazor.CLR）
+
+在模块方法签名中，C# 类型需要映射为 Jazor.CLR 定义的 JavaScript 类型：
+
+| C# 类型 | Jazor.CLR 类型 |
+|---------|---------------|
+| `bool` | `bool` |
+| `int`, `uint`, `short`, `ushort`, `byte`, `sbyte`, `float`, `double`, `decimal` | `Number` |
+| `long`, `ulong`, `Int128`, `UInt128`, `BigInteger` | `BigInt` |
+| `char`, `string` | `string` |
+| `DateTime`, `DateTimeOffset`, `DateOnly`, `TimeOnly` | `Date` |
+| `List<T>`, `IList<T>`, `IEnumerable<T>`, `T[]` | `Array<T>` |
+| `Dictionary<K,V>`, `IDictionary<K,V>` | `Map<TKey, TValue>` |
+| `HashSet<T>`, `ISet<T>` | `Set<T>` |
+| `object` | `object` |
+| `void` | `void` |
+
+### 特殊类型
+
+| C# 类型 | JS 类型 | 说明 |
+|---------|---------|------|
+| `ReadOnlySpan<char>`, `Span<char>` | `string` | 无需特殊处理 |
+| `System.Type` | `object` | JS 无类型系统 |
+| `System.Guid` | `string` | UUID 字符串格式 |
+| `System.Version` | `string` | 版本字符串 |
+
+### 异常类型映射
+
+| C# 异常 | JS 类型 |
+|---------|---------|
+| `Exception`, `SystemException`, `ArgumentException` | `Error` |
+| `ArgumentNullException` | `TypeError` |
+| `ArgumentOutOfRangeException`, `IndexOutOfRangeException` | `RangeError` |
+| `FormatException` | `SyntaxError` |
+
+## out/ref 参数处理
+
+> **重要**：C# 中 `out` 和 `ref` 使用同种方式处理：返回数组模拟，调用处解构。
+
+### 返回数组模式
+
+```csharp
+// C# 签名
+static bool TryParse(string, out bool result)
+
+// JS 返回值格式
+[returnValue, outValue]
+```
+
+**数组格式规则**：
+- 索引 0：方法返回值（void 方法为 `null`）
+- 索引 1+：按声明顺序的 out/ref 参数值
+
+### 定义处示例
+
+```csharp
+// 成员：static bool.TryParse(string, out bool)
+// 签名：_dada4bbdacd7aa19
+[Jazor(Op.Import, "static bool.TryParse(string, out bool)")]
+public static Array<object?> _dada4bbdacd7aa19(string? value, bool result)
+{
+    var str = value?.Trim()?.ToLower();
+    if (str == "true")
+        return [true, true];   // [返回值, out参数]
+    else if (str == "false")
+        return [true, false];  // [返回值, out参数]
+
+    return [false, false];     // 解析失败
+}
+```
+
+**重要注意事项**：
+1. 返回类型必须是 `Array<object?>`，不能使用泛型数组
+2. out/ref 参数在方法签名中只声明类型和名称，不使用 `out`/`ref` 关键字修饰
+3. 数组长度 = 1（返回值）+ out/ref 参数数量
+
+### 调用处生成
+
+```csharp
+// C# 代码
+if (bool.TryParse(input, out result)) { }
+
+// JS 生成
+let $0;
+if (($0 = _hash(input, result), result = $0[1], $0[0])) { }
+```
+
+**生成规则**：
+1. 编译器自动生成临时变量（如 `$0`）
+2. 先调用方法，结果存入临时变量
+3. 从数组中提取 out/ref 参数值，赋回原变量
+4. 使用返回值（索引 0）作为表达式的最终值
+
+### 多个 out/ref 参数
+
+```csharp
+// C# 签名：static bool TryParse(string, out int value1, out int value2)
+// JS 返回：[returnValue, value1, value2]
+
+// 调用处生成
+let $0;
+if (($0 = _hash(input, value1, value2), value1 = $0[1], value2 = $0[2], $0[0])) { }
+```
+
+## 白名单机制
+
+### 工作流程
+
+```
+Jazor.CLR 项目
+     │
+     ├── [Jazor] 标记 ───→ 白名单生成器 ───→ Analyzer 白名单
+     │                                              │
+     │                                              ↓
+     │                                    编译时类型/成员检查
+     │
+     └── 编译 ───────────→ CLR Module 库 ───→ Compiler 引用
+```
+
+### 与其他项目的协作
 
 ```text
 用户代码编写
@@ -230,135 +452,7 @@ public extern static Number _80b6c29cc0038969(Boolean instance);
 2. 生成白名单代码到 `Jazor.Compiler/WhiteList.cs.Generate.cs`
 3. 同步到 Jazor.Analyzer 项目
 
-## 类型映射说明
-
-### C# 到 JavaScript 的类型映射
-
-| C# 类型 | JavaScript 类型 | 说明 |
-| :--- | :--- | :--- |
-| `void` | `undefined` | 无返回值 |
-| `bool` | `boolean` | 布尔值 |
-| `char` | `string` | 单字符字符串 |
-| `string` | `string` | 字符串 |
-| `byte/sbyte/short/ushort/int/uint/float/double/decimal` | `number` | 浮点数 |
-| `long/ulong/BigInteger` | `bigint` | 大整数 |
-| `DateTime/DateTimeOffset/DateOnly` | `Date` | 日期对象 |
-| `TimeOnly` | `number` | 时间（毫秒） |
-| `TimeSpan` | `bigint` | 时间间隔（刻度） |
-| `Array<T>/List<T>` | `Array` | 数组 |
-| `Dictionary<K,V>` | `Map` | 映射 |
-| `HashSet<T>` | `Set` | 集合 |
-| `object` | `object` | 对象 |
-
-### 特殊类型
-
-- `Uint32Array` - 表示 `ReadOnlySpan<char>`，字符数组
-- `Uint8Array` - 表示字节数组
-- `Box<T>` - 表示 out/ref 参数的包装类型（当前实现，计划移除）
-- `IArray<T>` - 表示数组接口
-
-## out/ref 参数处理（计划中）
-
-> **状态**: 设计阶段，当前仍使用 `Box<T>` 实现，待调整
-
-### 设计思路
-
-C# 的 out/ref 参数将通过返回数组的方式转换到 JavaScript：
-
-1. 方法返回值和 out/ref 参数都放在数组中返回
-2. 数组格式：`[返回值, out参数1, out参数2, ...]`
-3. 使用临时变量和逗号表达式进行解包
-
-### 转换示例
-
-**C# 代码**:
-
-```csharp
-var a = "123";
-var b = false;
-if(b && Int32.TryParse(a, out b))
-{
-    Console.WriteLine(b);
-}
-```
-
-**JavaScript 转换结果**:
-
-```javascript
-let a = "123";
-let b = false;
-let $0;
-if(b && ($0=_Int32Module_TryParse(a,b), b=$0[1], $0[0]))
-{
-    console.log(b);
-}
-```
-
-### 逗号表达式解析
-
-```javascript
-($0=_Int32Module_TryParse(a,b), b=$0[1], $0[0])
-```
-
-执行顺序：
-
-1. 调用 `_Int32Module_TryParse(a, b)`，返回数组 `[true, 123]`
-2. 将数组赋值给临时变量 `$0`
-3. 将 `$0[1]`（即 `123`）赋值给 `b`
-4. 返回 `$0[0]`（即 `true`）作为整个表达式的值
-
-### 模块方法签名调整
-
-**当前实现**:
-
-```csharp
-[Jazor(Op.Discard, "static int.TryParse(string, out int)")]
-public extern static bool _16e2a901535b765e(object s, Box<Number> result);
-```
-
-**计划调整为**:
-
-```csharp
-[Jazor(Op.Import, "static int.TryParse(string, out int)")]
-public static object[] _16e2a901535b765e(object s, object _result)
-{
-    // C# 实现
-    bool success = int.TryParse(s, out int result);
-    return new object[] { success, result };
-}
-```
-
-> **说明**: `_result` 参数仅用于类型推导和保持签名一致性，实际不使用。
-
-### 多个 out/ref 参数示例
-
-**C# 代码**:
-
-```csharp
-if (DivRem(10, 3, out int quotient, out int remainder))
-{
-    Console.WriteLine($"{quotient}, {remainder}");
-}
-```
-
-**JavaScript 转换结果**:
-
-```javascript
-let $0;
-if (($0=_DivRem(10, 3), quotient=$0[1], remainder=$0[2], $0[0]))
-{
-    console.log(`${quotient}, ${remainder}`);
-}
-```
-
-**方法返回**: `[true, 3, 1]` (返回值, quotient, remainder)
-
-### 待实现部分
-
-1. **模块文件签名调整** - 所有带 out/ref 参数的方法
-2. **SemanticWalker 处理逻辑** - 识别 out/ref 参数并生成转换代码
-3. **临时变量生成** - 自动生成 `$0`, `$1`, ... 临时变量
-4. **Box\<T\> 类型移除** - 不再需要包装类型
+---
 
 ## 开发指南
 
@@ -366,7 +460,7 @@ if (($0=_DivRem(10, 3), quotient=$0[1], remainder=$0[2], $0[0]))
 
 1. 在 `module/` 目录创建新文件，如 `NewTypeModule.cs`
 2. 添加 `[ECMAScriptModule]` 和 `[Jazor(Op.Import, ...)]` 特性
-3. 为需要支持的成员添加方法声明
+3. 查阅 `doc/` 目录获取成员签名和哈希值
 4. 根据需要实现方法或使用 `extern`
 
 ```csharp
@@ -376,14 +470,16 @@ namespace Jazor.CLR;
 [Jazor(Op.Import, "System.YourType", "System/YourTypeModule.js")]
 public static class YourTypeModule
 {
-    // 使用 C# 实现
+    // 从 doc/YourTypeModule.md 获取签名和哈希值
+
+    // 使用 C# 实现（Op.Import 必须有方法体）
     [Jazor(Op.Import, "static System.YourType.Parse(string)")]
     public static YourType _xxx(string value)
     {
-        // 实现代码
+        // JavaScript 实现
     }
 
-    // 使用 extern 声明
+    // 使用 extern 声明（非 Import 类型）
     [Jazor(Op.Discard, "System.YourType.UnsupportedMethod()")]
     public extern static void _yyy();
 }
@@ -393,18 +489,119 @@ public static class YourTypeModule
 
 `[Jazor]` 特性的 Member 参数使用 .NET 完整成员名格式：
 
-- 静态方法：`static TypeName.MethodName(params)`
-- 实例方法：`TypeName.MethodName(params)`
-- 静态属性：`static TypeName.PropertyName.get` / `.set`
-- 实例属性：`TypeName.PropertyName.get` / `.set`
-- 重写方法：`override TypeName.MethodName(params)`
-- 运算符：`static TypeName.operator +(Type, Type)`
+| 成员类型 | 格式 |
+|---------|------|
+| 静态方法 | `static TypeName.MethodName(params)` |
+| 实例方法 | `TypeName.MethodName(params)` |
+| 静态属性 | `static TypeName.PropertyName.get` / `.set` |
+| 实例属性 | `TypeName.PropertyName.get` / `.set` |
+| 重写方法 | `override TypeName.MethodName(params)` |
+| 运算符 | `static TypeName.operator +(Type, Type)` |
+| 构造函数 | `TypeName.TypeName(params)` |
+| 字段 | `static readonly TypeName.FieldName` |
+
+### 模块路径规范
+
+| C# 类型 | 模块声明 | 说明 |
+|---------|----------|------|
+| `bool` | `[Jazor(Op.Import, "bool", "System/BooleanModule.js")]` | 基本类型别名 |
+| `Int32` | `[Jazor(Op.Import, "int", "System/Int32Module.js")]` | 基本类型关键字 |
+| `DateTime` | `[Jazor(Op.Import, "System.DateTime", "System/DateTimeModule.js")]` | 完整类型名 |
+| `Console` | `[Jazor(Op.Replace, "System.Console", "console")]` | 替换为全局对象 |
+
+**路径命名规则**：
+- 命名空间映射：`System.Collections.Generic` → `System/Collections/Generic/`
+- 文件命名：`{类型名}Module.js`
+- 泛型类型：`` `n `` 表示参数数量，如 `List`1Module.js`
+- 嵌套类型：使用 `+` 连接，如 `Outer+InnerModule.js`
 
 ### 代码风格
 
 - 代码使用 C# 编写，但语法贴合 JavaScript
 - 使用 JavaScript 类型名称（`Number`、`String`、`Boolean`、`Object` 等）
 - 使用 JavaScript 运行时 API（如 `Error` 构造函数）
+- 避免调用 C# 原生方法，使用映射后的 JavaScript 方法
+
+## 错误处理与调试
+
+### 常见错误场景
+
+| 错误信息 | 原因 | 解决方案 |
+|---------|------|----------|
+| `Type 'X' is not in whitelist` | 类型未在白名单中 | 检查类型是否被 `[Jazor]` 标记 |
+| `Member 'X' is not in whitelist` | 成员未在白名单中 | 检查成员签名是否正确标记 |
+| `Hash mismatch for member 'X'` | 方法哈希名与签名不匹配 | 使用 doc 文档中指定的正确哈希值 |
+| `Method not compiled` | `extern` 方法但 Op 不是 Import | Import 类型**不能**使用 `extern` |
+
+### extern 使用规则
+
+| Op 类型 | extern? | 原因 |
+|---------|---------|------|
+| `Discard` | ✅ | 不需要实现，标记为不支持 |
+| `Allowed` | ✅ | JS 原生支持，无需额外代码 |
+| `Replace` | ✅ | JS 原生方法，只需改名 |
+| `Inline` | ✅ | 内联代码提供实现 |
+| `Import` | ❌ | 需要完整的 C# 方法体实现 |
+| `Compile` | ✅ | 编译器内部处理 |
+
+### 常见陷阱与解决方案
+
+| 问题 | 原因 | 解决方案 |
+|------|------|----------|
+| 方法体未被编译到 CLR module | `extern` 方法只有白名单标记作用 | 只有 `Op.Import` 需要方法体，其他用 `extern` |
+| 占位符未替换 | `@#{n}` 格式错误 | 使用正确格式 `@#{0}`, `@#{1}` |
+| 返回值类型错误 | 使用泛型而非 `Array<object?>` | out/ref 方法必须返回 `Array<object?>` |
+| 循环引用 | Import 方法互相调用 | 避免模块间循环依赖 |
+| 类型映射错误 | 参数类型不正确 | 参考 GlobalUsings.cs 中的类型定义 |
+
+---
+
+## 快速参考
+
+### Op 类型速查表
+
+| 场景 | Op 类型 | extern? | 编译到 CLR module? |
+|------|---------|---------|-------------------|
+| JS 原生支持，无需处理 | `Allowed` | ✅ | ❌ |
+| JS 有类似方法但名称不同 | `Replace` | ✅ | ❌ |
+| 可用简单表达式实现 | `Inline` | ✅ | ❌ |
+| 需要完整实现 | `Import` | ❌ | ✅ |
+| 编译器特殊处理 | `Compile` | ✅ | ❌ |
+| 不支持 | `Discard` | ✅ | ❌ |
+
+### 占位符速查表
+
+| 方法类型 | @#{0} | @#{1} | @#{2} |
+|----------|-------|-------|-------|
+| 实例方法 | 实例 | 参数1 | 参数2 |
+| 静态方法 | 参数1 | 参数2 | 参数3 |
+| 扩展方法 | 被扩展对象 | 参数1 | 参数2 |
+
+### 常见成员 Op 选择指南
+
+**基础类型成员**：
+
+| 成员类型 | 推荐 Op | 原因 |
+|---------|---------|------|
+| `ToString()` | `Replace` → `toString` | JS 原生方法 |
+| `Equals(object)` | `Inline` → `===` | 简单比较 |
+| `GetHashCode()` | `Discard` | JS 无哈希码概念 |
+| `Parse(string)` | `Import` | 需验证和异常处理 |
+| `TryParse(string, out T)` | `Import` | 需返回数组 |
+| 静态常量（MaxValue等） | `Inline` | 字面量内联 |
+| 带 IFormatProvider 重载 | `Discard` | JS 无格式化区域概念 |
+
+**集合类型成员**：
+
+| 成员类型 | 推荐 Op | 原因 |
+|---------|---------|------|
+| 构造函数 `new List()` | `Inline` → `[]` 或 `new Map()` | 简单构造 |
+| `Count` / `Length` | `Replace` → `size` / `length` | 属性名不同 |
+| `Add(item)` | `Replace` → `push` (Array) 或 `Import` (Dictionary) | Array 直接替换，Dictionary 需检查重复 |
+| `Contains(item)` | `Replace` → `includes` / `has` | 方法名不同 |
+| 索引器 `this[i]` | `Inline` → `arr[i]` | 直接访问 |
+
+---
 
 ## 项目配置
 
@@ -426,19 +623,33 @@ public static class YourTypeModule
 
 ### 警告说明
 
-- `CS0626` - extern 方法没有特性
-- `CS0824` - 构造函数标记为 extern
-- `IDE0130` - 命名空间与文件夹不匹配
-- `CA1822` - 成员可以标记为静态
-- `IDE0060` - 未使用的参数
-- `IDE1006` - 命名风格不符合规则（混淆签名）
+| 警告 | 说明 |
+|------|------|
+| `CS0626` | extern 方法没有特性 |
+| `CS0824` | 构造函数标记为 extern |
+| `IDE0130` | 命名空间与文件夹不匹配 |
+| `CA1822` | 成员可以标记为静态 |
+| `IDE0060` | 未使用的参数 |
+| `IDE1006` | 命名风格不符合规则（哈希签名） |
+
+---
 
 ## 依赖关系
 
 - **ECMAScript** - 提供 ECMAScript AST 类型和 JavaScript 运行时类型
 - **Jazor.Common** - 提供 `[Jazor]` 特性和 `Op` 枚举
 
+---
+
 ## 文档资源
 
+- [rule.md](./rule.md) - 详细开发规则文档
+- [task.md](./task.md) - 任务完成状态
 - [doc/](./doc/) - 各模块成员签名文档
 - [CLAUDE.md](../../CLAUDE.md) - Jazor 项目整体开发规则
+
+---
+
+**文档维护者**：developerhan
+**最后更新**：2026-03-02
+**文档版本**：v4.0

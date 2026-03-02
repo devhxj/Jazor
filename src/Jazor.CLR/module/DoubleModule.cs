@@ -197,7 +197,7 @@ public static class DoubleModule
 	public extern static System.TypeCode _faf3eda13d4c24c6(Number instance);
 
 	// 数学方法
-	[Jazor(Op.Inline, "static double.IsPow2(double)", "(@#{0} > 0 &amp;&amp; (@#{0} &amp; (@#{0} - 1)) === 0)")]
+	[Jazor(Op.Inline, "static double.IsPow2(double)", "(@#{0} > 0 && (@#{0} & (@#{0} - 1)) === 0)")]
 	public extern static bool _0f9f49a802919a8f(Number value);
 
 	[Jazor(Op.Replace, "static double.Log2(double)", "log2")]

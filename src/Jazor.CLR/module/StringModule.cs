@@ -5,7 +5,7 @@ namespace Jazor.CLR;
 public static class StringModule
 {
 	///<summary>Represents the empty string. This field is read-only.</summary>
-	[Jazor(Op.Inline, "static readonly string.Empty", "")]
+	[Jazor(Op.Inline, "static readonly string.Empty", "\"\"")]
 	public extern static string _b16f79dc7b155be3();
 
 	///<summary>Retrieves the system's reference to the specified <see cref="T:System.String" />.</summary>
