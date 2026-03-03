@@ -8,12 +8,12 @@ namespace Jazor.CLR;
 /// - 底层数组不变，只是语义上只读
 ///
 /// Op 类型选择原则：
-/// - Replace: JS Array 有同名方法/属性
+/// - Alias: JS Array 有同名方法/属性
 /// - Inline: 简单表达式
 /// - Discard: ReadOnlyCollection 特有的但 JS Array 不完全支持的功能
 /// </summary>
-[ECMAScriptModule]
-[Jazor(Op.Import, "System.Collections.ObjectModel.ReadOnlyCollection<T>","System/Collections/ObjectModel/ReadOnlyCollectionModule.js")]
+[ECMAScriptModule("System/Collections/ObjectModel/ReadOnlyCollectionModule.js")]
+[Jazor(Op.Alias, "System.Collections.ObjectModel.ReadOnlyCollection<T>","Array")]
 public static class ReadOnlyCollectionModule<T>
 {
 	/// <summary>
@@ -34,14 +34,14 @@ public static class ReadOnlyCollectionModule<T>
 	/// C#: collection.Count
 	/// JS: array.length
 	/// </summary>
-	[Jazor(Op.Replace, "System.Collections.ObjectModel.ReadOnlyCollection<T>.Count.get", "length")]
+	[Jazor(Op.Alias, "System.Collections.ObjectModel.ReadOnlyCollection<T>.Count.get", "length")]
 	public extern static Number _f6a7b8c9d0e1f2a3(Array<T> instance);
 
 	/// <summary>
 	/// C#: collection.Contains(item)
 	/// JS: array.includes(item)
 	/// </summary>
-	[Jazor(Op.Replace, "System.Collections.ObjectModel.ReadOnlyCollection<T>.Contains(T)", "includes")]
+	[Jazor(Op.Alias, "System.Collections.ObjectModel.ReadOnlyCollection<T>.Contains(T)", "includes")]
 	public extern static bool _a7b8c9d0e1f2a3b4(Array<T> instance, T item);
 
 	/// <summary>
@@ -55,7 +55,7 @@ public static class ReadOnlyCollectionModule<T>
 	/// C#: collection.IndexOf(item)
 	/// JS: array.indexOf(item)
 	/// </summary>
-	[Jazor(Op.Replace, "System.Collections.ObjectModel.ReadOnlyCollection<T>.IndexOf(T)", "indexOf")]
+	[Jazor(Op.Alias, "System.Collections.ObjectModel.ReadOnlyCollection<T>.IndexOf(T)", "indexOf")]
 	public extern static Number _c9d0e1f2a3b4c5d6(Array<T> instance, T item);
 
 	/// <summary>

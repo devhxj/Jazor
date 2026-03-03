@@ -9,12 +9,12 @@ namespace Jazor.CLR;
 ///
 /// Op 类型选择原则：
 /// - Inline: 简单表达式和常量
-/// - Replace: JS 原生方法
+/// - Alias: JS 原生方法
 /// - Import: 需要验证的 Parse/TryParse
 /// - Discard: 不常用或平台特定的方法
 /// </summary>
-[ECMAScriptModule]
-[Jazor(Op.Import, "float","System/SingleModule.js")]
+[ECMAScriptModule("System/SingleModule.js")]
+[Jazor(Op.Alias, "float","Number")]
 public static class SingleModule
 {
 	// 常量 - 使用 Op.Inline
@@ -55,7 +55,7 @@ public static class SingleModule
 	/// C#: float.IsFinite(f)
 	/// JS: isFinite(f)
 	/// </summary>
-	[Jazor(Op.Replace, "static float.IsFinite(float)", "isFinite")]
+	[Jazor(Op.Alias, "static float.IsFinite(float)", "isFinite")]
 	public extern static bool _00118f159d09918d(Number f);
 
 	/// <summary>
@@ -69,7 +69,7 @@ public static class SingleModule
 	/// C#: float.IsNaN(f)
 	/// JS: isNaN(f)
 	/// </summary>
-	[Jazor(Op.Replace, "static float.IsNaN(float)", "isNaN")]
+	[Jazor(Op.Alias, "static float.IsNaN(float)", "isNaN")]
 	public extern static bool _8c3d7a2e3b690c9a(Number f);
 
 	/// <summary>
@@ -161,7 +161,7 @@ public static class SingleModule
 	/// C#: float.ToString()
 	/// JS: instance.toString()
 	/// </summary>
-	[Jazor(Op.Replace, "override float.ToString()", "toString")]
+	[Jazor(Op.Alias, "override float.ToString()", "toString")]
 	public extern static string _a036f8edeee45300(Number instance);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation using the specified culture-specific format information.</summary>

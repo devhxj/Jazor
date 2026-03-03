@@ -8,7 +8,7 @@ namespace Jazor.CLR;
 /// - 一维数组可以直接映射，多维数组不支持
 ///
 /// Op 类型选择原则：
-/// - Replace: JavaScript 有原生对应方法（如 length, indexOf, reverse, sort 等）
+/// - Alias: JavaScript 有原生对应方法（如 length, indexOf, reverse, sort 等）
 /// - Inline: JavaScript 有对应操作但名称/行为不同（如 Clone 用 slice()）
 /// - Import: 需要 C# 实现转换逻辑（如 Empty<T>, ConvertAll<T> 等）
 /// - Discard: JavaScript 无对应概念（如多维数组、类型系统相关方法）
@@ -20,8 +20,8 @@ namespace Jazor.CLR;
 /// - T[] → Array<T>
 /// - out 参数 → 返回数组（第一个元素是返回值，后续是 out 参数值）
 /// </summary>
-[ECMAScriptModule]
-[Jazor(Op.Import, "System.Array", "System/ArrayModule.js")]
+[ECMAScriptModule("System/ArrayModule.js")]
+[Jazor(Op.Alias, "System.Array", "Array")]
 public static class ArrayModule<T>
 {
 	#region 属性
@@ -30,7 +30,7 @@ public static class ArrayModule<T>
 	/// C#: array.Length
 	/// JS: array.length
 	/// </summary>
-	[Jazor(Op.Replace, "System.Array.Length.get", "length")]
+	[Jazor(Op.Alias, "System.Array.Length.get", "length")]
 	public extern static Number _fdebc1c5c62f33cc(Array instance);
 
 	/// <summary>
@@ -788,7 +788,7 @@ public static class ArrayModule<T>
 	/// C#: Array.Fill&lt;T&gt;(array, value)
 	/// JS: array.fill(value)
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Array.Fill<T>(T[], T)", "fill")]
+	[Jazor(Op.Alias, "static System.Array.Fill<T>(T[], T)", "fill")]
 	public extern static void _65ab99eba8176bda(Array<T> array, T value);
 
 	/// <summary>
@@ -987,7 +987,7 @@ public static class ArrayModule<T>
 	{
 		if (array == null)
 			throw new Error("ArgumentNullException: array is null");
-			
+
 		if (value is null)
 			return -1;
 

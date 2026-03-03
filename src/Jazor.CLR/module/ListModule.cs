@@ -8,13 +8,13 @@ namespace Jazor.CLR;
 /// - 大多数方法可以直接映射
 ///
 /// Op 类型选择原则：
-/// - Replace: JS Array 有同名方法
+/// - Alias: JS Array 有同名方法
 /// - Inline: 简单表达式
 /// - Import: 需要额外逻辑的方法
 /// - Discard: List 特有但 JS Array 不完全支持的功能
 /// </summary>
-[ECMAScriptModule]
-[Jazor(Op.Import, "System.Collections.Generic.List<T>","System/Collections/Generic/ListModule.js")]
+[ECMAScriptModule("System/Collections/Generic/ListModule.js")]
+[Jazor(Op.Alias, "System.Collections.Generic.List<T>","Array")]
 public static class ListModule<T>
 {
 	/// <summary>
@@ -48,7 +48,7 @@ public static class ListModule<T>
 	/// C#: list.Count
 	/// JS: array.length
 	/// </summary>
-	[Jazor(Op.Replace, "System.Collections.Generic.List<T>.Count.get", "length")]
+	[Jazor(Op.Alias, "System.Collections.Generic.List<T>.Count.get", "length")]
 	public extern static Number _a2137cdeeb85f3d9(Array<T> instance);
 
 	/// <summary>
@@ -69,7 +69,7 @@ public static class ListModule<T>
 	/// C#: list.Add(item)
 	/// JS: array.push(item)
 	/// </summary>
-	[Jazor(Op.Replace, "System.Collections.Generic.List<T>.Add(T)", "push")]
+	[Jazor(Op.Alias, "System.Collections.Generic.List<T>.Add(T)", "push")]
 	public extern static void _342f4a7099c7ddf0(Array<T> instance, T item);
 
 	/// <summary>
@@ -102,7 +102,7 @@ public static class ListModule<T>
 	/// C#: list.Contains(item)
 	/// JS: array.includes(item)
 	/// </summary>
-	[Jazor(Op.Replace, "System.Collections.Generic.List<T>.Contains(T)", "includes")]
+	[Jazor(Op.Alias, "System.Collections.Generic.List<T>.Contains(T)", "includes")]
 	public extern static bool _d9fab27c685b7de9(Array<T> instance, T item);
 
 	[Jazor(Op.Discard, "System.Collections.Generic.List<T>.ConvertAll<TOutput>(System.Converter<T, TOutput>)")]
@@ -148,28 +148,28 @@ public static class ListModule<T>
 	/// C#: list.Exists(match)
 	/// JS: array.some(match)
 	/// </summary>
-	[Jazor(Op.Replace, "System.Collections.Generic.List<T>.Exists(System.Predicate<T>)", "some")]
+	[Jazor(Op.Alias, "System.Collections.Generic.List<T>.Exists(System.Predicate<T>)", "some")]
 	public extern static bool _b23997dd4232ced6(Array<T> instance, Predicate<T> match);
 
 	/// <summary>
 	/// C#: list.Find(match)
 	/// JS: array.find(match)
 	/// </summary>
-	[Jazor(Op.Replace, "System.Collections.Generic.List<T>.Find(System.Predicate<T>)", "find")]
+	[Jazor(Op.Alias, "System.Collections.Generic.List<T>.Find(System.Predicate<T>)", "find")]
 	public extern static T? _089a5c28e11eeeaf(Array<T> instance, Predicate<T> match);
 
 	/// <summary>
 	/// C#: list.FindAll(match)
 	/// JS: array.filter(match)
 	/// </summary>
-	[Jazor(Op.Replace, "System.Collections.Generic.List<T>.FindAll(System.Predicate<T>)", "filter")]
+	[Jazor(Op.Alias, "System.Collections.Generic.List<T>.FindAll(System.Predicate<T>)", "filter")]
 	public extern static Array<T> _d8e500da425f2be5(Array<T> instance, Predicate<T> match);
 
 	/// <summary>
 	/// C#: list.FindIndex(match)
 	/// JS: array.findIndex(match)
 	/// </summary>
-	[Jazor(Op.Replace, "System.Collections.Generic.List<T>.FindIndex(System.Predicate<T>)", "findIndex")]
+	[Jazor(Op.Alias, "System.Collections.Generic.List<T>.FindIndex(System.Predicate<T>)", "findIndex")]
 	public extern static Number _4770bba04510e57b(Array<T> instance, Predicate<T> match);
 
 	/// <summary>
@@ -269,7 +269,7 @@ public static class ListModule<T>
 	/// C#: list.ForEach(action)
 	/// JS: array.forEach(action)
 	/// </summary>
-	[Jazor(Op.Replace, "System.Collections.Generic.List<T>.ForEach(System.Action<T>)", "forEach")]
+	[Jazor(Op.Alias, "System.Collections.Generic.List<T>.ForEach(System.Action<T>)", "forEach")]
 	public extern static void _7395d2cfe6dce3fb(Array<T> instance, Action<T> action);
 
 	[Jazor(Op.Discard, "System.Collections.Generic.List<T>.GetEnumerator()")]
@@ -293,14 +293,14 @@ public static class ListModule<T>
 	/// C#: list.IndexOf(item)
 	/// JS: array.indexOf(item)
 	/// </summary>
-	[Jazor(Op.Replace, "System.Collections.Generic.List<T>.IndexOf(T)", "indexOf")]
+	[Jazor(Op.Alias, "System.Collections.Generic.List<T>.IndexOf(T)", "indexOf")]
 	public extern static Number _2bb4b70655cede73(Array<T> instance, T item);
 
 	/// <summary>
 	/// C#: list.IndexOf(item, index)
 	/// JS: array.indexOf(item, index)
 	/// </summary>
-	[Jazor(Op.Replace, "System.Collections.Generic.List<T>.IndexOf(T, int)", "indexOf")]
+	[Jazor(Op.Alias, "System.Collections.Generic.List<T>.IndexOf(T, int)", "indexOf")]
 	public extern static Number _71ee35e0e260eb27(Array<T> instance, T item, Number index);
 
 	/// <summary>
@@ -337,14 +337,14 @@ public static class ListModule<T>
 	/// C#: list.LastIndexOf(item)
 	/// JS: array.lastIndexOf(item)
 	/// </summary>
-	[Jazor(Op.Replace, "System.Collections.Generic.List<T>.LastIndexOf(T)", "lastIndexOf")]
+	[Jazor(Op.Alias, "System.Collections.Generic.List<T>.LastIndexOf(T)", "lastIndexOf")]
 	public extern static Number _121df07eb2f61749(Array<T> instance, T item);
 
 	/// <summary>
 	/// C#: list.LastIndexOf(item, index)
 	/// JS: array.lastIndexOf(item, index)
 	/// </summary>
-	[Jazor(Op.Replace, "System.Collections.Generic.List<T>.LastIndexOf(T, int)", "lastIndexOf")]
+	[Jazor(Op.Alias, "System.Collections.Generic.List<T>.LastIndexOf(T, int)", "lastIndexOf")]
 	public extern static Number _279befda6399cda5(Array<T> instance, T item, Number index);
 
 	/// <summary>
@@ -417,7 +417,7 @@ public static class ListModule<T>
 	/// C#: list.Reverse()
 	/// JS: array.reverse()
 	/// </summary>
-	[Jazor(Op.Replace, "System.Collections.Generic.List<T>.Reverse()", "reverse")]
+	[Jazor(Op.Alias, "System.Collections.Generic.List<T>.Reverse()", "reverse")]
 	public extern static void _8a13946a926a97b2(Array<T> instance);
 
 	/// <summary>
@@ -443,14 +443,14 @@ public static class ListModule<T>
 	/// C#: list.Sort()
 	/// JS: array.sort()
 	/// </summary>
-	[Jazor(Op.Replace, "System.Collections.Generic.List<T>.Sort()", "sort")]
+	[Jazor(Op.Alias, "System.Collections.Generic.List<T>.Sort()", "sort")]
 	public extern static void _36a478f36b41a6d2(Array<T> instance);
 
 	/// <summary>
 	/// C#: list.Sort(comparer)
 	/// JS: array.sort((a, b) => comparer(a, b))
 	/// </summary>
-	[Jazor(Op.Replace, "System.Collections.Generic.List<T>.Sort(System.Collections.Generic.IComparer<T>)", "sort")]
+	[Jazor(Op.Alias, "System.Collections.Generic.List<T>.Sort(System.Collections.Generic.IComparer<T>)", "sort")]
 	public extern static void _5fa599e721e252ff(Array<T> instance, IComparer<T>? comparer);
 
 	/// <summary>
@@ -473,14 +473,14 @@ public static class ListModule<T>
 	/// C#: list.Sort(comparison)
 	/// JS: array.sort(comparison)
 	/// </summary>
-	[Jazor(Op.Replace, "System.Collections.Generic.List<T>.Sort(System.Comparison<T>)", "sort")]
+	[Jazor(Op.Alias, "System.Collections.Generic.List<T>.Sort(System.Comparison<T>)", "sort")]
 	public extern static void _0d91dcbccdea7c8c(Array<T> instance, Comparison<T> comparison);
 
 	/// <summary>
 	/// C#: list.ToArray()
 	/// JS: array.slice()
 	/// </summary>
-	[Jazor(Op.Replace, "System.Collections.Generic.List<T>.ToArray()", "slice")]
+	[Jazor(Op.Alias, "System.Collections.Generic.List<T>.ToArray()", "slice")]
 	public extern static Array<T> _eedb6fcf490f54cb(Array<T> instance);
 
 	[Jazor(Op.Discard, "System.Collections.Generic.List<T>.TrimExcess()")]
@@ -490,6 +490,6 @@ public static class ListModule<T>
 	/// C#: list.TrueForAll(match)
 	/// JS: array.every(match)
 	/// </summary>
-	[Jazor(Op.Replace, "System.Collections.Generic.List<T>.TrueForAll(System.Predicate<T>)", "every")]
+	[Jazor(Op.Alias, "System.Collections.Generic.List<T>.TrueForAll(System.Predicate<T>)", "every")]
 	public extern static bool _d12a4656f219490c(Array<T> instance, Predicate<T> match);
 }

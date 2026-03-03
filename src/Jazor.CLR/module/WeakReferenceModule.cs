@@ -1,7 +1,7 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule]
-[Jazor(Op.Import, "System.WeakReference","System/WeakReferenceModule.js")]
+[ECMAScriptModule("System/WeakReferenceModule.js")]
+[Jazor(Op.Alias, "System.WeakReference", "WeakRef")]
 public static class WeakReferenceModule
 {
 	///<summary>Initializes a new instance of the <see cref="T:System.WeakReference" /> class, referencing the specified object.</summary>

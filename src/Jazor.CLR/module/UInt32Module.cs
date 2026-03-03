@@ -9,12 +9,12 @@ namespace Jazor.CLR;
 ///
 /// Op 类型选择原则：
 /// - Inline: 简单比较和运算
-/// - Replace: JS Number 方法
+/// - Alias: JS Number 方法
 /// - Import: 需要完整实现的复杂逻辑（Parse/TryParse）
 /// - Discard: 不支持的功能
 /// </summary>
-[ECMAScriptModule]
-[Jazor(Op.Import, "uint","System/UInt32Module.js")]
+[ECMAScriptModule("System/UInt32Module.js")]
+[Jazor(Op.Alias, "uint", "Number")]
 public static class UInt32Module
 {
 	/// <summary>
@@ -67,7 +67,7 @@ public static class UInt32Module
 	public extern static Number _d42f9fcffa604eb2(Number instance);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation.</summary>
-	[Jazor(Op.Replace, "override uint.ToString()", "toString")]
+	[Jazor(Op.Alias, "override uint.ToString()", "toString")]
 	public extern static string _d124667433f8250d(Number instance);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation using the specified culture-specific format information.</summary>

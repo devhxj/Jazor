@@ -1,7 +1,7 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule]
-[Jazor(Op.Import, "System.DateTimeOffset","System/DateTimeOffsetModule.js")]
+[ECMAScriptModule("System/DateTimeOffsetModule.js")]
+[Jazor(Op.Alias, "System.DateTimeOffset","Date")]
 public static class DateTimeOffsetModule
 {
 	/// <summary>

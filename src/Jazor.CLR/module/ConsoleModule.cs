@@ -9,7 +9,7 @@ namespace Jazor.CLR;
 /// - Clear → console.clear
 ///
 /// Op 类型选择原则：
-/// - Replace: JavaScript 有原生对应方法（如 WriteLine → log, Clear → clear）
+/// - Alias: JavaScript 有原生对应方法（如 WriteLine → log, Clear → clear）
 /// - Discard: JavaScript 无对应概念（如输入、光标、窗口、颜色、编码等）
 ///
 /// 类型映射：
@@ -20,8 +20,8 @@ namespace Jazor.CLR;
 /// - long/ulong → BigInt
 /// - object → object
 /// </summary>
-[ECMAScriptModule]
-[Jazor(Op.Replace, "System.Console", "console")]
+[ECMAScriptModule("System/ConsoleModule.js")]
+[Jazor(Op.Alias, "System.Console", "console")]
 public static class ConsoleModule
 {
 	#region Properties (JavaScript 不支持，使用 Discard)
@@ -173,20 +173,20 @@ public static class ConsoleModule
 
 	#endregion
 
-	#region Output Methods (支持，使用 Replace 映射到 console.log)
+	#region Output Methods (支持，使用 Alias 映射到 console.log)
 
 	/// <summary>
 	/// C#: Console.WriteLine()
 	/// JS: console.log()
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.WriteLine()", "log")]
+	[Jazor(Op.Alias, "static System.Console.WriteLine()", "log")]
 	public extern static void _64a3c7e35feaa9f0();
 
 	/// <summary>
 	/// C#: Console.WriteLine(bool)
 	/// JS: console.log(value)
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.WriteLine(bool)", "log")]
+	[Jazor(Op.Alias, "static System.Console.WriteLine(bool)", "log")]
 	public extern static void _0657067880cafdd2(bool value);
 
 	/// <summary>
@@ -194,7 +194,7 @@ public static class ConsoleModule
 	/// JS: console.log(value)
 	/// char 映射为 string（单字符字符串）
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.WriteLine(char)", "log")]
+	[Jazor(Op.Alias, "static System.Console.WriteLine(char)", "log")]
 	public extern static void _5a138b02870324cb(string value);
 
 	/// <summary>
@@ -202,14 +202,14 @@ public static class ConsoleModule
 	/// JS: console.log(value)
 	/// char[] 映射为 string
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.WriteLine(char[])", "log")]
+	[Jazor(Op.Alias, "static System.Console.WriteLine(char[])", "log")]
 	public extern static void _bfd6ae4fc98a90ff(string buffer);
 
 	/// <summary>
 	/// C#: Console.WriteLine(char[], int, int)
 	/// JS: console.log(buffer.substring(index, index + count))
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.WriteLine(char[], int, int)", "log")]
+	[Jazor(Op.Alias, "static System.Console.WriteLine(char[], int, int)", "log")]
 	public extern static void _460b8c2943875e7e(string buffer, Number index, Number count);
 
 	/// <summary>
@@ -217,35 +217,35 @@ public static class ConsoleModule
 	/// JS: console.log(value)
 	/// decimal 映射为 Number
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.WriteLine(System.Decimal)", "log")]
+	[Jazor(Op.Alias, "static System.Console.WriteLine(System.Decimal)", "log")]
 	public extern static void _06770dfb1e3ad0be(Number value);
 
 	/// <summary>
 	/// C#: Console.WriteLine(double)
 	/// JS: console.log(value)
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.WriteLine(double)", "log")]
+	[Jazor(Op.Alias, "static System.Console.WriteLine(double)", "log")]
 	public extern static void _b457fd5c1c5f9568(Number value);
 
 	/// <summary>
 	/// C#: Console.WriteLine(float)
 	/// JS: console.log(value)
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.WriteLine(float)", "log")]
+	[Jazor(Op.Alias, "static System.Console.WriteLine(float)", "log")]
 	public extern static void _38bc406a617b49ca(Number value);
 
 	/// <summary>
 	/// C#: Console.WriteLine(int)
 	/// JS: console.log(value)
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.WriteLine(int)", "log")]
+	[Jazor(Op.Alias, "static System.Console.WriteLine(int)", "log")]
 	public extern static void _8f3980b4b82b99ac(Number value);
 
 	/// <summary>
 	/// C#: Console.WriteLine(uint)
 	/// JS: console.log(value)
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.WriteLine(uint)", "log")]
+	[Jazor(Op.Alias, "static System.Console.WriteLine(uint)", "log")]
 	public extern static void _029fda9e4e9b254f(Number value);
 
 	/// <summary>
@@ -253,7 +253,7 @@ public static class ConsoleModule
 	/// JS: console.log(value)
 	/// long 映射为 BigInt
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.WriteLine(long)", "log")]
+	[Jazor(Op.Alias, "static System.Console.WriteLine(long)", "log")]
 	public extern static void _0a1213ea041262ff(BigInt value);
 
 	/// <summary>
@@ -261,21 +261,21 @@ public static class ConsoleModule
 	/// JS: console.log(value)
 	/// ulong 映射为 BigInt
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.WriteLine(ulong)", "log")]
+	[Jazor(Op.Alias, "static System.Console.WriteLine(ulong)", "log")]
 	public extern static void _28da774493da8a92(BigInt value);
 
 	/// <summary>
 	/// C#: Console.WriteLine(object)
 	/// JS: console.log(value)
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.WriteLine(object)", "log")]
+	[Jazor(Op.Alias, "static System.Console.WriteLine(object)", "log")]
 	public extern static void _b1dc4a6e5df341aa(object? value);
 
 	/// <summary>
 	/// C#: Console.WriteLine(string)
 	/// JS: console.log(value)
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.WriteLine(string)", "log")]
+	[Jazor(Op.Alias, "static System.Console.WriteLine(string)", "log")]
 	public extern static void _19f2583beee4f7fb(string? value);
 
 	/// <summary>
@@ -283,60 +283,60 @@ public static class ConsoleModule
 	/// JS: console.log(value)
 	/// ReadOnlySpan<char> 映射为 Uint32Array
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.WriteLine(System.ReadOnlySpan<char>)", "log")]
+	[Jazor(Op.Alias, "static System.Console.WriteLine(System.ReadOnlySpan<char>)", "log")]
 	public extern static void _fd102c4488f2b5f3(Uint32Array value);
 
 	/// <summary>
 	/// C#: Console.WriteLine(string, object)
 	/// JS: 需要格式转换，C# 用 {0} 占位符，JS 用 %s/%d 等
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.WriteLine(string, object)", "log")]
+	[Jazor(Op.Alias, "static System.Console.WriteLine(string, object)", "log")]
 	public extern static void _c4e6acf24771bb66(string format, object? arg0);
 
 	/// <summary>
 	/// C#: Console.WriteLine(string, object, object)
 	/// JS: 需要格式转换
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.WriteLine(string, object, object)", "log")]
+	[Jazor(Op.Alias, "static System.Console.WriteLine(string, object, object)", "log")]
 	public extern static void _f5c74fa705a4f0b9(string format, object? arg0, object? arg1);
 
 	/// <summary>
 	/// C#: Console.WriteLine(string, object, object, object)
 	/// JS: 需要格式转换
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.WriteLine(string, object, object, object)", "log")]
+	[Jazor(Op.Alias, "static System.Console.WriteLine(string, object, object, object)", "log")]
 	public extern static void _0fa26d5cd312b8d3(string format, object? arg0, object? arg1, object? arg2);
 
 	/// <summary>
 	/// C#: Console.WriteLine(string, params object[])
 	/// JS: 需要格式转换
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.WriteLine(string, params object[])", "log")]
+	[Jazor(Op.Alias, "static System.Console.WriteLine(string, params object[])", "log")]
 	public extern static void _7a73fda86982983f(string format, object arg);
 
 	/// <summary>
 	/// C#: Console.WriteLine(string, params ReadOnlySpan<object>)
 	/// JS: 需要格式转换
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.WriteLine(string, params System.ReadOnlySpan<object>)", "log")]
+	[Jazor(Op.Alias, "static System.Console.WriteLine(string, params System.ReadOnlySpan<object>)", "log")]
 	public extern static void _e2406d27d341e50b(string format, object arg);
 
 	#endregion
 
-	#region Write Methods (支持，使用 Replace 映射到 console 方法)
+	#region Write Methods (支持，使用 Alias 映射到 console 方法)
 
 	/// <summary>
 	/// C#: Console.Write(string)
 	/// JS: console.log(value) (注意：JS 的 log 会换行，与 C# Write 不完全一致)
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.Write(string)", "log")]
+	[Jazor(Op.Alias, "static System.Console.Write(string)", "log")]
 	public extern static void _89898d51245a9c64(string? value);
 
 	/// <summary>
 	/// C#: Console.Write(bool)
 	/// JS: console.log(value)
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.Write(bool)", "log")]
+	[Jazor(Op.Alias, "static System.Console.Write(bool)", "log")]
 	public extern static void _a4ba329944e98b1c(bool value);
 
 	/// <summary>
@@ -344,7 +344,7 @@ public static class ConsoleModule
 	/// JS: console.log(value)
 	/// char 映射为 string
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.Write(char)", "log")]
+	[Jazor(Op.Alias, "static System.Console.Write(char)", "log")]
 	public extern static void _c61ec50b9f9538a3(string value);
 
 	/// <summary>
@@ -352,21 +352,21 @@ public static class ConsoleModule
 	/// JS: console.log(buffer)
 	/// char[] 映射为 string
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.Write(char[])", "log")]
+	[Jazor(Op.Alias, "static System.Console.Write(char[])", "log")]
 	public extern static void _aa7978304cd0bacc(string buffer);
 
 	/// <summary>
 	/// C#: Console.Write(char[], int, int)
 	/// JS: console.log(buffer.substring(index, index + count))
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.Write(char[], int, int)", "log")]
+	[Jazor(Op.Alias, "static System.Console.Write(char[], int, int)", "log")]
 	public extern static void _10c4068d62648fb5(string buffer, Number index, Number count);
 
 	/// <summary>
 	/// C#: Console.Write(double)
 	/// JS: console.log(value)
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.Write(double)", "log")]
+	[Jazor(Op.Alias, "static System.Console.Write(double)", "log")]
 	public extern static void _c7002c416a3da063(Number value);
 
 	/// <summary>
@@ -374,28 +374,28 @@ public static class ConsoleModule
 	/// JS: console.log(value)
 	/// decimal 映射为 Number
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.Write(System.Decimal)", "log")]
+	[Jazor(Op.Alias, "static System.Console.Write(System.Decimal)", "log")]
 	public extern static void _c37cf10f8516d6b7(Number value);
 
 	/// <summary>
 	/// C#: Console.Write(float)
 	/// JS: console.log(value)
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.Write(float)", "log")]
+	[Jazor(Op.Alias, "static System.Console.Write(float)", "log")]
 	public extern static void _80304f087568bfd4(Number value);
 
 	/// <summary>
 	/// C#: Console.Write(int)
 	/// JS: console.log(value)
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.Write(int)", "log")]
+	[Jazor(Op.Alias, "static System.Console.Write(int)", "log")]
 	public extern static void _9aeb4b39f93efc70(Number value);
 
 	/// <summary>
 	/// C#: Console.Write(uint)
 	/// JS: console.log(value)
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.Write(uint)", "log")]
+	[Jazor(Op.Alias, "static System.Console.Write(uint)", "log")]
 	public extern static void _e31e2ab80d13cd13(Number value);
 
 	/// <summary>
@@ -403,7 +403,7 @@ public static class ConsoleModule
 	/// JS: console.log(value)
 	/// long 映射为 BigInt
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.Write(long)", "log")]
+	[Jazor(Op.Alias, "static System.Console.Write(long)", "log")]
 	public extern static void _8950a34699a5bdf8(BigInt value);
 
 	/// <summary>
@@ -411,14 +411,14 @@ public static class ConsoleModule
 	/// JS: console.log(value)
 	/// ulong 映射为 BigInt
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.Write(ulong)", "log")]
+	[Jazor(Op.Alias, "static System.Console.Write(ulong)", "log")]
 	public extern static void _e8ba4c4ca492d5a8(BigInt value);
 
 	/// <summary>
 	/// C#: Console.Write(object)
 	/// JS: console.log(value)
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.Write(object)", "log")]
+	[Jazor(Op.Alias, "static System.Console.Write(object)", "log")]
 	public extern static void _134c0342866ed156(object? value);
 
 	/// <summary>
@@ -426,42 +426,42 @@ public static class ConsoleModule
 	/// JS: console.log(value)
 	/// ReadOnlySpan<char> 映射为 Uint32Array
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.Write(System.ReadOnlySpan<char>)", "log")]
+	[Jazor(Op.Alias, "static System.Console.Write(System.ReadOnlySpan<char>)", "log")]
 	public extern static void _ec7a704092bf9982(Uint32Array value);
 
 	/// <summary>
 	/// C#: Console.Write(string, object)
 	/// JS: 需要格式转换
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.Write(string, object)", "log")]
+	[Jazor(Op.Alias, "static System.Console.Write(string, object)", "log")]
 	public extern static void _961ab9b501a6baf0(string format, object? arg0);
 
 	/// <summary>
 	/// C#: Console.Write(string, object, object)
 	/// JS: 需要格式转换
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.Write(string, object, object)", "log")]
+	[Jazor(Op.Alias, "static System.Console.Write(string, object, object)", "log")]
 	public extern static void _33daccffa622fc66(string format, object? arg0, object? arg1);
 
 	/// <summary>
 	/// C#: Console.Write(string, object, object, object)
 	/// JS: 需要格式转换
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.Write(string, object, object, object)", "log")]
+	[Jazor(Op.Alias, "static System.Console.Write(string, object, object, object)", "log")]
 	public extern static void _366c851b7a360959(string format, object? arg0, object? arg1, object? arg2);
 
 	/// <summary>
 	/// C#: Console.Write(string, params object[])
 	/// JS: 需要格式转换
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.Write(string, params object[])", "log")]
+	[Jazor(Op.Alias, "static System.Console.Write(string, params object[])", "log")]
 	public extern static void _bdb97b77edce5259(string format, object arg);
 
 	/// <summary>
 	/// C#: Console.Write(string, params ReadOnlySpan<object>)
 	/// JS: 需要格式转换
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.Write(string, params System.ReadOnlySpan<object>)", "log")]
+	[Jazor(Op.Alias, "static System.Console.Write(string, params System.ReadOnlySpan<object>)", "log")]
 	public extern static void _4a291949ebb466b9(string format, object arg);
 
 	#endregion
@@ -488,7 +488,7 @@ public static class ConsoleModule
 	/// C#: Console.Clear()
 	/// JS: console.clear()
 	/// </summary>
-	[Jazor(Op.Replace, "static System.Console.Clear()", "clear")]
+	[Jazor(Op.Alias, "static System.Console.Clear()", "clear")]
 	public extern static void _7779d957d8f16481();
 
 	/// <summary>

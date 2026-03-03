@@ -16,12 +16,12 @@ internal enum Op
 	Allowed,
 
 	/// <summary>
-	/// 支持，替换名称
+	/// 支持，替换成别称
 	/// </summary>
-	Replace,
+	Alias,
 
 	/// <summary>
-	/// 支持，作为模块导入，放置在类上表示模块引用，放在方法上，指定的方法必须有实现
+	/// 支持，作为模块导入，放在方法上，指定的方法必须有实现
 	/// </summary>
 	Import,
 

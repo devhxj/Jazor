@@ -8,13 +8,13 @@ namespace Jazor.CLR;
 /// - 大多数方法可以直接映射
 ///
 /// Op 类型选择原则：
-/// - Replace: JS Map 有同名方法
+/// - Alias: JS Map 有同名方法
 /// - Inline: 简单表达式
 /// - Import: 需要额外逻辑的方法
 /// - Discard: Dictionary 特有但 JS Map 不完全支持的功能
 /// </summary>
-[ECMAScriptModule]
-[Jazor(Op.Import, "System.Collections.Generic.Dictionary<TKey, TValue>","System/Collections/Generic/DictionaryModule.js")]
+[ECMAScriptModule("System/Collections/Generic/DictionaryModule.js")]
+[Jazor(Op.Alias, "System.Collections.Generic.Dictionary<TKey, TValue>","Map")]
 public static class DictionaryModule<TKey, TValue>
 {
 	/// <summary>
@@ -60,7 +60,7 @@ public static class DictionaryModule<TKey, TValue>
 	/// C#: dict.Count
 	/// JS: map.size
 	/// </summary>
-	[Jazor(Op.Replace, "System.Collections.Generic.Dictionary<TKey, TValue>.Count.get", "size")]
+	[Jazor(Op.Alias, "System.Collections.Generic.Dictionary<TKey, TValue>.Count.get", "size")]
 	public extern static Number _8603bbd90bf60fc3(Map<TKey,TValue> instance);
 
 	[Jazor(Op.Discard, "System.Collections.Generic.Dictionary<TKey, TValue>.Capacity.get")]
@@ -111,14 +111,14 @@ public static class DictionaryModule<TKey, TValue>
 	/// C#: dict.Clear()
 	/// JS: map.clear()
 	/// </summary>
-	[Jazor(Op.Replace, "System.Collections.Generic.Dictionary<TKey, TValue>.Clear()", "clear")]
+	[Jazor(Op.Alias, "System.Collections.Generic.Dictionary<TKey, TValue>.Clear()", "clear")]
 	public extern static void _d701e854a5da9c91(Map<TKey,TValue> instance);
 
 	/// <summary>
 	/// C#: dict.ContainsKey(key)
 	/// JS: map.has(key)
 	/// </summary>
-	[Jazor(Op.Replace, "System.Collections.Generic.Dictionary<TKey, TValue>.ContainsKey(TKey)", "has")]
+	[Jazor(Op.Alias, "System.Collections.Generic.Dictionary<TKey, TValue>.ContainsKey(TKey)", "has")]
 	public extern static bool _ff0298236b0e309d(Map<TKey,TValue> instance, TKey key);
 
 	/// <summary>
@@ -147,7 +147,7 @@ public static class DictionaryModule<TKey, TValue>
 	/// C#: dict.Remove(key)
 	/// JS: map.delete(key)
 	/// </summary>
-	[Jazor(Op.Replace, "System.Collections.Generic.Dictionary<TKey, TValue>.Remove(TKey)", "delete")]
+	[Jazor(Op.Alias, "System.Collections.Generic.Dictionary<TKey, TValue>.Remove(TKey)", "delete")]
 	public extern static bool _0a910bf18a745786(Map<TKey,TValue> instance, TKey key);
 
 	/// <summary>

@@ -5,6 +5,7 @@ using Jazor.Name;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Jazor.Compiler;
 
@@ -58,7 +59,7 @@ public partial class SemanticWalker
 		// 先查询白名单
 		var displayName = symbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
 		if (WhiteList.Types.TryGetValue(displayName, out var entry) &&
-			entry.Op == Op.Replace &&
+			entry.Op == Op.Alias &&
 			!string.IsNullOrEmpty(entry.Value))
 			name = entry.Value!;
 
@@ -370,62 +371,15 @@ public partial class SemanticWalker
 		// 处理属性调用的实例对象
 		var instance = Translate<Expression>(operation.Instance, argument, null);
 
-		// 获取方法名称
-		string? propertyName = null;
-
 		// 检查白名单映射
-		var displayName = operation.Property.GetMethod!.ToDisplayString(Format.NameFormat);
-		if (WhiteList.Members.TryGetValue(displayName, out var entry))
-		{
-			if (entry.Op == Op.Allowed)
-				propertyName = operation.Property.Name;
+		var mapperExpr = GetWhiteListExpression(operation.Property.GetMethod!, argument, [], instance, out var alias);
+		if (mapperExpr is not null)
+			return mapperExpr;
 
-			else if (entry.Op == Op.Replace)
-				propertyName = entry.Value;
-
-			else if (entry.Op == Op.Inline)
-			{
-				if (string.IsNullOrEmpty(entry.Value))
-					return HandleTransformationFailure<Node>(operation, "Inline mapping requires a template.");
-
-				// 如果是实例方法调用，插入实例作为第一个参数	
-				var arguments = new List<Expression>();
-				if (instance is not null)
-					arguments.Insert(0, instance);
-
-				var raw = entry.Value!;
-				for (var i = 0; i < arguments.Count; i++)
-				{
-					var arg = arguments[i];
-					raw = raw.Replace($"@#{{{i}}}", arg.ToKnRECMAScript());
-				}
-
-				return _parser.ParseExpression(raw, null, true); //new UnsafeRawExpression(raw);
-			}
-
-			else if (entry.Op == Op.Import)
-			{
-				if (string.IsNullOrEmpty(entry.Value))
-					return HandleTransformationFailure<Node>(operation,
-						"Import mapping requires a module path.");
-
-				// 生成导入调用
-				var id = new Identifier(entry.Value!);
-				argument.MergeImportSpecifier(entry.Value!, new ImportSpecifier(id));
-
-				// 如果是实例属性调用，插入实例作为第一个参数
-				var arguments = new List<Expression>();
-				if (instance is not null)
-					arguments.Add(instance);
-
-				return new CallExpression(id, NodeList.From(arguments), optional: false);
-			}
-		}
-		else
-			propertyName = GetConfigOrSymbolName(operation.Property);
-
-		if (string.IsNullOrEmpty(propertyName))
-			return HandleTransformationFailure<Node>(operation, "");
+		// 获取方法名称
+		var propertyName = string.IsNullOrEmpty(alias)
+			? GetConfigOrSymbolName(operation.Property)
+			: alias;
 
 		var property = new Identifier(propertyName!);
 		if (instance is not null)
@@ -459,55 +413,35 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitMethodReference(IMethodReferenceOperation operation, WalkerArgument argument)
 	{
-		var instance = Translate<Expression>(operation.Instance, argument, null);
-		string? methodName = null;
-		// 检查白名单映射
-		var displayName = operation.Method.OriginalDefinition.ToDisplayString(Format.NameFormat);
-		if (WhiteList.Members.TryGetValue(displayName, out var entry))
+		// 如果是白名单方法调用，需要生成本地代理方法
+		// 生成代理方法参数
+		var name = GetUniqueName(operation);
+		var count = operation.Method.Parameters.Length + (operation.Method.IsStatic ? 0 : 1);
+		var args = Enumerable.Range(0, count)
+			.Select(i => new Identifier($"{name}_{i}") as Expression)
+			.ToList();
+
+		var valueExpr = GetWhiteListExpression(operation.Method, argument, args, null, out var alias);
+		if (valueExpr is not null)
 		{
-			if (entry.Op == Op.Allowed)
-				methodName = operation.Method.Name;
+			// 生成箭头函数表达式作为代理方法
+			var @return = new ReturnStatement(valueExpr);
+			var body = new FunctionBody(NodeList.From<Statement>(@return), strict: true);
+			var func = new ArrowFunctionExpression(
+				NodeList.From<Node>(args),
+				body,
+				expression: false,
+				async: false
+			);
 
-			else if (entry.Op == Op.Replace)
-				methodName = entry.Value;
-
-			else if (entry.Op == Op.Import)
-			{
-				if (string.IsNullOrEmpty(entry.Value))
-					return HandleTransformationFailure<Node>(operation, "Import mapping requires a module path.");
-
-				// 生成导入调用
-				var tempId = new Identifier(entry.Value!);
-				argument.MergeImportSpecifier(entry.Value!, new ImportSpecifier(tempId));
-				return tempId;
-			}
-
-			//else if (entry.Op == Op.Equals)
-			//{
-			//	return new MemberExpression(
-			//		obj: new Identifier("Object"),
-			//		property: new Identifier("is"), computed: false, optional: false);
-			//}
-
-			//else if (entry.Op == WhiteListOp.CompareTo)
-			//{
-			//	/*
-			//	var functionBody = new FunctionBody(NodeList.From(statements), strict: true);
-			//	var arrowFunction = new ArrowFunctionExpression(
-			//		NodeList.From<Node>(),
-			//		functionBody,
-			//		expression: false,
-			//		async: false
-			//	);*/
-			//}			
+			// 方法内不含this访问，直接返回箭头函数；否则需要绑定this
+			return func;
 		}
-		else
-			methodName = GetConfigOrSymbolName(operation.Method);
 
-		if (string.IsNullOrEmpty(methodName))
-			return HandleTransformationFailure<Node>(operation, "Method name cannot be determined for invocation.");
-
+		var instance = Translate<Expression>(operation.Instance, argument, null);
+		var methodName = string.IsNullOrEmpty(alias) ? GetConfigOrSymbolName(operation.Method) : alias;
 		var property = new Identifier(methodName!);
+		
 		Expression callee = property;
 		if (instance is null)
 		{
@@ -606,91 +540,14 @@ public partial class SemanticWalker
 				arguments.Add(right);
 		}
 
-		string? methodName = null;
+
 		// 检查白名单映射
-		var displayName = operation.TargetMethod.OriginalDefinition.ToDisplayString(Format.NameFormat);
-		if (WhiteList.Members.TryGetValue(displayName, out var entry))
-		{
-			if (entry.Op == Op.Allowed)
-				methodName = operation.TargetMethod.Name;
-
-			else if (entry.Op == Op.Replace)
-				methodName = entry.Value;
-
-			else if (entry.Op == Op.Inline)
-			{
-				if (string.IsNullOrEmpty(entry.Value))
-					return HandleTransformationFailure<Node>(operation, "Inline mapping requires a template.");
-
-				// 如果是实例方法调用，插入实例作为第一个参数
-				if (instance is not null)
-					arguments.Insert(0, instance);
-
-				var raw = entry.Value!;
-				for (var i = 0; i < arguments.Count; i++)
-				{
-					var arg = arguments[i];
-					raw = raw.Replace($"@#{{{i}}}", arg.ToKnRECMAScript());
-				}
-
-				var temp = _parser.ParseExpression(raw, null, true);//new UnsafeRawExpression(raw);
-				return BuildInvExpr(hasReturn, temp, refParas, argument);
-			}
-
-			else if (entry.Op == Op.Import)
-			{
-				if (string.IsNullOrEmpty(entry.Value))
-					return HandleTransformationFailure<Node>(operation, "Import mapping requires a module path.");
-
-				// 生成导入调用
-				var tempId = new Identifier(entry.Value!);
-				argument.MergeImportSpecifier(entry.Value!, new ImportSpecifier(tempId));
-
-				// 如果是实例方法调用，插入实例作为第一个参数
-				if (instance is not null)
-					arguments.Insert(0, instance);
-
-				var temp = new CallExpression(tempId, NodeList.From(arguments), optional: false);
-				return BuildInvExpr(hasReturn, temp, refParas, argument);
-			}
-
-			//else if (entry.Op == WhiteListOp.Equals || entry.Op == WhiteListOp.CompareTo)
-			//{
-			//	Expression left, right;
-			//	if (instance is null && arguments.Count == 2)
-			//	{
-			//		left = arguments[0];
-			//		right = arguments[1];
-			//	}
-			//	else if (instance is not null && arguments.Count == 1)
-			//	{
-			//		left = instance;
-			//		right = arguments[0];
-			//	}
-			//	else
-			//		return HandleTransformationFailure<Node>(operation,
-			//			"Equals operation requires an instance and at least one argument.");
-
-			//	var test = new NonLogicalBinaryExpression(Operator.StrictEquality, left, right);
-			//	return entry.Op == WhiteListOp.CompareTo
-			//		? new ConditionalExpression(
-			//			test: test,
-			//			consequent: new NumericLiteral(0, "0"),
-			//			alternate: new ConditionalExpression(
-			//				test: new NonLogicalBinaryExpression(Operator.GreaterThan, left, right),
-			//				consequent: new NumericLiteral(1, "1"),
-			//				alternate: new NumericLiteral(-1, "-1")
-			//			)
-			//		) : test;
-			//}
-		}
-		else
-			methodName = GetConfigOrSymbolName(operation.TargetMethod);
-
-		if (string.IsNullOrEmpty(methodName))
-			return HandleTransformationFailure<Node>(operation, "Method name cannot be determined for invocation.");
+		var mapperExpr = GetWhiteListExpression(operation.TargetMethod, argument, arguments, instance, out var alias);
+		if (mapperExpr is not null)
+			return BuildInvExpr(hasReturn, mapperExpr, refParas, argument);
 
 		// 判断方法调用的类型
+		var methodName = string.IsNullOrEmpty(alias) ? GetConfigOrSymbolName(operation.TargetMethod) : alias;
 		var property = new Identifier(methodName!);
 		Expression callee = property;
 		if (instance is null)
@@ -711,7 +568,6 @@ public partial class SemanticWalker
 
 		var callExpr = new CallExpression(callee, NodeList.From(arguments), optional: false);
 		return BuildInvExpr(hasReturn, callExpr, refParas, argument);
-
 
 		Expression BuildInvExpr(bool hasReturns, in Expression expr, in Dictionary<MemberExpression, Expression> paras,
 			in WalkerArgument argument)

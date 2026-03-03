@@ -65,7 +65,7 @@
 - `op`：操作类型（见 [Op 枚举说明](#3-op-枚举说明)）
 - `member`：完整的 C# 成员签名，用于白名单生成和哈希计算
 - `value`：
-  - `Op.Replace`：JavaScript 方法名（如 `toString`）
+  - `Op.Alias`：JavaScript 方法名（如 `toString`）
   - `Op.Inline`：内联代码模板（如 `(@#{0} === @#{1})`）
   - 其他 Op 类型：通常不需要此参数
 
@@ -96,7 +96,7 @@
 |---------|---------|-------------------|-----------|------|
 | `Discard` | ✅ | ❌ | 记录但标记为不支持 | JavaScript 无对应概念 |
 | `Allowed` | ✅ | ❌ | 记录为允许 | JavaScript 原生支持，无需处理 |
-| `Replace` | ✅ | ❌ | 记录为允许 | JS 有类似方法但名称不同 |
+| `Alias` | ✅ | ❌ | 记录为允许 | JS 有类似方法但名称不同 |
 | `Inline` | ✅ | ❌ | 记录为允许 | 简单表达式可直接内联 |
 | `Import` | ❌ | ✅ | 记录为允许 | 需要完整 JavaScript 实现 |
 | `Compile` | ✅ | ❌ | 记录为允许 | 编译器特殊处理 |
@@ -142,19 +142,19 @@ public extern static bool _hash();
 public extern static bool _2bd9618624257446();
 ```
 
-### 3.4 Op.Replace - 方法名替换
+### 3.4 Op.Alias - 方法名替换
 
 JS 有原生方法但名称不同。**不编译到 CLR module**，编译器直接替换方法名。
 
 ```csharp
-[Jazor(Op.Replace, "override bool.ToString()", "toString")]
+[Jazor(Op.Alias, "override bool.ToString()", "toString")]
 public extern static string _hash(bool instance);
 // 编译时直接生成：instance.toString()
 
 // 来自 doc/BooleanModule.md
 // 成员：override bool.ToString()
 // 签名：_d48c2d39317daf8f
-[Jazor(Op.Replace, "override bool.ToString()", "toString")]
+[Jazor(Op.Alias, "override bool.ToString()", "toString")]
 public extern static string _d48c2d39317daf8f(bool instance);
 ```
 
@@ -246,7 +246,7 @@ public extern static System.TypeCode _eb6a23c2a874fdf1(bool instance);
 ```
 JS 有原生对应？
 ├── 是，名称相同 → Allowed
-├── 是，名称不同 → Replace
+├── 是，名称不同 → Alias
 └── 否 → JS 有概念？
     ├── 否 → Discard
     ├── 简单表达式 → Inline
@@ -261,8 +261,8 @@ JS 有原生对应？
 | 默认构造函数 | `Allowed` | `bool.Boolean()`, `int.Int32()` | JS 原始类型无需构造 |
 | 类型转换运算符 | `Allowed` | 隐式/显式转换 | 编译器直接处理 |
 | JS 原生方法，同名 | `Allowed` | 运算符重载 | 无需额外代码 |
-| JS 原生方法，不同名 | `Replace` | `ToString()` → `toString()` | 只需改方法名 |
-| JS 原生属性，不同名 | `Replace` | `Count` → `size`, `Length` → `length` | 属性 getter 替换 |
+| JS 原生方法，不同名 | `Alias` | `ToString()` → `toString()` | 只需改方法名 |
+| JS 原生属性，不同名 | `Alias` | `Count` → `size`, `Length` → `length` | 属性 getter 替换 |
 | 简单表达式（< 50字符） | `Inline` | `Equals` → `===`, `MaxValue` → 字面量 | 单行表达式可内联 |
 | 数组/集合操作 | `Inline` | `list[i]` → `arr[i]`, `list.Add` → `arr.push` | 直接映射 |
 | 解析/转换方法 | `Import` | `Parse`, `TryParse` | 需要验证和错误处理 |
@@ -276,7 +276,7 @@ JS 有原生对应？
 
 | 成员类型 | 推荐 Op | 原因 |
 |---------|---------|------|
-| `ToString()` | `Replace` → `toString` | JS 原生方法 |
+| `ToString()` | `Alias` → `toString` | JS 原生方法 |
 | `Equals(object)` | `Inline` → `===` | 简单比较 |
 | `GetHashCode()` | `Discard` | JS 无哈希码概念 |
 | `Parse(string)` | `Import` | 需验证和异常处理 |
@@ -289,10 +289,10 @@ JS 有原生对应？
 | 成员类型 | 推荐 Op | 原因 |
 |---------|---------|------|
 | 构造函数 `new List()` | `Inline` → `[]` 或 `new Map()` | 简单构造 |
-| `Count` / `Length` | `Replace` → `size` / `length` | 属性名不同 |
-| `Add(item)` | `Replace` → `push` (Array) 或 `Import` (Dictionary) | Array 直接替换，Dictionary 需检查重复 |
-| `Contains(item)` | `Replace` → `includes` / `has` | 方法名不同 |
-| `Remove(item)` | `Replace` → `delete` 或 `Import` | Map 直接删除，List 需查找 |
+| `Count` / `Length` | `Alias` → `size` / `length` | 属性名不同 |
+| `Add(item)` | `Alias` → `push` (Array) 或 `Import` (Dictionary) | Array 直接替换，Dictionary 需检查重复 |
+| `Contains(item)` | `Alias` → `includes` / `has` | 方法名不同 |
+| `Remove(item)` | `Alias` → `delete` 或 `Import` | Map 直接删除，List 需查找 |
 | 索引器 `this[i]` | `Inline` → `arr[i]` | 直接访问 |
 | `GetEnumerator()` | `Discard` | JS 迭代协议不同 |
 | `CopyTo()` | `Import` | 需要循环复制逻辑 |
@@ -337,7 +337,7 @@ public static class XxxModule { }
 | C# 类型 | 模块声明 | 说明 |
 |---------|----------|------|
 | `bool` | `[Jazor(Op.Import, "bool", "System/BooleanModule.js")]` | 导入外部模块 |
-| `Console` | `[Jazor(Op.Replace, "System.Console", "console")]` | 替换为全局对象 |
+| `Console` | `[Jazor(Op.Alias, "System.Console", "console")]` | 替换为全局对象 |
 | `Int32` | `[Jazor(Op.Import, "int", "System/Int32Module.js")]` | 基本类型别名 |
 | `DateTime` | `[Jazor(Op.Import, "System.DateTime", "System/DateTimeModule.js")]` | 完整类型名 |
 
@@ -368,7 +368,7 @@ public static class XxxModule
     public extern static ReturnType _hash();
 
     // 实例方法 - extern 方法，不会被编译到 CLR module
-    [Jazor(Op.Replace, "Type.MethodName(ParamType)", "jsMethod")]
+    [Jazor(Op.Alias, "Type.MethodName(ParamType)", "jsMethod")]
     public extern static ReturnType _hash(Type instance, ParamType param);
 
     // 静态方法 - 有方法体，会被编译到 CLR module
@@ -734,7 +734,7 @@ public static class BooleanModule
     // 从 doc/BooleanModule.md 获取签名和注释
 
     ///<summary>Converts the value of this instance to its equivalent string representation.</summary>
-    [Jazor(Op.Replace, "override bool.ToString()", "toString")]
+    [Jazor(Op.Alias, "override bool.ToString()", "toString")]
     public extern static string _d48c2d39317daf8f(bool instance);
 
     ///<summary>Converts the specified string representation of a logical value to its Boolean equivalent.</summary>
@@ -764,7 +764,7 @@ public static class BooleanModule
 1. **成员签名**：直接从 doc 文档复制，如 `static bool.Parse(string)`
 2. **哈希命名**：使用 doc 文档中指定的签名，如 `_5dbf54319ebc8dfe`
 3. **XML 注释**：从 doc 文档复制，保持一致性
-4. **Op 类型**：根据方法特性选择（Replace/Inline/Import 等）
+4. **Op 类型**：根据方法特性选择（Alias/Inline/Import 等）
 
 ---
 
@@ -807,7 +807,7 @@ public static class BooleanModule
 |---------|---------|------|
 | `Discard` | ✅ | 不需要实现，标记为不支持 |
 | `Allowed` | ✅ | JS 原生支持，无需额外代码 |
-| `Replace` | ✅ | JS 原生方法，只需改名 |
+| `Alias` | ✅ | JS 原生方法，只需改名 |
 | `Inline` | ✅ | 内联代码提供实现 |
 | `Import` | ❌ | 需要完整的 C# 方法体实现 |
 | `Compile` | ✅ | 编译器内部处理 |
@@ -831,7 +831,7 @@ public static class BooleanModule
 | 场景 | Op 类型 | extern? | 编译到 CLR module? |
 |------|---------|---------|-------------------|
 | JS 原生支持，无需处理 | `Allowed` | ✅ | ❌ |
-| JS 有类似方法但名称不同 | `Replace` | ✅ | ❌ |
+| JS 有类似方法但名称不同 | `Alias` | ✅ | ❌ |
 | 可用简单表达式实现 | `Inline` | ✅ | ❌ |
 | 需要完整实现 | `Import` | ❌ | ✅ |
 | 编译器特殊处理 | `Compile` | ✅ | ❌ |
@@ -861,11 +861,11 @@ public static class BooleanModule
 
 ```csharp
 // 实例方法
-[Jazor(Op.Replace, "Type.MethodName(ParamType)", "jsMethodName")]
+[Jazor(Op.Alias, "Type.MethodName(ParamType)", "jsMethodName")]
 public extern static ReturnType _hash(Type instance, ParamType param);
 
 // 静态方法
-[Jazor(Op.Replace, "static Type.MethodName(ParamType)", "jsMethodName")]
+[Jazor(Op.Alias, "static Type.MethodName(ParamType)", "jsMethodName")]
 public extern static ReturnType _hash(ParamType param);
 
 // 带 out 参数
@@ -888,7 +888,7 @@ public static Array<object?> _hash(string? value, Type result)
 |---------|-----|-----------------|
 | `static bool.TrueString` | Inline | `"true"` |
 | `bool.Boolean()` | Allowed | 无操作 |
-| `override bool.ToString()` | Replace | `instance.toString()` |
+| `override bool.ToString()` | Alias | `instance.toString()` |
 | `override bool.Equals(object)` | Inline | `(a === b)` |
 | `static bool.Parse(string)` | Import | 模块函数调用 |
 | `static bool.TryParse(string, out bool)` | Import | 返回 `[success, value]` |
@@ -899,21 +899,21 @@ public static Array<object?> _hash(string? value, Type result)
 |---------|-----|-----------------|
 | `static int.MaxValue` | Inline | `2147483647` |
 | `static int.Parse(string)` | Import | 模块函数，带验证 |
-| `static int.Max(int, int)` | Replace | `Math.max(a, b)` |
+| `static int.Max(int, int)` | Alias | `Math.max(a, b)` |
 
 **String 类型**：
 
 | C# 成员 | Op | JavaScript 结果 |
 |---------|-----|-----------------|
-| `string.get_Length()` | Replace | `str.length` |
-| `string.Contains(string)` | Replace | `str.includes(value)` |
-| `string.Trim()` | Replace | `str.trim()` |
+| `string.get_Length()` | Alias | `str.length` |
+| `string.Contains(string)` | Alias | `str.includes(value)` |
+| `string.Trim()` | Alias | `str.trim()` |
 | `static string.IsNullOrEmpty(string)` | Inline | `!value` |
 
 ### 13.2 设计原则
 
 1. **GetHashCode 处理差异**：`bool/object.GetHashCode()` → `Discard`（JS 无哈希码机制）；`string.GetHashCode()` → `Import`（有实际用途）
-2. **ToString 使用 Replace**：JS 原生支持 `toString()`，直接调用原生方法效率更高
+2. **ToString 使用 Alias**：JS 原生支持 `toString()`，直接调用原生方法效率更高
 3. **Equals 使用 Inline**：`===` 与 C# `Equals` 语义一致，内联避免函数调用开销
 4. **Parse/TryParse 使用 Import**：解析逻辑复杂，需完整 JS 实现
 
@@ -931,7 +931,7 @@ public static Array<object?> _hash(string? value, Type result)
 public static class ReadOnlyDictionaryModule<TKey, TValue> where TKey : notnull
 {
     // TODO: 需要根据 JS Map 特性选择正确的 Op 类型
-    // 例如：ContainsKey 可以改为 Replace("has")
+    // 例如：ContainsKey 可以改为 Alias("has")
     [Jazor(Op.Discard, "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.ContainsKey(TKey)")]
     public extern static bool _08bd8c3015d3691e(Map<TKey, TValue> instance, object key);
 
@@ -952,7 +952,7 @@ public static class ReadOnlyDictionaryModule<TKey, TValue> where TKey : notnull
 1. **查阅 doc 文档**：获取成员签名和哈希值
 2. **选择 Op 类型**：参考 [3.8 Op 类型选择决策](#38-op-类型选择决策)
 3. **实现方法**：
-   - `Replace`: 指定 JS 方法名
+   - `Alias`: 指定 JS 方法名
    - `Inline`: 编写内联表达式
    - `Import`: 编写完整方法体
 4. **移除 `extern`**：`Import` 类型必须有方法体
@@ -964,7 +964,7 @@ public static class ReadOnlyDictionaryModule<TKey, TValue> where TKey : notnull
 |------|--------|-----------|
 | `BooleanModule` | ✅ 完整 | 基础类型完整实现 |
 | `Int32Module` | ✅ 完整 | 数值类型、Math 方法映射 |
-| `StringModule` | ✅ 完整 | 字符串操作、Replace/Inline 混合使用 |
+| `StringModule` | ✅ 完整 | 字符串操作、Alias/Inline 混合使用 |
 | `ListModule` | ✅ 完整 | 泛型集合、Array 方法映射 |
 | `DictionaryModule` | ✅ 完整 | 泛型字典、Map 方法映射 |
 

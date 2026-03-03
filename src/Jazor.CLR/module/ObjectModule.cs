@@ -10,7 +10,7 @@ namespace Jazor.CLR;
 ///
 /// Op 类型选择原则：
 /// - Inline: JavaScript 有对应操作符（typeof、===）
-/// - Replace: JavaScript 有原生方法（toString）
+/// - Alias: JavaScript 有原生方法（toString）
 /// - Allowed: 无操作，保持默认行为（Object 构造函数）
 /// - Discard: JavaScript 无对应概念（GetHashCode、Type 类型）
 ///
@@ -18,8 +18,8 @@ namespace Jazor.CLR;
 /// - System.Type → object（JavaScript 无类型系统）
 /// - int → Number
 /// </summary>
-[ECMAScriptModule]
-[Jazor(Op.Import, "object", "System/ObjectModule.js")]
+[ECMAScriptModule("System/ObjectModule.js")]
+[Jazor(Op.Alias, "object", "Object")]
 public static class ObjectModule
 {
 	/// <summary>
@@ -43,7 +43,7 @@ public static class ObjectModule
 	/// JS: obj.toString()
 	/// JavaScript 所有对象都有 toString 方法
 	/// </summary>
-	[Jazor(Op.Replace, "virtual object.ToString()", "toString")]
+	[Jazor(Op.Alias, "virtual object.ToString()", "toString")]
 	public extern static string? _b43835974ba92ea0(object instance);
 
 	/// <summary>

@@ -69,7 +69,7 @@ public partial class SemanticWalker
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
 │  3. 分析注解参数                                            │
-│     - Op: 操作类型 (Compile/Inline/Import/Replace/Allowed)  │
+│     - Op: 操作类型 (Compile/Inline/Import/Alias/Allowed)  │
 │     - Member: 成员名称                                       │
 │     - Value: 附加值                                         │
 └────────────────────┬────────────────────────────────────────┘
@@ -91,7 +91,7 @@ public partial class SemanticWalker
 |---------|------|------|
 | `Discard` | 不支持，丢弃 | 过滤掉不需要处理的成员 |
 | `Allowed` | 支持，无其他操作 | 标记为允许使用的类型/成员 |
-| `Replace` | 支持，替换名称 | 将 C# 名称替换为指定的 JavaScript 名称 |
+| `Alias` | 支持，替换名称 | 将 C# 名称替换为指定的 JavaScript 名称 |
 | `Import` | 作为模块导入 | 标记为从外部模块导入 |
 | `Inline` | 内联代码调用 | 直接嵌入 JavaScript 代码片段 |
 | `Compile` | 编译器特殊处理 | 生成专门的编译处理方法 |
@@ -104,7 +104,7 @@ public partial class SemanticWalker
 public static class ObjectModule { }
 
 // 替换名称
-[Jazor(Op.Replace, "console")]
+[Jazor(Op.Alias, "console","console")]
 public static class ConsoleModule { }
 
 // 内联代码
@@ -147,7 +147,7 @@ dotnet run
 ```csharp
 // WhiteList.cs.Generate.cs
 types["System.Object"] = new(Op.Allowed);
-types["console"] = new(Op.Replace, "console");
+types["console"] = new(Op.Alias, "console");
 members["static string.Concat(string, string)"] = new(Op.Inline, "@#{0}.concat(@#{1})");
 
 // WhiteList.cs.Compile.cs

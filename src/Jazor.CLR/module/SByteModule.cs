@@ -3,8 +3,8 @@ namespace Jazor.CLR;
 /// <summary>
 /// System.SByte (sbyte) 类型模块映射规则
 /// </summary>
-[ECMAScriptModule]
-[Jazor(Op.Import, "sbyte","System/SByteModule.js")]
+[ECMAScriptModule("System/SByteModule.js")]
+[Jazor(Op.Alias, "sbyte", "Number")]
 public static class SByteModule
 {
 	/// <summary>
@@ -60,7 +60,7 @@ public static class SByteModule
 	/// C#: sbyte.ToString()
 	/// JS: instance.toString()
 	/// </summary>
-	[Jazor(Op.Replace, "override sbyte.ToString()", "toString")]
+	[Jazor(Op.Alias, "override sbyte.ToString()", "toString")]
 	public extern static string _99cd65a77e5cb1e0(Number instance);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation, using the specified format.</summary>

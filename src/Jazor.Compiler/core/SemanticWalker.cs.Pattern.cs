@@ -118,7 +118,6 @@ using Acornima.Ast;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis;
 using Microsoft.CodeAnalysis.Operations;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -323,7 +322,7 @@ public partial class SemanticWalker
 	public override Node? VisitRecursivePattern(IRecursivePatternOperation operation, WalkerArgument argument)
 	{
 		var conditions = new List<Expression>();
-		var targetExpr = GetPatternRefrence(operation);
+		var targetExpr = GetPatternRefrence(operation, argument);
 
 		// 类型匹配条件（排除匿名类型、元组类型、object）
 		if (!operation.MatchedType.IsAnonymousType &&
@@ -343,8 +342,10 @@ public partial class SemanticWalker
 
 				// todo：需要完善判断是否检测属性存在，比如有些固定属性不需要检测
 				if (propertySubpattern.Member is IMemberReferenceOperation m)
-				{
-					var name = m.Member.Name;
+				{	
+					var symbol = GetWhiteListSymbol(m);
+					var _ = GetWhiteListExpression(symbol, argument, [], targetExpr, out var alias);
+					var name = alias ?? m.Member.Name;
 					var left = new NonLogicalBinaryExpression(Operator.In, new StringLiteral(name, $"\"{name}\""), targetExpr);
 					var condition = new LogicalExpression(Operator.LogicalAnd, left, right);
 					var notNull = new NonLogicalBinaryExpression(Operator.Inequality, targetExpr, Null);
@@ -400,7 +401,7 @@ public partial class SemanticWalker
 			IPropertySubpatternOperation or
 			ISwitchExpressionArmOperation)
 		{
-			var obj = GetPatternRefrence(operation.Parent);
+			var obj = GetPatternRefrence(operation.Parent, argument);
 			return new NonLogicalBinaryExpression(Operator.StrictEquality, obj, expr);
 		}
 
@@ -550,7 +551,7 @@ public partial class SemanticWalker
 		//         age is >= 18 检查年龄是否满足条件
 		// 转换结果：生成相应的JavaScript关系比较表达式
 		// 从参考操作中提取名称构建目标表达式
-		var left = GetPatternRefrence(operation);
+		var left = GetPatternRefrence(operation, argument);
 
 		// 获取右操作数（比较值）
 		var right = Translate<Expression>(operation.Value, argument);
@@ -593,7 +594,7 @@ public partial class SemanticWalker
 	public override Node? VisitListPattern(IListPatternOperation operation, WalkerArgument argument)
 	{
 		// 获取目标名称，在节点内构建表达式
-		var obj = GetPatternRefrence(operation);
+		var obj = GetPatternRefrence(operation, argument);
 		var lengthProp = new Identifier("length");
 		var lengthExpr = new MemberExpression(obj, lengthProp, computed: false, optional: false);
 
@@ -729,7 +730,7 @@ public partial class SemanticWalker
 		// ITypePatternOperation 只进行类型检查，不声明变量
 		// 使用 MatchedType 而非 InputType，因为我们要检查的是目标类型
 		var matchedType = operation.MatchedType;
-		var targetExpr = GetPatternRefrence(operation);
+		var targetExpr = GetPatternRefrence(operation, argument);
 
 		// 复用已有的类型匹配表达式生成方法
 		// CreateTypeMatchExpr 已正确处理：
@@ -747,8 +748,9 @@ public partial class SemanticWalker
 	/// 提取模式操作中引用对象名称
 	/// </summary>
 	/// <param name="operation">模式相关操作</param>
+	/// <param name="context">上下文信息</param>
 	/// <returns>引用对象名称</returns>
-	private Expression? ExtractPatternRefrence(IOperation? operation)
+	private Expression? ExtractPatternRefrence(IOperation? operation, WalkerArgument context)
 	{
 		if (operation is null)
 			return null;
@@ -765,18 +767,33 @@ public partial class SemanticWalker
 
 			else if (current is IPropertySubpatternOperation propertySubpatternOp)
 			{
+				if (propertySubpatternOp.Member is IMemberReferenceOperation member)
+				{
+					var symbol = GetWhiteListSymbol(member);
+					var mapperExpr = GetWhiteListExpression(symbol, context, [], null, out var alias);
+					if (mapperExpr is not null)
+						members.Push((x) => mapperExpr);
+					else
+					{
+						var memberName = alias ?? member.Member.Name;
+						var id = new Identifier(memberName);
+						var optional = IsNullableType(member.Type);
+						members.Push((x) => new MemberExpression(x, id, computed: false, optional));
+					}
+				}
+				/*
 				if (propertySubpatternOp.Member is IFieldReferenceOperation fieldRef)
 				{
-					var member = new Identifier(fieldRef.Field.Name);
+					var id = new Identifier(fieldRef.Field.Name);
 					var optional = IsNullableType(fieldRef.Field.Type);
-					members.Push((x) => new MemberExpression(x, member, computed: false, optional));
+					members.Push((x) => new MemberExpression(x, id, computed: false, optional));
 				}
 				else if (propertySubpatternOp.Member is IPropertyReferenceOperation propRef)
 				{
-					var member = new Identifier(propRef.Property.Name);
+					var id = new Identifier(propRef.Property.Name);
 					var optional = IsNullableType(propRef.Property.Type);
-					members.Push((x) => new MemberExpression(x, member, computed: false, optional));
-				}
+					members.Push((x) => new MemberExpression(x, id, computed: false, optional));
+				}*/
 			}
 			else if (
 				current is IPatternOperation patternOp &&
@@ -898,10 +915,11 @@ public partial class SemanticWalker
 	/// 提取模式操作中引用对象名称
 	/// </summary>
 	/// <param name="operation">模式相关操作</param>
+	/// <param name="context">上下文信息</param>
 	/// <returns>引用对象名称</returns>
-	private Expression GetPatternRefrence(IOperation operation)
+	private Expression GetPatternRefrence(IOperation operation, WalkerArgument context)
 	{
-		var expr = ExtractPatternRefrence(operation);
+		var expr = ExtractPatternRefrence(operation, context);
 		if (expr is null)
 		{
 			var location = operation.Syntax.GetLocation();
@@ -930,23 +948,21 @@ public partial class SemanticWalker
 
 		else
 		{
-			var mapper = GetMapperType(typeSymbol);
-			if (mapper.Mapper == TypeMapper.Class)
-				return InstanceOfExpr(value, mapper.Expression);
-			else
-				result = mapper.Mapper switch
-				{
-					TypeMapper.String => TypeOfExpr(value, new StringLiteral("string", "\"string\"")),
-					TypeMapper.Number => TypeOfExpr(value, new StringLiteral("number", "\"number\"")),
-					TypeMapper.BigInt => TypeOfExpr(value, new StringLiteral("bigint", "\"bigint\"")),
-					TypeMapper.Object => TypeOfExpr(value, new StringLiteral("object", "\"object\"")),
-					TypeMapper.Boolean => TypeOfExpr(value, new StringLiteral("boolean", "\"boolean\"")),
-					TypeMapper.Date => InstanceOfExpr(value, new Identifier("Date")),
-					TypeMapper.Map => InstanceOfExpr(value, new Identifier("Map")),
-					TypeMapper.Set => InstanceOfExpr(value, new Identifier("Set")),
-					TypeMapper.Array => new CallExpression(IsArrayExpr, NodeList.From(value), optional: false),
-					_ => null
-				};
+			var (mapper, typeName) = GetMapperType(typeSymbol);
+			result = mapper switch
+			{
+				TypeMapper.String => TypeOfExpr(value, new StringLiteral("string", "\"string\"")),
+				TypeMapper.Number => TypeOfExpr(value, new StringLiteral("number", "\"number\"")),
+				TypeMapper.BigInt => TypeOfExpr(value, new StringLiteral("bigint", "\"bigint\"")),
+				TypeMapper.Object => TypeOfExpr(value, new StringLiteral("object", "\"object\"")),
+				TypeMapper.Boolean => TypeOfExpr(value, new StringLiteral("boolean", "\"boolean\"")),
+				TypeMapper.Date => InstanceOfExpr(value, new Identifier("Date")),
+				TypeMapper.Map => InstanceOfExpr(value, new Identifier("Map")),
+				TypeMapper.Set => InstanceOfExpr(value, new Identifier("Set")),
+				TypeMapper.Array => new CallExpression(IsArrayExpr, NodeList.From(value), optional: false),
+				TypeMapper.Class => InstanceOfExpr(value, new Identifier(typeName)),
+				_ => null
+			};
 		}
 
 		// 判断可空
@@ -1213,7 +1229,7 @@ public partial class SemanticWalker
 		if (operation.DeclaredSymbol is null && operation.MatchedType is null)
 			return HandleTransformationFailure<Expression>(operation, "Declaration pattern must have either a declared symbol or a matched type.");
 
-		var obj = GetPatternRefrence(operation);
+		var obj = GetPatternRefrence(operation, argument);
 
 		Expression? typeMatchExpr = null, declaredExpr = null;
 

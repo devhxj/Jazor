@@ -1,7 +1,7 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule]
-[Jazor(Op.Import, "System.Globalization.CultureInfo","System/Globalization/CultureInfoModule.js")]
+[ECMAScriptModule("System/Globalization/CultureInfoModule.js")]
+[Jazor(Op.Alias, "System.Globalization.CultureInfo","String")]
 public static class CultureInfoModule
 {
 	/// <summary>

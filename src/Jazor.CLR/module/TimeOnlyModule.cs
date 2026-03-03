@@ -1,7 +1,10 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule]
-[Jazor(Op.Import, "System.TimeOnly","System/TimeOnlyModule.js")]
+/// <summary>
+/// CLR module for System.TimeOnly，映射成 JavaScript 中的 Number 类型，表示自午夜以来的毫秒数
+/// </summary>
+[ECMAScriptModule("System/TimeOnlyModule.js")]
+[Jazor(Op.Alias, "System.TimeOnly", "Number")]
 public static class TimeOnlyModule
 {
 	[Jazor(Op.Discard ,"System.TimeOnly.TimeOnly()")]
@@ -125,8 +128,8 @@ public static class TimeOnlyModule
 		var result = total % 86400000;
 		if (result < 0)
 		{
-			result = result + 86400000;
-			wrapped = wrapped - 1;
+			result += 86400000;
+			wrapped--;
 		}
 		return [result, wrapped];
 	}

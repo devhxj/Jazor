@@ -9,12 +9,12 @@ namespace Jazor.CLR;
 ///
 /// Op 类型选择原则：
 /// - Inline: 简单构造
-/// - Replace: JS Set 原生方法（如 has、add、delete）
+/// - Alias: JS Set 原生方法（如 has、add、delete）
 /// - Import: 需要完整实现的复杂逻辑
 /// - Discard: 不支持或极少使用
 /// </summary>
-[ECMAScriptModule]
-[Jazor(Op.Import, "System.Collections.Generic.HashSet<T>","System/Collections/Generic/HashSetModule.js")]
+[ECMAScriptModule("System/Collections/Generic/HashSetModule.js")]
+[Jazor(Op.Alias, "System.Collections.Generic.HashSet<T>","Set")]
 public static class HashSetModule<T>
 {
 	/// <summary>
@@ -51,28 +51,28 @@ public static class HashSetModule<T>
 	/// C#: set.Clear()
 	/// JS: set.clear()
 	/// </summary>
-	[Jazor(Op.Replace, "System.Collections.Generic.HashSet<T>.Clear()", "clear")]
+	[Jazor(Op.Alias, "System.Collections.Generic.HashSet<T>.Clear()", "clear")]
 	public extern static void _56d632bf48c92530(Set<T> instance);
 
 	/// <summary>
 	/// C#: set.Contains(item)
 	/// JS: set.has(item)
 	/// </summary>
-	[Jazor(Op.Replace, "System.Collections.Generic.HashSet<T>.Contains(T)", "has")]
+	[Jazor(Op.Alias, "System.Collections.Generic.HashSet<T>.Contains(T)", "has")]
 	public extern static bool _32b989c96ea23e8c(Set<T> instance, T item);
 
 	/// <summary>
 	/// C#: set.Remove(item)
 	/// JS: set.delete(item)
 	/// </summary>
-	[Jazor(Op.Replace, "System.Collections.Generic.HashSet<T>.Remove(T)", "delete")]
+	[Jazor(Op.Alias, "System.Collections.Generic.HashSet<T>.Remove(T)", "delete")]
 	public extern static bool _cfb963650cb3dabd(Set<T> instance, T item);
 
 	/// <summary>
 	/// C#: set.Count
 	/// JS: set.size
 	/// </summary>
-	[Jazor(Op.Replace, "System.Collections.Generic.HashSet<T>.Count.get", "size")]
+	[Jazor(Op.Alias, "System.Collections.Generic.HashSet<T>.Count.get", "size")]
 	public extern static Number _4bec0b4d27073edb(Set<T> instance);
 
 	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.Capacity.get")]

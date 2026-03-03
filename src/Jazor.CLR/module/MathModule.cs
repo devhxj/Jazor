@@ -8,12 +8,12 @@ namespace Jazor.CLR;
 ///
 /// Op 类型选择原则：
 /// - Inline: 常量 (E, PI, Tau)
-/// - Replace: JS Math 有同名方法
+/// - Alias: JS Math 有同名方法
 /// - Import: 需要额外逻辑的方法
 /// - Discard: 不支持的方法（如某些重载）
 /// </summary>
-[ECMAScriptModule]
-[Jazor(Op.Replace, "System.Math", "Math")]
+[ECMAScriptModule("System/MathModule.js")]
+[Jazor(Op.Alias, "System.Math", "Math")]
 public static class MathModule
 {
 	// 常量 - 使用 Op.Inline
@@ -39,55 +39,55 @@ public static class MathModule
 	public extern static Number _tau();
 
 	///<summary>Returns the angle whose cosine is the specified number.</summary>
-	[Jazor(Op.Replace, "static System.Math.Acos(double)", "acos")]
+	[Jazor(Op.Alias, "static System.Math.Acos(double)", "acos")]
 	public extern static Number _473e58e8c04acfd3(Number d);
 
 	///<summary>Returns the angle whose hyperbolic cosine is the specified number.</summary>
-	[Jazor(Op.Replace, "static System.Math.Acosh(double)", "acosh")]
+	[Jazor(Op.Alias, "static System.Math.Acosh(double)", "acosh")]
 	public extern static Number _46ecb0a75e5ba94e(Number d);
 
 	///<summary>Returns the angle whose sine is the specified number.</summary>
-	[Jazor(Op.Replace, "static System.Math.Asin(double)", "asin")]
+	[Jazor(Op.Alias, "static System.Math.Asin(double)", "asin")]
 	public extern static Number _31a8579686d23c98(Number d);
 
 	///<summary>Returns the angle whose hyperbolic sine is the specified number.</summary>
-	[Jazor(Op.Replace, "static System.Math.Asinh(double)", "asinh")]
+	[Jazor(Op.Alias, "static System.Math.Asinh(double)", "asinh")]
 	public extern static Number _fac652d6d6a2503b(Number d);
 
 	///<summary>Returns the angle whose tangent is the specified number.</summary>
-	[Jazor(Op.Replace, "static System.Math.Atan(double)", "atan")]
+	[Jazor(Op.Alias, "static System.Math.Atan(double)", "atan")]
 	public extern static Number _64bb4dcf5871842b(Number d);
 
 	///<summary>Returns the angle whose hyperbolic tangent is the specified number.</summary>
-	[Jazor(Op.Replace, "static System.Math.Atanh(double)", "atanh")]
+	[Jazor(Op.Alias, "static System.Math.Atanh(double)", "atanh")]
 	public extern static Number _8093e8210867a45e(Number d);
 
 	///<summary>Returns the angle whose tangent is the quotient of two specified numbers.</summary>
-	[Jazor(Op.Replace, "static System.Math.Atan2(double, double)", "atan2")]
+	[Jazor(Op.Alias, "static System.Math.Atan2(double, double)", "atan2")]
 	public extern static Number _cc6b2bb857d27648(Number y, Number x);
 
 	///<summary>Returns the cube root of a specified number.</summary>
-	[Jazor(Op.Replace, "static System.Math.Cbrt(double)", "cbrt")]
+	[Jazor(Op.Alias, "static System.Math.Cbrt(double)", "cbrt")]
 	public extern static Number _9369c8e8f81372b6(Number d);
 
 	///<summary>Returns the smallest integral value that is greater than or equal to the specified double-precision floating-point number.</summary>
-	[Jazor(Op.Replace, "static System.Math.Ceiling(double)", "ceil")]
+	[Jazor(Op.Alias, "static System.Math.Ceiling(double)", "ceil")]
 	public extern static Number _d7be7c95bfefd788(Number a);
 
 	///<summary>Returns the cosine of the specified angle.</summary>
-	[Jazor(Op.Replace, "static System.Math.Cos(double)", "cos")]
+	[Jazor(Op.Alias, "static System.Math.Cos(double)", "cos")]
 	public extern static Number _b6b312cfcefe789c(Number d);
 
 	///<summary>Returns the hyperbolic cosine of the specified angle.</summary>
-	[Jazor(Op.Replace, "static System.Math.Cosh(double)", "cosh")]
+	[Jazor(Op.Alias, "static System.Math.Cosh(double)", "cosh")]
 	public extern static Number _c6f1b8664a086e13(Number value);
 
 	///<summary>Returns <see langword="e" /> raised to the specified power.</summary>
-	[Jazor(Op.Replace, "static System.Math.Exp(double)", "exp")]
+	[Jazor(Op.Alias, "static System.Math.Exp(double)", "exp")]
 	public extern static Number _d5b39999cc90e482(Number d);
 
 	///<summary>Returns the largest integral value less than or equal to the specified double-precision floating-point number.</summary>
-	[Jazor(Op.Replace, "static System.Math.Floor(double)", "floor")]
+	[Jazor(Op.Alias, "static System.Math.Floor(double)", "floor")]
 	public extern static Number _a43200909dff4bc0(Number d);
 
 	///<summary>Returns (x * y) + z, rounded as one ternary operation.</summary>
@@ -95,23 +95,23 @@ public static class MathModule
 	public extern static Number _52c95df2ad20c3bd(Number x, Number y, Number z);
 
 	///<summary>Returns the natural (base <see langword="e" />) logarithm of a specified number.</summary>
-	[Jazor(Op.Replace, "static System.Math.Log(double)", "log")]
+	[Jazor(Op.Alias, "static System.Math.Log(double)", "log")]
 	public extern static Number _c65770c0fcbed4b6(Number d);
 
 	///<summary>Returns the base 2 logarithm of a specified number.</summary>
-	[Jazor(Op.Replace, "static System.Math.Log2(double)", "log2")]
+	[Jazor(Op.Alias, "static System.Math.Log2(double)", "log2")]
 	public extern static Number _e622dc98a98720f4(Number x);
 
 	///<summary>Returns the base 10 logarithm of a specified number.</summary>
-	[Jazor(Op.Replace, "static System.Math.Log10(double)", "log10")]
+	[Jazor(Op.Alias, "static System.Math.Log10(double)", "log10")]
 	public extern static Number _a882de08086ccec9(Number d);
 
 	///<summary>Returns a specified number raised to the specified power.</summary>
-	[Jazor(Op.Replace, "static System.Math.Pow(double, double)", "pow")]
+	[Jazor(Op.Alias, "static System.Math.Pow(double, double)", "pow")]
 	public extern static Number _fd439387b010bb99(Number x, Number y);
 
 	///<summary>Returns the sine of the specified angle.</summary>
-	[Jazor(Op.Replace, "static System.Math.Sin(double)", "sin")]
+	[Jazor(Op.Alias, "static System.Math.Sin(double)", "sin")]
 	public extern static Number _f1029100ea8114ab(Number a);
 
 	///<summary>Returns the sine and cosine of the specified angle.</summary>
@@ -119,27 +119,27 @@ public static class MathModule
 	public extern static (double Sin, double Cos) _4dcadff583296186(Number x);
 
 	///<summary>Returns the hyperbolic sine of the specified angle.</summary>
-	[Jazor(Op.Replace, "static System.Math.Sinh(double)", "sinh")]
+	[Jazor(Op.Alias, "static System.Math.Sinh(double)", "sinh")]
 	public extern static Number _f48ae51bac192bdf(Number value);
 
 	///<summary>Returns the square root of a specified number.</summary>
-	[Jazor(Op.Replace, "static System.Math.Sqrt(double)", "sqrt")]
+	[Jazor(Op.Alias, "static System.Math.Sqrt(double)", "sqrt")]
 	public extern static Number _b303f709d2b283f0(Number d);
 
 	///<summary>Returns the tangent of the specified angle.</summary>
-	[Jazor(Op.Replace, "static System.Math.Tan(double)", "tan")]
+	[Jazor(Op.Alias, "static System.Math.Tan(double)", "tan")]
 	public extern static Number _5f9763f3b0176663(Number a);
 
 	///<summary>Returns the hyperbolic tangent of the specified angle.</summary>
-	[Jazor(Op.Replace, "static System.Math.Tanh(double)", "tanh")]
+	[Jazor(Op.Alias, "static System.Math.Tanh(double)", "tanh")]
 	public extern static Number _d198ea5fec4f6c8a(Number value);
 
 	///<summary>Returns the absolute value of a 16-bit signed integer.</summary>
-	[Jazor(Op.Replace, "static System.Math.Abs(short)", "abs")]
+	[Jazor(Op.Alias, "static System.Math.Abs(short)", "abs")]
 	public extern static Number _81a80e1bfb516bfb(Number value);
 
 	///<summary>Returns the absolute value of a 32-bit signed integer.</summary>
-	[Jazor(Op.Replace, "static System.Math.Abs(int)", "abs")]
+	[Jazor(Op.Alias, "static System.Math.Abs(int)", "abs")]
 	public extern static Number _0aaf1073fc70e405(Number value);
 
 	///<summary>Returns the absolute value of a 64-bit signed integer.</summary>
@@ -151,7 +151,7 @@ public static class MathModule
 	public extern static nint _6de080191221a07d(object value);
 
 	///<summary>Returns the absolute value of an 8-bit signed integer.</summary>
-	[Jazor(Op.Replace, "static System.Math.Abs(sbyte)", "abs")]
+	[Jazor(Op.Alias, "static System.Math.Abs(sbyte)", "abs")]
 	public extern static Number _6ed2ee0733ac7051(Number value);
 
 	///<summary>Returns the absolute value of a <see cref="T:System.Decimal" /> number.</summary>
@@ -159,11 +159,11 @@ public static class MathModule
 	public extern static string _eab3564b2663dff6(string value);
 
 	///<summary>Returns the absolute value of a double-precision floating-point number.</summary>
-	[Jazor(Op.Replace, "static System.Math.Abs(double)", "abs")]
+	[Jazor(Op.Alias, "static System.Math.Abs(double)", "abs")]
 	public extern static Number _6a0f94e87051cd5f(Number value);
 
 	///<summary>Returns the absolute value of a single-precision floating-point number.</summary>
-	[Jazor(Op.Replace, "static System.Math.Abs(float)", "abs")]
+	[Jazor(Op.Alias, "static System.Math.Abs(float)", "abs")]
 	public extern static Number _3e86488d0112bcd3(Number value);
 
 	///<summary>Produces the full product of two unsigned 32-bit numbers.</summary>
@@ -323,7 +323,7 @@ public static class MathModule
 	public extern static Number _da091a35a0d7bc64(Number a, Number newBase);
 
 	///<summary>Returns the larger of two 8-bit unsigned integers.</summary>
-	[Jazor(Op.Replace, "static System.Math.Max(byte, byte)", "max")]
+	[Jazor(Op.Alias, "static System.Math.Max(byte, byte)", "max")]
 	public extern static Number _a26e415f31a1dd41(Number val1, Number val2);
 
 	///<summary>Returns the larger of two decimal numbers.</summary>
@@ -331,15 +331,15 @@ public static class MathModule
 	public extern static string _68326de2fcd99278(string val1, string val2);
 
 	///<summary>Returns the larger of two double-precision floating-point numbers.</summary>
-	[Jazor(Op.Replace, "static System.Math.Max(double, double)", "max")]
+	[Jazor(Op.Alias, "static System.Math.Max(double, double)", "max")]
 	public extern static Number _1bcd36ee2d1a5261(Number val1, Number val2);
 
 	///<summary>Returns the larger of two 16-bit signed integers.</summary>
-	[Jazor(Op.Replace, "static System.Math.Max(short, short)", "max")]
+	[Jazor(Op.Alias, "static System.Math.Max(short, short)", "max")]
 	public extern static Number _52a2dcd88692950d(Number val1, Number val2);
 
 	///<summary>Returns the larger of two 32-bit signed integers.</summary>
-	[Jazor(Op.Replace, "static System.Math.Max(int, int)", "max")]
+	[Jazor(Op.Alias, "static System.Math.Max(int, int)", "max")]
 	public extern static Number _c89f0321e6ece69a(Number val1, Number val2);
 
 	///<summary>Returns the larger of two 64-bit signed integers.</summary>
@@ -351,19 +351,19 @@ public static class MathModule
 	public extern static nint _c03baee2a94d0113(object val1, object val2);
 
 	///<summary>Returns the larger of two 8-bit signed integers.</summary>
-	[Jazor(Op.Replace, "static System.Math.Max(sbyte, sbyte)", "max")]
+	[Jazor(Op.Alias, "static System.Math.Max(sbyte, sbyte)", "max")]
 	public extern static Number _cb1537d45a143e0d(Number val1, Number val2);
 
 	///<summary>Returns the larger of two single-precision floating-point numbers.</summary>
-	[Jazor(Op.Replace, "static System.Math.Max(float, float)", "max")]
+	[Jazor(Op.Alias, "static System.Math.Max(float, float)", "max")]
 	public extern static Number _5acf698f9a9ada61(Number val1, Number val2);
 
 	///<summary>Returns the larger of two 16-bit unsigned integers.</summary>
-	[Jazor(Op.Replace, "static System.Math.Max(ushort, ushort)", "max")]
+	[Jazor(Op.Alias, "static System.Math.Max(ushort, ushort)", "max")]
 	public extern static Number _07de56d6927ee6af(Number val1, Number val2);
 
 	///<summary>Returns the larger of two 32-bit unsigned integers.</summary>
-	[Jazor(Op.Replace, "static System.Math.Max(uint, uint)", "max")]
+	[Jazor(Op.Alias, "static System.Math.Max(uint, uint)", "max")]
 	public extern static Number _6638c647001d2908(Number val1, Number val2);
 
 	///<summary>Returns the larger of two 64-bit unsigned integers.</summary>
@@ -379,7 +379,7 @@ public static class MathModule
 	public extern static Number _7922e74207558715(Number x, Number y);
 
 	///<summary>Returns the smaller of two 8-bit unsigned integers.</summary>
-	[Jazor(Op.Replace, "static System.Math.Min(byte, byte)", "min")]
+	[Jazor(Op.Alias, "static System.Math.Min(byte, byte)", "min")]
 	public extern static Number _f8806316e956dbb8(Number val1, Number val2);
 
 	///<summary>Returns the smaller of two decimal numbers.</summary>
@@ -387,15 +387,15 @@ public static class MathModule
 	public extern static string _87f14d6593efd87f(string val1, string val2);
 
 	///<summary>Returns the smaller of two double-precision floating-point numbers.</summary>
-	[Jazor(Op.Replace, "static System.Math.Min(double, double)", "min")]
+	[Jazor(Op.Alias, "static System.Math.Min(double, double)", "min")]
 	public extern static Number _d0d428d1a1f7d899(Number val1, Number val2);
 
 	///<summary>Returns the smaller of two 16-bit signed integers.</summary>
-	[Jazor(Op.Replace, "static System.Math.Min(short, short)", "min")]
+	[Jazor(Op.Alias, "static System.Math.Min(short, short)", "min")]
 	public extern static Number _d7a779b3283b34dc(Number val1, Number val2);
 
 	///<summary>Returns the smaller of two 32-bit signed integers.</summary>
-	[Jazor(Op.Replace, "static System.Math.Min(int, int)", "min")]
+	[Jazor(Op.Alias, "static System.Math.Min(int, int)", "min")]
 	public extern static Number _7fb229bda6fa1941(Number val1, Number val2);
 
 	///<summary>Returns the smaller of two 64-bit signed integers.</summary>
@@ -407,19 +407,19 @@ public static class MathModule
 	public extern static nint _e3cdc59c4e2b3f04(object val1, object val2);
 
 	///<summary>Returns the smaller of two 8-bit signed integers.</summary>
-	[Jazor(Op.Replace, "static System.Math.Min(sbyte, sbyte)", "min")]
+	[Jazor(Op.Alias, "static System.Math.Min(sbyte, sbyte)", "min")]
 	public extern static Number _0f8bf59fee331622(Number val1, Number val2);
 
 	///<summary>Returns the smaller of two single-precision floating-point numbers.</summary>
-	[Jazor(Op.Replace, "static System.Math.Min(float, float)", "min")]
+	[Jazor(Op.Alias, "static System.Math.Min(float, float)", "min")]
 	public extern static Number _2c1e93a158a72838(Number val1, Number val2);
 
 	///<summary>Returns the smaller of two 16-bit unsigned integers.</summary>
-	[Jazor(Op.Replace, "static System.Math.Min(ushort, ushort)", "min")]
+	[Jazor(Op.Alias, "static System.Math.Min(ushort, ushort)", "min")]
 	public extern static Number _3e853af2da5fd862(Number val1, Number val2);
 
 	///<summary>Returns the smaller of two 32-bit unsigned integers.</summary>
-	[Jazor(Op.Replace, "static System.Math.Min(uint, uint)", "min")]
+	[Jazor(Op.Alias, "static System.Math.Min(uint, uint)", "min")]
 	public extern static Number _849b5d874239b92c(Number val1, Number val2);
 
 	///<summary>Returns the smaller of two 64-bit unsigned integers.</summary>
@@ -459,7 +459,7 @@ public static class MathModule
 	public extern static string _b955eff4c2d1fa63(string d, Number decimals, object mode);
 
 	///<summary>Rounds a double-precision floating-point value to the nearest integral value, and rounds midpoint values to the nearest even number.</summary>
-	[Jazor(Op.Replace, "static System.Math.Round(double)", "round")]
+	[Jazor(Op.Alias, "static System.Math.Round(double)", "round")]
 	public extern static Number _6cd7f67f98eae0bc(Number a);
 
 	///<summary>Rounds a double-precision floating-point value to a specified number of fractional digits, and rounds midpoint values to the nearest even number.</summary>
@@ -479,15 +479,15 @@ public static class MathModule
 	public extern static Number _8d626104a531d041(string value);
 
 	///<summary>Returns an integer that indicates the sign of a double-precision floating-point number.</summary>
-	[Jazor(Op.Replace, "static System.Math.Sign(double)", "sign")]
+	[Jazor(Op.Alias, "static System.Math.Sign(double)", "sign")]
 	public extern static Number _9a554cfca79bdc59(Number value);
 
 	///<summary>Returns an integer that indicates the sign of a 16-bit signed integer.</summary>
-	[Jazor(Op.Replace, "static System.Math.Sign(short)", "sign")]
+	[Jazor(Op.Alias, "static System.Math.Sign(short)", "sign")]
 	public extern static Number _f8eefd9c948ed90a(Number value);
 
 	///<summary>Returns an integer that indicates the sign of a 32-bit signed integer.</summary>
-	[Jazor(Op.Replace, "static System.Math.Sign(int)", "sign")]
+	[Jazor(Op.Alias, "static System.Math.Sign(int)", "sign")]
 	public extern static Number _cfeb8757509066b2(Number value);
 
 	///<summary>Returns an integer that indicates the sign of a 64-bit signed integer.</summary>
@@ -499,11 +499,11 @@ public static class MathModule
 	public extern static Number _e5d5397dfe870f94(object value);
 
 	///<summary>Returns an integer that indicates the sign of an 8-bit signed integer.</summary>
-	[Jazor(Op.Replace, "static System.Math.Sign(sbyte)", "sign")]
+	[Jazor(Op.Alias, "static System.Math.Sign(sbyte)", "sign")]
 	public extern static Number _88575fe160876695(Number value);
 
 	///<summary>Returns an integer that indicates the sign of a single-precision floating-point number.</summary>
-	[Jazor(Op.Replace, "static System.Math.Sign(float)", "sign")]
+	[Jazor(Op.Alias, "static System.Math.Sign(float)", "sign")]
 	public extern static Number _c0668680ba7ef96e(Number value);
 
 	///<summary>Calculates the integral part of a specified decimal number.</summary>
@@ -511,7 +511,7 @@ public static class MathModule
 	public extern static string _abd9211e1e7514b4(string d);
 
 	///<summary>Calculates the integral part of a specified double-precision floating-point number.</summary>
-	[Jazor(Op.Replace, "static System.Math.Truncate(double)", "trunc")]
+	[Jazor(Op.Alias, "static System.Math.Truncate(double)", "trunc")]
 	public extern static Number _b74eaf879a3b5fd7(Number d);
 
 	///<summary>Returns x * 2^n computed efficiently.</summary>

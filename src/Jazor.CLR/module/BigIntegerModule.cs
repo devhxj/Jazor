@@ -1,7 +1,7 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule]
-[Jazor(Op.Import, "System.Numerics.BigInteger","System/Numerics/BigIntegerModule.js")]
+[ECMAScriptModule("System/Numerics/BigIntegerModule.js")]
+[Jazor(Op.Alias, "System.Numerics.BigInteger", "BigInt")]
 public static class BigIntegerModule
 {
 	///<summary>Initializes a new instance of the <see cref="T:System.Numerics.BigInteger" /> structure using a 32-bit signed integer value.</summary>

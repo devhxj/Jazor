@@ -1,7 +1,7 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule]
-[Jazor(Op.Import, "System.DateOnly","System/DateOnlyModule.js")]
+[ECMAScriptModule("System/DateOnlyModule.js")]
+[Jazor(Op.Alias, "System.DateOnly","Date")]
 public static class DateOnlyModule
 {
 	[Jazor(Op.Discard ,"System.DateOnly.DateOnly()")]

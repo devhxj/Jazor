@@ -10,12 +10,12 @@ namespace Jazor.CLR;
 ///
 /// Op 类型选择原则：
 /// - Inline: 简单表达式（如 Now、Today）
-/// - Replace: JS Date 原生方法（如 getFullYear、getMonth）
+/// - Alias: JS Date 原生方法（如 getFullYear、getMonth）
 /// - Import: 需要完整实现的复杂逻辑
 /// - Discard: 不支持或极少使用
 /// </summary>
-[ECMAScriptModule]
-[Jazor(Op.Import, "System.DateTime","System/DateTimeModule.js")]
+[ECMAScriptModule("System/DateTimeModule.js")]
+[Jazor(Op.Alias, "System.DateTime","Date")]
 public static class DateTimeModule
 {
 	/// <summary>
@@ -257,10 +257,10 @@ public static class DateTimeModule
 	[Jazor(Op.Inline, "System.DateTime.Date.get", "new Date(@#{0}.getFullYear(), @#{0}.getMonth(), @#{0}.getDate())")]
 	public extern static Date _d77d20d9d04e2b6b(Date instance);
 
-	[Jazor(Op.Replace, "System.DateTime.Day.get", "getDate")]
+	[Jazor(Op.Alias, "System.DateTime.Day.get", "getDate")]
 	public extern static Number _3b9ecf5fd3c301db(Date instance);
 
-	[Jazor(Op.Replace, "System.DateTime.DayOfWeek.get", "getDay")]
+	[Jazor(Op.Alias, "System.DateTime.DayOfWeek.get", "getDay")]
 	public extern static System.DayOfWeek _6070f1709c491634(Date instance);
 
 	/// <summary>
@@ -280,13 +280,13 @@ public static class DateTimeModule
 	[Jazor(Op.Discard ,"override System.DateTime.GetHashCode()")]
 	public extern static Number _d3529b55e30e2a12(Date instance);
 
-	[Jazor(Op.Replace, "System.DateTime.Hour.get", "getHours")]
+	[Jazor(Op.Alias, "System.DateTime.Hour.get", "getHours")]
 	public extern static Number _f263cff61e6628a9(Date instance);
 
 	[Jazor(Op.Discard ,"System.DateTime.Kind.get")]
 	public extern static System.DateTimeKind _551add245db0b701(Date instance);
 
-	[Jazor(Op.Replace, "System.DateTime.Millisecond.get", "getMilliseconds")]
+	[Jazor(Op.Alias, "System.DateTime.Millisecond.get", "getMilliseconds")]
 	public extern static Number _742a8bcf918b97e6(Date instance);
 
 	[Jazor(Op.Discard ,"System.DateTime.Microsecond.get")]
@@ -295,7 +295,7 @@ public static class DateTimeModule
 	[Jazor(Op.Discard ,"System.DateTime.Nanosecond.get")]
 	public extern static Number _46e11fe2eb2ee869(Date instance);
 
-	[Jazor(Op.Replace, "System.DateTime.Minute.get", "getMinutes")]
+	[Jazor(Op.Alias, "System.DateTime.Minute.get", "getMinutes")]
 	public extern static Number _f4ca5de4f63aa097(Date instance);
 
 	[Jazor(Op.Inline, "System.DateTime.Month.get", "(@#{0}.getMonth() + 1)")]
@@ -304,7 +304,7 @@ public static class DateTimeModule
 	[Jazor(Op.Inline, "static System.DateTime.Now.get", "new Date()")]
 	public extern static Date _ee9dd166a34a2fa5();
 
-	[Jazor(Op.Replace, "System.DateTime.Second.get", "getSeconds")]
+	[Jazor(Op.Alias, "System.DateTime.Second.get", "getSeconds")]
 	public extern static Number _10a94eacb3b7fd2d(Date instance);
 
 	/// <summary>
@@ -328,7 +328,7 @@ public static class DateTimeModule
 	[Jazor(Op.Inline, "static System.DateTime.Today.get", "new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())")]
 	public extern static Date _4b250155b7c688bb();
 
-	[Jazor(Op.Replace, "System.DateTime.Year.get", "getFullYear")]
+	[Jazor(Op.Alias, "System.DateTime.Year.get", "getFullYear")]
 	public extern static Number _9d56b09432f81c05(Date instance);
 
 	///<summary>Returns an indication whether the specified year is a leap year.</summary>
@@ -421,7 +421,7 @@ public static class DateTimeModule
 	public extern static string _af2d02ec0c0a300d(Date instance);
 
 	///<summary>Converts the value of the current <see cref="T:System.DateTime" /> object to its equivalent string representation using the formatting conventions of the current culture.</summary>
-	[Jazor(Op.Replace, "override System.DateTime.ToString()", "toString")]
+	[Jazor(Op.Alias, "override System.DateTime.ToString()", "toString")]
 	public extern static string _6659b3b5d1f081dd(Date instance);
 
 	///<summary>Converts the value of the current <see cref="T:System.DateTime" /> object to its equivalent string representation using the specified format and the formatting conventions of the current culture.</summary>

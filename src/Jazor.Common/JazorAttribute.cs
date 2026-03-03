@@ -5,7 +5,7 @@ namespace Jazor.Common;
 /// </summary>
 /// <param name="member">使用 ECMAScript.Common.Util.NameFormat 格式化后的成员名称（类名或方法名）</param>
 /// <param name="op">处理方式</param>
-/// <param name="value">op是Replace时，指定替换值</param>
+/// <param name="value">op是Alias时，指定替换值</param>
 [AttributeUsage(
 	AttributeTargets.Class | AttributeTargets.Property | AttributeTargets.Method,
 	AllowMultiple = false,

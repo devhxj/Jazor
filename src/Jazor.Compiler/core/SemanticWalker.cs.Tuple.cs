@@ -129,8 +129,9 @@ public partial class SemanticWalker
 					// 如果是方法调用，先造一个临时对象存放方法的值
 					idExpr = new Identifier(GetUniqueName(invocation));
 					var init = Translate<Expression>(invocation, argument);
-					var declarator = new VariableDeclarator(idExpr, init);
+					var declarator = new VariableDeclarator(idExpr, null);
 					argument.AddVarDeclarator(declarator, _recursionDepth);
+					exprs.Add(new AssignmentExpression(Operator.Assignment, idExpr, init));
 				}
 
 				// 如果解构元素是元组类型，递归解构
@@ -176,8 +177,9 @@ public partial class SemanticWalker
 						}
 
 						var id = Translate<Node>(element, argument);
-						var declarator = new VariableDeclarator(id, init);
+						var declarator = new VariableDeclarator(id, null);
 						argument.AddVarDeclarator(declarator, _recursionDepth);
+						exprs.Add(new AssignmentExpression(Operator.Assignment, id, init));
 					}
 					else if (!isDeclarationExpr && element is ILocalReferenceOperation localRef)
 					{
@@ -258,7 +260,6 @@ public partial class SemanticWalker
 					return;
 				}
 
-				List<VariableDeclarator> declarators = [];
 				List<Expression> args = [];
 				List<(int Index, Identifier Id)> nestedRefs = [];
 				var tupleType = (INamedTypeSymbol)tupleResult.Type!;
@@ -271,8 +272,8 @@ public partial class SemanticWalker
 						var id = new Identifier(name);
 						var declarator = new VariableDeclarator(id, null);
 
-						declarators.Add(declarator);
 						args.Add(id);
+						argument.AddVarDeclarator(declarator, _recursionDepth);
 					}
 					else if (element is ITupleOperation subTuple)
 					{
@@ -282,9 +283,9 @@ public partial class SemanticWalker
 						var id = new Identifier(name);
 						var declarator = new VariableDeclarator(id, null);
 
-						declarators.Add(declarator);
 						args.Add(id);
 						nestedRefs.Add((index, id));
+						argument.AddVarDeclarator(declarator, _recursionDepth);
 					}
 					else
 					{
@@ -294,18 +295,32 @@ public partial class SemanticWalker
 						if (element is IDeclarationExpressionOperation)
 						{
 							var declarator = new VariableDeclarator(id, null);
-							declarators.Add(declarator);
-						}						
+							argument.AddVarDeclarator(declarator, _recursionDepth);
+						}
 						args.Add(id);
 					}
 				}
-
-				// 执行 Deconstruct方法
+				
+				// Deconstruct方法参数是out参数且无返回值，但js不支持out/ref
+				// 所以编译器会把Deconstruct方法编成普通参数，然后返回数组对象输出本该由out参数输出的值	
 				var obj = Translate<Expression>(expr, argument);
 				var prop = new Identifier("Deconstruct");
 				var func = new MemberExpression(obj, prop, false, false);
 				var call = new CallExpression(func, NodeList.From(args), false);
-				exprs.Add(call);
+				var deconstructName = GetUniqueName(operation);
+				var deconstructId = new Identifier(deconstructName);
+				var deconstructDecl = new VariableDeclarator(deconstructId, null);
+				argument.AddVarDeclarator(deconstructDecl, _recursionDepth);
+				exprs.Add(new AssignmentExpression(Operator.Assignment, deconstructId, call));
+
+				// 从数组中取值赋给目标值
+				for (var i = 0; i < args.Count; i++)
+				{
+					var indexer = new NumericLiteral(i, i.ToString());
+					var member = new MemberExpression(deconstructId, indexer, computed: true, optional: false);
+					var assignExpr = new AssignmentExpression(Operator.Assignment, args[i], member);
+					exprs.Add(assignExpr);
+				}
 
 				IMethodSymbol method;
 				// 处理嵌套元组中的解构参数
@@ -315,7 +330,6 @@ public partial class SemanticWalker
 					method = (IMethodSymbol)valueType
 						.GetMembers()
 						.First(x => x.Kind == SymbolKind.Method && x.Name == "Deconstruct");
-				
 
 				foreach (var (index, id) in nestedRefs)
 				{

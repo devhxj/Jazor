@@ -1,7 +1,7 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule]
-[Jazor(Op.Import, "System.Nullable","System/NullableModule.js")]
+[ECMAScriptModule("System/NullableModule.js")]
+[Jazor(Op.Allowed, "System.Nullable<T>")]
 public static class NullableModule
 {
 	/// <summary>

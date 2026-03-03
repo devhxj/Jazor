@@ -14,7 +14,7 @@ var references = Basic.Reference.Assemblies.Net100.References.All
 	.Add(MetadataReference.CreateFromFile(ECMAScriptAssmbly.Location))
 	.Add(MetadataReference.CreateFromFile(CLRAssembly.Location));
 var compilation = CSharpCompilation.Create("Jazor", references: [.. references]);
-var types = new List<(string Op, string Member, string? Value)>();
+var types = new List<(string Op, string Member, string? Value, string? ModulePath)>();
 var members = new List<(string TypeName, string Op, string Member, string? Value, string? ModulePath)>();
 
 // 扫描ECMAScriptAssmbly和CLRAssembly中的JazorAttribute注解的类型
@@ -26,7 +26,9 @@ foreach (var assembly in new Assembly[] { ECMAScriptAssmbly, CLRAssembly })
 		if (jazorAttr is null || jazorAttr.Op == Op.Discard)
 			continue;
 
-		string? modulePath = null;
+#pragma warning disable CA1416 // 验证平台兼容性
+		var modulePath = type.GetCustomAttribute<ECMAScript.ECMAScriptModuleAttribute>()?.Import;
+#pragma warning restore CA1416 // 验证平台兼容性
 		var typeSymbol = compilation.GetTypeByMetadataName(type.FullName!)!;
 		var typeName = typeSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
 
@@ -35,10 +37,7 @@ foreach (var assembly in new Assembly[] { ECMAScriptAssmbly, CLRAssembly })
 			var memberName = string.IsNullOrEmpty(jazorAttr.Member) ? typeName : jazorAttr.Member;
 			var value = jazorAttr.Value;
 
-			if (jazorAttr.Op == Op.Import)
-				value = modulePath = jazorAttr.Value;
-
-			types.Add((jazorAttr.Op.ToString(), memberName, value));
+			types.Add((jazorAttr.Op.ToString(), memberName, value, modulePath));
 		}
 
 		foreach (var member in typeSymbol.GetMembers())

@@ -1,7 +1,6 @@
 ﻿using Acornima;
 using Acornima.Ast;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,20 +25,27 @@ public partial class SemanticWalker
 		foreach (var arg in operation.Arguments)
 			Translate(arguments, arg.Value, argument);
 
+
+
 		// 普通对象创建
-		var mapper = GetMapperType(operation.Type, arguments);
-		if (mapper.IsWhiteList)
-			return mapper.Expression;
-			
-		var typeName = mapper.TypeName;
+		var (mapper, typeName) = GetMapperType(operation.Type);
 		var callee = new Identifier(typeName);
+
 		Expression expr = new NewExpression(callee, NodeList.From(arguments));
-		if (mapper.Mapper == TypeMapper.BigInt)
+		if (mapper == TypeMapper.BigInt)
 			expr = new CallExpression(callee, NodeList.From(arguments), false);
 
-		else if (mapper.Mapper == TypeMapper.Array)
+		else if (mapper == TypeMapper.Array)
 			expr = new ArrayExpression(NodeList.From<Expression?>(arguments));
 
+		// 如果构造函数在白名单中，需要特殊处理
+		if (operation.Constructor is not null)
+		{
+			var mapperExpr = GetWhiteListExpression(operation.Constructor, argument, arguments, null, out _);
+			if (mapperExpr is not null)
+				expr = mapperExpr;
+		}			
+		
 		if (assignObj is not null)
 			expr = new AssignmentExpression(Operator.Assignment, assignObj, expr);
 

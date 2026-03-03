@@ -43,7 +43,19 @@ public partial class SemanticWalker
 				statements.Add(statement);
 
 			else if (node is Expression expr)
-				statements.Add(new NonSpecialExpressionStatement(expr));
+			{
+				// 剔除等于0的情况，因为它在JavaScript中没有副作用，不需要生成语句
+				if (expr is SequenceExpression seqExpr)
+				{
+					if (seqExpr.Expressions.Count == 1)
+						statements.Add(new NonSpecialExpressionStatement(seqExpr.Expressions[0]));
+
+					else if (seqExpr.Expressions.Count > 1)
+						statements.Add(new NonSpecialExpressionStatement(expr));
+				}
+				else
+					statements.Add(new NonSpecialExpressionStatement(expr));
+			}
 
 			else
 				HandleTransformationFailure<Node>(stmt, $"{stmt.Kind} could not be translated to JavaScript.");
@@ -222,14 +234,14 @@ public partial class SemanticWalker
 			return null;
 
 		var valueStr = Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture);
-		var mapper = GetMapperType(type);
+		var (mapper, _) = GetMapperType(type);
 
 		// 布尔值字面量：true / false
-		if (mapper.Mapper == TypeMapper.Boolean)
+		if (mapper == TypeMapper.Boolean)
 			return new BooleanLiteral((bool)value, ((bool)value).ToString().ToLowerInvariant());
 
 		// 字符串和字符字面量
-		else if (mapper.Mapper == TypeMapper.String)
+		else if (mapper == TypeMapper.String)
 		{
 			if (string.IsNullOrEmpty(valueStr))
 				return new StringLiteral("", "\"\"");
@@ -289,7 +301,7 @@ public partial class SemanticWalker
 		}
 
 		//  数值字面量：42 / 3.14
-		else if (mapper.Mapper == TypeMapper.Number)
+		else if (mapper == TypeMapper.Number)
 		{
 			// 对于 decimal 类型，需要处理精度损失问题
 			// decimal 范围约为 ±7.9×10²⁸，double 范围约为 ±1.7×10³⁰⁸
@@ -348,7 +360,7 @@ public partial class SemanticWalker
 		}
 
 		// BigInt 字面量：42L / 100UL / -42L -> 42n / 100n / -42n
-		else if (mapper.Mapper == TypeMapper.BigInt)
+		else if (mapper == TypeMapper.BigInt)
 		{
 			// 处理 ulong 类型（无符号 64 位整数）
 			if (type.SpecialType == SpecialType.System_UInt64)

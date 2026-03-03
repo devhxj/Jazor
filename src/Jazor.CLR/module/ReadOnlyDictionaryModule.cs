@@ -1,7 +1,7 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule]
-[Jazor(Op.Import, "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>","System/Collections/ObjectModel/ReadOnlyDictionaryModule.js")]
+[ECMAScriptModule("System/Collections/ObjectModel/ReadOnlyDictionaryModule.js")]
+[Jazor(Op.Alias, "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>","Map")]
 public static class ReadOnlyDictionaryModule<TKey, TValue> where TKey : notnull
 {
 	///<summary>Initializes a new instance of the <see cref="T:System.Collections.ObjectModel.ReadOnlyDictionary`2" /> class that is a wrapper around the specified dictionary.</summary>

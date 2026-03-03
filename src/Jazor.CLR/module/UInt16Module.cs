@@ -10,12 +10,12 @@ namespace Jazor.CLR;
 /// Op 类型选择原则：
 /// - Allowed: 操作符（+ - * / % == != &lt; &gt; &lt;= &gt;=）
 /// - Inline: 简单比较和运算
-/// - Replace: JS Math 方法
+/// - Alias: JS Math 方法
 /// - Import: 需要完整实现的复杂逻辑（Parse/TryParse）
 /// - Discard: 不支持的功能
 /// </summary>
-[ECMAScriptModule]
-[Jazor(Op.Import, "ushort","System/UInt16Module.js")]
+[ECMAScriptModule("System/UInt16Module.js")]
+[Jazor(Op.Alias, "ushort", "Number")]
 public static class UInt16Module
 {
 	/// <summary>
@@ -71,7 +71,7 @@ public static class UInt16Module
 	/// C#: ushort.ToString()
 	/// JS: instance.toString()
 	/// </summary>
-	[Jazor(Op.Replace, "override ushort.ToString()", "toString")]
+	[Jazor(Op.Alias, "override ushort.ToString()", "toString")]
 	public extern static string _97b1f766a137a176(Number instance);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation using the specified culture-specific format information.</summary>

@@ -48,8 +48,8 @@ public partial class SemanticWalker
             List<Statement> alternates = [];
             foreach (var @catch in operation.Catches)
             {
-                var mapper = GetMapperType(@catch.ExceptionType);
-                var right = mapper.Expression;
+                var (_, typeName) = GetMapperType(@catch.ExceptionType);
+                var right = new Identifier(typeName);
                 // 传递 tryParam 作为 exceptionParam，用于 when 条件检查
                 var statements = ExtractCatchClauseBody(@catch, argument, tryParam);
                 var param = ExtractCatchClauseParam(@catch);
@@ -211,11 +211,23 @@ public partial class SemanticWalker
 	public override Node? VisitThrow(IThrowOperation operation, WalkerArgument argument)
 	{
 		Expression expr;
-		if (operation.Exception is not null)
-			expr = Translate<Expression>(operation.Exception, argument);
+        if (operation.Exception is not null)
+            expr = Translate<Expression>(operation.Exception, argument);
         else
-            // 重新抛出当前异常，使用父级try的异常参数
-			expr = new Identifier(GetUniqueName(operation.Parent!.Parent!)); 
+        {
+            if (operation.Parent?.Parent?.Parent is not ITryOperation @try)
+                return HandleTransformationFailure<Node>(operation, "Throw statement could not be translated to JavaScript because it is not within a try block.");
+
+            expr = new Identifier(GetUniqueName(@try));
+            // 如果只有一个catch子句，则使用该catch子句的参数名
+            if (@try.Catches.Length == 1)
+            {
+                var catchClause = @try.Catches[0];
+                var param = ExtractCatchClauseParam(catchClause);
+                if (param is not null)
+                    expr = param;
+            }
+        }
 
 		return new ThrowStatement(expr);
 	}

@@ -1,7 +1,7 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule]
-[Jazor(Op.Import, "System.Globalization.GregorianCalendar","System/Globalization/GregorianCalendarModule.js")]
+[ECMAScriptModule("System/Globalization/GregorianCalendarModule.js")]
+[Jazor(Op.Alias, "System.Globalization.GregorianCalendar","Date")]
 public static class GregorianCalendarModule
 {
 	/// <summary>

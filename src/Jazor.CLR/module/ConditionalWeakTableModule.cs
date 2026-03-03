@@ -1,7 +1,7 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule]
-[Jazor(Op.Import, "System.Runtime.CompilerServices.ConditionalWeakTable<TKey, TValue>","System/Runtime/CompilerServices/ConditionalWeakTableModule.js")]
+[ECMAScriptModule("System/Runtime/CompilerServices/ConditionalWeakTableModule.js")]
+[Jazor(Op.Alias, "System.Runtime.CompilerServices.ConditionalWeakTable<TKey, TValue>","WeakMap")]
 public static class ConditionalWeakTableModule<TKey, TValue>
 {
 	/// <summary>

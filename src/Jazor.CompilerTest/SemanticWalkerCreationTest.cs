@@ -1438,7 +1438,7 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToECMAScript();
 
         // DateTime 映射为 Date
-        Assert.AreEqual("new Date(2024,1,1)", script);
+        Assert.AreEqual("new Date(2024,1-1,1)", script);
     }
 
     [TestMethod]
@@ -1460,7 +1460,7 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToECMAScript();
 
         // DateOnly 映射为 Date
-        Assert.AreEqual("new Date(2024,1,1)", script);
+        Assert.AreEqual("new Date(2024,1-1,1)", script);
     }
 
     [TestMethod]
@@ -1481,8 +1481,8 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        // TimeOnly 映射为 Date
-        Assert.AreEqual("new Date(12,30,0)", script);
+        // TimeOnly 映射为 Number秒
+        Assert.AreEqual("12*3600000+30*60000+0*1000", script);
     }
 
     [TestMethod]

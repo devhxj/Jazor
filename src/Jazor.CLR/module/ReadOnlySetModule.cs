@@ -1,7 +1,7 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule]
-[Jazor(Op.Import, "System.Collections.ObjectModel.ReadOnlySet<T>","System/Collections/ObjectModel/ReadOnlySetModule.js")]
+[ECMAScriptModule("System/Collections/ObjectModel/ReadOnlySetModule.js")]
+[Jazor(Op.Alias, "System.Collections.ObjectModel.ReadOnlySet<T>","Set")]
 public static class ReadOnlySetModule<T>
 {
 	///<summary>Initializes a new instance of the <see cref="T:System.Collections.ObjectModel.ReadOnlySet`1" /> class that is a wrapper around the specified set.</summary>

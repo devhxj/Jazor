@@ -1,7 +1,7 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule]
-[Jazor(Op.Import, "System.TimeSpan","System/TimeSpanModule.js")]
+[ECMAScriptModule("System/TimeSpanModule.js")]
+[Jazor(Op.Alias, "System.TimeSpan", "BigInt")]
 public static class TimeSpanModule
 {
 	//System.TimeSpan.NanosecondsPerTick = 100;

@@ -10,12 +10,12 @@ namespace Jazor.CLR;
 ///
 /// Op 类型选择原则：
 /// - Inline: 简单的字符码比较和运算
-/// - Replace: JS 有原生对应方法（如 toString）
+/// - Alias: JS 有原生对应方法（如 toString）
 /// - Import: 需要完整实现的复杂逻辑
 /// - Discard: JavaScript 无对应概念或不常用
 /// </summary>
-[ECMAScriptModule]
-[Jazor(Op.Import, "char","System/CharModule.js")]
+[ECMAScriptModule("System/CharModule.js")]
+[Jazor(Op.Alias, "char","String")]
 public static class CharModule
 {
 	[Jazor(Op.Discard, "char.Char()")]

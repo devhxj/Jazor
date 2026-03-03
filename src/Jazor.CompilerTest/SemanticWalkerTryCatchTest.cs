@@ -485,7 +485,7 @@ public sealed class SemanticWalkerTryCatchTest
 @"try {
   let x = 1;
 } catch (ex) {
-  throw v$0;
+  throw ex;
 }", script);
 
     }
@@ -956,10 +956,19 @@ catch (ex) {
         Assert.AreEqual(
 @"try {
   throw new Error(""error"");
-} catch(v$0) {
-  if (!true)
-    throw v$0;
-  let msg = ""caught"";
+} catch (v$0) {
+  if (v$0 instanceof Error) {
+    const v$1 = v$0;
+    if (!true)
+      throw v$0;
+    let msg = ""a"";
+  }
+  if (v$0 instanceof RangeError) {
+    const ex = v$0;
+    if (!true)
+      throw v$0;
+    let msg = ""b"";
+  }
 }", script);
 
     }

@@ -39,7 +39,7 @@
 |--------|---------|---------|------|
 | **Discard** | JS无对应概念 | ✅ 正确使用 | 用于不支持的API |
 | **Allowed** | JS原生支持，无需处理 | ✅ 正确 | 运算符等 |
-| **Replace** | JS有类似方法但名称不同 | ✅ 正确 | Boolean, Int32, List, Dictionary |
+| **Alias** | JS有类似方法但名称不同 | ✅ 正确 | Boolean, Int32, List, Dictionary |
 | **Inline** | 简单表达式 | ✅ 正确 | 常量和简单计算 |
 | **Import** | 需要完整实现 | ✅ 正确 | 都有方法体 |
 | **Compile** | 编译器特殊处理 | ✅ 正确 | Boolean |
@@ -107,7 +107,7 @@
 
 #### ✅ Int16Module 优化
 - **MaxValue/MinValue**: Inline实现，32767/-32768
-- **ToString**: Replace → toString
+- **ToString**: Alias → toString
 - **Equals**: Inline实现，=== 比较
 - **Parse**: Import实现，使用ParseInt并检查范围
 - **TryParse**: Import实现，返回[success, value]数组
@@ -115,7 +115,7 @@
 
 #### ✅ UInt16Module 优化
 - **MaxValue/MinValue**: Inline实现，65535/0
-- **ToString**: Replace → toString
+- **ToString**: Alias → toString
 - **Equals**: Inline实现，=== 比较
 - **Parse**: Import实现，使用ParseInt并检查范围
 - **TryParse**: Import实现，返回[success, value]数组
@@ -123,7 +123,7 @@
 
 #### ✅ UInt32Module 优化
 - **MaxValue/MinValue**: Inline实现，4294967295/0
-- **ToString**: Replace → toString
+- **ToString**: Alias → toString
 - **Equals**: Inline实现，=== 比较
 - **Parse**: Import实现，使用ParseInt并检查范围
 - **TryParse**: Import实现，返回[success, value]数组
@@ -132,7 +132,7 @@
 #### ✅ UInt64Module 优化
 - **MaxValue/MinValue**: Inline实现，18446744073709551615n/0n
 - **BigMul**: Inline实现
-- **ToString**: Replace → toString
+- **ToString**: Alias → toString
 - **Equals**: Inline实现，=== 比较
 - **Parse**: Import实现，使用BigInt_并检查范围
 - **TryParse**: Import实现，返回[success, value]数组
@@ -154,10 +154,10 @@
 #### ✅ ReadOnlyCollectionModule 优化
 - **构造函数**: Inline实现
 - **Empty**: Inline实现，返回[]
-- **Count**: Replace → length
-- **Contains**: Replace → includes
+- **Count**: Alias → length
+- **Contains**: Alias → includes
 - **索引器**: Inline实现 → arr[i]
-- **IndexOf**: Replace → indexOf
+- **IndexOf**: Alias → indexOf
 - **CopyTo**: Import实现
 
 ### 2026-03-01 更新（核心模块优化）

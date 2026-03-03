@@ -10,12 +10,12 @@ namespace Jazor.CLR;
 /// Op 类型选择原则：
 /// - Allowed: 操作符（+ - * / % == != &lt; &gt; &lt;= &gt;=）
 /// - Inline: 简单比较和运算
-/// - Replace: JS Math 方法
+/// - Alias: JS Math 方法
 /// - Import: 需要完整实现的复杂逻辑（Parse/TryParse）
 /// - Discard: 不支持的功能
 /// </summary>
-[ECMAScriptModule]
-[Jazor(Op.Import, "byte","System/ByteModule.js")]
+[ECMAScriptModule("System/ByteModule.js")]
+[Jazor(Op.Alias, "byte","Number")]
 public static class ByteModule
 {
 	[Jazor(Op.Discard ,"byte.Byte()")]
@@ -42,7 +42,7 @@ public static class ByteModule
 	public extern static Number _0db3f15e7e706cc7(Number instance);
 
 	///<summary>Converts the value of the current byte object to its equivalent string representation.</summary>
-	[Jazor(Op.Replace, "override byte.ToString()", "toString")]
+	[Jazor(Op.Alias, "override byte.ToString()", "toString")]
 	public extern static string _fe5d1bb114dd9985(Number instance);
 
 	///<summary>Converts the value of the current byte object to its equivalent string representation using the specified format.</summary>
@@ -272,14 +272,14 @@ public static class ByteModule
 	/// C#: byte.Max(x, y)
 	/// JS: Math.max(x, y)
 	/// </summary>
-	[Jazor(Op.Replace, "static byte.Max(byte, byte)", "max")]
+	[Jazor(Op.Alias, "static byte.Max(byte, byte)", "max")]
 	public extern static Number _04555e3eb1c7a9ce(Number x, Number y);
 
 	/// <summary>
 	/// C#: byte.Min(x, y)
 	/// JS: Math.min(x, y)
 	/// </summary>
-	[Jazor(Op.Replace, "static byte.Min(byte, byte)", "min")]
+	[Jazor(Op.Alias, "static byte.Min(byte, byte)", "min")]
 	public extern static Number _01cc0a43897afd75(Number x, Number y);
 
 	/// <summary>
@@ -287,7 +287,7 @@ public static class ByteModule
 	/// JS: Math.sign(value)
 	/// Note: For unsigned byte, always returns 0 or 1
 	/// </summary>
-	[Jazor(Op.Replace, "static byte.Sign(byte)", "sign")]
+	[Jazor(Op.Alias, "static byte.Sign(byte)", "sign")]
 	public extern static Number _683fdf4d3120d162(Number value);
 
 	///<summary>Creates an instance of the current type from a value, throwing an overflow exception for any values that fall outside the representable range of the current type.</summary>

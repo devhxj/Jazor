@@ -86,7 +86,7 @@ Jazor.CLR/
 - `op`：操作类型（见 [Op 枚举详解](#op-枚举详解)）
 - `member`：完整的 C# 成员签名，用于白名单生成和哈希计算
 - `value`：
-  - `Op.Replace`：JavaScript 方法名（如 `toString`）
+  - `Op.Alias`：JavaScript 方法名（如 `toString`）
   - `Op.Inline`：内联代码模板（如 `(@#{0} === @#{1})`）
 
 ### [ECMAScriptModule] 特性
@@ -128,7 +128,7 @@ public static bool _5dbf54319ebc8dfe(string value)
 |---------|---------|-------------------|-----------|------|
 | `Discard` | ✅ | ❌ | 记录但标记为不支持 | JavaScript 无对应概念 |
 | `Allowed` | ✅ | ❌ | 记录为允许 | JavaScript 原生支持，无需处理 |
-| `Replace` | ✅ | ❌ | 记录为允许 | JS 有类似方法但名称不同 |
+| `Alias` | ✅ | ❌ | 记录为允许 | JS 有类似方法但名称不同 |
 | `Inline` | ✅ | ❌ | 记录为允许 | 简单表达式可直接内联 |
 | `Import` | ❌ | ✅ | 记录为允许 | 需要完整 JavaScript 实现 |
 | `Compile` | ✅ | ❌ | 记录为允许 | 编译器特殊处理 |
@@ -142,7 +142,7 @@ public static bool _5dbf54319ebc8dfe(string value)
 ```
 JS 有原生对应？
 ├── 是，名称相同 → Allowed
-├── 是，名称不同 → Replace
+├── 是，名称不同 → Alias
 └── 否 → JS 有概念？
     ├── 否 → Discard
     ├── 简单表达式 → Inline
@@ -172,12 +172,12 @@ JavaScript 原生支持，默认行为正确：
 public extern static bool _2bd9618624257446();
 ```
 
-#### Op.Replace - 方法名替换
+#### Op.Alias - 方法名替换
 
 JS 有原生方法但名称不同：
 
 ```csharp
-[Jazor(Op.Replace, "override bool.ToString()", "toString")]
+[Jazor(Op.Alias, "override bool.ToString()", "toString")]
 public extern static string _d48c2d39317daf8f(bool instance);
 // 编译时直接生成：instance.toString()
 ```
@@ -507,7 +507,7 @@ public static class YourTypeModule
 | `bool` | `[Jazor(Op.Import, "bool", "System/BooleanModule.js")]` | 基本类型别名 |
 | `Int32` | `[Jazor(Op.Import, "int", "System/Int32Module.js")]` | 基本类型关键字 |
 | `DateTime` | `[Jazor(Op.Import, "System.DateTime", "System/DateTimeModule.js")]` | 完整类型名 |
-| `Console` | `[Jazor(Op.Replace, "System.Console", "console")]` | 替换为全局对象 |
+| `Console` | `[Jazor(Op.Alias, "System.Console", "console")]` | 替换为全局对象 |
 
 **路径命名规则**：
 - 命名空间映射：`System.Collections.Generic` → `System/Collections/Generic/`
@@ -539,7 +539,7 @@ public static class YourTypeModule
 |---------|---------|------|
 | `Discard` | ✅ | 不需要实现，标记为不支持 |
 | `Allowed` | ✅ | JS 原生支持，无需额外代码 |
-| `Replace` | ✅ | JS 原生方法，只需改名 |
+| `Alias` | ✅ | JS 原生方法，只需改名 |
 | `Inline` | ✅ | 内联代码提供实现 |
 | `Import` | ❌ | 需要完整的 C# 方法体实现 |
 | `Compile` | ✅ | 编译器内部处理 |
@@ -563,7 +563,7 @@ public static class YourTypeModule
 | 场景 | Op 类型 | extern? | 编译到 CLR module? |
 |------|---------|---------|-------------------|
 | JS 原生支持，无需处理 | `Allowed` | ✅ | ❌ |
-| JS 有类似方法但名称不同 | `Replace` | ✅ | ❌ |
+| JS 有类似方法但名称不同 | `Alias` | ✅ | ❌ |
 | 可用简单表达式实现 | `Inline` | ✅ | ❌ |
 | 需要完整实现 | `Import` | ❌ | ✅ |
 | 编译器特殊处理 | `Compile` | ✅ | ❌ |
@@ -583,7 +583,7 @@ public static class YourTypeModule
 
 | 成员类型 | 推荐 Op | 原因 |
 |---------|---------|------|
-| `ToString()` | `Replace` → `toString` | JS 原生方法 |
+| `ToString()` | `Alias` → `toString` | JS 原生方法 |
 | `Equals(object)` | `Inline` → `===` | 简单比较 |
 | `GetHashCode()` | `Discard` | JS 无哈希码概念 |
 | `Parse(string)` | `Import` | 需验证和异常处理 |
@@ -596,9 +596,9 @@ public static class YourTypeModule
 | 成员类型 | 推荐 Op | 原因 |
 |---------|---------|------|
 | 构造函数 `new List()` | `Inline` → `[]` 或 `new Map()` | 简单构造 |
-| `Count` / `Length` | `Replace` → `size` / `length` | 属性名不同 |
-| `Add(item)` | `Replace` → `push` (Array) 或 `Import` (Dictionary) | Array 直接替换，Dictionary 需检查重复 |
-| `Contains(item)` | `Replace` → `includes` / `has` | 方法名不同 |
+| `Count` / `Length` | `Alias` → `size` / `length` | 属性名不同 |
+| `Add(item)` | `Alias` → `push` (Array) 或 `Import` (Dictionary) | Array 直接替换，Dictionary 需检查重复 |
+| `Contains(item)` | `Alias` → `includes` / `has` | 方法名不同 |
 | 索引器 `this[i]` | `Inline` → `arr[i]` | 直接访问 |
 
 ---

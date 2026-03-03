@@ -11,12 +11,12 @@ namespace Jazor.CLR;
 /// Op 类型选择原则：
 /// - Allowed: 操作符（+ - * / % == != &lt; &gt; &lt;= &gt;=）
 /// - Inline: 简单比较和运算
-/// - Replace: JS Math 方法
+/// - Alias: JS Math 方法
 /// - Import: 需要完整实现的复杂逻辑（Parse/TryParse）
 /// - Discard: 不支持的功能
 /// </summary>
-[ECMAScriptModule]
-[Jazor(Op.Import, "int","System/Int32Module.js")]
+[ECMAScriptModule("System/Int32Module.js")]
+[Jazor(Op.Alias, "int","Number")]
 public static class Int32Module
 {
 	/// <summary>
@@ -78,7 +78,7 @@ public static class Int32Module
 	/// C#: int.ToString()
 	/// JS: instance.toString()
 	/// </summary>
-	[Jazor(Op.Replace, "override int.ToString()", "toString")]
+	[Jazor(Op.Alias, "override int.ToString()", "toString")]
 	public extern static string _0103494bc5e6253f(Number instance);
 
 	[Jazor(Op.Discard, "int.ToString(string)")]
@@ -189,7 +189,7 @@ public static class Int32Module
 	/// C#: int.LeadingZeroCount(value)
 	/// JS: Math.clz32(value)
 	/// </summary>
-	[Jazor(Op.Replace, "static int.LeadingZeroCount(int)", "clz32")]
+	[Jazor(Op.Alias, "static int.LeadingZeroCount(int)", "clz32")]
 	public extern static Number _f4458d4939549cbc(Number value);
 
 	/// <summary>
@@ -277,28 +277,28 @@ public static class Int32Module
 	/// C#: int.Max(x, y)
 	/// JS: Math.max(x, y)
 	/// </summary>
-	[Jazor(Op.Replace, "static int.Max(int, int)", "max")]
+	[Jazor(Op.Alias, "static int.Max(int, int)", "max")]
 	public extern static Number _a98fdc6e84d091b3(Number x, Number y);
 
 	/// <summary>
 	/// C#: int.Min(x, y)
 	/// JS: Math.min(x, y)
 	/// </summary>
-	[Jazor(Op.Replace, "static int.Min(int, int)", "min")]
+	[Jazor(Op.Alias, "static int.Min(int, int)", "min")]
 	public extern static Number _a0b140070c2e6328(Number x, Number y);
 
 	/// <summary>
 	/// C#: int.Sign(value)
 	/// JS: Math.sign(value)
 	/// </summary>
-	[Jazor(Op.Replace, "static int.Sign(int)", "sign")]
+	[Jazor(Op.Alias, "static int.Sign(int)", "sign")]
 	public extern static Number _ab2e55d493adcdd8(Number value);
 
 	/// <summary>
 	/// C#: int.Abs(value)
 	/// JS: Math.abs(value)
 	/// </summary>
-	[Jazor(Op.Replace, "static int.Abs(int)", "abs")]
+	[Jazor(Op.Alias, "static int.Abs(int)", "abs")]
 	public extern static Number _49bf8261f5cf3a4b(Number value);
 
 	[Jazor(Op.Discard, "static int.CreateChecked<TOther>(TOther)")]

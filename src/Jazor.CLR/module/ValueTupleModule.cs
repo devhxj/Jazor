@@ -1,7 +1,7 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule]
-[Jazor(Op.Import, "System.ValueTuple","System/ValueTupleModule.js")]
+[ECMAScriptModule("System/ValueTupleModule.js")]
+[Jazor(Op.Alias, "System.ValueTuple","Object")]
 public static class ValueTupleModule
 {
 	/// <summary>

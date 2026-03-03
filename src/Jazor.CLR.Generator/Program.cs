@@ -8,85 +8,14 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Xml.Linq;
 
-static string? GetComment(ISymbol? symbol,out string? summary)
-{
-	summary = null;
-	var xml = symbol?.GetDocumentationCommentXml();
-	if (string.IsNullOrEmpty(xml))
-		return null;
-
-	var member = XElement.Parse(xml);
-	var builder = new StringBuilder();
-	foreach (var node in member.Nodes())
-	{
-		var value = node.ToString().Replace(Environment.NewLine, "");
-		if (value.StartsWith("<summary>"))
-			summary = value
-				.Replace("<summary>        ", "<summary>")
-				.Replace("      </summary>", "</summary>");
-
-		builder.AppendLine(value);
-	}
-	var result = builder.ToString().TrimEnd('\n').Trim();
-
-	if (string.IsNullOrEmpty(result))
-		return null;
-
-	return $@"
-**注释**：
-
-```xml
-{result}
-```";
-}
-
-//var xmlDir = @"C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\10.0.2\ref\net10.0";
-var coreLibXml = XmlDocumentationProvider.CreateFromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "System.Private.CoreLib.xml"));
-var numericsXml = XmlDocumentationProvider.CreateFromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "System.Runtime.Numerics.xml"));
-var compilation = CSharpCompilation.Create("Jazor", references: [
-	MetadataReference.CreateFromFile(typeof(object).Assembly.Location, documentation: coreLibXml),
-	MetadataReference.CreateFromFile(typeof(Console).Assembly.Location, documentation: coreLibXml),
-	MetadataReference.CreateFromFile(typeof(Math).Assembly.Location, documentation: coreLibXml),
-	MetadataReference.CreateFromFile(typeof(BigInteger).Assembly.Location, documentation: numericsXml),
-]);
-
-
-var operatorNames = new Dictionary<string, string>
-{
-	{ "op_Addition", "+" },
-	{ "op_Subtraction", "-" },
-	{ "op_Multiply", "*" },
-	{ "op_Division", "/" },
-	{ "op_Modulus", "%" },
-	{ "op_BitwiseAnd", "&" },
-	{ "op_BitwiseOr", "|" },
-	{ "op_ExclusiveOr", "^" },
-	{ "op_LogicalNot", "!" },
-	{ "op_OnesComplement", "~" },
-	{ "op_LeftShift", "<<" },
-	{ "op_RightShift", ">>" },
-	{ "op_Equality", "==" },
-	{ "op_Inequality", "!=" },
-	{ "op_LessThan", "<" },
-	{ "op_LessThanOrEqual", "<=" },
-	{ "op_GreaterThan", ">" },
-	{ "op_GreaterThanOrEqual", ">=" },
-	{ "op_Increment", "++" },
-	{ "op_Decrement", "--" },
-	{ "op_UnaryPlus", "+" },
-	{ "op_UnaryNegation", "-" },
-	{ "op_True", "true" },
-	{ "op_False", "false" }
-};
-
-var types = new Type[]{
+var outTypes = new Type[]{
 	// 基本类型
-	//typeof(void),
+	typeof(void),
 	typeof(Console),
 	typeof(Math),
 	typeof(BigInteger),
-	//typeof(Object),
-	//typeof(Boolean),
+	typeof(Object),
+	typeof(Boolean),
 	typeof(Char),
 	typeof(SByte),
 	typeof(Byte),
@@ -119,12 +48,39 @@ var types = new Type[]{
 	typeof(ConditionalWeakTable<,>),
 	typeof(GregorianCalendar),
 	typeof(CultureInfo),
-	//typeof(Array)
+	typeof(Array)
+};
+var operatorNames = new Dictionary<string, string>
+{
+	{ "op_Addition", "+" },
+	{ "op_Subtraction", "-" },
+	{ "op_Multiply", "*" },
+	{ "op_Division", "/" },
+	{ "op_Modulus", "%" },
+	{ "op_BitwiseAnd", "&" },
+	{ "op_BitwiseOr", "|" },
+	{ "op_ExclusiveOr", "^" },
+	{ "op_LogicalNot", "!" },
+	{ "op_OnesComplement", "~" },
+	{ "op_LeftShift", "<<" },
+	{ "op_RightShift", ">>" },
+	{ "op_Equality", "==" },
+	{ "op_Inequality", "!=" },
+	{ "op_LessThan", "<" },
+	{ "op_LessThanOrEqual", "<=" },
+	{ "op_GreaterThan", ">" },
+	{ "op_GreaterThanOrEqual", ">=" },
+	{ "op_Increment", "++" },
+	{ "op_Decrement", "--" },
+	{ "op_UnaryPlus", "+" },
+	{ "op_UnaryNegation", "-" },
+	{ "op_True", "true" },
+	{ "op_False", "false" }
 };
 var typeMaps = new Dictionary<Type, string>()
 {
 	//{typeof(void),"void"},
-	{typeof(Object),"object"},
+	{typeof(Object),"Object"},
 	{typeof(Boolean),"Boolean"},
 	{typeof(Char),"Number"},
 	{typeof(SByte),"Number"},
@@ -145,12 +101,12 @@ var typeMaps = new Dictionary<Type, string>()
 	{typeof(UInt128),"BigInt"},
 	{typeof(TimeSpan),"BigInt"},
 	{typeof(BigInteger),"BigInt"},
-	{typeof(Decimal),"string"},
-	{typeof(String),"string"},
+	{typeof(Decimal),"String"},
+	{typeof(String),"String"},
 	{typeof(Exception),"Error"},
-	//{typeof(StringBuilder),""},
-	//{typeof(Nullable),"null"},
-	//{typeof(ValueTuple),""},
+	{typeof(StringBuilder),"String"},
+	{typeof(Nullable),"Object"},
+	{typeof(ValueTuple),"Object"},
 	{typeof(WeakReference),"WeakRef"},
 	//{typeof(Action),""},
 	//{typeof(Func<>),""},
@@ -161,9 +117,10 @@ var typeMaps = new Dictionary<Type, string>()
 	{typeof(ReadOnlyDictionary<,>),"Map<TKey,TValue>"},
 	{typeof(ReadOnlySet<>),"Set<T>"},
 	{typeof(ConditionalWeakTable<,>),"WeakMap<TKey,TValue>"},
-	{typeof(Calendar),"GregorianCalendar"},
-	{typeof(CultureInfo),"string"},
-	{typeof(Console),"object"},
+	{typeof(Calendar),"Date"},
+	{typeof(GregorianCalendar),"Date"},
+	{typeof(CultureInfo),"String"},
+	{typeof(Console),"Object"},
 };
 var nameMaps = new Dictionary<string, string>()
 {
@@ -228,6 +185,15 @@ var nameMaps = new Dictionary<string, string>()
 	{"System.Globalization.CultureInfo","String"}
 };
 
+//var xmlDir = @"C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\10.0.2\ref\net10.0";
+var coreLibXml = XmlDocumentationProvider.CreateFromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "System.Private.CoreLib.xml"));
+var numericsXml = XmlDocumentationProvider.CreateFromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "System.Runtime.Numerics.xml"));
+var compilation = CSharpCompilation.Create("Jazor", references: [
+	MetadataReference.CreateFromFile(typeof(object).Assembly.Location, documentation: coreLibXml),
+	MetadataReference.CreateFromFile(typeof(Console).Assembly.Location, documentation: coreLibXml),
+	MetadataReference.CreateFromFile(typeof(Math).Assembly.Location, documentation: coreLibXml),
+	MetadataReference.CreateFromFile(typeof(BigInteger).Assembly.Location, documentation: numericsXml),
+]);
 string ConvertParamaterName(IParameterSymbol symbol)
 {
 	var name = symbol.ToDisplayString();
@@ -264,7 +230,7 @@ if (!Directory.Exists(doc))
 if (!Directory.Exists(module))
 	Directory.CreateDirectory(module);
 
-foreach (var type in types)
+foreach (var type in outTypes)
 {
 	var coder = new StringBuilder();
 	var noter = new StringBuilder();
@@ -287,8 +253,8 @@ foreach (var type in types)
 	coder.Append(
 $@"namespace Jazor.CLR;
 
-[ECMAScriptModule]
-[Jazor(Op.Import, ""{fullName}"",""{type.FullName?.Split('`')[0].Replace('.', '/')}Module.js"")]
+[ECMAScriptModule(""{type.FullName?.Split('`')[0].Replace('.', '/')}Module.js"")]
+[Jazor(Op.Alias, ""{fullName}"", ""{mapName}"")]
 public static class {typeName}Module{(typeGenerics.Length > 0 ? typeGenerics : "")}
 {{");
 
@@ -403,58 +369,37 @@ $@"**成员**：{display}</br>
 	File.WriteAllText(Path.Combine(doc, $"{typeName}Module.md"), noter.ToString());
 	Console.WriteLine(typeName);
 }
-
-Type[] whiteListTypes = [
-		// 基本类型
-		typeof(void),
-		typeof(Object),
-		typeof(Boolean),
-		typeof(Char),
-		typeof(IntPtr),
-		typeof(UIntPtr),
-		typeof(SByte),
-		typeof(Byte),
-		typeof(Int16),
-		typeof(UInt16),
-		typeof(Int32),
-		typeof(UInt32),
-		typeof(Int64),
-		typeof(UInt64),
-		typeof(Single),
-		typeof(Double),
-		typeof(Decimal),
-		typeof(DateTime),
-		typeof(DateOnly),
-		typeof(TimeOnly),
-		typeof(DateTimeOffset),
-		typeof(TimeSpan),
-		typeof(String),
-		typeof(BigInteger),
-		typeof(Exception),
-		typeof(StringBuilder),
-		// 泛型或其他类型
-		typeof(Nullable),
-		typeof(ValueTuple),
-		typeof(WeakReference),
-		typeof(Action),
-		typeof(Func<>),
-		typeof(List<>),
-		typeof(Dictionary<,>),
-		typeof(HashSet<>),
-		typeof(ReadOnlyCollection),
-		typeof(ReadOnlyDictionary<,>),
-		typeof(ReadOnlySet<>),
-		typeof(ConditionalWeakTable<,>)
-	];
-var whiteListTypeNames = whiteListTypes
-	.Select(type => compilation!.GetTypeByMetadataName(type.FullName!)!.ToDisplayString(Format.NameFormat))
-	.Select(type => $"\"{type}\"");
-
-var whiteListTypeName = string.Join($", \n", whiteListTypeNames);
-
-var name = compilation!.GetTypeByMetadataName(typeof(List<>).FullName!)!
-	.Construct(compilation.GetSpecialType(SpecialType.System_Int32))
-	.ToDisplayString(Format.NameFormat);
-
-Console.WriteLine(whiteListTypeName);
 Console.ReadLine();
+
+
+static string? GetComment(ISymbol? symbol, out string? summary)
+{
+	summary = null;
+	var xml = symbol?.GetDocumentationCommentXml();
+	if (string.IsNullOrEmpty(xml))
+		return null;
+
+	var member = XElement.Parse(xml);
+	var builder = new StringBuilder();
+	foreach (var node in member.Nodes())
+	{
+		var value = node.ToString().Replace(Environment.NewLine, "");
+		if (value.StartsWith("<summary>"))
+			summary = value
+				.Replace("<summary>        ", "<summary>")
+				.Replace("      </summary>", "</summary>");
+
+		builder.AppendLine(value);
+	}
+	var result = builder.ToString().TrimEnd('\n').Trim();
+
+	if (string.IsNullOrEmpty(result))
+		return null;
+
+	return $@"
+**注释**：
+
+```xml
+{result}
+```";
+}

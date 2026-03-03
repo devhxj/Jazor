@@ -13,8 +13,8 @@ namespace Jazor.CLR;
 /// - Import: 需要完整实现的构造函数
 /// - Discard: 不支持或极少使用的功能
 /// </summary>
-[ECMAScriptModule]
-[Jazor(Op.Replace, "System.Exception","Error")]
+[ECMAScriptModule("System/ExceptionModule.js")]
+[Jazor(Op.Alias, "System.Exception","Error")]
 public static class ExceptionModule
 {
 	[Jazor(Op.Discard ,"System.Exception.TargetSite.get")]
@@ -79,7 +79,7 @@ public static class ExceptionModule
 	/// C#: Exception.ToString()
 	/// JS: error.toString() 或 error.message
 	/// </summary>
-	[Jazor(Op.Replace, "override System.Exception.ToString()", "toString")]
+	[Jazor(Op.Alias, "override System.Exception.ToString()", "toString")]
 	public extern static string _d02b6e28875d5f19(Error instance);
 
 	[Jazor(Op.Discard ,"System.Exception.HResult.get")]

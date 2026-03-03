@@ -9,12 +9,12 @@ namespace Jazor.CLR;
 ///
 /// Op 类型选择原则：
 /// - Inline: 简单比较和运算
-/// - Replace: JS 原生方法名替换
+/// - Alias: JS 原生方法名替换
 /// - Import: 需要完整实现的复杂逻辑（Parse/TryParse）
 /// - Discard: 不支持的功能
 /// </summary>
-[ECMAScriptModule]
-[Jazor(Op.Import, "short","System/Int16Module.js")]
+[ECMAScriptModule("System/Int16Module.js")]
+[Jazor(Op.Alias, "short","Number")]
 public static class Int16Module
 {
 	/// <summary>
@@ -69,7 +69,7 @@ public static class Int16Module
 	/// C#: short.ToString()
 	/// JS: instance.toString()
 	/// </summary>
-	[Jazor(Op.Replace, "override short.ToString()", "toString")]
+	[Jazor(Op.Alias, "override short.ToString()", "toString")]
 	public extern static string _300da933adcd7412(Number instance);
 
 	[Jazor(Op.Discard, "short.ToString(System.IFormatProvider)")]

@@ -70,3 +70,31 @@ class TestClass
 		public int C2 { get; set; }
 	}
 }
+
+
+class TestClass22
+{
+	void TestMethod()
+	{
+		var point = new Point(1, 2);
+		var (x, y) = point;
+	}
+
+	class Point
+	{
+		public int X { get; }
+		public int Y { get; }
+
+		public Point(int x, int y)
+		{
+			X = x;
+			Y = y;
+		}
+
+		public void Deconstruct(out int x, out int y)
+		{
+			x = X;
+			y = Y;
+		}
+	}
+}

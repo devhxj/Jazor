@@ -1,7 +1,7 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule]
-[Jazor(Op.Import, "string","System/StringModule.js")]
+[ECMAScriptModule("System/StringModule.js")]
+[Jazor(Op.Alias, "string","String")]
 public static class StringModule
 {
 	///<summary>Represents the empty string. This field is read-only.</summary>
@@ -100,7 +100,7 @@ public static class StringModule
 	/// C#: str.EndsWith(value)
 	/// JS: str.endsWith(value)
 	/// </summary>
-	[Jazor(Op.Replace, "string.EndsWith(string)", "endsWith")]
+	[Jazor(Op.Alias, "string.EndsWith(string)", "endsWith")]
 	public extern static bool _33de316681320ec7(string instance, string value);
 
 	///<summary>Determines whether the end of this string instance matches the specified string when compared using the specified comparison option.</summary>
@@ -163,7 +163,7 @@ public static class StringModule
 	/// C#: str.StartsWith(value)
 	/// JS: str.startsWith(value)
 	/// </summary>
-	[Jazor(Op.Replace, "string.StartsWith(string)", "startsWith")]
+	[Jazor(Op.Alias, "string.StartsWith(string)", "startsWith")]
 	public extern static bool _1cda198f8257d023(string instance, string value);
 
 	///<summary>Determines whether the beginning of this string instance matches the specified string when compared using the specified comparison option.</summary>
@@ -306,7 +306,7 @@ public static class StringModule
 	/// C#: str.Length
 	/// JS: str.length
 	/// </summary>
-	[Jazor(Op.Replace, "string.Length.get", "length")]
+	[Jazor(Op.Alias, "string.Length.get", "length")]
 	public extern static Number _1b0d64005dc28838(string instance);
 
 	///<summary>Creates the string  representation of a specified object.</summary>
@@ -577,7 +577,7 @@ public static class StringModule
 	/// JS: str.replaceAll(oldValue, newValue)
 	/// Note: Use replaceAll to replace all occurrences
 	/// </summary>
-	[Jazor(Op.Replace, "string.Replace(string, string)", "replaceAll")]
+	[Jazor(Op.Alias, "string.Replace(string, string)", "replaceAll")]
 	public extern static string _78a0e353c29afbc9(string instance, string oldValue, string? newValue);
 
 	///<summary>Replaces all newline sequences in the current string with <see cref="P:System.Environment.NewLine" />.</summary>
@@ -601,7 +601,7 @@ public static class StringModule
 	/// JS: str.split(separator)
 	/// Note: This is a simplified mapping, C# Split has more options
 	/// </summary>
-	[Jazor(Op.Replace, "string.Split(params char[])", "split")]
+	[Jazor(Op.Alias, "string.Split(params char[])", "split")]
 	public extern static string[] _62c8810ea13dba45(string instance, string separator);
 
 	///<summary>Splits a string into substrings based on specified delimiting characters.</summary>
@@ -640,7 +640,7 @@ public static class StringModule
 	/// C#: str.Substring(startIndex)
 	/// JS: str.substring(startIndex)
 	/// </summary>
-	[Jazor(Op.Replace, "string.Substring(int)", "substring")]
+	[Jazor(Op.Alias, "string.Substring(int)", "substring")]
 	public extern static string _6b947e3ae92ce851(string instance, Number startIndex);
 
 	/// <summary>
@@ -655,7 +655,7 @@ public static class StringModule
 	/// C#: str.ToLower()
 	/// JS: str.toLowerCase()
 	/// </summary>
-	[Jazor(Op.Replace, "string.ToLower()", "toLowerCase")]
+	[Jazor(Op.Alias, "string.ToLower()", "toLowerCase")]
 	public extern static string _482205d85705de41(string instance);
 
 	///<summary>Returns a copy of this string converted to lowercase, using the casing rules of the specified culture.</summary>
@@ -670,7 +670,7 @@ public static class StringModule
 	/// C#: str.ToUpper()
 	/// JS: str.toUpperCase()
 	/// </summary>
-	[Jazor(Op.Replace, "string.ToUpper()", "toUpperCase")]
+	[Jazor(Op.Alias, "string.ToUpper()", "toUpperCase")]
 	public extern static string _4b84099d877364bd(string instance);
 
 	///<summary>Returns a copy of this string converted to uppercase, using the casing rules of the specified culture.</summary>
@@ -685,7 +685,7 @@ public static class StringModule
 	/// C#: str.Trim()
 	/// JS: str.trim()
 	/// </summary>
-	[Jazor(Op.Replace, "string.Trim()", "trim")]
+	[Jazor(Op.Alias, "string.Trim()", "trim")]
 	public extern static string _eb98ee79e16b7ad4(string instance);
 
 	///<summary>Removes all leading and trailing instances of a character from the current string.</summary>
@@ -704,7 +704,7 @@ public static class StringModule
 	/// C#: str.TrimStart()
 	/// JS: str.trimStart()
 	/// </summary>
-	[Jazor(Op.Replace, "string.TrimStart()", "trimStart")]
+	[Jazor(Op.Alias, "string.TrimStart()", "trimStart")]
 	public extern static string _1ca7f6e7edd1e070(string instance);
 
 	///<summary>Removes all the leading occurrences of a specified character from the current string.</summary>
@@ -723,7 +723,7 @@ public static class StringModule
 	/// C#: str.TrimEnd()
 	/// JS: str.trimEnd()
 	/// </summary>
-	[Jazor(Op.Replace, "string.TrimEnd()", "trimEnd")]
+	[Jazor(Op.Alias, "string.TrimEnd()", "trimEnd")]
 	public extern static string _760bdb666072200b(string instance);
 
 	///<summary>Removes all the trailing occurrences of a character from the current string.</summary>
@@ -742,7 +742,7 @@ public static class StringModule
 	/// C#: str.Contains(value)
 	/// JS: str.includes(value)
 	/// </summary>
-	[Jazor(Op.Replace, "string.Contains(string)", "includes")]
+	[Jazor(Op.Alias, "string.Contains(string)", "includes")]
 	public extern static bool _c42ed9bafadfb16c(string instance, string value);
 
 	///<summary>Returns a value indicating whether a specified string occurs within this string, using the specified comparison rules.</summary>
@@ -789,14 +789,14 @@ public static class StringModule
 	/// C#: str.IndexOf(value)
 	/// JS: str.indexOf(value)
 	/// </summary>
-	[Jazor(Op.Replace, "string.IndexOf(string)", "indexOf")]
+	[Jazor(Op.Alias, "string.IndexOf(string)", "indexOf")]
 	public extern static Number _6fd03b0f0c2de338(string instance, string value);
 
 	/// <summary>
 	/// C#: str.IndexOf(value, startIndex)
 	/// JS: str.indexOf(value, startIndex)
 	/// </summary>
-	[Jazor(Op.Replace, "string.IndexOf(string, int)", "indexOf")]
+	[Jazor(Op.Alias, "string.IndexOf(string, int)", "indexOf")]
 	public extern static Number _8c391718b5fbe536(string instance, string value, Number startIndex);
 
 	///<summary>Reports the zero-based index of the first occurrence of the specified string in this instance. The search starts at a specified character position and examines a specified number of character positions.</summary>
@@ -843,14 +843,14 @@ public static class StringModule
 	/// C#: str.LastIndexOf(value)
 	/// JS: str.lastIndexOf(value)
 	/// </summary>
-	[Jazor(Op.Replace, "string.LastIndexOf(string)", "lastIndexOf")]
+	[Jazor(Op.Alias, "string.LastIndexOf(string)", "lastIndexOf")]
 	public extern static Number _ed4ccee87d9df9fc(string instance, string value);
 
 	/// <summary>
 	/// C#: str.LastIndexOf(value, startIndex)
 	/// JS: str.lastIndexOf(value, startIndex)
 	/// </summary>
-	[Jazor(Op.Replace, "string.LastIndexOf(string, int)", "lastIndexOf")]
+	[Jazor(Op.Alias, "string.LastIndexOf(string, int)", "lastIndexOf")]
 	public extern static Number _404d5ed27b7e190a(string instance, string value, Number startIndex);
 
 	///<summary>Reports the zero-based index position of the last occurrence of a specified string within this instance. The search starts at a specified character position and proceeds backward toward the beginning of the string for a specified number of character positions.</summary>

@@ -2710,10 +2710,12 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
-  let obj = new Date;
-  let result = obj instanceof Date;
+    Assert.AreEqual(
+@"{
+  let obj = new Number;
+  let result = typeof obj === ""number"";
 }", script);
+
   }
 
   /// <summary>
@@ -3344,7 +3346,7 @@ line2"";
     Assert.AreEqual(
 @"{
   let value = """";
-  let result = typeof value === ""string"" && (Object.prototype.hasOwnProperty.call(value, ""Length"") && value.Length === 0);
+  let result = typeof value === ""string"" && (value != null && (""length"" in value && value.length === 0));
 }", script);
 
   }
@@ -3771,18 +3773,20 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let obj = { Value: 42 };
   let v;
   let result = (() => {
     const v$0 = obj;
-    if (Object.prototype.hasOwnProperty.call(v$0, ""Value"") && (v = v$0.Value, true) && v > 0)
+    if (v$0 != null && (""Value"" in v$0 && (v = v$0.Value, true)) && v > 0)
       return ""Positive"";
-    if (Object.prototype.hasOwnProperty.call(v$0, ""Value"") && (v = v$0.Value, true) && v < 0)
+    if (v$0 != null && (""Value"" in v$0 && (v = v$0.Value, true)) && v < 0)
       return ""Negative"";
     return ""Zero"";
   })();
 }", script);
+
   }
 
   #endregion
@@ -3868,13 +3872,15 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let array = [1, 2, 3, 4, 5];
   let first, second, rest, last;
   if (Array.isArray(array) && array.length >= 3 && (first = array[0], true) && (second = array[1], true) && (rest = array.slice(2, -1), true) && (last = array[array.length - 1], true)) {
-    console.log(`${first}, ${second}, ${rest.Length}, ${last}`);
+    console.log(`${first}, ${second}, ${rest.length}, ${last}`);
   }
 }", script);
+
   }
 
   #endregion
@@ -3902,10 +3908,12 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let obj = ""hello"";
-  let result = typeof obj === ""string"" && (Object.prototype.hasOwnProperty.call(obj, ""Length"") && (obj.Length > 0 && obj.Length < 100));
+  let result = typeof obj === ""string"" && (obj != null && (""length"" in obj && (obj.length > 0 && obj.length < 100)));
 }", script);
+
   }
 
   /// <summary>
@@ -3929,10 +3937,12 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let data = { Outer: { Middle: { Inner: 42 } } };
-  let result = Object.prototype.hasOwnProperty.call(data, ""Outer"") && (Object.prototype.hasOwnProperty.call(data.Outer, ""Middle"") && (Object.prototype.hasOwnProperty.call(data.Outer.Middle, ""Inner"") && data.Outer.Middle.Inner > 0));
+  let result = data != null && (""Outer"" in data && (data.Outer != null && (""Middle"" in data.Outer && (data.Outer.Middle != null && (""Inner"" in data.Outer.Middle && data.Outer.Middle.Inner > 0)))));
 }", script);
+
   }
 
   /// <summary>
@@ -3956,11 +3966,13 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let obj = { Items: [1, 2, 3] };
   let first;
-  let result = Object.prototype.hasOwnProperty.call(obj, ""Items"") && (Array.isArray(obj.Items) && obj.Items.length >= 1 && (first = obj.Items[0], true) && (Array.isArray(obj.Items) && (Object.prototype.hasOwnProperty.call(obj.Items, ""Length"") && obj.Items.Length > 0)));
+  let result = obj != null && (""Items"" in obj && (Array.isArray(obj.Items) && obj.Items.length >= 1 && (first = obj.Items[0], true) && (Array.isArray(obj.Items) && (obj.Items != null && (""length"" in obj.Items && obj.Items.length > 0)))));
 }", script);
+
   }
 
   #endregion
@@ -3988,10 +4000,12 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let obj = { Value: null };
-  let result = Object.prototype.hasOwnProperty.call(obj, ""Value"") && !(obj.Value === null);
+  let result = obj != null && (""Value"" in obj && !(obj.Value === null));
 }", script);
+
   }
 
   /// <summary>
@@ -4015,11 +4029,13 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let obj = { Inner: { Value: 42 } };
   let v;
-  let result = Object.prototype.hasOwnProperty.call(obj, ""Inner"") && (obj.Inner.hasOwnProperty(""Value"") && (v = obj.Inner.Value, true));
+  let result = obj != null && (""Inner"" in obj && (obj.Inner != null && (""Value"" in obj.Inner && (v = obj.Inner.Value, true))));
 }", script);
+
   }
 
   #endregion
@@ -4282,7 +4298,8 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let items = [1, ""hello"", 3.14, 42];
   for (item of items) {
     let value;
@@ -4291,6 +4308,7 @@ line2"";
     }
   }
 }", script);
+
   }
 
   #endregion
@@ -4334,10 +4352,12 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let data = { Level1: { Level2: { Level3: { Value: 42 } } } };
-  let result = data.hasOwnProperty(""Level1"") && (data.Level1.hasOwnProperty(""Level2"") && (data.Level1.Level2.hasOwnProperty(""Level3"") && (data.Level1.Level2.Level3.hasOwnProperty(""Value"") && data.Level1.Level2.Level3.Value > 0)));
+  let result = data != null && (""Level1"" in data && (data.Level1 != null && (""Level2"" in data.Level1 && (data.Level1.Level2 != null && (""Level3"" in data.Level1.Level2 && (data.Level1.Level2.Level3 != null && (""Value"" in data.Level1.Level2.Level3 && data.Level1.Level2.Level3.Value > 0)))))));
 }", script);
+
   }
 
   /// <summary>
@@ -4361,10 +4381,12 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let obj = ""test"";
-  let result = typeof obj === ""string"" && (obj.hasOwnProperty(""Length"") && (obj.Length > 0 && obj.Length < 100)) || typeof obj === ""number"";
+  let result = typeof obj === ""string"" && (obj != null && (""length"" in obj && (obj.length > 0 && obj.length < 100))) || typeof obj === ""number"";
 }", script);
+
   }
 
   /// <summary>
@@ -4476,10 +4498,12 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let obj = 42;
-  let result = typeof obj === ""number"" && obj > 0 || typeof obj === ""string"" && (obj.hasOwnProperty(""Length"") && obj.Length > 0);
+  let result = typeof obj === ""number"" && obj > 0 || typeof obj === ""string"" && (obj != null && (""length"" in obj && obj.length > 0));
 }", script);
+
   }
 
   /// <summary>
@@ -4614,7 +4638,7 @@ line2"";
     Assert.AreEqual(
 @"{
   let obj = { A: { B: { C: { D: { E: { F: 42 } } } } } };
-  let match = obj.hasOwnProperty(""A"") && (obj.A.hasOwnProperty(""B"") && (obj.A.B.hasOwnProperty(""C"") && (obj.A.B.C.hasOwnProperty(""D"") && (obj.A.B.C.D.hasOwnProperty(""E"") && (obj.A.B.C.D.E.hasOwnProperty(""F"") && obj.A.B.C.D.E.F === 42)))));
+  let match = obj != null && (""A"" in obj && (obj.A != null && (""B"" in obj.A && (obj.A.B != null && (""C"" in obj.A.B && (obj.A.B.C != null && (""D"" in obj.A.B.C && (obj.A.B.C.D != null && (""E"" in obj.A.B.C.D && (obj.A.B.C.D.E != null && (""F"" in obj.A.B.C.D.E && obj.A.B.C.D.E.F === 42)))))))))));
 }", script);
 
   }
@@ -4655,11 +4679,11 @@ line2"";
 @"{
   let obj1 = ""hello"";
   let s;
-  if (typeof obj1 === ""string"" && (s = obj1, true) && s.Length > 0) {
+  if (typeof obj1 === ""string"" && (s = obj1, true) && s.length > 0) {
     console.log(s);
   }
   let s2;
-  if (typeof obj1 === ""string"" && (s2 = obj1, true) && s2.Length > 0) {
+  if (typeof obj1 === ""string"" && (s2 = obj1, true) && s2.length > 0) {
     console.log(s2);
   }
 }", script);

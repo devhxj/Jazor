@@ -9,12 +9,12 @@ namespace Jazor.CLR;
 ///
 /// Op 类型选择原则：
 /// - Inline: 简单比较和运算
-/// - Replace: JS BigInt 方法
+/// - Alias: JS BigInt 方法
 /// - Import: 需要完整实现的复杂逻辑（Parse/TryParse）
 /// - Discard: 不支持的功能
 /// </summary>
-[ECMAScriptModule]
-[Jazor(Op.Import, "long","System/Int64Module.js")]
+[ECMAScriptModule("System/Int64Module.js")]
+[Jazor(Op.Alias, "long","BigInt")]
 public static class Int64Module
 {
 	/// <summary>
@@ -67,7 +67,7 @@ public static class Int64Module
 	public extern static Number _a6f06b90e3618c16(BigInt instance);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation.</summary>
-	[Jazor(Op.Replace, "override long.ToString()", "toString")]
+	[Jazor(Op.Alias, "override long.ToString()", "toString")]
 	public extern static string _56beebc0ed49cbc9(BigInt instance);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation using the specified culture-specific format information.</summary>

@@ -1,7 +1,7 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule]
-[Jazor(Op.Import, "bool", "System/BooleanModule.js")]
+[ECMAScriptModule("System/BooleanModule.js")]
+[Jazor(Op.Alias, "bool", "Boolean")]
 public static class BooleanModule
 {
 	///<summary>Represents the Boolean value <see langword="true" /> as a string. This field is read-only.</summary>
@@ -20,7 +20,7 @@ public static class BooleanModule
 	public extern static Number _80b6c29cc0038969(bool instance);
 
 	///<summary>Converts the value of this instance to its equivalent string representation (either "True" or "False").</summary>
-	[Jazor(Op.Replace, "override bool.ToString()", "toString")]
+	[Jazor(Op.Alias, "override bool.ToString()", "toString")]
 	public extern static string _d48c2d39317daf8f(bool instance);
 
 	///<summary>Converts the value of this instance to its equivalent string representation (either "True" or "False").</summary>

@@ -1,7 +1,7 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule]
-[Jazor(Op.Import, "decimal","System/DecimalModule.js")]
+[ECMAScriptModule("System/DecimalModule.js")]
+[Jazor(Op.Alias, "decimal","String")]
 public static class DecimalModule
 {
 	//decimal.Zero = 0;
