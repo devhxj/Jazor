@@ -418,18 +418,16 @@ public partial class SemanticWalker
 		var name = GetUniqueName(operation);
 		var count = operation.Method.Parameters.Length + (operation.Method.IsStatic ? 0 : 1);
 		var args = Enumerable.Range(0, count)
-			.Select(i => new Identifier($"{name}_{i}") as Expression)
+			.Select(i => new Identifier($"{name}${i}") as Expression)
 			.ToList();
 
-		var valueExpr = GetWhiteListExpression(operation.Method, argument, args, null, out var alias);
+		var valueExpr = GetWhiteListExpression(operation.Method, argument, args, out var alias);
 		if (valueExpr is not null)
 		{
 			// 生成箭头函数表达式作为代理方法
-			var @return = new ReturnStatement(valueExpr);
-			var body = new FunctionBody(NodeList.From<Statement>(@return), strict: true);
 			var func = new ArrowFunctionExpression(
 				NodeList.From<Node>(args),
-				body,
+				valueExpr,
 				expression: false,
 				async: false
 			);
@@ -507,7 +505,7 @@ public partial class SemanticWalker
 	{
 		// 处理方法调用的实例对象
 		var instance = Translate<Expression>(operation.Instance, argument, null);
-		var refParas = new Dictionary<MemberExpression, Expression>();
+		var refParas = new List<Expression>();
 		var hasReturn = !operation.TargetMethod.ReturnsVoid;
 
 		// 处理方法调用的参数
@@ -515,31 +513,13 @@ public partial class SemanticWalker
 		foreach (var arg in operation.Arguments)
 		{
 			var right = Translate<Expression>(arg.Value, argument);
-			// ref 引用 或 out 变量引用，外部定义一个临时空对象来中转
+			// ref 引用 或 out 变量引用，记住顺序
 			if (arg.Parameter?.RefKind is RefKind.Out or RefKind.Ref)
-			{
-				var temp = new Identifier(GetUniqueName(arg));
-				var left = new MemberExpression(temp, new Identifier("value"), false, false);
-				// ref 要多一步 ref.value赋值
-				var properties = arg.Parameter.RefKind == RefKind.Ref
-					? NodeList.From<Node>(new ObjectProperty(
-						kind: PropertyKind.Init,
-						key: new Identifier("value"),
-						value: right,
-						computed: false,
-						shorthand: false,
-						method: false))
-					: NodeList.Empty<Node>();
-				var init = new ObjectExpression(properties);
-				var declarator = new VariableDeclarator(temp, init);
-				argument.AddVarDeclarator(declarator, _recursionDepth);
-				refParas.Add(left, right);
-				arguments.Add(temp);
-			}
-			else
-				arguments.Add(right);
-		}
+				refParas.Add(right);
 
+			// 当作普通参数传入
+			arguments.Add(right);
+		}
 
 		// 检查白名单映射
 		var mapperExpr = GetWhiteListExpression(operation.TargetMethod, argument, arguments, instance, out var alias);
@@ -569,22 +549,32 @@ public partial class SemanticWalker
 		var callExpr = new CallExpression(callee, NodeList.From(arguments), optional: false);
 		return BuildInvExpr(hasReturn, callExpr, refParas, argument);
 
-		Expression BuildInvExpr(bool hasReturns, in Expression expr, in Dictionary<MemberExpression, Expression> paras,
-			in WalkerArgument argument)
+		Expression BuildInvExpr(bool hasReturns, in Expression expr, in List<Expression> refs, in WalkerArgument ctx)
 		{
 			var expressions = new List<Expression>();
-			if (paras.Count > 0)
+			if (refs.Count > 0)
 			{
 				// 如果存在ref参数，需要生成逗号表达式，方法调用存临时变量，然后返写参数
 				var tempId = new Identifier(GetUniqueName(operation));
 				var declarator = new VariableDeclarator(tempId, null);
-				argument.AddVarDeclarator(declarator, _recursionDepth);
+				ctx.AddVarDeclarator(declarator, _recursionDepth);
+
 				expressions.Add(new AssignmentExpression(Operator.Assignment, tempId, expr));
-				foreach (var pair in paras)
-					expressions.Add(new AssignmentExpression(Operator.Assignment, pair.Value, pair.Key));
+				for (var i = 0; i < refs.Count; i++)
+				{
+					var index = hasReturns ? i + 1 : 0;
+					var indexer = new NumericLiteral(index, index.ToString());
+					var member = new MemberExpression(tempId, indexer, computed: true, optional: false);
+					var assignExpr = new AssignmentExpression(Operator.Assignment, refs[i], member);
+					expressions.Add(assignExpr);
+				}
 				// 最后如果有返回调用结果
 				if (hasReturns)
-					expressions.Add(tempId);
+				{
+					var indexer = new NumericLiteral(0, "0");
+					var member = new MemberExpression(tempId, indexer, computed: true, optional: false);
+					expressions.Add(member);
+				}
 				return new SequenceExpression(NodeList.From(expressions));
 			}
 

@@ -167,8 +167,7 @@ public sealed partial class SemanticWalker : OperationVisitor<WalkerArgument, No
         return operation.Member;
     }
 
-    private static Expression? GetWhiteListExpression(ISymbol symbol, WalkerArgument context, List<Expression> arguments,
-        Expression? instance, out string? alias)
+    private static Expression? GetWhiteListExpression(ISymbol symbol, WalkerArgument context, List<Expression> arguments, out string? alias)
     {
         alias = null;
         var displayString = symbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
@@ -180,14 +179,9 @@ public sealed partial class SemanticWalker : OperationVisitor<WalkerArgument, No
             else if (entry.Op == Op.Inline)
             {
                 var raw = entry.Value!;
-                var args = new List<Expression>();
-                if (!symbol.IsStatic && instance is not null)
-                    args.Add(instance);
-                args.AddRange(arguments);
-
-                for (var i = 0; i < args.Count; i++)
+                for (var i = 0; i < arguments.Count; i++)
                 {
-                    var arg = args[i];
+                    var arg = arguments[i];
                     raw = raw.Replace($"@#{{{i}}}", arg.ToKnRECMAScript());
                 }
 
@@ -199,17 +193,26 @@ public sealed partial class SemanticWalker : OperationVisitor<WalkerArgument, No
                 // 生成导入调用
                 var id = new Identifier(entry.Value!);
                 context.MergeImportSpecifier(entry.Value!, new ImportSpecifier(id));
-
-                var args = new List<Expression>();
-                if (!symbol.IsStatic && instance is not null)
-                    args.Add(instance);
-                args.AddRange(arguments);
-
-                return new CallExpression(id, NodeList.From(args), optional: false);
+                return new CallExpression(id, NodeList.From(arguments), optional: false);
             }
         }
 
         return null;
+    }
+
+    private static Expression? GetWhiteListExpression(ISymbol symbol, WalkerArgument context, Func<List<Expression>> func, out string? alias)
+    {
+        return GetWhiteListExpression(symbol, context, func(), out alias);
+    }
+
+    private static Expression? GetWhiteListExpression(ISymbol symbol, WalkerArgument context, List<Expression> arguments, Expression? instance, out string? alias)
+    {
+        var args = new List<Expression>();
+        if (!symbol.IsStatic && instance is not null)
+            args.Add(instance);
+        args.AddRange(arguments);
+
+        return GetWhiteListExpression(symbol, context, args, out alias);
     }
 
     private static readonly Parser _parser = new();

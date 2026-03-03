@@ -333,7 +333,8 @@ public sealed class SemanticWalkerTupleTest
         Assert.AreEqual(
 @"{
   let tuple = { aaa: 1, Item2: 2 };
-  let bbb = tuple.aaa, ccc = tuple.Item2;
+  let bbb, ccc;
+  bbb = tuple.aaa, ccc = tuple.Item2;
 }", script);
 
     }
@@ -395,8 +396,8 @@ public sealed class SemanticWalkerTupleTest
 @"{
   let tuple = { aaa: 1, Item2: 2 };
   let bbb;
-  let ccc = tuple.Item2;
-  bbb = tuple.aaa;
+  let ccc;
+  bbb = tuple.aaa, ccc = tuple.Item2;
 }", script);
 
     }
@@ -425,7 +426,8 @@ public sealed class SemanticWalkerTupleTest
         Assert.AreEqual(
 @"{
   let tuple = { outer: { inner: 1, Item2: 2 }, Item2: 3 };
-  let bbb = tuple.outer.inner, ccc = tuple.outer.Item2, aaa = tuple.Item2;
+  let bbb, ccc, aaa;
+  bbb = tuple.outer.inner, ccc = tuple.outer.Item2, aaa = tuple.Item2;
 }", script);
 
     }
@@ -454,7 +456,8 @@ public sealed class SemanticWalkerTupleTest
 
         Assert.AreEqual(
 @"{
-  let v$0 = this.GetTuple(), aaa = v$0.Item1, bbb = v$0.Item2;
+  let v$0, aaa, bbb;
+  v$0 = this.GetTuple(), aaa = v$0.Item1, bbb = v$0.Item2;
 }", script);
 
     }
@@ -484,7 +487,8 @@ public sealed class SemanticWalkerTupleTest
         Assert.AreEqual(
 @"{
   let tuple = { aaa: 1, Item2: 2 };
-  let ccc = tuple.Item2;
+  let ccc;
+  ccc = tuple.Item2;
 }", script);
 
     }
@@ -823,7 +827,8 @@ public sealed class SemanticWalkerTupleTest
     Item2: 2,
     Item3: 3
   };
-  let second = tuple.Item2;
+  let second;
+  second = tuple.Item2;
 }", script);
 
     }

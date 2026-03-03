@@ -91,13 +91,7 @@ var  b = (2,4);
 var  c = (2,"a");
 ((int bbb, int ccc),int aaa) = tuple;
 var script = @"
-try {
-  throw new Error(""error"");
-} catch(v$0) {
-  if (!true)
-    throw a;
-  let msg = ""caught"";
-}
+  let cc = (v$2$0, v$2$1) => _16e2a901535b765e(v$2$0, v$2$1);
 ";
 var parser = new Parser(new ParserOptions { 
 

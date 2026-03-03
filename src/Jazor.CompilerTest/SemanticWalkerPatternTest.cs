@@ -3376,10 +3376,12 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let obj = [];
   let result = Array.isArray(obj);
 }", script);
+
   }
 
   /// <summary>
