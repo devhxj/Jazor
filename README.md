@@ -98,6 +98,9 @@ The core compiler component with a two-layer conversion architecture:
 - Supports fallback to SyntaxNode conversion for optimized code via `IInvalidOperation`
 - **ESGenerator**: Source generator that automatically creates `ECMAScript.g.cs` files
 
+**Status**: ✅ Core complete | 533 tests passing (100%) | Build successful
+See [Jazor.Compiler readme](src/Jazor.Compiler/readme.md) for detailed documentation.
+
 ### 2. ECMAScript.Analyzer
 
 Static code analyzer that provides syntax validation for classes marked with `[ECMAScriptModule]` or `[ECMAScript]` attributes:
@@ -112,6 +115,13 @@ CLR runtime support providing ES6+ module implementations for all supported nati
 - Type-safe conversion between C# and JavaScript
 - Complete method and property implementations
 - Tree shaking support for optimized bundles via `[WhiteList]` attribute mapping
+
+**Module Status** (39 modules total):
+- ✅ Complete (9/10): 27 modules (69%)
+- ⚠️ Partial (7-8/10): 12 modules (31%)
+- 🔴 Needs work (< 7/10): 0 modules
+
+See [Jazor.CLR readme](src/Jazor.CLR/readme.md) for detailed module documentation.
 
 ### 4. ECMAScript.WebIDL
 

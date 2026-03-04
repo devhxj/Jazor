@@ -94,6 +94,9 @@ Jazor/
 - 支持通过 `IInvalidOperation` 回退到 SyntaxNode 转换
 - **ESGenerator**：源代码生成器，自动创建包含转换后 JavaScript 内容的 `ECMAScript.g.cs` 文件
 
+**状态**：✅ 核心功能完成 | 533 个测试全部通过 (100%) | 构建成功
+详见 [Jazor.Compiler readme](src/Jazor.Compiler/readme.md)。
+
 ### 2. ECMAScript.Analyzer
 
 静态代码分析器，为标记了 `[ECMAScriptModule]` 或 `[ECMAScript]` 特性的类提供语法验证：
@@ -108,6 +111,13 @@ CLR 运行时支持，为所有支持的原生 C# 类型提供 ES6+ 模块实现
 - C# 和 JavaScript 之间的类型安全转换
 - 完整的方法和属性实现
 - 通过 `[WhiteList]` 特性映射支持优化的 tree shaking
+
+**模块状态**（共 39 个模块）：
+- ✅ 完善 (9/10)：27 个模块 (69%)
+- ⚠️ 部分完善 (7-8/10)：12 个模块 (31%)
+- 🔴 需完善 (< 7/10)：0 个模块
+
+详见 [Jazor.CLR readme](src/Jazor.CLR/readme.md)。
 
 ### 4. ECMAScript.WebIDL
 
