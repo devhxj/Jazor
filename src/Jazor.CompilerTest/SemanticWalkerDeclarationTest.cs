@@ -495,8 +495,7 @@ public sealed class SemanticWalkerDeclarationTest
         var invocationOperation = (IInvocationOperation)ifOperation.Condition;
         var argumentOperation = invocationOperation.Arguments[1];
         var declarationExpression = (IDeclarationExpressionOperation)argumentOperation.Value;
-
-        var result = walker.VisitDeclarationExpression(declarationExpression, new());
+        var result = walker.VisitDeclarationExpression(declarationExpression, new(Depend: new()));
         var script = result?.ToECMAScript();
 
         Assert.AreEqual("result", script);

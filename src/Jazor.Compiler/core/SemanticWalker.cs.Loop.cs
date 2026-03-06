@@ -19,7 +19,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitForEachLoop(IForEachLoopOperation operation, WalkerArgument argument)
+	public override Node? VisitForEachLoop(IForEachLoopOperation operation, SenseArgument argument)
 	{
 		// 获取循环变量 - 使用 LoopControlVariable 直接访问
 		var left = Translate<Node>(operation.LoopControlVariable, argument);
@@ -40,7 +40,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitForLoop(IForLoopOperation operation, WalkerArgument argument)
+	public override Node? VisitForLoop(IForLoopOperation operation, SenseArgument argument)
 	{
 		StatementOrExpression? init = null;
 		Expression? test = null;
@@ -127,7 +127,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitWhileLoop(IWhileLoopOperation operation, WalkerArgument argument)
+	public override Node? VisitWhileLoop(IWhileLoopOperation operation, SenseArgument argument)
 	{
 		if (operation.Condition is null)
 			return null;

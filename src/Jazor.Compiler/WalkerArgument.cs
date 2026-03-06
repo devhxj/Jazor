@@ -20,10 +20,9 @@ public sealed class WalkerArgument
     }
 
     private WalkerArgument(
-        (NodeType Type, Expression Target)? context,
         Dictionary<string, List<ImportDeclarationSpecifier>> specifiers,
         Dictionary<string, VariableDeclarator> declarators)
-        => (Context, _specifiers, _declarators) = (context, specifiers, declarators);
+        => (_specifiers, _declarators) = (specifiers, declarators);
 
     /// <summary>
     /// 是否包含导入声明规范
@@ -34,11 +33,6 @@ public sealed class WalkerArgument
     /// 是否包含变量声明
     /// </summary>
     public bool HasVarDeclarator => _declarators.Count > 0;
-
-    /// <summary>
-    /// 上下文表达式,如果未设置，则默认会在使用时用标识符"@ctx"代替
-    /// </summary>
-    public (NodeType Type, Expression Target)? Context { get; }
 
     /// <summary>
     /// 添加导入声明规范,根据模块路径进行分组存储。
@@ -80,10 +74,10 @@ public sealed class WalkerArgument
     }
 
     /// <summary>
-    /// 创建一个新的WalkerArgument实例，复用当前累积的变量声明列表，并更新上下文表达式。
+    /// 创建新实例，共享导入字典，但使用新的变量声明字典。
+    /// 用于块级作用域隔离。
     /// </summary>
-    /// <param name="context"></param>
-    /// <returns></returns>
-    public WalkerArgument With(NodeType type, Expression target)
-        => new((type, target), _specifiers, _declarators);
+    /// <returns>新的 WalkerArgument 实例</returns>
+    public WalkerArgument WithNewDeclarators()
+        => new(_specifiers, new Dictionary<string, VariableDeclarator>());
 }

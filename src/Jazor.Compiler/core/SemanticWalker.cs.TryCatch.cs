@@ -22,7 +22,7 @@ public partial class SemanticWalker
     /// <param name="operation">当前访问的operation</param>
     /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Node? VisitTry(ITryOperation operation, WalkerArgument argument)
+    public override Node? VisitTry(ITryOperation operation, SenseArgument argument)
     {
         var bodyStatements = new List<Statement>();
         foreach (var stmt in operation.Body.Operations)
@@ -133,7 +133,7 @@ public partial class SemanticWalker
     /// <param name="argument"></param>
     /// <param name="exceptionParam">异常参数标识符，用于 when 条件和重新抛出</param>
     /// <returns></returns>
-    private List<Statement> ExtractCatchClauseBody(ICatchClauseOperation operation, WalkerArgument argument, Identifier? exceptionParam)
+    private List<Statement> ExtractCatchClauseBody(ICatchClauseOperation operation, SenseArgument argument, Identifier? exceptionParam)
     {
         var bodyStatements = new List<Statement>();
 
@@ -188,7 +188,7 @@ public partial class SemanticWalker
     /// <param name="operation">当前访问的operation</param>
     /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
-    public override Node? VisitCatchClause(ICatchClauseOperation operation, WalkerArgument argument)
+    public override Node? VisitCatchClause(ICatchClauseOperation operation, SenseArgument argument)
     {
         // 此处不用担心多个catch，多catch会在 VisitTry中处理
         var param = ExtractCatchClauseParam(operation);
@@ -208,7 +208,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitThrow(IThrowOperation operation, WalkerArgument argument)
+	public override Node? VisitThrow(IThrowOperation operation, SenseArgument argument)
 	{
 		Expression expr;
         if (operation.Exception is not null)

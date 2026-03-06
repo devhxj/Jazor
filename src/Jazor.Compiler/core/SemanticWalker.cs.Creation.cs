@@ -16,7 +16,7 @@ public partial class SemanticWalker
 	/// <param name="operation"></param>
 	/// <param name="argument"></param>
 	/// <returns></returns>
-	private Expression BuildObjectCreation(Expression? assignObj, IObjectCreationOperation operation, WalkerArgument argument)
+	private Expression BuildObjectCreation(Expression? assignObj, IObjectCreationOperation operation, SenseArgument argument)
 	{
 		if (operation.Type is null)
 			return HandleTransformationFailure<Expression>(operation, "Object creation type could not be translated to JavaScript.");
@@ -73,7 +73,7 @@ public partial class SemanticWalker
 	/// <param name="initializers"></param>
 	/// <param name="argument"></param>
 	/// <returns></returns>
-	private List<Expression> BuildObjectCreationInitializer(Expression? obj, IObjectOrCollectionInitializerOperation initializers, WalkerArgument argument)
+	private List<Expression> BuildObjectCreationInitializer(Expression? obj, IObjectOrCollectionInitializerOperation initializers, SenseArgument argument)
 	{
 		var exprs = new List<Expression>();
 		// 处理对象初始化器，只处理第一层，内部嵌套转换为对象字面量
@@ -203,7 +203,7 @@ public partial class SemanticWalker
 	/// <param name="operation"></param>
 	/// <param name="argument"></param>
 	/// <returns>IIFE箭头函数</returns>
-	private Expression? BuildObjectOrCollectionInitializer(Expression? initExpr, IObjectOrCollectionInitializerOperation operation, WalkerArgument argument)
+	private Expression? BuildObjectOrCollectionInitializer(Expression? initExpr, IObjectOrCollectionInitializerOperation operation, SenseArgument argument)
 	{
 		if (operation.Initializers.Length == 0)
 			return null;
@@ -252,7 +252,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitObjectCreation(IObjectCreationOperation operation, WalkerArgument argument)
+	public override Node? VisitObjectCreation(IObjectCreationOperation operation, SenseArgument argument)
 		=> BuildObjectCreation(null, operation, argument);
 
 	/// <summary>
@@ -265,7 +265,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitObjectOrCollectionInitializer(IObjectOrCollectionInitializerOperation operation, WalkerArgument argument)
+	public override Node? VisitObjectOrCollectionInitializer(IObjectOrCollectionInitializerOperation operation, SenseArgument argument)
 		=> BuildObjectOrCollectionInitializer(null, operation, argument);
 	
 	/// <summary>
@@ -277,7 +277,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitAnonymousObjectCreation(IAnonymousObjectCreationOperation operation, WalkerArgument argument)
+	public override Node? VisitAnonymousObjectCreation(IAnonymousObjectCreationOperation operation, SenseArgument argument)
 	{
 		var properties = new List<Node>();
 
@@ -313,7 +313,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitTypeParameterObjectCreation(ITypeParameterObjectCreationOperation operation, WalkerArgument argument)
+	public override Node? VisitTypeParameterObjectCreation(ITypeParameterObjectCreationOperation operation, SenseArgument argument)
 	{
 		if (operation.Type is null)
 			return HandleTransformationFailure<Node>(operation, "Type parameter object creation type could not be translated to JavaScript.");
@@ -337,7 +337,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitArrayCreation(IArrayCreationOperation operation, WalkerArgument argument)
+	public override Node? VisitArrayCreation(IArrayCreationOperation operation, SenseArgument argument)
 	{
 		// 检查是否为多维数组
 		if (operation.Type is IArrayTypeSymbol arrayType)
@@ -381,7 +381,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitMemberInitializer(IMemberInitializerOperation operation, WalkerArgument argument)
+	public override Node? VisitMemberInitializer(IMemberInitializerOperation operation, SenseArgument argument)
 	{
 		var target = operation.InitializedMember switch
 		{
@@ -414,7 +414,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitDelegateCreation(IDelegateCreationOperation operation, WalkerArgument argument)
+	public override Node? VisitDelegateCreation(IDelegateCreationOperation operation, SenseArgument argument)
 	{
 		// 委托创建转换为函数引用或箭头函数
 		return Visit(operation.Target, argument);

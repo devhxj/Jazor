@@ -1,3 +1,4 @@
+using Acornima.Ast;
 using ECMAScript;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
@@ -326,7 +327,7 @@ public sealed class SemanticWalkerTupleTest
         var statement = GetOperationAt<IExpressionStatementOperation>(block, 1);
         //var operation = (IDeconstructionAssignmentOperation)statement.Operation;
         var walker = new SemanticWalker(true);
-        var ctx = new WalkerArgument();
+        var ctx = SenseArgument.Default;
         var node = walker.Visit(block, ctx);
         var script = node?.ToKnRECMAScript();
 
@@ -357,7 +358,7 @@ public sealed class SemanticWalkerTupleTest
         //var statement = GetOperationAt<IExpressionStatementOperation>(block, 2);
         //var operation = (IDeconstructionAssignmentOperation)statement.Operation;
         var walker = new SemanticWalker(true);
-        var ctx = new WalkerArgument();
+        var ctx = SenseArgument.Default;
         var node = walker.Visit(block, ctx);
         var script = node?.ToKnRECMAScript();
 
@@ -388,7 +389,7 @@ public sealed class SemanticWalkerTupleTest
         //var statement = GetOperationAt<IExpressionStatementOperation>(block, 2);
         //var operation = (IDeconstructionAssignmentOperation)statement.Operation;
         var walker = new SemanticWalker(true);
-        var ctx = new WalkerArgument();
+        var ctx = SenseArgument.Default;
         var node = walker.Visit(block, ctx);
         var script = node?.ToKnRECMAScript();
 
@@ -419,7 +420,7 @@ public sealed class SemanticWalkerTupleTest
         //var statement = GetOperationAt<IExpressionStatementOperation>(block, 1);
         //var operation = (IDeconstructionAssignmentOperation)statement.Operation;
         var walker = new SemanticWalker(true);
-        var ctx = new WalkerArgument();
+        var ctx = SenseArgument.Default;
         var node = walker.Visit(block, ctx);
         var script = node?.ToKnRECMAScript();
 
@@ -450,7 +451,7 @@ public sealed class SemanticWalkerTupleTest
         //var statement = GetOperationAt<IExpressionStatementOperation>(block, 0);
         //var operation = (IDeconstructionAssignmentOperation)statement.Operation;
         var walker = new SemanticWalker(true);
-        var ctx = new WalkerArgument();
+        var ctx = SenseArgument.Default;
         var node = walker.Visit(block, ctx);
         var script = node?.ToKnRECMAScript();
 
@@ -480,7 +481,7 @@ public sealed class SemanticWalkerTupleTest
         //var operation = (IDeconstructionAssignmentOperation)statement.Operation;
         var walker = new SemanticWalker(true);
         //var node = walker.VisitDeconstructionAssignment(operation, new());
-        var ctx = new WalkerArgument();
+        var ctx = SenseArgument.Default;
         var node = walker.Visit(block, ctx);
         var script = node?.ToKnRECMAScript();
 
@@ -739,12 +740,12 @@ public sealed class SemanticWalkerTupleTest
         var initializer = variableDeclaration.Declarators.First().Initializer;
         var operation = (ITupleBinaryOperation)initializer!.Value;
         var walker = new SemanticWalker(true);
-        var queue = new WalkerArgument();
-        var node = walker.VisitTupleBinaryOperator(operation, queue);
+        var arg = new SenseArgument(Depend: new(), PatternInput: new Identifier("v$0"));
+        var node = walker.VisitTupleBinaryOperator(operation, arg);
         var script = node?.ToECMAScript();
 
         Assert.AreEqual("(v$0.Item1===1&&v$0.Item2===2)", script);
-        Assert.IsTrue(queue.HasVarDeclarator);
+        Assert.IsTrue(arg.HasVarDeclarator);
     }
 
     [TestMethod]
@@ -764,7 +765,7 @@ public sealed class SemanticWalkerTupleTest
             ");
 
         var walker = new SemanticWalker(true);
-        var ctx = new WalkerArgument();
+        var ctx = SenseArgument.Default;
         var node = walker.Visit(block, ctx);
         var script = node?.ToKnRECMAScript();
 
@@ -790,7 +791,7 @@ public sealed class SemanticWalkerTupleTest
             ");
 
         var walker = new SemanticWalker(true);
-        var ctx = new WalkerArgument();
+        var ctx = SenseArgument.Default;
         var node = walker.Visit(block, ctx);
         var script = node?.ToKnRECMAScript();
 
@@ -816,7 +817,7 @@ public sealed class SemanticWalkerTupleTest
             ");
 
         var walker = new SemanticWalker(true);
-        var ctx = new WalkerArgument();
+        var ctx = SenseArgument.Default;
         var node = walker.Visit(block, ctx);
         var script = node?.ToKnRECMAScript();
 
@@ -890,7 +891,7 @@ public sealed class SemanticWalkerTupleTest
             ");
 
         var walker = new SemanticWalker(true);
-        var ctx = new WalkerArgument();
+        var ctx = SenseArgument.Default;
         var node = walker.Visit(block, ctx);
         var script = node?.ToKnRECMAScript();
 
@@ -931,7 +932,7 @@ public sealed class SemanticWalkerTupleTest
             }");
 
         var walker = new SemanticWalker(true);
-        var ctx = new WalkerArgument();
+        var ctx = SenseArgument.Default;
         var node = walker.Visit(block, ctx);
         var script = node?.ToKnRECMAScript();
 
@@ -973,7 +974,7 @@ public sealed class SemanticWalkerTupleTest
             }");
 
         var walker = new SemanticWalker(true);
-        var ctx = new WalkerArgument();
+        var ctx = SenseArgument.Default;
         var node = walker.Visit(block, ctx);
         var script = node?.ToKnRECMAScript();
 
@@ -1000,7 +1001,7 @@ public sealed class SemanticWalkerTupleTest
             }");
 
         var walker = new SemanticWalker(true);
-        var ctx = new WalkerArgument();
+        var ctx = SenseArgument.Default;
         var node = walker.Visit(block, ctx);
         var script = node?.ToKnRECMAScript();
 

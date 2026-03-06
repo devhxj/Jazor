@@ -1,3 +1,4 @@
+using Acornima.Ast;
 using ECMAScript;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
@@ -117,10 +118,12 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let obj = 42;
   let result = obj === 42;
 }", script);
+
   }
 
   /// <summary>
@@ -172,10 +175,12 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let obj = ""hello"";
   let result = obj === ""hello"";
 }", script);
+
   }
 
   /// <summary>
@@ -631,10 +636,12 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let obj = 42;
   let result = !(obj === null);
 }", script);
+
   }
 
   /// <summary>
@@ -660,7 +667,8 @@ public sealed class SemanticWalkerPatternTest
     var declarator = declaration.Declarators.First();
     var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
     var negatedPatternOperation = (INegatedPatternOperation)isPatternOperation!.Pattern;
-    var node = walker.VisitNegatedPattern(negatedPatternOperation, new());
+    var ctx = new SenseArgument(Sense.Any, null, new Identifier("obj"));
+    var node = walker.VisitNegatedPattern(negatedPatternOperation, ctx);
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual("!(obj === null)", script);
@@ -687,10 +695,12 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let value = 5;
   let result = value > 0 && value < 10;
 }", script);
+
   }
 
   /// <summary>
@@ -716,7 +726,8 @@ public sealed class SemanticWalkerPatternTest
     var declarator = declaration.Declarators.First();
     var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
     var binaryPatternOperation = (IBinaryPatternOperation)isPatternOperation!.Pattern;
-    var node = walker.VisitBinaryPattern(binaryPatternOperation, new());
+    var arg = new SenseArgument(PatternInput: new Identifier("value"));
+    var node = walker.VisitBinaryPattern(binaryPatternOperation, arg);
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual("value > 0 && value < 10", script);
@@ -743,10 +754,12 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let value = 5;
   let result = value === 1 || value === 2 || value === 3 || value === 4 || value > 8;
 }", script);
+
   }
 
   /// <summary>
@@ -772,7 +785,8 @@ public sealed class SemanticWalkerPatternTest
     var declarator = declaration.Declarators.First();
     var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
     var binaryPatternOperation = (IBinaryPatternOperation)isPatternOperation!.Pattern;
-    var node = walker.VisitBinaryPattern(binaryPatternOperation, new());
+    var arg = new SenseArgument(PatternInput: new Identifier("value"));
+    var node = walker.VisitBinaryPattern(binaryPatternOperation, arg);
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual("value === 1 || value === 2 || value === 3 || value === 4 || value > 8", script);
@@ -799,10 +813,12 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let value = 5;
   let result = value > 0;
 }", script);
+
   }
 
   /// <summary>
@@ -828,7 +844,8 @@ public sealed class SemanticWalkerPatternTest
     var declarator = declaration.Declarators.First();
     var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
     var relationalPatternOperation = (IRelationalPatternOperation)isPatternOperation!.Pattern;
-    var node = walker.VisitRelationalPattern(relationalPatternOperation, new());
+    var arg = new SenseArgument(PatternInput: new Identifier("value"));
+    var node = walker.VisitRelationalPattern(relationalPatternOperation, arg);
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual("value > 0", script);
@@ -884,7 +901,8 @@ public sealed class SemanticWalkerPatternTest
     var declarator = declaration.Declarators.First();
     var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
     var relationalPatternOperation = (IRelationalPatternOperation)isPatternOperation!.Pattern;
-    var node = walker.VisitRelationalPattern(relationalPatternOperation, new());
+    var arg = new SenseArgument(PatternInput: new Identifier("value"));
+    var node = walker.VisitRelationalPattern(relationalPatternOperation, arg);
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual("value < 10", script);
@@ -911,10 +929,12 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let value = 5;
   let result = value >= 5;
 }", script);
+
   }
 
   /// <summary>
@@ -940,7 +960,8 @@ public sealed class SemanticWalkerPatternTest
     var declarator = declaration.Declarators.First();
     var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
     var relationalPatternOperation = (IRelationalPatternOperation)isPatternOperation!.Pattern;
-    var node = walker.VisitRelationalPattern(relationalPatternOperation, new());
+    var arg = new SenseArgument(PatternInput: new Identifier("value"));
+    var node = walker.VisitRelationalPattern(relationalPatternOperation, arg);
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual("value >= 5", script);
@@ -967,10 +988,12 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let value = 5;
   let result = value <= 10;
 }", script);
+
   }
 
   /// <summary>
@@ -996,7 +1019,8 @@ public sealed class SemanticWalkerPatternTest
     var declarator = declaration.Declarators.First();
     var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
     var relationalPatternOperation = (IRelationalPatternOperation)isPatternOperation!.Pattern;
-    var node = walker.VisitRelationalPattern(relationalPatternOperation, new());
+    var arg = new SenseArgument(PatternInput: new Identifier("value"));
+    var node = walker.VisitRelationalPattern(relationalPatternOperation, arg);
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual("value <= 10", script);
@@ -1110,7 +1134,8 @@ public sealed class SemanticWalkerPatternTest
     var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
     var recursivePatternOperation = (IRecursivePatternOperation)isPatternOperation!.Pattern;
     var propertySubpatternOperation = recursivePatternOperation.PropertySubpatterns.First();
-    var node = walker.VisitPropertySubpattern(propertySubpatternOperation, new());
+    var arg = new SenseArgument(PatternInput: new Identifier("person"));
+    var node = walker.VisitPropertySubpattern(propertySubpatternOperation, arg);
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"person.Name === ""John""", script);
@@ -1168,7 +1193,8 @@ public sealed class SemanticWalkerPatternTest
     var declarator = declaration.Declarators.First();
     var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
     var recursivePatternOperation = (IRecursivePatternOperation)isPatternOperation!.Pattern;
-    var node = walker.VisitRecursivePattern(recursivePatternOperation, new());
+    var arg = new SenseArgument(PatternInput: new Identifier("obj"));
+    var node = walker.VisitRecursivePattern(recursivePatternOperation, arg);
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(
@@ -1226,7 +1252,8 @@ public sealed class SemanticWalkerPatternTest
     var declarator = declaration.Declarators.First();
     var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
     var listPatternOperation = (IListPatternOperation)isPatternOperation!.Pattern;
-    var node = walker.VisitListPattern(listPatternOperation, new());
+    var arg = new SenseArgument(PatternInput: new Identifier("array"));
+    var node = walker.VisitListPattern(listPatternOperation, arg);
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual("Array.isArray(array) && array.length === 3 && array[0] === 1 && array[1] === 2 && array[2] === 3", script);
@@ -1282,7 +1309,8 @@ public sealed class SemanticWalkerPatternTest
     var declarator = declaration.Declarators.First();
     var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
     var listPatternOperation = (IListPatternOperation)isPatternOperation!.Pattern;
-    var node = walker.VisitListPattern(listPatternOperation, new());
+    var arg = new SenseArgument(PatternInput: new Identifier("array"));
+    var node = walker.VisitListPattern(listPatternOperation, arg);
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual("Array.isArray(array) && array.length >= 2 && array[0] === 1 && array[1] === 2", script);
@@ -1377,13 +1405,21 @@ public sealed class SemanticWalkerPatternTest
     var isPatternOperation = (IIsPatternOperation)ifOperation.Condition;
     var listPatternOperation = (IListPatternOperation)isPatternOperation.Pattern;
     var slicePatternOperation = (ISlicePatternOperation)listPatternOperation.Patterns.First();
-    var context = new WalkerArgument();
-    var node = walker.VisitSlicePattern(slicePatternOperation, context);
+    // 注意：直接调用 VisitSlicePattern 无法知道切片位置
+    // 实际的 slice 表达式构建在 VisitListPattern 中完成
+    // 这里传递的 PatternInput 会直接传给子模式
+    var sliceExpr = new CallExpression(
+      new MemberExpression(new Identifier("array"), new Identifier("slice"), false, false),
+      Acornima.Ast.NodeList.From<Expression>(new NumericLiteral(0, "0")),
+      false
+    );
+    var arg = new SenseArgument(Depend: new WalkerArgument(), PatternInput: sliceExpr);
+    var node = walker.VisitSlicePattern(slicePatternOperation, arg);
     var script = node?.ToECMAScript();
 
-    // 验证生成的表达式
+    // 验证生成的表达式（PatternInput 会被传给声明模式）
     Assert.AreEqual(@"rest=array.slice(0),true", script);
-    Assert.IsTrue(context.HasVarDeclarator);
+    Assert.IsTrue(arg.HasVarDeclarator);
   }
 
   /// <summary>
@@ -1686,7 +1722,8 @@ public sealed class SemanticWalkerPatternTest
     var conditionalOp = GetOperationAt<IConditionalOperation>(block, 1);
     var isPatternOperation = conditionalOp.Condition as IIsPatternOperation;
     var declarationPatternOperation = (IDeclarationPatternOperation)isPatternOperation!.Pattern;
-    var node = walker.VisitDeclarationPattern(declarationPatternOperation, new());
+    var arg = new SenseArgument(Depend: new WalkerArgument(), PatternInput: new Identifier("obj"));
+    var node = walker.VisitDeclarationPattern(declarationPatternOperation, arg);
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"typeof obj === ""number"" && (value = obj, true)", script);
@@ -1954,7 +1991,8 @@ public sealed class SemanticWalkerPatternTest
     var declarator = declaration.Declarators.First();
     var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
     var constantPatternOperation = (IConstantPatternOperation)isPatternOperation!.Pattern;
-    var node = walker.VisitConstantPattern(constantPatternOperation, new());
+    var arg = new SenseArgument(PatternInput: new Identifier("obj"));
+    var node = walker.VisitConstantPattern(constantPatternOperation, arg);
     var script = node?.ToECMAScript();
 
     Assert.AreEqual("obj===42", script);
@@ -1983,7 +2021,8 @@ public sealed class SemanticWalkerPatternTest
     var declarator = declaration.Declarators.First();
     var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
     var constantPatternOperation = (IConstantPatternOperation)isPatternOperation!.Pattern;
-    var node = walker.VisitConstantPattern(constantPatternOperation, new());
+    var arg = new SenseArgument(PatternInput: new Identifier("obj"));
+    var node = walker.VisitConstantPattern(constantPatternOperation, arg);
     var script = node?.ToECMAScript();
 
     Assert.AreEqual(@"obj===""hello""", script);
@@ -2013,7 +2052,9 @@ public sealed class SemanticWalkerPatternTest
     var walker = new SemanticWalker(true);
     var switchOperation = GetOperationAt<ISwitchOperation>(block, 1);
     var patternCaseClause = (IPatternCaseClauseOperation)switchOperation.Cases.First()!.Clauses.First()!;
-    var node = walker.VisitPatternCaseClause(patternCaseClause, new());
+    // 直接调用需要提供 PatternInput
+    var arg = new SenseArgument(Depend: new WalkerArgument(), PatternInput: new Identifier("v$0"));
+    var node = walker.VisitPatternCaseClause(patternCaseClause, arg);
     var script = node?.ToECMAScript();
 
     Assert.AreEqual("(x=v$0,true)&&x>10", script);
@@ -2391,7 +2432,9 @@ public sealed class SemanticWalkerPatternTest
     if (switchExpressionOperation is null)
       throw new InvalidOperationException("switchExpressionOperation is null");
     var switchCaseArm = switchExpressionOperation.Arms.First();
-    var node = walker.VisitSwitchExpressionArm(switchCaseArm, new());
+    // 需要提供 PatternInput（模拟 switch expression 的输入变量）
+    var arg = new SenseArgument(PatternInput: new Identifier("v$0"));
+    var node = walker.VisitSwitchExpressionArm(switchCaseArm, arg);
     var script = node?.ToECMAScript();
 
     Assert.AreEqual(@"if(v$0===1)return""one"";", script);
@@ -2425,7 +2468,8 @@ public sealed class SemanticWalkerPatternTest
     var switchExpressionOperation = declarator.Initializer!.Value as ISwitchExpressionOperation
       ?? throw new InvalidOperationException("switchExpressionOperation is null");
     var switchCaseArm = switchExpressionOperation.Arms.First();
-    var node = walker.VisitSwitchExpressionArm(switchCaseArm, new());
+    var arg = new SenseArgument(Depend: new WalkerArgument(), PatternInput: new Identifier("v$0"));
+    var node = walker.VisitSwitchExpressionArm(switchCaseArm, arg);
     var script = node?.ToECMAScript();
 
     Assert.AreEqual(@"if((x=v$0,true)&&x>0)return""positive"";", script);
@@ -2518,7 +2562,9 @@ public sealed class SemanticWalkerPatternTest
     var walker = new SemanticWalker(true);
     var switchOperation = GetOperationAt<ISwitchOperation>(block, 1);
     var patternCaseClause = (IPatternCaseClauseOperation)switchOperation.Cases.First()!.Clauses.First()!;
-    var node = walker.VisitPatternCaseClause(patternCaseClause, new());
+    // 直接调用需要提供 PatternInput
+    var arg = new SenseArgument(PatternInput: new Identifier("v$0"));
+    var node = walker.VisitPatternCaseClause(patternCaseClause, arg);
     var script = node?.ToECMAScript();
 
     Assert.AreEqual("v$0>0", script);
@@ -2548,7 +2594,9 @@ public sealed class SemanticWalkerPatternTest
     var walker = new SemanticWalker(true);
     var switchOperation = GetOperationAt<ISwitchOperation>(block, 1);
     var patternCaseClause = (IPatternCaseClauseOperation)switchOperation.Cases.First()!.Clauses.First()!;
-    var node = walker.VisitPatternCaseClause(patternCaseClause, new());
+    // 直接调用需要提供 PatternInput
+    var arg = new SenseArgument(Depend: new WalkerArgument(), PatternInput: new Identifier("v$0"));
+    var node = walker.VisitPatternCaseClause(patternCaseClause, arg);
     var script = node?.ToECMAScript();
 
     Assert.AreEqual(@"typeof v$0===""string""&&(s=v$0,true)&&s.length>0", script);
@@ -2740,10 +2788,12 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let obj = [];
   let result = Array.isArray(obj);
 }", script);
+
   }
 
   /// <summary>
@@ -3666,7 +3716,7 @@ line2"";
 
     Assert.AreEqual(@"{
   let point = new Point(1, 2);
-  let result = point instanceof Point && point.X === point > 0 && point.Y === point > 0;
+  let result = point instanceof Point && point.X > 0 && point.Y > 0;
 }", script);
   }
 

@@ -134,7 +134,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitIsType(IIsTypeOperation operation, WalkerArgument argument)
+	public override Node? VisitIsType(IIsTypeOperation operation, SenseArgument argument)
 	{
 		var value = Translate<Expression>(operation.ValueOperand, argument);
 		var result = CreateTypeMatchExpr(operation, operation.TypeOperand, value);
@@ -154,7 +154,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitIsNull(IIsNullOperation operation, WalkerArgument argument)
+	public override Node? VisitIsNull(IIsNullOperation operation, SenseArgument argument)
 	{
 		// null检查转换为 === null 比较
 		var operand = Translate<Expression>(operation.Operand, argument);
@@ -173,9 +173,12 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitIsPattern(IIsPatternOperation operation, WalkerArgument argument)
+	public override Node? VisitIsPattern(IIsPatternOperation operation, SenseArgument argument)
 	{
-		var expr = Translate<Expression>(operation.Pattern, argument);
+		// 获取被测试的值作为 PatternInput
+		var inputValue = Translate<Expression>(operation.Value, argument);
+		var patternArg = argument.WithPatternInput(inputValue);
+		var expr = Translate<Expression>(operation.Pattern, patternArg);
 		return Optimizer.OptimizeLogical(expr);
 	}
 
@@ -192,7 +195,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitPatternCaseClause(IPatternCaseClauseOperation operation, WalkerArgument argument)
+	public override Node? VisitPatternCaseClause(IPatternCaseClauseOperation operation, SenseArgument argument)
 	{
 		// IPatternCaseClauseOperation 没有 Value 属性
 		// 只返回条件表达式（模式检查 + when 守卫）
@@ -227,7 +230,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitSwitchExpression(ISwitchExpressionOperation operation, WalkerArgument argument)
+	public override Node? VisitSwitchExpression(ISwitchExpressionOperation operation, SenseArgument argument)
 	{
 		// 至少有一个分支
 		if (operation.Arms.Length < 1)
@@ -246,9 +249,12 @@ public partial class SemanticWalker
 			NodeList.From(new VariableDeclarator(id, input))
 		);
 
+		// 设置 PatternInput 为输入变量，传递给所有 arm
+		var armArg = argument.WithPatternInput(id);
+
 		// 处理所有模式，采用嵌套if确保副作用顺序
 		foreach (var arm in operation.Arms)
-			Translate(statements, arm, argument);
+			Translate(statements, arm, armArg);
 
 		statements.Insert(0, inputVar);
 		var functionBody = new FunctionBody(NodeList.From(statements), strict: true);
@@ -270,7 +276,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitSwitchExpressionArm(ISwitchExpressionArmOperation operation, WalkerArgument argument)
+	public override Node? VisitSwitchExpressionArm(ISwitchExpressionArmOperation operation, SenseArgument argument)
 	{
 		var value = Translate<Expression>(operation.Value, argument);
 
@@ -319,7 +325,7 @@ public partial class SemanticWalker
 	/// <param name="operation">递归模式操作</param>
 	/// <param name="argument">用于存放临时变量定义的上下文</param>
 	/// <returns>JavaScript组合条件表达式（使用&amp;&amp;连接所有条件）</returns>
-	public override Node? VisitRecursivePattern(IRecursivePatternOperation operation, WalkerArgument argument)
+	public override Node? VisitRecursivePattern(IRecursivePatternOperation operation, SenseArgument argument)
 	{
 		var conditions = new List<Expression>();
 		var targetExpr = GetPatternRefrence(operation, argument);
@@ -336,20 +342,22 @@ public partial class SemanticWalker
 		// 属性子模式（命名属性，如 { Name: "John" }）
 		if (operation.PropertySubpatterns.Length > 0)
 		{
+			// 为属性子模式传递 targetExpr 作为 PatternInput
+			var propertyArg = argument.WithPatternInput(targetExpr);
 			foreach (var propertySubpattern in operation.PropertySubpatterns)
 			{
-				var right = Translate<Expression>(propertySubpattern, argument);
+				var right = Translate<Expression>(propertySubpattern, propertyArg);
 
 				// todo：需要完善判断是否检测属性存在，比如有些固定属性不需要检测
 				if (propertySubpattern.Member is IMemberReferenceOperation m)
-				{	
+				{
 					var symbol = GetWhiteListSymbol(m);
 					var _ = GetWhiteListExpression(symbol, argument, [], targetExpr, out var alias);
 					var name = alias ?? m.Member.Name;
 					var left = new NonLogicalBinaryExpression(Operator.In, new StringLiteral(name, $"\"{name}\""), targetExpr);
 					var condition = new LogicalExpression(Operator.LogicalAnd, left, right);
 					var notNull = new NonLogicalBinaryExpression(Operator.Inequality, targetExpr, Null);
-					conditions.Add(new LogicalExpression(Operator.LogicalAnd, notNull, condition));		
+					conditions.Add(new LogicalExpression(Operator.LogicalAnd, notNull, condition));
 				}
 				else
 					conditions.Add(right);
@@ -389,23 +397,18 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitConstantPattern(IConstantPatternOperation operation, WalkerArgument argument)
+	public override Node? VisitConstantPattern(IConstantPatternOperation operation, SenseArgument argument)
 	{
 		var expr = Translate<Expression>(operation.Value, argument);
 
-		// 对于常量模式，直接比较
-		if (operation.Parent is
-			IIsPatternOperation or
-			IBinaryPatternOperation or
-			INegatedPatternOperation or
-			IPropertySubpatternOperation or
-			ISwitchExpressionArmOperation)
+		// 如果有 PatternInput，生成比较表达式
+		if (argument.PatternInput is not null)
 		{
-			var obj = GetPatternRefrence(operation.Parent, argument);
-			return new NonLogicalBinaryExpression(Operator.StrictEquality, obj, expr);
+			return new NonLogicalBinaryExpression(Operator.StrictEquality, argument.PatternInput, expr);
 		}
 
-		return Translate<Expression>(operation.Value, argument);
+		// 如果没有 PatternInput，直接返回值表达式（可能在某些特殊场景下）
+		return expr;
 	}
 
 	/// <summary>
@@ -418,7 +421,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitDeclarationPattern(IDeclarationPatternOperation operation, WalkerArgument argument)
+	public override Node? VisitDeclarationPattern(IDeclarationPatternOperation operation, SenseArgument argument)
 		=> BuildDeclarationPattern(operation, null, argument);
 
 	/// <summary>
@@ -435,7 +438,7 @@ public partial class SemanticWalker
 	/// <param name="operation">丢弃模式操作</param>
 	/// <param name="argument">当前operation所属的父operation</param>
 	/// <returns>JavaScript布尔字面量true</returns>
-	public override Node? VisitDiscardPattern(IDiscardPatternOperation operation, WalkerArgument argument)
+	public override Node? VisitDiscardPattern(IDiscardPatternOperation operation, SenseArgument argument)
 	{
 		// 丢弃模式的条件判断转换
 		// C# 示例：_ 表示"总是匹配"的模式
@@ -459,14 +462,33 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitPropertySubpattern(IPropertySubpatternOperation operation, WalkerArgument argument)
+	public override Node? VisitPropertySubpattern(IPropertySubpatternOperation operation, SenseArgument argument)
 	{
 		// 属性子模式的条件判断转换
 		// C# 示例：obj is { Name: "John" } 中的 Name: "John" 部分
 		//         转换为 obj.Name === "John" 的JavaScript表达式
 		// 转换结果：生成属性访问和比较的组合表达式
-		// 访问属性模式并转换为表达式
-		return Translate<Expression>(operation.Pattern, argument);
+
+		// 必须提供 PatternInput（来自父级递归模式）
+		var obj = GetPatternRefrence(operation, argument);
+		// 构建属性访问表达式作为新的 PatternInput
+		Expression propertyAccess;
+		if (operation.Member is IMemberReferenceOperation m)
+		{
+			var symbol = GetWhiteListSymbol(m);
+			var _ = GetWhiteListExpression(symbol, argument, [], obj, out var alias);
+			var name = alias ?? m.Member.Name;
+			propertyAccess = new MemberExpression(obj, new Identifier(name), computed: false, optional: false);
+		}
+		else
+		{
+			throw new InvalidOperationException(
+				$"属性子模式的成员不是有效的成员引用：{operation.Member?.Kind}");
+		}
+
+		// 用属性访问作为新的 PatternInput 传递给子模式
+		var patternArg = argument.WithPatternInput(propertyAccess);
+		return Translate<Expression>(operation.Pattern, patternArg);
 	}
 
 	/// <summary>
@@ -480,7 +502,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitNegatedPattern(INegatedPatternOperation operation, WalkerArgument argument)
+	public override Node? VisitNegatedPattern(INegatedPatternOperation operation, SenseArgument argument)
 	{
 		// 取反模式的条件判断转换
 		// C# 示例：obj is not null 是一个布尔条件表达式
@@ -507,7 +529,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitBinaryPattern(IBinaryPatternOperation operation, WalkerArgument argument)
+	public override Node? VisitBinaryPattern(IBinaryPatternOperation operation, SenseArgument argument)
 	{
 		// 二元模式的条件判断转换
 		// C# 示例：value is > 0 and < 100 是一个布尔条件表达式
@@ -544,7 +566,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitRelationalPattern(IRelationalPatternOperation operation, WalkerArgument argument)
+	public override Node? VisitRelationalPattern(IRelationalPatternOperation operation, SenseArgument argument)
 	{
 		// 关系模式的条件判断转换
 		// C# 示例：value is > 0 是一个布尔条件表达式
@@ -591,7 +613,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitListPattern(IListPatternOperation operation, WalkerArgument argument)
+	public override Node? VisitListPattern(IListPatternOperation operation, SenseArgument argument)
 	{
 		// 获取目标名称，在节点内构建表达式
 		var obj = GetPatternRefrence(operation, argument);
@@ -661,23 +683,82 @@ public partial class SemanticWalker
 						expr = BuildDeclarationPattern(declarationPatternOp, indexAccess, argument);
 					else
 					{
-						var value = Translate<Expression>(pattern, argument);
-						expr = new NonLogicalBinaryExpression(Operator.StrictEquality, indexAccess, value);
+						// 为子模式传递 indexAccess 作为 PatternInput
+						var patternArg = argument.WithPatternInput(indexAccess);
+						expr = Translate<Expression>(pattern, patternArg);
 					}
 
 					if (expr is not null)
 						result = new LogicalExpression(Operator.LogicalAnd, result, expr);
 				}
-				else if (pattern.Kind == OperationKind.SlicePattern)
+				else if (pattern is ISlicePatternOperation slicePattern)
 				{
-					// 切片模式可能返回空
-					var expr = Translate<Expression>(pattern, argument, null);
+					// 切片模式需要构建 slice 表达式
+					// slice(startIndex, endIndex)
+					// - 如果切片在最前面 [.. var rest]: slice(0)
+					// - 如果切片在中间 [var a, .. var rest]: slice(1)
+					// - 如果切片在中间且后面还有元素 [var a, .. var rest, var last]: slice(1, -1)
+
+					if (slicePattern.Pattern is null)
+						continue;
+
+					// slice 方法调用
+					var sliceMethod = new MemberExpression(obj, new Identifier("slice"), computed: false, optional: false);
+
+					// 计算切片参数
+					int startIndex = sliceIndex;
+
+					// 判断切片后面是否还有元素
+					bool hasElementsAfterSlice = sliceIndex < operation.Patterns.Length - 1;
+					int elementsAfterSlice = operation.Patterns.Length - sliceIndex - 1;
+
+					// 构建 slice 调用
+					CallExpression sliceCall;
+					if (!hasElementsAfterSlice)
+					{
+						// 切片后面没有元素: slice(startIndex)
+						sliceCall = new CallExpression(sliceMethod, NodeList.From<Expression>(new NumericLiteral(startIndex, startIndex.ToString())), optional: false);
+					}
+					else
+					{
+						// 切片后面有元素: slice(startIndex, -elementsAfterSlice)
+						// 例如后面有 1 个元素: slice(2, -1)
+						// 例如后面有 2 个元素: slice(2, -2)
+						int endIndex = -elementsAfterSlice;
+						sliceCall = new CallExpression(sliceMethod, NodeList.From<Expression>(new NumericLiteral(startIndex, startIndex.ToString()), new NumericLiteral(endIndex, endIndex.ToString())), optional: false);
+					}
+
+					// 处理切片模式的子模式（通常是声明模式）
+					Expression? expr;
+					if (slicePattern.Pattern is IDeclarationPatternOperation declarationPatternOp)
+					{
+						expr = BuildDeclarationPattern(declarationPatternOp, sliceCall, argument);
+					}
+					else
+					{
+						// 其他情况：传递切片表达式作为 PatternInput
+						var patternArg = argument.WithPatternInput(sliceCall);
+						expr = Translate<Expression>(slicePattern.Pattern, patternArg);
+					}
+
 					if (expr is not null)
 						result = new LogicalExpression(Operator.LogicalAnd, result, expr);
 				}
 				else
 				{
-					var expr = Translate<Expression>(pattern, argument);
+					// 嵌套列表模式或其他模式
+					// 计算索引访问表达式作为 PatternInput
+					Expression prop = new NumericLiteral(i, i.ToString());
+					if (hasSlice && i > sliceIndex)
+					{
+						var offset = operation.Patterns.Length - i;
+						var subExpr = new NumericLiteral(offset, offset.ToString());
+						prop = new NonLogicalBinaryExpression(Operator.Subtraction, lengthExpr, subExpr);
+					}
+
+					var indexAccess = new MemberExpression(obj, prop, computed: true, optional: false);
+					var patternArg = argument.WithPatternInput(indexAccess);
+					var expr = Translate<Expression>(pattern, patternArg);
 					result = new LogicalExpression(Operator.LogicalAnd, result, expr);
 				}
 			}
@@ -697,7 +778,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitSlicePattern(ISlicePatternOperation operation, WalkerArgument argument)
+	public override Node? VisitSlicePattern(ISlicePatternOperation operation, SenseArgument argument)
 	{
 		if (operation.Pattern is null)
 			return null;
@@ -725,7 +806,7 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitTypePattern(ITypePatternOperation operation, WalkerArgument argument)
+	public override Node? VisitTypePattern(ITypePatternOperation operation, SenseArgument argument)
 	{
 		// ITypePatternOperation 只进行类型检查，不声明变量
 		// 使用 MatchedType 而非 InputType，因为我们要检查的是目标类型
@@ -747,25 +828,35 @@ public partial class SemanticWalker
 	/// <summary>
 	/// 提取模式操作中引用对象名称
 	/// </summary>
+	/// <summary>
+	/// 提取模式操作中的目标表达式。
+	/// 如果 context.PatternInput 已提供，则应用成员访问路径后返回。
+	/// 如果未提供，则抛出异常（表示调用方需要传递 PatternInput）。
+	/// </summary>
 	/// <param name="operation">模式相关操作</param>
-	/// <param name="context">上下文信息</param>
-	/// <returns>引用对象名称</returns>
-	private Expression? ExtractPatternRefrence(IOperation? operation, WalkerArgument context)
+	/// <param name="context">上下文信息（必须包含 PatternInput）</param>
+	/// <returns>目标表达式</returns>
+	/// <exception cref="InvalidOperationException">当 PatternInput 未提供时抛出</exception>
+	private Expression? ExtractPatternRefrence(IOperation? operation, SenseArgument context)
 	{
 		if (operation is null)
 			return null;
 
-		var isInSwitch = false;
+		// 必须提供 PatternInput，不允许向上遍历
+		if (context.PatternInput is null)
+			return null;
+
 		var visited = new HashSet<IOperation>();
 		var current = operation;
-		IOperation? reference = null;
 		Stack<Func<Expression, Expression>> members = [];
+
+		// 只处理成员访问路径（属性子模式、列表模式索引）
 		while (current is not null)
 		{
 			if (!visited.Add(current))
 				break;
 
-			else if (current is IPropertySubpatternOperation propertySubpatternOp)
+			if (current is IPropertySubpatternOperation propertySubpatternOp)
 			{
 				if (propertySubpatternOp.Member is IMemberReferenceOperation member)
 				{
@@ -781,25 +872,11 @@ public partial class SemanticWalker
 						members.Push((x) => new MemberExpression(x, id, computed: false, optional));
 					}
 				}
-				/*
-				if (propertySubpatternOp.Member is IFieldReferenceOperation fieldRef)
-				{
-					var id = new Identifier(fieldRef.Field.Name);
-					var optional = IsNullableType(fieldRef.Field.Type);
-					members.Push((x) => new MemberExpression(x, id, computed: false, optional));
-				}
-				else if (propertySubpatternOp.Member is IPropertyReferenceOperation propRef)
-				{
-					var id = new Identifier(propRef.Property.Name);
-					var optional = IsNullableType(propRef.Property.Type);
-					members.Push((x) => new MemberExpression(x, id, computed: false, optional));
-				}*/
 			}
-			else if (
-				current is IPatternOperation patternOp &&
+			else if (current is IPatternOperation patternOp &&
 				current.Parent is IListPatternOperation listPatternOp)
 			{
-				// 判断是否有切片和切片位置
+				// 处理列表模式索引访问
 				var hasSlice = false;
 				var sliceIndex = -1;
 				for (int i = 0; i < listPatternOp.Patterns.Length; i++)
@@ -812,12 +889,10 @@ public partial class SemanticWalker
 					}
 				}
 
-				var fixedLen = hasSlice ? listPatternOp.Patterns.Length - 1 : listPatternOp.Patterns.Length;
 				var currentIndex = listPatternOp.Patterns.IndexOf(patternOp);
 
 				members.Push((x) =>
 				{
-					// 切片前直接使用索引，切片后需要计算反向索引
 					Expression prop = new NumericLiteral(currentIndex, currentIndex.ToString());
 					if (hasSlice)
 					{
@@ -836,8 +911,6 @@ public partial class SemanticWalker
 							var sliceExpr = new MemberExpression(x, sliceId, computed: false, optional: false);
 							if (afterSlice == 0)
 							{
-								// 切片在末尾，如 [var first, .. var rest]
-								// JavaScript: obj.slice(index)
 								return new CallExpression(
 									sliceExpr,
 									NodeList.From<Expression>(new NumericLiteral(currentIndex, currentIndex.ToString())),
@@ -846,10 +919,6 @@ public partial class SemanticWalker
 							}
 							else
 							{
-								// 切片在中间或开头，需要排除后面的 elementsAfterSlice 个元素
-								// 如 [var first, .. var middle, var last] -> obj.slice(1, -1)
-								// 如 [.. var rest, var last] -> obj.slice(0, -1)
-								// 如 [var a, .. var middle, var b, var c] -> obj.slice(1, -2)
 								return new CallExpression(
 									sliceExpr,
 									NodeList.From<Expression>(
@@ -864,72 +933,41 @@ public partial class SemanticWalker
 					return new MemberExpression(x, prop, computed: true, false);
 				});
 			}
-			else if (current is IIsTypeOperation isTypeOp)
+			else
 			{
-				reference = isTypeOp.ValueOperand;
+				// 遇到非成员访问操作，停止遍历
 				break;
 			}
-			else if (current is ISwitchOperation switchOp)
-			{
-				isInSwitch = true;
-				reference = switchOp.Value;
-				break;
-			}
-			else if (current is IIsPatternOperation isPatternOp)
-			{
-				reference = isPatternOp.Value;
-				break;
-			}
-			else if (current is ISwitchExpressionOperation switchExpressionOp)
-			{
-				isInSwitch = true;
-				reference = switchExpressionOp.Value;
-				break;
-			}
-
-			// 继续向上
 			current = current.Parent;
 		}
 
-		if (reference is null)
-			return null;
-
-
-		Expression expr;
-		if (isInSwitch)
-		{
-			//switch的目标值可能是一个复杂表达式，需要创建一个中间变量
-			var id = GetUniqueName(reference);
-			expr = new Identifier(id);
-		}
-		else
-			expr = Translate<Expression>(reference, new());
-
+		// 使用提供的 PatternInput
+		Expression expr = context.PatternInput;
 		while (members.Count > 0)
 			expr = members.Pop()(expr);
-
 		return expr;
 	}
 
 	/// <summary>
-	/// 提取模式操作中引用对象名称
+	/// 获取模式匹配的目标表达式。
+	/// 必须通过 SenseArgument.PatternInput 提供目标表达式。
 	/// </summary>
 	/// <param name="operation">模式相关操作</param>
-	/// <param name="context">上下文信息</param>
-	/// <returns>引用对象名称</returns>
-	private Expression GetPatternRefrence(IOperation operation, WalkerArgument context)
+	/// <param name="context">上下文信息（必须包含 PatternInput）</param>
+	/// <returns>目标表达式</returns>
+	/// <exception cref="InvalidOperationException">当 PatternInput 未提供时抛出</exception>
+	private Expression GetPatternRefrence(IOperation operation, SenseArgument context)
 	{
-		var expr = ExtractPatternRefrence(operation, context);
-		if (expr is null)
+		// 必须提供 PatternInput
+		if (context.PatternInput is null)
 		{
 			var location = operation.Syntax.GetLocation();
-			var message = $"无法提取模式引用对象名称，操作类型：{operation.Kind}。";
+			var message = $"模式匹配需要 PatternInput，但未提供。操作类型：{operation.Kind}。请检查调用点是否正确传递了 PatternInput。";
 			_report?.Invoke(location, message);
-
-			throw new OperationTransformationException(operation.Kind, message);
+			throw new InvalidOperationException(message);
 		}
 
-		return expr;
+		return context.PatternInput;
 	}
 
 	/// <summary>
@@ -1000,7 +1038,7 @@ public partial class SemanticWalker
 		INamedTypeSymbol namedType,
 		Expression targetExpr,
 		List<Expression> conditions,
-		WalkerArgument argument)
+		SenseArgument argument)
 	{
 		for (int i = 0; i < operation.DeconstructionSubpatterns.Length; i++)
 		{
@@ -1015,7 +1053,8 @@ public partial class SemanticWalker
 			if (propertyExpr is null)
 				return;
 
-			// 处理子模式
+			// 处理子模式，传递 propertyExpr 作为 PatternInput
+			var subpatternArg = argument.WithPatternInput(propertyExpr);
 			Expression? condition;
 			if (subpattern is IDeclarationPatternOperation declarationPattern)
 			{
@@ -1025,8 +1064,8 @@ public partial class SemanticWalker
 			else
 			{
 				// 其他模式：常量、关系等（如 1, > 0）
-				var patternResult = Translate<Expression>(subpattern, argument);
-				condition = new NonLogicalBinaryExpression(Operator.StrictEquality, propertyExpr, patternResult);
+				// 传递更新后的 PatternInput，让子模式自己处理比较
+				condition = Translate<Expression>(subpattern, subpatternArg);
 			}
 
 			conditions.Add(condition);
@@ -1128,7 +1167,7 @@ public partial class SemanticWalker
 	/// 转换结果：IIFE + if-else 链
 	/// 注意：不支持 goto 语句，如需共享逻辑请提取为方法
 	/// </summary>
-	private CallExpression VisitSwitchPatternMatching(ISwitchOperation operation, WalkerArgument argument)
+	private CallExpression VisitSwitchPatternMatching(ISwitchOperation operation, SenseArgument argument)
 	{
 		if (Visit(operation.Value, argument) is not Expression discriminant)
 			return HandleTransformationFailure<CallExpression>(operation.Value, "Switch discriminant could not be translated to JavaScript.");
@@ -1139,6 +1178,9 @@ public partial class SemanticWalker
 			VariableDeclarationKind.Const,
 			NodeList.From(new VariableDeclarator(inputId, discriminant))
 		);
+
+		// 设置 PatternInput 为输入变量
+		var caseArg = argument.WithPatternInput(inputId);
 
 		var statements = new List<Statement>();
 		foreach (var switchCase in operation.Cases)
@@ -1153,7 +1195,7 @@ public partial class SemanticWalker
 				else
 				{
 					// 兼容常量 null 模式
-					var expr = Translate<Expression>(clause, argument);
+					var expr = Translate<Expression>(clause, caseArg);
 					if ((clause.CaseKind == CaseKind.SingleValue) ||
 						(expr is Literal literal && literal.Kind == TokenKind.NullLiteral))
 						expr = new NonLogicalBinaryExpression(Operator.StrictEquality, inputId, expr);
@@ -1214,12 +1256,12 @@ public partial class SemanticWalker
 	/// 处理声明模式操作
 	/// </summary>
 	/// <param name="operation">声明模式操作</param>
-	/// <param name="value">赋值对象</param>
-	/// <param name="argument"></param>
-	/// <returns></returns>
-	private Expression BuildDeclarationPattern(IDeclarationPatternOperation operation, Expression? value, WalkerArgument argument)
+	/// <param name="value">赋值对象（可选，如果提供则用于类型检查）</param>
+	/// <param name="argument">语义上下文（必须包含 PatternInput）</param>
+	/// <returns>JavaScript 表达式</returns>
+	private Expression BuildDeclarationPattern(IDeclarationPatternOperation operation, Expression? value, SenseArgument argument)
 	{
-		/* 
+		/*
 		有效 - 显式类型声明，MatchedType 非空，DeclaredSymbol 非空：if (obj is string s)，显式指定类型并声明变量
 		有效 - 推断类型声明，MatchedType null，DeclaredSymbol 非空：if (obj is var s)，类型推断，声明变量
 		有效 - 类型检查，MatchedType 非空，DeclaredSymbol null：if (obj is string)，仅检查类型，不声明变量
@@ -1229,6 +1271,7 @@ public partial class SemanticWalker
 		if (operation.DeclaredSymbol is null && operation.MatchedType is null)
 			return HandleTransformationFailure<Expression>(operation, "Declaration pattern must have either a declared symbol or a matched type.");
 
+		// 必须有 PatternInput
 		var obj = GetPatternRefrence(operation, argument);
 
 		Expression? typeMatchExpr = null, declaredExpr = null;
@@ -1244,20 +1287,8 @@ public partial class SemanticWalker
 			var declarator = new VariableDeclarator(id, null);
 			argument.AddVarDeclarator(declarator, _recursionDepth);
 
-			Expression? assignValueExpr = null;
-			if (value is not null)
-				assignValueExpr = value;
-
-			else if (operation.Parent is IIsPatternOperation
-				or IPatternCaseClauseOperation
-				or ISwitchExpressionArmOperation
-				or IBinaryPatternOperation
-				or ISlicePatternOperation
-				or IPropertySubpatternOperation)
-				assignValueExpr = obj;
-
-			if (assignValueExpr is null)
-				return HandleTransformationFailure<Expression>(operation, "Cannot determine value to assign in declaration pattern.");
+			// 赋值表达式：使用提供的 value 或 PatternInput
+			var assignValueExpr = value ?? obj;
 
 			var assignmentExpr = new AssignmentExpression(Operator.Assignment, id, assignValueExpr);
 			var exprs = NodeList.From<Expression>(assignmentExpr, new BooleanLiteral(true, "true"));
