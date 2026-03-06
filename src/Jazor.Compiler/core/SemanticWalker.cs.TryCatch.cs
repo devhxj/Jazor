@@ -119,10 +119,10 @@ public partial class SemanticWalker
             }
         }
 
-        // 如果没有异常变量名，使用父级try的唯一名称作为参数名
-        if(param is null && operation.Parent is not null)
+        // 如果没有异常变量名，生成唯一名称
+        if (param is null)
             param = new Identifier(GetUniqueName(operation));
-        
+
         return param;
     }
 
@@ -163,9 +163,14 @@ public partial class SemanticWalker
             bodyStatements.Add(filterCheck);
         }
 
+        // 传递异常参数名给子操作（用于 re-throw）
+        var catchContext = exceptionParam is not null
+            ? argument.WithCatchVar(exceptionParam.Name)
+            : argument;
+
         foreach (var stmt in operation.Handler.Operations)
         {
-            var node = Visit(stmt, argument);
+            var node = Visit(stmt, catchContext);
             if (node is Statement statement)
                 bodyStatements.Add(statement);
             else if (node is Expression expr)
@@ -215,18 +220,11 @@ public partial class SemanticWalker
             expr = Translate<Expression>(operation.Exception, argument);
         else
         {
-            if (operation.Parent?.Parent?.Parent is not ITryOperation @try)
+            // 从上下文获取异常参数名（用于 re-throw）
+            if (argument.CatchExceptionVar is not null)
+                expr = new Identifier(argument.CatchExceptionVar);
+            else
                 return HandleTransformationFailure<Node>(operation, "Throw statement could not be translated to JavaScript because it is not within a try block.");
-
-            expr = new Identifier(GetUniqueName(@try));
-            // 如果只有一个catch子句，则使用该catch子句的参数名
-            if (@try.Catches.Length == 1)
-            {
-                var catchClause = @try.Catches[0];
-                var param = ExtractCatchClauseParam(catchClause);
-                if (param is not null)
-                    expr = param;
-            }
         }
 
 		return new ThrowStatement(expr);

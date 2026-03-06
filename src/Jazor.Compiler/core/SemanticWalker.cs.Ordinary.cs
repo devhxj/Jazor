@@ -519,9 +519,10 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitConditionalAccess(IConditionalAccessOperation operation, SenseArgument argument)
 	{
-		// 不需要处理 Operation，会在 WhenNotNull中递归回来处理
-		//var operand = VisitTo<Expression>(operation.Operation, argument);
-		var whenNotNull = Translate<Expression>(operation.WhenNotNull, argument);
+		// 先转换 Operation，然后通过 PatternInput 传递给 WhenNotNull
+		var operand = Translate<Expression>(operation.Operation, argument);
+		var whenNotNullArg = argument.WithPatternInput(operand);
+		var whenNotNull = Translate<Expression>(operation.WhenNotNull, whenNotNullArg);
 		return new ChainExpression(whenNotNull);
 	}
 
@@ -531,22 +532,16 @@ public partial class SemanticWalker
 	/// 它的唯一目的是提供类型信息，从而将运行时的短路求值逻辑（由 IConditionalAccessOperation 控制）与编译时的静态语义分析（由成员操作自身完成）完美解耦。
 	/// C# 示例：
 	/// obj?.Property中的obj?
-	/// 转换方式：递归向上找到IConditionalAccessOperation，提取真实的 Operation
+	/// 转换方式：从 PatternInput 获取（由 VisitConditionalAccess 传递）
 	/// 转换结果：obj?
 	/// </summary>
 	public override Node? VisitConditionalAccessInstance(IConditionalAccessInstanceOperation operation, SenseArgument argument)
 	{
-		var parent = operation.Parent;
-		while (parent is not null)
-		{
-			if (parent is IConditionalAccessOperation access)
-			{
-				return Translate<Expression>(access.Operation, argument);
-			}
-			parent = parent.Parent;
-		}
+		// 从 PatternInput 获取（由 VisitConditionalAccess 传递）
+		if (argument.PatternInput is not null)
+			return argument.PatternInput;
 
-		return HandleTransformationFailure<Node>(operation, "Could not find parent ConditionalAccessOperation.");
+		return HandleTransformationFailure<Node>(operation, "ConditionalAccessInstance requires PatternInput context from VisitConditionalAccess.");
 	}
 
 	/// <summary>
@@ -789,16 +784,6 @@ public partial class SemanticWalker
 			return value;
 
 		var target = Translate<Expression>(operation.Target, argument);
-		if (operation.Parent is IObjectCreationOperation)
-			return new ObjectProperty(
-				PropertyKind.Init,
-				key: target,
-				value: value,
-				computed: false,
-				shorthand: false,
-				method: false
-			);
-
 		return new AssignmentExpression(Operator.Assignment, target, value);
 	}
 

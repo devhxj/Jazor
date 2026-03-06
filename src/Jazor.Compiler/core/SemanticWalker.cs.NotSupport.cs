@@ -401,16 +401,8 @@ public partial class SemanticWalker
 	/// <returns>JavaScript范围对象字面量</returns>
 	public override Node? VisitRangeOperation(IRangeOperation operation, SenseArgument argument)
 	{
-		// 检查是否在数组元素访问的上下文中
-		if (operation.Parent is IArrayElementReferenceOperation arrayRef)
-		{
-			// 在数组元素访问上下文中，范围操作应该已经在 VisitArrayElementReference 中处理
-			// 这里不应该到达，但为了安全起见，返回一个错误
-			return HandleTransformationFailure<Node>(operation, "Range operation in array access should be handled by VisitArrayElementReference.");
-		}
-
-		// 单独的范围操作（不在数组访问中）在 JavaScript 中没有直接等价物
-		// 返回一个错误，因为无法在 JavaScript 中表示独立的范围对象
+		// 单独的范围操作在 JavaScript 中没有直接等价物
+		// 如果在数组元素访问上下文中，应该由 VisitArrayElementReference 处理
 		return HandleTransformationFailure<Node>(operation, "Standalone range operations are not supported in JavaScript conversion. Use array slicing instead.");
 	}
 

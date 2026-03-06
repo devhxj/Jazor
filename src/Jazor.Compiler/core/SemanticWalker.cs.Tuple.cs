@@ -408,39 +408,16 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
+	/// <remarks>
+	/// 注意：VisitSimpleAssignment 和 VisitDeconstructionAssignment 已经直接处理了 IDiscardOperation，
+	/// 不会调用此方法。此方法主要作为兜底处理其他可能的场景（罕见）。
+	/// </remarks>
 	public override Node? VisitDiscardOperation(IDiscardOperation operation, SenseArgument argument)
 	{
-		// 在解构赋值模式中 (例如: (_, y) = tuple)
-		if (operation.Parent is IDeconstructionAssignmentOperation)
-		{
-			// 在JavaScript的解构模式中，丢弃元素用空槽位表示。
-			// 例如: const [, y] = tuple;
-			// 但是，AST节点本身不能是“空的”。这里需要特殊处理。
-			// 一个常见的策略是返回一个特殊的标记节点，然后在 VisitDeconstructionAssignment 中处理它。
-			// 或者，更简单的方法是，让 VisitDeconstructionAssignment 自己处理丢弃操作，
-			// 而不是让 VisitDiscardOperation 返回一个有意义的节点。
-			// 如果必须返回一个节点，可以返回 null，并在父节点中处理。
-			// 最简单直接的方式是返回一个代表“无”的节点，让父节点忽略它。
-			// 这里我们返回一个特殊的Identifier，父节点需要识别它。
-			// 但更好的做法是让父节点直接检查子操作是否为 IDiscardOperation。
-			return null; // 让父节点处理
-		}
-
-		// 在简单赋值操作的左侧 (例如: _ = value)
-		if (operation.Parent is ISimpleAssignmentOperation assignment && assignment.Target == operation)
-		{
-			// C# 的 _ = value 意味着“执行 value 但不关心结果”。
-			// 这等价于直接执行 value 这个表达式语句。
-			// 所以，我们应该返回 value 本身，而不是 undefined。
-			// 父节点 VisitSimpleAssignmentOperation 应该检测到目标是丢弃操作，
-			// 然后只返回对 operation.Value 的访问结果。
-			return null; // 让父节点处理
-		}
-
-		// 在其他表达式中作为值使用 (非常罕见，但可能)
-		// 例如: var isNull = _ is null; // 这在C#中是编译时错误
-		// 或者作为方法参数: SomeMethod(_); // 这也是编译时错误
-		// 如果真的遇到了，可以返回 undefined。
+		// 返回 undefined 作为兜底
+		// 注意：大多数情况下，此方法不会被调用，因为：
+		// 1. _ = value 由 VisitSimpleAssignment 直接处理（检查 Target is IDiscardOperation）
+		// 2. (_, y) = tuple 由 VisitDeconstructionAssignment 直接处理（检查 element is IDiscardOperation）
 		return new Identifier("undefined");
 	}
 
