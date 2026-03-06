@@ -104,10 +104,45 @@ public partial class SemanticWalker
 		// };
 		// const temp = func(2,5);
 		// let zzz = temp.aaa;
-		// let yyy = temp.Item2;		
+		// let yyy = temp.Item2;
 		var expressions = new List<Expression>();
 		Deconstruct(operation.Target, operation.Value.Type!, operation.Value, expressions);
 		return new SequenceExpression(NodeList.From(expressions));
+
+		/// <summary>
+		/// 从 value 获取元组字段的值表达式
+		/// </summary>
+		/// <param name="value">值来源（IOperation 或 Expression）</param>
+		/// <param name="fieldName">字段名</param>
+		/// <param name="index">字段索引（用于 conversion 和 invocation 场景）</param>
+		/// <param name="tempVar">临时变量（用于 invocation 场景）</param>
+		/// <param name="argument">上下文参数</param>
+		/// <returns>字段值表达式，失败返回 null</returns>
+		Expression? GetTupleFieldValue(object value, string fieldName, int index, Identifier? tempVar, SenseArgument argument)
+		{
+			if (value is ILocalReferenceOperation localRef)
+			{
+				var obj = new Identifier(localRef.Local.Name);
+				return new MemberExpression(obj, new Identifier(fieldName), false, false);
+			}
+			if (value is IConversionOperation conversion && conversion.Operand is ITupleOperation conversionTuple)
+			{
+				return Translate<Expression>(conversionTuple.Elements[index], argument);
+			}
+			if (value is IInvocationOperation && tempVar is not null)
+			{
+				return new MemberExpression(tempVar, new Identifier(fieldName), false, false);
+			}
+			if (value is IOperation op)
+			{
+				return Translate<Expression>(op, argument);
+			}
+			if (value is Expression expr)
+			{
+				return new MemberExpression(expr, new Identifier(fieldName), false, false);
+			}
+			return null;
+		}
 
 		void Deconstruct(IOperation target, ITypeSymbol valueType, object value, List<Expression> exprs)
 		{
@@ -123,54 +158,32 @@ public partial class SemanticWalker
 				else
 					tupleTarget = (ITupleOperation)target;
 
-				Expression? idExpr = null;
+				Identifier? tempVar = null;
 				if (value is IInvocationOperation invocation)
 				{
-					// 如果是方法调用，先造一个临时对象存放方法的值
-					idExpr = new Identifier(GetUniqueName(invocation));
+					// 如果是方法调用，先创建临时变量存放方法的值
+					tempVar = new Identifier(GetUniqueName(invocation));
 					var init = Translate<Expression>(invocation, argument);
-					var declarator = new VariableDeclarator(idExpr, null);
+					var declarator = new VariableDeclarator(tempVar, null);
 					argument.AddVarDeclarator(declarator, _recursionDepth);
-					exprs.Add(new AssignmentExpression(Operator.Assignment, idExpr, init));
+					exprs.Add(new AssignmentExpression(Operator.Assignment, tempVar, init));
 				}
 
-				// 如果解构元素是元组类型，递归解构
+				// 遍历元组元素进行解构
 				for (var index = 0; index < tupleTarget.Elements.Length; index++)
 				{
 					var element = tupleTarget.Elements[index];
 					var field = ((INamedTypeSymbol)valueType).TupleElements[index];
+
+					// 跳过丢弃操作
 					if (element is IDiscardOperation)
-					{
 						continue;
-					}
-					else if (isDeclarationExpr || element is IDeclarationExpressionOperation)
+
+					// 处理声明表达式（新变量声明）
+					if (isDeclarationExpr || element is IDeclarationExpressionOperation)
 					{
-						Expression init;
-						if (value is ILocalReferenceOperation localRef)
-						{
-							var obj = new Identifier(localRef.Local.Name);
-							var prop = new Identifier(field.Name);
-							init = new MemberExpression(obj, prop, false, false);
-						}
-						else if (value is IConversionOperation conversion && conversion.Operand is ITupleOperation conversionTuple)
-						{
-							init = Translate<Expression>(conversionTuple.Elements[index], argument);
-						}
-						else if (value is IInvocationOperation)
-						{
-							var prop = new Identifier(field.Name);
-							init = new MemberExpression(idExpr!, prop, false, false);
-						}
-						else if (value is IOperation op)
-						{
-							init = Translate<Expression>(op, argument);
-						}
-						else if (value is Expression expr)
-						{
-							var prop = new Identifier(field.Name);
-							init = new MemberExpression(expr, prop, false, false);
-						}
-						else
+						var init = GetTupleFieldValue(value, field.Name, index, tempVar, argument);
+						if (init is null)
 						{
 							HandleTransformationFailure<Node>(target, $"The {target.Kind} operation is not supported in DeconstructionAssignment.");
 							return;
@@ -181,39 +194,20 @@ public partial class SemanticWalker
 						argument.AddVarDeclarator(declarator, _recursionDepth);
 						exprs.Add(new AssignmentExpression(Operator.Assignment, id, init));
 					}
+					// 处理已有变量引用
 					else if (!isDeclarationExpr && element is ILocalReferenceOperation localRef)
 					{
-						Expression right;
-						if (value is ILocalReferenceOperation valueLocalRef)
-						{
-							var obj = new Identifier(valueLocalRef.Local.Name);
-							var prop = new Identifier(field.Name);
-							right = new MemberExpression(obj, prop, false, false);
-						}
-						else if (value is IInvocationOperation)
-						{
-							var prop = new Identifier(field.Name);
-							right = new MemberExpression(idExpr!, prop, false, false);
-						}
-						else if (value is IOperation op)
-						{
-							right = Translate<Expression>(op, argument);
-						}
-						else if (value is Expression exprr)
-						{
-							var prop = new Identifier(field.Name);
-							right = new MemberExpression(exprr, prop, false, false);
-						}
-						else
+						var right = GetTupleFieldValue(value, field.Name, index, tempVar, argument);
+						if (right is null)
 						{
 							HandleTransformationFailure<Node>(target, $"The {target.Kind} operation is not supported in DeconstructionAssignment.");
 							return;
 						}
 
 						var left = Translate<Node>(localRef, argument);
-						var expr = new AssignmentExpression(Operator.Assignment, left, right);
-						exprs.Add(expr);
+						exprs.Add(new AssignmentExpression(Operator.Assignment, left, right));
 					}
+					// 处理嵌套元组
 					else if (field.Type.IsTupleType)
 					{
 						if (value is IConversionOperation conversion && conversion.Operand is ITupleOperation conversionTuple)
@@ -221,17 +215,14 @@ public partial class SemanticWalker
 							var subValue = conversionTuple.Elements[index];
 							Deconstruct(element, subValue.Type!, subValue, exprs);
 						}
-						else if (value is ILocalReferenceOperation l1)
+						else
 						{
-							var obj = new Identifier(l1.Local.Name);
-							var prop = new Identifier(field.Name);
-							var subValue = new MemberExpression(obj, prop, false, false);
-							Deconstruct(element, field.Type, subValue, exprs);
-						}
-						else if (value is Expression p)
-						{
-							var prop = new Identifier(field.Name);
-							var subValue = new MemberExpression(p, prop, false, false);
+							var subValue = GetTupleFieldValue(value, field.Name, index, tempVar, argument);
+							if (subValue is null)
+							{
+								HandleTransformationFailure<Node>(element, $"The {element.Kind} operation is not supported in DeconstructionAssignment.");
+								return;
+							}
 							Deconstruct(element, field.Type, subValue, exprs);
 						}
 					}
@@ -244,7 +235,7 @@ public partial class SemanticWalker
 			}
 			else if (valueType.TypeKind == TypeKind.Class && value is IOperation expr)
 			{
-				//自定义解构
+				// 自定义解构
 				ITupleOperation tupleResult;
 				bool isDeclarationExpressionTarget = false;
 				if (target is IDeclarationExpressionOperation declarationExpr && declarationExpr.Expression is ITupleOperation t1)
@@ -300,9 +291,9 @@ public partial class SemanticWalker
 						args.Add(id);
 					}
 				}
-				
+
 				// Deconstruct方法参数是out参数且无返回值，但js不支持out/ref
-				// 所以编译器会把Deconstruct方法编成普通参数，然后返回数组对象输出本该由out参数输出的值	
+				// 所以编译器会把Deconstruct方法编成普通参数，然后返回数组对象输出本该由out参数输出的值
 				var obj = Translate<Expression>(expr, argument);
 				var prop = new Identifier("Deconstruct");
 				var func = new MemberExpression(obj, prop, false, false);
