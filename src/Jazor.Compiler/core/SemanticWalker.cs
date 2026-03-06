@@ -185,7 +185,9 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
                     raw = raw.Replace($"@#{{{i}}}", arg.ToKnRECMAScript());
                 }
 
-                return _parser.ParseExpression(raw, null, true);
+                // Create a new Parser instance each time to avoid thread-safety issues
+                var parser = new Parser();
+                return parser.ParseExpression(raw, null, true);
             }
 
             else if (entry.Op == Op.Import)
@@ -215,7 +217,8 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         return GetWhiteListExpression(symbol, context, args, out alias);
     }
 
-    private static readonly Parser _parser = new();
+    // Note: Parser is not thread-safe, so we create a new instance each time
+    // instead of using a static field to avoid race conditions in parallel tests
 
     private int _recursionDepth;
 
