@@ -420,6 +420,53 @@ public partial class SemanticWalker
 	/// <param name="isEq">是否为相等比较（true: ==, false: !=）</param>
 	/// <param name="argument">上下文参数</param>
 	/// <returns>构建的逻辑表达式，失败返回 null</returns>
+	/// <summary>
+	/// 元组比较操作数的处理结果
+	/// </summary>
+	/// <param name="Expression">转换后的表达式（用于成员访问）</param>
+	/// <param name="TupleOperation">如果是元组字面量，保留原始操作</param>
+	private readonly record struct TupleOperandResult(Expression? Expression, ITupleOperation? TupleOperation);
+
+	/// <summary>
+	/// 处理元组比较操作数
+	/// </summary>
+	private TupleOperandResult ProcessTupleOperand(object target, SenseArgument argument)
+	{
+		if (target is IInvocationOperation invocation)
+		{
+			// 方法调用需要创建临时变量
+			var id = new Identifier(GetUniqueName(invocation));
+			var init = Translate<Expression>(invocation, argument);
+			var declarator = new VariableDeclarator(id, init);
+			argument.AddVarDeclarator(declarator, _recursionDepth);
+			return new TupleOperandResult(id, null);
+		}
+		if (target is ITupleOperation tuple)
+			return new TupleOperandResult(null, tuple);
+		if (target is IOperation op)
+			return new TupleOperandResult(Translate<Expression>(op, argument), null);
+		if (target is Expression expr)
+			return new TupleOperandResult(expr, null);
+
+		return default;
+	}
+
+	/// <summary>
+	/// 获取元组元素的表达式
+	/// </summary>
+	private Expression? GetTupleElementExpression(
+		in TupleOperandResult operand,
+		IFieldSymbol field,
+		int index,
+		SenseArgument argument)
+	{
+		if (operand.TupleOperation is not null)
+			return Translate<Expression>(operand.TupleOperation.Elements[index], argument);
+		if (operand.Expression is not null)
+			return new MemberExpression(operand.Expression, new Identifier(field.Name), false, false);
+		return null;
+	}
+
 	private Expression? BuildTupleBinaryExpression(
 		(object Target, ITypeSymbol Type) left,
 		(object Target, ITypeSymbol Type) right,
@@ -430,38 +477,9 @@ public partial class SemanticWalker
 		if (left.Type is not INamedTypeSymbol leftType || right.Type is not INamedTypeSymbol rightType)
 			return null;
 
-		Expression? leftExpr = null, rightExpr = null;
-		ITupleOperation? tupleLeft = null, tupleRight = null;
-
-		// 处理左操作数
-		if (left.Target is IInvocationOperation leftInvocation)
-		{
-			leftExpr = new Identifier(GetUniqueName(leftInvocation));
-			var init = Translate<Expression>(leftInvocation, argument);
-			var declarator = new VariableDeclarator(leftExpr, init);
-			argument.AddVarDeclarator(declarator,_recursionDepth);
-		}
-		else if (left.Target is ITupleOperation leftTuple)
-			tupleLeft = leftTuple;
-		else if (left.Target is IOperation leftOp)
-			leftExpr = Translate<Expression>(leftOp, argument);
-		else if (left.Target is Expression leftExp)
-			leftExpr = leftExp;
-
-		// 处理右操作数
-		if (right.Target is IInvocationOperation rightInvocation)
-		{
-			rightExpr = new Identifier(GetUniqueName(rightInvocation));
-			var init = Translate<Expression>(rightInvocation, argument);
-			var declarator = new VariableDeclarator(rightExpr, init);
-			argument.AddVarDeclarator(declarator,_recursionDepth);
-		}
-		else if (right.Target is ITupleOperation rightTuple)
-			tupleRight = rightTuple;
-		else if (right.Target is IOperation rightOp)
-			rightExpr = Translate<Expression>(rightOp, argument);
-		else if (right.Target is Expression rightExp)
-			rightExpr = rightExp;
+		// 处理左右操作数
+		var leftResult = ProcessTupleOperand(left.Target, argument);
+		var rightResult = ProcessTupleOperand(right.Target, argument);
 
 		Expression? result = null;
 
@@ -471,28 +489,15 @@ public partial class SemanticWalker
 			var leftField = leftType.TupleElements[index];
 			var rightField = rightType.TupleElements[index];
 
-			Expression? exprLeft = null, exprRight = null;
-
-			// 获取左元素表达式
-			if (tupleLeft is not null)
-				exprLeft = Translate<Expression>(tupleLeft.Elements[index], argument);
-			else if (leftExpr is not null)
-				exprLeft = new MemberExpression(leftExpr, new Identifier(leftField.Name), false, false);
-
-			// 获取右元素表达式
-			if (tupleRight is not null)
-				exprRight = Translate<Expression>(tupleRight.Elements[index], argument);
-			else if (rightExpr is not null)
-				exprRight = new MemberExpression(rightExpr, new Identifier(rightField.Name), false, false);
-
 			// 处理嵌套元组
 			if (leftField.Type.IsTupleType)
 			{
-				object? subLeft = tupleLeft is not null ? tupleLeft.Elements[index] : exprLeft;
-				object? subRight = tupleRight is not null ? tupleRight.Elements[index] : exprRight;
-
-				if (subLeft is null || subRight is null)
-					return null;
+				var subLeft = leftResult.TupleOperation is not null
+					? (object)leftResult.TupleOperation.Elements[index]
+					: GetTupleElementExpression(leftResult, leftField, index, argument)!;
+				var subRight = rightResult.TupleOperation is not null
+					? (object)rightResult.TupleOperation.Elements[index]
+					: GetTupleElementExpression(rightResult, rightField, index, argument)!;
 
 				var subResult = BuildTupleBinaryExpression(
 					(subLeft, leftField.Type),
@@ -509,6 +514,9 @@ public partial class SemanticWalker
 			}
 			else
 			{
+				var exprLeft = GetTupleElementExpression(leftResult, leftField, index, argument);
+				var exprRight = GetTupleElementExpression(rightResult, rightField, index, argument);
+
 				if (exprLeft is null || exprRight is null)
 					return null;
 
