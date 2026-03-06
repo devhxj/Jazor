@@ -735,7 +735,7 @@ public sealed class SemanticWalkerTupleTest
         var initializer = variableDeclaration.Declarators.First().Initializer;
         var operation = (ITupleBinaryOperation)initializer!.Value;
         var walker = new SemanticWalker(true);
-        var arg = new SenseArgument(Depend: new(), PatternInput: new Identifier("v$0"));
+        var arg = new SenseArgument(PatternInput: new Identifier("v$0"));
         var node = walker.VisitTupleBinaryOperator(operation, arg);
         var script = node?.ToECMAScript();
 

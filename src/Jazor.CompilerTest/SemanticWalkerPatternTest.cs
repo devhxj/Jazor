@@ -667,7 +667,7 @@ public sealed class SemanticWalkerPatternTest
     var declarator = declaration.Declarators.First();
     var isPatternOperation = declarator.Initializer!.Value as IIsPatternOperation;
     var negatedPatternOperation = (INegatedPatternOperation)isPatternOperation!.Pattern;
-    var ctx = new SenseArgument(Sense.Any, null, new Identifier("obj"));
+    var ctx = new SenseArgument(PatternInput: new Identifier("obj"));
     var node = walker.VisitNegatedPattern(negatedPatternOperation, ctx);
     var script = node?.ToKnRECMAScript();
 
@@ -1413,7 +1413,7 @@ public sealed class SemanticWalkerPatternTest
       Acornima.Ast.NodeList.From<Expression>(new NumericLiteral(0, "0")),
       false
     );
-    var arg = new SenseArgument(Depend: new WalkerArgument(), PatternInput: sliceExpr);
+    var arg = new SenseArgument(PatternInput: sliceExpr);
     var node = walker.VisitSlicePattern(slicePatternOperation, arg);
     var script = node?.ToECMAScript();
 
@@ -1724,7 +1724,7 @@ public sealed class SemanticWalkerPatternTest
     var conditionalOp = GetOperationAt<IConditionalOperation>(block, 1);
     var isPatternOperation = conditionalOp.Condition as IIsPatternOperation;
     var declarationPatternOperation = (IDeclarationPatternOperation)isPatternOperation!.Pattern;
-    var arg = new SenseArgument(Depend: new WalkerArgument(), PatternInput: new Identifier("obj"));
+    var arg = new SenseArgument(PatternInput: new Identifier("obj"));
     var node = walker.VisitDeclarationPattern(declarationPatternOperation, arg);
     var script = node?.ToKnRECMAScript();
 
@@ -2055,7 +2055,7 @@ public sealed class SemanticWalkerPatternTest
     var switchOperation = GetOperationAt<ISwitchOperation>(block, 1);
     var patternCaseClause = (IPatternCaseClauseOperation)switchOperation.Cases.First()!.Clauses.First()!;
     // 直接调用需要提供 PatternInput
-    var arg = new SenseArgument(Depend: new WalkerArgument(), PatternInput: new Identifier("v$0"));
+    var arg = new SenseArgument(PatternInput: new Identifier("v$0"));
     var node = walker.VisitPatternCaseClause(patternCaseClause, arg);
     var script = node?.ToECMAScript();
 
@@ -2470,7 +2470,7 @@ public sealed class SemanticWalkerPatternTest
     var switchExpressionOperation = declarator.Initializer!.Value as ISwitchExpressionOperation
       ?? throw new InvalidOperationException("switchExpressionOperation is null");
     var switchCaseArm = switchExpressionOperation.Arms.First();
-    var arg = new SenseArgument(Depend: new WalkerArgument(), PatternInput: new Identifier("v$0"));
+    var arg = new SenseArgument(PatternInput: new Identifier("v$0"));
     var node = walker.VisitSwitchExpressionArm(switchCaseArm, arg);
     var script = node?.ToECMAScript();
 
@@ -2597,7 +2597,7 @@ public sealed class SemanticWalkerPatternTest
     var switchOperation = GetOperationAt<ISwitchOperation>(block, 1);
     var patternCaseClause = (IPatternCaseClauseOperation)switchOperation.Cases.First()!.Clauses.First()!;
     // 直接调用需要提供 PatternInput
-    var arg = new SenseArgument(Depend: new WalkerArgument(), PatternInput: new Identifier("v$0"));
+    var arg = new SenseArgument(PatternInput: new Identifier("v$0"));
     var node = walker.VisitPatternCaseClause(patternCaseClause, arg);
     var script = node?.ToECMAScript();
 
