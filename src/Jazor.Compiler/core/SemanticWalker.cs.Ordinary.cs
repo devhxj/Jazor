@@ -62,17 +62,12 @@ public partial class SemanticWalker
 		}
 
 		// 根据上下文判断返回不同类型的语句块
-		// 如果父节点是方法或函数，返回 FunctionBody
-		if (operation.Parent is IMethodBodyOperation ||
-			operation.Parent is ILocalFunctionOperation ||
-			operation.Parent is IAnonymousFunctionOperation ||
-			operation.Parent is IConstructorBodyOperation)
+		// 如果 Sense 是 FunctionBody，返回 FunctionBody
+		if (argument.Sense == Sense.FunctionBody)
 			return new FunctionBody(NodeList.From(statements), strict: true);
 
-		// 如果父节点是类型或类定义的静态初始化块，返回 StaticBlock
-		if (operation.Parent is IFieldInitializerOperation &&
-			operation.Parent is IFieldReferenceOperation fieldRef &&
-			fieldRef.Field.IsStatic)
+		// 如果 Sense 是 StaticBlock，返回 StaticBlock
+		if (argument.Sense == Sense.StaticBlock)
 			return new StaticBlock(NodeList.From(statements));
 
 		// 默认情况返回 NestedBlockStatement
@@ -994,6 +989,12 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitArgument(IArgumentOperation operation, SenseArgument argument)
 	{
+		// 如果是 out 参数，传递 OutParameter 上下文
+		if (operation.Parameter.RefKind == Microsoft.CodeAnalysis.RefKind.Out)
+		{
+			var outArg = argument.With(Sense.OutParameter);
+			return Visit(operation.Value, outArg);
+		}
 		return Visit(operation.Value, argument);
 	}
 

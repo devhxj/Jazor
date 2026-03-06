@@ -129,7 +129,7 @@ public partial class SemanticWalker
 	public override Node? VisitDeclarationExpression(IDeclarationExpressionOperation operation, SenseArgument argument)
 	{
 		var expr = Translate<Expression>(operation.Expression, argument);
-		if (operation.Parent is IArgumentOperation)
+		if (argument.Sense == Sense.OutParameter)
 		{
 			var declarator = new VariableDeclarator(expr, null);
 			argument.AddVarDeclarator(declarator, _recursionDepth);

@@ -245,28 +245,51 @@ public partial class SemanticWalker
 		=> HandleTransformationFailure<Node>(operation, "Address of operator is not supported in JavaScript conversion.");
 
 	/// <summary>
-	/// 处理方法体操作（编译器内部）
-	/// 这是编译器内部使用的操作，不对应具体的 C# 语法
-	/// 转换结果：不支持
-	/// 原因：编译器内部操作，不对应具体的 C# 语法，无法转换为 JavaScript
+	/// 处理方法体操作
+	/// C# 示例：
+	/// void Method() { /* 方法体 */ }
+	/// int GetValue() => 42;  // 表达式体
+	/// 转换结果：转换为 FunctionBody
 	/// </summary>
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitMethodBodyOperation(IMethodBodyOperation operation, SenseArgument argument)
-		=> HandleTransformationFailure<Node>(operation, "Method body operations are not supported in JavaScript conversion.");
+	{
+		// 如果有块体，直接访问块
+		if (operation.BlockBody is not null)
+			return Visit(operation.BlockBody, argument);
+
+		// 如果有表达式体，转换为返回语句
+		if (operation.ExpressionBody is not null)
+		{
+			var expr = Translate<Expression>(operation.ExpressionBody, argument);
+			var returnStmt = new ReturnStatement(expr);
+			return new FunctionBody(NodeList.From<Statement>(returnStmt), strict: true);
+		}
+
+		return HandleTransformationFailure<Node>(operation, "Method body has neither block nor expression body.");
+	}
 
 	/// <summary>
-	/// 处理构造函数体操作（编译器内部）
-	/// 这是编译器内部使用的操作，不对应具体的 C# 语法
-	/// 转换结果：不支持
-	/// 原因：编译器内部操作，不对应具体的 C# 语法，无法转换为 JavaScript
+	/// 处理构造函数体操作
+	/// C# 示例：
+	/// class MyClass {
+	///     MyClass() { /* 构造函数体 */ }
+	/// }
+	/// 转换结果：转换为 FunctionBody
 	/// </summary>
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitConstructorBodyOperation(IConstructorBodyOperation operation, SenseArgument argument)
-		=> HandleTransformationFailure<Node>(operation, "Constructor body operations are not supported in JavaScript conversion.");
+	{
+		// 如果有块体，直接访问块
+		if (operation.BlockBody is not null)
+			return Visit(operation.BlockBody, argument);
+
+		return HandleTransformationFailure<Node>(operation, "Constructor body has no block body.");
+	}
 
 	/// <summary>
 	/// 处理捕获异常操作（编译器内部）

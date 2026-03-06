@@ -143,7 +143,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         if (operation is not null)
         {
             var walker = new SemanticWalker();
-            body = walker.Visit(operation, new()) as FunctionBody
+            var argument = new SenseArgument(Sense.FunctionBody);
+            body = walker.Visit(operation, argument) as FunctionBody
                 ?? throw new NotSupportedException($"Jazor cannot suport {symbol.Name}.");
         }
         //如果没有方法体，并且是属性的get、set方法，则是自动属性
@@ -252,7 +253,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         if (operation is not null)
         {
             var walker = new SemanticWalker();
-            body = walker.Visit(operation, new()) as FunctionBody
+            var argument = new SenseArgument(Sense.FunctionBody);
+            body = walker.Visit(operation, argument) as FunctionBody
                 ?? throw new NotSupportedException($"Jazor 不支持转换方法 {symbol.Name}，无法从操作生成函数体。");
         }
         //如果没有方法体，并且是属性的get、set方法，则是自动属性
