@@ -254,18 +254,16 @@ public sealed class SemanticWalkerDeclarationTest
 
         Assert.AreEqual(
 @"{
+  let value, v$0, v$1, result, v$2;
   let input = ""123"";
   let dict = new Map;
-  let value, v$0;
   if (v$0 = _7db4d9112b4ba3c4(dict, ""key"", value), value = v$0[1], v$0[0]) {
     console.log(value);
   }
   let a;
-  let v$1;
   if (v$1 = _16e2a901535b765e(input, a), a = v$1[1], v$1[0]) {
     console.log(a);
   }
-  let result, v$2;
   if (v$2 = _16e2a901535b765e(input, result), result = v$2[1], v$2[0]) {
     console.log(result);
   }
@@ -342,16 +340,15 @@ public sealed class SemanticWalkerDeclarationTest
 
         Assert.AreEqual(
 @"{
+  let result, v$0, v$1;
   let x = 10;
   let a = 1, b = 2, c;
   let numbers = [1, 2, 3];
   let input = ""123"";
-  let result, v$0;
   if (v$0 = _16e2a901535b765e(input, result), result = v$0[1], v$0[0]) {
     console.log(result);
   }
   let cc;
-  let v$1;
   if (v$1 = _16e2a901535b765e(input, cc), cc = v$1[1], v$1[0]) {
     console.log(cc);
   }
@@ -534,12 +531,11 @@ public sealed class SemanticWalkerDeclarationTest
 
         Assert.AreEqual(
 @"{
+  let bb, v$1, dd, v$3;
   let a = this.test.bind(this);
   a(1, ""2"");
-  let bb, v$1;
   let ab = (v$1 = _16e2a901535b765e(""1"", bb), bb = v$1[1], v$1[0]);
   let cc = (v$2$0, v$2$1) => _16e2a901535b765e(v$2$0, v$2$1);
-  let dd, v$3;
   v$3 = cc(""1"", dd), dd = v$3[1], v$3[0];
 }", script);
 

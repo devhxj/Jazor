@@ -1370,8 +1370,8 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(
 @"{
-  let array = [1, 2, 3, 4, 5];
   let rest;
+  let array = [1, 2, 3, 4, 5];
   if (Array.isArray(array) && array.length >= 0 && (rest = array.slice(0), true)) {
     console.log(rest.length);
   }
@@ -1530,8 +1530,8 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(
 @"{
-  let array = [1, 2, 3, 4, 5];
   let first, rest;
+  let array = [1, 2, 3, 4, 5];
   if (Array.isArray(array) && array.length >= 1 && (first = array[0], true) && (rest = array.slice(1), true)) {
     console.log(first);
     console.log(rest.length);
@@ -1565,14 +1565,16 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
-  let array = [1, 2, 3, 4, 5];
+    Assert.AreEqual(
+@"{
   let first, last;
+  let array = [1, 2, 3, 4, 5];
   if (Array.isArray(array) && array.length >= 2 && (first = array[0], true) && (last = array[array.length - 1], true)) {
     console.log(first);
     console.log(last);
   }
 }", script);
+
   }
 
   /// <summary>
@@ -1690,8 +1692,8 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let obj = 42;
   let value;
+  let obj = 42;
   if (typeof obj === ""number"" && (value = obj, true)) {
     console.log(value);
   }
@@ -1846,8 +1848,8 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(
 @"{
-  let array = [1, 2, 3, 4, 5];
   let first, second, rest;
+  let array = [1, 2, 3, 4, 5];
   if (Array.isArray(array) && array.length >= 2 && (first = array[0], true) && (second = array[1], true) && (rest = array.slice(2), true)) {
     console.log(first);
     console.log(second);
@@ -2220,8 +2222,8 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let tuple = { Item1: 1, Item2: ""hello"" };
   let x, s;
+  let tuple = { Item1: 1, Item2: ""hello"" };
   let result = typeof tuple.Item1 === ""number"" && (x = tuple.Item1, true) && (typeof tuple.Item2 === ""string"" && (s = tuple.Item2, true));
 }", script);
   }
@@ -2248,8 +2250,8 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let tuple = { Item1: 1, Item2: ""hello"" };
   let x, s;
+  let tuple = { Item1: 1, Item2: ""hello"" };
   let result = typeof tuple.Item1 === ""number"" && (x = tuple.Item1, true) && (typeof tuple.Item2 === ""string"" && (s = tuple.Item2, true)) && x > 0;
 }", script);
   }
@@ -2333,8 +2335,8 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let value = 42;
   let v;
+  let value = 42;
   if (typeof value === ""number"" && (v = value, true)) {
     console.log(v);
   }
@@ -2363,8 +2365,8 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let obj = 42;
   let x, y;
+  let obj = 42;
   let result = typeof obj === ""number"" && (x = obj, true) && (typeof obj === ""number"" && (y = obj, true));
 }", script);
   }
@@ -2394,8 +2396,8 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let array = [1, 2, 3];
   let a, b, c;
+  let array = [1, 2, 3];
   if (Array.isArray(array) && array.length === 3 && (a = array[0], true) && (b = array[1], true) && (c = array[2], true)) {
     console.log(a + b + c);
   }
@@ -2850,8 +2852,8 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let array = [1, 2, 3];
   let last;
+  let array = [1, 2, 3];
   if (Array.isArray(array) && array.length >= 1 && (last = array[array.length - 1], true) && last > 0) {
     console.log(last);
   }
@@ -3104,8 +3106,8 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(
 @"{
-  let obj = { X: 1, Y: 2 };
   let x;
+  let obj = { X: 1, Y: 2 };
   let result = (() => {
     const v$0 = obj;
     if (v$0 != null && (""X"" in v$0 && v$0.X === 1) && (v$0 != null && (""Y"" in v$0 && v$0.Y === 2)))
@@ -3540,8 +3542,8 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let value = null;
   let actual;
+  let value = null;
   if (typeof value === ""number"" && (actual = value, true)) {
     console.log(actual);
   }
@@ -3573,8 +3575,8 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let value = 42;
   let actual;
+  let value = 42;
   if (typeof value === ""number"" && (actual = value, true)) {
     console.log(actual);
   }
@@ -3609,8 +3611,8 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let obj = 42;
   let x;
+  let obj = 42;
   if (typeof obj === ""number"" && (x = obj, true)) {
     let y;
     if (x > 0 && (y = x, true)) {
@@ -3747,8 +3749,8 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let point = new Point(1, 2);
   let x, y;
+  let point = new Point(1, 2);
   if (point instanceof Point && (x = point.X, true) && (y = point.Y, true)) {
     console.log(`(${x}, ${y})`);
   }
@@ -3785,9 +3787,10 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
-  let value = 5;
+    Assert.AreEqual(
+@"{
   let x;
+  let value = 5;
   let result = (() => {
     const v$0 = value;
     if ((x = v$0, true) && (x > 0 && x < 10))
@@ -3797,6 +3800,7 @@ line2"";
     return ""Unknown"";
   })();
 }", script);
+
   }
 
   /// <summary>
@@ -3827,8 +3831,8 @@ line2"";
 
     Assert.AreEqual(
 @"{
-  let obj = { Value: 42 };
   let v;
+  let obj = { Value: 42 };
   let result = (() => {
     const v$0 = obj;
     if (v$0 != null && (""Value"" in v$0 && (v = v$0.Value, true)) && v > 0)
@@ -3926,8 +3930,8 @@ line2"";
 
     Assert.AreEqual(
 @"{
-  let array = [1, 2, 3, 4, 5];
   let first, second, rest, last;
+  let array = [1, 2, 3, 4, 5];
   if (Array.isArray(array) && array.length >= 3 && (first = array[0], true) && (second = array[1], true) && (rest = array.slice(2, -1), true) && (last = array[array.length - 1], true)) {
     console.log(`${first}, ${second}, ${rest.length}, ${last}`);
   }
@@ -4020,8 +4024,8 @@ line2"";
 
     Assert.AreEqual(
 @"{
-  let obj = { Items: [1, 2, 3] };
   let first;
+  let obj = { Items: [1, 2, 3] };
   let result = obj != null && (""Items"" in obj && (Array.isArray(obj.Items) && obj.Items.length >= 1 && (first = obj.Items[0], true) && (Array.isArray(obj.Items) && (obj.Items != null && (""length"" in obj.Items && obj.Items.length > 0)))));
 }", script);
 
@@ -4083,8 +4087,8 @@ line2"";
 
     Assert.AreEqual(
 @"{
-  let obj = { Inner: { Value: 42 } };
   let v;
+  let obj = { Inner: { Value: 42 } };
   let result = obj != null && (""Inner"" in obj && (obj.Inner != null && (""Value"" in obj.Inner && (v = obj.Inner.Value, true))));
 }", script);
 
@@ -4124,8 +4128,8 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let obj = 42;
   let s, x;
+  let obj = 42;
   (() => {
     const v$0 = obj;
     if (typeof v$0 === ""string"" && (s = v$0, true)) {
@@ -4468,8 +4472,8 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let numbers = [1, 2, 3, 4, 5];
   let first, second, last;
+  let numbers = [1, 2, 3, 4, 5];
   let result = (() => {
     const v$0 = numbers;
     if (Array.isArray(v$0) && v$0.length >= 2 && (first = v$0[0], true) && (second = v$0[1], true) && first > 0)
@@ -4729,12 +4733,11 @@ line2"";
     // 注意：变量可能在同一行或不同行声明
     Assert.AreEqual(
 @"{
+  let s, s2;
   let obj1 = ""hello"";
-  let s;
   if (typeof obj1 === ""string"" && (s = obj1, true) && s.length > 0) {
     console.log(s);
   }
-  let s2;
   if (typeof obj1 === ""string"" && (s2 = obj1, true) && s2.length > 0) {
     console.log(s2);
   }
@@ -4782,11 +4785,11 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+  @"{
+  let x, s;
   let value = 5;
-  let x;
   let result = value > 9 && (value > 0 && value < 10 && !(value === 5)) && ((x = value, true) && x < 10);
-  let s;
   (() => {
     const v$0 = value;
     if ((s = v$0, true) && s > 0) {
@@ -4805,6 +4808,7 @@ line2"";
     return;
   })();
 }", script);
+
   }
 
 

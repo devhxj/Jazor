@@ -129,25 +129,20 @@ public sealed class SemanticWalkerTupleTest
 
         Assert.AreEqual(
 @"{
+  let bbb, ccc, qqq, fff, ggg, hhh, f44, g44, h44, v$0, zzz, yyy, z99, y99, v$1;
   let tuple = { aaa: 1, Item2: 2 };
-  let bbb, ccc;
   bbb = tuple.aaa, ccc = tuple.Item2;
   let ddd, eee;
   ddd = tuple.aaa, eee = tuple.Item2;
   let kkk;
-  let qqq;
   kkk = tuple.aaa, qqq = tuple.Item2;
-  let fff, ggg, hhh;
   fff = 2, ggg = tuple.aaa, hhh = tuple.Item2;
-  let f44, g44, h44;
   f44 = 2, g44 = tuple.aaa, h44 = tuple.Item2;
   let func = (x, y) => {
     return { mmm: x, y: y };
   };
-  let v$0, zzz, yyy;
   v$0 = func(2, 5), zzz = v$0.mmm, yyy = v$0.y;
   let p = new Point;
-  let z99, y99, v$1;
   v$1 = p.Deconstruct(z99, y99), z99 = v$1[0], y99 = v$1[1];
 }", script);
 
@@ -333,8 +328,8 @@ public sealed class SemanticWalkerTupleTest
 
         Assert.AreEqual(
 @"{
-  let tuple = { aaa: 1, Item2: 2 };
   let bbb, ccc;
+  let tuple = { aaa: 1, Item2: 2 };
   bbb = tuple.aaa, ccc = tuple.Item2;
 }", script);
 
@@ -395,9 +390,9 @@ public sealed class SemanticWalkerTupleTest
 
         Assert.AreEqual(
 @"{
+  let ccc;
   let tuple = { aaa: 1, Item2: 2 };
   let bbb;
-  let ccc;
   bbb = tuple.aaa, ccc = tuple.Item2;
 }", script);
 
@@ -426,8 +421,8 @@ public sealed class SemanticWalkerTupleTest
 
         Assert.AreEqual(
 @"{
-  let tuple = { outer: { inner: 1, Item2: 2 }, Item2: 3 };
   let bbb, ccc, aaa;
+  let tuple = { outer: { inner: 1, Item2: 2 }, Item2: 3 };
   bbb = tuple.outer.inner, ccc = tuple.outer.Item2, aaa = tuple.Item2;
 }", script);
 
@@ -487,8 +482,8 @@ public sealed class SemanticWalkerTupleTest
 
         Assert.AreEqual(
 @"{
-  let tuple = { aaa: 1, Item2: 2 };
   let ccc;
+  let tuple = { aaa: 1, Item2: 2 };
   ccc = tuple.Item2;
 }", script);
 
@@ -823,12 +818,12 @@ public sealed class SemanticWalkerTupleTest
 
         Assert.AreEqual(
 @"{
+  let second;
   let tuple = {
     Item1: 1,
     Item2: 2,
     Item3: 3
   };
-  let second;
   second = tuple.Item2;
 }", script);
 
@@ -897,8 +892,8 @@ public sealed class SemanticWalkerTupleTest
 
         Assert.AreEqual(
 @"{
-  let point = new Point(1, 2);
   let x, y, v$0;
+  let point = new Point(1, 2);
   v$0 = point.Deconstruct(x, y), x = v$0[0], y = v$0[1];
 }", script);
 
@@ -938,9 +933,9 @@ public sealed class SemanticWalkerTupleTest
 
         Assert.AreEqual(
 @"{
+  let v$0, v$1, w, j, g, z;
   let point = new Point(1, { Item1: 2, Item2: 3 });
   let x;
-  let v$0, v$1, w, j, g, z;
   v$1 = point.Deconstruct(x, v$0), x = v$1[0], v$0 = v$1[1], w = v$0.Item1.Item1, j = v$0.Item1.Item2.Item1, g = v$0.Item1.Item2.Item2, z = v$0.b;
 }", script);
 
@@ -980,9 +975,9 @@ public sealed class SemanticWalkerTupleTest
 
         Assert.AreEqual(
 @"{
+  let v$0, v$1, w, j, g, z;
   let point = new Point(1, { Item1: 2, Item2: 3 });
   let x;
-  let v$0, v$1, w, j, g, z;
   v$1 = point.Deconstruct(x, v$0), x = v$1[0], v$0 = v$1[1], w = v$0.Item1.Item1, j = v$0.Item1.Item2.Item1, g = v$0.Item1.Item2.Item2, z = v$0.b;
 }", script);
 
@@ -1044,8 +1039,8 @@ public sealed class SemanticWalkerTupleTest
 
         Assert.AreEqual(
 @"{
-  let p = new Point;
   let z99, y99, v$0;
+  let p = new Point;
   v$0 = p.Deconstruct(z99, y99), z99 = v$0[0], y99 = v$0[1];
 }", script);
 

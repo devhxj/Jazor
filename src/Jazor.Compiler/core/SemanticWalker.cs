@@ -217,9 +217,6 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         return GetWhiteListExpression(symbol, context, args, out alias);
     }
 
-    // Note: Parser is not thread-safe, so we create a new instance each time
-    // instead of using a static field to avoid race conditions in parallel tests
-
     private int _recursionDepth;
 
     /// <summary>

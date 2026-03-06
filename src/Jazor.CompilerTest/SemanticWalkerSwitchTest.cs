@@ -564,8 +564,8 @@ public sealed class SemanticWalkerSwitchTest
 		// 类型模式中的变量声明通过逗号表达式转换为赋值
 		Assert.AreEqual(
 @"{
-  let obj = ""hello"";
   let s, i;
+  let obj = ""hello"";
   (() => {
     const v$0 = obj;
     if (v$0 === null) {
@@ -579,6 +579,7 @@ public sealed class SemanticWalkerSwitchTest
     }
   })();
 }", script);
+
 	}
 
 	/// <summary>

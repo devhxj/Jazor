@@ -1081,21 +1081,30 @@ public partial class SemanticWalker
 				}
 			}
 
-			// 处理 case 体
-			var bodyStatements = new List<Statement>();
+			// 处理 case 体：隔离 scope，变量声明留在 case 块内
+			var caseCtx = caseArg.WithNewScope();
+			var casePending = new List<Statement>();
 			foreach (var bodyOp in switchCase.Body)
 			{
 				// 此处会下沉检测是否使用了goto
-				var node = Visit(bodyOp, argument);
+				var node = Visit(bodyOp, caseCtx);
 				if (bodyOp.Kind == OperationKind.Branch)
-					bodyStatements.Add(new ReturnStatement(null));
+					casePending.Add(new ReturnStatement(null));
 
 				else if (node is Statement stmt)
-					bodyStatements.Add(stmt);
+					casePending.Add(stmt);
 
 				else if (node is Expression expr)
-					bodyStatements.Add(new NonSpecialExpressionStatement(expr));
+					casePending.Add(new NonSpecialExpressionStatement(expr));
 			}
+
+			var bodyStatements = new List<Statement>();
+			if (caseCtx.HasVarDeclarator)
+			{
+				var declarators = caseCtx.FlushVarDeclarator();
+				bodyStatements.Add(new VariableDeclaration(VariableDeclarationKind.Let, declarators));
+			}
+			bodyStatements.AddRange(casePending);
 
 			// 如果有条件
 			if (conditions.Count > 0)

@@ -245,53 +245,6 @@ public partial class SemanticWalker
 		=> HandleTransformationFailure<Node>(operation, "Address of operator is not supported in JavaScript conversion.");
 
 	/// <summary>
-	/// 处理方法体操作
-	/// C# 示例：
-	/// void Method() { /* 方法体 */ }
-	/// int GetValue() => 42;  // 表达式体
-	/// 转换结果：转换为 FunctionBody
-	/// </summary>
-	/// <param name="operation">当前访问的operation</param>
-	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitMethodBodyOperation(IMethodBodyOperation operation, SenseArgument argument)
-	{
-		// 如果有块体，直接访问块
-		if (operation.BlockBody is not null)
-			return Visit(operation.BlockBody, argument);
-
-		// 如果有表达式体，转换为返回语句
-		if (operation.ExpressionBody is not null)
-		{
-			var expr = Translate<Expression>(operation.ExpressionBody, argument);
-			var returnStmt = new ReturnStatement(expr);
-			return new FunctionBody(NodeList.From<Statement>(returnStmt), strict: true);
-		}
-
-		return HandleTransformationFailure<Node>(operation, "Method body has neither block nor expression body.");
-	}
-
-	/// <summary>
-	/// 处理构造函数体操作
-	/// C# 示例：
-	/// class MyClass {
-	///     MyClass() { /* 构造函数体 */ }
-	/// }
-	/// 转换结果：转换为 FunctionBody
-	/// </summary>
-	/// <param name="operation">当前访问的operation</param>
-	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitConstructorBodyOperation(IConstructorBodyOperation operation, SenseArgument argument)
-	{
-		// 如果有块体，直接访问块
-		if (operation.BlockBody is not null)
-			return Visit(operation.BlockBody, argument);
-
-		return HandleTransformationFailure<Node>(operation, "Constructor body has no block body.");
-	}
-
-	/// <summary>
 	/// 处理捕获异常操作（编译器内部）
 	/// 这是编译器内部使用的操作，表示在 catch 块中捕获的异常
 	/// 转换结果：不支持
@@ -537,4 +490,15 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitInlineArrayAccess(IInlineArrayAccessOperation operation, SenseArgument argument)
 		=> HandleTransformationFailure<Node>(operation, "Inline array access operations are not supported in JavaScript conversion.");
+
+	/// <summary>
+	/// 处理 IInvalidOperation，它包装了在当前上下文中无法用单一类型表示其结果的操作。
+	/// 此方法会尝试解包结合语法节点和子操作实现语义的精准匹配（不支持dynamic，不用考虑这个）。
+	/// 在诊断器没有异常的情况下，理论上不会触发这个方法
+	/// </summary>
+	/// <param name="operation">当前访问的 IInvalidOperation。</param>
+	/// <param name="argument">当前访问的 operation 的根 operation。</param>
+	/// <returns>转换后的 Acornima AST Node。</returns>
+	public override Node? VisitInvalid(IInvalidOperation operation, SenseArgument argument)
+		=> HandleTransformationFailure<Node>(operation, "Invalid operations are not supported in JavaScript conversion.");
 }

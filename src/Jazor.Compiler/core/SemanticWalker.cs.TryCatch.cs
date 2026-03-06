@@ -24,12 +24,20 @@ public partial class SemanticWalker
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitTry(ITryOperation operation, SenseArgument argument)
     {
-        var bodyStatements = new List<Statement>();
+        // try 体：隔离 scope，变量声明不泄漏到 try 外
+        var tryCtx = argument.WithNewScope();
+        var tryPending = new List<Statement>();
         foreach (var stmt in operation.Body.Operations)
+            Translate(tryPending, stmt, tryCtx);
+
+        var tryBodyStatements = new List<Statement>();
+        if (tryCtx.HasVarDeclarator)
         {
-            Translate(bodyStatements, stmt, argument);
+            var declarators = tryCtx.FlushVarDeclarator();
+            tryBodyStatements.Add(new VariableDeclaration(VariableDeclarationKind.Let, declarators));
         }
-        var block = new NestedBlockStatement(NodeList.From(bodyStatements));
+        tryBodyStatements.AddRange(tryPending);
+        var block = new NestedBlockStatement(NodeList.From(tryBodyStatements));
 
         // js只有单catch，多个catch需要合并成一个catch，在内部使用if分支
         CatchClause? handler = null;
@@ -77,12 +85,20 @@ public partial class SemanticWalker
         NestedBlockStatement? finalizer = null;
         if (operation.Finally is not null)
         {
-            var finallyStatements = new List<Statement>();
+            // finally 体：隔离 scope，变量声明不泄漏到 try 外
+            var finallyCtx = argument.WithNewScope();
+            var finallyPending = new List<Statement>();
             foreach (var stmt in operation.Finally.Operations)
+                Translate(finallyPending, stmt, finallyCtx);
+
+            var finallyBodyStatements = new List<Statement>();
+            if (finallyCtx.HasVarDeclarator)
             {
-                Translate(finallyStatements, stmt, argument);
+                var declarators = finallyCtx.FlushVarDeclarator();
+                finallyBodyStatements.Add(new VariableDeclaration(VariableDeclarationKind.Let, declarators));
             }
-            finalizer = new NestedBlockStatement(NodeList.From(finallyStatements));
+            finallyBodyStatements.AddRange(finallyPending);
+            finalizer = new NestedBlockStatement(NodeList.From(finallyBodyStatements));
         }
 
         return new TryStatement(block, handler, finalizer);
@@ -163,21 +179,30 @@ public partial class SemanticWalker
             bodyStatements.Add(filterCheck);
         }
 
-        // 传递异常参数名给子操作（用于 re-throw）
-        var catchContext = exceptionParam is not null
+        // catch 体：隔离 scope，变量声明不泄漏到 catch 外
+        // 同时传递异常参数名（用于 re-throw）
+        var catchContext = (exceptionParam is not null
             ? argument.WithCatchVar(exceptionParam.Name)
-            : argument;
+            : argument).WithNewScope();
 
+        var catchPending = new List<Statement>();
         foreach (var stmt in operation.Handler.Operations)
         {
             var node = Visit(stmt, catchContext);
             if (node is Statement statement)
-                bodyStatements.Add(statement);
+                catchPending.Add(statement);
             else if (node is Expression expr)
-                bodyStatements.Add(new NonSpecialExpressionStatement(expr));
+                catchPending.Add(new NonSpecialExpressionStatement(expr));
             else
                 HandleTransformationFailure<Node>(stmt, "Try statement catch clause could not be translated to JavaScript.");
         }
+
+        if (catchContext.HasVarDeclarator)
+        {
+            var declarators = catchContext.FlushVarDeclarator();
+            bodyStatements.Add(new VariableDeclaration(VariableDeclarationKind.Let, declarators));
+        }
+        bodyStatements.AddRange(catchPending);
         return bodyStatements;
     }
 

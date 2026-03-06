@@ -25,22 +25,13 @@ public partial class SemanticWalker
 	public override Node? VisitBlock(IBlockOperation operation, SenseArgument argument)
 	{
 		var ctx = argument.WithNewScope();
-		var statements = new List<Statement>();
+		var pendingStatements = new List<Statement>();
 		foreach (var stmt in operation.Operations)
 		{
 			var node = Visit(stmt, ctx);
 
-			// 在statement之间，理论上C#代码那边也不会存在同级别statement出现同样的名称，编译器会报错的
-			// 即使是不同级别statement，变量名称相同，在存在作用域交叉的情况下 也会报错，而用{}隔离那明显是跨statement了
-			if (ctx.HasVarDeclarator)
-			{
-				var declarators = ctx.FlushVarDeclarator();
-				var declaration = new VariableDeclaration(VariableDeclarationKind.Let, declarators);
-				statements.Add(declaration);
-			}
-
 			if (node is Statement statement)
-				statements.Add(statement);
+				pendingStatements.Add(statement);
 
 			else if (node is Expression expr)
 			{
@@ -48,30 +39,84 @@ public partial class SemanticWalker
 				if (expr is SequenceExpression seqExpr)
 				{
 					if (seqExpr.Expressions.Count == 1)
-						statements.Add(new NonSpecialExpressionStatement(seqExpr.Expressions[0]));
+						pendingStatements.Add(new NonSpecialExpressionStatement(seqExpr.Expressions[0]));
 
 					else if (seqExpr.Expressions.Count > 1)
-						statements.Add(new NonSpecialExpressionStatement(expr));
+						pendingStatements.Add(new NonSpecialExpressionStatement(expr));
 				}
 				else
-					statements.Add(new NonSpecialExpressionStatement(expr));
+					pendingStatements.Add(new NonSpecialExpressionStatement(expr));
 			}
 
 			else
 				HandleTransformationFailure<Node>(stmt, $"{stmt.Kind} could not be translated to JavaScript.");
 		}
 
+		// 所有 stmt 处理完后，将 out/pattern 变量声明集中提升到块顶
+		// C# 编译器保证同一作用域内不会有同名变量，提升是安全的
+		var statements = new List<Statement>();
+		if (ctx.HasVarDeclarator)
+		{
+			var declarators = ctx.FlushVarDeclarator();
+			statements.Add(new VariableDeclaration(VariableDeclarationKind.Let, declarators));
+		}
+		statements.AddRange(pendingStatements);
+
 		// 根据上下文判断返回不同类型的语句块
-		// 如果 Sense 是 FunctionBody，返回 FunctionBody
 		if (argument.Sense == Sense.FunctionBody)
 			return new FunctionBody(NodeList.From(statements), strict: true);
 
-		// 如果 Sense 是 StaticBlock，返回 StaticBlock
 		if (argument.Sense == Sense.StaticBlock)
 			return new StaticBlock(NodeList.From(statements));
 
-		// 默认情况返回 NestedBlockStatement
 		return new NestedBlockStatement(NodeList.From(statements));
+	}
+
+	/// <summary>
+	/// 处理方法体操作
+	/// C# 示例：
+	/// void Method() { /* 方法体 */ }
+	/// int GetValue() => 42;  // 表达式体
+	/// 转换结果：转换为 FunctionBody
+	/// </summary>
+	/// <param name="operation">当前访问的operation</param>
+	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+	/// <returns>Acornima的ESTree的Node</returns>
+	public override Node? VisitMethodBodyOperation(IMethodBodyOperation operation, SenseArgument argument)
+	{
+		// 如果有块体，直接访问块
+		if (operation.BlockBody is not null)
+			return Visit(operation.BlockBody, argument);
+
+		// 如果有表达式体，转换为返回语句
+		if (operation.ExpressionBody is not null)
+		{
+			var expr = Translate<Expression>(operation.ExpressionBody, argument);
+			var returnStmt = new ReturnStatement(expr);
+			return new FunctionBody(NodeList.From<Statement>(returnStmt), strict: true);
+		}
+
+		return HandleTransformationFailure<Node>(operation, "Method body has neither block nor expression body.");
+	}
+
+	/// <summary>
+	/// 处理构造函数体操作
+	/// C# 示例：
+	/// class MyClass {
+	///     MyClass() { /* 构造函数体 */ }
+	/// }
+	/// 转换结果：转换为 FunctionBody
+	/// </summary>
+	/// <param name="operation">当前访问的operation</param>
+	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+	/// <returns>Acornima的ESTree的Node</returns>
+	public override Node? VisitConstructorBodyOperation(IConstructorBodyOperation operation, SenseArgument argument)
+	{
+		// 如果有块体，直接访问块
+		if (operation.BlockBody is not null)
+			return Visit(operation.BlockBody, argument);
+
+		return HandleTransformationFailure<Node>(operation, "Constructor body has no block body.");
 	}
 
 	/// <summary>
@@ -187,20 +232,31 @@ public partial class SemanticWalker
 		foreach (var param in operation.Symbol.Parameters)
 			parameters.Add(new Identifier(param.Name));
 
-		var bodyStatements = new List<Statement>();
+		// 函数边界：隔离 _declarators，共享 _specifiers（import 需跨函数边界传播）
+		var bodyCtx = argument.WithNewScope();
+		var pendingStatements = new List<Statement>();
 		if (operation.Body is not null)
 		{
 			foreach (var stmt in operation.Body.Operations)
 			{
-				var node = Visit(stmt, argument);
+				var node = Visit(stmt, bodyCtx);
 				if (node is Statement statement)
-					bodyStatements.Add(statement);
+					pendingStatements.Add(statement);
 				else if (node is Expression expr)
-					bodyStatements.Add(new NonSpecialExpressionStatement(expr));
+					pendingStatements.Add(new NonSpecialExpressionStatement(expr));
 				else
 					HandleTransformationFailure<Node>(stmt, "Local function statement could not be translated to JavaScript.");
 			}
 		}
+
+		// 将函数体内的变量声明提升到函数体顶部
+		var bodyStatements = new List<Statement>();
+		if (bodyCtx.HasVarDeclarator)
+		{
+			var declarators = bodyCtx.FlushVarDeclarator();
+			bodyStatements.Add(new VariableDeclaration(VariableDeclarationKind.Let, declarators));
+		}
+		bodyStatements.AddRange(pendingStatements);
 
 		var body = new FunctionBody(NodeList.From(bodyStatements), strict: true);
 
@@ -481,10 +537,6 @@ public partial class SemanticWalker
 		//     void TestMethod() { Action action = MyMethod; }
 		//     void MyMethod() { }
 		// }
-		if (operation.Operand.Kind == OperationKind.None &&
-			operation.Operand.Syntax is IdentifierNameSyntax)
-			return ConvertFromSyntaxNode(operation.Operand.Syntax);
-
 		var expr = Translate<Expression>(operation.Operand, argument);
 
 		// 处理 Number 与 BigInt 之间的显式转换
@@ -730,19 +782,30 @@ public partial class SemanticWalker
 			parameters.Add(new Identifier(paramName));
 		}
 
-		var statements = new List<Statement>();
+		// 函数边界：隔离 _declarators，共享 _specifiers（import 需跨函数边界传播）
+		var bodyCtx = argument.WithNewScope();
+		var pendingStatements = new List<Statement>();
 		foreach (var stmt in operation.Body.Operations)
 		{
-			var node = Visit(stmt, argument);
+			var node = Visit(stmt, bodyCtx);
 			if (node is Statement statement)
-				statements.Add(statement);
+				pendingStatements.Add(statement);
 			else if (node is Expression expr)
-				statements.Add(new NonSpecialExpressionStatement(expr));
+				pendingStatements.Add(new NonSpecialExpressionStatement(expr));
 			else
 				return HandleTransformationFailure<Node>(stmt, "Anonymous function body statement could not be translated to JavaScript.");
 		}
 
-		var body = new FunctionBody(NodeList.From(statements), strict: true);
+		// 将函数体内的变量声明提升到函数体顶部
+		var bodyStatements = new List<Statement>();
+		if (bodyCtx.HasVarDeclarator)
+		{
+			var declarators = bodyCtx.FlushVarDeclarator();
+			bodyStatements.Add(new VariableDeclaration(VariableDeclarationKind.Let, declarators));
+		}
+		bodyStatements.AddRange(pendingStatements);
+
+		var body = new FunctionBody(NodeList.From(bodyStatements), strict: true);
 
 		// 创建箭头函数
 		return new ArrowFunctionExpression(
@@ -975,7 +1038,7 @@ public partial class SemanticWalker
 	public override Node? VisitArgument(IArgumentOperation operation, SenseArgument argument)
 	{
 		// 如果是 out 参数，传递 OutParameter 上下文
-		if (operation.Parameter.RefKind == Microsoft.CodeAnalysis.RefKind.Out)
+		if (operation.Parameter?.RefKind == RefKind.Out)
 		{
 			var outArg = argument.With(Sense.OutParameter);
 			return Visit(operation.Value, outArg);
