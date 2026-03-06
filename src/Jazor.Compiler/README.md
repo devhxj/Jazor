@@ -42,6 +42,8 @@ Jazor.Compiler 是 Jazor 项目的核心编译器模块，负责将 C# 代码（
 | 移除向上遍历 | ✅ 完成 |
 | PatternInput 上下文传递 | ✅ 完成 |
 | 线程安全修复 | ✅ 完成 |
+| 变量声明提升到块顶 | ✅ 完成 |
+| 函数边界作用域隔离 | ✅ 完成 |
 
 ---
 
@@ -50,12 +52,13 @@ Jazor.Compiler 是 Jazor 项目的核心编译器模块，负责将 C# 代码（
 1. [目录结构](#目录结构)
 2. [核心转换架构](#核心转换架构)
 3. [语义上下文设计](#语义上下文设计)
-4. [类型映射](#类型映射)
-5. [Visit 方法规范](#visit-方法规范)
-6. [AST 节点构造](#ast-节点构造)
-7. [白名单机制](#白名单机制)
-8. [不支持特性](#不支持特性)
-9. [开发指南](#开发指南)
+4. [变量声明与作用域](#变量声明与作用域)
+5. [类型映射](#类型映射)
+6. [Visit 方法规范](#visit-方法规范)
+7. [AST 节点构造](#ast-节点构造)
+8. [白名单机制](#白名单机制)
+9. [不支持特性](#不支持特性)
+10. [开发指南](#开发指南)
 
 ---
 
@@ -219,8 +222,8 @@ public readonly record struct SenseArgument(
     // Sense 变更
     public SenseArgument With(Sense sense) => this with { Sense = sense };
 
-    // 作用域隔离
-    public SenseArgument WithNewScope() => /* 共享导入，新变量声明字典 */;
+    // 作用域隔离（共享 _specifiers，新 _declarators）
+    public SenseArgument WithNewScope() => /* ... */;
 
     // 模式匹配上下文
     public SenseArgument WithPatternInput(Expression? input) => this with { PatternInput = input };
@@ -247,10 +250,11 @@ public override Node? VisitIsPattern(IIsPatternOperation operation, SenseArgumen
 // 异常处理：传递异常参数名
 private List<Statement> ExtractCatchClauseBody(ICatchClauseOperation operation, SenseArgument argument, Identifier? exceptionParam)
 {
-    var catchContext = exceptionParam is not null
+    // 隔离 catch 体作用域
+    var catchContext = (exceptionParam is not null
         ? argument.WithCatchVar(exceptionParam.Name)
-        : argument;
-    // 子操作可以通过 argument.CatchExceptionVar 获取异常参数名
+        : argument).WithNewScope();
+    // ...
 }
 
 // Block 输出类型判断
@@ -259,6 +263,58 @@ public override Node? VisitBlock(IBlockOperation operation, SenseArgument argume
     if (argument.Sense == Sense.FunctionBody)
         return new FunctionBody(statements, strict: true);
     return new NestedBlockStatement(statements);
+}
+```
+
+---
+
+## 变量声明与作用域
+
+### 设计原则
+
+**核心原则：函数边界必须隔离作用域**
+
+凡是对应 JS 函数边界或独立作用域的地方，必须隔离 `_declarators`，共享 `_specifiers`：
+
+| 数据 | 传播方向 | 函数边界行为 |
+|------|---------|------------|
+| `_declarators`（变量声明） | 向上冒泡到最近的块 | **不能**穿越函数边界 |
+| `_specifiers`（import 声明） | 向上冒泡到模块顶层 | **必须**穿越函数边界 |
+
+### 作用域隔离位置
+
+| 方法 | 处理方式 |
+|------|---------|
+| `VisitBlock` | `WithNewScope()` + flush 移到循环后（声明提升到块顶） |
+| `VisitLocalFunction` | `WithNewScope()` + 内部自行 flush |
+| `VisitAnonymousFunction` | `WithNewScope()` + 内部自行 flush |
+| `VisitTry` | try/catch/finally 各自 `WithNewScope()` |
+| `VisitSwitchPatternMatching` | case 体 `WithNewScope()` |
+
+### 示例：函数边界隔离
+
+```csharp
+public override Node? VisitAnonymousFunction(IAnonymousFunctionOperation operation, SenseArgument argument)
+{
+    // 隔离 _declarators，共享 _specifiers
+    var bodyCtx = argument.WithNewScope();
+    var pendingStatements = new List<Statement>();
+
+    foreach (var stmt in operation.Body.Operations)
+    {
+        var node = Visit(stmt, bodyCtx);
+        // ...
+    }
+
+    // 函数体内部自行处理变量声明
+    var bodyStatements = new List<Statement>();
+    if (bodyCtx.HasVarDeclarator)
+    {
+        var declarators = bodyCtx.FlushVarDeclarator();
+        bodyStatements.Add(new VariableDeclaration(VariableDeclarationKind.Let, declarators));
+    }
+    bodyStatements.AddRange(pendingStatements);
+    // ...
 }
 ```
 
@@ -383,7 +439,8 @@ public void Visit_IsPattern_Constant() { }
 | 优先级 | 任务 | 状态 |
 |--------|------|------|
 | P1 | WalkerArgument 上下文优化 | ✅ 完成 |
-| P1 | 变量声明位置优化 | ⏳ 待评估 |
+| P1 | 变量声明位置优化 | ✅ 完成 |
+| P1 | 函数边界作用域隔离 | ✅ 完成 |
 | P2 | 测试覆盖率统计 | ⏳ 待执行 |
 | P2 | 注释统一为 XML 文档格式 | ⏳ 待执行 |
 
@@ -404,4 +461,4 @@ public void Visit_IsPattern_Constant() { }
 ---
 
 **最后更新**：2026-03-06
-**文档版本**：v1.1
+**文档版本**：v1.2

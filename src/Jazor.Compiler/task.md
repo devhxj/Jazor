@@ -37,6 +37,10 @@
 | PatternInput 上下文传递 | ✅ 完成 | 模式匹配输入显式传递 |
 | CatchExceptionVar 上下文 | ✅ 完成 | 异常参数名显式传递 |
 | 线程安全修复 | ✅ 完成 | 移除静态 Parser 实例 |
+| 变量声明提升到块顶 | ✅ 完成 | VisitBlock flush 移到循环后 |
+| 函数边界隔离 | ✅ 完成 | LocalFunction/AnonymousFunction 隔离 scope |
+| try/catch/finally 体隔离 | ✅ 完成 | 各自 WithNewScope() 防止变量泄漏 |
+| switch case 体隔离 | ✅ 完成 | IIFE 内 case 体隔离 scope |
 
 ### 1.3 核心文件状态
 
@@ -77,7 +81,7 @@ dotnet build src/Jazor.Compiler/Jazor.Compiler.csproj
 | 序号 | 任务 | 涉及文件 | 状态 | 说明 |
 |-----|------|----------|------|------|
 | 1 | WalkerArgument 上下文优化 | 全部 | ✅ 完成 | 已通过 SenseArgument 实现，移除向上遍历 |
-| 2 | 变量声明位置优化 | `SemanticWalker.cs.Declaration.cs` | ⏳ 待评估 | 将变量声明集中在块开头，改善生成代码可读性 |
+| 2 | 变量声明位置优化 | `SemanticWalker.cs.Ordinary.cs` 等 | ✅ 完成 | 声明提升到块顶，函数边界隔离 |
 
 ### 🟢 P2 - 中优先级（增强项）
 
@@ -96,7 +100,32 @@ dotnet build src/Jazor.Compiler/Jazor.Compiler.csproj
 
 ## 三、已完成的重构
 
-### 3.1 Sense 语义上下文重构 (2026-03-06)
+### 3.1 变量声明位置与作用域隔离重构 (2026-03-06)
+
+**目标**: 将变量声明集中提升到块顶，并确保函数边界正确隔离作用域
+
+**问题背景**:
+- 变量声明被分散插入到各 statement 之间
+- 函数体（LocalFunction、AnonymousFunction）未隔离 scope，变量声明泄漏到外部块
+- try/catch/finally 体未隔离 scope
+- switch case 体未隔离 scope
+
+**完成内容**:
+1. ✅ `VisitBlock`: flush 从循环内移到循环后，声明提升到块顶
+2. ✅ `VisitLocalFunction`: `WithNewScope()` + 内部 flush
+3. ✅ `VisitAnonymousFunction`: `WithNewScope()` + 内部 flush
+4. ✅ `VisitTry`: try/catch/finally 体各自 `WithNewScope()`
+5. ✅ `VisitSwitchPatternMatching`: case 体 `WithNewScope()`
+6. ✅ 所有 533 个测试通过
+
+**设计原则**:
+- `_declarators`（变量声明）→ 不能穿越函数/块边界
+- `_specifiers`（import 声明）→ 必须穿越函数边界传播到模块顶层
+
+**提交记录**:
+- `34256b4` - 变量声明提升和函数边界隔离重构
+
+### 3.2 Sense 语义上下文重构 (2026-03-06)
 
 **目标**: 通过显式传递语义上下文替代 `operation.Parent` 向上遍历
 
@@ -117,7 +146,7 @@ dotnet build src/Jazor.Compiler/Jazor.Compiler.csproj
 - `aae9717` - 简化 VisitDeconstructionAssignment
 - `c5b316d` - 提取 BuildTupleBinaryExpression 辅助方法
 
-### 3.2 设计改进
+### 3.3 设计改进
 
 | 改进项 | 修改前 | 修改后 |
 |--------|--------|--------|
@@ -125,6 +154,8 @@ dotnet build src/Jazor.Compiler/Jazor.Compiler.csproj
 | re-throw 异常处理 | 向上遍历查找 ITryOperation | 通过 `SenseArgument.CatchExceptionVar` 传递 |
 | Block 输出类型判断 | `operation.Parent is IMethodBodyOperation` | `argument.Sense == Sense.FunctionBody` |
 | 条件访问操作数获取 | 向上遍历查找 IConditionalAccessOperation | 通过 `SenseArgument.PatternInput` 传递 |
+| 变量声明位置 | 分散在各 stmt 之间 | 提升到块顶 |
+| 函数体变量泄漏 | 无边界隔离 | `WithNewScope()` 隔离 |
 
 ---
 
@@ -134,7 +165,6 @@ dotnet build src/Jazor.Compiler/Jazor.Compiler.csproj
 
 | 问题 | 当前状态 | 说明 |
 |------|----------|------|
-| 变量声明位置分散 | 🟡 已知限制 | 变量声明被插入到各个 statement 之间，而非集中在块开头 |
 | 测试模式下固定命名 | ✅ 设计如此 | 测试模式返回固定名称 `v$test` 便于测试验证 |
 
 ### 4.2 已解决的问题
@@ -145,10 +175,22 @@ dotnet build src/Jazor.Compiler/Jazor.Compiler.csproj
 | re-throw 需要向上遍历 | ✅ 已解决 | 通过 CatchExceptionVar 显式传递 |
 | 测试结果不稳定 | ✅ 已解决 | 移除静态 Parser 实例，解决线程安全问题 |
 | out 参数变量声明丢失 | ✅ 已解决 | 在 VisitInvocation 中传递 OutParameter 上下文 |
+| 变量声明位置分散 | ✅ 已解决 | 提升到块顶 |
+| 函数体变量泄漏到外部块 | ✅ 已解决 | WithNewScope() 隔离 |
+| try/catch/finally 体变量泄漏 | ✅ 已解决 | 各自 WithNewScope() |
+| switch case 体变量泄漏 | ✅ 已解决 | WithNewScope() 隔离 |
 
 ---
 
 ## 五、版本历史
+
+### v1.2 - 2026-03-06
+
+- 完成变量声明位置优化
+- 完成函数边界隔离（LocalFunction、AnonymousFunction）
+- 完成 try/catch/finally 体作用域隔离
+- 完成 switch case 体作用域隔离
+- 所有测试通过
 
 ### v1.1 - 2026-03-06
 
@@ -185,8 +227,10 @@ dotnet build src/Jazor.Compiler/Jazor.Compiler.csproj
 - [x] 无向上遍历操作树逻辑
 - [x] 语义上下文显式传递
 - [x] 单个 Visit 方法可独立测试
+- [x] 函数边界正确隔离作用域
+- [x] 变量声明集中提升到块顶
 
 ---
 
 *本报告最后更新时间：2026-03-06*
-*状态：核心功能完成，架构重构完成*
+*状态：核心功能完成，架构重构完成，作用域隔离完成*
