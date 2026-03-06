@@ -173,7 +173,15 @@ dotnet build src/Jazor.Compiler/Jazor.Compiler.csproj
 |------|------|---------|
 | `GetTypeConfigOrWhiteListName(ITypeSymbol)` | 获取类型名称 | 白名单别名 → 特性配置 → 原始名称 |
 | `GetConfigOrSymbolName(ISymbol)` | 获取成员名称 | 特性配置 → 原始名称 |
+| `GetInitializerMemberName(ISymbol)` | 获取初始化器成员名称 | 白名单别名(setter) → 特性配置 → 原始名称 |
+| `GetMethodConfigOrWhiteListName(IMethodSymbol)` | 获取方法名称 | 白名单别名 → 特性配置 → 原始名称 |
 | `GetWhiteListExpression(ISymbol, ...)` | 处理白名单操作 | `Alias`/`Inline`/`Import` 操作 |
+
+**初始化器白名单处理**:
+- 属性初始化器：检查 setter 的 `Inline`/`Import` 操作
+- 方法初始化器：检查方法的 `Inline`/`Import` 操作
+- `Inline` 操作：生成内联代码表达式
+- `Import` 操作：生成模块导入调用
 
 **特性配置支持**:
 - `[ECMAScriptName("jsName")]` - 指定 JavaScript 名称

@@ -52,6 +52,44 @@ public partial class SemanticWalker
 		return string.IsNullOrEmpty(name) ? symbol.Name : name!;
 	}
 
+	/// <summary>
+	/// 获取初始化器成员的名称，优先检查白名单别名
+	/// 对于属性：检查 setter 的白名单别名（初始化器是设置值）
+	/// 对于字段：检查字段本身的白名单别名
+	/// </summary>
+	private static string GetInitializerMemberName(ISymbol symbol)
+	{
+		// 1. 先检查白名单别名
+		ISymbol? whiteListSymbol = symbol;
+		if (symbol is IPropertySymbol property && property.SetMethod is not null)
+			whiteListSymbol = property.SetMethod;
+
+		var displayString = whiteListSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
+		if (WhiteList.Members.TryGetValue(displayString, out var entry) &&
+			entry.Op == Op.Alias &&
+			!string.IsNullOrEmpty(entry.Value))
+			return entry.Value!;
+
+		// 2. 再检查特性配置
+		return GetConfigOrSymbolName(symbol);
+	}
+
+	/// <summary>
+	/// 获取方法的名称，优先检查白名单别名
+	/// </summary>
+	private static string GetMethodConfigOrWhiteListName(IMethodSymbol method)
+	{
+		// 1. 先检查白名单别名
+		var displayString = method.OriginalDefinition.ToDisplayString(Format.NameFormat);
+		if (WhiteList.Members.TryGetValue(displayString, out var entry) &&
+			entry.Op == Op.Alias &&
+			!string.IsNullOrEmpty(entry.Value))
+			return entry.Value!;
+
+		// 2. 再检查特性配置
+		return GetConfigOrSymbolName(method);
+	}
+
 	private static string? GetTypeConfigOrWhiteListName(ITypeSymbol symbol)
 	{
 		string? name = null;

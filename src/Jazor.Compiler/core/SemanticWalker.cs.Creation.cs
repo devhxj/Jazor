@@ -101,12 +101,35 @@ public partial class SemanticWalker
 					exprs.Add(expr);
 				}
 			}
-			else if (initializer is IMemberInitializerOperation memberInitializerOp)
+		else if (initializer is IMemberInitializerOperation memberInitializerOp)
 			{
+				var right = RecursiveObjectOrCollectionInitializer(memberInitializerOp.Initializer);
+
+				// 检查属性/字段的白名单 Inline/Import 操作
+				ISymbol? memberSymbol = memberInitializerOp.InitializedMember switch
+				{
+					IPropertyReferenceOperation propertyReferenceOp => (ISymbol?)propertyReferenceOp.Property.SetMethod ?? propertyReferenceOp.Property,
+					IFieldReferenceOperation fieldReferenceOp => fieldReferenceOp.Field,
+					_ => null
+				};
+
+				if (memberSymbol is not null && obj is not null)
+				{
+					// 对于属性 setter，需要将 obj 和 value 作为参数
+					var setterArgs = new List<Expression> { right };
+					var mapperExpr = GetWhiteListExpression(memberSymbol, argument, setterArgs, obj, out var alias);
+					if (mapperExpr is not null)
+					{
+						exprs.Add(mapperExpr);
+						continue;
+					}
+				}
+
+				// 普通属性/字段赋值
 				var target = memberInitializerOp.InitializedMember switch
 				{
-					IPropertyReferenceOperation propertyReferenceOp => new Identifier(GetConfigOrSymbolName(propertyReferenceOp.Property)),
-					IFieldReferenceOperation fieldReferenceOp => new Identifier(GetConfigOrSymbolName(fieldReferenceOp.Field)),
+					IPropertyReferenceOperation propertyReferenceOp => new Identifier(GetInitializerMemberName(propertyReferenceOp.Property)),
+					IFieldReferenceOperation fieldReferenceOp => new Identifier(GetInitializerMemberName(fieldReferenceOp.Field)),
 					_ => null
 				};
 
@@ -116,7 +139,6 @@ public partial class SemanticWalker
 				Expression left = obj is null
 					 ? target
 					 : new MemberExpression(obj, target, computed: false, optional: false);
-				var right = RecursiveObjectOrCollectionInitializer(memberInitializerOp.Initializer);
 				var expr = new AssignmentExpression(Operator.Assignment, left, right);
 				exprs.Add(expr);
 			}
@@ -125,15 +147,23 @@ public partial class SemanticWalker
 				if (obj is null)
 					return HandleTransformationFailure<List<Expression>>(initializer, "Member initializer target could not be translated to JavaScript.");
 
-				var methodName = GetConfigOrSymbolName(invocationOp.TargetMethod);
 				var arguments = new List<Expression>();
-
 				foreach (var arg in invocationOp.Arguments)
 				{
 					var argExpr = Translate<Expression>(arg.Value, argument);
 					arguments.Add(argExpr);
 				}
 
+				// 检查白名单 Inline/Import 操作
+				var mapperExpr = GetWhiteListExpression(invocationOp.TargetMethod, argument, arguments, obj, out var alias);
+				if (mapperExpr is not null)
+				{
+					exprs.Add(mapperExpr);
+					continue;
+				}
+
+				// 普通方法调用
+				var methodName = alias ?? GetMethodConfigOrWhiteListName(invocationOp.TargetMethod);
 				var callee = new MemberExpression(
 					obj,
 					new Identifier(methodName),
@@ -171,8 +201,8 @@ public partial class SemanticWalker
 			{
 				target = memberInitializerOp.InitializedMember switch
 				{
-					IPropertyReferenceOperation propertyReferenceOp => new Identifier(GetConfigOrSymbolName(propertyReferenceOp.Property)),
-					IFieldReferenceOperation fieldReferenceOp => new Identifier(GetConfigOrSymbolName(fieldReferenceOp.Field)),
+					IPropertyReferenceOperation propertyReferenceOp => new Identifier(GetInitializerMemberName(propertyReferenceOp.Property)),
+					IFieldReferenceOperation fieldReferenceOp => new Identifier(GetInitializerMemberName(fieldReferenceOp.Field)),
 					_ => null
 				};
 
@@ -389,8 +419,8 @@ public partial class SemanticWalker
 	{
 		var target = operation.InitializedMember switch
 		{
-			IPropertyReferenceOperation propertyReferenceOp => new Identifier(GetConfigOrSymbolName(propertyReferenceOp.Property)),
-			IFieldReferenceOperation fieldReferenceOp => new Identifier(GetConfigOrSymbolName(fieldReferenceOp.Field)),
+			IPropertyReferenceOperation propertyReferenceOp => new Identifier(GetInitializerMemberName(propertyReferenceOp.Property)),
+			IFieldReferenceOperation fieldReferenceOp => new Identifier(GetInitializerMemberName(fieldReferenceOp.Field)),
 			_ => null
 		};
 		if (target is null)
