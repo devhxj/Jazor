@@ -512,7 +512,11 @@ public partial class SemanticWalker
 		var arguments = new List<Expression>();
 		foreach (var arg in operation.Arguments)
 		{
-			var right = Translate<Expression>(arg.Value, argument);
+			// 为 out 参数传递 OutParameter 上下文
+			var argContext = arg.Parameter?.RefKind is RefKind.Out
+				? argument.With(Sense.OutParameter)
+				: argument;
+			var right = Translate<Expression>(arg.Value, argContext);
 			// ref 引用 或 out 变量引用，记住顺序
 			if (arg.Parameter?.RefKind is RefKind.Out or RefKind.Ref)
 				refParas.Add(right);
