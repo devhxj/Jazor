@@ -153,11 +153,11 @@ public partial class SemanticWalker
 				// 其他整数类型（int, short, sbyte 等）保持原样，会作为字面量处理
 				_ => symbol.HasConstantValue
 					? BuildValueLiteral(symbol.ContainingType, symbol.ConstantValue) ?? Null
-					: new Identifier(symbol.Name)
+					: new Identifier(GetConfigOrSymbolName(symbol))
 			};
 		}
 
-		return new Identifier(symbol.Name);
+		return new Identifier(GetConfigOrSymbolName(symbol));
 	}
 
 	/// <summary>

@@ -710,10 +710,10 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		// string.Empty 被转换为字段引用 Empty
+		// string.Empty 被白名单内联转换为空字符串 ""
 		// 空字符串使用双引号
 		Assert.AreEqual(@"{
-  let empty1 = Empty;
+  let empty1 = """";
   let empty2 = """";
   let empty3 = """";
 }", script);

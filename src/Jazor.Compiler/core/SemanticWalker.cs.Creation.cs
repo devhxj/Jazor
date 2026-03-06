@@ -105,8 +105,8 @@ public partial class SemanticWalker
 			{
 				var target = memberInitializerOp.InitializedMember switch
 				{
-					IPropertyReferenceOperation propertyReferenceOp => new Identifier(propertyReferenceOp.Property.Name),
-					IFieldReferenceOperation fieldReferenceOp => new Identifier(fieldReferenceOp.Field.Name),
+					IPropertyReferenceOperation propertyReferenceOp => new Identifier(GetConfigOrSymbolName(propertyReferenceOp.Property)),
+					IFieldReferenceOperation fieldReferenceOp => new Identifier(GetConfigOrSymbolName(fieldReferenceOp.Field)),
 					_ => null
 				};
 
@@ -125,7 +125,7 @@ public partial class SemanticWalker
 				if (obj is null)
 					return HandleTransformationFailure<List<Expression>>(initializer, "Member initializer target could not be translated to JavaScript.");
 
-				var methodName = invocationOp.TargetMethod.Name;
+				var methodName = GetConfigOrSymbolName(invocationOp.TargetMethod);
 				var arguments = new List<Expression>();
 
 				foreach (var arg in invocationOp.Arguments)
@@ -171,8 +171,8 @@ public partial class SemanticWalker
 			{
 				target = memberInitializerOp.InitializedMember switch
 				{
-					IPropertyReferenceOperation propertyReferenceOp => new Identifier(propertyReferenceOp.Property.Name),
-					IFieldReferenceOperation fieldReferenceOp => new Identifier(fieldReferenceOp.Field.Name),
+					IPropertyReferenceOperation propertyReferenceOp => new Identifier(GetConfigOrSymbolName(propertyReferenceOp.Property)),
+					IFieldReferenceOperation fieldReferenceOp => new Identifier(GetConfigOrSymbolName(fieldReferenceOp.Field)),
 					_ => null
 				};
 
@@ -319,8 +319,12 @@ public partial class SemanticWalker
 			return HandleTransformationFailure<Node>(operation, "Type parameter object creation type could not be translated to JavaScript.");
 
 		// 泛型类型参数对象创建，忽略泛型参数，当作普通对象创建
-		var typeName = operation.Type.Name;
-		var callee = new Identifier(typeName);
+		// 使用白名单检查获取类型名称
+		var typeName = GetTypeConfigOrWhiteListName(operation.Type);
+		if (string.IsNullOrEmpty(typeName))
+			return HandleTransformationFailure<Node>(operation, $"Type '{operation.Type.ToDisplayString()}' is not in whitelist and cannot be used for object creation.");
+
+		var callee = new Identifier(typeName!);
 
 		// 泛型类型参数对象通常使用无参数构造函数
 		return new NewExpression(callee, NodeList.From<Expression>());
@@ -385,8 +389,8 @@ public partial class SemanticWalker
 	{
 		var target = operation.InitializedMember switch
 		{
-			IPropertyReferenceOperation propertyReferenceOp => new Identifier(propertyReferenceOp.Property.Name),
-			IFieldReferenceOperation fieldReferenceOp => new Identifier(fieldReferenceOp.Field.Name),
+			IPropertyReferenceOperation propertyReferenceOp => new Identifier(GetConfigOrSymbolName(propertyReferenceOp.Property)),
+			IFieldReferenceOperation fieldReferenceOp => new Identifier(GetConfigOrSymbolName(fieldReferenceOp.Field)),
 			_ => null
 		};
 		if (target is null)

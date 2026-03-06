@@ -383,6 +383,12 @@ return HandleTransformationFailure<Node>(operation, "Unsupported operation");
 ### 唯一名称生成
 
 `GetUniqueName` 方法基于语法节点位置生成稳定的唯一变量名：
+
+- 使用 `_testCache` 缓存机制确保相同位置返回相同名称
+- 正常模式：基于 SHA256 哈希生成唯一名称
+- 测试模式：返回带索引的固定名称 `v$0`, `v$1`... 便于测试验证
+
+使用场景：
 - 对象创建时的临时变量
 - switch 表达式的输入变量
 - try-catch 的异常参数
@@ -461,4 +467,4 @@ public void Visit_IsPattern_Constant() { }
 ---
 
 **最后更新**：2026-03-06
-**文档版本**：v1.2
+**文档版本**：v1.3

@@ -1,6 +1,6 @@
 # Jazor.Compiler 任务追踪文档
 
-> 更新时间：2026-03-06
+> 更新时间：2026-03-07
 > 分析范围：Jazor.Compiler 核心转换模块
 > 分析依据：rule.md 开发规则文档
 
@@ -88,6 +88,26 @@ dotnet build src/Jazor.Compiler/Jazor.Compiler.csproj
 3. 参考 `VisitPropertyReference` 的实现模式
 4. 所有 533 个测试通过
 
+#### ~~P0-2: 类型/属性/字段/方法名称获取缺少白名单和特性别名检查~~ ✅ 已修复 (2026-03-07)
+
+**修复内容**: 完善白名单与特性别名处理机制
+
+**修改文件**:
+- `core/SemanticWalker.cs` - `GetMapperType` 方法
+- `core/SemanticWalker.cs.Creation.cs` - 对象初始化器、`VisitTypeParameterObjectCreation`
+- `core/SemanticWalker.cs.Ordinary.cs` - with 表达式
+- `core/SemanticWalker.cs.Pattern.cs` - 模式匹配属性
+- `core/SemanticWalker.cs.Reference.cs` - `GetFieldName` 方法
+
+**修改要点**:
+1. **类型名称**: `GetMapperType` 使用 `GetTypeConfigOrWhiteListName` 支持白名单别名和特性配置
+2. **泛型类型参数**: `VisitTypeParameterObjectCreation` 添加白名单检查，不在白名单中的类型报错
+3. **初始化器成员**: 使用 `GetConfigOrSymbolName` 获取属性/字段/方法名称，支持 `[ECMAScriptName]` 特性
+4. **模式匹配属性**: 使用 `GetConfigOrSymbolName` 替代 `m.Member.Name`
+5. **with 表达式**: 使用 `GetConfigOrSymbolName` 获取成员名称
+6. **字段名**: `GetFieldName` 使用 `GetConfigOrSymbolName` 支持特性别名
+7. 所有 533 个测试通过
+
 ---
 
 ### 🟡 P1 - 高优先级（改进项）
@@ -127,7 +147,7 @@ dotnet build src/Jazor.Compiler/Jazor.Compiler.csproj
 | `SemanticWalker.cs.Creation.cs` | `BuildObjectCreation` | ✅ 第44行 | 正确 |
 | `SemanticWalker.cs.Pattern.cs` | 模式匹配属性/方法 | ✅ 通过 `GetWhiteListSymbol` | 正确 |
 
-### 3.2 白名单检查完整性审查 (2026-03-06)
+### 3.2 白名单检查完整性审查 (2026-03-07)
 
 **审查结论**: ✅ 所有需要白名单检查的位置都已正确实现
 
@@ -138,22 +158,51 @@ dotnet build src/Jazor.Compiler/Jazor.Compiler.csproj
 | `SemanticWalker.cs.Reference.cs` | `VisitMethodReference` | ✅ 第449行 | 正确 |
 | `SemanticWalker.cs.Reference.cs` | `VisitInvocation` | ✅ 第554行 | 正确 |
 | `SemanticWalker.cs.Creation.cs` | `BuildObjectCreation` | ✅ 第44行 | 正确 |
-| `SemanticWalker.cs` | `GetMapperType` | ✅ 第130行 | 正确 |
-| `SemanticWalker.cs.Pattern.cs` | 属性子模式 (第354行) | ✅ `GetWhiteListSymbol` | 正确 |
-| `SemanticWalker.cs.Pattern.cs` | 属性子模式 (第478行) | ✅ `GetWhiteListSymbol` | 正确 |
+| `SemanticWalker.cs` | `GetMapperType` | ✅ 第130行 | 已修复 |
+| `SemanticWalker.cs.Creation.cs` | `VisitTypeParameterObjectCreation` | ✅ 第323行 | 已修复 |
+| `SemanticWalker.cs.Pattern.cs` | 属性子模式 (第354行) | ✅ `GetWhiteListSymbol` | 已修复 |
+| `SemanticWalker.cs.Pattern.cs` | 属性子模式 (第478行) | ✅ `GetWhiteListSymbol` | 已修复 |
+| `SemanticWalker.cs.Ordinary.cs` | with 表达式初始化器 | ✅ `GetConfigOrSymbolName` | 已修复 |
+| `SemanticWalker.cs.Creation.cs` | 对象初始化器成员名 | ✅ `GetConfigOrSymbolName` | 已修复 |
+
+### 3.3 名称获取规范 (2026-03-07)
+
+**核心方法**:
+
+| 方法 | 用途 | 检查顺序 |
+|------|------|---------|
+| `GetTypeConfigOrWhiteListName(ITypeSymbol)` | 获取类型名称 | 白名单别名 → 特性配置 → 原始名称 |
+| `GetConfigOrSymbolName(ISymbol)` | 获取成员名称 | 特性配置 → 原始名称 |
+| `GetWhiteListExpression(ISymbol, ...)` | 处理白名单操作 | `Alias`/`Inline`/`Import` 操作 |
+
+**特性配置支持**:
+- `[ECMAScriptName("jsName")]` - 指定 JavaScript 名称
+- `[Description("jsName")]` - 作为备选的别名配置
+
+**需要名称转换的位置**:
+
+| 位置 | 方法 | 使用的方法 |
+|------|------|-----------|
+| 类型名称 | `GetMapperType` | `GetTypeConfigOrWhiteListName` |
+| 泛型类型参数对象创建 | `VisitTypeParameterObjectCreation` | `GetTypeConfigOrWhiteListName` |
+| 字段名 | `GetFieldName` | `GetConfigOrSymbolName` |
+| 属性/字段初始化器 | `BuildObjectCreationInitializer` | `GetConfigOrSymbolName` |
+| 方法调用初始化器 | `BuildObjectCreationInitializer` | `GetConfigOrSymbolName` |
+| with 表达式成员 | `VisitWith` | `GetConfigOrSymbolName` |
+| 模式匹配属性 | `VisitRecursivePattern`/`VisitPropertySubpattern` | `GetConfigOrSymbolName` |
 
 **不需要白名单检查的位置**:
 
 | 类型 | 原因 |
 |------|------|
-| 本地变量/参数引用 | 用户定义的变量，不涉及 BCL 类型 |
-| 对象初始化器中的成员名 | 用户定义的类成员，不是 BCL 类型 |
-| 元组元素名 | 语言内置结构 |
+| 本地变量/参数引用 | 用户定义的变量，不涉及跨模块调用 |
+| 对象初始化器中的成员名 | 用户定义的类成员 |
+| 元组元素名 | 编译器生成或用户定义的解构名称 |
 | 控制流结构（循环、条件、异常等） | 不涉及成员访问 |
 | 字符串插值 | 模板字符串转换 |
 | 类型检查 (`is` 操作符) | 通过 `GetMapperType` 已处理 |
 
-### 3.3 白名单操作类型处理
+### 3.4 白名单操作类型处理
 
 | Op 类型 | 处理位置 | 处理方式 |
 |---------|---------|---------|
@@ -164,7 +213,7 @@ dotnet build src/Jazor.Compiler/Jazor.Compiler.csproj
 | `Discard` | - | 不支持（需在检查时抛出异常） |
 | `Compile` | `SemanticWalker.cs.Generate.cs` | 编译器生成处理 |
 
-### 3.3 无需白名单检查的操作
+### 3.5 无需白名单检查的操作
 
 以下操作类型不需要白名单检查：
 
@@ -281,7 +330,18 @@ dotnet build src/Jazor.Compiler/Jazor.Compiler.csproj
 
 ## 六、版本历史
 
-### v1.5 - 2026-03-06 (当前)
+### v1.6 - 2026-03-07 (当前)
+
+- 完善白名单与特性别名处理机制
+- 修复 `GetMapperType` 自定义类型名称获取
+- 修复 `VisitTypeParameterObjectCreation` 添加白名单检查
+- 修复对象初始化器成员名称使用 `GetConfigOrSymbolName`
+- 修复模式匹配属性名称使用 `GetConfigOrSymbolName`
+- 修复 with 表达式成员名称使用 `GetConfigOrSymbolName`
+- 更新测试用例预期值（`string.Empty` → `""`, `TimeSpan.Zero` → `0n`）
+- 所有 533 个测试通过
+
+### v1.5 - 2026-03-06
 
 - 修复 VisitFieldReference 缺少白名单检查问题
 - 所有 533 个测试通过
@@ -342,8 +402,9 @@ dotnet build src/Jazor.Compiler/Jazor.Compiler.csproj
 - [x] 函数边界正确隔离作用域
 - [x] 变量声明集中提升到块顶
 - [x] 所有引用操作都有白名单检查
+- [x] 类型/属性/字段/方法名称获取支持白名单和特性别名
 
 ---
 
-*本报告最后更新时间：2026-03-06*
-*状态：核心功能完成，架构重构完成，作用域隔离完成，白名单检查完成*
+*本报告最后更新时间：2026-03-07*
+*状态：核心功能完成，架构重构完成，作用域隔离完成，白名单与特性别名检查完成*

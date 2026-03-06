@@ -1753,9 +1753,8 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        // ⚠️ 问题：TimeSpan.Zero 静态字段被转换为标识符 "Zero" 而非字面量值
-        // DateTimeOffset 被正确映射为 Date，但参数有问题
-        // 这是字段引用转换的问题
-        Assert.AreEqual("new Date(2024,1,1,0,0,0,Zero)", script);
+        // TimeSpan.Zero 被白名单内联转换为 0n（BigInt 零）
+        // DateTimeOffset 被正确映射为 Date
+        Assert.AreEqual("new Date(2024,1,1,0,0,0,0n)", script);
     }
 }

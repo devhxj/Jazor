@@ -127,31 +127,42 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
                     // 对于自定义类型，使用instanceof检查（优先于接口检查）
                     else if (typeSymbol.TypeKind == TypeKind.Struct || typeSymbol.TypeKind == TypeKind.Class)
                     {
-                        if (WhiteList.Types.TryGetValue(displayName, out var entry) && entry.Op == Common.Op.Alias)
+                        if (WhiteList.Types.TryGetValue(displayName, out var entry))
                         {
-                            var mapper = entry.Value! switch
+                            // 白名单中的类型
+                            if (entry.Op == Common.Op.Alias && !string.IsNullOrEmpty(entry.Value))
                             {
-                                "String" => TypeMapper.String,
-								"Object" => TypeMapper.Object,
-								"Array" => TypeMapper.Array,
-								"Number" => TypeMapper.Number,
-								"Date" => TypeMapper.Date,
-								"BigInt" => TypeMapper.BigInt,
-								"Map" => TypeMapper.Map,
-								"Set" => TypeMapper.Set,
-								_ => TypeMapper.Class
-                            };
-
-                            return (mapper, entry.Value!);
+                                var mapper = entry.Value! switch
+                                {
+                                    "String" => TypeMapper.String,
+                                    "Object" => TypeMapper.Object,
+                                    "Array" => TypeMapper.Array,
+                                    "Number" => TypeMapper.Number,
+                                    "Date" => TypeMapper.Date,
+                                    "BigInt" => TypeMapper.BigInt,
+                                    "Map" => TypeMapper.Map,
+                                    "Set" => TypeMapper.Set,
+                                    _ => TypeMapper.Class
+                                };
+                                return (mapper, entry.Value!);
+                            }
+                            // Op.Allowed 等其他情况，使用原始名称
+                            // 例如：System.Nullable<T>, void 等
                         }
 
-                        return (TypeMapper.Class, typeSymbol.Name);
+                        // 不在白名单中或 Op != Alias 的自定义类型
+                        // 这些类型应该已经被 Analyzer 验证过（被 [ECMAScript] 标记）
+                        // 使用 GetTypeConfigOrWhiteListName 获取正确的名称（支持特性配置）
+                        var configName = GetTypeConfigOrWhiteListName(typeSymbol);
+                        return (TypeMapper.Class, configName ?? typeSymbol.Name);
                     }
                 }
                 break;
         }
 
-        return (TypeMapper.Unknown, typeSymbol.Name);
+        // 未知类型，使用白名单检查获取名称
+        var unknownName = GetTypeConfigOrWhiteListName(typeSymbol);
+        return (TypeMapper.Unknown, unknownName ?? typeSymbol.Name);
     }
 
     private static ISymbol GetWhiteListSymbol(IMemberReferenceOperation operation, bool isRead = true)

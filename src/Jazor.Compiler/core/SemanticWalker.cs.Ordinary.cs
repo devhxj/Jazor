@@ -1081,12 +1081,12 @@ public partial class SemanticWalker
 		{
 			if (initializer is IMemberInitializerOperation memberInit)
 			{
-				// 获取成员名称
+				// 获取成员名称（支持特性别名）
 				string memberName;
 				if (memberInit.InitializedMember is IFieldSymbol f)
-					memberName = f.Name;
+					memberName = GetConfigOrSymbolName(f);
 				else if (memberInit.InitializedMember is IPropertySymbol p)
-					memberName = p.Name;
+					memberName = GetConfigOrSymbolName(p);
 				else
 					return HandleTransformationFailure<Node>(operation.Initializer, "With initializer could not be translated to JavaScript.");
 
