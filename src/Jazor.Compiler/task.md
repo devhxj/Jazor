@@ -19,7 +19,7 @@
 | 异常处理 (TryCatch) | ✅ 完成 | ✅ 完整 | try-catch-finally |
 | 元组 (Tuple) | ✅ 完成 | ✅ 完整 | 创建和解构 |
 | 创建表达式 (Creation) | ✅ 完成 | ✅ 完整 | 对象/数组创建 |
-| 引用操作 (Reference) | ✅ 完成 | ✅ 完整 | 字段/属性/方法引用 |
+| 引用操作 (Reference) | ✅ 完成 | ✅ 完整 | 白名单检查已修复 |
 | 变量声明 (Declaration) | ✅ 完成 | ✅ 完整 | 局部变量/参数 |
 | 普通运算 (Ordinary) | ✅ 完成 | ✅ 完整 | 二元/一元/条件表达式 |
 | 无效操作处理 (Invalid) | ✅ 完成 | ✅ 完整 | 语法节点回退机制 |
@@ -55,7 +55,7 @@
 | `SemanticWalker.cs.Tuple.cs` | ✅ 优化 | ~550 | 元组实现（已重构） |
 | `SemanticWalker.cs.TryCatch.cs` | ✅ 优化 | ~240 | 异常处理（已重构） |
 | `SemanticWalker.cs.Ordinary.cs` | ✅ 优化 | ~800 | 普通运算（已重构） |
-| `SemanticWalker.cs.Reference.cs` | ✅ 稳定 | ~200 | 引用操作实现 |
+| `SemanticWalker.cs.Reference.cs` | ✅ 稳定 | ~200 | 白名单检查已修复 |
 | `SemanticWalker.cs.Loop.cs` | ✅ 稳定 | ~200 | 循环语句实现 |
 | `SemanticWalker.cs.Switch.cs` | ✅ 稳定 | ~300 | Switch 实现 |
 
@@ -75,6 +75,20 @@ dotnet build src/Jazor.Compiler/Jazor.Compiler.csproj
 ### 🔴 P0 - 紧急（影响核心功能）
 
 当前无 P0 级别任务。
+
+#### ~~P0-1: VisitFieldReference 缺少白名单检查~~ ✅ 已修复 (2026-03-06)
+
+**修复内容**: 在 `VisitFieldReference` 方法中添加了白名单检查逻辑
+
+**修改文件**: `core/SemanticWalker.cs.Reference.cs`
+
+**修改要点**:
+1. 在方法开始处添加 `GetWhiteListExpression` 调用检查白名单
+2. 支持 `Alias`、`Inline`、`Import`、`Discard` 等 Op 类型
+3. 参考 `VisitPropertyReference` 的实现模式
+4. 所有 533 个测试通过
+
+---
 
 ### 🟡 P1 - 高优先级（改进项）
 
@@ -98,9 +112,78 @@ dotnet build src/Jazor.Compiler/Jazor.Compiler.csproj
 
 ---
 
-## 三、已完成的重构
+## 三、白名单检查审查报告
 
-### 3.1 变量声明位置与作用域隔离重构 (2026-03-06)
+### 3.1 白名单检查完整性
+
+| 文件 | 操作类型 | 白名单检查 | 状态 |
+|------|---------|----------|------|
+| `SemanticWalker.cs` (主文件) | 类型映射 (`GetMapperType`) | ✅ `WhiteList.Types` | 正确 |
+| `SemanticWalker.cs` (主文件) | 成员映射 (`GetWhiteListExpression`) | ✅ `WhiteList.Members` | 正确 |
+| `SemanticWalker.cs.Reference.cs` | `VisitPropertyReference` | ✅ 第375行 | 正确 |
+| `SemanticWalker.cs.Reference.cs` | `VisitMethodReference` | ✅ 第424行 | 正确 |
+| `SemanticWalker.cs.Reference.cs` | `VisitInvocation` | ✅ 第529行 | 正确 |
+| `SemanticWalker.cs.Reference.cs` | `VisitFieldReference` | ❌ **缺失** | **问题** |
+| `SemanticWalker.cs.Creation.cs` | `BuildObjectCreation` | ✅ 第44行 | 正确 |
+| `SemanticWalker.cs.Pattern.cs` | 模式匹配属性/方法 | ✅ 通过 `GetWhiteListSymbol` | 正确 |
+
+### 3.2 白名单检查完整性审查 (2026-03-06)
+
+**审查结论**: ✅ 所有需要白名单检查的位置都已正确实现
+
+| 文件 | 操作类型 | 白名单检查 | 状态 |
+|------|---------|----------|------|
+| `SemanticWalker.cs.Reference.cs` | `VisitFieldReference` | ✅ 第342行 | 已修复 |
+| `SemanticWalker.cs.Reference.cs` | `VisitPropertyReference` | ✅ 第400行 | 正确 |
+| `SemanticWalker.cs.Reference.cs` | `VisitMethodReference` | ✅ 第449行 | 正确 |
+| `SemanticWalker.cs.Reference.cs` | `VisitInvocation` | ✅ 第554行 | 正确 |
+| `SemanticWalker.cs.Creation.cs` | `BuildObjectCreation` | ✅ 第44行 | 正确 |
+| `SemanticWalker.cs` | `GetMapperType` | ✅ 第130行 | 正确 |
+| `SemanticWalker.cs.Pattern.cs` | 属性子模式 (第354行) | ✅ `GetWhiteListSymbol` | 正确 |
+| `SemanticWalker.cs.Pattern.cs` | 属性子模式 (第478行) | ✅ `GetWhiteListSymbol` | 正确 |
+
+**不需要白名单检查的位置**:
+
+| 类型 | 原因 |
+|------|------|
+| 本地变量/参数引用 | 用户定义的变量，不涉及 BCL 类型 |
+| 对象初始化器中的成员名 | 用户定义的类成员，不是 BCL 类型 |
+| 元组元素名 | 语言内置结构 |
+| 控制流结构（循环、条件、异常等） | 不涉及成员访问 |
+| 字符串插值 | 模板字符串转换 |
+| 类型检查 (`is` 操作符) | 通过 `GetMapperType` 已处理 |
+
+### 3.3 白名单操作类型处理
+
+| Op 类型 | 处理位置 | 处理方式 |
+|---------|---------|---------|
+| `Alias` | `GetWhiteListExpression` | 替换名称 |
+| `Inline` | `GetWhiteListExpression` | 解析并替换占位符 |
+| `Import` | `GetWhiteListExpression` | 生成导入调用 |
+| `Allowed` | - | 原生支持 |
+| `Discard` | - | 不支持（需在检查时抛出异常） |
+| `Compile` | `SemanticWalker.cs.Generate.cs` | 编译器生成处理 |
+
+### 3.3 无需白名单检查的操作
+
+以下操作类型不需要白名单检查：
+
+| 文件 | 操作类型 | 原因 |
+|------|---------|------|
+| `SemanticWalker.cs.Loop.cs` | 循环语句 | 控制流结构，不涉及成员访问 |
+| `SemanticWalker.cs.Switch.cs` | Switch 语句 | 控制流结构 |
+| `SemanticWalker.cs.Declaration.cs` | 变量声明 | 局部变量不涉及外部成员 |
+| `SemanticWalker.cs.String.cs` | 字符串插值 | 模板字符串转换 |
+| `SemanticWalker.cs.TryCatch.cs` | 异常处理 | 控制流结构 |
+| `SemanticWalker.cs.Tuple.cs` | 元组操作 | 语言内置结构 |
+| `SemanticWalker.cs.NotSupport.cs` | 不支持操作 | 直接抛出异常 |
+| `SemanticWalker.cs.Syntax.cs` | 语法转换 | 语法层面转换 |
+
+---
+
+## 四、已完成的重构
+
+### 4.1 变量声明位置与作用域隔离重构 (2026-03-06)
 
 **目标**: 将变量声明集中提升到块顶，并确保函数边界正确隔离作用域
 
@@ -125,7 +208,22 @@ dotnet build src/Jazor.Compiler/Jazor.Compiler.csproj
 **提交记录**:
 - `34256b4` - 变量声明提升和函数边界隔离重构
 
-### 3.2 Sense 语义上下文重构 (2026-03-06)
+### 4.2 测试模式命名优化 (2026-03-06)
+
+**目标**: 优化测试模式下的固定命名机制
+
+**问题背景**:
+- 测试模式返回固定名称 `v$test`，多个临时变量无法区分
+
+**完成内容**:
+1. ✅ 引入 `_testCache` 缓存机制
+2. ✅ 相同位置返回相同索引，不同位置返回不同索引
+3. ✅ 格式：`v$0`, `v$1`, `v$2`...
+
+**提交记录**:
+- `7a7ef39` - 测试模式命名优化
+
+### 4.3 Sense 语义上下文重构 (2026-03-06)
 
 **目标**: 通过显式传递语义上下文替代 `operation.Parent` 向上遍历
 
@@ -146,7 +244,7 @@ dotnet build src/Jazor.Compiler/Jazor.Compiler.csproj
 - `aae9717` - 简化 VisitDeconstructionAssignment
 - `c5b316d` - 提取 BuildTupleBinaryExpression 辅助方法
 
-### 3.3 设计改进
+### 4.4 设计改进
 
 | 改进项 | 修改前 | 修改后 |
 |--------|--------|--------|
@@ -159,15 +257,9 @@ dotnet build src/Jazor.Compiler/Jazor.Compiler.csproj
 
 ---
 
-## 四、已知问题追踪
+## 五、已知问题追踪
 
-### 4.1 设计权衡
-
-| 问题 | 当前状态 | 说明 |
-|------|----------|------|
-| 测试模式下固定命名 | ✅ 设计如此 | 测试模式返回固定名称 `v$test` 便于测试验证 |
-
-### 4.2 已解决的问题
+### 5.1 已解决的问题
 
 | 问题 | 解决状态 | 说明 |
 |------|----------|------|
@@ -179,10 +271,30 @@ dotnet build src/Jazor.Compiler/Jazor.Compiler.csproj
 | 函数体变量泄漏到外部块 | ✅ 已解决 | WithNewScope() 隔离 |
 | try/catch/finally 体变量泄漏 | ✅ 已解决 | 各自 WithNewScope() |
 | switch case 体变量泄漏 | ✅ 已解决 | WithNewScope() 隔离 |
+| 测试模式下固定命名 | ✅ 已解决 | 使用 _testCache 缓存，返回带索引的固定名称 `v$0`, `v$1`... |
+
+### 5.2 待解决的问题
+
+当前无待解决的问题。
 
 ---
 
-## 五、版本历史
+## 六、版本历史
+
+### v1.5 - 2026-03-06 (当前)
+
+- 修复 VisitFieldReference 缺少白名单检查问题
+- 所有 533 个测试通过
+
+### v1.4 - 2026-03-06
+
+- 完成白名单检查审查
+- 发现 VisitFieldReference 缺少白名单检查问题
+
+### v1.3 - 2026-03-06
+
+- 优化测试模式下固定命名机制
+- 使用 _testCache 缓存，返回带索引的固定名称
 
 ### v1.2 - 2026-03-06
 
@@ -208,29 +320,30 @@ dotnet build src/Jazor.Compiler/Jazor.Compiler.csproj
 
 ---
 
-## 六、验收标准
+## 七、验收标准
 
-### 6.1 转换正确性
+### 7.1 转换正确性
 
 - [x] 所有单元测试通过 (533/533)
 - [x] 生成的 JavaScript AST 结构正确
 - [x] 语义等价性验证通过
 
-### 6.2 代码质量
+### 7.2 代码质量
 
 - [x] 构建无警告
 - [x] 代码符合项目规范
 - [ ] 注释完整清晰 (部分完成)
 
-### 6.3 架构质量
+### 7.3 架构质量
 
 - [x] 无向上遍历操作树逻辑
 - [x] 语义上下文显式传递
 - [x] 单个 Visit 方法可独立测试
 - [x] 函数边界正确隔离作用域
 - [x] 变量声明集中提升到块顶
+- [x] 所有引用操作都有白名单检查
 
 ---
 
 *本报告最后更新时间：2026-03-06*
-*状态：核心功能完成，架构重构完成，作用域隔离完成*
+*状态：核心功能完成，架构重构完成，作用域隔离完成，白名单检查完成*

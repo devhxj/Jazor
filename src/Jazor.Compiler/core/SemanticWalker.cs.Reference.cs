@@ -334,6 +334,15 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitFieldReference(IFieldReferenceOperation operation, SenseArgument argument)
 	{
+		// 处理字段的实例对象
+		var instance = Translate<Expression>(operation.Instance, argument, null);
+
+		// 检查白名单映射
+		// 字段没有 GetMethod/SetMethod，直接使用字段符号进行白名单查询
+		var mapperExpr = GetWhiteListExpression(operation.Field, argument, [], instance, out var alias);
+		if (mapperExpr is not null)
+			return mapperExpr;
+
 		// 对于静态常量字段（无实例），GetFieldName 返回的是常量表达式
 		if (operation.Instance is null)
 			return GetFieldName(operation, operation.Field);
@@ -349,11 +358,27 @@ public partial class SemanticWalker
 			return fieldExpr;
 		}
 
-		// 普通实例字段访问：obj.field
-		var expr = Translate<Expression>(operation.Instance, argument);
-		var fieldName = operation.Field.Name;
-		var property = new Identifier(fieldName);
-		return new MemberExpression(expr, property, computed: false, optional: false);
+		// 获取字段名称（支持别名）
+		var fieldName = string.IsNullOrEmpty(alias)
+			? operation.Field.Name
+			: alias;
+
+		var property = new Identifier(fieldName!);
+		if (instance is not null)
+		{
+			var optional = operation.Instance is IConditionalAccessInstanceOperation;
+			return new MemberExpression(instance, property, false, optional);
+		}
+
+		// 静态成员：生成完整的限定名
+		if (operation.Field.IsStatic && operation.Field.ContainingType is not null)
+		{
+			var containing = BuildFullTypeName(operation.Field.ContainingType);
+			if (containing is not null)
+				return new MemberExpression(containing, property, computed: false, optional: false);
+		}
+
+		return property;
 	}
 
 	/// <summary>
