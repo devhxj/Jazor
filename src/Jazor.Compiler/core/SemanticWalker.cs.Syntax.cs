@@ -3,24 +3,12 @@ using Acornima.Ast;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Operations;
 using System.Linq;
 
 namespace Jazor.Compiler;
 
 public partial class SemanticWalker
 {
-	/// <summary>
-	/// 处理 IInvalidOperation，它包装了在当前上下文中无法用单一类型表示其结果的操作。
-	/// 此方法会尝试解包结合语法节点和子操作实现语义的精准匹配（不支持dynamic，不用考虑这个）。
-	/// 在诊断器没有异常的情况下，理论上不会触发这个方法
-	/// </summary>
-	/// <param name="operation">当前访问的 IInvalidOperation。</param>
-	/// <param name="argument">当前访问的 operation 的根 operation。</param>
-	/// <returns>转换后的 Acornima AST Node。</returns>
-	public override Node? VisitInvalid(IInvalidOperation operation, SenseArgument argument)
-		=> ConvertFromSyntaxNode(operation.Syntax);
-
 	/// <summary>
 	/// 核心转换器，基于 C# 语法节点类型进行模式匹配，转换为 Acornima AST 节点。
 	/// </summary>
