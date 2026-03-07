@@ -742,10 +742,23 @@ public sealed class AstConverterTests
 
         // Act
         var result = converter.Convert();
+        var script = result?.ToKnRECMAScript();
 
         // Assert
-        Assert.IsNotNull(result);
-        Assert.IsGreaterThan(result.Body.Count, 0);
+        Assert.AreEqual(@"
+export let Field;
+export const Const = 42;
+let <Prop>k__BackingField;
+let <Prop>k__BackingField;
+export function get_Prop() {
+  return <Prop>k__BackingField;
+}
+export function set_Prop(value) {
+  <Prop>k__BackingField = value;
+}
+export function Method() { }
+", script);
+
     }
 
     [TestMethod]

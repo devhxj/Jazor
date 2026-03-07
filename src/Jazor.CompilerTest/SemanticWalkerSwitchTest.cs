@@ -1992,7 +1992,7 @@ public sealed class SemanticWalkerSwitchTest
 	/// 测试 switch 带 return
 	/// </summary>
 	[TestMethod]
-	public void VisitSwitch_WithReturn()
+	public void VisitSwitch_WithReturn1()
 	{
 		var block = GetBlockOperation(@"
 			class TestClass
@@ -2111,7 +2111,7 @@ public sealed class SemanticWalkerSwitchTest
 	/// 测试 switch 只有 default
 	/// </summary>
 	[TestMethod]
-	public void VisitSwitch_OnlyDefault()
+	public void VisitSwitch_OnlyDefault1()
 	{
 		var block = GetBlockOperation(@"
 			class TestClass

@@ -1818,7 +1818,7 @@ public sealed class SemanticWalkerBoundaryTest
 			{
 				void TestMethod()
 				{
-					string special = ""Tab:\t Newline:\n Quote:\"" Backslash:\\""";
+					string special = ""Tab:\\t Newline:\\n Quote:\\"" Backslash:\\"";
 				}
 			}
 		");
@@ -2003,5 +2003,4 @@ public sealed class SemanticWalkerBoundaryTest
 	}
 
 	#endregion
-}
 }

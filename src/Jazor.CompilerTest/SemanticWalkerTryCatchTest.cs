@@ -1838,7 +1838,7 @@ catch (ex) {
     /// 测试三层嵌套 try-catch
     /// </summary>
     [TestMethod]
-    public void VisitTry_TripleNested()
+    public void VisitTry_TripleNested1()
     {
         var block = GetBlockOperation(@"
             class TestClass

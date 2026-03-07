@@ -62,7 +62,7 @@ public sealed class SemanticWalkerTupleTest
 
         throw new InvalidOperationException("未找到可分析的操作");
     }
-  
+
     /// <summary>
     /// 获取指定索引的操作
     /// </summary>
@@ -768,7 +768,7 @@ public sealed class SemanticWalkerTupleTest
 @"{
   let v$0 = this.Get1(), v$1 = this.Get2();
   let result = (v$0.Item1 === v$1.Item1 && v$0.Item2 === v$1.Item2);
-}", script);        
+}", script);
 
     }
 
@@ -793,7 +793,7 @@ public sealed class SemanticWalkerTupleTest
         Assert.AreEqual(
 @"{
   let result = (BigInt(1) === 1n && 2 === 2);
-}", script);  
+}", script);
 
     }
 
@@ -1672,7 +1672,7 @@ public sealed class SemanticWalkerTupleTest
     /// 测试元组 - 嵌套访问
     /// </summary>
     [TestMethod]
-    public void Visit_Tuple_NestedAccess()
+    public void Visit_Tuple_NestedAccess1()
     {
         var block = GetBlockOperation(@"
             class TestClass
@@ -1697,7 +1697,7 @@ public sealed class SemanticWalkerTupleTest
     /// 测试元组 - 方法返回元组
     /// </summary>
     [TestMethod]
-    public void Visit_Tuple_MethodReturn()
+    public void Visit_Tuple_MethodReturn1()
     {
         var block = GetBlockOperation(@"
             class TestClass
@@ -1857,3 +1857,4 @@ public sealed class SemanticWalkerTupleTest
 
     #endregion
 }
+#endregion

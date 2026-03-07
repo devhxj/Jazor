@@ -4968,7 +4968,7 @@ line2"";
   /// 测试常量模式 - 空字符串
   /// </summary>
   [TestMethod]
-  public void Visit_IsPattern_EmptyString()
+  public void Visit_IsPattern_EmptyString1()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -5680,7 +5680,7 @@ line2"";
   /// 测试关系模式 - 大于
   /// </summary>
   [TestMethod]
-  public void Visit_RelationalPattern_GreaterThan()
+  public void Visit_RelationalPattern_GreaterThan1()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -5713,7 +5713,7 @@ line2"";
   /// 测试关系模式 - 小于
   /// </summary>
   [TestMethod]
-  public void Visit_RelationalPattern_LessThan()
+  public void Visit_RelationalPattern_LessThan1()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -5746,7 +5746,7 @@ line2"";
   /// 测试关系模式 - 大于等于
   /// </summary>
   [TestMethod]
-  public void Visit_RelationalPattern_GreaterThanOrEqual()
+  public void Visit_RelationalPattern_GreaterThanOrEqual1()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -5779,7 +5779,7 @@ line2"";
   /// 测试关系模式 - 小于等于
   /// </summary>
   [TestMethod]
-  public void Visit_RelationalPattern_LessThanOrEqual()
+  public void Visit_RelationalPattern_LessThanOrEqual1()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -5816,7 +5816,7 @@ line2"";
   /// 测试列表模式 - 空列表
   /// </summary>
   [TestMethod]
-  public void Visit_ListPattern_Empty()
+  public void Visit_ListPattern_Empty1()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -5843,7 +5843,7 @@ line2"";
   /// 测试列表模式 - 单元素
   /// </summary>
   [TestMethod]
-  public void Visit_ListPattern_SingleElement()
+  public void Visit_ListPattern_SingleElement1()
   {
     var block = GetBlockOperation(@"
             class TestClass

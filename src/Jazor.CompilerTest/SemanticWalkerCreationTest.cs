@@ -2281,7 +2281,7 @@ public sealed class SemanticWalkerCreationTest
     /// 测试对象创建 - DateTime
     /// </summary>
     [TestMethod]
-    public void Visit_ObjectCreation_DateTime()
+    public void Visit_ObjectCreation_DateTime1()
     {
         var block = GetBlockOperation(@"
             class TestClass
@@ -2377,7 +2377,7 @@ public sealed class SemanticWalkerCreationTest
     /// 测试对象创建 - 匿名对象
     /// </summary>
     [TestMethod]
-    public void Visit_ObjectCreation_Anonymous()
+    public void Visit_ObjectCreation_Anonymous1()
     {
         var block = GetBlockOperation(@"
             class TestClass
@@ -2683,7 +2683,7 @@ public sealed class SemanticWalkerCreationTest
     /// 测试数组创建 - 隐式类型
     /// </summary>
     [TestMethod]
-    public void Visit_ArrayCreation_ImplicitlyTyped()
+    public void Visit_ArrayCreation_ImplicitlyTyped1()
     {
         var block = GetBlockOperation(@"
             class TestClass
@@ -2708,7 +2708,7 @@ public sealed class SemanticWalkerCreationTest
     /// 测试数组创建 - 字符串数组
     /// </summary>
     [TestMethod]
-    public void Visit_ArrayCreation_StringArray()
+    public void Visit_ArrayCreation_StringArray1()
     {
         var block = GetBlockOperation(@"
             class TestClass
@@ -2888,3 +2888,4 @@ public sealed class SemanticWalkerCreationTest
 
     #endregion
 }
+#endregion

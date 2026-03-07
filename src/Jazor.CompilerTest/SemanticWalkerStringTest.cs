@@ -1479,7 +1479,7 @@ ${name}!`;
 	/// 测试字符串 Length 属性
 	/// </summary>
 	[TestMethod]
-	public void Visit_String_Length()
+	public void Visit_String_Length1()
 	{
 		var block = GetBlockOperation(@"
 			class TestClass
@@ -1990,7 +1990,7 @@ ${name}!`;
 	/// 测试字符串 IsNullOrEmpty
 	/// </summary>
 	[TestMethod]
-	public void Visit_String_IsNullOrEmpty()
+	public void Visit_String_IsNullOrEmpty1()
 	{
 		var block = GetBlockOperation(@"
 			class TestClass
@@ -2014,7 +2014,7 @@ ${name}!`;
 	/// 测试字符串 IsNullOrWhiteSpace
 	/// </summary>
 	[TestMethod]
-	public void Visit_String_IsNullOrWhiteSpace()
+	public void Visit_String_IsNullOrWhiteSpace1()
 	{
 		var block = GetBlockOperation(@"
 			class TestClass
@@ -2038,7 +2038,7 @@ ${name}!`;
 	/// 测试字符串 Join 静态方法
 	/// </summary>
 	[TestMethod]
-	public void Visit_String_Join()
+	public void Visit_String_Join1()
 	{
 		var block = GetBlockOperation(@"
 			class TestClass
