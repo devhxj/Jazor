@@ -981,7 +981,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(@"v$0.Add(1), v$0.Add(2), v$0.Add(3)", script);
+        Assert.AreEqual(@"v$0.push(1), v$0.push(2), v$0.push(3)", script);
     }
 
     [TestMethod]
@@ -1006,18 +1006,18 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"v$0.Add((() => {
+@"v$0.push((() => {
   let v$1 = [];
-  v$1.Add(1);
+  v$1.push(1);
   return v$1;
-})()), v$0.Add((() => {
+})()), v$0.push((() => {
   let v$2 = [];
-  v$2.Add(2);
-  v$2.Add(4);
+  v$2.push(2);
+  v$2.push(4);
   return v$2;
-})()), v$0.Add((() => {
+})()), v$0.push((() => {
   let v$3 = [];
-  v$3.Add(3);
+  v$3.push(3);
   return v$3;
 })())", script);
 

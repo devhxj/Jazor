@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Jazor.Compiler;
 
@@ -1157,116 +1158,91 @@ public partial class SemanticWalker
 	/// </summary>
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-	/// <returns>Acornima的ESTree的Node</returns>
+	/// <returns>Acornima的ESTree的Node，如果特性未实现 IECMAScript 接口则返回 null</returns>
+	/// <remarks>
+	/// 特性参数限制：必须是编译时常量（基本类型、字符串、枚举、typeof、null、数组）
+	/// 只处理实现了 IECMAScript 接口的特性，其他特性忽略
+	/// 使用 operation.Operation 获取 IObjectCreationOperation，通过 IOperation 转换参数值
+	/// 通过语法节点的 NameEquals 判断是否命名参数
+	/// </remarks>
 	public override Node? VisitAttribute(IAttributeOperation operation, SenseArgument argument)
 	{
-		// 通过语法节点获取特性信息
+		// 只处理实现了 IECMAScript 接口的特性,IECMAScript是一个约定，所以写死名称
+		if (operation.Operation is not IObjectCreationOperation creationOp)
+			return null;
+
+		if(creationOp.Type?.AllInterfaces.Any(i => i.Name == "IECMAScript") != true)
+			return null;
+
 		if (operation.Syntax is not AttributeSyntax attributeSyntax)
 			return HandleTransformationFailure<Node>(operation, "Attribute syntax node is not available");
 
-		// 获取特性名称
+		// 获取特性名称（移除 Attribute 后缀）
 		var attributeName = attributeSyntax.Name?.ToString();
-		if (string.IsNullOrEmpty(attributeName) || attributeName is null)
+		if (string.IsNullOrEmpty(attributeName))
 			return HandleTransformationFailure<Node>(operation, "Cannot determine attribute name");
 
-		// 移除常见的 C# 特性后缀
-		if (attributeName.EndsWith("Attribute"))
+		if (attributeName!.EndsWith("Attribute"))
 			attributeName = attributeName.Substring(0, attributeName.Length - 9);
 
-		// 处理特性参数
-		var arguments = new List<Expression>();
-		if (attributeSyntax.ArgumentList?.Arguments is not null)
+		var positionalArgs = new List<Expression>();
+		var namedProps = new List<ObjectProperty>();
+
+		// 通过 IObjectCreationOperation 的 Arguments 获取参数
+		var syntaxArgs = attributeSyntax.ArgumentList?.Arguments;
+		if (syntaxArgs is not null)
 		{
-			foreach (var arg in attributeSyntax.ArgumentList.Arguments)
+			for (int i = 0; i < creationOp.Arguments.Length && i < syntaxArgs.Value.Count; i++)
 			{
-				if (arg.Expression is not null)
+				var arg = creationOp.Arguments[i];
+				var syntaxArg = syntaxArgs.Value[i];
+
+                if (Visit(arg.Value, argument) is not Expression valueExpr)
+                    return HandleTransformationFailure<Node>(operation, "Failed to convert attribute argument");
+
+                // 通过语法判断是否命名参数（NameEquals 表示 PropertyName = value）
+                if (syntaxArg.NameEquals is not null)
 				{
-					var expr = ConvertFromSyntaxNode(arg.Expression);
-					if (expr is Expression convertedExpr)
-						arguments.Add(convertedExpr);
-					else
-						return HandleTransformationFailure<Node>(operation, "Failed to convert attribute argument");
+					var key = new Identifier(syntaxArg.NameEquals.Name.Identifier.Text);
+					namedProps.Add(new ObjectProperty(
+						kind: PropertyKind.Init,
+						key: key,
+						value: valueExpr,
+						computed: false,
+						shorthand: false,
+						method: false
+					));
+				}
+				else
+				{
+					positionalArgs.Add(valueExpr);
 				}
 			}
 		}
 
-		// 处理命名参数
-		var properties = new List<Node>();
-		if (attributeSyntax.ArgumentList?.Arguments is not null)
+		// 构建装饰器表达式
+		Expression decorator = (positionalArgs.Count, namedProps.Count) switch
 		{
-			foreach (var arg in attributeSyntax.ArgumentList.Arguments)
-			{
-				if (arg.NameEquals is not null)
-				{
-					// 命名参数：PropertyName = value
-					var key = new Identifier(arg.NameEquals.Name.Identifier.Text);
-					if (arg.Expression is not null)
-					{
-						var value = ConvertFromSyntaxNode(arg.Expression);
-						if (value is Expression valueExpr)
-						{
-							properties.Add(new ObjectProperty(
-								kind: PropertyKind.Init,
-								key: key,
-								value: valueExpr,
-								computed: false,
-								shorthand: false,
-								method: false
-							));
-						}
-						else
-							return HandleTransformationFailure<Node>(operation, "Failed to convert named argument value");
-					}
-				}
-			}
-		}
+			(0, 0) => new Identifier(attributeName),                                    // @Decorator
+			(_, 0) => new CallExpression(new Identifier(attributeName), NodeList.From(positionalArgs), optional: false),  // @Decorator(args...)
+			(0, _) => CreateDecoratorWithProps(attributeName, namedProps),              // @Decorator({ props })
+			_ => CreateDecoratorWithArgsAndProps(attributeName, positionalArgs, namedProps)  // @Decorator(args..., { props })
+		};
 
-		// 创建装饰器表达式
-		Expression decorator;
-		if (arguments.Count == 0 && properties.Count == 0)
-		{
-			// 无参数装饰器：@Decorator
-			decorator = new Identifier(attributeName);
-		}
-		else if (arguments.Count > 0 && properties.Count == 0)
-		{
-			// 只有位置参数：@Decorator(args...)
-			decorator = new CallExpression(
-				new Identifier(attributeName),
-				NodeList.From(arguments),
-				optional: false
-			);
-		}
-		else
-		{
-			// 有命名参数，使用对象字面量：@Decorator({ ...props })
-			var propsObject = new ObjectExpression(NodeList.From(properties));
-			if (arguments.Count > 0)
-			{
-				// 既有位置参数又有命名参数：@Decorator(args..., { ...props })
-				var allArgs = new List<Expression>(arguments)
-				{
-					propsObject
-				};
-				decorator = new CallExpression(
-					new Identifier(attributeName),
-					NodeList.From(allArgs),
-					optional: false
-				);
-			}
-			else
-			{
-				// 只有命名参数：@Decorator({ ...props })
-				decorator = new CallExpression(
-					new Identifier(attributeName),
-					NodeList.From<Expression>(propsObject),
-					optional: false
-				);
-			}
-		}
-
-		// 返回装饰器节点
 		return new Decorator(decorator);
+	}
+
+	private static CallExpression CreateDecoratorWithProps(string name, List<ObjectProperty> props)
+	{
+		var propsObject = new ObjectExpression(NodeList.From<Node>(props));
+		return new CallExpression(new Identifier(name), NodeList.From<Expression>(propsObject), optional: false);
+	}
+
+	private static CallExpression CreateDecoratorWithArgsAndProps(string name, List<Expression> args, List<ObjectProperty> props)
+	{
+		var propsObject = new ObjectExpression(NodeList.From<Node>(props));
+		var allArgs = new List<Expression>(args) { propsObject };
+		return new CallExpression(new Identifier(name), NodeList.From(allArgs), optional: false);
 	}
 
 	/// <summary>

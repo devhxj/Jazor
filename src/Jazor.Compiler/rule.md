@@ -16,9 +16,10 @@
 5. [Visit 方法规范](#5-visit-方法规范)
 6. [AST 节点构造规范](#6-ast-节点构造规范)
 7. [白名单机制](#7-白名单机制)
-8. [Translate 方法族](#8-translate-方法族)
-9. [不支持特性清单](#9-不支持特性清单)
-10. [测试规范](#10-测试规范)
+8. [特性转换规范](#8-特性转换规范)
+9. [Translate 方法族](#9-translate-方法族)
+10. [不支持特性清单](#10-不支持特性清单)
+11. [测试规范](#11-测试规范)
 
 ---
 
@@ -388,7 +389,99 @@ IMemberReferenceOperation
 
 ---
 
-## 8. Translate 方法族
+## 8. 特性转换规范
+
+### 8.1 IECMAScript 接口约定
+
+`IECMAScript` 是一个标记接口，用于标识需要转换为 JavaScript Decorator 的 C# 特性：
+
+```csharp
+namespace ECMAScript;
+
+public interface IECMAScript { }
+```
+
+**约定规则**：
+- 接口名称固定为 `IECMAScript`（不包含命名空间）
+- 只检查接口名称，不检查完整限定名
+- 这是一个约定，而非强制继承关系
+
+### 8.2 特性转换流程
+
+```
+IAttributeOperation
+        │
+        ▼
+┌───────────────────────────────┐
+│  检查是否实现 IECMAScript 接口  │
+│  creationOp.Type?.AllInterfaces│
+│    .Any(i => i.Name == "IECMAScript")│
+└───────────────────────────────┘
+        │
+        ├── 未实现 → 返回 null（忽略特性）
+        │
+        ▼ 实现了 IECMAScript
+┌───────────────────────────────┐
+│  获取特性名称，移除 Attribute 后缀│
+└───────────────────────────────┘
+        │
+        ▼
+┌───────────────────────────────┐
+│  通过 IObjectCreationOperation │
+│  .Arguments 获取参数            │
+│  使用 Visit 转换参数值          │
+└───────────────────────────────┘
+        │
+        ▼
+┌───────────────────────────────┐
+│  构建 Decorator 表达式          │
+│  @Decorator / @Decorator(args) │
+└───────────────────────────────┘
+```
+
+### 8.3 参数转换规则
+
+特性参数限制为编译时常量：
+
+| 参数类型 | 转换方式 |
+|---------|---------|
+| 基本类型字面量 | 直接转换为 JavaScript 字面量 |
+| 字符串 | `StringLiteral` |
+| 枚举值 | 转换为枚举的数值或名称 |
+| `typeof(Type)` | 根据类型映射转换 |
+| null | `NullLiteral` |
+| 数组 | `ArrayExpression` |
+
+### 8.4 命名参数处理
+
+通过语法节点的 `NameEquals` 判断是否为命名参数：
+
+```csharp
+if (syntaxArg.NameEquals is not null)
+{
+    // 命名参数：PropertyName = value
+    var key = new Identifier(syntaxArg.NameEquals.Name.Identifier.Text);
+    namedProps.Add(new ObjectProperty(...));
+}
+else
+{
+    // 位置参数
+    positionalArgs.Add(valueExpr);
+}
+```
+
+### 8.5 Decorator 输出格式
+
+| 参数情况 | JavaScript 输出 |
+|---------|----------------|
+| 无参数 | `@Decorator` |
+| 只有位置参数 | `@Decorator(arg1, arg2)` |
+| 只有命名参数 | `@Decorator({ prop: value })` |
+| 混合参数 | `@Decorator(arg1, { prop: value })` |
+
+---
+
+## 9. Translate 方法族
 
 ### 8.1 Translate 方法类型
 
@@ -414,9 +507,9 @@ Translate(elements, element, argument, null);
 
 ---
 
-## 9. 不支持特性清单
+## 10. 不支持特性清单
 
-### 9.1 不支持的操作类型
+### 10.1 不支持的操作类型
 
 | 操作类型 | 原因 |
 |---------|------|
@@ -456,7 +549,7 @@ Translate(elements, element, argument, null);
 | `IInlineArrayAccessOperation` | 内联数组访问 |
 | `IRangeOperation`（独立） | 独立的范围操作（在数组切片中支持） |
 
-### 9.2 不支持时的错误信息格式
+### 10.2 不支持时的错误信息格式
 
 ```csharp
 public override Node? VisitXxx(IXxxOperation operation, WalkerArgument argument)
@@ -465,9 +558,9 @@ public override Node? VisitXxx(IXxxOperation operation, WalkerArgument argument)
 
 ---
 
-## 10. 测试规范
+## 11. 测试规范
 
-### 10.1 测试文件组织
+### 11.1 测试文件组织
 
 测试项目使用 MSTest 框架，按功能模块组织：
 
@@ -487,7 +580,7 @@ public override Node? VisitXxx(IXxxOperation operation, WalkerArgument argument)
 | `AstConverterTests.cs` | AstConverter 测试 |
 | `OptimizerTest.cs` | 优化器测试 |
 
-### 10.2 测试方法命名约定
+### 11.2 测试方法命名约定
 
 ```csharp
 // 格式：Visit_[PatternType]_[Scenario]
@@ -498,7 +591,7 @@ public void Visit_IsPattern_Constant() { }
 public void Visit_SwitchExpression_Basic() { }
 ```
 
-### 10.3 测试辅助方法
+### 11.3 测试辅助方法
 
 ```csharp
 // 编译代码并获取 Roslyn 代码块
@@ -508,7 +601,7 @@ protected IBlockOperation GetBlockOperation(string code)
 }
 ```
 
-### 10.4 测试覆盖要求
+### 11.4 测试覆盖要求
 
 - 每个 Visit 方法必须有对应的单元测试
 - 测试场景包括正常转换和异常情况

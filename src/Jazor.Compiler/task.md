@@ -53,6 +53,18 @@
 | 模式匹配属性名 | ✅ |
 | with 表达式成员名 | ✅ |
 
+### 1.4 特性转换
+
+| 检查位置 | 状态 |
+|---------|------|
+| VisitAttribute | ✅ |
+
+**特性转换规则**：
+- 只转换实现了 `IECMAScript` 接口的特性
+- 其他特性自动忽略（返回 null）
+- 使用 `IObjectCreationOperation.Arguments` 通过 IOperation 转换参数值
+- 转换为 JavaScript Decorator 语法
+
 ---
 
 ## 二、待办任务清单
