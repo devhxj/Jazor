@@ -1237,4 +1237,1153 @@ public sealed class SemanticWalkerLoopTest
   }
 
   #endregion
+
+  #region 扩展测试用例 - ForEach变体
+
+  /// <summary>
+  /// 测试 foreach 遍历字符串
+  /// </summary>
+  [TestMethod]
+  public void Visit_ForEachLoop_String()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    string text = ""hello"";
+                    foreach (char c in text)
+                    {
+                        Console.WriteLine(c);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let text = ""hello"";
+  for (c of text) {
+    console.log(c);
+  }
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 foreach 带索引访问
+  /// </summary>
+  [TestMethod]
+  public void Visit_ForEachLoop_WithIndex()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var items = new[] { ""a"", ""b"", ""c"" };
+                    int index = 0;
+                    foreach (var item in items)
+                    {
+                        Console.WriteLine(index + "": "" + item);
+                        index++;
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let items = [""a"", ""b"", ""c""];
+  let index = 0;
+  for (item of items) {
+    console.log(index + "": "" + item);
+    index++;
+  }
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 foreach 嵌套
+  /// </summary>
+  [TestMethod]
+  public void Visit_ForEachLoop_Nested()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var matrix = new[] { new[] { 1, 2 }, new[] { 3, 4 } };
+                    foreach (var row in matrix)
+                    {
+                        foreach (var col in row)
+                        {
+                            Console.WriteLine(col);
+                        }
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let matrix = [[1, 2], [3, 4]];
+  for (row of matrix) {
+    for (col of row) {
+      console.log(col);
+    }
+  }
+}", script);
+  }
+
+  #endregion
+
+  #region 扩展测试用例 - For变体
+
+  /// <summary>
+  /// 测试 for 循环多变量初始化
+  /// </summary>
+  [TestMethod]
+  public void Visit_ForLoop_MultipleVariables()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    for (int i = 0, j = 10; i < j; i++, j--)
+                    {
+                        Console.WriteLine(i + j);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  for (let i = 0, j = 10; i < j; i++, j--) {
+    console.log(i + j);
+  }
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 for 循环复杂条件
+  /// </summary>
+  [TestMethod]
+  public void Visit_ForLoop_ComplexCondition()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int limit = 10;
+                    for (int i = 0; i < limit && limit > 0; i++)
+                    {
+                        limit--;
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let limit = 10;
+  for (let i = 0; i < limit && limit > 0; i++) {
+    limit--;
+  }
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 for 循环多更新表达式
+  /// </summary>
+  [TestMethod]
+  public void Visit_ForLoop_MultipleUpdates()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    for (int i = 0, j = 10; i < 10; i++, j -= 2)
+                    {
+                        Console.WriteLine(i * j);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  for (let i = 0, j = 10; i < 10; i++, j -= 2) {
+    console.log(i * j);
+  }
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 for 循环递减步长
+  /// </summary>
+  [TestMethod]
+  public void Visit_ForLoop_DecrementStep()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    for (int i = 100; i >= 0; i -= 10)
+                    {
+                        Console.WriteLine(i);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  for (let i = 100; i >= 0; i -= 10) {
+    console.log(i);
+  }
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 for 循环乘法更新
+  /// </summary>
+  [TestMethod]
+  public void Visit_ForLoop_MultiplyUpdate()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    for (int i = 1; i < 1000; i *= 2)
+                    {
+                        Console.WriteLine(i);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  for (let i = 1; i < 1000; i *= 2) {
+    console.log(i);
+  }
+}", script);
+  }
+
+  #endregion
+
+  #region 扩展测试用例 - While变体
+
+  /// <summary>
+  /// 测试 while 循环无限循环
+  /// </summary>
+  [TestMethod]
+  public void Visit_WhileLoop_Infinite()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    while (true)
+                    {
+                        break;
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  while (true) {
+    break;
+  }
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 while 循环带计数器
+  /// </summary>
+  [TestMethod]
+  public void Visit_WhileLoop_WithCounter()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int count = 0;
+                    int sum = 0;
+                    while (count < 10)
+                    {
+                        sum += count;
+                        count++;
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let count = 0;
+  let sum = 0;
+  while (count < 10) {
+    sum += count;
+    count++;
+  }
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 while 循环前条件检查
+  /// </summary>
+  [TestMethod]
+  public void Visit_WhileLoop_PreCondition()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int x = 0;
+                    while (x > 0)
+                    {
+                        x--;
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let x = 0;
+  while (x > 0) {
+    x--;
+  }
+}", script);
+  }
+
+  #endregion
+
+  #region 扩展测试用例 - DoWhile变体
+
+  /// <summary>
+  /// 测试 do-while 循环至少执行一次
+  /// </summary>
+  [TestMethod]
+  public void Visit_DoWhileLoop_ExecuteOnce()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int x = 0;
+                    do
+                    {
+                        x++;
+                    } while (false);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let x = 0;
+  do {
+    x++;
+  } while (false);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 do-while 循环带break
+  /// </summary>
+  [TestMethod]
+  public void Visit_DoWhileLoop_WithBreak()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int i = 0;
+                    do
+                    {
+                        i++;
+                        if (i > 5)
+                            break;
+                    } while (i < 100);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let i = 0;
+  do {
+    i++;
+    if (i > 5)
+      break;
+  } while (i < 100);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 do-while 循环带continue
+  /// </summary>
+  [TestMethod]
+  public void Visit_DoWhileLoop_WithContinue()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int i = 0;
+                    int count = 0;
+                    do
+                    {
+                        i++;
+                        if (i % 2 == 0)
+                            continue;
+                        count++;
+                    } while (i < 10);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let i = 0;
+  let count = 0;
+  do {
+    i++;
+    if (i % 2 == 0)
+      continue;
+    count++;
+  } while (i < 10);
+}", script);
+  }
+
+  #endregion
+
+  #region 扩展测试用例 - 循环控制
+
+  /// <summary>
+  /// 测试 break 跳出多层循环
+  /// </summary>
+  [TestMethod]
+  public void Visit_Loop_BreakOuter()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    bool found = false;
+                    for (int i = 0; i < 10 && !found; i++)
+                    {
+                        for (int j = 0; j < 10; j++)
+                        {
+                            if (i * j == 25)
+                            {
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let found = false;
+  for (let i = 0; i < 10 && !found; i++) {
+    for (let j = 0; j < 10; j++) {
+      if (i * j == 25) {
+        found = true;
+        break;
+      }
+    }
+  }
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 continue 在嵌套循环中
+  /// </summary>
+  [TestMethod]
+  public void Visit_Loop_ContinueNested()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    for (int i = 0; i < 3; i++)
+                    {
+                        for (int j = 0; j < 3; j++)
+                        {
+                            if (j == 1)
+                                continue;
+                            Console.WriteLine(i + "","" + j);
+                        }
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      if (j == 1)
+        continue;
+      console.log(i + "","" + j);
+    }
+  }
+}", script);
+  }
+
+  /// <summary>
+  /// 测试循环中的 return
+  /// </summary>
+  [TestMethod]
+  public void Visit_Loop_ReturnInLoop()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                int TestMethod()
+                {
+                    for (int i = 0; i < 100; i++)
+                    {
+                        if (i == 50)
+                            return i;
+                    }
+                    return -1;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  for (let i = 0; i < 100; i++) {
+    if (i == 50)
+      return i;
+  }
+  return -1;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试无限循环 while(true)
+  /// </summary>
+  [TestMethod]
+  public void Visit_While_Infinite()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int count = 0;
+                    while (true)
+                    {
+                        count++;
+                        if (count > 10)
+                            break;
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let count = 0;
+  while (true) {
+    count++;
+    if (count > 10)
+      break;
+  }
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 do-while 至少执行一次
+  /// </summary>
+  [TestMethod]
+  public void Visit_DoWhile_ExecuteOnce()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int x = 0;
+                    do
+                    {
+                        x++;
+                    } while (false);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let x = 0;
+  do {
+    x++;
+  } while (false);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 for 循环多变量
+  /// </summary>
+  [TestMethod]
+  public void Visit_For_MultiVariable()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    for (int i = 0, j = 10; i < j; i++, j--)
+                    {
+                        Console.WriteLine(i + "","" + j);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  for (let i = 0, j = 10; i < j; i++, j--) {
+    console.log(i + "","" + j);
+  }
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 foreach 带索引计算
+  /// </summary>
+  [TestMethod]
+  public void Visit_Foreach_WithIndex()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var items = new int[] { 10, 20, 30 };
+                    int index = 0;
+                    foreach (var item in items)
+                    {
+                        Console.WriteLine(index + "": "" + item);
+                        index++;
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let items = [10, 20, 30];
+  let index = 0;
+  for (const item of items) {
+    console.log(index + "": "" + item);
+    index++;
+  }
+}", script);
+  }
+
+  /// <summary>
+  /// 测试嵌套 for 循环带条件 break
+  /// </summary>
+  [TestMethod]
+  public void Visit_NestedFor_ConditionalBreak()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    bool found = false;
+                    for (int i = 0; i < 5 && !found; i++)
+                    {
+                        for (int j = 0; j < 5; j++)
+                        {
+                            if (i * j == 12)
+                            {
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let found = false;
+  for (let i = 0; i < 5 && !found; i++) {
+    for (let j = 0; j < 5; j++) {
+      if (i * j == 12) {
+        found = true;
+        break;
+      }
+    }
+  }
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 while 循环带计数器
+  /// </summary>
+  [TestMethod]
+  public void Visit_While_WithCounter()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int count = 0;
+                    int sum = 0;
+                    while (count < 10)
+                    {
+                        sum += count;
+                        count++;
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let count = 0;
+  let sum = 0;
+  while (count < 10) {
+    sum += count;
+    count++;
+  }
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 do-while 带 continue
+  /// </summary>
+  [TestMethod]
+  public void Visit_DoWhile_WithContinue()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int i = 0;
+                    do
+                    {
+                        i++;
+                        if (i == 5)
+                            continue;
+                        Console.WriteLine(i);
+                    } while (i < 10);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let i = 0;
+  do {
+    i++;
+    if (i == 5)
+      continue;
+    console.log(i);
+  } while (i < 10);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 for 循环空初始化
+  /// </summary>
+  [TestMethod]
+  public void Visit_For_EmptyInit()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int i = 0;
+                    for (; i < 5; i++)
+                    {
+                        Console.WriteLine(i);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let i = 0;
+  for (; i < 5; i++) {
+    console.log(i);
+  }
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 for 循环空条件
+  /// </summary>
+  [TestMethod]
+  public void Visit_For_EmptyCondition()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    for (int i = 0; ; i++)
+                    {
+                        if (i >= 10) break;
+                        Console.WriteLine(i);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  for (let i = 0; ; i++) {
+    if (i >= 10) break;
+    console.log(i);
+  }
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 for 循环空迭代器
+  /// </summary>
+  [TestMethod]
+  public void Visit_For_EmptyIterator()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    for (int i = 0; i < 5; )
+                    {
+                        Console.WriteLine(i);
+                        i++;
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  for (let i = 0; i < 5; ) {
+    console.log(i);
+    i++;
+  }
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 foreach 遍历字符串
+  /// </summary>
+  [TestMethod]
+  public void Visit_Foreach_String()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    string text = ""Hello"";
+                    foreach (char c in text)
+                    {
+                        Console.WriteLine(c);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let text = ""Hello"";
+  for (const c of text) {
+    console.log(c);
+  }
+}", script);
+  }
+
+  /// <summary>
+  /// 测试三重嵌套循环
+  /// </summary>
+  [TestMethod]
+  public void Visit_TripleNestedLoop()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    for (int i = 0; i < 2; i++)
+                    {
+                        for (int j = 0; j < 2; j++)
+                        {
+                            for (int k = 0; k < 2; k++)
+                            {
+                                Console.WriteLine(i + "","" + j + "","" + k);
+                            }
+                        }
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  for (let i = 0; i < 2; i++) {
+    for (let j = 0; j < 2; j++) {
+      for (let k = 0; k < 2; k++) {
+        console.log(i + "","" + j + "","" + k);
+      }
+    }
+  }
+}", script);
+  }
+
+  /// <summary>
+  /// 测试循环带复杂条件
+  /// </summary>
+  [TestMethod]
+  public void Visit_For_ComplexCondition()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int x = 10;
+                    int y = 20;
+                    for (int i = 0; i < x && i < y; i++)
+                    {
+                        Console.WriteLine(i);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let x = 10;
+  let y = 20;
+  for (let i = 0; i < x && i < y; i++) {
+    console.log(i);
+  }
+}", script);
+  }
+
+  /// <summary>
+  /// 测试循环带递增/递减运算符
+  /// </summary>
+  [TestMethod]
+  public void Visit_For_IncDecOperators()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    for (int i = 0; i < 10; i++)
+                    {
+                        int j = i++;
+                        int k = ++i;
+                        Console.WriteLine(j + "" "" + k);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+  }
+
+  /// <summary>
+  /// 测试 while 循环带提前退出
+  /// </summary>
+  [TestMethod]
+  public void Visit_While_EarlyExit()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                int TestMethod()
+                {
+                    int i = 0;
+                    while (i < 100)
+                    {
+                        if (i == 42)
+                            return i;
+                        i++;
+                    }
+                    return -1;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let i = 0;
+  while (i < 100) {
+    if (i == 42)
+      return i;
+    i++;
+  }
+  return -1;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试循环中使用 out 参数
+  /// </summary>
+  [TestMethod]
+  public void Visit_Loop_WithOutParameter()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    for (int i = 0; i < 5; i++)
+                    {
+                        if (int.TryParse(""123"", out int result))
+                        {
+                            Console.WriteLine(result);
+                        }
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+  }
+
+  #endregion
 }

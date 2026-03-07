@@ -967,4 +967,1041 @@ public sealed class SemanticWalkerBoundaryTest
 	}
 
 	#endregion
+
+	#region 扩展测试用例 - 数值溢出边界
+
+	/// <summary>
+	/// 测试 byte 边界值
+	/// </summary>
+	[TestMethod]
+	public void NumericBoundary_ByteMaxMin()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					byte max = byte.MaxValue;
+					byte min = byte.MinValue;
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let max = 255;
+  let min = 0;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 short 边界值
+	/// </summary>
+	[TestMethod]
+	public void NumericBoundary_ShortMaxMin()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					short max = short.MaxValue;
+					short min = short.MinValue;
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let max = 32767;
+  let min = -32768;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 uint 边界值
+	/// </summary>
+	[TestMethod]
+	public void NumericBoundary_UIntMaxMin()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					uint max = uint.MaxValue;
+					uint min = uint.MinValue;
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let max = 4294967295;
+  let min = 0;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 ulong 边界值
+	/// </summary>
+	[TestMethod]
+	public void NumericBoundary_ULongMaxMin()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					ulong max = ulong.MaxValue;
+					ulong min = ulong.MinValue;
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let max = 18446744073709552000;
+  let min = 0;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 float 边界值
+	/// </summary>
+	[TestMethod]
+	public void NumericBoundary_FloatMaxMin()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					float max = float.MaxValue;
+					float min = float.MinValue;
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let max = 3.4028235e+38;
+  let min = -3.4028235e+38;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 decimal 边界值
+	/// </summary>
+	[TestMethod]
+	public void NumericBoundary_DecimalMaxMin()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					decimal max = decimal.MaxValue;
+					decimal min = decimal.MinValue;
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let max = 79228162514264300000000000000;
+  let min = -79228162514264300000000000000;
+}", script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - 特殊字符边界
+
+	/// <summary>
+	/// 测试 Unicode 字符串
+	/// </summary>
+	[TestMethod]
+	public void StringBoundary_Unicode()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string chinese = ""你好世界"";
+					string emoji = ""😀🎉"";
+					string mixed = ""Hello世界"";
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let chinese = ""你好世界"";
+  let emoji = ""😀🎉"";
+  let mixed = ""Hello世界"";
+}", script);
+	}
+
+	/// <summary>
+	/// 测试转义字符
+	/// </summary>
+	[TestMethod]
+	public void StringBoundary_EscapeCharacters()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string tab = ""\t"";
+					string newline = ""\n"";
+					string carriage = ""\r"";
+					string backslash = ""\\"";
+					string quote = ""\"""";
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let tab = ""\t"";
+  let newline = ""\n"";
+  let carriage = ""\r"";
+  let backslash = ""\\"";
+  let quote = ""\"""";
+}", script);
+	}
+
+	/// <summary>
+	/// 测试长字符串
+	/// </summary>
+	[TestMethod]
+	public void StringBoundary_LongString()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string longText = ""This is a very long string that contains many characters and words to test how the compiler handles longer text content in string literals. It should be converted correctly to JavaScript without any issues."";
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsTrue(script!.Contains("let longText = "));
+		Assert.IsTrue(script!.Contains("very long string"));
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - 数组边界
+
+	/// <summary>
+	/// 测试大数组初始化
+	/// </summary>
+	[TestMethod]
+	public void ArrayBoundary_LargeArray()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					int[] large = new int[1000];
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let large = new Array(1000);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试多维数组
+	/// </summary>
+	[TestMethod]
+	public void ArrayBoundary_MultiDimensional()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					int[,] matrix2d = new int[3, 4];
+					int[,,] matrix3d = new int[2, 3, 4];
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let matrix2d = new Array(3).fill().map(() => new Array(4));
+  let matrix3d = new Array(2).fill().map(() => new Array(3).fill().map(() => new Array(4)));
+}", script);
+	}
+
+	/// <summary>
+	/// 测试数组元素类型边界
+	/// </summary>
+	[TestMethod]
+	public void ArrayBoundary_ElementTypes()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					int[] ints = { 1, 2, 3 };
+					string[] strings = { ""a"", ""b"", ""c"" };
+					bool[] bools = { true, false, true };
+					double[] doubles = { 1.1, 2.2, 3.3 };
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let ints = [1, 2, 3];
+  let strings = [""a"", ""b"", ""c""];
+  let bools = [true, false, true];
+  let doubles = [1.1, 2.2, 3.3];
+}", script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - 对象边界
+
+	/// <summary>
+	/// 测试空对象初始化
+	/// </summary>
+	[TestMethod]
+	public void ObjectBoundary_EmptyObject()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					object empty = new object();
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let empty = {};
+}", script);
+	}
+
+	/// <summary>
+	/// 测试匿名对象属性名边界
+	/// </summary>
+	[TestMethod]
+	public void ObjectBoundary_AnonymousPropertyName()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					var obj = new
+					{
+						name = ""test"",
+						Name = ""Test"",
+						_name = ""_test"",
+						Name123 = ""test123""
+					};
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let obj = { name: ""test"", Name: ""Test"", _name: ""_test"", Name123: ""test123"" };
+}", script);
+	}
+
+	/// <summary>
+	/// 测试对象属性数量边界
+	/// </summary>
+	[TestMethod]
+	public void ObjectBoundary_ManyProperties()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					var obj = new { a = 1, b = 2, c = 3, d = 4, e = 5, f = 6, g = 7, h = 8, i = 9, j = 10 };
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let obj = { a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8, i: 9, j: 10 };
+}", script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - 表达式边界
+
+	/// <summary>
+	/// 测试深层嵌套表达式
+	/// </summary>
+	[TestMethod]
+	public void ExpressionBoundary_DeepNesting()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					int a = 1;
+					int result = ((a + 1) + 2) + ((a + 3) + 4);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let a = 1;
+  let result = a + 1 + 2 + a + 3 + 4;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试复杂条件表达式
+	/// </summary>
+	[TestMethod]
+	public void ExpressionBoundary_ComplexCondition()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					bool a = true, b = false, c = true, d = false;
+					bool result = (a || b) && (c || d) || !(a && b);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let a = true, b = false, c = true, d = false;
+  let result = (a || b) && (c || d) || !(a && b);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试运算符优先级
+	/// </summary>
+	[TestMethod]
+	public void ExpressionBoundary_OperatorPrecedence()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					int a = 1, b = 2, c = 3;
+					int result1 = a + b * c;
+					int result2 = (a + b) * c;
+					int result3 = a * b + c;
+					int result4 = a * (b + c);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let a = 1, b = 2, c = 3;
+  let result1 = a + b * c;
+  let result2 = (a + b) * c;
+  let result3 = a * b + c;
+  let result4 = a * (b + c);
+}", script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - 循环边界变体
+
+	/// <summary>
+	/// 测试零次迭代循环
+	/// </summary>
+	[TestMethod]
+	public void LoopBoundary_ZeroIterations()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					int count = 0;
+					for (int i = 0; i < 0; i++)
+					{
+						count++;
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let count = 0;
+  for (let i = 0; i < 0; i++) {
+    count++;
+  }
+}", script);
+	}
+
+	/// <summary>
+	/// 测试单次迭代循环
+	/// </summary>
+	[TestMethod]
+	public void LoopBoundary_SingleIteration()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					int count = 0;
+					for (int i = 0; i < 1; i++)
+					{
+						count++;
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let count = 0;
+  for (let i = 0; i < 1; i++) {
+    count++;
+  }
+}", script);
+	}
+
+	/// <summary>
+	/// 测试负步长循环
+	/// </summary>
+	[TestMethod]
+	public void LoopBoundary_NegativeStep()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					for (int i = 10; i >= 0; i -= 2)
+					{
+						Console.WriteLine(i);
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  for (let i = 10; i >= 0; i -= 2) {
+    console.log(i);
+  }
+}", script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - 递归边界
+
+	/// <summary>
+	/// 测试简单递归方法
+	/// </summary>
+	[TestMethod]
+	public void RecursionBoundary_Simple()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				int Factorial(int n)
+				{
+					if (n <= 1) return 1;
+					return n * Factorial(n - 1);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  if (n <= 1)
+    return 1;
+  return n * this.Factorial(n - 1);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试相互递归
+	/// </summary>
+	[TestMethod]
+	public void RecursionBoundary_Mutual()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				bool IsEven(int n)
+				{
+					if (n == 0) return true;
+					return IsOdd(n - 1);
+				}
+
+				bool IsOdd(int n)
+				{
+					if (n == 0) return false;
+					return IsEven(n - 1);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsTrue(script!.Contains("IsEven"));
+		Assert.IsTrue(script!.Contains("IsOdd"));
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - 更多数值边界
+
+	/// <summary>
+	/// 测试 byte 边界
+	/// </summary>
+	[TestMethod]
+	public void NumericBoundary_ByteValues()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					byte max = 255;
+					byte min = 0;
+					byte mid = 128;
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let max = 255;
+  let min = 0;
+  let mid = 128;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 short 边界
+	/// </summary>
+	[TestMethod]
+	public void NumericBoundary_ShortValues()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					short max = 32767;
+					short min = -32768;
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let max = 32767;
+  let min = -32768;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 uint 边界
+	/// </summary>
+	[TestMethod]
+	public void NumericBoundary_UIntValues()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					uint max = 4294967295;
+					uint min = 0;
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	/// <summary>
+	/// 测试 ulong 边界
+	/// </summary>
+	[TestMethod]
+	public void NumericBoundary_ULongValues()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					ulong big = 18446744073709551615UL;
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	/// <summary>
+	/// 测试 float 精度
+	/// </summary>
+	[TestMethod]
+	public void NumericBoundary_FloatPrecision()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					float f1 = 0.1f;
+					float f2 = 0.2f;
+					float sum = f1 + f2;
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	/// <summary>
+	/// 测试 decimal 精度
+	/// </summary>
+	[TestMethod]
+	public void NumericBoundary_DecimalPrecision()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					decimal d1 = 0.1m;
+					decimal d2 = 0.2m;
+					decimal sum = d1 + d2;
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - 更多字符串边界
+
+	/// <summary>
+	/// 测试特殊字符字符串
+	/// </summary>
+	[TestMethod]
+	public void StringBoundary_SpecialChars()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string special = ""Tab:\t Newline:\n Quote:\"" Backslash:\\""";
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	/// <summary>
+	/// 测试原始字符串
+	/// </summary>
+	[TestMethod]
+	public void StringBoundary_RawString()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string raw = ""No escapes needed: \n \t \"" "";
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - 对象边界
+
+	/// <summary>
+	/// 测试空对象
+	/// </summary>
+	[TestMethod]
+	public void ObjectBoundary_Null()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					object? obj = null;
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let obj = null;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试空对象属性访问
+	/// </summary>
+	[TestMethod]
+	public void ObjectBoundary_NullPropertyAccess()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					TestClass? obj = null;
+					if (obj != null)
+					{
+						Console.WriteLine(obj.ToString());
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - 条件边界
+
+	/// <summary>
+	/// 测试始终为真的条件
+	/// </summary>
+	[TestMethod]
+	public void ConditionBoundary_AlwaysTrue()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					if (true)
+					{
+						Console.WriteLine(""always"");
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  if (true) {
+    console.log(""always"");
+  }
+}", script);
+	}
+
+	/// <summary>
+	/// 测试始终为假的条件
+	/// </summary>
+	[TestMethod]
+	public void ConditionBoundary_AlwaysFalse()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					if (false)
+					{
+						Console.WriteLine(""never"");
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  if (false) {
+    console.log(""never"");
+  }
+}", script);
+	}
+
+	/// <summary>
+	/// 测试复杂条件
+	/// </summary>
+	[TestMethod]
+	public void ConditionBoundary_Complex()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					bool a = true;
+					bool b = false;
+					bool c = true;
+					if ((a && b) || (c && !b))
+					{
+						Console.WriteLine(""complex"");
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	#endregion
+}
 }

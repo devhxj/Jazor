@@ -1030,7 +1030,7 @@ public sealed class SemanticWalkerTupleTest
                         x = X;
                         y = Y;
                     }
-                }  
+                }
             }");
 
         var walker = new SemanticWalker(true);
@@ -1044,5 +1044,816 @@ public sealed class SemanticWalkerTupleTest
   v$0 = p.Deconstruct(z99, y99), z99 = v$0[0], y99 = v$0[1];
 }", script);
 
-    }    
+    }
+
+    #region 扩展测试用例 - 元组成员访问
+
+    /// <summary>
+    /// 测试元组成员访问 - Item属性
+    /// </summary>
+    [TestMethod]
+    public void Visit_Tuple_ItemAccess()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var tuple = (1, 2, 3);
+                    int first = tuple.Item1;
+                    int second = tuple.Item2;
+                    int third = tuple.Item3;
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let tuple = { Item1: 1, Item2: 2, Item3: 3 };
+  let first = tuple.Item1;
+  let second = tuple.Item2;
+  let third = tuple.Item3;
+}", script);
+    }
+
+    /// <summary>
+    /// 测试元组成员访问 - 命名元素
+    /// </summary>
+    [TestMethod]
+    public void Visit_Tuple_NamedElementAccess()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var person = (name: ""John"", age: 30);
+                    string name = person.name;
+                    int age = person.age;
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let person = { name: ""John"", age: 30 };
+  let name = person.name;
+  let age = person.age;
+}", script);
+    }
+
+    /// <summary>
+    /// 测试元组成员访问 - 混合命名和未命名
+    /// </summary>
+    [TestMethod]
+    public void Visit_Tuple_MixedElementAccess()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var tuple = (name: ""test"", 42, true);
+                    string n = tuple.name;
+                    int i2 = tuple.Item2;
+                    bool i3 = tuple.Item3;
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let tuple = { name: ""test"", Item2: 42, Item3: true };
+  let n = tuple.name;
+  let i2 = tuple.Item2;
+  let i3 = tuple.Item3;
+}", script);
+    }
+
+    #endregion
+
+    #region 扩展测试用例 - 元组作为方法参数
+
+    /// <summary>
+    /// 测试元组作为方法参数
+    /// </summary>
+    [TestMethod]
+    public void Visit_Tuple_AsMethodParameter()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var tuple = (1, 2);
+                    PrintTuple(tuple);
+                }
+
+                void PrintTuple((int, int) t) { }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let tuple = { Item1: 1, Item2: 2 };
+  this.PrintTuple(tuple);
+}", script);
+    }
+
+    /// <summary>
+    /// 测试元组字面量作为方法参数
+    /// </summary>
+    [TestMethod]
+    public void Visit_Tuple_LiteralAsParameter()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    PrintTuple((1, 2));
+                }
+
+                void PrintTuple((int, int) t) { }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  this.PrintTuple({ Item1: 1, Item2: 2 });
+}", script);
+    }
+
+    /// <summary>
+    /// 测试命名元组作为方法参数
+    /// </summary>
+    [TestMethod]
+    public void Visit_Tuple_NamedTupleAsParameter()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    PrintPerson((name: ""John"", age: 30));
+                }
+
+                void PrintPerson((string name, int age) person) { }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  this.PrintPerson({ name: ""John"", age: 30 });
+}", script);
+    }
+
+    #endregion
+
+    #region 扩展测试用例 - 元组作为返回值
+
+    /// <summary>
+    /// 测试元组作为返回值
+    /// </summary>
+    [TestMethod]
+    public void Visit_Tuple_AsReturnValue()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                (int, int) GetPoint()
+                {
+                    return (1, 2);
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+}", script);
+    }
+
+    /// <summary>
+    /// 测试元组方法调用
+    /// </summary>
+    [TestMethod]
+    public void Visit_Tuple_MethodReturn()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var point = GetPoint();
+                    int x = point.Item1;
+                    int y = point.Item2;
+                }
+
+                (int, int) GetPoint() => (1, 2);
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let point = this.GetPoint();
+  let x = point.Item1;
+  let y = point.Item2;
+}", script);
+    }
+
+    /// <summary>
+    /// 测试命名元组返回值
+    /// </summary>
+    [TestMethod]
+    public void Visit_Tuple_NamedReturn()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var person = GetPerson();
+                    string name = person.name;
+                    int age = person.age;
+                }
+
+                (string name, int age) GetPerson() => (""John"", 30);
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let person = this.GetPerson();
+  let name = person.name;
+  let age = person.age;
+}", script);
+    }
+
+    #endregion
+
+    #region 扩展测试用例 - 嵌套元组
+
+    /// <summary>
+    /// 测试嵌套元组访问
+    /// </summary>
+    [TestMethod]
+    public void Visit_Tuple_NestedAccess()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var nested = (1, (2, 3));
+                    int a = nested.Item1;
+                    int b = nested.Item2.Item1;
+                    int c = nested.Item2.Item2;
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let nested = { Item1: 1, Item2: { Item1: 2, Item2: 3 } };
+  let a = nested.Item1;
+  let b = nested.Item2.Item1;
+  let c = nested.Item2.Item2;
+}", script);
+    }
+
+    /// <summary>
+    /// 测试深层嵌套元组
+    /// </summary>
+    [TestMethod]
+    public void Visit_Tuple_DeeplyNested()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var deep = (1, (2, (3, 4)));
+                    int d1 = deep.Item1;
+                    int d2 = deep.Item2.Item1;
+                    int d3 = deep.Item2.Item2.Item1;
+                    int d4 = deep.Item2.Item2.Item2;
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let deep = { Item1: 1, Item2: { Item1: 2, Item2: { Item1: 3, Item2: 4 } } };
+  let d1 = deep.Item1;
+  let d2 = deep.Item2.Item1;
+  let d3 = deep.Item2.Item2.Item1;
+  let d4 = deep.Item2.Item2.Item2;
+}", script);
+    }
+
+    #endregion
+
+    #region 扩展测试用例 - 元组与var模式
+
+    /// <summary>
+    /// 测试元组解构到var
+    /// </summary>
+    [TestMethod]
+    public void Visit_Tuple_DeconstructVar()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var (a, b) = (1, 2);
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let a, b;
+  a = 1, b = 2;
+}", script);
+    }
+
+    /// <summary>
+    /// 测试元组解构带丢弃
+    /// </summary>
+    [TestMethod]
+    public void Visit_Tuple_DeconstructWithDiscard()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var (a, _, c) = (1, 2, 3);
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let a, c;
+  a = 1, c = 3;
+}", script);
+    }
+
+    /// <summary>
+    /// 测试多丢弃解构
+    /// </summary>
+    [TestMethod]
+    public void Visit_Tuple_MultipleDiscards()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var (_, _, _) = (1, 2, 3);
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        // 全部丢弃，应该不产生任何变量
+        Assert.AreEqual(@"{
+}", script);
+    }
+
+    #endregion
+
+    #region 扩展测试用例 - 元组比较变体
+
+    /// <summary>
+    /// 测试四元素元组比较
+    /// </summary>
+    [TestMethod]
+    public void Visit_Tuple_FourElementCompare()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var t1 = (1, 2, 3, 4);
+                    var t2 = (1, 2, 3, 4);
+                    bool equal = t1 == t2;
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let t1 = { Item1: 1, Item2: 2, Item3: 3, Item4: 4 };
+  let t2 = { Item1: 1, Item2: 2, Item3: 3, Item4: 4 };
+  let equal = t1.Item1 === t2.Item1 && t1.Item2 === t2.Item2 && t1.Item3 === t2.Item3 && t1.Item4 === t2.Item4;
+}", script);
+    }
+
+    /// <summary>
+    /// 测试元组不等比较
+    /// </summary>
+    [TestMethod]
+    public void Visit_Tuple_NotEqualCompare()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var t1 = (1, 2);
+                    var t2 = (3, 4);
+                    bool notEqual = t1 != t2;
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let t1 = { Item1: 1, Item2: 2 };
+  let t2 = { Item1: 3, Item2: 4 };
+  let notEqual = t1.Item1 !== t2.Item1 || t1.Item2 !== t2.Item2;
+}", script);
+    }
+
+    #region 扩展测试用例 - 更多元组场景
+
+    /// <summary>
+    /// 测试元组创建 - 空元组
+    /// </summary>
+    [TestMethod]
+    public void Visit_Tuple_ValueTupleEmpty()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var empty = ValueTuple.Create();
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+    }
+
+    /// <summary>
+    /// 测试元组 - 五元素元组
+    /// </summary>
+    [TestMethod]
+    public void Visit_Tuple_FiveElements()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var t = (1, 2, 3, 4, 5);
+                    int sum = t.Item1 + t.Item2 + t.Item3 + t.Item4 + t.Item5;
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let t = { Item1: 1, Item2: 2, Item3: 3, Item4: 4, Item5: 5 };
+  let sum = t.Item1 + t.Item2 + t.Item3 + t.Item4 + t.Item5;
+}", script);
+    }
+
+    /// <summary>
+    /// 测试元组 - 六元素元组
+    /// </summary>
+    [TestMethod]
+    public void Visit_Tuple_SixElements()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var t = (1, 2, 3, 4, 5, 6);
+                    int sum = t.Item1 + t.Item2 + t.Item3 + t.Item4 + t.Item5 + t.Item6;
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+    }
+
+    /// <summary>
+    /// 测试元组 - 带表达式计算
+    /// </summary>
+    [TestMethod]
+    public void Visit_Tuple_WithComputedValues()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int a = 10;
+                    var t = (a + 1, a * 2, a / 3);
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let a = 10;
+  let t = { Item1: a + 1, Item2: a * 2, Item3: a / 3 };
+}", script);
+    }
+
+    /// <summary>
+    /// 测试元组解构 - 交换变量
+    /// </summary>
+    [TestMethod]
+    public void Visit_Tuple_Swap()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int a = 1, b = 2;
+                    (a, b) = (b, a);
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+    }
+
+    /// <summary>
+    /// 测试元组 - 嵌套访问
+    /// </summary>
+    [TestMethod]
+    public void Visit_Tuple_NestedAccess()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var nested = ((1, 2), (3, 4));
+                    int a = nested.Item1.Item1;
+                    int b = nested.Item2.Item2;
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+    }
+
+    /// <summary>
+    /// 测试元组 - 方法返回元组
+    /// </summary>
+    [TestMethod]
+    public void Visit_Tuple_MethodReturn()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var (x, y) = GetPoint();
+                }
+
+                (int, int) GetPoint() => (10, 20);
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+    }
+
+    /// <summary>
+    /// 测试元组 - 字符串类型元素
+    /// </summary>
+    [TestMethod]
+    public void Visit_Tuple_StringElements()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var t = (""hello"", ""world"");
+                    string greeting = t.Item1 + "" "" + t.Item2;
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let t = { Item1: ""hello"", Item2: ""world"" };
+  let greeting = t.Item1 + "" "" + t.Item2;
+}", script);
+    }
+
+    /// <summary>
+    /// 测试元组 - 混合类型元素
+    /// </summary>
+    [TestMethod]
+    public void Visit_Tuple_MixedTypeElements()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var t = (1, ""two"", 3.0, true);
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let t = { Item1: 1, Item2: ""two"", Item3: 3, Item4: true };
+}", script);
+    }
+
+    /// <summary>
+    /// 测试元组 - 作为字典键
+    /// </summary>
+    [TestMethod]
+    public void Visit_Tuple_AsDictionaryKey()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var dict = new System.Collections.Generic.Dictionary<(int, int), string>();
+                    dict[(1, 2)] = ""value"";
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+    }
+
+    /// <summary>
+    /// 测试元组 - 循环中使用
+    /// </summary>
+    [TestMethod]
+    public void Visit_Tuple_InLoop()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var points = new (int, int)[] { (1, 2), (3, 4), (5, 6) };
+                    foreach (var (x, y) in points)
+                    {
+                        Console.WriteLine(x + "","" + y);
+                    }
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+    }
+
+    /// <summary>
+    /// 测试元组 - switch中使用
+    /// </summary>
+    [TestMethod]
+    public void Visit_Tuple_InSwitch()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var point = (0, 0);
+                    switch (point)
+                    {
+                        case (0, 0):
+                            Console.WriteLine(""origin"");
+                            break;
+                        default:
+                            Console.WriteLine(""other"");
+                            break;
+                    }
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+    }
+
+    #endregion
 }

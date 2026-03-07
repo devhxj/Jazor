@@ -816,4 +816,1641 @@ public sealed class SemanticWalkerSwitchTest
 
 		Assert.AreEqual("false", script);
 	}
+
+	#region 扩展测试用例 - 多值case
+
+	/// <summary>
+	/// 测试 switch 语句 - 多值 fallthrough
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitch_MultipleFallthrough()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					int value = 1;
+					switch (value)
+					{
+						case 1:
+						case 2:
+						case 3:
+							break;
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+			@"{
+  let value = 1;
+  switch (value) {
+    case 1:
+      break;
+    case 2:
+    case 3:
+  }
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 switch 语句 - 多值带语句
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitch_MultipleFallthroughWithStatements()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					int value = 1;
+					int result = 0;
+					switch (value)
+					{
+						case 1:
+						case 2:
+							result = 100;
+							break;
+						case 3:
+							result = 200;
+							break;
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+			@"{
+  let value = 1;
+  let result = 0;
+  switch (value) {
+    case 1:
+      break;
+    case 2:
+      result = 100;
+      break;
+    case 3:
+      result = 200;
+      break;
+  }
+}", script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - Switch表达式
+
+	/// <summary>
+	/// 测试 switch 表达式 - 简单常量
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitchExpression_SimpleConstants()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					int value = 1;
+					string result = value switch
+					{
+						1 => ""one"",
+						2 => ""two"",
+						_ => ""other""
+					};
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+			@"{
+  let value = 1;
+  let result = (() => {
+    const v$0 = value;
+    if (v$0 === 1)
+      return ""one"";
+    if (v$0 === 2)
+      return ""two"";
+    return ""other"";
+  })();
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 switch 表达式 - 整数返回值
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitchExpression_IntegerReturn()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string value = ""a"";
+					int result = value switch
+					{
+						""a"" => 1,
+						""b"" => 2,
+						_ => 0
+					};
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+			@"{
+  let value = ""a"";
+  let result = (() => {
+    const v$0 = value;
+    if (v$0 === ""a"")
+      return 1;
+    if (v$0 === ""b"")
+      return 2;
+    return 0;
+  })();
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 switch 表达式 - 关系模式
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitchExpression_RelationalPattern()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					int value = 5;
+					string result = value switch
+					{
+						< 0 => ""negative"",
+						0 => ""zero"",
+						> 0 and < 10 => ""small"",
+						_ => ""large""
+					};
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+			@"{
+  let value = 5;
+  let result = (() => {
+    const v$0 = value;
+    if (v$0 < 0)
+      return ""negative"";
+    if (v$0 === 0)
+      return ""zero"";
+    if (v$0 > 0 && v$0 < 10)
+      return ""small"";
+    return ""large"";
+  })();
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 switch 表达式 - 属性模式
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitchExpression_PropertyPattern()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					var point = new { X = 0, Y = 0 };
+					string result = point switch
+					{
+						{ X: 0, Y: 0 } => ""origin"",
+						{ X: var x } when x > 0 => ""right"",
+						_ => ""other""
+					};
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+			@"{
+  let x;
+  let point = { X: 0, Y: 0 };
+  let result = (() => {
+    const v$0 = point;
+    if (v$0 != null && (""X"" in v$0 && v$0.X === 0) && (v$0 != null && (""Y"" in v$0 && v$0.Y === 0)))
+      return ""origin"";
+    if (v$0 != null && (""X"" in v$0 && (x = v$0.X, true)) && x > 0)
+      return ""right"";
+    return ""other"";
+  })();
+}", script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - Switch嵌套
+
+	/// <summary>
+	/// 测试嵌套 switch 语句
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitch_NestedSwitch()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					int outer = 1;
+					int inner = 2;
+					switch (outer)
+					{
+						case 1:
+							switch (inner)
+							{
+								case 1:
+									break;
+								case 2:
+									break;
+							}
+							break;
+						case 2:
+							break;
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+			@"{
+  let outer = 1;
+  let inner = 2;
+  switch (outer) {
+    case 1:
+      switch (inner) {
+        case 1:
+          break;
+        case 2:
+          break;
+      }
+      break;
+    case 2:
+      break;
+  }
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 switch 在循环中
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitch_InLoop()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					for (int i = 0; i < 3; i++)
+					{
+						switch (i)
+						{
+							case 0:
+								break;
+							case 1:
+								break;
+							default:
+								break;
+						}
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+			@"{
+  for (let i = 0; i < 3; i++) {
+    switch (i) {
+      case 0:
+        break;
+      case 1:
+        break;
+      default:
+        break;
+    }
+  }
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 switch 在 if 中
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitch_InIf()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					int value = 1;
+					bool flag = true;
+					if (flag)
+					{
+						switch (value)
+						{
+							case 1:
+								break;
+							default:
+								break;
+						}
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+			@"{
+  let value = 1;
+  let flag = true;
+  if (flag) {
+    switch (value) {
+      case 1:
+        break;
+      default:
+        break;
+    }
+  }
+}", script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - Switch返回值
+
+	/// <summary>
+	/// 测试 switch 中的 return
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitch_WithReturn()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				int TestMethod()
+				{
+					int value = 1;
+					switch (value)
+					{
+						case 1:
+							return 100;
+						case 2:
+							return 200;
+						default:
+							return 0;
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+			@"{
+  let value = 1;
+  switch (value) {
+    case 1:
+      return 100;
+    case 2:
+      return 200;
+    default:
+      return 0;
+  }
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 switch 表达式作为参数
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitchExpression_AsArgument()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					int value = 1;
+					Console.WriteLine(value switch
+					{
+						1 => ""one"",
+						_ => ""other""
+					});
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+			@"{
+  let value = 1;
+  console.log((() => {
+    const v$0 = value;
+    if (v$0 === 1)
+      return ""one"";
+    return ""other"";
+  })());
+}", script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - Switch类型模式
+
+	/// <summary>
+	/// 测试 switch 类型模式带声明
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitch_TypePatternWithDeclaration()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					object obj = ""hello"";
+					switch (obj)
+					{
+						case string s:
+							Console.WriteLine(s.Length);
+							break;
+						case int i:
+							Console.WriteLine(i);
+							break;
+						default:
+							break;
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+			@"{
+  let s, i;
+  let obj = ""hello"";
+  (() => {
+    const v$0 = obj;
+    if (typeof v$0 === ""string"" && (s = v$0, true)) {
+      console.log(s.length);
+      return;
+    }
+    if (typeof v$0 === ""number"" && (i = v$0, true)) {
+      console.log(i);
+      return;
+    }
+    return;
+  })();
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 switch with when 子句
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitch_WithWhenClause()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					int value = 5;
+					switch (value)
+					{
+						case int n when n > 0:
+							Console.WriteLine(""positive"");
+							break;
+						case int n when n < 0:
+							Console.WriteLine(""negative"");
+							break;
+						default:
+							Console.WriteLine(""zero"");
+							break;
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+			@"{
+  let n;
+  let value = 5;
+  (() => {
+    const v$0 = value;
+    if (typeof v$0 === ""number"" && (n = v$0, true) && n > 0) {
+      console.log(""positive"");
+      return;
+    }
+    if (typeof v$0 === ""number"" && (n = v$0, true) && n < 0) {
+      console.log(""negative"");
+      return;
+    }
+    console.log(""zero"");
+    return;
+  })();
+}", script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - 边界情况
+
+	/// <summary>
+	/// 测试 switch 空case数量
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitch_ManyEmptyCases()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					int value = 1;
+					switch (value)
+					{
+						case 1:
+						case 2:
+						case 3:
+						case 4:
+						case 5:
+							break;
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+			@"{
+  let value = 1;
+  switch (value) {
+    case 1:
+      break;
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+  }
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 switch 表达式嵌套三元运算符
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitchExpression_WithTernary()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					int value = 1;
+					string result = value switch
+					{
+						1 => true ? ""yes"" : ""no"",
+						_ => ""other""
+					};
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+			@"{
+  let value = 1;
+  let result = (() => {
+    const v$0 = value;
+    if (v$0 === 1)
+      return true ? ""yes"" : ""no"";
+    return ""other"";
+  })();
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 switch 字符switch
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitch_CharValue()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					char c = 'a';
+					switch (c)
+					{
+						case 'a':
+							break;
+						case 'b':
+							break;
+						default:
+							break;
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+			@"{
+  let c = ""a"";
+  switch (c) {
+    case ""a"":
+      break;
+    case ""b"":
+      break;
+    default:
+      break;
+  }
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 switch 枚举值
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitch_EnumValue()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				enum Color { Red, Green, Blue }
+				void TestMethod()
+				{
+					Color c = Color.Red;
+					switch (c)
+					{
+						case Color.Red:
+							break;
+						case Color.Green:
+							break;
+						default:
+							break;
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+			@"{
+  let c = 0;
+  switch (c) {
+    case 0:
+      break;
+    case 1:
+      break;
+    default:
+      break;
+  }
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 switch 多个枚举值
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitch_MultipleEnumValues()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				enum Status { Pending, Active, Completed, Failed }
+				void TestMethod()
+				{
+					Status s = Status.Active;
+					int result = 0;
+					switch (s)
+					{
+						case Status.Pending:
+							result = 1;
+							break;
+						case Status.Active:
+							result = 2;
+							break;
+						case Status.Completed:
+							result = 3;
+							break;
+						default:
+							result = 0;
+							break;
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+			@"{
+  let s = 1;
+  let result = 0;
+  switch (s) {
+    case 0:
+      result = 1;
+      break;
+    case 1:
+      result = 2;
+      break;
+    case 2:
+      result = 3;
+      break;
+    default:
+      result = 0;
+      break;
+  }
+}", script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - 字符串switch
+
+	/// <summary>
+	/// 测试 switch 字符串值
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitch_StringValue_Simple()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string name = ""test"";
+					int result = 0;
+					switch (name)
+					{
+						case ""test"":
+							result = 1;
+							break;
+						case ""other"":
+							result = 2;
+							break;
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+			@"{
+  let name = ""test"";
+  let result = 0;
+  switch (name) {
+    case ""test"":
+      result = 1;
+      break;
+    case ""other"":
+      result = 2;
+      break;
+  }
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 switch 字符串带 default
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitch_StringValue_WithDefault()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string mode = ""debug"";
+					string output = """";
+					switch (mode)
+					{
+						case ""debug"":
+							output = ""D"";
+							break;
+						case ""release"":
+							output = ""R"";
+							break;
+						default:
+							output = ""?"";
+							break;
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+			@"{
+  let mode = ""debug"";
+  let output = """";
+  switch (mode) {
+    case ""debug"":
+      output = ""D"";
+      break;
+    case ""release"":
+      output = ""R"";
+      break;
+    default:
+      output = ""?"";
+      break;
+  }
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 switch 空字符串
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitch_EmptyString()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string s = """";
+					int result = 0;
+					switch (s)
+					{
+						case """":
+							result = 1;
+							break;
+						default:
+							result = 0;
+							break;
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+			@"{
+  let s = """";
+  let result = 0;
+  switch (s) {
+    case """":
+      result = 1;
+      break;
+    default:
+      result = 0;
+      break;
+  }
+}", script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - 长switch
+
+	/// <summary>
+	/// 测试长 switch 语句
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitch_LongSwitch()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					int value = 3;
+					int result = 0;
+					switch (value)
+					{
+						case 1: result = 1; break;
+						case 2: result = 2; break;
+						case 3: result = 3; break;
+						case 4: result = 4; break;
+						case 5: result = 5; break;
+						default: result = -1; break;
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+			@"{
+  let value = 3;
+  let result = 0;
+  switch (value) {
+    case 1:
+      result = 1;
+      break;
+    case 2:
+      result = 2;
+      break;
+    case 3:
+      result = 3;
+      break;
+    case 4:
+      result = 4;
+      break;
+    case 5:
+      result = 5;
+      break;
+    default:
+      result = -1;
+      break;
+  }
+}", script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - switch表达式
+
+	/// <summary>
+	/// 测试 switch 表达式带多个条件
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitchExpression_MultipleConditions()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					int x = 10;
+					string result = x switch
+					{
+						0 => ""zero"",
+						1 => ""one"",
+						2 => ""two"",
+						3 => ""three"",
+						_ => ""many""
+					};
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+			@"{
+  let x = 10;
+  let result = (() => {
+    const v$0 = x;
+    if (v$0 === 0)
+      return ""zero"";
+    if (v$0 === 1)
+      return ""one"";
+    if (v$0 === 2)
+      return ""two"";
+    if (v$0 === 3)
+      return ""three"";
+    return ""many"";
+  })();
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 switch 表达式带元组
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitchExpression_TuplePattern()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					var (a, b) = (1, 2);
+					string result = (a, b) switch
+					{
+						(0, 0) => ""origin"",
+						(0, _) => ""y-axis"",
+						(_, 0) => ""x-axis"",
+						_ => ""elsewhere""
+					};
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+			@"{
+  let v$0 = [1, 2];
+  let a = v$0[0];
+  let b = v$0[1];
+  let result = (() => {
+    const v$1 = [a, b];
+    if (v$1[0] === 0 && v$1[1] === 0)
+      return ""origin"";
+    if (v$1[0] === 0)
+      return ""y-axis"";
+    if (v$1[1] === 0)
+      return ""x-axis"";
+    return ""elsewhere"";
+  })();
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 switch 表达式带 or 模式
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitchExpression_OrPattern()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					int value = 1;
+					string result = value switch
+					{
+						1 or 2 or 3 => ""small"",
+						4 or 5 or 6 => ""medium"",
+						_ => ""large""
+					};
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+			@"{
+  let value = 1;
+  let result = (() => {
+    const v$0 = value;
+    if (v$0 === 1 || v$0 === 2 || v$0 === 3)
+      return ""small"";
+    if (v$0 === 4 || v$0 === 5 || v$0 === 6)
+      return ""medium"";
+    return ""large"";
+  })();
+}", script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - switch with return
+
+	/// <summary>
+	/// 测试 switch 带 return
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitch_WithReturn()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				int TestMethod()
+				{
+					int value = 1;
+					switch (value)
+					{
+						case 1: return 10;
+						case 2: return 20;
+						default: return 0;
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+			@"{
+  let value = 1;
+  switch (value) {
+    case 1:
+      return 10;
+    case 2:
+      return 20;
+    default:
+      return 0;
+  }
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 switch 在方法中带 return
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitch_InMethodWithReturn()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				string GetGrade(int score)
+				{
+					switch (score)
+					{
+						case int s when s >= 90: return ""A"";
+						case int s when s >= 80: return ""B"";
+						case int s when s >= 70: return ""C"";
+						default: return ""F"";
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+			@"{
+  (() => {
+    const v$0 = score;
+    if (typeof v$0 === ""number"" && v$0 >= 90) {
+      return ""A"";
+    }
+    if (typeof v$0 === ""number"" && v$0 >= 80) {
+      return ""B"";
+    }
+    if (typeof v$0 === ""number"" && v$0 >= 70) {
+      return ""C"";
+    }
+    return ""F"";
+  })();
+}", script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - 空switch
+
+	/// <summary>
+	/// 测试空 switch 语句
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitch_EmptyBody()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					int value = 1;
+					switch (value)
+					{
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+			@"{
+  let value = 1;
+  switch (value) {
+  }
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 switch 只有 default
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitch_OnlyDefault()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					int value = 1;
+					switch (value)
+					{
+						default:
+							break;
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+			@"{
+  let value = 1;
+  switch (value) {
+    default:
+      break;
+  }
+}", script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - 带表达式的switch
+
+	/// <summary>
+	/// 测试 switch 表达式 - 简单返回
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitch_ExpressionReturn()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				int TestMethod()
+				{
+					int value = 1;
+					return value switch
+					{
+						1 => 100,
+						2 => 200,
+						_ => 0
+					};
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	/// <summary>
+	/// 测试 switch 语句 - 多个case相同代码
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitch_MultipleCasesSameCode()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					int value = 1;
+					switch (value)
+					{
+						case 1:
+						case 2:
+						case 3:
+							Console.WriteLine(""small"");
+							break;
+						default:
+							Console.WriteLine(""large"");
+							break;
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	/// <summary>
+	/// 测试 switch 表达式 - 嵌套元组
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitch_ExpressionNestedTuple()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				string TestMethod(int a, int b)
+				{
+					return (a, b) switch
+					{
+						(0, 0) => ""both zero"",
+						(0, _) => ""a zero"",
+						(_, 0) => ""b zero"",
+						_ => ""neither zero""
+					};
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	/// <summary>
+	/// 测试 switch 语句 - case中使用方法调用
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitch_CaseWithMethodCall()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod(string input)
+				{
+					switch (input.ToLower())
+					{
+						case ""yes"":
+							Console.WriteLine(""YES"");
+							break;
+						case ""no"":
+							Console.WriteLine(""NO"");
+							break;
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	/// <summary>
+	/// 测试 switch 表达式 - 使用属性模式
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitch_ExpressionPropertyPattern()
+	{
+		var block = GetBlockOperation(@"
+			class Person { public string Name { get; set; } }
+			class TestClass
+			{
+				string TestMethod(Person p)
+				{
+					return p switch
+					{
+						{ Name: ""Alice"" } => ""Hi Alice"",
+						{ Name: ""Bob"" } => ""Hey Bob"",
+						_ => ""Hello stranger""
+					};
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	/// <summary>
+	/// 测试 switch 语句 - 使用when条件
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitch_WhenCondition()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod(int value)
+				{
+					switch (value)
+					{
+						case int n when n > 0:
+							Console.WriteLine(""positive"");
+							break;
+						case int n when n < 0:
+							Console.WriteLine(""negative"");
+							break;
+						default:
+							Console.WriteLine(""zero"");
+							break;
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	/// <summary>
+	/// 测试 switch 表达式 - 使用关系模式
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitch_ExpressionRelationalPattern()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				string TestMethod(int value)
+				{
+					return value switch
+					{
+						< 0 => ""negative"",
+						0 => ""zero"",
+						> 0 and < 10 => ""small positive"",
+						>= 10 => ""large positive""
+					};
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	/// <summary>
+	/// 测试 switch 表达式 - 使用逻辑模式
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitch_ExpressionLogicalPattern()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				string TestMethod(int value)
+				{
+					return value switch
+					{
+						1 or 2 or 3 => ""one two three"",
+						4 and >= 0 => ""four"",
+						not 5 => ""not five"",
+						_ => ""five""
+					};
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	/// <summary>
+	/// 测试 switch 语句 - 带返回值的表达式
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitch_ExpressionWithCalculation()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				int TestMethod(string op, int a, int b)
+				{
+					return op switch
+					{
+						""+"" => a + b,
+						""-"" => a - b,
+						""*"" => a * b,
+						""/"" => a / b,
+						_ => 0
+					};
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	/// <summary>
+	/// 测试 switch 语句 - 带break和return混合
+	/// </summary>
+	[TestMethod]
+	public void VisitSwitch_BreakReturn()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				int TestMethod(int value)
+				{
+					switch (value)
+					{
+						case 0:
+							return 0;
+						case 1:
+							break;
+						default:
+							return -1;
+					}
+					return 1;
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	#endregion
 }

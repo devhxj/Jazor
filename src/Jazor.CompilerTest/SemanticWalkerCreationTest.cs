@@ -1757,4 +1757,1134 @@ public sealed class SemanticWalkerCreationTest
         // DateTimeOffset 被正确映射为 Date
         Assert.AreEqual("new Date(2024,1,1,0,0,0,0n)", script);
     }
+
+    #region 扩展测试用例 - 数组创建变体
+
+    /// <summary>
+    /// 测试隐式类型数组
+    /// </summary>
+    [TestMethod]
+    public void Visit_ArrayCreation_ImplicitlyTyped()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var arr = new[] { 1, 2, 3, 4, 5 };
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  let arr = [1, 2, 3, 4, 5];
+}", script);
+    }
+
+    /// <summary>
+    /// 测试字符串数组创建
+    /// </summary>
+    [TestMethod]
+    public void Visit_ArrayCreation_StringArray()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var arr = new[] { ""a"", ""b"", ""c"" };
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  let arr = [""a"", ""b"", ""c""];
+}", script);
+    }
+
+    /// <summary>
+    /// 测试多维数组创建
+    /// </summary>
+    [TestMethod]
+    public void Visit_ArrayCreation_Multidimensional()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var matrix = new int[2, 3];
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  let matrix = new Array(2).fill().map(() => new Array(3));
+}", script);
+    }
+
+    /// <summary>
+    /// 测试交错数组创建
+    /// </summary>
+    [TestMethod]
+    public void Visit_ArrayCreation_Jagged()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var jagged = new int[3][];
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  let jagged = new Array(3);
+}", script);
+    }
+
+    /// <summary>
+    /// 测试带初始化的多维数组
+    /// </summary>
+    [TestMethod]
+    public void Visit_ArrayCreation_MultidimensionalWithInit()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var matrix = new int[,] { { 1, 2, 3 }, { 4, 5, 6 } };
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  let matrix = [[1, 2, 3], [4, 5, 6]];
+}", script);
+    }
+
+    #endregion
+
+    #region 扩展测试用例 - 对象创建变体
+
+    /// <summary>
+    /// 测试无参数对象创建
+    /// </summary>
+    [TestMethod]
+    public void Visit_ObjectCreation_Parameterless()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = new object();
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  let obj = {};
+}", script);
+    }
+
+    /// <summary>
+    /// 测试带参数对象创建
+    /// </summary>
+    [TestMethod]
+    public void Visit_ObjectCreation_WithParameters()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var exception = new System.Exception(""Error message"");
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  let exception = new Error(""Error message"");
+}", script);
+    }
+
+    /// <summary>
+    /// 测试对象初始化器
+    /// </summary>
+    [TestMethod]
+    public void Visit_ObjectCreation_WithInitializer()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = new TestClass { Name = ""Test"", Value = 42 };
+                }
+
+                public string Name { get; set; }
+                public int Value { get; set; }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  let obj = new TestClass;
+  obj.Name = ""Test"";
+  obj.Value = 42;
+}", script);
+    }
+
+    /// <summary>
+    /// 测试嵌套对象创建
+    /// </summary>
+    [TestMethod]
+    public void Visit_ObjectCreation_Nested()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var outer = new OuterClass { Inner = new InnerClass { Value = 100 } };
+                }
+            }
+
+            class OuterClass
+            {
+                public InnerClass Inner { get; set; }
+            }
+
+            class InnerClass
+            {
+                public int Value { get; set; }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  let outer = new OuterClass;
+  outer.Inner = new InnerClass;
+  outer.Inner.Value = 100;
+}", script);
+    }
+
+    /// <summary>
+    /// 测试匿名对象创建
+    /// </summary>
+    [TestMethod]
+    public void Visit_ObjectCreation_Anonymous()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var anonymous = new { Name = ""Test"", Value = 42 };
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  let anonymous = { Name: ""Test"", Value: 42 };
+}", script);
+    }
+
+    #endregion
+
+    #region 扩展测试用例 - 集合初始化器
+
+    /// <summary>
+    /// 测试List初始化器
+    /// </summary>
+    [TestMethod]
+    public void Visit_CollectionInitializer_List()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var list = new System.Collections.Generic.List<int> { 1, 2, 3, 4, 5 };
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  let list = [1, 2, 3, 4, 5];
+}", script);
+    }
+
+    /// <summary>
+    /// 测试Dictionary初始化器
+    /// </summary>
+    [TestMethod]
+    public void Visit_CollectionInitializer_Dictionary()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var dict = new System.Collections.Generic.Dictionary<string, int>
+                    {
+                        { ""one"", 1 },
+                        { ""two"", 2 },
+                        { ""three"", 3 }
+                    };
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  let dict = new Map([[""one"", 1], [""two"", 2], [""three"", 3]]);
+}", script);
+    }
+
+    /// <summary>
+    /// 测试HashSet初始化器
+    /// </summary>
+    [TestMethod]
+    public void Visit_CollectionInitializer_HashSet()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var set = new System.Collections.Generic.HashSet<int> { 1, 2, 3 };
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  let set = new Set([1, 2, 3]);
+}", script);
+    }
+
+    #endregion
+
+    #region 扩展测试用例 - 特殊类型创建
+
+    /// <summary>
+    /// 测试DateTime创建
+    /// </summary>
+    [TestMethod]
+    public void Visit_ObjectCreation_DateTime()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var date = new System.DateTime(2024, 1, 1);
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  let date = new Date(2024, 1, 1);
+}", script);
+    }
+
+    /// <summary>
+    /// 测试BigInteger创建
+    /// </summary>
+    [TestMethod]
+    public void Visit_ObjectCreation_BigInteger()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var big = new System.Numerics.BigInteger(12345);
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  let big = BigInt(12345);
+}", script);
+    }
+
+    /// <summary>
+    /// 测试StringBuilder创建
+    /// </summary>
+    [TestMethod]
+    public void Visit_ObjectCreation_StringBuilder()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var sb = new System.Text.StringBuilder();
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  let sb = """";
+}", script);
+    }
+
+    /// <summary>
+    /// 测试Guid创建
+    /// </summary>
+    [TestMethod]
+    public void Visit_ObjectCreation_Guid()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var guid = new System.Guid();
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  let guid = crypto.randomUUID();
+}", script);
+    }
+
+    #region 扩展测试用例 - 更多对象创建
+
+    /// <summary>
+    /// 测试对象创建 - 带参数构造函数
+    /// </summary>
+    [TestMethod]
+    public void Visit_ObjectCreation_WithArgs()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var point = new Point(10, 20);
+                }
+            }
+
+            class Point
+            {
+                public int X { get; }
+                public int Y { get; }
+                public Point(int x, int y) { X = x; Y = y; }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+    }
+
+    /// <summary>
+    /// 测试对象创建 - 链式构造
+    /// </summary>
+    [TestMethod]
+    public void Visit_ObjectCreation_Chained()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = new OuterClass { Inner = new InnerClass { Value = 42 } };
+                }
+            }
+
+            class OuterClass { public InnerClass Inner { get; set; } }
+            class InnerClass { public int Value { get; set; } }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+    }
+
+    /// <summary>
+    /// 测试对象创建 - DateTime
+    /// </summary>
+    [TestMethod]
+    public void Visit_ObjectCreation_DateTime()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var date = new System.DateTime(2024, 1, 1);
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+    }
+
+    /// <summary>
+    /// 测试对象创建 - TimeSpan
+    /// </summary>
+    [TestMethod]
+    public void Visit_ObjectCreation_TimeSpan()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var duration = new System.TimeSpan(1, 2, 3);
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+    }
+
+    /// <summary>
+    /// 测试对象创建 - 数组初始化器简写
+    /// </summary>
+    [TestMethod]
+    public void Visit_ArrayCreation_Shorthand()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[] arr = { 1, 2, 3 };
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  let arr = [1, 2, 3];
+}", script);
+    }
+
+    /// <summary>
+    /// 测试对象创建 - 空数组
+    /// </summary>
+    [TestMethod]
+    public void Visit_ArrayCreation_Empty()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[] empty = new int[0];
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  let empty = [];
+}", script);
+    }
+
+    /// <summary>
+    /// 测试对象创建 - 匿名对象
+    /// </summary>
+    [TestMethod]
+    public void Visit_ObjectCreation_Anonymous()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = new { Name = ""Test"", Value = 42 };
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  let obj = { Name: ""Test"", Value: 42 };
+}", script);
+    }
+
+    /// <summary>
+    /// 测试对象创建 - 嵌套匿名对象
+    /// </summary>
+    [TestMethod]
+    public void Visit_ObjectCreation_NestedAnonymous()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = new { Outer = new { Inner = 1 } };
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  let obj = { Outer: { Inner: 1 } };
+}", script);
+    }
+
+    /// <summary>
+    /// 测试对象创建 - 集合初始化器
+    /// </summary>
+    [TestMethod]
+    public void Visit_ObjectCreation_CollectionInitializer()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var list = new System.Collections.Generic.List<int> { 1, 2, 3 };
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  let list = [1, 2, 3];
+}", script);
+    }
+
+    /// <summary>
+    /// 测试对象创建 - 字典初始化器
+    /// </summary>
+    [TestMethod]
+    public void Visit_ObjectCreation_DictionaryInitializer()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var dict = new System.Collections.Generic.Dictionary<string, int>
+                    {
+                        { ""one"", 1 },
+                        { ""two"", 2 }
+                    };
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+    }
+
+    /// <summary>
+    /// 测试对象创建 - HashSet
+    /// </summary>
+    [TestMethod]
+    public void Visit_ObjectCreation_HashSetWithValues()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var set = new System.Collections.Generic.HashSet<int> { 1, 2, 3 };
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  let set = new Set([1, 2, 3]);
+}", script);
+    }
+
+    /// <summary>
+    /// 测试对象创建 - 栈
+    /// </summary>
+    [TestMethod]
+    public void Visit_ObjectCreation_Stack()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var stack = new System.Collections.Generic.Stack<int>();
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+    }
+
+    /// <summary>
+    /// 测试对象创建 - 队列
+    /// </summary>
+    [TestMethod]
+    public void Visit_ObjectCreation_Queue()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var queue = new System.Collections.Generic.Queue<string>();
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+    }
+
+    /// <summary>
+    /// 测试对象创建 - 多个对象
+    /// </summary>
+    [TestMethod]
+    public void Visit_ObjectCreation_Multiple()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var a = new object();
+                    var b = new object();
+                    var c = new object();
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  let a = new Object;
+  let b = new Object;
+  let c = new Object;
+}", script);
+    }
+
+    /// <summary>
+    /// 测试对象创建 - 对象在表达式中
+    /// </summary>
+    [TestMethod]
+    public void Visit_ObjectCreation_InExpression()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    bool result = new object() != null;
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+    }
+
+    #endregion
+
+    #region 扩展测试用例 - 更多集合创建
+
+    /// <summary>
+    /// 测试集合创建 - 列表带初始值
+    /// </summary>
+    [TestMethod]
+    public void Visit_CollectionCreation_ListWithValues()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var list = new System.Collections.Generic.List<int> { 1, 2, 3, 4, 5 };
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  let list = [1, 2, 3, 4, 5];
+}", script);
+    }
+
+    /// <summary>
+    /// 测试集合创建 - 字典带初始值
+    /// </summary>
+    [TestMethod]
+    public void Visit_CollectionCreation_DictionaryWithValues()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var dict = new System.Collections.Generic.Dictionary<string, int>
+                    {
+                        [""one""] = 1,
+                        [""two""] = 2
+                    };
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+    }
+
+    /// <summary>
+    /// 测试集合创建 - HashSet带初始值
+    /// </summary>
+    [TestMethod]
+    public void Visit_CollectionCreation_HashSetWithValues()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var set = new System.Collections.Generic.HashSet<string> { ""a"", ""b"", ""c"" };
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  let set = new Set([""a"", ""b"", ""c""]);
+}", script);
+    }
+
+    /// <summary>
+    /// 测试数组创建 - 隐式类型
+    /// </summary>
+    [TestMethod]
+    public void Visit_ArrayCreation_ImplicitlyTyped()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var arr = new[] { 1, 2, 3 };
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  let arr = [1, 2, 3];
+}", script);
+    }
+
+    /// <summary>
+    /// 测试数组创建 - 字符串数组
+    /// </summary>
+    [TestMethod]
+    public void Visit_ArrayCreation_StringArray()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var arr = new[] { ""a"", ""b"", ""c"" };
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  let arr = [""a"", ""b"", ""c""];
+}", script);
+    }
+
+    /// <summary>
+    /// 测试数组创建 - 双精度数组
+    /// </summary>
+    [TestMethod]
+    public void Visit_ArrayCreation_DoubleArray()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var arr = new[] { 1.1, 2.2, 3.3 };
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  let arr = [1.1, 2.2, 3.3];
+}", script);
+    }
+
+    #endregion
+
+    #region 扩展测试用例 - 更多对象初始化器
+
+    /// <summary>
+    /// 测试对象初始化器 - 多属性
+    /// </summary>
+    [TestMethod]
+    public void Visit_ObjectInitializer_MultipleProperties()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var person = new Person { Name = ""John"", Age = 30 };
+                }
+            }
+
+            class Person
+            {
+                public string Name { get; set; }
+                public int Age { get; set; }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+    }
+
+    /// <summary>
+    /// 测试对象初始化器 - 嵌套
+    /// </summary>
+    [TestMethod]
+    public void Visit_ObjectInitializer_Nested()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var outer = new Outer { Inner = new Inner { Value = 42 } };
+                }
+            }
+
+            class Outer { public Inner Inner { get; set; } }
+            class Inner { public int Value { get; set; } }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+    }
+
+    #endregion
+
+    #region 扩展测试用例 - 特殊类型创建
+
+    /// <summary>
+    /// 测试 DateOnly 创建
+    /// </summary>
+    [TestMethod]
+    public void Visit_ObjectCreation_DateOnly()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var date = new System.DateOnly(2024, 1, 1);
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+    }
+
+    /// <summary>
+    /// 测试 TimeOnly 创建
+    /// </summary>
+    [TestMethod]
+    public void Visit_ObjectCreation_TimeOnly()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var time = new System.TimeOnly(12, 30, 0);
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+    }
+
+    /// <summary>
+    /// 测试 DateTimeOffset 创建
+    /// </summary>
+    [TestMethod]
+    public void Visit_ObjectCreation_DateTimeOffset()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var dto = new System.DateTimeOffset(2024, 1, 1, 12, 0, 0, System.TimeSpan.Zero);
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+    }
+
+    #endregion
 }

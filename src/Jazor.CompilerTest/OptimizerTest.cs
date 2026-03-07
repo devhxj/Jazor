@@ -742,4 +742,276 @@ public sealed class OptimizerTest
     }
 
     #endregion
+
+    #region 更多基本去重测试
+
+    /// <summary>
+    /// 测试五个操作数去重
+    /// </summary>
+    [TestMethod]
+    public void OptimizeLogical_FiveOperandsWithDuplicate_RemovesDuplicate()
+    {
+        // Arrange: A && B && C && D && A -> A && B && C && D
+        var a = new Identifier("a");
+        var b = new Identifier("b");
+        var c = new Identifier("c");
+        var d = new Identifier("d");
+        var left = new LogicalExpression(Operator.LogicalAnd, a, b);
+        var middle = new LogicalExpression(Operator.LogicalAnd, left, c);
+        var right = new LogicalExpression(Operator.LogicalAnd, d, a);
+        var expr = new LogicalExpression(Operator.LogicalAnd, middle, right);
+
+        // Act
+        var result = Optimizer.OptimizeLogical(expr);
+
+        // Assert
+        Assert.IsInstanceOfType<LogicalExpression>(result);
+        var operands = CollectOperands((LogicalExpression)result, Operator.LogicalAnd);
+        Assert.HasCount(4, operands);
+    }
+
+    /// <summary>
+    /// 测试无重复时保持结构
+    /// </summary>
+    [TestMethod]
+    public void OptimizeLogical_NoDuplicates_PreservesAll()
+    {
+        // Arrange: A && B && C && D
+        var a = new Identifier("a");
+        var b = new Identifier("b");
+        var c = new Identifier("c");
+        var d = new Identifier("d");
+        var left = new LogicalExpression(Operator.LogicalAnd, a, b);
+        var right = new LogicalExpression(Operator.LogicalAnd, c, d);
+        var expr = new LogicalExpression(Operator.LogicalAnd, left, right);
+
+        // Act
+        var result = Optimizer.OptimizeLogical(expr);
+
+        // Assert
+        Assert.IsInstanceOfType<LogicalExpression>(result);
+        var operands = CollectOperands((LogicalExpression)result, Operator.LogicalAnd);
+        Assert.HasCount(4, operands);
+    }
+
+    #endregion
+
+    #region Nullish Coalescing 更多测试
+
+    /// <summary>
+    /// 测试空值合并运算符嵌套
+    /// </summary>
+    [TestMethod]
+    public void OptimizeLogical_NullishCoalescingNested_Optimizes()
+    {
+        // Arrange: a ?? b ?? a
+        var a = new Identifier("a");
+        var b = new Identifier("b");
+        var inner = new LogicalExpression(Operator.NullishCoalescing, a, b);
+        var expr = new LogicalExpression(Operator.NullishCoalescing, inner, a);
+
+        // Act
+        var result = Optimizer.OptimizeLogical(expr);
+
+        // Assert: 应该优化为 a ?? b
+        Assert.IsInstanceOfType<LogicalExpression>(result);
+        var logical = (LogicalExpression)result;
+        Assert.AreEqual(Operator.NullishCoalescing, logical.Operator);
+    }
+
+    /// <summary>
+    /// 测试空值合并与 || 混合
+    /// </summary>
+    [TestMethod]
+    public void OptimizeLogical_NullishCoalescingMixedOr_PreservesStructure()
+    {
+        // Arrange: (a ?? b) || (a ?? b)
+        var a = new Identifier("a");
+        var b = new Identifier("b");
+        var nullish = new LogicalExpression(Operator.NullishCoalescing, a, b);
+        var expr = new LogicalExpression(Operator.LogicalOr, nullish, nullish);
+
+        // Act
+        var result = Optimizer.OptimizeLogical(expr);
+
+        // Assert: 由于表达式相同，应该去重
+        Assert.IsInstanceOfType<LogicalExpression>(result);
+        var logical = (LogicalExpression)result;
+        Assert.AreEqual(Operator.NullishCoalescing, logical.Operator);
+    }
+
+    #endregion
+
+    #region 更多副作用测试
+
+    /// <summary>
+    /// 测试数组访问副作用
+    /// </summary>
+    [TestMethod]
+    public void OptimizeLogical_ArrayAccessWithSideEffect_PreservesStructure()
+    {
+        // Arrange: arr[0] && arr[0]
+        var arr = new Identifier("arr");
+        var zero = new NumericLiteral(0, "0");
+        var access = new MemberExpression(arr, zero, computed: true, optional: false);
+        var expr = new LogicalExpression(Operator.LogicalAnd, access, access);
+
+        // Act
+        var result = Optimizer.OptimizeLogical(expr);
+
+        // Assert: 数组访问可能有副作用，不应该去重
+        Assert.IsInstanceOfType<LogicalExpression>(result);
+    }
+
+    /// <summary>
+    /// 测试对象属性访问副作用
+    /// </summary>
+    [TestMethod]
+    public void OptimizeLogical_PropertyAccess_PureExpression()
+    {
+        // Arrange: obj.prop && obj.prop
+        var obj = new Identifier("obj");
+        var prop = new Identifier("prop");
+        var access = new MemberExpression(obj, prop, computed: false, optional: false);
+        var expr = new LogicalExpression(Operator.LogicalAnd, access, access);
+
+        // Act
+        var result = Optimizer.OptimizeLogical(expr);
+
+        // Assert: 纯属性访问可以优化
+        Assert.IsInstanceOfType<MemberExpression>(result);
+    }
+
+    #endregion
+
+    #region 数值字面量测试
+
+    /// <summary>
+    /// 测试数值字面量去重
+    /// </summary>
+    [TestMethod]
+    public void OptimizeLogical_NumericLiteralDuplicate_ReturnsSingleLiteral()
+    {
+        // Arrange: 42 && 42
+        var lit = new NumericLiteral(42, "42");
+        var expr = new LogicalExpression(Operator.LogicalAnd, lit, lit);
+
+        // Act
+        var result = Optimizer.OptimizeLogical(expr);
+
+        // Assert
+        Assert.IsInstanceOfType<NumericLiteral>(result);
+        Assert.AreEqual(42, ((NumericLiteral)result).Value);
+    }
+
+    /// <summary>
+    /// 测试不同数值不去重
+    /// </summary>
+    [TestMethod]
+    public void OptimizeLogical_DifferentNumericLiterals_PreservesBoth()
+    {
+        // Arrange: 1 && 2
+        var one = new NumericLiteral(1, "1");
+        var two = new NumericLiteral(2, "2");
+        var expr = new LogicalExpression(Operator.LogicalAnd, one, two);
+
+        // Act
+        var result = Optimizer.OptimizeLogical(expr);
+
+        // Assert
+        Assert.IsInstanceOfType<LogicalExpression>(result);
+    }
+
+    #endregion
+
+    #region 复杂嵌套测试
+
+    /// <summary>
+    /// 测试深度嵌套表达式
+    /// </summary>
+    [TestMethod]
+    public void OptimizeLogical_DeepNestedNoDuplicates_PreservesAll()
+    {
+        // Arrange: 构建深度为10的表达式
+        Expression expr = new Identifier("a");
+        for (int i = 0; i < 10; i++)
+        {
+            expr = new LogicalExpression(Operator.LogicalAnd, expr, new Identifier($"b{i}"));
+        }
+
+        // Act
+        var result = Optimizer.OptimizeLogical(expr);
+
+        // Assert
+        Assert.IsInstanceOfType<LogicalExpression>(result);
+        var operands = CollectOperands((LogicalExpression)result, Operator.LogicalAnd);
+        Assert.HasCount(11, operands); // a + b0..b9
+    }
+
+    /// <summary>
+    /// 测试混合运算符深度嵌套
+    /// </summary>
+    [TestMethod]
+    public void OptimizeLogical_MixedDeepNested_PreservesStructure()
+    {
+        // Arrange: ((a && b) || c) && (d || (e && f))
+        var a = new Identifier("a");
+        var b = new Identifier("b");
+        var c = new Identifier("c");
+        var d = new Identifier("d");
+        var e = new Identifier("e");
+        var f = new Identifier("f");
+
+        var and1 = new LogicalExpression(Operator.LogicalAnd, a, b);
+        var or1 = new LogicalExpression(Operator.LogicalOr, and1, c);
+        var and2 = new LogicalExpression(Operator.LogicalAnd, e, f);
+        var or2 = new LogicalExpression(Operator.LogicalOr, d, and2);
+        var expr = new LogicalExpression(Operator.LogicalAnd, or1, or2);
+
+        // Act
+        var result = Optimizer.OptimizeLogical(expr);
+
+        // Assert
+        Assert.IsInstanceOfType<LogicalExpression>(result);
+    }
+
+    #endregion
+
+    #region 边界情况测试
+
+    /// <summary>
+    /// 测试 null 值处理
+    /// </summary>
+    [TestMethod]
+    public void OptimizeLogical_NullLiteral_HandlesCorrectly()
+    {
+        // Arrange: null && null
+        var nullLit = new NullLiteral("null");
+        var expr = new LogicalExpression(Operator.LogicalAnd, nullLit, nullLit);
+
+        // Act
+        var result = Optimizer.OptimizeLogical(expr);
+
+        // Assert
+        Assert.IsInstanceOfType<NullLiteral>(result);
+    }
+
+    /// <summary>
+    /// 测试 this 表达式
+    /// </summary>
+    [TestMethod]
+    public void OptimizeLogical_ThisExpression_HandlesCorrectly()
+    {
+        // Arrange: this && this
+        var thisExpr = new ThisExpression();
+        var expr = new LogicalExpression(Operator.LogicalAnd, thisExpr, thisExpr);
+
+        // Act
+        var result = Optimizer.OptimizeLogical(expr);
+
+        // Assert
+        Assert.IsInstanceOfType<ThisExpression>(result);
+    }
+
+    #endregion
 }

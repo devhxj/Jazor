@@ -2688,4 +2688,624 @@ public sealed class SemanticWalkerOrdinaryTest
 
   }
 
+  #region 扩展测试用例 - 更多二元运算
+
+  /// <summary>
+  /// 测试二元运算 - 模运算
+  /// </summary>
+  [TestMethod]
+  public void Visit_Binary_Modulo()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int remainder = 10 % 3;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let remainder = 10 % 3;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试二元运算 - 幂运算
+  /// </summary>
+  [TestMethod]
+  public void Visit_Binary_Power()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    double result = System.Math.Pow(2, 10);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+  }
+
+  /// <summary>
+  /// 测试二元运算 - 位移
+  /// </summary>
+  [TestMethod]
+  public void Visit_Binary_Shift()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int left = 1 << 4;
+                    int right = 16 >> 2;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let left = 1 << 4;
+  let right = 16 >> 2;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试二元运算 - 位运算
+  /// </summary>
+  [TestMethod]
+  public void Visit_Binary_Bitwise()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int and = 0xFF & 0x0F;
+                    int or = 0xF0 | 0x0F;
+                    int xor = 0xFF ^ 0x0F;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let and = 255 & 15;
+  let or = 240 | 15;
+  let xor = 255 ^ 15;
+}", script);
+  }
+
+  #endregion
+
+  #region 扩展测试用例 - 更多一元运算
+
+  /// <summary>
+  /// 测试一元运算 - 位取反
+  /// </summary>
+  [TestMethod]
+  public void Visit_Unary_BitwiseNot()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int value = 0x0F;
+                    int not = ~value;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+  }
+
+  /// <summary>
+  /// 测试一元运算 - 正号
+  /// </summary>
+  [TestMethod]
+  public void Visit_Unary_Plus()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int value = +42;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let value = +42;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试一元运算 - 前置递增
+  /// </summary>
+  [TestMethod]
+  public void Visit_Unary_PrefixIncrement()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int x = 5;
+                    int y = ++x;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let x = 5;
+  let y = ++x;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试一元运算 - 后置递减
+  /// </summary>
+  [TestMethod]
+  public void Visit_Unary_PostfixDecrement()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int x = 5;
+                    int y = x--;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let x = 5;
+  let y = x--;
+}", script);
+  }
+
+  #endregion
+
+  #region 扩展测试用例 - 更多条件表达式
+
+  /// <summary>
+  /// 测试条件表达式 - 嵌套三元
+  /// </summary>
+  [TestMethod]
+  public void Visit_Conditional_Nested()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int x = 5;
+                    string result = x < 0 ? ""negative"" : x == 0 ? ""zero"" : ""positive"";
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let x = 5;
+  let result = x < 0 ? ""negative"" : x === 0 ? ""zero"" : ""positive"";
+}", script);
+  }
+
+  /// <summary>
+  /// 测试条件表达式 - 复杂条件
+  /// </summary>
+  [TestMethod]
+  public void Visit_Conditional_ComplexCondition()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int a = 5;
+                    int b = 10;
+                    int max = a > b ? a : b;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let a = 5;
+  let b = 10;
+  let max = a > b ? a : b;
+}", script);
+  }
+
+  #endregion
+
+  #region 扩展测试用例 - 更多赋值运算
+
+  /// <summary>
+  /// 测试复合赋值 - %=
+  /// </summary>
+  [TestMethod]
+  public void Visit_Assign_ModuloAssign()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int x = 10;
+                    x %= 3;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let x = 10;
+  x %= 3;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试复合赋值 - &=
+  /// </summary>
+  [TestMethod]
+  public void Visit_Assign_AndAssign()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int x = 0xFF;
+                    x &= 0x0F;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let x = 255;
+  x &= 15;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试复合赋值 - |=
+  /// </summary>
+  [TestMethod]
+  public void Visit_Assign_OrAssign()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int x = 0xF0;
+                    x |= 0x0F;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let x = 240;
+  x |= 15;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试复合赋值 - ^=
+  /// </summary>
+  [TestMethod]
+  public void Visit_Assign_XorAssign()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int x = 0xFF;
+                    x ^= 0x0F;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let x = 255;
+  x ^= 15;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试复合赋值 - <<=
+  /// </summary>
+  [TestMethod]
+  public void Visit_Assign_LeftShiftAssign()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int x = 1;
+                    x <<= 4;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let x = 1;
+  x <<= 4;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试复合赋值 - >>=
+  /// </summary>
+  [TestMethod]
+  public void Visit_Assign_RightShiftAssign()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int x = 16;
+                    x >>= 2;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let x = 16;
+  x >>= 2;
+}", script);
+  }
+
+  #endregion
+
+  #region 扩展测试用例 - 更多Lambda
+
+  /// <summary>
+  /// 测试 Lambda - 无参数
+  /// </summary>
+  [TestMethod]
+  public void Visit_Lambda_NoParams()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    Func<int> getNumber = () => 42;
+                    int result = getNumber();
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let getNumber = () => {
+    return 42;
+  };
+  let result = getNumber();
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Lambda - 多语句体
+  /// </summary>
+  [TestMethod]
+  public void Visit_Lambda_StatementBody()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    Func<int, int> doubleIt = x =>
+                    {
+                        int doubled = x * 2;
+                        return doubled;
+                    };
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+  }
+
+  /// <summary>
+  /// 测试 Lambda - Action 类型
+  /// </summary>
+  [TestMethod]
+  public void Visit_Lambda_Action()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    Action<string> print = s => Console.WriteLine(s);
+                    print(""hello"");
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let print = s => {
+    return console.log(s);
+  };
+  print(""hello"");
+}", script);
+  }
+
+  #endregion
+
+  #region 扩展测试用例 - 更多比较
+
+  /// <summary>
+  /// 测试比较运算 - !=
+  /// </summary>
+  [TestMethod]
+  public void Visit_Comparison_NotEqual()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int a = 1;
+                    int b = 2;
+                    bool notEqual = a != b;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let a = 1;
+  let b = 2;
+  let notEqual = a !== b;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试比较运算 - <=
+  /// </summary>
+  [TestMethod]
+  public void Visit_Comparison_LessThanOrEqual()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int a = 1;
+                    int b = 2;
+                    bool le = a <= b;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let a = 1;
+  let b = 2;
+  let le = a <= b;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试比较运算 - >=
+  /// </summary>
+  [TestMethod]
+  public void Visit_Comparison_GreaterThanOrEqual()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int a = 2;
+                    int b = 1;
+                    bool ge = a >= b;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let a = 2;
+  let b = 1;
+  let ge = a >= b;
+}", script);
+  }
+
+  #endregion
 }

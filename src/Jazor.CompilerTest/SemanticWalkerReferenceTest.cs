@@ -1149,4 +1149,1067 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	#endregion
+
+	#region 扩展测试用例 - 多维数组
+
+	/// <summary>
+	/// 测试二维数组元素访问
+	/// </summary>
+	[TestMethod]
+	public void Visit_ArrayElementReference_TwoDimensional()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[,] matrix = new int[2, 3];
+                    int x = matrix[0, 1];
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let matrix = new Array(2).fill().map(() => new Array(3));
+  let x = matrix[0][1];
+}", script);
+	}
+
+	/// <summary>
+	/// 测试交错数组元素访问
+	/// </summary>
+	[TestMethod]
+	public void Visit_ArrayElementReference_Jagged()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[][] jagged = new int[2][];
+                    int x = jagged[0][1];
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let jagged = new Array(2);
+  let x = jagged[0][1];
+}", script);
+	}
+
+	/// <summary>
+	/// 测试数组元素赋值
+	/// </summary>
+	[TestMethod]
+	public void Visit_ArrayElementReference_Assignment()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[] array = new int[5];
+                    array[0] = 10;
+                    array[1] = 20;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let array = new Array(5);
+  array[0] = 10;
+  array[1] = 20;
+}", script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - 属性引用变体
+
+	/// <summary>
+	/// 测试只读属性访问
+	/// </summary>
+	[TestMethod]
+	public void Visit_PropertyReference_ReadOnly()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                public int ReadOnlyProp { get; }
+
+                void TestMethod()
+                {
+                    TestClass obj = new TestClass();
+                    int x = obj.ReadOnlyProp;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let obj = new TestClass;
+  let x = obj.ReadOnlyProp;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试静态属性访问 DateTime.UtcNow
+	/// </summary>
+	[TestMethod]
+	public void Visit_PropertyReference_DateTimeUtcNow()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    DateTime utcNow = DateTime.UtcNow;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let utcNow = new Date;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 DateTime 日期属性
+	/// </summary>
+	[TestMethod]
+	public void Visit_PropertyReference_DateTimeProperties()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    DateTime now = DateTime.Now;
+                    int year = now.Year;
+                    int month = now.Month;
+                    int day = now.Day;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let now = new Date;
+  let year = now.getFullYear();
+  let month = now.getMonth() + 1;
+  let day = now.getDate();
+}", script);
+	}
+
+	/// <summary>
+	/// 测试数组长度属性
+	/// </summary>
+	[TestMethod]
+	public void Visit_PropertyReference_ArrayLength()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[] array = [1, 2, 3, 4, 5];
+                    int len = array.Length;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let array = [1, 2, 3, 4, 5];
+  let len = array.length;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串长度属性
+	/// </summary>
+	[TestMethod]
+	public void Visit_PropertyReference_StringLength()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    string text = ""Hello"";
+                    int len = text.Length;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let text = ""Hello"";
+  let len = text.length;
+}", script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - 方法引用变体
+
+	/// <summary>
+	/// 测试实例方法引用带绑定
+	/// </summary>
+	[TestMethod]
+	public void Visit_MethodReference_BoundMethod()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    TestClass obj = new TestClass();
+                    Action action = obj.DoSomething;
+                }
+
+                void DoSomething() { }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let obj = new TestClass;
+  let action = obj.DoSomething.bind(obj);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试带参数方法引用
+	/// </summary>
+	[TestMethod]
+	public void Visit_MethodReference_WithParameters()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    Func<int, int, int> add = Add;
+                }
+
+                int Add(int a, int b) => a + b;
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let add = this.Add.bind(this);
+}", script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - this引用变体
+
+	/// <summary>
+	/// 测试this传递给方法
+	/// </summary>
+	[TestMethod]
+	public void Visit_InstanceReference_ThisAsArgument()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    Process(this);
+                }
+
+                void Process(TestClass obj) { }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  this.Process(this);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试this返回
+	/// </summary>
+	[TestMethod]
+	public void Visit_InstanceReference_ReturnThis()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                TestClass TestMethod()
+                {
+                    return this;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  return this;
+}", script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - 索引器引用
+
+	/// <summary>
+	/// 测试列表索引器访问
+	/// </summary>
+	[TestMethod]
+	public void Visit_IndexerReference_List()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var list = new List<int> { 1, 2, 3 };
+                    int first = list[0];
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let list = [1, 2, 3];
+  let first = list[0];
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字典索引器访问
+	/// </summary>
+	[TestMethod]
+	public void Visit_IndexerReference_Dictionary()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var dict = new Dictionary<string, int>();
+                    dict[""key""] = 42;
+                    int value = dict[""key""];
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let dict = new Map;
+  dict.set(""key"", 42);
+  let value = dict.get(""key"");
+}", script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - 复杂引用场景
+
+	/// <summary>
+	/// 测试链式方法调用
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_ChainedMethodCalls()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    string text = ""  Hello World  "";
+                    string result = text.Trim().ToUpper().Substring(0, 5);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let text = ""  Hello World  "";
+  let result = text.trim().toUpperCase().substring(0, 0 + 5);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试嵌套属性访问
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_NestedPropertyAccess()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                public InnerClass Inner { get; set; }
+
+                void TestMethod()
+                {
+                    TestClass obj = new TestClass();
+                    obj.Inner = new InnerClass();
+                    int x = obj.Inner.Value;
+                }
+            }
+
+            class InnerClass
+            {
+                public int Value { get; set; }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let obj = new TestClass;
+  obj.Inner = new InnerClass;
+  let x = obj.Inner.Value;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试数组元素作为对象属性访问
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_ArrayElementProperty()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var array = new[] { ""apple"", ""banana"", ""cherry"" };
+                    int len = array[0].Length;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let array = [""apple"", ""banana"", ""cherry""];
+  let len = array[0].length;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试数组元素方法调用
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_ArrayElementMethod()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var array = new[] { ""apple"", ""banana"", ""cherry"" };
+                    string upper = array[0].ToUpper();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let array = [""apple"", ""banana"", ""cherry""];
+  let upper = array[0].toUpperCase();
+}", script);
+	}
+
+	#region 扩展测试用例 - 更多属性引用
+
+	/// <summary>
+	/// 测试静态属性引用
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_StaticProperty()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var now = System.DateTime.Now;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	/// <summary>
+	/// 测试只读属性
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_ReadOnlyProperty()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                public int ReadOnly => 42;
+
+                void TestMethod()
+                {
+                    int value = ReadOnly;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let value = this.ReadOnly;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试计算属性
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_ComputedProperty()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                private int _value = 10;
+                public int Doubled => _value * 2;
+
+                void TestMethod()
+                {
+                    int result = Doubled;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	/// <summary>
+	/// 测试索引器属性
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_IndexerProperty()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var list = new System.Collections.Generic.List<int> { 1, 2, 3 };
+                    int first = list[0];
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let list = [1, 2, 3];
+  let first = list[0];
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字典索引器
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_DictionaryIndexer()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var dict = new System.Collections.Generic.Dictionary<string, int>();
+                    dict[""key""] = 42;
+                    int value = dict[""key""];
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - 更多字段引用
+
+	/// <summary>
+	/// 测试静态字段引用
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_StaticField()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                public static int Counter = 0;
+
+                void TestMethod()
+                {
+                    int count = Counter;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let count = Counter;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试只读字段
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_ReadOnlyField()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                public readonly int Value = 42;
+
+                void TestMethod()
+                {
+                    int v = Value;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let v = this.Value;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试常量字段
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_ConstField()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                public const int MaxValue = 100;
+
+                void TestMethod()
+                {
+                    int max = MaxValue;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let max = 100;
+}", script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - 数组引用
+
+	/// <summary>
+	/// 测试二维数组引用
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_2DArray()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[,] matrix = new int[3, 3];
+                    matrix[0, 0] = 1;
+                    int value = matrix[1, 2];
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	/// <summary>
+	/// 测试锯齿数组引用
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_JaggedArray()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[][] jagged = new int[3][];
+                    jagged[0] = new int[] { 1, 2, 3 };
+                    int value = jagged[0][1];
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	/// <summary>
+	/// 测试数组 Length 属性
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_ArrayLength()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[] arr = new int[] { 1, 2, 3, 4, 5 };
+                    int len = arr.Length;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let arr = [1, 2, 3, 4, 5];
+  let len = arr.length;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试数组 Rank 属性
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_ArrayRank()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[,] matrix = new int[3, 4];
+                    int rank = matrix.Rank;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - 方法引用
+
+	/// <summary>
+	/// 测试方法组引用
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_MethodGroup()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    System.Func<int, int> func = Double;
+                    int result = func(5);
+                }
+
+                int Double(int x) => x * 2;
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	/// <summary>
+	/// 测试静态方法引用
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_StaticMethod()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int result = Add(1, 2);
+                }
+
+                static int Add(int a, int b) => a + b;
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let result = Add(1, 2);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试扩展方法引用
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_ExtensionMethod()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var list = new System.Collections.Generic.List<int> { 1, 2, 3 };
+                    var doubled = list.Select(x => x * 2).ToList();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - 链式调用
+
+	/// <summary>
+	/// 测试链式方法调用
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_ChainedMethods()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    string result = ""hello world"".ToUpper().Trim().Substring(0, 5);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let result = ""hello world"".toUpperCase().trim().substring(0, 5);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试链式属性访问
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_ChainedProperties()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var date = System.DateTime.Now.Date;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	/// <summary>
+	/// 测试混合链式调用
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_MixedChaining()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int len = ""hello"".ToUpper().Length;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let len = ""hello"".toUpperCase().length;
+}", script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - this和base
+
+	/// <summary>
+	/// 测试 this 引用
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_This()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                private int _value;
+
+                void TestMethod()
+                {
+                    this._value = 10;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  this._value = 10;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 this 作为参数
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_ThisAsArgument()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    Process(this);
+                }
+
+                void Process(TestClass obj) { }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  this.Process(this);
+}", script);
+	}
+
+	#endregion
 }

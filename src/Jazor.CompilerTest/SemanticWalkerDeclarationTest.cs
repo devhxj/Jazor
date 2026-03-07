@@ -540,4 +540,1117 @@ public sealed class SemanticWalkerDeclarationTest
 }", script);
 
     }
+
+    #region 数组声明测试
+
+    [TestMethod]
+    public void Visit_ArrayDeclaration_Empty()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[] empty = new int[0];
+                    string[] emptyStr = new string[0];
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let empty = [];
+  let emptyStr = [];
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_ArrayDeclaration_Size()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[] arr = new int[5];
+                    double[] doubles = new double[10];
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let arr = new Array(5);
+  let doubles = new Array(10);
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_ArrayDeclaration_Implicit()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var arr = new[] { 1, 2, 3 };
+                    var strs = new[] { ""a"", ""b"" };
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let arr = [1, 2, 3];
+  let strs = [""a"", ""b""];
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_ArrayDeclaration_Nested()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[][] nested = new int[][] { new int[] { 1, 2 }, new int[] { 3, 4, 5 } };
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let nested = [[1, 2], [3, 4, 5]];
+}", script);
+    }
+
+    #endregion
+
+    #region 多变量声明测试
+
+    [TestMethod]
+    public void Visit_MultiVarDeclaration_SameType()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int a = 1, b = 2, c = 3, d = 4;
+                    string x = ""x"", y = ""y"", z = ""z"";
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let a = 1, b = 2, c = 3, d = 4;
+  let x = ""x"", y = ""y"", z = ""z"";
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_MultiVarDeclaration_MixedInit()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int a = 1, b, c = 3, d;
+                    string x, y = ""y"", z;
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let a = 1, b, c = 3, d;
+  let x, y = ""y"", z;
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_MultiVarDeclaration_Expressions()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int a = 1 + 2, b = 3 * 4, c = 5 - 6;
+                    bool x = true, y = false, z = a > b;
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let a = 1 + 2, b = 3 * 4, c = 5 - 6;
+  let x = true, y = false, z = a > b;
+}", script);
+    }
+
+    #endregion
+
+    #region 变量初始化测试
+
+    [TestMethod]
+    public void Visit_VariableInit_Null()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    string s = null;
+                    object obj = null;
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let s = null;
+  let obj = null;
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_VariableInit_Default()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int x = default(int);
+                    bool b = default(bool);
+                    string s = default(string);
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let x = 0;
+  let b = false;
+  let s = null;
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_VariableInit_NewObject()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = new object();
+                    var list = new System.Collections.Generic.List<int>();
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let obj = new Object;
+  let list = [];
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_VariableInit_ComplexExpression()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int result = (1 + 2) * 3 - 4 / 2;
+                    bool condition = (5 > 3) && (2 < 4) || false;
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let result = (1 + 2) * 3 - 4 / 2;
+  let condition = 5 > 3 && 2 < 4 || false;
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_VariableInit_MethodCall()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    string upper = ""hello"".ToUpper();
+                    int length = ""world"".Length;
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let upper = ""hello"".toUpperCase();
+  let length = ""world"".length;
+}", script);
+    }
+
+    #endregion
+
+    #region Const声明测试
+
+    [TestMethod]
+    public void Visit_ConstDeclaration_Basic()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    const int x = 10;
+                    const string name = ""test"";
+                    const bool flag = true;
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let x = 10;
+  let name = ""test"";
+  let flag = true;
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_ConstDeclaration_Expression()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    const int sum = 1 + 2 + 3;
+                    const double pi = 3.14159;
+                    const int product = 2 * 3 * 4;
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let sum = 1 + 2 + 3;
+  let pi = 3.14159;
+  let product = 2 * 3 * 4;
+}", script);
+    }
+
+    #endregion
+
+    #region 局部函数声明测试
+
+    [TestMethod]
+    public void Visit_LocalFunction_NoParams()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int GetNumber()
+                    {
+                        return 42;
+                    }
+                    var result = GetNumber();
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  function getNumber() {
+    return 42;
+  }
+  let result = getNumber();
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_LocalFunction_WithParams()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int Add(int a, int b)
+                    {
+                        return a + b;
+                    }
+                    var sum = Add(1, 2);
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  function add(a, b) {
+    return a + b;
+  }
+  let sum = add(1, 2);
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_LocalFunction_Static()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    static int Multiply(int a, int b)
+                    {
+                        return a * b;
+                    }
+                    var result = Multiply(3, 4);
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  function multiply(a, b) {
+    return a * b;
+  }
+  let result = multiply(3, 4);
+}", script);
+    }
+
+    #endregion
+
+    #region out参数声明测试
+
+    [TestMethod]
+    public void Visit_OutDeclaration_IntTryParse()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    if (int.TryParse(""123"", out int number))
+                    {
+                        Console.WriteLine(number);
+                    }
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let number, v$test;
+  if (v$test = _16e2a901535b765e(""123"", number), number = v$test[1], v$test[0]) {
+    console.log(number);
+  }
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_OutDeclaration_DoubleTryParse()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    if (double.TryParse(""3.14"", out double value))
+                    {
+                        Console.WriteLine(value);
+                    }
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let value, v$test;
+  if (v$test = _4ff10f9012f5f7b6(""3.14"", value), value = v$test[1], v$test[0]) {
+    console.log(value);
+  }
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_OutDeclaration_MultipleOut()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var dict = new System.Collections.Generic.Dictionary<string, int>();
+                    dict.TryGetValue(""a"", out int a);
+                    dict.TryGetValue(""b"", out int b);
+                    Console.WriteLine(a + b);
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let a, v$test, b, v$test;
+  let dict = new Map;
+  v$test = _7db4d9112b4ba3c4(dict, ""a"", a), a = v$test[1], v$test[0];
+  v$test = _7db4d9112b4ba3c4(dict, ""b"", b), b = v$test[1], v$test[0];
+  console.log(a + b);
+}", script);
+    }
+
+    #endregion
+
+    #region 嵌套声明测试
+
+    [TestMethod]
+    public void Visit_NestedDeclaration_Block()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    {
+                        int inner = 42;
+                        Console.WriteLine(inner);
+                    }
+                    int outer = 24;
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  {
+    let inner = 42;
+    console.log(inner);
+  }
+  let outer = 24;
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_NestedDeclaration_If()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    if (true)
+                    {
+                        int inIf = 1;
+                        Console.WriteLine(inIf);
+                    }
+                    int afterIf = 2;
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  if (true) {
+    let inIf = 1;
+    console.log(inIf);
+  }
+  let afterIf = 2;
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_NestedDeclaration_For()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    for (int i = 0; i < 10; i++)
+                    {
+                        int loopVar = i * 2;
+                        Console.WriteLine(loopVar);
+                    }
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  for (let i = 0; i < 10; i++) {
+    let loopVar = i * 2;
+    console.log(loopVar);
+  }
+}", script);
+    }
+
+    #endregion
+
+    #region 使用声明测试
+
+    [TestMethod]
+    public void Visit_UsingDeclaration_Basic()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    using var disposable = new TestDisposable();
+                    Console.WriteLine(""test"");
+                }
+            }
+
+            class TestDisposable : System.IDisposable
+            {
+                public void Dispose() { }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        // using 声明转换为普通声明
+        Assert.AreEqual(
+@"{
+  let disposable = new TestDisposable;
+  console.log(""test"");
+}", script);
+    }
+
+    #endregion
+
+    #region 元组声明测试
+
+    [TestMethod]
+    public void Visit_TupleDeclaration_Basic()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    (int a, int b) tuple = (1, 2);
+                    Console.WriteLine(tuple.a);
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let tuple = [1, 2];
+  console.log(tuple[0]);
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_TupleDeclaration_Named()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    (string Name, int Age) person = (""John"", 30);
+                    Console.WriteLine(person.Name);
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let person = [""John"", 30];
+  console.log(person[0]);
+}", script);
+    }
+
+    #endregion
+
+    #region 声明表达式测试
+
+    [TestMethod]
+    public void Visit_DeclarationExpression_InLambda()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var list = new System.Collections.Generic.List<int> { 1, 2, 3 };
+                    var filtered = list.Where(x => x > 1).ToList();
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let list = [1, 2, 3];
+  let filtered = list.filter(x => x > 1);
+}", script);
+    }
+
+    #endregion
+
+    #region 赋值声明测试
+
+    [TestMethod]
+    public void Visit_AssignmentDeclaration_Simple()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int x;
+                    x = 10;
+                    Console.WriteLine(x);
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let x;
+  x = 10;
+  console.log(x);
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_AssignmentDeclaration_Chained()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int a, b, c;
+                    a = b = c = 5;
+                    Console.WriteLine(a + b + c);
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let a, b, c;
+  a = b = c = 5;
+  console.log(a + b + c);
+}", script);
+    }
+
+    #endregion
+
+    #region 扩展测试用例 - 更多变量声明
+
+    /// <summary>
+    /// 测试变量声明 - 隐式类型
+    /// </summary>
+    [TestMethod]
+    public void Visit_VarDeclaration_InferredType()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var number = 42;
+                    var text = ""hello"";
+                    var flag = true;
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let number = 42;
+  let text = ""hello"";
+  let flag = true;
+}", script);
+    }
+
+    /// <summary>
+    /// 测试变量声明 - 可空类型
+    /// </summary>
+    [TestMethod]
+    public void Visit_NullableDeclaration()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int? nullable = null;
+                    string? maybeNull = ""test"";
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let nullable = null;
+  let maybeNull = ""test"";
+}", script);
+    }
+
+    /// <summary>
+    /// 测试变量声明 - 初始化为表达式
+    /// </summary>
+    [TestMethod]
+    public void Visit_ExpressionInitialization()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int sum = 1 + 2 + 3;
+                    string greeting = ""Hello"" + "" "" + ""World"";
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let sum = 1 + 2 + 3;
+  let greeting = ""Hello"" + "" "" + ""World"";
+}", script);
+    }
+
+    /// <summary>
+    /// 测试变量声明 - 初始化为方法结果
+    /// </summary>
+    [TestMethod]
+    public void Visit_MethodResultInitialization()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int result = GetValue();
+                }
+
+                int GetValue() => 42;
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let result = this.GetValue();
+}", script);
+    }
+
+    #endregion
+
+    #region 扩展测试用例 - 更多数组声明
+
+    /// <summary>
+    /// 测试数组声明 - 指定大小
+    /// </summary>
+    [TestMethod]
+    public void Visit_ArrayWithSize()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[] arr = new int[5];
+                    string[] strs = new string[10];
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let arr = new Array(5);
+  let strs = new Array(10);
+}", script);
+    }
+
+    /// <summary>
+    /// 测试数组声明 - 多维数组
+    /// </summary>
+    [TestMethod]
+    public void Visit_MultiDimensionalArray()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[,] matrix = new int[3, 4];
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+    }
+
+    /// <summary>
+    /// 测试数组声明 - 锯齿数组
+    /// </summary>
+    [TestMethod]
+    public void Visit_JaggedArray()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[][] jagged = new int[3][];
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+    }
+
+    #endregion
+
+    #region 扩展测试用例 - 更多局部函数
+
+    /// <summary>
+    /// 测试局部函数 - 带默认参数
+    /// </summary>
+    [TestMethod]
+    public void Visit_LocalFunction_DefaultParam()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int Add(int a, int b = 1)
+                    {
+                        return a + b;
+                    }
+                    var result = Add(5);
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+    }
+
+    /// <summary>
+    /// 测试局部函数 - 递归调用
+    /// </summary>
+    [TestMethod]
+    public void Visit_LocalFunction_Recursive()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int Factorial(int n)
+                    {
+                        return n <= 1 ? 1 : n * Factorial(n - 1);
+                    }
+                    var result = Factorial(5);
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+    }
+
+    #endregion
+
+    #region 扩展测试用例 - 更多out参数
+
+    /// <summary>
+    /// 测试out参数 - 多个out
+    /// </summary>
+    [TestMethod]
+    public void Visit_MultipleOutParameters()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    if (int.TryParse(""1"", out int a) && int.TryParse(""2"", out int b))
+                    {
+                        Console.WriteLine(a + b);
+                    }
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+    }
+
+    #endregion
 }

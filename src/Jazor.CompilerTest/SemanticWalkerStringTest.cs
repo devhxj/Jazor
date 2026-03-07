@@ -800,4 +800,1598 @@ public sealed class SemanticWalkerStringTest
 	}
 
 	#endregion
+
+	#region 扩展测试用例 - 字符串连接
+
+	/// <summary>
+	/// 测试字符串连接 - 简单连接
+	/// </summary>
+	[TestMethod]
+	public void Visit_StringConcat_Simple()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string a = ""Hello"";
+					string b = ""World"";
+					string result = a + "" "" + b;
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let a = ""Hello"";
+  let b = ""World"";
+  let result = a + "" "" + b;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串连接 - 多个字符串
+	/// </summary>
+	[TestMethod]
+	public void Visit_StringConcat_Multiple()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string a = ""a"";
+					string b = ""b"";
+					string c = ""c"";
+					string result = a + b + c;
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let a = ""a"";
+  let b = ""b"";
+  let c = ""c"";
+  let result = a + b + c;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串连接 - 与数字连接
+	/// </summary>
+	[TestMethod]
+	public void Visit_StringConcat_WithNumber()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					int num = 42;
+					string result = ""The answer is "" + num;
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let num = 42;
+  let result = ""The answer is "" + num;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串连接 - 与布尔值连接
+	/// </summary>
+	[TestMethod]
+	public void Visit_StringConcat_WithBoolean()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					bool flag = true;
+					string result = ""Flag is "" + flag;
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let flag = true;
+  let result = ""Flag is "" + flag;
+}", script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - 插值字符串变体
+
+	/// <summary>
+	/// 测试插值字符串 - 嵌套表达式
+	/// </summary>
+	[TestMethod]
+	public void Visit_InterpolatedString_NestedExpression()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					int a = 1;
+					int b = 2;
+					string result = $""Sum: {a + b}, Product: {a * b}"";
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let a = 1;
+  let b = 2;
+  let result = `Sum: ${a + b}, Product: ${a * b}`;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试插值字符串 - 方法调用
+	/// </summary>
+	[TestMethod]
+	public void Visit_InterpolatedString_MethodCallExpr()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string name = ""hello world"";
+					string result = $""Upper: {name.ToUpper()}"";
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let name = ""hello world"";
+  let result = `Upper: ${name.toUpperCase()}`;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试插值字符串 - 三元表达式
+	/// </summary>
+	[TestMethod]
+	public void Visit_InterpolatedString_TernaryExpr()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					int value = 5;
+					string result = $""Value is {(value > 0 ? ""positive"" : ""non-positive"")}"";
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let value = 5;
+  let result = `Value is ${value > 0 ? ""positive"" : ""non-positive""}`;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试插值字符串 - 空值处理
+	/// </summary>
+	[TestMethod]
+	public void Visit_InterpolatedString_NullValue()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string name = null;
+					string result = $""Hello, {name ?? ""Guest""}!"";
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let name = null;
+  let result = `Hello, ${name ?? ""Guest""}!`;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试插值字符串 - 多行字符串
+	/// </summary>
+	[TestMethod]
+	public void Visit_InterpolatedString_Multiline()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string name = ""World"";
+					string result = $""Hello,
+{name}!"";
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let name = ""World"";
+  let result = `Hello,
+${name}!`;
+}", script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - 字符串方法
+
+	/// <summary>
+	/// 测试字符串 Length 属性
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_Length()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""Hello"";
+					int len = text.Length;
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let text = ""Hello"";
+  let len = text.length;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串 ToLower 方法
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_ToLower()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""HELLO"";
+					string lower = text.ToLower();
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let text = ""HELLO"";
+  let lower = text.toLowerCase();
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串 Contains 方法
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_Contains()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""Hello World"";
+					bool hasWorld = text.Contains(""World"");
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let text = ""Hello World"";
+  let hasWorld = text.includes(""World"");
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串 StartsWith 方法
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_StartsWith()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""Hello World"";
+					bool starts = text.StartsWith(""Hello"");
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let text = ""Hello World"";
+  let starts = text.startsWith(""Hello"");
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串 EndsWith 方法
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_EndsWith()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""Hello World"";
+					bool ends = text.EndsWith(""World"");
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let text = ""Hello World"";
+  let ends = text.endsWith(""World"");
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串 Replace 方法
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_Replace()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""Hello World"";
+					string replaced = text.Replace(""World"", ""Universe"");
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let text = ""Hello World"";
+  let replaced = text.replace(""World"", ""Universe"");
+}", script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - 特殊字符串
+
+	/// <summary>
+	/// 测试空字符串
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_Empty()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string empty = """";
+					bool isEmpty = string.IsNullOrEmpty(empty);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let empty = """";
+  let isEmpty = empty == null || empty === """";
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串空格
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_Whitespace()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string whitespace = ""   "";
+					string trimmed = whitespace.Trim();
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let whitespace = ""   "";
+  let trimmed = whitespace.trim();
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串转义字符
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_EscapeCharacters()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""Line1\nLine2\tTabbed"";
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let text = ""Line1\nLine2\tTabbed"";
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串连接运算符 +=
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_ConcatAssign()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string result = ""Hello"";
+					result += "" World"";
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let result = ""Hello"";
+  result += "" World"";
+}", script);
+	}
+
+	/// <summary>
+	/// 测试多行字符串连接
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_MultiLineConcat()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string multi = ""Line1"" +
+						""Line2"" +
+						""Line3"";
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let multi = ""Line1"" + ""Line2"" + ""Line3"";
+}", script);
+	}
+
+	/// <summary>
+	/// 测试插值字符串中的三元运算符
+	/// </summary>
+	[TestMethod]
+	public void Visit_InterpolatedString_Ternary()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					int x = 5;
+					string result = $""Value is {(x > 0 ? ""positive"" : ""non-positive"")}"";
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let x = 5;
+  let result = `Value is ${x > 0 ? ""positive"" : ""non-positive""}`;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试插值字符串中的方法调用
+	/// </summary>
+	[TestMethod]
+	public void Visit_InterpolatedString_MethodCall()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string name = ""Hello World"";
+					string result = $""Upper: {name.ToUpper()}"";
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let name = ""Hello World"";
+  let result = `Upper: ${name.toUpperCase()}`;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试插值字符串中的 null 值
+	/// </summary>
+	[TestMethod]
+	public void Visit_InterpolatedString_Null()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string? s = null;
+					string result = $""Value: {s}"";
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let s = null;
+  let result = `Value: ${s}`;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串比较
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_Comparison()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string a = ""hello"";
+					string b = ""world"";
+					bool equal = a == b;
+					bool notEqual = a != b;
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let a = ""hello"";
+  let b = ""world"";
+  let equal = a === b;
+  let notEqual = a !== b;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串 Length 属性
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_Length()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""Hello"";
+					int len = text.Length;
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let text = ""Hello"";
+  let len = text.length;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串索引访问
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_Indexer()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""Hello"";
+					char first = text[0];
+					char last = text[text.Length - 1];
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let text = ""Hello"";
+  let first = text[0];
+  let last = text[text.length - 1];
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串 Substring 方法
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_Substring()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""Hello World"";
+					string sub1 = text.Substring(0, 5);
+					string sub2 = text.Substring(6);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let text = ""Hello World"";
+  let sub1 = text.substring(0, 5);
+  let sub2 = text.substring(6);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串 Split 方法
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_Split()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""a,b,c"";
+					string[] parts = text.Split(',');
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let text = ""a,b,c"";
+  let parts = text.split("","");
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串 Join 方法
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_Join()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string[] parts = new string[] { ""a"", ""b"", ""c"" };
+					string joined = string.Join("","", parts);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let parts = [""a"", ""b"", ""c""];
+  let joined = parts.join("","");
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串 IsNullOrEmpty
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_IsNullOrEmpty()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string s = """";
+					bool empty = string.IsNullOrEmpty(s);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let s = """";
+  let empty = s == null || s.length === 0;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串 IsNullOrWhiteSpace
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_IsNullOrWhiteSpace()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string s = ""   "";
+					bool whitespace = string.IsNullOrWhiteSpace(s);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+	 Assert.IsNotNull(script);
+	}
+
+	/// <summary>
+	/// 测试字符串格式化
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_Format()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string formatted = string.Format(""Name: {0}, Age: {1}"", ""John"", 30);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+	 Assert.IsNotNull(script);
+	}
+
+	/// <summary>
+	/// 测试字符串插值带格式
+	/// </summary>
+	[TestMethod]
+	public void Visit_InterpolatedString_Format()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					double pi = 3.14159;
+					string formatted = $""Pi: {pi:F2}"";
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	/// <summary>
+	/// 测试字符串 Replace 多次
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_ReplaceChain()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""hello world"";
+					string result = text.Replace(""hello"", ""hi"").Replace(""world"", ""there"");
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let text = ""hello world"";
+  let result = text.replace(""hello"", ""hi"").replace(""world"", ""there"");
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串 StartsWith/EndsWith
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_StartsEndsWith()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string filename = ""test.txt"";
+					bool starts = filename.StartsWith(""test"");
+					bool ends = filename.EndsWith("".txt"");
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let filename = ""test.txt"";
+  let starts = filename.startsWith(""test"");
+  let ends = filename.endsWith("".txt"");
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串 PadLeft/PadRight
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_Pad()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""42"";
+					string paddedLeft = text.PadLeft(5);
+					string paddedRight = text.PadRight(5);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let text = ""42"";
+  let paddedLeft = text.padStart(5);
+  let paddedRight = text.padEnd(5);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串 ToCharArray
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_ToCharArray()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""Hello"";
+					char[] chars = text.ToCharArray();
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let text = ""Hello"";
+  let chars = text.split("""");
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串 @ 前缀（逐字字符串）
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_Verbatim()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string path = @""C:\Users\test"";
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - 更多字符串方法
+
+	/// <summary>
+	/// 测试字符串 Replace 多次调用
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_ReplaceChained()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""hello world"";
+					string result = text.Replace(""hello"", ""hi"").Replace(""world"", ""there"");
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let text = ""hello world"";
+  let result = text.replace(""hello"", ""hi"").replace(""world"", ""there"");
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串 ToLowerInvariant
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_ToLowerInvariant()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""HELLO"";
+					string lower = text.ToLowerInvariant();
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let text = ""HELLO"";
+  let lower = text.toLowerCase();
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串 ToUpperInvariant
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_ToUpperInvariant()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""hello"";
+					string upper = text.ToUpperInvariant();
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let text = ""hello"";
+  let upper = text.toUpperCase();
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串 TrimStart
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_TrimStart()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""  hello  "";
+					string trimmed = text.TrimStart();
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let text = ""  hello  "";
+  let trimmed = text.trimStart();
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串 TrimEnd
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_TrimEnd()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""  hello  "";
+					string trimmed = text.TrimEnd();
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let text = ""  hello  "";
+  let trimmed = text.trimEnd();
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串 IsNullOrEmpty
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_IsNullOrEmpty()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""hello"";
+					bool isEmpty = string.IsNullOrEmpty(text);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	/// <summary>
+	/// 测试字符串 IsNullOrWhiteSpace
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_IsNullOrWhiteSpace()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""  "";
+					bool isWhiteSpace = string.IsNullOrWhiteSpace(text);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	/// <summary>
+	/// 测试字符串 Join 静态方法
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_Join()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string[] parts = [""a"", ""b"", ""c""];
+					string joined = string.Join("","", parts);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	/// <summary>
+	/// 测试字符串 Split 多字符
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_SplitMultipleChars()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""a,b;c"";
+					string[] parts = text.Split([',', ';']);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	/// <summary>
+	/// 测试字符串 LastIndexOf
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_LastIndexOf()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""hello world"";
+					int index = text.LastIndexOf(""o"");
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let text = ""hello world"";
+  let index = text.lastIndexOf(""o"");
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串 Remove
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_Remove()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""hello world"";
+					string removed = text.Remove(5);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let text = ""hello world"";
+  let removed = text.slice(0, 5);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串 Insert
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_Insert()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""helloworld"";
+					string inserted = text.Insert(5, "" "");
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let text = ""helloworld"";
+  let inserted = text.slice(0, 5) + "" "" + text.slice(5);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串 PadLeft 多字符
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_PadLeftWithChar()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""42"";
+					string padded = text.PadLeft(5, '0');
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	/// <summary>
+	/// 测试字符串 PadRight 多字符
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_PadRightWithChar()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""42"";
+					string padded = text.PadRight(5, '-');
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - 字符串比较
+
+	/// <summary>
+	/// 测试字符串 Equals 忽略大小写
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_EqualsIgnoreCase()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string a = ""Hello"";
+					string b = ""hello"";
+					bool equal = a.Equals(b, StringComparison.OrdinalIgnoreCase);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	/// <summary>
+	/// 测试字符串 Compare
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_Compare()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string a = ""apple"";
+					string b = ""banana"";
+					int result = string.Compare(a, b);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	/// <summary>
+	/// 测试字符串 CompareOrdinal
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_CompareOrdinal()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string a = ""a"";
+					string b = ""B"";
+					int result = string.CompareOrdinal(a, b);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	#endregion
+
+	#region 扩展测试用例 - 字符串与数字转换
+
+	/// <summary>
+	/// 测试 int.Parse 字符串转整数
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_IntParse()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string numStr = ""42"";
+					int num = int.Parse(numStr);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	/// <summary>
+	/// 测试 double.Parse 字符串转浮点数
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_DoubleParse()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string numStr = ""3.14"";
+					double num = double.Parse(numStr);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	/// <summary>
+	/// 测试 ToString 数字转字符串
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_NumberToString()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					int num = 42;
+					string numStr = num.ToString();
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let num = 42;
+  let numStr = (num).toString();
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 ToString 格式化
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_ToStringFormat()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					int num = 42;
+					string hex = num.ToString(""X"");
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+	}
+
+	#endregion
 }
