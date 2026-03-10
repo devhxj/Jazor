@@ -18,18 +18,6 @@ public sealed class LineComment : Statement
         => visitor is AstToECMAScriptConverter v ? v.VisitLineComment(this) : this;
 }
 
-/// <summary>
-/// 自定义表达式节点
-/// </summary>
-public sealed class UnsafeRawExpression : Expression
-{
-    public UnsafeRawExpression(in string unsafeRaw) : base(NodeType.Extension) => UnsafeRaw = unsafeRaw;
-
-    public string UnsafeRaw { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
-
-    protected override object? Accept(AstVisitor visitor)
-        => visitor is AstToECMAScriptConverter v ? v.VisitUnsafeRawExpression(this) : this;
-}
 
 public sealed class AstToECMAScriptConverter(JavaScriptTextWriter writer, AstToJavaScriptOptions options)
     : AstToJavaScriptConverter(writer, options)
@@ -38,14 +26,6 @@ public sealed class AstToECMAScriptConverter(JavaScriptTextWriter writer, AstToJ
     {
         Writer.WriteLineComment(node.Comment, TriviaFlags.LeadingNewLineRequired);
         return node;
-    }
-
-    public object? VisitUnsafeRawExpression(UnsafeRawExpression node)
-    {
-		WriteContext.ChangeNodeProperty(nameof(node.UnsafeRaw), static node => node.As<UnsafeRawExpression>().UnsafeRaw);
-		Writer.WriteLiteral(node.UnsafeRaw, TokenKind.StringLiteral, ref WriteContext);
-
-		return node;
     }
 }
 

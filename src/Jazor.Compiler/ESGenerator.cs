@@ -18,7 +18,7 @@ public class ESGenerator : IIncrementalGenerator
 		// 转换为 JavaScript 模块
 		context.RegisterImplementationSourceOutput<(SyntaxNode TargetNode, SemanticModel SemanticModel)> (
 			source: classDecls,
-			action: (outputContext, transform) =>
+			action: async (outputContext, transform) =>
 			{
 				try
 				{
@@ -30,7 +30,7 @@ public class ESGenerator : IIncrementalGenerator
 					var className = classDecl.Identifier.ValueText;
 					
 					// 执行转换
-					var jsAst = astConverter.Convert();
+					var jsAst = await astConverter.Convert();
 					
 					// 生成 JavaScript 代码（简化实现）
 					var jsCode = $"// Generated from {className}\n// TODO: Implement AST to JavaScript conversion\nexport class {className} {{\n  constructor() {{\n    // TODO\n  }}\n}}\n";

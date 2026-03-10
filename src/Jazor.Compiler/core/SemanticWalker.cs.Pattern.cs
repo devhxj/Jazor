@@ -353,7 +353,7 @@ public partial class SemanticWalker
 				{
 					var symbol = GetWhiteListSymbol(m);
 					var _ = GetWhiteListExpression(symbol, argument, [], targetExpr, out var alias);
-					var name = alias ?? GetConfigOrSymbolName(m.Member);
+					var name = alias ?? Util.GetConfigOrSymbolName(m.Member);
 					var left = new NonLogicalBinaryExpression(Operator.In, new StringLiteral(name, $"\"{name}\""), targetExpr);
 					var condition = new LogicalExpression(Operator.LogicalAnd, left, right);
 					var notNull = new NonLogicalBinaryExpression(Operator.Inequality, targetExpr, Null);
@@ -477,7 +477,7 @@ public partial class SemanticWalker
 		{
 			var symbol = GetWhiteListSymbol(m);
 			var _ = GetWhiteListExpression(symbol, argument, [], obj, out var alias);
-			var name = alias ?? GetConfigOrSymbolName(m.Member);
+			var name = alias ?? Util.GetConfigOrSymbolName(m.Member);
 			propertyAccess = new MemberExpression(obj, new Identifier(name), computed: false, optional: false);
 		}
 		else

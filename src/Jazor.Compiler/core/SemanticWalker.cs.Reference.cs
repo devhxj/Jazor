@@ -12,47 +12,6 @@ namespace Jazor.Compiler;
 public partial class SemanticWalker
 {
 	/// <summary>
-	/// 获取ISymbol的 JavaScript 名称
-	/// 优先级：
-	/// 1. ECMAScriptNameAttribute
-	/// 2. DescriptionAttribute (以 @# 开头)
-	/// </summary>
-	/// <param name="symbol"></param>
-	/// <returns></returns>
-	private static string? GetSymbolConfigName(ISymbol symbol)
-	{
-		var useDescription = true;
-		string? configName = null, description = null;
-		foreach (var attr in symbol.GetAttributes())
-		{
-			if (attr.ConstructorArguments.Length == 0)
-				continue;
-
-			//ECMAScriptNameAttribute 优先级最高，找到后直接返回
-			if (attr.AttributeClass?.Name == "ECMAScriptNameAttribute")
-			{
-				useDescription = false;
-				configName = attr.ConstructorArguments[0].Value?.ToString()?.Trim();
-				break;
-			}
-			else if (attr.AttributeClass?.Name == "DescriptionAttribute")
-			{
-				var desc = attr.ConstructorArguments[0].Value?.ToString()?.Trim();
-				if (desc?.StartsWith("@#") == true)
-					description = desc.Substring(2);
-			}
-		}
-
-		return useDescription ? description : configName;
-	}
-
-	private static string GetConfigOrSymbolName(ISymbol symbol)
-	{
-		var name = GetSymbolConfigName(symbol);
-		return string.IsNullOrEmpty(name) ? symbol.Name : name!;
-	}
-
-	/// <summary>
 	/// 获取初始化器成员的名称，优先检查白名单别名
 	/// 对于属性：检查 setter 的白名单别名（初始化器是设置值）
 	/// 对于字段：检查字段本身的白名单别名
@@ -71,7 +30,7 @@ public partial class SemanticWalker
 			return entry.Value!;
 
 		// 2. 再检查特性配置
-		return GetConfigOrSymbolName(symbol);
+		return Util.GetConfigOrSymbolName(symbol);
 	}
 
 	/// <summary>
@@ -87,7 +46,7 @@ public partial class SemanticWalker
 			return entry.Value!;
 
 		// 2. 再检查特性配置
-		return GetConfigOrSymbolName(method);
+		return Util.GetConfigOrSymbolName(method);
 	}
 
 	private static string? GetTypeConfigOrWhiteListName(ITypeSymbol symbol)
@@ -105,7 +64,7 @@ public partial class SemanticWalker
 		if (string.IsNullOrEmpty(name))
 		{
 			// 注意 name 为空字符串表示跳过名称，只有为null时才使用symbol name
-			name = GetSymbolConfigName(symbol);
+			name = Util.GetSymbolConfigName(symbol);
 			name ??= symbol.Name;
 		}
 
@@ -191,11 +150,11 @@ public partial class SemanticWalker
 				// 其他整数类型（int, short, sbyte 等）保持原样，会作为字面量处理
 				_ => symbol.HasConstantValue
 					? BuildValueLiteral(symbol.ContainingType, symbol.ConstantValue) ?? Null
-					: new Identifier(GetConfigOrSymbolName(symbol))
+					: new Identifier(Util.GetConfigOrSymbolName(symbol))
 			};
 		}
 
-		return new Identifier(GetConfigOrSymbolName(symbol));
+		return new Identifier(Util.GetConfigOrSymbolName(symbol));
 	}
 
 	/// <summary>
@@ -441,7 +400,7 @@ public partial class SemanticWalker
 
 		// 获取方法名称
 		var propertyName = string.IsNullOrEmpty(alias)
-			? GetConfigOrSymbolName(operation.Property)
+			? Util.GetConfigOrSymbolName(operation.Property)
 			: alias;
 
 		var property = new Identifier(propertyName!);
@@ -500,7 +459,7 @@ public partial class SemanticWalker
 		}
 
 		var instance = Translate<Expression>(operation.Instance, argument, null);
-		var methodName = string.IsNullOrEmpty(alias) ? GetConfigOrSymbolName(operation.Method) : alias;
+		var methodName = string.IsNullOrEmpty(alias) ? Util.GetConfigOrSymbolName(operation.Method) : alias;
 		var property = new Identifier(methodName!);
 		
 		Expression callee = property;
@@ -594,7 +553,7 @@ public partial class SemanticWalker
 			return BuildInvExpr(hasReturn, mapperExpr, refParas, argument);
 
 		// 判断方法调用的类型
-		var methodName = string.IsNullOrEmpty(alias) ? GetConfigOrSymbolName(operation.TargetMethod) : alias;
+		var methodName = string.IsNullOrEmpty(alias) ? Util.GetConfigOrSymbolName(operation.TargetMethod) : alias;
 		var property = new Identifier(methodName!);
 		Expression callee = property;
 		if (instance is null)

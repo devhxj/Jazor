@@ -213,11 +213,6 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         return null;
     }
 
-    private static Expression? GetWhiteListExpression(ISymbol symbol, SenseArgument context, Func<List<Expression>> func, out string? alias)
-    {
-        return GetWhiteListExpression(symbol, context, func(), out alias);
-    }
-
     private static Expression? GetWhiteListExpression(ISymbol symbol, SenseArgument context, List<Expression> arguments, Expression? instance, out string? alias)
     {
         var args = new List<Expression>();

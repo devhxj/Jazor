@@ -1,9 +1,13 @@
+using Acornima;
 using Acornima.Ast;
+using Jazor.Name;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Jazor.Compiler;
 
@@ -32,7 +36,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     /// 将C# 14 ClassDeclarationSyntax 转换为Acornima.Ast.Module(es6+ module)
     /// </summary>
     /// <returns></returns>
-    public Module? Convert()
+    public async Task<Module?> Convert()
     {
         // 检查是否为 public 顶层类型
         if (_classSymbol.DeclaredAccessibility != Accessibility.Public)
@@ -48,13 +52,13 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             switch (member)
             {
                 case IFieldSymbol field:
-                    members.Add(ConvertModuleField(field));
+                    members.Add(await ConvertModuleField(field));
                     break;
-                case IPropertySymbol prop:
-                    members.AddRange(ConvertModuleProperty(prop));
-                    break;
-                case IMethodSymbol func when func.MethodKind == MethodKind.Ordinary:
-                    members.Add(ConvertModuleMethod(func));
+                // Property被Field和Method代替了
+                case IMethodSymbol func
+                when func.MethodKind != MethodKind.Constructor &&
+                    func.MethodKind != MethodKind.SharedConstructor:
+                    members.Add(await ConvertModuleMethod(func));
                     break;
                 case INamedTypeSymbol @class when @class.TypeKind == TypeKind.Class:
                     members.Add(ConvertModuleClass(@class));
@@ -71,12 +75,166 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             : null;
     }
 
-    private VariableDeclaration ConvertVariableField(IFieldSymbol symbol)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="symbol"></param>
+    /// <returns></returns>
+    private async Task<Declaration> ConvertModuleField(IFieldSymbol symbol)
     {
-        var name = GetSymbolName(symbol);
-        var init = symbol.HasConstantValue
-            ? CreateEqualsValueClauseSyntaxLiteral(symbol.Type.SpecialType, symbol.ConstantValue)
-            : null;
+        var declaration = await ConvertVariableField(symbol);
+
+        if (ShouldBePrivate(symbol.DeclaredAccessibility))
+            return declaration;
+        else
+            return new ExportNamedDeclaration(
+                declaration,
+                NodeList.From<ExportSpecifier>([]),
+                null,
+                NodeList.From<ImportAttribute>([]));
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="symbol"></param>
+    /// <returns></returns>
+    /// <exception cref="NotSupportedException"></exception>
+    private async Task<Declaration> ConvertModuleMethod(IMethodSymbol symbol)
+    {
+        // 获取方法体
+        BlockSyntax? blockSyntax = null;
+        ExpressionSyntax? expressionSyntax = null;
+        foreach (var reference in symbol.DeclaringSyntaxReferences)
+        {
+            var syntax = await reference.GetSyntaxAsync();
+            if (syntax is MethodDeclarationSyntax methodDecl)
+            {
+                if (methodDecl.Body is not null)
+                {
+                    blockSyntax = methodDecl.Body;
+                    break;
+                }
+                else if (methodDecl.ExpressionBody is not null)
+                {
+                    expressionSyntax = methodDecl.ExpressionBody.Expression;
+                    break;
+                }
+            }
+            else if (syntax is AccessorDeclarationSyntax accessorDecl)
+            {
+                if (accessorDecl.Body is not null)
+                {
+                    blockSyntax = accessorDecl.Body;
+                    break;
+                }
+                else if (accessorDecl.ExpressionBody is not null)
+                {
+                    expressionSyntax = accessorDecl.ExpressionBody.Expression;
+                    break;
+                }
+            }
+            else if (syntax is ArrowExpressionClauseSyntax arrowExpr)
+            {
+                expressionSyntax = arrowExpr.Expression;
+                break;
+            }
+        }
+
+        FunctionBody? body = null;
+        if (blockSyntax is null && expressionSyntax is null &&
+            (symbol.MethodKind == MethodKind.PropertyGet || symbol.MethodKind == MethodKind.PropertySet))
+        {
+            // 自动属性
+            var displayString = symbol.AssociatedSymbol!.OriginalDefinition.ToDisplayString(Format.NameFormat);
+            var fieldId = new Identifier(Format.HashName(displayString));
+            if (symbol.MethodKind == MethodKind.PropertyGet)
+            {
+                var returnStmt = new ReturnStatement(fieldId);
+                body = new FunctionBody(strict: true, body: NodeList.From<Statement>(returnStmt));
+            }
+            else
+            {
+                var value = new Identifier("value");
+                var assignExpr = new AssignmentExpression(Operator.Assignment, fieldId, value);
+                var assignStmt = new NonSpecialExpressionStatement(assignExpr);
+                body = new FunctionBody(strict: true, body: NodeList.From<Statement>(assignStmt));
+            }
+        }
+        else if (blockSyntax is not null)
+        {
+            var operation = _classModel.GetOperation(blockSyntax);
+            if (operation is not null)
+            {
+                var walker = new SemanticWalker();
+                var argument = new SenseArgument(Sense.FunctionBody);
+                body = walker.Visit(operation, argument) as FunctionBody;
+            }
+        }
+        else if (expressionSyntax is not null)
+        {
+            var operation = _classModel.GetOperation(expressionSyntax);
+            if (operation is not null)
+            {
+                var walker = new SemanticWalker();
+                var argument = new SenseArgument(Sense.Any);
+                var stmt = walker.Visit(operation, argument) switch
+                {
+                    Statement s => s,
+                    Expression e => symbol.ReturnsVoid
+                        ? new NonSpecialExpressionStatement(e)
+                        : new ReturnStatement(e),
+                    _ => null
+                };
+                if (stmt is not null)
+                    body = new FunctionBody(NodeList.From(stmt), true);
+            }
+        }
+        if (body is null)
+            throw new NotSupportedException($"Jazor 不支持转换方法 {symbol.Name}，无法从操作生成函数体。");
+
+        var parameters = symbol.Parameters.Select(p => (Node)ConvertParameter(p));
+        var name = Util.GetConfigOrSymbolName(symbol);
+        var identifier = new Identifier(name);
+        var declaration = new FunctionDeclaration(
+            id: identifier,
+            parameters: NodeList.From(parameters),
+            body: body,
+            generator: false,
+            async: false);
+
+        if (ShouldBePrivate(symbol.DeclaredAccessibility))
+            return declaration;
+
+        return new ExportNamedDeclaration(
+            declaration,
+            NodeList.From<ExportSpecifier>([]),
+            null,
+            NodeList.From<ImportAttribute>([]));
+    }
+
+
+
+
+    private async Task<VariableDeclaration> ConvertVariableField(IFieldSymbol symbol)
+    {
+        Expression? init = null;
+        if (symbol.HasConstantValue)
+            init = CreateEqualsValueClauseSyntaxLiteral(symbol.Type.SpecialType, symbol.ConstantValue);
+        else
+            foreach (var item in symbol.DeclaringSyntaxReferences)
+            {
+                var syntax = await item.GetSyntaxAsync() as VariableDeclaratorSyntax;
+                if (syntax is not null && syntax.Initializer is not null)
+                {
+                    init = CreateEqualsValueClauseSyntaxLiteral(syntax.Initializer);
+                    break;
+                }
+            }
+
+        var name = symbol.IsImplicitlyDeclared && symbol.AssociatedSymbol?.Kind == SymbolKind.Property
+            ? Format.HashName(symbol.AssociatedSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat))
+            : Util.GetConfigOrSymbolName(symbol);
         var identifier = new Identifier(name);
         var kind = symbol.IsConst
             ? VariableDeclarationKind.Const
@@ -104,20 +262,6 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             isStatic: symbol.IsStatic,
             decorators: NodeList.Empty<Decorator>()
         );
-    }
-
-    private Declaration ConvertModuleField(IFieldSymbol symbol)
-    {
-        var declaration = ConvertVariableField(symbol);
-
-        if (ShouldBePrivate(symbol.DeclaredAccessibility))
-            return declaration;
-        else
-            return new ExportNamedDeclaration(
-                declaration,
-                NodeList.From<ExportSpecifier>([]),
-                null,
-                NodeList.From<ImportAttribute>([]));
     }
 
     private MethodDefinition ConvertMemberMethod(IMethodSymbol symbol)
@@ -215,103 +359,6 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         );
     }
 
-    private Declaration ConvertModuleMethod(IMethodSymbol symbol)
-    {
-        IOperation? operation = null;
-        foreach (var reference in symbol.DeclaringSyntaxReferences)
-        {
-            var syntax = reference.GetSyntax();
-            if (syntax is MethodDeclarationSyntax methodDecl)
-            {
-                if (methodDecl.Body is not null)
-                {
-                    operation = _classModel.GetOperation(methodDecl.Body);
-                    break;
-                }
-                else if (methodDecl.ExpressionBody is not null)
-                {
-                    operation = _classModel.GetOperation(methodDecl.ExpressionBody);
-                    break;
-                }
-            }
-            else if (syntax is AccessorDeclarationSyntax accessorDecl)
-            {
-                if (accessorDecl.Body is not null)
-                {
-                    operation = _classModel.GetOperation(accessorDecl.Body);
-                    break;
-                }
-                else if (accessorDecl.ExpressionBody is not null)
-                {
-                    operation = _classModel.GetOperation(accessorDecl.ExpressionBody);
-                    break;
-                }
-            }
-        }
-
-        FunctionBody body;
-        if (operation is not null)
-        {
-            var walker = new SemanticWalker();
-            var argument = new SenseArgument(Sense.FunctionBody);
-            body = walker.Visit(operation, argument) as FunctionBody
-                ?? throw new NotSupportedException($"Jazor 不支持转换方法 {symbol.Name}，无法从操作生成函数体。");
-        }
-        //如果没有方法体，并且是属性的get、set方法，则是自动属性
-        else if (symbol.AssociatedSymbol?.Kind == SymbolKind.Property)
-        {
-            var backName = $"<{symbol.AssociatedSymbol.Name}>k__BackingField";
-            var backField = new Identifier(backName);
-
-            // 注意，顶层类需要扁平化，没有类结构，在扁平化Property时
-            // 会自动检测backField生成一个VariableDeclaration，此处直接返回Identifier
-            if (symbol.MethodKind == MethodKind.PropertyGet)
-                body = new FunctionBody(
-                    strict: true,
-                    body: NodeList.From<Statement>(
-                    new ReturnStatement(backField)));
-            else
-            {
-                var value = new Identifier("value");
-                body = new FunctionBody(
-                    strict: true,
-                    body: NodeList.From<Statement>(
-                        new NonSpecialExpressionStatement(
-                            new AssignmentExpression("=", backField, value))));
-            }
-        }
-        else
-            throw new NotSupportedException($"Jazor 不支持转换方法 {symbol.Name}，无法从操作生成函数体。");
-
-        var parameters = new List<Node>();
-        if (symbol.Parameters.Length > 0)
-        {
-            foreach (var p in symbol.Parameters)
-            {
-                var parameter = ConvertParameter(p)
-                    ?? throw new NotSupportedException($"Jazor 不支持转换参数 {p.Name}，无法从符号生成参数节点。");
-                parameters.Add(parameter);
-            }
-        }
-
-        var name = GetSymbolName(symbol);
-        var identifier = new Identifier(name);
-        var declaration = new FunctionDeclaration(
-            id: identifier,
-            parameters: NodeList.From(parameters),
-            body: body,
-            generator: false,
-            async: false);
-
-        if (ShouldBePrivate(symbol.DeclaredAccessibility))
-            return declaration;
-        else
-            return new ExportNamedDeclaration(
-                declaration,
-                NodeList.From<ExportSpecifier>([]),
-                null,
-                NodeList.From<ImportAttribute>([]));
-    }
 
     private List<ClassProperty> ConvertMemberProperty(IPropertySymbol symbol)
     {
@@ -343,43 +390,6 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         }
 
         return properties;
-    }
-
-    private List<Declaration> ConvertModuleProperty(IPropertySymbol symbol)
-    {
-        var declarations = new List<Declaration>();
-        // 找出BackingField
-        var backName = $"<{symbol.Name}>k__BackingField";
-        var backingFieldSymbol = symbol.ContainingType
-                .GetMembers(backName)
-                .OfType<IFieldSymbol>()
-                .FirstOrDefault();
-        if (backingFieldSymbol is not null)
-        {
-            // BackingField 是私有的
-            var backingFieldDecl = ConvertVariableField(backingFieldSymbol);
-            declarations.Add(backingFieldDecl);
-        }
-
-        // 处理 getter
-        if (symbol.GetMethod is not null)
-        {
-            var getFuncDecl = ConvertModuleMethod(symbol.GetMethod);
-            declarations.Add(getFuncDecl);
-        }
-
-        // 处理 setter
-        if (symbol.SetMethod is not null)
-        {
-            var setFuncDecl = ConvertModuleMethod(symbol.SetMethod);
-            declarations.Add(setFuncDecl);
-        }
-
-        // 处理属性初始化器，如 int P { get; set; } = 42;
-        // 属性初始化器 是只有自动属性或field关键字实现的属性才有
-        // 会在BackingField的默认值上处理
-
-        return declarations;
     }
 
     private ClassDeclaration ConvertMemberClass(INamedTypeSymbol symbol)
@@ -516,7 +526,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 .Replace("\t", "\\t")
                 .Replace("\v", "\\v");
 
-            right = new StringLiteral(value: val, raw: $"'{raw}'");
+            right = new StringLiteral(value: val, raw: $"\"{raw}\"");
         }
         else if (type == SpecialType.System_Boolean)
             right = new BooleanLiteral(value: val.ToLower() == "true", raw: val.ToLower());
@@ -527,7 +537,48 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         return right;
     }
 
-    private static bool IsNumeric(SpecialType type)
+    private Expression CreateEqualsValueClauseSyntaxLiteral(EqualsValueClauseSyntax syntax)
+    {
+        var value = syntax.Value;
+
+        // 仅处理字面量表达式
+        if (value is LiteralExpressionSyntax lit)
+        {
+            return lit.Token.Value switch
+            {
+                null => new NullLiteral("null"),
+                bool b => new BooleanLiteral(b, b.ToString().ToLower()),
+                char c => new StringLiteral(c.ToString(), $"\"{c}\""),
+                string s => new StringLiteral(s, $"\"{s}\""),
+                sbyte sb => new NumericLiteral(sb, sb.ToString()),
+                byte b => new NumericLiteral(b, b.ToString()),
+                short s => new NumericLiteral(s, s.ToString()),
+                ushort us => new NumericLiteral(us, us.ToString()),
+                int i => new NumericLiteral(i, i.ToString()),
+                uint ui => new NumericLiteral(ui, ui.ToString()),
+                long l => new NumericLiteral(l, l.ToString()),
+                ulong ul => new NumericLiteral(ul, ul.ToString()),
+                double d => new NumericLiteral(d, d.ToString()),
+                float f => new NumericLiteral(f, f.ToString()),
+                decimal dec => new NumericLiteral(System.Convert.ToDouble(dec), dec.ToString()),
+                _ => throw new NotSupportedException($"Unsupported literal type: {lit.Token.Value?.GetType()}")
+            };
+        }
+
+        var operation = _classModel.GetOperation(syntax);
+        if (operation is not null)
+        {
+            var walker = new SemanticWalker();
+            var argument = new SenseArgument(Sense.Any);
+            var expr = walker.Visit(operation, argument) as Expression;
+            if (expr is not null)
+                return expr;
+        }
+
+        throw new NotSupportedException($"Only literal expressions are supported, got: {value.Kind()}");
+    }
+
+	private static bool IsNumeric(SpecialType type)
     {
         return type switch
         {
@@ -555,5 +606,4 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     /// <returns></returns>
     private bool ShouldBePrivate(Accessibility accessibility)
         => accessibility != Accessibility.Public && accessibility != Accessibility.Internal;
-
 }

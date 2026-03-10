@@ -98,3 +98,49 @@ class TestClass22
 		}
 	}
 }
+
+public static class TestClass2222
+{
+	public static int A = 1;
+	public static string B = "456";
+	public const int C = 42;
+	public static int P1 { get; set; }
+	public static int P2 { get; }
+	public static int P3
+	{
+		get { return P1; }
+		set { }
+	}
+
+	public static int P4 => P1;
+
+	public static string P5
+	{
+		get => B;
+		set => B = value;
+	}
+
+	public static string? P6
+	{
+		get => field;
+		set => field = value;
+	}
+
+	public static string? P7
+	{
+		get;
+		set => field = value?.Trim();
+	}
+
+	public static string P8
+	{
+		get => B;
+		set => B = value.Trim();
+	}
+
+	public static void Method() { }
+
+	public static void Method(int a) { }
+
+	public static int Method(int a, int b) => a + b;
+}
