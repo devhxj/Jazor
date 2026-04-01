@@ -1,0 +1,12 @@
+{
+  "nodeModulesDir": "auto",
+  "tasks": {
+    "collect": "deno run --config deno.json --allow-read --allow-write --allow-net deno/collect.ts"
+  },
+  "imports": {
+    "@webref/css": "npm:@webref/css@6.12.7",
+    "@webref/events": "npm:@webref/events@1.11.3",
+    "@webref/idl": "npm:@webref/idl@3.46.1",
+    "webidl2": "npm:webidl2@24.4.1"
+  }
+}

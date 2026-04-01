@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jazor.Test", "src\Jazor.Tes
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "ECMAScript.WebIDL", "src\ECMAScript.WebIDL\ECMAScript.WebIDL.esproj", "{6A077F28-AD13-E482-8A45-CAC145E659F2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECMAScript.WebIDL.Generator", "src\ECMAScript.WebIDL.Generator\ECMAScript.WebIDL.Generator.csproj", "{C6D1E3E0-8B0B-4D2C-9A70-5A9F7E7E21C1}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jazor.CLR.Generator", "src\Jazor.CLR.Generator\Jazor.CLR.Generator.csproj", "{7C141193-0263-D148-4D3B-396D4383F4D5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jazor.Common", "src\Jazor.Common\Jazor.Common.csproj", "{F9B6CC72-9C0B-FD51-3708-A625BA8B7D57}"
@@ -61,6 +63,10 @@ Global
 		{6A077F28-AD13-E482-8A45-CAC145E659F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6A077F28-AD13-E482-8A45-CAC145E659F2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6A077F28-AD13-E482-8A45-CAC145E659F2}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{C6D1E3E0-8B0B-4D2C-9A70-5A9F7E7E21C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C6D1E3E0-8B0B-4D2C-9A70-5A9F7E7E21C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C6D1E3E0-8B0B-4D2C-9A70-5A9F7E7E21C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C6D1E3E0-8B0B-4D2C-9A70-5A9F7E7E21C1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7C141193-0263-D148-4D3B-396D4383F4D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7C141193-0263-D148-4D3B-396D4383F4D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7C141193-0263-D148-4D3B-396D4383F4D5}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -72,7 +72,8 @@ Jazor/
 │   ├── ECMAScript.Server/         # Compilation server
 │   ├── ECMAScript.Test/           # Manual test console
 │   ├── ECMAScript.ComplierTest/   # Compiler tests (MSTest)
-│   ├── ECMAScript.WebIDL/         # WebIDL binding generator (TypeScript)
+│   ├── ECMAScript.WebIDL/         # WebIDL collection worker (TypeScript/Deno)
+│   ├── ECMAScript.WebIDL.Generator/ # C# host for the WebIDL pipeline
 │   ├── ECMAScript.Common/         # Common types and utilities
 │   └── ECMASCript.MSBuild/        # MSBuild integration
 ├── PROJECT_RULES.md               # Project development rules
@@ -130,6 +131,10 @@ Web API binding generator that automatically generates C# type bindings from Web
 - CSS API bindings
 - WebGL API bindings
 - Modern Web standard API bindings
+
+The pipeline is being migrated to a split architecture:
+- `src/ECMAScript.WebIDL` keeps the `webref` / `webidl2` collection layer
+- `src/ECMAScript.WebIDL.Generator` hosts Deno through `DenoHost` and persists a stable JSON inventory for the future C# emitter
 
 ### 5. ECMAScript.Server
 

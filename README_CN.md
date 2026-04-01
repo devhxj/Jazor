@@ -68,7 +68,8 @@ Jazor/
 │   ├── ECMAScript.Server/         # 编译服务器
 │   ├── ECMAScript.Test/           # 手动测试控制台
 │   ├── ECMAScript.ComplierTest/   # 编译器测试（MSTest）
-│   ├── ECMAScript.WebIDL/         # WebIDL 绑定生成器（TypeScript）
+│   ├── ECMAScript.WebIDL/         # WebIDL 采集层（TypeScript/Deno）
+│   ├── ECMAScript.WebIDL.Generator/ # WebIDL 管线的 C# 宿主
 │   ├── ECMAScript.Common/         # 公共类型和工具
 │   └── ECMASCript.MSBuild/        # MSBuild 集成
 ├── PROJECT_RULES.md               # 项目开发规则
@@ -126,6 +127,10 @@ Web API 绑定生成器，自动从 Web IDL 规范生成 C# 类型绑定。支�
 - CSS API 绑定
 - WebGL API 绑定
 - 现代 Web 标准 API 绑定
+
+当前正在迁移为分层架构：
+- `src/ECMAScript.WebIDL` 保留 `webref` / `webidl2` 采集层
+- `src/ECMAScript.WebIDL.Generator` 通过 `DenoHost` 承载 Deno，并为后续 C# emitter 落稳定 JSON IR
 
 ### 5. ECMAScript.Server
 

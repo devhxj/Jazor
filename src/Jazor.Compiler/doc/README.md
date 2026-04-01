@@ -7,6 +7,17 @@
 **分析时间**: 2026-03-06
 **分析依据**: rule.md v1.0
 
+## 推荐阅读路径
+
+如果你是第一次进入该目录，建议按以下顺序阅读：
+
+1. [ArchitectureOverview.Simplified.md](./ArchitectureOverview.Simplified.md)
+2. [ArchitectureOverview.md](./ArchitectureOverview.md)
+3. [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)
+4. [TransformationRoadmap.md](./TransformationRoadmap.md)
+5. [WhiteList.md](./WhiteList.md)
+6. [SemanticWalker.md](./SemanticWalker.md)
+
 ---
 
 ## 核心文件列表
@@ -22,6 +33,14 @@
 | `WhiteList.cs` | 白名单核心 | [WhiteList.md](./WhiteList.md) |
 | `Optimizer.cs` | AST 优化器 | [Optimizer.md](./Optimizer.md) |
 | `ESGenerator.cs` | 增量源生成器 | [ESGenerator.md](./ESGenerator.md) |
+| `Transformation Pipeline` | 端到端语法转化总说明 | [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md) |
+| `Architecture Overview` | 编译器整体方案架构图与职责边界 | [ArchitectureOverview.md](./ArchitectureOverview.md) |
+| `Architecture Simplified` | 面向新成员和汇报的一页版架构说明 | [ArchitectureOverview.Simplified.md](./ArchitectureOverview.Simplified.md) |
+| `Transformation Roadmap` | 闭环状态、欠账和下一阶段动作 | [TransformationRoadmap.md](./TransformationRoadmap.md) |
+| `Module Conversion Spec` | 模块层转换规范 | [ModuleConversionSpec.md](./ModuleConversionSpec.md) |
+| `Walker Extension Spec` | `SemanticWalker` 扩展规范 | [WalkerExtensionSpec.md](./WalkerExtensionSpec.md) |
+| `Inline AST Template Spec` | `Op.Inline` 的 AST 模板规范 | [InlineAstTemplateSpec.md](./InlineAstTemplateSpec.md) |
+| `Closure Checklist` | 转化链路闭环清单 | [TransformationClosureChecklist.md](./TransformationClosureChecklist.md) |
 
 ---
 
