@@ -934,10 +934,10 @@ public sealed class SemanticWalkerTupleTest
         Assert.AreEqual(
 @"{
   let v$0, v$1, w, j, g, z;
-  let point = new Point(1, { Item1: 2, Item2: 3 });
+  let point = new Point(1, { a: 2, b: 3 });
   let x;
   v$1 = point.Deconstruct(x, v$0), x = v$1[0], v$0 = v$1[1], w = v$0.Item1.Item1, j = v$0.Item1.Item2.Item1, g = v$0.Item1.Item2.Item2, z = v$0.b;
-}", script);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 
     }
 
@@ -976,10 +976,10 @@ public sealed class SemanticWalkerTupleTest
         Assert.AreEqual(
 @"{
   let v$0, v$1, w, j, g, z;
-  let point = new Point(1, { Item1: 2, Item2: 3 });
+  let point = new Point(1, { a: 2, b: 3 });
   let x;
   v$1 = point.Deconstruct(x, v$0), x = v$1[0], v$0 = v$1[1], w = v$0.Item1.Item1, j = v$0.Item1.Item2.Item1, g = v$0.Item1.Item2.Item2, z = v$0.b;
-}", script);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 
     }
 
@@ -1004,7 +1004,34 @@ public sealed class SemanticWalkerTupleTest
 @"{
   let a, b;
   a = 1, b = 2;
-}", script);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+
+    }
+
+    [TestMethod]
+    public void VisitDeconstructionAssignment_ConversionInvocationOperand()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    (int a, int b) = ((int, int))GetTuple();
+                }
+
+                (int, int) GetTuple() => (1, 2);
+            }");
+
+        var walker = new SemanticWalker(true);
+        var ctx = SenseArgument.Default;
+        var node = walker.Visit(block, ctx);
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let v$0, a, b;
+  v$0 = this.GetTuple(), a = v$0.Item1, b = v$0.Item2;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 
     }
 
@@ -1235,7 +1262,34 @@ public sealed class SemanticWalkerTupleTest
 
         Assert.AreEqual(@"{
   this.PrintPerson({ name: ""John"", age: 30 });
-}", script);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+    }
+
+    [TestMethod]
+    public void Visit_Tuple_AsParameter_RemapNames()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    (string name, int age) person = (""John"", 30);
+                    PrintPerson(person);
+                }
+
+                void PrintPerson((string first, int years) person) { }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let person = { name: ""John"", age: 30 };
+  this.PrintPerson({ first: person.name, years: person.age });
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
     #endregion
@@ -1328,7 +1382,164 @@ public sealed class SemanticWalkerTupleTest
   let person = this.GetPerson();
   let name = person.name;
   let age = person.age;
-}", script);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+    }
+
+    [TestMethod]
+    public void Visit_Tuple_NamedReturn_RemapNames()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                (string first, int years) GetPerson()
+                {
+                    return (""John"", 30);
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  return { first: ""John"", years: 30 };
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+    }
+
+    [TestMethod]
+    public void Visit_Tuple_NamedReturn_RemapNames_FromLocal()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                (string first, int years) GetPerson()
+                {
+                    (string name, int age) source = (""John"", 30);
+                    return source;
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let source = { name: ""John"", age: 30 };
+  return { first: source.name, years: source.age };
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+    }
+
+    [TestMethod]
+    public void Visit_Tuple_NamedReturn_RemapNames_FromLambdaLocal()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    Func<(string first, int years)> get = () =>
+                    {
+                        (string name, int age) source = (""John"", 30);
+                        return source;
+                    };
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let get = () => {
+    let source = { name: ""John"", age: 30 };
+    return { first: source.name, years: source.age };
+  };
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+    }
+
+    [TestMethod]
+    public void Visit_Tuple_Assignment_RemapNames_AfterDeclaration()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    (string name, int age) source = (""John"", 30);
+                    (string first, int years) target = (""A"", 1);
+                    target = source;
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let source = { name: ""John"", age: 30 };
+  let target = { first: ""A"", years: 1 };
+  target = { first: source.name, years: source.age };
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+    }
+
+    [TestMethod]
+    public void Visit_Tuple_Assignment_RemapNames_Nested()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    ((int left, int right) pair, int total) source = ((1, 2), 3);
+                    ((int x, int y) point, int sum) target = ((4, 5), 6);
+                    target = source;
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let source = { pair: { left: 1, right: 2 }, total: 3 };
+  let target = { point: { x: 4, y: 5 }, sum: 6 };
+  target = { point: { x: source.pair.left, y: source.pair.right }, sum: source.total };
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+    }
+
+    [TestMethod]
+    public void Visit_Tuple_Assignment_RemapNames()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    (string name, int age) source = (""John"", 30);
+                    (string first, int years) target = source;
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let source = { name: ""John"", age: 30 };
+  let target = { first: source.name, years: source.age };
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
     #endregion
@@ -1579,7 +1790,9 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
+        Assert.AreEqual(@"{
+  let empty = null;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
     /// <summary>
@@ -1637,7 +1850,17 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
+        Assert.AreEqual(@"{
+  let t = {
+    Item1: 1,
+    Item2: 2,
+    Item3: 3,
+    Item4: 4,
+    Item5: 5,
+    Item6: 6
+  };
+  let sum = t.Item1 + t.Item2 + t.Item3 + t.Item4 + t.Item5 + t.Item6;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
     /// <summary>
@@ -1693,7 +1916,12 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
+        Assert.AreEqual(
+@"{
+  let v$0, v$1;
+  let a = 1, b = 2;
+  v$0 = b, v$1 = a, a = v$0, b = v$1;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
     /// <summary>
@@ -1718,7 +1946,11 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
+        Assert.AreEqual(@"{
+  let nested = { Item1: { Item1: 1, Item2: 2 }, Item2: { Item1: 3, Item2: 4 } };
+  let a = nested.Item1.Item1;
+  let b = nested.Item2.Item2;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
     /// <summary>
@@ -1743,7 +1975,10 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
+        Assert.AreEqual(@"{
+  let v$0, x, y;
+  v$0 = this.GetPoint(), x = v$0.Item1, y = v$0.Item2;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
     /// <summary>
@@ -1826,7 +2061,10 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
+        Assert.AreEqual(@"{
+  let dict = new Map;
+  dict.set({ Item1: 1, Item2: 2 }, ""value"");
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
     /// <summary>
@@ -1853,7 +2091,10 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
+        StringAssert.Contains(script!, "points");
+        StringAssert.Contains(script, "x");
+        StringAssert.Contains(script, "y");
+        StringAssert.Contains(script, "console.log");
     }
 
     /// <summary>
@@ -1885,7 +2126,10 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
+        StringAssert.Contains(script!, "switch");
+        StringAssert.Contains(script, "Item1");
+        StringAssert.Contains(script, "Item2");
+        StringAssert.Contains(script, "\"origin\"");
     }
 
     #endregion

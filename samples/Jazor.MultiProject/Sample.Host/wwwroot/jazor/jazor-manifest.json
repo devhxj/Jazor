@@ -1,0 +1,27 @@
+{
+  "RootAssemblyPath": "D:\\repository\\own\\jazor\\Jazor\\samples\\Jazor.MultiProject\\Sample.Host\\bin\\Debug\\net10.0\\Sample.Host.dll",
+  "GeneratedAtUtc": "2026-04-01T12:06:17.0421635Z",
+  "Modules": [
+    {
+      "AssemblyName": "Sample.Features",
+      "TypeName": "Sample.Features.GreeterModule",
+      "Id": "Sample.Features.GreeterModule",
+      "RelativePath": "features/greeter.mjs",
+      "Hash": "F2C74DC3457679DD99357B2C2C4421AF51F016B2816CC033E135712BE2183129"
+    },
+    {
+      "AssemblyName": "Sample.Host",
+      "TypeName": "Sample.Host.AppModule",
+      "Id": "Sample.Host.AppModule",
+      "RelativePath": "host/app.mjs",
+      "Hash": "F190206787E58FE5D1E0BD3634145EE1ADBEA1AFB4E55B8D11125D89CA4BAB9C"
+    },
+    {
+      "AssemblyName": "Sample.Contracts",
+      "TypeName": "Sample.Contracts.GreetingSharedModule",
+      "Id": "Sample.Contracts.GreetingSharedModule",
+      "RelativePath": "shared/greetings.mjs",
+      "Hash": "D29920936B0E2DF905D08B09008FFF21DD1DC694E41A2465DE5737D6549E5D83"
+    }
+  ]
+}

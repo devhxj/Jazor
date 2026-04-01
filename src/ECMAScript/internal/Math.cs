@@ -2,6 +2,12 @@
 
 public static partial class Global
 {
+	/// <summary>
+	/// Projection of the JavaScript Math object onto C# extension members.
+	/// A trailing <c>_</c> is used only when C# naming rules or framework conflicts
+	/// require a host-side escape hatch; the emitted JavaScript name still comes from
+	/// the configured alias and remains aligned with the JavaScript runtime.
+	/// </summary>
 	extension(Math)
 	{
 		///// <summary>
@@ -148,7 +154,7 @@ public static partial class Global
 		/// <param name="x"></param>
 		/// <returns></returns>
 		[Description("@#cosh")]
-		public extern static Number cosh_(Number x);
+		public extern static Number Cosh_(Number x);
 
 		/// <summary>
 		/// Returns e (the base of natural logarithms) raised to a power.
@@ -175,7 +181,7 @@ public static partial class Global
 		/// </summary>
 		/// <param name="x">A numeric expression.</param>
 		/// <returns></returns>
-		[Description("@#Floor")]
+		[Description("@#floor")]
 		public extern static Number Floor_(Number x);
 
 		/// <summary>
@@ -197,7 +203,7 @@ public static partial class Global
 		/// <param name="values"></param>
 		/// <returns></returns>
 		[Description("@#hypot")]
-		public extern static Number Hypotj(params Number[] values);
+		public extern static Number Hypot_(params Number[] values);
 
 		/// <summary>
 		/// Returns the result of the C-like 32-bit multiplication of the two parameters.
@@ -213,7 +219,7 @@ public static partial class Global
 		/// </summary>
 		/// <param name="x">A numeric expression.</param>
 		/// <returns></returns>
-		[Description("@#logj")]
+		[Description("@#log")]
 		public extern static Number Log_(Number x);
 
 		/// <summary>
@@ -255,7 +261,7 @@ public static partial class Global
 		/// <param name="values">Numeric expressions to be evaluated.</param>
 		/// <returns></returns>
 		[Description("@#max")]
-		public extern static Number Maxj(params Number[] values);
+		public extern static Number Max_(params Number[] values);
 
 		/// <summary>
 		/// Returns the smaller of a set of supplied numeric expressions.
@@ -263,7 +269,7 @@ public static partial class Global
 		/// <param name="values">Numeric expressions to be evaluated.</param>
 		/// <returns></returns>
 		[Description("@#min")]
-		public extern static Number Minj(params Number[] values);
+		public extern static Number Min_(params Number[] values);
 
 		/// <summary>
 		/// Returns the value of a base expression taken to a specified power.
@@ -279,8 +285,8 @@ public static partial class Global
 		/// </summary>
 		/// <returns></returns>
 		[Description("@#random")]
-		public extern static Number Randomj();
-
+		public extern static Number Random_();
+		
 		/// <summary>
 		/// Returns a supplied numeric expression rounded to the nearest integer.
 		/// </summary>

@@ -7,12 +7,12 @@ Current responsibilities:
 - run the Deno collection worker through `DenoHost`
 - collect a stable JSON inventory from `webref` and `webidl2`
 - persist inventory artifacts under `src/ECMAScript/generate/.webidl`
-- generate preview C# bindings for `typedef`, `enum`, `callback`, `callback interface`, and `dictionary`
+- generate preview C# bindings for `typedef`, `enum`, `callback`, `callback interface`, `dictionary`, `interface`, and `namespace`
 
 Current non-goals:
 
 - replacing the existing `app.ts` emitter in one step
-- migrating interface, dictionary, and method emission completely yet
+- assuming legacy TypeScript output is the source of truth when current `webref` inventory disagrees
 
 Typical command:
 

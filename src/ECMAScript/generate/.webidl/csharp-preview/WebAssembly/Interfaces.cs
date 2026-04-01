@@ -105,14 +105,14 @@ public class Module
     /// </summary>
     /// <param name="moduleObject">moduleObject</param>
     [Description("@#exports")]
-    public extern static ModuleExportDescriptor[] Exports(Module moduleObject);
+    public static extern ModuleExportDescriptor[] Exports(Module moduleObject);
 
     /// <summary>
     /// imports
     /// </summary>
     /// <param name="moduleObject">moduleObject</param>
     [Description("@#imports")]
-    public extern static ModuleImportDescriptor[] Imports(Module moduleObject);
+    public static extern ModuleImportDescriptor[] Imports(Module moduleObject);
 
     /// <summary>
     /// customSections
@@ -120,7 +120,7 @@ public class Module
     /// <param name="moduleObject">moduleObject</param>
     /// <param name="sectionName">sectionName</param>
     [Description("@#customSections")]
-    public extern static ArrayBuffer[] CustomSections(Module moduleObject, string sectionName);
+    public static extern ArrayBuffer[] CustomSections(Module moduleObject, string sectionName);
 }
 
 /// <summary>
@@ -143,7 +143,7 @@ public class Table
     /// <param name="delta">delta</param>
     /// <param name="value">value</param>
     [Description("@#grow")]
-    public extern uint Grow(uint delta, object value);
+    public extern uint Grow(uint delta, object? value = default);
 
     /// <summary>
     /// get
@@ -158,7 +158,7 @@ public class Table
     /// <param name="index">index</param>
     /// <param name="value">value</param>
     [Description("@#set")]
-    public extern void Set(uint index, object value);
+    public extern void Set(uint index, object? value = default);
 
     /// <summary>
 /// length

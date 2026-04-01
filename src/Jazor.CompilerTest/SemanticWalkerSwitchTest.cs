@@ -889,7 +889,6 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
 		Assert.IsTrue(script.Contains("let value = 1;"));
 		Assert.IsTrue(script.Contains("let result = 0;"));
 		Assert.IsTrue(script.Contains("case 1:"));
@@ -1918,7 +1917,6 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
 		Assert.IsTrue(script.Contains("let a, b;"));
 		Assert.IsTrue(script.Contains("a = 1, b = 2;"));
 		Assert.IsTrue(script.Contains("let result = (() => {"));
@@ -2039,7 +2037,6 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
 		Assert.IsTrue(script.Contains("let s;"));
 		Assert.IsTrue(script.Contains("const v$0 = score;"));
 		Assert.IsTrue(script.Contains("return \"A\";"));
@@ -2147,7 +2144,12 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "let value = 1;");
+		StringAssert.Contains(script, "return (() => {");
+		StringAssert.Contains(script, "if (v$0 === 1)");
+		StringAssert.Contains(script, "return 100;");
+		StringAssert.Contains(script, "return 200;");
+		StringAssert.Contains(script, "return 0;");
 	}
 
 	/// <summary>
@@ -2181,7 +2183,14 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "switch (value)");
+		StringAssert.Contains(script, "case 1:");
+		StringAssert.Contains(script, "case 2:");
+		StringAssert.Contains(script, "case 3:");
+		StringAssert.Contains(script, "console.log(\"small\")");
+		StringAssert.Contains(script, "console.log(\"large\")");
+		StringAssert.Contains(script, "default:");
+		StringAssert.Contains(script, "break;");
 	}
 
 	/// <summary>
@@ -2210,7 +2219,13 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "return (() => {");
+		StringAssert.Contains(script, "\"both zero\"");
+		StringAssert.Contains(script, "\"a zero\"");
+		StringAssert.Contains(script, "\"b zero\"");
+		StringAssert.Contains(script, "\"neither zero\"");
+		Assert.IsTrue(script.Contains("a === 0") || script.Contains("Item1 === 0"));
+		Assert.IsTrue(script.Contains("b === 0") || script.Contains("Item2 === 0"));
 	}
 
 	/// <summary>
@@ -2241,7 +2256,11 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "switch (input.toLowerCase())");
+		StringAssert.Contains(script, "case \"yes\":");
+		StringAssert.Contains(script, "console.log(\"YES\")");
+		StringAssert.Contains(script, "case \"no\":");
+		StringAssert.Contains(script, "console.log(\"NO\")");
 	}
 
 	/// <summary>
@@ -2270,7 +2289,12 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "return (() => {");
+		StringAssert.Contains(script, "\"Name\" in");
+		StringAssert.Contains(script, "return \"Hi Alice\";");
+		StringAssert.Contains(script, "return \"Hey Bob\";");
+		StringAssert.Contains(script, "return \"Hello stranger\";");
+		Assert.IsTrue(script.Contains("p != null") || script.Contains("v$0 != null"));
 	}
 
 	/// <summary>
@@ -2304,7 +2328,11 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "console.log(\"positive\")");
+		StringAssert.Contains(script, "console.log(\"negative\")");
+		StringAssert.Contains(script, "console.log(\"zero\")");
+		Assert.IsTrue(script.Contains("if (") || script.Contains("switch"));
+		Assert.IsTrue(script.Contains("> 0") || script.Contains("< 0"));
 	}
 
 	/// <summary>
@@ -2333,7 +2361,14 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "return (() => {");
+		StringAssert.Contains(script, "return \"negative\";");
+		StringAssert.Contains(script, "return \"zero\";");
+		StringAssert.Contains(script, "return \"small positive\";");
+		StringAssert.Contains(script, "return \"large positive\";");
+		Assert.IsTrue(script.Contains("v$0 < 0") || script.Contains("value < 0"));
+		Assert.IsTrue(script.Contains("v$0 > 0 && v$0 < 10") || script.Contains("value > 0 && value < 10"));
+		Assert.IsTrue(script.Contains("v$0 >= 10") || script.Contains("value >= 10"));
 	}
 
 	/// <summary>
@@ -2362,7 +2397,13 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "return (() => {");
+		StringAssert.Contains(script, "return \"one two three\";");
+		StringAssert.Contains(script, "return \"four\";");
+		StringAssert.Contains(script, "return \"not five\";");
+		StringAssert.Contains(script, "return \"five\";");
+		Assert.IsTrue(script.Contains("v$0 === 1 || v$0 === 2 || v$0 === 3") || script.Contains("value === 1 || value === 2 || value === 3"));
+		Assert.IsTrue(script.Contains("!(v$0 === 5)") || script.Contains("v$0 !== 5") || script.Contains("!(value === 5)"));
 	}
 
 	/// <summary>
@@ -2392,7 +2433,13 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "return (() => {");
+		StringAssert.Contains(script, "const v$0 = op;");
+		StringAssert.Contains(script, "return a + b;");
+		StringAssert.Contains(script, "return a - b;");
+		StringAssert.Contains(script, "return a * b;");
+		StringAssert.Contains(script, "return a / b;");
+		StringAssert.Contains(script, "return 0;");
 	}
 
 	/// <summary>
@@ -2424,7 +2471,10 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "return 0;");
+		StringAssert.Contains(script, "break;");
+		StringAssert.Contains(script, "return -1;");
+		StringAssert.Contains(script, "return 1;");
 	}
 
 	#endregion

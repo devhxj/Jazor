@@ -3,7 +3,7 @@ using System.ComponentModel;
 namespace ECMAScript;
 
 [ECMAScript]
-[Description("@#Exec")]
+[Description("@#")]
 public sealed class RegExpResult : IArray<string>
 {
     ///<summary>
@@ -48,11 +48,17 @@ public sealed class RegExpResult : IArray<string>
     [Description("@#rightContext")]
     public extern string RightContext { get; }
 
+    /// <summary>
+    /// Named capture groups returned by <c>RegExp.prototype.exec</c>.
+    /// This is exposed as <see cref="IObject"/> because the value is consumed through
+    /// JavaScript-style key access rather than a strongly typed CLR dictionary contract.
+    /// </summary>
     [Description("@#groups")]
-    public extern IObject<string>? Groups { get; }
+    public extern IObject? Groups { get; }
 
     public extern string this[uint index] { get; }
 
+    [Description("@#length")]
     public extern uint Length { get; }
 
     public extern IEnumerator GetEnumerator();

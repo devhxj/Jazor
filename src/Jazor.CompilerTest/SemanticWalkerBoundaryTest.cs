@@ -1745,7 +1745,10 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		AssertScriptEqual(@"{
+  let max = 4294967295;
+  let min = 0;
+}", script);
 	}
 
 	/// <summary>
@@ -1768,7 +1771,9 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		AssertScriptEqual(@"{
+  let big = 18446744073709551615n;
+}", script);
 	}
 
 	/// <summary>
@@ -1793,7 +1798,11 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		AssertScriptEqual(@"{
+  let f1 = 0.1;
+  let f2 = 0.2;
+  let sum = f1 + f2;
+}", script);
 	}
 
 	/// <summary>
@@ -1818,7 +1827,11 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		AssertScriptEqual(@"{
+  let d1 = 0.1;
+  let d2 = 0.2;
+  let sum = d1 + d2;
+}", script);
 	}
 
 	#endregion
@@ -1845,7 +1858,9 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		AssertScriptEqual(@"{
+  let special = ""Tab:\t Newline:\n Backslash:\\"";
+}", script);
 	}
 
 	/// <summary>
@@ -1868,7 +1883,9 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		AssertScriptEqual(@"{
+  let raw = ""No escapes needed: \n \t \"" "";
+}", script);
 	}
 
 	#endregion
@@ -1924,7 +1941,12 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		AssertScriptEqual(@"{
+  let obj = null;
+  if (obj !== null) {
+    console.log(obj.toString());
+  }
+}", script);
 	}
 
 	#endregion
@@ -2017,7 +2039,14 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		AssertScriptEqual(@"{
+  let a = true;
+  let b = false;
+  let c = true;
+  if (a && b || c && !b) {
+    console.log(""complex"");
+  }
+}", script);
 	}
 
 	#endregion

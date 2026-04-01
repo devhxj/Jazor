@@ -415,8 +415,22 @@ public partial class Analyzer : DiagnosticAnalyzer
 		if (typeSymbol.TypeKind != TypeKind.Class)
 			return false;
 
-		return typeSymbol.Name.EndsWith(Attribute) && 
-			(typeSymbol.IsAbstract || typeSymbol.ContainingType.Name == Attribute);
+		if (!typeSymbol.Name.EndsWith(Attribute, StringComparison.Ordinal))
+			return false;
+
+		if (typeSymbol.IsAbstract)
+			return true;
+
+		var current = typeSymbol;
+		while (current is not null)
+		{
+			if (current.Name == Attribute)
+				return true;
+
+			current = current.BaseType;
+		}
+
+		return false;
 	}
 }
 

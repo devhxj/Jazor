@@ -511,6 +511,71 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         return properties;
     }
 
+    private MethodDefinition ConvertMemberConstructor(IMethodSymbol symbol)
+    {
+        if (symbol.MethodKind != MethodKind.Constructor)
+            throw new NotSupportedException($"Jazor cannot suport {symbol.Name}.");
+
+        if (symbol.IsStatic)
+            throw new NotSupportedException($"Jazor member class does not support static constructor {symbol.Name}.");
+
+        IOperation? operation = null;
+        foreach (var reference in symbol.DeclaringSyntaxReferences)
+        {
+            if (reference.GetSyntax() is not ConstructorDeclarationSyntax ctorDecl)
+                continue;
+
+            if (ctorDecl.Initializer is not null)
+                throw new NotSupportedException($"Jazor member class does not support constructor initializer on {symbol.Name}.");
+
+            if (ctorDecl.Body is not null)
+            {
+                operation = _classModel.GetOperation(ctorDecl.Body);
+                break;
+            }
+
+            if (ctorDecl.ExpressionBody is not null)
+            {
+                operation = _classModel.GetOperation(ctorDecl.ExpressionBody);
+                break;
+            }
+        }
+
+        if (operation is null)
+            throw new NotSupportedException($"Jazor cannot suport {symbol.Name}.");
+
+        var walker = new SemanticWalker();
+        var argument = new SenseArgument(Sense.FunctionBody);
+        var body = walker.Visit(operation, argument) as FunctionBody
+            ?? throw new NotSupportedException($"Jazor cannot suport {symbol.Name}.");
+        MergeImports(argument);
+
+        var parameters = new List<Node>();
+        if (symbol.Parameters.Length > 0)
+        {
+            foreach (var p in symbol.Parameters)
+            {
+                var parameter = ConvertParameter(p)
+                    ?? throw new NotSupportedException($"Jazor cannot suport {p.Name}.");
+                parameters.Add(parameter);
+            }
+        }
+
+        return new MethodDefinition(
+            PropertyKind.Method,
+            key: new Identifier("constructor"),
+            value: new FunctionExpression(
+                id: null,
+                parameters: NodeList.From(parameters),
+                body: body,
+                generator: false,
+                async: false),
+            computed: false,
+            isStatic: false,
+            decorators: NodeList.Empty<Decorator>()
+        );
+    }
+
     private ClassDeclaration ConvertMemberClass(INamedTypeSymbol symbol)
     {
         var nodes = new List<Node>();
@@ -523,6 +588,10 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                     break;
                 case IPropertySymbol prop:
                     nodes.AddRange(ConvertMemberProperty(prop));
+                    break;
+                case IMethodSymbol ctor when ctor.MethodKind == MethodKind.Constructor:
+                    if (!ctor.IsImplicitlyDeclared)
+                        nodes.Add(ConvertMemberConstructor(ctor));
                     break;
                 case IMethodSymbol func when func.MethodKind == MethodKind.Ordinary:
                     nodes.Add(ConvertMemberMethod(func));
@@ -652,7 +721,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
     private static FunctionBody ApplyRefOutReturnProtocol(FunctionBody body, IReadOnlyList<Expression> refParas, bool hasReturn)
     {
-        var returnExpr = new ArrayExpression(NodeList.From(BuildReturnElements(null, refParas, hasReturn)));
+        var returnExpr = new ArrayExpression(NodeList.From<Expression?>(BuildReturnElements(null, refParas, hasReturn)));
         var rewriter = new RefOutReturnRewriter(refParas, hasReturn);
         var rewritten = (FunctionBody)(rewriter.Visit(body) ?? body);
         if (!hasReturn)
@@ -685,7 +754,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             if (hasReturn)
                 elements.Add(node.Argument ?? new Identifier("undefined"));
             elements.AddRange(refParas);
-            return new ReturnStatement(new ArrayExpression(NodeList.From(elements)));
+            return new ReturnStatement(new ArrayExpression(NodeList.From<Expression?>(elements)));
         }
 
         protected override object VisitFunctionExpression(FunctionExpression node) => node;

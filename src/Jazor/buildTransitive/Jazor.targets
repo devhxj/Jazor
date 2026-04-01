@@ -1,0 +1,35 @@
+<Project>
+  <Target Name="JazorEmit"
+          AfterTargets="CoreCompile"
+          Condition="'$(DesignTimeBuild)' != 'true' and '$(JazorEmit)' == 'true' and Exists('$(TargetPath)')">
+    <PropertyGroup>
+      <_JazorEmitOutDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorOutDir)')), '[\\/]+$', ''))</_JazorEmitOutDir>
+      <JazorManifestPath Condition="'$(JazorManifestPath)' == ''">$(_JazorEmitOutDir)\jazor-manifest.json</JazorManifestPath>
+      <_JazorEmitManifestPath>$([System.IO.Path]::GetFullPath('$(JazorManifestPath)'))</_JazorEmitManifestPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <JazorEmitAssembly Include="$(TargetPath)" />
+      <JazorEmitAssembly Include="@(ReferenceCopyLocalPaths)"
+                         Condition="'%(ReferenceCopyLocalPaths.Extension)' == '.dll'" />
+    </ItemGroup>
+
+    <MakeDir Directories="$(_JazorEmitOutDir)" />
+
+    <Exec Command="dotnet &quot;$(MSBuildThisFileDirectory)..\tools\net10.0\Jazor.Emit.dll&quot; --root &quot;$(TargetPath)&quot; --out &quot;$(_JazorEmitOutDir)&quot; --write-manifest &quot;$(_JazorEmitManifestPath)&quot; --clean &quot;$(JazorCleanEmit)&quot; --fail-on-path-conflict &quot;$(JazorFailOnPathConflict)&quot; @(JazorEmitAssembly->'--assembly &quot;%(Identity)&quot;', ' ')" />
+  </Target>
+
+  <Target Name="JazorBundle"
+          DependsOnTargets="JazorEmit"
+          AfterTargets="Build"
+          Condition="'$(DesignTimeBuild)' != 'true' and '$(JazorBundle)' == 'true' and '$(JazorEmit)' == 'true'">
+    <PropertyGroup>
+      <JazorManifestPath Condition="'$(JazorManifestPath)' == ''">$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorOutDir)')), '[\\/]+$', ''))\jazor-manifest.json</JazorManifestPath>
+      <_JazorBundleOut>$([System.IO.Path]::GetFullPath('$(JazorBundleOut)'))</_JazorBundleOut>
+      <_JazorEmitOutDirForBundle>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorOutDir)')), '[\\/]+$', ''))</_JazorEmitOutDirForBundle>
+      <_JazorManifestPathForBundle>$([System.IO.Path]::GetFullPath('$(JazorManifestPath)'))</_JazorManifestPathForBundle>
+    </PropertyGroup>
+
+    <Exec Command="dotnet &quot;$(MSBuildThisFileDirectory)..\tools\net10.0\Jazor.Emit.dll&quot; bundle --in &quot;$(_JazorEmitOutDirForBundle)&quot; --manifest &quot;$(_JazorManifestPathForBundle)&quot; --out &quot;$(_JazorBundleOut)&quot;" />
+  </Target>
+</Project>

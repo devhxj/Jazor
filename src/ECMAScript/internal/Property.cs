@@ -3,22 +3,22 @@
 [ECMAScript]
 public class PropertyDescriptor
 {
-	[DisplayName("configurable")]
+	[Description("@#configurable")]
 	public bool? Configurable { get; set; }
 
-	[DisplayName("enumerable")]
+	[Description("@#enumerable")]
 	public bool? Enumerable { get; set; }
 
-	[DisplayName("value")]
+	[Description("@#value")]
 	public object? Value { get; set; }
 
-	[DisplayName("writable")]
+	[Description("@#writable")]
 	public bool? Writable { get; set; }
 
-	[DisplayName("get")]
+	[Description("@#get")]
 	public extern object? Get();
 
-	[DisplayName("set")]
+	[Description("@#set")]
 	public extern void Set(object v);
 }
 

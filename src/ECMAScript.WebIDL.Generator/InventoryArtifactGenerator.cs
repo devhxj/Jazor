@@ -59,7 +59,7 @@ internal sealed class InventoryArtifactGenerator
         builder.AppendLine("## Next Step");
         builder.AppendLine();
         builder.AppendLine("This inventory is the stable interchange format between the Deno collection layer and the future C# binding emitter.");
-        builder.AppendLine("A preview emitter currently writes typedef, enum, callback, callback interface, and dictionary bindings under `csharp-preview/`.");
+        builder.AppendLine("A preview emitter currently writes typedef, enum, callback, callback interface, dictionary, interface, and namespace bindings under `csharp-preview/`.");
         return builder.ToString();
     }
 }

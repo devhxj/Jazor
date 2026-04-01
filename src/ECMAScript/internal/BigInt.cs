@@ -24,7 +24,7 @@ public abstract class BigInt
 	/// <param name="bigint">要存储在指定位数上的整数。</param>
 	/// <returns>bigint 模 (modulo) 2^width 作为有符号整数的值。</returns>
 	[Description("@#asIntN")]
-	public extern static BigInt AsIntN(Number width, Number bigint);
+	public extern static BigInt AsIntN(Number width, BigInt bigint);
 
 	/// <summary>
 	/// 将 BigInt 值转换为一个 -2^(width-1) 与 2^(width-1)-1 之间的无符号整数。
@@ -33,7 +33,7 @@ public abstract class BigInt
 	/// <param name="bigint">要存储在指定位数上的整数。</param>
 	/// <returns>bigint 模 (modulo) 2^width 作为无符号整数的值。</returns>
 	[Description("@#asUintN")]
-	public extern static BigInt AsUintN(Number width, Number bigint);
+	public extern static BigInt AsUintN(Number width, BigInt bigint);
 
 	public extern static BigInt operator +(BigInt a, BigInt b);
 

@@ -93,8 +93,10 @@ public delegate U ReduceFunc<T, U>(U previousValue, T currentValue, uint current
 [ECMAScript]
 public interface IArray : IEnumerable
 {
+	[Description("@#length")]
 	uint Length { get; }
 
+	[Description("@#isArray")]
 	static extern bool IsArray(object? obj);
 }
 
@@ -432,16 +434,22 @@ public partial class Array<T> : object, IArray<T>
 	[Description("@#findIndex")]
 	public extern Number FindIndex(Predicate<T> callbackfn);
 
+	[Description("@#from")]
 	public extern static IEnumerable<T> From(IEnumerable<T> arrayLike);
 
+	[Description("@#from")]
 	public extern static IEnumerable<T> From<U>(IEnumerable<U> arrayLike, Func<U, int, T> mapFn, object? thisArg = null);
 
+	[Description("@#fromAsync")]
 	public extern static PromiseResult<IEnumerable<T>> FromAsync(IEnumerable<T> arrayLike);
 
+	[Description("@#fromAsync")]
 	public extern static PromiseResult<IEnumerable<T>> FromAsync<U>(IEnumerable<U> arrayLike, Func<U, int, T> mapFn, object? thisArg = null);
 
+	[Description("@#isArray")]
 	public extern static bool IsArray(object? value);
 
+	[Description("@#of")]
 	public extern static Array<T> Of(params IEnumerable<T> value);
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
@@ -486,6 +494,7 @@ public static partial class Global
 {
 	extension(Array array)
 	{
+		[Description("@#isArray")]
 		public extern static bool IsArray(object? obj);
 
 		[Jazor("[]")]

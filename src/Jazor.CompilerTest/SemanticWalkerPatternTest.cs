@@ -2652,10 +2652,10 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
-  let obj = new Date;
-  let result = obj instanceof Date;
-}", script);
+    StringAssert.Contains(script!, "utcDateTime");
+    StringAssert.Contains(script, "offsetTicks");
+    StringAssert.Contains(script, "instanceof Date");
+    StringAssert.Contains(script, "typeof obj.offsetTicks === \"bigint\"");
   }
 
   /// <summary>
@@ -3871,7 +3871,6 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.IsNotNull(script);
     Assert.IsTrue(script.Contains("let matrix = ["));
     Assert.IsTrue(script.Contains("let result = Array.isArray(matrix)"));
     Assert.IsTrue(script.Contains("matrix.length > 0"));
@@ -4620,7 +4619,6 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.IsNotNull(script);
     Assert.IsTrue(script.Contains("let list = ["));
     Assert.IsTrue(script.Contains("list.length === 15"));
     Assert.IsTrue(script.Contains("list[0] === 1"));
@@ -4822,7 +4820,13 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.IsNotNull(script);
+    Assert.AreEqual(@"{
+  let v;
+  let value = 42;
+  if (typeof value === ""number"" && (v = value, true)) {
+    console.log(v);
+  }
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
   }
 
   /// <summary>
@@ -4849,7 +4853,11 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.IsNotNull(script);
+    StringAssert.Contains(script!, "let d;");
+    StringAssert.Contains(script, "let obj = 3.14;");
+    StringAssert.Contains(script, "typeof obj === \"number\"");
+    StringAssert.Contains(script, "(d = obj, true)");
+    StringAssert.Contains(script, "console.log(d)");
   }
 
   /// <summary>
@@ -4876,7 +4884,11 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.IsNotNull(script);
+    StringAssert.Contains(script!, "let b;");
+    StringAssert.Contains(script, "let obj = true;");
+    StringAssert.Contains(script, "typeof obj === \"boolean\"");
+    StringAssert.Contains(script, "(b = obj, true)");
+    StringAssert.Contains(script, "console.log(b)");
   }
 
   #endregion
@@ -5113,7 +5125,10 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.IsNotNull(script);
+    StringAssert.Contains(script!, "value > 0 && value < 10");
+    StringAssert.Contains(script, "value > 20");
+    StringAssert.Contains(script, "console.log(\"in range\")");
+    Assert.IsTrue(script.Contains("||") || script.Contains("or"));
   }
 
   #endregion
@@ -5147,7 +5162,11 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "Address");
+    StringAssert.Contains(script, "City");
+    StringAssert.Contains(script, "\"NYC\"");
+    StringAssert.Contains(script, "console.log(\"New Yorker\")");
+    Assert.IsTrue(script.Contains("&&") || script.Contains("?."));
   }
 
   /// <summary>
@@ -5176,7 +5195,12 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.IsNotNull(script);
+    StringAssert.Contains(script!, "X");
+    StringAssert.Contains(script, "Y");
+    StringAssert.Contains(script, "10");
+    StringAssert.Contains(script, "20");
+    StringAssert.Contains(script, "console.log(\"found\")");
+    Assert.IsTrue(script.Contains("instanceof Point") || script.Contains("\"X\" in"));
   }
 
   #endregion
@@ -5207,7 +5231,9 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.IsNotNull(script);
+    StringAssert.Contains(script!, "Array.isArray(arr)");
+    StringAssert.Contains(script, "arr.length === 0");
+    StringAssert.Contains(script, "console.log(\"empty\")");
   }
 
   /// <summary>
@@ -5234,7 +5260,11 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.IsNotNull(script);
+    StringAssert.Contains(script!, "let single;");
+    StringAssert.Contains(script, "Array.isArray(arr)");
+    StringAssert.Contains(script, "arr.length === 1");
+    StringAssert.Contains(script, "single = arr[0]");
+    StringAssert.Contains(script, "console.log(single)");
   }
 
   /// <summary>
@@ -5261,7 +5291,12 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.IsNotNull(script);
+    StringAssert.Contains(script!, "let first, rest;");
+    StringAssert.Contains(script, "Array.isArray(arr)");
+    StringAssert.Contains(script, "arr.length >= 1");
+    StringAssert.Contains(script, "first = arr[0]");
+    StringAssert.Contains(script, "rest = arr.slice(1)");
+    StringAssert.Contains(script, "console.log(first)");
   }
 
   #endregion
@@ -5337,7 +5372,11 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "let result = (() => {");
+    StringAssert.Contains(script, "const v$");
+    StringAssert.Contains(script, "\"string\"");
+    StringAssert.Contains(script, "\"number\"");
+    StringAssert.Contains(script, "return \"other\";");
   }
 
   #endregion
@@ -5365,7 +5404,12 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.IsNotNull(script);
+    StringAssert.Contains(script!, "let i;");
+    StringAssert.Contains(script, "let result =");
+    StringAssert.Contains(script, "typeof obj === \"number\"");
+    StringAssert.Contains(script, "(i = obj, true)");
+    StringAssert.Contains(script, "int:");
+    StringAssert.Contains(script, "not int");
   }
 
   /// <summary>
@@ -5395,7 +5439,15 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.IsNotNull(script);
+    Assert.AreEqual(@"{
+  let items = [1, ""two"", 3];
+  for (item of items) {
+    let n;
+    if (typeof item === ""number"" && (n = item, true)) {
+      console.log(n * 2);
+    }
+  }
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
   }
 
   /// <summary>
@@ -5431,7 +5483,9 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.IsNotNull(script);
+    Assert.AreEqual(@"{
+  this.Process(""hello"");
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
   }
 
   #endregion
@@ -5462,7 +5516,10 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.IsNotNull(script);
+    StringAssert.Contains(script!, "let value;");
+    StringAssert.Contains(script, "let obj = 42;");
+    StringAssert.Contains(script, "(value = obj, true)");
+    StringAssert.Contains(script, "console.log(value)");
   }
 
   /// <summary>
@@ -5489,7 +5546,11 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.IsNotNull(script);
+    StringAssert.Contains(script!, "let s;");
+    StringAssert.Contains(script, "let obj = \"hello\";");
+    StringAssert.Contains(script, "typeof obj === \"string\"");
+    StringAssert.Contains(script, "(s = obj, true)");
+    StringAssert.Contains(script, "console.log(s.length)");
   }
 
   #endregion
@@ -5625,7 +5686,10 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.IsNotNull(script);
+    StringAssert.Contains(script!, "Name");
+    StringAssert.Contains(script, "\"John\"");
+    StringAssert.Contains(script, "console.log(\"found\")");
+    Assert.IsTrue(script.Contains("instanceof Person") || script.Contains("\"Name\" in"));
   }
 
   /// <summary>
@@ -5654,7 +5718,10 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.IsNotNull(script);
+    StringAssert.Contains(script!, "X");
+    StringAssert.Contains(script, "Y");
+    StringAssert.Contains(script, "console.log(\"origin\")");
+    Assert.IsTrue(script.Contains("instanceof Point") || script.Contains("\"X\" in"));
   }
 
   #endregion
@@ -5821,7 +5888,9 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.IsNotNull(script);
+    StringAssert.Contains(script!, "Array.isArray(arr)");
+    StringAssert.Contains(script, "arr.length === 0");
+    StringAssert.Contains(script, "console.log(\"empty\")");
   }
 
   /// <summary>
@@ -5848,7 +5917,11 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.IsNotNull(script);
+    StringAssert.Contains(script!, "let single;");
+    StringAssert.Contains(script, "Array.isArray(arr)");
+    StringAssert.Contains(script, "arr.length === 1");
+    StringAssert.Contains(script, "single = arr[0]");
+    StringAssert.Contains(script, "console.log(single)");
   }
 
   /// <summary>
@@ -5875,7 +5948,12 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.IsNotNull(script);
+    StringAssert.Contains(script!, "let first, second;");
+    StringAssert.Contains(script, "Array.isArray(arr)");
+    StringAssert.Contains(script, "arr.length === 2");
+    StringAssert.Contains(script, "first = arr[0]");
+    StringAssert.Contains(script, "second = arr[1]");
+    StringAssert.Contains(script, "console.log(first + second)");
   }
 
   #endregion
@@ -5903,7 +5981,11 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.IsNotNull(script);
+    StringAssert.Contains(script!, "a");
+    StringAssert.Contains(script, "c");
+    StringAssert.Contains(script, "1");
+    StringAssert.Contains(script, "3");
+    StringAssert.Contains(script, "console.log(a + c)");
   }
 
   /// <summary>
@@ -5931,7 +6013,10 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.IsNotNull(script);
+    StringAssert.Contains(script!, "let value = 5;");
+    StringAssert.Contains(script, "let result = (() => {");
+    StringAssert.Contains(script, "return \"one\";");
+    StringAssert.Contains(script, "return \"other\";");
   }
 
   #endregion

@@ -126,6 +126,41 @@ public sealed class SemanticWalkerReferenceTest
 
 	#region VisitParameterReference - 参数引用
 
+	[TestMethod]
+	public void Visit_Reference_DescriptionBasedNamespaceAliasType_TranslatesToWebIdlNames()
+	{
+		var block = GetBlockOperation(@"
+            using System.ComponentModel;
+            using console = ECMAScript.Console.Console;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    console.Log(""hello"");
+                }
+            }
+
+            namespace ECMAScript.Console
+            {
+                [Description(""@#console"")]
+                public static class Console
+                {
+                    [Description(""@#log"")]
+                    public static void Log(string value) { }
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  console.log(""hello"");
+}".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+	}
+
 	/// <summary>
 	/// 测试 VisitParameterReference - 简单参数引用
 	/// C# 示例：void Method(int x) { Console.WriteLine(x); }
@@ -527,6 +562,79 @@ public sealed class SemanticWalkerReferenceTest
 	#endregion
 
 	#region VisitMethodReference - 方法引用
+
+	[TestMethod]
+	public void Visit_Invocation_ObjectPrototypeMethod_HasOwnProperty()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                public int Value { get; set; }
+
+                void TestMethod()
+                {
+                    var obj = new TestClass();
+                    var hasValue = obj.HasOwnProperty(""Value"");
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+@"{
+  let obj = new TestClass;
+  let hasValue = obj.hasOwnProperty(""Value"");
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Invocation_ObjectStaticMethod_Keys()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var keys = Object.Keys(new TestClass());
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+@"{
+  let keys = Object.keys(new TestClass);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Invocation_ObjectStaticMethod_Is()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var same = Object.Is(1, 1);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+@"{
+  let same = Object.is(1, 1);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
 
 	/// <summary>
 	/// 测试 VisitMethodReference - 静态方法引用
@@ -1812,7 +1920,33 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		Assert.AreEqual(@"{
+  let now = new Date;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_RuntimeStaticProperty_UsesImplicitEcmascriptMemberName()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var buffer = new ArrayBuffer(8);
+                    var byteLength = buffer.ByteLength;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let buffer = new ArrayBuffer(8);
+  let byteLength = buffer.byteLength;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>
@@ -1865,7 +1999,9 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		Assert.AreEqual(@"{
+  let result = this.Doubled;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>
@@ -1917,7 +2053,11 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		Assert.AreEqual(@"{
+  let dict = new Map;
+  dict.set(""key"", 42);
+  let value = dict.get(""key"");
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	#endregion
@@ -1947,8 +2087,8 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.AreEqual(@"{
-  let count = Counter;
-}", script);
+  let count = TestClass.Counter;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>
@@ -2031,7 +2171,11 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		Assert.AreEqual(@"{
+  let matrix = new Array(3).fill().map(() => new Array(3));
+  matrix[0][0] = 1;
+  let value = matrix[1][2];
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>
@@ -2056,7 +2200,11 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		Assert.AreEqual(@"{
+  let jagged = new Array(3);
+  jagged[0] = [1, 2, 3];
+  let value = jagged[0][1];
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>
@@ -2107,7 +2255,10 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		Assert.AreEqual(@"{
+  let matrix = new Array(3).fill().map(() => new Array(4));
+  let rank = 2;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	#endregion
@@ -2137,7 +2288,10 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		Assert.AreEqual(@"{
+  let func = this.Double.bind(this);
+  let result = func(5);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>
@@ -2167,6 +2321,127 @@ public sealed class SemanticWalkerReferenceTest
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
+	[TestMethod]
+	public void Visit_Reference_RuntimeInstanceMethod_UsesImplicitEcmascriptMemberName()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var date = new Date(0);
+                    var time = date.GetTime();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let date = new Date(0);
+  let time = date.getTime();
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_RuntimeStaticMethod_UsesImplicitEcmascriptMemberName()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var isInteger = Number.IsInteger(1);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let isInteger = Number.isInteger(1);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_ECMAScriptEnumField_EmitsStringLiteral()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var matcher = Intl.LocaleMatcher.BestFit;
+                    var twoDigit = Intl.NumericTwoDigit.TwoDigit;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let matcher = ""best fit"";
+  let twoDigit = ""2-digit"";
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_ReflectGet_UsesJsMemberName()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                public int Value { get; set; }
+
+                void TestMethod()
+                {
+                    var value = Reflect.Get(new TestClass(), ""Value"");
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let value = Reflect.get(new TestClass, ""Value"");
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_UserStaticMethod_DoesNotUseImplicitEcmascriptMemberName()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var value = Helper.DoWork();
+                }
+            }
+
+            class Helper
+            {
+                public static int DoWork() => 1;
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let value = Helper.DoWork();
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
 	/// <summary>
 	/// 测试扩展方法引用
 	/// </summary>
@@ -2188,7 +2463,10 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		Assert.AreEqual(@"{
+  let list = [1, 2, 3];
+  let doubled = Array.from(Array.from(list).map(x => x * 2));
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	#endregion
@@ -2240,7 +2518,9 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		Assert.AreEqual(@"{
+  let date = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>

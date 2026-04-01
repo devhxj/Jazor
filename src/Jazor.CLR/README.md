@@ -97,7 +97,7 @@ Jazor.CLR/
 - `member`：完整的 C# 成员签名，用于白名单生成和哈希计算
 - `value`：
   - `Op.Alias`：JavaScript 方法名（如 `toString`）
-  - `Op.Inline`：内联代码模板（如 `(@#{0} === @#{1})`）
+  - `Op.Inline`：内联代码模板（如 `(__arg1 === __arg2)`）
 
 ### [ECMAScriptModule] 特性
 
@@ -198,13 +198,13 @@ public extern static string _d48c2d39317daf8f(bool instance);
 
 ```csharp
 // Equals → 严格相等
-[Jazor(Op.Inline, "override bool.Equals(object)", "(@#{0} === @#{1})")]
+[Jazor(Op.Inline, "override bool.Equals(object)", "(__arg1 === __arg2)")]
 public extern static bool _hash(bool instance, object? obj);
 ```
 
 **占位符规则**：
 
-| 方法类型 | @#{0} | @#{1} | @#{2} |
+| 方法类型 | __arg1 | __arg2 | __arg3 |
 |----------|-------|-------|-------|
 | 实例方法 | 实例 | 参数1 | 参数2 |
 | 静态方法 | 参数1 | 参数2 | 参数3 |
@@ -559,7 +559,7 @@ public static class YourTypeModule
 | 问题 | 原因 | 解决方案 |
 |------|------|----------|
 | 方法体未被编译到 CLR module | `extern` 方法只有白名单标记作用 | 只有 `Op.Import` 需要方法体，其他用 `extern` |
-| 占位符未替换 | `@#{n}` 格式错误 | 使用正确格式 `@#{0}`, `@#{1}` |
+| 占位符未替换 | `__argN` 格式错误 | 使用正确格式 `__arg1`, `__arg2` |
 | 返回值类型错误 | 使用泛型而非 `Array<object?>` | out/ref 方法必须返回 `Array<object?>` |
 | 循环引用 | Import 方法互相调用 | 避免模块间循环依赖 |
 | 类型映射错误 | 参数类型不正确 | 参考 GlobalUsings.cs 中的类型定义 |
@@ -581,7 +581,7 @@ public static class YourTypeModule
 
 ### 占位符速查表
 
-| 方法类型 | @#{0} | @#{1} | @#{2} |
+| 方法类型 | __arg1 | __arg2 | __arg3 |
 |----------|-------|-------|-------|
 | 实例方法 | 实例 | 参数1 | 参数2 |
 | 静态方法 | 参数1 | 参数2 | 参数3 |

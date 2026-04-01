@@ -47,7 +47,9 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         // string -> js string
         // byte、sbyte、short、ushort、int、uint、decimal、double、float -> js Number
         // long、ulong、Int128、UInt128、timestamp、BigInteger ->js BigInt
-        // DateOnly、TimeOnly、DateTime、DateTimeOffset -> js Date
+        // DateOnly、DateTime -> js Date
+        // DateTimeOffset -> js Object wrapper
+        // TimeOnly -> js BigInt（ticks）
         // Array -> js array
         // IDictionary -> js Map
         // IEnumerable(非IDictionary) -> js Set
@@ -90,14 +92,18 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
                         return (TypeMapper.Array, "Array");
 
                     // Enum 类型映射到 Number
-                    else if (typeSymbol.TypeKind == TypeKind.Enum ||
-                        displayName == "System.TimeOnly")
+                    else if (typeSymbol.TypeKind == TypeKind.Enum)
                         return (TypeMapper.Number, "Number");
 
                     // Date 相关类型（SpecialType 只包含 DateTime）
-                    else if (displayName == "System.DateTimeOffset" ||
-                        displayName == "System.DateOnly")
+                    else if (displayName == "System.DateOnly")
                         return (TypeMapper.Date, "Date");
+
+                    else if (displayName == "System.DateTimeOffset")
+                        return (TypeMapper.Object, "Object");
+
+                    else if (displayName == "System.TimeOnly")
+                        return (TypeMapper.BigInt, "BigInt");
 
                     // BigInt 相关类型（SpecialType 只包含 Int64/UInt64）
                     else if (displayName == "System.Int128" ||

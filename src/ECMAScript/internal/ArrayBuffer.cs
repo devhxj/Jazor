@@ -31,10 +31,13 @@ public interface IAllowSharedBufferSource
 [EditorBrowsable(EditorBrowsableState.Never)]
 public interface IArrayBufferView
 {
+	[Description("@#buffer")]
 	ArrayBuffer Buffer { get; }
 
+	[Description("@#byteLength")]
 	uint ByteLength { get; }
 
+	[Description("@#byteOffset")]
 	uint ByteOffset { get; }
 }
 
@@ -51,8 +54,10 @@ public class ArrayBuffer : IBufferSource
 
 	public extern ArrayBuffer(uint length, ArrayBufferOption? option = null);
 
+	[Description("@#isView")]
 	public extern static bool IsView(object arg);
 
+	[Description("@#byteLength")]
 	public extern virtual double ByteLength { get; }
 
 	/// <summary>
@@ -61,6 +66,7 @@ public class ArrayBuffer : IBufferSource
 	/// <param name="begin"></param>
 	/// <param name="end"></param>
 	/// <returns></returns>
+	[Description("@#slice")]
 	public extern virtual ArrayBuffer Slice(uint begin, uint? end = null);
 }
 
@@ -80,74 +86,109 @@ public class DataView : IArrayBufferView, IBufferSource
 {
 	public extern DataView(ArrayBuffer buffer, uint? byteOffset = null, uint? byteLength = null);
 
+	[Description("@#buffer")]
 	public virtual ArrayBuffer Buffer { get; }
 
+	[Description("@#byteLength")]
 	public virtual uint ByteLength { get; }
 
+	[Description("@#byteOffset")]
 	public virtual uint ByteOffset { get; }
 
+	[Description("@#getFloat32")]
 	public virtual extern float GetFloat32(uint byteOffset);
 
+	[Description("@#getFloat32")]
 	public virtual extern float GetFloat32(uint byteOffset, bool littleEndian);
 
+	[Description("@#getFloat64")]
 	public virtual extern double GetFloat64(uint byteOffset);
 
+	[Description("@#getFloat64")]
 	public virtual extern double GetFloat64(uint byteOffset, bool littleEndian);
 
+	[Description("@#getInt8")]
 	public virtual extern sbyte GetInt8(uint byteOffset);
 
+	[Description("@#getInt16")]
 	public virtual extern short GetInt16(uint byteOffset);
 
+	[Description("@#getInt16")]
 	public virtual extern short GetInt16(uint byteOffset, bool littleEndian);
 
+	[Description("@#getInt32")]
 	public virtual extern int GetInt32(uint byteOffset);
 
+	[Description("@#getInt32")]
 	public virtual extern int GetInt32(uint byteOffset, bool littleEndian);
 
+	[Description("@#getBigInt64")]
 	public virtual extern BigInt GetBigInt64(uint byteOffset, bool littleEndian);
 
+	[Description("@#getUint8")]
 	public virtual extern byte GetUint8(uint byteOffset);
 
+	[Description("@#getUint16")]
 	public virtual extern ushort GetUint16(uint byteOffset);
 
+	[Description("@#getUint16")]
 	public virtual extern ushort GetUint16(uint byteOffset, bool littleEndian);
 
+	[Description("@#getUint32")]
 	public virtual extern uint GetUint32(uint byteOffset);
 
+	[Description("@#getUint32")]
 	public virtual extern uint GetUint32(uint byteOffset, bool littleEndian);
 
+	[Description("@#getBigUint64")]
 	public virtual extern BigInt GetBigUint64(uint byteOffset, bool littleEndian);
 
+	[Description("@#setFloat32")]
 	public virtual extern void SetFloat32(uint byteOffset, float value);
 
+	[Description("@#setFloat32")]
 	public virtual extern void SetFloat32(uint byteOffset, float value, bool littleEndian);
 
+	[Description("@#setFloat64")]
 	public virtual extern void SetFloat64(uint byteOffset, double value);
 
+	[Description("@#setFloat64")]
 	public virtual extern void SetFloat64(uint byteOffset, double value, bool littleEndian);
 
+	[Description("@#setInt8")]
 	public virtual extern void SetInt8(uint byteOffset, sbyte value);
 
+	[Description("@#setInt16")]
 	public virtual extern void SetInt16(uint byteOffset, short value);
 
+	[Description("@#setInt16")]
 	public virtual extern void SetInt16(uint byteOffset, short value, bool littleEndian);
 
+	[Description("@#setInt32")]
 	public virtual extern void SetInt32(uint byteOffset, int value);
 
+	[Description("@#setInt32")]
 	public virtual extern void SetInt32(uint byteOffset, int value, bool littleEndian);
 
+	[Description("@#setBigInt64")]
 	public virtual extern void SetBigInt64(uint byteOffset, BigInt value, bool littleEndian);
 
+	[Description("@#setUint8")]
 	public virtual extern void SetUint8(uint byteOffset, byte value);
 
+	[Description("@#setUint16")]
 	public virtual extern void SetUint16(uint byteOffset, ushort value);
 
+	[Description("@#setUint16")]
 	public virtual extern void SetUint16(uint byteOffset, ushort value, bool littleEndian);
 
+	[Description("@#setUint32")]
 	public virtual extern void SetUint32(uint byteOffset, uint value);
 
+	[Description("@#setUint32")]
 	public virtual extern void SetUint32(uint byteOffset, uint value, bool littleEndian);
 
+	[Description("@#setBigUint64")]
 	public virtual extern void SetBigUint64(uint byteOffset, BigInt value, bool littleEndian);
 }
 
@@ -467,11 +508,11 @@ public class BigUint64Array : TypedArray<ulong, BigUint64Array>
 
 [ECMAScript]
 [Description("@#Float16Array")]
-public class Float16Array : TypedArray<float, Float32Array>
+public class Float16Array : TypedArray<float, Float16Array>
 {
 	public extern Float16Array(uint length);
 
-	public extern Float16Array(Float32Array array);
+	public extern Float16Array(Float16Array array);
 
 	public extern Float16Array(IEnumerable<float> array);
 

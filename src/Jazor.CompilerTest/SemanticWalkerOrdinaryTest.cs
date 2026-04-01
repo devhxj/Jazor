@@ -747,7 +747,7 @@ public sealed class SemanticWalkerOrdinaryTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "await ");
     Assert.IsTrue(Regex.IsMatch(script, @"\{\r?\n  await Task\.Delay_[a-f0-9]+\(100\);\r?\n\}"));
 
   }
@@ -2768,7 +2768,8 @@ public sealed class SemanticWalkerOrdinaryTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "let result =");
+    Assert.IsTrue(script.Contains("Math.pow(2, 10)") || script.Contains("2 ** 10"));
   }
 
   /// <summary>
@@ -2852,7 +2853,8 @@ public sealed class SemanticWalkerOrdinaryTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "let value = 15;");
+    StringAssert.Contains(script, "~value");
   }
 
   /// <summary>
@@ -3217,7 +3219,10 @@ public sealed class SemanticWalkerOrdinaryTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "let doubleIt =");
+    StringAssert.Contains(script, "=> {");
+    StringAssert.Contains(script, "let doubled = x * 2;");
+    StringAssert.Contains(script, "return doubled;");
   }
 
   /// <summary>

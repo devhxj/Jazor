@@ -26,150 +26,175 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	/// Returns a string representation of a date. The format of the string depends on the locale.
 	/// </summary>
 	/// <returns></returns>
+	[Description("@#toString")]
 	public extern override string ToString();
 
 	/// <summary>
 	/// Returns a date as a string value.
 	/// </summary>
 	/// <returns></returns>
+	[Description("@#toDateString")]
 	public extern string ToDateString();
 
 	/// <summary>
 	/// Returns a time as a string value.
 	/// </summary>
 	/// <returns></returns>
+	[Description("@#toTimeString")]
 	public extern string ToTimeString();
 
 	/// <summary>
 	/// Returns a value as a string value appropriate to the host environment's current locale.
 	/// </summary>
 	/// <returns></returns>
+	[Description("@#toLocaleString")]
 	public extern string ToLocaleString();
 
 	/// <summary>
 	/// Returns a date as a string value appropriate to the host environment's current locale.
 	/// </summary>
 	/// <returns></returns>
+	[Description("@#toLocaleDateString")]
 	public extern string ToLocaleDateString();
 
 	/// <summary>
 	/// Returns a time as a string value appropriate to the host environment's current locale.
 	/// </summary>
 	/// <returns></returns>
+	[Description("@#toLocaleTimeString")]
 	public extern string ToLocaleTimeString();
 
 	/// <summary>
 	/// Returns the stored time value in milliseconds since midnight, January 1, 1970 UTC.
 	/// </summary>
 	/// <returns></returns>
+	[Description("@#valueOf")]
 	public extern Number ValueOf();
 
 	/// <summary>
 	/// Returns the stored time value in milliseconds since midnight, January 1, 1970 UTC.
 	/// </summary>
 	/// <returns></returns>
+	[Description("@#getTime")]
 	public extern Number GetTime();
 
 	/// <summary>
 	/// Gets the year, using local time.
 	/// </summary>
 	/// <returns></returns>
+	[Description("@#getFullYear")]
 	public extern Number GetFullYear();
 
 	/// <summary>
 	/// Gets the year using Universal Coordinated Time (UTC).
 	/// </summary>
 	/// <returns></returns>
+	[Description("@#getUTCFullYear")]
 	public extern Number GetUTCFullYear();
 
 	/// <summary>
 	/// Gets the month, using local time.
 	/// </summary>
 	/// <returns></returns>
+	[Description("@#getMonth")]
 	public extern Number GetMonth();
 
 	/// <summary>
 	/// Gets the month of a Date object using Universal Coordinated Time (UTC).
 	/// </summary>
 	/// <returns></returns>
+	[Description("@#getUTCMonth")]
 	public extern Number GetUTCMonth();
 
 	/// <summary>
 	/// Gets the day-of-the-month, using local time.
 	/// </summary>
 	/// <returns></returns>
+	[Description("@#getDate")]
 	public extern Number GetDate();
 
 	/// <summary>
 	/// Gets the day of the week, using local time.
 	/// </summary>
 	/// <returns></returns>
+	[Description("@#getUTCDate")]
 	public extern Number GetUTCDate();
 
 	/// <summary>
 	/// Gets the day of the week, using local time.
 	/// </summary>
 	/// <returns></returns>
+	[Description("@#getDay")]
 	public extern Number GetDay();
 
 	/// <summary>
 	/// Gets the day of the week using Universal Coordinated Time (UTC).
 	/// </summary>
 	/// <returns></returns>
+	[Description("@#getUTCDay")]
 	public extern Number GetUTCDay();
 
 	/// <summary>
 	/// Gets the hours in a date, using local time.
 	/// </summary>
 	/// <returns></returns>
+	[Description("@#getHours")]
 	public extern Number GetHours();
 
 	/// <summary>
 	/// Gets the hours value in a Date object using Universal Coordinated Time (UTC).
 	/// </summary>
 	/// <returns></returns>
+	[Description("@#getUTCHours")]
 	public extern Number GetUTCHours();
 
 	/// <summary>
 	/// Gets the minutes of a Date object, using local time.
 	/// </summary>
 	/// <returns></returns>
+	[Description("@#getMinutes")]
 	public extern Number GetMinutes();
 
 	/// <summary>
 	/// Gets the minutes of a Date object using Universal Coordinated Time (UTC).
 	/// </summary>
 	/// <returns></returns>
+	[Description("@#getUTCMinutes")]
 	public extern Number GetUTCMinutes();
 
 	/// <summary>
 	/// Gets the seconds of a Date object, using local time.
 	/// </summary>
 	/// <returns></returns>
+	[Description("@#getSeconds")]
 	public extern Number GetSeconds();
 
 	/// <summary>
 	/// Gets the seconds of a Date object using Universal Coordinated Time (UTC).
 	/// </summary>
 	/// <returns></returns>
+	[Description("@#getUTCSeconds")]
 	public extern Number GetUTCSeconds();
 
 	/// <summary>
 	/// Gets the milliseconds of a Date, using local time.
 	/// </summary>
 	/// <returns></returns>
+	[Description("@#getMilliseconds")]
 	public extern Number GetMilliseconds();
 
 	/// <summary>
 	/// Gets the milliseconds of a Date object using Universal Coordinated Time (UTC).
 	/// </summary>
 	/// <returns></returns>
+	[Description("@#getUTCMilliseconds")]
 	public extern Number GetUTCMilliseconds();
 
 	/// <summary>
 	/// Gets the difference in minutes between Universal Coordinated Time (UTC) and the time on the local computer.
 	/// </summary>
 	/// <returns></returns>
+	[Description("@#getTimezoneOffset")]
 	public extern Number GetTimezoneOffset();
 
 	/// <summary>
@@ -177,6 +202,7 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	/// </summary>
 	/// <param name="time">A numeric value representing the number of elapsed milliseconds since midnight, January 1, 1970 GMT.</param>
 	/// <returns></returns>
+	[Description("@#setTime")]
 	public extern Number SetTime(Number time);
 
 	/// <summary>
@@ -184,6 +210,7 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	/// </summary>
 	/// <param name="ms">A numeric value equal to the millisecond value.</param>
 	/// <returns></returns>
+	[Description("@#setMilliseconds")]
 	public extern Number SetMilliseconds(Number ms);
 
 	/// <summary>
@@ -191,6 +218,7 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	/// </summary>
 	/// <param name="ms">A numeric value equal to the millisecond value.</param>
 	/// <returns></returns>
+	[Description("@#setUTCMilliseconds")]
 	public extern Number SetUTCMilliseconds(Number ms);
 
 	/// <summary>
@@ -199,6 +227,7 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	/// <param name="sec">A numeric value equal to the seconds value.</param>
 	/// <param name="ms">A numeric value equal to the milliseconds value.</param>
 	/// <returns></returns>
+	[Description("@#setSeconds")]
 	public extern Number SetSeconds(Number sec, Number? ms = default);
 
 	/// <summary>
@@ -207,6 +236,7 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	/// <param name="sec">A numeric value equal to the seconds value.</param>
 	/// <param name="ms">A numeric value equal to the milliseconds value.</param>
 	/// <returns></returns>
+	[Description("@#setUTCSeconds")]
 	public extern Number SetUTCSeconds(Number sec, Number? ms = default);
 
 	/// <summary>
@@ -216,6 +246,7 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	/// <param name="sec">A numeric value equal to the seconds value.</param>
 	/// <param name="ms">A numeric value equal to the milliseconds value.</param>
 	/// <returns></returns>
+	[Description("@#setMinutes")]
 	public extern Number SetMinutes(Number min, Number? sec = default, Number? ms = default);
 
 	/// <summary>
@@ -225,6 +256,7 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	/// <param name="sec">A numeric value equal to the seconds value.</param>
 	/// <param name="ms">A numeric value equal to the milliseconds value.</param>
 	/// <returns></returns>
+	[Description("@#setUTCMinutes")]
 	public extern Number SetUTCMinutes(Number min, Number? sec = default, Number? ms = default);
 
 	/// <summary>
@@ -235,6 +267,7 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	/// <param name="sec">A numeric value equal to the seconds value.</param>
 	/// <param name="ms">A numeric value equal to the milliseconds value.</param>
 	/// <returns></returns>
+	[Description("@#setHours")]
 	public extern Number SetHours(Number hours, Number? min = default, Number? sec = default, Number? ms = default);
 
 	/// <summary>
@@ -245,6 +278,7 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	/// <param name="sec">A numeric value equal to the seconds value.</param>
 	/// <param name="ms">A numeric value equal to the milliseconds value.</param>
 	/// <returns></returns>
+	[Description("@#setUTCHours")]
 	public extern Number SetUTCHours(Number hours, Number? min = default, Number? sec = default, Number? ms = default);
 
 	/// <summary>
@@ -252,6 +286,7 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	/// </summary>
 	/// <param name="date">A numeric value equal to the day of the month.</param>
 	/// <returns></returns>
+	[Description("@#setDate")]
 	public extern Number SetDate(Number date);
 
 	/// <summary>
@@ -259,6 +294,7 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	/// </summary>
 	/// <param name="date">A numeric value equal to the day of the month.</param>
 	/// <returns></returns>
+	[Description("@#setUTCDate")]
 	public extern Number SetUTCDate(Number date);
 
 	/// <summary>
@@ -267,6 +303,7 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	/// <param name="month">A numeric value equal to the month. The value for January is 0, and other month values follow consecutively.</param>
 	/// <param name="date">A numeric value representing the day of the month. If this value is not supplied, the value from a call to the getDate method is used.</param>
 	/// <returns></returns>
+	[Description("@#setMonth")]
 	public extern Number SetMonth(Number month, Number? date = default);
 
 	/// <summary>
@@ -275,6 +312,7 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	/// <param name="month">A numeric value equal to the month. The value for January is 0, and other month values follow consecutively.</param>
 	/// <param name="date">A numeric value representing the day of the month. If it is not supplied, the value from a call to the getUTCDate method is used.</param>
 	/// <returns></returns>
+	[Description("@#setUTCMonth")]
 	public extern Number SetUTCMonth(Number month, Number? date = default);
 
 	/// <summary>
@@ -284,6 +322,7 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	/// <param name="month">A zero-based numeric value for the month (0 for January, 11 for December). Must be specified if numDate is specified.</param>
 	/// <param name="date">A numeric value equal for the day of the month.</param>
 	/// <returns></returns>
+	[Description("@#setFullYear")]
 	public extern Number SetFullYear(Number year, Number? month = default, Number? date = default);
 
 	/// <summary>
@@ -293,12 +332,14 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	/// <param name="month">A numeric value equal to the month. The value for January is 0, and other month values follow consecutively. Must be supplied if numDate is supplied.</param>
 	/// <param name="date">A numeric value equal to the day of the month.</param>
 	/// <returns></returns>
+	[Description("@#setUTCFullYear")]
 	public extern Number SetUTCFullYear(Number year, Number? month = default, Number? date = default);
 
 	/// <summary>
 	/// Returns a date converted to a string using Universal Coordinated Time (UTC).
 	/// </summary>
 	/// <returns></returns>
+	[Description("@#toUTCString")]
 	public extern string ToUTCString();
 
 	/// <summary>
@@ -306,6 +347,7 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	/// </summary>
 	/// <returns></returns>
 	/// <exception cref="InvalidOperationException"></exception>
+	[Description("@#toISOString")]
 	public extern string ToISOString();
 
 	/// <summary>
@@ -313,6 +355,7 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	/// </summary>
 	/// <param name="key"></param>
 	/// <returns></returns>
+	[Description("@#toJSON")]
 	public extern string ToJSON(object? key = null);
 
 	/// <summary>
@@ -320,7 +363,8 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	/// </summary>
 	/// <param name="s">A date string</param>
 	/// <returns></returns>
-	public extern static Date Parse(string s);
+	[Description("@#parse")]
+	public extern static Number Parse(string s);
 
 	/// <summary>
 	/// Returns the number of milliseconds between midnight, January 1, 1970 Universal Coordinated Time (UTC) (or GMT) and the specified date.
@@ -333,6 +377,7 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	/// <param name="seconds">Must be supplied if milliseconds is supplied. A number from 0 to 59 that specifies the seconds.</param>
 	/// <param name="milliseconds">A number from 0 to 999 that specifies the milliseconds.</param>
 	/// <returns></returns>
+	[Description("@#UTC")]
 	public extern static Number UTC(Number year, Number monthIndex, Number? date = default, Number? hours = default, Number? minutes = default, Number? seconds = default, Number? milliseconds = default);
 
 	/// <summary>
@@ -348,6 +393,7 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	/// 
 	/// </summary>
 	/// <returns></returns>
+	[Description("@#now")]
 	public extern static Number NowTimestamp();
 
 	public extern static implicit operator Number(Date date);
@@ -412,6 +458,7 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	/// <param name="locales">A locale string or array of locale strings that contain one or more language or locale tags.If you include more than one locale string, list them in descending order of priority so that the first entry is the preferred locale.If you omit this parameter, the default locale of the JavaScript runtime is used.</param>
 	/// <param name="options">An object that contains one or more properties that specify comparison options.</param>
 	/// <returns></returns>
+	[Description("@#toLocaleString")]
 	public extern string ToLocaleString(string? locales = null, Intl.DateTimeFormatOptions? options = null);
 
 	/// <summary>
@@ -420,6 +467,7 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	/// <param name="locales">A locale string or array of locale strings that contain one or more language or locale tags.If you include more than one locale string, list them in descending order of priority so that the first entry is the preferred locale.If you omit this parameter, the default locale of the JavaScript runtime is used.</param>
 	/// <param name="options">An object that contains one or more properties that specify comparison options.</param>
 	/// <returns></returns>
+	[Description("@#toLocaleString")]
 	public extern string ToLocaleString(IEnumerable<string> locales, Intl.DateTimeFormatOptions? options = null);
 
 	/// <summary>
@@ -428,6 +476,7 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	/// <param name="locales">A locale string or array of locale strings that contain one or more language or locale tags.If you include more than one locale string, list them in descending order of priority so that the first entry is the preferred locale.If you omit this parameter, the default locale of the JavaScript runtime is used.</param>
 	/// <param name="options">An object that contains one or more properties that specify comparison options.</param>
 	/// <returns></returns>
+	[Description("@#toLocaleDateString")]
 	public extern string ToLocaleDateString(string? locales = null, Intl.DateTimeFormatOptions? options = null);
 
 	/// <summary>
@@ -436,6 +485,7 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	/// <param name="locales">A locale string or array of locale strings that contain one or more language or locale tags.If you include more than one locale string, list them in descending order of priority so that the first entry is the preferred locale.If you omit this parameter, the default locale of the JavaScript runtime is used.</param>
 	/// <param name="options">An object that contains one or more properties that specify comparison options.</param>
 	/// <returns></returns>
+	[Description("@#toLocaleDateString")]
 	public extern string ToLocaleDateString(IEnumerable<string> locales, Intl.DateTimeFormatOptions? options = null);
 
 	/// <summary>
@@ -444,6 +494,7 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	/// <param name="locales">A locale string or array of locale strings that contain one or more language or locale tags.If you include more than one locale string, list them in descending order of priority so that the first entry is the preferred locale.If you omit this parameter, the default locale of the JavaScript runtime is used.</param>
 	/// <param name="options">An object that contains one or more properties that specify comparison options.</param>
 	/// <returns></returns>
+	[Description("@#toLocaleTimeString")]
 	public extern string ToLocaleTimeString(string? locales = null, Intl.DateTimeFormatOptions? options = null);
 
 	/// <summary>
@@ -452,6 +503,7 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	/// <param name="locales">A locale string or array of locale strings that contain one or more language or locale tags.If you include more than one locale string, list them in descending order of priority so that the first entry is the preferred locale.If you omit this parameter, the default locale of the JavaScript runtime is used.</param>
 	/// <param name="options">An object that contains one or more properties that specify comparison options.</param>
 	/// <returns></returns>
+	[Description("@#toLocaleTimeString")]
 	public extern string ToLocaleTimeString(IEnumerable<string> locales, Intl.DateTimeFormatOptions? options = null);
 }
 

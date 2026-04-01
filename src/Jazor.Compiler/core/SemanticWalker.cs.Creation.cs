@@ -22,8 +22,16 @@ public partial class SemanticWalker
 			return HandleTransformationFailure<Expression>(operation, "Object creation type could not be translated to JavaScript.");
 
 		var arguments = new List<Expression>();
-		foreach (var arg in operation.Arguments)
-			Translate(arguments, arg.Value, argument);
+		for (var index = 0; index < operation.Arguments.Length; index++)
+		{
+			var arg = operation.Arguments[index];
+			var targetType = operation.Constructor?.Parameters.Length > index
+				? operation.Constructor.Parameters[index].Type
+				: arg.Parameter?.Type;
+			// 构造器参数同样属于 tuple 边界。
+			// 如果实参 tuple 的当前视图和形参 tuple 的目标视图不同，这里直接 remap。
+			arguments.Add(TranslateTupleForTarget(arg.Value, targetType, argument));
+		}
 
 
 
@@ -183,7 +191,10 @@ public partial class SemanticWalker
 				}
 				else
 				{
-					var right = Translate<Expression>(simpleAssignmentOp.Value, argument);
+					// 对象初始化器里的 tuple 成员赋值也走统一 remap 规则，
+					// 避免和普通赋值/参数传递出现不同的运行时 shape。
+					// 目标协议取成员的静态类型，而不是右值字面量自己的自然名字。
+					var right = TranslateTupleForTarget(simpleAssignmentOp.Value, simpleAssignmentOp.Target.Type, argument);
 
 					if (propertyReference?.Property.SetMethod is not null && propertyInstance is not null)
 					{
@@ -258,7 +269,7 @@ public partial class SemanticWalker
 				var arguments = new List<Expression>();
 				foreach (var arg in invocationOp.Arguments)
 				{
-					var argExpr = Translate<Expression>(arg.Value, argument);
+					var argExpr = TranslateTupleForTarget(arg.Value, arg.Parameter?.Type, argument);
 					arguments.Add(argExpr);
 				}
 

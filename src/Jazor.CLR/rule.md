@@ -66,7 +66,7 @@
 - `member`：完整的 C# 成员签名，用于白名单生成和哈希计算
 - `value`：
   - `Op.Alias`：JavaScript 方法名（如 `toString`）
-  - `Op.Inline`：内联代码模板（如 `(@#{0} === @#{1})`）
+  - `Op.Inline`：内联代码模板（如 `(__arg1 === __arg2)`）
   - 其他 Op 类型：通常不需要此参数
 
 **使用说明**：
@@ -164,7 +164,7 @@ public extern static string _d48c2d39317daf8f(bool instance);
 
 **占位符规则**：
 
-| 方法类型 | @#{0} | @#{1} | @#{2} |
+| 方法类型 | __arg1 | __arg2 | __arg3 |
 |----------|-------|-------|-------|
 | 实例方法 | 实例 | 参数1 | 参数2 |
 | 静态方法 | 参数1 | 参数2 | 参数3 |
@@ -172,7 +172,7 @@ public extern static string _d48c2d39317daf8f(bool instance);
 
 ```csharp
 // Equals → 严格相等
-[Jazor(Op.Inline, "override bool.Equals(object)", "(@#{0} === @#{1})")]
+[Jazor(Op.Inline, "override bool.Equals(object)", "(__arg1 === __arg2)")]
 public extern static bool _hash(bool instance, object? obj);
 
 // 静态字段 → 字面量
@@ -228,7 +228,7 @@ public static bool _5dbf54319ebc8dfe(string? value)
 | 特性 | Op.Inline | Op.Compile |
 |------|-----------|------------|
 | 处理时机 | 代码生成阶段 | 编译器内部处理 |
-| 占位符 | 支持 `@#{n}` | 由编译器决定 |
+| 占位符 | 使用 `__argN` | 由编译器决定 |
 | 适用场景 | 简单表达式替换 | 复杂逻辑、编译器内置处理 |
 
 ```csharp
@@ -817,7 +817,7 @@ public static class BooleanModule
 | 问题 | 原因 | 解决方案 |
 |------|------|----------|
 | 方法体未被编译到 CLR module | `extern` 方法只有白名单标记作用 | 只有 `Op.Import` 需要方法体，其他用 `extern` |
-| 占位符未替换 | `@#{n}` 格式错误 | 使用正确格式 `@#{0}`, `@#{1}` |
+| 占位符未替换 | `__argN` 格式错误 | 使用正确格式 `__arg1`, `__arg2` |
 | 返回值类型错误 | 使用泛型而非 `Array<object?>` | out/ref 方法必须返回 `Array<object?>` |
 | 循环引用 | Import 方法互相调用 | 避免模块间循环依赖 |
 | 类型映射错误 | 参数类型不正确 | 参考 GlobalUsings.cs 中的类型定义 |
@@ -839,7 +839,7 @@ public static class BooleanModule
 
 ### 12.2 占位符速查表
 
-| 方法类型 | @#{0} | @#{1} | @#{2} |
+| 方法类型 | __arg1 | __arg2 | __arg3 |
 |----------|-------|-------|-------|
 | 实例方法 | 实例 | 参数1 | 参数2 |
 | 静态方法 | 参数1 | 参数2 | 参数3 |
@@ -994,17 +994,17 @@ public static class ReadOnlyDictionaryModule<TKey, TValue> where TKey : notnull
 /// C#: char.IsAsciiLetter(c)
 /// JS: (c &gt;= 65 &amp;&amp; c &lt;= 90) || (c &gt;= 97 &amp;&amp; c &lt;= 122)
 /// </summary>
-[Jazor(Op.Inline, "static char.IsAsciiLetter(char)", "((@#{0} >= 65 && @#{0} <= 90) || (@#{0} >= 97 && @#{0} <= 122))")]
+[Jazor(Op.Inline, "static char.IsAsciiLetter(char)", "((__arg1 >= 65 && __arg1 <= 90) || (__arg1 >= 97 && __arg1 <= 122))")]
 public extern static bool _hash(Number c);
 ```
 
 **错误示例**（Jazor 特性值中错误使用 HTML 实体）：
 ```csharp
 // ❌ 错误：Jazor 特性值中使用了 HTML 实体
-[Jazor(Op.Inline, "static char.IsAsciiLetter(char)", "((@#{0} &gt;= 65 &amp;&amp; @#{0} &lt;= 90))")]
+[Jazor(Op.Inline, "static char.IsAsciiLetter(char)", "((__arg1 &gt;= 65 &amp;&amp; __arg1 &lt;= 90))")]
 
 // ✅ 正确：Jazor 特性值中使用实际的 JavaScript 字符
-[Jazor(Op.Inline, "static char.IsAsciiLetter(char)", "((@#{0} >= 65 && @#{0} <= 90))")]
+[Jazor(Op.Inline, "static char.IsAsciiLetter(char)", "((__arg1 >= 65 && __arg1 <= 90))")]
 ```
 
 **原因**：

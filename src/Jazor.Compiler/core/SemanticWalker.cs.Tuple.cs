@@ -16,6 +16,17 @@ public partial class SemanticWalker
 	/// var tuple = (x, y);         // 元组创建
 	/// (double Sum, int Count) t2 = (4.5, 3);// 命名元组创建
 	/// 转换结果：{ Item1: 1, Item2: "hello", Item3: true } 或 { Sum: 4.5, Count: 3 } （使用对象模拟）
+	/// <para/>
+	/// 这里仅负责“当前 tuple 视图”的字面量落地。当前编译器对 tuple 的 lowering 规则是：
+	/// 1. tuple 只是一层语法糖，解构/比较/swap 等语义一律按“位置”处理；
+	/// 2. 运行时不引入新的 tuple 类型，最终只落成普通对象；
+	/// 3. 对外对象 shape 由“当前静态视图名字”决定，命名 tuple 在业务上视为稳定协议；
+	/// 4. 只要 tuple 穿过边界后目标名字不同，就必须显式 remap，而不是直接透传。
+	/// <para/>
+	/// 换句话说：
+	/// - 位置负责语义等价
+	/// - 名字负责运行时协议
+	/// - remap 负责把两者衔接起来
 	/// </summary>
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
@@ -62,6 +73,182 @@ public partial class SemanticWalker
 		}
 
 		return new ObjectExpression(NodeList.From(nodes));		
+	}
+
+	/// <summary>
+	/// tuple 的运行时协议由“当前静态视图名字”决定。
+	/// 只要目标视图和源视图名字不同，就需要在边界上显式重映射，
+	/// 避免把 tuple 名字误当成可忽略的纯语法信息。
+	/// </summary>
+	private Expression? TryTranslateTupleConversion(IConversionOperation operation, SenseArgument argument)
+	{
+		if (operation.Type is not INamedTypeSymbol targetTupleType || !targetTupleType.IsTupleType ||
+			operation.Operand.Type is not INamedTypeSymbol sourceTupleType || !sourceTupleType.IsTupleType)
+			return null;
+
+		if (HasSameTupleRuntimeShape(sourceTupleType, targetTupleType))
+			return null;
+
+		return BuildTupleProjection(operation.Operand, sourceTupleType, targetTupleType, argument);
+	}
+
+	/// <summary>
+	/// tuple 在参数/赋值边界上按目标静态视图重映射。
+	/// 这里不依赖 Roslyn 是否显式插入 Conversion，只要目标类型是另一套 tuple 名字，就主动 lower 成新对象。
+	/// <para/>
+	/// 这个 helper 是 tuple 边界规则的统一入口：
+	/// - return / assignment / invocation / object creation / initializer
+	/// 都应该复用它，而不是各自直接 Translate(value)。
+	/// </summary>
+	private Expression TranslateTupleForTarget(IOperation source, ITypeSymbol? targetType, SenseArgument argument)
+	{
+		if (source.Type is INamedTypeSymbol sourceTupleType && sourceTupleType.IsTupleType &&
+			targetType is INamedTypeSymbol targetTupleType && targetTupleType.IsTupleType &&
+			!HasSameTupleRuntimeShape(sourceTupleType, targetTupleType))
+			return BuildTupleProjection(source, sourceTupleType, targetTupleType, argument);
+
+		return Translate<Expression>(source, argument);
+	}
+
+	/// <summary>
+	/// return 同样是 tuple 视图切换边界。
+	/// 这里直接从 SemanticModel 取当前位置所在的 enclosing symbol 返回类型，
+	/// 避免把 return source; 这类场景漏成直接透传。
+	/// </summary>
+	private static ITypeSymbol? GetTupleReturnTargetType(IReturnOperation operation)
+	{
+		return operation.SemanticModel?.GetEnclosingSymbol(operation.Syntax.SpanStart) is IMethodSymbol method
+			? method.ReturnType
+			: null;
+	}
+
+	/// <summary>
+	/// 判断 tuple 的运行时对象 shape 是否一致。
+	/// 只要任意一个槽位名字不同，就不能直接透传。
+	/// </summary>
+	private static bool HasSameTupleRuntimeShape(INamedTypeSymbol sourceType, INamedTypeSymbol targetType)
+	{
+		if (sourceType.TupleElements.Length != targetType.TupleElements.Length)
+			return false;
+
+		for (var index = 0; index < sourceType.TupleElements.Length; index++)
+		{
+			var sourceField = sourceType.TupleElements[index];
+			var targetField = targetType.TupleElements[index];
+			if (sourceField.Name != targetField.Name)
+				return false;
+
+			var sourceNested = sourceField.Type as INamedTypeSymbol;
+			var targetNested = targetField.Type as INamedTypeSymbol;
+			var isSourceNestedTuple = sourceNested?.IsTupleType == true;
+			var isTargetNestedTuple = targetNested?.IsTupleType == true;
+			if (isSourceNestedTuple != isTargetNestedTuple)
+				return false;
+
+			if (isSourceNestedTuple &&
+				!HasSameTupleRuntimeShape(sourceNested!, targetNested!))
+				return false;
+		}
+
+		return true;
+	}
+
+	/// <summary>
+	/// 按目标 tuple 视图重新构造对象。
+	/// 语义仍然按位置对应，但最终落地的 key 以目标视图名称为准。
+	/// <para/>
+	/// 例如：
+	/// (name, age) -> (first, years)
+	/// 会 lower 成 { first: source.name, years: source.age }，
+	/// 而不是把原对象直接赋给目标变量。
+	/// </summary>
+	private Expression BuildTupleProjection(
+		object source,
+		INamedTypeSymbol sourceType,
+		INamedTypeSymbol targetType,
+		SenseArgument argument)
+	{
+		ITupleOperation? tupleLiteral = source as ITupleOperation;
+		Expression? sourceExpression = null;
+		if (tupleLiteral is null)
+		{
+			if (source is IOperation sourceOperation)
+			{
+				if (ShouldCacheTupleSource(sourceOperation))
+				{
+					var tempId = new Identifier(GetUniqueName(sourceOperation));
+					var init = Translate<Expression>(sourceOperation, argument);
+					var declarator = new VariableDeclarator(tempId, init);
+					argument.AddVarDeclarator(declarator, _recursionDepth);
+					sourceExpression = tempId;
+				}
+				else
+				{
+					sourceExpression = Translate<Expression>(sourceOperation, argument);
+				}
+			}
+			else if (source is Expression expression)
+			{
+				sourceExpression = expression;
+			}
+		}
+
+		var properties = new List<Node>();
+		for (var index = 0; index < targetType.TupleElements.Length; index++)
+		{
+			var sourceField = sourceType.TupleElements[index];
+			var targetField = targetType.TupleElements[index];
+			Expression value;
+			if (sourceField.Type is INamedTypeSymbol nestedSourceType && nestedSourceType.IsTupleType &&
+				targetField.Type is INamedTypeSymbol nestedTargetType && nestedTargetType.IsTupleType)
+			{
+				var nestedSource = tupleLiteral is not null
+					? (object)tupleLiteral.Elements[index]
+					: new MemberExpression(sourceExpression!, new Identifier(sourceField.Name), false, false);
+				value = BuildTupleProjection(nestedSource, nestedSourceType, nestedTargetType, argument);
+			}
+			else if (tupleLiteral is not null)
+			{
+				value = Translate<Expression>(tupleLiteral.Elements[index], argument);
+			}
+			else
+			{
+				value = new MemberExpression(sourceExpression!, new Identifier(sourceField.Name), false, false);
+			}
+
+			properties.Add(new ObjectProperty(
+				PropertyKind.Init,
+				key: new Identifier(targetField.Name),
+				value: value,
+				computed: false,
+				shorthand: false,
+				method: false));
+		}
+
+		return new ObjectExpression(NodeList.From(properties));
+	}
+
+	/// <summary>
+	/// tuple lowering 会多次读取同一个源值的不同槽位。
+	/// 复杂表达式必须先缓存，否则会改变 getter/调用的求值次数。
+	/// <para/>
+	/// 例如：
+	/// - ((int,int))GetTuple()
+	/// - SomePropertyReturningTuple
+	/// 都不能在 remap / compare / deconstruct 中被重复求值。
+	/// </summary>
+	private static bool ShouldCacheTupleSource(IOperation operation)
+	{
+		return operation switch
+		{
+			ITupleOperation => false,
+			ILocalReferenceOperation => false,
+			IParameterReferenceOperation => false,
+			IFieldReferenceOperation => false,
+			IInstanceReferenceOperation => false,
+			IConversionOperation { Operand: ITupleOperation } => false,
+			_ => true
+		};
 	}
 
 	/// <summary>
@@ -120,6 +307,8 @@ public partial class SemanticWalker
 		/// <returns>字段值表达式，失败返回 null</returns>
 		Expression? GetTupleFieldValue(object value, string fieldName, int index, Identifier? tempVar, SenseArgument argument)
 		{
+			if (tempVar is not null)
+				return new MemberExpression(tempVar, new Identifier(fieldName), false, false);
 			if (value is ILocalReferenceOperation localRef)
 			{
 				var obj = new Identifier(localRef.Local.Name);
@@ -131,13 +320,10 @@ public partial class SemanticWalker
 			{
 				return Translate<Expression>(conversionTuple.Elements[index], argument);
 			}
-			if (value is IInvocationOperation && tempVar is not null)
-			{
-				return new MemberExpression(tempVar, new Identifier(fieldName), false, false);
-			}
 			if (value is IOperation op)
 			{
-				return Translate<Expression>(op, argument);
+				var tupleExpr = Translate<Expression>(op, argument);
+				return new MemberExpression(tupleExpr, new Identifier(fieldName), false, false);
 			}
 			if (value is Expression expr)
 			{
@@ -146,29 +332,105 @@ public partial class SemanticWalker
 			return null;
 		}
 
-		void Deconstruct(IOperation target, ITypeSymbol valueType, object value, List<Expression> exprs)
+		static void CollectTargetLocals(IOperation target, HashSet<ILocalSymbol> locals)
+		{
+			switch (target)
+			{
+				case ILocalReferenceOperation localRef:
+					locals.Add(localRef.Local);
+					break;
+				case IDeclarationExpressionOperation declarationExpr:
+					CollectTargetLocals(declarationExpr.Expression, locals);
+					break;
+				case ITupleOperation tupleTarget:
+					foreach (var tupleElement in tupleTarget.Elements)
+						CollectTargetLocals(tupleElement, locals);
+					break;
+			}
+		}
+
+		static bool ReferencesTargetLocal(IOperation operation, HashSet<ILocalSymbol> locals)
+		{
+			if (operation is ILocalReferenceOperation localRef &&
+				locals.Contains(localRef.Local))
+				return true;
+
+			foreach (var child in operation.ChildOperations)
+			{
+				if (ReferencesTargetLocal(child, locals))
+					return true;
+			}
+
+			return false;
+		}
+
+		static bool ShouldCacheTupleField(object value, int index, HashSet<ILocalSymbol> targetLocals)
+		{
+			if (targetLocals.Count == 0)
+				return false;
+
+			return value switch
+			{
+				ITupleOperation tupleOp => ReferencesTargetLocal(tupleOp.Elements[index], targetLocals),
+				IConversionOperation { Operand: ITupleOperation conversionTuple } => ReferencesTargetLocal(conversionTuple.Elements[index], targetLocals),
+				_ => false
+			};
+		}
+
+		void Deconstruct(IOperation target, ITypeSymbol valueType, object value, List<Expression> exprs, bool declareTargets = false)
 		{
 			if (valueType.IsTupleType && target is ITupleOperation or IDeclarationExpressionOperation)
 			{
 				ITupleOperation tupleTarget;
-				bool isDeclarationExpr = false;
 				if (target is IDeclarationExpressionOperation declarationExpressionOp)
 				{
-					isDeclarationExpr = true;
+					declareTargets = true;
 					tupleTarget = (ITupleOperation)declarationExpressionOp.Expression;
 				}
 				else
 					tupleTarget = (ITupleOperation)target;
 
+				var targetLocals = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
+				CollectTargetLocals(tupleTarget, targetLocals);
+
 				Identifier? tempVar = null;
-				if (value is IInvocationOperation invocation)
+				if (value is IOperation valueOperation && ShouldCacheTupleSource(valueOperation))
 				{
-					// 如果是方法调用，先创建临时变量存放方法的值
-					tempVar = new Identifier(GetUniqueName(invocation));
-					var init = Translate<Expression>(invocation, argument);
+					// 复杂源值先整体缓存，再按字段读取。
+					// 这样 deconstruct 仍按位置展开，但不会重复求值。
+					tempVar = new Identifier(GetUniqueName(valueOperation));
+					var init = Translate<Expression>(valueOperation, argument);
 					var declarator = new VariableDeclarator(tempVar, null);
 					argument.AddVarDeclarator(declarator, _recursionDepth);
 					exprs.Add(new AssignmentExpression(Operator.Assignment, tempVar, init));
+				}
+
+				var cachedValues = new Expression?[tupleTarget.Elements.Length];
+				for (var index = 0; index < tupleTarget.Elements.Length; index++)
+				{
+					var element = tupleTarget.Elements[index];
+					var field = ((INamedTypeSymbol)valueType).TupleElements[index];
+
+					if (element is IDiscardOperation)
+						continue;
+
+					var fieldValue = GetTupleFieldValue(value, field.Name, index, tempVar, argument);
+					if (fieldValue is null)
+					{
+						HandleTransformationFailure<Node>(target, $"The {target.Kind} operation is not supported in DeconstructionAssignment.");
+						return;
+					}
+
+					if (ShouldCacheTupleField(value, index, targetLocals))
+					{
+						var cacheId = new Identifier(GetUniqueName(target, $"tuple{index}"));
+						var cacheDecl = new VariableDeclarator(cacheId, null);
+						argument.AddVarDeclarator(cacheDecl, _recursionDepth);
+						exprs.Add(new AssignmentExpression(Operator.Assignment, cacheId, fieldValue));
+						cachedValues[index] = cacheId;
+					}
+					else
+						cachedValues[index] = fieldValue;
 				}
 
 				// 遍历元组元素进行解构
@@ -177,56 +439,31 @@ public partial class SemanticWalker
 					var element = tupleTarget.Elements[index];
 					var field = ((INamedTypeSymbol)valueType).TupleElements[index];
 
-					// 跳过丢弃操作
 					if (element is IDiscardOperation)
 						continue;
 
-					// 处理声明表达式（新变量声明）
-					if (isDeclarationExpr || element is IDeclarationExpressionOperation)
+					var right = cachedValues[index];
+					if (right is null)
 					{
-						var init = GetTupleFieldValue(value, field.Name, index, tempVar, argument);
-						if (init is null)
-						{
-							HandleTransformationFailure<Node>(target, $"The {target.Kind} operation is not supported in DeconstructionAssignment.");
-							return;
-						}
+						HandleTransformationFailure<Node>(target, $"The {target.Kind} operation is not supported in DeconstructionAssignment.");
+						return;
+					}
 
+					if (field.Type.IsTupleType)
+					{
+						Deconstruct(element, field.Type, right, exprs, declareTargets);
+					}
+					else if (declareTargets || element is IDeclarationExpressionOperation)
+					{
 						var id = Translate<Node>(element, argument);
 						var declarator = new VariableDeclarator(id, null);
 						argument.AddVarDeclarator(declarator, _recursionDepth);
-						exprs.Add(new AssignmentExpression(Operator.Assignment, id, init));
+						exprs.Add(new AssignmentExpression(Operator.Assignment, id, right));
 					}
-					// 处理已有变量引用
-					else if (!isDeclarationExpr && element is ILocalReferenceOperation localRef)
+					else if (element is ILocalReferenceOperation localRef)
 					{
-						var right = GetTupleFieldValue(value, field.Name, index, tempVar, argument);
-						if (right is null)
-						{
-							HandleTransformationFailure<Node>(target, $"The {target.Kind} operation is not supported in DeconstructionAssignment.");
-							return;
-						}
-
 						var left = Translate<Node>(localRef, argument);
 						exprs.Add(new AssignmentExpression(Operator.Assignment, left, right));
-					}
-					// 处理嵌套元组
-					else if (field.Type.IsTupleType)
-					{
-						if (value is IConversionOperation conversion && conversion.Operand is ITupleOperation conversionTuple)
-						{
-							var subValue = conversionTuple.Elements[index];
-							Deconstruct(element, subValue.Type!, subValue, exprs);
-						}
-						else
-						{
-							var subValue = GetTupleFieldValue(value, field.Name, index, tempVar, argument);
-							if (subValue is null)
-							{
-								HandleTransformationFailure<Node>(element, $"The {element.Kind} operation is not supported in DeconstructionAssignment.");
-								return;
-							}
-							Deconstruct(element, field.Type, subValue, exprs);
-						}
 					}
 					else
 					{
@@ -434,19 +671,21 @@ public partial class SemanticWalker
 	/// </summary>
 	private TupleOperandResult ProcessTupleOperand(object target, SenseArgument argument)
 	{
-		if (target is IInvocationOperation invocation)
-		{
-			// 方法调用需要创建临时变量
-			var id = new Identifier(GetUniqueName(invocation));
-			var init = Translate<Expression>(invocation, argument);
-			var declarator = new VariableDeclarator(id, init);
-			argument.AddVarDeclarator(declarator, _recursionDepth);
-			return new TupleOperandResult(id, null);
-		}
 		if (target is ITupleOperation tuple)
 			return new TupleOperandResult(null, tuple);
 		if (target is IOperation op)
+		{
+			if (ShouldCacheTupleSource(op))
+			{
+				var id = new Identifier(GetUniqueName(op));
+				var init = Translate<Expression>(op, argument);
+				var declarator = new VariableDeclarator(id, init);
+				argument.AddVarDeclarator(declarator, _recursionDepth);
+				return new TupleOperandResult(id, null);
+			}
+
 			return new TupleOperandResult(Translate<Expression>(op, argument), null);
+		}
 		if (target is Expression expr)
 			return new TupleOperandResult(expr, null);
 

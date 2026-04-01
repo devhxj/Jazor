@@ -463,16 +463,19 @@
 
 ```bash
 # 运行所有测试
-dotnet test
+pwsh ./scripts/test-dotnet.ps1
 
 # 运行特定测试项目
-dotnet test src/Jazor.CompilerTest
+dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj
+
+# 运行 emit/bundle 测试
+dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj
 
 # 运行单个测试类
-dotnet test --filter "SemanticWalkerPatternTest"
+dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticWalkerPatternTest"
 
 # 运行单个测试方法
-dotnet test --filter "SemanticWalkerPatternTest.Visit_IsPattern_Constant"
+dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticWalkerPatternTest.Visit_IsPattern_Constant"
 
 # 生成测试覆盖率报告
 dotnet test --collect:"XPlat Code Coverage"

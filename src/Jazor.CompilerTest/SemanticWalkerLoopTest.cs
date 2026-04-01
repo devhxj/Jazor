@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
+using System.Text.RegularExpressions;
 
 namespace Jazor.ComplierTest;
 
@@ -2319,7 +2320,10 @@ AssertScriptEqual(@"{
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "for (let i = 0; i < 10; i++)");
+    StringAssert.Contains(script, "let j = i++;");
+    StringAssert.Contains(script, "let k = ++i;");
+    StringAssert.Contains(script, "console.log(j + \" \" + k);");
   }
 
   /// <summary>
@@ -2386,7 +2390,14 @@ AssertScriptEqual(@"{
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.IsNotNull(script);
+    Assert.AreEqual(@"{
+  for (let i = 0; i < 5; i++) {
+    let result, v$0;
+    if (v$0 = _16e2a901535b765e(""123"", result), result = v$0[1], v$0[0]) {
+      console.log(result);
+    }
+  }
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
   }
 
   #endregion

@@ -1562,7 +1562,6 @@ catch (ex) {
         var node = walker.VisitTry(tryOp, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
         Assert.IsTrue(Regex.IsMatch(script, """
 ^try \{
   result = 1;
@@ -1727,9 +1726,8 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "console.log(\"Format error\")");
         Assert.IsTrue(Regex.IsMatch(script, """_[a-f0-9]+\("abc"\)"""));
-        Assert.IsTrue(script.Contains("""console.log("Format error")"""));
         Assert.IsTrue(script.Contains("catch"));
     }
 
@@ -1761,8 +1759,8 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        // 当前仅验证 checked + OverflowException 的代码路径可完成转换
-        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "console.log(\"Overflow\")");
+        Assert.IsTrue(script.Contains("catch"));
     }
 
     #endregion
@@ -2326,7 +2324,10 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "console.log(\"inner\")");
+        StringAssert.Contains(script, "console.log(\"inner finally\")");
+        StringAssert.Contains(script, "console.log(\"outer finally\")");
+        Assert.IsTrue(Regex.Matches(script!, @"finally \{").Count >= 2);
     }
 
     /// <summary>
@@ -2356,7 +2357,10 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "throw new Error(\"test\")");
+        StringAssert.Contains(script, "ex.message.includes(\"test\")");
+        StringAssert.Contains(script, "console.log(\"caught test exception\")");
+        Assert.IsTrue(script.Contains("if (") || script.Contains("catch"));
     }
 
     /// <summary>
@@ -2390,7 +2394,10 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "throw new ArgumentException(\"test\")");
+        StringAssert.Contains(script, "console.log(\"argument exception\")");
+        StringAssert.Contains(script, "console.log(\"general exception\")");
+        Assert.IsTrue(script.Contains("if (") || script.Contains("else if"));
     }
 
     /// <summary>
@@ -2458,7 +2465,15 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
+        AssertScriptEqual(
+@"{
+  try {
+    throw new Error(""error message"");
+  } catch (ex) {
+    let msg = ex.message;
+    let stack = ex.stack;
+  }
+}", script);
     }
 
     /// <summary>
@@ -2488,7 +2503,13 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "try {");
+        StringAssert.Contains(script, "return 1;");
+        StringAssert.Contains(script, "finally {");
+        StringAssert.Contains(script, "console.log(\"finally\")");
+        Assert.IsTrue(
+            script.IndexOf("return 1;", StringComparison.Ordinal) <
+            script.IndexOf("finally {", StringComparison.Ordinal));
     }
 
     /// <summary>
@@ -2520,7 +2541,9 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "throw new Error(\"test\")");
+        StringAssert.Contains(script, "catch (ex)");
+        StringAssert.Contains(script, "this.LogError(ex);");
     }
 
     /// <summary>
@@ -2553,7 +2576,11 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "try {");
+        StringAssert.Contains(script, "for (let i = 0; i < 10; i++)");
+        StringAssert.Contains(script, "console.log(i)");
+        StringAssert.Contains(script, "catch {");
+        StringAssert.Contains(script, "console.log(\"error\")");
     }
 
     /// <summary>
@@ -2586,7 +2613,11 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "try {");
+        StringAssert.Contains(script, "if (flag)");
+        StringAssert.Contains(script, "console.log(\"flag is true\")");
+        StringAssert.Contains(script, "catch {");
+        StringAssert.Contains(script, "console.log(\"error\")");
     }
 
     /// <summary>
@@ -2610,7 +2641,8 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "let ex = new Error(\"test\");");
+        StringAssert.Contains(script, "throw ex;");
     }
 
     /// <summary>
@@ -2636,7 +2668,8 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
+        Assert.IsTrue(script!.Contains("if (value === null)") || script.Contains("if (value == null)"));
+        StringAssert.Contains(script, "throw new TypeError('value')");
     }
 
     /// <summary>
@@ -2670,7 +2703,9 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "console.log(\"invalid operation\")");
+        StringAssert.Contains(script, "console.log(\"other exception\")");
+        Assert.IsTrue(script.Contains("if (") || script.Contains("catch ("));
     }
 
     /// <summary>
@@ -2733,7 +2768,10 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "try {");
+        StringAssert.Contains(script, "this.DoSomething();");
+        StringAssert.Contains(script, "catch (ex)");
+        StringAssert.Contains(script, "throw new Error(\"Wrapped\", ex)");
     }
 
     /// <summary>
@@ -2770,7 +2808,12 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "try {");
+        StringAssert.Contains(script, "console.log(\"try\")");
+        StringAssert.Contains(script, "finally {");
+        StringAssert.Contains(script, "console.log(\"finally try\")");
+        StringAssert.Contains(script, "console.log(\"finally catch\")");
+        Assert.IsTrue(script.Contains("catch {") || script.Contains("catch ("));
     }
 
     #endregion

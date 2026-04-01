@@ -310,7 +310,7 @@ public static class StringModule
 	{
 		if (index < 0 || index >= instance.Length)
 			throw new Error("IndexOutOfRangeException: index is out of range.");
-		return instance[index];
+		return instance[index].ToString();
 	}
 
 	/// <summary>

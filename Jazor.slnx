@@ -1,0 +1,26 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="src/ECMAScript.WebIDL.Generator/ECMAScript.WebIDL.Generator.csproj" />
+  <Project Path="src/ECMAScript.WebIDL.GeneratorTest/ECMAScript.WebIDL.GeneratorTest.csproj" />
+  <Project Path="src/ECMAScript.WebIDL/ECMAScript.WebIDL.esproj">
+    <Build Solution="*|Any CPU" />
+    <Deploy Solution="*|Any CPU" />
+  </Project>
+  <Project Path="src/ECMAScript/ECMAScript.csproj" />
+  <Project Path="src/Jazor.Analyzer/Jazor.Analyzer.csproj" />
+  <Project Path="src/Jazor.CLR.Generator/Jazor.CLR.Generator.csproj" />
+  <Project Path="src/Jazor.CLR/Jazor.CLR.csproj" />
+  <Project Path="src/Jazor.Common/Jazor.Common.csproj" />
+  <Project Path="src/Jazor.Compiler.Generator/Jazor.Compiler.Generator.csproj" />
+  <Project Path="src/Jazor.Compiler/Jazor.Compiler.csproj" />
+  <Project Path="src/Jazor.CompilerTest/Jazor.CompilerTest.csproj" />
+  <Project Path="src/Jazor.Emit/Jazor.Emit.csproj" />
+  <Project Path="src/Jazor.EmitTest/Jazor.EmitTest.csproj" />
+  <Project Path="src/Jazor.Name/Jazor.Name.csproj" />
+  <Project Path="src/Jazor/Jazor.csproj" />
+  <Project Path="src/Jazor.Test/Jazor.Test.csproj" />
+</Solution>

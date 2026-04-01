@@ -107,6 +107,7 @@ public readonly struct Number : IEquatable<Number>, IComparable, IComparable<Num
 	/// </summary>
 	/// <param name="radix">Specifies a radix for converting numeric values to strings.This value is only used for numbers.</param>
 	/// <returns></returns>
+	[Description("@#toString")]
 	public extern string Tostring(Number? radix);
 
 	/// <summary>
@@ -114,6 +115,7 @@ public readonly struct Number : IEquatable<Number>, IComparable, IComparable<Num
 	/// </summary>
 	/// <param name="fractionDigits">Number of digits after the decimal point.Must be in the range 0 - 20, inclusive.</param>
 	/// <returns></returns>
+	[Description("@#toFixed")]
 	public extern string ToFixed(Number? fractionDigits = null);
 
 	/// <summary>
@@ -121,6 +123,7 @@ public readonly struct Number : IEquatable<Number>, IComparable, IComparable<Num
 	/// </summary>
 	/// <param name="fractionDigits">Number of digits after the decimal point. Must be in the range 0 - 20, inclusive.</param>
 	/// <returns></returns>
+	[Description("@#toExponential")]
 	public extern string ToExponential(Number? fractionDigits = null);
 
 	/// <summary>
@@ -128,14 +131,17 @@ public readonly struct Number : IEquatable<Number>, IComparable, IComparable<Num
 	/// </summary>
 	/// <param name="precision">Number of significant digits.Must be in the range 1 - 21, inclusive.</param>
 	/// <returns></returns>
+	[Description("@#toPrecision")]
 	public extern string ToPrecision(Number? precision = null);
 
 	/// <summary>
 	/// Returns the primitive value of the specified object.
 	/// </summary>
 	/// <returns></returns>
+	[Description("@#valueOf")]
 	public extern Number ValueOf();
 
+	[Description("@#prototype")]
 	public extern static Number Prototype { get; }
 
 	/// <summary>
@@ -183,6 +189,7 @@ public readonly struct Number : IEquatable<Number>, IComparable, IComparable<Num
 	/// <param name="locales">A locale string or array of locale strings that contain one or more language or locale tags.If you include more than one locale string, list them in descending order of priority so that the first entry is the preferred locale.If you omit this parameter, the default locale of the JavaScript runtime is used.</param>
 	/// <param name="options">An object that contains one or more properties that specify comparison options.</param>
 	/// <returns></returns>
+	[Description("@#toLocaleString")]
 	public extern string ToLocalestring(string? locales, Intl.NumberFormatOptions? options = null);
 
 	/// <summary>
@@ -191,10 +198,13 @@ public readonly struct Number : IEquatable<Number>, IComparable, IComparable<Num
 	/// <param name="locales">A locale string or array of locale strings that contain one or more language or locale tags.If you include more than one locale string, list them in descending order of priority so that the first entry is the preferred locale.If you omit this parameter, the default locale of the JavaScript runtime is used.</param>
 	/// <param name="options">An object that contains one or more properties that specify comparison options.</param>
 	/// <returns></returns>
+	[Description("@#toLocaleString")]
 	public extern string ToLocalestring(string[]? locales, Intl.NumberFormatOptions? options = null);
 
+	[Description("@#toString")]
 	public extern string Tostring();
 
+	[Description("@#isInteger")]
 	public extern static bool IsInteger(object? value);
 
 	internal bool IsNaN { get; }

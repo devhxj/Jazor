@@ -3,6 +3,7 @@ using Acornima.Ast;
 using Jazor.Common;
 using Jazor.Name;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using System.Collections.Generic;
 using System.Linq;
@@ -63,15 +64,32 @@ public partial class SemanticWalker
 		// 再取特性配置
 		if (string.IsNullOrEmpty(name))
 		{
-			// 注意 name 为空字符串表示跳过名称，只有为null时才使用symbol name
-			name = Util.GetSymbolConfigName(symbol);
-			name ??= symbol.Name;
+			if (Util.HasNameResolutionBoundary(symbol))
+				return null;
+
+			name = Util.GetSymbolConfigName(symbol) ?? symbol.Name;
 		}
 
 		return name;
 	}
 
-	private Expression? BuildFullTypeName(ITypeSymbol symbol)
+	private static string? GetModuleImportPath(ITypeSymbol symbol)
+	{
+		foreach (var attribute in symbol.GetAttributes())
+		{
+			if (attribute.AttributeClass?.ToDisplayString() != "ECMAScript.ECMAScriptModuleAttribute")
+				continue;
+
+			if (attribute.ConstructorArguments.Length == 1 &&
+				attribute.ConstructorArguments[0].Value is string importPath &&
+				!string.IsNullOrWhiteSpace(importPath))
+				return importPath;
+		}
+
+		return null;
+	}
+
+	private Expression? BuildFullTypeName(ITypeSymbol symbol, SenseArgument? context = null)
 	{
 		var queue = new Stack<string>();
 		var type = symbol;
@@ -81,15 +99,23 @@ public partial class SemanticWalker
 				SymbolEqualityComparer.Default.Equals(type, _moduleRootType))
 				break;
 
-			// module 入口类截止
-			if (type.GetAttributes().Any(x => x.AttributeClass?.Name == "ECMASCriptModule"))
-				break;
-
 			var name = GetTypeConfigOrWhiteListName(type);
 			if (string.IsNullOrEmpty(name))
 				break;
-			else
+
+			var modulePath = GetModuleImportPath(type);
+			if (!string.IsNullOrEmpty(modulePath))
+			{
+				if (_moduleRootType is null || !SymbolEqualityComparer.Default.Equals(type, _moduleRootType))
+				{
+					context?.MergeImportSpecifier(modulePath!, new ImportSpecifier(new Identifier(name!)));
+				}
+
 				queue.Push(name!);
+				break;
+			}
+
+			queue.Push(name!);
 
 			type = SymbolEqualityComparer.Default.Equals(type, symbol.ContainingType)
 				? null : symbol.ContainingType;
@@ -108,8 +134,64 @@ public partial class SemanticWalker
 		return expr;
 	}
 
+	private Expression? TryBuildStaticQualifiedMemberFromSyntax(SyntaxNode syntax, string memberName)
+	{
+		ExpressionSyntax? targetSyntax = syntax switch
+		{
+			InvocationExpressionSyntax invocation when invocation.Expression is MemberAccessExpressionSyntax memberAccess => memberAccess.Expression,
+			MemberAccessExpressionSyntax memberAccess => memberAccess.Expression,
+			_ => null
+		};
+
+		if (targetSyntax is null)
+			return null;
+
+		var target = ConvertFromSyntaxNode(targetSyntax) as Expression;
+		if (target is null)
+			return null;
+
+		return new MemberExpression(target, new Identifier(memberName), computed: false, optional: false);
+	}
+
+	private bool TryBuildImportedModuleMember(ITypeSymbol? containingType, string memberName, SenseArgument? context, out Expression? expression)
+	{
+		expression = null;
+		if (containingType is null)
+			return false;
+
+		var modulePath = GetModuleImportPath(containingType);
+		if (string.IsNullOrWhiteSpace(modulePath))
+			return false;
+
+		if (_moduleRootType is not null &&
+			SymbolEqualityComparer.Default.Equals(containingType, _moduleRootType))
+			return false;
+
+		context?.MergeImportSpecifier(modulePath!, new ImportSpecifier(new Identifier(memberName)));
+		expression = new Identifier(memberName);
+		return true;
+	}
+
+	private bool TryBuildImportedModulePropertyAccess(IPropertySymbol property, SenseArgument? context, out Expression? expression)
+	{
+		expression = null;
+		if (!property.IsStatic || property.GetMethod is null)
+			return false;
+
+		var getterName = GetMethodConfigOrWhiteListName(property.GetMethod);
+		if (!TryBuildImportedModuleMember(property.ContainingType, getterName, context, out var getter) ||
+			getter is null)
+			return false;
+
+		expression = new CallExpression(getter, NodeList.Empty<Expression>(), optional: false);
+		return true;
+	}
+
 	private Expression GetFieldName(IOperation includeOp, IFieldSymbol symbol)
 	{
+		if (TryBuildECMAScriptEnumLiteral(symbol, out var enumLiteral))
+			return enumLiteral;
+
 		// 检查是否是特殊常量字段（如 double.PositiveInfinity, double.NaN 等）
 		if (symbol.ContainingType is not null && symbol.IsConst)
 		{
@@ -172,6 +254,22 @@ public partial class SemanticWalker
 		return new Identifier(Util.GetConfigOrSymbolName(symbol));
 	}
 
+	private static bool TryBuildECMAScriptEnumLiteral(IFieldSymbol symbol, out Expression expression)
+	{
+		expression = null!;
+		if (!symbol.HasConstantValue ||
+			symbol.ContainingType?.TypeKind != TypeKind.Enum ||
+			symbol.ContainingAssembly?.Name != "ECMAScript")
+			return false;
+
+		var alias = Util.GetSymbolConfigName(symbol);
+		if (string.IsNullOrEmpty(alias))
+			return false;
+
+		expression = new StringLiteral(alias!, $"\"{alias!.Replace("\\", "\\\\").Replace("\"", "\\\"")}\"");
+		return true;
+	}
+
 	private static bool IsDateLikeType(ITypeSymbol? type)
 	{
 		if (type is null)
@@ -179,7 +277,7 @@ public partial class SemanticWalker
 
 		var displayName = type.OriginalDefinition.ToDisplayString(Format.NameFormat);
 		return type.SpecialType == SpecialType.System_DateTime ||
-			displayName is "System.DateOnly" or "System.DateTimeOffset";
+			displayName == "System.DateOnly";
 	}
 
 	private static bool ShouldInvokeAliasedPropertyGetter(IPropertyReferenceOperation operation, string alias)
@@ -526,10 +624,6 @@ public partial class SemanticWalker
 		if (mapperExpr is not null)
 			return mapperExpr;
 
-		// 对于静态常量字段（无实例），GetFieldName 返回的是常量表达式
-		if (operation.Instance is null)
-			return GetFieldName(operation, operation.Field);
-
 		// 对于实例字段访问，需要创建成员访问表达式
 		// ImplicitReceiver 指那些语法上不需要、也不能写 this 的隐式实例引用
 		if (operation.Instance is IInstanceReferenceOperation instanceReferenceOp &&
@@ -557,12 +651,25 @@ public partial class SemanticWalker
 		// public 静态类带[ECMAScriptModule]是模块类
 		if (operation.Field.IsStatic && operation.Field.ContainingType is not null)
 		{
-			var containing = BuildFullTypeName(operation.Field.ContainingType);
+			if (TryBuildImportedModuleMember(operation.Field.ContainingType, fieldName!, argument, out var importedMember) &&
+				importedMember is not null)
+				return importedMember;
+
+			if (operation.Field.IsConst)
+				return GetFieldName(operation, operation.Field);
+
+			var containing = BuildFullTypeName(operation.Field.ContainingType, argument);
 			if (containing is not null)
 				return new MemberExpression(containing, property, computed: false, optional: false);
+
+			var qualified = TryBuildStaticQualifiedMemberFromSyntax(operation.Syntax, fieldName!);
+			if (qualified is not null)
+				return qualified;
 		}
 
-		return property;
+		return operation.Instance is null
+			? GetFieldName(operation, operation.Field)
+			: property;
 	}
 
 	/// <summary>
@@ -614,8 +721,12 @@ public partial class SemanticWalker
 		// 检查属性是否是静态成员
 		if (operation.Property.IsStatic && operation.Property.ContainingType is not null)
 		{
+			if (TryBuildImportedModulePropertyAccess(operation.Property, argument, out var importedProperty) &&
+				importedProperty is not null)
+				return importedProperty;
+
 			// 生成类型标识符作为对象
-			var containing = BuildFullTypeName(operation.Property.ContainingType);
+			var containing = BuildFullTypeName(operation.Property.ContainingType, argument);
 			if (containing is not null)
 				return new MemberExpression(containing, property, computed: false, optional: false);
 		}
@@ -666,9 +777,21 @@ public partial class SemanticWalker
 		{
 			if (operation.Method.IsStatic)
 			{
-				var containing = BuildFullTypeName(operation.Method.ContainingType);
+				if (TryBuildImportedModuleMember(operation.Method.ContainingType, methodName!, argument, out var importedMethod) &&
+					importedMethod is not null)
+					callee = importedMethod;
+				else
+				{
+				var containing = BuildFullTypeName(operation.Method.ContainingType, argument);
 				if (containing is not null)
 					callee = new MemberExpression(containing, property, computed: false, optional: false);
+				else
+				{
+					var qualified = TryBuildStaticQualifiedMemberFromSyntax(operation.Syntax, methodName!);
+					if (qualified is not null)
+						callee = qualified;
+				}
+				}
 			}
 		}
 		else
@@ -737,7 +860,7 @@ public partial class SemanticWalker
 			var argContext = arg.Parameter?.RefKind is RefKind.Out
 				? argument.With(Sense.OutParameter)
 				: argument;
-			var right = Translate<Expression>(arg.Value, argContext);
+			var right = TranslateTupleForTarget(arg.Value, arg.Parameter?.Type, argContext);
 			// ref 引用 或 out 变量引用，记住顺序
 			if (arg.Parameter?.RefKind is RefKind.Out or RefKind.Ref)
 				refParas.Add(right);
@@ -763,9 +886,21 @@ public partial class SemanticWalker
 		{
 			if (operation.TargetMethod.IsStatic)
 			{
-				var containing = BuildFullTypeName(operation.TargetMethod.ContainingType);
+				if (TryBuildImportedModuleMember(operation.TargetMethod.ContainingType, methodName!, argument, out var importedMethod) &&
+					importedMethod is not null)
+					callee = importedMethod;
+				else
+				{
+				var containing = BuildFullTypeName(operation.TargetMethod.ContainingType, argument);
 				if (containing is not null)
 					callee = new MemberExpression(containing, property, computed: false, optional: false);
+				else
+				{
+					var qualified = TryBuildStaticQualifiedMemberFromSyntax(operation.Syntax, methodName!);
+					if (qualified is not null)
+						callee = qualified;
+				}
+				}
 			}
 		}
 		else

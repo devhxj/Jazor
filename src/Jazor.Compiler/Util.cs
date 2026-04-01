@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Acornima;
 using Acornima.Ast;
@@ -11,6 +12,23 @@ namespace Jazor.Compiler;
 /// </summary>
 public static class Util
 {
+    private const string ECMAScriptAssemblyName = "ECMAScript";
+    private const string ECMAScriptAttributeName = "ECMAScriptAttribute";
+
+    private enum JsNameConfigKind
+    {
+        None,
+        Stop,
+        Explicit,
+    }
+
+    private readonly record struct JsNameConfig(JsNameConfigKind Kind, string? Name)
+    {
+        public static JsNameConfig None => new(JsNameConfigKind.None, null);
+        public static JsNameConfig Stop => new(JsNameConfigKind.Stop, null);
+        public static JsNameConfig Explicit(string name) => new(JsNameConfigKind.Explicit, name);
+    }
+
     /// <summary>
     /// 
     /// </summary>
@@ -28,18 +46,31 @@ public static class Util
         => node.ToJavaScript(JavaScriptTextWriterOptions.Default, AstToJavaScriptOptions.Default);
 
     /// <summary>
-    /// 获取ISymbol的 JavaScript 名称
+    /// 获取 ISymbol 显式配置的 JavaScript 名称。
     /// 优先级：
     /// 1. ECMAScriptNameAttribute
-    /// 2. DescriptionAttribute (以 @# 开头)
+    /// 2. DescriptionAttribute (仅当值为 @#name 时)
     /// </summary>
     /// <param name="symbol"></param>
     /// <returns></returns>
     public static string? GetSymbolConfigName(ISymbol symbol)
+        => GetSymbolNameConfig(symbol) is { Kind: JsNameConfigKind.Explicit, Name: var name } ? name : null;
+
+    /// <summary>
+    /// 判断当前符号是否声明了名称解析边界（<c>@#</c>）。
+    /// 一旦命中该边界，当前符号及其外层宿主都不再继续参与名称拼接。
+    /// </summary>
+    /// <param name="symbol"></param>
+    /// <returns></returns>
+    public static bool HasNameResolutionBoundary(ISymbol symbol)
+        => GetSymbolNameConfig(symbol).Kind == JsNameConfigKind.Stop;
+
+    private static JsNameConfig GetSymbolNameConfig(ISymbol symbol)
     {
         // todo:属性的别名如何处理（因为存在get、set）
         var useDescription = true;
-        string? configName = null, description = null;
+        string? configName = null;
+        JsNameConfig description = JsNameConfig.None;
         foreach (var attr in symbol.GetAttributes())
         {
             if (attr.ConstructorArguments.Length == 0)
@@ -56,11 +87,21 @@ public static class Util
             {
                 var desc = attr.ConstructorArguments[0].Value?.ToString()?.Trim();
                 if (desc?.StartsWith("@#") == true)
-                    description = desc.Substring(2);
+                {
+                    var name = desc.Substring(2);
+                    description = string.IsNullOrEmpty(name)
+                        ? JsNameConfig.Stop
+                        : JsNameConfig.Explicit(name);
+                }
             }
         }
 
-        return useDescription ? description : configName;
+        if (!useDescription)
+            return string.IsNullOrEmpty(configName)
+                ? JsNameConfig.None
+                : JsNameConfig.Explicit(configName!);
+
+        return description;
     }
 
     /// <summary>
@@ -81,17 +122,34 @@ public static class Util
             var displayString = prop.OriginalDefinition.ToDisplayString(Format.NameFormat);
             return Format.HashName(displayString);
         }
-        else if (symbol is IMethodSymbol methodSymbol)
+
+        return AppendMethodOverloadSuffixIfNeeded(symbol, symbol.Name);
+    }
+
+    private static string AppendMethodOverloadSuffixIfNeeded(ISymbol symbol, string name)
+    {
+        if (symbol is IMethodSymbol methodSymbol)
         {
+            if (ShouldSkipMethodOverloadSuffix(methodSymbol))
+                return name;
+
             // 需要判断是否存在方法重载
-            if (methodSymbol.ContainingType.GetMembers(methodSymbol.Name)
+            if (methodSymbol.ContainingType is not null &&
+                methodSymbol.ContainingType.GetMembers(methodSymbol.Name)
                 .Count(m => m.Kind == SymbolKind.Method) > 1)
             {
                 var displayString = symbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
-                return $"{symbol.Name}{Format.HashName(displayString)}";
+                return $"{name}{Format.HashName(displayString)}";
             }
         }
 
-        return symbol.Name;
+        return name;
     }
+
+    private static bool HasAttribute(ISymbol? symbol, string attributeName)
+        => symbol?.GetAttributes().Any(attr => attr.AttributeClass?.Name == attributeName) == true;
+
+    private static bool ShouldSkipMethodOverloadSuffix(IMethodSymbol methodSymbol)
+        => methodSymbol.ContainingAssembly?.Name == ECMAScriptAssemblyName &&
+           HasAttribute(methodSymbol.ContainingType, ECMAScriptAttributeName);
 }

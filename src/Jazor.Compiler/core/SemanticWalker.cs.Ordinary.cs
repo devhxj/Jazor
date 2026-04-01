@@ -195,7 +195,10 @@ public partial class SemanticWalker
 		if (operation.ReturnedValue is null)
 			return new ReturnStatement(null);
 
-		var exp = Translate<Expression>(operation.ReturnedValue, argument);
+		// return 也是 tuple 运行时协议切换边界。
+		// 如果返回表达式当前 tuple 视图和函数声明返回类型不同，
+		// 这里需要按目标返回类型显式 remap，而不是直接返回源对象。
+		var exp = TranslateTupleForTarget(operation.ReturnedValue, GetTupleReturnTargetType(operation), argument);
 		return new ReturnStatement(exp);
 	}
 
@@ -532,6 +535,14 @@ public partial class SemanticWalker
 	/// <returns>转换后的 JavaScript ESTree Node</returns>
 	public override Node? VisitConversion(IConversionOperation operation, SenseArgument argument)
 	{
+		// tuple 在这里做“边界重映射”：
+		// 语义仍按位置对应，但一旦目标静态视图名字不同，就显式生成新的对象协议。
+		// 这里只处理 Roslyn 明确表示出来的 conversion；其他边界（参数、赋值、初始化器）
+		// 还会通过 TranslateTupleForTarget 主动套同一套规则。
+		var tupleProjection = TryTranslateTupleConversion(operation, argument);
+		if (tupleProjection is not null)
+			return tupleProjection;
+
 		// 处理特殊情况：方法组转换为委托类型
 		// class TestClass
 		// {
@@ -679,6 +690,14 @@ public partial class SemanticWalker
 	{
 		var left = Translate<Expression>(operation.LeftOperand, argument);
 		var right = Translate<Expression>(operation.RightOperand, argument);
+
+		if (operation.OperatorMethod is not null)
+		{
+			var mapped = GetWhiteListExpression(operation.OperatorMethod, argument, [left, right], out _);
+			if (mapped is not null)
+				return mapped;
+		}
+
 		var @operator = operation.OperatorKind switch
 		{
 			BinaryOperatorKind.Add => Operator.Addition,
@@ -843,7 +862,12 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitSimpleAssignment(ISimpleAssignmentOperation operation, SenseArgument argument)
 	{
-		var value = Translate<Expression>(operation.Value, argument);
+		// tuple 赋值不依赖 Roslyn 恰好插入 conversion。
+		// 只要目标静态类型是另一套 tuple 视图，这里就按目标协议主动重映射。
+		// 这样：
+		//   target = source;
+		// 不会因为 IOperation 树里缺少显式 conversion 而漏掉 tuple remap。
+		var value = TranslateTupleForTarget(operation.Value, operation.Target.Type, argument);
 		if (operation.Target is IDiscardOperation)
 			return value;
 

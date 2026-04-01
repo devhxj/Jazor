@@ -1,81 +1,53 @@
 using System.ComponentModel;
-using System.Data;
+using PropertyKey = ECMAScript.Either<string, ECMAScript.Number, ECMAScript.Symbol>;
 
 namespace ECMAScript;
 
 /// <summary>
-/// 创建对象的代理
+/// Projection of JavaScript's <c>Proxy</c> constructor.
 /// </summary>
-/// <typeparam name="TTarget">目标对象类型</typeparam>
+/// <typeparam name="TTarget">Static CLR view of the proxied target object.</typeparam>
 [ECMAScript]
 [Description("@#Proxy")]
-public class Proxy<TTarget> where TTarget : class
+public sealed class Proxy<TTarget> where TTarget : class
 {
 	/// <summary>
-	/// 创建一个新的代理实例
+	/// Creates a JavaScript proxy for the supplied target and handler.
 	/// </summary>
-	/// <param name="target">目标对象</param>
-	/// <param name="handler">代理处理器</param>
 	public extern Proxy(TTarget target, ProxyHandler<TTarget> handler);
-
-	/// <summary>
-	/// 获取代理的目标对象
-	/// </summary>
-	[Description("@#target")]
-	public extern TTarget Target { get; }
-
-	/// <summary>
-	/// 获取代理的处理器对象
-	/// </summary>
-	[Description("@#handler")]
-	public extern ProxyHandler<TTarget> Handler { get; }
 }
 
 /// <summary>
-/// 代理处理器，定义代理的行为
+/// Bridge type used to declare JavaScript proxy traps.
+/// This type itself is not a JavaScript runtime host.
 /// </summary>
-/// <typeparam name="TTarget">目标对象类型</typeparam>
+/// <typeparam name="TTarget">Static CLR view of the proxied target object.</typeparam>
 [ECMAScript]
+[Description("@#")]
+[EditorBrowsable(EditorBrowsableState.Never)]
 public abstract class ProxyHandler<TTarget> where TTarget : class
 {
 	/// <summary>
-	/// 拦截属性读取操作，类似于 handler.get()
+	/// Trap for property reads.
 	/// </summary>
-	/// <param name="target">目标对象</param>
-	/// <param name="property">属性名</param>
-	/// <param name="receiver">接收对象</param>
-	/// <returns></returns>
 	[Description("@#get")]
-	public extern virtual object Get(TTarget target, string property, object receiver);
+	public extern virtual object? Get(TTarget target, PropertyKey property, object receiver);
 
 	/// <summary>
-	/// 拦截属性设置操作，类似于 handler.set()
+	/// Trap for property writes.
 	/// </summary>
-	/// <param name="target">目标对象</param>
-	/// <param name="property">属性名</param>
-	/// <param name="value">要设置的值</param>
-	/// <param name="receiver">接收对象</param>
-	/// <returns></returns>
 	[Description("@#set")]
-	public extern virtual bool Set(TTarget target, string property, object value, object receiver);
+	public extern virtual bool Set(TTarget target, PropertyKey property, object? value, object receiver);
 
 	/// <summary>
-	/// 拦截 in 操作符，类似于 handler.has()
+	/// Trap for the <c>in</c> operator.
 	/// </summary>
-	/// <param name="target">目标对象</param>
-	/// <param name="property">属性名</param>
-	/// <returns></returns>
 	[Description("@#has")]
-	public extern virtual bool Has(TTarget target, string property);
+	public extern virtual bool Has(TTarget target, PropertyKey property);
 
 	/// <summary>
-	/// 拦截函数调用操作，类似于 handler.apply()
+	/// Trap for function invocation.
 	/// </summary>
-	/// <param name="target">目标对象</param>
-	/// <param name="thisArg">this 值</param>
-	/// <param name="argumentsList">参数列表</param>
-	/// <returns></returns>
 	[Description("@#apply")]
-	public extern virtual object Apply(TTarget target, object thisArg, object[] argumentsList);
+	public extern virtual object? Apply(TTarget target, object thisArg, object[] argumentsList);
 }
-

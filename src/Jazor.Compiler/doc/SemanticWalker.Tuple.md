@@ -1,178 +1,204 @@
-# SemanticWalker.cs.Tuple.cs 分析文档
+# `SemanticWalker.cs.Tuple.cs`
 
-## 1. 文件概述
+## 定位
 
-**文件路径**: `core/SemanticWalker.cs.Tuple.cs`
+`SemanticWalker.cs.Tuple.cs` 负责把 C# tuple 相关语法糖 lower 成 JavaScript AST。
 
-**职责**: 处理元组创建、解构和比较操作。
+当前实现不追求 CLR 级语义等价，而追求两点：
 
-**代码行数**: ~560 行
+1. C# tuple 的代码结果等价。
+2. JavaScript 侧运行时 shape 对业务和第三方可预期。
 
-## 2. 核心功能
+换句话说，这里的 tuple 不是运行时类型设计问题，而是编译期解糖问题。
 
-### 2.1 元组创建 (VisitTuple)
+## 当前规则
 
-元组使用 JavaScript 对象模拟：
+### 1. tuple 只是语法糖
 
-```csharp
-// C# 示例
-(1, "hello", true)
-var tuple = (x, y);
-(double Sum, int Count) t2 = (4.5, 3);
+编译器不会引入 `JTuple`、`Array` 子类、`freeze` 或其他新的运行时 tuple 类型。
 
-// JavaScript 结果
-{ Item1: 1, Item2: "hello", Item3: true }
-{ x: x, y: y }
-{ Sum: 4.5, Count: 3 }
-```
-
-### 2.2 解构赋值 (VisitDeconstructionAssignment)
+tuple 最终只会落成普通对象：
 
 ```csharp
-// C# 示例
-var (name, age) = GetPerson();
-(int x, int y) = tuple;
-
-// JavaScript 结果
-let _temp = getPerson();
-let name = _temp.name;
-let age = _temp.age;
+(1, 2)
 ```
 
-**支持的解构场景**：
-- 元组解构
-- 嵌套元组解构
-- 自定义 Deconstruct 方法
-- 带方法调用的解构
-
-### 2.3 元组比较 (VisitTupleBinaryOperator)
+```js
+{ Item1: 1, Item2: 2 }
+```
 
 ```csharp
-// C# 示例
-(a, b) == (c, d)
-(x, y) != (1, 2)
-
-// JavaScript 结果
-a === c && b === d
-x !== 1 || y !== 2
+(name: "John", age: 30)
 ```
 
-## 3. 方法详解
+```js
+{ name: "John", age: 30 }
+```
 
-### 3.1 VisitTuple
+### 2. 位置负责语义
+
+解构、比较、swap、本质匹配都按槽位位置处理，而不是按名字处理。
+
+例如：
 
 ```csharp
-public override Node? VisitTuple(ITupleOperation operation, WalkerArgument argument)
-{
-    var nodes = new List<Node>();
-    var tupleType = (INamedTypeSymbol)operation.NaturalType!;
-    for (var index = 0; index < operation.Elements.Length; index++)
-    {
-        var fieldName = tupleType.TupleElements[index].Name;  // 支持命名元组
-        var element = operation.Elements[index];
-        var key = new Identifier(fieldName);
-        var value = Translate<Expression>(element, argument);
-        nodes.Add(new ObjectProperty(PropertyKind.Init, key, value, ...));
-    }
-    return new ObjectExpression(NodeList.From(nodes));
-}
+(a, b) = (b, a);
 ```
 
-### 3.2 Deconstruct (嵌套方法)
+lower 后会先缓存右值，再回写左值，避免自引用覆盖：
 
-处理复杂的解构逻辑：
+```js
+let v$0, v$1;
+v$0 = b, v$1 = a, a = v$0, b = v$1;
+```
+
+### 3. 名字负责运行时协议
+
+虽然 C# tuple 名字不是强约束的一部分，但当前编译器把“当前静态视图名字”视为 JS 侧运行时协议。
+
+这意味着：
+
+- 相同位置但不同名字的 tuple，在 JS 侧不能直接透传。
+- 业务代码和第三方代码看到的是对象 key，不是 CLR tuple metadata。
+
+### 4. 边界上需要 remap
+
+当 tuple 穿过静态视图边界，且目标 tuple 名字与源名字不同，编译器会显式生成一个新对象，而不是直接复用原对象。
+
+例如：
 
 ```csharp
-void Deconstruct(IOperation target, ITypeSymbol valueType, object value, List<Expression> exprs)
-{
-    // 1. 元组类型解构
-    if (valueType.IsTupleType && target is ITupleOperation or IDeclarationExpressionOperation)
-    {
-        // 递归处理每个元素
-        for (var index = 0; index < tupleTarget.Elements.Length; index++)
-        {
-            // 声明新变量或赋值给现有变量
-            // 处理丢弃操作
-            // 处理嵌套元组
-        }
-    }
-    // 2. 自定义 Deconstruct 方法
-    else if (valueType.TypeKind == TypeKind.Class)
-    {
-        // 调用 Deconstruct 方法
-        // 从返回数组中取值
-    }
-}
+(string name, int age) source = ("John", 30);
+(string first, int years) target = source;
 ```
 
-### 3.3 BuildTupleBinaryExpression
+```js
+let source = { name: "John", age: 30 };
+let target = { first: source.name, years: source.age };
+```
 
-递归构建元组比较表达式：
+## 已覆盖的 tuple 边界
+
+当前统一通过 `TranslateTupleForTarget(...)` 和 `TryTranslateTupleConversion(...)` 处理 remap，已接入这些边界：
+
+- 显式/隐式 conversion
+- 简单赋值
+- 方法调用参数
+- 构造函数参数
+- 对象初始化器赋值
+- `return`
+
+如果边界两边 runtime shape 一致，则直接透传，不额外投影。
+
+## 核心实现点
+
+### `VisitTuple`
+
+只负责“当前 tuple 视图”的对象字面量落地，不负责跨边界 remap。
+
+### `HasSameTupleRuntimeShape`
+
+递归比较 tuple 各槽位名字和嵌套 tuple shape。
+
+只要任意一层名字不同，就认为 runtime shape 不同，不能直接透传。
+
+### `BuildTupleProjection`
+
+按目标 tuple 视图重新构造对象。
+
+例如：
 
 ```csharp
-private Expression? BuildTupleBinaryExpression(
-    (object Target, ITypeSymbol Type) left,
-    (object Target, ITypeSymbol Type) right,
-    bool isEq,
-    WalkerArgument argument)
-{
-    // 处理方法调用结果缓存
-    if (left.Target is IInvocationOperation leftInvocation)
-    {
-        leftExpr = new Identifier(GetUniqueName(leftInvocation));
-        // 添加临时变量声明
-    }
-
-    // 递归处理嵌套元组
-    if (leftField.Type.IsTupleType)
-    {
-        var subResult = BuildTupleBinaryExpression(subLeft, subRight, isEq, argument);
-    }
-}
+(name, age) -> (first, years)
 ```
 
-## 4. 已知缺陷
+会生成：
 
-### 4.1 高优先级缺陷
+```js
+{ first: source.name, years: source.age }
+```
 
-| 缺陷 | 影响 | 建议修复方案 |
-|------|------|-------------|
-| **解构赋值复杂度高** | 代码难以维护 | 重构为独立的解构服务 |
-| **自定义 Deconstruct 处理不完整** | 某些场景可能失败 | 完善 Deconstruct 方法查找和调用 |
+嵌套 tuple 也会递归 remap。
 
-### 4.2 中优先级缺陷
+### `ShouldCacheTupleSource`
 
-| 缺陷 | 影响 | 建议修复方案 |
-|------|------|-------------|
-| **临时变量命名可能冲突** | 复杂嵌套时可能冲突 | 使用更安全的命名策略 |
-| **元组比较对方法调用的缓存** | 重复计算 | 已实现缓存，但需验证 |
+如果 tuple 源值来自调用、属性、复杂表达式等，projection / compare / deconstruct 不能重复求值。
 
-## 5. AST 节点映射
+这时会先缓存到临时变量，再按字段读取，保证：
 
-| C# 结构 | JavaScript AST | 备注 |
-|---------|---------------|------|
-| `(a, b)` | `ObjectExpression` | 属性为 Item1, Item2 或命名 |
-| `var (a, b) = tuple` | 多个赋值语句 | 使用逗号表达式 |
-| `tuple1 == tuple2` | `LogicalExpression` | and/or 连接的比较 |
-| `_` (丢弃) | `null` 或忽略 | 在解构中跳过 |
+- getter 次数不变
+- 调用次数不变
+- swap / compare / deconstruct 的结果稳定
 
-## 6. 测试覆盖
+## 解构规则
 
-**当前状态**: ~30 个测试
+tuple 解构仍按位置展开。
 
-**测试场景**：
-- ✅ 元组创建
-- ✅ 命名元组
-- ✅ 简单解构
-- ✅ 嵌套解构
-- ✅ 元组比较
-- ✅ 丢弃模式
+支持：
 
-## 7. 相关文档
+- tuple 解构
+- 嵌套 tuple 解构
+- 丢弃
+- 带临时缓存的复杂右值
+- 自定义 `Deconstruct`
 
-- [SemanticWalker.Pattern.md](./SemanticWalker.Pattern.md)
-- [SemanticWalker.md](./SemanticWalker.md)
+其中 tuple 解构和自定义 `Deconstruct` 是两套路径：
 
----
+- tuple 解构直接按字段访问对象
+- 自定义 `Deconstruct` 按当前编译器约定转成一次方法调用，再从返回数组中取出 out 值
 
-**最后更新**: 2026-03-03
+## 比较规则
+
+tuple `==` / `!=` 会递归 lower 成逐槽位比较：
+
+- `==` -> 各元素严格相等并且用 `&&` 连接
+- `!=` -> 任一元素严格不等并且用 `||` 连接
+
+复杂操作数会先缓存，避免重复调用。
+
+## 当前实现的明确取舍
+
+下面这些方向当前都不采用：
+
+- 运行时 `JTuple`
+- `Array`/数组子类模拟 tuple
+- `Object.freeze`
+- 同时保留 `ItemN` 与别名双写 shape
+
+原因很直接：
+
+- 会让 `toString` / `toJSON` / 序列化产生额外歧义
+- 会把一个编译期语法糖问题膨胀成运行时类型设计问题
+- 对当前业务最关键的“稳定对象协议”没有额外收益
+
+## 测试关注点
+
+相关测试主要分布在：
+
+- `src/Jazor.CompilerTest/SemanticWalkerTupleTest.cs`
+- `src/Jazor.CompilerTest/SemanticWalkerDeclarationTest.cs`
+- `src/Jazor.CompilerTest/SemanticWalkerCreationTest.cs`
+
+当前测试重点覆盖：
+
+- tuple 字面量生成
+- 命名/未命名混合 tuple
+- 解构与嵌套解构
+- swap 顺序正确性
+- tuple 比较
+- 参数传递 remap
+- 赋值 remap
+- 返回值 remap
+- 对象初始化器 remap
+- 复杂源值缓存
+
+## 结论
+
+当前 tuple lowering 的核心标准是：
+
+- 语义按位置保持等价
+- 运行时按当前静态名字暴露协议
+- 一旦跨视图就显式 remap
+- 一旦源值复杂就先缓存
+
+这套实现更适合当前编译器目标，也比引入额外运行时 tuple 类型更可控。

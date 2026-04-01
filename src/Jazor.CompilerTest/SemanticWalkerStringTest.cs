@@ -67,6 +67,28 @@ public sealed class SemanticWalkerStringTest
 		Assert.AreEqual(expected.ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
 	}
 
+	[TestMethod]
+	public void Visit_String_FromCodePoint()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    string value = String.FromCodePoint(65);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let value = String.fromCodePoint(65);
+}", script);
+	}
+
 	#region 简单插值字符串测试
 
 	/// <summary>
@@ -1667,7 +1689,10 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-	 Assert.IsNotNull(script);
+		AssertScriptEqual(@"{
+  let s = ""   "";
+  let whitespace = !s?.trim();
+}", script);
 	}
 
 	/// <summary>
@@ -1690,7 +1715,9 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-	 Assert.IsNotNull(script);
+		StringAssert.Contains(script, "Name:");
+		StringAssert.Contains(script, "Age:");
+		StringAssert.Contains(script, "John");
 	}
 
 	/// <summary>
@@ -1714,7 +1741,8 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "Pi:");
+		Assert.IsTrue(script.Contains("toFixed") || script.Contains("pi"));
 	}
 
 	/// <summary>
@@ -1849,7 +1877,7 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		StringAssert.Contains(script, @"C:\\Users\\test");
 	}
 
 	#endregion
@@ -2012,7 +2040,10 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		AssertScriptEqual(@"{
+  let text = ""hello"";
+  let isEmpty = !text;
+}", script);
 	}
 
 	/// <summary>
@@ -2036,7 +2067,10 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		AssertScriptEqual(@"{
+  let text = ""  "";
+  let isWhiteSpace = !text?.trim();
+}", script);
 	}
 
 	/// <summary>
@@ -2060,7 +2094,8 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "join");
+		StringAssert.Contains(script, "\",\"");
 	}
 
 	/// <summary>
@@ -2084,7 +2119,8 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "split");
+		Assert.IsTrue(script.Contains(",") || script.Contains(";"));
 	}
 
 	/// <summary>
@@ -2189,7 +2225,8 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		Assert.IsTrue(script.Contains("padStart") || script.Contains("0"));
+		StringAssert.Contains(script, "5");
 	}
 
 	/// <summary>
@@ -2213,7 +2250,8 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		Assert.IsTrue(script.Contains("padEnd") || script.Contains("-"));
+		StringAssert.Contains(script, "5");
 	}
 
 	#endregion
@@ -2242,7 +2280,11 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		AssertScriptEqual(@"{
+  let a = ""Hello"";
+  let b = ""hello"";
+  let equal = a.Equals_f8e1e01e8c17e8bb(b, 5);
+}", script);
 	}
 
 	/// <summary>
@@ -2267,7 +2309,11 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		AssertScriptEqual(@"{
+  let a = ""apple"";
+  let b = ""banana"";
+  let result = _e16eea9fe3891a62(a, b);
+}", script);
 	}
 
 	/// <summary>
@@ -2292,7 +2338,11 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		AssertScriptEqual(@"{
+  let a = ""a"";
+  let b = ""B"";
+  let result = String.CompareOrdinal_a55d307de6e31c7b(a, b);
+}", script);
 	}
 
 	#endregion
@@ -2320,7 +2370,8 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "\"42\"");
+		Assert.IsTrue(script.Contains("parseInt") || script.Contains("Number(") || script.Contains("let num ="));
 	}
 
 	/// <summary>
@@ -2344,7 +2395,8 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "\"3.14\"");
+		Assert.IsTrue(script.Contains("parseFloat") || script.Contains("Number(") || script.Contains("let num ="));
 	}
 
 	/// <summary>
@@ -2395,7 +2447,7 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
+		Assert.IsTrue(script.Contains("toString") || script.Contains("\"X\"") || script.Contains("16"));
 	}
 
 	#endregion

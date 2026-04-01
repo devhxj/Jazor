@@ -1,4 +1,4 @@
-# ECMAScript.ComplierTest
+# Jazor.CompilerTest
 
 Jazor 编译器的单元测试项目，验证 C# 到 JavaScript 代码转换的正确性。
 
@@ -26,7 +26,7 @@ Jazor 编译器的单元测试项目，验证 C# 到 JavaScript 代码转换的�
 ## 测试文件结构
 
 ```
-ECMAScript.ComplierTest/
+Jazor.CompilerTest/
 ├── AstConverterTests.cs              # 类级别转换测试
 ├── SemanticWalkerPatternTest.cs      # 模式匹配测试
 ├── SemanticWalkerLoopTest.cs         # 循环语句测试
@@ -251,19 +251,19 @@ public void TestMethod()
 ### 运行所有测试
 
 ```bash
-dotnet test src/ECMAScript.ComplierTest
+pwsh ./scripts/test-dotnet.ps1
 ```
 
 ### 运行特定测试类
 
 ```bash
-dotnet test --filter "SemanticWalkerPatternTest"
+dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticWalkerPatternTest"
 ```
 
 ### 运行单个测试方法
 
 ```bash
-dotnet test --filter "SemanticWalkerPatternTest.Visit_IsPattern_Constant"
+dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticWalkerPatternTest.Visit_IsPattern_Constant"
 ```
 
 ## 代码覆盖率
@@ -274,7 +274,7 @@ dotnet test --filter "SemanticWalkerPatternTest.Visit_IsPattern_Constant"
 
 ```bash
 # 使用配置文件运行测试并生成覆盖率
-dotnet test src/ECMAScript.ComplierTest --settings coverlet.runsettings
+dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --settings src/Jazor.CompilerTest/coverlet.runsettings
 
 # 覆盖率结果将输出到输出目录
 # 格式：opencover, cobertura, json, lcov
@@ -299,7 +299,7 @@ dotnet tool install -g dotnet-reportgenerator-globaltool
 
 # 生成 HTML 报告
 dotnet-reportgenerator \
-  -reports:src/ECMAScript.ComplierTest/TestResults/**/*.coverage.opencover.xml \
+  -reports:src/Jazor.CompilerTest/TestResults/**/*.coverage.opencover.xml \
   -targetdir:coverage-report \
   -reporttypes:Html
 
@@ -339,7 +339,7 @@ open coverage-report/index.html   # macOS
 
 - name: Check coverage threshold
   run: |
-    dotnet test --settings coverlet.runsettings \
+    dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --settings coverlet.runsettings \
       --logger "trx;LogFileName=test-results.trx"
 ```
 

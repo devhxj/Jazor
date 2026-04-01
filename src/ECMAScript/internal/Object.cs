@@ -3,6 +3,7 @@
 namespace ECMAScript;
 
 [ECMAScript]
+[Description("@#")]
 public interface IReadOnly<T>
 {
 	T Value { get; }
@@ -12,40 +13,28 @@ public interface IReadOnly<T>
 [Description("@#Object")]
 public interface IObject
 {
+	/// <summary>
+	/// Represents a JavaScript object that can be indexed by property name.
+	/// This interface is intentionally narrow: it models "object-like index access"
+	/// rather than every value that can exist in JavaScript.
+	/// </summary>
 	IObject? this[string key] { get; }
 
+	/// <summary>
+	/// Represents JavaScript index access on object-like values.
+	/// </summary>
 	IObject? this[uint index] { get; }
-}
-
-[ECMAScript]
-[Description("@#Object")]
-public interface IObject<TPrototype> : IObject
-{
-	/// <summary>
-	/// Returns the primitive value of the specified object.
-	/// </summary>
-	/// <returns></returns>
-	[Description("@#valueOf")]
-	public extern TPrototype ValueOf();
-
-	/// <summary>
-	/// A reference to the prototype for a class of objects.
-	/// </summary>
-	[Description("@#prototype")]
-	public extern static TPrototype Prototype { get; }
-}
-
-[ECMAScript]
-[Description("@#Object")]
-public interface IObject<TPrototype, TValue> : IObject<TPrototype>
-{
-	public new extern TValue? this[string key] { get; }
-
-	public new extern TValue? this[uint index] { get; }
 }
 
 public static partial class Global
 {
+	/// <summary>
+	/// Projection of JavaScript's Object constructor and Object.prototype surface onto
+	/// C#'s extension-member model. Static members in this block correspond to
+	/// <c>Object.*</c>, while instance members correspond to <c>Object.prototype.*</c>.
+	/// This keeps user code close to JavaScript runtime shape without introducing
+	/// extra C# host types that would increase the sense of mismatch.
+	/// </summary>
 	extension(object obj)
 	{
 		public extern static bool operator ==(object? a, object? b);
@@ -60,30 +49,33 @@ public static partial class Global
 		public extern void Super(params Array<object?> values);
 
 		/// <summary>
-		/// 需要应用源对象属性的目标对象，修改后将作为返回值。
+		/// Copies enumerable own properties from one or more source objects onto the target object.
+		/// The target instance itself is returned so the original static type is preserved in C#.
 		/// </summary>
-		/// <param name="target">需要应用源对象属性的目标对象，修改后将作为返回值。</param>
-		/// <param name="source">一个或多个包含要应用的属性的源对象。</param>
-		/// <returns>修改后的目标对象。</returns>
+		/// <param name="target">The target object to mutate.</param>
+		/// <param name="source">One or more source objects whose properties will be copied.</param>
+		/// <returns>The same <paramref name="target"/> instance after assignment.</returns>
 		[Description("@#assign")]
-		public extern static IObject<TPrototype> Assign<TPrototype>(TPrototype target, params object[] source);
+		public extern static TTarget Assign<TTarget>(TTarget target, params object[] source);
 
 		/// <summary>
-		/// Creates an object that has the specified prototype or that has null prototype.
+		/// Creates a new JavaScript object with the specified prototype.
+		/// The return type stays as <see cref="IObject"/> because the created value is primarily
+		/// consumed through dynamic property/index access rather than a CLR prototype contract.
 		/// </summary>
-		/// <param name="proto">Object to use as a prototype.May be null.</param>
-		/// <returns></returns>
+		/// <param name="proto">The object to use as the prototype. May be null.</param>
+		/// <returns>A newly created object, or null when the JavaScript result is null.</returns>
 		[Description("@#create")]
-		public extern static IObject<TPrototype>? Create<TPrototype>(TPrototype? proto);
+		public extern static IObject? Create(object? proto);
 
 		/// <summary>
-		/// Creates an object that has the specified prototype, and that optionally contains specified properties.
+		/// Creates a new JavaScript object with the specified prototype and property descriptors.
 		/// </summary>
-		/// <param name="proto">Object to use as a prototype.May be null</param>
-		/// <param name="propertiesObject">JavaScript object that contains one or more property descriptors.</param>
-		/// <returns></returns>
+		/// <param name="proto">The object to use as the prototype. May be null.</param>
+		/// <param name="propertiesObject">A JavaScript object containing property descriptors.</param>
+		/// <returns>A newly created object, or null when the JavaScript result is null.</returns>
 		[Description("@#create")]
-		public extern static IObject<TPrototype>? Create<TPrototype>(TPrototype? proto, PropertyDescriptorMap propertiesObject);
+		public extern static IObject? Create(object? proto, PropertyDescriptorMap propertiesObject);
 
 		/// <summary>
 		///  确定两个值是否为相同值。如果以下其中一项成立，则两个值相同：<br/>
@@ -110,41 +102,46 @@ public static partial class Global
 
 		/// <summary>
 		/// Adds a property to an object, or modifies attributes of an existing property.
+		/// The original target type is returned so callers keep their static CLR shape.
 		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <param name="o">Object on which to add or modify the property.This can be a native JavaScript object (that is, a user-defined object or a built in object) or a DOM object.</param>
+		/// <typeparam name="TTarget">The static CLR type of the target object.</typeparam>
+		/// <param name="o">Object on which to add or modify the property. This can be a native JavaScript object or a DOM object.</param>
 		/// <param name="p">The property name.</param>
-		/// <param name="attributes">Descriptor for the property.It can be for a data property or an accessor property.</param>
-		/// <returns></returns>
+		/// <param name="attributes">Descriptor for the property. It can describe a data or accessor property.</param>
+		/// <returns>The same <paramref name="o"/> instance.</returns>
 		[Description("@#defineProperty")]
-		public extern static IObject<TTargetT> DefineProperty<TTargetT>(TTargetT o, PropertyKey p, PropertyDescriptor attributes);
+		public extern static TTarget DefineProperty<TTarget>(TTarget o, PropertyKey p, PropertyDescriptor attributes);
 
 		/// <summary>
 		/// Adds one or more properties to an object, and/or modifies attributes of existing properties.
+		/// The original target type is returned so callers keep their static CLR shape.
 		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <param name="o">Object on which to add or modify the properties.This can be a native JavaScript object or a DOM object.</param>
-		/// <param name="properties">JavaScript object that contains one or more descriptor objects. Each descriptor object describes a data property or an accessor property.</param>
-		/// <returns></returns>
+		/// <typeparam name="TTarget">The static CLR type of the target object.</typeparam>
+		/// <param name="o">Object on which to add or modify the properties. This can be a native JavaScript object or a DOM object.</param>
+		/// <param name="properties">A JavaScript object containing one or more descriptor objects.</param>
+		/// <returns>The same <paramref name="o"/> instance.</returns>
 		[Description("@#defineProperties")]
-		public extern static IObject<TTarget> DefineProperties<TTarget>(TTarget o, PropertyDescriptorMap properties);
+		public extern static TTarget DefineProperties<TTarget>(TTarget o, PropertyDescriptorMap properties);
 
 		/// <summary>
-		/// Prevents the modification of attributes of existing properties, and prevents the addition of new properties.
+		/// Prevents the modification of attributes of existing properties and prevents the addition of new properties.
+		/// The original target type is returned so callers keep their static CLR shape.
 		/// </summary>
-		/// <typeparam name="T"></typeparam>
+		/// <typeparam name="TTarget">The static CLR type of the target object.</typeparam>
 		/// <param name="o">Object on which to lock the attributes.</param>
-		/// <returns></returns>
+		/// <returns>The same <paramref name="o"/> instance.</returns>
 		[Description("@#seal")]
-		public extern static IObject<TTarget> Seal<TTarget>(TTarget o);
+		public extern static TTarget Seal<TTarget>(TTarget o);
 
 		/// <summary>
 		/// Returns the prototype of an object.
+		/// The result is modeled as <see cref="IObject"/> because callers typically consume it
+		/// as a JavaScript object rather than as a strongly typed CLR prototype instance.
 		/// </summary>
 		/// <param name="o">The object that references the prototype.</param>
-		/// <returns></returns>
+		/// <returns>The prototype object, or null when the JavaScript result is null.</returns>
 		[Description("@#getPrototypeOf")]
-		public extern static IObject<TPrototype> GetPrototypeOf<TPrototype>(TPrototype o);
+		public extern static IObject? GetPrototypeOf(object o);
 
 		/// <summary>
 		/// Gets the own property descriptor of the specified object.

@@ -64,6 +64,57 @@ public sealed class SemanticWalkerDeclarationTest
         throw new InvalidOperationException("未找到可分析的操作");
     }
 
+    private static (SemanticModel SemanticModel, SyntaxNode Root) GetSemanticModelAndRoot(string code)
+    {
+        var usings = @"
+        global using System;
+        global using System.Collections.Generic;
+        global using System.Linq;
+        global using System.Numerics;
+        global using System.ComponentModel;
+		global using ECMAScript;
+		global using static ECMAScript.Global;";
+
+        var references = Basic.Reference.Assemblies.Net100.References.All
+            .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location));
+        var compilation = CSharpCompilation.Create(
+            assemblyName: "TestAssembly",
+            syntaxTrees: [
+              CSharpSyntaxTree.ParseText(usings),
+              CSharpSyntaxTree.ParseText(code)
+            ],
+            references: references,
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var diagnostics = compilation.GetDiagnostics();
+        var errors = diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
+        if (errors.Count > 0)
+        {
+            var errorMessages = string.Join("\n", errors.Select(e => $"{e.Id}: {e.GetMessage()}"));
+            throw new InvalidOperationException(errorMessages);
+        }
+
+        var syntaxTree = compilation.SyntaxTrees.Last();
+        return (compilation.GetSemanticModel(syntaxTree), syntaxTree.GetRoot());
+    }
+
+    private static IFieldInitializerOperation GetFieldInitializerOperation(string code)
+    {
+        var (semanticModel, root) = GetSemanticModelAndRoot(code);
+        var fieldDeclarator = root.DescendantNodes().OfType<VariableDeclaratorSyntax>().First();
+        var operation = semanticModel.GetOperation(fieldDeclarator.Initializer!) as IFieldInitializerOperation;
+        return operation ?? throw new InvalidOperationException("未找到字段初始化器操作");
+    }
+
+    private static IPropertyInitializerOperation GetPropertyInitializerOperation(string code)
+    {
+        var (semanticModel, root) = GetSemanticModelAndRoot(code);
+        var propertyDeclaration = root.DescendantNodes().OfType<PropertyDeclarationSyntax>()
+            .First(x => x.Initializer is not null);
+        var operation = semanticModel.GetOperation(propertyDeclaration.Initializer!) as IPropertyInitializerOperation;
+        return operation ?? throw new InvalidOperationException("未找到属性初始化器操作");
+    }
+
 
     /// <summary>
     /// 获取指定索引的操作
@@ -306,6 +357,40 @@ public sealed class SemanticWalkerDeclarationTest
     }
 
     [TestMethod]
+    public void DirectVisit_FieldInitializer_TupleRemapByTargetType()
+    {
+        var operation = GetFieldInitializerOperation(@"
+            class TestClass
+            {
+                private (string first, int years) _person = (name: ""John"", age: 30);
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var result = walker.VisitFieldInitializer(operation, new());
+        var script = result?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{ first: ""John"", years: 30 }", script);
+    }
+
+    [TestMethod]
+    public void DirectVisit_PropertyInitializer_TupleRemapByTargetType()
+    {
+        var operation = GetPropertyInitializerOperation(@"
+            class TestClass
+            {
+                public (string first, int years) Person { get; set; } = (name: ""John"", age: 30);
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var result = walker.VisitPropertyInitializer(operation, new());
+        var script = result?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{ first: ""John"", years: 30 }", script);
+    }
+
+    [TestMethod]
     public void Visit_MixedDeclarationTypes()
     {
         var block = GetBlockOperation(@"
@@ -428,6 +513,30 @@ public sealed class SemanticWalkerDeclarationTest
         var script = result?.ToKnRECMAScript();
 
         Assert.AreEqual("x = 100", script);
+    }
+
+    [TestMethod]
+    public void DirectVisit_VariableDeclarator_TupleRemapByTargetType()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    (string name, int age) source = (""John"", 30);
+                    (string first, int years) target = source;
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var variableDeclarationGroup = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
+        var variableDeclarator = variableDeclarationGroup.Declarations.First().Declarators.First();
+
+        var result = walker.VisitVariableDeclarator(variableDeclarator, new());
+        var script = result?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"target = { first: source.name, years: source.age }", script);
     }
 
     [TestMethod]
@@ -1031,7 +1140,6 @@ public sealed class SemanticWalkerDeclarationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
         Assert.IsTrue(Regex.IsMatch(script, @"\{\r?\n  let number, (?<tmp>v\$\d+);\r?\n  if \(\k<tmp> = _[a-f0-9]+\(""123"", number\), number = \k<tmp>\[1\], \k<tmp>\[0\]\) \{\r?\n    console\.log\(number\);\r?\n  \}\r?\n\}"));
     }
 
@@ -1055,7 +1163,6 @@ public sealed class SemanticWalkerDeclarationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
         Assert.IsTrue(Regex.IsMatch(script, @"\{\r?\n  let value, (?<tmp>v\$\d+);\r?\n  if \(\k<tmp> = _[a-f0-9]+\(""3\.14"", value\), value = \k<tmp>\[1\], \k<tmp>\[0\]\) \{\r?\n    console\.log\(value\);\r?\n  \}\r?\n\}"));
     }
 
@@ -1079,7 +1186,6 @@ public sealed class SemanticWalkerDeclarationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
         Assert.IsTrue(Regex.IsMatch(script, @"\{\r?\n  let a, (?<tmp1>v\$\d+), b, (?<tmp2>v\$\d+);\r?\n  let dict = new Map;\r?\n  \k<tmp1> = _[a-f0-9]+\((dict), ""a"", a\), a = \k<tmp1>\[1\], \k<tmp1>\[0\];\r?\n  \k<tmp2> = _[a-f0-9]+\(\1, ""b"", b\), b = \k<tmp2>\[1\], \k<tmp2>\[0\];\r?\n  console\.log\(a \+ b\);\r?\n\}"));
     }
 
@@ -1232,8 +1338,11 @@ public sealed class SemanticWalkerDeclarationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
-        Assert.IsTrue(Regex.IsMatch(script, @"\{\r?\n  let tuple = \{ (Item1|a): 1, (Item2|b): 2 \};\r?\n  console\.log\(tuple\.(Item1|a)\);\r?\n\}"));
+        Assert.AreEqual(
+@"{
+  let tuple = { a: 1, b: 2 };
+  console.log(tuple.a);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
     [TestMethod]
@@ -1254,8 +1363,11 @@ public sealed class SemanticWalkerDeclarationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
-        Assert.IsTrue(Regex.IsMatch(script, "\\{\\r?\\n  let person = \\{ (Name|Item1): \"John\", (Age|Item2): 30 \\};\\r?\\n  console\\.log\\(person\\.(Name|Item1)\\);\\r?\\n\\}"));
+        Assert.AreEqual(
+@"{
+  let person = { Name: ""John"", Age: 30 };
+  console.log(person.Name);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
     #endregion
@@ -1280,7 +1392,6 @@ public sealed class SemanticWalkerDeclarationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
         Assert.IsTrue(script.Contains("let list = [1, 2, 3];"));
         Assert.IsTrue(script.Contains("let filtered = Array.from(Array.from(list).filter("));
         Assert.IsTrue(script.Contains("return x > 1;"));
@@ -1514,7 +1625,8 @@ public sealed class SemanticWalkerDeclarationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
+        Assert.IsTrue(script.Contains("Array.from") || script.Contains("new Array(3)"));
+        StringAssert.Contains(script, "4");
     }
 
     /// <summary>
@@ -1537,7 +1649,7 @@ public sealed class SemanticWalkerDeclarationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
+        Assert.IsTrue(script.Contains("new Array(3)") || script.Contains("Array.from"));
     }
 
     #endregion
@@ -1568,7 +1680,13 @@ public sealed class SemanticWalkerDeclarationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
+        AssertScriptEqual(
+@"{
+  function Add(a, b) {
+    return a + b;
+  }
+  let result = Add(5, 1);
+}", script);
     }
 
     /// <summary>
@@ -1595,7 +1713,9 @@ public sealed class SemanticWalkerDeclarationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "Factorial");
+        StringAssert.Contains(script, "n - 1");
+        StringAssert.Contains(script, "Factorial(5)");
     }
 
     #endregion
@@ -1625,7 +1745,10 @@ public sealed class SemanticWalkerDeclarationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "a");
+        StringAssert.Contains(script, "b");
+        StringAssert.Contains(script, "console.log(a + b)");
+        Assert.IsTrue(script.Contains("v$") || script.Contains("console.log(a + b)"));
     }
 
     #endregion

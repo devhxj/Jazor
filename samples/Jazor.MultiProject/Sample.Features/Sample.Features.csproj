@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <JazorEmit>false</JazorEmit>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sample.Contracts\Sample.Contracts.csproj" />
+  </ItemGroup>
+</Project>

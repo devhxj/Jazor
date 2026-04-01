@@ -1,49 +1,272 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Jazor.Compiler;
 
 [Generator]
-public class ESGenerator : IIncrementalGenerator
+public sealed class ESGenerator : IIncrementalGenerator
 {
-	public void Initialize(IncrementalGeneratorInitializationContext context)
-	{
-		var classDecls = context.SyntaxProvider.ForAttributeWithMetadataName(
-			"ECMAScript.ECMAScriptModuleAttribute",
-			predicate: (node, _) => node is ClassDeclarationSyntax,
-			transform: (context, _) => (context.TargetNode, context.SemanticModel)
-		);
+    private static readonly DiagnosticDescriptor ModuleGenerationFailed = new(
+        id: "JAZORG001",
+        title: "Jazor module generation failed",
+        messageFormat: "Failed to generate JavaScript module for '{0}': {1}",
+        category: "Jazor.Compiler",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 
-		// 转换为 JavaScript 模块
-		context.RegisterImplementationSourceOutput<(SyntaxNode TargetNode, SemanticModel SemanticModel)> (
-			source: classDecls,
-			action: async (outputContext, transform) =>
-			{
-				try
-				{
-					var classSymbol = (INamedTypeSymbol)transform.SemanticModel.GetDeclaredSymbol(transform.TargetNode)!;
-                    var astConverter = new AstConverter(classSymbol, transform.SemanticModel);
+    public void Initialize(IncrementalGeneratorInitializationContext context)
+    {
+        var moduleCandidates = context.SyntaxProvider.ForAttributeWithMetadataName(
+            fullyQualifiedMetadataName: "ECMAScript.ECMAScriptModuleAttribute",
+            predicate: static (node, _) => node is ClassDeclarationSyntax,
+            transform: static (syntaxContext, _) => CreateCandidate(syntaxContext))
+            .Where(static candidate => candidate is not null);
 
-					// 获取类名作为文件名
-					var classDecl = (ClassDeclarationSyntax)transform.TargetNode;
-					var className = classDecl.Identifier.ValueText;
-					
-					// 执行转换
-					var jsAst = await astConverter.Convert();
-					
-					// 生成 JavaScript 代码（简化实现）
-					var jsCode = $"// Generated from {className}\n// TODO: Implement AST to JavaScript conversion\nexport class {className} {{\n  constructor() {{\n    // TODO\n  }}\n}}\n";
-					
-					// 输出 JavaScript 文件
-					outputContext.AddSource($"{className}.mjs", jsCode);
-				}
-				catch (System.Exception ex)
-				{
-					// 处理转换异常
-					var errorMsg = $"// 转换失败: {ex.Message}\n// {ex.StackTrace}";
-					outputContext.AddSource("conversion.error.txt", errorMsg);
-				}
-			});
-	}
+        var combined = context.CompilationProvider.Combine(moduleCandidates.Collect());
+        context.RegisterSourceOutput(combined, static (outputContext, source) =>
+        {
+            var (compilation, candidates) = source;
+            EmitCatalog(outputContext, compilation, candidates);
+        });
+    }
+
+    private static ModuleCandidate? CreateCandidate(GeneratorAttributeSyntaxContext context)
+    {
+        if (context.TargetNode is not ClassDeclarationSyntax)
+            return null;
+
+        if (context.TargetSymbol is not INamedTypeSymbol classSymbol)
+            return null;
+
+        return new ModuleCandidate(classSymbol, context.SemanticModel, context.TargetNode.GetLocation());
+    }
+
+    private static void EmitCatalog(
+        SourceProductionContext context,
+        Compilation compilation,
+        ImmutableArray<ModuleCandidate?> candidates)
+    {
+        if (candidates.IsDefaultOrEmpty)
+            return;
+
+        var assemblyName = compilation.AssemblyName ?? "Jazor.Assembly";
+        var seenTypes = new HashSet<string>(StringComparer.Ordinal);
+        var generatedModules = new List<GeneratedModuleInfo>();
+
+        foreach (var candidate in candidates)
+        {
+            if (candidate is null)
+                continue;
+
+            var typeName = candidate.ClassSymbol.ToDisplayString();
+            if (!seenTypes.Add(typeName))
+                continue;
+
+            try
+            {
+                var converter = new AstConverter(candidate.ClassSymbol, candidate.SemanticModel);
+                var module = converter.Convert().GetAwaiter().GetResult();
+                var content = module?.ToKnRECMAScript() ?? string.Empty;
+                var relativePath = GetRelativePath(candidate.ClassSymbol);
+                generatedModules.Add(new GeneratedModuleInfo(
+                    assemblyName,
+                    typeName,
+                    typeName,
+                    relativePath,
+                    content,
+                    ComputeSha256Hex(content)));
+            }
+            catch (Exception ex)
+            {
+                context.ReportDiagnostic(Diagnostic.Create(
+                    ModuleGenerationFailed,
+                    candidate.Location,
+                    typeName,
+                    ex.Message));
+            }
+        }
+
+        if (generatedModules.Count == 0)
+            return;
+
+        generatedModules.Sort(static (left, right) =>
+        {
+            var byPath = StringComparer.OrdinalIgnoreCase.Compare(left.RelativePath, right.RelativePath);
+            return byPath != 0 ? byPath : StringComparer.Ordinal.Compare(left.TypeName, right.TypeName);
+        });
+
+        context.AddSource("Jazor.Generated.ModuleCatalog.g.cs", BuildCatalogSource(assemblyName, generatedModules));
+    }
+
+    private static string BuildCatalogSource(string assemblyName, IReadOnlyList<GeneratedModuleInfo> modules)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("// <auto-generated/>");
+        builder.AppendLine("#nullable enable");
+        builder.AppendLine("namespace Jazor.Generated");
+        builder.AppendLine("{");
+        builder.AppendLine("    [global::System.Runtime.CompilerServices.CompilerGenerated]");
+        builder.AppendLine("    public static partial class ModuleCatalog");
+        builder.AppendLine("    {");
+        builder.Append("        public static string AssemblyName { get; } = ");
+        builder.Append(EscapeCSharpString(assemblyName));
+        builder.AppendLine(";");
+        builder.AppendLine();
+        builder.AppendLine("        public static global::System.Collections.IEnumerable GetModules()");
+        builder.AppendLine("        {");
+        builder.AppendLine("            return _modules;");
+        builder.AppendLine("        }");
+        builder.AppendLine();
+        builder.AppendLine("        [global::System.Runtime.CompilerServices.CompilerGenerated]");
+        builder.AppendLine("        private sealed class GeneratedModule");
+        builder.AppendLine("        {");
+        builder.AppendLine("            public GeneratedModule(string assemblyName, string typeName, string id, string relativePath, string content, string hash)");
+        builder.AppendLine("            {");
+        builder.AppendLine("                AssemblyName = assemblyName;");
+        builder.AppendLine("                TypeName = typeName;");
+        builder.AppendLine("                Id = id;");
+        builder.AppendLine("                RelativePath = relativePath;");
+        builder.AppendLine("                Content = content;");
+        builder.AppendLine("                Hash = hash;");
+        builder.AppendLine("            }");
+        builder.AppendLine();
+        builder.AppendLine("            public string AssemblyName { get; }");
+        builder.AppendLine("            public string TypeName { get; }");
+        builder.AppendLine("            public string Id { get; }");
+        builder.AppendLine("            public string RelativePath { get; }");
+        builder.AppendLine("            public string Content { get; }");
+        builder.AppendLine("            public string Hash { get; }");
+        builder.AppendLine("        }");
+        builder.AppendLine();
+        builder.AppendLine("        private static readonly GeneratedModule[] _modules = new GeneratedModule[]");
+        builder.AppendLine("        {");
+
+        foreach (var module in modules)
+        {
+            builder.AppendLine("            new GeneratedModule(");
+            builder.Append("                assemblyName: ");
+            builder.Append(EscapeCSharpString(module.AssemblyName));
+            builder.AppendLine(",");
+            builder.Append("                typeName: ");
+            builder.Append(EscapeCSharpString(module.TypeName));
+            builder.AppendLine(",");
+            builder.Append("                id: ");
+            builder.Append(EscapeCSharpString(module.Id));
+            builder.AppendLine(",");
+            builder.Append("                relativePath: ");
+            builder.Append(EscapeCSharpString(module.RelativePath));
+            builder.AppendLine(",");
+            builder.Append("                content: ");
+            builder.Append(EscapeCSharpString(module.Content));
+            builder.AppendLine(",");
+            builder.Append("                hash: ");
+            builder.Append(EscapeCSharpString(module.Hash));
+            builder.AppendLine("),");
+        }
+
+        builder.AppendLine("        };");
+        builder.AppendLine("    }");
+        builder.AppendLine("}");
+        return builder.ToString();
+    }
+
+    private static string GetRelativePath(INamedTypeSymbol classSymbol)
+    {
+        foreach (var attribute in classSymbol.GetAttributes())
+        {
+            if (attribute.AttributeClass?.ToDisplayString() != "ECMAScript.ECMAScriptModuleAttribute")
+                continue;
+
+            if (attribute.ConstructorArguments.Length == 1 &&
+                attribute.ConstructorArguments[0].Value is string importPath &&
+                !string.IsNullOrWhiteSpace(importPath))
+            {
+                return NormalizeRelativePath(importPath);
+            }
+        }
+
+        var assemblyName = classSymbol.ContainingAssembly?.Name ?? "Jazor.Assembly";
+        var namespaceName = classSymbol.ContainingNamespace?.IsGlobalNamespace == true
+            ? string.Empty
+            : classSymbol.ContainingNamespace!.ToDisplayString().Replace('.', '/');
+        var fileName = $"{classSymbol.Name}.mjs";
+
+        return string.IsNullOrEmpty(namespaceName)
+            ? $"{assemblyName}/{fileName}"
+            : $"{assemblyName}/{namespaceName}/{fileName}";
+    }
+
+    private static string NormalizeRelativePath(string path)
+    {
+        var normalized = path.Replace('\\', '/').TrimStart('/');
+        var segments = normalized.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+        if (segments.Length == 0)
+            throw new InvalidOperationException("ECMAScriptModule import path cannot be empty.");
+
+        if (segments.Any(static segment => segment == ".."))
+            throw new InvalidOperationException("ECMAScriptModule import path cannot escape the output directory.");
+
+        normalized = string.Join("/", segments);
+        if (!normalized.EndsWith(".js", StringComparison.OrdinalIgnoreCase) &&
+            !normalized.EndsWith(".mjs", StringComparison.OrdinalIgnoreCase))
+        {
+            normalized += ".mjs";
+        }
+
+        return normalized;
+    }
+
+    private static string ComputeSha256Hex(string content)
+    {
+        using var sha = SHA256.Create();
+        var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(content));
+        var builder = new StringBuilder(bytes.Length * 2);
+        foreach (var item in bytes)
+            builder.Append(item.ToString("X2"));
+        return builder.ToString();
+    }
+
+    private static string EscapeCSharpString(string value)
+    {
+        var builder = new StringBuilder(value.Length + 2);
+        builder.Append('"');
+        foreach (var ch in value)
+        {
+            builder.Append(ch switch
+            {
+                '\\' => "\\\\",
+                '"' => "\\\"",
+                '\0' => "\\0",
+                '\a' => "\\a",
+                '\b' => "\\b",
+                '\f' => "\\f",
+                '\n' => "\\n",
+                '\r' => "\\r",
+                '\t' => "\\t",
+                '\v' => "\\v",
+                _ => ch.ToString()
+            });
+        }
+
+        builder.Append('"');
+        return builder.ToString();
+    }
+
+    private sealed record ModuleCandidate(
+        INamedTypeSymbol ClassSymbol,
+        SemanticModel SemanticModel,
+        Location Location);
+
+    private sealed record GeneratedModuleInfo(
+        string AssemblyName,
+        string TypeName,
+        string Id,
+        string RelativePath,
+        string Content,
+        string Hash);
 }

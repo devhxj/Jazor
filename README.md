@@ -71,7 +71,8 @@ Jazor/
 │   │   └── ESGenerator.cs         # Source generator for ECMAScript.g.cs
 │   ├── ECMAScript.Server/         # Compilation server
 │   ├── ECMAScript.Test/           # Manual test console
-│   ├── ECMAScript.ComplierTest/   # Compiler tests (MSTest)
+│   ├── Jazor.CompilerTest/        # Compiler tests (MSTest)
+│   ├── Jazor.EmitTest/            # Emit and bundle tests (MSTest)
 │   ├── ECMAScript.WebIDL/         # WebIDL collection worker (TypeScript/Deno)
 │   ├── ECMAScript.WebIDL.Generator/ # C# host for the WebIDL pipeline
 │   ├── ECMAScript.Common/         # Common types and utilities
@@ -321,17 +322,23 @@ dotnet restore
 # Build solution
 dotnet build
 
-# Run tests
-dotnet test
+# Run core .NET tests
+pwsh ./scripts/test-dotnet.ps1
 
-# Run specific test project
-dotnet test src/ECMAScript.ComplierTest
+# Run compiler tests only
+pwsh ./scripts/test-dotnet.ps1 -Project compiler
+
+# Run emit/bundle tests only
+pwsh ./scripts/test-dotnet.ps1 -Project emit
+
+# Run specific test project directly
+dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj
 
 # Run single test class
-dotnet test --filter "SemanticWalkerPatternTest"
+dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticWalkerPatternTest"
 
 # Run single test method
-dotnet test --filter "SemanticWalkerPatternTest.Visit_IsPattern_Constant"
+dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticWalkerPatternTest.Visit_IsPattern_Constant"
 ```
 
 ## Contributing

@@ -3,6 +3,13 @@
 [ECMAScript]
 [Description("@#")]
 [Jazor]
+/// <summary>
+/// Host surface for JavaScript runtime globals as exposed to C#.
+/// The public API aims to stay as close to JavaScript runtime shape as C# allows,
+/// ideally differing only by casing. When C# syntax or BCL naming conflicts force
+/// a deviation, that deviation is a host-language escape hatch rather than a different
+/// runtime model.
+/// </summary>
 public static partial class Global
 {
 	/// <summary>
@@ -19,6 +26,10 @@ public static partial class Global
 	[Jazor]
 	public extern static RegExp RegExp(string value);
 
+	/// <summary>
+	/// C# host name for JavaScript <c>Number(...)</c>.
+	/// The trailing underscore only avoids naming conflicts on the C# side.
+	/// </summary>
 	[Description("@#Number")]
 	public extern static Number Number_(Number value);
 
@@ -28,6 +39,10 @@ public static partial class Global
 	[Description("@#Number")]
 	public extern static Number Number_(string value);
 
+	/// <summary>
+	/// C# host name for JavaScript <c>BigInt(...)</c>.
+	/// The trailing underscore only avoids naming conflicts on the C# side.
+	/// </summary>
 	[Description("@#BigInt")]
 	public extern static BigInt BigInt_(Number value);
 

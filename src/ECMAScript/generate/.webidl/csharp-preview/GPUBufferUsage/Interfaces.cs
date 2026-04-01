@@ -12,7 +12,7 @@ public class GPU
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#requestAdapter")]
-    public extern PromiseResult<GPUAdapter?> RequestAdapter(GPURequestAdapterOptions? options = default);
+    public extern PromiseResult<GPUAdapter?> RequestAdapter(GPURequestAdapterOptions options = new());
 
     /// <summary>
     /// getPreferredCanvasFormat
@@ -57,7 +57,7 @@ public extern bool IsFallbackAdapter { get; }
     /// </summary>
     /// <param name="descriptor">descriptor</param>
     [Description("@#requestDevice")]
-    public extern PromiseResult<GPUDevice> RequestDevice(GPUDeviceDescriptor? descriptor = default);
+    public extern PromiseResult<GPUDevice> RequestDevice(GPUDeviceDescriptor descriptor = new());
 
     /// <summary>
     /// requestAdapterInfo
@@ -162,7 +162,7 @@ public extern GPUBufferMapState MapState { get; }
     /// <param name="offset">offset</param>
     /// <param name="size">size</param>
     [Description("@#mapAsync")]
-    public extern PromiseResult<void> MapAsync(GPUMapModeFlags mode, GPUSize64? offset = default, GPUSize64? size = default);
+    public extern PromiseResult<void> MapAsync(GPUMapModeFlags mode, GPUSize64 offset = 0, GPUSize64? size = default);
 
     /// <summary>
     /// getMappedRange
@@ -170,7 +170,7 @@ public extern GPUBufferMapState MapState { get; }
     /// <param name="offset">offset</param>
     /// <param name="size">size</param>
     [Description("@#getMappedRange")]
-    public extern ArrayBuffer GetMappedRange(GPUSize64? offset = default, GPUSize64? size = default);
+    public extern ArrayBuffer GetMappedRange(GPUSize64 offset = 0, GPUSize64? size = default);
 
     /// <summary>
     /// unmap
@@ -261,7 +261,7 @@ public class GPUCommandEncoder
     /// </summary>
     /// <param name="descriptor">descriptor</param>
     [Description("@#beginComputePass")]
-    public extern GPUComputePassEncoder BeginComputePass(GPUComputePassDescriptor? descriptor = default);
+    public extern GPUComputePassEncoder BeginComputePass(GPUComputePassDescriptor descriptor = new());
 
     /// <summary>
     /// copyBufferToBuffer
@@ -308,7 +308,7 @@ public class GPUCommandEncoder
     /// <param name="offset">offset</param>
     /// <param name="size">size</param>
     [Description("@#clearBuffer")]
-    public extern void ClearBuffer(GPUBuffer buffer, GPUSize64? offset = default, GPUSize64? size = default);
+    public extern void ClearBuffer(GPUBuffer buffer, GPUSize64 offset = 0, GPUSize64? size = default);
 
     /// <summary>
     /// resolveQuerySet
@@ -326,7 +326,7 @@ public class GPUCommandEncoder
     /// </summary>
     /// <param name="descriptor">descriptor</param>
     [Description("@#finish")]
-    public extern GPUCommandBuffer Finish(GPUCommandBufferDescriptor? descriptor = default);
+    public extern GPUCommandBuffer Finish(GPUCommandBufferDescriptor descriptor = new());
 
     #region mixin GPUObjectBase
     /// <summary>
@@ -438,7 +438,7 @@ public class GPUComputePassEncoder
     /// <param name="workgroupCountY">workgroupCountY</param>
     /// <param name="workgroupCountZ">workgroupCountZ</param>
     [Description("@#dispatchWorkgroups")]
-    public extern void DispatchWorkgroups(GPUSize32 workgroupCountX, GPUSize32? workgroupCountY = default, GPUSize32? workgroupCountZ = default);
+    public extern void DispatchWorkgroups(GPUSize32 workgroupCountX, GPUSize32 workgroupCountY = 1, GPUSize32 workgroupCountZ = 1);
 
     /// <summary>
     /// dispatchWorkgroupsIndirect
@@ -492,7 +492,7 @@ public extern string Label { get; set; }
     /// <param name="bindGroup">bindGroup</param>
     /// <param name="dynamicOffsets">dynamicOffsets</param>
     [Description("@#setBindGroup")]
-    public extern void SetBindGroup(GPUIndex32 index, GPUBindGroup? bindGroup, GPUBufferDynamicOffset[]? dynamicOffsets = default);
+    public extern void SetBindGroup(GPUIndex32 index, GPUBindGroup? bindGroup, GPUBufferDynamicOffset[] dynamicOffsets = new GPUBufferDynamicOffset[]());
     
     /// <summary>
     /// setBindGroup
@@ -582,7 +582,7 @@ public extern GPUQueue Queue { get; }
     /// </summary>
     /// <param name="descriptor">descriptor</param>
     [Description("@#createSampler")]
-    public extern GPUSampler CreateSampler(GPUSamplerDescriptor? descriptor = default);
+    public extern GPUSampler CreateSampler(GPUSamplerDescriptor descriptor = new());
 
     /// <summary>
     /// importExternalTexture
@@ -652,7 +652,7 @@ public extern GPUQueue Queue { get; }
     /// </summary>
     /// <param name="descriptor">descriptor</param>
     [Description("@#createCommandEncoder")]
-    public extern GPUCommandEncoder CreateCommandEncoder(GPUCommandEncoderDescriptor? descriptor = default);
+    public extern GPUCommandEncoder CreateCommandEncoder(GPUCommandEncoderDescriptor descriptor = new());
 
     /// <summary>
     /// createRenderBundleEncoder
@@ -785,7 +785,7 @@ public class GPUOutOfMemoryError : GPUError
 /// </summary>
 [ECMAScript]
 [Description("@#GPUPipelineError")]
-public class GPUPipelineError : DOMException
+public class GPUPipelineError(string message, string name) : DOMException(message, name)
 {
     /// <summary>
 /// Constructor 
@@ -880,7 +880,7 @@ public class GPUQueue
     /// <param name="dataOffset">dataOffset</param>
     /// <param name="size">size</param>
     [Description("@#writeBuffer")]
-    public extern void WriteBuffer(GPUBuffer buffer, GPUSize64 bufferOffset, IAllowSharedBufferSource data, GPUSize64? dataOffset = default, GPUSize64? size = default);
+    public extern void WriteBuffer(GPUBuffer buffer, GPUSize64 bufferOffset, IAllowSharedBufferSource data, GPUSize64 dataOffset = 0, GPUSize64? size = default);
 
     /// <summary>
     /// writeTexture
@@ -938,7 +938,7 @@ public class GPURenderBundleEncoder
     /// </summary>
     /// <param name="descriptor">descriptor</param>
     [Description("@#finish")]
-    public extern GPURenderBundle Finish(GPURenderBundleDescriptor? descriptor = default);
+    public extern GPURenderBundle Finish(GPURenderBundleDescriptor descriptor = new());
 
     #region mixin GPUObjectBase
     /// <summary>
@@ -978,7 +978,7 @@ public extern string Label { get; set; }
     /// <param name="bindGroup">bindGroup</param>
     /// <param name="dynamicOffsets">dynamicOffsets</param>
     [Description("@#setBindGroup")]
-    public extern void SetBindGroup(GPUIndex32 index, GPUBindGroup? bindGroup, GPUBufferDynamicOffset[]? dynamicOffsets = default);
+    public extern void SetBindGroup(GPUIndex32 index, GPUBindGroup? bindGroup, GPUBufferDynamicOffset[] dynamicOffsets = new GPUBufferDynamicOffset[]());
     
     /// <summary>
     /// setBindGroup
@@ -1008,7 +1008,7 @@ public extern string Label { get; set; }
     /// <param name="offset">offset</param>
     /// <param name="size">size</param>
     [Description("@#setIndexBuffer")]
-    public extern void SetIndexBuffer(GPUBuffer buffer, GPUIndexFormat indexFormat, GPUSize64? offset = default, GPUSize64? size = default);
+    public extern void SetIndexBuffer(GPUBuffer buffer, GPUIndexFormat indexFormat, GPUSize64 offset = 0, GPUSize64? size = default);
     
     /// <summary>
     /// setVertexBuffer
@@ -1018,7 +1018,7 @@ public extern string Label { get; set; }
     /// <param name="offset">offset</param>
     /// <param name="size">size</param>
     [Description("@#setVertexBuffer")]
-    public extern void SetVertexBuffer(GPUIndex32 slot, GPUBuffer? buffer, GPUSize64? offset = default, GPUSize64? size = default);
+    public extern void SetVertexBuffer(GPUIndex32 slot, GPUBuffer? buffer, GPUSize64 offset = 0, GPUSize64? size = default);
     
     /// <summary>
     /// draw
@@ -1028,7 +1028,7 @@ public extern string Label { get; set; }
     /// <param name="firstVertex">firstVertex</param>
     /// <param name="firstInstance">firstInstance</param>
     [Description("@#draw")]
-    public extern void Draw(GPUSize32 vertexCount, GPUSize32? instanceCount = default, GPUSize32? firstVertex = default, GPUSize32? firstInstance = default);
+    public extern void Draw(GPUSize32 vertexCount, GPUSize32 instanceCount = 1, GPUSize32 firstVertex = 0, GPUSize32 firstInstance = 0);
     
     /// <summary>
     /// drawIndexed
@@ -1039,7 +1039,7 @@ public extern string Label { get; set; }
     /// <param name="baseVertex">baseVertex</param>
     /// <param name="firstInstance">firstInstance</param>
     [Description("@#drawIndexed")]
-    public extern void DrawIndexed(GPUSize32 indexCount, GPUSize32? instanceCount = default, GPUSize32? firstIndex = default, GPUSignedOffset32? baseVertex = default, GPUSize32? firstInstance = default);
+    public extern void DrawIndexed(GPUSize32 indexCount, GPUSize32 instanceCount = 1, GPUSize32 firstIndex = 0, GPUSignedOffset32 baseVertex = 0, GPUSize32 firstInstance = 0);
     
     /// <summary>
     /// drawIndirect
@@ -1166,7 +1166,7 @@ public extern string Label { get; set; }
     /// <param name="bindGroup">bindGroup</param>
     /// <param name="dynamicOffsets">dynamicOffsets</param>
     [Description("@#setBindGroup")]
-    public extern void SetBindGroup(GPUIndex32 index, GPUBindGroup? bindGroup, GPUBufferDynamicOffset[]? dynamicOffsets = default);
+    public extern void SetBindGroup(GPUIndex32 index, GPUBindGroup? bindGroup, GPUBufferDynamicOffset[] dynamicOffsets = new GPUBufferDynamicOffset[]());
     
     /// <summary>
     /// setBindGroup
@@ -1196,7 +1196,7 @@ public extern string Label { get; set; }
     /// <param name="offset">offset</param>
     /// <param name="size">size</param>
     [Description("@#setIndexBuffer")]
-    public extern void SetIndexBuffer(GPUBuffer buffer, GPUIndexFormat indexFormat, GPUSize64? offset = default, GPUSize64? size = default);
+    public extern void SetIndexBuffer(GPUBuffer buffer, GPUIndexFormat indexFormat, GPUSize64 offset = 0, GPUSize64? size = default);
     
     /// <summary>
     /// setVertexBuffer
@@ -1206,7 +1206,7 @@ public extern string Label { get; set; }
     /// <param name="offset">offset</param>
     /// <param name="size">size</param>
     [Description("@#setVertexBuffer")]
-    public extern void SetVertexBuffer(GPUIndex32 slot, GPUBuffer? buffer, GPUSize64? offset = default, GPUSize64? size = default);
+    public extern void SetVertexBuffer(GPUIndex32 slot, GPUBuffer? buffer, GPUSize64 offset = 0, GPUSize64? size = default);
     
     /// <summary>
     /// draw
@@ -1216,7 +1216,7 @@ public extern string Label { get; set; }
     /// <param name="firstVertex">firstVertex</param>
     /// <param name="firstInstance">firstInstance</param>
     [Description("@#draw")]
-    public extern void Draw(GPUSize32 vertexCount, GPUSize32? instanceCount = default, GPUSize32? firstVertex = default, GPUSize32? firstInstance = default);
+    public extern void Draw(GPUSize32 vertexCount, GPUSize32 instanceCount = 1, GPUSize32 firstVertex = 0, GPUSize32 firstInstance = 0);
     
     /// <summary>
     /// drawIndexed
@@ -1227,7 +1227,7 @@ public extern string Label { get; set; }
     /// <param name="baseVertex">baseVertex</param>
     /// <param name="firstInstance">firstInstance</param>
     [Description("@#drawIndexed")]
-    public extern void DrawIndexed(GPUSize32 indexCount, GPUSize32? instanceCount = default, GPUSize32? firstIndex = default, GPUSignedOffset32? baseVertex = default, GPUSize32? firstInstance = default);
+    public extern void DrawIndexed(GPUSize32 indexCount, GPUSize32 instanceCount = 1, GPUSize32 firstIndex = 0, GPUSignedOffset32 baseVertex = 0, GPUSize32 firstInstance = 0);
     
     /// <summary>
     /// drawIndirect
@@ -1553,7 +1553,7 @@ public class GPUTexture
     /// </summary>
     /// <param name="descriptor">descriptor</param>
     [Description("@#createView")]
-    public extern GPUTextureView CreateView(GPUTextureViewDescriptor? descriptor = default);
+    public extern GPUTextureView CreateView(GPUTextureViewDescriptor descriptor = new());
 
     /// <summary>
     /// destroy
@@ -1639,7 +1639,7 @@ public extern string Label { get; set; }
 /// </summary>
 [ECMAScript]
 [Description("@#GPUUncapturedErrorEvent")]
-public class GPUUncapturedErrorEvent : Event
+public class GPUUncapturedErrorEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 

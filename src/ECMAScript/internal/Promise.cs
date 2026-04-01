@@ -6,11 +6,14 @@ using System.Threading;
 namespace ECMAScript;
 
 [ECMAScript]
+[Description("@#")]
 [EditorBrowsable(EditorBrowsableState.Never)]
 public interface IPromise
 {
+    [Description("@#catch")]
     IPromise Catch(Action<Error> onError);
 
+    [Description("@#finally")]
     IPromise Finally(Action onFinal);
 
     /// <summary>
@@ -18,6 +21,7 @@ public interface IPromise
     /// </summary>
     /// <param name="onFulfilled">Action to be invoked on resolution</param>
     /// <returns></returns>
+    [Description("@#then")]
     IPromise Then(Action onFulfilled);
     /// <summary>
     /// Returns a new promise that will be resolved when one of the passed in actions is finished.
@@ -25,6 +29,7 @@ public interface IPromise
     /// <param name="onFulfilled">Action to be invoked when this promise is resolved</param>
     /// <param name="onRejected">Action to be invoked when this promise is rejected</param>
     /// <returns></returns>
+    [Description("@#then")]
     IPromise Then(Action onFulfilled, Action onRejected);
     /// <summary>
     /// Returns a new promise that will be resolved when one of the passed in actions is finished.
@@ -32,6 +37,7 @@ public interface IPromise
     /// <param name="onFulfilled">Action to be invoked when this promise is resolved</param>
     /// <param name="onRejected">Action to be invoked when this promise is rejected</param>
     /// <returns></returns>
+    [Description("@#then")]
     IPromise Then(Action onFufilled, Action<Error> onRejected);
 
     /// <summary>
@@ -40,6 +46,7 @@ public interface IPromise
     /// </summary>
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved</param>
     /// <returns></returns>
+    [Description("@#then")]
     IPromise<T> Then<T>(Func<T> onFulfilled);
     /// <summary>
     /// Returns a promise that will be resolved with the return value of the passed in
@@ -49,6 +56,7 @@ public interface IPromise
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action"/> to be invoked when this promise is rejected.</param>
     /// <returns></returns>
+    [Description("@#then")]
     IPromise<T> Then<T>(Func<T> onFulfilled, Action onRejected);
     /// <summary>
     /// Returns a promise that will be resolved with the return value of the passed in
@@ -58,6 +66,7 @@ public interface IPromise
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action{T}"/> to be invoked when this promise is rejected.</param>
     /// <returns></returns>
+    [Description("@#then")]
     IPromise<T> Then<T>(Func<T> onFulfilled, Action<Error> onRejected);
 
     /// <summary>
@@ -66,6 +75,7 @@ public interface IPromise
     /// </summary>
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved</param>
     /// <returns></returns>
+    [Description("@#then")]
     IPromise<T> Then<T>(Func<IPromise<T>> onFulfilled);
     /// <summary>
     /// Returns a new promise that will be resolved with resolved value of the
@@ -76,6 +86,7 @@ public interface IPromise
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action"/> to be invoked when this promise is rejected.</param>
     /// <returns></returns>
+    [Description("@#then")]
     IPromise<T> Then<T>(Func<IPromise<T>> onFulfilled, Action onRejected);
     /// <summary>
     /// Returns a new promise that will be resolved with resolved value of the
@@ -86,6 +97,7 @@ public interface IPromise
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action{T}"/> to be invoked when this promise is rejected.</param>
     /// <returns></returns>
+    [Description("@#then")]
     IPromise<T> Then<T>(Func<IPromise<T>> onFulfilled, Action<Error> onRejected);
 
     /// <summary>
@@ -94,6 +106,7 @@ public interface IPromise
     /// </summary>
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved</param>
     /// <returns></returns>
+    [Description("@#then")]
     IPromise Then(Func<IPromise> onFulfilled);
     /// <summary>
     /// Returns a new promise that will be resolved with resolved value of the
@@ -104,6 +117,7 @@ public interface IPromise
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action"/> to be invoked when this promise is rejected.</param>
     /// <returns></returns>
+    [Description("@#then")]
     IPromise Then(Func<IPromise> onFulfilled, Action onRejected);
     /// <summary>
     /// Returns a new promise that will be resolved with resolved value of the
@@ -114,6 +128,7 @@ public interface IPromise
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action{T}"/> to be invoked when this promise is rejected.</param>
     /// <returns></returns>
+    [Description("@#then")]
     IPromise Then(Func<IPromise> onFulfilled, Action<Error> onRejected);
 
     /// <summary>
@@ -122,6 +137,7 @@ public interface IPromise
     /// </summary>
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved</param>
     /// <returns></returns>
+    [Description("@#then")]
     IPromise Then(Func<PromiseResult> onFulfilled);
     /// <summary>
     /// Returns a new promise that will be resolved with resolved value of the
@@ -131,6 +147,7 @@ public interface IPromise
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action"/> to be invoked when this promise is rejected.</param>
     /// <returns></returns>
+    [Description("@#then")]
     IPromise Then(Func<PromiseResult> onFulfilled, Action onRejected);
     /// <summary>
     /// Returns a new promise that will be resolved with resolved value of the
@@ -140,6 +157,7 @@ public interface IPromise
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action{T}"/> to be invoked when this promise is rejected.</param>
     /// <returns></returns>
+    [Description("@#then")]
     IPromise Then(Func<PromiseResult> onFulfilled, Action<Error> onRejected);
 
     /// <summary>
@@ -148,6 +166,7 @@ public interface IPromise
     /// </summary>
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved</param>
     /// <returns></returns>
+    [Description("@#then")]
     IPromise<T> Then<T>(Func<PromiseResult<T>> onFulfilled);
     /// <summary>
     /// Returns a new promise that will be resolved with resolved value of the
@@ -158,6 +177,7 @@ public interface IPromise
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action"/> to be invoked when this promise is rejected.</param>
     /// <returns></returns>
+    [Description("@#then")]
     IPromise<T> Then<T>(Func<PromiseResult<T>> onFulfilled, Action onRejected);
     /// <summary>
     /// Returns a new promise that will be resolved with resolved value of the
@@ -168,13 +188,16 @@ public interface IPromise
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action{T}"/> to be invoked when this promise is rejected.</param>
     /// <returns></returns>
+    [Description("@#then")]
     IPromise<T> Then<T>(Func<PromiseResult<T>> onFulfilled, Action<Error> onRejected);
 }
 
 [ECMAScript]
+[Description("@#")]
 [EditorBrowsable(EditorBrowsableState.Never)]
 public interface IPromise<T> : IPromise
 {
+    [Description("@#finally")]
     new IPromise<T> Finally(Action onFinal);
 
     /// <summary>
@@ -182,6 +205,7 @@ public interface IPromise<T> : IPromise
     /// </summary>
     /// <param name="onFulfilled"><see cref="Action{T}"/> to be invoked on resolution</param>
     /// <returns></returns>
+    [Description("@#then")]
     IPromise Then(Action<T> onFulfilled);
     /// <summary>
     /// Returns a new promise that will be resolved when one of the passed in actions is finished.
@@ -189,6 +213,7 @@ public interface IPromise<T> : IPromise
     /// <param name="onFulfilled"><see cref="Action{T}"/> to be invoked when this promise is resolved</param>
     /// <param name="onRejected"><see cref="Action{T}"/> to be invoked when this promise is rejected</param>
     /// <returns></returns>
+    [Description("@#then")]
     IPromise Then(Action<T> onFulfilled, Action onRejected);
 
     /// <summary>
@@ -197,6 +222,7 @@ public interface IPromise<T> : IPromise
     /// <param name="onFulfilled"><see cref="Action{T}"/> to be invoked when this promise is resolved</param>
     /// <param name="onRejected"><see cref="Action{T}"/> to be invoked when this promise is rejected</param>
     /// <returns></returns>
+    [Description("@#then")]
     IPromise Then(Action<T> onFulfilled, Action<Error> onRejected);
 
 
@@ -206,6 +232,7 @@ public interface IPromise<T> : IPromise
     /// </summary>
     /// <param name="onFulfilled"><see cref="Func{T, TResult}"/> to be invoked when this promise is resolved</param>
     /// <returns></returns>
+    [Description("@#then")]
     IPromise<TResult> Then<TResult>(Func<T, TResult> onFulfilled);
     /// <summary>
     /// Returns a promise that will be resolved with the return value of the passed in
@@ -215,6 +242,7 @@ public interface IPromise<T> : IPromise
     /// <param name="onFulfilled"><see cref="Func{T, TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action"/> to be invoked when this promise is rejected.</param>
     /// <returns></returns>
+    [Description("@#then")]
     IPromise<TResult> Then<TResult>(Func<T, TResult> onFulfilled, Action onRejected);
     /// <summary>
     /// Returns a promise that will be resolved with the return value of the passed in
@@ -224,6 +252,7 @@ public interface IPromise<T> : IPromise
     /// <param name="onFulfilled"><see cref="Func{T, TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action{T}"/> to be invoked when this promise is rejected.</param>
     /// <returns></returns>
+    [Description("@#then")]
     IPromise<TResult> Then<TResult>(Func<T, TResult> onFulfilled, Action<Error> onRejected);
 
     /// <summary>
@@ -232,6 +261,7 @@ public interface IPromise<T> : IPromise
     /// </summary>
     /// <param name="onFulfilled"><see cref="Func{T, TResult}"/> to be invoked when this promise is resolved</param>
     /// <returns></returns>
+    [Description("@#then")]
     IPromise<TResult> Then<TResult>(Func<T, PromiseResult<TResult>> onFulfilled);
     /// <summary>
     /// Returns a new promise that will be resolved with resolved value of the
@@ -242,6 +272,7 @@ public interface IPromise<T> : IPromise
     /// <param name="onFulfilled"><see cref="Func{T, TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action"/> to be invoked when this promise is rejected.</param>
     /// <returns></returns>
+    [Description("@#then")]
     IPromise<TResult> Then<TResult>(Func<T, PromiseResult<TResult>> onFulfilled, Action onRejected);
     /// <summary>
     /// Returns a new promise that will be resolved with resolved value of the
@@ -252,22 +283,33 @@ public interface IPromise<T> : IPromise
     /// <param name="onFulfilled"><see cref="Func{T, TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action{T}"/> to be invoked when this promise is rejected.</param>
     /// <returns></returns>
+    [Description("@#then")]
     IPromise<TResult> Then<TResult>(Func<T, PromiseResult<TResult>> onFulfilled, Action<Error> onRejected);
 
+    [Description("@#then")]
     IPromise Then(Func<T, IPromise> onResolve);
+    [Description("@#then")]
     IPromise Then(Func<T, IPromise> onResolve, Action onRejected);
+    [Description("@#then")]
     IPromise Then(Func<T, IPromise> onResolve, Action<Error> onRejected);
 
+    [Description("@#then")]
     IPromise<TResult> Then<TResult>(Func<T, IPromise<TResult>> onFulfilled);
+    [Description("@#then")]
     IPromise<TResult> Then<TResult>(Func<T, IPromise<TResult>> onFulfilled, Action onRejected);
+    [Description("@#then")]
     IPromise<TResult> Then<TResult>(Func<T, IPromise<TResult>> onFulfilled, Action<Error> onRejected);
 
+    [Description("@#then")]
     IPromise Then(Func<T, PromiseResult> onFulfilled);
+    [Description("@#then")]
     IPromise Then(Func<T, PromiseResult> onFulfilled, Action onRejected);
+    [Description("@#then")]
     IPromise Then(Func<T, PromiseResult> onFulfilled, Action<Error> onRejected);
 }
 
 [ECMAScript]
+[Description("@#")]
 public sealed class PromiseResult : IAsyncResult
 {
     public extern object AsyncState { get; }
@@ -282,6 +324,7 @@ public sealed class PromiseResult : IAsyncResult
 }
 
 [ECMAScript]
+[Description("@#")]
 public sealed class PromiseResult<TResult> : IAsyncResult
 {
 	public extern object AsyncState { get; }
@@ -296,7 +339,7 @@ public sealed class PromiseResult<TResult> : IAsyncResult
 }
 
 [ECMAScript]
-[Description("@#promise")]
+[Description("@#Promise")]
 public class Promise : IPromise
 {
     /// <summary>
@@ -636,7 +679,7 @@ public class Promise : IPromise
 }
 
 [ECMAScript]
-[Description("@#promise")]  
+[Description("@#Promise")]  
 public sealed class Promise<T> : Promise, IPromise<T>
 {
     /// <summary>

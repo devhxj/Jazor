@@ -6,8 +6,10 @@ namespace ECMAScript;
 [Description("@#Error")]
 public class Error : Exception
 {
+	[Description("@#name")]
 	public virtual string Name => "Error";
 
+	[Description("@#stack")]
 	public string? Stack => StackTrace;
 
 	public extern Error(string message, string? stack = null);
@@ -60,6 +62,7 @@ public class Error : Exception
 [Description("@#EvalError")]
 public class EvalError : Error
 {
+	[Description("@#name")]
 	public override string Name => "EvalError";
 
 	public extern EvalError(string message, string? stack = null);
@@ -69,6 +72,7 @@ public class EvalError : Error
 [Description("@#RangeError")]
 public class RangeError : Error
 {
+	[Description("@#name")]
 	public override string Name => "RangeError";
 
 	public extern RangeError(string message, string? stack = null);
@@ -78,6 +82,7 @@ public class RangeError : Error
 [Description("@#ReferenceError")]
 public class ReferenceError : Error
 {
+	[Description("@#name")]
 	public override string Name => "ReferenceError";
 
 	public extern ReferenceError(string message, string? stack = null);
@@ -87,6 +92,7 @@ public class ReferenceError : Error
 [Description("@#SyntaxError")]
 public class SyntaxError : Error
 {
+	[Description("@#name")]
 	public override string Name => "SyntaxError";
 
 	public extern SyntaxError(string message, string? stack = null);
@@ -96,6 +102,7 @@ public class SyntaxError : Error
 [Description("@#TypeError")]
 public class TypeError : Error
 {
+	[Description("@#name")]
 	public override string Name => "TypeError";
 
 	public extern TypeError(string message, string? stack = null);
@@ -105,6 +112,7 @@ public class TypeError : Error
 [Description("@#URIError")]
 public class URIError : Error
 {
+	[Description("@#name")]
 	public override string Name => "URIError";
 
 	public extern URIError(string message, string? stack = null);
@@ -114,8 +122,10 @@ public class URIError : Error
 [Description("@#AggregateError")]
 public class AggregateError : Error
 {
+	[Description("@#name")]
 	public override string Name => "AggregateError";
 
+	[Description("@#errors")]
 	public IReadOnlyList<Exception> Errors { get; }
 
 	public extern AggregateError(IReadOnlyList<Exception> errors, string? message = null, string? stack = null);

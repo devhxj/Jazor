@@ -82,7 +82,7 @@ public class CSSColorValue : CSSStyleValue
     /// </summary>
     /// <param name="cssText">cssText</param>
     [Description("@#parse")]
-    public extern static Either<CSSColorValue, CSSStyleValue> Parse(string cssText);
+    public static extern Either<CSSColorValue, CSSStyleValue> Parse(string cssText);
 }
 
 /// <summary>
@@ -634,49 +634,49 @@ public class CSSNumericValue : CSSStyleValue
     /// </summary>
     /// <param name="values">values</param>
     [Description("@#add")]
-    public extern CSSNumericValue Add(CSSNumberish values);
+    public extern CSSNumericValue Add(params CSSNumberish[] values);
 
     /// <summary>
     /// sub
     /// </summary>
     /// <param name="values">values</param>
     [Description("@#sub")]
-    public extern CSSNumericValue Sub(CSSNumberish values);
+    public extern CSSNumericValue Sub(params CSSNumberish[] values);
 
     /// <summary>
     /// mul
     /// </summary>
     /// <param name="values">values</param>
     [Description("@#mul")]
-    public extern CSSNumericValue Mul(CSSNumberish values);
+    public extern CSSNumericValue Mul(params CSSNumberish[] values);
 
     /// <summary>
     /// div
     /// </summary>
     /// <param name="values">values</param>
     [Description("@#div")]
-    public extern CSSNumericValue Div(CSSNumberish values);
+    public extern CSSNumericValue Div(params CSSNumberish[] values);
 
     /// <summary>
     /// min
     /// </summary>
     /// <param name="values">values</param>
     [Description("@#min")]
-    public extern CSSNumericValue Min(CSSNumberish values);
+    public extern CSSNumericValue Min(params CSSNumberish[] values);
 
     /// <summary>
     /// max
     /// </summary>
     /// <param name="values">values</param>
     [Description("@#max")]
-    public extern CSSNumericValue Max(CSSNumberish values);
+    public extern CSSNumericValue Max(params CSSNumberish[] values);
 
     /// <summary>
     /// equals
     /// </summary>
     /// <param name="value">value</param>
     [Description("@#equals")]
-    public extern bool Equals(CSSNumberish value);
+    public extern bool Equals(params CSSNumberish[] value);
 
     /// <summary>
     /// to
@@ -690,7 +690,7 @@ public class CSSNumericValue : CSSStyleValue
     /// </summary>
     /// <param name="units">units</param>
     [Description("@#toSum")]
-    public extern CSSMathSum ToSum(string units);
+    public extern CSSMathSum ToSum(params string[] units);
 
     /// <summary>
     /// type
@@ -703,7 +703,7 @@ public class CSSNumericValue : CSSStyleValue
     /// </summary>
     /// <param name="cssText">cssText</param>
     [Description("@#parse")]
-    public extern static CSSNumericValue Parse(string cssText);
+    public static extern CSSNumericValue Parse(string cssText);
 }
 
 /// <summary>
@@ -1455,7 +1455,7 @@ public extern uint Length { get; }
     /// <param name="value">value</param>
     /// <param name="priority">priority</param>
     [Description("@#setProperty")]
-    public extern void SetProperty(string property, string value, string? priority = default);
+    public extern void SetProperty(string property, string value, string priority = "");
 
     /// <summary>
     /// removeProperty
@@ -1578,7 +1578,7 @@ public extern CSSRuleList Rules { get; }
     /// <param name="style">style</param>
     /// <param name="index">index</param>
     [Description("@#addRule")]
-    public extern int AddRule(string? selector = default, string? style = default, uint? index = default);
+    public extern int AddRule(string selector = "undefined", string style = "undefined", uint? index = default);
 
     /// <summary>
     /// removeRule
@@ -1601,7 +1601,7 @@ public class CSSStyleValue
     /// <param name="property">property</param>
     /// <param name="cssText">cssText</param>
     [Description("@#parse")]
-    public extern static CSSStyleValue Parse(string property, string cssText);
+    public static extern CSSStyleValue Parse(string property, string cssText);
 
     /// <summary>
     /// parseAll
@@ -1609,7 +1609,7 @@ public class CSSStyleValue
     /// <param name="property">property</param>
     /// <param name="cssText">cssText</param>
     [Description("@#parseAll")]
-    public extern static CSSStyleValue[] ParseAll(string property, string cssText);
+    public static extern CSSStyleValue[] ParseAll(string property, string cssText);
 }
 
 /// <summary>
@@ -2248,7 +2248,7 @@ public class StylePropertyMap : StylePropertyMapReadOnly
     /// <param name="property">property</param>
     /// <param name="values">values</param>
     [Description("@#set")]
-    public extern void Set(string property, Either<CSSStyleValue, string> values);
+    public extern void Set(string property, params Either<CSSStyleValue, string>[] values);
     
     /// <summary>
     /// set
@@ -2272,7 +2272,7 @@ public class StylePropertyMap : StylePropertyMapReadOnly
     /// <param name="property">property</param>
     /// <param name="values">values</param>
     [Description("@#append")]
-    public extern void Append(string property, Either<CSSStyleValue, string> values);
+    public extern void Append(string property, params Either<CSSStyleValue, string>[] values);
     
     /// <summary>
     /// append
@@ -2426,7 +2426,7 @@ public partial class Window
     /// <param name="elt">elt</param>
     /// <param name="pseudoElt">pseudoElt</param>
     [Description("@#getComputedStyle")]
-    public extern CSSStyleDeclaration GetComputedStyle(Element elt, string? pseudoElt);
+    public extern CSSStyleDeclaration GetComputedStyle(Element elt, string? pseudoElt = default);
 }
 
 /// <summary>
@@ -2434,7 +2434,7 @@ public partial class Window
 /// </summary>
 [ECMAScript]
 [Description("@#WorkletAnimation")]
-public class WorkletAnimation : Animation
+public class WorkletAnimation(AnimationEffect? effect, AnimationTimeline? timeline) : Animation(effect, timeline)
 {
     /// <summary>
 /// Constructor 

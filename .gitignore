@@ -401,3 +401,9 @@ FodyWeavers.xsd
 .kilocode
 CLAUDE.md
 .omc/
+.claude/
+.dotnet/
+.dotnet-out/
+.tmp/
+.vs/
+

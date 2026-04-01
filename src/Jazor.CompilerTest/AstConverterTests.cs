@@ -261,7 +261,7 @@ export function set_Property(value) {
     }
 
     [TestMethod]
-    public async Task Convert_ClassWithNestedClass_ThrowsNotSupportedException()
+    public async Task Convert_ClassWithNestedClass_GeneratesClassDeclaration()
     {
         // Arrange
         var code = """
@@ -270,6 +270,16 @@ export function set_Property(value) {
                 public class NestedClass
                 {
                     public int Field;
+
+                    public NestedClass(int value)
+                    {
+                        Field = value;
+                    }
+
+                    public int Double()
+                    {
+                        return Field * 2;
+                    }
                 }
             }
             """;
@@ -277,9 +287,22 @@ export function set_Property(value) {
         var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
         var converter = new AstConverter(classSymbol, semanticModel);
 
-        // Act & Assert - 嵌套类需要扁平化处理，当前会抛出 NotSupportedException
-        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
-        Assert.IsNotNull(exception.Message);
+        // Act
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        // Assert
+        Assert.AreEqual(
+@"export class NestedClass {
+  Field;
+  constructor(value) {
+    this.Field = value;
+  }
+  Double() {
+    return this.Field * 2;
+  }
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
 
     #region 静态字段测试
@@ -1948,7 +1971,119 @@ export let Value = _155212572c9a3297(""33"");
 export function LogValue() {
   return _fb5a811e7a32a324(_155212572c9a3297(""44""));
 }
-", script);
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithCrossModuleStaticReference_GeneratesModuleImport()
+    {
+        // Arrange
+        var code = """
+            using System;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo
+            {
+                [ECMAScript.ECMAScriptModule("System/RuntimeModule.js")]
+                public static class RuntimeModule
+                {
+                    public static int Make() => 42;
+                }
+
+                [ECMAScript.ECMAScriptModule("System/ConsumerModule.js")]
+                public static class ConsumerModule
+                {
+                    public static int Create() => RuntimeModule.Make();
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(code);
+        var consumer = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "ConsumerModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+        var converter = new AstConverter(consumer, semanticModel);
+
+        // Act
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        // Assert
+        Assert.AreEqual(
+@"import { Make } from ""System/RuntimeModule.js"";
+export function Create() {
+  return Make();
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithCrossModuleStaticPropertyReference_GeneratesGetterImport()
+    {
+        // Arrange
+        var code = """
+            using System;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo
+            {
+                [ECMAScript.ECMAScriptModule("System/RuntimeModule.js")]
+                public static class RuntimeModule
+                {
+                    public static int Value { get; } = 42;
+                }
+
+                [ECMAScript.ECMAScriptModule("System/ConsumerModule.js")]
+                public static class ConsumerModule
+                {
+                    public static int Create() => RuntimeModule.Value;
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(code);
+        var consumer = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "ConsumerModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+        var converter = new AstConverter(consumer, semanticModel);
+
+        // Act
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        // Assert
+        Assert.AreEqual(
+@"import { get_Value } from ""System/RuntimeModule.js"";
+export function Create() {
+  return get_Value();
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
 
     [TestMethod]
@@ -1972,13 +2107,9 @@ export function LogValue() {
         // Assert
         Assert.AreEqual(
 @"export function Check() {
-  return {
-    Value: 1
-  } === {
-    Value: 1
-  };
+  return { Value: 1 } === { Value: 1 };
 }
-", script);
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
 
     #endregion

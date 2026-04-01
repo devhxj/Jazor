@@ -1,4 +1,5 @@
 ﻿using Acornima.Ast;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 using System.Collections.Generic;
 
@@ -38,7 +39,21 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitFieldInitializer(IFieldInitializerOperation operation, SenseArgument argument)
 	{
-		return Visit(operation.Value, argument);
+		var targetType = operation.InitializedFields.Length > 0
+			? operation.InitializedFields[0].Type
+			: null;
+		return TranslateTupleForTarget(operation.Value, targetType, argument);
+	}
+
+	/// <summary>
+	/// 处理属性初始化器操作
+	/// </summary>
+	public override Node? VisitPropertyInitializer(IPropertyInitializerOperation operation, SenseArgument argument)
+	{
+		var targetType = operation.InitializedProperties.Length > 0
+			? operation.InitializedProperties[0].Type
+			: null;
+		return TranslateTupleForTarget(operation.Value, targetType, argument);
 	}
 
 	/// <summary>
@@ -69,7 +84,9 @@ public partial class SemanticWalker
 	public override Node? VisitVariableDeclarator(IVariableDeclaratorOperation operation, SenseArgument argument)
 	{
 		var identifier = new Identifier(operation.Symbol.Name);
-		var init = Translate<Expression>(operation.Initializer, argument, null);
+		var init = operation.Initializer?.Value is IOperation value
+			? TranslateTupleForTarget(value, operation.Symbol.Type, argument)
+			: null;
 
 		return new VariableDeclarator(identifier, init);
 	}

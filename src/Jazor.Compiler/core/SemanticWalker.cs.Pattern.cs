@@ -115,6 +115,7 @@ IIsPatternOperation
 */
 using Acornima;
 using Acornima.Ast;
+using Jazor.Name;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis;
 using Microsoft.CodeAnalysis.Operations;
@@ -863,6 +864,24 @@ public partial class SemanticWalker
 
 		else
 		{
+			var displayName = typeSymbol.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat);
+			if (displayName == "System.DateTimeOffset")
+			{
+				var utcDateTime = new MemberExpression(value, new Identifier("utcDateTime"), computed: false, optional: false);
+				var offsetTicks = new MemberExpression(value, new Identifier("offsetTicks"), computed: false, optional: false);
+				result = new LogicalExpression(
+					Operator.LogicalAnd,
+					new LogicalExpression(
+						Operator.LogicalAnd,
+						new NonLogicalBinaryExpression(Operator.StrictInequality, value, Null),
+						TypeOfExpr(value, new StringLiteral("object", "\"object\""))),
+					new LogicalExpression(
+						Operator.LogicalAnd,
+						InstanceOfExpr(utcDateTime, new Identifier("Date")),
+						TypeOfExpr(offsetTicks, new StringLiteral("bigint", "\"bigint\""))));
+			}
+			else
+			{
 			var (mapper, typeName) = GetMapperType(typeSymbol);
 			result = mapper switch
 			{
@@ -878,6 +897,7 @@ public partial class SemanticWalker
 				TypeMapper.Class => InstanceOfExpr(value, new Identifier(typeName)),
 				_ => null
 			};
+			}
 		}
 
 		// 判断可空

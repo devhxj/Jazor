@@ -25,6 +25,9 @@ internal sealed class PreviewBindingEmitter
 
     private readonly GeneratorOptions _options;
     private readonly WebIdlTypeMapper _typeMapper = new();
+    private readonly Dictionary<string, IReadOnlyList<JsonElement>> _mixinMembersByKey = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, InterfaceCache> _interfaceCachesByKey = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, string[]> _interfaceKeysByName = new(StringComparer.Ordinal);
 
     public PreviewBindingEmitter(GeneratorOptions options)
     {
@@ -46,6 +49,7 @@ internal sealed class PreviewBindingEmitter
         var callbacksByNamespace = new SortedDictionary<string, List<string>>(StringComparer.Ordinal);
         var dictionariesByNamespace = new SortedDictionary<string, List<string>>(StringComparer.Ordinal);
         var interfacesByNamespace = new SortedDictionary<string, List<string>>(StringComparer.Ordinal);
+        var namespacesByNamespace = new SortedDictionary<string, List<string>>(StringComparer.Ordinal);
 
         foreach (var declaration in inventory.Files.SelectMany(file => file.Declarations))
         {
@@ -99,23 +103,23 @@ internal sealed class PreviewBindingEmitter
             AddByNamespace(dictionariesByNamespace, namespaceName, EmitDictionary(dictionaryGroup.Select(item => item.Declaration).ToArray(), namespaceName));
         }
 
-        var mixinBodies = inventory.Files
-            .SelectMany(file => file.Declarations
-                .Where(static declaration => declaration.Kind == "interface mixin")
-                .Select(declaration => new { file.Namespace, Declaration = declaration }))
-            .GroupBy(item => new
-            {
-                Namespace = item.Namespace ?? string.Empty,
-                Name = item.Declaration.Name ?? string.Empty,
-            })
-            .ToDictionary(
-                group => $"{group.Key.Namespace}|{group.Key.Name}",
-                group =>
-                {
-                    var namespaceName = string.IsNullOrWhiteSpace(group.Key.Namespace) ? null : group.Key.Namespace;
-                    return EmitMixinBody(group.Select(item => item.Declaration).ToArray(), namespaceName);
-                },
-                StringComparer.Ordinal);
+        _mixinMembersByKey.Clear();
+        foreach (var mixinGroup in inventory.Files
+                     .SelectMany(file => file.Declarations
+                         .Where(static declaration => declaration.Kind == "interface mixin")
+                         .Select(declaration => new { file.Namespace, Declaration = declaration }))
+                     .GroupBy(item => new
+                     {
+                         Namespace = item.Namespace ?? string.Empty,
+                         Name = item.Declaration.Name ?? string.Empty,
+                     }))
+        {
+            var namespaceName = string.IsNullOrWhiteSpace(mixinGroup.Key.Namespace) ? null : mixinGroup.Key.Namespace;
+            var members = mixinGroup
+                .SelectMany(item => item.Declaration.Payload.GetArray("members"))
+                .ToArray();
+            _mixinMembersByKey[$"{mixinGroup.Key.Namespace}|{mixinGroup.Key.Name}"] = DistinctMembers(members, namespaceName);
+        }
 
         var includesByTarget = inventory.Files
             .SelectMany(file => file.Declarations
@@ -131,6 +135,8 @@ internal sealed class PreviewBindingEmitter
                 group => group.Key,
                 group => group.Select(item => item.Include).Distinct(StringComparer.Ordinal).ToArray(),
                 StringComparer.Ordinal);
+
+        BuildInterfaceCaches(inventory, includesByTarget);
 
         var inheritedTypeKeys = inventory.Files
             .SelectMany(file => file.Declarations
@@ -157,8 +163,26 @@ internal sealed class PreviewBindingEmitter
                     interfaceGroup.Select(item => item.Declaration).ToArray(),
                     namespaceName,
                     inheritedTypeKeys.Contains(inheritedKey),
-                    mixinBodies,
                     includesByTarget));
+        }
+
+        foreach (var namespaceGroup in inventory.Files
+                     .SelectMany(file => file.Declarations
+                         .Where(static declaration => declaration.Kind == "namespace")
+                         .Select(declaration => new { file.Namespace, Declaration = declaration }))
+                     .GroupBy(item => new
+                     {
+                         Namespace = item.Namespace ?? string.Empty,
+                         Name = item.Declaration.Name ?? string.Empty,
+                     }))
+        {
+            var namespaceName = string.IsNullOrWhiteSpace(namespaceGroup.Key.Namespace) ? null : namespaceGroup.Key.Namespace;
+            AddByNamespace(
+                namespacesByNamespace,
+                namespaceName,
+                EmitNamespace(namespaceGroup.Select(item => item.Declaration).ToArray(), namespaceName));
+
+            globalUsings.Add(EmitNamespaceAlias(namespaceGroup.Key.Name, namespaceName));
         }
 
         await File.WriteAllTextAsync(
@@ -170,6 +194,7 @@ internal sealed class PreviewBindingEmitter
         await WriteGroupedFilesAsync(previewRoot, "Callbacks.cs", callbacksByNamespace, cancellationToken);
         await WriteGroupedFilesAsync(previewRoot, "Dictionaries.cs", dictionariesByNamespace, cancellationToken);
         await WriteGroupedFilesAsync(previewRoot, "Interfaces.cs", interfacesByNamespace, cancellationToken);
+        await WriteGroupedFilesAsync(previewRoot, "Namespaces.cs", namespacesByNamespace, cancellationToken);
     }
 
     private string EmitTypedef(WebIdlDeclarationInventory declaration, string? namespaceName)
@@ -534,26 +559,10 @@ internal sealed class PreviewBindingEmitter
         };
     }
 
-    private string EmitMixinBody(IReadOnlyList<WebIdlDeclarationInventory> declarations, string? namespaceName)
-    {
-        var members = declarations
-            .SelectMany(declaration => declaration.Payload.GetArray("members"))
-            .ToArray();
-        var distinctMembers = DistinctMembers(members, namespaceName);
-        var accessorInfo = BuildAccessorInfo(distinctMembers);
-
-        return string.Join(
-            Environment.NewLine + Environment.NewLine,
-            distinctMembers
-                .Select(member => EmitInterfaceMember(member, declarations[0].Name ?? string.Empty, namespaceName, accessorInfo))
-                .Where(static code => !string.IsNullOrWhiteSpace(code)));
-    }
-
     private string EmitInterface(
         IReadOnlyList<WebIdlDeclarationInventory> declarations,
         string? namespaceName,
         bool isInheritedByOtherType,
-        IReadOnlyDictionary<string, string> mixinBodies,
         IReadOnlyDictionary<string, string[]> includesByTarget)
     {
         var originalName = declarations[0].Name ?? throw new InvalidOperationException("Interface name is required.");
@@ -573,10 +582,48 @@ internal sealed class PreviewBindingEmitter
             .SelectMany(declaration => declaration.Payload.GetArray("members"))
             .ToArray();
         var distinctMembers = DistinctMembers(members, namespaceName);
+        var effectiveMembers = GetEffectiveInterfaceMembers(declarations, namespaceName, includesByTarget);
+        var interfaceKey = BuildTypeKey(namespaceName, originalName);
+        _interfaceCachesByKey.TryGetValue(interfaceKey, out var interfaceCache);
         var inheritanceParts = new List<string>();
+        var primaryConstructor = string.Empty;
         if (inheritances.Length == 1)
         {
-            inheritanceParts.Add(inheritances[0]);
+            var parentName = inheritances[0];
+            var parentKey = ResolveInterfaceKey(
+                namespaceName,
+                declarations.Select(static declaration => declaration.Inheritance).FirstOrDefault(static inheritance => !string.IsNullOrWhiteSpace(inheritance)));
+            if (parentKey is not null && _interfaceCachesByKey.TryGetValue(parentKey, out var parentCache))
+            {
+                var noParameterConstructors = parentCache.Constructors.Where(static ctor => ctor.ParameterCount == 0).ToArray();
+                var childConstructors = distinctMembers
+                    .Where(static member => member.GetStringOrNull("type") == "constructor")
+                    .Select(member => BuildConstructorCache(member, namespaceName))
+                    .ToArray();
+                if (parentCache.Constructors.Count > 0 && noParameterConstructors.Length == 0)
+                {
+                    var hasSameParameterConstructor = childConstructors.Any(childCtor =>
+                        parentCache.Constructors.Any(parentCtor => parentCtor.TypeSignature == childCtor.TypeSignature));
+                    if (hasSameParameterConstructor)
+                    {
+                        inheritanceParts.Add(parentName);
+                    }
+                    else
+                    {
+                        var parentConstructor = parentCache.Constructors[0];
+                        primaryConstructor = $"({parentConstructor.ParameterList})";
+                        inheritanceParts.Add($"{parentName}({parentConstructor.ArgumentList})");
+                    }
+                }
+                else
+                {
+                    inheritanceParts.Add(parentName);
+                }
+            }
+            else
+            {
+                inheritanceParts.Add(parentName);
+            }
         }
 
         var iterableInterface = distinctMembers.FirstOrDefault(static member => member.GetStringOrNull("type") == "iterable");
@@ -598,11 +645,19 @@ internal sealed class PreviewBindingEmitter
         }
 
         var inheritanceClause = inheritanceParts.Count > 0 ? $" : {string.Join(", ", inheritanceParts.Distinct(StringComparer.Ordinal))}" : string.Empty;
-        var accessorInfo = BuildAccessorInfo(distinctMembers);
+        var accessorInfo = BuildAccessorInfo(effectiveMembers);
+        var emissionContext = new InterfaceEmissionContext(
+            OwnerName: originalName,
+            NamespaceName: namespaceName,
+            InterfaceKey: interfaceKey,
+            Cache: interfaceCache,
+            ForceStatic: false,
+            EnableInheritance: true);
         var bodyMembers = distinctMembers
-            .Select(member => EmitInterfaceMember(member, originalName, namespaceName, accessorInfo))
+            .Select(member => EmitInterfaceMember(member, emissionContext, accessorInfo))
             .Where(static code => !string.IsNullOrWhiteSpace(code))
             .ToList();
+        var emittedMemberKeys = new HashSet<string>(distinctMembers.Select(member => BuildMemberKey(member, namespaceName)), StringComparer.Ordinal);
 
         var includeKey = $"{namespaceName ?? string.Empty}|{originalName}";
         if (includesByTarget.TryGetValue(includeKey, out var includeMixins))
@@ -610,9 +665,26 @@ internal sealed class PreviewBindingEmitter
             foreach (var mixinName in includeMixins)
             {
                 var mixinKey = $"{namespaceName ?? string.Empty}|{mixinName}";
-                if (mixinBodies.TryGetValue(mixinKey, out var mixinBody) && !string.IsNullOrWhiteSpace(mixinBody))
+                if (_mixinMembersByKey.TryGetValue(mixinKey, out var mixinMembers))
                 {
-                    bodyMembers.Add($"#region mixin {mixinName}{Environment.NewLine}{mixinBody}{Environment.NewLine}#endregion");
+                    var regionMembers = new List<JsonElement>();
+                    foreach (var mixinMember in mixinMembers)
+                    {
+                        if (emittedMemberKeys.Add(BuildMemberKey(mixinMember, namespaceName)))
+                        {
+                            regionMembers.Add(mixinMember);
+                        }
+                    }
+
+                    var mixinBody = string.Join(
+                        Environment.NewLine + Environment.NewLine,
+                        regionMembers
+                            .Select(member => EmitInterfaceMember(member, emissionContext, accessorInfo))
+                            .Where(static code => !string.IsNullOrWhiteSpace(code)));
+                    if (!string.IsNullOrWhiteSpace(mixinBody))
+                    {
+                        bodyMembers.Add($"#region mixin {mixinName}{Environment.NewLine}{mixinBody}{Environment.NewLine}#endregion");
+                    }
                 }
             }
         }
@@ -625,7 +697,7 @@ internal sealed class PreviewBindingEmitter
         builder.AppendLine("/// </summary>");
         builder.AppendLine("[ECMAScript]");
         builder.AppendLine($"[Description(\"@#{originalName}\")]");
-        builder.AppendLine($"public{abstractKeyword}{partialKeyword} class {className}{inheritanceClause}");
+        builder.AppendLine($"public{abstractKeyword}{partialKeyword} class {className}{primaryConstructor}{inheritanceClause}");
         builder.AppendLine("{");
         if (bodyMembers.Count > 0)
         {
@@ -636,49 +708,104 @@ internal sealed class PreviewBindingEmitter
         return builder.ToString();
     }
 
-    private string? EmitInterfaceMember(JsonElement member, string ownerName, string? namespaceName, AccessorInfo accessorInfo)
+    private string EmitNamespace(
+        IReadOnlyList<WebIdlDeclarationInventory> declarations,
+        string? namespaceName)
+    {
+        var originalName = declarations[0].Name ?? throw new InvalidOperationException("Namespace name is required.");
+        var className = WebIdlNaming.ToPascalCase(originalName);
+        var members = declarations
+            .SelectMany(declaration => declaration.Payload.GetArray("members"))
+            .ToArray();
+        var distinctMembers = DistinctMembers(members, namespaceName);
+        var accessorInfo = BuildAccessorInfo(distinctMembers);
+        var emissionContext = new InterfaceEmissionContext(
+            OwnerName: originalName,
+            NamespaceName: namespaceName,
+            InterfaceKey: BuildTypeKey(namespaceName, originalName),
+            Cache: null,
+            ForceStatic: true,
+            EnableInheritance: false);
+        var bodyMembers = distinctMembers
+            .Select(member => EmitNamespaceMember(member, emissionContext, accessorInfo))
+            .Where(static code => !string.IsNullOrWhiteSpace(code))
+            .ToList();
+
+        var partialKeyword = declarations.Any(static declaration => declaration.Partial == true) ? " partial" : string.Empty;
+        var builder = new StringBuilder();
+        builder.AppendLine("/// <summary>");
+        builder.AppendLine($"/// {originalName}");
+        builder.AppendLine("/// </summary>");
+        builder.AppendLine("[ECMAScript]");
+        builder.AppendLine($"[Description(\"@#{originalName}\")]");
+        builder.AppendLine($"public static{partialKeyword} class {className}");
+        builder.AppendLine("{");
+        if (bodyMembers.Count > 0)
+        {
+            builder.AppendLine(string.Join(Environment.NewLine + Environment.NewLine, bodyMembers.OfType<string>().Select(static member => Indent(member, 1))));
+        }
+
+        builder.Append('}');
+        return builder.ToString();
+    }
+
+    private static string EmitNamespaceAlias(string originalName, string? namespaceName)
+    {
+        var aliasName = EscapeIdentifier(originalName);
+        var className = WebIdlNaming.ToPascalCase(originalName);
+        return $"global using {aliasName} = {GetQualifiedTypeName(namespaceName, className)};";
+    }
+
+    private string? EmitInterfaceMember(JsonElement member, InterfaceEmissionContext context, AccessorInfo accessorInfo)
     {
         var type = member.GetStringOrNull("type");
         return type switch
         {
-            "constructor" => EmitConstructor(member, ownerName, namespaceName),
-            "attribute" => EmitAttribute(member, ownerName, namespaceName),
-            "const" => EmitConst(member, namespaceName),
-            "operation" => EmitOperation(member, ownerName, namespaceName, accessorInfo),
-            "iterable" => EmitIterableMember(member, namespaceName),
-            "maplike" => EmitMaplikeMember(member, namespaceName),
-            "setlike" => EmitSetlikeMember(member, namespaceName),
+            "constructor" => EmitConstructor(member, context.OwnerName, context.NamespaceName),
+            "attribute" => EmitAttribute(member, context),
+            "const" => EmitConst(member, context.NamespaceName),
+            "operation" => EmitOperation(member, context, accessorInfo),
+            "iterable" => EmitIterableMember(member, context.NamespaceName),
+            "maplike" => EmitMaplikeMember(member, context.NamespaceName),
+            "setlike" => EmitSetlikeMember(member, context.NamespaceName),
             _ => null,
         };
     }
 
-    private string EmitAttribute(JsonElement attribute, string ownerName, string? namespaceName)
+    private string? EmitNamespaceMember(JsonElement member, InterfaceEmissionContext context, AccessorInfo accessorInfo)
     {
-        var className = WebIdlNaming.ToPascalCase(ownerName);
-        var propertyType = _typeMapper.ToInlineType(attribute.GetProperty("idlType"), namespaceName);
-        var propertyName = WebIdlNaming.ToPascalCase(attribute.GetStringOrNull("name") ?? throw new InvalidOperationException("Attribute name is required."));
-        if (propertyName == className)
+        var type = member.GetStringOrNull("type");
+        return type switch
         {
-            propertyName += "_";
-        }
+            "attribute" => EmitAttribute(member, context),
+            "const" => EmitConst(member, context.NamespaceName),
+            "operation" => EmitOperation(member, context, accessorInfo),
+            _ => null,
+        };
+    }
 
+    private string? EmitAttribute(JsonElement attribute, InterfaceEmissionContext context)
+    {
+        var propertyType = _typeMapper.ToInlineType(attribute.GetProperty("idlType"), context.NamespaceName);
         var originalName = attribute.GetStringOrNull("name") ?? string.Empty;
-        if (originalName.Contains('-', StringComparison.Ordinal))
+        var propertyName = GetAttributePropertyName(originalName, context.OwnerName);
+        var inheritanceDisposition = context.EnableInheritance
+            ? GetPropertyInheritanceDisposition(context, propertyName, propertyType)
+            : InheritanceDisposition.None;
+        if (inheritanceDisposition == InheritanceDisposition.Skip)
         {
-            propertyName = string.Join(
-                "_",
-                originalName.Split('-', StringSplitOptions.RemoveEmptyEntries)
-                    .Select(WebIdlNaming.ToPascalCase));
+            return null;
         }
 
-        var staticPrefix = attribute.GetStringOrNull("special") == "static" ? "static " : string.Empty;
+        var isStatic = context.ForceStatic || attribute.GetStringOrNull("special") == "static";
+        var inheritanceModifier = inheritanceDisposition == InheritanceDisposition.New ? "new " : string.Empty;
         var isReadonly = attribute.GetBooleanOrNull("readonly") == true;
 
         return "/// <summary>\n"
             + $"/// {originalName}\n"
             + "/// </summary>\n"
             + $"[Description(\"@#{originalName}\")]\n"
-            + $"public extern {staticPrefix}{propertyType} {propertyName} {{ get;{(isReadonly ? string.Empty : " set;")} }}";
+            + $"public {inheritanceModifier}{(isStatic ? "static " : string.Empty)}extern {propertyType} {propertyName} {{ get;{(isReadonly ? string.Empty : " set;")} }}";
     }
 
     private string EmitConstructor(JsonElement constructor, string ownerName, string? namespaceName)
@@ -701,35 +828,46 @@ internal sealed class PreviewBindingEmitter
             + $"public extern {ownerName}({string.Join(", ", parameters)});";
     }
 
-    private string? EmitOperation(JsonElement operation, string ownerName, string? namespaceName, AccessorInfo accessorInfo)
+    private string? EmitOperation(JsonElement operation, InterfaceEmissionContext context, AccessorInfo accessorInfo)
     {
         var special = operation.GetStringOrNull("special") ?? string.Empty;
         var operationName = operation.GetStringOrNull("name");
         var returnType = operation.TryGetProperty("idlType", out var operationType)
-            ? _typeMapper.ToInlineType(operationType, namespaceName, "void")
+            ? _typeMapper.ToInlineType(operationType, context.NamespaceName, "void")
             : "void";
         var arguments = operation.GetArray("arguments");
 
         if (string.IsNullOrWhiteSpace(operationName))
         {
+            var unnamedDisposition = GetOperationInheritanceDisposition(context, special, string.Empty, arguments, returnType);
+            if (unnamedDisposition == InheritanceDisposition.Skip)
+            {
+                return null;
+            }
+
+            var unnamedInheritanceModifier = unnamedDisposition == InheritanceDisposition.New ? "new " : string.Empty;
             return special switch
             {
                 "stringifier" => null,
-                "getter" => EmitIndexerGetter(arguments, returnType, ownerName, accessorInfo, namespaceName),
-                "setter" => EmitIndexerSetter(arguments, ownerName, accessorInfo, namespaceName),
-                "deleter" => $"[Description(\"@#\")]{Environment.NewLine}[Category(\"deleter\")]{Environment.NewLine}public extern void Delete({string.Join(", ", BuildMethodParameters(arguments, namespaceName).Select(static parameter => parameter.Signature))});",
+                "getter" => EmitIndexerGetter(arguments, returnType, accessorInfo, context.NamespaceName, unnamedInheritanceModifier),
+                "setter" => EmitIndexerSetter(arguments, context.OwnerName, accessorInfo, context.NamespaceName, unnamedInheritanceModifier),
+                "deleter" => $"[Description(\"@#\")]{Environment.NewLine}[Category(\"deleter\")]{Environment.NewLine}public extern {unnamedInheritanceModifier}void Delete({string.Join(", ", BuildMethodParameters(arguments, context.NamespaceName).Select(static parameter => parameter.Signature))});",
                 _ => null,
             };
         }
 
-        var methodName = WebIdlNaming.ToPascalCase(operationName);
-        if (methodName == "Item")
+        var methodName = GetOperationMethodName(operationName);
+        var inheritanceDisposition = context.EnableInheritance
+            ? GetOperationInheritanceDisposition(context, special, methodName, arguments, returnType)
+            : InheritanceDisposition.None;
+        if (inheritanceDisposition == InheritanceDisposition.Skip)
         {
-            methodName = "GetItem";
+            return null;
         }
 
-        var parameters = BuildMethodParameters(arguments, namespaceName);
-        var staticPrefix = special == "static" ? "static " : string.Empty;
+        var parameters = BuildMethodParameters(arguments, context.NamespaceName);
+        var isStatic = context.ForceStatic || special == "static";
+        var inheritanceModifier = inheritanceDisposition == InheritanceDisposition.New ? "new " : string.Empty;
         var builder = new StringBuilder();
         builder.AppendLine("/// <summary>");
         builder.AppendLine($"/// {operationName}");
@@ -740,14 +878,14 @@ internal sealed class PreviewBindingEmitter
         }
 
         builder.AppendLine($"[Description(\"@#{operationName}\")]");
-        builder.Append($"public extern {staticPrefix}{returnType} {methodName}({string.Join(", ", parameters.Select(static parameter => parameter.Signature))});");
+        builder.Append($"public {inheritanceModifier}{(isStatic ? "static " : string.Empty)}extern {returnType} {methodName}({string.Join(", ", parameters.Select(static parameter => parameter.Signature))});");
 
         var lastArgument = arguments.LastOrDefault();
         if (lastArgument.ValueKind != JsonValueKind.Undefined
             && lastArgument.TryGetProperty("idlType", out var lastIdlType)
             && lastIdlType.GetBooleanOrNull("union") == true)
         {
-            var overloads = EmitUnionTailOverloads(operationName, methodName, returnType, staticPrefix, arguments, namespaceName);
+            var overloads = EmitUnionTailOverloads(operationName, methodName, returnType, isStatic, inheritanceModifier, arguments, context.NamespaceName);
             if (overloads.Count > 0)
             {
                 builder.AppendLine();
@@ -762,21 +900,22 @@ internal sealed class PreviewBindingEmitter
     private string? EmitIndexerGetter(
         IReadOnlyList<JsonElement> arguments,
         string returnType,
-        string ownerName,
         AccessorInfo accessorInfo,
-        string? namespaceName)
+        string? namespaceName,
+        string inheritanceModifier)
     {
         var parameters = BuildMethodParameters(arguments, namespaceName);
         return accessorInfo.HasSetter
-            ? $"[Description(\"@#\")] {Environment.NewLine}public extern {returnType} this[{string.Join(", ", parameters.Select(static parameter => parameter.Signature))}] {{ get; set; }}"
-            : $"[Description(\"@#\")] {Environment.NewLine}public extern {returnType} this[{string.Join(", ", parameters.Select(static parameter => parameter.Signature))}] {{ get; }}";
+            ? $"[Description(\"@#\")] {Environment.NewLine}public extern {inheritanceModifier}{returnType} this[{string.Join(", ", parameters.Select(static parameter => parameter.Signature))}] {{ get; set; }}"
+            : $"[Description(\"@#\")] {Environment.NewLine}public extern {inheritanceModifier}{returnType} this[{string.Join(", ", parameters.Select(static parameter => parameter.Signature))}] {{ get; }}";
     }
 
     private string? EmitIndexerSetter(
         IReadOnlyList<JsonElement> arguments,
         string ownerName,
         AccessorInfo accessorInfo,
-        string? namespaceName)
+        string? namespaceName,
+        string inheritanceModifier)
     {
         if (accessorInfo.HasGetter)
         {
@@ -791,7 +930,7 @@ internal sealed class PreviewBindingEmitter
         var indexType = _typeMapper.ToInlineType(arguments[0].GetProperty("idlType"), namespaceName);
         var indexName = WebIdlNaming.ToCamelCase(arguments[0].GetStringOrNull("name") ?? string.Empty);
         var valueType = _typeMapper.ToInlineType(arguments[1].GetProperty("idlType"), namespaceName);
-        return $"[Description(\"@#\")] {Environment.NewLine}public extern {valueType} this[{indexType} {indexName}] {{ set; }}";
+        return $"[Description(\"@#\")] {Environment.NewLine}public extern {inheritanceModifier}{valueType} this[{indexType} {indexName}] {{ set; }}";
     }
 
     private string EmitIterableMember(JsonElement member, string? namespaceName)
@@ -886,43 +1025,52 @@ internal sealed class PreviewBindingEmitter
         {
             var originalName = argument.GetStringOrNull("name") ?? string.Empty;
             var name = WebIdlNaming.ToCamelCase(originalName);
-            var type = _typeMapper.ToInlineType(argument.GetProperty("idlType"), namespaceName);
+            var idlType = argument.GetProperty("idlType");
+            var type = _typeMapper.ToInlineType(idlType, namespaceName);
             var typeKey = type.EndsWith("?", StringComparison.Ordinal) ? type[..^1] : type;
+            var isOptional = argument.GetBooleanOrNull("optional") == true;
+            var isVariadic = argument.GetBooleanOrNull("variadic") == true;
             string? defaultValue = null;
+
+            if (isVariadic)
+            {
+                var variadicType = type.EndsWith("[]", StringComparison.Ordinal) ? type : $"{type}[]";
+                parameters.Add(new MethodParameterEmission(
+                    OriginalName: originalName,
+                    CommentName: name.TrimStart('@'),
+                    Signature: $"params {variadicType} {name}",
+                    Type: variadicType,
+                    Name: name));
+                continue;
+            }
 
             if (argument.TryGetProperty("default", out var argumentDefault) && argumentDefault.ValueKind != JsonValueKind.Null)
             {
-                var value = _typeMapper.FormatValue(argumentDefault, argument.GetProperty("idlType"), namespaceName);
+                var value = _typeMapper.FormatValue(argumentDefault, idlType, namespaceName);
                 var isEnumType = _typeMapper.IsEnumType(typeKey);
-                if (isEnumType && (argument.GetProperty("idlType").GetBooleanOrNull("nullable") != true || (value.Length > 0 && value is not "default" and not "null")))
+                if (isEnumType && (idlType.GetBooleanOrNull("nullable") != true || (value.Length > 0 && value is not "default" and not "null")))
                 {
                     value = $"{typeKey}.{NormalizeEnumValue(value)}";
                 }
 
-                if (argument.GetProperty("idlType").GetBooleanOrNull("union") == true && !hasOptionalParameter)
+                if (value == "null")
                 {
-                    defaultValue = null;
+                    type = MakeOptionalParameterType(type);
+                    defaultValue = "default";
                 }
                 else
                 {
                     value = AddNumericSuffix(type, value);
-                    if (argument.GetProperty("idlType").GetBooleanOrNull("nullable") != true
-                        && argument.GetProperty("idlType").GetBooleanOrNull("union") != true
-                        && !_typeMapper.IsOptionalPrimitive(typeKey)
-                        && !isEnumType)
-                    {
-                        type = $"{typeKey}?";
-                        value = "default";
-                    }
-
                     defaultValue = value;
-                    hasOptionalParameter = true;
                 }
+
+                hasOptionalParameter = true;
             }
-            else if (hasOptionalParameter)
+            else if (isOptional || hasOptionalParameter)
             {
-                type = $"{typeKey}?";
+                type = MakeOptionalParameterType(type);
                 defaultValue = "default";
+                hasOptionalParameter = true;
             }
 
             parameters.Add(new MethodParameterEmission(
@@ -940,7 +1088,8 @@ internal sealed class PreviewBindingEmitter
         string originalOperationName,
         string methodName,
         string returnType,
-        string staticPrefix,
+        bool isStatic,
+        string inheritanceModifier,
         IReadOnlyList<JsonElement> arguments,
         string? namespaceName)
     {
@@ -971,11 +1120,286 @@ internal sealed class PreviewBindingEmitter
 
             builder.AppendLine($"/// <param name=\"{lastArgumentName.TrimStart('@')}\">{lastArgument.GetStringOrNull("name")}</param>");
             builder.AppendLine($"[Description(\"@#{originalOperationName}\")]");
-            builder.Append($"public extern {staticPrefix}{returnType} {methodName}({string.Join(", ", signatureParts)});");
+            builder.Append($"public {inheritanceModifier}{(isStatic ? "static " : string.Empty)}extern {returnType} {methodName}({string.Join(", ", signatureParts)});");
             overloads.Add(builder.ToString());
         }
 
         return overloads;
+    }
+
+    private void BuildInterfaceCaches(WebIdlInventory inventory, IReadOnlyDictionary<string, string[]> includesByTarget)
+    {
+        _interfaceCachesByKey.Clear();
+        _interfaceKeysByName.Clear();
+
+        var groupedInterfaces = inventory.Files
+            .SelectMany(file => file.Declarations
+                .Where(static declaration => declaration.Kind == "interface")
+                .Select(declaration => new { file.Namespace, Declaration = declaration }))
+            .GroupBy(item => new
+            {
+                Namespace = item.Namespace ?? string.Empty,
+                Name = item.Declaration.Name ?? string.Empty,
+            })
+            .ToArray();
+
+        foreach (var group in groupedInterfaces)
+        {
+            var key = $"{group.Key.Namespace}|{group.Key.Name}";
+            if (_interfaceKeysByName.TryGetValue(group.Key.Name, out var existingKeys))
+            {
+                _interfaceKeysByName[group.Key.Name] = [.. existingKeys, key];
+            }
+            else
+            {
+                _interfaceKeysByName[group.Key.Name] = [key];
+            }
+        }
+
+        foreach (var group in groupedInterfaces)
+        {
+            var namespaceName = string.IsNullOrWhiteSpace(group.Key.Namespace) ? null : group.Key.Namespace;
+            var declarations = group.Select(item => item.Declaration).ToArray();
+            var effectiveMembers = GetEffectiveInterfaceMembers(declarations, namespaceName, includesByTarget);
+            var parentName = declarations
+                .Select(static declaration => declaration.Inheritance)
+                .FirstOrDefault(static inheritance => !string.IsNullOrWhiteSpace(inheritance));
+            var parentKey = ResolveInterfaceKey(namespaceName, parentName);
+            var constructors = effectiveMembers
+                .Where(static member => member.GetStringOrNull("type") == "constructor")
+                .Select(member => BuildConstructorCache(member, namespaceName))
+                .ToArray();
+            var className = WebIdlNaming.ToPascalCase(group.Key.Name);
+            var properties = effectiveMembers
+                .Where(static member => member.GetStringOrNull("type") == "attribute")
+                .Select(member => BuildPropertyCache(member, group.Key.Name, className, namespaceName))
+                .ToArray();
+            var operations = effectiveMembers
+                .Where(static member => member.GetStringOrNull("type") == "operation")
+                .Select(member => BuildOperationCache(member, namespaceName))
+                .ToArray();
+
+            _interfaceCachesByKey[$"{group.Key.Namespace}|{group.Key.Name}"] = new InterfaceCache(
+                Constructors: constructors,
+                Properties: properties,
+                Operations: operations,
+                ParentKey: parentKey);
+        }
+    }
+
+    private IReadOnlyList<JsonElement> GetEffectiveInterfaceMembers(
+        IReadOnlyList<WebIdlDeclarationInventory> declarations,
+        string? namespaceName,
+        IReadOnlyDictionary<string, string[]> includesByTarget)
+    {
+        var members = declarations
+            .SelectMany(declaration => declaration.Payload.GetArray("members"))
+            .ToArray();
+        var effectiveMembers = DistinctMembers(members, namespaceName).ToList();
+        var seen = new HashSet<string>(effectiveMembers.Select(member => BuildMemberKey(member, namespaceName)), StringComparer.Ordinal);
+        var includeKey = $"{namespaceName ?? string.Empty}|{declarations[0].Name}";
+        if (!includesByTarget.TryGetValue(includeKey, out var includeMixins))
+        {
+            return effectiveMembers;
+        }
+
+        foreach (var mixinName in includeMixins)
+        {
+            var mixinKey = $"{namespaceName ?? string.Empty}|{mixinName}";
+            if (!_mixinMembersByKey.TryGetValue(mixinKey, out var mixinMembers))
+            {
+                continue;
+            }
+
+            foreach (var mixinMember in mixinMembers)
+            {
+                if (seen.Add(BuildMemberKey(mixinMember, namespaceName)))
+                {
+                    effectiveMembers.Add(mixinMember);
+                }
+            }
+        }
+
+        return effectiveMembers;
+    }
+
+    private string? ResolveInterfaceKey(string? namespaceName, string? typeName)
+    {
+        if (string.IsNullOrWhiteSpace(typeName))
+        {
+            return null;
+        }
+
+        var namespacedKey = BuildTypeKey(namespaceName, typeName);
+        if (_interfaceKeysByName.Values.Any(keys => keys.Contains(namespacedKey, StringComparer.Ordinal)))
+        {
+            return namespacedKey;
+        }
+
+        if (_interfaceKeysByName.TryGetValue(typeName, out var keys) && keys.Length == 1)
+        {
+            return keys[0];
+        }
+
+        var pascalName = WebIdlNaming.ToPascalCase(typeName);
+        var pascalMatches = _interfaceKeysByName
+            .Where(pair => WebIdlNaming.ToPascalCase(pair.Key) == pascalName)
+            .SelectMany(static pair => pair.Value)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        return pascalMatches.Length == 1 ? pascalMatches[0] : null;
+    }
+
+    private InheritanceDisposition GetPropertyInheritanceDisposition(InterfaceEmissionContext context, string propertyName, string propertyType)
+    {
+        var hasMatchingName = false;
+        foreach (var ancestor in EnumerateAncestors(context.Cache))
+        {
+            if (ancestor.Properties.Any(property => property.Name == propertyName && property.Type == propertyType))
+            {
+                return InheritanceDisposition.Skip;
+            }
+
+            if (ancestor.Properties.Any(property => property.Name == propertyName))
+            {
+                hasMatchingName = true;
+            }
+        }
+
+        return hasMatchingName ? InheritanceDisposition.New : InheritanceDisposition.None;
+    }
+
+    private InheritanceDisposition GetOperationInheritanceDisposition(
+        InterfaceEmissionContext context,
+        string special,
+        string methodName,
+        IReadOnlyList<JsonElement> arguments,
+        string returnType)
+    {
+        var argumentSignature = string.Join("@", arguments.Select(argument =>
+            $"{argument.GetStringOrNull("name")}:{_typeMapper.ToInlineType(argument.GetProperty("idlType"), context.NamespaceName)}"));
+        var hasMatchingNameAndParameters = false;
+        foreach (var ancestor in EnumerateAncestors(context.Cache))
+        {
+            if (ancestor.Operations.Any(operation =>
+                    operation.Special == special
+                    && operation.Name == methodName
+                    && operation.ArgumentSignature == argumentSignature
+                    && operation.ReturnType == returnType))
+            {
+                return InheritanceDisposition.Skip;
+            }
+
+            if (ancestor.Operations.Any(operation =>
+                    operation.Special == special
+                    && operation.Name == methodName
+                    && operation.ArgumentSignature == argumentSignature))
+            {
+                hasMatchingNameAndParameters = true;
+            }
+        }
+
+        return hasMatchingNameAndParameters ? InheritanceDisposition.New : InheritanceDisposition.None;
+    }
+
+    private IEnumerable<InterfaceCache> EnumerateAncestors(InterfaceCache? cache)
+    {
+        var parentKey = cache?.ParentKey;
+        while (!string.IsNullOrWhiteSpace(parentKey) && _interfaceCachesByKey.TryGetValue(parentKey, out var parentCache))
+        {
+            yield return parentCache;
+            parentKey = parentCache.ParentKey;
+        }
+    }
+
+    private ConstructorCache BuildConstructorCache(JsonElement constructor, string? namespaceName)
+    {
+        var arguments = constructor.GetArray("arguments");
+        var parameterList = string.Join(", ", arguments.Select(argument =>
+        {
+            var argType = _typeMapper.ToInlineType(argument.GetProperty("idlType"), namespaceName);
+            var argName = WebIdlNaming.ToCamelCase(argument.GetStringOrNull("name") ?? string.Empty);
+            return $"{argType} {argName}";
+        }));
+        var argumentList = string.Join(", ", arguments.Select(argument => WebIdlNaming.ToCamelCase(argument.GetStringOrNull("name") ?? string.Empty)));
+        var typeSignature = string.Join("@", arguments.Select(argument => _typeMapper.ToInlineType(argument.GetProperty("idlType"), namespaceName)));
+        return new ConstructorCache(arguments.Count, parameterList, argumentList, typeSignature);
+    }
+
+    private PropertyCache BuildPropertyCache(JsonElement attribute, string ownerName, string className, string? namespaceName)
+    {
+        var originalName = attribute.GetStringOrNull("name") ?? string.Empty;
+        return new PropertyCache(
+            GetAttributePropertyName(originalName, ownerName, className),
+            _typeMapper.ToInlineType(attribute.GetProperty("idlType"), namespaceName));
+    }
+
+    private OperationCache BuildOperationCache(JsonElement operation, string? namespaceName)
+    {
+        var special = operation.GetStringOrNull("special") ?? string.Empty;
+        var operationName = operation.GetStringOrNull("name");
+        var methodName = string.IsNullOrWhiteSpace(operationName)
+            ? string.Empty
+            : GetOperationMethodName(operationName);
+        var argumentSignature = string.Join("@", operation.GetArray("arguments").Select(argument =>
+            $"{argument.GetStringOrNull("name")}:{_typeMapper.ToInlineType(argument.GetProperty("idlType"), namespaceName)}"));
+        var returnType = operation.TryGetProperty("idlType", out var operationType)
+            ? _typeMapper.ToInlineType(operationType, namespaceName, "void")
+            : "void";
+        return new OperationCache(special, methodName, argumentSignature, returnType);
+    }
+
+    private static string GetAttributePropertyName(string originalName, string ownerName, string? className = null)
+    {
+        var propertyName = WebIdlNaming.ToPascalCase(originalName);
+        var resolvedClassName = className ?? WebIdlNaming.ToPascalCase(ownerName);
+        if (propertyName == resolvedClassName)
+        {
+            propertyName += "_";
+        }
+
+        if (originalName.Contains('-', StringComparison.Ordinal))
+        {
+            propertyName = string.Join(
+                "_",
+                originalName.Split('-', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(WebIdlNaming.ToPascalCase));
+        }
+
+        return propertyName;
+    }
+
+    private static string GetOperationMethodName(string operationName)
+    {
+        var methodName = WebIdlNaming.ToPascalCase(operationName);
+        return methodName == "Item" ? "GetItem" : methodName;
+    }
+
+    private static string EscapeIdentifier(string value)
+    {
+        return value switch
+        {
+            "abstract" or "as" or "base" or "bool" or "break" or "byte" or "case" or "catch" or "char" or "checked" or
+            "class" or "const" or "continue" or "decimal" or "default" or "delegate" or "do" or "double" or "else" or
+            "enum" or "event" or "explicit" or "extern" or "false" or "finally" or "fixed" or "float" or "for" or
+            "foreach" or "goto" or "if" or "implicit" or "in" or "int" or "interface" or "internal" or "is" or "lock" or
+            "long" or "namespace" or "new" or "null" or "object" or "operator" or "out" or "override" or "params" or
+            "private" or "protected" or "public" or "readonly" or "ref" or "return" or "sbyte" or "sealed" or "short" or
+            "sizeof" or "stackalloc" or "static" or "string" or "struct" or "switch" or "this" or "throw" or "true" or
+            "try" or "typeof" or "uint" or "ulong" or "unchecked" or "unsafe" or "ushort" or "using" or "virtual" or
+            "void" or "volatile" or "while" => $"@{value}",
+            _ => value,
+        };
+    }
+
+    private static string MakeOptionalParameterType(string type)
+    {
+        return type.EndsWith("?", StringComparison.Ordinal) ? type : $"{type}?";
+    }
+
+    private static string BuildTypeKey(string? namespaceName, string? name)
+    {
+        return $"{namespaceName ?? string.Empty}|{name ?? string.Empty}";
     }
 
     private IReadOnlyList<JsonElement> DistinctMembers(IReadOnlyList<JsonElement> members, string? namespaceName)
@@ -1030,4 +1454,41 @@ internal sealed class PreviewBindingEmitter
     private sealed record AccessorInfo(
         bool HasGetter,
         bool HasSetter);
+
+    private sealed record InterfaceEmissionContext(
+        string OwnerName,
+        string? NamespaceName,
+        string InterfaceKey,
+        InterfaceCache? Cache,
+        bool ForceStatic,
+        bool EnableInheritance);
+
+    private sealed record InterfaceCache(
+        IReadOnlyList<ConstructorCache> Constructors,
+        IReadOnlyList<PropertyCache> Properties,
+        IReadOnlyList<OperationCache> Operations,
+        string? ParentKey);
+
+    private sealed record ConstructorCache(
+        int ParameterCount,
+        string ParameterList,
+        string ArgumentList,
+        string TypeSignature);
+
+    private sealed record PropertyCache(
+        string Name,
+        string Type);
+
+    private sealed record OperationCache(
+        string Special,
+        string Name,
+        string ArgumentSignature,
+        string ReturnType);
+
+    private enum InheritanceDisposition
+    {
+        None,
+        New,
+        Skip,
+    }
 }

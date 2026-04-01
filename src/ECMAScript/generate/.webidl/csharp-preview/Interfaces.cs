@@ -66,7 +66,7 @@ public extern AbortSignal Signal { get; }
     /// </summary>
     /// <param name="reason">reason</param>
     [Description("@#abort")]
-    public extern void Abort(object reason);
+    public extern void Abort(object? reason = default);
 }
 
 /// <summary>
@@ -81,21 +81,21 @@ public class AbortSignal : EventTarget
     /// </summary>
     /// <param name="reason">reason</param>
     [Description("@#abort")]
-    public extern static AbortSignal Abort(object reason);
+    public static extern AbortSignal Abort(object? reason = default);
 
     /// <summary>
     /// timeout
     /// </summary>
     /// <param name="milliseconds">milliseconds</param>
     [Description("@#timeout")]
-    public extern static AbortSignal Timeout(ulong milliseconds);
+    public static extern AbortSignal Timeout(ulong milliseconds);
 
     /// <summary>
     /// any
     /// </summary>
     /// <param name="signals">signals</param>
     [Description("@#any")]
-    public extern static AbortSignal Any(AbortSignal[] signals);
+    public static extern AbortSignal Any(AbortSignal[] signals);
 
     /// <summary>
 /// aborted
@@ -477,7 +477,7 @@ public partial class AnimationEffect
     /// </summary>
     /// <param name="timing">timing</param>
     [Description("@#updateTiming")]
-    public extern void UpdateTiming(OptionalEffectTiming? timing = default);
+    public extern void UpdateTiming(OptionalEffectTiming timing = new());
 
     /// <summary>
 /// parent
@@ -502,21 +502,21 @@ public extern AnimationEffect? NextSibling { get; }
     /// </summary>
     /// <param name="effects">effects</param>
     [Description("@#before")]
-    public extern void Before(AnimationEffect effects);
+    public extern void Before(params AnimationEffect[] effects);
 
     /// <summary>
     /// after
     /// </summary>
     /// <param name="effects">effects</param>
     [Description("@#after")]
-    public extern void After(AnimationEffect effects);
+    public extern void After(params AnimationEffect[] effects);
 
     /// <summary>
     /// replace
     /// </summary>
     /// <param name="effects">effects</param>
     [Description("@#replace")]
-    public extern void Replace(AnimationEffect effects);
+    public extern void Replace(params AnimationEffect[] effects);
 
     /// <summary>
     /// remove
@@ -530,7 +530,7 @@ public extern AnimationEffect? NextSibling { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#AnimationEvent")]
-public class AnimationEvent : Event
+public class AnimationEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -584,7 +584,7 @@ public extern uint Length { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#AnimationPlaybackEvent")]
-public class AnimationPlaybackEvent : Event
+public class AnimationPlaybackEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -630,7 +630,7 @@ public extern CSSNumberish? Duration { get; }
     /// </summary>
     /// <param name="effect">effect</param>
     [Description("@#play")]
-    public extern Animation Play(AnimationEffect? effect = null);
+    public extern Animation Play(AnimationEffect? effect = default);
 }
 
 /// <summary>
@@ -1067,7 +1067,7 @@ public extern EventHandler Ondequeue { get; set; }
     /// </summary>
     /// <param name="config">config</param>
     [Description("@#isConfigSupported")]
-    public extern static PromiseResult<AudioDecoderSupport> IsConfigSupported(AudioDecoderConfig config);
+    public static extern PromiseResult<AudioDecoderSupport> IsConfigSupported(AudioDecoderConfig config);
 }
 
 /// <summary>
@@ -1152,7 +1152,7 @@ public extern EventHandler Ondequeue { get; set; }
     /// </summary>
     /// <param name="config">config</param>
     [Description("@#isConfigSupported")]
-    public extern static PromiseResult<AudioEncoderSupport> IsConfigSupported(AudioEncoderConfig config);
+    public static extern PromiseResult<AudioEncoderSupport> IsConfigSupported(AudioEncoderConfig config);
 }
 
 /// <summary>
@@ -1477,7 +1477,7 @@ extern IEnumerator IEnumerable.GetEnumerator();
 /// </summary>
 [ECMAScript]
 [Description("@#AudioProcessingEvent")]
-public class AudioProcessingEvent : Event
+public class AudioProcessingEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -1517,7 +1517,7 @@ public class AudioRenderCapacity : EventTarget
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#start")]
-    public extern void Start(AudioRenderCapacityOptions? options = default);
+    public extern void Start(AudioRenderCapacityOptions options = new());
 
     /// <summary>
     /// stop
@@ -1537,7 +1537,7 @@ public extern EventHandler Onupdate { get; set; }
 /// </summary>
 [ECMAScript]
 [Description("@#AudioRenderCapacityEvent")]
-public class AudioRenderCapacityEvent : Event
+public class AudioRenderCapacityEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -1921,7 +1921,7 @@ public extern ArrayBuffer ClientDataJSON { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#BackgroundFetchEvent")]
-public class BackgroundFetchEvent : ExtendableEvent
+public class BackgroundFetchEvent(string type, ExtendableEventInit eventInitDict) : ExtendableEvent(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -1951,7 +1951,7 @@ public class BackgroundFetchManager
     /// <param name="requests">requests</param>
     /// <param name="options">options</param>
     [Description("@#fetch")]
-    public extern PromiseResult<BackgroundFetchRegistration> Fetch(string id, Either<RequestInfo, RequestInfo[]> requests, BackgroundFetchOptions? options = default);
+    public extern PromiseResult<BackgroundFetchRegistration> Fetch(string id, Either<RequestInfo, RequestInfo[]> requests, BackgroundFetchOptions options = new());
 
     /// <summary>
     /// get
@@ -2060,7 +2060,7 @@ public extern EventHandler Onprogress { get; set; }
     /// <param name="request">request</param>
     /// <param name="options">options</param>
     [Description("@#match")]
-    public extern PromiseResult<BackgroundFetchRecord> Match(RequestInfo request, CacheQueryOptions? options = default);
+    public extern PromiseResult<BackgroundFetchRecord> Match(RequestInfo request, CacheQueryOptions options = new());
 
     /// <summary>
     /// matchAll
@@ -2068,7 +2068,7 @@ public extern EventHandler Onprogress { get; set; }
     /// <param name="request">request</param>
     /// <param name="options">options</param>
     [Description("@#matchAll")]
-    public extern PromiseResult<BackgroundFetchRecord[]> MatchAll(RequestInfo request, CacheQueryOptions? options = default);
+    public extern PromiseResult<BackgroundFetchRecord[]> MatchAll(RequestInfo? request = default, CacheQueryOptions options = new());
 }
 
 /// <summary>
@@ -2090,7 +2090,7 @@ public class BackgroundFetchUpdateUIEvent : BackgroundFetchEvent
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#updateUI")]
-    public extern PromiseResult<void> UpdateUI(BackgroundFetchUIOptions? options = default);
+    public extern PromiseResult<void> UpdateUI(BackgroundFetchUIOptions options = new());
 }
 
 /// <summary>
@@ -2124,7 +2124,7 @@ public class BarcodeDetector
     /// getSupportedFormats
     /// </summary>
     [Description("@#getSupportedFormats")]
-    public extern static PromiseResult<BarcodeFormat[]> GetSupportedFormats();
+    public static extern PromiseResult<BarcodeFormat[]> GetSupportedFormats();
 
     /// <summary>
     /// detect
@@ -2288,7 +2288,7 @@ public extern EventHandler Onstatechange { get; set; }
     /// <param name="imag">imag</param>
     /// <param name="constraints">constraints</param>
     [Description("@#createPeriodicWave")]
-    public extern PeriodicWave CreatePeriodicWave(float[] real, float[] imag, PeriodicWaveConstraints? constraints = default);
+    public extern PeriodicWave CreatePeriodicWave(float[] real, float[] imag, PeriodicWaveConstraints constraints = new());
 
     /// <summary>
     /// createScriptProcessor
@@ -2318,7 +2318,7 @@ public extern EventHandler Onstatechange { get; set; }
     /// <param name="successCallback">successCallback</param>
     /// <param name="errorCallback">errorCallback</param>
     [Description("@#decodeAudioData")]
-    public extern PromiseResult<AudioBuffer> DecodeAudioData(ArrayBuffer audioData, DecodeSuccessCallback? successCallback, DecodeErrorCallback? errorCallback);
+    public extern PromiseResult<AudioBuffer> DecodeAudioData(ArrayBuffer audioData, DecodeSuccessCallback? successCallback = default, DecodeErrorCallback? errorCallback = default);
 }
 
 /// <summary>
@@ -2423,13 +2423,13 @@ public class BeforeInstallPromptEvent : Event
 /// </summary>
 [ECMAScript]
 [Description("@#BeforeUnloadEvent")]
-public class BeforeUnloadEvent : Event
+public class BeforeUnloadEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// returnValue
 /// </summary>
 [Description("@#returnValue")]
-public extern string ReturnValue { get; set; }
+public new extern string ReturnValue { get; set; }
 }
 
 /// <summary>
@@ -2519,7 +2519,7 @@ public extern string Type { get; }
     /// <param name="end">end</param>
     /// <param name="contentType">contentType</param>
     [Description("@#slice")]
-    public extern Blob Slice(long start, long end, string contentType);
+    public extern Blob Slice(long? start = default, long? end = default, string? contentType = default);
 
     /// <summary>
     /// stream
@@ -2545,7 +2545,7 @@ public extern string Type { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#BlobEvent")]
-public class BlobEvent : Event
+public class BlobEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -2603,14 +2603,14 @@ public extern BluetoothDevice? ReferringDevice { get; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#requestDevice")]
-    public extern PromiseResult<BluetoothDevice> RequestDevice(RequestDeviceOptions? options = default);
+    public extern PromiseResult<BluetoothDevice> RequestDevice(RequestDeviceOptions options = new());
 
     /// <summary>
     /// requestLEScan
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#requestLEScan")]
-    public extern PromiseResult<BluetoothLEScan> RequestLEScan(BluetoothLEScanOptions? options = default);
+    public extern PromiseResult<BluetoothLEScan> RequestLEScan(BluetoothLEScanOptions options = new());
 
     #region mixin BluetoothDeviceEventHandlers
     /// <summary>
@@ -2660,7 +2660,7 @@ public extern EventHandler Onserviceremoved { get; set; }
 /// </summary>
 [ECMAScript]
 [Description("@#BluetoothAdvertisingEvent")]
-public class BluetoothAdvertisingEvent : Event
+public class BluetoothAdvertisingEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -2842,7 +2842,7 @@ public extern BluetoothRemoteGATTServer? Gatt { get; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#watchAdvertisements")]
-    public extern PromiseResult<void> WatchAdvertisements(WatchAdvertisementsOptions? options = default);
+    public extern PromiseResult<void> WatchAdvertisements(WatchAdvertisementsOptions options = new());
 
     /// <summary>
 /// watchingAdvertisements
@@ -3106,7 +3106,7 @@ public extern DataView? Value { get; }
     /// </summary>
     /// <param name="descriptor">descriptor</param>
     [Description("@#getDescriptors")]
-    public extern PromiseResult<BluetoothRemoteGATTDescriptor[]> GetDescriptors(BluetoothDescriptorUUID descriptor);
+    public extern PromiseResult<BluetoothRemoteGATTDescriptor[]> GetDescriptors(BluetoothDescriptorUUID? descriptor = default);
 
     /// <summary>
     /// readValue
@@ -3238,7 +3238,7 @@ public extern bool Connected { get; }
     /// </summary>
     /// <param name="service">service</param>
     [Description("@#getPrimaryServices")]
-    public extern PromiseResult<BluetoothRemoteGATTService[]> GetPrimaryServices(BluetoothServiceUUID service);
+    public extern PromiseResult<BluetoothRemoteGATTService[]> GetPrimaryServices(BluetoothServiceUUID? service = default);
 }
 
 /// <summary>
@@ -3278,7 +3278,7 @@ public extern bool IsPrimary { get; }
     /// </summary>
     /// <param name="characteristic">characteristic</param>
     [Description("@#getCharacteristics")]
-    public extern PromiseResult<BluetoothRemoteGATTCharacteristic[]> GetCharacteristics(BluetoothCharacteristicUUID characteristic);
+    public extern PromiseResult<BluetoothRemoteGATTCharacteristic[]> GetCharacteristics(BluetoothCharacteristicUUID? characteristic = default);
 
     /// <summary>
     /// getIncludedService
@@ -3292,7 +3292,7 @@ public extern bool IsPrimary { get; }
     /// </summary>
     /// <param name="service">service</param>
     [Description("@#getIncludedServices")]
-    public extern PromiseResult<BluetoothRemoteGATTService[]> GetIncludedServices(BluetoothServiceUUID service);
+    public extern PromiseResult<BluetoothRemoteGATTService[]> GetIncludedServices(BluetoothServiceUUID? service = default);
 
     #region mixin CharacteristicEventHandlers
     /// <summary>
@@ -3395,70 +3395,70 @@ public class BluetoothUUID
     /// </summary>
     /// <param name="name">name</param>
     [Description("@#getService")]
-    public extern static UUID GetService(Either<string, uint> name);
+    public static extern UUID GetService(Either<string, uint> name);
     
     /// <summary>
     /// getService
     /// </summary>
     /// <param name="name">name</param>
     [Description("@#getService")]
-    public extern static UUID GetService(string name);
+    public static extern UUID GetService(string name);
     
     /// <summary>
     /// getService
     /// </summary>
     /// <param name="name">name</param>
     [Description("@#getService")]
-    public extern static UUID GetService(uint name);
+    public static extern UUID GetService(uint name);
 
     /// <summary>
     /// getCharacteristic
     /// </summary>
     /// <param name="name">name</param>
     [Description("@#getCharacteristic")]
-    public extern static UUID GetCharacteristic(Either<string, uint> name);
+    public static extern UUID GetCharacteristic(Either<string, uint> name);
     
     /// <summary>
     /// getCharacteristic
     /// </summary>
     /// <param name="name">name</param>
     [Description("@#getCharacteristic")]
-    public extern static UUID GetCharacteristic(string name);
+    public static extern UUID GetCharacteristic(string name);
     
     /// <summary>
     /// getCharacteristic
     /// </summary>
     /// <param name="name">name</param>
     [Description("@#getCharacteristic")]
-    public extern static UUID GetCharacteristic(uint name);
+    public static extern UUID GetCharacteristic(uint name);
 
     /// <summary>
     /// getDescriptor
     /// </summary>
     /// <param name="name">name</param>
     [Description("@#getDescriptor")]
-    public extern static UUID GetDescriptor(Either<string, uint> name);
+    public static extern UUID GetDescriptor(Either<string, uint> name);
     
     /// <summary>
     /// getDescriptor
     /// </summary>
     /// <param name="name">name</param>
     [Description("@#getDescriptor")]
-    public extern static UUID GetDescriptor(string name);
+    public static extern UUID GetDescriptor(string name);
     
     /// <summary>
     /// getDescriptor
     /// </summary>
     /// <param name="name">name</param>
     [Description("@#getDescriptor")]
-    public extern static UUID GetDescriptor(uint name);
+    public static extern UUID GetDescriptor(uint name);
 
     /// <summary>
     /// canonicalUUID
     /// </summary>
     /// <param name="alias">alias</param>
     [Description("@#canonicalUUID")]
-    public extern static UUID CanonicalUUID(uint alias);
+    public static extern UUID CanonicalUUID(uint alias);
 }
 
 /// <summary>
@@ -3531,7 +3531,7 @@ public partial class BrowserCaptureMediaStreamTrack : MediaStreamTrack
     /// clone
     /// </summary>
     [Description("@#clone")]
-    public extern BrowserCaptureMediaStreamTrack Clone();
+    public new extern BrowserCaptureMediaStreamTrack Clone();
 }
 
 /// <summary>
@@ -3539,7 +3539,7 @@ public partial class BrowserCaptureMediaStreamTrack : MediaStreamTrack
 /// </summary>
 [ECMAScript]
 [Description("@#BufferedChangeEvent")]
-public class BufferedChangeEvent : Event
+public class BufferedChangeEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -3592,7 +3592,7 @@ public extern Delegate Size { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#CDATASection")]
-public class CDATASection : Text
+public class CDATASection(string data) : Text(data)
 {
 }
 
@@ -3603,12 +3603,6 @@ public class CDATASection : Text
 [Description("@#CSPViolationReportBody")]
 public class CSPViolationReportBody : ReportBody
 {
-    /// <summary>
-    /// toJSON
-    /// </summary>
-    [Description("@#toJSON")]
-    public extern object ToJSON();
-
     /// <summary>
 /// documentURL
 /// </summary>
@@ -3681,7 +3675,7 @@ public extern uint? ColumnNumber { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#CSSAnimation")]
-public class CSSAnimation : Animation
+public class CSSAnimation(AnimationEffect? effect, AnimationTimeline? timeline) : Animation(effect, timeline)
 {
     /// <summary>
 /// animationName
@@ -3830,22 +3824,10 @@ public class CSSFontFaceDescriptors : CSSStyleDeclaration
 public extern string Src { get; set; }
 
     /// <summary>
-/// fontFamily
-/// </summary>
-[Description("@#fontFamily")]
-public extern string FontFamily { get; set; }
-
-    /// <summary>
 /// font-family
 /// </summary>
 [Description("@#font-family")]
 public extern string Font_Family { get; set; }
-
-    /// <summary>
-/// fontStyle
-/// </summary>
-[Description("@#fontStyle")]
-public extern string FontStyle { get; set; }
 
     /// <summary>
 /// font-style
@@ -3854,34 +3836,16 @@ public extern string FontStyle { get; set; }
 public extern string Font_Style { get; set; }
 
     /// <summary>
-/// fontWeight
-/// </summary>
-[Description("@#fontWeight")]
-public extern string FontWeight { get; set; }
-
-    /// <summary>
 /// font-weight
 /// </summary>
 [Description("@#font-weight")]
 public extern string Font_Weight { get; set; }
 
     /// <summary>
-/// fontStretch
-/// </summary>
-[Description("@#fontStretch")]
-public extern string FontStretch { get; set; }
-
-    /// <summary>
 /// font-stretch
 /// </summary>
 [Description("@#font-stretch")]
 public extern string Font_Stretch { get; set; }
-
-    /// <summary>
-/// fontWidth
-/// </summary>
-[Description("@#fontWidth")]
-public extern string FontWidth { get; set; }
 
     /// <summary>
 /// font-width
@@ -3902,22 +3866,10 @@ public extern string UnicodeRange { get; set; }
 public extern string Unicode_Range { get; set; }
 
     /// <summary>
-/// fontFeatureSettings
-/// </summary>
-[Description("@#fontFeatureSettings")]
-public extern string FontFeatureSettings { get; set; }
-
-    /// <summary>
 /// font-feature-settings
 /// </summary>
 [Description("@#font-feature-settings")]
 public extern string Font_Feature_Settings { get; set; }
-
-    /// <summary>
-/// fontVariationSettings
-/// </summary>
-[Description("@#fontVariationSettings")]
-public extern string FontVariationSettings { get; set; }
 
     /// <summary>
 /// font-variation-settings
@@ -3948,12 +3900,6 @@ public extern string FontDisplay { get; set; }
 /// </summary>
 [Description("@#font-display")]
 public extern string Font_Display { get; set; }
-
-    /// <summary>
-/// fontLanguageOverride
-/// </summary>
-[Description("@#fontLanguageOverride")]
-public extern string FontLanguageOverride { get; set; }
 
     /// <summary>
 /// font-language-override
@@ -4257,72 +4203,6 @@ public extern FrozenSet<string> NameList { get; }
 public class CSSPositionTryDescriptors : CSSStyleDeclaration
 {
     /// <summary>
-/// margin
-/// </summary>
-[Description("@#margin")]
-public extern string Margin { get; set; }
-
-    /// <summary>
-/// marginTop
-/// </summary>
-[Description("@#marginTop")]
-public extern string MarginTop { get; set; }
-
-    /// <summary>
-/// marginRight
-/// </summary>
-[Description("@#marginRight")]
-public extern string MarginRight { get; set; }
-
-    /// <summary>
-/// marginBottom
-/// </summary>
-[Description("@#marginBottom")]
-public extern string MarginBottom { get; set; }
-
-    /// <summary>
-/// marginLeft
-/// </summary>
-[Description("@#marginLeft")]
-public extern string MarginLeft { get; set; }
-
-    /// <summary>
-/// marginBlock
-/// </summary>
-[Description("@#marginBlock")]
-public extern string MarginBlock { get; set; }
-
-    /// <summary>
-/// marginBlockStart
-/// </summary>
-[Description("@#marginBlockStart")]
-public extern string MarginBlockStart { get; set; }
-
-    /// <summary>
-/// marginBlockEnd
-/// </summary>
-[Description("@#marginBlockEnd")]
-public extern string MarginBlockEnd { get; set; }
-
-    /// <summary>
-/// marginInline
-/// </summary>
-[Description("@#marginInline")]
-public extern string MarginInline { get; set; }
-
-    /// <summary>
-/// marginInlineStart
-/// </summary>
-[Description("@#marginInlineStart")]
-public extern string MarginInlineStart { get; set; }
-
-    /// <summary>
-/// marginInlineEnd
-/// </summary>
-[Description("@#marginInlineEnd")]
-public extern string MarginInlineEnd { get; set; }
-
-    /// <summary>
 /// margin-top
 /// </summary>
 [Description("@#margin-top")]
@@ -4383,72 +4263,6 @@ public extern string Margin_Inline_Start { get; set; }
 public extern string Margin_Inline_End { get; set; }
 
     /// <summary>
-/// inset
-/// </summary>
-[Description("@#inset")]
-public extern string Inset { get; set; }
-
-    /// <summary>
-/// insetBlock
-/// </summary>
-[Description("@#insetBlock")]
-public extern string InsetBlock { get; set; }
-
-    /// <summary>
-/// insetBlockStart
-/// </summary>
-[Description("@#insetBlockStart")]
-public extern string InsetBlockStart { get; set; }
-
-    /// <summary>
-/// insetBlockEnd
-/// </summary>
-[Description("@#insetBlockEnd")]
-public extern string InsetBlockEnd { get; set; }
-
-    /// <summary>
-/// insetInline
-/// </summary>
-[Description("@#insetInline")]
-public extern string InsetInline { get; set; }
-
-    /// <summary>
-/// insetInlineStart
-/// </summary>
-[Description("@#insetInlineStart")]
-public extern string InsetInlineStart { get; set; }
-
-    /// <summary>
-/// insetInlineEnd
-/// </summary>
-[Description("@#insetInlineEnd")]
-public extern string InsetInlineEnd { get; set; }
-
-    /// <summary>
-/// top
-/// </summary>
-[Description("@#top")]
-public extern string Top { get; set; }
-
-    /// <summary>
-/// left
-/// </summary>
-[Description("@#left")]
-public extern string Left { get; set; }
-
-    /// <summary>
-/// right
-/// </summary>
-[Description("@#right")]
-public extern string Right { get; set; }
-
-    /// <summary>
-/// bottom
-/// </summary>
-[Description("@#bottom")]
-public extern string Bottom { get; set; }
-
-    /// <summary>
 /// inset-block
 /// </summary>
 [Description("@#inset-block")]
@@ -4483,78 +4297,6 @@ public extern string Inset_Inline_Start { get; set; }
 /// </summary>
 [Description("@#inset-inline-end")]
 public extern string Inset_Inline_End { get; set; }
-
-    /// <summary>
-/// width
-/// </summary>
-[Description("@#width")]
-public extern string Width { get; set; }
-
-    /// <summary>
-/// minWidth
-/// </summary>
-[Description("@#minWidth")]
-public extern string MinWidth { get; set; }
-
-    /// <summary>
-/// maxWidth
-/// </summary>
-[Description("@#maxWidth")]
-public extern string MaxWidth { get; set; }
-
-    /// <summary>
-/// height
-/// </summary>
-[Description("@#height")]
-public extern string Height { get; set; }
-
-    /// <summary>
-/// minHeight
-/// </summary>
-[Description("@#minHeight")]
-public extern string MinHeight { get; set; }
-
-    /// <summary>
-/// maxHeight
-/// </summary>
-[Description("@#maxHeight")]
-public extern string MaxHeight { get; set; }
-
-    /// <summary>
-/// blockSize
-/// </summary>
-[Description("@#blockSize")]
-public extern string BlockSize { get; set; }
-
-    /// <summary>
-/// minBlockSize
-/// </summary>
-[Description("@#minBlockSize")]
-public extern string MinBlockSize { get; set; }
-
-    /// <summary>
-/// maxBlockSize
-/// </summary>
-[Description("@#maxBlockSize")]
-public extern string MaxBlockSize { get; set; }
-
-    /// <summary>
-/// inlineSize
-/// </summary>
-[Description("@#inlineSize")]
-public extern string InlineSize { get; set; }
-
-    /// <summary>
-/// minInlineSize
-/// </summary>
-[Description("@#minInlineSize")]
-public extern string MinInlineSize { get; set; }
-
-    /// <summary>
-/// maxInlineSize
-/// </summary>
-[Description("@#maxInlineSize")]
-public extern string MaxInlineSize { get; set; }
 
     /// <summary>
 /// min-width
@@ -4617,24 +4359,6 @@ public extern string Min_Inline_Size { get; set; }
 public extern string Max_Inline_Size { get; set; }
 
     /// <summary>
-/// placeSelf
-/// </summary>
-[Description("@#placeSelf")]
-public extern string PlaceSelf { get; set; }
-
-    /// <summary>
-/// alignSelf
-/// </summary>
-[Description("@#alignSelf")]
-public extern string AlignSelf { get; set; }
-
-    /// <summary>
-/// justifySelf
-/// </summary>
-[Description("@#justifySelf")]
-public extern string JustifySelf { get; set; }
-
-    /// <summary>
 /// place-self
 /// </summary>
 [Description("@#place-self")]
@@ -4653,22 +4377,10 @@ public extern string Align_Self { get; set; }
 public extern string Justify_Self { get; set; }
 
     /// <summary>
-/// positionAnchor
-/// </summary>
-[Description("@#positionAnchor")]
-public extern string PositionAnchor { get; set; }
-
-    /// <summary>
 /// position-anchor
 /// </summary>
 [Description("@#position-anchor")]
 public extern string Position_Anchor { get; set; }
-
-    /// <summary>
-/// insetArea
-/// </summary>
-[Description("@#insetArea")]
-public extern string InsetArea { get; set; }
 
     /// <summary>
 /// inset-area
@@ -4735,7 +4447,7 @@ public extern Either<Element, CSSPseudoElement> Parent { get; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#getBoxQuads")]
-    public extern DOMQuad[] GetBoxQuads(BoxQuadOptions? options = default);
+    public extern DOMQuad[] GetBoxQuads(BoxQuadOptions options = new());
     
     /// <summary>
     /// convertQuadFromNode
@@ -4744,7 +4456,7 @@ public extern Either<Element, CSSPseudoElement> Parent { get; }
     /// <param name="from">from</param>
     /// <param name="options">options</param>
     [Description("@#convertQuadFromNode")]
-    public extern DOMQuad ConvertQuadFromNode(DOMQuadInit quad, GeometryNode from, ConvertCoordinateOptions? options = default);
+    public extern DOMQuad ConvertQuadFromNode(DOMQuadInit quad, GeometryNode from, ConvertCoordinateOptions options = new());
     
     /// <summary>
     /// convertRectFromNode
@@ -4753,7 +4465,7 @@ public extern Either<Element, CSSPseudoElement> Parent { get; }
     /// <param name="from">from</param>
     /// <param name="options">options</param>
     [Description("@#convertRectFromNode")]
-    public extern DOMQuad ConvertRectFromNode(DOMRectReadOnly rect, GeometryNode from, ConvertCoordinateOptions? options = default);
+    public extern DOMQuad ConvertRectFromNode(DOMRectReadOnly rect, GeometryNode from, ConvertCoordinateOptions options = new());
     
     /// <summary>
     /// convertPointFromNode
@@ -4762,7 +4474,7 @@ public extern Either<Element, CSSPseudoElement> Parent { get; }
     /// <param name="from">from</param>
     /// <param name="options">options</param>
     [Description("@#convertPointFromNode")]
-    public extern DOMPoint ConvertPointFromNode(DOMPointInit point, GeometryNode from, ConvertCoordinateOptions? options = default);
+    public extern DOMPoint ConvertPointFromNode(DOMPointInit point, GeometryNode from, ConvertCoordinateOptions options = new());
     #endregion
 }
 
@@ -9070,7 +8782,7 @@ public extern string StrokeDashadjust { get; set; }
 /// </summary>
 [ECMAScript]
 [Description("@#CSSTransition")]
-public class CSSTransition : Animation
+public class CSSTransition(AnimationEffect? effect, AnimationTimeline? timeline) : Animation(effect, timeline)
 {
     /// <summary>
 /// transitionProperty
@@ -9112,7 +8824,7 @@ public class Cache
     /// <param name="request">request</param>
     /// <param name="options">options</param>
     [Description("@#match")]
-    public extern PromiseResult<Either<Response, void>> Match(RequestInfo request, CacheQueryOptions? options = default);
+    public extern PromiseResult<Either<Response, void>> Match(RequestInfo request, CacheQueryOptions options = new());
 
     /// <summary>
     /// matchAll
@@ -9120,7 +8832,7 @@ public class Cache
     /// <param name="request">request</param>
     /// <param name="options">options</param>
     [Description("@#matchAll")]
-    public extern PromiseResult<FrozenSet<Response>> MatchAll(RequestInfo request, CacheQueryOptions? options = default);
+    public extern PromiseResult<FrozenSet<Response>> MatchAll(RequestInfo? request = default, CacheQueryOptions options = new());
 
     /// <summary>
     /// add
@@ -9150,7 +8862,7 @@ public class Cache
     /// <param name="request">request</param>
     /// <param name="options">options</param>
     [Description("@#delete")]
-    public extern PromiseResult<bool> Delete(RequestInfo request, CacheQueryOptions? options = default);
+    public extern PromiseResult<bool> Delete(RequestInfo request, CacheQueryOptions options = new());
 
     /// <summary>
     /// keys
@@ -9158,7 +8870,7 @@ public class Cache
     /// <param name="request">request</param>
     /// <param name="options">options</param>
     [Description("@#keys")]
-    public extern PromiseResult<FrozenSet<Request>> Keys(RequestInfo request, CacheQueryOptions? options = default);
+    public extern PromiseResult<FrozenSet<Request>> Keys(RequestInfo? request = default, CacheQueryOptions options = new());
 }
 
 /// <summary>
@@ -9174,7 +8886,7 @@ public class CacheStorage
     /// <param name="request">request</param>
     /// <param name="options">options</param>
     [Description("@#match")]
-    public extern PromiseResult<Either<Response, void>> Match(RequestInfo request, MultiCacheQueryOptions? options = default);
+    public extern PromiseResult<Either<Response, void>> Match(RequestInfo request, MultiCacheQueryOptions options = new());
 
     /// <summary>
     /// has
@@ -9209,7 +8921,7 @@ public class CacheStorage
 /// </summary>
 [ECMAScript]
 [Description("@#CanMakePaymentEvent")]
-public class CanMakePaymentEvent : ExtendableEvent
+public class CanMakePaymentEvent(string type, ExtendableEventInit eventInitDict) : ExtendableEvent(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -9273,7 +8985,7 @@ public class CanvasPattern
     /// </summary>
     /// <param name="transform">transform</param>
     [Description("@#setTransform")]
-    public extern void SetTransform(DOMMatrix2DInit? transform = default);
+    public extern void SetTransform(DOMMatrix2DInit transform = new());
 }
 
 /// <summary>
@@ -9380,7 +9092,7 @@ public extern HTMLCanvasElement Canvas { get; }
     /// </summary>
     /// <param name="transform">transform</param>
     [Description("@#setTransform")]
-    public extern void SetTransform(DOMMatrix2DInit? transform = default);
+    public extern void SetTransform(DOMMatrix2DInit transform = new());
     
     /// <summary>
     /// resetTransform
@@ -9662,7 +9374,7 @@ public extern string Filter { get; set; }
     /// <param name="y">y</param>
     /// <param name="maxWidth">maxWidth</param>
     [Description("@#fillText")]
-    public extern void FillText(string text, double x, double y, double maxWidth);
+    public extern void FillText(string text, double x, double y, double? maxWidth = default);
     
     /// <summary>
     /// strokeText
@@ -9672,7 +9384,7 @@ public extern string Filter { get; set; }
     /// <param name="y">y</param>
     /// <param name="maxWidth">maxWidth</param>
     [Description("@#strokeText")]
-    public extern void StrokeText(string text, double x, double y, double maxWidth);
+    public extern void StrokeText(string text, double x, double y, double? maxWidth = default);
     
     /// <summary>
     /// measureText
@@ -9727,7 +9439,7 @@ public extern string Filter { get; set; }
     /// <param name="sh">sh</param>
     /// <param name="settings">settings</param>
     [Description("@#createImageData")]
-    public extern ImageData CreateImageData(int sw, int sh, ImageDataSettings? settings = default);
+    public extern ImageData CreateImageData(int sw, int sh, ImageDataSettings settings = new());
     
     /// <summary>
     /// createImageData
@@ -9745,7 +9457,7 @@ public extern string Filter { get; set; }
     /// <param name="sh">sh</param>
     /// <param name="settings">settings</param>
     [Description("@#getImageData")]
-    public extern ImageData GetImageData(int sx, int sy, int sw, int sh, ImageDataSettings? settings = default);
+    public extern ImageData GetImageData(int sx, int sy, int sw, int sh, ImageDataSettings settings = new());
     
     /// <summary>
     /// putImageData
@@ -9952,7 +9664,7 @@ public extern string WordSpacing { get; set; }
     /// <param name="h">h</param>
     /// <param name="radii">radii</param>
     [Description("@#roundRect")]
-    public extern void RoundRect(double x, double y, double w, double h, Either<double, DOMPointInit, Either<double, DOMPointInit>[]> radii);
+    public extern void RoundRect(double x, double y, double w, double h, Either<double, DOMPointInit, Either<double, DOMPointInit>[]> radii = 0);
     
     /// <summary>
     /// roundRect
@@ -10020,7 +9732,7 @@ public extern string WordSpacing { get; set; }
 /// </summary>
 [ECMAScript]
 [Description("@#CaptureActionEvent")]
-public class CaptureActionEvent : Event
+public class CaptureActionEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -10066,7 +9778,7 @@ public extern CaptureController();
 /// </summary>
 [ECMAScript]
 [Description("@#CapturedMouseEvent")]
-public class CapturedMouseEvent : Event
+public class CapturedMouseEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -10175,7 +9887,7 @@ public extern FrozenSet<MediaImage> Artwork { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#CharacterBoundsUpdateEvent")]
-public class CharacterBoundsUpdateEvent : Event
+public class CharacterBoundsUpdateEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -10276,7 +9988,7 @@ public extern Element? NextElementSibling { get; }
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#before")]
-    public extern void Before(Either<Node, string> nodes);
+    public extern void Before(params Either<Node, string>[] nodes);
     
     /// <summary>
     /// before
@@ -10297,7 +10009,7 @@ public extern Element? NextElementSibling { get; }
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#after")]
-    public extern void After(Either<Node, string> nodes);
+    public extern void After(params Either<Node, string>[] nodes);
     
     /// <summary>
     /// after
@@ -10318,7 +10030,7 @@ public extern Element? NextElementSibling { get; }
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#replaceWith")]
-    public extern void ReplaceWith(Either<Node, string> nodes);
+    public extern void ReplaceWith(params Either<Node, string>[] nodes);
     
     /// <summary>
     /// replaceWith
@@ -10393,7 +10105,7 @@ public extern ClientType Type { get; }
     /// <param name="message">message</param>
     /// <param name="options">options</param>
     [Description("@#postMessage")]
-    public extern void PostMessage(object message, StructuredSerializeOptions? options = default);
+    public extern void PostMessage(object message, StructuredSerializeOptions options = new());
 }
 
 /// <summary>
@@ -10415,7 +10127,7 @@ public class Clients
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#matchAll")]
-    public extern PromiseResult<FrozenSet<Client>> MatchAll(ClientQueryOptions? options = default);
+    public extern PromiseResult<FrozenSet<Client>> MatchAll(ClientQueryOptions options = new());
 
     /// <summary>
     /// openWindow
@@ -10443,7 +10155,7 @@ public class Clipboard : EventTarget
     /// </summary>
     /// <param name="formats">formats</param>
     [Description("@#read")]
-    public extern PromiseResult<ClipboardItems> Read(ClipboardUnsanitizedFormats? formats = default);
+    public extern PromiseResult<ClipboardItems> Read(ClipboardUnsanitizedFormats formats = new());
 
     /// <summary>
     /// readText
@@ -10471,7 +10183,7 @@ public class Clipboard : EventTarget
 /// </summary>
 [ECMAScript]
 [Description("@#ClipboardEvent")]
-public class ClipboardEvent : Event
+public class ClipboardEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -10525,7 +10237,7 @@ public extern FrozenSet<string> Types { get; }
     /// </summary>
     /// <param name="type">type</param>
     [Description("@#supports")]
-    public extern static bool Supports(string type);
+    public static extern bool Supports(string type);
 }
 
 /// <summary>
@@ -10533,7 +10245,7 @@ public extern FrozenSet<string> Types { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#CloseEvent")]
-public class CloseEvent : Event
+public class CloseEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -10624,7 +10336,7 @@ public class Comment : CharacterData
 /// </summary>
 [ECMAScript]
 [Description("@#CompositionEvent")]
-public partial class CompositionEvent : UIEvent
+public partial class CompositionEvent(string type, UIEventInit eventInitDict) : UIEvent(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -10648,7 +10360,7 @@ public extern string Data { get; }
     /// <param name="viewArg">viewArg</param>
     /// <param name="dataArg">dataArg</param>
     [Description("@#initCompositionEvent")]
-    public extern void InitCompositionEvent(string typeArg, bool bubblesArg = false, bool cancelableArg = false, WindowProxy? viewArg = null, string? dataArg = default);
+    public extern void InitCompositionEvent(string typeArg, bool bubblesArg = false, bool cancelableArg = false, WindowProxy? viewArg = default, string dataArg = "");
 }
 
 /// <summary>
@@ -10793,7 +10505,7 @@ public class ContactsManager
     /// <param name="properties">properties</param>
     /// <param name="options">options</param>
     [Description("@#select")]
-    public extern PromiseResult<ContactInfo[]> Select(ContactProperty[] properties, ContactsSelectOptions? options = default);
+    public extern PromiseResult<ContactInfo[]> Select(ContactProperty[] properties, ContactsSelectOptions options = new());
 }
 
 /// <summary>
@@ -10829,7 +10541,7 @@ public class ContentIndex
 /// </summary>
 [ECMAScript]
 [Description("@#ContentIndexEvent")]
-public class ContentIndexEvent : ExtendableEvent
+public class ContentIndexEvent(string type, ExtendableEventInit eventInitDict) : ExtendableEvent(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -10850,7 +10562,7 @@ public extern string Id { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#ContentVisibilityAutoStateChangeEvent")]
-public class ContentVisibilityAutoStateChangeEvent : Event
+public class ContentVisibilityAutoStateChangeEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -10898,7 +10610,7 @@ public extern bool Normalize { get; set; }
 /// </summary>
 [ECMAScript]
 [Description("@#CookieChangeEvent")]
-public class CookieChangeEvent : Event
+public class CookieChangeEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -10939,7 +10651,7 @@ public class CookieStore : EventTarget
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#get")]
-    public extern PromiseResult<CookieListItem?> Get(CookieStoreGetOptions? options = default);
+    public extern PromiseResult<CookieListItem?> Get(CookieStoreGetOptions options = new());
 
     /// <summary>
     /// getAll
@@ -10953,7 +10665,7 @@ public class CookieStore : EventTarget
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#getAll")]
-    public extern PromiseResult<CookieList> GetAll(CookieStoreGetOptions? options = default);
+    public extern PromiseResult<CookieList> GetAll(CookieStoreGetOptions options = new());
 
     /// <summary>
     /// set
@@ -11053,12 +10765,6 @@ public extern Delegate Size { get; }
 public class CrashReportBody : ReportBody
 {
     /// <summary>
-    /// toJSON
-    /// </summary>
-    [Description("@#toJSON")]
-    public extern object ToJSON();
-
-    /// <summary>
 /// reason
 /// </summary>
 [Description("@#reason")]
@@ -11088,7 +10794,7 @@ public extern string Type { get; }
     /// isConditionalMediationAvailable
     /// </summary>
     [Description("@#isConditionalMediationAvailable")]
-    public extern static PromiseResult<bool> IsConditionalMediationAvailable();
+    public static extern PromiseResult<bool> IsConditionalMediationAvailable();
 }
 
 /// <summary>
@@ -11103,7 +10809,7 @@ public class CredentialsContainer
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#get")]
-    public extern PromiseResult<Credential?> Get(CredentialRequestOptions? options = default);
+    public extern PromiseResult<Credential?> Get(CredentialRequestOptions options = new());
 
     /// <summary>
     /// store
@@ -11117,7 +10823,7 @@ public class CredentialsContainer
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#create")]
-    public extern PromiseResult<Credential?> Create(CredentialCreationOptions? options = default);
+    public extern PromiseResult<Credential?> Create(CredentialCreationOptions options = new());
 
     /// <summary>
     /// preventSilentAccess
@@ -11138,7 +10844,7 @@ public class CropTarget
     /// </summary>
     /// <param name="element">element</param>
     [Description("@#fromElement")]
-    public extern static PromiseResult<CropTarget> FromElement(Element element);
+    public static extern PromiseResult<CropTarget> FromElement(Element element);
 }
 
 /// <summary>
@@ -11214,7 +10920,7 @@ public class CustomElementRegistry
     /// <param name="constructor">constructor</param>
     /// <param name="options">options</param>
     [Description("@#define")]
-    public extern void Define(string name, CustomElementConstructor constructor, ElementDefinitionOptions? options = default);
+    public extern void Define(string name, CustomElementConstructor constructor, ElementDefinitionOptions options = new());
 
     /// <summary>
     /// get
@@ -11250,7 +10956,7 @@ public class CustomElementRegistry
 /// </summary>
 [ECMAScript]
 [Description("@#CustomEvent")]
-public class CustomEvent : Event
+public class CustomEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -11513,14 +11219,14 @@ public class DOMImplementation
     /// <param name="qualifiedName">qualifiedName</param>
     /// <param name="doctype">doctype</param>
     [Description("@#createDocument")]
-    public extern XMLDocument CreateDocument(string? @namespace, string qualifiedName, DocumentType? doctype = null);
+    public extern XMLDocument CreateDocument(string? @namespace, string qualifiedName, DocumentType? doctype = default);
 
     /// <summary>
     /// createHTMLDocument
     /// </summary>
     /// <param name="title">title</param>
     [Description("@#createHTMLDocument")]
-    public extern Document CreateHTMLDocument(string title);
+    public extern Document CreateHTMLDocument(string? title = default);
 
     /// <summary>
     /// hasFeature
@@ -11547,167 +11253,35 @@ public class DOMMatrix : DOMMatrixReadOnly
     /// </summary>
     /// <param name="other">other</param>
     [Description("@#fromMatrix")]
-    public extern static DOMMatrix FromMatrix(DOMMatrixInit? other = default);
+    public new static extern DOMMatrix FromMatrix(DOMMatrixInit other = new());
 
     /// <summary>
     /// fromFloat32Array
     /// </summary>
     /// <param name="array32">array32</param>
     [Description("@#fromFloat32Array")]
-    public extern static DOMMatrix FromFloat32Array(Float32Array array32);
+    public new static extern DOMMatrix FromFloat32Array(Float32Array array32);
 
     /// <summary>
     /// fromFloat64Array
     /// </summary>
     /// <param name="array64">array64</param>
     [Description("@#fromFloat64Array")]
-    public extern static DOMMatrix FromFloat64Array(Float64Array array64);
-
-    /// <summary>
-/// a
-/// </summary>
-[Description("@#a")]
-public extern double A { get; set; }
-
-    /// <summary>
-/// b
-/// </summary>
-[Description("@#b")]
-public extern double B { get; set; }
-
-    /// <summary>
-/// c
-/// </summary>
-[Description("@#c")]
-public extern double C { get; set; }
-
-    /// <summary>
-/// d
-/// </summary>
-[Description("@#d")]
-public extern double D { get; set; }
-
-    /// <summary>
-/// e
-/// </summary>
-[Description("@#e")]
-public extern double E { get; set; }
-
-    /// <summary>
-/// f
-/// </summary>
-[Description("@#f")]
-public extern double F { get; set; }
-
-    /// <summary>
-/// m11
-/// </summary>
-[Description("@#m11")]
-public extern double M11 { get; set; }
-
-    /// <summary>
-/// m12
-/// </summary>
-[Description("@#m12")]
-public extern double M12 { get; set; }
-
-    /// <summary>
-/// m13
-/// </summary>
-[Description("@#m13")]
-public extern double M13 { get; set; }
-
-    /// <summary>
-/// m14
-/// </summary>
-[Description("@#m14")]
-public extern double M14 { get; set; }
-
-    /// <summary>
-/// m21
-/// </summary>
-[Description("@#m21")]
-public extern double M21 { get; set; }
-
-    /// <summary>
-/// m22
-/// </summary>
-[Description("@#m22")]
-public extern double M22 { get; set; }
-
-    /// <summary>
-/// m23
-/// </summary>
-[Description("@#m23")]
-public extern double M23 { get; set; }
-
-    /// <summary>
-/// m24
-/// </summary>
-[Description("@#m24")]
-public extern double M24 { get; set; }
-
-    /// <summary>
-/// m31
-/// </summary>
-[Description("@#m31")]
-public extern double M31 { get; set; }
-
-    /// <summary>
-/// m32
-/// </summary>
-[Description("@#m32")]
-public extern double M32 { get; set; }
-
-    /// <summary>
-/// m33
-/// </summary>
-[Description("@#m33")]
-public extern double M33 { get; set; }
-
-    /// <summary>
-/// m34
-/// </summary>
-[Description("@#m34")]
-public extern double M34 { get; set; }
-
-    /// <summary>
-/// m41
-/// </summary>
-[Description("@#m41")]
-public extern double M41 { get; set; }
-
-    /// <summary>
-/// m42
-/// </summary>
-[Description("@#m42")]
-public extern double M42 { get; set; }
-
-    /// <summary>
-/// m43
-/// </summary>
-[Description("@#m43")]
-public extern double M43 { get; set; }
-
-    /// <summary>
-/// m44
-/// </summary>
-[Description("@#m44")]
-public extern double M44 { get; set; }
+    public new static extern DOMMatrix FromFloat64Array(Float64Array array64);
 
     /// <summary>
     /// multiplySelf
     /// </summary>
     /// <param name="other">other</param>
     [Description("@#multiplySelf")]
-    public extern DOMMatrix MultiplySelf(DOMMatrixInit? other = default);
+    public extern DOMMatrix MultiplySelf(DOMMatrixInit other = new());
 
     /// <summary>
     /// preMultiplySelf
     /// </summary>
     /// <param name="other">other</param>
     [Description("@#preMultiplySelf")]
-    public extern DOMMatrix PreMultiplySelf(DOMMatrixInit? other = default);
+    public extern DOMMatrix PreMultiplySelf(DOMMatrixInit other = new());
 
     /// <summary>
     /// translateSelf
@@ -11813,21 +11387,21 @@ public class DOMMatrixReadOnly
     /// </summary>
     /// <param name="other">other</param>
     [Description("@#fromMatrix")]
-    public extern static DOMMatrixReadOnly FromMatrix(DOMMatrixInit? other = default);
+    public static extern DOMMatrixReadOnly FromMatrix(DOMMatrixInit other = new());
 
     /// <summary>
     /// fromFloat32Array
     /// </summary>
     /// <param name="array32">array32</param>
     [Description("@#fromFloat32Array")]
-    public extern static DOMMatrixReadOnly FromFloat32Array(Float32Array array32);
+    public static extern DOMMatrixReadOnly FromFloat32Array(Float32Array array32);
 
     /// <summary>
     /// fromFloat64Array
     /// </summary>
     /// <param name="array64">array64</param>
     [Description("@#fromFloat64Array")]
-    public extern static DOMMatrixReadOnly FromFloat64Array(Float64Array array64);
+    public static extern DOMMatrixReadOnly FromFloat64Array(Float64Array array64);
 
     /// <summary>
 /// a
@@ -12058,7 +11632,7 @@ public extern bool IsIdentity { get; }
     /// </summary>
     /// <param name="other">other</param>
     [Description("@#multiply")]
-    public extern DOMMatrix Multiply(DOMMatrixInit? other = default);
+    public extern DOMMatrix Multiply(DOMMatrixInit other = new());
 
     /// <summary>
     /// flipX
@@ -12083,7 +11657,7 @@ public extern bool IsIdentity { get; }
     /// </summary>
     /// <param name="point">point</param>
     [Description("@#transformPoint")]
-    public extern DOMPoint TransformPoint(DOMPointInit? point = default);
+    public extern DOMPoint TransformPoint(DOMPointInit point = new());
 
     /// <summary>
     /// toFloat32Array
@@ -12146,31 +11720,7 @@ public class DOMPoint : DOMPointReadOnly
     /// </summary>
     /// <param name="other">other</param>
     [Description("@#fromPoint")]
-    public extern static DOMPoint FromPoint(DOMPointInit? other = default);
-
-    /// <summary>
-/// x
-/// </summary>
-[Description("@#x")]
-public extern double X { get; set; }
-
-    /// <summary>
-/// y
-/// </summary>
-[Description("@#y")]
-public extern double Y { get; set; }
-
-    /// <summary>
-/// z
-/// </summary>
-[Description("@#z")]
-public extern double Z { get; set; }
-
-    /// <summary>
-/// w
-/// </summary>
-[Description("@#w")]
-public extern double W { get; set; }
+    public new static extern DOMPoint FromPoint(DOMPointInit other = new());
 }
 
 /// <summary>
@@ -12194,7 +11744,7 @@ public class DOMPointReadOnly
     /// </summary>
     /// <param name="other">other</param>
     [Description("@#fromPoint")]
-    public extern static DOMPointReadOnly FromPoint(DOMPointInit? other = default);
+    public static extern DOMPointReadOnly FromPoint(DOMPointInit other = new());
 
     /// <summary>
 /// x
@@ -12225,7 +11775,7 @@ public extern double W { get; }
     /// </summary>
     /// <param name="matrix">matrix</param>
     [Description("@#matrixTransform")]
-    public extern DOMPoint MatrixTransform(DOMMatrixInit? matrix = default);
+    public extern DOMPoint MatrixTransform(DOMMatrixInit matrix = new());
 
     /// <summary>
     /// toJSON
@@ -12255,14 +11805,14 @@ public class DOMQuad
     /// </summary>
     /// <param name="other">other</param>
     [Description("@#fromRect")]
-    public extern static DOMQuad FromRect(DOMRectInit? other = default);
+    public static extern DOMQuad FromRect(DOMRectInit other = new());
 
     /// <summary>
     /// fromQuad
     /// </summary>
     /// <param name="other">other</param>
     [Description("@#fromQuad")]
-    public extern static DOMQuad FromQuad(DOMQuadInit? other = default);
+    public static extern DOMQuad FromQuad(DOMQuadInit other = new());
 
     /// <summary>
 /// p1
@@ -12322,31 +11872,7 @@ public class DOMRect : DOMRectReadOnly
     /// </summary>
     /// <param name="other">other</param>
     [Description("@#fromRect")]
-    public extern static DOMRect FromRect(DOMRectInit? other = default);
-
-    /// <summary>
-/// x
-/// </summary>
-[Description("@#x")]
-public extern double X { get; set; }
-
-    /// <summary>
-/// y
-/// </summary>
-[Description("@#y")]
-public extern double Y { get; set; }
-
-    /// <summary>
-/// width
-/// </summary>
-[Description("@#width")]
-public extern double Width { get; set; }
-
-    /// <summary>
-/// height
-/// </summary>
-[Description("@#height")]
-public extern double Height { get; set; }
+    public new static extern DOMRect FromRect(DOMRectInit other = new());
 }
 
 /// <summary>
@@ -12391,7 +11917,7 @@ public class DOMRectReadOnly
     /// </summary>
     /// <param name="other">other</param>
     [Description("@#fromRect")]
-    public extern static DOMRectReadOnly FromRect(DOMRectInit? other = default);
+    public static extern DOMRectReadOnly FromRect(DOMRectInit other = new());
 
     /// <summary>
 /// x
@@ -12523,14 +12049,14 @@ public extern uint Length { get; }
     /// </summary>
     /// <param name="tokens">tokens</param>
     [Description("@#add")]
-    public extern void Add(string tokens);
+    public extern void Add(params string[] tokens);
 
     /// <summary>
     /// remove
     /// </summary>
     /// <param name="tokens">tokens</param>
     [Description("@#remove")]
-    public extern void Remove(string tokens);
+    public extern void Remove(params string[] tokens);
 
     /// <summary>
     /// toggle
@@ -12538,7 +12064,7 @@ public extern uint Length { get; }
     /// <param name="token">token</param>
     /// <param name="force">force</param>
     [Description("@#toggle")]
-    public extern bool Toggle(string token, bool force);
+    public extern bool Toggle(string token, bool? force = default);
 
     /// <summary>
     /// replace
@@ -12659,7 +12185,7 @@ public extern FrozenSet<string> Types { get; }
     /// </summary>
     /// <param name="format">format</param>
     [Description("@#clearData")]
-    public extern void ClearData(string format);
+    public extern void ClearData(string? format = default);
 
     /// <summary>
 /// files
@@ -12813,7 +12339,7 @@ public extern string Name { get; }
     /// <param name="message">message</param>
     /// <param name="options">options</param>
     [Description("@#postMessage")]
-    public extern void PostMessage(object message, StructuredSerializeOptions? options = default);
+    public extern void PostMessage(object message, StructuredSerializeOptions options = new());
 
     /// <summary>
     /// close
@@ -12885,12 +12411,6 @@ public extern AudioParam DelayTime { get; }
 public class DeprecationReportBody : ReportBody
 {
     /// <summary>
-    /// toJSON
-    /// </summary>
-    [Description("@#toJSON")]
-    public extern object ToJSON();
-
-    /// <summary>
 /// id
 /// </summary>
 [Description("@#id")]
@@ -12932,7 +12452,7 @@ public extern uint? ColumnNumber { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#DeviceMotionEvent")]
-public class DeviceMotionEvent : Event
+public class DeviceMotionEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -12969,7 +12489,7 @@ public extern double Interval { get; }
     /// requestPermission
     /// </summary>
     [Description("@#requestPermission")]
-    public extern static PromiseResult<PermissionState> RequestPermission();
+    public static extern PromiseResult<PermissionState> RequestPermission();
 }
 
 /// <summary>
@@ -13029,7 +12549,7 @@ public extern double? Gamma { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#DeviceOrientationEvent")]
-public class DeviceOrientationEvent : Event
+public class DeviceOrientationEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -13067,7 +12587,7 @@ public extern bool Absolute { get; }
     /// </summary>
     /// <param name="absolute">absolute</param>
     [Description("@#requestPermission")]
-    public extern static PromiseResult<PermissionState> RequestPermission(bool absolute = false);
+    public static extern PromiseResult<PermissionState> RequestPermission(bool absolute = false);
 }
 
 /// <summary>
@@ -13162,7 +12682,7 @@ public extern NamedFlowMap NamedFlows { get; }
     /// </summary>
     /// <param name="callbackOptions">callbackOptions</param>
     [Description("@#startViewTransition")]
-    public extern ViewTransition StartViewTransition(Either<UpdateCallback, StartViewTransitionOptions> callbackOptions);
+    public extern ViewTransition StartViewTransition(Either<UpdateCallback, StartViewTransitionOptions> callbackOptions = new());
     
     /// <summary>
     /// startViewTransition
@@ -13301,7 +12821,7 @@ public extern Element? DocumentElement { get; }
     /// <param name="localName">localName</param>
     /// <param name="options">options</param>
     [Description("@#createElement")]
-    public extern Element CreateElement(string localName, Either<string, ElementCreationOptions> options);
+    public extern Element CreateElement(string localName, Either<string, ElementCreationOptions> options = new());
     
     /// <summary>
     /// createElement
@@ -13326,7 +12846,7 @@ public extern Element? DocumentElement { get; }
     /// <param name="qualifiedName">qualifiedName</param>
     /// <param name="options">options</param>
     [Description("@#createElementNS")]
-    public extern Element CreateElementNS(string? @namespace, string qualifiedName, Either<string, ElementCreationOptions> options);
+    public extern Element CreateElementNS(string? @namespace, string qualifiedName, Either<string, ElementCreationOptions> options = new());
     
     /// <summary>
     /// createElementNS
@@ -13431,7 +12951,7 @@ public extern Element? DocumentElement { get; }
     /// <param name="whatToShow">whatToShow</param>
     /// <param name="filter">filter</param>
     [Description("@#createNodeIterator")]
-    public extern NodeIterator CreateNodeIterator(Node root, uint whatToShow = 0xFFFFFFFF, NodeFilter? filter = null);
+    public extern NodeIterator CreateNodeIterator(Node root, uint whatToShow = 0xFFFFFFFF, NodeFilter? filter = default);
 
     /// <summary>
     /// createTreeWalker
@@ -13440,7 +12960,7 @@ public extern Element? DocumentElement { get; }
     /// <param name="whatToShow">whatToShow</param>
     /// <param name="filter">filter</param>
     [Description("@#createTreeWalker")]
-    public extern TreeWalker CreateTreeWalker(Node root, uint whatToShow = 0xFFFFFFFF, NodeFilter? filter = null);
+    public extern TreeWalker CreateTreeWalker(Node root, uint whatToShow = 0xFFFFFFFF, NodeFilter? filter = default);
 
     /// <summary>
     /// measureElement
@@ -13492,7 +13012,7 @@ public extern EventHandler Onfullscreenerror { get; set; }
     /// </summary>
     /// <param name="html">html</param>
     [Description("@#parseHTMLUnsafe")]
-    public extern static Document ParseHTMLUnsafe(string html);
+    public static extern Document ParseHTMLUnsafe(string html);
 
     /// <summary>
 /// location
@@ -13612,7 +13132,7 @@ public extern HTMLOrSVGScriptElement? CurrentScript { get; }
     /// <param name="unused1">unused1</param>
     /// <param name="unused2">unused2</param>
     [Description("@#open")]
-    public extern Document Open(string unused1, string unused2);
+    public extern Document Open(string? unused1 = default, string? unused2 = default);
 
     /// <summary>
     /// open
@@ -13634,14 +13154,14 @@ public extern HTMLOrSVGScriptElement? CurrentScript { get; }
     /// </summary>
     /// <param name="text">text</param>
     [Description("@#write")]
-    public extern void Write(string text);
+    public extern void Write(params string[] text);
 
     /// <summary>
     /// writeln
     /// </summary>
     /// <param name="text">text</param>
     [Description("@#writeln")]
-    public extern void Writeln(string text);
+    public extern void Writeln(params string[] text);
 
     /// <summary>
 /// defaultView
@@ -13668,7 +13188,7 @@ public extern string DesignMode { get; set; }
     /// <param name="showUI">showUI</param>
     /// <param name="value">value</param>
     [Description("@#execCommand")]
-    public extern bool ExecCommand(string commandId, bool showUI = false, string? value = default);
+    public extern bool ExecCommand(string commandId, bool showUI = false, string value = "");
 
     /// <summary>
     /// queryCommandEnabled
@@ -13932,7 +13452,7 @@ public extern FontFaceSet Fonts { get; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#getBoxQuads")]
-    public extern DOMQuad[] GetBoxQuads(BoxQuadOptions? options = default);
+    public extern DOMQuad[] GetBoxQuads(BoxQuadOptions options = new());
     
     /// <summary>
     /// convertQuadFromNode
@@ -13941,7 +13461,7 @@ public extern FontFaceSet Fonts { get; }
     /// <param name="from">from</param>
     /// <param name="options">options</param>
     [Description("@#convertQuadFromNode")]
-    public extern DOMQuad ConvertQuadFromNode(DOMQuadInit quad, GeometryNode from, ConvertCoordinateOptions? options = default);
+    public extern DOMQuad ConvertQuadFromNode(DOMQuadInit quad, GeometryNode from, ConvertCoordinateOptions options = new());
     
     /// <summary>
     /// convertRectFromNode
@@ -13950,7 +13470,7 @@ public extern FontFaceSet Fonts { get; }
     /// <param name="from">from</param>
     /// <param name="options">options</param>
     [Description("@#convertRectFromNode")]
-    public extern DOMQuad ConvertRectFromNode(DOMRectReadOnly rect, GeometryNode from, ConvertCoordinateOptions? options = default);
+    public extern DOMQuad ConvertRectFromNode(DOMRectReadOnly rect, GeometryNode from, ConvertCoordinateOptions options = new());
     
     /// <summary>
     /// convertPointFromNode
@@ -13959,7 +13479,7 @@ public extern FontFaceSet Fonts { get; }
     /// <param name="from">from</param>
     /// <param name="options">options</param>
     [Description("@#convertPointFromNode")]
-    public extern DOMPoint ConvertPointFromNode(DOMPointInit point, GeometryNode from, ConvertCoordinateOptions? options = default);
+    public extern DOMPoint ConvertPointFromNode(DOMPointInit point, GeometryNode from, ConvertCoordinateOptions options = new());
     #endregion
 
     #region mixin NonElementParentNode
@@ -14033,7 +13553,7 @@ public extern uint ChildElementCount { get; }
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#prepend")]
-    public extern void Prepend(Either<Node, string> nodes);
+    public extern void Prepend(params Either<Node, string>[] nodes);
     
     /// <summary>
     /// prepend
@@ -14054,7 +13574,7 @@ public extern uint ChildElementCount { get; }
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#append")]
-    public extern void Append(Either<Node, string> nodes);
+    public extern void Append(params Either<Node, string>[] nodes);
     
     /// <summary>
     /// append
@@ -14075,7 +13595,7 @@ public extern uint ChildElementCount { get; }
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#replaceChildren")]
-    public extern void ReplaceChildren(Either<Node, string> nodes);
+    public extern void ReplaceChildren(params Either<Node, string>[] nodes);
     
     /// <summary>
     /// replaceChildren
@@ -14113,7 +13633,7 @@ public extern uint ChildElementCount { get; }
     /// <param name="expression">expression</param>
     /// <param name="resolver">resolver</param>
     [Description("@#createExpression")]
-    public extern XPathExpression CreateExpression(string expression, XPathNSResolver? resolver = null);
+    public extern XPathExpression CreateExpression(string expression, XPathNSResolver? resolver = default);
     
     /// <summary>
     /// createNSResolver
@@ -14131,7 +13651,7 @@ public extern uint ChildElementCount { get; }
     /// <param name="type">type</param>
     /// <param name="result">result</param>
     [Description("@#evaluate")]
-    public extern XPathResult Evaluate(string expression, Node contextNode, XPathNSResolver? resolver = null, ushort type = 0, XPathResult? result = null);
+    public extern XPathResult Evaluate(string expression, Node contextNode, XPathNSResolver? resolver = default, ushort type = 0, XPathResult? result = default);
     #endregion
 
     #region mixin GlobalEventHandlers
@@ -14794,7 +14314,7 @@ public extern uint ChildElementCount { get; }
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#prepend")]
-    public extern void Prepend(Either<Node, string> nodes);
+    public extern void Prepend(params Either<Node, string>[] nodes);
     
     /// <summary>
     /// prepend
@@ -14815,7 +14335,7 @@ public extern uint ChildElementCount { get; }
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#append")]
-    public extern void Append(Either<Node, string> nodes);
+    public extern void Append(params Either<Node, string>[] nodes);
     
     /// <summary>
     /// append
@@ -14836,7 +14356,7 @@ public extern uint ChildElementCount { get; }
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#replaceChildren")]
-    public extern void ReplaceChildren(Either<Node, string> nodes);
+    public extern void ReplaceChildren(params Either<Node, string>[] nodes);
     
     /// <summary>
     /// replaceChildren
@@ -14880,7 +14400,7 @@ public class DocumentPictureInPicture : EventTarget
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#requestWindow")]
-    public extern PromiseResult<Window> RequestWindow(DocumentPictureInPictureOptions? options = default);
+    public extern PromiseResult<Window> RequestWindow(DocumentPictureInPictureOptions options = new());
 
     /// <summary>
 /// window
@@ -14900,7 +14420,7 @@ public extern EventHandler Onenter { get; set; }
 /// </summary>
 [ECMAScript]
 [Description("@#DocumentPictureInPictureEvent")]
-public class DocumentPictureInPictureEvent : Event
+public class DocumentPictureInPictureEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -14961,7 +14481,7 @@ public extern string SystemId { get; }
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#before")]
-    public extern void Before(Either<Node, string> nodes);
+    public extern void Before(params Either<Node, string>[] nodes);
     
     /// <summary>
     /// before
@@ -14982,7 +14502,7 @@ public extern string SystemId { get; }
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#after")]
-    public extern void After(Either<Node, string> nodes);
+    public extern void After(params Either<Node, string>[] nodes);
     
     /// <summary>
     /// after
@@ -15003,7 +14523,7 @@ public extern string SystemId { get; }
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#replaceWith")]
-    public extern void ReplaceWith(Either<Node, string> nodes);
+    public extern void ReplaceWith(params Either<Node, string>[] nodes);
     
     /// <summary>
     /// replaceWith
@@ -15032,7 +14552,7 @@ public extern string SystemId { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#DragEvent")]
-public class DragEvent : MouseEvent
+public class DragEvent(string type, MouseEventInit eventInitDict) : MouseEvent(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -15645,7 +15165,7 @@ public partial class Element : Node
     /// </summary>
     /// <param name="option">option</param>
     [Description("@#focusableAreas")]
-    public extern Node[] FocusableAreas(FocusableAreasOption? option = default);
+    public extern Node[] FocusableAreas(FocusableAreasOption option = new());
 
     /// <summary>
     /// spatialNavigationSearch
@@ -15653,7 +15173,7 @@ public partial class Element : Node
     /// <param name="dir">dir</param>
     /// <param name="options">options</param>
     [Description("@#spatialNavigationSearch")]
-    public extern Node? SpatialNavigationSearch(SpatialNavigationDirection dir, SpatialNavigationSearchOptions? options = default);
+    public extern Node? SpatialNavigationSearch(SpatialNavigationDirection dir, SpatialNavigationSearchOptions options = new());
 
     /// <summary>
     /// pseudo
@@ -15685,14 +15205,14 @@ public extern List<string> Part { get; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#checkVisibility")]
-    public extern bool CheckVisibility(CheckVisibilityOptions? options = default);
+    public extern bool CheckVisibility(CheckVisibilityOptions options = new());
 
     /// <summary>
     /// scrollIntoView
     /// </summary>
     /// <param name="arg">arg</param>
     [Description("@#scrollIntoView")]
-    public extern void ScrollIntoView(Either<bool, ScrollIntoViewOptions> arg);
+    public extern void ScrollIntoView(Either<bool, ScrollIntoViewOptions> arg = new());
     
     /// <summary>
     /// scrollIntoView
@@ -15713,7 +15233,7 @@ public extern List<string> Part { get; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#scroll")]
-    public extern void Scroll(ScrollToOptions? options = default);
+    public extern void Scroll(ScrollToOptions options = new());
 
     /// <summary>
     /// scroll
@@ -15728,7 +15248,7 @@ public extern List<string> Part { get; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#scrollTo")]
-    public extern void ScrollTo(ScrollToOptions? options = default);
+    public extern void ScrollTo(ScrollToOptions options = new());
 
     /// <summary>
     /// scrollTo
@@ -15743,7 +15263,7 @@ public extern List<string> Part { get; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#scrollBy")]
-    public extern void ScrollBy(ScrollToOptions? options = default);
+    public extern void ScrollBy(ScrollToOptions options = new());
 
     /// <summary>
     /// scrollBy
@@ -15926,7 +15446,7 @@ public extern NamedNodeMap Attributes { get; }
     /// <param name="qualifiedName">qualifiedName</param>
     /// <param name="force">force</param>
     [Description("@#toggleAttribute")]
-    public extern bool ToggleAttribute(string qualifiedName, bool force);
+    public extern bool ToggleAttribute(string qualifiedName, bool? force = default);
 
     /// <summary>
     /// hasAttribute
@@ -16076,7 +15596,7 @@ public extern string ElementTiming { get; set; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#requestFullscreen")]
-    public extern PromiseResult<void> RequestFullscreen(FullscreenOptions? options = default);
+    public extern PromiseResult<void> RequestFullscreen(FullscreenOptions options = new());
 
     /// <summary>
 /// onfullscreenchange
@@ -16102,7 +15622,7 @@ public extern EventHandler Onfullscreenerror { get; set; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#getHTML")]
-    public extern string GetHTML(GetHTMLOptions? options = default);
+    public extern string GetHTML(GetHTMLOptions options = new());
 
     /// <summary>
     /// setPointerCapture
@@ -16151,7 +15671,7 @@ public extern string RegionOverset { get; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#getBoxQuads")]
-    public extern DOMQuad[] GetBoxQuads(BoxQuadOptions? options = default);
+    public extern DOMQuad[] GetBoxQuads(BoxQuadOptions options = new());
     
     /// <summary>
     /// convertQuadFromNode
@@ -16160,7 +15680,7 @@ public extern string RegionOverset { get; }
     /// <param name="from">from</param>
     /// <param name="options">options</param>
     [Description("@#convertQuadFromNode")]
-    public extern DOMQuad ConvertQuadFromNode(DOMQuadInit quad, GeometryNode from, ConvertCoordinateOptions? options = default);
+    public extern DOMQuad ConvertQuadFromNode(DOMQuadInit quad, GeometryNode from, ConvertCoordinateOptions options = new());
     
     /// <summary>
     /// convertRectFromNode
@@ -16169,7 +15689,7 @@ public extern string RegionOverset { get; }
     /// <param name="from">from</param>
     /// <param name="options">options</param>
     [Description("@#convertRectFromNode")]
-    public extern DOMQuad ConvertRectFromNode(DOMRectReadOnly rect, GeometryNode from, ConvertCoordinateOptions? options = default);
+    public extern DOMQuad ConvertRectFromNode(DOMRectReadOnly rect, GeometryNode from, ConvertCoordinateOptions options = new());
     
     /// <summary>
     /// convertPointFromNode
@@ -16178,7 +15698,7 @@ public extern string RegionOverset { get; }
     /// <param name="from">from</param>
     /// <param name="options">options</param>
     [Description("@#convertPointFromNode")]
-    public extern DOMPoint ConvertPointFromNode(DOMPointInit point, GeometryNode from, ConvertCoordinateOptions? options = default);
+    public extern DOMPoint ConvertPointFromNode(DOMPointInit point, GeometryNode from, ConvertCoordinateOptions options = new());
     #endregion
 
     #region mixin ParentNode
@@ -16211,7 +15731,7 @@ public extern uint ChildElementCount { get; }
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#prepend")]
-    public extern void Prepend(Either<Node, string> nodes);
+    public extern void Prepend(params Either<Node, string>[] nodes);
     
     /// <summary>
     /// prepend
@@ -16232,7 +15752,7 @@ public extern uint ChildElementCount { get; }
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#append")]
-    public extern void Append(Either<Node, string> nodes);
+    public extern void Append(params Either<Node, string>[] nodes);
     
     /// <summary>
     /// append
@@ -16253,7 +15773,7 @@ public extern uint ChildElementCount { get; }
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#replaceChildren")]
-    public extern void ReplaceChildren(Either<Node, string> nodes);
+    public extern void ReplaceChildren(params Either<Node, string>[] nodes);
     
     /// <summary>
     /// replaceChildren
@@ -16304,7 +15824,7 @@ public extern Element? NextElementSibling { get; }
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#before")]
-    public extern void Before(Either<Node, string> nodes);
+    public extern void Before(params Either<Node, string>[] nodes);
     
     /// <summary>
     /// before
@@ -16325,7 +15845,7 @@ public extern Element? NextElementSibling { get; }
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#after")]
-    public extern void After(Either<Node, string> nodes);
+    public extern void After(params Either<Node, string>[] nodes);
     
     /// <summary>
     /// after
@@ -16346,7 +15866,7 @@ public extern Element? NextElementSibling { get; }
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#replaceWith")]
-    public extern void ReplaceWith(Either<Node, string> nodes);
+    public extern void ReplaceWith(params Either<Node, string>[] nodes);
     
     /// <summary>
     /// replaceWith
@@ -16382,7 +15902,7 @@ public extern HTMLSlotElement? AssignedSlot { get; }
 /// innerHTML
 /// </summary>
 [Description("@#innerHTML")]
-public extern string InnerHTML_ { get; set; }
+public extern string InnerHTML { get; set; }
     #endregion
 
     #region mixin ARIAMixin
@@ -16700,7 +16220,7 @@ public extern string? AriaValueText { get; set; }
     /// <param name="keyframes">keyframes</param>
     /// <param name="options">options</param>
     [Description("@#animate")]
-    public extern Animation Animate(object? keyframes, Either<double, KeyframeAnimationOptions> options);
+    public extern Animation Animate(object? keyframes, Either<double, KeyframeAnimationOptions> options = new());
     
     /// <summary>
     /// animate
@@ -16723,7 +16243,7 @@ public extern string? AriaValueText { get; set; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#getAnimations")]
-    public extern Animation[] GetAnimations(GetAnimationsOptions? options = default);
+    public extern Animation[] GetAnimations(GetAnimationsOptions options = new());
     #endregion
 }
 
@@ -16746,7 +16266,7 @@ public extern ShadowRoot? ShadowRoot { get; }
     /// <param name="value">value</param>
     /// <param name="state">state</param>
     [Description("@#setFormValue")]
-    public extern void SetFormValue(Either<File, string, FormData>? value, Either<File, string, FormData>? state);
+    public extern void SetFormValue(Either<File, string, FormData>? value, Either<File, string, FormData>? state = default);
     
     /// <summary>
     /// setFormValue
@@ -16785,7 +16305,7 @@ public extern HTMLFormElement? Form { get; }
     /// <param name="message">message</param>
     /// <param name="anchor">anchor</param>
     [Description("@#setValidity")]
-    public extern void SetValidity(ValidityStateFlags? flags = default, string? message = default, HTMLElement? anchor = default);
+    public extern void SetValidity(ValidityStateFlags flags = new(), string? message = default, HTMLElement? anchor = default);
 
     /// <summary>
 /// willValidate
@@ -17233,7 +16753,7 @@ public extern uint ByteLength { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#ErrorEvent")]
-public class ErrorEvent : Event
+public class ErrorEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -17544,7 +17064,7 @@ public extern EventTarget();
     /// <param name="callback">callback</param>
     /// <param name="options">options</param>
     [Description("@#addEventListener")]
-    public extern void AddEventListener(string type, EventListener? callback, Either<AddEventListenerOptions, bool> options);
+    public extern void AddEventListener(string type, EventListener? callback, Either<AddEventListenerOptions, bool> options = new());
     
     /// <summary>
     /// addEventListener
@@ -17571,7 +17091,7 @@ public extern EventTarget();
     /// <param name="callback">callback</param>
     /// <param name="options">options</param>
     [Description("@#removeEventListener")]
-    public extern void RemoveEventListener(string type, EventListener? callback, Either<EventListenerOptions, bool> options);
+    public extern void RemoveEventListener(string type, EventListener? callback, Either<EventListenerOptions, bool> options = new());
     
     /// <summary>
     /// removeEventListener
@@ -17604,7 +17124,7 @@ public extern EventTarget();
 /// </summary>
 [ECMAScript]
 [Description("@#ExtendableCookieChangeEvent")]
-public class ExtendableCookieChangeEvent : ExtendableEvent
+public class ExtendableCookieChangeEvent(string type, ExtendableEventInit eventInitDict) : ExtendableEvent(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -17631,7 +17151,7 @@ public extern FrozenSet<CookieListItem> Deleted { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#ExtendableEvent")]
-public class ExtendableEvent : Event
+public class ExtendableEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -17653,7 +17173,7 @@ public class ExtendableEvent : Event
 /// </summary>
 [ECMAScript]
 [Description("@#ExtendableMessageEvent")]
-public class ExtendableMessageEvent : ExtendableEvent
+public class ExtendableMessageEvent(string type, ExtendableEventInit eventInitDict) : ExtendableEvent(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -17730,7 +17250,7 @@ public extern EyeDropper();
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#open")]
-    public extern PromiseResult<ColorSelectionResult> Open(ColorSelectionOptions? options = default);
+    public extern PromiseResult<ColorSelectionResult> Open(ColorSelectionOptions options = new());
 }
 
 /// <summary>
@@ -17806,14 +17326,14 @@ public class Fence
     /// </summary>
     /// <param name="event">event</param>
     [Description("@#reportEvent")]
-    public extern void ReportEvent(ReportEventType? @event = default);
+    public extern void ReportEvent(ReportEventType @event = new());
 
     /// <summary>
     /// setReportEventDataForAutomaticBeacons
     /// </summary>
     /// <param name="event">event</param>
     [Description("@#setReportEventDataForAutomaticBeacons")]
-    public extern void SetReportEventDataForAutomaticBeacons(FenceEvent? @event = default);
+    public extern void SetReportEventDataForAutomaticBeacons(FenceEvent @event = new());
 
     /// <summary>
     /// getNestedConfigs
@@ -17866,7 +17386,7 @@ public extern FencedFrameConfigSize? ContentHeight { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#FetchEvent")]
-public class FetchEvent : ExtendableEvent
+public class FetchEvent(string type, ExtendableEventInit eventInitDict) : ExtendableEvent(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -17924,7 +17444,7 @@ public extern PromiseResult<object> Handled { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#File")]
-public partial class File : Blob
+public partial class File(BlobPart[] blobParts, BlobPropertyBag options) : Blob(blobParts, options)
 {
     /// <summary>
 /// webkitRelativePath
@@ -18006,7 +17526,7 @@ public extern FileReader();
     /// <param name="blob">blob</param>
     /// <param name="encoding">encoding</param>
     [Description("@#readAsText")]
-    public extern void ReadAsText(Blob blob, string encoding);
+    public extern void ReadAsText(Blob blob, string? encoding = default);
 
     /// <summary>
     /// readAsDataURL
@@ -18126,7 +17646,7 @@ public extern FileReaderSync();
     /// <param name="blob">blob</param>
     /// <param name="encoding">encoding</param>
     [Description("@#readAsText")]
-    public extern string ReadAsText(Blob blob, string encoding);
+    public extern string ReadAsText(Blob blob, string? encoding = default);
 
     /// <summary>
     /// readAsDataURL
@@ -18177,7 +17697,7 @@ public class FileSystemDirectoryEntry : FileSystemEntry
     /// <param name="successCallback">successCallback</param>
     /// <param name="errorCallback">errorCallback</param>
     [Description("@#getFile")]
-    public extern void GetFile(string? path, FileSystemFlags? options = default, FileSystemEntryCallback? successCallback = default, ErrorCallback? errorCallback = default);
+    public extern void GetFile(string? path = default, FileSystemFlags options = new(), FileSystemEntryCallback? successCallback = default, ErrorCallback? errorCallback = default);
 
     /// <summary>
     /// getDirectory
@@ -18187,7 +17707,7 @@ public class FileSystemDirectoryEntry : FileSystemEntry
     /// <param name="successCallback">successCallback</param>
     /// <param name="errorCallback">errorCallback</param>
     [Description("@#getDirectory")]
-    public extern void GetDirectory(string? path, FileSystemFlags? options = default, FileSystemEntryCallback? successCallback = default, ErrorCallback? errorCallback = default);
+    public extern void GetDirectory(string? path = default, FileSystemFlags options = new(), FileSystemEntryCallback? successCallback = default, ErrorCallback? errorCallback = default);
 }
 
 /// <summary>
@@ -18206,7 +17726,7 @@ public class FileSystemDirectoryHandle : FileSystemHandle, IEnumerable<(string, 
     /// <param name="name">name</param>
     /// <param name="options">options</param>
     [Description("@#getFileHandle")]
-    public extern PromiseResult<FileSystemFileHandle> GetFileHandle(string name, FileSystemGetFileOptions? options = default);
+    public extern PromiseResult<FileSystemFileHandle> GetFileHandle(string name, FileSystemGetFileOptions options = new());
 
     /// <summary>
     /// getDirectoryHandle
@@ -18214,7 +17734,7 @@ public class FileSystemDirectoryHandle : FileSystemHandle, IEnumerable<(string, 
     /// <param name="name">name</param>
     /// <param name="options">options</param>
     [Description("@#getDirectoryHandle")]
-    public extern PromiseResult<FileSystemDirectoryHandle> GetDirectoryHandle(string name, FileSystemGetDirectoryOptions? options = default);
+    public extern PromiseResult<FileSystemDirectoryHandle> GetDirectoryHandle(string name, FileSystemGetDirectoryOptions options = new());
 
     /// <summary>
     /// removeEntry
@@ -18222,7 +17742,7 @@ public class FileSystemDirectoryHandle : FileSystemHandle, IEnumerable<(string, 
     /// <param name="name">name</param>
     /// <param name="options">options</param>
     [Description("@#removeEntry")]
-    public extern PromiseResult<void> RemoveEntry(string name, FileSystemRemoveOptions? options = default);
+    public extern PromiseResult<void> RemoveEntry(string name, FileSystemRemoveOptions options = new());
 
     /// <summary>
     /// resolve
@@ -18245,7 +17765,7 @@ public class FileSystemDirectoryReader
     /// <param name="successCallback">successCallback</param>
     /// <param name="errorCallback">errorCallback</param>
     [Description("@#readEntries")]
-    public extern void ReadEntries(FileSystemEntriesCallback successCallback, ErrorCallback errorCallback);
+    public extern void ReadEntries(FileSystemEntriesCallback successCallback, ErrorCallback? errorCallback = default);
 }
 
 /// <summary>
@@ -18291,7 +17811,7 @@ public extern FileSystem Filesystem { get; }
     /// <param name="successCallback">successCallback</param>
     /// <param name="errorCallback">errorCallback</param>
     [Description("@#getParent")]
-    public extern void GetParent(FileSystemEntryCallback successCallback, ErrorCallback errorCallback);
+    public extern void GetParent(FileSystemEntryCallback? successCallback = default, ErrorCallback? errorCallback = default);
 }
 
 /// <summary>
@@ -18307,7 +17827,7 @@ public class FileSystemFileEntry : FileSystemEntry
     /// <param name="successCallback">successCallback</param>
     /// <param name="errorCallback">errorCallback</param>
     [Description("@#file")]
-    public extern void File(FileCallback successCallback, ErrorCallback errorCallback);
+    public extern void File(FileCallback successCallback, ErrorCallback? errorCallback = default);
 }
 
 /// <summary>
@@ -18328,7 +17848,7 @@ public class FileSystemFileHandle : FileSystemHandle
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#createWritable")]
-    public extern PromiseResult<FileSystemWritableFileStream> CreateWritable(FileSystemCreateWritableOptions? options = default);
+    public extern PromiseResult<FileSystemWritableFileStream> CreateWritable(FileSystemCreateWritableOptions options = new());
 
     /// <summary>
     /// createSyncAccessHandle
@@ -18349,14 +17869,14 @@ public partial class FileSystemHandle
     /// </summary>
     /// <param name="descriptor">descriptor</param>
     [Description("@#queryPermission")]
-    public extern PromiseResult<PermissionState> QueryPermission(FileSystemHandlePermissionDescriptor? descriptor = default);
+    public extern PromiseResult<PermissionState> QueryPermission(FileSystemHandlePermissionDescriptor descriptor = new());
 
     /// <summary>
     /// requestPermission
     /// </summary>
     /// <param name="descriptor">descriptor</param>
     [Description("@#requestPermission")]
-    public extern PromiseResult<PermissionState> RequestPermission(FileSystemHandlePermissionDescriptor? descriptor = default);
+    public extern PromiseResult<PermissionState> RequestPermission(FileSystemHandlePermissionDescriptor descriptor = new());
 
     /// <summary>
 /// kind
@@ -18391,7 +17911,7 @@ public class FileSystemSyncAccessHandle
     /// <param name="buffer">buffer</param>
     /// <param name="options">options</param>
     [Description("@#read")]
-    public extern ulong Read(IAllowSharedBufferSource buffer, FileSystemReadWriteOptions? options = default);
+    public extern ulong Read(IAllowSharedBufferSource buffer, FileSystemReadWriteOptions options = new());
 
     /// <summary>
     /// write
@@ -18399,7 +17919,7 @@ public class FileSystemSyncAccessHandle
     /// <param name="buffer">buffer</param>
     /// <param name="options">options</param>
     [Description("@#write")]
-    public extern ulong Write(IAllowSharedBufferSource buffer, FileSystemReadWriteOptions? options = default);
+    public extern ulong Write(IAllowSharedBufferSource buffer, FileSystemReadWriteOptions options = new());
 
     /// <summary>
     /// truncate
@@ -18432,7 +17952,7 @@ public class FileSystemSyncAccessHandle
 /// </summary>
 [ECMAScript]
 [Description("@#FileSystemWritableFileStream")]
-public class FileSystemWritableFileStream : WritableStream
+public class FileSystemWritableFileStream(object underlyingSink, QueuingStrategy strategy) : WritableStream(underlyingSink, strategy)
 {
     /// <summary>
     /// write
@@ -18461,7 +17981,7 @@ public class FileSystemWritableFileStream : WritableStream
 /// </summary>
 [ECMAScript]
 [Description("@#FocusEvent")]
-public class FocusEvent : UIEvent
+public class FocusEvent(string type, UIEventInit eventInitDict) : UIEvent(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -18794,7 +18314,7 @@ public extern EventHandler Onloadingerror { get; set; }
     /// <param name="font">font</param>
     /// <param name="text">text</param>
     [Description("@#load")]
-    public extern PromiseResult<FontFace[]> Load(string font, string? text = default);
+    public extern PromiseResult<FontFace[]> Load(string font, string text = " ");
 
     /// <summary>
     /// check
@@ -18802,7 +18322,7 @@ public extern EventHandler Onloadingerror { get; set; }
     /// <param name="font">font</param>
     /// <param name="text">text</param>
     [Description("@#check")]
-    public extern bool Check(string font, string? text = default);
+    public extern bool Check(string font, string text = " ");
 
     /// <summary>
 /// ready
@@ -18822,7 +18342,7 @@ public extern FontFaceSetLoadStatus Status { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#FontFaceSetLoadEvent")]
-public class FontFaceSetLoadEvent : Event
+public class FontFaceSetLoadEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -19050,7 +18570,7 @@ public class FormData : IEnumerable<(string, FormDataEntryValue)>
     /// <param name="blobValue">blobValue</param>
     /// <param name="filename">filename</param>
     [Description("@#append")]
-    public extern void Append(string name, Blob blobValue, string filename);
+    public extern void Append(string name, Blob blobValue, string? filename = default);
 
     /// <summary>
     /// delete
@@ -19095,7 +18615,7 @@ public class FormData : IEnumerable<(string, FormDataEntryValue)>
     /// <param name="blobValue">blobValue</param>
     /// <param name="filename">filename</param>
     [Description("@#set")]
-    public extern void Set(string name, Blob blobValue, string filename);
+    public extern void Set(string name, Blob blobValue, string? filename = default);
 
     extern IEnumerator<(string, FormDataEntryValue)> IEnumerable<(string, FormDataEntryValue)>.GetEnumerator();
     extern IEnumerator IEnumerable.GetEnumerator();
@@ -19106,7 +18626,7 @@ public class FormData : IEnumerable<(string, FormDataEntryValue)>
 /// </summary>
 [ECMAScript]
 [Description("@#FormDataEvent")]
-public class FormDataEvent : Event
+public class FormDataEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -19263,7 +18783,7 @@ public extern double Value { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#GamepadEvent")]
-public class GamepadEvent : Event
+public class GamepadEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -19298,7 +18818,7 @@ public extern FrozenSet<GamepadHapticEffectType> Effects { get; }
     /// <param name="type">type</param>
     /// <param name="params">params</param>
     [Description("@#playEffect")]
-    public extern PromiseResult<GamepadHapticsResult> PlayEffect(GamepadHapticEffectType type, GamepadEffectParameters? @params = default);
+    public extern PromiseResult<GamepadHapticsResult> PlayEffect(GamepadHapticEffectType type, GamepadEffectParameters @params = new());
 
     /// <summary>
     /// reset
@@ -19417,7 +18937,7 @@ public class Geolocation
     /// <param name="errorCallback">errorCallback</param>
     /// <param name="options">options</param>
     [Description("@#getCurrentPosition")]
-    public extern void GetCurrentPosition(PositionCallback successCallback, PositionErrorCallback? errorCallback = null, PositionOptions? options = default);
+    public extern void GetCurrentPosition(PositionCallback successCallback, PositionErrorCallback? errorCallback = default, PositionOptions options = new());
 
     /// <summary>
     /// watchPosition
@@ -19426,7 +18946,7 @@ public class Geolocation
     /// <param name="errorCallback">errorCallback</param>
     /// <param name="options">options</param>
     [Description("@#watchPosition")]
-    public extern int WatchPosition(PositionCallback successCallback, PositionErrorCallback? errorCallback = null, PositionOptions? options = default);
+    public extern int WatchPosition(PositionCallback successCallback, PositionErrorCallback? errorCallback = default, PositionOptions options = new());
 
     /// <summary>
     /// clearWatch
@@ -19562,7 +19082,7 @@ public class GeolocationSensor : Sensor
     /// </summary>
     /// <param name="readOptions">readOptions</param>
     [Description("@#read")]
-    public extern static PromiseResult<GeolocationSensorReading> Read(ReadOptions? readOptions = default);
+    public static extern PromiseResult<GeolocationSensorReading> Read(ReadOptions readOptions = new());
 
     /// <summary>
 /// latitude
@@ -19664,14 +19184,14 @@ public extern AnimationEffect? LastChild { get; }
     /// </summary>
     /// <param name="effects">effects</param>
     [Description("@#prepend")]
-    public extern void Prepend(AnimationEffect effects);
+    public extern void Prepend(params AnimationEffect[] effects);
 
     /// <summary>
     /// append
     /// </summary>
     /// <param name="effects">effects</param>
     [Description("@#append")]
-    public extern void Append(AnimationEffect effects);
+    public extern void Append(params AnimationEffect[] effects);
 }
 
 /// <summary>
@@ -19744,7 +19264,7 @@ public extern EventHandler Ondisconnect { get; set; }
 /// </summary>
 [ECMAScript]
 [Description("@#HIDConnectionEvent")]
-public class HIDConnectionEvent : Event
+public class HIDConnectionEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -19850,7 +19370,7 @@ public extern FrozenSet<HIDCollectionInfo> Collections { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#HIDInputReportEvent")]
-public class HIDInputReportEvent : Event
+public class HIDInputReportEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -19906,7 +19426,7 @@ public extern uint Length { get; }
     /// </summary>
     /// <param name="nameOrIndex">nameOrIndex</param>
     [Description("@#item")]
-    public extern Either<HTMLCollection, Element>? GetItem(string nameOrIndex);
+    public extern Either<HTMLCollection, Element>? GetItem(string? nameOrIndex = default);
 }
 
 /// <summary>
@@ -20637,7 +20157,7 @@ public extern uint Height { get; set; }
     /// <param name="type">type</param>
     /// <param name="quality">quality</param>
     [Description("@#toDataURL")]
-    public extern string ToDataURL(string? type = default, object? quality = default);
+    public extern string ToDataURL(string type = "image/png", object? quality = default);
 
     /// <summary>
     /// toBlob
@@ -20646,7 +20166,7 @@ public extern uint Height { get; set; }
     /// <param name="type">type</param>
     /// <param name="quality">quality</param>
     [Description("@#toBlob")]
-    public extern void ToBlob(BlobCallback callback, string? type = default, object? quality = default);
+    public extern void ToBlob(BlobCallback callback, string type = "image/png", object? quality = default);
 
     /// <summary>
     /// transferControlToOffscreen
@@ -20659,7 +20179,7 @@ public extern uint Height { get; set; }
     /// </summary>
     /// <param name="frameRequestRate">frameRequestRate</param>
     [Description("@#captureStream")]
-    public extern MediaStream CaptureStream(double frameRequestRate);
+    public extern MediaStream CaptureStream(double? frameRequestRate = default);
 }
 
 /// <summary>
@@ -20813,7 +20333,7 @@ public extern string ReturnValue { get; set; }
     /// </summary>
     /// <param name="returnValue">returnValue</param>
     [Description("@#close")]
-    public extern void Close(string returnValue);
+    public extern void Close(string? returnValue = default);
 }
 
 /// <summary>
@@ -21015,7 +20535,7 @@ public extern string OuterText { get; set; }
     /// </summary>
     /// <param name="force">force</param>
     [Description("@#togglePopover")]
-    public extern bool TogglePopover(bool force);
+    public extern bool TogglePopover(bool? force = default);
 
     /// <summary>
 /// popover
@@ -21693,7 +21213,7 @@ public extern int TabIndex { get; set; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#focus")]
-    public extern void Focus(FocusOptions? options = default);
+    public extern void Focus(FocusOptions options = new());
     
     /// <summary>
     /// blur
@@ -21918,7 +21438,7 @@ public class HTMLFormControlsCollection : HTMLCollection
     /// </summary>
     /// <param name="name">name</param>
     [Description("@#namedItem")]
-    public extern Either<RadioNodeList, Element>? NamedItem(string name);
+    public new extern Either<RadioNodeList, Element>? NamedItem(string name);
 }
 
 /// <summary>
@@ -22028,7 +21548,7 @@ public extern uint Length { get; }
     /// </summary>
     /// <param name="submitter">submitter</param>
     [Description("@#requestSubmit")]
-    public extern void RequestSubmit(HTMLElement? submitter = null);
+    public extern void RequestSubmit(HTMLElement? submitter = default);
 
     /// <summary>
     /// reset
@@ -23070,7 +22590,7 @@ public extern string? SelectionDirection { get; set; }
     /// <param name="end">end</param>
     /// <param name="direction">direction</param>
     [Description("@#setSelectionRange")]
-    public extern void SetSelectionRange(uint start, uint end, string direction);
+    public extern void SetSelectionRange(uint start, uint end, string? direction = default);
 
     /// <summary>
     /// showPicker
@@ -23747,7 +23267,7 @@ public extern TextTrackList TextTracks { get; }
     /// <param name="label">label</param>
     /// <param name="language">language</param>
     [Description("@#addTextTrack")]
-    public extern TextTrack AddTextTrack(TextTrackKind kind, string? label = default, string? language = default);
+    public extern TextTrack AddTextTrack(TextTrackKind kind, string label = "", string language = "");
 
     /// <summary>
     /// captureStream
@@ -24219,12 +23739,6 @@ public extern int Index { get; }
 [Description("@#HTMLOptionsCollection")]
 public class HTMLOptionsCollection : HTMLCollection
 {
-    /// <summary>
-/// length
-/// </summary>
-[Description("@#length")]
-public extern uint Length { get; set; }
-
     [Description("@#")] 
     public extern HTMLOptionElement? this[uint index] { set; }
 
@@ -24234,7 +23748,7 @@ public extern uint Length { get; set; }
     /// <param name="element">element</param>
     /// <param name="before">before</param>
     [Description("@#add")]
-    public extern void Add(Either<HTMLOptionElement, HTMLOptGroupElement> element, Either<HTMLElement, int>? before);
+    public extern void Add(Either<HTMLOptionElement, HTMLOptGroupElement> element, Either<HTMLElement, int>? before = default);
     
     /// <summary>
     /// add
@@ -24456,7 +23970,7 @@ public extern string ReferrerPolicy { get; set; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#activate")]
-    public extern PromiseResult<void> Activate(PortalActivateOptions? options = default);
+    public extern PromiseResult<void> Activate(PortalActivateOptions options = new());
 
     /// <summary>
     /// postMessage
@@ -24464,7 +23978,7 @@ public extern string ReferrerPolicy { get; set; }
     /// <param name="message">message</param>
     /// <param name="options">options</param>
     [Description("@#postMessage")]
-    public extern void PostMessage(object message, StructuredSerializeOptions? options = default);
+    public extern void PostMessage(object message, StructuredSerializeOptions options = new());
 
     /// <summary>
 /// onmessage
@@ -24637,7 +24151,7 @@ public extern string FetchPriority { get; set; }
     /// </summary>
     /// <param name="type">type</param>
     [Description("@#supports")]
-    public extern static bool Supports(string type);
+    public static extern bool Supports(string type);
 
     /// <summary>
 /// charset
@@ -24758,7 +24272,7 @@ public extern uint Length { get; set; }
     /// <param name="element">element</param>
     /// <param name="before">before</param>
     [Description("@#add")]
-    public extern void Add(Either<HTMLOptionElement, HTMLOptGroupElement> element, Either<HTMLElement, int>? before);
+    public extern void Add(Either<HTMLOptionElement, HTMLOptGroupElement> element, Either<HTMLElement, int>? before = default);
     
     /// <summary>
     /// add
@@ -24775,12 +24289,6 @@ public extern uint Length { get; set; }
     /// <param name="before">before</param>
     [Description("@#add")]
     public extern void Add(Either<HTMLOptionElement, HTMLOptGroupElement> element, int before);
-
-    /// <summary>
-    /// remove
-    /// </summary>
-    [Description("@#remove")]
-    public extern void Remove();
 
     /// <summary>
     /// remove
@@ -24880,21 +24388,21 @@ public extern string Name { get; set; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#assignedNodes")]
-    public extern Node[] AssignedNodes(AssignedNodesOptions? options = default);
+    public extern Node[] AssignedNodes(AssignedNodesOptions options = new());
 
     /// <summary>
     /// assignedElements
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#assignedElements")]
-    public extern Element[] AssignedElements(AssignedNodesOptions? options = default);
+    public extern Element[] AssignedElements(AssignedNodesOptions options = new());
 
     /// <summary>
     /// assign
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#assign")]
-    public extern void Assign(Either<Element, Text> nodes);
+    public extern void Assign(params Either<Element, Text>[] nodes);
     
     /// <summary>
     /// assign
@@ -25720,7 +25228,7 @@ public extern string SelectionDirection { get; set; }
     /// <param name="end">end</param>
     /// <param name="direction">direction</param>
     [Description("@#setSelectionRange")]
-    public extern void SetSelectionRange(uint start, uint end, string direction);
+    public extern void SetSelectionRange(uint start, uint end, string? direction = default);
 }
 
 /// <summary>
@@ -25972,7 +25480,7 @@ public extern bool DisablePictureInPicture { get; set; }
 /// </summary>
 [ECMAScript]
 [Description("@#HashChangeEvent")]
-public class HashChangeEvent : Event
+public class HashChangeEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -26105,7 +25613,7 @@ public extern object State { get; }
     /// <param name="unused">unused</param>
     /// <param name="url">url</param>
     [Description("@#pushState")]
-    public extern void PushState(object data, string unused, string? url = null);
+    public extern void PushState(object data, string unused, string? url = default);
 
     /// <summary>
     /// replaceState
@@ -26114,7 +25622,7 @@ public extern object State { get; }
     /// <param name="unused">unused</param>
     /// <param name="url">url</param>
     [Description("@#replaceState")]
-    public extern void ReplaceState(object data, string unused, string? url = null);
+    public extern void ReplaceState(object data, string unused, string? url = default);
 }
 
 /// <summary>
@@ -26166,7 +25674,7 @@ public extern IDBRequest Request { get; }
     /// </summary>
     /// <param name="key">key</param>
     [Description("@#continue")]
-    public extern void Continue(object key);
+    public extern void Continue(object? key = default);
 
     /// <summary>
     /// continuePrimaryKey
@@ -26236,7 +25744,7 @@ public extern DOMStringList ObjectStoreNames { get; }
     /// <param name="mode">mode</param>
     /// <param name="options">options</param>
     [Description("@#transaction")]
-    public extern IDBTransaction Transaction(Either<string, string[]> storeNames, IDBTransactionMode mode = IDBTransactionMode.Readonly, IDBTransactionOptions? options = default);
+    public extern IDBTransaction Transaction(Either<string, string[]> storeNames, IDBTransactionMode mode = IDBTransactionMode.Readonly, IDBTransactionOptions options = new());
 
     /// <summary>
     /// close
@@ -26250,7 +25758,7 @@ public extern DOMStringList ObjectStoreNames { get; }
     /// <param name="name">name</param>
     /// <param name="options">options</param>
     [Description("@#createObjectStore")]
-    public extern IDBObjectStore CreateObjectStore(string name, IDBObjectStoreParameters? options = default);
+    public extern IDBObjectStore CreateObjectStore(string name, IDBObjectStoreParameters options = new());
 
     /// <summary>
     /// deleteObjectStore
@@ -26297,7 +25805,7 @@ public class IDBFactory
     /// <param name="name">name</param>
     /// <param name="version">version</param>
     [Description("@#open")]
-    public extern IDBOpenDBRequest Open(string name, ulong version);
+    public extern IDBOpenDBRequest Open(string name, ulong? version = default);
 
     /// <summary>
     /// deleteDatabase
@@ -26378,7 +25886,7 @@ public extern bool Unique { get; }
     /// <param name="query">query</param>
     /// <param name="count">count</param>
     [Description("@#getAll")]
-    public extern IDBRequest GetAll(object query, uint count);
+    public extern IDBRequest GetAll(object? query = default, uint? count = default);
 
     /// <summary>
     /// getAllKeys
@@ -26386,14 +25894,14 @@ public extern bool Unique { get; }
     /// <param name="query">query</param>
     /// <param name="count">count</param>
     [Description("@#getAllKeys")]
-    public extern IDBRequest GetAllKeys(object query, uint count);
+    public extern IDBRequest GetAllKeys(object? query = default, uint? count = default);
 
     /// <summary>
     /// count
     /// </summary>
     /// <param name="query">query</param>
     [Description("@#count")]
-    public extern IDBRequest Count(object query);
+    public extern IDBRequest Count(object? query = default);
 
     /// <summary>
     /// openCursor
@@ -26401,7 +25909,7 @@ public extern bool Unique { get; }
     /// <param name="query">query</param>
     /// <param name="direction">direction</param>
     [Description("@#openCursor")]
-    public extern IDBRequest OpenCursor(object query, IDBCursorDirection direction = IDBCursorDirection.Next);
+    public extern IDBRequest OpenCursor(object? query = default, IDBCursorDirection direction = IDBCursorDirection.Next);
 
     /// <summary>
     /// openKeyCursor
@@ -26409,7 +25917,7 @@ public extern bool Unique { get; }
     /// <param name="query">query</param>
     /// <param name="direction">direction</param>
     [Description("@#openKeyCursor")]
-    public extern IDBRequest OpenKeyCursor(object query, IDBCursorDirection direction = IDBCursorDirection.Next);
+    public extern IDBRequest OpenKeyCursor(object? query = default, IDBCursorDirection direction = IDBCursorDirection.Next);
 }
 
 /// <summary>
@@ -26448,7 +25956,7 @@ public extern bool UpperOpen { get; }
     /// </summary>
     /// <param name="value">value</param>
     [Description("@#only")]
-    public extern static IDBKeyRange Only(object value);
+    public static extern IDBKeyRange Only(object value);
 
     /// <summary>
     /// lowerBound
@@ -26456,7 +25964,7 @@ public extern bool UpperOpen { get; }
     /// <param name="lower">lower</param>
     /// <param name="open">open</param>
     [Description("@#lowerBound")]
-    public extern static IDBKeyRange LowerBound(object lower, bool open = false);
+    public static extern IDBKeyRange LowerBound(object lower, bool open = false);
 
     /// <summary>
     /// upperBound
@@ -26464,7 +25972,7 @@ public extern bool UpperOpen { get; }
     /// <param name="upper">upper</param>
     /// <param name="open">open</param>
     [Description("@#upperBound")]
-    public extern static IDBKeyRange UpperBound(object upper, bool open = false);
+    public static extern IDBKeyRange UpperBound(object upper, bool open = false);
 
     /// <summary>
     /// bound
@@ -26474,7 +25982,7 @@ public extern bool UpperOpen { get; }
     /// <param name="lowerOpen">lowerOpen</param>
     /// <param name="upperOpen">upperOpen</param>
     [Description("@#bound")]
-    public extern static IDBKeyRange Bound(object lower, object upper, bool lowerOpen = false, bool upperOpen = false);
+    public static extern IDBKeyRange Bound(object lower, object upper, bool lowerOpen = false, bool upperOpen = false);
 
     /// <summary>
     /// includes
@@ -26527,7 +26035,7 @@ public extern bool AutoIncrement { get; }
     /// <param name="value">value</param>
     /// <param name="key">key</param>
     [Description("@#put")]
-    public extern IDBRequest Put(object value, object key);
+    public extern IDBRequest Put(object value, object? key = default);
 
     /// <summary>
     /// add
@@ -26535,7 +26043,7 @@ public extern bool AutoIncrement { get; }
     /// <param name="value">value</param>
     /// <param name="key">key</param>
     [Description("@#add")]
-    public extern IDBRequest Add(object value, object key);
+    public extern IDBRequest Add(object value, object? key = default);
 
     /// <summary>
     /// delete
@@ -26570,7 +26078,7 @@ public extern bool AutoIncrement { get; }
     /// <param name="query">query</param>
     /// <param name="count">count</param>
     [Description("@#getAll")]
-    public extern IDBRequest GetAll(object query, uint count);
+    public extern IDBRequest GetAll(object? query = default, uint? count = default);
 
     /// <summary>
     /// getAllKeys
@@ -26578,14 +26086,14 @@ public extern bool AutoIncrement { get; }
     /// <param name="query">query</param>
     /// <param name="count">count</param>
     [Description("@#getAllKeys")]
-    public extern IDBRequest GetAllKeys(object query, uint count);
+    public extern IDBRequest GetAllKeys(object? query = default, uint? count = default);
 
     /// <summary>
     /// count
     /// </summary>
     /// <param name="query">query</param>
     [Description("@#count")]
-    public extern IDBRequest Count(object query);
+    public extern IDBRequest Count(object? query = default);
 
     /// <summary>
     /// openCursor
@@ -26593,7 +26101,7 @@ public extern bool AutoIncrement { get; }
     /// <param name="query">query</param>
     /// <param name="direction">direction</param>
     [Description("@#openCursor")]
-    public extern IDBRequest OpenCursor(object query, IDBCursorDirection direction = IDBCursorDirection.Next);
+    public extern IDBRequest OpenCursor(object? query = default, IDBCursorDirection direction = IDBCursorDirection.Next);
 
     /// <summary>
     /// openKeyCursor
@@ -26601,7 +26109,7 @@ public extern bool AutoIncrement { get; }
     /// <param name="query">query</param>
     /// <param name="direction">direction</param>
     [Description("@#openKeyCursor")]
-    public extern IDBRequest OpenKeyCursor(object query, IDBCursorDirection direction = IDBCursorDirection.Next);
+    public extern IDBRequest OpenKeyCursor(object? query = default, IDBCursorDirection direction = IDBCursorDirection.Next);
 
     /// <summary>
     /// index
@@ -26617,7 +26125,7 @@ public extern bool AutoIncrement { get; }
     /// <param name="keyPath">keyPath</param>
     /// <param name="options">options</param>
     [Description("@#createIndex")]
-    public extern IDBIndex CreateIndex(string name, Either<string, string[]> keyPath, IDBIndexParameters? options = default);
+    public extern IDBIndex CreateIndex(string name, Either<string, string[]> keyPath, IDBIndexParameters options = new());
 
     /// <summary>
     /// deleteIndex
@@ -26777,7 +26285,7 @@ public extern EventHandler Onerror { get; set; }
 /// </summary>
 [ECMAScript]
 [Description("@#IDBVersionChangeEvent")]
-public class IDBVersionChangeEvent : Event
+public class IDBVersionChangeEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -26835,7 +26343,7 @@ public class IdentityCredential : Credential
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#disconnect")]
-    public extern static PromiseResult<void> Disconnect(IdentityCredentialDisconnectOptions? options = default);
+    public static extern PromiseResult<void> Disconnect(IdentityCredentialDisconnectOptions options = new());
 
     /// <summary>
 /// token
@@ -26861,14 +26369,14 @@ public class IdentityProvider
     /// close
     /// </summary>
     [Description("@#close")]
-    public extern static void Close();
+    public static extern void Close();
 
     /// <summary>
     /// getUserInfo
     /// </summary>
     /// <param name="config">config</param>
     [Description("@#getUserInfo")]
-    public extern static PromiseResult<IdentityUserInfo[]> GetUserInfo(IdentityProviderConfig config);
+    public static extern PromiseResult<IdentityUserInfo[]> GetUserInfo(IdentityProviderConfig config);
 }
 
 /// <summary>
@@ -26925,14 +26433,14 @@ public extern EventHandler Onchange { get; set; }
     /// requestPermission
     /// </summary>
     [Description("@#requestPermission")]
-    public extern static PromiseResult<PermissionState> RequestPermission();
+    public static extern PromiseResult<PermissionState> RequestPermission();
 
     /// <summary>
     /// start
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#start")]
-    public extern PromiseResult<void> Start(IdleOptions? options = default);
+    public extern PromiseResult<void> Start(IdleOptions options = new());
 }
 
 /// <summary>
@@ -27000,7 +26508,7 @@ public class ImageCapture
     /// </summary>
     /// <param name="photoSettings">photoSettings</param>
     [Description("@#takePhoto")]
-    public extern PromiseResult<Blob> TakePhoto(PhotoSettings? photoSettings = default);
+    public extern PromiseResult<Blob> TakePhoto(PhotoSettings photoSettings = new());
 
     /// <summary>
     /// getPhotoCapabilities
@@ -27118,7 +26626,7 @@ public extern ImageTrackList Tracks { get; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#decode")]
-    public extern PromiseResult<ImageDecodeResult> Decode(ImageDecodeOptions? options = default);
+    public extern PromiseResult<ImageDecodeResult> Decode(ImageDecodeOptions options = new());
 
     /// <summary>
     /// reset
@@ -27137,7 +26645,7 @@ public extern ImageTrackList Tracks { get; }
     /// </summary>
     /// <param name="type">type</param>
     [Description("@#isTypeSupported")]
-    public extern static PromiseResult<bool> IsTypeSupported(string type);
+    public static extern PromiseResult<bool> IsTypeSupported(string type);
 }
 
 /// <summary>
@@ -27219,7 +26727,7 @@ public class Ink
     /// </summary>
     /// <param name="param">param</param>
     [Description("@#requestPresenter")]
-    public extern PromiseResult<InkPresenter> RequestPresenter(InkPresenterParam? param = default);
+    public extern PromiseResult<InkPresenter> RequestPresenter(InkPresenterParam param = new());
 }
 
 /// <summary>
@@ -27295,7 +26803,7 @@ public class InputDeviceInfo : MediaDeviceInfo
 /// </summary>
 [ECMAScript]
 [Description("@#InputEvent")]
-public partial class InputEvent : UIEvent
+public partial class InputEvent(string type, UIEventInit eventInitDict) : UIEvent(type, eventInitDict)
 {
     /// <summary>
 /// dataTransfer
@@ -27340,7 +26848,7 @@ public extern string InputType { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#InstallEvent")]
-public class InstallEvent : ExtendableEvent
+public class InstallEvent(string type, ExtendableEventInit eventInitDict) : ExtendableEvent(type, eventInitDict)
 {
     /// <summary>
     /// addRoutes
@@ -27390,7 +26898,7 @@ public class InterestGroupBiddingScriptRunnerGlobalScope : InterestGroupBiddingA
     /// </summary>
     /// <param name="generateBidOutput">generateBidOutput</param>
     [Description("@#setBid")]
-    public extern bool SetBid(GenerateBidOutput? generateBidOutput = default);
+    public extern bool SetBid(GenerateBidOutput generateBidOutput = new());
 
     /// <summary>
     /// setPriority
@@ -27405,7 +26913,7 @@ public class InterestGroupBiddingScriptRunnerGlobalScope : InterestGroupBiddingA
     /// <param name="key">key</param>
     /// <param name="priority">priority</param>
     [Description("@#setPrioritySignalsOverride")]
-    public extern void SetPrioritySignalsOverride(string key, double? priority);
+    public extern void SetPrioritySignalsOverride(string key, double? priority = default);
 }
 
 /// <summary>
@@ -27585,12 +27093,6 @@ public extern Element Target { get; }
 public class InterventionReportBody : ReportBody
 {
     /// <summary>
-    /// toJSON
-    /// </summary>
-    [Description("@#toJSON")]
-    public extern object ToJSON();
-
-    /// <summary>
 /// id
 /// </summary>
 [Description("@#id")]
@@ -27640,7 +27142,7 @@ public const GLenum COMPLETION_STATUS_KHR = 0x91B1;
 /// </summary>
 [ECMAScript]
 [Description("@#KeyFrameRequestEvent")]
-public class KeyFrameRequestEvent : Event
+public class KeyFrameRequestEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -27668,7 +27170,7 @@ public partial class Keyboard : EventTarget
     /// </summary>
     /// <param name="keyCodes">keyCodes</param>
     [Description("@#lock")]
-    public extern PromiseResult<void> Lock(string[]? keyCodes = default);
+    public extern PromiseResult<void> Lock(string[] keyCodes = new string[]());
 
     /// <summary>
     /// unlock
@@ -27694,7 +27196,7 @@ public extern EventHandler Onlayoutchange { get; set; }
 /// </summary>
 [ECMAScript]
 [Description("@#KeyboardEvent")]
-public partial class KeyboardEvent : UIEvent
+public partial class KeyboardEvent(string type, UIEventInit eventInitDict) : UIEvent(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -27802,7 +27304,7 @@ public extern bool IsComposing { get; }
     /// <param name="shiftKey">shiftKey</param>
     /// <param name="metaKey">metaKey</param>
     [Description("@#initKeyboardEvent")]
-    public extern void InitKeyboardEvent(string typeArg, bool bubblesArg = false, bool cancelableArg = false, Window? viewArg = null, string? keyArg = default, uint locationArg = 0, bool ctrlKey = false, bool altKey = false, bool shiftKey = false, bool metaKey = false);
+    public extern void InitKeyboardEvent(string typeArg, bool bubblesArg = false, bool cancelableArg = false, Window? viewArg = default, string keyArg = "", uint locationArg = 0, bool ctrlKey = false, bool altKey = false, bool shiftKey = false, bool metaKey = false);
 
     /// <summary>
 /// charCode
@@ -27932,7 +27434,7 @@ public extern uint Size { get; }
 /// id
 /// </summary>
 [Description("@#id")]
-public extern string Id { get; }
+public new extern string Id { get; }
 
     /// <summary>
 /// url
@@ -27945,12 +27447,6 @@ public extern string Url { get; }
 /// </summary>
 [Description("@#element")]
 public extern Element? Element { get; }
-
-    /// <summary>
-    /// toJSON
-    /// </summary>
-    [Description("@#toJSON")]
-    public extern object ToJSON();
 }
 
 /// <summary>
@@ -28018,12 +27514,6 @@ public extern double LastInputTime { get; }
 /// </summary>
 [Description("@#sources")]
 public extern FrozenSet<LayoutShiftAttribution> Sources { get; }
-
-    /// <summary>
-    /// toJSON
-    /// </summary>
-    [Description("@#toJSON")]
-    public extern object ToJSON();
 }
 
 /// <summary>
@@ -28242,7 +27732,7 @@ public extern bool SysexEnabled { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#MIDIConnectionEvent")]
-public class MIDIConnectionEvent : Event
+public class MIDIConnectionEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -28304,7 +27794,7 @@ extern IEnumerator IEnumerable.GetEnumerator();
 /// </summary>
 [ECMAScript]
 [Description("@#MIDIMessageEvent")]
-public class MIDIMessageEvent : Event
+public class MIDIMessageEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -28449,7 +27939,7 @@ public class ML
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#createContext")]
-    public extern PromiseResult<MLContext> CreateContext(MLContextOptions? options = default);
+    public extern PromiseResult<MLContext> CreateContext(MLContextOptions options = new());
 
     /// <summary>
     /// createContext
@@ -28544,7 +28034,7 @@ public partial class MLGraphBuilder
     /// <param name="input">input</param>
     /// <param name="options">options</param>
     [Description("@#argMin")]
-    public extern MLOperand ArgMin(MLOperand input, MLArgMinMaxOptions? options = default);
+    public extern MLOperand ArgMin(MLOperand input, MLArgMinMaxOptions options = new());
 
     /// <summary>
     /// argMax
@@ -28552,7 +28042,7 @@ public partial class MLGraphBuilder
     /// <param name="input">input</param>
     /// <param name="options">options</param>
     [Description("@#argMax")]
-    public extern MLOperand ArgMax(MLOperand input, MLArgMinMaxOptions? options = default);
+    public extern MLOperand ArgMax(MLOperand input, MLArgMinMaxOptions options = new());
 
     /// <summary>
     /// batchNormalization
@@ -28562,7 +28052,7 @@ public partial class MLGraphBuilder
     /// <param name="variance">variance</param>
     /// <param name="options">options</param>
     [Description("@#batchNormalization")]
-    public extern MLOperand BatchNormalization(MLOperand input, MLOperand mean, MLOperand variance, MLBatchNormalizationOptions? options = default);
+    public extern MLOperand BatchNormalization(MLOperand input, MLOperand mean, MLOperand variance, MLBatchNormalizationOptions options = new());
 
     /// <summary>
     /// cast
@@ -28578,14 +28068,14 @@ public partial class MLGraphBuilder
     /// <param name="input">input</param>
     /// <param name="options">options</param>
     [Description("@#clamp")]
-    public extern MLOperand Clamp(MLOperand input, MLClampOptions? options = default);
+    public extern MLOperand Clamp(MLOperand input, MLClampOptions options = new());
 
     /// <summary>
     /// clamp
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#clamp")]
-    public extern MLActivation Clamp(MLClampOptions? options = default);
+    public extern MLActivation Clamp(MLClampOptions options = new());
 
     /// <summary>
     /// concat
@@ -28602,7 +28092,7 @@ public partial class MLGraphBuilder
     /// <param name="filter">filter</param>
     /// <param name="options">options</param>
     [Description("@#conv2d")]
-    public extern MLOperand Conv2d(MLOperand input, MLOperand filter, MLConv2dOptions? options = default);
+    public extern MLOperand Conv2d(MLOperand input, MLOperand filter, MLConv2dOptions options = new());
 
     /// <summary>
     /// convTranspose2d
@@ -28611,7 +28101,7 @@ public partial class MLGraphBuilder
     /// <param name="filter">filter</param>
     /// <param name="options">options</param>
     [Description("@#convTranspose2d")]
-    public extern MLOperand ConvTranspose2d(MLOperand input, MLOperand filter, MLConvTranspose2dOptions? options = default);
+    public extern MLOperand ConvTranspose2d(MLOperand input, MLOperand filter, MLConvTranspose2dOptions options = new());
 
     /// <summary>
     /// add
@@ -28813,14 +28303,14 @@ public partial class MLGraphBuilder
     /// <param name="input">input</param>
     /// <param name="options">options</param>
     [Description("@#elu")]
-    public extern MLOperand Elu(MLOperand input, MLEluOptions? options = default);
+    public extern MLOperand Elu(MLOperand input, MLEluOptions options = new());
 
     /// <summary>
     /// elu
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#elu")]
-    public extern MLActivation Elu(MLEluOptions? options = default);
+    public extern MLActivation Elu(MLEluOptions options = new());
 
     /// <summary>
     /// expand
@@ -28837,7 +28327,7 @@ public partial class MLGraphBuilder
     /// <param name="indices">indices</param>
     /// <param name="options">options</param>
     [Description("@#gather")]
-    public extern MLOperand Gather(MLOperand input, MLOperand indices, MLGatherOptions? options = default);
+    public extern MLOperand Gather(MLOperand input, MLOperand indices, MLGatherOptions options = new());
 
     /// <summary>
     /// gelu
@@ -28859,7 +28349,7 @@ public partial class MLGraphBuilder
     /// <param name="b">b</param>
     /// <param name="options">options</param>
     [Description("@#gemm")]
-    public extern MLOperand Gemm(MLOperand a, MLOperand b, MLGemmOptions? options = default);
+    public extern MLOperand Gemm(MLOperand a, MLOperand b, MLGemmOptions options = new());
 
     /// <summary>
     /// gru
@@ -28871,7 +28361,7 @@ public partial class MLGraphBuilder
     /// <param name="hiddenSize">hiddenSize</param>
     /// <param name="options">options</param>
     [Description("@#gru")]
-    public extern MLOperand[] Gru(MLOperand input, MLOperand weight, MLOperand recurrentWeight, uint steps, uint hiddenSize, MLGruOptions? options = default);
+    public extern MLOperand[] Gru(MLOperand input, MLOperand weight, MLOperand recurrentWeight, uint steps, uint hiddenSize, MLGruOptions options = new());
 
     /// <summary>
     /// gruCell
@@ -28883,7 +28373,7 @@ public partial class MLGraphBuilder
     /// <param name="hiddenSize">hiddenSize</param>
     /// <param name="options">options</param>
     [Description("@#gruCell")]
-    public extern MLOperand GruCell(MLOperand input, MLOperand weight, MLOperand recurrentWeight, MLOperand hiddenState, uint hiddenSize, MLGruCellOptions? options = default);
+    public extern MLOperand GruCell(MLOperand input, MLOperand weight, MLOperand recurrentWeight, MLOperand hiddenState, uint hiddenSize, MLGruCellOptions options = new());
 
     /// <summary>
     /// hardSigmoid
@@ -28891,14 +28381,14 @@ public partial class MLGraphBuilder
     /// <param name="input">input</param>
     /// <param name="options">options</param>
     [Description("@#hardSigmoid")]
-    public extern MLOperand HardSigmoid(MLOperand input, MLHardSigmoidOptions? options = default);
+    public extern MLOperand HardSigmoid(MLOperand input, MLHardSigmoidOptions options = new());
 
     /// <summary>
     /// hardSigmoid
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#hardSigmoid")]
-    public extern MLActivation HardSigmoid(MLHardSigmoidOptions? options = default);
+    public extern MLActivation HardSigmoid(MLHardSigmoidOptions options = new());
 
     /// <summary>
     /// hardSwish
@@ -28919,7 +28409,7 @@ public partial class MLGraphBuilder
     /// <param name="input">input</param>
     /// <param name="options">options</param>
     [Description("@#instanceNormalization")]
-    public extern MLOperand InstanceNormalization(MLOperand input, MLInstanceNormalizationOptions? options = default);
+    public extern MLOperand InstanceNormalization(MLOperand input, MLInstanceNormalizationOptions options = new());
 
     /// <summary>
     /// layerNormalization
@@ -28927,7 +28417,7 @@ public partial class MLGraphBuilder
     /// <param name="input">input</param>
     /// <param name="options">options</param>
     [Description("@#layerNormalization")]
-    public extern MLOperand LayerNormalization(MLOperand input, MLLayerNormalizationOptions? options = default);
+    public extern MLOperand LayerNormalization(MLOperand input, MLLayerNormalizationOptions options = new());
 
     /// <summary>
     /// leakyRelu
@@ -28935,14 +28425,14 @@ public partial class MLGraphBuilder
     /// <param name="input">input</param>
     /// <param name="options">options</param>
     [Description("@#leakyRelu")]
-    public extern MLOperand LeakyRelu(MLOperand input, MLLeakyReluOptions? options = default);
+    public extern MLOperand LeakyRelu(MLOperand input, MLLeakyReluOptions options = new());
 
     /// <summary>
     /// leakyRelu
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#leakyRelu")]
-    public extern MLActivation LeakyRelu(MLLeakyReluOptions? options = default);
+    public extern MLActivation LeakyRelu(MLLeakyReluOptions options = new());
 
     /// <summary>
     /// linear
@@ -28950,14 +28440,14 @@ public partial class MLGraphBuilder
     /// <param name="input">input</param>
     /// <param name="options">options</param>
     [Description("@#linear")]
-    public extern MLOperand Linear(MLOperand input, MLLinearOptions? options = default);
+    public extern MLOperand Linear(MLOperand input, MLLinearOptions options = new());
 
     /// <summary>
     /// linear
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#linear")]
-    public extern MLActivation Linear(MLLinearOptions? options = default);
+    public extern MLActivation Linear(MLLinearOptions options = new());
 
     /// <summary>
     /// lstm
@@ -28969,7 +28459,7 @@ public partial class MLGraphBuilder
     /// <param name="hiddenSize">hiddenSize</param>
     /// <param name="options">options</param>
     [Description("@#lstm")]
-    public extern MLOperand[] Lstm(MLOperand input, MLOperand weight, MLOperand recurrentWeight, uint steps, uint hiddenSize, MLLstmOptions? options = default);
+    public extern MLOperand[] Lstm(MLOperand input, MLOperand weight, MLOperand recurrentWeight, uint steps, uint hiddenSize, MLLstmOptions options = new());
 
     /// <summary>
     /// lstmCell
@@ -28982,7 +28472,7 @@ public partial class MLGraphBuilder
     /// <param name="hiddenSize">hiddenSize</param>
     /// <param name="options">options</param>
     [Description("@#lstmCell")]
-    public extern MLOperand[] LstmCell(MLOperand input, MLOperand weight, MLOperand recurrentWeight, MLOperand hiddenState, MLOperand cellState, uint hiddenSize, MLLstmCellOptions? options = default);
+    public extern MLOperand[] LstmCell(MLOperand input, MLOperand weight, MLOperand recurrentWeight, MLOperand hiddenState, MLOperand cellState, uint hiddenSize, MLLstmCellOptions options = new());
 
     /// <summary>
     /// matmul
@@ -29000,7 +28490,7 @@ public partial class MLGraphBuilder
     /// <param name="endingPadding">endingPadding</param>
     /// <param name="options">options</param>
     [Description("@#pad")]
-    public extern MLOperand Pad(MLOperand input, uint[] beginningPadding, uint[] endingPadding, MLPadOptions? options = default);
+    public extern MLOperand Pad(MLOperand input, uint[] beginningPadding, uint[] endingPadding, MLPadOptions options = new());
 
     /// <summary>
     /// averagePool2d
@@ -29008,7 +28498,7 @@ public partial class MLGraphBuilder
     /// <param name="input">input</param>
     /// <param name="options">options</param>
     [Description("@#averagePool2d")]
-    public extern MLOperand AveragePool2d(MLOperand input, MLPool2dOptions? options = default);
+    public extern MLOperand AveragePool2d(MLOperand input, MLPool2dOptions options = new());
 
     /// <summary>
     /// l2Pool2d
@@ -29016,7 +28506,7 @@ public partial class MLGraphBuilder
     /// <param name="input">input</param>
     /// <param name="options">options</param>
     [Description("@#l2Pool2d")]
-    public extern MLOperand L2Pool2d(MLOperand input, MLPool2dOptions? options = default);
+    public extern MLOperand L2Pool2d(MLOperand input, MLPool2dOptions options = new());
 
     /// <summary>
     /// maxPool2d
@@ -29024,7 +28514,7 @@ public partial class MLGraphBuilder
     /// <param name="input">input</param>
     /// <param name="options">options</param>
     [Description("@#maxPool2d")]
-    public extern MLOperand MaxPool2d(MLOperand input, MLPool2dOptions? options = default);
+    public extern MLOperand MaxPool2d(MLOperand input, MLPool2dOptions options = new());
 
     /// <summary>
     /// prelu
@@ -29040,7 +28530,7 @@ public partial class MLGraphBuilder
     /// <param name="input">input</param>
     /// <param name="options">options</param>
     [Description("@#reduceL1")]
-    public extern MLOperand ReduceL1(MLOperand input, MLReduceOptions? options = default);
+    public extern MLOperand ReduceL1(MLOperand input, MLReduceOptions options = new());
 
     /// <summary>
     /// reduceL2
@@ -29048,7 +28538,7 @@ public partial class MLGraphBuilder
     /// <param name="input">input</param>
     /// <param name="options">options</param>
     [Description("@#reduceL2")]
-    public extern MLOperand ReduceL2(MLOperand input, MLReduceOptions? options = default);
+    public extern MLOperand ReduceL2(MLOperand input, MLReduceOptions options = new());
 
     /// <summary>
     /// reduceLogSum
@@ -29056,7 +28546,7 @@ public partial class MLGraphBuilder
     /// <param name="input">input</param>
     /// <param name="options">options</param>
     [Description("@#reduceLogSum")]
-    public extern MLOperand ReduceLogSum(MLOperand input, MLReduceOptions? options = default);
+    public extern MLOperand ReduceLogSum(MLOperand input, MLReduceOptions options = new());
 
     /// <summary>
     /// reduceLogSumExp
@@ -29064,7 +28554,7 @@ public partial class MLGraphBuilder
     /// <param name="input">input</param>
     /// <param name="options">options</param>
     [Description("@#reduceLogSumExp")]
-    public extern MLOperand ReduceLogSumExp(MLOperand input, MLReduceOptions? options = default);
+    public extern MLOperand ReduceLogSumExp(MLOperand input, MLReduceOptions options = new());
 
     /// <summary>
     /// reduceMax
@@ -29072,7 +28562,7 @@ public partial class MLGraphBuilder
     /// <param name="input">input</param>
     /// <param name="options">options</param>
     [Description("@#reduceMax")]
-    public extern MLOperand ReduceMax(MLOperand input, MLReduceOptions? options = default);
+    public extern MLOperand ReduceMax(MLOperand input, MLReduceOptions options = new());
 
     /// <summary>
     /// reduceMean
@@ -29080,7 +28570,7 @@ public partial class MLGraphBuilder
     /// <param name="input">input</param>
     /// <param name="options">options</param>
     [Description("@#reduceMean")]
-    public extern MLOperand ReduceMean(MLOperand input, MLReduceOptions? options = default);
+    public extern MLOperand ReduceMean(MLOperand input, MLReduceOptions options = new());
 
     /// <summary>
     /// reduceMin
@@ -29088,7 +28578,7 @@ public partial class MLGraphBuilder
     /// <param name="input">input</param>
     /// <param name="options">options</param>
     [Description("@#reduceMin")]
-    public extern MLOperand ReduceMin(MLOperand input, MLReduceOptions? options = default);
+    public extern MLOperand ReduceMin(MLOperand input, MLReduceOptions options = new());
 
     /// <summary>
     /// reduceProduct
@@ -29096,7 +28586,7 @@ public partial class MLGraphBuilder
     /// <param name="input">input</param>
     /// <param name="options">options</param>
     [Description("@#reduceProduct")]
-    public extern MLOperand ReduceProduct(MLOperand input, MLReduceOptions? options = default);
+    public extern MLOperand ReduceProduct(MLOperand input, MLReduceOptions options = new());
 
     /// <summary>
     /// reduceSum
@@ -29104,7 +28594,7 @@ public partial class MLGraphBuilder
     /// <param name="input">input</param>
     /// <param name="options">options</param>
     [Description("@#reduceSum")]
-    public extern MLOperand ReduceSum(MLOperand input, MLReduceOptions? options = default);
+    public extern MLOperand ReduceSum(MLOperand input, MLReduceOptions options = new());
 
     /// <summary>
     /// reduceSumSquare
@@ -29112,7 +28602,7 @@ public partial class MLGraphBuilder
     /// <param name="input">input</param>
     /// <param name="options">options</param>
     [Description("@#reduceSumSquare")]
-    public extern MLOperand ReduceSumSquare(MLOperand input, MLReduceOptions? options = default);
+    public extern MLOperand ReduceSumSquare(MLOperand input, MLReduceOptions options = new());
 
     /// <summary>
     /// relu
@@ -29133,7 +28623,7 @@ public partial class MLGraphBuilder
     /// <param name="input">input</param>
     /// <param name="options">options</param>
     [Description("@#resample2d")]
-    public extern MLOperand Resample2d(MLOperand input, MLResample2dOptions? options = default);
+    public extern MLOperand Resample2d(MLOperand input, MLResample2dOptions options = new());
 
     /// <summary>
     /// reshape
@@ -29184,14 +28674,14 @@ public partial class MLGraphBuilder
     /// <param name="input">input</param>
     /// <param name="options">options</param>
     [Description("@#softplus")]
-    public extern MLOperand Softplus(MLOperand input, MLSoftplusOptions? options = default);
+    public extern MLOperand Softplus(MLOperand input, MLSoftplusOptions options = new());
 
     /// <summary>
     /// softplus
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#softplus")]
-    public extern MLActivation Softplus(MLSoftplusOptions? options = default);
+    public extern MLActivation Softplus(MLSoftplusOptions options = new());
 
     /// <summary>
     /// softsign
@@ -29213,7 +28703,7 @@ public partial class MLGraphBuilder
     /// <param name="splits">splits</param>
     /// <param name="options">options</param>
     [Description("@#split")]
-    public extern MLOperand[] Split(MLOperand input, Either<uint, uint[]> splits, MLSplitOptions? options = default);
+    public extern MLOperand[] Split(MLOperand input, Either<uint, uint[]> splits, MLSplitOptions options = new());
 
     /// <summary>
     /// tanh
@@ -29234,7 +28724,7 @@ public partial class MLGraphBuilder
     /// <param name="input">input</param>
     /// <param name="options">options</param>
     [Description("@#transpose")]
-    public extern MLOperand Transpose(MLOperand input, MLTransposeOptions? options = default);
+    public extern MLOperand Transpose(MLOperand input, MLTransposeOptions options = new());
 
     /// <summary>
     /// triangular
@@ -29242,7 +28732,7 @@ public partial class MLGraphBuilder
     /// <param name="input">input</param>
     /// <param name="options">options</param>
     [Description("@#triangular")]
-    public extern MLOperand Triangular(MLOperand input, MLTriangularOptions? options = default);
+    public extern MLOperand Triangular(MLOperand input, MLTriangularOptions options = new());
 
     /// <summary>
     /// where
@@ -29996,7 +29486,7 @@ public extern int TabIndex { get; set; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#focus")]
-    public extern void Focus(FocusOptions? options = default);
+    public extern void Focus(FocusOptions options = new());
     
     /// <summary>
     /// blur
@@ -30078,14 +29568,14 @@ public partial class MediaDevices : EventTarget
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#selectAudioOutput")]
-    public extern PromiseResult<MediaDeviceInfo> SelectAudioOutput(AudioOutputOptions? options = default);
+    public extern PromiseResult<MediaDeviceInfo> SelectAudioOutput(AudioOutputOptions options = new());
 
     /// <summary>
     /// setCaptureHandleConfig
     /// </summary>
     /// <param name="config">config</param>
     [Description("@#setCaptureHandleConfig")]
-    public extern void SetCaptureHandleConfig(CaptureHandleConfig? config = default);
+    public extern void SetCaptureHandleConfig(CaptureHandleConfig config = new());
 
     /// <summary>
     /// setSupportedCaptureActions
@@ -30123,21 +29613,21 @@ public extern EventHandler Ondevicechange { get; set; }
     /// </summary>
     /// <param name="constraints">constraints</param>
     [Description("@#getUserMedia")]
-    public extern PromiseResult<MediaStream> GetUserMedia(MediaStreamConstraints? constraints = default);
+    public extern PromiseResult<MediaStream> GetUserMedia(MediaStreamConstraints constraints = new());
 
     /// <summary>
     /// getViewportMedia
     /// </summary>
     /// <param name="constraints">constraints</param>
     [Description("@#getViewportMedia")]
-    public extern PromiseResult<MediaStream> GetViewportMedia(ViewportMediaStreamConstraints? constraints = default);
+    public extern PromiseResult<MediaStream> GetViewportMedia(ViewportMediaStreamConstraints constraints = new());
 
     /// <summary>
     /// getDisplayMedia
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#getDisplayMedia")]
-    public extern PromiseResult<MediaStream> GetDisplayMedia(DisplayMediaStreamOptions? options = default);
+    public extern PromiseResult<MediaStream> GetDisplayMedia(DisplayMediaStreamOptions options = new());
 }
 
 /// <summary>
@@ -30166,7 +29656,7 @@ public extern HTMLMediaElement MediaElement { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#MediaEncryptedEvent")]
-public class MediaEncryptedEvent : Event
+public class MediaEncryptedEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -30237,7 +29727,7 @@ public extern string Message { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#MediaKeyMessageEvent")]
-public class MediaKeyMessageEvent : Event
+public class MediaKeyMessageEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -30413,7 +29903,7 @@ public class MediaKeys
     /// </summary>
     /// <param name="policy">policy</param>
     [Description("@#getStatusForPolicy")]
-    public extern PromiseResult<MediaKeyStatus> GetStatusForPolicy(MediaKeysPolicy? policy = default);
+    public extern PromiseResult<MediaKeyStatus> GetStatusForPolicy(MediaKeysPolicy policy = new());
 
     /// <summary>
     /// setServerCertificate
@@ -30512,7 +30002,7 @@ public extern EventHandler Onchange { get; set; }
 /// </summary>
 [ECMAScript]
 [Description("@#MediaQueryListEvent")]
-public class MediaQueryListEvent : Event
+public class MediaQueryListEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -30625,7 +30115,7 @@ public extern BitrateMode AudioBitrateMode { get; }
     /// </summary>
     /// <param name="timeslice">timeslice</param>
     [Description("@#start")]
-    public extern void Start(uint timeslice);
+    public extern void Start(uint? timeslice = default);
 
     /// <summary>
     /// stop
@@ -30656,7 +30146,7 @@ public extern BitrateMode AudioBitrateMode { get; }
     /// </summary>
     /// <param name="type">type</param>
     [Description("@#isTypeSupported")]
-    public extern static bool IsTypeSupported(string type);
+    public static extern bool IsTypeSupported(string type);
 }
 
 /// <summary>
@@ -30691,7 +30181,7 @@ public extern MediaSessionPlaybackState PlaybackState { get; set; }
     /// </summary>
     /// <param name="state">state</param>
     [Description("@#setPositionState")]
-    public extern void SetPositionState(MediaPositionState? state = default);
+    public extern void SetPositionState(MediaPositionState state = new());
 
     /// <summary>
     /// setMicrophoneActive
@@ -30772,7 +30262,7 @@ public extern EventHandler Onsourceclose { get; set; }
 /// canConstructInDedicatedWorker
 /// </summary>
 [Description("@#canConstructInDedicatedWorker")]
-public extern static bool CanConstructInDedicatedWorker { get; }
+public static extern bool CanConstructInDedicatedWorker { get; }
 
     /// <summary>
     /// addSourceBuffer
@@ -30793,7 +30283,7 @@ public extern static bool CanConstructInDedicatedWorker { get; }
     /// </summary>
     /// <param name="error">error</param>
     [Description("@#endOfStream")]
-    public extern void EndOfStream(EndOfStreamError error);
+    public extern void EndOfStream(EndOfStreamError? error = default);
 
     /// <summary>
     /// setLiveSeekableRange
@@ -30814,7 +30304,7 @@ public extern static bool CanConstructInDedicatedWorker { get; }
     /// </summary>
     /// <param name="type">type</param>
     [Description("@#isTypeSupported")]
-    public extern static bool IsTypeSupported(string type);
+    public static extern bool IsTypeSupported(string type);
 }
 
 /// <summary>
@@ -31083,7 +30573,7 @@ public extern EventHandler Onended { get; set; }
     /// </summary>
     /// <param name="constraints">constraints</param>
     [Description("@#applyConstraints")]
-    public extern PromiseResult<void> ApplyConstraints(MediaTrackConstraints? constraints = default);
+    public extern PromiseResult<void> ApplyConstraints(MediaTrackConstraints constraints = new());
 
     /// <summary>
 /// contentHint
@@ -31124,7 +30614,7 @@ public class MediaStreamTrackAudioSourceNode : AudioNode
 /// </summary>
 [ECMAScript]
 [Description("@#MediaStreamTrackEvent")]
-public class MediaStreamTrackEvent : Event
+public class MediaStreamTrackEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -31190,7 +30680,7 @@ public extern MessagePort Port2 { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#MessageEvent")]
-public class MessageEvent : Event
+public class MessageEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -31241,7 +30731,7 @@ public extern FrozenSet<MessagePort> Ports { get; }
     /// <param name="source">source</param>
     /// <param name="ports">ports</param>
     [Description("@#initMessageEvent")]
-    public extern void InitMessageEvent(string type, bool bubbles = false, bool cancelable = false, object? data = default, string? origin = default, string? lastEventId = default, MessageEventSource? source = null, MessagePort[]? ports = default);
+    public extern void InitMessageEvent(string type, bool bubbles = false, bool cancelable = false, object? data = default, string origin = "", string lastEventId = "", MessageEventSource? source = default, MessagePort[] ports = new MessagePort[]());
 }
 
 /// <summary>
@@ -31265,7 +30755,7 @@ public class MessagePort : EventTarget
     /// <param name="message">message</param>
     /// <param name="options">options</param>
     [Description("@#postMessage")]
-    public extern void PostMessage(object message, StructuredSerializeOptions? options = default);
+    public extern void PostMessage(object message, StructuredSerializeOptions options = new());
 
     /// <summary>
     /// start
@@ -31363,7 +30853,7 @@ public extern uint Length { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#MouseEvent")]
-public partial class MouseEvent : UIEvent
+public partial class MouseEvent(string type, UIEventInit eventInitDict) : UIEvent(type, eventInitDict)
 {
     /// <summary>
 /// pageX
@@ -31524,7 +31014,7 @@ public extern EventTarget? RelatedTarget { get; }
     /// <param name="buttonArg">buttonArg</param>
     /// <param name="relatedTargetArg">relatedTargetArg</param>
     [Description("@#initMouseEvent")]
-    public extern void InitMouseEvent(string typeArg, bool bubblesArg = false, bool cancelableArg = false, Window? viewArg = null, int detailArg = 0, int screenXArg = 0, int screenYArg = 0, int clientXArg = 0, int clientYArg = 0, bool ctrlKeyArg = false, bool altKeyArg = false, bool shiftKeyArg = false, bool metaKeyArg = false, short buttonArg = 0, EventTarget? relatedTargetArg = null);
+    public extern void InitMouseEvent(string typeArg, bool bubblesArg = false, bool cancelableArg = false, Window? viewArg = default, int detailArg = 0, int screenXArg = 0, int screenYArg = 0, int clientXArg = 0, int clientYArg = 0, bool ctrlKeyArg = false, bool altKeyArg = false, bool shiftKeyArg = false, bool metaKeyArg = false, short buttonArg = 0, EventTarget? relatedTargetArg = default);
 }
 
 /// <summary>
@@ -31532,7 +31022,7 @@ public extern EventTarget? RelatedTarget { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#MutationEvent")]
-public class MutationEvent : Event
+public class MutationEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// MODIFICATION
@@ -31594,7 +31084,7 @@ public extern ushort AttrChange { get; }
     /// <param name="attrNameArg">attrNameArg</param>
     /// <param name="attrChangeArg">attrChangeArg</param>
     [Description("@#initMutationEvent")]
-    public extern void InitMutationEvent(string typeArg, bool bubblesArg = false, bool cancelableArg = false, Node? relatedNodeArg = null, string? prevValueArg = default, string? newValueArg = default, string? attrNameArg = default, ushort attrChangeArg = 0);
+    public extern void InitMutationEvent(string typeArg, bool bubblesArg = false, bool cancelableArg = false, Node? relatedNodeArg = default, string prevValueArg = "", string newValueArg = "", string attrNameArg = "", ushort attrChangeArg = 0);
 }
 
 /// <summary>
@@ -31616,7 +31106,7 @@ public class MutationObserver
     /// <param name="target">target</param>
     /// <param name="options">options</param>
     [Description("@#observe")]
-    public extern void Observe(Node target, MutationObserverInit? options = default);
+    public extern void Observe(Node target, MutationObserverInit options = new());
 
     /// <summary>
     /// disconnect
@@ -31742,7 +31232,7 @@ public extern EventHandler Onreadingerror { get; set; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#scan")]
-    public extern PromiseResult<void> Scan(NDEFScanOptions? options = default);
+    public extern PromiseResult<void> Scan(NDEFScanOptions options = new());
 
     /// <summary>
     /// write
@@ -31750,14 +31240,14 @@ public extern EventHandler Onreadingerror { get; set; }
     /// <param name="message">message</param>
     /// <param name="options">options</param>
     [Description("@#write")]
-    public extern PromiseResult<void> Write(NDEFMessageSource message, NDEFWriteOptions? options = default);
+    public extern PromiseResult<void> Write(NDEFMessageSource message, NDEFWriteOptions options = new());
 
     /// <summary>
     /// makeReadOnly
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#makeReadOnly")]
-    public extern PromiseResult<void> MakeReadOnly(NDEFMakeReadOnlyOptions? options = default);
+    public extern PromiseResult<void> MakeReadOnly(NDEFMakeReadOnlyOptions options = new());
 }
 
 /// <summary>
@@ -31765,7 +31255,7 @@ public extern EventHandler Onreadingerror { get; set; }
 /// </summary>
 [ECMAScript]
 [Description("@#NDEFReadingEvent")]
-public class NDEFReadingEvent : Event
+public class NDEFReadingEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -31985,7 +31475,7 @@ public extern uint Length { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#NavigateEvent")]
-public class NavigateEvent : Event
+public class NavigateEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -32059,7 +31549,7 @@ public extern bool HasUAVisualTransition { get; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#intercept")]
-    public extern void Intercept(NavigationInterceptOptions? options = default);
+    public extern void Intercept(NavigationInterceptOptions options = new());
 
     /// <summary>
     /// scroll
@@ -32124,14 +31614,14 @@ public extern bool CanGoForward { get; }
     /// <param name="url">url</param>
     /// <param name="options">options</param>
     [Description("@#navigate")]
-    public extern NavigationResult Navigate(string url, NavigationNavigateOptions? options = default);
+    public extern NavigationResult Navigate(string url, NavigationNavigateOptions options = new());
 
     /// <summary>
     /// reload
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#reload")]
-    public extern NavigationResult Reload(NavigationReloadOptions? options = default);
+    public extern NavigationResult Reload(NavigationReloadOptions options = new());
 
     /// <summary>
     /// traverseTo
@@ -32139,21 +31629,21 @@ public extern bool CanGoForward { get; }
     /// <param name="key">key</param>
     /// <param name="options">options</param>
     [Description("@#traverseTo")]
-    public extern NavigationResult TraverseTo(string key, NavigationOptions? options = default);
+    public extern NavigationResult TraverseTo(string key, NavigationOptions options = new());
 
     /// <summary>
     /// back
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#back")]
-    public extern NavigationResult Back(NavigationOptions? options = default);
+    public extern NavigationResult Back(NavigationOptions options = new());
 
     /// <summary>
     /// forward
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#forward")]
-    public extern NavigationResult Forward(NavigationOptions? options = default);
+    public extern NavigationResult Forward(NavigationOptions options = new());
 
     /// <summary>
 /// onnavigate
@@ -32211,7 +31701,7 @@ public extern NavigationType NavigationType { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#NavigationCurrentEntryChangeEvent")]
-public class NavigationCurrentEntryChangeEvent : Event
+public class NavigationCurrentEntryChangeEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -32282,7 +31772,7 @@ public extern bool SameDocument { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#NavigationEvent")]
-public class NavigationEvent : UIEvent
+public class NavigationEvent(string type, UIEventInit eventInitDict) : UIEvent(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -32459,7 +31949,7 @@ public extern AudioSession AudioSession { get; }
     /// <param name="url">url</param>
     /// <param name="data">data</param>
     [Description("@#sendBeacon")]
-    public extern bool SendBeacon(string url, BodyInit? data = null);
+    public extern bool SendBeacon(string url, BodyInit? data = default);
 
     /// <summary>
 /// clipboard
@@ -32627,7 +32117,7 @@ public extern ServiceWorkerContainer ServiceWorker { get; }
     /// </summary>
     /// <param name="group">group</param>
     [Description("@#leaveAdInterestGroup")]
-    public extern PromiseResult<void> LeaveAdInterestGroup(AuctionAdInterestGroupKey? group = default);
+    public extern PromiseResult<void> LeaveAdInterestGroup(AuctionAdInterestGroupKey group = new());
 
     /// <summary>
     /// clearOriginJoinedAdInterestGroups
@@ -32635,7 +32125,7 @@ public extern ServiceWorkerContainer ServiceWorker { get; }
     /// <param name="owner">owner</param>
     /// <param name="interestGroupsToKeep">interestGroupsToKeep</param>
     [Description("@#clearOriginJoinedAdInterestGroups")]
-    public extern PromiseResult<void> ClearOriginJoinedAdInterestGroups(string owner, string[]? interestGroupsToKeep = default);
+    public extern PromiseResult<void> ClearOriginJoinedAdInterestGroups(string owner, string[] interestGroupsToKeep = new string[]());
 
     /// <summary>
     /// runAdAuction
@@ -32686,14 +32176,14 @@ public extern Bluetooth Bluetooth { get; }
     /// </summary>
     /// <param name="data">data</param>
     [Description("@#share")]
-    public extern PromiseResult<void> Share(ShareData? data = default);
+    public extern PromiseResult<void> Share(ShareData data = new());
 
     /// <summary>
     /// canShare
     /// </summary>
     /// <param name="data">data</param>
     [Description("@#canShare")]
-    public extern bool CanShare(ShareData? data = default);
+    public extern bool CanShare(ShareData data = new());
 
     /// <summary>
 /// hid
@@ -32706,7 +32196,7 @@ public extern HID Hid { get; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#requestMIDIAccess")]
-    public extern PromiseResult<MIDIAccess> RequestMIDIAccess(MIDIOptions? options = default);
+    public extern PromiseResult<MIDIAccess> RequestMIDIAccess(MIDIOptions options = new());
 
     /// <summary>
 /// usb
@@ -32732,7 +32222,7 @@ public extern WindowControlsOverlay WindowControlsOverlay { get; }
     /// </summary>
     /// <param name="contents">contents</param>
     [Description("@#setAppBadge")]
-    public extern PromiseResult<void> SetAppBadge(ulong contents);
+    public extern PromiseResult<void> SetAppBadge(ulong? contents = default);
     
     /// <summary>
     /// clearAppBadge
@@ -33227,7 +32717,7 @@ public extern Document? OwnerDocument { get; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#getRootNode")]
-    public extern Node GetRootNode(GetRootNodeOptions? options = default);
+    public extern Node GetRootNode(GetRootNodeOptions options = new());
 
     /// <summary>
 /// parentNode
@@ -33586,20 +33076,20 @@ public class Notification : EventTarget
 /// permission
 /// </summary>
 [Description("@#permission")]
-public extern static NotificationPermission Permission { get; }
+public static extern NotificationPermission Permission { get; }
 
     /// <summary>
     /// requestPermission
     /// </summary>
     /// <param name="deprecatedCallback">deprecatedCallback</param>
     [Description("@#requestPermission")]
-    public extern static PromiseResult<NotificationPermission> RequestPermission(NotificationPermissionCallback deprecatedCallback);
+    public static extern PromiseResult<NotificationPermission> RequestPermission(NotificationPermissionCallback? deprecatedCallback = default);
 
     /// <summary>
 /// maxActions
 /// </summary>
 [Description("@#maxActions")]
-public extern static uint MaxActions { get; }
+public static extern uint MaxActions { get; }
 
     /// <summary>
 /// onclick
@@ -33727,7 +33217,7 @@ public extern FrozenSet<NotificationAction> Actions { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#NotificationEvent")]
-public class NotificationEvent : ExtendableEvent
+public class NotificationEvent(string type, ExtendableEventInit eventInitDict) : ExtendableEvent(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -33998,7 +33488,7 @@ public const GLenum FRAMEBUFFER_INCOMPLETE_VIEW_TARGETS_OVR = 0x9633;
 /// </summary>
 [ECMAScript]
 [Description("@#OfflineAudioCompletionEvent")]
-public class OfflineAudioCompletionEvent : Event
+public class OfflineAudioCompletionEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -34112,7 +33602,7 @@ public extern ulong Height { get; set; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#convertToBlob")]
-    public extern PromiseResult<Blob> ConvertToBlob(ImageEncodeOptions? options = default);
+    public extern PromiseResult<Blob> ConvertToBlob(ImageEncodeOptions options = new());
 
     /// <summary>
 /// oncontextlost
@@ -34231,7 +33721,7 @@ public extern OffscreenCanvas Canvas { get; }
     /// </summary>
     /// <param name="transform">transform</param>
     [Description("@#setTransform")]
-    public extern void SetTransform(DOMMatrix2DInit? transform = default);
+    public extern void SetTransform(DOMMatrix2DInit transform = new());
     
     /// <summary>
     /// resetTransform
@@ -34483,7 +33973,7 @@ public extern string Filter { get; set; }
     /// <param name="y">y</param>
     /// <param name="maxWidth">maxWidth</param>
     [Description("@#fillText")]
-    public extern void FillText(string text, double x, double y, double maxWidth);
+    public extern void FillText(string text, double x, double y, double? maxWidth = default);
     
     /// <summary>
     /// strokeText
@@ -34493,7 +33983,7 @@ public extern string Filter { get; set; }
     /// <param name="y">y</param>
     /// <param name="maxWidth">maxWidth</param>
     [Description("@#strokeText")]
-    public extern void StrokeText(string text, double x, double y, double maxWidth);
+    public extern void StrokeText(string text, double x, double y, double? maxWidth = default);
     
     /// <summary>
     /// measureText
@@ -34548,7 +34038,7 @@ public extern string Filter { get; set; }
     /// <param name="sh">sh</param>
     /// <param name="settings">settings</param>
     [Description("@#createImageData")]
-    public extern ImageData CreateImageData(int sw, int sh, ImageDataSettings? settings = default);
+    public extern ImageData CreateImageData(int sw, int sh, ImageDataSettings settings = new());
     
     /// <summary>
     /// createImageData
@@ -34566,7 +34056,7 @@ public extern string Filter { get; set; }
     /// <param name="sh">sh</param>
     /// <param name="settings">settings</param>
     [Description("@#getImageData")]
-    public extern ImageData GetImageData(int sx, int sy, int sw, int sh, ImageDataSettings? settings = default);
+    public extern ImageData GetImageData(int sx, int sy, int sw, int sh, ImageDataSettings settings = new());
     
     /// <summary>
     /// putImageData
@@ -34773,7 +34263,7 @@ public extern string WordSpacing { get; set; }
     /// <param name="h">h</param>
     /// <param name="radii">radii</param>
     [Description("@#roundRect")]
-    public extern void RoundRect(double x, double y, double w, double h, Either<double, DOMPointInit, Either<double, DOMPointInit>[]> radii);
+    public extern void RoundRect(double x, double y, double w, double h, Either<double, DOMPointInit, Either<double, DOMPointInit>[]> radii = 0);
     
     /// <summary>
     /// roundRect
@@ -34923,7 +34413,7 @@ public extern string Constraint { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#PageRevealEvent")]
-public class PageRevealEvent : Event
+public class PageRevealEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -34944,7 +34434,7 @@ public extern ViewTransition? ViewTransition { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#PageSwapEvent")]
-public class PageSwapEvent : Event
+public class PageSwapEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -34971,7 +34461,7 @@ public extern ViewTransition? ViewTransition { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#PageTransitionEvent")]
-public class PageTransitionEvent : Event
+public class PageTransitionEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -35163,7 +34653,7 @@ public class Path2D
     /// <param name="path">path</param>
     /// <param name="transform">transform</param>
     [Description("@#addPath")]
-    public extern void AddPath(Path2D path, DOMMatrix2DInit? transform = default);
+    public extern void AddPath(Path2D path, DOMMatrix2DInit transform = new());
 
     #region mixin CanvasPath
     /// <summary>
@@ -35240,7 +34730,7 @@ public class Path2D
     /// <param name="h">h</param>
     /// <param name="radii">radii</param>
     [Description("@#roundRect")]
-    public extern void RoundRect(double x, double y, double w, double h, Either<double, DOMPointInit, Either<double, DOMPointInit>[]> radii);
+    public extern void RoundRect(double x, double y, double w, double h, Either<double, DOMPointInit, Either<double, DOMPointInit>[]> radii = 0);
     
     /// <summary>
     /// roundRect
@@ -35329,7 +34819,7 @@ public extern string UserHint { get; set; }
 /// </summary>
 [ECMAScript]
 [Description("@#PaymentMethodChangeEvent")]
-public class PaymentMethodChangeEvent : PaymentRequestUpdateEvent
+public class PaymentMethodChangeEvent(string type, PaymentRequestUpdateEventInit eventInitDict) : PaymentRequestUpdateEvent(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -35370,7 +34860,7 @@ public partial class PaymentRequest : EventTarget
     /// </summary>
     /// <param name="detailsPromise">detailsPromise</param>
     [Description("@#show")]
-    public extern PromiseResult<PaymentResponse> Show(PromiseResult<PaymentDetailsUpdate> detailsPromise);
+    public extern PromiseResult<PaymentResponse> Show(PromiseResult<PaymentDetailsUpdate>? detailsPromise = default);
 
     /// <summary>
     /// abort
@@ -35400,7 +34890,7 @@ public extern EventHandler Onpaymentmethodchange { get; set; }
     /// isSecurePaymentConfirmationAvailable
     /// </summary>
     [Description("@#isSecurePaymentConfirmationAvailable")]
-    public extern static PromiseResult<bool> IsSecurePaymentConfirmationAvailable();
+    public static extern PromiseResult<bool> IsSecurePaymentConfirmationAvailable();
 }
 
 /// <summary>
@@ -35408,7 +34898,7 @@ public extern EventHandler Onpaymentmethodchange { get; set; }
 /// </summary>
 [ECMAScript]
 [Description("@#PaymentRequestEvent")]
-public class PaymentRequestEvent : ExtendableEvent
+public class PaymentRequestEvent(string type, ExtendableEventInit eventInitDict) : ExtendableEvent(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -35478,14 +34968,14 @@ public extern FrozenSet<PaymentShippingOption>? ShippingOptions { get; }
     /// <param name="methodName">methodName</param>
     /// <param name="methodDetails">methodDetails</param>
     [Description("@#changePaymentMethod")]
-    public extern PromiseResult<PaymentRequestDetailsUpdate?> ChangePaymentMethod(string methodName, object? methodDetails = null);
+    public extern PromiseResult<PaymentRequestDetailsUpdate?> ChangePaymentMethod(string methodName, object? methodDetails = default);
 
     /// <summary>
     /// changeShippingAddress
     /// </summary>
     /// <param name="shippingAddress">shippingAddress</param>
     [Description("@#changeShippingAddress")]
-    public extern PromiseResult<PaymentRequestDetailsUpdate?> ChangeShippingAddress(AddressInit? shippingAddress = default);
+    public extern PromiseResult<PaymentRequestDetailsUpdate?> ChangeShippingAddress(AddressInit shippingAddress = new());
 
     /// <summary>
     /// changeShippingOption
@@ -35507,7 +34997,7 @@ public extern FrozenSet<PaymentShippingOption>? ShippingOptions { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#PaymentRequestUpdateEvent")]
-public class PaymentRequestUpdateEvent : Event
+public class PaymentRequestUpdateEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -35561,14 +35051,14 @@ public extern object Details { get; }
     /// <param name="result">result</param>
     /// <param name="details">details</param>
     [Description("@#complete")]
-    public extern PromiseResult<void> Complete(PaymentComplete result = PaymentComplete.Unknown, PaymentCompleteDetails? details = default);
+    public extern PromiseResult<void> Complete(PaymentComplete result = PaymentComplete.Unknown, PaymentCompleteDetails details = new());
 
     /// <summary>
     /// retry
     /// </summary>
     /// <param name="errorFields">errorFields</param>
     [Description("@#retry")]
-    public extern PromiseResult<void> Retry(PaymentValidationErrors? errorFields = default);
+    public extern PromiseResult<void> Retry(PaymentValidationErrors errorFields = new());
 }
 
 /// <summary>
@@ -35645,7 +35135,7 @@ public extern PerformanceNavigation Navigation { get; }
     /// <param name="name">name</param>
     /// <param name="type">type</param>
     [Description("@#getEntriesByName")]
-    public extern PerformanceEntryList GetEntriesByName(string name, string type);
+    public extern PerformanceEntryList GetEntriesByName(string name, string? type = default);
 
     /// <summary>
     /// clearResourceTimings
@@ -35672,14 +35162,14 @@ public extern EventHandler Onresourcetimingbufferfull { get; set; }
     /// <param name="markName">markName</param>
     /// <param name="markOptions">markOptions</param>
     [Description("@#mark")]
-    public extern PerformanceMark Mark(string markName, PerformanceMarkOptions? markOptions = default);
+    public extern PerformanceMark Mark(string markName, PerformanceMarkOptions markOptions = new());
 
     /// <summary>
     /// clearMarks
     /// </summary>
     /// <param name="markName">markName</param>
     [Description("@#clearMarks")]
-    public extern void ClearMarks(string markName);
+    public extern void ClearMarks(string? markName = default);
 
     /// <summary>
     /// measure
@@ -35688,14 +35178,14 @@ public extern EventHandler Onresourcetimingbufferfull { get; set; }
     /// <param name="startOrMeasureOptions">startOrMeasureOptions</param>
     /// <param name="endMark">endMark</param>
     [Description("@#measure")]
-    public extern PerformanceMeasure Measure(string measureName, Either<string, PerformanceMeasureOptions> startOrMeasureOptions, string endMark);
+    public extern PerformanceMeasure Measure(string measureName, Either<string, PerformanceMeasureOptions> startOrMeasureOptions = new(), string? endMark = default);
 
     /// <summary>
     /// clearMeasures
     /// </summary>
     /// <param name="measureName">measureName</param>
     [Description("@#clearMeasures")]
-    public extern void ClearMeasures(string measureName);
+    public extern void ClearMeasures(string? measureName = default);
 }
 
 /// <summary>
@@ -35745,7 +35235,7 @@ public extern uint NaturalHeight { get; }
 /// id
 /// </summary>
 [Description("@#id")]
-public extern string Id { get; }
+public new extern string Id { get; }
 
     /// <summary>
 /// element
@@ -35758,12 +35248,6 @@ public extern Element? Element { get; }
 /// </summary>
 [Description("@#url")]
 public extern string Url { get; }
-
-    /// <summary>
-    /// toJSON
-    /// </summary>
-    [Description("@#toJSON")]
-    public extern object ToJSON();
 }
 
 /// <summary>
@@ -35852,12 +35336,6 @@ public extern Node? Target { get; }
 /// </summary>
 [Description("@#interactionId")]
 public extern ulong InteractionId { get; }
-
-    /// <summary>
-    /// toJSON
-    /// </summary>
-    [Description("@#toJSON")]
-    public extern object ToJSON();
 }
 
 /// <summary>
@@ -35867,30 +35345,6 @@ public extern ulong InteractionId { get; }
 [Description("@#PerformanceLongAnimationFrameTiming")]
 public class PerformanceLongAnimationFrameTiming : PerformanceEntry
 {
-    /// <summary>
-/// startTime
-/// </summary>
-[Description("@#startTime")]
-public extern double StartTime { get; }
-
-    /// <summary>
-/// duration
-/// </summary>
-[Description("@#duration")]
-public extern double Duration { get; }
-
-    /// <summary>
-/// name
-/// </summary>
-[Description("@#name")]
-public extern string Name { get; }
-
-    /// <summary>
-/// entryType
-/// </summary>
-[Description("@#entryType")]
-public extern string EntryType { get; }
-
     /// <summary>
 /// renderStart
 /// </summary>
@@ -35920,12 +35374,6 @@ public extern double FirstUIEventTimestamp { get; }
 /// </summary>
 [Description("@#scripts")]
 public extern FrozenSet<PerformanceScriptTiming> Scripts { get; }
-
-    /// <summary>
-    /// toJSON
-    /// </summary>
-    [Description("@#toJSON")]
-    public extern object ToJSON();
 }
 
 /// <summary>
@@ -35936,40 +35384,10 @@ public extern FrozenSet<PerformanceScriptTiming> Scripts { get; }
 public class PerformanceLongTaskTiming : PerformanceEntry
 {
     /// <summary>
-/// startTime
-/// </summary>
-[Description("@#startTime")]
-public extern double StartTime { get; }
-
-    /// <summary>
-/// duration
-/// </summary>
-[Description("@#duration")]
-public extern double Duration { get; }
-
-    /// <summary>
-/// name
-/// </summary>
-[Description("@#name")]
-public extern string Name { get; }
-
-    /// <summary>
-/// entryType
-/// </summary>
-[Description("@#entryType")]
-public extern string EntryType { get; }
-
-    /// <summary>
 /// attribution
 /// </summary>
 [Description("@#attribution")]
 public extern FrozenSet<TaskAttributionTiming> Attribution { get; }
-
-    /// <summary>
-    /// toJSON
-    /// </summary>
-    [Description("@#toJSON")]
-    public extern object ToJSON();
 }
 
 /// <summary>
@@ -36137,12 +35555,6 @@ public extern double CriticalCHRestart { get; }
 public extern NotRestoredReasons? NotRestoredReasons { get; }
 
     /// <summary>
-    /// toJSON
-    /// </summary>
-    [Description("@#toJSON")]
-    public extern object ToJSON();
-
-    /// <summary>
 /// activationStart
 /// </summary>
 [Description("@#activationStart")]
@@ -36167,7 +35579,7 @@ public class PerformanceObserver
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#observe")]
-    public extern void Observe(PerformanceObserverInit? options = default);
+    public extern void Observe(PerformanceObserverInit options = new());
 
     /// <summary>
     /// disconnect
@@ -36185,7 +35597,7 @@ public class PerformanceObserver
 /// supportedEntryTypes
 /// </summary>
 [Description("@#supportedEntryTypes")]
-public extern static FrozenSet<string> SupportedEntryTypes { get; }
+public static extern FrozenSet<string> SupportedEntryTypes { get; }
 }
 
 /// <summary>
@@ -36214,7 +35626,7 @@ public class PerformanceObserverEntryList
     /// <param name="name">name</param>
     /// <param name="type">type</param>
     [Description("@#getEntriesByName")]
-    public extern PerformanceEntryList GetEntriesByName(string name, string type);
+    public extern PerformanceEntryList GetEntriesByName(string name, string? type = default);
 }
 
 /// <summary>
@@ -36366,12 +35778,6 @@ public extern RenderBlockingStatusType RenderBlockingStatus { get; }
 public extern string ContentType { get; }
 
     /// <summary>
-    /// toJSON
-    /// </summary>
-    [Description("@#toJSON")]
-    public extern object ToJSON();
-
-    /// <summary>
 /// serverTiming
 /// </summary>
 [Description("@#serverTiming")]
@@ -36385,30 +35791,6 @@ public extern FrozenSet<PerformanceServerTiming> ServerTiming { get; }
 [Description("@#PerformanceScriptTiming")]
 public class PerformanceScriptTiming : PerformanceEntry
 {
-    /// <summary>
-/// startTime
-/// </summary>
-[Description("@#startTime")]
-public extern double StartTime { get; }
-
-    /// <summary>
-/// duration
-/// </summary>
-[Description("@#duration")]
-public extern double Duration { get; }
-
-    /// <summary>
-/// name
-/// </summary>
-[Description("@#name")]
-public extern string Name { get; }
-
-    /// <summary>
-/// entryType
-/// </summary>
-[Description("@#entryType")]
-public extern string EntryType { get; }
-
     /// <summary>
 /// invokerType
 /// </summary>
@@ -36468,12 +35850,6 @@ public extern Window? Window { get; }
 /// </summary>
 [Description("@#windowAttribution")]
 public extern ScriptWindowAttribution WindowAttribution { get; }
-
-    /// <summary>
-    /// toJSON
-    /// </summary>
-    [Description("@#toJSON")]
-    public extern object ToJSON();
 }
 
 /// <summary>
@@ -36653,7 +36029,7 @@ public extern ulong LoadEventEnd { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#PeriodicSyncEvent")]
-public class PeriodicSyncEvent : ExtendableEvent
+public class PeriodicSyncEvent(string type, ExtendableEventInit eventInitDict) : ExtendableEvent(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -36682,7 +36058,7 @@ public class PeriodicSyncManager
     /// <param name="tag">tag</param>
     /// <param name="options">options</param>
     [Description("@#register")]
-    public extern PromiseResult<void> Register(string tag, BackgroundSyncOptions? options = default);
+    public extern PromiseResult<void> Register(string tag, BackgroundSyncOptions options = new());
 
     /// <summary>
     /// getTags
@@ -36781,7 +36157,7 @@ public class PermissionsPolicy
     /// <param name="feature">feature</param>
     /// <param name="origin">origin</param>
     [Description("@#allowsFeature")]
-    public extern bool AllowsFeature(string feature, string origin);
+    public extern bool AllowsFeature(string feature, string? origin = default);
 
     /// <summary>
     /// features
@@ -36846,7 +36222,7 @@ public extern string Disposition { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#PictureInPictureEvent")]
-public class PictureInPictureEvent : Event
+public class PictureInPictureEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -36973,7 +36349,7 @@ public extern uint Length { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#PointerEvent")]
-public class PointerEvent : MouseEvent
+public class PointerEvent(string type, MouseEventInit eventInitDict) : MouseEvent(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -37072,7 +36448,7 @@ public extern bool IsPrimary { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#PopStateEvent")]
-public class PopStateEvent : Event
+public class PopStateEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -37099,7 +36475,7 @@ public extern bool HasUAVisualTransition { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#PortalActivateEvent")]
-public class PortalActivateEvent : Event
+public class PortalActivateEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -37134,7 +36510,7 @@ public class PortalHost : EventTarget
     /// <param name="message">message</param>
     /// <param name="options">options</param>
     [Description("@#postMessage")]
-    public extern void PostMessage(object message, StructuredSerializeOptions? options = default);
+    public extern void PostMessage(object message, StructuredSerializeOptions options = new());
 
     /// <summary>
 /// onmessage
@@ -37290,7 +36666,7 @@ public extern EventHandler Onmessage { get; set; }
 /// </summary>
 [ECMAScript]
 [Description("@#PresentationConnectionAvailableEvent")]
-public class PresentationConnectionAvailableEvent : Event
+public class PresentationConnectionAvailableEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -37311,7 +36687,7 @@ public extern PresentationConnection Connection { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#PresentationConnectionCloseEvent")]
-public class PresentationConnectionCloseEvent : Event
+public class PresentationConnectionCloseEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -37431,7 +36807,7 @@ public class PressureObserver
     /// <param name="source">source</param>
     /// <param name="options">options</param>
     [Description("@#observe")]
-    public extern PromiseResult<void> Observe(PressureSource source, PressureObserverOptions? options = default);
+    public extern PromiseResult<void> Observe(PressureSource source, PressureObserverOptions options = new());
 
     /// <summary>
     /// unobserve
@@ -37456,7 +36832,7 @@ public class PressureObserver
 /// supportedSources
 /// </summary>
 [Description("@#supportedSources")]
-public extern static FrozenSet<PressureSource> SupportedSources { get; }
+public static extern FrozenSet<PressureSource> SupportedSources { get; }
 }
 
 /// <summary>
@@ -37542,7 +36918,7 @@ public extern bool Stopped { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#ProgressEvent")]
-public class ProgressEvent : Event
+public class ProgressEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -37575,7 +36951,7 @@ public extern ulong Total { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#PromiseRejectionEvent")]
-public class PromiseRejectionEvent : Event
+public class PromiseRejectionEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -37676,12 +37052,6 @@ public extern string? AuthenticatorAttachment { get; }
     public extern AuthenticationExtensionsClientOutputs GetClientExtensionResults();
 
     /// <summary>
-    /// isConditionalMediationAvailable
-    /// </summary>
-    [Description("@#isConditionalMediationAvailable")]
-    public extern static PromiseResult<bool> IsConditionalMediationAvailable();
-
-    /// <summary>
     /// toJSON
     /// </summary>
     [Description("@#toJSON")]
@@ -37691,27 +37061,27 @@ public extern string? AuthenticatorAttachment { get; }
     /// isUserVerifyingPlatformAuthenticatorAvailable
     /// </summary>
     [Description("@#isUserVerifyingPlatformAuthenticatorAvailable")]
-    public extern static PromiseResult<bool> IsUserVerifyingPlatformAuthenticatorAvailable();
+    public static extern PromiseResult<bool> IsUserVerifyingPlatformAuthenticatorAvailable();
 
     /// <summary>
     /// getClientCapabilities
     /// </summary>
     [Description("@#getClientCapabilities")]
-    public extern static PromiseResult<PublicKeyCredentialClientCapabilities> GetClientCapabilities();
+    public static extern PromiseResult<PublicKeyCredentialClientCapabilities> GetClientCapabilities();
 
     /// <summary>
     /// parseCreationOptionsFromJSON
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#parseCreationOptionsFromJSON")]
-    public extern static PublicKeyCredentialCreationOptions ParseCreationOptionsFromJSON(PublicKeyCredentialCreationOptionsJSON options);
+    public static extern PublicKeyCredentialCreationOptions ParseCreationOptionsFromJSON(PublicKeyCredentialCreationOptionsJSON options);
 
     /// <summary>
     /// parseRequestOptionsFromJSON
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#parseRequestOptionsFromJSON")]
-    public extern static PublicKeyCredentialRequestOptions ParseRequestOptionsFromJSON(PublicKeyCredentialRequestOptionsJSON options);
+    public static extern PublicKeyCredentialRequestOptions ParseRequestOptionsFromJSON(PublicKeyCredentialRequestOptionsJSON options);
 }
 
 /// <summary>
@@ -37719,7 +37089,7 @@ public extern string? AuthenticatorAttachment { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#PushEvent")]
-public class PushEvent : ExtendableEvent
+public class PushEvent(string type, ExtendableEventInit eventInitDict) : ExtendableEvent(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -37746,14 +37116,14 @@ public class PushManager
 /// supportedContentEncodings
 /// </summary>
 [Description("@#supportedContentEncodings")]
-public extern static FrozenSet<string> SupportedContentEncodings { get; }
+public static extern FrozenSet<string> SupportedContentEncodings { get; }
 
     /// <summary>
     /// subscribe
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#subscribe")]
-    public extern PromiseResult<PushSubscription> Subscribe(PushSubscriptionOptionsInit? options = default);
+    public extern PromiseResult<PushSubscription> Subscribe(PushSubscriptionOptionsInit options = new());
 
     /// <summary>
     /// getSubscription
@@ -37766,7 +37136,7 @@ public extern static FrozenSet<string> SupportedContentEncodings { get; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#permissionState")]
-    public extern PromiseResult<PermissionState> PermissionState(PushSubscriptionOptionsInit? options = default);
+    public extern PromiseResult<PermissionState> PermissionState(PushSubscriptionOptionsInit options = new());
 }
 
 /// <summary>
@@ -37851,7 +37221,7 @@ public extern PushSubscriptionOptions Options { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#PushSubscriptionChangeEvent")]
-public class PushSubscriptionChangeEvent : ExtendableEvent
+public class PushSubscriptionChangeEvent(string type, ExtendableEventInit eventInitDict) : ExtendableEvent(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -37953,7 +37323,7 @@ public extern string ToneBuffer { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#RTCDTMFToneChangeEvent")]
-public class RTCDTMFToneChangeEvent : Event
+public class RTCDTMFToneChangeEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -38124,7 +37494,7 @@ public extern RTCPriorityType Priority { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#RTCDataChannelEvent")]
-public class RTCDataChannelEvent : Event
+public class RTCDataChannelEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -38229,7 +37599,7 @@ public extern ArrayBuffer Data { get; set; }
 /// </summary>
 [ECMAScript]
 [Description("@#RTCError")]
-public partial class RTCError : DOMException
+public partial class RTCError(string message, string name) : DOMException(message, name)
 {
     /// <summary>
 /// Constructor 
@@ -38280,7 +37650,7 @@ public extern int? HttpRequestStatusCode { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#RTCErrorEvent")]
-public class RTCErrorEvent : Event
+public class RTCErrorEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -38501,7 +37871,7 @@ public extern RTCIceTransport();
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#gather")]
-    public extern void Gather(RTCIceGatherOptions? options = default);
+    public extern void Gather(RTCIceGatherOptions options = new());
 
     /// <summary>
     /// start
@@ -38509,7 +37879,7 @@ public extern RTCIceTransport();
     /// <param name="remoteParameters">remoteParameters</param>
     /// <param name="role">role</param>
     [Description("@#start")]
-    public extern void Start(RTCIceParameters? remoteParameters = default, RTCIceRole role = RTCIceRole.Controlled);
+    public extern void Start(RTCIceParameters remoteParameters = new(), RTCIceRole role = RTCIceRole.Controlled);
 
     /// <summary>
     /// stop
@@ -38522,7 +37892,7 @@ public extern RTCIceTransport();
     /// </summary>
     /// <param name="remoteCandidate">remoteCandidate</param>
     [Description("@#addRemoteCandidate")]
-    public extern void AddRemoteCandidate(RTCIceCandidateInit? remoteCandidate = default);
+    public extern void AddRemoteCandidate(RTCIceCandidateInit remoteCandidate = new());
 
     /// <summary>
 /// onerror
@@ -38611,21 +37981,21 @@ public partial class RTCPeerConnection : EventTarget
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#createOffer")]
-    public extern PromiseResult<RTCSessionDescriptionInit> CreateOffer(RTCOfferOptions? options = default);
+    public extern PromiseResult<RTCSessionDescriptionInit> CreateOffer(RTCOfferOptions options = new());
 
     /// <summary>
     /// createAnswer
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#createAnswer")]
-    public extern PromiseResult<RTCSessionDescriptionInit> CreateAnswer(RTCAnswerOptions? options = default);
+    public extern PromiseResult<RTCSessionDescriptionInit> CreateAnswer(RTCAnswerOptions options = new());
 
     /// <summary>
     /// setLocalDescription
     /// </summary>
     /// <param name="description">description</param>
     [Description("@#setLocalDescription")]
-    public extern PromiseResult<void> SetLocalDescription(RTCLocalSessionDescriptionInit? description = default);
+    public extern PromiseResult<void> SetLocalDescription(RTCLocalSessionDescriptionInit description = new());
 
     /// <summary>
 /// localDescription
@@ -38675,7 +38045,7 @@ public extern RTCSessionDescription? PendingRemoteDescription { get; }
     /// </summary>
     /// <param name="candidate">candidate</param>
     [Description("@#addIceCandidate")]
-    public extern PromiseResult<void> AddIceCandidate(RTCIceCandidateInit? candidate = default);
+    public extern PromiseResult<void> AddIceCandidate(RTCIceCandidateInit candidate = new());
 
     /// <summary>
 /// signalingState
@@ -38724,7 +38094,7 @@ public extern bool? CanTrickleIceCandidates { get; }
     /// </summary>
     /// <param name="configuration">configuration</param>
     [Description("@#setConfiguration")]
-    public extern void SetConfiguration(RTCConfiguration? configuration = default);
+    public extern void SetConfiguration(RTCConfiguration configuration = new());
 
     /// <summary>
     /// close
@@ -38781,7 +38151,7 @@ public extern EventHandler Onconnectionstatechange { get; set; }
     /// <param name="failureCallback">failureCallback</param>
     /// <param name="options">options</param>
     [Description("@#createOffer")]
-    public extern PromiseResult<void> CreateOffer(RTCSessionDescriptionCallback successCallback, RTCPeerConnectionErrorCallback failureCallback, RTCOfferOptions? options = default);
+    public extern PromiseResult<void> CreateOffer(RTCSessionDescriptionCallback successCallback, RTCPeerConnectionErrorCallback failureCallback, RTCOfferOptions options = new());
 
     /// <summary>
     /// setLocalDescription
@@ -38823,7 +38193,7 @@ public extern EventHandler Onconnectionstatechange { get; set; }
     /// </summary>
     /// <param name="keygenAlgorithm">keygenAlgorithm</param>
     [Description("@#generateCertificate")]
-    public extern static PromiseResult<RTCCertificate> GenerateCertificate(AlgorithmIdentifier keygenAlgorithm);
+    public static extern PromiseResult<RTCCertificate> GenerateCertificate(AlgorithmIdentifier keygenAlgorithm);
 
     /// <summary>
     /// getSenders
@@ -38849,7 +38219,7 @@ public extern EventHandler Onconnectionstatechange { get; set; }
     /// <param name="track">track</param>
     /// <param name="streams">streams</param>
     [Description("@#addTrack")]
-    public extern RTCRtpSender AddTrack(MediaStreamTrack track, MediaStream streams);
+    public extern RTCRtpSender AddTrack(MediaStreamTrack track, params MediaStream[] streams);
 
     /// <summary>
     /// removeTrack
@@ -38864,7 +38234,7 @@ public extern EventHandler Onconnectionstatechange { get; set; }
     /// <param name="trackOrKind">trackOrKind</param>
     /// <param name="init">init</param>
     [Description("@#addTransceiver")]
-    public extern RTCRtpTransceiver AddTransceiver(Either<MediaStreamTrack, string> trackOrKind, RTCRtpTransceiverInit? init = default);
+    public extern RTCRtpTransceiver AddTransceiver(Either<MediaStreamTrack, string> trackOrKind, RTCRtpTransceiverInit init = new());
 
     /// <summary>
 /// ontrack
@@ -38884,7 +38254,7 @@ public extern RTCSctpTransport? Sctp { get; }
     /// <param name="label">label</param>
     /// <param name="dataChannelDict">dataChannelDict</param>
     [Description("@#createDataChannel")]
-    public extern RTCDataChannel CreateDataChannel(string label, RTCDataChannelInit? dataChannelDict = default);
+    public extern RTCDataChannel CreateDataChannel(string label, RTCDataChannelInit dataChannelDict = new());
 
     /// <summary>
 /// ondatachannel
@@ -38897,7 +38267,7 @@ public extern EventHandler Ondatachannel { get; set; }
     /// </summary>
     /// <param name="selector">selector</param>
     [Description("@#getStats")]
-    public extern PromiseResult<RTCStatsReport> GetStats(MediaStreamTrack? selector = null);
+    public extern PromiseResult<RTCStatsReport> GetStats(MediaStreamTrack? selector = default);
 
     /// <summary>
     /// setIdentityProvider
@@ -38905,7 +38275,7 @@ public extern EventHandler Ondatachannel { get; set; }
     /// <param name="provider">provider</param>
     /// <param name="options">options</param>
     [Description("@#setIdentityProvider")]
-    public extern void SetIdentityProvider(string provider, RTCIdentityProviderOptions? options = default);
+    public extern void SetIdentityProvider(string provider, RTCIdentityProviderOptions options = new());
 
     /// <summary>
     /// getIdentityAssertion
@@ -38937,7 +38307,7 @@ public extern string? IdpErrorInfo { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#RTCPeerConnectionIceErrorEvent")]
-public class RTCPeerConnectionIceErrorEvent : Event
+public class RTCPeerConnectionIceErrorEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -38982,7 +38352,7 @@ public extern string ErrorText { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#RTCPeerConnectionIceEvent")]
-public class RTCPeerConnectionIceEvent : Event
+public class RTCPeerConnectionIceEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -39028,7 +38398,7 @@ public extern RTCDtlsTransport? Transport { get; }
     /// </summary>
     /// <param name="kind">kind</param>
     [Description("@#getCapabilities")]
-    public extern static RTCRtpCapabilities? GetCapabilities(string kind);
+    public static extern RTCRtpCapabilities? GetCapabilities(string kind);
 
     /// <summary>
     /// getParameters
@@ -39101,7 +38471,7 @@ public extern ReadableStream Readable { get; }
     /// </summary>
     /// <param name="rid">rid</param>
     [Description("@#generateKeyFrame")]
-    public extern PromiseResult<ulong> GenerateKeyFrame(string rid);
+    public extern PromiseResult<ulong> GenerateKeyFrame(string? rid = default);
 
     /// <summary>
     /// sendKeyFrameRequest
@@ -39152,7 +38522,7 @@ public extern RTCDtlsTransport? Transport { get; }
     /// </summary>
     /// <param name="kind">kind</param>
     [Description("@#getCapabilities")]
-    public extern static RTCRtpCapabilities? GetCapabilities(string kind);
+    public static extern RTCRtpCapabilities? GetCapabilities(string kind);
 
     /// <summary>
     /// setParameters
@@ -39160,7 +38530,7 @@ public extern RTCDtlsTransport? Transport { get; }
     /// <param name="parameters">parameters</param>
     /// <param name="setParameterOptions">setParameterOptions</param>
     [Description("@#setParameters")]
-    public extern PromiseResult<void> SetParameters(RTCRtpSendParameters parameters, RTCSetParameterOptions? setParameterOptions = default);
+    public extern PromiseResult<void> SetParameters(RTCRtpSendParameters parameters, RTCSetParameterOptions setParameterOptions = new());
 
     /// <summary>
     /// getParameters
@@ -39180,7 +38550,7 @@ public extern RTCDtlsTransport? Transport { get; }
     /// </summary>
     /// <param name="streams">streams</param>
     [Description("@#setStreams")]
-    public extern void SetStreams(MediaStream streams);
+    public extern void SetStreams(params MediaStream[] streams);
 
     /// <summary>
     /// getStats
@@ -39205,7 +38575,7 @@ public extern RTCRtpTransform? Transform { get; set; }
     /// </summary>
     /// <param name="rids">rids</param>
     [Description("@#generateKeyFrame")]
-    public extern PromiseResult<void> GenerateKeyFrame(string[] rids);
+    public extern PromiseResult<void> GenerateKeyFrame(string[]? rids = default);
 }
 
 /// <summary>
@@ -39361,7 +38731,7 @@ extern IEnumerator IEnumerable.GetEnumerator();
 /// </summary>
 [ECMAScript]
 [Description("@#RTCTrackEvent")]
-public class RTCTrackEvent : Event
+public class RTCTrackEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -39400,7 +38770,7 @@ public extern RTCRtpTransceiver Transceiver { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#RTCTransformEvent")]
-public class RTCTransformEvent : Event
+public class RTCTransformEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// transformer
@@ -39662,7 +39032,7 @@ public extern double? DesiredSize { get; }
     /// </summary>
     /// <param name="e">e</param>
     [Description("@#error")]
-    public extern void Error(object e);
+    public extern void Error(object? e = default);
 }
 
 /// <summary>
@@ -39684,7 +39054,7 @@ public class ReadableStream : IEnumerable<object>
     /// </summary>
     /// <param name="asyncIterable">asyncIterable</param>
     [Description("@#from")]
-    public extern static ReadableStream From(object asyncIterable);
+    public static extern ReadableStream From(object asyncIterable);
 
     /// <summary>
 /// locked
@@ -39697,14 +39067,14 @@ public extern bool Locked { get; }
     /// </summary>
     /// <param name="reason">reason</param>
     [Description("@#cancel")]
-    public extern PromiseResult<void> Cancel(object reason);
+    public extern PromiseResult<void> Cancel(object? reason = default);
 
     /// <summary>
     /// getReader
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#getReader")]
-    public extern ReadableStreamReader GetReader(ReadableStreamGetReaderOptions? options = default);
+    public extern ReadableStreamReader GetReader(ReadableStreamGetReaderOptions options = new());
 
     /// <summary>
     /// pipeThrough
@@ -39712,7 +39082,7 @@ public extern bool Locked { get; }
     /// <param name="transform">transform</param>
     /// <param name="options">options</param>
     [Description("@#pipeThrough")]
-    public extern ReadableStream PipeThrough(ReadableWritablePair transform, StreamPipeOptions? options = default);
+    public extern ReadableStream PipeThrough(ReadableWritablePair transform, StreamPipeOptions options = new());
 
     /// <summary>
     /// pipeTo
@@ -39720,7 +39090,7 @@ public extern bool Locked { get; }
     /// <param name="destination">destination</param>
     /// <param name="options">options</param>
     [Description("@#pipeTo")]
-    public extern PromiseResult<void> PipeTo(WritableStream destination, StreamPipeOptions? options = default);
+    public extern PromiseResult<void> PipeTo(WritableStream destination, StreamPipeOptions options = new());
 
     /// <summary>
     /// tee
@@ -39751,7 +39121,7 @@ public class ReadableStreamBYOBReader
     /// <param name="view">view</param>
     /// <param name="options">options</param>
     [Description("@#read")]
-    public extern PromiseResult<ReadableStreamReadResult> Read(IArrayBufferView view, ReadableStreamBYOBReaderReadOptions? options = default);
+    public extern PromiseResult<ReadableStreamReadResult> Read(IArrayBufferView view, ReadableStreamBYOBReaderReadOptions options = new());
 
     /// <summary>
     /// releaseLock
@@ -39771,7 +39141,7 @@ public extern PromiseResult<object> Closed { get; }
     /// </summary>
     /// <param name="reason">reason</param>
     [Description("@#cancel")]
-    public extern PromiseResult<void> Cancel(object reason);
+    public extern PromiseResult<void> Cancel(object? reason = default);
     #endregion
 }
 
@@ -39827,14 +39197,14 @@ public extern double? DesiredSize { get; }
     /// </summary>
     /// <param name="chunk">chunk</param>
     [Description("@#enqueue")]
-    public extern void Enqueue(object chunk);
+    public extern void Enqueue(object? chunk = default);
 
     /// <summary>
     /// error
     /// </summary>
     /// <param name="e">e</param>
     [Description("@#error")]
-    public extern void Error(object e);
+    public extern void Error(object? e = default);
 }
 
 /// <summary>
@@ -39874,7 +39244,7 @@ public extern PromiseResult<object> Closed { get; }
     /// </summary>
     /// <param name="reason">reason</param>
     [Description("@#cancel")]
-    public extern PromiseResult<void> Cancel(object reason);
+    public extern PromiseResult<void> Cancel(object? reason = default);
     #endregion
 }
 
@@ -39911,7 +39281,7 @@ public class RemotePlayback : EventTarget
     /// </summary>
     /// <param name="id">id</param>
     [Description("@#cancelWatchAvailability")]
-    public extern PromiseResult<void> CancelWatchAvailability(int id);
+    public extern PromiseResult<void> CancelWatchAvailability(int? id = default);
 
     /// <summary>
 /// state
@@ -40150,7 +39520,7 @@ public extern IPAddressSpace TargetAddressSpace { get; }
 /// body
 /// </summary>
 [Description("@#body")]
-public extern ReadableStream? Body_ { get; }
+public extern ReadableStream? Body { get; }
     
     /// <summary>
 /// bodyUsed
@@ -40209,7 +39579,7 @@ public class ResizeObserver
     /// <param name="target">target</param>
     /// <param name="options">options</param>
     [Description("@#observe")]
-    public extern void Observe(Element target, ResizeObserverOptions? options = default);
+    public extern void Observe(Element target, ResizeObserverOptions options = new());
 
     /// <summary>
     /// unobserve
@@ -40301,7 +39671,7 @@ public class Response
     /// error
     /// </summary>
     [Description("@#error")]
-    public extern static Response Error();
+    public static extern Response Error();
 
     /// <summary>
     /// redirect
@@ -40309,7 +39679,7 @@ public class Response
     /// <param name="url">url</param>
     /// <param name="status">status</param>
     [Description("@#redirect")]
-    public extern static Response Redirect(string url, ushort status = 302);
+    public static extern Response Redirect(string url, ushort status = 302);
 
     /// <summary>
     /// json
@@ -40317,7 +39687,7 @@ public class Response
     /// <param name="data">data</param>
     /// <param name="init">init</param>
     [Description("@#json")]
-    public extern static Response Json(object data, ResponseInit? init = default);
+    public static extern Response Json(object data, ResponseInit init = new());
 
     /// <summary>
 /// type
@@ -40372,7 +39742,7 @@ public extern Headers Headers { get; }
 /// body
 /// </summary>
 [Description("@#body")]
-public extern ReadableStream? Body_ { get; }
+public extern ReadableStream? Body { get; }
     
     /// <summary>
 /// bodyUsed
@@ -40424,7 +39794,7 @@ public class RestrictionTarget
     /// </summary>
     /// <param name="element">element</param>
     [Description("@#fromElement")]
-    public extern static PromiseResult<RestrictionTarget> FromElement(Element element);
+    public static extern PromiseResult<RestrictionTarget> FromElement(Element element);
 }
 
 /// <summary>
@@ -40446,7 +39816,7 @@ public class SFrameTransform : EventTarget
     /// <param name="key">key</param>
     /// <param name="keyID">keyID</param>
     [Description("@#setEncryptionKey")]
-    public extern PromiseResult<void> SetEncryptionKey(CryptoKey key, CryptoKeyID keyID);
+    public extern PromiseResult<void> SetEncryptionKey(CryptoKey key, CryptoKeyID? keyID = default);
 
     /// <summary>
 /// onerror
@@ -40474,7 +39844,7 @@ public extern WritableStream Writable { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#SFrameTransformErrorEvent")]
-public class SFrameTransformErrorEvent : Event
+public class SFrameTransformErrorEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -41236,7 +40606,7 @@ public class SVGElement : Element
 /// className
 /// </summary>
 [Description("@#className")]
-public extern SVGAnimatedString ClassName { get; }
+public new extern SVGAnimatedString ClassName { get; }
 
     /// <summary>
 /// ownerSVGElement
@@ -41902,7 +41272,7 @@ public extern int TabIndex { get; set; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#focus")]
-    public extern void Focus(FocusOptions? options = default);
+    public extern void Focus(FocusOptions options = new());
     
     /// <summary>
     /// blur
@@ -43619,14 +42989,14 @@ public extern SVGAnimatedNumber PathLength { get; }
     /// </summary>
     /// <param name="point">point</param>
     [Description("@#isPointInFill")]
-    public extern bool IsPointInFill(DOMPointInit? point = default);
+    public extern bool IsPointInFill(DOMPointInit point = new());
 
     /// <summary>
     /// isPointInStroke
     /// </summary>
     /// <param name="point">point</param>
     [Description("@#isPointInStroke")]
-    public extern bool IsPointInStroke(DOMPointInit? point = default);
+    public extern bool IsPointInStroke(DOMPointInit point = new());
 
     /// <summary>
     /// getTotalLength
@@ -43718,7 +43088,7 @@ public extern SVGAnimatedTransformList Transform { get; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#getBBox")]
-    public extern DOMRect GetBBox(SVGBoundingBoxOptions? options = default);
+    public extern DOMRect GetBBox(SVGBoundingBoxOptions options = new());
 
     /// <summary>
     /// getCTM
@@ -44833,7 +44203,7 @@ public extern DOMPointReadOnly CurrentTranslate { get; }
     /// </summary>
     /// <param name="matrix">matrix</param>
     [Description("@#createSVGTransformFromMatrix")]
-    public extern SVGTransform CreateSVGTransformFromMatrix(DOMMatrix2DInit? matrix = default);
+    public extern SVGTransform CreateSVGTransformFromMatrix(DOMMatrix2DInit matrix = new());
 
     /// <summary>
     /// getElementById
@@ -45319,7 +44689,7 @@ public extern SVGAnimatedEnumeration LengthAdjust { get; }
     /// </summary>
     /// <param name="point">point</param>
     [Description("@#getCharNumAtPosition")]
-    public extern int GetCharNumAtPosition(DOMPointInit? point = default);
+    public extern int GetCharNumAtPosition(DOMPointInit point = new());
 
     /// <summary>
     /// selectSubString
@@ -45528,7 +44898,7 @@ public extern float Angle { get; }
     /// </summary>
     /// <param name="matrix">matrix</param>
     [Description("@#setMatrix")]
-    public extern void SetMatrix(DOMMatrix2DInit? matrix = default);
+    public extern void SetMatrix(DOMMatrix2DInit matrix = new());
 
     /// <summary>
     /// setTranslate
@@ -45644,7 +45014,7 @@ public extern uint NumberOfItems { get; }
     /// </summary>
     /// <param name="matrix">matrix</param>
     [Description("@#createSVGTransformFromMatrix")]
-    public extern SVGTransform CreateSVGTransformFromMatrix(DOMMatrix2DInit? matrix = default);
+    public extern SVGTransform CreateSVGTransformFromMatrix(DOMMatrix2DInit matrix = new());
 
     /// <summary>
     /// consolidate
@@ -45775,7 +45145,7 @@ public class Scheduler
     /// <param name="callback">callback</param>
     /// <param name="options">options</param>
     [Description("@#postTask")]
-    public extern PromiseResult<object> PostTask(SchedulerPostTaskCallback callback, SchedulerPostTaskOptions? options = default);
+    public extern PromiseResult<object> PostTask(SchedulerPostTaskCallback callback, SchedulerPostTaskOptions options = new());
 }
 
 /// <summary>
@@ -45790,7 +45160,7 @@ public class Scheduling
     /// </summary>
     /// <param name="isInputPendingOptions">isInputPendingOptions</param>
     [Description("@#isInputPending")]
-    public extern bool IsInputPending(IsInputPendingOptions? isInputPendingOptions = default);
+    public extern bool IsInputPending(IsInputPendingOptions isInputPendingOptions = new());
 }
 
 /// <summary>
@@ -46010,12 +45380,6 @@ public extern int BufferSize { get; }
 public class ScriptingPolicyReportBody : ReportBody
 {
     /// <summary>
-    /// toJSON
-    /// </summary>
-    [Description("@#toJSON")]
-    public extern object ToJSON();
-
-    /// <summary>
 /// violationType
 /// </summary>
 [Description("@#violationType")]
@@ -46077,7 +45441,7 @@ public extern ScrollAxis Axis { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#SecurityPolicyViolationEvent")]
-public class SecurityPolicyViolationEvent : Event
+public class SecurityPolicyViolationEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -46252,7 +45616,7 @@ public extern string Direction { get; }
     /// </summary>
     /// <param name="shadowRoots">shadowRoots</param>
     [Description("@#getComposedRanges")]
-    public extern StaticRange[] GetComposedRanges(ShadowRoot shadowRoots);
+    public extern StaticRange[] GetComposedRanges(params ShadowRoot[] shadowRoots);
 
     /// <summary>
     /// collapse
@@ -46314,7 +45678,7 @@ public extern string Direction { get; }
     /// <param name="direction">direction</param>
     /// <param name="granularity">granularity</param>
     [Description("@#modify")]
-    public extern void Modify(string alter, string direction, string granularity);
+    public extern void Modify(string? alter = default, string? direction = default, string? granularity = default);
 
     /// <summary>
     /// deleteFromDocument
@@ -46392,7 +45756,7 @@ public extern EventHandler Onerror { get; set; }
 /// </summary>
 [ECMAScript]
 [Description("@#SensorErrorEvent")]
-public class SensorErrorEvent : Event
+public class SensorErrorEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -46426,7 +45790,7 @@ public class SequenceEffect : GroupEffect
     /// clone
     /// </summary>
     [Description("@#clone")]
-    public extern SequenceEffect Clone();
+    public new extern SequenceEffect Clone();
 }
 
 /// <summary>
@@ -46459,7 +45823,7 @@ public extern EventHandler Ondisconnect { get; set; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#requestPort")]
-    public extern PromiseResult<SerialPort> RequestPort(SerialPortRequestOptions? options = default);
+    public extern PromiseResult<SerialPort> RequestPort(SerialPortRequestOptions options = new());
 }
 
 /// <summary>
@@ -46517,7 +45881,7 @@ public extern WritableStream Writable { get; }
     /// </summary>
     /// <param name="signals">signals</param>
     [Description("@#setSignals")]
-    public extern PromiseResult<void> SetSignals(SerialOutputSignals? signals = default);
+    public extern PromiseResult<void> SetSignals(SerialOutputSignals signals = new());
 
     /// <summary>
     /// getSignals
@@ -46571,7 +45935,7 @@ public extern ServiceWorkerState State { get; }
     /// <param name="message">message</param>
     /// <param name="options">options</param>
     [Description("@#postMessage")]
-    public extern void PostMessage(object message, StructuredSerializeOptions? options = default);
+    public extern void PostMessage(object message, StructuredSerializeOptions options = new());
 
     /// <summary>
 /// onstatechange
@@ -46613,14 +45977,14 @@ public extern PromiseResult<ServiceWorkerRegistration> Ready { get; }
     /// <param name="scriptURL">scriptURL</param>
     /// <param name="options">options</param>
     [Description("@#register")]
-    public extern PromiseResult<ServiceWorkerRegistration> Register(string scriptURL, RegistrationOptions? options = default);
+    public extern PromiseResult<ServiceWorkerRegistration> Register(string scriptURL, RegistrationOptions options = new());
 
     /// <summary>
     /// getRegistration
     /// </summary>
     /// <param name="clientURL">clientURL</param>
     [Description("@#getRegistration")]
-    public extern PromiseResult<Either<ServiceWorkerRegistration, void>> GetRegistration(string? clientURL = default);
+    public extern PromiseResult<Either<ServiceWorkerRegistration, void>> GetRegistration(string clientURL = "");
 
     /// <summary>
     /// getRegistrations
@@ -46842,14 +46206,14 @@ public extern CookieStoreManager Cookies { get; }
     /// <param name="title">title</param>
     /// <param name="options">options</param>
     [Description("@#showNotification")]
-    public extern PromiseResult<void> ShowNotification(string title, NotificationOptions? options = default);
+    public extern PromiseResult<void> ShowNotification(string title, NotificationOptions options = new());
 
     /// <summary>
     /// getNotifications
     /// </summary>
     /// <param name="filter">filter</param>
     [Description("@#getNotifications")]
-    public extern PromiseResult<Notification[]> GetNotifications(GetNotificationOptions? filter = default);
+    public extern PromiseResult<Notification[]> GetNotifications(GetNotificationOptions filter = new());
 
     /// <summary>
 /// paymentManager
@@ -46929,7 +46293,7 @@ public extern EventHandler Onupdatefound { get; set; }
 /// </summary>
 [ECMAScript]
 [Description("@#ShadowAnimation")]
-public class ShadowAnimation : Animation
+public class ShadowAnimation(AnimationEffect? effect, AnimationTimeline? timeline) : Animation(effect, timeline)
 {
     /// <summary>
 /// Constructor 
@@ -47006,7 +46370,7 @@ public extern EventHandler Onslotchange { get; set; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#getHTML")]
-    public extern string GetHTML(GetHTMLOptions? options = default);
+    public extern string GetHTML(GetHTMLOptions options = new());
 
     #region mixin DocumentOrShadowRoot
     /// <summary>
@@ -47045,7 +46409,7 @@ public extern Element? PointerLockElement { get; }
 /// innerHTML
 /// </summary>
 [Description("@#innerHTML")]
-public extern string InnerHTML_ { get; set; }
+public extern string InnerHTML { get; set; }
     #endregion
 }
 
@@ -47063,7 +46427,7 @@ public class SharedStorage
     /// <param name="value">value</param>
     /// <param name="options">options</param>
     [Description("@#set")]
-    public extern PromiseResult<object> Set(string key, string value, SharedStorageSetMethodOptions? options = default);
+    public extern PromiseResult<object> Set(string key, string value, SharedStorageSetMethodOptions options = new());
 
     /// <summary>
     /// append
@@ -47218,7 +46582,7 @@ public extern EventHandler Onconnect { get; set; }
 /// </summary>
 [ECMAScript]
 [Description("@#SnapEvent")]
-public class SnapEvent : Event
+public class SnapEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -47603,7 +46967,7 @@ public extern float Confidence { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#SpeechRecognitionErrorEvent")]
-public class SpeechRecognitionErrorEvent : Event
+public class SpeechRecognitionErrorEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -47630,7 +46994,7 @@ public extern string Message { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#SpeechRecognitionEvent")]
-public class SpeechRecognitionEvent : Event
+public class SpeechRecognitionEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -47768,7 +47132,7 @@ public extern EventHandler Onvoiceschanged { get; set; }
 /// </summary>
 [ECMAScript]
 [Description("@#SpeechSynthesisErrorEvent")]
-public class SpeechSynthesisErrorEvent : SpeechSynthesisEvent
+public class SpeechSynthesisErrorEvent(string type, SpeechSynthesisEventInit eventInitDict) : SpeechSynthesisEvent(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -47789,7 +47153,7 @@ public extern SpeechSynthesisErrorCode Error { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#SpeechSynthesisEvent")]
-public class SpeechSynthesisEvent : Event
+public class SpeechSynthesisEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -48119,7 +47483,7 @@ public class StorageBucketManager
     /// <param name="name">name</param>
     /// <param name="options">options</param>
     [Description("@#open")]
-    public extern PromiseResult<StorageBucket> Open(string name, StorageBucketOptions? options = default);
+    public extern PromiseResult<StorageBucket> Open(string name, StorageBucketOptions options = new());
 
     /// <summary>
     /// keys
@@ -48140,7 +47504,7 @@ public class StorageBucketManager
 /// </summary>
 [ECMAScript]
 [Description("@#StorageEvent")]
-public class StorageEvent : Event
+public class StorageEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -48191,7 +47555,7 @@ public extern Storage? StorageArea { get; }
     /// <param name="url">url</param>
     /// <param name="storageArea">storageArea</param>
     [Description("@#initStorageEvent")]
-    public extern void InitStorageEvent(string type, bool bubbles = false, bool cancelable = false, string? key = null, string? oldValue = null, string? newValue = null, string? url = default, Storage? storageArea = null);
+    public extern void InitStorageEvent(string type, bool bubbles = false, bool cancelable = false, string? key = default, string? oldValue = default, string? newValue = default, string url = "", Storage? storageArea = default);
 }
 
 /// <summary>
@@ -48231,7 +47595,7 @@ public partial class StorageManager
 /// </summary>
 [ECMAScript]
 [Description("@#SubmitEvent")]
-public class SubmitEvent : Event
+public class SubmitEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -48376,7 +47740,7 @@ public class SubtleCrypto
 /// </summary>
 [ECMAScript]
 [Description("@#SyncEvent")]
-public class SyncEvent : ExtendableEvent
+public class SyncEvent(string type, ExtendableEventInit eventInitDict) : ExtendableEvent(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -48427,30 +47791,6 @@ public class SyncManager
 public class TaskAttributionTiming : PerformanceEntry
 {
     /// <summary>
-/// startTime
-/// </summary>
-[Description("@#startTime")]
-public extern double StartTime { get; }
-
-    /// <summary>
-/// duration
-/// </summary>
-[Description("@#duration")]
-public extern double Duration { get; }
-
-    /// <summary>
-/// name
-/// </summary>
-[Description("@#name")]
-public extern string Name { get; }
-
-    /// <summary>
-/// entryType
-/// </summary>
-[Description("@#entryType")]
-public extern string EntryType { get; }
-
-    /// <summary>
 /// containerType
 /// </summary>
 [Description("@#containerType")]
@@ -48473,12 +47813,6 @@ public extern string ContainerId { get; }
 /// </summary>
 [Description("@#containerName")]
 public extern string ContainerName { get; }
-
-    /// <summary>
-    /// toJSON
-    /// </summary>
-    [Description("@#toJSON")]
-    public extern object ToJSON();
 }
 
 /// <summary>
@@ -48507,7 +47841,7 @@ public class TaskController : AbortController
 /// </summary>
 [ECMAScript]
 [Description("@#TaskPriorityChangeEvent")]
-public class TaskPriorityChangeEvent : Event
+public class TaskPriorityChangeEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -48536,7 +47870,7 @@ public class TaskSignal : AbortSignal
     /// <param name="signals">signals</param>
     /// <param name="init">init</param>
     [Description("@#any")]
-    public extern static TaskSignal Any(AbortSignal[] signals, TaskSignalAnyInit? init = default);
+    public static extern TaskSignal Any(AbortSignal[] signals, TaskSignalAnyInit init = new());
 
     /// <summary>
 /// priority
@@ -48583,7 +47917,7 @@ public extern string WholeText { get; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#getBoxQuads")]
-    public extern DOMQuad[] GetBoxQuads(BoxQuadOptions? options = default);
+    public extern DOMQuad[] GetBoxQuads(BoxQuadOptions options = new());
     
     /// <summary>
     /// convertQuadFromNode
@@ -48592,7 +47926,7 @@ public extern string WholeText { get; }
     /// <param name="from">from</param>
     /// <param name="options">options</param>
     [Description("@#convertQuadFromNode")]
-    public extern DOMQuad ConvertQuadFromNode(DOMQuadInit quad, GeometryNode from, ConvertCoordinateOptions? options = default);
+    public extern DOMQuad ConvertQuadFromNode(DOMQuadInit quad, GeometryNode from, ConvertCoordinateOptions options = new());
     
     /// <summary>
     /// convertRectFromNode
@@ -48601,7 +47935,7 @@ public extern string WholeText { get; }
     /// <param name="from">from</param>
     /// <param name="options">options</param>
     [Description("@#convertRectFromNode")]
-    public extern DOMQuad ConvertRectFromNode(DOMRectReadOnly rect, GeometryNode from, ConvertCoordinateOptions? options = default);
+    public extern DOMQuad ConvertRectFromNode(DOMRectReadOnly rect, GeometryNode from, ConvertCoordinateOptions options = new());
     
     /// <summary>
     /// convertPointFromNode
@@ -48610,7 +47944,7 @@ public extern string WholeText { get; }
     /// <param name="from">from</param>
     /// <param name="options">options</param>
     [Description("@#convertPointFromNode")]
-    public extern DOMPoint ConvertPointFromNode(DOMPointInit point, GeometryNode from, ConvertCoordinateOptions? options = default);
+    public extern DOMPoint ConvertPointFromNode(DOMPointInit point, GeometryNode from, ConvertCoordinateOptions options = new());
     #endregion
 
     #region mixin Slottable
@@ -48642,7 +47976,7 @@ public class TextDecoder
     /// <param name="input">input</param>
     /// <param name="options">options</param>
     [Description("@#decode")]
-    public extern string Decode(IAllowSharedBufferSource input, TextDecodeOptions? options = default);
+    public extern string Decode(IAllowSharedBufferSource? input = default, TextDecodeOptions options = new());
 
     #region mixin TextDecoderCommon
     /// <summary>
@@ -48751,7 +48085,7 @@ public extern TextEncoder();
     /// </summary>
     /// <param name="input">input</param>
     [Description("@#encode")]
-    public extern Uint8Array Encode(string? input = default);
+    public extern Uint8Array Encode(string input = "");
 
     /// <summary>
     /// encodeInto
@@ -48810,7 +48144,7 @@ public extern WritableStream Writable { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#TextEvent")]
-public class TextEvent : UIEvent
+public class TextEvent(string type, UIEventInit eventInitDict) : UIEvent(type, eventInitDict)
 {
     /// <summary>
 /// data
@@ -48827,7 +48161,7 @@ public extern string Data { get; }
     /// <param name="view">view</param>
     /// <param name="data">data</param>
     [Description("@#initTextEvent")]
-    public extern void InitTextEvent(string type, bool bubbles = false, bool cancelable = false, Window? view = null, string? data = default);
+    public extern void InitTextEvent(string type, bool bubbles = false, bool cancelable = false, Window? view = default, string data = "undefined");
 }
 
 /// <summary>
@@ -48873,7 +48207,7 @@ public extern UnderlineThickness UnderlineThickness { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#TextFormatUpdateEvent")]
-public class TextFormatUpdateEvent : Event
+public class TextFormatUpdateEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -49172,7 +48506,7 @@ public extern EventHandler Onremovetrack { get; set; }
 /// </summary>
 [ECMAScript]
 [Description("@#TextUpdateEvent")]
-public class TextUpdateEvent : Event
+public class TextUpdateEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -49217,7 +48551,7 @@ public extern uint SelectionEnd { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#TimeEvent")]
-public class TimeEvent : Event
+public class TimeEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// view
@@ -49274,7 +48608,7 @@ public extern uint Length { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#ToggleEvent")]
-public class ToggleEvent : Event
+public class ToggleEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -49405,7 +48739,7 @@ public extern TouchType TouchType { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#TouchEvent")]
-public class TouchEvent : UIEvent
+public class TouchEvent(string type, UIEventInit eventInitDict) : UIEvent(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -49490,7 +48824,7 @@ public extern uint Length { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#TrackEvent")]
-public class TrackEvent : Event
+public class TrackEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -49552,14 +48886,14 @@ public extern double? DesiredSize { get; }
     /// </summary>
     /// <param name="chunk">chunk</param>
     [Description("@#enqueue")]
-    public extern void Enqueue(object chunk);
+    public extern void Enqueue(object? chunk = default);
 
     /// <summary>
     /// error
     /// </summary>
     /// <param name="reason">reason</param>
     [Description("@#error")]
-    public extern void Error(object reason);
+    public extern void Error(object? reason = default);
 
     /// <summary>
     /// terminate
@@ -49573,7 +48907,7 @@ public extern double? DesiredSize { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#TransitionEvent")]
-public class TransitionEvent : Event
+public class TransitionEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -49736,7 +49070,7 @@ public extern string Name { get; }
     /// <param name="input">input</param>
     /// <param name="arguments">arguments</param>
     [Description("@#createHTML")]
-    public extern TrustedHTML CreateHTML(string input, object arguments);
+    public extern TrustedHTML CreateHTML(string input, params object[] arguments);
 
     /// <summary>
     /// createScript
@@ -49744,7 +49078,7 @@ public extern string Name { get; }
     /// <param name="input">input</param>
     /// <param name="arguments">arguments</param>
     [Description("@#createScript")]
-    public extern TrustedScript CreateScript(string input, object arguments);
+    public extern TrustedScript CreateScript(string input, params object[] arguments);
 
     /// <summary>
     /// createScriptURL
@@ -49752,7 +49086,7 @@ public extern string Name { get; }
     /// <param name="input">input</param>
     /// <param name="arguments">arguments</param>
     [Description("@#createScriptURL")]
-    public extern TrustedScriptURL CreateScriptURL(string input, object arguments);
+    public extern TrustedScriptURL CreateScriptURL(string input, params object[] arguments);
 }
 
 /// <summary>
@@ -49768,7 +49102,7 @@ public class TrustedTypePolicyFactory
     /// <param name="policyName">policyName</param>
     /// <param name="policyOptions">policyOptions</param>
     [Description("@#createPolicy")]
-    public extern TrustedTypePolicy CreatePolicy(string policyName, TrustedTypePolicyOptions? policyOptions = default);
+    public extern TrustedTypePolicy CreatePolicy(string policyName, TrustedTypePolicyOptions policyOptions = new());
 
     /// <summary>
     /// isHTML
@@ -49811,7 +49145,7 @@ public extern TrustedScript EmptyScript { get; }
     /// <param name="elementNs">elementNs</param>
     /// <param name="attrNs">attrNs</param>
     [Description("@#getAttributeType")]
-    public extern string? GetAttributeType(string tagName, string attribute, string? elementNs = default, string? attrNs = default);
+    public extern string? GetAttributeType(string tagName, string attribute, string elementNs = "", string attrNs = "");
 
     /// <summary>
     /// getPropertyType
@@ -49820,7 +49154,7 @@ public extern TrustedScript EmptyScript { get; }
     /// <param name="property">property</param>
     /// <param name="elementNs">elementNs</param>
     [Description("@#getPropertyType")]
-    public extern string? GetPropertyType(string tagName, string property, string? elementNs = default);
+    public extern string? GetPropertyType(string tagName, string property, string elementNs = "");
 
     /// <summary>
 /// defaultPolicy
@@ -49834,7 +49168,7 @@ public extern TrustedTypePolicy? DefaultPolicy { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#UIEvent")]
-public partial class UIEvent : Event
+public partial class UIEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// sourceCapabilities
@@ -49870,7 +49204,7 @@ public extern int Detail { get; }
     /// <param name="viewArg">viewArg</param>
     /// <param name="detailArg">detailArg</param>
     [Description("@#initUIEvent")]
-    public extern void InitUIEvent(string typeArg, bool bubblesArg = false, bool cancelableArg = false, Window? viewArg = null, int detailArg = 0);
+    public extern void InitUIEvent(string typeArg, bool bubblesArg = false, bool cancelableArg = false, Window? viewArg = default, int detailArg = 0);
 
     /// <summary>
 /// which
@@ -49891,28 +49225,28 @@ public partial class URL
     /// </summary>
     /// <param name="obj">obj</param>
     [Description("@#createObjectURL")]
-    public extern static string CreateObjectURL(Either<Blob, MediaSource> obj);
+    public static extern string CreateObjectURL(Either<Blob, MediaSource> obj);
     
     /// <summary>
     /// createObjectURL
     /// </summary>
     /// <param name="obj">obj</param>
     [Description("@#createObjectURL")]
-    public extern static string CreateObjectURL(Blob obj);
+    public static extern string CreateObjectURL(Blob obj);
     
     /// <summary>
     /// createObjectURL
     /// </summary>
     /// <param name="obj">obj</param>
     [Description("@#createObjectURL")]
-    public extern static string CreateObjectURL(MediaSource obj);
+    public static extern string CreateObjectURL(MediaSource obj);
 
     /// <summary>
     /// revokeObjectURL
     /// </summary>
     /// <param name="url">url</param>
     [Description("@#revokeObjectURL")]
-    public extern static void RevokeObjectURL(string url);
+    public static extern void RevokeObjectURL(string url);
 
     /// <summary>
 /// Constructor 
@@ -49927,7 +49261,7 @@ public partial class URL
     /// <param name="url">url</param>
     /// <param name="base">base</param>
     [Description("@#parse")]
-    public extern static URL? Parse(string url, string @base);
+    public static extern URL? Parse(string url, string? @base = default);
 
     /// <summary>
     /// canParse
@@ -49935,7 +49269,7 @@ public partial class URL
     /// <param name="url">url</param>
     /// <param name="base">base</param>
     [Description("@#canParse")]
-    public extern static bool CanParse(string url, string @base);
+    public static extern bool CanParse(string url, string? @base = default);
 
     /// <summary>
 /// href
@@ -50044,7 +49378,7 @@ public class URLPattern
     /// <param name="input">input</param>
     /// <param name="baseURL">baseURL</param>
     [Description("@#test")]
-    public extern bool Test(URLPatternInput? input = default, string? baseURL = default);
+    public extern bool Test(URLPatternInput input = new(), string? baseURL = default);
 
     /// <summary>
     /// exec
@@ -50052,7 +49386,7 @@ public class URLPattern
     /// <param name="input">input</param>
     /// <param name="baseURL">baseURL</param>
     [Description("@#exec")]
-    public extern URLPatternResult? Exec(URLPatternInput? input = default, string? baseURL = default);
+    public extern URLPatternResult? Exec(URLPatternInput input = new(), string? baseURL = default);
 
     /// <summary>
 /// protocol
@@ -50142,7 +49476,7 @@ public extern uint Size { get; }
     /// <param name="name">name</param>
     /// <param name="value">value</param>
     [Description("@#delete")]
-    public extern void Delete(string name, string value);
+    public extern void Delete(string name, string? value = default);
 
     /// <summary>
     /// get
@@ -50164,7 +49498,7 @@ public extern uint Size { get; }
     /// <param name="name">name</param>
     /// <param name="value">value</param>
     [Description("@#has")]
-    public extern bool Has(string name, string value);
+    public extern bool Has(string name, string? value = default);
 
     /// <summary>
     /// set
@@ -50306,7 +49640,7 @@ public extern FrozenSet<USBInterface> Interfaces { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#USBConnectionEvent")]
-public class USBConnectionEvent : Event
+public class USBConnectionEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -50492,7 +49826,7 @@ public extern bool Opened { get; }
     /// <param name="setup">setup</param>
     /// <param name="data">data</param>
     [Description("@#controlTransferOut")]
-    public extern PromiseResult<USBOutTransferResult> ControlTransferOut(USBControlTransferParameters setup, IBufferSource data);
+    public extern PromiseResult<USBOutTransferResult> ControlTransferOut(USBControlTransferParameters setup, IBufferSource? data = default);
 
     /// <summary>
     /// clearHalt
@@ -51082,7 +50416,7 @@ public extern bool Valid { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#ValueEvent")]
-public class ValueEvent : Event
+public class ValueEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -51210,7 +50544,7 @@ public extern EventHandler Ondequeue { get; set; }
     /// </summary>
     /// <param name="config">config</param>
     [Description("@#isConfigSupported")]
-    public extern static PromiseResult<VideoDecoderSupport> IsConfigSupported(VideoDecoderConfig config);
+    public static extern PromiseResult<VideoDecoderSupport> IsConfigSupported(VideoDecoderConfig config);
 }
 
 /// <summary>
@@ -51257,7 +50591,7 @@ public extern EventHandler Ondequeue { get; set; }
     /// <param name="frame">frame</param>
     /// <param name="options">options</param>
     [Description("@#encode")]
-    public extern void Encode(VideoFrame frame, VideoEncoderEncodeOptions? options = default);
+    public extern void Encode(VideoFrame frame, VideoEncoderEncodeOptions options = new());
 
     /// <summary>
     /// flush
@@ -51282,7 +50616,7 @@ public extern EventHandler Ondequeue { get; set; }
     /// </summary>
     /// <param name="config">config</param>
     [Description("@#isConfigSupported")]
-    public extern static PromiseResult<VideoEncoderSupport> IsConfigSupported(VideoEncoderConfig config);
+    public static extern PromiseResult<VideoEncoderSupport> IsConfigSupported(VideoEncoderConfig config);
 }
 
 /// <summary>
@@ -51377,7 +50711,7 @@ public extern VideoColorSpace ColorSpace { get; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#allocationSize")]
-    public extern uint AllocationSize(VideoFrameCopyToOptions? options = default);
+    public extern uint AllocationSize(VideoFrameCopyToOptions options = new());
 
     /// <summary>
     /// copyTo
@@ -51385,7 +50719,7 @@ public extern VideoColorSpace ColorSpace { get; }
     /// <param name="destination">destination</param>
     /// <param name="options">options</param>
     [Description("@#copyTo")]
-    public extern PromiseResult<PlaneLayout[]> CopyTo(IAllowSharedBufferSource destination, VideoFrameCopyToOptions? options = default);
+    public extern PromiseResult<PlaneLayout[]> CopyTo(IAllowSharedBufferSource destination, VideoFrameCopyToOptions options = new());
 
     /// <summary>
     /// clone
@@ -51560,7 +50894,7 @@ public extern EventHandler Onremovetrack { get; set; }
 /// </summary>
 [ECMAScript]
 [Description("@#ViewTimeline")]
-public class ViewTimeline : ScrollTimeline
+public class ViewTimeline(ScrollTimelineOptions options) : ScrollTimeline(options)
 {
     /// <summary>
 /// Constructor 
@@ -51702,28 +51036,10 @@ public extern EventHandler Ongeometrychange { get; set; }
 public class VisibilityStateEntry : PerformanceEntry
 {
     /// <summary>
-/// name
-/// </summary>
-[Description("@#name")]
-public extern string Name { get; }
-
-    /// <summary>
-/// entryType
-/// </summary>
-[Description("@#entryType")]
-public extern string EntryType { get; }
-
-    /// <summary>
-/// startTime
-/// </summary>
-[Description("@#startTime")]
-public extern double StartTime { get; }
-
-    /// <summary>
 /// duration
 /// </summary>
 [Description("@#duration")]
-public extern uint Duration { get; }
+public new extern uint Duration { get; }
 }
 
 /// <summary>
@@ -57266,7 +56582,7 @@ public const GLenum MAX_CLIENT_WAIT_TIMEOUT_WEBGL = 0x9247;
     /// <param name="dstOffset">dstOffset</param>
     /// <param name="length">length</param>
     [Description("@#getBufferSubData")]
-    public extern void GetBufferSubData(GLenum target, GLintptr srcByteOffset, IArrayBufferView dstBuffer, ulong dstOffset = 0, GLuint? length = default);
+    public extern void GetBufferSubData(GLenum target, GLintptr srcByteOffset, IArrayBufferView dstBuffer, ulong dstOffset = 0, GLuint length = 0);
     
     /// <summary>
     /// blitFramebuffer
@@ -57526,7 +56842,7 @@ public const GLenum MAX_CLIENT_WAIT_TIMEOUT_WEBGL = 0x9247;
     /// <param name="srcOffset">srcOffset</param>
     /// <param name="srcLengthOverride">srcLengthOverride</param>
     [Description("@#compressedTexImage3D")]
-    public extern void CompressedTexImage3D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, IArrayBufferView srcData, ulong srcOffset = 0, GLuint? srcLengthOverride = default);
+    public extern void CompressedTexImage3D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, IArrayBufferView srcData, ulong srcOffset = 0, GLuint srcLengthOverride = 0);
     
     /// <summary>
     /// compressedTexSubImage3D
@@ -57561,7 +56877,7 @@ public const GLenum MAX_CLIENT_WAIT_TIMEOUT_WEBGL = 0x9247;
     /// <param name="srcOffset">srcOffset</param>
     /// <param name="srcLengthOverride">srcLengthOverride</param>
     [Description("@#compressedTexSubImage3D")]
-    public extern void CompressedTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, IArrayBufferView srcData, ulong srcOffset = 0, GLuint? srcLengthOverride = default);
+    public extern void CompressedTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, IArrayBufferView srcData, ulong srcOffset = 0, GLuint srcLengthOverride = 0);
     
     /// <summary>
     /// getFragDataLocation
@@ -57617,7 +56933,7 @@ public const GLenum MAX_CLIENT_WAIT_TIMEOUT_WEBGL = 0x9247;
     /// <param name="srcOffset">srcOffset</param>
     /// <param name="srcLength">srcLength</param>
     [Description("@#uniform1uiv")]
-    public extern void Uniform1uiv(WebGLUniformLocation? location, Uint32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void Uniform1uiv(WebGLUniformLocation? location, Uint32List data, ulong srcOffset = 0, GLuint srcLength = 0);
     
     /// <summary>
     /// uniform2uiv
@@ -57627,7 +56943,7 @@ public const GLenum MAX_CLIENT_WAIT_TIMEOUT_WEBGL = 0x9247;
     /// <param name="srcOffset">srcOffset</param>
     /// <param name="srcLength">srcLength</param>
     [Description("@#uniform2uiv")]
-    public extern void Uniform2uiv(WebGLUniformLocation? location, Uint32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void Uniform2uiv(WebGLUniformLocation? location, Uint32List data, ulong srcOffset = 0, GLuint srcLength = 0);
     
     /// <summary>
     /// uniform3uiv
@@ -57637,7 +56953,7 @@ public const GLenum MAX_CLIENT_WAIT_TIMEOUT_WEBGL = 0x9247;
     /// <param name="srcOffset">srcOffset</param>
     /// <param name="srcLength">srcLength</param>
     [Description("@#uniform3uiv")]
-    public extern void Uniform3uiv(WebGLUniformLocation? location, Uint32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void Uniform3uiv(WebGLUniformLocation? location, Uint32List data, ulong srcOffset = 0, GLuint srcLength = 0);
     
     /// <summary>
     /// uniform4uiv
@@ -57647,7 +56963,7 @@ public const GLenum MAX_CLIENT_WAIT_TIMEOUT_WEBGL = 0x9247;
     /// <param name="srcOffset">srcOffset</param>
     /// <param name="srcLength">srcLength</param>
     [Description("@#uniform4uiv")]
-    public extern void Uniform4uiv(WebGLUniformLocation? location, Uint32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void Uniform4uiv(WebGLUniformLocation? location, Uint32List data, ulong srcOffset = 0, GLuint srcLength = 0);
     
     /// <summary>
     /// uniformMatrix3x2fv
@@ -57658,7 +56974,7 @@ public const GLenum MAX_CLIENT_WAIT_TIMEOUT_WEBGL = 0x9247;
     /// <param name="srcOffset">srcOffset</param>
     /// <param name="srcLength">srcLength</param>
     [Description("@#uniformMatrix3x2fv")]
-    public extern void UniformMatrix3x2fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void UniformMatrix3x2fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, ulong srcOffset = 0, GLuint srcLength = 0);
     
     /// <summary>
     /// uniformMatrix4x2fv
@@ -57669,7 +56985,7 @@ public const GLenum MAX_CLIENT_WAIT_TIMEOUT_WEBGL = 0x9247;
     /// <param name="srcOffset">srcOffset</param>
     /// <param name="srcLength">srcLength</param>
     [Description("@#uniformMatrix4x2fv")]
-    public extern void UniformMatrix4x2fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void UniformMatrix4x2fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, ulong srcOffset = 0, GLuint srcLength = 0);
     
     /// <summary>
     /// uniformMatrix2x3fv
@@ -57680,7 +56996,7 @@ public const GLenum MAX_CLIENT_WAIT_TIMEOUT_WEBGL = 0x9247;
     /// <param name="srcOffset">srcOffset</param>
     /// <param name="srcLength">srcLength</param>
     [Description("@#uniformMatrix2x3fv")]
-    public extern void UniformMatrix2x3fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void UniformMatrix2x3fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, ulong srcOffset = 0, GLuint srcLength = 0);
     
     /// <summary>
     /// uniformMatrix4x3fv
@@ -57691,7 +57007,7 @@ public const GLenum MAX_CLIENT_WAIT_TIMEOUT_WEBGL = 0x9247;
     /// <param name="srcOffset">srcOffset</param>
     /// <param name="srcLength">srcLength</param>
     [Description("@#uniformMatrix4x3fv")]
-    public extern void UniformMatrix4x3fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void UniformMatrix4x3fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, ulong srcOffset = 0, GLuint srcLength = 0);
     
     /// <summary>
     /// uniformMatrix2x4fv
@@ -57702,7 +57018,7 @@ public const GLenum MAX_CLIENT_WAIT_TIMEOUT_WEBGL = 0x9247;
     /// <param name="srcOffset">srcOffset</param>
     /// <param name="srcLength">srcLength</param>
     [Description("@#uniformMatrix2x4fv")]
-    public extern void UniformMatrix2x4fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void UniformMatrix2x4fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, ulong srcOffset = 0, GLuint srcLength = 0);
     
     /// <summary>
     /// uniformMatrix3x4fv
@@ -57713,7 +57029,7 @@ public const GLenum MAX_CLIENT_WAIT_TIMEOUT_WEBGL = 0x9247;
     /// <param name="srcOffset">srcOffset</param>
     /// <param name="srcLength">srcLength</param>
     [Description("@#uniformMatrix3x4fv")]
-    public extern void UniformMatrix3x4fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void UniformMatrix3x4fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, ulong srcOffset = 0, GLuint srcLength = 0);
     
     /// <summary>
     /// vertexAttribI4i
@@ -58219,7 +57535,7 @@ public const GLenum MAX_CLIENT_WAIT_TIMEOUT_WEBGL = 0x9247;
     /// <param name="srcOffset">srcOffset</param>
     /// <param name="length">length</param>
     [Description("@#bufferData")]
-    public extern void BufferData(GLenum target, IArrayBufferView srcData, GLenum usage, ulong srcOffset, GLuint? length = default);
+    public extern void BufferData(GLenum target, IArrayBufferView srcData, GLenum usage, ulong srcOffset, GLuint length = 0);
     
     /// <summary>
     /// bufferSubData
@@ -58230,7 +57546,7 @@ public const GLenum MAX_CLIENT_WAIT_TIMEOUT_WEBGL = 0x9247;
     /// <param name="srcOffset">srcOffset</param>
     /// <param name="length">length</param>
     [Description("@#bufferSubData")]
-    public extern void BufferSubData(GLenum target, GLintptr dstByteOffset, IArrayBufferView srcData, ulong srcOffset, GLuint? length = default);
+    public extern void BufferSubData(GLenum target, GLintptr dstByteOffset, IArrayBufferView srcData, ulong srcOffset, GLuint length = 0);
     
     /// <summary>
     /// texImage2D
@@ -58406,7 +57722,7 @@ public const GLenum MAX_CLIENT_WAIT_TIMEOUT_WEBGL = 0x9247;
     /// <param name="srcOffset">srcOffset</param>
     /// <param name="srcLengthOverride">srcLengthOverride</param>
     [Description("@#compressedTexImage2D")]
-    public extern void CompressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, IArrayBufferView srcData, ulong srcOffset = 0, GLuint? srcLengthOverride = default);
+    public extern void CompressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, IArrayBufferView srcData, ulong srcOffset = 0, GLuint srcLengthOverride = 0);
     
     /// <summary>
     /// compressedTexSubImage2D
@@ -58437,7 +57753,7 @@ public const GLenum MAX_CLIENT_WAIT_TIMEOUT_WEBGL = 0x9247;
     /// <param name="srcOffset">srcOffset</param>
     /// <param name="srcLengthOverride">srcLengthOverride</param>
     [Description("@#compressedTexSubImage2D")]
-    public extern void CompressedTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, IArrayBufferView srcData, ulong srcOffset = 0, GLuint? srcLengthOverride = default);
+    public extern void CompressedTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, IArrayBufferView srcData, ulong srcOffset = 0, GLuint srcLengthOverride = 0);
     
     /// <summary>
     /// uniform1fv
@@ -58447,7 +57763,7 @@ public const GLenum MAX_CLIENT_WAIT_TIMEOUT_WEBGL = 0x9247;
     /// <param name="srcOffset">srcOffset</param>
     /// <param name="srcLength">srcLength</param>
     [Description("@#uniform1fv")]
-    public extern void Uniform1fv(WebGLUniformLocation? location, Float32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void Uniform1fv(WebGLUniformLocation? location, Float32List data, ulong srcOffset = 0, GLuint srcLength = 0);
     
     /// <summary>
     /// uniform2fv
@@ -58457,7 +57773,7 @@ public const GLenum MAX_CLIENT_WAIT_TIMEOUT_WEBGL = 0x9247;
     /// <param name="srcOffset">srcOffset</param>
     /// <param name="srcLength">srcLength</param>
     [Description("@#uniform2fv")]
-    public extern void Uniform2fv(WebGLUniformLocation? location, Float32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void Uniform2fv(WebGLUniformLocation? location, Float32List data, ulong srcOffset = 0, GLuint srcLength = 0);
     
     /// <summary>
     /// uniform3fv
@@ -58467,7 +57783,7 @@ public const GLenum MAX_CLIENT_WAIT_TIMEOUT_WEBGL = 0x9247;
     /// <param name="srcOffset">srcOffset</param>
     /// <param name="srcLength">srcLength</param>
     [Description("@#uniform3fv")]
-    public extern void Uniform3fv(WebGLUniformLocation? location, Float32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void Uniform3fv(WebGLUniformLocation? location, Float32List data, ulong srcOffset = 0, GLuint srcLength = 0);
     
     /// <summary>
     /// uniform4fv
@@ -58477,7 +57793,7 @@ public const GLenum MAX_CLIENT_WAIT_TIMEOUT_WEBGL = 0x9247;
     /// <param name="srcOffset">srcOffset</param>
     /// <param name="srcLength">srcLength</param>
     [Description("@#uniform4fv")]
-    public extern void Uniform4fv(WebGLUniformLocation? location, Float32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void Uniform4fv(WebGLUniformLocation? location, Float32List data, ulong srcOffset = 0, GLuint srcLength = 0);
     
     /// <summary>
     /// uniform1iv
@@ -58487,7 +57803,7 @@ public const GLenum MAX_CLIENT_WAIT_TIMEOUT_WEBGL = 0x9247;
     /// <param name="srcOffset">srcOffset</param>
     /// <param name="srcLength">srcLength</param>
     [Description("@#uniform1iv")]
-    public extern void Uniform1iv(WebGLUniformLocation? location, Int32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void Uniform1iv(WebGLUniformLocation? location, Int32List data, ulong srcOffset = 0, GLuint srcLength = 0);
     
     /// <summary>
     /// uniform2iv
@@ -58497,7 +57813,7 @@ public const GLenum MAX_CLIENT_WAIT_TIMEOUT_WEBGL = 0x9247;
     /// <param name="srcOffset">srcOffset</param>
     /// <param name="srcLength">srcLength</param>
     [Description("@#uniform2iv")]
-    public extern void Uniform2iv(WebGLUniformLocation? location, Int32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void Uniform2iv(WebGLUniformLocation? location, Int32List data, ulong srcOffset = 0, GLuint srcLength = 0);
     
     /// <summary>
     /// uniform3iv
@@ -58507,7 +57823,7 @@ public const GLenum MAX_CLIENT_WAIT_TIMEOUT_WEBGL = 0x9247;
     /// <param name="srcOffset">srcOffset</param>
     /// <param name="srcLength">srcLength</param>
     [Description("@#uniform3iv")]
-    public extern void Uniform3iv(WebGLUniformLocation? location, Int32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void Uniform3iv(WebGLUniformLocation? location, Int32List data, ulong srcOffset = 0, GLuint srcLength = 0);
     
     /// <summary>
     /// uniform4iv
@@ -58517,7 +57833,7 @@ public const GLenum MAX_CLIENT_WAIT_TIMEOUT_WEBGL = 0x9247;
     /// <param name="srcOffset">srcOffset</param>
     /// <param name="srcLength">srcLength</param>
     [Description("@#uniform4iv")]
-    public extern void Uniform4iv(WebGLUniformLocation? location, Int32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void Uniform4iv(WebGLUniformLocation? location, Int32List data, ulong srcOffset = 0, GLuint srcLength = 0);
     
     /// <summary>
     /// uniformMatrix2fv
@@ -58528,7 +57844,7 @@ public const GLenum MAX_CLIENT_WAIT_TIMEOUT_WEBGL = 0x9247;
     /// <param name="srcOffset">srcOffset</param>
     /// <param name="srcLength">srcLength</param>
     [Description("@#uniformMatrix2fv")]
-    public extern void UniformMatrix2fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void UniformMatrix2fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, ulong srcOffset = 0, GLuint srcLength = 0);
     
     /// <summary>
     /// uniformMatrix3fv
@@ -58539,7 +57855,7 @@ public const GLenum MAX_CLIENT_WAIT_TIMEOUT_WEBGL = 0x9247;
     /// <param name="srcOffset">srcOffset</param>
     /// <param name="srcLength">srcLength</param>
     [Description("@#uniformMatrix3fv")]
-    public extern void UniformMatrix3fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void UniformMatrix3fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, ulong srcOffset = 0, GLuint srcLength = 0);
     
     /// <summary>
     /// uniformMatrix4fv
@@ -58550,7 +57866,7 @@ public const GLenum MAX_CLIENT_WAIT_TIMEOUT_WEBGL = 0x9247;
     /// <param name="srcOffset">srcOffset</param>
     /// <param name="srcLength">srcLength</param>
     [Description("@#uniformMatrix4fv")]
-    public extern void UniformMatrix4fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void UniformMatrix4fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, ulong srcOffset = 0, GLuint srcLength = 0);
     
     /// <summary>
     /// readPixels
@@ -58634,7 +57950,7 @@ public class WebGLBuffer : WebGLObject
 /// </summary>
 [ECMAScript]
 [Description("@#WebGLContextEvent")]
-public class WebGLContextEvent : Event
+public class WebGLContextEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -61899,7 +61215,7 @@ public extern string Protocol { get; }
     /// <param name="code">code</param>
     /// <param name="reason">reason</param>
     [Description("@#close")]
-    public extern void Close(ushort code, string reason);
+    public extern void Close(ushort? code = default, string? reason = default);
 
     /// <summary>
 /// onmessage
@@ -62009,7 +61325,7 @@ public extern PromiseResult<object> Draining { get; }
     /// </summary>
     /// <param name="closeInfo">closeInfo</param>
     [Description("@#close")]
-    public extern void Close(WebTransportCloseInfo? closeInfo = default);
+    public extern void Close(WebTransportCloseInfo closeInfo = new());
 
     /// <summary>
 /// datagrams
@@ -62022,7 +61338,7 @@ public extern WebTransportDatagramDuplexStream Datagrams { get; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#createBidirectionalStream")]
-    public extern PromiseResult<WebTransportBidirectionalStream> CreateBidirectionalStream(WebTransportSendStreamOptions? options = default);
+    public extern PromiseResult<WebTransportBidirectionalStream> CreateBidirectionalStream(WebTransportSendStreamOptions options = new());
 
     /// <summary>
 /// incomingBidirectionalStreams
@@ -62035,7 +61351,7 @@ public extern ReadableStream IncomingBidirectionalStreams { get; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#createUnidirectionalStream")]
-    public extern PromiseResult<WebTransportSendStream> CreateUnidirectionalStream(WebTransportSendStreamOptions? options = default);
+    public extern PromiseResult<WebTransportSendStream> CreateUnidirectionalStream(WebTransportSendStreamOptions options = new());
 
     /// <summary>
 /// incomingUnidirectionalStreams
@@ -62053,7 +61369,7 @@ public extern ReadableStream IncomingUnidirectionalStreams { get; }
 /// supportsReliableOnly
 /// </summary>
 [Description("@#supportsReliableOnly")]
-public extern static bool SupportsReliableOnly { get; }
+public static extern bool SupportsReliableOnly { get; }
 }
 
 /// <summary>
@@ -62131,7 +61447,7 @@ public extern double OutgoingHighWaterMark { get; set; }
 /// </summary>
 [ECMAScript]
 [Description("@#WebTransportError")]
-public class WebTransportError : DOMException
+public class WebTransportError(string message, string name) : DOMException(message, name)
 {
     /// <summary>
 /// Constructor 
@@ -62158,7 +61474,7 @@ public extern uint? StreamErrorCode { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#WebTransportReceiveStream")]
-public class WebTransportReceiveStream : ReadableStream
+public class WebTransportReceiveStream(object underlyingSource, QueuingStrategy strategy) : ReadableStream(underlyingSource, strategy)
 {
     /// <summary>
     /// getStats
@@ -62186,7 +61502,7 @@ public class WebTransportSendGroup
 /// </summary>
 [ECMAScript]
 [Description("@#WebTransportSendStream")]
-public class WebTransportSendStream : WritableStream
+public class WebTransportSendStream(object underlyingSink, QueuingStrategy strategy) : WritableStream(underlyingSink, strategy)
 {
     /// <summary>
 /// sendGroup
@@ -62210,7 +61526,7 @@ public extern long SendOrder { get; set; }
     /// getWriter
     /// </summary>
     [Description("@#getWriter")]
-    public extern WebTransportWriter GetWriter();
+    public new extern WebTransportWriter GetWriter();
 }
 
 /// <summary>
@@ -62218,14 +61534,14 @@ public extern long SendOrder { get; set; }
 /// </summary>
 [ECMAScript]
 [Description("@#WebTransportWriter")]
-public class WebTransportWriter : WritableStreamDefaultWriter
+public class WebTransportWriter(WritableStream stream) : WritableStreamDefaultWriter(stream)
 {
     /// <summary>
     /// atomicWrite
     /// </summary>
     /// <param name="chunk">chunk</param>
     [Description("@#atomicWrite")]
-    public extern PromiseResult<void> AtomicWrite(object chunk);
+    public extern PromiseResult<void> AtomicWrite(object? chunk = default);
 }
 
 /// <summary>
@@ -62233,7 +61549,7 @@ public class WebTransportWriter : WritableStreamDefaultWriter
 /// </summary>
 [ECMAScript]
 [Description("@#WheelEvent")]
-public class WheelEvent : MouseEvent
+public class WheelEvent(string type, MouseEventInit eventInitDict) : MouseEvent(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -62415,7 +61731,7 @@ public extern double PageYOffset { get; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#scroll")]
-    public extern void Scroll(ScrollToOptions? options = default);
+    public extern void Scroll(ScrollToOptions options = new());
 
     /// <summary>
     /// scroll
@@ -62430,7 +61746,7 @@ public extern double PageYOffset { get; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#scrollTo")]
-    public extern void ScrollTo(ScrollToOptions? options = default);
+    public extern void ScrollTo(ScrollToOptions options = new());
 
     /// <summary>
     /// scrollTo
@@ -62445,7 +61761,7 @@ public extern double PageYOffset { get; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#scrollBy")]
-    public extern void ScrollBy(ScrollToOptions? options = default);
+    public extern void ScrollBy(ScrollToOptions options = new());
 
     /// <summary>
     /// scrollBy
@@ -62527,21 +61843,21 @@ public extern Fence? Fence { get; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#showOpenFilePicker")]
-    public extern PromiseResult<FileSystemFileHandle[]> ShowOpenFilePicker(OpenFilePickerOptions? options = default);
+    public extern PromiseResult<FileSystemFileHandle[]> ShowOpenFilePicker(OpenFilePickerOptions options = new());
 
     /// <summary>
     /// showSaveFilePicker
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#showSaveFilePicker")]
-    public extern PromiseResult<FileSystemFileHandle> ShowSaveFilePicker(SaveFilePickerOptions? options = default);
+    public extern PromiseResult<FileSystemFileHandle> ShowSaveFilePicker(SaveFilePickerOptions options = new());
 
     /// <summary>
     /// showDirectoryPicker
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#showDirectoryPicker")]
-    public extern PromiseResult<FileSystemDirectoryHandle> ShowDirectoryPicker(DirectoryPickerOptions? options = default);
+    public extern PromiseResult<FileSystemDirectoryHandle> ShowDirectoryPicker(DirectoryPickerOptions options = new());
 
     /// <summary>
 /// window
@@ -62706,7 +62022,7 @@ public extern Element? FrameElement { get; }
     /// <param name="target">target</param>
     /// <param name="features">features</param>
     [Description("@#open")]
-    public extern WindowProxy? Open(string? url = default, string? target = default, string? features = default);
+    public extern WindowProxy? Open(string url = "", string target = "_blank", string features = "");
 
     [Description("@#")] 
     public extern object this[string name] { get; }
@@ -62747,7 +62063,7 @@ public extern bool OriginAgentCluster { get; }
     /// </summary>
     /// <param name="message">message</param>
     [Description("@#confirm")]
-    public extern bool Confirm(string? message = default);
+    public extern bool Confirm(string message = "");
 
     /// <summary>
     /// prompt
@@ -62755,7 +62071,7 @@ public extern bool OriginAgentCluster { get; }
     /// <param name="message">message</param>
     /// <param name="default">default</param>
     [Description("@#prompt")]
-    public extern string? Prompt(string? message = default, string? @default = default);
+    public extern string? Prompt(string message = "", string @default = "");
 
     /// <summary>
     /// print
@@ -62770,7 +62086,7 @@ public extern bool OriginAgentCluster { get; }
     /// <param name="targetOrigin">targetOrigin</param>
     /// <param name="transfer">transfer</param>
     [Description("@#postMessage")]
-    public extern void PostMessage(object message, string targetOrigin, object[]? transfer = default);
+    public extern void PostMessage(object message, string targetOrigin, object[] transfer = new object[]());
 
     /// <summary>
     /// postMessage
@@ -62778,7 +62094,7 @@ public extern bool OriginAgentCluster { get; }
     /// <param name="message">message</param>
     /// <param name="options">options</param>
     [Description("@#postMessage")]
-    public extern void PostMessage(object message, WindowPostMessageOptions? options = default);
+    public extern void PostMessage(object message, WindowPostMessageOptions options = new());
 
     /// <summary>
     /// captureEvents
@@ -62803,7 +62119,7 @@ public extern External External { get; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#queryLocalFonts")]
-    public extern PromiseResult<FontData[]> QueryLocalFonts(QueryOptions? options = default);
+    public extern PromiseResult<FontData[]> QueryLocalFonts(QueryOptions options = new());
 
     /// <summary>
 /// onappinstalled
@@ -62847,7 +62163,7 @@ public extern PortalHost? PortalHost { get; }
     /// <param name="callback">callback</param>
     /// <param name="options">options</param>
     [Description("@#requestIdleCallback")]
-    public extern uint RequestIdleCallback(IdleRequestCallback callback, IdleRequestOptions? options = default);
+    public extern uint RequestIdleCallback(IdleRequestCallback callback, IdleRequestOptions options = new());
 
     /// <summary>
     /// cancelIdleCallback
@@ -63629,7 +62945,7 @@ public extern EventHandler Onportalactivate { get; set; }
     /// <param name="input">input</param>
     /// <param name="init">init</param>
     [Description("@#fetch")]
-    public extern PromiseResult<Response> Fetch(RequestInfo input, RequestInit? init = default);
+    public extern PromiseResult<Response> Fetch(RequestInfo input, RequestInit init = new());
     
     /// <summary>
 /// performance
@@ -63683,7 +62999,7 @@ public extern bool CrossOriginIsolated { get; }
     /// <param name="timeout">timeout</param>
     /// <param name="arguments">arguments</param>
     [Description("@#setTimeout")]
-    public extern int SetTimeout(TimerHandler handler, int timeout = 0, object? arguments = default);
+    public extern int SetTimeout(TimerHandler handler, int timeout = 0, params object[] arguments);
     
     /// <summary>
     /// clearTimeout
@@ -63699,7 +63015,7 @@ public extern bool CrossOriginIsolated { get; }
     /// <param name="timeout">timeout</param>
     /// <param name="arguments">arguments</param>
     [Description("@#setInterval")]
-    public extern int SetInterval(TimerHandler handler, int timeout = 0, object? arguments = default);
+    public extern int SetInterval(TimerHandler handler, int timeout = 0, params object[] arguments);
     
     /// <summary>
     /// clearInterval
@@ -63721,7 +63037,7 @@ public extern bool CrossOriginIsolated { get; }
     /// <param name="image">image</param>
     /// <param name="options">options</param>
     [Description("@#createImageBitmap")]
-    public extern PromiseResult<ImageBitmap> CreateImageBitmap(ImageBitmapSource image, ImageBitmapOptions? options = default);
+    public extern PromiseResult<ImageBitmap> CreateImageBitmap(ImageBitmapSource image, ImageBitmapOptions options = new());
     
     /// <summary>
     /// createImageBitmap
@@ -63733,7 +63049,7 @@ public extern bool CrossOriginIsolated { get; }
     /// <param name="sh">sh</param>
     /// <param name="options">options</param>
     [Description("@#createImageBitmap")]
-    public extern PromiseResult<ImageBitmap> CreateImageBitmap(ImageBitmapSource image, int sx, int sy, int sw, int sh, ImageBitmapOptions? options = default);
+    public extern PromiseResult<ImageBitmap> CreateImageBitmap(ImageBitmapSource image, int sx, int sy, int sw, int sh, ImageBitmapOptions options = new());
     
     /// <summary>
     /// structuredClone
@@ -63741,7 +63057,7 @@ public extern bool CrossOriginIsolated { get; }
     /// <param name="value">value</param>
     /// <param name="options">options</param>
     [Description("@#structuredClone")]
-    public extern object StructuredClone(object value, StructuredSerializeOptions? options = default);
+    public extern object StructuredClone(object value, StructuredSerializeOptions options = new());
     
     /// <summary>
 /// indexedDB
@@ -63877,7 +63193,7 @@ public extern EventHandler Ongeometrychange { get; set; }
 /// </summary>
 [ECMAScript]
 [Description("@#WindowControlsOverlayGeometryChangeEvent")]
-public class WindowControlsOverlayGeometryChangeEvent : Event
+public class WindowControlsOverlayGeometryChangeEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -63912,7 +63228,7 @@ public class WindowSharedStorage : SharedStorage
     /// <param name="name">name</param>
     /// <param name="options">options</param>
     [Description("@#run")]
-    public extern PromiseResult<object> Run(string name, SharedStorageRunOperationMethodOptions? options = default);
+    public extern PromiseResult<object> Run(string name, SharedStorageRunOperationMethodOptions options = new());
 
     /// <summary>
     /// selectURL
@@ -63921,7 +63237,7 @@ public class WindowSharedStorage : SharedStorage
     /// <param name="urls">urls</param>
     /// <param name="options">options</param>
     [Description("@#selectURL")]
-    public extern PromiseResult<SharedStorageResponse> SelectURL(string name, FrozenSet<SharedStorageUrlWithMetadata> urls, SharedStorageRunOperationMethodOptions? options = default);
+    public extern PromiseResult<SharedStorageResponse> SelectURL(string name, FrozenSet<SharedStorageUrlWithMetadata> urls, SharedStorageRunOperationMethodOptions options = new());
 
     /// <summary>
 /// worklet
@@ -63964,7 +63280,7 @@ public class Worker : EventTarget
     /// <param name="message">message</param>
     /// <param name="options">options</param>
     [Description("@#postMessage")]
-    public extern void PostMessage(object message, StructuredSerializeOptions? options = default);
+    public extern void PostMessage(object message, StructuredSerializeOptions options = new());
 
     /// <summary>
 /// onmessage
@@ -64017,7 +63333,7 @@ public extern WorkerNavigator Navigator { get; }
     /// </summary>
     /// <param name="urls">urls</param>
     [Description("@#importScripts")]
-    public extern void ImportScripts(string urls);
+    public extern void ImportScripts(params string[] urls);
 
     /// <summary>
 /// onerror
@@ -64070,7 +63386,7 @@ public extern FontFaceSet Fonts { get; }
     /// <param name="input">input</param>
     /// <param name="init">init</param>
     [Description("@#fetch")]
-    public extern PromiseResult<Response> Fetch(RequestInfo input, RequestInit? init = default);
+    public extern PromiseResult<Response> Fetch(RequestInfo input, RequestInit init = new());
     
     /// <summary>
 /// performance
@@ -64124,7 +63440,7 @@ public extern bool CrossOriginIsolated { get; }
     /// <param name="timeout">timeout</param>
     /// <param name="arguments">arguments</param>
     [Description("@#setTimeout")]
-    public extern int SetTimeout(TimerHandler handler, int timeout = 0, object? arguments = default);
+    public extern int SetTimeout(TimerHandler handler, int timeout = 0, params object[] arguments);
     
     /// <summary>
     /// clearTimeout
@@ -64140,7 +63456,7 @@ public extern bool CrossOriginIsolated { get; }
     /// <param name="timeout">timeout</param>
     /// <param name="arguments">arguments</param>
     [Description("@#setInterval")]
-    public extern int SetInterval(TimerHandler handler, int timeout = 0, object? arguments = default);
+    public extern int SetInterval(TimerHandler handler, int timeout = 0, params object[] arguments);
     
     /// <summary>
     /// clearInterval
@@ -64162,7 +63478,7 @@ public extern bool CrossOriginIsolated { get; }
     /// <param name="image">image</param>
     /// <param name="options">options</param>
     [Description("@#createImageBitmap")]
-    public extern PromiseResult<ImageBitmap> CreateImageBitmap(ImageBitmapSource image, ImageBitmapOptions? options = default);
+    public extern PromiseResult<ImageBitmap> CreateImageBitmap(ImageBitmapSource image, ImageBitmapOptions options = new());
     
     /// <summary>
     /// createImageBitmap
@@ -64174,7 +63490,7 @@ public extern bool CrossOriginIsolated { get; }
     /// <param name="sh">sh</param>
     /// <param name="options">options</param>
     [Description("@#createImageBitmap")]
-    public extern PromiseResult<ImageBitmap> CreateImageBitmap(ImageBitmapSource image, int sx, int sy, int sw, int sh, ImageBitmapOptions? options = default);
+    public extern PromiseResult<ImageBitmap> CreateImageBitmap(ImageBitmapSource image, int sx, int sy, int sw, int sh, ImageBitmapOptions options = new());
     
     /// <summary>
     /// structuredClone
@@ -64182,7 +63498,7 @@ public extern bool CrossOriginIsolated { get; }
     /// <param name="value">value</param>
     /// <param name="options">options</param>
     [Description("@#structuredClone")]
-    public extern object StructuredClone(object value, StructuredSerializeOptions? options = default);
+    public extern object StructuredClone(object value, StructuredSerializeOptions options = new());
     
     /// <summary>
 /// indexedDB
@@ -64327,7 +63643,7 @@ public extern USB Usb { get; }
     /// </summary>
     /// <param name="contents">contents</param>
     [Description("@#setAppBadge")]
-    public extern PromiseResult<void> SetAppBadge(ulong contents);
+    public extern PromiseResult<void> SetAppBadge(ulong? contents = default);
     
     /// <summary>
     /// clearAppBadge
@@ -64504,7 +63820,7 @@ public class Worklet
     /// <param name="moduleURL">moduleURL</param>
     /// <param name="options">options</param>
     [Description("@#addModule")]
-    public extern PromiseResult<void> AddModule(string moduleURL, WorkletOptions? options = default);
+    public extern PromiseResult<void> AddModule(string moduleURL, WorkletOptions options = new());
 }
 
 /// <summary>
@@ -64571,7 +63887,7 @@ public extern bool Locked { get; }
     /// </summary>
     /// <param name="reason">reason</param>
     [Description("@#abort")]
-    public extern PromiseResult<void> Abort(object reason);
+    public extern PromiseResult<void> Abort(object? reason = default);
 
     /// <summary>
     /// close
@@ -64604,7 +63920,7 @@ public extern AbortSignal Signal { get; }
     /// </summary>
     /// <param name="e">e</param>
     [Description("@#error")]
-    public extern void Error(object e);
+    public extern void Error(object? e = default);
 }
 
 /// <summary>
@@ -64643,7 +63959,7 @@ public extern PromiseResult<object> Ready { get; }
     /// </summary>
     /// <param name="reason">reason</param>
     [Description("@#abort")]
-    public extern PromiseResult<void> Abort(object reason);
+    public extern PromiseResult<void> Abort(object? reason = default);
 
     /// <summary>
     /// close
@@ -64662,7 +63978,7 @@ public extern PromiseResult<object> Ready { get; }
     /// </summary>
     /// <param name="chunk">chunk</param>
     [Description("@#write")]
-    public extern PromiseResult<void> Write(object chunk);
+    public extern PromiseResult<void> Write(object? chunk = default);
 }
 
 /// <summary>
@@ -64759,7 +64075,7 @@ public extern ushort ReadyState { get; }
     /// <param name="username">username</param>
     /// <param name="password">password</param>
     [Description("@#open")]
-    public extern void Open(byte[] method, string url, bool @async, string? username = null, string? password = null);
+    public extern void Open(byte[] method, string url, bool @async, string? username = default, string? password = default);
 
     /// <summary>
     /// setRequestHeader
@@ -64792,7 +64108,7 @@ public extern XMLHttpRequestUpload Upload { get; }
     /// </summary>
     /// <param name="body">body</param>
     [Description("@#send")]
-    public extern void Send(Either<Document, XMLHttpRequestBodyInit>? body);
+    public extern void Send(Either<Document, XMLHttpRequestBodyInit>? body = default);
     
     /// <summary>
     /// send
@@ -64975,7 +64291,7 @@ public extern XPathEvaluator();
     /// <param name="expression">expression</param>
     /// <param name="resolver">resolver</param>
     [Description("@#createExpression")]
-    public extern XPathExpression CreateExpression(string expression, XPathNSResolver? resolver = null);
+    public extern XPathExpression CreateExpression(string expression, XPathNSResolver? resolver = default);
     
     /// <summary>
     /// createNSResolver
@@ -64993,7 +64309,7 @@ public extern XPathEvaluator();
     /// <param name="type">type</param>
     /// <param name="result">result</param>
     [Description("@#evaluate")]
-    public extern XPathResult Evaluate(string expression, Node contextNode, XPathNSResolver? resolver = null, ushort type = 0, XPathResult? result = null);
+    public extern XPathResult Evaluate(string expression, Node contextNode, XPathNSResolver? resolver = default, ushort type = 0, XPathResult? result = default);
     #endregion
 }
 
@@ -65011,7 +64327,7 @@ public class XPathExpression
     /// <param name="type">type</param>
     /// <param name="result">result</param>
     [Description("@#evaluate")]
-    public extern XPathResult Evaluate(Node contextNode, ushort type = 0, XPathResult? result = null);
+    public extern XPathResult Evaluate(Node contextNode, ushort type = 0, XPathResult? result = default);
 }
 
 /// <summary>
@@ -65706,7 +65022,7 @@ public extern uint Length { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#XRInputSourceEvent")]
-public class XRInputSourceEvent : Event
+public class XRInputSourceEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -65733,7 +65049,7 @@ public extern XRInputSource InputSource { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#XRInputSourcesChangeEvent")]
-public class XRInputSourcesChangeEvent : Event
+public class XRInputSourcesChangeEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -65803,7 +65119,7 @@ public class XRLayer : EventTarget
 /// </summary>
 [ECMAScript]
 [Description("@#XRLayerEvent")]
-public class XRLayerEvent : Event
+public class XRLayerEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -65884,7 +65200,7 @@ public class XRMediaBinding
     /// <param name="video">video</param>
     /// <param name="init">init</param>
     [Description("@#createQuadLayer")]
-    public extern XRQuadLayer CreateQuadLayer(HTMLVideoElement video, XRMediaQuadLayerInit? init = default);
+    public extern XRQuadLayer CreateQuadLayer(HTMLVideoElement video, XRMediaQuadLayerInit init = new());
 
     /// <summary>
     /// createCylinderLayer
@@ -65892,7 +65208,7 @@ public class XRMediaBinding
     /// <param name="video">video</param>
     /// <param name="init">init</param>
     [Description("@#createCylinderLayer")]
-    public extern XRCylinderLayer CreateCylinderLayer(HTMLVideoElement video, XRMediaCylinderLayerInit? init = default);
+    public extern XRCylinderLayer CreateCylinderLayer(HTMLVideoElement video, XRMediaCylinderLayerInit init = new());
 
     /// <summary>
     /// createEquirectLayer
@@ -65900,7 +65216,7 @@ public class XRMediaBinding
     /// <param name="video">video</param>
     /// <param name="init">init</param>
     [Description("@#createEquirectLayer")]
-    public extern XREquirectLayer CreateEquirectLayer(HTMLVideoElement video, XRMediaEquirectLayerInit? init = default);
+    public extern XREquirectLayer CreateEquirectLayer(HTMLVideoElement video, XRMediaEquirectLayerInit init = new());
 }
 
 /// <summary>
@@ -66234,7 +65550,7 @@ public extern EventHandler Onreset { get; set; }
 /// </summary>
 [ECMAScript]
 [Description("@#XRReferenceSpaceEvent")]
-public class XRReferenceSpaceEvent : Event
+public class XRReferenceSpaceEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -66407,7 +65723,7 @@ public extern bool IsSystemKeyboardSupported { get; }
     /// </summary>
     /// <param name="state">state</param>
     [Description("@#updateRenderState")]
-    public extern void UpdateRenderState(XRRenderStateInit? state = default);
+    public extern void UpdateRenderState(XRRenderStateInit state = new());
 
     /// <summary>
     /// updateTargetFrameRate
@@ -66552,7 +65868,7 @@ public extern XRDOMOverlayState? DomOverlayState { get; }
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#requestLightProbe")]
-    public extern PromiseResult<XRLightProbe> RequestLightProbe(XRLightProbeInit? options = default);
+    public extern PromiseResult<XRLightProbe> RequestLightProbe(XRLightProbeInit options = new());
 
     /// <summary>
 /// preferredReflectionFormat
@@ -66572,7 +65888,7 @@ public extern XRReflectionFormat PreferredReflectionFormat { get; }
 /// </summary>
 [ECMAScript]
 [Description("@#XRSessionEvent")]
-public class XRSessionEvent : Event
+public class XRSessionEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
 /// Constructor 
@@ -66631,7 +65947,7 @@ public class XRSystem : EventTarget
     /// <param name="mode">mode</param>
     /// <param name="options">options</param>
     [Description("@#requestSession")]
-    public extern PromiseResult<XRSession> RequestSession(XRSessionMode mode, XRSessionInit? options = default);
+    public extern PromiseResult<XRSession> RequestSession(XRSessionMode mode, XRSessionInit options = new());
 
     /// <summary>
 /// ondevicechange
@@ -66823,35 +66139,35 @@ public extern bool UsesDepthValues { get; }
     /// </summary>
     /// <param name="init">init</param>
     [Description("@#createProjectionLayer")]
-    public extern XRProjectionLayer CreateProjectionLayer(XRProjectionLayerInit? init = default);
+    public extern XRProjectionLayer CreateProjectionLayer(XRProjectionLayerInit init = new());
 
     /// <summary>
     /// createQuadLayer
     /// </summary>
     /// <param name="init">init</param>
     [Description("@#createQuadLayer")]
-    public extern XRQuadLayer CreateQuadLayer(XRQuadLayerInit? init = default);
+    public extern XRQuadLayer CreateQuadLayer(XRQuadLayerInit init = new());
 
     /// <summary>
     /// createCylinderLayer
     /// </summary>
     /// <param name="init">init</param>
     [Description("@#createCylinderLayer")]
-    public extern XRCylinderLayer CreateCylinderLayer(XRCylinderLayerInit? init = default);
+    public extern XRCylinderLayer CreateCylinderLayer(XRCylinderLayerInit init = new());
 
     /// <summary>
     /// createEquirectLayer
     /// </summary>
     /// <param name="init">init</param>
     [Description("@#createEquirectLayer")]
-    public extern XREquirectLayer CreateEquirectLayer(XREquirectLayerInit? init = default);
+    public extern XREquirectLayer CreateEquirectLayer(XREquirectLayerInit init = new());
 
     /// <summary>
     /// createCubeLayer
     /// </summary>
     /// <param name="init">init</param>
     [Description("@#createCubeLayer")]
-    public extern XRCubeLayer CreateCubeLayer(XRCubeLayerInit? init = default);
+    public extern XRCubeLayer CreateCubeLayer(XRCubeLayerInit init = new());
 
     /// <summary>
     /// getSubImage
@@ -66948,7 +66264,7 @@ public extern uint FramebufferHeight { get; }
     /// </summary>
     /// <param name="session">session</param>
     [Description("@#getNativeFramebufferScaleFactor")]
-    public extern static double GetNativeFramebufferScaleFactor(XRSession session);
+    public static extern double GetNativeFramebufferScaleFactor(XRSession session);
 }
 
 /// <summary>

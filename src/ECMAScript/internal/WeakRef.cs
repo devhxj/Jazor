@@ -4,6 +4,7 @@ namespace ECMAScript;
 /// 对象允许你保留对另一个对象的弱引用，但不会阻止垃圾回收（GC）清理被弱引用的对象。
 /// </summary>
 [ECMAScript]
+[Description("@#WeakRef")]
 public sealed class WeakRef
 {
 	public extern WeakRef(object target);
@@ -20,6 +21,7 @@ public sealed class WeakRef
 /// 对象允许你保留对另一个对象的弱引用，但不会阻止垃圾回收（GC）清理被弱引用的对象。
 /// </summary>
 [ECMAScript]
+[Description("@#WeakRef")]
 public sealed class WeakRef<T>
 {
 	public extern WeakRef(T target);
