@@ -59,8 +59,11 @@ public sealed class SemanticWalkerLoopTest
         return operation;
     }
 
-    throw new InvalidOperationException("未找到可分析的操作");
+  throw new InvalidOperationException("未找到可分析的操作");
   }
+
+  private static void AssertScriptEqual(string expected, string? actual)
+    => Assert.AreEqual(expected.ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
   
 
   /// <summary>
@@ -794,9 +797,9 @@ public sealed class SemanticWalkerLoopTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    AssertScriptEqual(@"{
   for (let i = 0; i < 10; i++) {
-    if (i == 5)
+    if (i === 5)
       break;
     console.log(i);
   }
@@ -830,9 +833,9 @@ public sealed class SemanticWalkerLoopTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    AssertScriptEqual(@"{
   for (let i = 0; i < 10; i++) {
-    if (i % 2 == 0)
+    if (i % 2 === 0)
       continue;
     console.log(i);
   }
@@ -866,9 +869,9 @@ public sealed class SemanticWalkerLoopTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    AssertScriptEqual(@"{
   for (let i = 0; i < 10; i++) {
-    if (i == 5)
+    if (i === 5)
       return i;
   }
   return -1;
@@ -909,10 +912,10 @@ public sealed class SemanticWalkerLoopTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    AssertScriptEqual(@"{
   for (let i = 0; i < 3; i++) {
     for (let j = 0; j < 3; j++) {
-      if (i == j)
+      if (i === j)
         break;
       console.log(i * 3 + j);
     }
@@ -950,10 +953,10 @@ public sealed class SemanticWalkerLoopTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+AssertScriptEqual(@"{
   for (let i = 0; i < 3; i++) {
     for (let j = 0; j < 3; j++) {
-      if (i == j)
+      if (i === j)
         continue;
       console.log(i * 3 + j);
     }
@@ -1090,7 +1093,7 @@ public sealed class SemanticWalkerLoopTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    AssertScriptEqual(@"{
   let items = [1, 2, 3];
   for (item of items) {
     console.log(item);
@@ -1099,7 +1102,7 @@ public sealed class SemanticWalkerLoopTest
     console.log(i);
   }
   for (let j = 10; j >= 0; j--) {
-    if (j == 5)
+    if (j === 5)
       break;
     console.log(j);
   }
@@ -1703,12 +1706,12 @@ public sealed class SemanticWalkerLoopTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+AssertScriptEqual(@"{
   let i = 0;
   let count = 0;
   do {
     i++;
-    if (i % 2 == 0)
+    if (i % 2 === 0)
       continue;
     count++;
   } while (i < 10);
@@ -1750,11 +1753,11 @@ public sealed class SemanticWalkerLoopTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+AssertScriptEqual(@"{
   let found = false;
   for (let i = 0; i < 10 && !found; i++) {
     for (let j = 0; j < 10; j++) {
-      if (i * j == 25) {
+      if (i * j === 25) {
         found = true;
         break;
       }
@@ -1791,10 +1794,10 @@ public sealed class SemanticWalkerLoopTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+AssertScriptEqual(@"{
   for (let i = 0; i < 3; i++) {
     for (let j = 0; j < 3; j++) {
-      if (j == 1)
+      if (j === 1)
         continue;
       console.log(i + "","" + j);
     }
@@ -1827,9 +1830,9 @@ public sealed class SemanticWalkerLoopTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+AssertScriptEqual(@"{
   for (let i = 0; i < 100; i++) {
-    if (i == 50)
+    if (i === 50)
       return i;
   }
   return -1;
@@ -1960,10 +1963,10 @@ public sealed class SemanticWalkerLoopTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    AssertScriptEqual(@"{
   let items = [10, 20, 30];
   let index = 0;
-  for (const item of items) {
+  for (item of items) {
     console.log(index + "": "" + item);
     index++;
   }
@@ -2001,11 +2004,11 @@ public sealed class SemanticWalkerLoopTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+AssertScriptEqual(@"{
   let found = false;
   for (let i = 0; i < 5 && !found; i++) {
     for (let j = 0; j < 5; j++) {
-      if (i * j == 12) {
+      if (i * j === 12) {
         found = true;
         break;
       }
@@ -2077,11 +2080,11 @@ public sealed class SemanticWalkerLoopTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+AssertScriptEqual(@"{
   let i = 0;
   do {
     i++;
-    if (i == 5)
+    if (i === 5)
       continue;
     console.log(i);
   } while (i < 10);
@@ -2144,9 +2147,10 @@ public sealed class SemanticWalkerLoopTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    AssertScriptEqual(@"{
   for (let i = 0; ; i++) {
-    if (i >= 10) break;
+    if (i >= 10)
+      break;
     console.log(i);
   }
 }", script);
@@ -2208,9 +2212,9 @@ public sealed class SemanticWalkerLoopTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    AssertScriptEqual(@"{
   let text = ""Hello"";
-  for (const c of text) {
+  for (c of text) {
     console.log(c);
   }
 }", script);
@@ -2345,10 +2349,10 @@ public sealed class SemanticWalkerLoopTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+AssertScriptEqual(@"{
   let i = 0;
   while (i < 100) {
-    if (i == 42)
+    if (i === 42)
       return i;
     i++;
   }

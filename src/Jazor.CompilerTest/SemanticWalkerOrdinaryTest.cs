@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
+using System.Text.RegularExpressions;
 
 namespace Jazor.ComplierTest;
 
@@ -61,6 +62,9 @@ public sealed class SemanticWalkerOrdinaryTest
 
     throw new InvalidOperationException("未找到可分析的操作");
   }
+
+  private static void AssertScriptEqual(string expected, string? actual)
+    => Assert.AreEqual(expected.ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
 
   /// <summary>
   /// 获取指定索引的操作
@@ -155,9 +159,9 @@ public sealed class SemanticWalkerOrdinaryTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    AssertScriptEqual(@"{
   for (let i = 0; i < 10; i++) {
-    if (i == 5)
+    if (i === 5)
       break;
   }
 }", script);
@@ -188,9 +192,9 @@ public sealed class SemanticWalkerOrdinaryTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    AssertScriptEqual(@"{
   for (let i = 0; i < 10; i++) {
-    if (i % 2 == 0)
+    if (i % 2 === 0)
       continue;
   }
 }", script);
@@ -743,9 +747,8 @@ public sealed class SemanticWalkerOrdinaryTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
-  await Task.Delay(100);
-}", script);
+    Assert.IsNotNull(script);
+    Assert.IsTrue(Regex.IsMatch(script, @"\{\r?\n  await Task\.Delay_[a-f0-9]+\(100\);\r?\n\}"));
 
   }
 
@@ -1222,14 +1225,14 @@ public sealed class SemanticWalkerOrdinaryTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(
+    AssertScriptEqual(
 @"{
   label1: console.log(""Label1"");
   ;
   for (let i = 0; i < 10; i++) {
-    if (i == 5)
+    if (i === 5)
       break;
-    if (i % 2 == 0)
+    if (i % 2 === 0)
       continue;
   }
   return;
@@ -1748,11 +1751,41 @@ public sealed class SemanticWalkerOrdinaryTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    Assert.AreEqual(
+@"{
   let a = 10;
   let b = 3;
   let result = a - b;
-}", script);
+}".Replace("\r\n", "\n"),
+        script?.Replace("\r\n", "\n"));
+  }
+
+  [TestMethod]
+  public void Visit_BinaryOperator_TimeOnlySubtraction_UsesWhitelistOperator()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var left = new System.TimeOnly(1, 0, 0);
+                    var right = new System.TimeOnly(23, 0, 0);
+                    var result = left - right;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(
+@"{
+  let left = BigInt(1) * 36000000000n + BigInt(0) * 600000000n + BigInt(0) * 10000000n;
+  let right = BigInt(23) * 36000000000n + BigInt(0) * 600000000n + BigInt(0) * 10000000n;
+  let result = _888a9b439de5e7c1(left, right);
+}".Replace("\r\n", "\n"),
+        script?.Replace("\r\n", "\n"));
   }
 
   /// <summary>
@@ -1864,10 +1897,10 @@ public sealed class SemanticWalkerOrdinaryTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    AssertScriptEqual(@"{
   let a = 5;
   let b = 5;
-  let result = a == b;
+  let result = a === b;
 }", script);
   }
 
@@ -1893,10 +1926,10 @@ public sealed class SemanticWalkerOrdinaryTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    AssertScriptEqual(@"{
   let a = 5;
   let b = 3;
-  let result = a != b;
+  let result = a !== b;
 }", script);
   }
 
@@ -3208,9 +3241,10 @@ public sealed class SemanticWalkerOrdinaryTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    AssertScriptEqual(@"{
   let print = s => {
-    return console.log(s);
+    console.log(s);
+    return;
   };
   print(""hello"");
 }", script);

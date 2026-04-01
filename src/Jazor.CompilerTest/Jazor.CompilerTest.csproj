@@ -11,9 +11,6 @@
     <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Acornima" Version="1.2.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" />
-    <PackageReference Include="Acornima.Extras" Version="1.2.0" />
     <PackageReference Include="coverlet.collector" Version="6.0.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Acornima.Ast;
 using Jazor.Compiler;
+using Basic.Reference.Assemblies;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -15,7 +16,7 @@ public sealed class AstConverterTests
         var compilation = CSharpCompilation.Create(
             "TestAssembly",
             [CSharpSyntaxTree.ParseText(code)],
-            [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)],
+            Net100.References.All,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         var syntaxTree = compilation.SyntaxTrees.First();
@@ -382,13 +383,7 @@ export let Field3 = 3;
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
-}
+@"export let StringField = ""hello"";
 ", script);
 
     }
@@ -413,13 +408,7 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
-}
+@"export let BoolField = true;
 ", script);
 
     }
@@ -444,13 +433,7 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
-}
+@"export let DoubleField = 3.14;
 ", script);
 
     }
@@ -481,13 +464,7 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
-}
+@"export function VoidMethod() { }
 ", script);
 
     }
@@ -515,12 +492,8 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
+@"export function Add(a, b) {
+  return a + b;
 }
 ", script);
 
@@ -549,12 +522,8 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
+@"export function Greet(name) {
+  return ""Hello "" + name;
 }
 ", script);
 
@@ -581,13 +550,8 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
-}
+@"function PrivateMethod() { }
+export function PublicMethod() { }
 ", script);
 
     }
@@ -612,13 +576,7 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
-}
+@"export function InternalMethod() { }
 ", script);
 
     }
@@ -633,7 +591,7 @@ export function set_Property(value) {
         // Arrange
         var code = """
             public static class TestClass
-            {
+            {          
                 public static int ReadOnlyProperty { get; } = 42;
             }
             """;
@@ -647,12 +605,9 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
+@"let _3d9336660801cacd = 42;
+export function get_ReadOnlyProperty() {
+  return _3d9336660801cacd;
 }
 ", script);
 
@@ -682,12 +637,9 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
+@"let _field = 10;
+export function get_ComputedProperty() {
+  return _field * 2;
 }
 ", script);
 
@@ -715,12 +667,26 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
+@"let _6f335f402aa64190;
+export function get_Prop1() {
+  return _6f335f402aa64190;
 }
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
+export function set_Prop1(value) {
+  _6f335f402aa64190 = value;
+}
+let _5bc1888a0261866a;
+export function get_Prop2() {
+  return _5bc1888a0261866a;
+}
+export function set_Prop2(value) {
+  _5bc1888a0261866a = value;
+}
+let _2695ecdb6d62ea86;
+export function get_Prop3() {
+  return _2695ecdb6d62ea86;
+}
+export function set_Prop3(value) {
+  _2695ecdb6d62ea86 = value;
 }
 ", script);
 
@@ -756,13 +722,12 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
-}
+@"export const Status = Object.freeze({
+  None: 0,
+  Active: 1,
+  Inactive: 2,
+  Pending: 3
+});
 ", script);
 
     }
@@ -794,13 +759,12 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
-}
+@"export const Permissions = Object.freeze({
+  None: 0,
+  Read: 1,
+  Write: 2,
+  Execute: 4
+});
 ", script);
 
     }
@@ -828,13 +792,11 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
-}
+@"const InternalEnum = Object.freeze({
+  A: 0,
+  B: 1,
+  C: 2
+});
 ", script);
 
     }
@@ -849,7 +811,7 @@ export function set_Property(value) {
         // Arrange
         var code = """
             public static class TestClass
-            {
+            {                
                 public static int A = 1;
                 public static string B = "456";
                 public const int C = 42;
@@ -905,50 +867,50 @@ export function set_Property(value) {
         // Assert
         Assert.AreEqual(
 @"export let A = 1;
-export let B = '456';
+export let B = ""456"";
 export const C = 42;
 let _81c4b3c96dabee42;
-export function get_P1_e9faabe23a46cc69() {
+export function get_P1() {
   return _81c4b3c96dabee42;
 }
-export function set_P1_c3fccb0f811c7aa9(value) {
+export function set_P1(value) {
   _81c4b3c96dabee42 = value;
 }
 let _f616cc6f43cd37b6;
-export function get_P2_7354316d084f6017() {
+export function get_P2() {
   return _f616cc6f43cd37b6;
 }
-export function get_P3_a92a1c47987f09f3() {
-  return TestClass.P1;
+export function get_P3() {
+  return P1;
 }
-export function set_P3_a5f5fe32a0369622(value) { }
-export function get_P4_59b16b641fd7d232() {
-  return TestClass.P1;
+export function set_P3(value) { }
+export function get_P4() {
+  return P1;
 }
-export function get_P5_c247f0de47605e48() {
+export function get_P5() {
   return B;
 }
-export function set_P5_36c456021ed45ee0(value) {
+export function set_P5(value) {
   B = value;
 }
 let _57556f0916b4200d;
-export function get_P6_439aaf1d5a179e0a() {
+export function get_P6() {
   return _57556f0916b4200d;
 }
-export function set_P6_29dba293ba723011(value) {
+export function set_P6(value) {
   _57556f0916b4200d = value;
 }
 let _aa3181446f60dc6e;
-export function get_P7_b1e8fd126a0bb12e() {
+export function get_P7() {
   return _aa3181446f60dc6e;
 }
-export function set_P7_a2d6e1bd946c1995(value) {
+export function set_P7(value) {
   _aa3181446f60dc6e = value.trim();
 }
-export function get_P8_9a1906d3d1b4a56a() {
+export function get_P8() {
   return B;
 }
-export function set_P8_384beccd8b5e594e(value) {
+export function set_P8(value) {
   B = value.trim();
 }
 export function Method_a604b94929b691c0() { }
@@ -978,20 +940,8 @@ export function Method_04bbed0f7a07bb40(a, b) {
         var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
         var converter = new AstConverter(classSymbol, semanticModel);
 
-        // Act
-        var module = await converter.Convert();
-        var script = module?.ToKnRECMAScript();
-
         // Assert
-        Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
-}
-", script);
+        await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
 
     }
 
@@ -1022,12 +972,8 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
+@"export function Identity(value) {
+  return value;
 }
 ", script);
 
@@ -1053,13 +999,7 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
-}
+@"export let Numbers = [];
 ", script);
 
     }
@@ -1082,20 +1022,8 @@ export function set_Property(value) {
         var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
         var converter = new AstConverter(classSymbol, semanticModel);
 
-        // Act
-        var module = await converter.Convert();
-        var script = module?.ToKnRECMAScript();
-
         // Assert
-        Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
-}
-", script);
+        await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
 
     }
 
@@ -1141,13 +1069,7 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
-}
+@"export let NullableField = null;
 ", script);
 
     }
@@ -1172,13 +1094,7 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
-}
+@"export let ArrayField = [1, 2, 3];
 ", script);
 
     }
@@ -1203,13 +1119,7 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
-}
+@"export let ListField = [];
 ", script);
 
     }
@@ -1234,13 +1144,7 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
-}
+@"export let DictField = new Map;
 ", script);
 
     }
@@ -1272,14 +1176,10 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
+@"export function Max(a, b) {
+  return a.CompareTo(b) > 0 ? a : b;
 }
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
-}
-", script);
+".ReplaceLineEndings(), script?.ReplaceLineEndings());
 
     }
 
@@ -1305,13 +1205,10 @@ export function set_Property(value) {
         var script = module?.ToKnRECMAScript();
 
         // Assert
+        // todo:扩展函数还需要增加调用测试
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
+@"export function Double(value) {
+  return value * 2;
 }
 ", script);
 
@@ -1339,13 +1236,10 @@ export function set_Property(value) {
         var script = module?.ToKnRECMAScript();
 
         // Assert
+        // todo:需要增加 params 参数方法调用测试
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
+@"export function Sum(values) {
+  return values.length;
 }
 ", script);
 
@@ -1374,14 +1268,79 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
+@"export function Increment(value) {
+  value++;
+  return [value];
 }
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
+".ReplaceLineEndings(), script?.ReplaceLineEndings());
+
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNonVoidRefMethod_GeneratesTupleStyleReturn()
+    {
+        // Arrange
+        var code = """
+            public static class TestClass
+            {
+                public static int IncrementAndReturn(ref int value)
+                {
+                    value++;
+                    return value + 10;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        // Act
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        // Assert
+        Assert.AreEqual(
+@"export function IncrementAndReturn(value) {
+  value++;
+  return [value + 10, value];
 }
-", script);
+".ReplaceLineEndings(), script?.ReplaceLineEndings());
+
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithRefMethod_EarlyReturn_PreservesProtocolOnAllPaths()
+    {
+        // Arrange
+        var code = """
+            public static class TestClass
+            {
+                public static void Normalize(ref int value)
+                {
+                    if (value < 0)
+                        return;
+
+                    value++;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        // Act
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        // Assert
+        Assert.AreEqual(
+@"export function Normalize(value) {
+  if (value < 0)
+    return [value];
+  value++;
+  return [value];
+}
+".ReplaceLineEndings(), script?.ReplaceLineEndings());
 
     }
 
@@ -1409,12 +1368,9 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
+@"const _9d512e1fd4b4d93c = 42;
+export function get_Value() {
+  return _9d512e1fd4b4d93c;
 }
 ", script);
 
@@ -1441,12 +1397,9 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
+@"let _field = 10;
+export function get_Doubled() {
+  return _field * 2;
 }
 ", script);
 
@@ -1476,13 +1429,7 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
-}
+@"export let LongField = 9223372036854775807n;
 ", script);
 
     }
@@ -1507,14 +1454,8 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
-}
-", script);
+@"export let ULongField = 18446744073709551615n;
+".ReplaceLineEndings(), script?.ReplaceLineEndings());
 
     }
 
@@ -1538,13 +1479,7 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
-}
+@"export let MaxDouble = Number.MAX_VALUE;
 ", script);
 
     }
@@ -1569,13 +1504,7 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
-}
+@"export let DecimalField = 123.456;
 ", script);
 
     }
@@ -1600,13 +1529,7 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
-}
+@"export let SpecialString = ""Hello\nWorld\t!"";
 ", script);
 
     }
@@ -1631,13 +1554,7 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
-}
+@"export let EmptyString = """";
 ", script);
 
     }
@@ -1662,13 +1579,7 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
-}
+@"export let UnicodeString = ""你好世界🌍"";
 ", script);
 
     }
@@ -1693,13 +1604,7 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
-}
+@"export let QuoteString = ""He said \""Hello\"""";
 ", script);
 
     }
@@ -1724,13 +1629,7 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
-}
+@"export let CharField = ""A"";
 ", script);
 
     }
@@ -1762,12 +1661,8 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
+@"export function Add(a, b = 10) {
+  return a + b;
 }
 ", script);
 
@@ -1796,12 +1691,8 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
+@"export function Greet(name = ""World"", age = 0) {
+  return `Hello ${name}, age ${age}`;
 }
 ", script);
 
@@ -1854,12 +1745,11 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
+@"export function DoWork_7bf2b889f48863c7() { }
+export function DoWork_6b6f7943743f9c5d(value) { }
+export function DoWork_53280513e48ce038(value) { }
+export function DoWork_90a9f2ec5e6402a1(a, b) {
+  return a + b;
 }
 ", script);
 
@@ -1889,12 +1779,8 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
+@"export function Square(x) {
+  return x * x;
 }
 ", script);
 
@@ -1921,12 +1807,9 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
+@"let _counter = 0;
+export function Increment() {
+  _counter++;
 }
 ", script);
 
@@ -1956,13 +1839,7 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
-}
+@"export let NestedGenerics = new Map;
 ", script);
 
     }
@@ -1991,12 +1868,10 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
+@"export function Fibonacci(n) {
+  if (n <= 1)
+    return n;
+  return Fibonacci(n - 1) + Fibonacci(n - 2);
 }
 ", script);
 
@@ -2031,15 +1906,79 @@ export function set_Property(value) {
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
-export function get_Property() {
-  return _38ee328c86b9b067;
-}
-export function set_Property(value) {
-  _38ee328c86b9b067 = value;
-}
+@"export const Days = Object.freeze({
+  Monday: 1,
+  Tuesday: 2,
+  Wednesday: 3,
+  Thursday: 4,
+  Friday: 5,
+  Saturday: 6,
+  Sunday: 7
+});
 ", script);
 
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithImportWhitelistMembers_GeneratesMergedImports()
+    {
+        // Arrange
+        var code = """
+            using System.Numerics;
+
+            public static class TestClass
+            {
+                public static BigInteger Value = BigInteger.Parse("33");
+
+                public static double LogValue() => BigInteger.Log(BigInteger.Parse("44"));
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        // Act
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        // Assert
+        Assert.AreEqual(
+@"import { _155212572c9a3297, _fb5a811e7a32a324 } from ""System/Numerics/BigIntegerModule.js"";
+export let Value = _155212572c9a3297(""33"");
+export function LogValue() {
+  return _fb5a811e7a32a324(_155212572c9a3297(""44""));
+}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithInlineWhitelistAnonymousObject_PreservesObjectLiteralArguments()
+    {
+        // Arrange
+        var code = """
+            public static class TestClass
+            {
+                public static bool Check() => object.Equals(new { Value = 1 }, new { Value = 1 });
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        // Act
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        // Assert
+        Assert.AreEqual(
+@"export function Check() {
+  return {
+    Value: 1
+  } === {
+    Value: 1
+  };
+}
+", script);
     }
 
     #endregion

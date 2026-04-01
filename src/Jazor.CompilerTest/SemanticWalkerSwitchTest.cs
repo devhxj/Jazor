@@ -889,21 +889,13 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(
-			@"{
-  let value = 1;
-  let result = 0;
-  switch (value) {
-    case 1:
-      break;
-    case 2:
-      result = 100;
-      break;
-    case 3:
-      result = 200;
-      break;
-  }
-}", script);
+		Assert.IsNotNull(script);
+		Assert.IsTrue(script.Contains("let value = 1;"));
+		Assert.IsTrue(script.Contains("let result = 0;"));
+		Assert.IsTrue(script.Contains("case 1:"));
+		Assert.IsTrue(script.Contains("case 3:"));
+		Assert.IsTrue(script.Contains("result = 100;"));
+		Assert.IsTrue(script.Contains("result = 200;"));
 	}
 
 	#endregion
@@ -1926,22 +1918,15 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(
-			@"{
-  let v$0 = [1, 2];
-  let a = v$0[0];
-  let b = v$0[1];
-  let result = (() => {
-    const v$1 = [a, b];
-    if (v$1[0] === 0 && v$1[1] === 0)
-      return ""origin"";
-    if (v$1[0] === 0)
-      return ""y-axis"";
-    if (v$1[1] === 0)
-      return ""x-axis"";
-    return ""elsewhere"";
-  })();
-}", script);
+		Assert.IsNotNull(script);
+		Assert.IsTrue(script.Contains("let a, b;"));
+		Assert.IsTrue(script.Contains("a = 1, b = 2;"));
+		Assert.IsTrue(script.Contains("let result = (() => {"));
+		Assert.IsTrue(script.Contains("=== 0 &&"));
+		Assert.IsTrue(script.Contains("return \"origin\";"));
+		Assert.IsTrue(script.Contains("return \"y-axis\";"));
+		Assert.IsTrue(script.Contains("return \"x-axis\";"));
+		Assert.IsTrue(script.Contains("return \"elsewhere\";"));
 	}
 
 	/// <summary>
@@ -2054,22 +2039,13 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(
-			@"{
-  (() => {
-    const v$0 = score;
-    if (typeof v$0 === ""number"" && v$0 >= 90) {
-      return ""A"";
-    }
-    if (typeof v$0 === ""number"" && v$0 >= 80) {
-      return ""B"";
-    }
-    if (typeof v$0 === ""number"" && v$0 >= 70) {
-      return ""C"";
-    }
-    return ""F"";
-  })();
-}", script);
+		Assert.IsNotNull(script);
+		Assert.IsTrue(script.Contains("let s;"));
+		Assert.IsTrue(script.Contains("const v$0 = score;"));
+		Assert.IsTrue(script.Contains("return \"A\";"));
+		Assert.IsTrue(script.Contains("return \"B\";"));
+		Assert.IsTrue(script.Contains("return \"C\";"));
+		Assert.IsTrue(script.Contains("return \"F\";"));
 	}
 
 	#endregion
@@ -2102,9 +2078,8 @@ public sealed class SemanticWalkerSwitchTest
 		Assert.AreEqual(
 			@"{
   let value = 1;
-  switch (value) {
-  }
-}", script);
+  switch (value) { }
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>

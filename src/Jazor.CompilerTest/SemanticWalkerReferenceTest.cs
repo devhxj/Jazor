@@ -340,8 +340,8 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.AreEqual(@"{
-  let x = Number.MIN_VALUE;
-}", script);
+  let x = -Number.MAX_VALUE;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>
@@ -367,8 +367,8 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.AreEqual(@"{
-  let x = Number.MAX_SAFE_INTEGER;
-}", script);
+  let x = 9223372036854775807n;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>
@@ -394,8 +394,8 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.AreEqual(@"{
-  let x = Number.MIN_SAFE_INTEGER;
-}", script);
+  let x = -9223372036854775808n;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>
@@ -624,12 +624,12 @@ public sealed class SemanticWalkerReferenceTest
   let z = _155212572c9a3297(""33"");
   let w = y++;
   let v = z * BigInt(33);
-  let a = y.CompareTo(y);
-  let b = z.ToString();
-  let c = w.Equals(v);
+  let a = y < y ? -1 : y > y ? 1 : 0;
+  let b = z.toString();
+  let c = w === v;
   console.log(z);
-  this.TestMethod(x, y);
-}", script);
+  this.TestMethod_86dba5f71d944ea3(x, y);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 
 	}
 
@@ -1142,10 +1142,10 @@ public sealed class SemanticWalkerReferenceTest
   let nan = NaN;
   let epsilon = Number.EPSILON;
   let maxVal = Number.MAX_VALUE;
-  let minVal = Number.MIN_VALUE;
-  let longMax = Number.MAX_SAFE_INTEGER;
-  let longMin = Number.MIN_SAFE_INTEGER;
-}", script);
+  let minVal = -Number.MAX_VALUE;
+  let longMax = 9223372036854775807n;
+  let longMin = -9223372036854775808n;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	#endregion
@@ -1551,7 +1551,97 @@ public sealed class SemanticWalkerReferenceTest
   let dict = new Map;
   dict.set(""key"", 42);
   let value = dict.get(""key"");
-}", script);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	/// <summary>
+	/// 测试字典索引器访问 - 匿名对象键
+	/// </summary>
+	[TestMethod]
+	public void Visit_IndexerReference_Dictionary_AnonymousObjectKey()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var dict = new Dictionary<object, int>();
+                    dict[new { Name = ""key"", Index = 1 }] = 42;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let dict = new Map;
+  dict.set({ Name: ""key"", Index: 1 }, 42);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	/// <summary>
+	/// 测试字典索引器访问 - new 表达式键
+	/// </summary>
+	[TestMethod]
+	public void Visit_IndexerReference_Dictionary_NewExpressionKey()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var dict = new Dictionary<object, int>();
+                    dict[new TestClass()] = 42;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let dict = new Map;
+  dict.set(new TestClass, 42);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	/// <summary>
+	/// 测试字典索引器访问 - 可选链键
+	/// </summary>
+	[TestMethod]
+	public void Visit_IndexerReference_Dictionary_ConditionalAccessKey()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                class Person
+                {
+                    public string Name { get; set; }
+                }
+
+                void TestMethod()
+                {
+                    Person person = null;
+                    var dict = new Dictionary<string, int>();
+                    dict[person?.Name] = 42;
+                    int value = dict[person?.Name];
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let person = null;
+  let dict = new Map;
+  dict.set(person?.Name, 42);
+  let value = dict.get(person?.Name);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	#endregion
@@ -1582,7 +1672,32 @@ public sealed class SemanticWalkerReferenceTest
 		Assert.AreEqual(@"{
   let text = ""  Hello World  "";
   let result = text.trim().toUpperCase().substring(0, 0 + 5);
-}", script);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	/// <summary>
+	/// 测试内联方法调用 - 数组字面量参数
+	/// </summary>
+	[TestMethod]
+	public void Visit_Invocation_ArrayClear_ArrayLiteralArgument()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    Array.Clear(new int[] { 1, 2, 3 });
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  [1, 2, 3].length = 0;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>
@@ -2048,8 +2163,8 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.AreEqual(@"{
-  let result = Add(1, 2);
-}", script);
+  let result = TestClass.Add(1, 2);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>
@@ -2101,8 +2216,8 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.AreEqual(@"{
-  let result = ""hello world"".toUpperCase().trim().substring(0, 5);
-}", script);
+  let result = ""hello world"".toUpperCase().trim().substring(0, 0 + 5);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>

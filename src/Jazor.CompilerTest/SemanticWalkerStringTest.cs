@@ -62,6 +62,11 @@ public sealed class SemanticWalkerStringTest
 		throw new InvalidOperationException("未找到可分析的操作");
 	}
 
+	private static void AssertScriptEqual(string expected, string? actual)
+	{
+		Assert.AreEqual(expected.ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
+	}
+
 	#region 简单插值字符串测试
 
 	/// <summary>
@@ -1043,7 +1048,7 @@ public sealed class SemanticWalkerStringTest
 				void TestMethod()
 				{
 					string name = ""World"";
-					string result = $""Hello,
+					string result = $@""Hello,
 {name}!"";
 				}
 			}
@@ -1053,7 +1058,7 @@ public sealed class SemanticWalkerStringTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let name = ""World"";
   let result = `Hello,
 ${name}!`;
@@ -1220,9 +1225,9 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let text = ""Hello World"";
-  let replaced = text.replace(""World"", ""Universe"");
+  let replaced = text.replaceAll(""World"", ""Universe"");
 }", script);
 	}
 
@@ -1251,9 +1256,9 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let empty = """";
-  let isEmpty = empty == null || empty === """";
+  let isEmpty = !empty;
 }", script);
 	}
 
@@ -1524,10 +1529,10 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let text = ""Hello"";
-  let first = text[0];
-  let last = text[text.length - 1];
+  let first = text.charAt(0);
+  let last = text.charAt(text.length - 1);
 }", script);
 	}
 
@@ -1553,9 +1558,9 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let text = ""Hello World"";
-  let sub1 = text.substring(0, 5);
+  let sub1 = text.substring(0, 0 + 5);
   let sub2 = text.substring(6);
 }", script);
 	}
@@ -1608,9 +1613,9 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let parts = [""a"", ""b"", ""c""];
-  let joined = parts.join("","");
+  let joined = Array.from(parts).join("","");
 }", script);
 	}
 
@@ -1635,9 +1640,9 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let s = """";
-  let empty = s == null || s.length === 0;
+  let empty = !s;
 }", script);
 	}
 
@@ -1733,9 +1738,9 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let text = ""hello world"";
-  let result = text.replace(""hello"", ""hi"").replace(""world"", ""there"");
+  let result = text.replaceAll(""hello"", ""hi"").replaceAll(""world"", ""there"");
 }", script);
 	}
 
@@ -1872,9 +1877,9 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let text = ""hello world"";
-  let result = text.replace(""hello"", ""hi"").replace(""world"", ""there"");
+  let result = text.replaceAll(""hello"", ""hi"").replaceAll(""world"", ""there"");
 }", script);
 	}
 
@@ -2363,9 +2368,9 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let num = 42;
-  let numStr = (num).toString();
+  let numStr = num.toString();
 }", script);
 	}
 

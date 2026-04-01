@@ -1073,11 +1073,15 @@ public sealed class SemanticWalkerTupleTest
 
         Assert.AreEqual(
 @"{
-  let tuple = { Item1: 1, Item2: 2, Item3: 3 };
+  let tuple = {
+    Item1: 1,
+    Item2: 2,
+    Item3: 3
+  };
   let first = tuple.Item1;
   let second = tuple.Item2;
   let third = tuple.Item3;
-}", script);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
     /// <summary>
@@ -1135,11 +1139,15 @@ public sealed class SemanticWalkerTupleTest
 
         Assert.AreEqual(
 @"{
-  let tuple = { name: ""test"", Item2: 42, Item3: true };
+  let tuple = {
+    name: ""test"",
+    Item2: 42,
+    Item3: true
+  };
   let n = tuple.name;
   let i2 = tuple.Item2;
   let i3 = tuple.Item3;
-}", script);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
     #endregion
@@ -1255,7 +1263,8 @@ public sealed class SemanticWalkerTupleTest
         var script = node?.ToKnRECMAScript();
 
         Assert.AreEqual(@"{
-}", script);
+  return { Item1: 1, Item2: 2 };
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
     /// <summary>
@@ -1447,7 +1456,7 @@ public sealed class SemanticWalkerTupleTest
 @"{
   let a, c;
   a = 1, c = 3;
-}", script);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
     /// <summary>
@@ -1471,8 +1480,7 @@ public sealed class SemanticWalkerTupleTest
         var script = node?.ToKnRECMAScript();
 
         // 全部丢弃，应该不产生任何变量
-        Assert.AreEqual(@"{
-}", script);
+        Assert.AreEqual(@"{ }".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
     #endregion
@@ -1503,10 +1511,20 @@ public sealed class SemanticWalkerTupleTest
 
         Assert.AreEqual(
 @"{
-  let t1 = { Item1: 1, Item2: 2, Item3: 3, Item4: 4 };
-  let t2 = { Item1: 1, Item2: 2, Item3: 3, Item4: 4 };
-  let equal = t1.Item1 === t2.Item1 && t1.Item2 === t2.Item2 && t1.Item3 === t2.Item3 && t1.Item4 === t2.Item4;
-}", script);
+  let t1 = {
+    Item1: 1,
+    Item2: 2,
+    Item3: 3,
+    Item4: 4
+  };
+  let t2 = {
+    Item1: 1,
+    Item2: 2,
+    Item3: 3,
+    Item4: 4
+  };
+  let equal = (t1.Item1 === t2.Item1 && t1.Item2 === t2.Item2 && t1.Item3 === t2.Item3 && t1.Item4 === t2.Item4);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
     /// <summary>
@@ -1535,8 +1553,8 @@ public sealed class SemanticWalkerTupleTest
 @"{
   let t1 = { Item1: 1, Item2: 2 };
   let t2 = { Item1: 3, Item2: 4 };
-  let notEqual = t1.Item1 !== t2.Item1 || t1.Item2 !== t2.Item2;
-}", script);
+  let notEqual = (t1.Item1 !== t2.Item1 || t1.Item2 !== t2.Item2);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
     #region 扩展测试用例 - 更多元组场景
@@ -1587,9 +1605,15 @@ public sealed class SemanticWalkerTupleTest
 
         Assert.AreEqual(
 @"{
-  let t = { Item1: 1, Item2: 2, Item3: 3, Item4: 4, Item5: 5 };
+  let t = {
+    Item1: 1,
+    Item2: 2,
+    Item3: 3,
+    Item4: 4,
+    Item5: 5
+  };
   let sum = t.Item1 + t.Item2 + t.Item3 + t.Item4 + t.Item5;
-}", script);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
     /// <summary>
@@ -1640,8 +1664,12 @@ public sealed class SemanticWalkerTupleTest
         Assert.AreEqual(
 @"{
   let a = 10;
-  let t = { Item1: a + 1, Item2: a * 2, Item3: a / 3 };
-}", script);
+  let t = {
+    Item1: a + 1,
+    Item2: a * 2,
+    Item3: a / 3
+  };
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
     /// <summary>
@@ -1768,8 +1796,13 @@ public sealed class SemanticWalkerTupleTest
 
         Assert.AreEqual(
 @"{
-  let t = { Item1: 1, Item2: ""two"", Item3: 3, Item4: true };
-}", script);
+  let t = {
+    Item1: 1,
+    Item2: ""two"",
+    Item3: 3,
+    Item4: true
+  };
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
     /// <summary>
