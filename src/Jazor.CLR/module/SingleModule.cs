@@ -62,7 +62,7 @@ public static class SingleModule
 	/// C#: float.IsInfinity(f)
 	/// JS: !isFinite(f)
 	/// </summary>
-	[Jazor(Op.Inline, "static float.IsInfinity(float)", "!isFinite(@#{0})")]
+	[Jazor(Op.Inline, "static float.IsInfinity(float)", "!isFinite(__arg1)")]
 	public extern static bool _47887f5e1e35e199(Number f);
 
 	/// <summary>
@@ -76,14 +76,14 @@ public static class SingleModule
 	/// C#: float.IsNegative(f)
 	/// JS: Object.is(f, -0) || f < 0
 	/// </summary>
-	[Jazor(Op.Inline, "static float.IsNegative(float)", "(Object.is(@#{0}, -0) || @#{0} < 0)")]
+	[Jazor(Op.Inline, "static float.IsNegative(float)", "(Object.is(__arg1, -0) || __arg1 < 0)")]
 	public extern static bool _846e9450c3f550b6(Number f);
 
 	/// <summary>
 	/// C#: float.IsNegativeInfinity(f)
 	/// JS: f === -Infinity
 	/// </summary>
-	[Jazor(Op.Inline, "static float.IsNegativeInfinity(float)", "(@#{0} === -Infinity)")]
+	[Jazor(Op.Inline, "static float.IsNegativeInfinity(float)", "(__arg1 === -Infinity)")]
 	public extern static bool _8b4a47cad79ef70b(Number f);
 
 	///<summary>Determines whether the specified value is normal.</summary>
@@ -94,7 +94,7 @@ public static class SingleModule
 	/// C#: float.IsPositiveInfinity(f)
 	/// JS: f === Infinity
 	/// </summary>
-	[Jazor(Op.Inline, "static float.IsPositiveInfinity(float)", "(@#{0} === Infinity)")]
+	[Jazor(Op.Inline, "static float.IsPositiveInfinity(float)", "(__arg1 === Infinity)")]
 	public extern static bool _b2b89b81c87952dc(Number f);
 
 	///<summary>Determines whether the specified value is subnormal.</summary>
@@ -105,14 +105,14 @@ public static class SingleModule
 	/// C#: float.CompareTo(object)
 	/// JS: instance - (value ?? 0)
 	/// </summary>
-	[Jazor(Op.Inline, "float.CompareTo(object)", "(@#{0} - (@#{1} ?? 0))")]
+	[Jazor(Op.Inline, "float.CompareTo(object)", "(__arg1 - (__arg2 ?? 0))")]
 	public extern static Number _0b80f2f2f1a3c1a6(Number instance, object? value);
 
 	/// <summary>
 	/// C#: float.CompareTo(float)
 	/// JS: instance - value
 	/// </summary>
-	[Jazor(Op.Inline, "float.CompareTo(float)", "(@#{0} - @#{1})")]
+	[Jazor(Op.Inline, "float.CompareTo(float)", "(__arg1 - __arg2)")]
 	public extern static Number _f6880f77edc2efe5(Number instance, Number value);
 
 	///<summary>Returns a value that indicates whether two specified <xref data-throw-if-not-resolved="true" uid="System.Single"></xref> values are equal.</summary>
@@ -143,14 +143,14 @@ public static class SingleModule
 	/// C#: float.Equals(object)
 	/// JS: instance === obj
 	/// </summary>
-	[Jazor(Op.Inline, "override float.Equals(object)", "(@#{0} === @#{1})")]
+	[Jazor(Op.Inline, "override float.Equals(object)", "(__arg1 === __arg2)")]
 	public extern static bool _eb69b50c7032a809(Number instance, object? obj);
 
 	/// <summary>
 	/// C#: float.Equals(float)
 	/// JS: instance === obj
 	/// </summary>
-	[Jazor(Op.Inline, "float.Equals(float)", "(@#{0} === @#{1})")]
+	[Jazor(Op.Inline, "float.Equals(float)", "(__arg1 === __arg2)")]
 	public extern static bool _5c45db76bd764c38(Number instance, Number obj);
 
 	///<summary>Returns the hash code for this instance.</summary>

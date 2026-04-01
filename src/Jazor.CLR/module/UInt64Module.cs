@@ -35,7 +35,7 @@ public static class UInt64Module
 	public extern static BigInt _6e7ac89a8d6e0188();
 
 	///<summary>Produces the full product of two unsigned 64-bit numbers.</summary>
-	[Jazor(Op.Inline, "static ulong.BigMul(ulong, ulong)", "(@#{0} * @#{1})")]
+	[Jazor(Op.Inline, "static ulong.BigMul(ulong, ulong)", "(__arg1 * __arg2)")]
 	public extern static BigInt _0b66aa6b0604bed0(BigInt left, BigInt right);
 
 	///<summary>Compares this instance to a specified object and returns an indication of their relative values.</summary>
@@ -51,15 +51,15 @@ public static class UInt64Module
 	}
 
 	///<summary>Compares this instance to a specified 64-bit unsigned integer and returns an indication of their relative values.</summary>
-	[Jazor(Op.Inline, "ulong.CompareTo(ulong)", "(@#{0} < @#{1} ? -1 : (@#{0} > @#{1} ? 1 : 0))")]
+	[Jazor(Op.Inline, "ulong.CompareTo(ulong)", "(__arg1 < __arg2 ? -1 : (__arg1 > __arg2 ? 1 : 0))")]
 	public extern static Number _46d8680dadd72b04(BigInt instance, BigInt value);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
-	[Jazor(Op.Inline, "override ulong.Equals(object)", "(@#{0} === @#{1})")]
+	[Jazor(Op.Inline, "override ulong.Equals(object)", "(__arg1 === __arg2)")]
 	public extern static bool _a0651bb3484c4e26(BigInt instance, object? obj);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified <see cref="T:System.UInt64" /> value.</summary>
-	[Jazor(Op.Inline, "ulong.Equals(ulong)", "(@#{0} === @#{1})")]
+	[Jazor(Op.Inline, "ulong.Equals(ulong)", "(__arg1 === __arg2)")]
 	public extern static bool _aefa4fdc77a1c743(BigInt instance, BigInt obj);
 
 	///<summary>Returns the hash code for this instance.</summary>

@@ -22,19 +22,19 @@ public static class ByteModule
 	public extern static Number _c16a6a35ab0f1a78();
 
 	///<summary>Compares this instance to a specified object and returns an indication of their relative values.</summary>
-	[Jazor(Op.Inline, "byte.CompareTo(object)", "(@#{0} - (@#{1} ?? 0))")]
+	[Jazor(Op.Inline, "byte.CompareTo(object)", "(__arg1 - (__arg2 ?? 0))")]
 	public extern static Number _7aaf4c67dc6c9c9a(Number instance, object? value);
 
 	///<summary>Compares this instance to a specified 8-bit unsigned integer and returns an indication of their relative values.</summary>
-	[Jazor(Op.Inline, "byte.CompareTo(byte)", "(@#{0} - @#{1})")]
+	[Jazor(Op.Inline, "byte.CompareTo(byte)", "(__arg1 - __arg2)")]
 	public extern static Number _5c935ae4273a32cf(Number instance, Number value);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
-	[Jazor(Op.Inline, "override byte.Equals(object)", "(@#{0} === @#{1})")]
+	[Jazor(Op.Inline, "override byte.Equals(object)", "(__arg1 === __arg2)")]
 	public extern static bool _991f10ab45b84c4a(Number instance, object? obj);
 
 	///<summary>Returns a value indicating whether this instance and a specified byte object represent the same value.</summary>
-	[Jazor(Op.Inline, "byte.Equals(byte)", "(@#{0} === @#{1})")]
+	[Jazor(Op.Inline, "byte.Equals(byte)", "(__arg1 === __arg2)")]
 	public extern static bool _4885d24d76ef9f6d(Number instance, Number obj);
 
 	///<summary>Returns the hash code for this instance.</summary>
@@ -217,14 +217,14 @@ public static class ByteModule
 	/// C#: byte.RotateLeft(value, amount)
 	/// JS: ((value << (amount & 7)) | (value >>> (8 - (amount & 7)))) & 0xFF
 	/// </summary>
-	[Jazor(Op.Inline, "static byte.RotateLeft(byte, int)", "(((@#{0} << (@#{1} & 7)) | (@#{0} >>> (8 - (@#{1} & 7)))) & 0xFF)")]
+	[Jazor(Op.Inline, "static byte.RotateLeft(byte, int)", "(((__arg1 << (__arg2 & 7)) | (__arg1 >>> (8 - (__arg2 & 7)))) & 0xFF)")]
 	public extern static Number _0156fdbf291b637d(Number value, Number rotateAmount);
 
 	/// <summary>
 	/// C#: byte.RotateRight(value, amount)
 	/// JS: ((value >>> (amount & 7)) | (value << (8 - (amount & 7)))) & 0xFF
 	/// </summary>
-	[Jazor(Op.Inline, "static byte.RotateRight(byte, int)", "(((@#{0} >>> (@#{1} & 7)) | (@#{0} << (8 - (@#{1} & 7)))) & 0xFF)")]
+	[Jazor(Op.Inline, "static byte.RotateRight(byte, int)", "(((__arg1 >>> (__arg2 & 7)) | (__arg1 << (8 - (__arg2 & 7)))) & 0xFF)")]
 	public extern static Number _872d6a20e2bf8567(Number value, Number rotateAmount);
 
 	/// <summary>
@@ -251,21 +251,21 @@ public static class ByteModule
 	/// C#: byte.IsPow2(value)
 	/// JS: value > 0 && (value & (value - 1)) === 0
 	/// </summary>
-	[Jazor(Op.Inline, "static byte.IsPow2(byte)", "(@#{0} > 0 && (@#{0} & (@#{0} - 1)) === 0)")]
+	[Jazor(Op.Inline, "static byte.IsPow2(byte)", "(__arg1 > 0 && (__arg1 & (__arg1 - 1)) === 0)")]
 	public extern static bool _b10f7588a1920633(Number value);
 
 	/// <summary>
 	/// C#: byte.Log2(value)
 	/// JS: Math.floor(Math.log2(value))
 	/// </summary>
-	[Jazor(Op.Inline, "static byte.Log2(byte)", "Math.floor(Math.log2(@#{0}))")]
+	[Jazor(Op.Inline, "static byte.Log2(byte)", "Math.floor(Math.log2(__arg1))")]
 	public extern static Number _8f1e70f00149e892(Number value);
 
 	/// <summary>
 	/// C#: byte.Clamp(value, min, max)
 	/// JS: Math.min(Math.max(value, min), max)
 	/// </summary>
-	[Jazor(Op.Inline, "static byte.Clamp(byte, byte, byte)", "Math.min(Math.max(@#{0}, @#{1}), @#{2})")]
+	[Jazor(Op.Inline, "static byte.Clamp(byte, byte, byte)", "Math.min(Math.max(__arg1, __arg2), __arg3)")]
 	public extern static Number _d46830318e177655(Number value, Number min, Number max);
 
 	/// <summary>
@@ -306,14 +306,14 @@ public static class ByteModule
 	/// C#: byte.IsEvenInteger(value)
 	/// JS: (value & 1) === 0
 	/// </summary>
-	[Jazor(Op.Inline, "static byte.IsEvenInteger(byte)", "((@#{0} & 1) === 0)")]
+	[Jazor(Op.Inline, "static byte.IsEvenInteger(byte)", "((__arg1 & 1) === 0)")]
 	public extern static bool _ed30037c45c0e107(Number value);
 
 	/// <summary>
 	/// C#: byte.IsOddInteger(value)
 	/// JS: (value & 1) !== 0
 	/// </summary>
-	[Jazor(Op.Inline, "static byte.IsOddInteger(byte)", "((@#{0} & 1) !== 0)")]
+	[Jazor(Op.Inline, "static byte.IsOddInteger(byte)", "((__arg1 & 1) !== 0)")]
 	public extern static bool _bb058beaaa7a9d6f(Number value);
 
 	///<summary>Tries to parse a string into a value.</summary>

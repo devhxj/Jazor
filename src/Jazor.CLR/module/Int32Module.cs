@@ -40,35 +40,35 @@ public static class Int32Module
 	/// C#: int.BigMul(a, b)
 	/// JS: BigInt(a) * BigInt(b)
 	/// </summary>
-	[Jazor(Op.Inline, "static int.BigMul(int, int)", "(BigInt(@#{0}) * BigInt(@#{1}))")]
+	[Jazor(Op.Inline, "static int.BigMul(int, int)", "(BigInt(__arg1) * BigInt(__arg2))")]
 	public extern static BigInt _6f2c27167c45a727(Number left, Number right);
 
 	/// <summary>
 	/// C#: int.CompareTo(obj)
 	/// JS: instance - obj
 	/// </summary>
-	[Jazor(Op.Inline, "int.CompareTo(object)", "(@#{0} - (@#{1} ?? 0))")]
+	[Jazor(Op.Inline, "int.CompareTo(object)", "(__arg1 - (__arg2 ?? 0))")]
 	public extern static Number _b03337a2a71c762d(Number instance, object? value);
 
 	/// <summary>
 	/// C#: int.CompareTo(value)
 	/// JS: instance - value
 	/// </summary>
-	[Jazor(Op.Inline, "int.CompareTo(int)", "(@#{0} - @#{1})")]
+	[Jazor(Op.Inline, "int.CompareTo(int)", "(__arg1 - __arg2)")]
 	public extern static Number _741df6ab5c9e75bc(Number instance, Number value);
 
 	/// <summary>
 	/// C#: int.Equals(obj)
 	/// JS: instance === obj
 	/// </summary>
-	[Jazor(Op.Inline, "override int.Equals(object)", "(@#{0} === @#{1})")]
+	[Jazor(Op.Inline, "override int.Equals(object)", "(__arg1 === __arg2)")]
 	public extern static bool _3f3e17a78ac17712(Number instance, object? obj);
 
 	/// <summary>
 	/// C#: int.Equals(other)
 	/// JS: instance === other
 	/// </summary>
-	[Jazor(Op.Inline, "int.Equals(int)", "(@#{0} === @#{1})")]
+	[Jazor(Op.Inline, "int.Equals(int)", "(__arg1 === __arg2)")]
 	public extern static bool _5e7fb3a45e5a8f45(Number instance, Number obj);
 
 	[Jazor(Op.Discard, "override int.GetHashCode()")]
@@ -214,14 +214,14 @@ public static class Int32Module
 	/// C#: int.RotateLeft(value, amount)
 	/// JS: (value << amount) | (value >>> (32 - amount))
 	/// </summary>
-	[Jazor(Op.Inline, "static int.RotateLeft(int, int)", "((@#{0} << (@#{1} & 31)) | (@#{0} >>> (32 - (@#{1} & 31))))")]
+	[Jazor(Op.Inline, "static int.RotateLeft(int, int)", "((__arg1 << (__arg2 & 31)) | (__arg1 >>> (32 - (__arg2 & 31))))")]
 	public extern static Number _f7913110e7d03a57(Number value, Number rotateAmount);
 
 	/// <summary>
 	/// C#: int.RotateRight(value, amount)
 	/// JS: (value >>> amount) | (value << (32 - amount))
 	/// </summary>
-	[Jazor(Op.Inline, "static int.RotateRight(int, int)", "((@#{0} >>> (@#{1} & 31)) | (@#{0} << (32 - (@#{1} & 31))))")]
+	[Jazor(Op.Inline, "static int.RotateRight(int, int)", "((__arg1 >>> (__arg2 & 31)) | (__arg1 << (32 - (__arg2 & 31))))")]
 	public extern static Number _f090db0dba3c3b28(Number value, Number rotateAmount);
 
 	/// <summary>
@@ -249,28 +249,28 @@ public static class Int32Module
 	/// C#: int.IsPow2(value)
 	/// JS: value > 0 && (value & (value - 1)) === 0
 	/// </summary>
-	[Jazor(Op.Inline, "static int.IsPow2(int)", "(@#{0} > 0 && (@#{0} & (@#{0} - 1)) === 0)")]
+	[Jazor(Op.Inline, "static int.IsPow2(int)", "(__arg1 > 0 && (__arg1 & (__arg1 - 1)) === 0)")]
 	public extern static bool _8157179708f5a6c3(Number value);
 
 	/// <summary>
 	/// C#: int.Log2(value)
 	/// JS: Math.floor(Math.log2(value))
 	/// </summary>
-	[Jazor(Op.Inline, "static int.Log2(int)", "Math.floor(Math.log2(@#{0}))")]
+	[Jazor(Op.Inline, "static int.Log2(int)", "Math.floor(Math.log2(__arg1))")]
 	public extern static Number _3173781f909bc9fc(Number value);
 
 	/// <summary>
 	/// C#: int.Clamp(value, min, max)
 	/// JS: Math.min(Math.max(value, min), max)
 	/// </summary>
-	[Jazor(Op.Inline, "static int.Clamp(int, int, int)", "Math.min(Math.max(@#{0}, @#{1}), @#{2})")]
+	[Jazor(Op.Inline, "static int.Clamp(int, int, int)", "Math.min(Math.max(__arg1, __arg2), __arg3)")]
 	public extern static Number _351e597bc27e1afc(Number value, Number min, Number max);
 
 	/// <summary>
 	/// C#: int.CopySign(value, sign)
 	/// JS: sign >= 0 ? Math.abs(value) : -Math.abs(value)
 	/// </summary>
-	[Jazor(Op.Inline, "static int.CopySign(int, int)", "(@#{1} >= 0 ? Math.abs(@#{0}) : -Math.abs(@#{0}))")]
+	[Jazor(Op.Inline, "static int.CopySign(int, int)", "(__arg2 >= 0 ? Math.abs(__arg1) : -Math.abs(__arg1))")]
 	public extern static Number _95793b26c4495935(Number value, Number sign);
 
 	/// <summary>
@@ -314,42 +314,42 @@ public static class Int32Module
 	/// C#: int.IsEvenInteger(value)
 	/// JS: (value & 1) === 0
 	/// </summary>
-	[Jazor(Op.Inline, "static int.IsEvenInteger(int)", "((@#{0} & 1) === 0)")]
+	[Jazor(Op.Inline, "static int.IsEvenInteger(int)", "((__arg1 & 1) === 0)")]
 	public extern static bool _4cbed0ce3a7f9c5f(Number value);
 
 	/// <summary>
 	/// C#: int.IsNegative(value)
 	/// JS: value < 0
 	/// </summary>
-	[Jazor(Op.Inline, "static int.IsNegative(int)", "(@#{0} < 0)")]
+	[Jazor(Op.Inline, "static int.IsNegative(int)", "(__arg1 < 0)")]
 	public extern static bool _3d1db358d3f6d96f(Number value);
 
 	/// <summary>
 	/// C#: int.IsOddInteger(value)
 	/// JS: (value & 1) !== 0
 	/// </summary>
-	[Jazor(Op.Inline, "static int.IsOddInteger(int)", "((@#{0} & 1) !== 0)")]
+	[Jazor(Op.Inline, "static int.IsOddInteger(int)", "((__arg1 & 1) !== 0)")]
 	public extern static bool _0f92a85f87224c94(Number value);
 
 	/// <summary>
 	/// C#: int.IsPositive(value)
 	/// JS: value > 0
 	/// </summary>
-	[Jazor(Op.Inline, "static int.IsPositive(int)", "(@#{0} > 0)")]
+	[Jazor(Op.Inline, "static int.IsPositive(int)", "(__arg1 > 0)")]
 	public extern static bool _280b1b013a39c514(Number value);
 
 	/// <summary>
 	/// C#: int.MaxMagnitude(x, y)
 	/// JS: Math.abs(x) > Math.abs(y) ? x : y
 	/// </summary>
-	[Jazor(Op.Inline, "static int.MaxMagnitude(int, int)", "(Math.abs(@#{0}) > Math.abs(@#{1}) ? @#{0} : @#{1})")]
+	[Jazor(Op.Inline, "static int.MaxMagnitude(int, int)", "(Math.abs(__arg1) > Math.abs(__arg2) ? __arg1 : __arg2)")]
 	public extern static Number _a36b4a6dbd50fa77(Number x, Number y);
 
 	/// <summary>
 	/// C#: int.MinMagnitude(x, y)
 	/// JS: Math.abs(x) < Math.abs(y) ? x : y
 	/// </summary>
-	[Jazor(Op.Inline, "static int.MinMagnitude(int, int)", "(Math.abs(@#{0}) < Math.abs(@#{1}) ? @#{0} : @#{1})")]
+	[Jazor(Op.Inline, "static int.MinMagnitude(int, int)", "(Math.abs(__arg1) < Math.abs(__arg2) ? __arg1 : __arg2)")]
 	public extern static Number _d0c6a74fd11d24bf(Number x, Number y);
 
 	[Jazor(Op.Discard, "static int.TryParse(string, System.IFormatProvider, out int)")]

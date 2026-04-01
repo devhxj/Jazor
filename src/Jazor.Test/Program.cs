@@ -91,7 +91,12 @@ var  b = (2,4);
 var  c = (2,"a");
 ((int bbb, int ccc),int aaa) = tuple;
 var script = @"
-  let cc = (v$2$0, v$2$1) => _16e2a901535b765e(v$2$0, v$2$1);
+const Status = Object.freeze({
+  None: 0,
+  Active: 1,
+  Inactive: 2,
+  Pending: 3
+});
 ";
 var parser = new Parser(new ParserOptions { 
 

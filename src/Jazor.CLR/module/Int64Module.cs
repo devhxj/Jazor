@@ -35,7 +35,7 @@ public static class Int64Module
 	public extern static BigInt _74cd360dde6bde69();
 
 	///<summary>Produces the full product of two 64-bit numbers.</summary>
-	[Jazor(Op.Inline, "static long.BigMul(long, long)", "(@#{0} * @#{1})")]
+	[Jazor(Op.Inline, "static long.BigMul(long, long)", "(__arg1 * __arg2)")]
 	public extern static BigInt _62ebef6eaaff4810(BigInt left, BigInt right);
 
 	///<summary>Compares this instance to a specified object and returns an indication of their relative values.</summary>
@@ -51,15 +51,15 @@ public static class Int64Module
 	}
 
 	///<summary>Compares this instance to a specified 64-bit signed integer and returns an indication of their relative values.</summary>
-	[Jazor(Op.Inline, "long.CompareTo(long)", "(@#{0} < @#{1} ? -1 : (@#{0} > @#{1} ? 1 : 0))")]
+	[Jazor(Op.Inline, "long.CompareTo(long)", "(__arg1 < __arg2 ? -1 : (__arg1 > __arg2 ? 1 : 0))")]
 	public extern static Number _e862e3c68f06f9e2(BigInt instance, BigInt value);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
-	[Jazor(Op.Inline, "override long.Equals(object)", "(@#{0} === @#{1})")]
+	[Jazor(Op.Inline, "override long.Equals(object)", "(__arg1 === __arg2)")]
 	public extern static bool _3fc2378cd670be8a(BigInt instance, object? obj);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified <see cref="T:System.Int64" /> value.</summary>
-	[Jazor(Op.Inline, "long.Equals(long)", "(@#{0} === @#{1})")]
+	[Jazor(Op.Inline, "long.Equals(long)", "(__arg1 === __arg2)")]
 	public extern static bool _73c4e4cb572f07f1(BigInt instance, BigInt obj);
 
 	///<summary>Returns the hash code for this instance.</summary>
@@ -246,7 +246,7 @@ public static class Int64Module
 	}
 
 	///<summary>Determines if a value is a power of two.</summary>
-	[Jazor(Op.Inline, "static long.IsPow2(long)", "(@#{0} > 0n && (@#{0} & (@#{0} - 1n)) === 0n)")]
+	[Jazor(Op.Inline, "static long.IsPow2(long)", "(__arg1 > 0n && (__arg1 & (__arg1 - 1n)) === 0n)")]
 	public extern static bool _fd78c89cf0a7feff(BigInt value);
 
 	///<summary>Computes the log2 of a value.</summary>
@@ -272,11 +272,11 @@ public static class Int64Module
 	}
 
 	///<summary>Compares two values to compute which is greater.</summary>
-	[Jazor(Op.Inline, "static long.Max(long, long)", "(@#{0} > @#{1} ? @#{0} : @#{1})")]
+	[Jazor(Op.Inline, "static long.Max(long, long)", "(__arg1 > __arg2 ? __arg1 : __arg2)")]
 	public extern static BigInt _2c60dae3f93fedef(BigInt x, BigInt y);
 
 	///<summary>Compares two values to compute which is lesser.</summary>
-	[Jazor(Op.Inline, "static long.Min(long, long)", "(@#{0} < @#{1} ? @#{0} : @#{1})")]
+	[Jazor(Op.Inline, "static long.Min(long, long)", "(__arg1 < __arg2 ? __arg1 : __arg2)")]
 	public extern static BigInt _e9f5fe363044ceda(BigInt x, BigInt y);
 
 	///<summary>Computes the sign of a value.</summary>
@@ -289,7 +289,7 @@ public static class Int64Module
 	}
 
 	///<summary>Computes the absolute of a value.</summary>
-	[Jazor(Op.Inline, "static long.Abs(long)", "(@#{0} < 0n ? -@#{0} : @#{0})")]
+	[Jazor(Op.Inline, "static long.Abs(long)", "(__arg1 < 0n ? -__arg1 : __arg1)")]
 	public extern static BigInt _6ae5b36df368d1e5(BigInt value);
 
 	///<summary>Creates an instance of the current type from a value, throwing an overflow exception for any values that fall outside the representable range of the current type.</summary>
@@ -305,19 +305,19 @@ public static class Int64Module
 	public extern static BigInt _363a470fd9444076<TOther>(object value);
 
 	///<summary>Determines if a value represents an even integral number.</summary>
-	[Jazor(Op.Inline, "static long.IsEvenInteger(long)", "(@#{0} % 2n === 0n)")]
+	[Jazor(Op.Inline, "static long.IsEvenInteger(long)", "(__arg1 % 2n === 0n)")]
 	public extern static bool _203dfc08764b3516(BigInt value);
 
 	///<summary>Determines if a value is negative.</summary>
-	[Jazor(Op.Inline, "static long.IsNegative(long)", "(@#{0} < 0n)")]
+	[Jazor(Op.Inline, "static long.IsNegative(long)", "(__arg1 < 0n)")]
 	public extern static bool _cac37e2db2e55b1b(BigInt value);
 
 	///<summary>Determines if a value represents an odd integral number.</summary>
-	[Jazor(Op.Inline, "static long.IsOddInteger(long)", "(@#{0} % 2n !== 0n)")]
+	[Jazor(Op.Inline, "static long.IsOddInteger(long)", "(__arg1 % 2n !== 0n)")]
 	public extern static bool _23594f30886ac699(BigInt value);
 
 	///<summary>Determines if a value is positive.</summary>
-	[Jazor(Op.Inline, "static long.IsPositive(long)", "(@#{0} > 0n)")]
+	[Jazor(Op.Inline, "static long.IsPositive(long)", "(__arg1 > 0n)")]
 	public extern static bool _3c8be08897a76569(BigInt value);
 
 	///<summary>Compares two values to compute which is greater.</summary>

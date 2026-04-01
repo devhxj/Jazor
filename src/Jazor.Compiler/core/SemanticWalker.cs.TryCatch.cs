@@ -1,5 +1,6 @@
 ﻿using Acornima;
 using Acornima.Ast;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 using System.Collections.Generic;
 
@@ -7,6 +8,34 @@ namespace Jazor.Compiler;
 
 public partial class SemanticWalker
 {
+    private List<Statement> TranslateOperationsToStatements(IEnumerable<IOperation> operations, SenseArgument context)
+    {
+        var pendingStatements = new List<Statement>();
+        foreach (var operation in operations)
+        {
+            var node = Visit(operation, context);
+
+            if (node is Statement statement)
+                pendingStatements.Add(statement);
+            else if (node is Expression expr)
+            {
+                if (expr is SequenceExpression seqExpr)
+                {
+                    if (seqExpr.Expressions.Count == 1)
+                        pendingStatements.Add(new NonSpecialExpressionStatement(seqExpr.Expressions[0]));
+                    else if (seqExpr.Expressions.Count > 1)
+                        pendingStatements.Add(new NonSpecialExpressionStatement(expr));
+                }
+                else
+                    pendingStatements.Add(new NonSpecialExpressionStatement(expr));
+            }
+            else
+                HandleTransformationFailure<Node>(operation, $"{operation.Kind} could not be translated to JavaScript.");
+        }
+
+        return pendingStatements;
+    }
+
     /// <summary>
     /// 处理 try-catch-finally 语句操作
     /// C# 示例：
@@ -26,9 +55,7 @@ public partial class SemanticWalker
     {
         // try 体：隔离 scope，变量声明不泄漏到 try 外
         var tryCtx = argument.WithNewScope();
-        var tryPending = new List<Statement>();
-        foreach (var stmt in operation.Body.Operations)
-            Translate(tryPending, stmt, tryCtx);
+        var tryPending = TranslateOperationsToStatements(operation.Body.Operations, tryCtx);
 
         var tryBodyStatements = new List<Statement>();
         if (tryCtx.HasVarDeclarator)
@@ -87,9 +114,7 @@ public partial class SemanticWalker
         {
             // finally 体：隔离 scope，变量声明不泄漏到 try 外
             var finallyCtx = argument.WithNewScope();
-            var finallyPending = new List<Statement>();
-            foreach (var stmt in operation.Finally.Operations)
-                Translate(finallyPending, stmt, finallyCtx);
+            var finallyPending = TranslateOperationsToStatements(operation.Finally.Operations, finallyCtx);
 
             var finallyBodyStatements = new List<Statement>();
             if (finallyCtx.HasVarDeclarator)
@@ -135,12 +160,27 @@ public partial class SemanticWalker
             }
         }
 
-        // 如果没有异常变量名，生成唯一名称
-        if (param is null)
-            param = new Identifier(GetUniqueName(operation));
-
         return param;
     }
+
+    private static bool ContainsBareRethrow(IOperation operation)
+    {
+        if (operation is IThrowOperation { Exception: null })
+            return true;
+
+        foreach (var child in operation.ChildOperations)
+        {
+            if (ContainsBareRethrow(child))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool RequiresCatchBinding(ICatchClauseOperation operation)
+        => operation.Filter is not null
+        || operation.ExceptionDeclarationOrExpression is not null
+        || ContainsBareRethrow(operation.Handler);
 
     /// <summary>
     /// 从ExceptionDeclarationOrExpression中提取异常变量名
@@ -184,18 +224,7 @@ public partial class SemanticWalker
         var catchContext = (exceptionParam is not null
             ? argument.WithCatchVar(exceptionParam.Name)
             : argument).WithNewScope();
-
-        var catchPending = new List<Statement>();
-        foreach (var stmt in operation.Handler.Operations)
-        {
-            var node = Visit(stmt, catchContext);
-            if (node is Statement statement)
-                catchPending.Add(statement);
-            else if (node is Expression expr)
-                catchPending.Add(new NonSpecialExpressionStatement(expr));
-            else
-                HandleTransformationFailure<Node>(stmt, "Try statement catch clause could not be translated to JavaScript.");
-        }
+        var catchPending = TranslateOperationsToStatements(operation.Handler.Operations, catchContext);
 
         if (catchContext.HasVarDeclarator)
         {
@@ -221,7 +250,9 @@ public partial class SemanticWalker
     public override Node? VisitCatchClause(ICatchClauseOperation operation, SenseArgument argument)
     {
         // 此处不用担心多个catch，多catch会在 VisitTry中处理
-        var param = ExtractCatchClauseParam(operation);
+        var param = RequiresCatchBinding(operation)
+            ? ExtractCatchClauseParam(operation) ?? new Identifier(GetUniqueName(operation))
+            : null;
         var statements = ExtractCatchClauseBody(operation, argument, param);
         var body = new NestedBlockStatement(NodeList.From(statements));
 

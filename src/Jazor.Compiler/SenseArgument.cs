@@ -1,5 +1,6 @@
 using Acornima.Ast;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Jazor.Compiler;
 
@@ -148,5 +149,26 @@ public record struct SenseArgument
         var list = NodeList.From(_declarators.Values);
         _declarators.Clear();
         return list;
+    }
+
+    /// <summary>
+    /// 刷新并获取当前累积的导入声明分组，然后清空内部存储。
+    /// </summary>
+    public IReadOnlyList<KeyValuePair<string, NodeList<ImportDeclarationSpecifier>>> FlushImportSpecifiers()
+    {
+        if (_specifiers is null || _specifiers.Count == 0)
+            return [];
+
+        var result = new List<KeyValuePair<string, NodeList<ImportDeclarationSpecifier>>>(_specifiers.Count);
+        foreach (var pair in _specifiers)
+        {
+            var specifiers = pair.Value
+                .GroupBy(static specifier => specifier.ToECMAScript(), System.StringComparer.Ordinal)
+                .Select(static group => group.First());
+            result.Add(new KeyValuePair<string, NodeList<ImportDeclarationSpecifier>>(pair.Key, NodeList.From(specifiers)));
+        }
+
+        _specifiers.Clear();
+        return result;
     }
 }

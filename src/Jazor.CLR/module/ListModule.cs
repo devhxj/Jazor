@@ -35,7 +35,7 @@ public static class ListModule<T>
 	/// C#: new List&lt;T&gt;(collection)
 	/// JS: Array.from(collection)
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.List<T>.List(System.Collections.Generic.IEnumerable<T>)", "Array.from(@#{0})")]
+	[Jazor(Op.Inline, "System.Collections.Generic.List<T>.List(System.Collections.Generic.IEnumerable<T>)", "Array.from(__arg1)")]
 	public extern static Array<T> _ea4c991aac8688c0(Array<T> collection);
 
 	[Jazor(Op.Discard, "System.Collections.Generic.List<T>.Capacity.get")]
@@ -53,16 +53,21 @@ public static class ListModule<T>
 
 	/// <summary>
 	/// C#: list[index]
-	/// JS: array[index]
+	/// JS: array[index] (越界时抛出 ArgumentOutOfRangeException)
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.List<T>.this[int].get", "@#{0}[@#{1}]")]
-	public extern static T _d389c31d59037b42(Array<T> instance, Number index);
+	[Jazor(Op.Import, "System.Collections.Generic.List<T>.this[int].get")]
+	public static T _d389c31d59037b42(Array<T> instance, Number index)
+	{
+		if (index < 0 || index >= instance.Length)
+			throw new Error("ArgumentOutOfRangeException: index is out of range.");
+		return instance[index];
+	}
 
 	/// <summary>
 	/// C#: list[index] = value
 	/// JS: array[index] = value
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.List<T>.this[int].set", "(@#{0}[@#{1}] = @#{2})")]
+	[Jazor(Op.Inline, "System.Collections.Generic.List<T>.this[int].set", "(__arg1[__arg2] = __arg3)")]
 	public extern static void _c16a7960302ea054(Array<T> instance, Number index, T value);
 
 	/// <summary>
@@ -76,7 +81,7 @@ public static class ListModule<T>
 	/// C#: list.AddRange(collection)
 	/// JS: array.push(...collection)
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.List<T>.AddRange(System.Collections.Generic.IEnumerable<T>)", "@#{0}.push(...@#{1})")]
+	[Jazor(Op.Inline, "System.Collections.Generic.List<T>.AddRange(System.Collections.Generic.IEnumerable<T>)", "__arg1.push(...__arg2)")]
 	public extern static void _a2660853a4ebc1f6(Array<T> instance, Array<T> collection);
 
 	[Jazor(Op.Discard, "System.Collections.Generic.List<T>.AsReadOnly()")]
@@ -95,7 +100,7 @@ public static class ListModule<T>
 	/// C#: list.Clear()
 	/// JS: array.length = 0
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.List<T>.Clear()", "(@#{0}.length = 0)")]
+	[Jazor(Op.Inline, "System.Collections.Generic.List<T>.Clear()", "(__arg1.length = 0)")]
 	public extern static void _7de26e55010ee1a8(Array<T> instance);
 
 	/// <summary>
@@ -279,14 +284,14 @@ public static class ListModule<T>
 	/// C#: list.GetRange(index, count)
 	/// JS: array.slice(index, index + count)
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.List<T>.GetRange(int, int)", "@#{0}.slice(@#{1}, @#{1} + @#{2})")]
+	[Jazor(Op.Inline, "System.Collections.Generic.List<T>.GetRange(int, int)", "__arg1.slice(__arg2, __arg2 + __arg3)")]
 	public extern static Array<T> _c35c9c99a23ff96a(Array<T> instance, Number index, Number count);
 
 	/// <summary>
 	/// C#: list.Slice(start, length)
 	/// JS: array.slice(start, start + length)
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.List<T>.Slice(int, int)", "@#{0}.slice(@#{1}, @#{1} + @#{2})")]
+	[Jazor(Op.Inline, "System.Collections.Generic.List<T>.Slice(int, int)", "__arg1.slice(__arg2, __arg2 + __arg3)")]
 	public extern static Array<T> _adcf2df90da54ec8(Array<T> instance, Number start, Number length);
 
 	/// <summary>
@@ -323,14 +328,14 @@ public static class ListModule<T>
 	/// C#: list.Insert(index, item)
 	/// JS: array.splice(index, 0, item)
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.List<T>.Insert(int, T)", "@#{0}.splice(@#{1}, 0, @#{2})")]
+	[Jazor(Op.Inline, "System.Collections.Generic.List<T>.Insert(int, T)", "__arg1.splice(__arg2, 0, __arg3)")]
 	public extern static void _0dc538197c677986(Array<T> instance, Number index, T item);
 
 	/// <summary>
 	/// C#: list.InsertRange(index, collection)
 	/// JS: array.splice(index, 0, ...collection)
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.List<T>.InsertRange(int, System.Collections.Generic.IEnumerable<T>)", "@#{0}.splice(@#{1}, 0, ...@#{2})")]
+	[Jazor(Op.Inline, "System.Collections.Generic.List<T>.InsertRange(int, System.Collections.Generic.IEnumerable<T>)", "__arg1.splice(__arg2, 0, ...__arg3)")]
 	public extern static void _56ef9aefabac7c09(Array<T> instance, Number index, Array<T> collection);
 
 	/// <summary>
@@ -403,14 +408,14 @@ public static class ListModule<T>
 	/// C#: list.RemoveAt(index)
 	/// JS: array.splice(index, 1)
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.List<T>.RemoveAt(int)", "@#{0}.splice(@#{1}, 1)")]
+	[Jazor(Op.Inline, "System.Collections.Generic.List<T>.RemoveAt(int)", "__arg1.splice(__arg2, 1)")]
 	public extern static void _a5e8c6b27df6470b(Array<T> instance, Number index);
 
 	/// <summary>
 	/// C#: list.RemoveRange(index, count)
 	/// JS: array.splice(index, count)
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.List<T>.RemoveRange(int, int)", "@#{0}.splice(@#{1}, @#{2})")]
+	[Jazor(Op.Inline, "System.Collections.Generic.List<T>.RemoveRange(int, int)", "__arg1.splice(__arg2, __arg3)")]
 	public extern static void _8425758ef4e7b6f9(Array<T> instance, Number index, Number count);
 
 	/// <summary>

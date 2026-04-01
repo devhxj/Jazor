@@ -51,15 +51,15 @@ public static class UInt32Module
 	}
 
 	///<summary>Compares this instance to a specified 32-bit unsigned integer and returns an indication of their relative values.</summary>
-	[Jazor(Op.Inline, "uint.CompareTo(uint)", "(@#{0} < @#{1} ? -1 : (@#{0} > @#{1} ? 1 : 0))")]
+	[Jazor(Op.Inline, "uint.CompareTo(uint)", "(__arg1 < __arg2 ? -1 : (__arg1 > __arg2 ? 1 : 0))")]
 	public extern static Number _7a5a26a8548c61fe(Number instance, Number value);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
-	[Jazor(Op.Inline, "override uint.Equals(object)", "(@#{0} === @#{1})")]
+	[Jazor(Op.Inline, "override uint.Equals(object)", "(__arg1 === __arg2)")]
 	public extern static bool _ab3e546a9bf4a9ed(Number instance, object? obj);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified <see cref="T:System.UInt32" />.</summary>
-	[Jazor(Op.Inline, "uint.Equals(uint)", "(@#{0} === @#{1})")]
+	[Jazor(Op.Inline, "uint.Equals(uint)", "(__arg1 === __arg2)")]
 	public extern static bool _cb191ad5776dddb3(Number instance, Number obj);
 
 	///<summary>Returns the hash code for this instance.</summary>

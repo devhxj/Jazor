@@ -686,8 +686,8 @@ public partial class SemanticWalker
 			BinaryOperatorKind.Multiply => Operator.Multiplication,
 			BinaryOperatorKind.Divide => Operator.Division,
 			BinaryOperatorKind.Remainder => Operator.Remainder,
-			BinaryOperatorKind.Equals => Operator.Equality,
-			BinaryOperatorKind.NotEquals => Operator.Inequality,
+			BinaryOperatorKind.Equals => Operator.StrictEquality,
+			BinaryOperatorKind.NotEquals => Operator.StrictInequality,
 			BinaryOperatorKind.LessThan => Operator.LessThan,
 			BinaryOperatorKind.GreaterThan => Operator.GreaterThan,
 			BinaryOperatorKind.LessThanOrEqual => Operator.LessThanOrEqual,
@@ -847,6 +847,25 @@ public partial class SemanticWalker
 		if (operation.Target is IDiscardOperation)
 			return value;
 
+		if (operation.Target is IPropertyReferenceOperation propertyReference &&
+			propertyReference.Property.SetMethod is not null)
+		{
+			var instance = Translate<Expression>(propertyReference.Instance, argument, null);
+			var setterArguments = new List<Expression>(propertyReference.Arguments.Length + 1);
+			foreach (var propertyArgument in propertyReference.Arguments)
+			{
+				var argContext = propertyArgument.Parameter?.RefKind is RefKind.Out
+					? argument.With(Sense.OutParameter)
+					: argument;
+				setterArguments.Add(Translate<Expression>(propertyArgument.Value, argContext));
+			}
+			setterArguments.Add(value);
+
+			var mapperExpr = GetWhiteListExpression(propertyReference.Property.SetMethod, argument, setterArguments, instance, out _);
+			if (mapperExpr is not null)
+				return mapperExpr;
+		}
+
 		var target = Translate<Expression>(operation.Target, argument);
 		return new AssignmentExpression(Operator.Assignment, target, value);
 	}
@@ -971,7 +990,7 @@ public partial class SemanticWalker
 		return operation.Type?.SpecialType switch
 		{
 			SpecialType.System_Boolean => new BooleanLiteral(false, "false"),
-			SpecialType.System_String => new StringLiteral("", "''"),
+			SpecialType.System_String => new NullLiteral("null"),
 			SpecialType.System_SByte or
 			SpecialType.System_Byte or
 			SpecialType.System_Int16 or

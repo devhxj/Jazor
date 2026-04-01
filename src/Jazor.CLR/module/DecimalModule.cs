@@ -25,42 +25,42 @@ public static class DecimalModule
 	/// C#: new decimal(int)
 	/// JS: String(value)
 	/// </summary>
-	[Jazor(Op.Inline, "decimal.Decimal(int)", "String(@#{0})")]
+	[Jazor(Op.Inline, "decimal.Decimal(int)", "String(__arg1)")]
 	public extern static string _9c4dd6829012e347(Number value);
 
 	/// <summary>
 	/// C#: new decimal(uint)
 	/// JS: String(value)
 	/// </summary>
-	[Jazor(Op.Inline, "decimal.Decimal(uint)", "String(@#{0})")]
+	[Jazor(Op.Inline, "decimal.Decimal(uint)", "String(__arg1)")]
 	public extern static string _73a058b17ed5de01(Number value);
 
 	/// <summary>
 	/// C#: new decimal(long)
 	/// JS: String(value)
 	/// </summary>
-	[Jazor(Op.Inline, "decimal.Decimal(long)", "String(@#{0})")]
+	[Jazor(Op.Inline, "decimal.Decimal(long)", "String(__arg1)")]
 	public extern static string _188ee93a8a80b7f4(BigInt value);
 
 	/// <summary>
 	/// C#: new decimal(ulong)
 	/// JS: String(value)
 	/// </summary>
-	[Jazor(Op.Inline, "decimal.Decimal(ulong)", "String(@#{0})")]
+	[Jazor(Op.Inline, "decimal.Decimal(ulong)", "String(__arg1)")]
 	public extern static string _9a3a0f6f89e1e594(BigInt value);
 
 	/// <summary>
 	/// C#: new decimal(float)
 	/// JS: String(value)
 	/// </summary>
-	[Jazor(Op.Inline, "decimal.Decimal(float)", "String(@#{0})")]
+	[Jazor(Op.Inline, "decimal.Decimal(float)", "String(__arg1)")]
 	public extern static string _2f7f0d9035a4bbf6(Number value);
 
 	/// <summary>
 	/// C#: new decimal(double)
 	/// JS: String(value)
 	/// </summary>
-	[Jazor(Op.Inline, "decimal.Decimal(double)", "String(@#{0})")]
+	[Jazor(Op.Inline, "decimal.Decimal(double)", "String(__arg1)")]
 	public extern static string _cb7c7a937d3b8460(Number value);
 
 	///<summary>Converts the specified 64-bit signed integer, which contains an OLE Automation Currency value, to the equivalent <see cref="T:System.Decimal" /> value.</summary>
@@ -90,21 +90,21 @@ public static class DecimalModule
 	/// C#: decimal.Add(d1, d2)
 	/// JS: String(Number(d1) + Number(d2))
 	/// </summary>
-	[Jazor(Op.Inline, "static decimal.Add(decimal, decimal)", "String(Number(@#{0}) + Number(@#{1}))")]
+	[Jazor(Op.Inline, "static decimal.Add(decimal, decimal)", "String(Number(__arg1) + Number(__arg2))")]
 	public extern static string _f73258f14e05c790(string d1, string d2);
 
 	/// <summary>
 	/// C#: decimal.Ceiling(d)
 	/// JS: String(Math.ceil(Number(d)))
 	/// </summary>
-	[Jazor(Op.Inline, "static decimal.Ceiling(decimal)", "String(Math.ceil(Number(@#{0})))")]
+	[Jazor(Op.Inline, "static decimal.Ceiling(decimal)", "String(Math.ceil(Number(__arg1)))")]
 	public extern static string _84028a6e79626057(string d);
 
 	/// <summary>
 	/// C#: decimal.Compare(d1, d2)
 	/// JS: Number(d1) < Number(d2) ? -1 : (Number(d1) > Number(d2) ? 1 : 0)
 	/// </summary>
-	[Jazor(Op.Inline, "static decimal.Compare(decimal, decimal)", "(Number(@#{0}) < Number(@#{1}) ? -1 : (Number(@#{0}) > Number(@#{1}) ? 1 : 0))")]
+	[Jazor(Op.Inline, "static decimal.Compare(decimal, decimal)", "(Number(__arg1) < Number(__arg2) ? -1 : (Number(__arg1) > Number(__arg2) ? 1 : 0))")]
 	public extern static Number _c11e0aef6b5ccf1e(string d1, string d2);
 
 	///<summary>Compares this instance to a specified object and returns a comparison of their relative values.</summary>
@@ -115,56 +115,56 @@ public static class DecimalModule
 	/// C#: instance.CompareTo(value)
 	/// JS: Number(instance) < Number(value) ? -1 : (Number(instance) > Number(value) ? 1 : 0)
 	/// </summary>
-	[Jazor(Op.Inline, "decimal.CompareTo(decimal)", "(Number(@#{0}) < Number(@#{1}) ? -1 : (Number(@#{0}) > Number(@#{1}) ? 1 : 0))")]
+	[Jazor(Op.Inline, "decimal.CompareTo(decimal)", "(Number(__arg1) < Number(__arg2) ? -1 : (Number(__arg1) > Number(__arg2) ? 1 : 0))")]
 	public extern static Number _ca8a78810233056c(string instance, string value);
 
 	/// <summary>
 	/// C#: decimal.Divide(d1, d2)
 	/// JS: String(Number(d1) / Number(d2))
 	/// </summary>
-	[Jazor(Op.Inline, "static decimal.Divide(decimal, decimal)", "String(Number(@#{0}) / Number(@#{1}))")]
+	[Jazor(Op.Inline, "static decimal.Divide(decimal, decimal)", "String(Number(__arg1) / Number(__arg2))")]
 	public extern static string _f5c1c0a2a040b000(string d1, string d2);
 
 	/// <summary>
 	/// C#: instance.Equals(value)
 	/// JS: Number(instance) === Number(value)
 	/// </summary>
-	[Jazor(Op.Inline, "override decimal.Equals(object)", "(typeof @#{1} === 'string' && Number(@#{0}) === Number(@#{1}))")]
+	[Jazor(Op.Inline, "override decimal.Equals(object)", "(typeof __arg2 === 'string' && Number(__arg1) === Number(__arg2))")]
 	public extern static bool _8abe47785e51f122(string instance, object? value);
 
 	/// <summary>
 	/// C#: instance.Equals(value)
 	/// JS: Number(instance) === Number(value)
 	/// </summary>
-	[Jazor(Op.Inline, "decimal.Equals(decimal)", "(Number(@#{0}) === Number(@#{1}))")]
+	[Jazor(Op.Inline, "decimal.Equals(decimal)", "(Number(__arg1) === Number(__arg2))")]
 	public extern static bool _3dfd87d9d2f35e11(string instance, string value);
 
 	/// <summary>
 	/// C#: instance.GetHashCode()
 	/// JS: Number(instance) | 0 (convert to int32)
 	/// </summary>
-	[Jazor(Op.Inline, "override decimal.GetHashCode()", "(Number(@#{0}) | 0)")]
+	[Jazor(Op.Inline, "override decimal.GetHashCode()", "(Number(__arg1) | 0)")]
 	public extern static Number _f58659c33299d2b1(string instance);
 
 	/// <summary>
 	/// C#: decimal.Equals(d1, d2)
 	/// JS: Number(d1) === Number(d2)
 	/// </summary>
-	[Jazor(Op.Inline, "static decimal.Equals(decimal, decimal)", "(Number(@#{0}) === Number(@#{1}))")]
+	[Jazor(Op.Inline, "static decimal.Equals(decimal, decimal)", "(Number(__arg1) === Number(__arg2))")]
 	public extern static bool _b25c4446c28ed255(string d1, string d2);
 
 	/// <summary>
 	/// C#: decimal.Floor(d)
 	/// JS: String(Math.floor(Number(d)))
 	/// </summary>
-	[Jazor(Op.Inline, "static decimal.Floor(decimal)", "String(Math.floor(Number(@#{0})))")]
+	[Jazor(Op.Inline, "static decimal.Floor(decimal)", "String(Math.floor(Number(__arg1)))")]
 	public extern static string _518facaaeeb29ead(string d);
 
 	/// <summary>
 	/// C#: instance.ToString()
 	/// JS: instance
 	/// </summary>
-	[Jazor(Op.Inline, "override decimal.ToString()", "@#{0}")]
+	[Jazor(Op.Inline, "override decimal.ToString()", "__arg1")]
 	public extern static string _65a0e4fe8ccdd829(string instance);
 
 	/// <summary>
@@ -185,7 +185,7 @@ public static class DecimalModule
 	/// C#: instance.ToString(provider)
 	/// JS: instance
 	/// </summary>
-	[Jazor(Op.Inline, "decimal.ToString(System.IFormatProvider)", "@#{0}")]
+	[Jazor(Op.Inline, "decimal.ToString(System.IFormatProvider)", "__arg1")]
 	public extern static string _6234ba988b3e006d(string instance, Intl.NumberFormat? provider);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation using the specified format and culture-specific format information.</summary>

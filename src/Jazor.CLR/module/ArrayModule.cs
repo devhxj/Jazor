@@ -37,7 +37,7 @@ public static class ArrayModule<T>
 	/// JavaScript 数组没有 LongLength 概念，长度最大为 2^32-1
 	/// 但可以转换为 BigInt 返回
 	/// </summary>
-	[Jazor(Op.Inline, "System.Array.LongLength.get", "BigInt((@#{0}).length)")]
+	[Jazor(Op.Inline, "System.Array.LongLength.get", "BigInt((__arg1).length)")]
 	public extern static BigInt _82dc944f60373152(Array instance);
 
 	/// <summary>
@@ -264,14 +264,14 @@ public static class ArrayModule<T>
 	/// C#: Array.Clear(array)
 	/// JS: array.length = 0 或 array.fill(undefined)
 	/// </summary>
-	[Jazor(Op.Inline, "static System.Array.Clear(System.Array)", "@#{0}.length = 0")]
+	[Jazor(Op.Inline, "static System.Array.Clear(System.Array)", "__arg1.length = 0")]
 	public extern static void _96774f9ec153a919(Array<T> array);
 
 	/// <summary>
 	/// C#: Array.Clear(array, index, length)
 	/// JS: array.fill(undefined, index, index + length)
 	/// </summary>
-	[Jazor(Op.Inline, "static System.Array.Clear(System.Array, int, int)", "@#{0}.fill(undefined, @#{1}, @#{1} + @#{2})")]
+	[Jazor(Op.Inline, "static System.Array.Clear(System.Array, int, int)", "__arg1.fill(undefined, __arg2, __arg2 + __arg3)")]
 	public extern static void _e6e9140591777519(Array array, Number index, Number length);
 
 	#endregion
@@ -281,13 +281,13 @@ public static class ArrayModule<T>
 	/// <summary>
 	/// JavaScript 数组是一维的，GetLength 等同于 length
 	/// </summary>
-	[Jazor(Op.Inline, "System.Array.GetLength(int)", "(@#{0}).length")]
+	[Jazor(Op.Inline, "System.Array.GetLength(int)", "(__arg1).length")]
 	public extern static Number _4a62a6d3092e758c(object instance, Number dimension);
 
 	/// <summary>
 	/// JavaScript 数组是一维的，GetUpperBound 返回 length - 1
 	/// </summary>
-	[Jazor(Op.Inline, "System.Array.GetUpperBound(int)", "(@#{0}).length - 1")]
+	[Jazor(Op.Inline, "System.Array.GetUpperBound(int)", "(__arg1).length - 1")]
 	public extern static Number _240013ed6fb455ce(object instance, Number dimension);
 
 	/// <summary>
@@ -299,7 +299,7 @@ public static class ArrayModule<T>
 	/// <summary>
 	/// JavaScript 数组是一维的，GetLongLength 等同于 BigInt(length)
 	/// </summary>
-	[Jazor(Op.Inline, "System.Array.GetLongLength(int)", "BigInt((@#{0}).length)")]
+	[Jazor(Op.Inline, "System.Array.GetLongLength(int)", "BigInt((__arg1).length)")]
 	public extern static BigInt _b529d6e54112cf3e(object instance, Number dimension);
 
 	#endregion
@@ -316,7 +316,7 @@ public static class ArrayModule<T>
 	/// C#: array.GetValue(index)
 	/// JS: array[index]
 	/// </summary>
-	[Jazor(Op.Inline, "System.Array.GetValue(int)", "(@#{0})[@#{1}]")]
+	[Jazor(Op.Inline, "System.Array.GetValue(int)", "(__arg1)[__arg2]")]
 	public extern static object? _eba14f0435c17445(object instance, Number index);
 
 	/// <summary>
@@ -335,7 +335,7 @@ public static class ArrayModule<T>
 	/// C#: array.SetValue(value, index)
 	/// JS: array[index] = value
 	/// </summary>
-	[Jazor(Op.Inline, "System.Array.SetValue(object, int)", "(@#{0})[@#{2}] = @#{1}")]
+	[Jazor(Op.Inline, "System.Array.SetValue(object, int)", "(__arg1)[__arg3] = __arg2")]
 	public extern static void _1f2a45eb847a2ec4(object instance, object? value, Number index);
 
 	/// <summary>
@@ -361,7 +361,7 @@ public static class ArrayModule<T>
 	/// JS: array[Number(longIndex)]
 	/// BigInt 可以作为索引使用
 	/// </summary>
-	[Jazor(Op.Inline, "System.Array.GetValue(long)", "(@#{0})[@#{1}]")]
+	[Jazor(Op.Inline, "System.Array.GetValue(long)", "(__arg1)[__arg2]")]
 	public extern static object? _99c592f7140b4f20(object instance, BigInt index);
 
 	/// <summary>
@@ -386,7 +386,7 @@ public static class ArrayModule<T>
 	/// C#: array.SetValue(value, longIndex)
 	/// JS: array[Number(longIndex)] = value
 	/// </summary>
-	[Jazor(Op.Inline, "System.Array.SetValue(object, long)", "(@#{0})[@#{2}] = @#{1}")]
+	[Jazor(Op.Inline, "System.Array.SetValue(object, long)", "(__arg1)[__arg3] = __arg2")]
 	public extern static void _d845170315112950(object instance, object? value, BigInt index);
 
 	/// <summary>
@@ -443,7 +443,7 @@ public static class ArrayModule<T>
 	/// C#: array.Clone()
 	/// JS: array.slice() 或 [...array]
 	/// </summary>
-	[Jazor(Op.Inline, "System.Array.Clone()", "(@#{0}).slice()")]
+	[Jazor(Op.Inline, "System.Array.Clone()", "(__arg1).slice()")]
 	public extern static object _7b75e1326e081bb2(object instance);
 
 	#endregion
@@ -1180,7 +1180,7 @@ public static class ArrayModule<T>
 	#region Reverse 方法系列
 
 	///<summary>Reverses the sequence of the elements in the entire one-dimensional <see cref="T:System.Array" />.</summary>
-	[Jazor(Op.Inline, "static System.Array.Reverse(System.Array)", "@#{0}.reverse()")]
+	[Jazor(Op.Inline, "static System.Array.Reverse(System.Array)", "__arg1.reverse()")]
 	public extern static void _c02ce18f02385f3d(Array<T> array);
 
 	///<summary>Reverses the sequence of a subset of the elements in the one-dimensional <see cref="T:System.Array" />.</summary>

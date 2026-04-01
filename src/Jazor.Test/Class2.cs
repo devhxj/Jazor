@@ -99,6 +99,15 @@ class TestClass22
 	}
 }
 
+public static class TestClass34
+{
+	public static int A = 42;
+	public static int ReadOnlyProperty
+	{
+		get => A;
+	} 
+}
+			
 public static class TestClass2222
 {
 	public static int A = 1;

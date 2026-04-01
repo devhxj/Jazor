@@ -9,65 +9,96 @@ public static class DateOnlyModule
 
 	/// <summary>
 	/// C#: DateOnly.MinValue (0001-01-01)
-	/// JS: new Date(1, 0, 1)
+	/// JS: UTC midnight date for 0001-01-01
 	/// </summary>
-	[Jazor(Op.Inline, "static System.DateOnly.MinValue.get", "new Date(1, 0, 1)")]
-	public extern static Date _4ab7a6677b34a52b();
+	[Jazor(Op.Import, "static System.DateOnly.MinValue.get")]
+	public static Date _4ab7a6677b34a52b()
+	{
+		var result = new Date(0);
+		result.SetUTCHours(0, 0, 0, 0);
+		result.SetUTCFullYear(1, 0, 1);
+		return result;
+	}
 
 	/// <summary>
 	/// C#: DateOnly.MaxValue (9999-12-31)
-	/// JS: new Date(9999, 11, 31)
+	/// JS: UTC midnight date for 9999-12-31
 	/// </summary>
-	[Jazor(Op.Inline, "static System.DateOnly.MaxValue.get", "new Date(9999, 11, 31)")]
-	public extern static Date _d3542025e0317ea5();
+	[Jazor(Op.Import, "static System.DateOnly.MaxValue.get")]
+	public static Date _d3542025e0317ea5()
+	{
+		var result = new Date(0);
+		result.SetUTCHours(0, 0, 0, 0);
+		result.SetUTCFullYear(9999, 11, 31);
+		return result;
+	}
 
 	/// <summary>
 	/// C#: new DateOnly(year, month, day)
-	/// JS: new Date(year, month - 1, day)
+	/// JS: create UTC midnight date
 	/// </summary>
-	[Jazor(Op.Inline, "System.DateOnly.DateOnly(int, int, int)", "new Date(@#{0}, @#{1} - 1, @#{2})")]
-	public extern static Date _8c5a25d777626c6c(Number year, Number month, Number day);
+	[Jazor(Op.Import, "System.DateOnly.DateOnly(int, int, int)")]
+	public static Date _8c5a25d777626c6c(Number year, Number month, Number day)
+	{
+		var result = new Date(0);
+		result.SetUTCHours(0, 0, 0, 0);
+		result.SetUTCFullYear(year, month - 1, day);
+		return result;
+	}
 
 	/// <summary>
 	/// C#: new DateOnly(year, month, day, calendar)
-	/// JS: new Date(year, month - 1, day)
+	/// JS: create UTC midnight date
 	/// </summary>
-	[Jazor(Op.Inline, "System.DateOnly.DateOnly(int, int, int, System.Globalization.Calendar)", "new Date(@#{0}, @#{1} - 1, @#{2})")]
-	public extern static Date _c0568bfa1df0ef59(Number year, Number month, Number day, GregorianCalendar calendar);
+	[Jazor(Op.Import, "System.DateOnly.DateOnly(int, int, int, System.Globalization.Calendar)")]
+	public static Date _c0568bfa1df0ef59(Number year, Number month, Number day, GregorianCalendar calendar)
+	{
+		var result = new Date(0);
+		result.SetUTCHours(0, 0, 0, 0);
+		result.SetUTCFullYear(year, month - 1, day);
+		return result;
+	}
 
 	/// <summary>
 	/// C#: DateOnly.FromDayNumber(dayNumber)
-	/// JS: new Date(1, 0, 1 + dayNumber)
+	/// JS: add dayNumber days to 0001-01-01 UTC midnight
 	/// </summary>
-	[Jazor(Op.Inline, "static System.DateOnly.FromDayNumber(int)", "new Date(1, 0, 1 + @#{0})")]
-	public extern static Date _96a80b211a70154c(Number dayNumber);
+	[Jazor(Op.Import, "static System.DateOnly.FromDayNumber(int)")]
+	public static Date _96a80b211a70154c(Number dayNumber)
+	{
+		var result = new Date(0);
+		result.SetUTCHours(0, 0, 0, 0);
+		result.SetUTCFullYear(1, 0, 1);
+		result.SetUTCDate(result.GetUTCDate() + dayNumber);
+		return result;
+	}
 
 	/// <summary>
 	/// C#: instance.Year
-	/// JS: instance.getFullYear()
+	/// JS: instance.getUTCFullYear()
 	/// </summary>
-	[Jazor(Op.Inline, "System.DateOnly.Year.get", "@#{0}.getFullYear()")]
+	[Jazor(Op.Inline, "System.DateOnly.Year.get", "__arg1.getUTCFullYear()")]
 	public extern static Number _eeb6f43b5386f459(Date instance);
 
 	/// <summary>
 	/// C#: instance.Month
-	/// JS: instance.getMonth() + 1
+	/// JS: instance.getUTCMonth() + 1
 	/// </summary>
-	[Jazor(Op.Inline, "System.DateOnly.Month.get", "(@#{0}.getMonth() + 1)")]
+	[Jazor(Op.Inline, "System.DateOnly.Month.get", "(__arg1.getUTCMonth() + 1)")]
 	public extern static Number _c189199a72fa745c(Date instance);
 
 	/// <summary>
 	/// C#: instance.Day
-	/// JS: instance.getDate()
+	/// JS: instance.getUTCDate()
 	/// </summary>
-	[Jazor(Op.Inline, "System.DateOnly.Day.get", "@#{0}.getDate()")]
+	[Jazor(Op.Inline, "System.DateOnly.Day.get", "__arg1.getUTCDate()")]
 	public extern static Number _fa637ab5d7ac92a4(Date instance);
 
 	/// <summary>
 	/// C#: instance.DayOfWeek
-	/// JS: instance.getDay()
+	/// JS: instance.getUTCDay()
 	/// </summary>
-	[Jazor(Op.Inline, "System.DateOnly.DayOfWeek.get", "@#{0}.getDay()")]
+	[Jazor(Op.Inline, "System.DateOnly.DayOfWeek.get", "__arg1.getUTCDay()")]
 	public extern static System.DayOfWeek _faf7aaba77d4de0c(Date instance);
 
 	/// <summary>
@@ -77,7 +108,9 @@ public static class DateOnlyModule
 	[Jazor(Op.Import, "System.DateOnly.DayOfYear.get")]
 	public static Number _6eb4f28206445ae2(Date instance)
 	{
-		var start = new Date(instance.GetFullYear(), 0, 0);
+		var start = new Date(0);
+		start.SetUTCHours(0, 0, 0, 0);
+		start.SetUTCFullYear(instance.GetUTCFullYear(), 0, 0);
 		var diff = instance.GetTime() - start.GetTime();
 		var oneDay = 1000 * 60 * 60 * 24;
 		return Math.Floor_(diff / oneDay);
@@ -90,7 +123,9 @@ public static class DateOnlyModule
 	[Jazor(Op.Import, "System.DateOnly.DayNumber.get")]
 	public static Number _04663ba34bb3359d(Date instance)
 	{
-		var start = new Date(1, 0, 1);
+		var start = new Date(0);
+		start.SetUTCHours(0, 0, 0, 0);
+		start.SetUTCFullYear(1, 0, 1);
 		var diff = instance.GetTime() - start.GetTime();
 		var oneDay = 1000 * 60 * 60 * 24;
 		return Math.Floor_(diff / oneDay);
@@ -98,32 +133,37 @@ public static class DateOnlyModule
 
 	/// <summary>
 	/// C#: instance.AddDays(value)
-	/// JS: new Date(instance.getTime() + value * 86400000)
+	/// JS: use UTC day arithmetic to avoid DST drift
 	/// </summary>
-	[Jazor(Op.Inline, "System.DateOnly.AddDays(int)", "new Date(@#{0}.getTime() + @#{1} * 86400000)")]
-	public extern static Date _cb25738994c034e6(Date instance, Number value);
+	[Jazor(Op.Import, "System.DateOnly.AddDays(int)")]
+	public static Date _cb25738994c034e6(Date instance, Number value)
+	{
+		var result = new Date(instance.GetTime());
+		result.SetUTCDate(result.GetUTCDate() + value);
+		return result;
+	}
 
 	/// <summary>
 	/// C#: instance.AddMonths(value)
-	/// JS: new Date(instance.setMonth(instance.getMonth() + value))
+	/// JS: use UTC month arithmetic
 	/// </summary>
 	[Jazor(Op.Import, "System.DateOnly.AddMonths(int)")]
 	public static Date _48134214e63fd9f3(Date instance, Number value)
 	{
 		var result = new Date(instance.GetTime());
-		result.SetMonth(result.GetMonth() + value);
+		result.SetUTCMonth(result.GetUTCMonth() + value);
 		return result;
 	}
 
 	/// <summary>
 	/// C#: instance.AddYears(value)
-	/// JS: new Date(instance.setFullYear(instance.getFullYear() + value))
+	/// JS: use UTC year arithmetic
 	/// </summary>
 	[Jazor(Op.Import, "System.DateOnly.AddYears(int)")]
 	public static Date _267d01eded65ff1c(Date instance, Number value)
 	{
 		var result = new Date(instance.GetTime());
-		result.SetFullYear(result.GetFullYear() + value);
+		result.SetUTCFullYear(result.GetUTCFullYear() + value);
 		return result;
 	}
 

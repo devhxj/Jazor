@@ -91,7 +91,7 @@ public static class MathModule
 	public extern static Number _a43200909dff4bc0(Number d);
 
 	///<summary>Returns (x * y) + z, rounded as one ternary operation.</summary>
-	[Jazor(Op.Inline, "static System.Math.FusedMultiplyAdd(double, double, double)", "(@#{0} * @#{1} + @#{2})")]
+	[Jazor(Op.Inline, "static System.Math.FusedMultiplyAdd(double, double, double)", "(__arg1 * __arg2 + __arg3)")]
 	public extern static Number _52c95df2ad20c3bd(Number x, Number y, Number z);
 
 	///<summary>Returns the natural (base <see langword="e" />) logarithm of a specified number.</summary>
@@ -115,7 +115,7 @@ public static class MathModule
 	public extern static Number _f1029100ea8114ab(Number a);
 
 	///<summary>Returns the sine and cosine of the specified angle.</summary>
-	[Jazor(Op.Inline, "static System.Math.SinCos(double)", "({ Sin: Math.sin(@#{0}), Cos: Math.cos(@#{0}) })")]
+	[Jazor(Op.Inline, "static System.Math.SinCos(double)", "({ Sin: Math.sin(__arg1), Cos: Math.cos(__arg1) })")]
 	public extern static (double Sin, double Cos) _4dcadff583296186(Number x);
 
 	///<summary>Returns the hyperbolic sine of the specified angle.</summary>
@@ -143,7 +143,7 @@ public static class MathModule
 	public extern static Number _0aaf1073fc70e405(Number value);
 
 	///<summary>Returns the absolute value of a 64-bit signed integer.</summary>
-	[Jazor(Op.Inline, "static System.Math.Abs(long)", "((@#{0} < 0n) ? -@#{0} : @#{0})")]
+	[Jazor(Op.Inline, "static System.Math.Abs(long)", "((__arg1 < 0n) ? -__arg1 : __arg1)")]
 	public extern static BigInt _2f5b0b713dde9501(BigInt value);
 
 	///<summary>Returns the absolute value of a native signed integer.</summary>
@@ -167,11 +167,11 @@ public static class MathModule
 	public extern static Number _3e86488d0112bcd3(Number value);
 
 	///<summary>Produces the full product of two unsigned 32-bit numbers.</summary>
-	[Jazor(Op.Inline, "static System.Math.BigMul(uint, uint)", "(BigInt(@#{0}) * BigInt(@#{1}))")]
+	[Jazor(Op.Inline, "static System.Math.BigMul(uint, uint)", "(BigInt(__arg1) * BigInt(__arg2))")]
 	public extern static BigInt _6683ad6f7ac7c14c(Number a, Number b);
 
 	///<summary>Produces the full product of two 32-bit numbers.</summary>
-	[Jazor(Op.Inline, "static System.Math.BigMul(int, int)", "(BigInt(@#{0}) * BigInt(@#{1}))")]
+	[Jazor(Op.Inline, "static System.Math.BigMul(int, int)", "(BigInt(__arg1) * BigInt(__arg2))")]
 	public extern static BigInt _f8dfabc9cf61c7c8(Number a, Number b);
 
 	///<summary>Produces the full product of two unsigned 64-bit numbers.</summary>
@@ -183,11 +183,11 @@ public static class MathModule
 	public extern static Array<object?> _1f2b3fb549b0a774(BigInt a, BigInt b, BigInt low);
 
 	///<summary>Produces the full product of two unsigned 64-bit numbers.</summary>
-	[Jazor(Op.Inline, "static System.Math.BigMul(ulong, ulong)", "(@#{0} * @#{1})")]
+	[Jazor(Op.Inline, "static System.Math.BigMul(ulong, ulong)", "(__arg1 * __arg2)")]
 	public extern static BigInt _d2fa7191b8139e97(BigInt a, BigInt b);
 
 	///<summary>Produces the full product of two 64-bit numbers.</summary>
-	[Jazor(Op.Inline, "static System.Math.BigMul(long, long)", "(@#{0} * @#{1})")]
+	[Jazor(Op.Inline, "static System.Math.BigMul(long, long)", "(__arg1 * __arg2)")]
 	public extern static BigInt _9eceeda3d33f938a(BigInt a, BigInt b);
 
 	///<summary>Returns the largest value that compares less than a specified value.</summary>
@@ -199,7 +199,7 @@ public static class MathModule
 	public extern static Number _655bd4d428ca20ea(Number x);
 
 	///<summary>Returns a value with the magnitude of <paramref name="x" /> and the sign of <paramref name="y" />.</summary>
-	[Jazor(Op.Inline, "static System.Math.CopySign(double, double)", "(Math.abs(@#{0}) * Math.sign(@#{1}))")]
+	[Jazor(Op.Inline, "static System.Math.CopySign(double, double)", "(Math.abs(__arg1) * Math.sign(__arg2))")]
 	public extern static Number _f51bc6e5d8ce272b(Number x, Number y);
 
 	///<summary>Calculates the quotient of two 32-bit signed integers and also returns the remainder in an output parameter.</summary>
@@ -255,7 +255,7 @@ public static class MathModule
 	public extern static string _84cbc0eaf2d899af(string d);
 
 	///<summary>Returns <paramref name="value" /> clamped to the inclusive range of <paramref name="min" /> and <paramref name="max" />.</summary>
-	[Jazor(Op.Inline, "static System.Math.Clamp(byte, byte, byte)", "Math.min(Math.max(@#{0}, @#{1}), @#{2})")]
+	[Jazor(Op.Inline, "static System.Math.Clamp(byte, byte, byte)", "Math.min(Math.max(__arg1, __arg2), __arg3)")]
 	public extern static Number _8921213084b6685c(Number value, Number min, Number max);
 
 	///<summary>Returns <paramref name="value" /> clamped to the inclusive range of <paramref name="min" /> and <paramref name="max" />.</summary>
@@ -263,15 +263,15 @@ public static class MathModule
 	public extern static string _735e24a467fce432(string value, string min, string max);
 
 	///<summary>Returns <paramref name="value" /> clamped to the inclusive range of <paramref name="min" /> and <paramref name="max" />.</summary>
-	[Jazor(Op.Inline, "static System.Math.Clamp(double, double, double)", "Math.min(Math.max(@#{0}, @#{1}), @#{2})")]
+	[Jazor(Op.Inline, "static System.Math.Clamp(double, double, double)", "Math.min(Math.max(__arg1, __arg2), __arg3)")]
 	public extern static Number _a416f1414d77c0fa(Number value, Number min, Number max);
 
 	///<summary>Returns <paramref name="value" /> clamped to the inclusive range of <paramref name="min" /> and <paramref name="max" />.</summary>
-	[Jazor(Op.Inline, "static System.Math.Clamp(short, short, short)", "Math.min(Math.max(@#{0}, @#{1}), @#{2})")]
+	[Jazor(Op.Inline, "static System.Math.Clamp(short, short, short)", "Math.min(Math.max(__arg1, __arg2), __arg3)")]
 	public extern static Number _86bd53ebc62ad520(Number value, Number min, Number max);
 
 	///<summary>Returns <paramref name="value" /> clamped to the inclusive range of <paramref name="min" /> and <paramref name="max" />.</summary>
-	[Jazor(Op.Inline, "static System.Math.Clamp(int, int, int)", "Math.min(Math.max(@#{0}, @#{1}), @#{2})")]
+	[Jazor(Op.Inline, "static System.Math.Clamp(int, int, int)", "Math.min(Math.max(__arg1, __arg2), __arg3)")]
 	public extern static Number _ac5962f496c6acc0(Number value, Number min, Number max);
 
 	///<summary>Returns <paramref name="value" /> clamped to the inclusive range of <paramref name="min" /> and <paramref name="max" />.</summary>
@@ -283,19 +283,19 @@ public static class MathModule
 	public extern static nint _63803d1734456eee(object value, object min, object max);
 
 	///<summary>Returns <paramref name="value" /> clamped to the inclusive range of <paramref name="min" /> and <paramref name="max" />.</summary>
-	[Jazor(Op.Inline, "static System.Math.Clamp(sbyte, sbyte, sbyte)", "Math.min(Math.max(@#{0}, @#{1}), @#{2})")]
+	[Jazor(Op.Inline, "static System.Math.Clamp(sbyte, sbyte, sbyte)", "Math.min(Math.max(__arg1, __arg2), __arg3)")]
 	public extern static Number _f2a0d82587b4e02a(Number value, Number min, Number max);
 
 	///<summary>Returns <paramref name="value" /> clamped to the inclusive range of <paramref name="min" /> and <paramref name="max" />.</summary>
-	[Jazor(Op.Inline, "static System.Math.Clamp(float, float, float)", "Math.min(Math.max(@#{0}, @#{1}), @#{2})")]
+	[Jazor(Op.Inline, "static System.Math.Clamp(float, float, float)", "Math.min(Math.max(__arg1, __arg2), __arg3)")]
 	public extern static Number _751a0e2d62df6aff(Number value, Number min, Number max);
 
 	///<summary>Returns <paramref name="value" /> clamped to the inclusive range of <paramref name="min" /> and <paramref name="max" />.</summary>
-	[Jazor(Op.Inline, "static System.Math.Clamp(ushort, ushort, ushort)", "Math.min(Math.max(@#{0}, @#{1}), @#{2})")]
+	[Jazor(Op.Inline, "static System.Math.Clamp(ushort, ushort, ushort)", "Math.min(Math.max(__arg1, __arg2), __arg3)")]
 	public extern static Number _74d6735122ecb151(Number value, Number min, Number max);
 
 	///<summary>Returns <paramref name="value" /> clamped to the inclusive range of <paramref name="min" /> and <paramref name="max" />.</summary>
-	[Jazor(Op.Inline, "static System.Math.Clamp(uint, uint, uint)", "Math.min(Math.max(@#{0}, @#{1}), @#{2})")]
+	[Jazor(Op.Inline, "static System.Math.Clamp(uint, uint, uint)", "Math.min(Math.max(__arg1, __arg2), __arg3)")]
 	public extern static Number _8322034639d6a05c(Number value, Number min, Number max);
 
 	///<summary>Returns <paramref name="value" /> clamped to the inclusive range of <paramref name="min" /> and <paramref name="max" />.</summary>
@@ -319,7 +319,7 @@ public static class MathModule
 	public extern static Number _51e4d6005e6e11ef(Number x);
 
 	///<summary>Returns the logarithm of a specified number in a specified base.</summary>
-	[Jazor(Op.Inline, "static System.Math.Log(double, double)", "(Math.log(@#{0}) / Math.log(@#{1}))")]
+	[Jazor(Op.Inline, "static System.Math.Log(double, double)", "(Math.log(__arg1) / Math.log(__arg2))")]
 	public extern static Number _da091a35a0d7bc64(Number a, Number newBase);
 
 	///<summary>Returns the larger of two 8-bit unsigned integers.</summary>
@@ -375,7 +375,7 @@ public static class MathModule
 	public extern static nuint _7f3becc9b24d51d3(object val1, object val2);
 
 	///<summary>Returns the larger magnitude of two double-precision floating-point numbers.</summary>
-	[Jazor(Op.Inline, "static System.Math.MaxMagnitude(double, double)", "((Math.abs(@#{0}) >= Math.abs(@#{1})) ? @#{0} : @#{1})")]
+	[Jazor(Op.Inline, "static System.Math.MaxMagnitude(double, double)", "((Math.abs(__arg1) >= Math.abs(__arg2)) ? __arg1 : __arg2)")]
 	public extern static Number _7922e74207558715(Number x, Number y);
 
 	///<summary>Returns the smaller of two 8-bit unsigned integers.</summary>
@@ -431,15 +431,15 @@ public static class MathModule
 	public extern static nuint _c03fe2f175939d3a(object val1, object val2);
 
 	///<summary>Returns the smaller magnitude of two double-precision floating-point numbers.</summary>
-	[Jazor(Op.Inline, "static System.Math.MinMagnitude(double, double)", "((Math.abs(@#{0}) <= Math.abs(@#{1})) ? @#{0} : @#{1})")]
+	[Jazor(Op.Inline, "static System.Math.MinMagnitude(double, double)", "((Math.abs(__arg1) <= Math.abs(__arg2)) ? __arg1 : __arg2)")]
 	public extern static Number _44776725ec896ede(Number x, Number y);
 
 	///<summary>Returns an estimate of the reciprocal of a specified number.</summary>
-	[Jazor(Op.Inline, "static System.Math.ReciprocalEstimate(double)", "(1 / @#{0})")]
+	[Jazor(Op.Inline, "static System.Math.ReciprocalEstimate(double)", "(1 / __arg1)")]
 	public extern static Number _63ae085718e46139(Number d);
 
 	///<summary>Returns an estimate of the reciprocal square root of a specified number.</summary>
-	[Jazor(Op.Inline, "static System.Math.ReciprocalSqrtEstimate(double)", "(1 / Math.sqrt(@#{0}))")]
+	[Jazor(Op.Inline, "static System.Math.ReciprocalSqrtEstimate(double)", "(1 / Math.sqrt(__arg1))")]
 	public extern static Number _5ab45aaeb89fbf4c(Number d);
 
 	///<summary>Rounds a decimal value to the nearest integral value, and rounds midpoint values to the nearest even number.</summary>
@@ -515,6 +515,6 @@ public static class MathModule
 	public extern static Number _b74eaf879a3b5fd7(Number d);
 
 	///<summary>Returns x * 2^n computed efficiently.</summary>
-	[Jazor(Op.Inline, "static System.Math.ScaleB(double, int)", "(@#{0} * Math.pow(2, @#{1}))")]
+	[Jazor(Op.Inline, "static System.Math.ScaleB(double, int)", "(__arg1 * Math.pow(2, __arg2))")]
 	public extern static Number _11ce4194425195ad(Number x, Number n);
 }

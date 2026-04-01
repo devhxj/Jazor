@@ -28,28 +28,28 @@ public static class SByteModule
 	/// C#: sbyte.CompareTo(object)
 	/// JS: instance - (obj ?? 0)
 	/// </summary>
-	[Jazor(Op.Inline, "sbyte.CompareTo(object)", "(@#{0} - (@#{1} ?? 0))")]
+	[Jazor(Op.Inline, "sbyte.CompareTo(object)", "(__arg1 - (__arg2 ?? 0))")]
 	public extern static Number _f8a387725694962f(Number instance, object? obj);
 
 	/// <summary>
 	/// C#: sbyte.CompareTo(sbyte)
 	/// JS: instance - value
 	/// </summary>
-	[Jazor(Op.Inline, "sbyte.CompareTo(sbyte)", "(@#{0} - @#{1})")]
+	[Jazor(Op.Inline, "sbyte.CompareTo(sbyte)", "(__arg1 - __arg2)")]
 	public extern static Number _a0ff7e0ac34c91a8(Number instance, Number value);
 
 	/// <summary>
 	/// C#: sbyte.Equals(object)
 	/// JS: instance === obj
 	/// </summary>
-	[Jazor(Op.Inline, "override sbyte.Equals(object)", "(@#{0} === @#{1})")]
+	[Jazor(Op.Inline, "override sbyte.Equals(object)", "(__arg1 === __arg2)")]
 	public extern static bool _74c9452fa767096f(Number instance, object? obj);
 
 	/// <summary>
 	/// C#: sbyte.Equals(sbyte)
 	/// JS: instance === obj
 	/// </summary>
-	[Jazor(Op.Inline, "sbyte.Equals(sbyte)", "(@#{0} === @#{1})")]
+	[Jazor(Op.Inline, "sbyte.Equals(sbyte)", "(__arg1 === __arg2)")]
 	public extern static bool _4105db2840795661(Number instance, Number obj);
 
 	///<summary>Returns the hash code for this instance.</summary>

@@ -52,6 +52,14 @@ public partial class SemanticWalker
 		// 如果有初始化器，则需要用IIFE处理
 		if (operation.Initializer?.Initializers.Length > 0)
 		{
+			if (TryBuildCollectionLiteral(operation.Initializer, mapper, argument, out var collectionLiteral))
+			{
+				expr = collectionLiteral;
+				if (assignObj is not null)
+					expr = new AssignmentExpression(Operator.Assignment, assignObj, expr);
+				return expr;
+			}
+
 			if (assignObj is null)
 				return BuildObjectOrCollectionInitializer(expr, operation.Initializer, argument)!;
 			else
@@ -64,6 +72,47 @@ public partial class SemanticWalker
 		}
 
 		return expr;
+	}
+
+	private bool TryBuildCollectionLiteral(IObjectOrCollectionInitializerOperation initializer, TypeMapper mapper, SenseArgument argument, out Expression expression)
+	{
+		expression = null!;
+		if (mapper is not (TypeMapper.Array or TypeMapper.Set or TypeMapper.Map))
+			return false;
+
+		var items = new List<Expression>();
+		foreach (var init in initializer.Initializers)
+		{
+			if (init is not IInvocationOperation invocation)
+				return false;
+
+			if (mapper is TypeMapper.Array or TypeMapper.Set)
+			{
+				if (invocation.Arguments.Length != 1)
+					return false;
+				items.Add(Translate<Expression>(invocation.Arguments[0].Value, argument));
+			}
+			else
+			{
+				if (invocation.Arguments.Length != 2)
+					return false;
+
+				var key = Translate<Expression>(invocation.Arguments[0].Value, argument);
+				var value = Translate<Expression>(invocation.Arguments[1].Value, argument);
+				items.Add(new ArrayExpression(NodeList.From<Expression?>(key, value)));
+			}
+		}
+
+		if (mapper == TypeMapper.Array)
+		{
+			expression = new ArrayExpression(NodeList.From<Expression?>(items));
+			return true;
+		}
+
+		var literalArray = new ArrayExpression(NodeList.From<Expression?>(items));
+		var typeName = mapper == TypeMapper.Set ? "Set" : "Map";
+		expression = new NewExpression(new Identifier(typeName), NodeList.From<Expression>(literalArray));
+		return true;
 	}
 
 	/// <summary>
@@ -81,10 +130,48 @@ public partial class SemanticWalker
 		{
 			if (initializer is ISimpleAssignmentOperation simpleAssignmentOp)
 			{
-				var prop = Translate<Expression>(simpleAssignmentOp.Target, argument);
-				var left = obj is null
-					 ? prop
-					 : new MemberExpression(obj, prop, computed: false, optional: false);
+				Expression? left = null;
+				IPropertyReferenceOperation? propertyReference = null;
+				Expression? propertyInstance = null;
+				if (simpleAssignmentOp.Target is IPropertyReferenceOperation propertyReferenceOp)
+				{
+					propertyReference = propertyReferenceOp;
+					propertyInstance = Translate<Expression>(propertyReferenceOp.Instance, argument, null) ?? obj;
+					if (propertyReferenceOp.Arguments.Length > 0)
+					{
+						if (propertyReferenceOp.Arguments.Length != 1 || propertyInstance is null)
+							return HandleTransformationFailure<List<Expression>>(initializer, "Indexed initializer target could not be translated to JavaScript.");
+
+						var index = Translate<Expression>(propertyReferenceOp.Arguments[0].Value, argument);
+						left = new MemberExpression(propertyInstance, index, computed: true, optional: false);
+					}
+					else
+					{
+						var property = new Identifier(GetInitializerMemberName(propertyReferenceOp.Property));
+						left = propertyInstance is null
+							? property
+							: new MemberExpression(propertyInstance, property, computed: false, optional: false);
+					}
+				}
+				else if (simpleAssignmentOp.Target is IFieldReferenceOperation fieldReferenceOp)
+				{
+					var fieldInstance = Translate<Expression>(fieldReferenceOp.Instance, argument, null) ?? obj;
+					var field = new Identifier(GetInitializerMemberName(fieldReferenceOp.Field));
+					left = fieldInstance is null
+						? field
+						: new MemberExpression(fieldInstance, field, computed: false, optional: false);
+				}
+				else
+				{
+					var prop = Translate<Expression>(simpleAssignmentOp.Target, argument);
+					left = obj is null
+						 ? prop
+						 : new MemberExpression(obj, prop, computed: false, optional: false);
+				}
+
+				if (left is null)
+					return HandleTransformationFailure<List<Expression>>(initializer, "Initializer target could not be translated to JavaScript.");
+
 				if (simpleAssignmentOp.Value is IObjectCreationOperation subObjectCreationOp &&
 					subObjectCreationOp.Initializer is not null)
 				{
@@ -97,6 +184,27 @@ public partial class SemanticWalker
 				else
 				{
 					var right = Translate<Expression>(simpleAssignmentOp.Value, argument);
+
+					if (propertyReference?.Property.SetMethod is not null && propertyInstance is not null)
+					{
+						var setterArguments = new List<Expression>(propertyReference.Arguments.Length + 1);
+						foreach (var propertyArgument in propertyReference.Arguments)
+						{
+							var argContext = propertyArgument.Parameter?.RefKind is RefKind.Out
+								? argument.With(Sense.OutParameter)
+								: argument;
+							setterArguments.Add(Translate<Expression>(propertyArgument.Value, argContext));
+						}
+						setterArguments.Add(right);
+
+						var mapperExpr = GetWhiteListExpression(propertyReference.Property.SetMethod, argument, setterArguments, propertyInstance, out _);
+						if (mapperExpr is not null)
+						{
+							exprs.Add(mapperExpr);
+							continue;
+						}
+					}
+
 					var expr = new AssignmentExpression(Operator.Assignment, left, right);
 					exprs.Add(expr);
 				}
@@ -373,15 +481,15 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitArrayCreation(IArrayCreationOperation operation, SenseArgument argument)
 	{
-		// 检查是否为多维数组
-		if (operation.Type is IArrayTypeSymbol arrayType)
+		if (operation.Type is IArrayTypeSymbol arrayType && arrayType.Rank > 1)
 		{
-			if (arrayType.Rank > 1)
-			{
-				// 多维数组在 C# 中可以创建但无法访问，导致“能创建却无法访问”的悄论
-				// 为保证语义一致性，禁止创建多维数组
-				return HandleTransformationFailure<Node>(operation, "Array creation with unsupported initializer or dimension.");
-			}
+			if (operation.Initializer is not null)
+				return BuildNestedArrayInitializer(operation.Initializer, argument);
+
+			var dimensions = operation.DimensionSizes
+				.Select(dimension => Translate<Expression>(dimension, argument))
+				.ToArray();
+			return BuildMultiDimensionalArray(dimensions, 0);
 		}
 
 		var elements = new List<Expression?>();
@@ -397,13 +505,62 @@ public partial class SemanticWalker
 			// 处理空数组或基于大小的数组
 			foreach (var dimension in operation.DimensionSizes)
 			{
-				// 为简化，创建一个空数组，实际可能需要 new Array(size)
+				if (dimension.ConstantValue.HasValue)
+				{
+					switch (dimension.ConstantValue.Value)
+					{
+						case 0:
+						case 0u:
+						case 0L:
+						case 0UL:
+							return new ArrayExpression(NodeList.From<Expression?>());
+					}
+				}
+
 				var sizeNode = Translate<Expression>(dimension, argument);
 				return new NewExpression(new Identifier("Array"), NodeList.From(sizeNode));
 			}
 		}
 
 		return new ArrayExpression(NodeList.From(elements));
+	}
+
+	private Expression BuildNestedArrayInitializer(IArrayInitializerOperation initializer, SenseArgument argument)
+	{
+		var elements = new List<Expression?>(initializer.ElementValues.Length);
+		foreach (var element in initializer.ElementValues)
+		{
+			if (element is IArrayInitializerOperation nestedInitializer)
+				elements.Add(BuildNestedArrayInitializer(nestedInitializer, argument));
+			else
+				Translate(elements, element, argument, null);
+		}
+
+		return new ArrayExpression(NodeList.From(elements));
+	}
+
+	private static Expression BuildMultiDimensionalArray(IReadOnlyList<Expression> dimensions, int dimensionIndex)
+	{
+		var currentArray = new NewExpression(new Identifier("Array"), NodeList.From(dimensions[dimensionIndex]));
+		if (dimensionIndex == dimensions.Count - 1)
+			return currentArray;
+
+		var fillCall = new CallExpression(
+			new MemberExpression(currentArray, new Identifier("fill"), computed: false, optional: false),
+			NodeList.From<Expression>(),
+			optional: false);
+
+		var nested = BuildMultiDimensionalArray(dimensions, dimensionIndex + 1);
+		var mapper = new ArrowFunctionExpression(
+			NodeList.From<Node>(),
+			nested,
+			expression: true,
+			async: false);
+
+		return new CallExpression(
+			new MemberExpression(fillCall, new Identifier("map"), computed: false, optional: false),
+			NodeList.From<Expression>(mapper),
+			optional: false);
 	}
 
 	/// <summary>

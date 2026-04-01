@@ -188,24 +188,13 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
                 alias = entry.Value!;
 
             else if (entry.Op == Op.Inline)
-            {
-                var raw = entry.Value!;
-                for (var i = 0; i < arguments.Count; i++)
-                {
-                    var arg = arguments[i];
-                    raw = raw.Replace($"@#{{{i}}}", arg.ToKnRECMAScript());
-                }
-
-                // Create a new Parser instance each time to avoid thread-safety issues
-                var parser = new Parser();
-                return parser.ParseExpression(raw, null, true);
-            }
+                return InstantiateInlineTemplate(displayString, entry.Value!, arguments);
 
             else if (entry.Op == Op.Import)
             {
                 // 生成导入调用
                 var id = new Identifier(entry.Value!);
-                context.MergeImportSpecifier(entry.Value!, new ImportSpecifier(id));
+                context.MergeImportSpecifier(entry.Path!, new ImportSpecifier(id));
                 return new CallExpression(id, NodeList.From(arguments), optional: false);
             }
         }
@@ -234,6 +223,8 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
     private readonly Action<Location, string?>? _report;
 
+    private readonly ITypeSymbol? _moduleRootType;
+
     private readonly Dictionary<string, Func<Expression?, Expression?[], Expression?>> _whiteListCompiles;
 
     public SemanticWalker()
@@ -241,6 +232,8 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         _whiteListCompiles = [];
         Generate(ref _whiteListCompiles);
 	}
+
+    public SemanticWalker(ITypeSymbol moduleRootType) : this() => _moduleRootType = moduleRootType;
 
     public SemanticWalker(bool test) : this() => _test = test;
 

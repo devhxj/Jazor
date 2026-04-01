@@ -5,7 +5,7 @@ namespace Jazor.CLR;
 public static class ReadOnlyDictionaryModule<TKey, TValue> where TKey : notnull
 {
 	///<summary>Initializes a new instance of the <see cref="T:System.Collections.ObjectModel.ReadOnlyDictionary`2" /> class that is a wrapper around the specified dictionary.</summary>
-	[Jazor(Op.Inline, "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.ReadOnlyDictionary(System.Collections.Generic.IDictionary<TKey, TValue>)", "@#{0}")]
+	[Jazor(Op.Inline, "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.ReadOnlyDictionary(System.Collections.Generic.IDictionary<TKey, TValue>)", "__arg1")]
 	public extern static Map<TKey,TValue> _b22e987e1be225aa(object dictionary);
 
 	/// <summary>
@@ -25,28 +25,34 @@ public static class ReadOnlyDictionaryModule<TKey, TValue> where TKey : notnull
 	/// C#: instance.ContainsKey(key)
 	/// JS: instance.has(key)
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.ContainsKey(TKey)", "@#{0}.has(@#{1})")]
+	[Jazor(Op.Inline, "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.ContainsKey(TKey)", "__arg1.has(__arg2)")]
 	public extern static bool _08bd8c3015d3691e(Map<TKey,TValue> instance, object key);
 
 	/// <summary>
 	/// C#: instance.TryGetValue(key, out value)
 	/// JS: [has, value]
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.TryGetValue(TKey, out TValue)", "(@#{0}.has(@#{1}) ? [true, @#{0}.get(@#{1})] : [false, null])")]
+	[Jazor(Op.Inline, "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.TryGetValue(TKey, out TValue)", "(__arg1.has(__arg2) ? [true, __arg1.get(__arg2)] : [false, null])")]
 	public extern static Array<object?> _19af957975f1546f(Map<TKey,TValue> instance, object key, object value);
 
 	/// <summary>
 	/// C#: instance[key]
-	/// JS: instance.get(key)
+	/// JS: instance.get(key) (缺失时抛出 KeyNotFoundException)
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.this[TKey].get", "@#{0}.get(@#{1})")]
-	public extern static TValue _ed4a7913b74bfd87(Map<TKey,TValue> instance, object key);
+	[Jazor(Op.Import, "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.this[TKey].get")]
+	public static TValue _ed4a7913b74bfd87(Map<TKey,TValue> instance, object key)
+	{
+		var typedKey = (TKey)key;
+		if (!instance.Has(typedKey))
+			throw new Error("KeyNotFoundException: The given key was not present in the dictionary.");
+		return instance.Get(typedKey);
+	}
 
 	/// <summary>
 	/// C#: instance.Count
 	/// JS: instance.size
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.Count.get", "@#{0}.size")]
+	[Jazor(Op.Inline, "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.Count.get", "__arg1.size")]
 	public extern static Number _3a7eb79e194b9fae(Map<TKey,TValue> instance);
 
 	///<summary>Returns an enumerator that iterates through the <see cref="T:System.Collections.ObjectModel.ReadOnlyDictionary`2" />.</summary>

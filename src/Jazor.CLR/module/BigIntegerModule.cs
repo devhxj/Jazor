@@ -185,28 +185,28 @@ public static class BigIntegerModule
 	/// C#: bigint.IsPowerOfTwo
 	/// JS: instance > 0n && (instance & (instance - 1n)) === 0n
 	/// </summary>
-	[Jazor(Op.Inline, "System.Numerics.BigInteger.IsPowerOfTwo.get", "(@#{0} > 0n && (@#{0} & (@#{0} - 1n)) === 0n)")]
+	[Jazor(Op.Inline, "System.Numerics.BigInteger.IsPowerOfTwo.get", "(__arg1 > 0n && (__arg1 & (__arg1 - 1n)) === 0n)")]
 	public extern static bool _ee8564f940baf789(BigInt instance);
 
 	/// <summary>
 	/// C#: bigint.IsZero
 	/// JS: instance === 0n
 	/// </summary>
-	[Jazor(Op.Inline, "System.Numerics.BigInteger.IsZero.get", "(@#{0} === 0n)")]
+	[Jazor(Op.Inline, "System.Numerics.BigInteger.IsZero.get", "(__arg1 === 0n)")]
 	public extern static bool _c138b3f4dd057592(BigInt instance);
 
 	/// <summary>
 	/// C#: bigint.IsOne
 	/// JS: instance === 1n
 	/// </summary>
-	[Jazor(Op.Inline, "System.Numerics.BigInteger.IsOne.get", "(@#{0} === 1n)")]
+	[Jazor(Op.Inline, "System.Numerics.BigInteger.IsOne.get", "(__arg1 === 1n)")]
 	public extern static bool _2aa0739f87c79906(BigInt instance);
 
 	/// <summary>
 	/// C#: bigint.IsEven
 	/// JS: instance % 2n === 0n
 	/// </summary>
-	[Jazor(Op.Inline, "System.Numerics.BigInteger.IsEven.get", "(@#{0} % 2n === 0n)")]
+	[Jazor(Op.Inline, "System.Numerics.BigInteger.IsEven.get", "(__arg1 % 2n === 0n)")]
 	public extern static bool _4a465705ad4dc8ca(BigInt instance);
 
 	/// <summary>

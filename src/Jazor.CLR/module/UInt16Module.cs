@@ -39,28 +39,28 @@ public static class UInt16Module
 	/// C#: ushort.CompareTo(object)
 	/// JS: (instance < value ? -1 : (instance > value ? 1 : 0))
 	/// </summary>
-	[Jazor(Op.Inline, "ushort.CompareTo(object)", "(@#{0} < (@#{1} ?? 0) ? -1 : (@#{0} > (@#{1} ?? 0) ? 1 : 0))")]
+	[Jazor(Op.Inline, "ushort.CompareTo(object)", "(__arg1 < (__arg2 ?? 0) ? -1 : (__arg1 > (__arg2 ?? 0) ? 1 : 0))")]
 	public extern static Number _d8d8b9cba9bd3347(Number instance, object? value);
 
 	/// <summary>
 	/// C#: ushort.CompareTo(ushort)
 	/// JS: (instance < value ? -1 : (instance > value ? 1 : 0))
 	/// </summary>
-	[Jazor(Op.Inline, "ushort.CompareTo(ushort)", "(@#{0} < @#{1} ? -1 : (@#{0} > @#{1} ? 1 : 0))")]
+	[Jazor(Op.Inline, "ushort.CompareTo(ushort)", "(__arg1 < __arg2 ? -1 : (__arg1 > __arg2 ? 1 : 0))")]
 	public extern static Number _2ca53dc375a8ff3d(Number instance, Number value);
 
 	/// <summary>
 	/// C#: ushort.Equals(object)
 	/// JS: instance === obj
 	/// </summary>
-	[Jazor(Op.Inline, "override ushort.Equals(object)", "(@#{0} === @#{1})")]
+	[Jazor(Op.Inline, "override ushort.Equals(object)", "(__arg1 === __arg2)")]
 	public extern static bool _c13e06040702dab1(Number instance, object? obj);
 
 	/// <summary>
 	/// C#: ushort.Equals(ushort)
 	/// JS: instance === obj
 	/// </summary>
-	[Jazor(Op.Inline, "ushort.Equals(ushort)", "(@#{0} === @#{1})")]
+	[Jazor(Op.Inline, "ushort.Equals(ushort)", "(__arg1 === __arg2)")]
 	public extern static bool _0faff9447540bf0f(Number instance, Number obj);
 
 	///<summary>Returns the hash code for this instance.</summary>

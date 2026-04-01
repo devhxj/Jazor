@@ -230,26 +230,32 @@ public static class StringModule
 	[Jazor(Op.Discard ,"string.TryCopyTo(System.Span<char>)")]
 	public extern static bool _b0ab2eeef447828c(string instance, Uint32Array destination);
 
-	///<summary>Copies the characters in this instance to a Unicode character array.</summary>
-	[Jazor(Op.Discard ,"string.ToCharArray()")]
+	/// <summary>
+	/// C#: str.ToCharArray()
+	/// JS: str.split("")
+	/// </summary>
+	[Jazor(Op.Inline, "string.ToCharArray()", """__arg1.split("")""")]
 	public extern static char[] _7b8eb7b3d52c463d(string instance);
 
-	///<summary>Copies the characters in a specified substring in this instance to a Unicode character array.</summary>
-	[Jazor(Op.Discard ,"string.ToCharArray(int, int)")]
+	/// <summary>
+	/// C#: str.ToCharArray(startIndex, length)
+	/// JS: str.substring(startIndex, startIndex + length).split("")
+	/// </summary>
+	[Jazor(Op.Inline, "string.ToCharArray(int, int)", """__arg1.substring(__arg2, __arg2 + __arg3).split("")""")]
 	public extern static char[] _53042938adf57f41(string instance, Number startIndex, Number length);
 
 	/// <summary>
 	/// C#: string.IsNullOrEmpty(value)
 	/// JS: !value
 	/// </summary>
-	[Jazor(Op.Inline, "static string.IsNullOrEmpty(string)", "!@#{0}")]
+	[Jazor(Op.Inline, "static string.IsNullOrEmpty(string)", "!__arg1")]
 	public extern static bool _f6e1cc63ac93e98f(string? value);
 
 	/// <summary>
 	/// C#: string.IsNullOrWhiteSpace(value)
 	/// JS: !value?.trim()
 	/// </summary>
-	[Jazor(Op.Inline, "static string.IsNullOrWhiteSpace(string)", "!@#{0}?.trim()")]
+	[Jazor(Op.Inline, "static string.IsNullOrWhiteSpace(string)", "!__arg1?.trim()")]
 	public extern static bool _257a1a64b4d0f7d2(string? value);
 
 	///<summary>Returns a reference to the element of the string at index zero.This method is intended to support .NET compilers and is not intended to be called by user code.</summary>
@@ -297,10 +303,15 @@ public static class StringModule
 
 	/// <summary>
 	/// C#: str[index]
-	/// JS: str.charAt(index) or str[index]
+	/// JS: str[index] (越界时抛出 IndexOutOfRangeException)
 	/// </summary>
-	[Jazor(Op.Inline, "string.this[int].get", "@#{0}.charAt(@#{1})")]
-	public extern static string _5ad63706a889c294(string instance, Number index);
+	[Jazor(Op.Import, "string.this[int].get")]
+	public static string _5ad63706a889c294(string instance, Number index)
+	{
+		if (index < 0 || index >= instance.Length)
+			throw new Error("IndexOutOfRangeException: index is out of range.");
+		return instance[index];
+	}
 
 	/// <summary>
 	/// C#: str.Length
@@ -341,21 +352,21 @@ public static class StringModule
 	/// C#: string.Concat(str0, str1)
 	/// JS: str0 + str1
 	/// </summary>
-	[Jazor(Op.Inline, "static string.Concat(string, string)", "(@#{0} + @#{1})")]
+	[Jazor(Op.Inline, "static string.Concat(string, string)", "(__arg1 + __arg2)")]
 	public extern static string _021d71ef80d7918e(string? str0, string? str1);
 
 	/// <summary>
 	/// C#: string.Concat(str0, str1, str2)
 	/// JS: str0 + str1 + str2
 	/// </summary>
-	[Jazor(Op.Inline, "static string.Concat(string, string, string)", "(@#{0} + @#{1} + @#{2})")]
+	[Jazor(Op.Inline, "static string.Concat(string, string, string)", "(__arg1 + __arg2 + __arg3)")]
 	public extern static string _ccc7897cb6f89406(string? str0, string? str1, string? str2);
 
 	/// <summary>
 	/// C#: string.Concat(str0, str1, str2, str3)
 	/// JS: str0 + str1 + str2 + str3
 	/// </summary>
-	[Jazor(Op.Inline, "static string.Concat(string, string, string, string)", "(@#{0} + @#{1} + @#{2} + @#{3})")]
+	[Jazor(Op.Inline, "static string.Concat(string, string, string, string)", "(__arg1 + __arg2 + __arg3 + __arg4)")]
 	public extern static string _abe4ba2b38df2f54(string? str0, string? str1, string? str2, string? str3);
 
 	///<summary>Concatenates the string representations of two specified read-only character spans.</summary>
@@ -480,8 +491,11 @@ public static class StringModule
 	[Jazor(Op.Discard ,"static string.Format(System.IFormatProvider, System.Text.CompositeFormat, params System.ReadOnlySpan<object>)")]
 	public extern static string _e4458a04839fcdc5(Intl.NumberFormat? provider, object format,  object args);
 
-	///<summary>Returns a new string in which a specified string is inserted at a specified index position in this instance.</summary>
-	[Jazor(Op.Discard ,"string.Insert(int, string)")]
+	/// <summary>
+	/// C#: str.Insert(startIndex, value)
+	/// JS: str.slice(0, startIndex) + value + str.slice(startIndex)
+	/// </summary>
+	[Jazor(Op.Inline, "string.Insert(int, string)", "(__arg1.slice(0, __arg2) + __arg3 + __arg1.slice(__arg2))")]
 	public extern static string _91223088dad76801(string instance, Number startIndex, string value);
 
 	///<summary>Concatenates an array of strings, using the specified separator between each member.</summary>
@@ -552,12 +566,18 @@ public static class StringModule
 	[Jazor(Op.Discard ,"string.PadRight(int, char)")]
 	public extern static string _685227781124d327(string instance, Number totalWidth, Number paddingChar);
 
-	///<summary>Returns a new string in which a specified number of characters in the current instance beginning at a specified position have been deleted.</summary>
-	[Jazor(Op.Discard ,"string.Remove(int, int)")]
+	/// <summary>
+	/// C#: str.Remove(startIndex, count)
+	/// JS: str.slice(0, startIndex) + str.slice(startIndex + count)
+	/// </summary>
+	[Jazor(Op.Inline, "string.Remove(int, int)", "(__arg1.slice(0, __arg2) + __arg1.slice(__arg2 + __arg3))")]
 	public extern static string _ac075983805231a6(string instance, Number startIndex, Number count);
 
-	///<summary>Returns a new string in which all the characters in the current instance, beginning at a specified position and continuing through the last position, have been deleted.</summary>
-	[Jazor(Op.Discard ,"string.Remove(int)")]
+	/// <summary>
+	/// C#: str.Remove(startIndex)
+	/// JS: str.slice(0, startIndex)
+	/// </summary>
+	[Jazor(Op.Inline, "string.Remove(int)", "__arg1.slice(0, __arg2)")]
 	public extern static string _d258363cef56cdfb(string instance, Number startIndex);
 
 	///<summary>Returns a new string in which all occurrences of a specified string in the current instance are replaced with another specified string, using the provided culture and case sensitivity.</summary>
@@ -648,7 +668,7 @@ public static class StringModule
 	/// JS: str.substring(startIndex, startIndex + length)
 	/// Note: C# Substring uses length, JS substring uses end index
 	/// </summary>
-	[Jazor(Op.Inline, "string.Substring(int, int)", "@#{0}.substring(@#{1}, @#{1} + @#{2})")]
+	[Jazor(Op.Inline, "string.Substring(int, int)", "__arg1.substring(__arg2, __arg2 + __arg3)")]
 	public extern static string _ac659b5819c0360c(string instance, Number startIndex, Number length);
 
 	/// <summary>
@@ -662,8 +682,11 @@ public static class StringModule
 	[Jazor(Op.Discard ,"string.ToLower(System.Globalization.CultureInfo)")]
 	public extern static string _8e06da9945efff04(string instance, String? culture);
 
-	///<summary>Returns a copy of this <see cref="T:System.String" /> object converted to lowercase using the casing rules of the invariant culture.</summary>
-	[Jazor(Op.Discard ,"string.ToLowerInvariant()")]
+	/// <summary>
+	/// C#: str.ToLowerInvariant()
+	/// JS: str.toLowerCase()
+	/// </summary>
+	[Jazor(Op.Alias, "string.ToLowerInvariant()", "toLowerCase")]
 	public extern static string _3ff043d0307f4917(string instance);
 
 	/// <summary>
@@ -677,8 +700,11 @@ public static class StringModule
 	[Jazor(Op.Discard ,"string.ToUpper(System.Globalization.CultureInfo)")]
 	public extern static string _9369d4b370002404(string instance, String? culture);
 
-	///<summary>Returns a copy of this <see cref="T:System.String" /> object converted to uppercase using the casing rules of the invariant culture.</summary>
-	[Jazor(Op.Discard ,"string.ToUpperInvariant()")]
+	/// <summary>
+	/// C#: str.ToUpperInvariant()
+	/// JS: str.toUpperCase()
+	/// </summary>
+	[Jazor(Op.Alias, "string.ToUpperInvariant()", "toUpperCase")]
 	public extern static string _3dc9c0782170eb46(string instance);
 
 	/// <summary>

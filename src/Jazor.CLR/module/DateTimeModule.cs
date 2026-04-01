@@ -46,7 +46,7 @@ public static class DateTimeModule
 	/// C#: new DateTime(ticks)
 	/// JS: new Date(Number((ticks - 621355968000000000n) / 10000n))
 	/// </summary>
-	[Jazor(Op.Inline, "System.DateTime.DateTime(long)", "new Date(Number((@#{0} - 621355968000000000n) / 10000n))")]
+	[Jazor(Op.Inline, "System.DateTime.DateTime(long)", "new Date(Number((__arg1 - 621355968000000000n) / 10000n))")]
 	public extern static Date _1ba9ed95dd0eab48(BigInt ticks);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTime" /> structure to a specified number of ticks and to Coordinated Universal Time (UTC) or local time.</summary>
@@ -62,7 +62,7 @@ public static class DateTimeModule
 	public extern static Date _85602323793168a5(Date date, Number time, object kind);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTime" /> structure to the specified year, month, and day.</summary>
-	[Jazor(Op.Inline, "System.DateTime.DateTime(int, int, int)", "new Date(@#{0}, @#{1} - 1, @#{2})")]
+	[Jazor(Op.Inline, "System.DateTime.DateTime(int, int, int)", "new Date(__arg1, __arg2 - 1, __arg3)")]
 	public extern static Date _4cb33a818161a3e1(Number year, Number month, Number day);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTime" /> structure to the specified year, month, and day for the specified calendar.</summary>
@@ -74,7 +74,7 @@ public static class DateTimeModule
 	public extern static Date _bd2c430e6327a2cc(Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond, GregorianCalendar calendar, object kind);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTime" /> structure to the specified year, month, day, hour, minute, and second.</summary>
-	[Jazor(Op.Inline, "System.DateTime.DateTime(int, int, int, int, int, int)", "new Date(@#{0}, @#{1} - 1, @#{2}, @#{3}, @#{4}, @#{5})")]
+	[Jazor(Op.Inline, "System.DateTime.DateTime(int, int, int, int, int, int)", "new Date(__arg1, __arg2 - 1, __arg3, __arg4, __arg5, __arg6)")]
 	public extern static Date _4903723bbf8a0a2f(Number year, Number month, Number day, Number hour, Number minute, Number second);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTime" /> structure to the specified year, month, day, hour, minute, second, and Coordinated Universal Time (UTC) or local time.</summary>
@@ -86,7 +86,7 @@ public static class DateTimeModule
 	public extern static Date _29bb943b21806bd9(Number year, Number month, Number day, Number hour, Number minute, Number second, GregorianCalendar calendar);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTime" /> structure to the specified year, month, day, hour, minute, second, and millisecond.</summary>
-	[Jazor(Op.Inline, "System.DateTime.DateTime(int, int, int, int, int, int, int)", "new Date(@#{0}, @#{1} - 1, @#{2}, @#{3}, @#{4}, @#{5}, @#{6})")]
+	[Jazor(Op.Inline, "System.DateTime.DateTime(int, int, int, int, int, int, int)", "new Date(__arg1, __arg2 - 1, __arg3, __arg4, __arg5, __arg6, __arg7)")]
 	public extern static Date _5822b271bb635d64(Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTime" /> structure to the specified year, month, day, hour, minute, second, millisecond, and Coordinated Universal Time (UTC) or local time.</summary>
@@ -215,15 +215,15 @@ public static class DateTimeModule
 	}
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
-	[Jazor(Op.Inline, "override System.DateTime.Equals(object)", "(@#{0} instanceof Date && @#{0}.getTime() === (@#{1}?.getTime?.() ?? NaN))")]
+	[Jazor(Op.Inline, "override System.DateTime.Equals(object)", "(__arg1 instanceof Date && __arg1.getTime() === (__arg2?.getTime?.() ?? NaN))")]
 	public extern static bool _f6903c1af8944917(Date instance, object? value);
 
 	///<summary>Returns a value indicating whether the value of this instance is equal to the value of the specified <see cref="T:System.DateTime" /> instance.</summary>
-	[Jazor(Op.Inline, "System.DateTime.Equals(System.DateTime)", "(@#{0}.getTime() === @#{1}.getTime())")]
+	[Jazor(Op.Inline, "System.DateTime.Equals(System.DateTime)", "(__arg1.getTime() === __arg2.getTime())")]
 	public extern static bool _c29ca32a998c517c(Date instance, Date value);
 
 	///<summary>Returns a value indicating whether two <see cref="T:System.DateTime" /> instances  have the same date and time value.</summary>
-	[Jazor(Op.Inline, "static System.DateTime.Equals(System.DateTime, System.DateTime)", "(@#{0}.getTime() === @#{1}.getTime())")]
+	[Jazor(Op.Inline, "static System.DateTime.Equals(System.DateTime, System.DateTime)", "(__arg1.getTime() === __arg2.getTime())")]
 	public extern static bool _4937ff8bec81ddea(Date t1, Date t2);
 
 	///<summary>Deserializes a 64-bit binary value and recreates an original serialized <see cref="T:System.DateTime" /> object.</summary>
@@ -254,7 +254,7 @@ public static class DateTimeModule
 	[Jazor(Op.Discard ,"System.DateTime.ToBinary()")]
 	public extern static BigInt _9cea54115c704cf7(Date instance);
 
-	[Jazor(Op.Inline, "System.DateTime.Date.get", "new Date(@#{0}.getFullYear(), @#{0}.getMonth(), @#{0}.getDate())")]
+	[Jazor(Op.Inline, "System.DateTime.Date.get", "new Date(__arg1.getFullYear(), __arg1.getMonth(), __arg1.getDate())")]
 	public extern static Date _d77d20d9d04e2b6b(Date instance);
 
 	[Jazor(Op.Alias, "System.DateTime.Day.get", "getDate")]
@@ -298,7 +298,7 @@ public static class DateTimeModule
 	[Jazor(Op.Alias, "System.DateTime.Minute.get", "getMinutes")]
 	public extern static Number _f4ca5de4f63aa097(Date instance);
 
-	[Jazor(Op.Inline, "System.DateTime.Month.get", "(@#{0}.getMonth() + 1)")]
+	[Jazor(Op.Inline, "System.DateTime.Month.get", "(__arg1.getMonth() + 1)")]
 	public extern static Number _a8a6b6e36a0ea736(Date instance);
 
 	[Jazor(Op.Inline, "static System.DateTime.Now.get", "new Date()")]
@@ -311,7 +311,7 @@ public static class DateTimeModule
 	/// C#: DateTime.Ticks
 	/// JS: instance.getTime() * 10000 + 621355968000000000 (从公元1年1月1日开始的ticks)
 	/// </summary>
-	[Jazor(Op.Inline, "System.DateTime.Ticks.get", "(BigInt(@#{0}.getTime()) * 10000n + 621355968000000000n)")]
+	[Jazor(Op.Inline, "System.DateTime.Ticks.get", "(BigInt(__arg1.getTime()) * 10000n + 621355968000000000n)")]
 	public extern static BigInt _bcde32e170f49354(Date instance);
 
 	/// <summary>

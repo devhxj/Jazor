@@ -98,7 +98,7 @@ public static class TimeSpanModule
 	/// C#: TimeSpan.Ticks
 	/// JS: instance (TimeSpan在JS中用BigInt表示ticks)
 	/// </summary>
-	[Jazor(Op.Inline, "System.TimeSpan.Ticks.get", "@#{0}")]
+	[Jazor(Op.Inline, "System.TimeSpan.Ticks.get", "__arg1")]
 	public extern static BigInt _72d4a471ef1a968f(BigInt instance);
 
 	/// <summary>
@@ -424,7 +424,7 @@ public static class TimeSpanModule
 	/// C#: TimeSpan.FromTicks(long)
 	/// JS: value (TimeSpan在JS中直接用BigInt表示ticks)
 	/// </summary>
-	[Jazor(Op.Inline, "static System.TimeSpan.FromTicks(long)", "@#{0}")]
+	[Jazor(Op.Inline, "static System.TimeSpan.FromTicks(long)", "__arg1")]
 	public extern static BigInt _a43571552d95203d(BigInt value);
 
 	///<summary>Converts the string representation of a time interval to its <see cref="T:System.TimeSpan" /> equivalent.</summary>

@@ -27,7 +27,7 @@ public static class ObjectModule
 	/// JS: typeof obj
 	/// 注意：JavaScript 的 typeof 返回类型字符串（如 "object", "string", "number" 等）
 	/// </summary>
-	[Jazor(Op.Inline, "object.GetType()", "typeof @#{0}")]
+	[Jazor(Op.Inline, "object.GetType()", "typeof __arg1")]
 	public extern static string _393ae40d42f17afb(object instance);
 
 	/// <summary>
@@ -51,7 +51,7 @@ public static class ObjectModule
 	/// JS: obj === other
 	/// 对于 object 类型，Equals 语义是引用相等，与 === 一致
 	/// </summary>
-	[Jazor(Op.Inline, "virtual object.Equals(object)", "(@#{0} === @#{1})")]
+	[Jazor(Op.Inline, "virtual object.Equals(object)", "(__arg1 === __arg2)")]
 	public extern static bool _bfe118282c0f0f45(object instance, object? obj);
 
 	/// <summary>
@@ -59,7 +59,7 @@ public static class ObjectModule
 	/// JS: objA === objB
 	/// C# 的 Object.Equals 静态方法对于引用类型使用引用相等
 	/// </summary>
-	[Jazor(Op.Inline, "static object.Equals(object, object)", "(@#{0} === @#{1})")]
+	[Jazor(Op.Inline, "static object.Equals(object, object)", "(__arg1 === __arg2)")]
 	public extern static bool _cfcace6be1500e0f(object? objA, object? objB);
 
 	/// <summary>
@@ -67,7 +67,7 @@ public static class ObjectModule
 	/// JS: objA === objB
 	/// JavaScript 的 === 对于对象比较的是引用
 	/// </summary>
-	[Jazor(Op.Inline, "static object.ReferenceEquals(object, object)", "(@#{0} === @#{1})")]
+	[Jazor(Op.Inline, "static object.ReferenceEquals(object, object)", "(__arg1 === __arg2)")]
 	public extern static bool _b7bcdcecb3f79c07(object? objA, object? objB);
 
 	/// <summary>

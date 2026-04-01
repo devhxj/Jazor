@@ -1,12 +1,32 @@
-using System;
 using System.Linq;
+using Acornima;
+using Acornima.Ast;
 using Jazor.Name;
 using Microsoft.CodeAnalysis;
 
 namespace Jazor.Compiler;
 
-internal static class Util
+/// <summary>
+/// 
+/// </summary>
+public static class Util
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="node"></param>
+    /// <returns></returns>
+    public static string ToKnRECMAScript(this Node node)
+        => node.ToJavaScript(KnRJavaScriptTextFormatterOptions.Default, AstToJavaScriptOptions.Default);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="node"></param>
+    /// <returns></returns>
+    public static string ToECMAScript(this Node node)
+        => node.ToJavaScript(JavaScriptTextWriterOptions.Default, AstToJavaScriptOptions.Default);
+
     /// <summary>
     /// 获取ISymbol的 JavaScript 名称
     /// 优先级：
@@ -43,6 +63,11 @@ internal static class Util
         return useDescription ? description : configName;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="symbol"></param>
+    /// <returns></returns>
     public static string GetConfigOrSymbolName(ISymbol symbol)
     {
         var name = GetSymbolConfigName(symbol);

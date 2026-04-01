@@ -49,7 +49,7 @@ public static class GregorianCalendarModule
 	/// C#: calendar.GetDayOfMonth(time)
 	/// JS: time.getDate()
 	/// </summary>
-	[Jazor(Op.Inline, "override System.Globalization.GregorianCalendar.GetDayOfMonth(System.DateTime)", "@#{1}.getDate()")]
+	[Jazor(Op.Inline, "override System.Globalization.GregorianCalendar.GetDayOfMonth(System.DateTime)", "__arg2.getDate()")]
 	public extern static Number _5f5d0a874674bdea(object instance, Date time);
 
 	///<summary>Returns the day of the week in the specified <see cref="T:System.DateTime" />.</summary>
@@ -79,7 +79,7 @@ public static class GregorianCalendarModule
 	/// C#: calendar.GetMonth(time)
 	/// JS: (time.getMonth() + 1)
 	/// </summary>
-	[Jazor(Op.Inline, "override System.Globalization.GregorianCalendar.GetMonth(System.DateTime)", "(@#{1}.getMonth() + 1)")]
+	[Jazor(Op.Inline, "override System.Globalization.GregorianCalendar.GetMonth(System.DateTime)", "(__arg2.getMonth() + 1)")]
 	public extern static Number _ce76f400b1aa26d3(object instance, Date time);
 
 	///<summary>Returns the number of months in the specified year in the specified era.</summary>
@@ -90,7 +90,7 @@ public static class GregorianCalendarModule
 	/// C#: calendar.GetYear(time)
 	/// JS: time.getFullYear()
 	/// </summary>
-	[Jazor(Op.Inline, "override System.Globalization.GregorianCalendar.GetYear(System.DateTime)", "@#{1}.getFullYear()")]
+	[Jazor(Op.Inline, "override System.Globalization.GregorianCalendar.GetYear(System.DateTime)", "__arg2.getFullYear()")]
 	public extern static Number _fd5a2cde6fb4d6f5(object instance, Date time);
 
 	///<summary>Determines whether the specified date in the specified era is a leap day.</summary>

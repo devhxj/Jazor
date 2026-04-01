@@ -5,7 +5,7 @@ namespace Jazor.CLR;
 public static class WeakReferenceModule
 {
 	///<summary>Initializes a new instance of the <see cref="T:System.WeakReference" /> class, referencing the specified object.</summary>
-	[Jazor(Op.Inline ,"System.WeakReference.WeakReference(object)", "new WeakRef(@#{0})")]
+	[Jazor(Op.Inline ,"System.WeakReference.WeakReference(object)", "new WeakRef(__arg1)")]
 	public extern static WeakRef _9a41b3fc95053633(object? target);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.WeakReference" /> class, referencing the specified object and using the specified resurrection tracking.</summary>
@@ -19,10 +19,10 @@ public static class WeakReferenceModule
 	[Jazor(Op.Discard ,"virtual System.WeakReference.TrackResurrection.get")]
 	public extern static bool _a2251c9f4ed1f026(WeakRef instance);
 
-	[Jazor(Op.Inline ,"virtual System.WeakReference.IsAlive.get", "(@#{0}.deref() !== undefined)")]
+	[Jazor(Op.Inline ,"virtual System.WeakReference.IsAlive.get", "(__arg1.deref() !== undefined)")]
 	public extern static bool _c3d16f7de644412a(WeakRef instance);
 
-	[Jazor(Op.Inline ,"virtual System.WeakReference.Target.get", "@#{0}.deref()")]
+	[Jazor(Op.Inline ,"virtual System.WeakReference.Target.get", "__arg1.deref()")]
 	public extern static object? _ba77d80a1e80efa6(WeakRef instance);
 
 	[Jazor(Op.Discard ,"virtual System.WeakReference.Target.set")]

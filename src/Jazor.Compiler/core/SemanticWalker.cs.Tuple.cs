@@ -125,6 +125,8 @@ public partial class SemanticWalker
 				var obj = new Identifier(localRef.Local.Name);
 				return new MemberExpression(obj, new Identifier(fieldName), false, false);
 			}
+			if (value is ITupleOperation tupleOp)
+				return Translate<Expression>(tupleOp.Elements[index], argument);
 			if (value is IConversionOperation conversion && conversion.Operand is ITupleOperation conversionTuple)
 			{
 				return Translate<Expression>(conversionTuple.Elements[index], argument);

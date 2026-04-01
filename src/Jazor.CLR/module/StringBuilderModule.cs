@@ -19,7 +19,7 @@ public static class StringBuilderModule
 	/// C#: new StringBuilder(string)
 	/// JS: (value ?? "").split('')
 	/// </summary>
-	[Jazor(Op.Inline, "System.Text.StringBuilder.StringBuilder(string)", "(@#{0} ?? '').split('')")]
+	[Jazor(Op.Inline, "System.Text.StringBuilder.StringBuilder(string)", "(__arg1 ?? '').split('')")]
 	public extern static System.Text.StringBuilder _c2c8c4778873ccdc(string? value);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Text.StringBuilder" /> class using the specified string and capacity.</summary>
@@ -51,7 +51,7 @@ public static class StringBuilderModule
 	/// C#: sb.ToString()
 	/// JS: instance.join('')
 	/// </summary>
-	[Jazor(Op.Inline, "override System.Text.StringBuilder.ToString()", "@#{0}.join('')")]
+	[Jazor(Op.Inline, "override System.Text.StringBuilder.ToString()", "__arg1.join('')")]
 	public extern static string _010347a06fe9584c(Array<string> instance);
 
 	///<summary>Converts the value of a substring of this instance to a <see cref="T:System.String" />.</summary>
@@ -62,14 +62,14 @@ public static class StringBuilderModule
 	/// C#: sb.Clear()
 	/// JS: instance.length = 0; return instance
 	/// </summary>
-	[Jazor(Op.Inline, "System.Text.StringBuilder.Clear()", "(@#{0}.length = 0, @#{0})")]
+	[Jazor(Op.Inline, "System.Text.StringBuilder.Clear()", "(__arg1.length = 0, __arg1)")]
 	public extern static System.Text.StringBuilder _3b8e77fc2c4d5f63(System.Text.StringBuilder instance);
 
 	/// <summary>
 	/// C#: sb.Length
 	/// JS: instance.length
 	/// </summary>
-	[Jazor(Op.Inline, "System.Text.StringBuilder.Length.get", "@#{0}.length")]
+	[Jazor(Op.Inline, "System.Text.StringBuilder.Length.get", "__arg1.length")]
 	public extern static Number _76a78d5aa26cb6e0(System.Text.StringBuilder instance);
 
 	[Jazor(Op.Discard ,"System.Text.StringBuilder.Length.set")]
@@ -97,7 +97,7 @@ public static class StringBuilderModule
 	/// C#: sb.Append(string)
 	/// JS: 将字符串追加到数组末尾
 	/// </summary>
-	[Jazor(Op.Inline, "System.Text.StringBuilder.Append(string)", "(@#{1} != null ? @#{0}.push(...@#{1}.split('')) : @#{0}, @#{0})")]
+	[Jazor(Op.Inline, "System.Text.StringBuilder.Append(string)", "(__arg2 != null ? __arg1.push(...__arg2.split('')) : __arg1, __arg1)")]
 	public extern static Array<string> _2879b76db56f25fb(Array<string> instance, string? value);
 
 	///<summary>Appends a copy of a specified substring to this instance.</summary>
@@ -116,14 +116,14 @@ public static class StringBuilderModule
 	/// C#: sb.AppendLine()
 	/// JS: instance.push('\n')
 	/// </summary>
-	[Jazor(Op.Inline, "System.Text.StringBuilder.AppendLine()", "(@#{0}.push('\\n'), @#{0})")]
+	[Jazor(Op.Inline, "System.Text.StringBuilder.AppendLine()", "(__arg1.push('\\n'), __arg1)")]
 	public extern static Array<string> _35fe8bcf463e879b(Array<string> instance);
 
 	/// <summary>
 	/// C#: sb.AppendLine(string)
 	/// JS: 先 Append(value)，再 push('\n')
 	/// </summary>
-	[Jazor(Op.Inline, "System.Text.StringBuilder.AppendLine(string)", "(@#{1} != null ? @#{0}.push(...@#{1}.split('')) : @#{0}, @#{0}.push('\\n'), @#{0})")]
+	[Jazor(Op.Inline, "System.Text.StringBuilder.AppendLine(string)", "(__arg2 != null ? __arg1.push(...__arg2.split('')) : __arg1, __arg1.push('\\n'), __arg1)")]
 	public extern static Array<string> _c06aaa44e213e405(Array<string> instance, string? value);
 
 	///<summary>Copies the characters from a specified segment of this instance to a specified segment of a destination <see cref="T:System.Char" /> array.</summary>

@@ -71,12 +71,20 @@ public partial class SemanticWalker
 		return name;
 	}
 
-	private static Expression? BuildFullTypeName(ITypeSymbol symbol)
+	private Expression? BuildFullTypeName(ITypeSymbol symbol)
 	{
 		var queue = new Stack<string>();
 		var type = symbol;
 		while (type is not null)
 		{
+			if (_moduleRootType is not null &&
+				SymbolEqualityComparer.Default.Equals(type, _moduleRootType))
+				break;
+
+			// module 入口类截止
+			if (type.GetAttributes().Any(x => x.AttributeClass?.Name == "ECMASCriptModule"))
+				break;
+
 			var name = GetTypeConfigOrWhiteListName(type);
 			if (string.IsNullOrEmpty(name))
 				break;
@@ -124,37 +132,225 @@ public partial class SemanticWalker
 						new Identifier("Number"),
 						new Identifier("EPSILON"), computed: false, optional: false),
 
-				// 浮点类型的最大/最小值
-				(nameof(double.MaxValue), SpecialType.System_Double) or
-				(nameof(float.MaxValue), SpecialType.System_Single) =>
+				// double 的最大/最小值与 JavaScript Number 范围一致
+				(nameof(double.MaxValue), SpecialType.System_Double) =>
 					new MemberExpression(
 						new Identifier("Number"),
 						new Identifier("MAX_VALUE"), computed: false, optional: false),
-				(nameof(double.MinValue), SpecialType.System_Double) or
-				(nameof(float.MinValue), SpecialType.System_Single) =>
-					new MemberExpression(
-						new Identifier("Number"),
-						new Identifier("MIN_VALUE"), computed: false, optional: false),
+				(nameof(double.MinValue), SpecialType.System_Double) =>
+					new NonUpdateUnaryExpression(
+						Operator.UnaryNegation,
+						new MemberExpression(
+							new Identifier("Number"),
+							new Identifier("MAX_VALUE"), computed: false, optional: false)),
 
-				// 整数类型的最大/最小值 - 使用安全整数常量或字面量
-				// long 类型超出 JavaScript 安全整数范围，使用 MAX/MIN_SAFE_INTEGER
+				// float 的边界值需要保留 C# 单精度语义，不能退化成 JS 的 double 极值
+				(nameof(float.MaxValue), SpecialType.System_Single) =>
+					new NumericLiteral(float.MaxValue, float.MaxValue.ToString("R", System.Globalization.CultureInfo.InvariantCulture)),
+				(nameof(float.MinValue), SpecialType.System_Single) =>
+					new NumericLiteral(float.MinValue, float.MinValue.ToString("R", System.Globalization.CultureInfo.InvariantCulture)),
+
+				// long 的边界值在当前映射中属于 bigint
 				(nameof(long.MaxValue), SpecialType.System_Int64) =>
-					new MemberExpression(
-						new Identifier("Number"),
-						new Identifier("MAX_SAFE_INTEGER"), computed: false, optional: false),
+					new BigIntLiteral(new System.Numerics.BigInteger(long.MaxValue), $"{long.MaxValue}n"),
 				(nameof(long.MinValue), SpecialType.System_Int64) =>
-					new MemberExpression(
-						new Identifier("Number"),
-						new Identifier("MIN_SAFE_INTEGER"), computed: false, optional: false),
+					new BigIntLiteral(new System.Numerics.BigInteger(long.MinValue), $"{long.MinValue}n"),
+
+				// decimal 最大/最小值保持为精确数值字面量
+				(nameof(decimal.MaxValue), SpecialType.System_Decimal) =>
+					new NumericLiteral((double)decimal.MaxValue, decimal.MaxValue.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+				(nameof(decimal.MinValue), SpecialType.System_Decimal) =>
+					new NumericLiteral((double)decimal.MinValue, decimal.MinValue.ToString(System.Globalization.CultureInfo.InvariantCulture)),
 
 				// 其他整数类型（int, short, sbyte 等）保持原样，会作为字面量处理
 				_ => symbol.HasConstantValue
-					? BuildValueLiteral(symbol.ContainingType, symbol.ConstantValue) ?? Null
+					? BuildValueLiteral(symbol.Type, symbol.ConstantValue) ?? Null
 					: new Identifier(Util.GetConfigOrSymbolName(symbol))
 			};
 		}
 
 		return new Identifier(Util.GetConfigOrSymbolName(symbol));
+	}
+
+	private static bool IsDateLikeType(ITypeSymbol? type)
+	{
+		if (type is null)
+			return false;
+
+		var displayName = type.OriginalDefinition.ToDisplayString(Format.NameFormat);
+		return type.SpecialType == SpecialType.System_DateTime ||
+			displayName is "System.DateOnly" or "System.DateTimeOffset";
+	}
+
+	private static bool ShouldInvokeAliasedPropertyGetter(IPropertyReferenceOperation operation, string alias)
+	{
+		if (operation.Instance is null || operation.Arguments.Length != 0 || string.IsNullOrEmpty(alias))
+			return false;
+
+		if (!IsDateLikeType(operation.Instance.Type))
+			return false;
+
+		return alias is "getDate" or "getHours" or "getMilliseconds" or "getMinutes" or "getSeconds" or "getFullYear";
+	}
+
+	private static Expression BuildAliasedPropertyAccess(Expression instance, string propertyName, bool optional, bool invoke)
+	{
+		var member = new MemberExpression(instance, new Identifier(propertyName), computed: false, optional: optional);
+		if (!invoke)
+			return member;
+
+		return new CallExpression(member, NodeList.Empty<Expression>(), optional: false);
+	}
+
+	private static Expression BuildArrayFrom(Expression value) =>
+		new CallExpression(
+			new MemberExpression(new Identifier("Array"), new Identifier("from"), computed: false, optional: false),
+			NodeList.From(value),
+			optional: false);
+
+	private static Expression BuildInstanceMethodCall(Expression instance, string methodName, params Expression[] arguments) =>
+		new CallExpression(
+			new MemberExpression(instance, new Identifier(methodName), computed: false, optional: false),
+			NodeList.From(arguments),
+			optional: false);
+
+	private static bool TryBuildIntrinsicMethodInvocation(IMethodSymbol method, Expression? instance, List<Expression> arguments, out Expression? expression)
+	{
+		expression = null;
+		if (method.ContainingType is null)
+			return false;
+
+		var containingType = method.ContainingType.OriginalDefinition.ToDisplayString(Format.NameFormat);
+		if (method.ContainingType.SpecialType == SpecialType.System_String || containingType == "string")
+		{
+			if (method.IsStatic)
+			{
+				expression = method.Name switch
+				{
+					"Join" when arguments.Count == 2 =>
+						BuildInstanceMethodCall(BuildArrayFrom(arguments[1]), "join", arguments[0]),
+					_ => null
+				};
+
+				if (expression is not null)
+					return true;
+			}
+			else if (instance is not null)
+			{
+				expression = method.Name switch
+				{
+					"Split" when arguments.Count >= 1 =>
+						BuildInstanceMethodCall(instance, "split", arguments[0]),
+					"PadLeft" when arguments.Count == 1 =>
+						BuildInstanceMethodCall(instance, "padStart", arguments[0]),
+					"PadLeft" when arguments.Count == 2 =>
+						BuildInstanceMethodCall(instance, "padStart", arguments[0], arguments[1]),
+					"PadRight" when arguments.Count == 1 =>
+						BuildInstanceMethodCall(instance, "padEnd", arguments[0]),
+					"PadRight" when arguments.Count == 2 =>
+						BuildInstanceMethodCall(instance, "padEnd", arguments[0], arguments[1]),
+					"ToCharArray" when arguments.Count == 0 =>
+						BuildInstanceMethodCall(instance, "split", new StringLiteral("", "\"\"")),
+					"ToCharArray" when arguments.Count == 2 =>
+						BuildInstanceMethodCall(
+							BuildInstanceMethodCall(
+								instance,
+								"substring",
+								arguments[0],
+								new NonLogicalBinaryExpression(Operator.Addition, arguments[0], arguments[1])),
+							"split",
+							new StringLiteral("", "\"\"")),
+					"ToLowerInvariant" when arguments.Count == 0 =>
+						BuildInstanceMethodCall(instance, "toLowerCase"),
+					"ToUpperInvariant" when arguments.Count == 0 =>
+						BuildInstanceMethodCall(instance, "toUpperCase"),
+					"Remove" when arguments.Count == 1 =>
+						BuildInstanceMethodCall(instance, "slice", new NumericLiteral(0, "0"), arguments[0]),
+					"Remove" when arguments.Count == 2 =>
+						new NonLogicalBinaryExpression(
+							Operator.Addition,
+							BuildInstanceMethodCall(instance, "slice", new NumericLiteral(0, "0"), arguments[0]),
+							BuildInstanceMethodCall(
+								instance,
+								"slice",
+								new NonLogicalBinaryExpression(Operator.Addition, arguments[0], arguments[1]))),
+					"Insert" when arguments.Count == 2 =>
+						new NonLogicalBinaryExpression(
+							Operator.Addition,
+							new NonLogicalBinaryExpression(
+								Operator.Addition,
+								BuildInstanceMethodCall(instance, "slice", new NumericLiteral(0, "0"), arguments[0]),
+								arguments[1]),
+							BuildInstanceMethodCall(instance, "slice", arguments[0])),
+					_ => null
+				};
+
+				if (expression is not null)
+					return true;
+			}
+		}
+
+		if (containingType == "System.Linq.Enumerable")
+		{
+			expression = method.Name switch
+			{
+				"Where" when arguments.Count == 2 =>
+					new CallExpression(
+						new MemberExpression(
+							BuildArrayFrom(arguments[0]),
+							new Identifier("filter"),
+							computed: false,
+							optional: false),
+						NodeList.From(arguments[1]),
+						optional: false),
+				"Select" when arguments.Count == 2 =>
+					new CallExpression(
+						new MemberExpression(
+							BuildArrayFrom(arguments[0]),
+							new Identifier("map"),
+							computed: false,
+							optional: false),
+						NodeList.From(arguments[1]),
+						optional: false),
+				"ToList" when arguments.Count == 1 =>
+					BuildArrayFrom(arguments[0]),
+				_ => null
+			};
+
+			if (expression is not null)
+				return true;
+		}
+
+		if (instance is null)
+			return false;
+
+		if (containingType == "System.Numerics.BigInteger")
+		{
+			expression = method.Name switch
+			{
+				nameof(System.Numerics.BigInteger.CompareTo) when arguments.Count == 1 =>
+					new ConditionalExpression(
+						new NonLogicalBinaryExpression(Operator.LessThan, instance, arguments[0]),
+						new NumericLiteral(-1, "-1"),
+						new ConditionalExpression(
+							new NonLogicalBinaryExpression(Operator.GreaterThan, instance, arguments[0]),
+							new NumericLiteral(1, "1"),
+							new NumericLiteral(0, "0"))),
+				nameof(System.Numerics.BigInteger.Equals) when arguments.Count == 1 =>
+					new NonLogicalBinaryExpression(Operator.StrictEquality, instance, arguments[0]),
+				nameof(object.ToString) when arguments.Count == 0 =>
+					new CallExpression(
+						new MemberExpression(instance, new Identifier("toString"), computed: false, optional: false),
+						NodeList.Empty<Expression>(),
+						optional: false),
+				_ => null
+			};
+
+			if (expression is not null)
+				return true;
+		}
+
+		return false;
 	}
 
 	/// <summary>
@@ -171,83 +367,73 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitArrayElementReference(IArrayElementReferenceOperation operation, SenseArgument argument)
 	{
-		if (operation.Indices.Length != 1)
-			return HandleTransformationFailure<Node>(operation,
-				operation.Indices.Length > 1
-					? "Multi-dimensional array access is not supported in JavaScript conversion"
-					: "Array access requires at least one index.");
+		if (operation.Indices.Length == 0)
+			return HandleTransformationFailure<Node>(operation, "Array access requires at least one index.");
 
-		var expr = Translate<Expression>(operation.ArrayReference, argument);
-		var indexOperation = operation.Indices[0];
-
-		// 检查是否是从末尾开始的索引（^n）
-		// 处理从末尾开始的索引，转换为 array[array.length - n]
-		// 生成 array.length 访问
-		if (indexOperation is IUnaryOperation unary && unary.OperatorKind == UnaryOperatorKind.Hat)
+		Expression expr = Translate<Expression>(operation.ArrayReference, argument);
+		for (var i = 0; i < operation.Indices.Length; i++)
 		{
-			var lengthAccess = new MemberExpression(expr, new Identifier("length"), computed: false, optional: false);
-			var innerIndex = Translate<Expression>(unary.Operand, argument);
-			var indexCalculation = new NonLogicalBinaryExpression(Operator.Subtraction, lengthAccess, innerIndex);
-			return new MemberExpression(expr, indexCalculation, computed: true, optional: false);
+			var indexOperation = operation.Indices[i];
+			if (indexOperation is IRangeOperation && i != operation.Indices.Length - 1)
+				return HandleTransformationFailure<Node>(operation, "Range indexing is only supported on the final array dimension.");
+
+			expr = BuildArrayIndexAccess(expr, indexOperation);
 		}
-		else if (indexOperation is IImplicitIndexerReferenceOperation implicitIndexer)
+		return expr;
+
+		Expression BuildArrayIndexAccess(Expression target, IOperation indexOperation)
 		{
-			// 处理隐式索引器引用（另一种可能的表示方式）
-			var instance = Translate<Expression>(implicitIndexer.Instance, argument);
-			var indexArgument = Translate<Expression>(implicitIndexer.Argument, argument);
-			var lengthAccess = new MemberExpression(instance, new Identifier("length"), computed: false, optional: false);
-			if (implicitIndexer.Argument is IUnaryOperation indexUnaryOp && indexUnaryOp.OperatorKind == UnaryOperatorKind.Hat)
-				indexArgument = Translate<Expression>(indexUnaryOp.Operand, argument);
-			var indexCalculation = new NonLogicalBinaryExpression(Operator.Subtraction, lengthAccess, indexArgument);
-			return new MemberExpression(instance, indexCalculation, computed: true, optional: false);
-		}
-		else if (indexOperation is IRangeOperation range)
-		{
-			// 处理普通范围操作，转换为 Array.slice
-			// 获取范围的起始和结束值
-			// 检查起始值是否是从末尾开始的索引（^n）
-			var start = range.LeftOperand is IUnaryOperation leftUnary && leftUnary.OperatorKind == UnaryOperatorKind.Hat
-				? UnaryHat(expr, leftUnary)
-				: Translate<Expression>(range.LeftOperand, argument, null);
-
-			var end = range.RightOperand is IUnaryOperation rightUnary && rightUnary.OperatorKind == UnaryOperatorKind.Hat
-				? UnaryHat(expr, rightUnary)
-				: Translate<Expression>(range.RightOperand, argument, null);
-
-			// 创建 slice 方法调用
-			var slice = new MemberExpression(expr, new Identifier("slice"), computed: false, optional: false);
-			var args = NodeList.Empty<Expression>();// 空范围：array[..] -> array.slice() (复制整个数组)
-
-			// 处理不同的范围情况
-			if (start is not null && end is not null)
+			if (indexOperation is IUnaryOperation unary && unary.OperatorKind == UnaryOperatorKind.Hat)
 			{
-				// 完整范围：array[start..end] -> array.slice(start, end + 1)
-				// C# 范围包含结束位置，JavaScript slice 不包含，所以需要 +1
-				var adjustedEnd = new NonLogicalBinaryExpression(Operator.Addition, end, new NumericLiteral(1, "1"));
-				args = NodeList.From(start, adjustedEnd);
+				var lengthAccess = new MemberExpression(target, new Identifier("length"), computed: false, optional: false);
+				var innerIndex = Translate<Expression>(unary.Operand, argument);
+				var indexCalculation = new NonLogicalBinaryExpression(Operator.Subtraction, lengthAccess, innerIndex);
+				return new MemberExpression(target, indexCalculation, computed: true, optional: false);
 			}
-			else if (start is not null)
+			else if (indexOperation is IImplicitIndexerReferenceOperation implicitIndexer)
 			{
-				// 只有起始：array[start..] -> array.slice(start)
-				args = NodeList.From(start);
+				var instance = Translate<Expression>(implicitIndexer.Instance, argument);
+				var indexArgument = Translate<Expression>(implicitIndexer.Argument, argument);
+				var lengthAccess = new MemberExpression(instance, new Identifier("length"), computed: false, optional: false);
+				if (implicitIndexer.Argument is IUnaryOperation indexUnaryOp && indexUnaryOp.OperatorKind == UnaryOperatorKind.Hat)
+					indexArgument = Translate<Expression>(indexUnaryOp.Operand, argument);
+				var indexCalculation = new NonLogicalBinaryExpression(Operator.Subtraction, lengthAccess, indexArgument);
+				return new MemberExpression(instance, indexCalculation, computed: true, optional: false);
 			}
-			else if (end is not null)
+			else if (indexOperation is IRangeOperation range)
 			{
-				// 只有结束：array[..end] -> array.slice(0, end + 1)
-				var adjustedEnd = new NonLogicalBinaryExpression(Operator.Addition, end, new NumericLiteral(1, "1"));
-				args = NodeList.From<Expression>(new NumericLiteral(0, "0"), adjustedEnd);
-			}
+				var start = range.LeftOperand is IUnaryOperation leftUnary && leftUnary.OperatorKind == UnaryOperatorKind.Hat
+					? UnaryHat(target, leftUnary)
+					: Translate<Expression>(range.LeftOperand, argument, null);
 
-			return new CallExpression(slice, args, optional: false);
-		}
-		// 注意：步长范围操作（如 array[1..^4..2]）在当前的 Roslyn 操作模型中可能不直接支持
-		// 这种情况可能需要通过自定义操作或语法节点处理
-		// 如果需要支持，可以在 VisitInvalid 方法中处理特殊的语法节点
-		else
-		{
-			// 普通索引访问
-			var indexCalculation = Translate<Expression>(indexOperation, argument);
-			return new MemberExpression(expr, indexCalculation, computed: true, optional: false);
+				var end = range.RightOperand is IUnaryOperation rightUnary && rightUnary.OperatorKind == UnaryOperatorKind.Hat
+					? UnaryHat(target, rightUnary)
+					: Translate<Expression>(range.RightOperand, argument, null);
+
+				var slice = new MemberExpression(target, new Identifier("slice"), computed: false, optional: false);
+				var args = NodeList.Empty<Expression>();
+				if (start is not null && end is not null)
+				{
+					var adjustedEnd = new NonLogicalBinaryExpression(Operator.Addition, end, new NumericLiteral(1, "1"));
+					args = NodeList.From(start, adjustedEnd);
+				}
+				else if (start is not null)
+				{
+					args = NodeList.From(start);
+				}
+				else if (end is not null)
+				{
+					var adjustedEnd = new NonLogicalBinaryExpression(Operator.Addition, end, new NumericLiteral(1, "1"));
+					args = NodeList.From<Expression>(new NumericLiteral(0, "0"), adjustedEnd);
+				}
+
+				return new CallExpression(slice, args, optional: false);
+			}
+			else
+			{
+				var indexCalculation = Translate<Expression>(indexOperation, argument);
+				return new MemberExpression(target, indexCalculation, computed: true, optional: false);
+			}
 		}
 
 		Expression UnaryHat(Expression obj, IUnaryOperation unary)
@@ -368,6 +554,7 @@ public partial class SemanticWalker
 		}
 
 		// 静态成员：生成完整的限定名
+		// public 静态类带[ECMAScriptModule]是模块类
 		if (operation.Field.IsStatic && operation.Field.ContainingType is not null)
 		{
 			var containing = BuildFullTypeName(operation.Field.ContainingType);
@@ -390,11 +577,23 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitPropertyReference(IPropertyReferenceOperation operation, SenseArgument argument)
 	{
+		if (operation.Property.Name == "Rank" &&
+			operation.Instance?.Type is IArrayTypeSymbol arrayType)
+			return new NumericLiteral(arrayType.Rank, arrayType.Rank.ToString());
+
 		// 处理属性调用的实例对象
 		var instance = Translate<Expression>(operation.Instance, argument, null);
+		var arguments = new List<Expression>(operation.Arguments.Length);
+		foreach (var propertyArgument in operation.Arguments)
+		{
+			var argContext = propertyArgument.Parameter?.RefKind is RefKind.Out
+				? argument.With(Sense.OutParameter)
+				: argument;
+			arguments.Add(Translate<Expression>(propertyArgument.Value, argContext));
+		}
 
 		// 检查白名单映射
-		var mapperExpr = GetWhiteListExpression(operation.Property.GetMethod!, argument, [], instance, out var alias);
+		var mapperExpr = GetWhiteListExpression(operation.Property.GetMethod!, argument, arguments, instance, out var alias);
 		if (mapperExpr is not null)
 			return mapperExpr;
 
@@ -407,7 +606,7 @@ public partial class SemanticWalker
 		if (instance is not null)
 		{
 			var optional = operation.Instance is IConditionalAccessInstanceOperation;
-			return new MemberExpression(instance, property, false, optional);
+			return BuildAliasedPropertyAccess(instance, propertyName!, optional, ShouldInvokeAliasedPropertyGetter(operation, propertyName!));
 		}
 
 		// todo：后续需要清理和白名单整合
@@ -478,10 +677,10 @@ public partial class SemanticWalker
 				? new MemberExpression(instance, property, computed: false, optional: false)
 				: instance;
 
-			// 若方法内含this访问，需绑定
+			// 实例方法组必须绑定到实际接收者，而不是当前 lexical this。
 			callee = new CallExpression(
 				callee: new MemberExpression(callee, new Identifier("bind"), computed: false, optional: false),
-				args: NodeList.From<Expression>(new ThisExpression()),
+				args: NodeList.From<Expression>(instance),
 				false);
 		}
 
@@ -551,6 +750,10 @@ public partial class SemanticWalker
 		var mapperExpr = GetWhiteListExpression(operation.TargetMethod, argument, arguments, instance, out var alias);
 		if (mapperExpr is not null)
 			return BuildInvExpr(hasReturn, mapperExpr, refParas, argument);
+
+		if (TryBuildIntrinsicMethodInvocation(operation.TargetMethod, instance, arguments, out var intrinsicExpr) &&
+			intrinsicExpr is not null)
+			return BuildInvExpr(hasReturn, intrinsicExpr, refParas, argument);
 
 		// 判断方法调用的类型
 		var methodName = string.IsNullOrEmpty(alias) ? Util.GetConfigOrSymbolName(operation.TargetMethod) : alias;

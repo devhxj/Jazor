@@ -41,7 +41,7 @@ public static class DictionaryModule<TKey, TValue>
 	/// C#: new Dictionary&lt;TKey, TValue&gt;(dictionary)
 	/// JS: new Map(dictionary.entries())
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary(System.Collections.Generic.IDictionary<TKey, TValue>)", "new Map(@#{0})")]
+	[Jazor(Op.Inline, "System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary(System.Collections.Generic.IDictionary<TKey, TValue>)", "new Map(__arg1)")]
 	public extern static Map<TKey,TValue> _70d1054600376f0b(Map<TKey,TValue> dictionary);
 
 	[Jazor(Op.Discard, "System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary(System.Collections.Generic.IDictionary<TKey, TValue>, System.Collections.Generic.IEqualityComparer<TKey>)")]
@@ -70,28 +70,33 @@ public static class DictionaryModule<TKey, TValue>
 	/// C#: dict.Keys
 	/// JS: Array.from(map.keys())
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.Dictionary<TKey, TValue>.Keys.get", "Array.from(@#{0}.keys())")]
+	[Jazor(Op.Inline, "System.Collections.Generic.Dictionary<TKey, TValue>.Keys.get", "Array.from(__arg1.keys())")]
 	public extern static Array<TKey> _4f3806a69cb6b35b(Map<TKey,TValue> instance);
 
 	/// <summary>
 	/// C#: dict.Values
 	/// JS: Array.from(map.values())
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.Dictionary<TKey, TValue>.Values.get", "Array.from(@#{0}.values())")]
+	[Jazor(Op.Inline, "System.Collections.Generic.Dictionary<TKey, TValue>.Values.get", "Array.from(__arg1.values())")]
 	public extern static Array<TValue> _300379ba29761970(Map<TKey,TValue> instance);
 
 	/// <summary>
 	/// C#: dict[key]
-	/// JS: map.get(key)
+	/// JS: map.get(key) (缺失时抛出 KeyNotFoundException)
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.Dictionary<TKey, TValue>.this[TKey].get", "@#{0}.get(@#{1})")]
-	public extern static TValue _e73dbdff85c46ddc(Map<TKey,TValue> instance, TKey key);
+	[Jazor(Op.Import, "System.Collections.Generic.Dictionary<TKey, TValue>.this[TKey].get")]
+	public static TValue _e73dbdff85c46ddc(Map<TKey,TValue> instance, TKey key)
+	{
+		if (!instance.Has(key))
+			throw new Error("KeyNotFoundException: The given key was not present in the dictionary.");
+		return instance.Get(key);
+	}
 
 	/// <summary>
 	/// C#: dict[key] = value
 	/// JS: map.set(key, value)
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.Dictionary<TKey, TValue>.this[TKey].set", "@#{0}.set(@#{1}, @#{2})")]
+	[Jazor(Op.Inline, "System.Collections.Generic.Dictionary<TKey, TValue>.this[TKey].set", "__arg1.set(__arg2, __arg3)")]
 	public extern static void _63d62bee2698301f(Map<TKey,TValue> instance, TKey key, TValue value);
 
 	/// <summary>
@@ -125,7 +130,7 @@ public static class DictionaryModule<TKey, TValue>
 	/// C#: dict.ContainsValue(value)
 	/// JS: Array.from(map.values()).includes(value)
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.Dictionary<TKey, TValue>.ContainsValue(TValue)", "Array.from(@#{0}.values()).includes(@#{1})")]
+	[Jazor(Op.Inline, "System.Collections.Generic.Dictionary<TKey, TValue>.ContainsValue(TValue)", "Array.from(__arg1.values()).includes(__arg2)")]
 	public extern static bool _a402110d48f70caf(Map<TKey,TValue> instance, TValue value);
 
 	[Jazor(Op.Discard, "System.Collections.Generic.Dictionary<TKey, TValue>.GetEnumerator()")]

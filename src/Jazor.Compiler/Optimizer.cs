@@ -100,7 +100,7 @@ public static class Optimizer
                 NonLogicalBinaryExpression be => IsEffect(be.Left) || IsEffect(be.Right),
                 NonUpdateUnaryExpression ue => IsEffect(ue.Argument),
                 ConditionalExpression ce => IsEffect(ce.Test) || IsEffect(ce.Consequent) || IsEffect(ce.Alternate),
-                MemberExpression me => IsEffect(me.Object),
+                MemberExpression me => me.Computed || IsEffect(me.Object) || (me.Property is Expression property && IsEffect(property)),
                 SequenceExpression se => se.Expressions.Any(IsEffect),
                 ArrayExpression ae => ae.Elements.Any(el => el is Expression expr && IsEffect(expr)),
                 ObjectExpression oe => oe.Properties.Any(p => p is Property prop && (IsEffect(prop.Key) || (prop.Value is Expression v && IsEffect(v)))),

@@ -3,10 +3,11 @@ using Acornima.Ast;
 using Jazor.Name;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Globalization;
 using System.Linq;
+using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace Jazor.Compiler;
@@ -30,7 +31,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 {
     private readonly INamedTypeSymbol _classSymbol = classSymbol;
     private readonly SemanticModel _classModel = classModel;
-    private readonly List<ImportDeclaration> _imports = [];
+    private readonly Dictionary<string, List<ImportDeclarationSpecifier>> _imports = [];
 
     /// <summary>
     /// 将C# 14 ClassDeclarationSyntax 转换为Acornima.Ast.Module(es6+ module)
@@ -46,19 +47,19 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             throw new NotSupportedException($"嵌套类 {_classSymbol.Name} 需要扁平化处理");
 
         var members = new List<Statement>();
-
+        var a = _classSymbol.GetMembers();
         foreach (var member in _classSymbol.GetMembers())
         {
             switch (member)
             {
                 case IFieldSymbol field:
-                    members.Add(await ConvertModuleField(field));
+                    await ConvertModuleField(members, field);
                     break;
+                case IPropertySymbol:
+                    break;                    
                 // Property被Field和Method代替了
-                case IMethodSymbol func
-                when func.MethodKind != MethodKind.Constructor &&
-                    func.MethodKind != MethodKind.SharedConstructor:
-                    members.Add(await ConvertModuleMethod(func));
+                case IMethodSymbol func:
+                    await ConvertModuleMethod(members, func);
                     break;
                 case INamedTypeSymbol @class when @class.TypeKind == TypeKind.Class:
                     members.Add(ConvertModuleClass(@class));
@@ -66,42 +67,109 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 case INamedTypeSymbol @enum when @enum.TypeKind == TypeKind.Enum:
                     members.Add(ConvertModuleEnum(@enum));
                     break;
+                default:
+                    throw new NotSupportedException($"Jazor 模块类不支持{member.Kind}:{member.Name}。");
             }
         }
 
-        var statements = NodeList.From(_imports.Concat(members));
+        var statements = NodeList.From(BuildImportDeclarations().Concat(members));
         return statements.Count > 0
             ? new Module(statements)
             : null;
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="symbol"></param>
-    /// <returns></returns>
-    private async Task<Declaration> ConvertModuleField(IFieldSymbol symbol)
+    private IEnumerable<ImportDeclaration> BuildImportDeclarations()
     {
-        var declaration = await ConvertVariableField(symbol);
+        foreach (var pair in _imports)
+        {
+            var specifierList = string.Join(", ", pair.Value.Select(static specifier => specifier.ToECMAScript()));
+            var modulePath = EscapeJavaScriptString(pair.Key);
+            var importScript = $"import {{ {specifierList} }} from \"{modulePath}\";";
+            var importStatement = new Parser().ParseModule(importScript).Body.Single() as ImportDeclaration;
+            if (importStatement is null)
+                throw new NotSupportedException($"Jazor 无法生成模块导入：{pair.Key}");
 
-        if (ShouldBePrivate(symbol.DeclaredAccessibility))
-            return declaration;
-        else
-            return new ExportNamedDeclaration(
-                declaration,
-                NodeList.From<ExportSpecifier>([]),
-                null,
-                NodeList.From<ImportAttribute>([]));
+            yield return importStatement;
+        }
+    }
+
+    private void MergeImports(in SenseArgument argument)
+    {
+        foreach (var pair in argument.FlushImportSpecifiers())
+        {
+            if (_imports.TryGetValue(pair.Key, out var list))
+            {
+                foreach (var specifier in pair.Value)
+                {
+                    if (!list.Any(existing => existing.ToECMAScript() == specifier.ToECMAScript()))
+                        list.Add(specifier);
+                }
+            }
+            else
+                _imports.Add(pair.Key, [.. pair.Value]);
+        }
     }
 
     /// <summary>
     /// 
     /// </summary>
+    /// <param name="statements"></param>
+    /// <param name="symbol"></param>
+    /// <returns></returns>
+    private async Task ConvertModuleField(List<Statement> statements, IFieldSymbol symbol)
+    {
+        var declaration = await ConvertVariableField(symbol);
+        if (ShouldBePrivate(symbol.DeclaredAccessibility))
+            statements.Add(declaration);
+        else
+            statements.Add(new ExportNamedDeclaration(
+                declaration,
+                NodeList.From<ExportSpecifier>([]),
+                null,
+                NodeList.From<ImportAttribute>([])));
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="statements"></param>
     /// <param name="symbol"></param>
     /// <returns></returns>
     /// <exception cref="NotSupportedException"></exception>
-    private async Task<Declaration> ConvertModuleMethod(IMethodSymbol symbol)
+    private async Task ConvertModuleMethod(List<Statement> statements, IMethodSymbol symbol)
     {
+        if (symbol.MethodKind == MethodKind.SharedConstructor)
+        {
+            if (symbol.IsImplicitlyDeclared)
+                return;
+
+            throw new NotSupportedException($"Jazor 模块类{symbol.Name}不支持静态构造函数。");
+        }
+
+        if (symbol.MethodKind == MethodKind.PropertySet)
+        {
+            foreach (var reference in symbol.DeclaringSyntaxReferences)
+            {
+                if (await reference.GetSyntaxAsync() is AccessorDeclarationSyntax accessor &&
+                    accessor.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.InitAccessorDeclaration))
+                    return;
+            }
+        }
+
+        if (symbol.IsInitOnly)
+            return;
+
+        var parameters = new List<Node>();
+		var refParas = new List<Expression>();
+		var hasReturn = !symbol.ReturnsVoid;
+        foreach (var item in symbol.Parameters)
+        {
+            var expr = ConvertParameter(item);
+            parameters.Add(expr);
+            if (item.RefKind is RefKind.Out or RefKind.Ref)
+                refParas.Add(expr);
+        }
+
         // 获取方法体
         BlockSyntax? blockSyntax = null;
         ExpressionSyntax? expressionSyntax = null;
@@ -166,9 +234,10 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             var operation = _classModel.GetOperation(blockSyntax);
             if (operation is not null)
             {
-                var walker = new SemanticWalker();
+                var walker = new SemanticWalker(_classSymbol);
                 var argument = new SenseArgument(Sense.FunctionBody);
                 body = walker.Visit(operation, argument) as FunctionBody;
+                MergeImports(argument);
             }
         }
         else if (expressionSyntax is not null)
@@ -176,7 +245,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             var operation = _classModel.GetOperation(expressionSyntax);
             if (operation is not null)
             {
-                var walker = new SemanticWalker();
+                var walker = new SemanticWalker(_classSymbol);
                 var argument = new SenseArgument(Sense.Any);
                 var stmt = walker.Visit(operation, argument) switch
                 {
@@ -186,6 +255,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                         : new ReturnStatement(e),
                     _ => null
                 };
+                MergeImports(argument);
                 if (stmt is not null)
                     body = new FunctionBody(NodeList.From(stmt), true);
             }
@@ -193,9 +263,12 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         if (body is null)
             throw new NotSupportedException($"Jazor 不支持转换方法 {symbol.Name}，无法从操作生成函数体。");
 
-        var parameters = symbol.Parameters.Select(p => (Node)ConvertParameter(p));
+        if (refParas.Count > 0)
+            body = ApplyRefOutReturnProtocol(body, refParas, hasReturn);
+
         var name = Util.GetConfigOrSymbolName(symbol);
         var identifier = new Identifier(name);
+        // todo:分析使用ArrowFunctionExpression的可能性
         var declaration = new FunctionDeclaration(
             id: identifier,
             parameters: NodeList.From(parameters),
@@ -204,16 +277,33 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             async: false);
 
         if (ShouldBePrivate(symbol.DeclaredAccessibility))
-            return declaration;
-
-        return new ExportNamedDeclaration(
-            declaration,
-            NodeList.From<ExportSpecifier>([]),
-            null,
-            NodeList.From<ImportAttribute>([]));
+            statements.Add(declaration);
+        else
+            statements.Add(new ExportNamedDeclaration(
+                declaration,
+                NodeList.From<ExportSpecifier>([]),
+                null,
+                NodeList.From<ImportAttribute>([])));
     }
 
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="symbol"></param>
+    /// <returns></returns>
+    private Declaration ConvertModuleEnum(INamedTypeSymbol symbol)
+    {
+        var declaration = ConvertMemberEnum(symbol);
+        if (ShouldBePrivate(symbol.DeclaredAccessibility))
+            return declaration;
+        else
+            return new ExportNamedDeclaration(
+                    declaration,
+                    NodeList.From<ExportSpecifier>([]),
+                    null,
+                    NodeList.From<ImportAttribute>([]));
+    }
 
 
     private async Task<VariableDeclaration> ConvertVariableField(IFieldSymbol symbol)
@@ -232,11 +322,39 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 }
             }
 
-        var name = symbol.IsImplicitlyDeclared && symbol.AssociatedSymbol?.Kind == SymbolKind.Property
-            ? Format.HashName(symbol.AssociatedSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat))
-            : Util.GetConfigOrSymbolName(symbol);
+        string name;
+        bool isPropertyInitOnly = false;
+        if (symbol.AssociatedSymbol is IPropertySymbol property)
+        {
+            isPropertyInitOnly = property.DeclaringSyntaxReferences
+                .Select(r => r.GetSyntax())
+                .OfType<PropertyDeclarationSyntax>()
+                .Any(static p => p.AccessorList?.Accessors.Any(a => a.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.InitAccessorDeclaration)) == true);
+            if (symbol.IsImplicitlyDeclared)
+                name = Format.HashName(symbol.AssociatedSymbol!.OriginalDefinition.ToDisplayString(Format.NameFormat));
+            else
+                name = Util.GetConfigOrSymbolName(symbol);
+
+            // C#只有自动实现的属性或使用 ‘field’ 关键字的属性才能具有初始值设定项。
+            // 要查找对应的属性，是否有初始化赋值
+            if (init is null)
+            {
+                foreach (var item in property.DeclaringSyntaxReferences)
+                {
+                    var syntax = await item.GetSyntaxAsync() as PropertyDeclarationSyntax;
+                    if (syntax is not null && syntax.Initializer is not null)
+                    {
+                        init = CreateEqualsValueClauseSyntaxLiteral(syntax.Initializer);
+                        break;
+                    }
+                }
+            }
+        }
+        else
+            name = Util.GetConfigOrSymbolName(symbol);
+
         var identifier = new Identifier(name);
-        var kind = symbol.IsConst
+        var kind = symbol.IsConst || isPropertyInitOnly
             ? VariableDeclarationKind.Const
             : VariableDeclarationKind.Let;
         var declarator = new VariableDeclarator(identifier, init);
@@ -290,6 +408,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             var argument = new SenseArgument(Sense.FunctionBody);
             body = walker.Visit(operation, argument) as FunctionBody
                 ?? throw new NotSupportedException($"Jazor cannot suport {symbol.Name}.");
+            MergeImports(argument);
         }
         //如果没有方法体，并且是属性的get、set方法，则是自动属性
         else if (isProperty)
@@ -426,6 +545,9 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
     private Declaration ConvertModuleClass(INamedTypeSymbol symbol)
     {
+        if (symbol.IsStatic)
+            throw new NotSupportedException($"Jazor 模块类中不支持静态成员类{symbol.Name}。");
+            
         var declaration = ConvertMemberClass(symbol);
 
         if (ShouldBePrivate(symbol.DeclaredAccessibility))
@@ -453,36 +575,33 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             //枚举一般不会使用long，所以double足够
             var value = System.Convert.ToDouble(kv.Value);
             var raw = kv.Value.ToString();
-            var definition = new PropertyDefinition(
+            var definition = new ObjectProperty(
+                    kind: PropertyKind.Init,
                     key: new Identifier(kv.Key),
                     value: new NumericLiteral(value: value, raw: raw),
                     computed: false,
-                    isStatic: false,
-                    decorators: NodeList.Empty<Decorator>()
+                    shorthand: false,
+                    method: false
                 ) as Node;
 
             return definition;
         }));
 
-        var init = new ObjectExpression(props);
-        var name = GetSymbolName(symbol);
+        // 生成冻结的值面量对象
+        var arg = new ObjectExpression(props);
+        var init = new CallExpression(
+            callee: new MemberExpression(
+                obj: new Identifier("Object"),
+                property: new Identifier("freeze"),
+                computed: false,
+                optional: false),
+            args: NodeList.From<Expression>(arg),
+            optional: false);
+        var name = Util.GetConfigOrSymbolName(symbol);
         var declarator = new VariableDeclarator(new Identifier(name), init);
         var declaration = new VariableDeclaration(VariableDeclarationKind.Const, NodeList.From([declarator]));
 
         return declaration;
-    }
-
-    private Declaration ConvertModuleEnum(INamedTypeSymbol symbol)
-    {
-        var declaration = ConvertMemberEnum(symbol);
-        if (ShouldBePrivate(symbol.DeclaredAccessibility))
-            return declaration;
-        else
-            return new ExportNamedDeclaration(
-                    declaration,
-                    NodeList.From<ExportSpecifier>([]),
-                    null,
-                    NodeList.From<ImportAttribute>([]));
     }
 
     private static Expression ConvertParameter(IParameterSymbol parameter)
@@ -503,38 +622,10 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         if (value is null)
             throw new NotSupportedException($"Cannot convert null to literal.");
 
-        var val = value.ToString();
-
-        Expression right;
         if (type == SpecialType.None)
             return new NullLiteral("null");
 
-        else if (IsNumeric(type))
-            right = new NumericLiteral(value: System.Convert.ToDouble(value), raw: val);
-
-        else if (type == SpecialType.System_String || type == SpecialType.System_Char)
-        {
-            var raw = val
-                .Replace("\\", "\\\\")  // 必须先转义反斜杠
-                .Replace("\"", "\\\"")
-                .Replace("\0", "\\0")
-                .Replace("\a", "\\a")
-                .Replace("\b", "\\b")
-                .Replace("\f", "\\f")
-                .Replace("\n", "\\n")
-                .Replace("\r", "\\r")
-                .Replace("\t", "\\t")
-                .Replace("\v", "\\v");
-
-            right = new StringLiteral(value: val, raw: $"\"{raw}\"");
-        }
-        else if (type == SpecialType.System_Boolean)
-            right = new BooleanLiteral(value: val.ToLower() == "true", raw: val.ToLower());
-
-        else
-            throw new NotSupportedException($"Cannot convert {value} value to literal.");
-
-        return right;
+        return CreateLiteralExpression(value);
     }
 
     private Expression CreateEqualsValueClauseSyntaxLiteral(EqualsValueClauseSyntax syntax)
@@ -543,39 +634,100 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
         // 仅处理字面量表达式
         if (value is LiteralExpressionSyntax lit)
-        {
-            return lit.Token.Value switch
-            {
-                null => new NullLiteral("null"),
-                bool b => new BooleanLiteral(b, b.ToString().ToLower()),
-                char c => new StringLiteral(c.ToString(), $"\"{c}\""),
-                string s => new StringLiteral(s, $"\"{s}\""),
-                sbyte sb => new NumericLiteral(sb, sb.ToString()),
-                byte b => new NumericLiteral(b, b.ToString()),
-                short s => new NumericLiteral(s, s.ToString()),
-                ushort us => new NumericLiteral(us, us.ToString()),
-                int i => new NumericLiteral(i, i.ToString()),
-                uint ui => new NumericLiteral(ui, ui.ToString()),
-                long l => new NumericLiteral(l, l.ToString()),
-                ulong ul => new NumericLiteral(ul, ul.ToString()),
-                double d => new NumericLiteral(d, d.ToString()),
-                float f => new NumericLiteral(f, f.ToString()),
-                decimal dec => new NumericLiteral(System.Convert.ToDouble(dec), dec.ToString()),
-                _ => throw new NotSupportedException($"Unsupported literal type: {lit.Token.Value?.GetType()}")
-            };
-        }
+            return CreateLiteralExpression(lit.Token.Value);
 
         var operation = _classModel.GetOperation(syntax);
         if (operation is not null)
         {
-            var walker = new SemanticWalker();
+            var walker = new SemanticWalker(_classSymbol);
             var argument = new SenseArgument(Sense.Any);
             var expr = walker.Visit(operation, argument) as Expression;
+            MergeImports(argument);
             if (expr is not null)
                 return expr;
         }
 
         throw new NotSupportedException($"Only literal expressions are supported, got: {value.Kind()}");
+    }
+
+    private static FunctionBody ApplyRefOutReturnProtocol(FunctionBody body, IReadOnlyList<Expression> refParas, bool hasReturn)
+    {
+        var returnExpr = new ArrayExpression(NodeList.From(BuildReturnElements(null, refParas, hasReturn)));
+        var rewriter = new RefOutReturnRewriter(refParas, hasReturn);
+        var rewritten = (FunctionBody)(rewriter.Visit(body) ?? body);
+        if (!hasReturn)
+        {
+            var statements = rewritten.Body.ToList();
+            statements.Add(new ReturnStatement(returnExpr));
+            rewritten = new FunctionBody(NodeList.From(statements), rewritten.Strict);
+        }
+
+        return rewritten;
+
+        static List<Expression> BuildReturnElements(Expression? returnValue, IReadOnlyList<Expression> refs, bool hasReturnValue)
+        {
+            var items = new List<Expression>();
+            if (hasReturnValue)
+                items.Add(returnValue ?? new Identifier("undefined"));
+            items.AddRange(refs);
+            return items;
+        }
+    }
+
+    private sealed class RefOutReturnRewriter(IReadOnlyList<Expression> refParas, bool hasReturn) : AstRewriter
+    {
+        public bool HasReturnStatement { get; private set; }
+
+        protected override object? VisitReturnStatement(ReturnStatement node)
+        {
+            HasReturnStatement = true;
+            var elements = new List<Expression>();
+            if (hasReturn)
+                elements.Add(node.Argument ?? new Identifier("undefined"));
+            elements.AddRange(refParas);
+            return new ReturnStatement(new ArrayExpression(NodeList.From(elements)));
+        }
+
+        protected override object VisitFunctionExpression(FunctionExpression node) => node;
+        protected override object VisitArrowFunctionExpression(ArrowFunctionExpression node) => node;
+    }
+
+    private static Expression CreateLiteralExpression(object? value)
+    {
+        return value switch
+        {
+            null => new NullLiteral("null"),
+            bool b => new BooleanLiteral(b, b.ToString().ToLowerInvariant()),
+            char c => new StringLiteral(c.ToString(), $"\"{EscapeJavaScriptString(c.ToString())}\""),
+            string s => new StringLiteral(s, $"\"{EscapeJavaScriptString(s)}\""),
+            sbyte sb => new NumericLiteral(sb, sb.ToString(CultureInfo.InvariantCulture)),
+            byte b => new NumericLiteral(b, b.ToString(CultureInfo.InvariantCulture)),
+            short s => new NumericLiteral(s, s.ToString(CultureInfo.InvariantCulture)),
+            ushort us => new NumericLiteral(us, us.ToString(CultureInfo.InvariantCulture)),
+            int i => new NumericLiteral(i, i.ToString(CultureInfo.InvariantCulture)),
+            uint ui => new NumericLiteral(ui, ui.ToString(CultureInfo.InvariantCulture)),
+            long l => new BigIntLiteral(new BigInteger(l), $"{l.ToString(CultureInfo.InvariantCulture)}n"),
+            ulong ul => new BigIntLiteral(new BigInteger(ul), $"{ul.ToString(CultureInfo.InvariantCulture)}n"),
+            double d => new NumericLiteral(d, d.ToString("R", CultureInfo.InvariantCulture)),
+            float f => new NumericLiteral(f, f.ToString("R", CultureInfo.InvariantCulture)),
+            decimal dec => new NumericLiteral(System.Convert.ToDouble(dec), dec.ToString(CultureInfo.InvariantCulture)),
+            _ => throw new NotSupportedException($"Unsupported literal type: {value.GetType()}")
+        };
+    }
+
+    private static string EscapeJavaScriptString(string value)
+    {
+        return value
+            .Replace("\\", "\\\\")
+            .Replace("\"", "\\\"")
+            .Replace("\0", "\\0")
+            .Replace("\a", "\\a")
+            .Replace("\b", "\\b")
+            .Replace("\f", "\\f")
+            .Replace("\n", "\\n")
+            .Replace("\r", "\\r")
+            .Replace("\t", "\\t")
+            .Replace("\v", "\\v");
     }
 
 	private static bool IsNumeric(SpecialType type)

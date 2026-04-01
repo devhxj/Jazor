@@ -38,28 +38,28 @@ public static class Int16Module
 	/// C#: short.CompareTo(object)
 	/// JS: (instance - (value ?? 0))
 	/// </summary>
-	[Jazor(Op.Inline, "short.CompareTo(object)", "(@#{0} - (@#{1} ?? 0))")]
+	[Jazor(Op.Inline, "short.CompareTo(object)", "(__arg1 - (__arg2 ?? 0))")]
 	public extern static Number _16417ddcfd71e8e5(Number instance, object? value);
 
 	/// <summary>
 	/// C#: short.CompareTo(short)
 	/// JS: (instance - value)
 	/// </summary>
-	[Jazor(Op.Inline, "short.CompareTo(short)", "(@#{0} - @#{1})")]
+	[Jazor(Op.Inline, "short.CompareTo(short)", "(__arg1 - __arg2)")]
 	public extern static Number _4ee8d8c1e1a45502(Number instance, Number value);
 
 	/// <summary>
 	/// C#: short.Equals(object)
 	/// JS: instance === obj
 	/// </summary>
-	[Jazor(Op.Inline, "override short.Equals(object)", "(@#{0} === @#{1})")]
+	[Jazor(Op.Inline, "override short.Equals(object)", "(__arg1 === __arg2)")]
 	public extern static bool _22027e397eeeadf4(Number instance, object? obj);
 
 	/// <summary>
 	/// C#: short.Equals(short)
 	/// JS: instance === obj
 	/// </summary>
-	[Jazor(Op.Inline, "short.Equals(short)", "(@#{0} === @#{1})")]
+	[Jazor(Op.Inline, "short.Equals(short)", "(__arg1 === __arg2)")]
 	public extern static bool _cc018b8cb5a7c74c(Number instance, Number obj);
 
 	[Jazor(Op.Discard, "override short.GetHashCode()")]

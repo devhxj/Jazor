@@ -31,7 +31,7 @@ public static class ExceptionModule
 	/// C#: new Exception(string message)
 	/// JS: new Error(message)
 	/// </summary>
-	[Jazor(Op.Inline, "System.Exception.Exception(string)", "new Error(@#{0})")]
+	[Jazor(Op.Inline, "System.Exception.Exception(string)", "new Error(__arg1)")]
 	public extern static Error _2cf200c538022157(string? message);
 
 	/// <summary>
@@ -46,7 +46,7 @@ public static class ExceptionModule
 	/// C#: Exception.Message
 	/// JS: error.message
 	/// </summary>
-	[Jazor(Op.Inline, "virtual System.Exception.Message.get", "@#{0}.message")]
+	[Jazor(Op.Inline, "virtual System.Exception.Message.get", "__arg1.message")]
 	public extern static string _254136af38922fd7(Error instance);
 
 	[Jazor(Op.Discard ,"virtual System.Exception.Data.get")]
@@ -92,13 +92,48 @@ public static class ExceptionModule
 	/// C#: Exception.GetType()
 	/// JS: error.constructor.name 或 error.name
 	/// </summary>
-	[Jazor(Op.Inline, "System.Exception.GetType()", "@#{0}.constructor")]
+	[Jazor(Op.Inline, "System.Exception.GetType()", "__arg1.constructor")]
 	public extern static System.Type _352db97ff685dc43(Error instance);
 
 	/// <summary>
 	/// C#: Exception.StackTrace
 	/// JS: error.stack
 	/// </summary>
-	[Jazor(Op.Inline, "virtual System.Exception.StackTrace.get", "@#{0}.stack")]
+	[Jazor(Op.Inline, "virtual System.Exception.StackTrace.get", "__arg1.stack")]
 	public extern static string? _699c881cddeae353(Error instance);
+
+	/// <summary>
+	/// C#: ArgumentException.ParamName
+	/// JS: error.message
+	/// </summary>
+	[Jazor(Op.Inline, "virtual System.ArgumentException.ParamName.get", "__arg1.message")]
+	public extern static string? _0dbd1c9e0d1f4e3a(Error instance);
+
+	/// <summary>
+	/// C#: new DivideByZeroException()
+	/// JS: new Error("DivideByZeroException")
+	/// </summary>
+	[Jazor(Op.Inline, "System.DivideByZeroException.DivideByZeroException()", "new Error('DivideByZeroException')")]
+	public extern static Error _d1f4c6c8e9474d37();
+
+	/// <summary>
+	/// C#: new InvalidOperationException()
+	/// JS: new Error()
+	/// </summary>
+	[Jazor(Op.Inline, "System.InvalidOperationException.InvalidOperationException()", "new Error()")]
+	public extern static Error _e2850b70fbe24075();
+
+	/// <summary>
+	/// C#: new InvalidOperationException(string)
+	/// JS: new Error(message)
+	/// </summary>
+	[Jazor(Op.Inline, "System.InvalidOperationException.InvalidOperationException(string)", "new Error(__arg1)")]
+	public extern static Error _5c8e0e76e3ba42db(string? message);
+
+	/// <summary>
+	/// C#: new ArgumentNullException(string)
+	/// JS: new TypeError(paramName)
+	/// </summary>
+	[Jazor(Op.Inline, "System.ArgumentNullException.ArgumentNullException(string)", "new TypeError(__arg1)")]
+	public extern static TypeError _d6f57ff44fd24ef5(string? paramName);
 }

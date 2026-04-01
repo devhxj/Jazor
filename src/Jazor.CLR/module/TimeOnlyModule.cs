@@ -29,70 +29,70 @@ public static class TimeOnlyModule
 	/// C#: new TimeOnly(hour, minute)
 	/// JS: hour * 3600000 + minute * 60000 (milliseconds since midnight)
 	/// </summary>
-	[Jazor(Op.Inline, "System.TimeOnly.TimeOnly(int, int)", "(@#{0} * 3600000 + @#{1} * 60000)")]
+	[Jazor(Op.Inline, "System.TimeOnly.TimeOnly(int, int)", "(__arg1 * 3600000 + __arg2 * 60000)")]
 	public extern static Number _62d395c56c4c299d(Number hour, Number minute);
 
 	/// <summary>
 	/// C#: new TimeOnly(hour, minute, second)
 	/// JS: hour * 3600000 + minute * 60000 + second * 1000
 	/// </summary>
-	[Jazor(Op.Inline, "System.TimeOnly.TimeOnly(int, int, int)", "(@#{0} * 3600000 + @#{1} * 60000 + @#{2} * 1000)")]
+	[Jazor(Op.Inline, "System.TimeOnly.TimeOnly(int, int, int)", "(__arg1 * 3600000 + __arg2 * 60000 + __arg3 * 1000)")]
 	public extern static Number _e9a3481b3456aad4(Number hour, Number minute, Number second);
 
 	/// <summary>
 	/// C#: new TimeOnly(hour, minute, second, millisecond)
 	/// JS: hour * 3600000 + minute * 60000 + second * 1000 + millisecond
 	/// </summary>
-	[Jazor(Op.Inline, "System.TimeOnly.TimeOnly(int, int, int, int)", "(@#{0} * 3600000 + @#{1} * 60000 + @#{2} * 1000 + @#{3})")]
+	[Jazor(Op.Inline, "System.TimeOnly.TimeOnly(int, int, int, int)", "(__arg1 * 3600000 + __arg2 * 60000 + __arg3 * 1000 + __arg4)")]
 	public extern static Number _335167098e226ccf(Number hour, Number minute, Number second, Number millisecond);
 
 	/// <summary>
 	/// C#: new TimeOnly(hour, minute, second, millisecond, microsecond)
 	/// JS: hour * 3600000 + minute * 60000 + second * 1000 + millisecond + microsecond / 1000
 	/// </summary>
-	[Jazor(Op.Inline, "System.TimeOnly.TimeOnly(int, int, int, int, int)", "(@#{0} * 3600000 + @#{1} * 60000 + @#{2} * 1000 + @#{3} + @#{4} / 1000)")]
+	[Jazor(Op.Inline, "System.TimeOnly.TimeOnly(int, int, int, int, int)", "(__arg1 * 3600000 + __arg2 * 60000 + __arg3 * 1000 + __arg4 + __arg5 / 1000)")]
 	public extern static Number _28c8cb012fe0e547(Number hour, Number minute, Number second, Number millisecond, Number microsecond);
 
 	/// <summary>
 	/// C#: new TimeOnly(ticks)
 	/// JS: Number(ticks) / 10000 (convert ticks to milliseconds)
 	/// </summary>
-	[Jazor(Op.Inline, "System.TimeOnly.TimeOnly(long)", "Number(@#{0}) / 10000")]
+	[Jazor(Op.Inline, "System.TimeOnly.TimeOnly(long)", "Number(__arg1) / 10000")]
 	public extern static Number _b8b3b95e8b848f44(BigInt ticks);
 
 	/// <summary>
 	/// C#: instance.Hour
 	/// JS: Math.floor(instance / 3600000) % 24
 	/// </summary>
-	[Jazor(Op.Inline, "System.TimeOnly.Hour.get", "(Math.floor(@#{0} / 3600000) % 24)")]
+	[Jazor(Op.Inline, "System.TimeOnly.Hour.get", "(Math.floor(__arg1 / 3600000) % 24)")]
 	public extern static Number _201ef41481f4e3fb(Number instance);
 
 	/// <summary>
 	/// C#: instance.Minute
 	/// JS: Math.floor(instance / 60000) % 60
 	/// </summary>
-	[Jazor(Op.Inline, "System.TimeOnly.Minute.get", "(Math.floor(@#{0} / 60000) % 60)")]
+	[Jazor(Op.Inline, "System.TimeOnly.Minute.get", "(Math.floor(__arg1 / 60000) % 60)")]
 	public extern static Number _009addd612610031(Number instance);
 
 	/// <summary>
 	/// C#: instance.Second
 	/// JS: Math.floor(instance / 1000) % 60
 	/// </summary>
-	[Jazor(Op.Inline, "System.TimeOnly.Second.get", "(Math.floor(@#{0} / 1000) % 60)")]
+	[Jazor(Op.Inline, "System.TimeOnly.Second.get", "(Math.floor(__arg1 / 1000) % 60)")]
 	public extern static Number _b9481eedd6cbeb99(Number instance);
 
 	/// <summary>
 	/// C#: instance.Millisecond
 	/// JS: instance % 1000
 	/// </summary>
-	[Jazor(Op.Inline, "System.TimeOnly.Millisecond.get", "(@#{0} % 1000)")]
+	[Jazor(Op.Inline, "System.TimeOnly.Millisecond.get", "(__arg1 % 1000)")]
 	public extern static Number _3c789a48d39d0010(Number instance);
 
 	/// <summary>
 	/// C#: instance.Microsecond
 	/// JS: (instance % 1) * 1000
 	/// </summary>
-	[Jazor(Op.Inline, "System.TimeOnly.Microsecond.get", "((@#{0} % 1) * 1000)")]
+	[Jazor(Op.Inline, "System.TimeOnly.Microsecond.get", "((__arg1 % 1) * 1000)")]
 	public extern static Number _a091b803b851e27e(Number instance);
 
 	/// <summary>
@@ -106,14 +106,14 @@ public static class TimeOnlyModule
 	/// C#: instance.Ticks
 	/// JS: BigInt(instance) * 10000n
 	/// </summary>
-	[Jazor(Op.Inline, "System.TimeOnly.Ticks.get", "(BigInt(@#{0}) * 10000n)")]
+	[Jazor(Op.Inline, "System.TimeOnly.Ticks.get", "(BigInt(__arg1) * 10000n)")]
 	public extern static BigInt _2fd46050126234ac(Number instance);
 
 	/// <summary>
 	/// C#: instance.Add(value)
 	/// JS: (instance + Number(value) / 10000) % 86400000
 	/// </summary>
-	[Jazor(Op.Inline, "System.TimeOnly.Add(System.TimeSpan)", "((@#{0} + Number(@#{1}) / 10000) % 86400000)")]
+	[Jazor(Op.Inline, "System.TimeOnly.Add(System.TimeSpan)", "((__arg1 + Number(__arg2) / 10000) % 86400000)")]
 	public extern static Number _4c935b985e7b6e02(Number instance, BigInt value);
 
 	/// <summary>
@@ -138,7 +138,7 @@ public static class TimeOnlyModule
 	/// C#: instance.AddHours(value)
 	/// JS: (instance + value * 3600000) % 86400000
 	/// </summary>
-	[Jazor(Op.Inline, "System.TimeOnly.AddHours(double)", "((@#{0} + @#{1} * 3600000) % 86400000)")]
+	[Jazor(Op.Inline, "System.TimeOnly.AddHours(double)", "((__arg1 + __arg2 * 3600000) % 86400000)")]
 	public extern static Number _8e71fa0d2695e84f(Number instance, Number value);
 
 	/// <summary>
@@ -163,7 +163,7 @@ public static class TimeOnlyModule
 	/// C#: instance.AddMinutes(value)
 	/// JS: (instance + value * 60000) % 86400000
 	/// </summary>
-	[Jazor(Op.Inline, "System.TimeOnly.AddMinutes(double)", "((@#{0} + @#{1} * 60000) % 86400000)")]
+	[Jazor(Op.Inline, "System.TimeOnly.AddMinutes(double)", "((__arg1 + __arg2 * 60000) % 86400000)")]
 	public extern static Number _77bd7db30cbf3bc9(Number instance, Number value);
 
 	/// <summary>
@@ -188,7 +188,7 @@ public static class TimeOnlyModule
 	/// C#: instance.IsBetween(start, end)
 	/// JS: 支持跨午夜的范围检查
 	/// </summary>
-	[Jazor(Op.Inline, "System.TimeOnly.IsBetween(System.TimeOnly, System.TimeOnly)", "(@#{1} < @#{2} ? (@#{0} >= @#{1} && @#{0} < @#{2}) : (@#{0} >= @#{1} || @#{0} < @#{2}))")]
+	[Jazor(Op.Inline, "System.TimeOnly.IsBetween(System.TimeOnly, System.TimeOnly)", "(__arg2 < __arg3 ? (__arg1 >= __arg2 && __arg1 < __arg3) : (__arg1 >= __arg2 || __arg1 < __arg3))")]
 	public extern static bool _da64e8d379a7e47c(Number instance, Number start, Number end);
 
 	///<summary>Determines whether two specified instances of <xref data-throw-if-not-resolved="true" uid="System.TimeOnly"></xref>are equal.</summary>

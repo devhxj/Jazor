@@ -32,19 +32,19 @@ public static class BooleanModule
 	public extern static Array<object?> _811623fcb5eec2f4(bool instance, string destination, Number charsWritten);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
-	[Jazor(Op.Inline, "override bool.Equals(object)", "(@#{0} === @#{1})")]
+	[Jazor(Op.Inline, "override bool.Equals(object)", "(__arg1 === __arg2)")]
 	public extern static bool _97cc6572c33639b7(bool instance, object? obj);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified <see cref="T:System.Boolean" /> object.</summary>
-	[Jazor(Op.Inline, "bool.Equals(bool)", "(@#{0} === @#{1})")]
+	[Jazor(Op.Inline, "bool.Equals(bool)", "(__arg1 === __arg2)")]
 	public extern static bool _22566f8453458531(bool instance, bool obj);
 
 	///<summary>Compares this instance to a specified object and returns an integer that indicates their relationship to one another.</summary>
-	[Jazor(Op.Inline, "bool.CompareTo(object)", "(@#{0} === @#{1} ? 0 : (@#{0} ? 1 : -1))")]
+	[Jazor(Op.Inline, "bool.CompareTo(object)", "(__arg1 === __arg2 ? 0 : (__arg1 ? 1 : -1))")]
 	public extern static Number _f877237b160159b0(bool instance, object? obj);
 
 	///<summary>Compares this instance to a specified <see cref="T:System.Boolean" /> object and returns an integer that indicates their relationship to one another.</summary>
-	[Jazor(Op.Inline, "bool.CompareTo(bool)", "(@#{0} === @#{1} ? 0 : (@#{0} ? 1 : -1))")]
+	[Jazor(Op.Inline, "bool.CompareTo(bool)", "(__arg1 === __arg2 ? 0 : (__arg1 ? 1 : -1))")]
 	public extern static Number _52e94ceda3f9af79(bool instance, bool value);
 
 	///<summary>Converts the specified string representation of a logical value to its <see cref="T:System.Boolean" /> equivalent.</summary>

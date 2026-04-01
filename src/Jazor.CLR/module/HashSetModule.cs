@@ -36,7 +36,7 @@ public static class HashSetModule<T>
 	/// C#: new HashSet<T>(collection)
 	/// JS: new Set(collection)
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.HashSet(System.Collections.Generic.IEnumerable<T>)", "new Set(@#{0})")]
+	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.HashSet(System.Collections.Generic.IEnumerable<T>)", "new Set(__arg1)")]
 	public extern static Set<T> _1bd2e054852d9d5f(Array<T> collection);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Collections.Generic.HashSet`1" /> class that uses the specified equality comparer for the set type, contains elements copied from the specified collection, and has sufficient capacity to accommodate the number of elements copied.</summary>
@@ -118,70 +118,70 @@ public static class HashSetModule<T>
 	/// C#: set.UnionWith(other)
 	/// JS: 遍历 other，添加所有元素
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.UnionWith(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { for (var item of other) set.add(item); })(@#{0}, @#{1})")]
+	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.UnionWith(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { for (var item of other) set.add(item); })(__arg1, __arg2)")]
 	public extern static void _b2bd5d22aadd44a8(Set<T> instance, Array<T> other);
 
 	/// <summary>
 	/// C#: set.IntersectWith(other)
 	/// JS: 保留同时存在于两个集合中的元素
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.IntersectWith(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { for (var item of set) { var found = false; for (var o of other) { if (o === item) { found = true; break; } } if (!found) set.delete(item); } })(@#{0}, @#{1})")]
+	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.IntersectWith(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { for (var item of set) { var found = false; for (var o of other) { if (o === item) { found = true; break; } } if (!found) set.delete(item); } })(__arg1, __arg2)")]
 	public extern static void _3a6a072035334578(Set<T> instance, Array<T> other);
 
 	/// <summary>
 	/// C#: set.ExceptWith(other)
 	/// JS: 从 instance 中删除 other 中的所有元素
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.ExceptWith(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { for (var item of other) set.delete(item); })(@#{0}, @#{1})")]
+	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.ExceptWith(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { for (var item of other) set.delete(item); })(__arg1, __arg2)")]
 	public extern static void _373e2e9ed1fb3f5b(Set<T> instance, Array<T> other);
 
 	/// <summary>
 	/// C#: set.SymmetricExceptWith(other)
 	/// JS: 保留只存在于一个集合中的元素
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.SymmetricExceptWith(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { for (var item of other) { if (set.has(item)) set.delete(item); else set.add(item); } })(@#{0}, @#{1})")]
+	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.SymmetricExceptWith(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { var otherSet = new Set(other); for (var item of otherSet) { if (set.has(item)) set.delete(item); else set.add(item); } })(__arg1, __arg2)")]
 	public extern static void _a22fe44dc0ae9ad2(Set<T> instance, Array<T> other);
 
 	/// <summary>
 	/// C#: set.IsSubsetOf(other)
 	/// JS: 检查 instance 是否是 other 的子集
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.IsSubsetOf(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { for (var item of set) { var found = false; for (var o of other) { if (o === item) { found = true; break; } } if (!found) return false; } return true; })(@#{0}, @#{1})")]
+	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.IsSubsetOf(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { var otherSet = new Set(other); for (var item of set) { if (!otherSet.has(item)) return false; } return true; })(__arg1, __arg2)")]
 	public extern static bool _23c8bcfc6b71d2b1(Set<T> instance, Array<T> other);
 
 	/// <summary>
 	/// C#: set.IsProperSubsetOf(other)
 	/// JS: 检查 instance 是否是 other 的真子集
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.IsProperSubsetOf(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { var otherSize = 0; for (var _ of other) otherSize++; if (set.size >= otherSize) return false; for (var item of set) { var found = false; for (var o of other) { if (o === item) { found = true; break; } } if (!found) return false; } return true; })(@#{0}, @#{1})")]
+	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.IsProperSubsetOf(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { var otherSet = new Set(other); if (set.size >= otherSet.size) return false; for (var item of set) { if (!otherSet.has(item)) return false; } return true; })(__arg1, __arg2)")]
 	public extern static bool _fb8566ae66aa9591(Set<T> instance, Array<T> other);
 
 	/// <summary>
 	/// C#: set.IsSupersetOf(other)
 	/// JS: 检查 instance 是否是 other 的超集
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.IsSupersetOf(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { for (var item of other) { if (!set.has(item)) return false; } return true; })(@#{0}, @#{1})")]
+	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.IsSupersetOf(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { var otherSet = new Set(other); for (var item of otherSet) { if (!set.has(item)) return false; } return true; })(__arg1, __arg2)")]
 	public extern static bool _3be7fbb1d68799fb(Set<T> instance, Array<T> other);
 
 	/// <summary>
 	/// C#: set.IsProperSupersetOf(other)
 	/// JS: 检查 instance 是否是 other 的真超集
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.IsProperSupersetOf(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { var otherSize = 0; for (var _ of other) otherSize++; if (set.size <= otherSize) return false; for (var item of other) { if (!set.has(item)) return false; } return true; })(@#{0}, @#{1})")]
+	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.IsProperSupersetOf(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { var otherSet = new Set(other); if (set.size <= otherSet.size) return false; for (var item of otherSet) { if (!set.has(item)) return false; } return true; })(__arg1, __arg2)")]
 	public extern static bool _cc0cc2d0f5be70db(Set<T> instance, Array<T> other);
 
 	/// <summary>
 	/// C#: set.Overlaps(other)
 	/// JS: 检查是否有交集
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.Overlaps(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { for (var item of other) { if (set.has(item)) return true; } return false; })(@#{0}, @#{1})")]
+	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.Overlaps(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { var otherSet = new Set(other); for (var item of otherSet) { if (set.has(item)) return true; } return false; })(__arg1, __arg2)")]
 	public extern static bool _84709aa8ff70a52a(Set<T> instance, Array<T> other);
 
 	/// <summary>
 	/// C#: set.SetEquals(other)
 	/// JS: 检查两个集合是否相等
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.SetEquals(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { var otherSize = 0; for (var _ of other) otherSize++; if (set.size !== otherSize) return false; for (var item of other) { if (!set.has(item)) return false; } return true; })(@#{0}, @#{1})")]
+	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.SetEquals(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { var otherSet = new Set(other); if (set.size !== otherSet.size) return false; for (var item of otherSet) { if (!set.has(item)) return false; } return true; })(__arg1, __arg2)")]
 	public extern static bool _55425d259e5f54ea(Set<T> instance, Array<T> other);
 
 	///<summary>Copies the elements of a <see cref="T:System.Collections.Generic.HashSet`1" /> object to an array.</summary>

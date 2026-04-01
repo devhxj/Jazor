@@ -62,29 +62,29 @@ public static class DoubleModule
 	[Jazor(Op.Alias, "static double.IsNaN(double)", "isNaN")]
 	public extern static bool _24e14b276e0c7e30(Number d);
 
-	[Jazor(Op.Inline, "static double.IsNegative(double)", "(Object.is(@#{0}, -0) || @#{0} < 0)")]
+	[Jazor(Op.Inline, "static double.IsNegative(double)", "(Object.is(__arg1, -0) || __arg1 < 0)")]
 	public extern static bool _2f6ba4398ec15d8d(Number d);
 
-	[Jazor(Op.Inline, "static double.IsNegativeInfinity(double)", "(@#{0} === -Infinity)")]
+	[Jazor(Op.Inline, "static double.IsNegativeInfinity(double)", "(__arg1 === -Infinity)")]
 	public extern static bool _f0fb1d1302b488d6(Number d);
 
 	[Jazor(Op.Discard, "static double.IsNormal(double)")]
 	public extern static bool _9b3adc853b9cfe8f(Number d);
 
-	[Jazor(Op.Inline, "static double.IsPositiveInfinity(double)", "(@#{0} === Infinity)")]
+	[Jazor(Op.Inline, "static double.IsPositiveInfinity(double)", "(__arg1 === Infinity)")]
 	public extern static bool _d15ff5d4064e951a(Number d);
 
 	[Jazor(Op.Discard, "static double.IsSubnormal(double)")]
 	public extern static bool _a48f9d7298aa7e76(Number d);
 
 	// CompareTo 和 Equals
-	[Jazor(Op.Inline, "double.CompareTo(object)", "(@#{0} - (@#{1} ?? 0))")]
+	[Jazor(Op.Inline, "double.CompareTo(object)", "(__arg1 - (__arg2 ?? 0))")]
 	public extern static Number _b0d483b6deae2278(Number instance, object? value);
 
-	[Jazor(Op.Inline, "double.CompareTo(double)", "(@#{0} - @#{1})")]
+	[Jazor(Op.Inline, "double.CompareTo(double)", "(__arg1 - __arg2)")]
 	public extern static Number _7b8150796366d2b1(Number instance, Number value);
 
-	[Jazor(Op.Inline, "override double.Equals(object)", "(@#{0} === @#{1})")]
+	[Jazor(Op.Inline, "override double.Equals(object)", "(__arg1 === __arg2)")]
 	public extern static bool _b5f97a04bba189b0(Number instance, object? obj);
 
 	// 操作符 - 使用 Op.Allowed
@@ -106,7 +106,7 @@ public static class DoubleModule
 	[Jazor(Op.Allowed, "static double.operator >=(double, double)")]
 	public extern static bool _4f7605355b48150a(Number left, Number right);
 
-	[Jazor(Op.Inline, "double.Equals(double)", "(@#{0} === @#{1})")]
+	[Jazor(Op.Inline, "double.Equals(double)", "(__arg1 === __arg2)")]
 	public extern static bool _6c01d37504f73181(Number instance, Number obj);
 
 	[Jazor(Op.Discard, "override double.GetHashCode()")]
@@ -197,7 +197,7 @@ public static class DoubleModule
 	public extern static System.TypeCode _faf3eda13d4c24c6(Number instance);
 
 	// 数学方法
-	[Jazor(Op.Inline, "static double.IsPow2(double)", "(@#{0} > 0 && (@#{0} & (@#{0} - 1)) === 0)")]
+	[Jazor(Op.Inline, "static double.IsPow2(double)", "(__arg1 > 0 && (__arg1 & (__arg1 - 1)) === 0)")]
 	public extern static bool _0f9f49a802919a8f(Number value);
 
 	[Jazor(Op.Alias, "static double.Log2(double)", "log2")]
@@ -206,19 +206,19 @@ public static class DoubleModule
 	[Jazor(Op.Alias, "static double.Exp(double)", "exp")]
 	public extern static Number _e94626bfb529f1e2(Number x);
 
-	[Jazor(Op.Inline, "static double.ExpM1(double)", "(Math.exp(@#{0}) - 1)")]
+	[Jazor(Op.Inline, "static double.ExpM1(double)", "(Math.exp(__arg1) - 1)")]
 	public extern static Number _1a8fc1577d8842a1(Number x);
 
 	[Jazor(Op.Alias, "static double.Exp2(double)", "exp2")]
 	public extern static Number _894bcd9f10fe195f(Number x);
 
-	[Jazor(Op.Inline, "static double.Exp2M1(double)", "(Math.pow(2, @#{0}) - 1)")]
+	[Jazor(Op.Inline, "static double.Exp2M1(double)", "(Math.pow(2, __arg1) - 1)")]
 	public extern static Number _b2c7a69c53b5558f(Number x);
 
-	[Jazor(Op.Inline, "static double.Exp10(double)", "(Math.pow(10, @#{0}))")]
+	[Jazor(Op.Inline, "static double.Exp10(double)", "(Math.pow(10, __arg1))")]
 	public extern static Number _433ea7f5bfe42847(Number x);
 
-	[Jazor(Op.Inline, "static double.Exp10M1(double)", "(Math.pow(10, @#{0}) - 1)")]
+	[Jazor(Op.Inline, "static double.Exp10M1(double)", "(Math.pow(10, __arg1) - 1)")]
 	public extern static Number _aece0b0b794624da(Number x);
 
 	[Jazor(Op.Alias, "static double.Ceiling(double)", "ceil")]
@@ -251,7 +251,7 @@ public static class DoubleModule
 	[Jazor(Op.Alias, "static double.Atan2(double, double)", "atan2")]
 	public extern static Number _d606d02df668235c(Number y, Number x);
 
-	[Jazor(Op.Inline, "static double.Atan2Pi(double, double)", "(Math.atan2(@#{0}, @#{1}) / Math.PI)")]
+	[Jazor(Op.Inline, "static double.Atan2Pi(double, double)", "(Math.atan2(__arg1, __arg2) / Math.PI)")]
 	public extern static Number _f54e39103ea7d6b5(Number y, Number x);
 
 	[Jazor(Op.Discard, "static double.BitDecrement(double)")]
@@ -260,25 +260,25 @@ public static class DoubleModule
 	[Jazor(Op.Discard, "static double.BitIncrement(double)")]
 	public extern static Number _a83d47e386f63de0(Number x);
 
-	[Jazor(Op.Inline, "static double.FusedMultiplyAdd(double, double, double)", "(@#{0} * @#{1} + @#{2})")]
+	[Jazor(Op.Inline, "static double.FusedMultiplyAdd(double, double, double)", "(__arg1 * __arg2 + __arg3)")]
 	public extern static Number _a7385e0d1e651c3f(Number left, Number right, Number addend);
 
-	[Jazor(Op.Inline, "static double.Ieee754Remainder(double, double)", "(@#{0} - @#{1} * Math.round(@#{0} / @#{1}))")]
+	[Jazor(Op.Inline, "static double.Ieee754Remainder(double, double)", "(__arg1 - __arg2 * Math.round(__arg1 / __arg2))")]
 	public extern static Number _092bc2bc891d33a8(Number left, Number right);
 
 	[Jazor(Op.Alias, "static double.ILogB(double)", "log2")]
 	public extern static Number _48628732b1dc8ac9(Number x);
 
-	[Jazor(Op.Inline, "static double.Lerp(double, double, double)", "(@#{0} + (@#{1} - @#{0}) * @#{2})")]
+	[Jazor(Op.Inline, "static double.Lerp(double, double, double)", "(__arg1 + (__arg2 - __arg1) * __arg3)")]
 	public extern static Number _a5426c98bc8a2df3(Number value1, Number value2, Number amount);
 
-	[Jazor(Op.Inline, "static double.ReciprocalEstimate(double)", "(1 / @#{0})")]
+	[Jazor(Op.Inline, "static double.ReciprocalEstimate(double)", "(1 / __arg1)")]
 	public extern static Number _a07d02f7af20108d(Number x);
 
-	[Jazor(Op.Inline, "static double.ReciprocalSqrtEstimate(double)", "(1 / Math.sqrt(@#{0}))")]
+	[Jazor(Op.Inline, "static double.ReciprocalSqrtEstimate(double)", "(1 / Math.sqrt(__arg1))")]
 	public extern static Number _093ed023d5ee163e(Number x);
 
-	[Jazor(Op.Inline, "static double.ScaleB(double, int)", "(@#{0} * Math.pow(2, @#{1}))")]
+	[Jazor(Op.Inline, "static double.ScaleB(double, int)", "(__arg1 * Math.pow(2, __arg2))")]
 	public extern static Number _efc90b780554b82f(Number x, Number n);
 
 	[Jazor(Op.Alias, "static double.Acosh(double)", "acosh")]
@@ -302,28 +302,28 @@ public static class DoubleModule
 	[Jazor(Op.Alias, "static double.Log(double)", "log")]
 	public extern static Number _f89aa2d9ce52cc5e(Number x);
 
-	[Jazor(Op.Inline, "static double.Log(double, double)", "(Math.log(@#{0}) / Math.log(@#{1}))")]
+	[Jazor(Op.Inline, "static double.Log(double, double)", "(Math.log(__arg1) / Math.log(__arg2))")]
 	public extern static Number _2367dc158f1f7ec9(Number x, Number newBase);
 
-	[Jazor(Op.Inline, "static double.LogP1(double)", "Math.log1p(@#{0})")]
+	[Jazor(Op.Inline, "static double.LogP1(double)", "Math.log1p(__arg1)")]
 	public extern static Number _379f80adec6e897b(Number x);
 
-	[Jazor(Op.Inline, "static double.Log2P1(double)", "(Math.log2(@#{0} + 1))")]
+	[Jazor(Op.Inline, "static double.Log2P1(double)", "(Math.log2(__arg1 + 1))")]
 	public extern static Number _0f38233678cfefdc(Number x);
 
 	[Jazor(Op.Alias, "static double.Log10(double)", "log10")]
 	public extern static Number _d057b30c2fca7de9(Number x);
 
-	[Jazor(Op.Inline, "static double.Log10P1(double)", "(Math.log10(@#{0} + 1))")]
+	[Jazor(Op.Inline, "static double.Log10P1(double)", "(Math.log10(__arg1 + 1))")]
 	public extern static Number _f0b78003a9ab01fb(Number x);
 
-	[Jazor(Op.Inline, "static double.Clamp(double, double, double)", "(Math.max(@#{1}, Math.min(@#{0}, @#{2})))")]
+	[Jazor(Op.Inline, "static double.Clamp(double, double, double)", "(Math.max(__arg2, Math.min(__arg1, __arg3)))")]
 	public extern static Number _8a90b4c9a1beefd9(Number value, Number min, Number max);
 
 	[Jazor(Op.Discard, "static double.ClampNative(double, double, double)")]
 	public extern static Number _ead55aa3a172f045(Number value, Number min, Number max);
 
-	[Jazor(Op.Inline, "static double.CopySign(double, double)", "(Math.abs(@#{0}) * Math.sign(@#{1}))")]
+	[Jazor(Op.Inline, "static double.CopySign(double, double)", "(Math.abs(__arg1) * Math.sign(__arg2))")]
 	public extern static Number _7d753440d9da2ba5(Number value, Number sign);
 
 	[Jazor(Op.Alias, "static double.Max(double, double)", "max")]
@@ -359,19 +359,19 @@ public static class DoubleModule
 	[Jazor(Op.Discard, "static double.CreateTruncating<TOther>(TOther)")]
 	public extern static Number _e3a12f862df0ccea<TOther>(object value);
 
-	[Jazor(Op.Inline, "static double.IsEvenInteger(double)", "(@#{0} % 2 === 0)")]
+	[Jazor(Op.Inline, "static double.IsEvenInteger(double)", "(__arg1 % 2 === 0)")]
 	public extern static bool _e3c00c1b96ee23bd(Number value);
 
-	[Jazor(Op.Inline, "static double.IsInteger(double)", "(Number.isInteger(@#{0}))")]
+	[Jazor(Op.Inline, "static double.IsInteger(double)", "(Number.isInteger(__arg1))")]
 	public extern static bool _f0cb8da3d3123834(Number value);
 
-	[Jazor(Op.Inline, "static double.IsOddInteger(double)", "(@#{0} % 2 !== 0)")]
+	[Jazor(Op.Inline, "static double.IsOddInteger(double)", "(__arg1 % 2 !== 0)")]
 	public extern static bool _0f52036842645ea9(Number value);
 
-	[Jazor(Op.Inline, "static double.IsPositive(double)", "(@#{0} > 0 || Object.is(@#{0}, 0))")]
+	[Jazor(Op.Inline, "static double.IsPositive(double)", "(__arg1 > 0 || Object.is(__arg1, 0))")]
 	public extern static bool _c1220c050b39d180(Number value);
 
-	[Jazor(Op.Inline, "static double.IsRealNumber(double)", "(!isNaN(@#{0}))")]
+	[Jazor(Op.Inline, "static double.IsRealNumber(double)", "(!isNaN(__arg1))")]
 	public extern static bool _0e7439da8bbce1ab(Number value);
 
 	[Jazor(Op.Alias, "static double.MaxMagnitude(double, double)", "max")]
@@ -413,13 +413,13 @@ public static class DoubleModule
 	[Jazor(Op.Alias, "static double.Pow(double, double)", "pow")]
 	public extern static Number _a9ce690fc0374936(Number x, Number y);
 
-	[Jazor(Op.Inline, "static double.Cbrt(double)", "Math.cbrt(@#{0})")]
+	[Jazor(Op.Inline, "static double.Cbrt(double)", "Math.cbrt(__arg1)")]
 	public extern static Number _be2f8c6b23df2f9d(Number x);
 
-	[Jazor(Op.Inline, "static double.Hypot(double, double)", "Math.hypot(@#{0}, @#{1})")]
+	[Jazor(Op.Inline, "static double.Hypot(double, double)", "Math.hypot(__arg1, __arg2)")]
 	public extern static Number _7b8e31add532abe8(Number x, Number y);
 
-	[Jazor(Op.Inline, "static double.RootN(double, int)", "Math.pow(@#{0}, 1 / @#{1})")]
+	[Jazor(Op.Inline, "static double.RootN(double, int)", "Math.pow(__arg1, 1 / __arg2)")]
 	public extern static Number _83649fc6ded4d88e(Number x, Number n);
 
 	[Jazor(Op.Alias, "static double.Sqrt(double)", "sqrt")]
@@ -434,49 +434,49 @@ public static class DoubleModule
 	[Jazor(Op.Alias, "static double.Acos(double)", "acos")]
 	public extern static Number _1c32d7b441f1bec1(Number x);
 
-	[Jazor(Op.Inline, "static double.AcosPi(double)", "(Math.acos(@#{0}) / Math.PI)")]
+	[Jazor(Op.Inline, "static double.AcosPi(double)", "(Math.acos(__arg1) / Math.PI)")]
 	public extern static Number _4a99593b807868d6(Number x);
 
 	[Jazor(Op.Alias, "static double.Asin(double)", "asin")]
 	public extern static Number _517eb387ef38a60b(Number x);
 
-	[Jazor(Op.Inline, "static double.AsinPi(double)", "(Math.asin(@#{0}) / Math.PI)")]
+	[Jazor(Op.Inline, "static double.AsinPi(double)", "(Math.asin(__arg1) / Math.PI)")]
 	public extern static Number _1a0239dc7bac42d0(Number x);
 
 	[Jazor(Op.Alias, "static double.Atan(double)", "atan")]
 	public extern static Number _a6a8f60d8be1baab(Number x);
 
-	[Jazor(Op.Inline, "static double.AtanPi(double)", "(Math.atan(@#{0}) / Math.PI)")]
+	[Jazor(Op.Inline, "static double.AtanPi(double)", "(Math.atan(__arg1) / Math.PI)")]
 	public extern static Number _fa0c5717daf60a22(Number x);
 
 	[Jazor(Op.Alias, "static double.Cos(double)", "cos")]
 	public extern static Number _ab249d49b3cb5f87(Number x);
 
-	[Jazor(Op.Inline, "static double.CosPi(double)", "Math.cos(@#{0} * Math.PI)")]
+	[Jazor(Op.Inline, "static double.CosPi(double)", "Math.cos(__arg1 * Math.PI)")]
 	public extern static Number _68646d1a3f7e1c4e(Number x);
 
-	[Jazor(Op.Inline, "static double.DegreesToRadians(double)", "(@#{0} * Math.PI / 180)")]
+	[Jazor(Op.Inline, "static double.DegreesToRadians(double)", "(__arg1 * Math.PI / 180)")]
 	public extern static Number _b613a401ab60cfa7(Number degrees);
 
-	[Jazor(Op.Inline, "static double.RadiansToDegrees(double)", "(@#{0} * 180 / Math.PI)")]
+	[Jazor(Op.Inline, "static double.RadiansToDegrees(double)", "(__arg1 * 180 / Math.PI)")]
 	public extern static Number _1ed0662536b0a079(Number radians);
 
 	[Jazor(Op.Alias, "static double.Sin(double)", "sin")]
 	public extern static Number _82a42c3870a8a263(Number x);
 
-	[Jazor(Op.Inline, "static double.SinCos(double)", "({ sin: Math.sin(@#{0}), cos: Math.cos(@#{0}) })")]
+	[Jazor(Op.Inline, "static double.SinCos(double)", "({ sin: Math.sin(__arg1), cos: Math.cos(__arg1) })")]
 	public extern static (double Sin, double Cos) _bc56189e3e1f8a22(Number x);
 
-	[Jazor(Op.Inline, "static double.SinCosPi(double)", "({ sin: Math.sin(@#{0} * Math.PI), cos: Math.cos(@#{0} * Math.PI) })")]
+	[Jazor(Op.Inline, "static double.SinCosPi(double)", "({ sin: Math.sin(__arg1 * Math.PI), cos: Math.cos(__arg1 * Math.PI) })")]
 	public extern static (double SinPi, double CosPi) _0f4aeef5d225794d(Number x);
 
-	[Jazor(Op.Inline, "static double.SinPi(double)", "Math.sin(@#{0} * Math.PI)")]
+	[Jazor(Op.Inline, "static double.SinPi(double)", "Math.sin(__arg1 * Math.PI)")]
 	public extern static Number _364c4226f027481d(Number x);
 
 	[Jazor(Op.Alias, "static double.Tan(double)", "tan")]
 	public extern static Number _3f5c35650c642d58(Number x);
 
-	[Jazor(Op.Inline, "static double.TanPi(double)", "Math.tan(@#{0} * Math.PI)")]
+	[Jazor(Op.Inline, "static double.TanPi(double)", "Math.tan(__arg1 * Math.PI)")]
 	public extern static Number _c193db8303daa585(Number x);
 
 	[Jazor(Op.Discard, "static double.Parse(System.ReadOnlySpan<byte>, System.Globalization.NumberStyles, System.IFormatProvider)")]

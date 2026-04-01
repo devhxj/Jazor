@@ -20,7 +20,7 @@ public static class ReadOnlyCollectionModule<T>
 	/// C#: new ReadOnlyCollection&lt;T&gt;(list)
 	/// JS: list (直接使用原数组)
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.ObjectModel.ReadOnlyCollection<T>.ReadOnlyCollection(System.Collections.Generic.IList<T>)", "@#{0}")]
+	[Jazor(Op.Inline, "System.Collections.ObjectModel.ReadOnlyCollection<T>.ReadOnlyCollection(System.Collections.Generic.IList<T>)", "__arg1")]
 	public extern static Array<T> _d4e5f6a7b8c9d0e1(Array<T> list);
 
 	/// <summary>
@@ -46,10 +46,15 @@ public static class ReadOnlyCollectionModule<T>
 
 	/// <summary>
 	/// C#: collection[index]
-	/// JS: array[index]
+	/// JS: array[index] (越界时抛出 ArgumentOutOfRangeException)
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.ObjectModel.ReadOnlyCollection<T>.this[int].get", "@#{0}[@#{1}]")]
-	public extern static T _b8c9d0e1f2a3b4c5(Array<T> instance, Number index);
+	[Jazor(Op.Import, "System.Collections.ObjectModel.ReadOnlyCollection<T>.this[int].get")]
+	public static T _b8c9d0e1f2a3b4c5(Array<T> instance, Number index)
+	{
+		if (index < 0 || index >= instance.Length)
+			throw new Error("ArgumentOutOfRangeException: index is out of range.");
+		return instance[index];
+	}
 
 	/// <summary>
 	/// C#: collection.IndexOf(item)
