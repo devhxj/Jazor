@@ -76,8 +76,10 @@ public abstract class BigInt
 	public extern static BigInt operator %(BigInt x, BigInt y);
 
 	[ECMAScriptIgnore]
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public extern override bool Equals(object? obj);
 
 	[ECMAScriptIgnore]
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public extern override int GetHashCode();
 }

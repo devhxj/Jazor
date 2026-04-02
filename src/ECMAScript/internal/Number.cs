@@ -108,7 +108,7 @@ public readonly struct Number : IEquatable<Number>, IComparable, IComparable<Num
 	/// <param name="radix">Specifies a radix for converting numeric values to strings.This value is only used for numbers.</param>
 	/// <returns></returns>
 	[Description("@#toString")]
-	public extern string Tostring(Number? radix);
+	public extern string ToString(Number? radix);
 
 	/// <summary>
 	/// Returns a string representing a number in fixed-point notation.
@@ -190,7 +190,7 @@ public readonly struct Number : IEquatable<Number>, IComparable, IComparable<Num
 	/// <param name="options">An object that contains one or more properties that specify comparison options.</param>
 	/// <returns></returns>
 	[Description("@#toLocaleString")]
-	public extern string ToLocalestring(string? locales, Intl.NumberFormatOptions? options = null);
+	public extern string ToLocaleString(string? locales, Intl.NumberFormatOptions? options = null);
 
 	/// <summary>
 	/// Converts a number to a string by using the current or specified locale.
@@ -199,10 +199,10 @@ public readonly struct Number : IEquatable<Number>, IComparable, IComparable<Num
 	/// <param name="options">An object that contains one or more properties that specify comparison options.</param>
 	/// <returns></returns>
 	[Description("@#toLocaleString")]
-	public extern string ToLocalestring(string[]? locales, Intl.NumberFormatOptions? options = null);
+	public extern string ToLocaleString(string[]? locales, Intl.NumberFormatOptions? options = null);
 
 	[Description("@#toString")]
-	public extern string Tostring();
+	public extern override string ToString();
 
 	[Description("@#isInteger")]
 	public extern static bool IsInteger(object? value);

@@ -2,7 +2,7 @@
 
 [ECMAScript]
 [Description("@#Date")]
-public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFormattable,IMinMaxValue<Date>
+public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFormattable
 {
 	public extern Date();
 
@@ -114,7 +114,7 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	public extern Number GetDate();
 
 	/// <summary>
-	/// Gets the day of the week, using local time.
+	/// Gets the day of the month using Universal Coordinated Time (UTC).
 	/// </summary>
 	/// <returns></returns>
 	[Description("@#getUTCDate")]
@@ -381,20 +381,11 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	public extern static Number UTC(Number year, Number monthIndex, Number? date = default, Number? hours = default, Number? minutes = default, Number? seconds = default, Number? milliseconds = default);
 
 	/// <summary>
-	/// Returns the number of milliseconds elapsed since midnight, January 1, 1970 Universal Coordinated Time (UTC).
+	/// Returns the number of milliseconds elapsed since midnight, January 1, 1970 UTC.
+	/// This is the C# host projection of JavaScript <c>Date.now()</c>.
 	/// </summary>
-	public extern static Number Now { get; }
-
-	public extern static Date MaxValue { get; }
-
-	public extern static Date MinValue { get; }
-
-	/// <summary>
-	/// 
-	/// </summary>
-	/// <returns></returns>
 	[Description("@#now")]
-	public extern static Number NowTimestamp();
+	public extern static Number Now();
 
 	public extern static implicit operator Number(Date date);
 
@@ -443,8 +434,7 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public extern override int GetHashCode();
 
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public extern string ToString(string? format, IFormatProvider? formatProvider);
+	extern string IFormattable.ToString(string? format, IFormatProvider? formatProvider);
 
 	extern int IComparable.CompareTo(object? obj);
 

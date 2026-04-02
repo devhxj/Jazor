@@ -174,10 +174,11 @@ public partial class Array<T> : object, IArray<T>
 	/// <param name="items">New elements to add to the array.</param>
 	/// <returns></returns>
 	[Description("@#push")]
-	public extern double Push(params IEnumerable<T> items);
+	public extern double Push(params T[] items);
 
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	[Description("@#push")]
-	public extern double PushItem(T item);
+	public extern double Push_(T item);
 
 	/// <summary>
 	/// Combines two or more arrays.
@@ -194,7 +195,7 @@ public partial class Array<T> : object, IArray<T>
 	/// <param name="items">Additional arrays and/or items to add to the end of the array.</param>
 	/// <returns>This method returns a new array without modifying any existing arrays.</returns>
 	[Description("@#concat")]
-	public extern IEnumerable<T> Concat(params IEnumerable<T> items);
+	public extern IEnumerable<T> Concat(params T[] items);
 
 	/// <summary>
 	/// Adds all the elements of an array into a string, separated by the specified separator string.
@@ -258,7 +259,7 @@ public partial class Array<T> : object, IArray<T>
 	/// <param name="items">Elements to insert into the array in place of the deleted elements.</param>
 	/// <returns>An array containing the elements that were deleted.</returns>
 	[Description("@#splice")]
-	public extern Array<T> Splice(double start, double deleteCount, params IEnumerable<T> items);
+	public extern Array<T> Splice(double start, double deleteCount, params T[] items);
 
 	/// <summary>
 	/// Inserts new elements at the start of an array, and returns the new length of the array.
@@ -266,7 +267,7 @@ public partial class Array<T> : object, IArray<T>
 	/// <param name="items">Elements to insert at the start of the array.</param>
 	/// <returns></returns>
 	[Description("@#unshift")]
-	public extern double Unshift(params IEnumerable<T> items);
+	public extern double Unshift(params T[] items);
 
 	/// <summary>
 	/// Returns the index of the first occurrence of a value in an array, or -1 if it is not present.
@@ -441,16 +442,16 @@ public partial class Array<T> : object, IArray<T>
 	public extern static IEnumerable<T> From<U>(IEnumerable<U> arrayLike, Func<U, int, T> mapFn, object? thisArg = null);
 
 	[Description("@#fromAsync")]
-	public extern static PromiseResult<IEnumerable<T>> FromAsync(IEnumerable<T> arrayLike);
+	public extern static IPromise<IEnumerable<T>> FromAsync(IEnumerable<T> arrayLike);
 
 	[Description("@#fromAsync")]
-	public extern static PromiseResult<IEnumerable<T>> FromAsync<U>(IEnumerable<U> arrayLike, Func<U, int, T> mapFn, object? thisArg = null);
+	public extern static IPromise<IEnumerable<T>> FromAsync<U>(IEnumerable<U> arrayLike, Func<U, int, T> mapFn, object? thisArg = null);
 
 	[Description("@#isArray")]
 	public extern static bool IsArray(object? value);
 
 	[Description("@#of")]
-	public extern static Array<T> Of(params IEnumerable<T> value);
+	public extern static Array<T> Of(params T[] value);
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public extern new Type GetType();

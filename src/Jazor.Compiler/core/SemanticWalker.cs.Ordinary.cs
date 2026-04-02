@@ -1127,15 +1127,22 @@ public partial class SemanticWalker
 			{
 				// 获取成员名称（支持特性别名）
 				string memberName;
+				ITypeSymbol? targetType;
 				if (memberInit.InitializedMember is IFieldSymbol f)
+				{
 					memberName = Util.GetConfigOrSymbolName(f);
+					targetType = f.Type;
+				}
 				else if (memberInit.InitializedMember is IPropertySymbol p)
+				{
 					memberName = Util.GetConfigOrSymbolName(p);
+					targetType = p.Type;
+				}
 				else
 					return HandleTransformationFailure<Node>(operation.Initializer, "With initializer could not be translated to JavaScript.");
 
 				// 获取初始化值
-				var initValue = Translate<Expression>(memberInit.Initializer, argument);
+				var initValue = TranslateTupleForTarget(memberInit.Initializer, targetType, argument);
 				// 根据AST节点构造规范，使用PropertyDefinition创建对象属性
 				// 确保生成正确的属性语法：{ ...original, propertyName: value }
 				properties.Add(new ObjectProperty(

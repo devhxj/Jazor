@@ -4,9 +4,44 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "System.DateOnly","Object")]
 public static class DateOnlyModule
 {
-	private static Number GetDateTimeKind(object kind)
+	private static Number MaxDayNumber => 3652058;
+
+	private static void EnsureWholeNumber(Number value, string message)
 	{
-		var value = Number_(kind);
+		if (IsNaN(value) || Math.Floor_(value) != value || value < Number.MIN_SAFE_INTEGER || value > Number.MAX_SAFE_INTEGER)
+			throw new Error(message);
+	}
+
+	private static RuntimeModule.JDateOnly AddMonthsCore(RuntimeModule.JDateOnly instance, Number months)
+	{
+		EnsureWholeNumber(months, "ArgumentOutOfRangeException: Months value must be a whole number.");
+
+		var monthIndex = (instance.Year - 1) * 12 + (instance.Month - 1) + months;
+		var newYear = Math.Floor_(monthIndex / 12) + 1;
+		var newMonthIndex = monthIndex % 12;
+		if (newMonthIndex < 0)
+			newMonthIndex += 12;
+
+		var newMonth = newMonthIndex + 1;
+		var daysInMonth = RuntimeModule.GetDaysInMonth(newYear, newMonth);
+		var newDay = instance.Day > daysInMonth ? daysInMonth : instance.Day;
+		return new RuntimeModule.JDateOnly(newYear, newMonth, newDay);
+	}
+
+	private static RuntimeModule.JDateOnly CreateFromDayNumber(Number dayNumber)
+	{
+		EnsureWholeNumber(dayNumber, "ArgumentOutOfRangeException: Day number must be a whole number.");
+		if (dayNumber < 0 || dayNumber > MaxDayNumber)
+			throw new Error("ArgumentOutOfRangeException: Day number must be within the range of DateOnly.");
+
+		var date = RuntimeModule.CreateUtcDate(1, 1, 1);
+		date.SetUTCDate(date.GetUTCDate() + dayNumber);
+		return new RuntimeModule.JDateOnly(date.GetUTCFullYear(), date.GetUTCMonth() + 1, date.GetUTCDate());
+	}
+
+	private static Number GetDateTimeKind(System.DateTimeKind kind)
+	{
+		var value = Number_((int)kind);
 		if (value != 0 && value != 1 && value != 2)
 			throw new Error("ArgumentException: Invalid DateTimeKind value.");
 
@@ -63,7 +98,7 @@ public static class DateOnlyModule
 	/// JS: create wrapper
 	/// </summary>
 	[Jazor(Op.Import, "System.DateOnly.DateOnly(int, int, int, System.Globalization.Calendar)")]
-	public static RuntimeModule.JDateOnly _c0568bfa1df0ef59(Number year, Number month, Number day, GregorianCalendar calendar) => new(year, month, day);
+	public static RuntimeModule.JDateOnly _c0568bfa1df0ef59(Number year, Number month, Number day, string calendar) => new(year, month, day);
 
 	/// <summary>
 	/// C#: DateOnly.FromDayNumber(dayNumber)
@@ -71,11 +106,7 @@ public static class DateOnlyModule
 	/// </summary>
 	[Jazor(Op.Import, "static System.DateOnly.FromDayNumber(int)")]
 	public static RuntimeModule.JDateOnly _96a80b211a70154c(Number dayNumber)
-	{
-		var date = RuntimeModule.CreateUtcDate(1, 1, 1);
-		date.SetUTCDate(date.GetUTCDate() + dayNumber);
-		return new RuntimeModule.JDateOnly(date.GetUTCFullYear(), date.GetUTCMonth() + 1, date.GetUTCDate());
-	}
+		=> CreateFromDayNumber(dayNumber);
 
 	/// <summary>
 	/// C#: instance.Year
@@ -109,7 +140,7 @@ public static class DateOnlyModule
 	public static System.DayOfWeek _faf7aaba77d4de0c(RuntimeModule.JDateOnly instance)
 	{
 		var date = RuntimeModule.CreateUtcDate(instance.Year, instance.Month, instance.Day);
-		return date.GetUTCDay();
+		return (System.DayOfWeek)(int)date.GetUTCDay();
 	}
 
 	/// <summary>
@@ -141,6 +172,7 @@ public static class DateOnlyModule
 	[Jazor(Op.Import, "System.DateOnly.AddDays(int)")]
 	public static RuntimeModule.JDateOnly _cb25738994c034e6(RuntimeModule.JDateOnly instance, Number value)
 	{
+		EnsureWholeNumber(value, "ArgumentOutOfRangeException: Days value must be a whole number.");
 		var date = RuntimeModule.CreateUtcDate(instance.Year, instance.Month, instance.Day);
 		date.SetUTCDate(date.GetUTCDate() + value);
 		return new RuntimeModule.JDateOnly(date.GetUTCFullYear(), date.GetUTCMonth() + 1, date.GetUTCDate());
@@ -152,11 +184,7 @@ public static class DateOnlyModule
 	/// </summary>
 	[Jazor(Op.Import, "System.DateOnly.AddMonths(int)")]
 	public static RuntimeModule.JDateOnly _48134214e63fd9f3(RuntimeModule.JDateOnly instance, Number value)
-	{
-		var date = RuntimeModule.CreateUtcDate(instance.Year, instance.Month, instance.Day);
-		date.SetUTCMonth(date.GetUTCMonth() + value);
-		return new RuntimeModule.JDateOnly(date.GetUTCFullYear(), date.GetUTCMonth() + 1, date.GetUTCDate());
-	}
+		=> AddMonthsCore(instance, value);
 
 	/// <summary>
 	/// C#: instance.AddYears(value)
@@ -165,9 +193,8 @@ public static class DateOnlyModule
 	[Jazor(Op.Import, "System.DateOnly.AddYears(int)")]
 	public static RuntimeModule.JDateOnly _267d01eded65ff1c(RuntimeModule.JDateOnly instance, Number value)
 	{
-		var date = RuntimeModule.CreateUtcDate(instance.Year, instance.Month, instance.Day);
-		date.SetUTCFullYear(date.GetUTCFullYear() + value);
-		return new RuntimeModule.JDateOnly(date.GetUTCFullYear(), date.GetUTCMonth() + 1, date.GetUTCDate());
+		EnsureWholeNumber(value, "ArgumentOutOfRangeException: Years value must be a whole number.");
+		return AddMonthsCore(instance, value * 12);
 	}
 
 	///<summary>Determines whether two specified instances of <see cref="T:System.DateOnly" /> are equal.</summary>
@@ -215,12 +242,12 @@ public static class DateOnlyModule
 		var minute = Math.Floor_(totalMilliseconds / 60000) % 60;
 		var second = Math.Floor_(totalMilliseconds / 1000) % 60;
 		var millisecond = totalMilliseconds % 1000;
-		return new RuntimeModule.JDateTime(new Date(instance.Year, instance.Month - 1, instance.Day, hour, minute, second, millisecond), 0, subMillisecondTicks);
+		return new RuntimeModule.JDateTime(RuntimeModule.CreateLocalDateTime(instance.Year, instance.Month, instance.Day, hour, minute, second, millisecond), 0, subMillisecondTicks);
 	}
 
 	///<summary>Returns a <see cref="T:System.DateTime" /> instance with the specified input kind that is set to the date of this <see cref="T:System.DateOnly" /> instance and the time of specified input time.</summary>
 	[Jazor(Op.Import ,"System.DateOnly.ToDateTime(System.TimeOnly, System.DateTimeKind)")]
-	public static RuntimeModule.JDateTime _458cbe4dafb71f56(RuntimeModule.JDateOnly instance, RuntimeModule.JTimeOnly time, object kind)
+	public static RuntimeModule.JDateTime _458cbe4dafb71f56(RuntimeModule.JDateOnly instance, RuntimeModule.JTimeOnly time, System.DateTimeKind kind)
 	{
 		var result = _877770696b013f43(instance, time);
 		return new RuntimeModule.JDateTime(result.Date, GetDateTimeKind(kind), result.SubMillisecondTicks);
@@ -248,6 +275,9 @@ public static class DateOnlyModule
 	[Jazor(Op.Import ,"System.DateOnly.CompareTo(object)")]
 	public static Number _519a37b30f165f47(RuntimeModule.JDateOnly instance, object? value)
 	{
+		if (value == null)
+			return 1;
+
 		var other = value as RuntimeModule.JDateOnly;
 		if (other == null)
 			throw new Error("ArgumentException: Object must be of type DateOnly.");

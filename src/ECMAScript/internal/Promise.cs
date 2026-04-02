@@ -5,6 +5,10 @@ using System.Threading;
 
 namespace ECMAScript;
 
+/// <summary>
+/// JavaScript promise shape used for instance members such as <c>then</c>, <c>catch</c>, and <c>finally</c>.
+/// This bridge interface is intentionally hidden so editor completion stays focused on runtime hosts like <see cref="Promise"/>.
+/// </summary>
 [ECMAScript]
 [Description("@#")]
 [EditorBrowsable(EditorBrowsableState.Never)]
@@ -38,7 +42,7 @@ public interface IPromise
     /// <param name="onRejected">Action to be invoked when this promise is rejected</param>
     /// <returns></returns>
     [Description("@#then")]
-    IPromise Then(Action onFufilled, Action<Error> onRejected);
+    IPromise Then(Action onFulfilled, Action<Error> onRejected);
 
     /// <summary>
     /// Returns a new promise that will be resolved with the return value of the passed
@@ -132,11 +136,12 @@ public interface IPromise
     IPromise Then(Func<IPromise> onFulfilled, Action<Error> onRejected);
 
     /// <summary>
-    /// Returns a new promise that will be resolved with resolved value of the
-    /// <see cref="PromiseResult"/> returned from the passed in <see cref="Func{TResult}"/>
+    /// Returns a new promise that will be resolved with the value carried by the
+    /// bridge-only <see cref="PromiseResult"/> returned from the passed in <see cref="Func{TResult}"/>.
     /// </summary>
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved</param>
     /// <returns></returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     IPromise Then(Func<PromiseResult> onFulfilled);
     /// <summary>
@@ -147,6 +152,7 @@ public interface IPromise
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action"/> to be invoked when this promise is rejected.</param>
     /// <returns></returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     IPromise Then(Func<PromiseResult> onFulfilled, Action onRejected);
     /// <summary>
@@ -157,15 +163,17 @@ public interface IPromise
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action{T}"/> to be invoked when this promise is rejected.</param>
     /// <returns></returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     IPromise Then(Func<PromiseResult> onFulfilled, Action<Error> onRejected);
 
     /// <summary>
-    /// Returns a new promise that will be resolved with resolved value of the
-    /// <see cref="PromiseResult{TResult}"/> returned from the passed in <see cref="Func{TResult}"/>
+    /// Returns a new promise that will be resolved with the value carried by the
+    /// bridge-only <see cref="PromiseResult{TResult}"/> returned from the passed in <see cref="Func{TResult}"/>.
     /// </summary>
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved</param>
     /// <returns></returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     IPromise<T> Then<T>(Func<PromiseResult<T>> onFulfilled);
     /// <summary>
@@ -177,6 +185,7 @@ public interface IPromise
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action"/> to be invoked when this promise is rejected.</param>
     /// <returns></returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     IPromise<T> Then<T>(Func<PromiseResult<T>> onFulfilled, Action onRejected);
     /// <summary>
@@ -188,10 +197,15 @@ public interface IPromise
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action{T}"/> to be invoked when this promise is rejected.</param>
     /// <returns></returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     IPromise<T> Then<T>(Func<PromiseResult<T>> onFulfilled, Action<Error> onRejected);
 }
 
+/// <summary>
+/// Typed JavaScript promise shape used for instance members such as <c>then</c> and <c>finally</c>.
+/// This is a bridge contract, so it stays hidden from normal editor completion.
+/// </summary>
 [ECMAScript]
 [Description("@#")]
 [EditorBrowsable(EditorBrowsableState.Never)]
@@ -227,8 +241,8 @@ public interface IPromise<T> : IPromise
 
 
     /// <summary>
-    /// Returns a new promise that will be resolved with resolved value of the
-    /// <see cref="PromiseResult{TResult}"/> returned from the passed in <see cref="Func{TResult}"/>
+    /// Returns a new promise that will be resolved with the return value of the passed in
+    /// <see cref="Func{TResult}"/>.
     /// </summary>
     /// <param name="onFulfilled"><see cref="Func{T, TResult}"/> to be invoked when this promise is resolved</param>
     /// <returns></returns>
@@ -256,11 +270,12 @@ public interface IPromise<T> : IPromise
     IPromise<TResult> Then<TResult>(Func<T, TResult> onFulfilled, Action<Error> onRejected);
 
     /// <summary>
-    /// Returns a new promise that will be resolved with resolved value of the
-    /// <see cref="PromiseResult{TResult}"/> returned from the passed in <see cref="Func{TResult}"/>
+    /// Returns a new promise that will be resolved with the value carried by the
+    /// bridge-only <see cref="PromiseResult{TResult}"/> returned from the passed in <see cref="Func{TResult}"/>.
     /// </summary>
     /// <param name="onFulfilled"><see cref="Func{T, TResult}"/> to be invoked when this promise is resolved</param>
     /// <returns></returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     IPromise<TResult> Then<TResult>(Func<T, PromiseResult<TResult>> onFulfilled);
     /// <summary>
@@ -272,6 +287,7 @@ public interface IPromise<T> : IPromise
     /// <param name="onFulfilled"><see cref="Func{T, TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action"/> to be invoked when this promise is rejected.</param>
     /// <returns></returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     IPromise<TResult> Then<TResult>(Func<T, PromiseResult<TResult>> onFulfilled, Action onRejected);
     /// <summary>
@@ -283,6 +299,7 @@ public interface IPromise<T> : IPromise
     /// <param name="onFulfilled"><see cref="Func{T, TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action{T}"/> to be invoked when this promise is rejected.</param>
     /// <returns></returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     IPromise<TResult> Then<TResult>(Func<T, PromiseResult<TResult>> onFulfilled, Action<Error> onRejected);
 
@@ -300,41 +317,70 @@ public interface IPromise<T> : IPromise
     [Description("@#then")]
     IPromise<TResult> Then<TResult>(Func<T, IPromise<TResult>> onFulfilled, Action<Error> onRejected);
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     IPromise Then(Func<T, PromiseResult> onFulfilled);
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     IPromise Then(Func<T, PromiseResult> onFulfilled, Action onRejected);
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     IPromise Then(Func<T, PromiseResult> onFulfilled, Action<Error> onRejected);
 }
 
+/// <summary>
+/// Bridge-only placeholder used by async lowering and generated bindings where JavaScript would normally expose a promise or awaited value.
+/// This type is not a JavaScript runtime global and its CLR members do not map to JavaScript instance members.
+/// </summary>
 [ECMAScript]
 [Description("@#")]
+[EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class PromiseResult : IAsyncResult
 {
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public extern object AsyncState { get; }
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public extern WaitHandle AsyncWaitHandle { get; }
 
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public extern bool CompletedSynchronously { get; }
 
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public extern bool IsCompleted { get; }
 
+	/// <summary>
+	/// Bridge-only completed sentinel used by async lowering.
+	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public extern static PromiseResult Completed { get; }
 }
 
+/// <summary>
+/// Bridge-only placeholder used by async lowering and generated bindings where JavaScript would normally expose a promise or awaited value.
+/// This type is not a JavaScript runtime global and its CLR members do not map to JavaScript instance members.
+/// </summary>
 [ECMAScript]
 [Description("@#")]
+[EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class PromiseResult<TResult> : IAsyncResult
 {
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public extern object AsyncState { get; }
 
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public extern WaitHandle AsyncWaitHandle { get; }
 
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public extern bool CompletedSynchronously { get; }
 
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public extern bool IsCompleted { get; }
 
+	/// <summary>
+	/// Bridge-only completed sentinel used by async lowering.
+	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public extern static PromiseResult<TResult> Completed { get; }
 }
 
@@ -383,6 +429,7 @@ public class Promise : IPromise
     /// </summary>
     /// <param name="tasks">PromiseResults on which to wait.</param>
     /// <returns></returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#all")]
     public static extern IPromise All(params PromiseResult[] tasks);
 
@@ -392,6 +439,7 @@ public class Promise : IPromise
     /// </summary>
     /// <param name="tasks"></param>
     /// <returns></returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#all")]
     public static extern IPromise All(IEnumerable<PromiseResult> tasks);
 
@@ -425,6 +473,7 @@ public class Promise : IPromise
     /// </summary>
     /// <param name="tasks"></param>
     /// <returns></returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#all")]
     public static extern IPromise<object[]> All(params PromiseResult<object>[] tasks);
 
@@ -436,6 +485,7 @@ public class Promise : IPromise
     /// </summary>
     /// <param name="tasks"><see cref="IEnumerable{T}"/> of <see cref="PromiseResult{TResult}"/>s on which to wait.</param>
     /// <returns></returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#all")]
     public static extern IPromise<object[]> All(IEnumerable<PromiseResult<object>> tasks);
 
@@ -463,6 +513,7 @@ public class Promise : IPromise
     /// </summary>
     /// <param name="tasks"><see cref="PromiseResult"/>s on which to wait</param>
     /// <returns></returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#any")]
     public static extern IPromise Any(params PromiseResult[] tasks);
 
@@ -472,6 +523,7 @@ public class Promise : IPromise
     /// </summary>
     /// <param name="tasks"><see cref="IEnumerable{T}"/> of <see cref="PromiseResult"/>s on which to wait</param>
     /// <returns></returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#any")]
     public static extern IPromise Any(IEnumerable<PromiseResult> tasks);
 
@@ -481,6 +533,7 @@ public class Promise : IPromise
     /// </summary>
     /// <param name="tasks"><see cref="PromiseResult{TResult}"/>s on which to wait</param>
     /// <returns></returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#any")]
     public static extern IPromise<object> Any(params PromiseResult<object>[] tasks);
 
@@ -490,6 +543,7 @@ public class Promise : IPromise
     /// </summary>
     /// <param name="tasks"><see cref="IEnumerable{T}"/> of <see cref="PromiseResult{TResult}"/>s on which to wait</param>
     /// <returns></returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#any")]
     public static extern IPromise<object> Any(IEnumerable<PromiseResult<object>> tasks);
 
@@ -543,6 +597,7 @@ public class Promise : IPromise
     /// </summary>
     /// <param name="tasks"><see cref="PromiseResult"/>s on which to wait.</param>
     /// <returns></returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#race")]
     public static extern IPromise Race(IEnumerable<PromiseResult> tasks);
 
@@ -551,6 +606,7 @@ public class Promise : IPromise
     /// </summary>
     /// <param name="tasks"><see cref="PromiseResult"/>s on which to wait.</param>
     /// <returns></returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#race")]
     public static extern IPromise Race(params PromiseResult[] tasks);
 
@@ -575,6 +631,7 @@ public class Promise : IPromise
     /// </summary>
     /// <param name="tasks"><see cref="IEnumerable{T}"/> of <see cref="PromiseResult{TResult}"/>s on which to wait.</param>
     /// <returns></returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#race")]
     public static extern IPromise<object> Race(IEnumerable<PromiseResult<object>> tasks);
 
@@ -583,6 +640,7 @@ public class Promise : IPromise
     /// </summary>
     /// <param name="tasks"><see cref="PromiseResult{TResult}"/>s on which to wait.</param>
     /// <returns></returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#race")]
     public static extern IPromise<object> Race(params PromiseResult<object>[] tasks);
 
@@ -595,14 +653,14 @@ public class Promise : IPromise
     public extern Promise(Action<Action> callback);
 
     /// <summary>
-    /// Creates a promise that can be resolved or rejeted with the passed in callback.
+    /// Creates a promise that can be resolved or rejected with the passed in callback.
     /// </summary>
     /// <param name="callback">Callback that can use the first parameter to resolve the promise,
     /// and the second parameter to reject the promise.</param>
     public extern Promise(Action<Action, Action> callback);
 
     /// <summary>
-    /// Creates a promise that can be resolved or rejeted with the passed in callback.
+    /// Creates a promise that can be resolved or rejected with the passed in callback.
     /// </summary>
     /// <param name="callback">Callback that can use the first parameter to resolve the promise,
     /// and the second parameter to reject the promise with a given exception.</param>
@@ -644,30 +702,39 @@ public class Promise : IPromise
     [Description("@#then")]
     public extern IPromise<T> Then<T>(Func<IPromise<T>> onFulfilled, Action<Error> onRejected);
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     public extern IPromise<T> Then<T>(Func<Promise<T>> onFulfilled);
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     public extern IPromise<T> Then<T>(Func<Promise<T>> onFulfilled, Action onRejected);
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     public extern IPromise<T> Then<T>(Func<Promise<T>> onFulfilled, Action<Error> onRejected);
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     public extern IPromise Then(Func<PromiseResult> onFulfilled);
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     public extern IPromise Then(Func<PromiseResult> onFulfilled, Action onRejected);
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     public extern IPromise Then(Func<PromiseResult> onFulfilled, Action<Error> onRejected);
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     public extern IPromise<T> Then<T>(Func<PromiseResult<T>> onFulfilled);
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     public extern IPromise<T> Then<T>(Func<PromiseResult<T>> onFulfilled, Action onRejected);
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     public extern IPromise<T> Then<T>(Func<PromiseResult<T>> onFulfilled, Action<Error> onRejected);
 
@@ -715,6 +782,7 @@ public sealed class Promise<T> : Promise, IPromise<T>
     /// </summary>
     /// <param name="tasks">PromiseResults on which to wait.</param>
     /// <returns></returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static extern IPromise<T[]> All(params PromiseResult<T>[] tasks);
 
     [Description("@#any")]
@@ -723,9 +791,11 @@ public sealed class Promise<T> : Promise, IPromise<T>
     [Description("@#any")]
     public static extern IPromise<T> Any(params IPromise<T>[] promises);
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#any")]
     public static extern IPromise<T> Any(IEnumerable<PromiseResult<T>> tasks);
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#any")]
     public static extern IPromise<T> Any(params PromiseResult<T>[] tasks);
 
@@ -773,12 +843,15 @@ public sealed class Promise<T> : Promise, IPromise<T>
     [Description("@#then")]
     public extern IPromise<TResult> Then<TResult>(Func<T, TResult> onFulfilled, Action<Error> onRejected);
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     public extern IPromise<TResult> Then<TResult>(Func<T, PromiseResult<TResult>> onFulfilled);
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     public extern IPromise<TResult> Then<TResult>(Func<T, PromiseResult<TResult>> onFulfilled, Action onRejected);
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     public extern IPromise<TResult> Then<TResult>(Func<T, PromiseResult<TResult>> onFulfilled, Action<Error> onRejected);
 
@@ -791,12 +864,15 @@ public sealed class Promise<T> : Promise, IPromise<T>
     [Description("@#then")]
     public extern IPromise Then(Func<T, IPromise> onResolve, Action<Error> onRejected);
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     public extern IPromise Then(Func<T, PromiseResult> onFulfilled);
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     public extern IPromise Then(Func<T, PromiseResult> onFulfilled, Action onRejected);
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     public extern IPromise Then(Func<T, PromiseResult> onFulfilled, Action<Error> onRejected);
 

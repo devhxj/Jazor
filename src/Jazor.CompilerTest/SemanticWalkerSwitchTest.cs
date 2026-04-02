@@ -247,10 +247,10 @@ public sealed class SemanticWalkerSwitchTest
   let value = 1;
   switch (value) {
     case 1:
-      break;
     case 2:
+      break;
   }
-}", script);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>
@@ -851,11 +851,11 @@ public sealed class SemanticWalkerSwitchTest
   let value = 1;
   switch (value) {
     case 1:
-      break;
     case 2:
     case 3:
+      break;
   }
-}", script);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>
@@ -889,12 +889,20 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsTrue(script.Contains("let value = 1;"));
-		Assert.IsTrue(script.Contains("let result = 0;"));
-		Assert.IsTrue(script.Contains("case 1:"));
-		Assert.IsTrue(script.Contains("case 3:"));
-		Assert.IsTrue(script.Contains("result = 100;"));
-		Assert.IsTrue(script.Contains("result = 200;"));
+		Assert.AreEqual(
+			@"{
+  let value = 1;
+  let result = 0;
+  switch (value) {
+    case 1:
+    case 2:
+      result = 100;
+      break;
+    case 3:
+      result = 200;
+      break;
+  }
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	#endregion
@@ -1443,13 +1451,13 @@ public sealed class SemanticWalkerSwitchTest
   let value = 1;
   switch (value) {
     case 1:
-      break;
     case 2:
     case 3:
     case 4:
     case 5:
+      break;
   }
-}", script);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>
@@ -1917,14 +1925,21 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsTrue(script.Contains("let a, b;"));
-		Assert.IsTrue(script.Contains("a = 1, b = 2;"));
-		Assert.IsTrue(script.Contains("let result = (() => {"));
-		Assert.IsTrue(script.Contains("=== 0 &&"));
-		Assert.IsTrue(script.Contains("return \"origin\";"));
-		Assert.IsTrue(script.Contains("return \"y-axis\";"));
-		Assert.IsTrue(script.Contains("return \"x-axis\";"));
-		Assert.IsTrue(script.Contains("return \"elsewhere\";"));
+		Assert.AreEqual(
+			@"{
+  let a, b;
+  a = 1, b = 2;
+  let result = (() => {
+    const v$0 = { a: a, b: b };
+    if (v$0.a === 0 && v$0.b === 0)
+      return ""origin"";
+    if (v$0.a === 0)
+      return ""y-axis"";
+    if (v$0.b === 0)
+      return ""x-axis"";
+    return ""elsewhere"";
+  })();
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>
@@ -2037,12 +2052,23 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsTrue(script.Contains("let s;"));
-		Assert.IsTrue(script.Contains("const v$0 = score;"));
-		Assert.IsTrue(script.Contains("return \"A\";"));
-		Assert.IsTrue(script.Contains("return \"B\";"));
-		Assert.IsTrue(script.Contains("return \"C\";"));
-		Assert.IsTrue(script.Contains("return \"F\";"));
+		Assert.AreEqual(
+			@"{
+  let s;
+  (() => {
+    const v$0 = score;
+    if (typeof v$0 === ""number"" && (s = v$0, true) && s >= 90) {
+      return ""A"";
+    }
+    if (typeof v$0 === ""number"" && (s = v$0, true) && s >= 80) {
+      return ""B"";
+    }
+    if (typeof v$0 === ""number"" && (s = v$0, true) && s >= 70) {
+      return ""C"";
+    }
+    return ""F"";
+  })();
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	#endregion
@@ -2144,12 +2170,18 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		StringAssert.Contains(script, "let value = 1;");
-		StringAssert.Contains(script, "return (() => {");
-		StringAssert.Contains(script, "if (v$0 === 1)");
-		StringAssert.Contains(script, "return 100;");
-		StringAssert.Contains(script, "return 200;");
-		StringAssert.Contains(script, "return 0;");
+		Assert.AreEqual(
+			@"{
+  let value = 1;
+  return (() => {
+    const v$0 = value;
+    if (v$0 === 1)
+      return 100;
+    if (v$0 === 2)
+      return 200;
+    return 0;
+  })();
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>
@@ -2183,14 +2215,20 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		StringAssert.Contains(script, "switch (value)");
-		StringAssert.Contains(script, "case 1:");
-		StringAssert.Contains(script, "case 2:");
-		StringAssert.Contains(script, "case 3:");
-		StringAssert.Contains(script, "console.log(\"small\")");
-		StringAssert.Contains(script, "console.log(\"large\")");
-		StringAssert.Contains(script, "default:");
-		StringAssert.Contains(script, "break;");
+		Assert.AreEqual(
+			@"{
+  let value = 1;
+  switch (value) {
+    case 1:
+    case 2:
+    case 3:
+      console.log(""small"");
+      break;
+    default:
+      console.log(""large"");
+      break;
+  }
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>
@@ -2219,13 +2257,19 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		StringAssert.Contains(script, "return (() => {");
-		StringAssert.Contains(script, "\"both zero\"");
-		StringAssert.Contains(script, "\"a zero\"");
-		StringAssert.Contains(script, "\"b zero\"");
-		StringAssert.Contains(script, "\"neither zero\"");
-		Assert.IsTrue(script.Contains("a === 0") || script.Contains("Item1 === 0"));
-		Assert.IsTrue(script.Contains("b === 0") || script.Contains("Item2 === 0"));
+		Assert.AreEqual(
+			@"{
+  return (() => {
+    const v$0 = { a: a, b: b };
+    if (v$0.a === 0 && v$0.b === 0)
+      return ""both zero"";
+    if (v$0.a === 0)
+      return ""a zero"";
+    if (v$0.b === 0)
+      return ""b zero"";
+    return ""neither zero"";
+  })();
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>
@@ -2256,11 +2300,17 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		StringAssert.Contains(script, "switch (input.toLowerCase())");
-		StringAssert.Contains(script, "case \"yes\":");
-		StringAssert.Contains(script, "console.log(\"YES\")");
-		StringAssert.Contains(script, "case \"no\":");
-		StringAssert.Contains(script, "console.log(\"NO\")");
+		Assert.AreEqual(
+			@"{
+  switch (input.toLowerCase()) {
+    case ""yes"":
+      console.log(""YES"");
+      break;
+    case ""no"":
+      console.log(""NO"");
+      break;
+  }
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>
@@ -2289,12 +2339,17 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		StringAssert.Contains(script, "return (() => {");
-		StringAssert.Contains(script, "\"Name\" in");
-		StringAssert.Contains(script, "return \"Hi Alice\";");
-		StringAssert.Contains(script, "return \"Hey Bob\";");
-		StringAssert.Contains(script, "return \"Hello stranger\";");
-		Assert.IsTrue(script.Contains("p != null") || script.Contains("v$0 != null"));
+		Assert.AreEqual(
+			@"{
+  return (() => {
+    const v$0 = p;
+    if (v$0 instanceof Person && (v$0 != null && (""Name"" in v$0 && v$0.Name === ""Alice"")))
+      return ""Hi Alice"";
+    if (v$0 instanceof Person && (v$0 != null && (""Name"" in v$0 && v$0.Name === ""Bob"")))
+      return ""Hey Bob"";
+    return ""Hello stranger"";
+  })();
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>
@@ -2328,11 +2383,23 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		StringAssert.Contains(script, "console.log(\"positive\")");
-		StringAssert.Contains(script, "console.log(\"negative\")");
-		StringAssert.Contains(script, "console.log(\"zero\")");
-		Assert.IsTrue(script.Contains("if (") || script.Contains("switch"));
-		Assert.IsTrue(script.Contains("> 0") || script.Contains("< 0"));
+		Assert.AreEqual(
+			@"{
+  let n;
+  (() => {
+    const v$0 = value;
+    if (typeof v$0 === ""number"" && (n = v$0, true) && n > 0) {
+      console.log(""positive"");
+      return;
+    }
+    if (typeof v$0 === ""number"" && (n = v$0, true) && n < 0) {
+      console.log(""negative"");
+      return;
+    }
+    console.log(""zero"");
+    return;
+  })();
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>
@@ -2361,14 +2428,20 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		StringAssert.Contains(script, "return (() => {");
-		StringAssert.Contains(script, "return \"negative\";");
-		StringAssert.Contains(script, "return \"zero\";");
-		StringAssert.Contains(script, "return \"small positive\";");
-		StringAssert.Contains(script, "return \"large positive\";");
-		Assert.IsTrue(script.Contains("v$0 < 0") || script.Contains("value < 0"));
-		Assert.IsTrue(script.Contains("v$0 > 0 && v$0 < 10") || script.Contains("value > 0 && value < 10"));
-		Assert.IsTrue(script.Contains("v$0 >= 10") || script.Contains("value >= 10"));
+		Assert.AreEqual(
+			@"{
+  return (() => {
+    const v$0 = value;
+    if (v$0 < 0)
+      return ""negative"";
+    if (v$0 === 0)
+      return ""zero"";
+    if (v$0 > 0 && v$0 < 10)
+      return ""small positive"";
+    if (v$0 >= 10)
+      return ""large positive"";
+  })();
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>
@@ -2397,13 +2470,19 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		StringAssert.Contains(script, "return (() => {");
-		StringAssert.Contains(script, "return \"one two three\";");
-		StringAssert.Contains(script, "return \"four\";");
-		StringAssert.Contains(script, "return \"not five\";");
-		StringAssert.Contains(script, "return \"five\";");
-		Assert.IsTrue(script.Contains("v$0 === 1 || v$0 === 2 || v$0 === 3") || script.Contains("value === 1 || value === 2 || value === 3"));
-		Assert.IsTrue(script.Contains("!(v$0 === 5)") || script.Contains("v$0 !== 5") || script.Contains("!(value === 5)"));
+		Assert.AreEqual(
+			@"{
+  return (() => {
+    const v$0 = value;
+    if (v$0 === 1 || v$0 === 2 || v$0 === 3)
+      return ""one two three"";
+    if (v$0 === 4 && v$0 >= 0)
+      return ""four"";
+    if (!(v$0 === 5))
+      return ""not five"";
+    return ""five"";
+  })();
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>
@@ -2433,13 +2512,21 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		StringAssert.Contains(script, "return (() => {");
-		StringAssert.Contains(script, "const v$0 = op;");
-		StringAssert.Contains(script, "return a + b;");
-		StringAssert.Contains(script, "return a - b;");
-		StringAssert.Contains(script, "return a * b;");
-		StringAssert.Contains(script, "return a / b;");
-		StringAssert.Contains(script, "return 0;");
+		Assert.AreEqual(
+			@"{
+  return (() => {
+    const v$0 = op;
+    if (v$0 === ""+"")
+      return a + b;
+    if (v$0 === ""-"")
+      return a - b;
+    if (v$0 === ""*"")
+      return a * b;
+    if (v$0 === ""/"")
+      return a / b;
+    return 0;
+  })();
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>
@@ -2471,10 +2558,18 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		StringAssert.Contains(script, "return 0;");
-		StringAssert.Contains(script, "break;");
-		StringAssert.Contains(script, "return -1;");
-		StringAssert.Contains(script, "return 1;");
+		Assert.AreEqual(
+			@"{
+  switch (value) {
+    case 0:
+      return 0;
+    case 1:
+      break;
+    default:
+      return -1;
+  }
+  return 1;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	#endregion

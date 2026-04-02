@@ -3,6 +3,25 @@ namespace Jazor.CLR;
 [ECMAScriptModule("System/RuntimeModule.js")]
 public static class RuntimeModule
 {
+	private static BigInt MinTimeSpanTicks => BigInt_("-9223372036854775808");
+	private static BigInt MaxTimeSpanTicks => BigInt_("9223372036854775807");
+
+	private static void EnsureWholeNumber(Number value, string message)
+	{
+		if (IsNaN(value) || Math.Floor_(value) != value || value < Number.MIN_SAFE_INTEGER || value > Number.MAX_SAFE_INTEGER)
+			throw new Error(message);
+	}
+
+	private static void EnsureYearAndMonth(Number year, Number month)
+	{
+		EnsureWholeNumber(year, "ArgumentOutOfRangeException: Year must be a whole number between 1 and 9999.");
+		EnsureWholeNumber(month, "ArgumentOutOfRangeException: Month must be a whole number between 1 and 12.");
+		if (year < 1 || year > 9999)
+			throw new Error("ArgumentOutOfRangeException: Year must be between 1 and 9999.");
+		if (month < 1 || month > 12)
+			throw new Error("ArgumentOutOfRangeException: Month must be between 1 and 12.");
+	}
+
 	public sealed class JDateTime
 	{
 		[Description("@#date")]
@@ -21,7 +40,7 @@ public static class RuntimeModule
 			this.SubMillisecondTicks = BigInt.Zero;
 			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptor
 			{
-				Value = ToPrimitive,
+				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
 			});
 		}
@@ -33,7 +52,7 @@ public static class RuntimeModule
 			this.SubMillisecondTicks = BigInt.Zero;
 			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptor
 			{
-				Value = ToPrimitive,
+				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
 			});
 		}
@@ -45,7 +64,7 @@ public static class RuntimeModule
 			this.SubMillisecondTicks = subMillisecondTicks;
 			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptor
 			{
-				Value = ToPrimitive,
+				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
 			});
 		}
@@ -103,7 +122,7 @@ public static class RuntimeModule
 			this.UtcSubMillisecondTicks = BigInt.Zero;
 			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptor
 			{
-				Value = ToPrimitive,
+				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
 			});
 		}
@@ -115,7 +134,7 @@ public static class RuntimeModule
 			this.UtcSubMillisecondTicks = utcSubMillisecondTicks;
 			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptor
 			{
-				Value = ToPrimitive,
+				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
 			});
 		}
@@ -181,7 +200,7 @@ public static class RuntimeModule
 			DayNumber = Math.Floor_((utcDate.GetTime() - start.GetTime()) / 86400000);
 			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptor
 			{
-				Value = ToPrimitive,
+				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
 			});
 		}
@@ -209,11 +228,11 @@ public static class RuntimeModule
 
 		public JTimeOnly(BigInt ticks)
 		{
-			var normalized = ticks % BigInt_(864000000000d);
-			this.Ticks = normalized < BigInt.Zero ? normalized + BigInt_(864000000000d) : normalized;
+			var normalized = ticks % BigInt_("864000000000");
+			this.Ticks = normalized < BigInt.Zero ? normalized + BigInt_("864000000000") : normalized;
 			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptor
 			{
-				Value = ToPrimitive,
+				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
 			});
 		}
@@ -221,7 +240,7 @@ public static class RuntimeModule
 		[Description("@#toString")]
 		public override string ToString()
 		{
-			var hour = Number_(Ticks / BigInt_(36000000000d));
+			var hour = Number_(Ticks / BigInt_("36000000000"));
 			var minute = Number_((Ticks / BigInt_(600000000)) % BigInt_(60));
 			var second = Number_((Ticks / BigInt_(10000000)) % BigInt_(60));
 			var fraction = Ticks % BigInt_(10000000);
@@ -255,10 +274,13 @@ public static class RuntimeModule
 
 		public JTimeSpan(BigInt ticks)
 		{
+			if (ticks < MinTimeSpanTicks || ticks > MaxTimeSpanTicks)
+				throw new Error("OverflowException: TimeSpan is too long or too short.");
+
 			this.Ticks = ticks;
 			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptor
 			{
-				Value = ToPrimitive,
+				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
 			});
 		}
@@ -268,8 +290,8 @@ public static class RuntimeModule
 		{
 			var negative = Ticks < BigInt.Zero;
 			var absolute = negative ? -Ticks : Ticks;
-			var days = absolute / BigInt_(864000000000d);
-			var hours = Number_((absolute / BigInt_(36000000000d)) % BigInt_(24));
+			var days = absolute / BigInt_("864000000000");
+			var hours = Number_((absolute / BigInt_("36000000000")) % BigInt_(24));
 			var minutes = Number_((absolute / BigInt_(600000000)) % BigInt_(60));
 			var seconds = Number_((absolute / BigInt_(10000000)) % BigInt_(60));
 			var fraction = absolute % BigInt_(10000000);
@@ -301,11 +323,60 @@ public static class RuntimeModule
 		}
 	}
 
+	public static Number GetDaysInMonth(Number year, Number month)
+	{
+		EnsureYearAndMonth(year, month);
+		var probe = new Date(0);
+		probe.SetUTCHours(0, 0, 0, 0);
+		probe.SetUTCFullYear(year, month, 0);
+		return probe.GetUTCDate();
+	}
+
+	private static void EnsureValidDateParts(Number year, Number month, Number day)
+	{
+		EnsureYearAndMonth(year, month);
+		EnsureWholeNumber(day, "ArgumentOutOfRangeException: Day must be a whole number.");
+		if (day < 1 || day > GetDaysInMonth(year, month))
+			throw new Error("ArgumentOutOfRangeException: The supplied year, month, or day is out of range.");
+	}
+
+	private static void EnsureValidDateTimeParts(Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond)
+	{
+		EnsureValidDateParts(year, month, day);
+		EnsureWholeNumber(hour, "ArgumentOutOfRangeException: Hour must be a whole number.");
+		EnsureWholeNumber(minute, "ArgumentOutOfRangeException: Minute must be a whole number.");
+		EnsureWholeNumber(second, "ArgumentOutOfRangeException: Second must be a whole number.");
+		EnsureWholeNumber(millisecond, "ArgumentOutOfRangeException: Millisecond must be a whole number.");
+		if (hour < 0 || hour > 23
+			|| minute < 0 || minute > 59
+			|| second < 0 || second > 59
+			|| millisecond < 0 || millisecond > 999)
+			throw new Error("ArgumentOutOfRangeException: The supplied date or time component is out of range.");
+	}
+
 	public static Date CreateUtcDate(Number year, Number month, Number day)
 	{
+		EnsureValidDateParts(year, month, day);
 		var result = new Date(0);
 		result.SetUTCHours(0, 0, 0, 0);
 		result.SetUTCFullYear(year, month - 1, day);
+		return result;
+	}
+
+	public static Date CreateLocalDate(Number year, Number month, Number day)
+	{
+		EnsureValidDateParts(year, month, day);
+		var result = new Date(0);
+		result.SetHours(0, 0, 0, 0);
+		result.SetFullYear(year, month - 1, day);
+		return result;
+	}
+
+	public static Date CreateLocalDateTime(Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond)
+	{
+		EnsureValidDateTimeParts(year, month, day, hour, minute, second, millisecond);
+		var result = CreateLocalDate(year, month, day);
+		result.SetHours(hour, minute, second, millisecond);
 		return result;
 	}
 

@@ -1660,8 +1660,11 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsTrue(script!.Contains("isOdd") || script.Contains("IsOdd"));
-		Assert.IsTrue(script.Contains("n - 1"));
+		AssertScriptEqual(@"{
+  if (n === 0)
+    return true;
+  return this.IsOdd(n - 1);
+}", script);
 	}
 
 	#endregion

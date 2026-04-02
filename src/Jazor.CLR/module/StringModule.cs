@@ -234,14 +234,14 @@ public static class StringModule
 	/// C#: str.ToCharArray()
 	/// JS: str.split("")
 	/// </summary>
-	[Jazor(Op.Inline, "string.ToCharArray()", """__arg1.split("")""")]
+	[Jazor(Op.Inline, "string.ToCharArray()", """__arg1.split(\"\")""")]
 	public extern static char[] _7b8eb7b3d52c463d(string instance);
 
 	/// <summary>
 	/// C#: str.ToCharArray(startIndex, length)
 	/// JS: str.substring(startIndex, startIndex + length).split("")
 	/// </summary>
-	[Jazor(Op.Inline, "string.ToCharArray(int, int)", """__arg1.substring(__arg2, __arg2 + __arg3).split("")""")]
+	[Jazor(Op.Inline, "string.ToCharArray(int, int)", """__arg1.substring(__arg2, __arg2 + __arg3).split(\"\")""")]
 	public extern static char[] _53042938adf57f41(string instance, Number startIndex, Number length);
 
 	/// <summary>

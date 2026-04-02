@@ -12,6 +12,33 @@ public static class TimeOnlyModule
 	private static BigInt TicksPerMinute => BigInt_("600000000");
 	private static BigInt TicksPerSecond => BigInt_("10000000");
 
+	private static void ValidateTimeParts(Number hour, Number minute, Number second, Number millisecond, Number microsecond)
+	{
+		if (Math.Floor_(hour) != hour || Math.Floor_(minute) != minute || Math.Floor_(second) != second || Math.Floor_(millisecond) != millisecond || Math.Floor_(microsecond) != microsecond)
+			throw new Error("ArgumentOutOfRangeException: TimeOnly components must be whole numbers.");
+		if (hour < 0 || hour > 23 || minute < 0 || minute > 59 || second < 0 || second > 59 || millisecond < 0 || millisecond > 999 || microsecond < 0 || microsecond > 999)
+			throw new Error("ArgumentOutOfRangeException: One or more TimeOnly components are out of range.");
+	}
+
+	private static RuntimeModule.JTimeOnly CreateTimeOnly(Number hour, Number minute, Number second, Number millisecond, Number microsecond)
+	{
+		ValidateTimeParts(hour, minute, second, millisecond, microsecond);
+		return new RuntimeModule.JTimeOnly(
+			BigInt_(hour) * TicksPerHour
+			+ BigInt_(minute) * TicksPerMinute
+			+ BigInt_(second) * TicksPerSecond
+			+ BigInt_(millisecond) * BigInt_("10000")
+			+ BigInt_(microsecond) * BigInt_(10));
+	}
+
+	private static RuntimeModule.JTimeOnly CreateTimeOnlyFromTicks(BigInt ticks)
+	{
+		if (ticks < BigInt.Zero || ticks >= TicksPerDay)
+			throw new Error("ArgumentOutOfRangeException: TimeOnly ticks must be within a single day.");
+
+		return new RuntimeModule.JTimeOnly(ticks);
+	}
+
 	private static RuntimeModule.JTimeOnly ParseCore(string s)
 	{
 		var first = s.IndexOf(':');
@@ -75,7 +102,7 @@ public static class TimeOnlyModule
 	/// </summary>
 	[Jazor(Op.Import, "System.TimeOnly.TimeOnly(int, int)")]
 	public static RuntimeModule.JTimeOnly _62d395c56c4c299d(Number hour, Number minute)
-		=> new(BigInt_(hour) * BigInt_("36000000000") + BigInt_(minute) * BigInt_("600000000"));
+		=> CreateTimeOnly(hour, minute, 0, 0, 0);
 
 	/// <summary>
 	/// C#: new TimeOnly(hour, minute, second)
@@ -83,7 +110,7 @@ public static class TimeOnlyModule
 	/// </summary>
 	[Jazor(Op.Import, "System.TimeOnly.TimeOnly(int, int, int)")]
 	public static RuntimeModule.JTimeOnly _e9a3481b3456aad4(Number hour, Number minute, Number second)
-		=> new(BigInt_(hour) * BigInt_("36000000000") + BigInt_(minute) * BigInt_("600000000") + BigInt_(second) * BigInt_("10000000"));
+		=> CreateTimeOnly(hour, minute, second, 0, 0);
 
 	/// <summary>
 	/// C#: new TimeOnly(hour, minute, second, millisecond)
@@ -91,7 +118,7 @@ public static class TimeOnlyModule
 	/// </summary>
 	[Jazor(Op.Import, "System.TimeOnly.TimeOnly(int, int, int, int)")]
 	public static RuntimeModule.JTimeOnly _335167098e226ccf(Number hour, Number minute, Number second, Number millisecond)
-		=> new(BigInt_(hour) * BigInt_("36000000000") + BigInt_(minute) * BigInt_("600000000") + BigInt_(second) * BigInt_("10000000") + BigInt_(millisecond) * BigInt_("10000"));
+		=> CreateTimeOnly(hour, minute, second, millisecond, 0);
 
 	/// <summary>
 	/// C#: new TimeOnly(hour, minute, second, millisecond, microsecond)
@@ -99,14 +126,15 @@ public static class TimeOnlyModule
 	/// </summary>
 	[Jazor(Op.Import, "System.TimeOnly.TimeOnly(int, int, int, int, int)")]
 	public static RuntimeModule.JTimeOnly _28c8cb012fe0e547(Number hour, Number minute, Number second, Number millisecond, Number microsecond)
-		=> new(BigInt_(hour) * BigInt_("36000000000") + BigInt_(minute) * BigInt_("600000000") + BigInt_(second) * BigInt_("10000000") + BigInt_(millisecond) * BigInt_("10000") + BigInt_(microsecond) * BigInt_(10));
+		=> CreateTimeOnly(hour, minute, second, millisecond, microsecond);
 
 	/// <summary>
 	/// C#: new TimeOnly(ticks)
 	/// JS: ticks
 	/// </summary>
 	[Jazor(Op.Import, "System.TimeOnly.TimeOnly(long)")]
-	public static RuntimeModule.JTimeOnly _b8b3b95e8b848f44(BigInt ticks) => new(ticks);
+	public static RuntimeModule.JTimeOnly _b8b3b95e8b848f44(BigInt ticks)
+		=> CreateTimeOnlyFromTicks(ticks);
 
 	/// <summary>
 	/// C#: instance.Hour
@@ -320,7 +348,8 @@ public static class TimeOnlyModule
 
 	///<summary>Constructs a <see cref="T:System.TimeOnly" /> object from a time span representing the time elapsed since midnight.</summary>
 	[Jazor(Op.Import ,"static System.TimeOnly.FromTimeSpan(System.TimeSpan)")]
-	public static RuntimeModule.JTimeOnly _df2fe8c100ae98f0(RuntimeModule.JTimeSpan timeSpan) => new(timeSpan.Ticks);
+	public static RuntimeModule.JTimeOnly _df2fe8c100ae98f0(RuntimeModule.JTimeSpan timeSpan)
+		=> CreateTimeOnlyFromTicks(timeSpan.Ticks);
 
 	///<summary>Constructs a <see cref="T:System.TimeOnly" /> object from a <see cref="T:System.DateTime" /> representing the time of the day in this <see cref="T:System.DateTime" /> object.</summary>
 	[Jazor(Op.Import ,"static System.TimeOnly.FromDateTime(System.DateTime)")]
@@ -349,6 +378,9 @@ public static class TimeOnlyModule
 	[Jazor(Op.Import ,"System.TimeOnly.CompareTo(object)")]
 	public static Number _fa5c092641b8d1d5(RuntimeModule.JTimeOnly instance, object? value)
 	{
+		if (value == null)
+			return 1;
+
 		var other = value as RuntimeModule.JTimeOnly;
 		if (other == null)
 			throw new Error("ArgumentException: Object must be of type TimeOnly.");

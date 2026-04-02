@@ -34,6 +34,9 @@ public static partial class Global
 	/// <c>Object.*</c>, while instance members correspond to <c>Object.prototype.*</c>.
 	/// This keeps user code close to JavaScript runtime shape without introducing
 	/// extra C# host types that would increase the sense of mismatch.
+	/// Members that C# instance dispatch cannot project faithfully, such as
+	/// <c>Object.prototype.toString()</c> on <see cref="object"/>, are intentionally omitted
+	/// instead of being exposed under misleading CLR-only shapes.
 	/// </summary>
 	extension(object obj)
 	{
@@ -154,6 +157,14 @@ public static partial class Global
 		public extern static PropertyDescriptor? GetOwnPropertyDescriptor(object o, PropertyKey p);
 
 		/// <summary>
+		/// Returns all own property descriptors of an object.
+		/// </summary>
+		/// <param name="o">Object that contains the own properties.</param>
+		/// <returns>A JavaScript object whose values are property descriptors.</returns>
+		[Description("@#getOwnPropertyDescriptors")]
+		public extern static PropertyDescriptorMap GetOwnPropertyDescriptors(object o);
+
+		/// <summary>
 		/// Returns the names of the own properties of an object. The own properties of an object are those that are defined directly
 		/// on that object, and are not inherited from the object's prototype. The properties of an object include both fields (objects) and functions.
 		/// </summary>
@@ -163,18 +174,19 @@ public static partial class Global
 		public extern static Array<string> GetOwnPropertyNames(object o);
 
 		/// <summary>
-		/// Returns a date converted to a string using the current locale.
+		/// Returns the own symbol properties of an object.
+		/// </summary>
+		/// <param name="o">Object that contains the own symbol properties.</param>
+		/// <returns>An array of symbol keys defined directly on <paramref name="o"/>.</returns>
+		[Description("@#getOwnPropertySymbols")]
+		public extern static Array<Symbol> GetOwnPropertySymbols(object o);
+
+		/// <summary>
+		/// Returns a locale-sensitive string representation of the object.
 		/// </summary>
 		/// <returns></returns>
 		[Description("@#toLocaleString")]
 		public extern string ToLocaleString();
-
-		/// <summary>
-		/// Returns a date converted to a string using the current locale.
-		/// </summary>
-		/// <returns></returns>
-		[Description("@#toString")]
-		public extern string ToString(uint r);
 
 		/// <summary>
 		/// Determines whether an object has a property with the specified name.
@@ -209,6 +221,39 @@ public static partial class Global
 		public extern static Array<string> Keys(object o);
 
 		/// <summary>
+		/// Returns the values of the enumerable own properties of an object.
+		/// </summary>
+		/// <param name="o">Object that contains the properties.</param>
+		/// <returns>An array of property values.</returns>
+		[Description("@#values")]
+		public extern static Array<object?> Values(object o);
+
+		/// <summary>
+		/// Returns the enumerable own property key-value pairs of an object.
+		/// </summary>
+		/// <param name="o">Object that contains the properties.</param>
+		/// <returns>An array of two-element key-value pairs.</returns>
+		[Description("@#entries")]
+		public extern static Array<Array<object?>> Entries(object o);
+
+		/// <summary>
+		/// Creates an object from key-value entries.
+		/// </summary>
+		/// <param name="entries">Pairs of property keys and values.</param>
+		/// <returns>A newly created JavaScript object.</returns>
+		[Description("@#fromEntries")]
+		public extern static IObject? FromEntries(IEnumerable<Array<object?>> entries);
+
+		/// <summary>
+		/// Returns whether the object has the specified own property.
+		/// </summary>
+		/// <param name="o">Object that contains the property.</param>
+		/// <param name="p">Property key to test.</param>
+		/// <returns><see langword="true"/> when the property exists directly on the object.</returns>
+		[Description("@#hasOwn")]
+		public extern static bool HasOwn(object o, PropertyKey p);
+
+		/// <summary>
 		/// Returns true if existing property attributes cannot be modified in an object and new properties cannot be added to the object.
 		/// </summary>
 		/// <param name="o">Object to test.</param>
@@ -233,11 +278,33 @@ public static partial class Global
 		public extern static bool IsExtensible(object o);
 
 		/// <summary>
+		/// Prevents new properties from being added to an object.
+		/// The original target type is returned so callers keep their static CLR shape.
+		/// </summary>
+		/// <typeparam name="TTarget">The static CLR type of the target object.</typeparam>
+		/// <param name="o">Object on which to prevent extensions.</param>
+		/// <returns>The same <paramref name="o"/> instance.</returns>
+		[Description("@#preventExtensions")]
+		public extern static TTarget PreventExtensions<TTarget>(TTarget o);
+
+		/// <summary>
+		/// Changes the prototype of an object.
+		/// The original target type is returned so callers keep their static CLR shape.
+		/// </summary>
+		/// <typeparam name="TTarget">The static CLR type of the target object.</typeparam>
+		/// <param name="o">Object whose prototype will be updated.</param>
+		/// <param name="proto">The new prototype object, or null.</param>
+		/// <returns>The same <paramref name="o"/> instance.</returns>
+		[Description("@#setPrototypeOf")]
+		public extern static TTarget SetPrototypeOf<TTarget>(TTarget o, object? proto);
+
+		/// <summary>
 		/// Prevents the modification of existing property attributes and values, and prevents the addition of new properties.
+		/// The original target type is returned so callers keep their static CLR shape.
 		/// </summary>
 		/// <param name="o">Object on which to lock the attributes.</param>
 		/// <returns></returns>
 		[Description("@#freeze")]
-		public extern static ref readonly TTarget Freeze<TTarget>(TTarget o);
+		public extern static TTarget Freeze<TTarget>(TTarget o);
 	}
 }

@@ -2320,10 +2320,13 @@ AssertScriptEqual(@"{
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    StringAssert.Contains(script, "for (let i = 0; i < 10; i++)");
-    StringAssert.Contains(script, "let j = i++;");
-    StringAssert.Contains(script, "let k = ++i;");
-    StringAssert.Contains(script, "console.log(j + \" \" + k);");
+    AssertScriptEqual(@"{
+  for (let i = 0; i < 10; i++) {
+    let j = i++;
+    let k = ++i;
+    console.log(j + "" "" + k);
+  }
+}", script);
   }
 
   /// <summary>

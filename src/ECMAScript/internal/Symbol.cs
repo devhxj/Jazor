@@ -40,11 +40,6 @@ public sealed class Symbol
 	public extern override int GetHashCode();
 
 	/// <summary>
-	/// Creates a new unique symbol.
-	/// </summary>
-	public extern static Symbol Create(string? description = null);
-
-	/// <summary>
 	/// Retrieves or creates a symbol from the global registry.
 	/// </summary>
 	[Description("@#for")]

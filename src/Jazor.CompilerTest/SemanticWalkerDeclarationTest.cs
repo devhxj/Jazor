@@ -1392,9 +1392,13 @@ public sealed class SemanticWalkerDeclarationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsTrue(script.Contains("let list = [1, 2, 3];"));
-        Assert.IsTrue(script.Contains("let filtered = Array.from(Array.from(list).filter("));
-        Assert.IsTrue(script.Contains("return x > 1;"));
+        AssertScriptEqual(
+@"{
+  let list = [1, 2, 3];
+  let filtered = Array.from(Array.from(list).filter(x => {
+    return x > 1;
+  }));
+}", script);
     }
 
     #endregion
@@ -1625,8 +1629,10 @@ public sealed class SemanticWalkerDeclarationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsTrue(script.Contains("Array.from") || script.Contains("new Array(3)"));
-        StringAssert.Contains(script, "4");
+        AssertScriptEqual(
+@"{
+  let matrix = new Array(3).fill().map(() => new Array(4));
+}", script);
     }
 
     /// <summary>
@@ -1649,7 +1655,10 @@ public sealed class SemanticWalkerDeclarationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsTrue(script.Contains("new Array(3)") || script.Contains("Array.from"));
+        AssertScriptEqual(
+@"{
+  let jagged = new Array(3);
+}", script);
     }
 
     #endregion
@@ -1713,9 +1722,13 @@ public sealed class SemanticWalkerDeclarationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        StringAssert.Contains(script, "Factorial");
-        StringAssert.Contains(script, "n - 1");
-        StringAssert.Contains(script, "Factorial(5)");
+        AssertScriptEqual(
+@"{
+  function Factorial(n) {
+    return n <= 1 ? 1 : n * Factorial(n - 1);
+  }
+  let result = Factorial(5);
+}", script);
     }
 
     #endregion
@@ -1745,10 +1758,7 @@ public sealed class SemanticWalkerDeclarationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        StringAssert.Contains(script, "a");
-        StringAssert.Contains(script, "b");
-        StringAssert.Contains(script, "console.log(a + b)");
-        Assert.IsTrue(script.Contains("v$") || script.Contains("console.log(a + b)"));
+        Assert.IsTrue(Regex.IsMatch(script, @"\{\r?\n  let a, (?<tmp1>v\$\d+), b, (?<tmp2>v\$\d+);\r?\n  if \(\(\k<tmp1> = _[a-f0-9]+\(""1"", a\), a = \k<tmp1>\[1\], \k<tmp1>\[0\]\) && \(\k<tmp2> = _[a-f0-9]+\(""2"", b\), b = \k<tmp2>\[1\], \k<tmp2>\[0\]\)\) \{\r?\n    console\.log\(a \+ b\);\r?\n  \}\r?\n\}"));
     }
 
     #endregion

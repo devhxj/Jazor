@@ -49,6 +49,13 @@ public static partial class Global
 	[Description("@#BigInt")]
 	public extern static BigInt BigInt_(string value);
 
+	/// <summary>
+	/// C# host name for JavaScript <c>Symbol(...)</c>.
+	/// The trailing underscore only avoids naming conflicts with the <see cref="Symbol"/> type.
+	/// </summary>
+	[Description("@#Symbol")]
+	public extern static Symbol Symbol_(string? description = null);
+
 	[Description("@#document")]
 	public extern static Document Document { get; }
 

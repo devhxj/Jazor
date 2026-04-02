@@ -139,7 +139,7 @@ public static partial class Global
 		/// <param name="data">要显示的数据。必须是数组或对象。</param>
 		/// <param name="columns">一个包含列的名称的数组。</param>
 		[Description("@#table")]
-		public extern static void Table(object? data, string[] columns);
+		public extern static void Table(object? data, string[]? columns = null);
 
 		/// <summary>
 		/// 你可以启动一个计时器来跟踪某一个操作的占用时长。每一个计时器必须拥有唯一的名字，页面中最多能同时运行 10,000 个计时器。当以此计时器名字为参数调用 console.timeEnd() 时，浏览器将以毫秒为单位，输出对应计时器所经过的时间。
@@ -147,6 +147,13 @@ public static partial class Global
 		/// <param name="label">新计时器的名字。用来标记这个计时器，作为参数调用 console.timeEnd() 可以停止计时并将经过的时间在终端中打印出来。</param>
 		[Description("@#time")]
 		public extern static void Time(string? label = null);
+
+		/// <summary>
+		/// 停止指定的计时器，并将该计时器经过的时间输出到控制台。
+		/// </summary>
+		/// <param name="label">计时器名称。未提供时使用默认计时器。</param>
+		[Description("@#timeEnd")]
+		public extern static void TimeEnd(string? label = null);
 
 		/// <summary>
 		/// 在控制台输出计时器的值，该计时器必须已经通过 console.time() 启动。

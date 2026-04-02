@@ -72,6 +72,11 @@ public sealed class SemanticWalkerCreationTest
         return operation ?? throw new InvalidOperationException("未找到可分析的操作");
     }
 
+    private static void AssertScriptEqual(string expected, string? actual)
+    {
+        Assert.AreEqual(expected.ReplaceLineEndings(), actual?.ReplaceLineEndings());
+    }
+
     /// <summary>
     /// 获取对象创建操作
     /// </summary>
@@ -1456,8 +1461,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        // DateTime 映射为 Date
-        Assert.AreEqual("new Date(2024,1-1,1)", script);
+        Assert.AreEqual("_4cb33a818161a3e1(2024,1,1)", script);
     }
 
     [TestMethod]
@@ -1478,8 +1482,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        // DateOnly 映射为 Date
-        Assert.AreEqual("new Date(2024,1-1,1)", script);
+        Assert.AreEqual("_8c5a25d777626c6c(2024,1,1)", script);
     }
 
     [TestMethod]
@@ -1500,9 +1503,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual(
-            "BigInt(12)*36000000000n+BigInt(30)*600000000n+BigInt(0)*10000000n",
-            script);
+        Assert.AreEqual("_e9a3481b3456aad4(12,30,0)", script);
     }
 
     [TestMethod]
@@ -1523,8 +1524,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        // TimeSpan 映射为 BigInt，使用 CallExpression
-        Assert.AreEqual("BigInt(1,2,3)", script);
+        Assert.AreEqual("_6f22e268aec62fe7(1,2,3)", script);
     }
 
     [TestMethod]
@@ -1773,8 +1773,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        StringAssert.Contains(script.Replace(" ", ""), "utcDateTime:newDate");
-        StringAssert.Contains(script.Replace(" ", ""), "offsetTicks:0n");
+        Assert.AreEqual("_d90dce0e1d2f06e4(2024,1,1,0,0,0,_e5548fcde33957a6())", script);
     }
 
     #region 扩展测试用例 - 数组创建变体
@@ -2166,7 +2165,7 @@ public sealed class SemanticWalkerCreationTest
         var normalized = script?.Replace("\r\n", "\n");
 
         Assert.AreEqual(@"{
-  let date = new Date(2024, 1 - 1, 1);
+  let date = _4cb33a818161a3e1(2024, 1, 1);
 }", normalized);
     }
 
@@ -2336,7 +2335,7 @@ public sealed class SemanticWalkerCreationTest
         var normalized = script?.Replace("\r\n", "\n");
 
         Assert.AreEqual(@"{
-  let date = new Date(2024, 1 - 1, 1);
+  let date = _4cb33a818161a3e1(2024, 1, 1);
 }", normalized);
     }
 
@@ -2359,8 +2358,9 @@ public sealed class SemanticWalkerCreationTest
         var walker = new SemanticWalker(true);
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
-        StringAssert.Contains(script!, "let duration =");
-        Assert.IsTrue(script.Contains("BigInt(1, 2, 3)") || script.Contains("BigInt(1,2,3)"));
+        AssertScriptEqual(@"{
+  let duration = _6f22e268aec62fe7(1, 2, 3);
+}", script);
     }
 
     /// <summary>
@@ -2638,8 +2638,9 @@ public sealed class SemanticWalkerCreationTest
         var walker = new SemanticWalker(true);
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
-        StringAssert.Contains(script!, "new Object");
-        Assert.IsTrue(script.Contains("!= null") || script.Contains("!== null"));
+        AssertScriptEqual(@"{
+  let result = new Object !== null;
+}", script);
     }
 
     #endregion
@@ -2694,10 +2695,9 @@ public sealed class SemanticWalkerCreationTest
         var walker = new SemanticWalker(true);
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
-        StringAssert.Contains(script!, "new Map");
-        StringAssert.Contains(script, "\"one\"");
-        StringAssert.Contains(script, "\"two\"");
-        Assert.IsTrue(script.Contains("[\"one\", 1]") || script.Contains(".set(\"one\", 1)"));
+        AssertScriptEqual(@"{
+  let dict = new Map([[""one"", 1], [""two"", 2]]);
+}", script);
     }
 
     /// <summary>
@@ -2829,10 +2829,14 @@ public sealed class SemanticWalkerCreationTest
         var walker = new SemanticWalker(true);
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
-        StringAssert.Contains(script!, "let person = (() => {");
-        StringAssert.Contains(script, "new Person");
-        StringAssert.Contains(script, "Name = \"John\"");
-        StringAssert.Contains(script, "Age = 30");
+        AssertScriptEqual(@"{
+  let person = (() => {
+    let v$0 = new Person;
+    v$0.Name = ""John"";
+    v$0.Age = 30;
+    return v$0;
+  })();
+}", script);
     }
 
     /// <summary>
@@ -2857,10 +2861,14 @@ public sealed class SemanticWalkerCreationTest
         var walker = new SemanticWalker(true);
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
-        StringAssert.Contains(script!, "let outer = (() => {");
-        StringAssert.Contains(script, "new Outer");
-        StringAssert.Contains(script, "new Inner");
-        StringAssert.Contains(script, "Value = 42");
+        AssertScriptEqual(@"{
+  let outer = (() => {
+    let v$0 = new Outer;
+    v$0.Inner = new Inner;
+    v$0.Inner.Value = 42;
+    return v$0;
+  })();
+}", script);
     }
 
     #endregion
@@ -2889,7 +2897,7 @@ public sealed class SemanticWalkerCreationTest
         var normalized = script?.Replace("\r\n", "\n");
 
         Assert.AreEqual(@"{
-  let date = new Date(2024, 1 - 1, 1);
+  let date = _8c5a25d777626c6c(2024, 1, 1);
 }", normalized);
     }
 
@@ -2915,7 +2923,7 @@ public sealed class SemanticWalkerCreationTest
 
         Assert.AreEqual(
 @"{
-  let time = BigInt(12) * 36000000000n + BigInt(30) * 600000000n + BigInt(0) * 10000000n;
+  let time = _e9a3481b3456aad4(12, 30, 0);
 }".Replace("\r\n", "\n"),
             script?.Replace("\r\n", "\n"));
     }
@@ -2939,10 +2947,9 @@ public sealed class SemanticWalkerCreationTest
         var walker = new SemanticWalker(true);
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
-        StringAssert.Contains(script!, "utcDateTime");
-        StringAssert.Contains(script, "new Date(");
-        StringAssert.Contains(script, "offsetTicks");
-        Assert.IsTrue(script.Contains("0n") || script.Contains("BigInt(0)"));
+        AssertScriptEqual(@"{
+  let dto = _d90dce0e1d2f06e4(2024, 1, 1, 12, 0, 0, _e5548fcde33957a6());
+}", script);
     }
 
     #endregion

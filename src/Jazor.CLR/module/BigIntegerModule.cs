@@ -1162,7 +1162,7 @@ public static class BigIntegerModule
 		if (value == BigInt.Zero)
 			return BigInt.Zero;
 
-		var bitLength = value.ToString(2).Length;
+		var bitLength = Number_(_41fe76dfb4ee2ab2(value));
 
 		var ra = rotateAmount % bitLength;
 		if (ra < 0)
@@ -1189,15 +1189,7 @@ public static class BigIntegerModule
 		if (value == BigInt.Zero)
 			return BigInt.Zero;
 
-
-		// Calculate the number of bits
-		var temp = value;
-		var bitLength = 0;
-		while (temp > BigInt.Zero)
-		{
-			bitLength++;
-			temp >>= BigInt.One;
-		}
+		var bitLength = Number_(_41fe76dfb4ee2ab2(value));
 
 		// Handle negative rotateAmount (convert to left rotation)
 		if (rotateAmount < 0)

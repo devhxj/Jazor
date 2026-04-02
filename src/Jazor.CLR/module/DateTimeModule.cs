@@ -25,32 +25,36 @@ public static class DateTimeModule
 	private static BigInt ZeroTicks => BigInt.Zero;
 	private static BigInt BinaryKindShift => BigInt_("4611686018427387904");
 	private static BigInt BinaryTicksMask => BigInt_("4611686018427387903");
+	private static BigInt MaxDateTimeTicks => BigInt_("3155378975999999999");
 	private static Number OADateUnixOffsetDays => 25569d;
 	private static Number MillisecondsPerDay => 86400000d;
 	private static Number DateTimeKindUnspecified => 0;
 	private static Number DateTimeKindUtc => 1;
 	private static Number DateTimeKindLocal => 2;
 
-	private static Date CreateLocalDate(Number year, Number month, Number day)
+	private static void EnsureWholeNumber(Number value, string message)
 	{
-		var result = new Date(0);
-		result.SetHours(0, 0, 0, 0);
-		result.SetFullYear(year, month - 1, day);
-		return result;
+		if (IsNaN(value) || Math.Floor_(value) != value || value < Number.MIN_SAFE_INTEGER || value > Number.MAX_SAFE_INTEGER)
+			throw new Error(message);
 	}
 
+	private static RuntimeModule.JDateTime CreateDefaultDateTime()
+		=> new(CreateLocalDate(1, 1, 1), DateTimeKindUnspecified);
+
+	private static Date CreateLocalDate(Number year, Number month, Number day)
+		=> RuntimeModule.CreateLocalDate(year, month, day);
+
 	private static Date CreateLocalDateTime(Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond)
-	{
-		var result = CreateLocalDate(year, month, day);
-		result.SetHours(hour, minute, second, millisecond);
-		return result;
-	}
+		=> RuntimeModule.CreateLocalDateTime(year, month, day, hour, minute, second, millisecond);
 
 	private static RuntimeModule.JDateTime CreateFromTicks(BigInt ticks)
 		=> CreateFromTicks(ticks, DateTimeKindUnspecified);
 
 	private static RuntimeModule.JDateTime CreateFromTicks(BigInt ticks, Number kind)
 	{
+		if (ticks < ZeroTicks || ticks > MaxDateTimeTicks)
+			throw new Error("ArgumentOutOfRangeException: Ticks must be within the range of DateTime.");
+
 		var ticksSinceUnixEpoch = ticks - UnixEpochTicks;
 		var milliseconds = ticksSinceUnixEpoch / TicksPerMillisecond;
 		var subMillisecondTicks = ticksSinceUnixEpoch % TicksPerMillisecond;
@@ -62,9 +66,9 @@ public static class DateTimeModule
 
 		var utc = new Date(Number_(milliseconds));
 		return new RuntimeModule.JDateTime(
-			new Date(
+			CreateLocalDateTime(
 				utc.GetUTCFullYear(),
-				utc.GetUTCMonth(),
+				utc.GetUTCMonth() + 1,
 				utc.GetUTCDate(),
 				utc.GetUTCHours(),
 				utc.GetUTCMinutes(),
@@ -82,6 +86,9 @@ public static class DateTimeModule
 
 	private static RuntimeModule.JDateTime CreateFromInstantTicks(BigInt ticks, Number kind)
 	{
+		if (ticks < ZeroTicks || ticks > MaxDateTimeTicks)
+			throw new Error("ArgumentOutOfRangeException: Ticks must be within the range of DateTime.");
+
 		if (kind == DateTimeKindUtc)
 			return CreateFromTicks(ticks, kind);
 
@@ -97,13 +104,21 @@ public static class DateTimeModule
 		return new RuntimeModule.JDateTime(new Date(Number_(milliseconds)), kind, subMillisecondTicks);
 	}
 
-	private static Number GetKind(object kind)
+	private static Number GetKind(System.DateTimeKind kind)
 	{
-		var value = Number_(kind);
+		var value = Number_((int)kind);
 		if (value != DateTimeKindUnspecified && value != DateTimeKindUtc && value != DateTimeKindLocal)
 			throw new Error("ArgumentException: Invalid DateTimeKind value.");
 
 		return value;
+	}
+
+	private static BigInt GetMicrosecondTicks(Number microsecond)
+	{
+		if (Math.Floor_(microsecond) != microsecond || microsecond < 0 || microsecond > 999)
+			throw new Error("ArgumentOutOfRangeException: Microsecond must be between 0 and 999.");
+
+		return BigInt_(microsecond) * TicksPerMicrosecond;
 	}
 
 	private static BigInt GetTicks(RuntimeModule.JDateTime instance)
@@ -145,15 +160,43 @@ public static class DateTimeModule
 	{
 		var now = new Date();
 		return new RuntimeModule.JDateTime(
-			new Date(
+			CreateLocalDateTime(
 				now.GetUTCFullYear(),
-				now.GetUTCMonth(),
+				now.GetUTCMonth() + 1,
 				now.GetUTCDate(),
 				now.GetUTCHours(),
 				now.GetUTCMinutes(),
 				now.GetUTCSeconds(),
 				now.GetUTCMilliseconds()),
 			DateTimeKindUtc);
+	}
+
+	private static RuntimeModule.JDateTime AddMonthsCore(RuntimeModule.JDateTime instance, Number months)
+	{
+		EnsureWholeNumber(months, "ArgumentOutOfRangeException: Months value must be a whole number.");
+
+		var year = instance.Date.GetFullYear();
+		var monthIndex = (year - 1) * 12 + instance.Date.GetMonth() + months;
+		var newYear = Math.Floor_(monthIndex / 12) + 1;
+		var newMonthIndex = monthIndex % 12;
+		if (newMonthIndex < 0)
+			newMonthIndex += 12;
+
+		var newMonth = newMonthIndex + 1;
+		var day = instance.Date.GetDate();
+		var daysInMonth = RuntimeModule.GetDaysInMonth(newYear, newMonth);
+		var newDay = day > daysInMonth ? daysInMonth : day;
+		return CreateDateTime(
+			CreateLocalDateTime(
+				newYear,
+				newMonth,
+				newDay,
+				instance.Date.GetHours(),
+				instance.Date.GetMinutes(),
+				instance.Date.GetSeconds(),
+				instance.Date.GetMilliseconds()),
+			instance.Kind,
+			instance.SubMillisecondTicks);
 	}
 
 	private static bool HasUtcSuffix(string input)
@@ -193,6 +236,38 @@ public static class DateTimeModule
 		return false;
 	}
 
+	private static BigInt ExtractSubMillisecondTicks(string input)
+	{
+		var timeIndex = input.LastIndexOf('T');
+		var spaceIndex = input.LastIndexOf(' ');
+		if (spaceIndex > timeIndex)
+			timeIndex = spaceIndex;
+
+		var fractionIndex = input.IndexOf('.', timeIndex + 1);
+		if (fractionIndex < 0)
+			return ZeroTicks;
+
+		var end = input.Length;
+		for (var i = fractionIndex + 1; i < input.Length; i++)
+		{
+			var c = input[i];
+			if (c < '0' || c > '9')
+			{
+				end = i;
+				break;
+			}
+		}
+
+		var digits = input.Substring(fractionIndex + 1, end - fractionIndex - 1);
+		if (digits.Length == 0 || digits.Length > 7)
+			throw new Error($"FormatException: String '{input}' was not recognized as a valid DateTime.");
+
+		while (digits.Length < 7)
+			digits += "0";
+
+		return BigInt_(digits.Substring(3, 4));
+	}
+
 	private static RuntimeModule.JDateTime ParseCore(string input)
 	{
 		var s = input.Trim();
@@ -215,13 +290,15 @@ public static class DateTimeModule
 		if (IsNaN(parsed.GetTime()))
 			throw new Error($"FormatException: String '{input}' was not recognized as a valid DateTime.");
 
+		var subMillisecondTicks = ExtractSubMillisecondTicks(s);
+
 		if (HasUtcSuffix(s))
-			return CreateFromTicks(BigInt_(parsed.GetTime()) * TicksPerMillisecond + UnixEpochTicks, DateTimeKindUtc);
+			return CreateFromTicks(BigInt_(parsed.GetTime()) * TicksPerMillisecond + subMillisecondTicks + UnixEpochTicks, DateTimeKindUtc);
 
 		if (HasExplicitOffset(s))
-			return new RuntimeModule.JDateTime(new Date(parsed.GetTime()), DateTimeKindLocal);
+			return new RuntimeModule.JDateTime(new Date(parsed.GetTime()), DateTimeKindLocal, subMillisecondTicks);
 
-		return new RuntimeModule.JDateTime(parsed, DateTimeKindUnspecified);
+		return new RuntimeModule.JDateTime(parsed, DateTimeKindUnspecified, subMillisecondTicks);
 	}
 
 	/// <summary>
@@ -258,7 +335,7 @@ public static class DateTimeModule
 
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTime" /> structure to a specified number of ticks and to Coordinated Universal Time (UTC) or local time.</summary>
 	[Jazor(Op.Import ,"System.DateTime.DateTime(long, System.DateTimeKind)")]
-	public static RuntimeModule.JDateTime _eda1c8bf8e1e617b(BigInt ticks, object kind)
+	public static RuntimeModule.JDateTime _eda1c8bf8e1e617b(BigInt ticks, System.DateTimeKind kind)
 		=> CreateFromTicks(ticks, GetKind(kind));
 
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTime" /> structure to the specified <see cref="T:System.DateOnly" /> and <see cref="T:System.TimeOnly" />. The new instance will have the <see cref="F:System.DateTimeKind.Unspecified" /> kind.</summary>
@@ -276,7 +353,7 @@ public static class DateTimeModule
 
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTime" /> structure to the specified <see cref="T:System.DateOnly" /> and <see cref="T:System.TimeOnly" /> and respecting the specified <see cref="T:System.DateTimeKind" />.</summary>
 	[Jazor(Op.Import ,"System.DateTime.DateTime(System.DateOnly, System.TimeOnly, System.DateTimeKind)")]
-	public static RuntimeModule.JDateTime _85602323793168a5(RuntimeModule.JDateOnly date, RuntimeModule.JTimeOnly time, object kind)
+	public static RuntimeModule.JDateTime _85602323793168a5(RuntimeModule.JDateOnly date, RuntimeModule.JTimeOnly time, System.DateTimeKind kind)
 	{
 		var result = _4fef4795bcbef97f(date, time);
 		return CreateDateTime(result.Date, GetKind(kind), result.SubMillisecondTicks);
@@ -292,7 +369,7 @@ public static class DateTimeModule
 
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTime" /> structure to the specified year, month, day, hour, minute, second, millisecond, and Coordinated Universal Time (UTC) or local time for the specified calendar.</summary>
 	[Jazor(Op.Discard ,"System.DateTime.DateTime(int, int, int, int, int, int, int, System.Globalization.Calendar, System.DateTimeKind)")]
-	public extern static RuntimeModule.JDateTime _bd2c430e6327a2cc(Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond, GregorianCalendar calendar, object kind);
+	public extern static RuntimeModule.JDateTime _bd2c430e6327a2cc(Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond, GregorianCalendar calendar, System.DateTimeKind kind);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTime" /> structure to the specified year, month, day, hour, minute, and second.</summary>
 	[Jazor(Op.Import, "System.DateTime.DateTime(int, int, int, int, int, int)")]
@@ -301,7 +378,7 @@ public static class DateTimeModule
 
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTime" /> structure to the specified year, month, day, hour, minute, second, and Coordinated Universal Time (UTC) or local time.</summary>
 	[Jazor(Op.Import ,"System.DateTime.DateTime(int, int, int, int, int, int, System.DateTimeKind)")]
-	public static RuntimeModule.JDateTime _f83be88cfb3fbce0(Number year, Number month, Number day, Number hour, Number minute, Number second, object kind)
+	public static RuntimeModule.JDateTime _f83be88cfb3fbce0(Number year, Number month, Number day, Number hour, Number minute, Number second, System.DateTimeKind kind)
 		=> new(CreateLocalDateTime(year, month, day, hour, minute, second, 0), GetKind(kind));
 
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTime" /> structure to the specified year, month, day, hour, minute, and second for the specified calendar.</summary>
@@ -315,7 +392,7 @@ public static class DateTimeModule
 
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTime" /> structure to the specified year, month, day, hour, minute, second, millisecond, and Coordinated Universal Time (UTC) or local time.</summary>
 	[Jazor(Op.Import ,"System.DateTime.DateTime(int, int, int, int, int, int, int, System.DateTimeKind)")]
-	public static RuntimeModule.JDateTime _c52eec5e681a0b8b(Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond, object kind)
+	public static RuntimeModule.JDateTime _c52eec5e681a0b8b(Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond, System.DateTimeKind kind)
 		=> new(CreateLocalDateTime(year, month, day, hour, minute, second, millisecond), GetKind(kind));
 
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTime" /> structure to the specified year, month, day, hour, minute, second, and millisecond for the specified calendar.</summary>
@@ -325,12 +402,12 @@ public static class DateTimeModule
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTime" /> structure to the specified year, month, day, hour, minute, second, millisecond, and Coordinated Universal Time (UTC) or local time for the specified calendar.</summary>
 	[Jazor(Op.Import ,"System.DateTime.DateTime(int, int, int, int, int, int, int, int)")]
 	public static RuntimeModule.JDateTime _9117d26d23769ad1(Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond, Number microsecond)
-		=> CreateDateTime(CreateLocalDateTime(year, month, day, hour, minute, second, millisecond), DateTimeKindUnspecified, BigInt_(microsecond) * TicksPerMicrosecond);
+		=> CreateDateTime(CreateLocalDateTime(year, month, day, hour, minute, second, millisecond), DateTimeKindUnspecified, GetMicrosecondTicks(microsecond));
 
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTime" /> structure to the specified year, month, day, hour, minute, second, millisecond, and Coordinated Universal Time (UTC) or local time for the specified calendar.</summary>
 	[Jazor(Op.Import ,"System.DateTime.DateTime(int, int, int, int, int, int, int, int, System.DateTimeKind)")]
-	public static RuntimeModule.JDateTime _e84671346e2b9972(Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond, Number microsecond, object kind)
-		=> CreateDateTime(CreateLocalDateTime(year, month, day, hour, minute, second, millisecond), GetKind(kind), BigInt_(microsecond) * TicksPerMicrosecond);
+	public static RuntimeModule.JDateTime _e84671346e2b9972(Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond, Number microsecond, System.DateTimeKind kind)
+		=> CreateDateTime(CreateLocalDateTime(year, month, day, hour, minute, second, millisecond), GetKind(kind), GetMicrosecondTicks(microsecond));
 
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTime" /> structure to the specified year, month, day, hour, minute, second, millisecond, and Coordinated Universal Time (UTC) or local time for the specified calendar.</summary>
 	[Jazor(Op.Discard ,"System.DateTime.DateTime(int, int, int, int, int, int, int, int, System.Globalization.Calendar)")]
@@ -338,7 +415,7 @@ public static class DateTimeModule
 
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTime" /> structure to the specified year, month, day, hour, minute, second, millisecond, and Coordinated Universal Time (UTC) or local time for the specified calendar.</summary>
 	[Jazor(Op.Discard ,"System.DateTime.DateTime(int, int, int, int, int, int, int, int, System.Globalization.Calendar, System.DateTimeKind)")]
-	public extern static RuntimeModule.JDateTime _cd0b8f2bce1e09ed(Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond, Number microsecond, GregorianCalendar calendar, object kind);
+	public extern static RuntimeModule.JDateTime _cd0b8f2bce1e09ed(Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond, Number microsecond, GregorianCalendar calendar, System.DateTimeKind kind);
 
 	///<summary>Returns a new <see cref="T:System.DateTime" /> that adds the value of the specified <see cref="T:System.TimeSpan" /> to the value of this instance.</summary>
 	[Jazor(Op.Import ,"System.DateTime.Add(System.TimeSpan)")]
@@ -373,11 +450,7 @@ public static class DateTimeModule
 	///<summary>Returns a new <see cref="T:System.DateTime" /> that adds the specified number of months to the value of this instance.</summary>
 	[Jazor(Op.Import, "System.DateTime.AddMonths(int)")]
 	public static RuntimeModule.JDateTime _aae197b95f9024a4(RuntimeModule.JDateTime instance, Number months)
-	{
-		var result = new Date(instance.Date.GetTime());
-		result.SetMonth(result.GetMonth() + months);
-		return CreateDateTime(result, instance.Kind, instance.SubMillisecondTicks);
-	}
+		=> AddMonthsCore(instance, months);
 
 	///<summary>Returns a new <see cref="T:System.DateTime" /> that adds the specified number of seconds to the value of this instance.</summary>
 	[Jazor(Op.Import, "System.DateTime.AddSeconds(double)")]
@@ -393,9 +466,8 @@ public static class DateTimeModule
 	[Jazor(Op.Import, "System.DateTime.AddYears(int)")]
 	public static RuntimeModule.JDateTime _3353d31b02f2bed8(RuntimeModule.JDateTime instance, Number value)
 	{
-		var result = new Date(instance.Date.GetTime());
-		result.SetFullYear(result.GetFullYear() + value);
-		return CreateDateTime(result, instance.Kind, instance.SubMillisecondTicks);
+		EnsureWholeNumber(value, "ArgumentOutOfRangeException: Years value must be a whole number.");
+		return AddMonthsCore(instance, value * 12);
 	}
 
 	///<summary>Compares two instances of <see cref="T:System.DateTime" /> and returns an integer that indicates whether the first instance is earlier than, the same as, or later than the second instance.</summary>
@@ -413,6 +485,9 @@ public static class DateTimeModule
 	[Jazor(Op.Import ,"System.DateTime.CompareTo(object)")]
 	public static Number _f7b2337bfa9864d9(RuntimeModule.JDateTime instance, object? value)
 	{
+		if (value == null)
+			return 1;
+
 		var other = value as RuntimeModule.JDateTime;
 		if (other == null)
 			throw new Error("ArgumentException: Object must be of type DateTime.");
@@ -435,7 +510,9 @@ public static class DateTimeModule
 	[Jazor(Op.Import, "static System.DateTime.DaysInMonth(int, int)")]
 	public static Number _38ef7423971afb7f(Number year, Number month)
 	{
-		return new Date(year, month, 0).GetDate();
+		var date = CreateLocalDate(year, month + 1, 1);
+		date.SetDate(0);
+		return date.GetDate();
 	}
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
@@ -485,15 +562,15 @@ public static class DateTimeModule
 	public static bool _d3b1cc7e750c6bc3(RuntimeModule.JDateTime instance)
 	{
 		var year = instance.Date.GetFullYear();
-		var januaryOffset = new Date(year, 0, 1).GetTimezoneOffset();
-		var julyOffset = new Date(year, 6, 1).GetTimezoneOffset();
-		var standardOffset = Math.Max(januaryOffset, julyOffset);
+		var januaryOffset = CreateLocalDate(year, 1, 1).GetTimezoneOffset();
+		var julyOffset = CreateLocalDate(year, 7, 1).GetTimezoneOffset();
+		var standardOffset = januaryOffset > julyOffset ? januaryOffset : julyOffset;
 		return instance.Date.GetTimezoneOffset() < standardOffset;
 	}
 
 	///<summary>Creates a new <see cref="T:System.DateTime" /> object that has the same number of ticks as the specified <see cref="T:System.DateTime" />, but is designated as either local time, Coordinated Universal Time (UTC), or neither, as indicated by the specified <see cref="T:System.DateTimeKind" /> value.</summary>
 	[Jazor(Op.Import ,"static System.DateTime.SpecifyKind(System.DateTime, System.DateTimeKind)")]
-	public static RuntimeModule.JDateTime _a99826a92073614e(RuntimeModule.JDateTime value, object kind)
+	public static RuntimeModule.JDateTime _a99826a92073614e(RuntimeModule.JDateTime value, System.DateTimeKind kind)
 		=> CreateDateTime(value.Date, GetKind(kind), value.SubMillisecondTicks);
 
 	///<summary>Serializes the current <see cref="T:System.DateTime" /> object to a 64-bit binary value that subsequently can be used to recreate the <see cref="T:System.DateTime" /> object.</summary>
@@ -511,7 +588,7 @@ public static class DateTimeModule
 
 	[Jazor(Op.Import, "System.DateTime.DayOfWeek.get")]
 	public static System.DayOfWeek _6070f1709c491634(RuntimeModule.JDateTime instance)
-		=> instance.Date.GetDay();
+		=> (System.DayOfWeek)(int)instance.Date.GetDay();
 
 	/// <summary>
 	/// C#: DateTime.DayOfYear
@@ -520,10 +597,10 @@ public static class DateTimeModule
 	[Jazor(Op.Import, "System.DateTime.DayOfYear.get")]
 	public static Number _4f6ca20bf1aaa2d3(RuntimeModule.JDateTime instance)
 	{
-		var start = new Date(instance.Date.GetFullYear(), 0, 0);
-		var diff = instance.Date.GetTime() - start.GetTime();
-		var oneDay = 1000 * 60 * 60 * 24;
-		return Math.Floor_(diff / oneDay);
+		var year = instance.Date.GetFullYear();
+		var start = Date.UTC(year, 0, 0);
+		var current = Date.UTC(year, instance.Date.GetMonth(), instance.Date.GetDate());
+		return Math.Floor_((current - start) / 86400000);
 	}
 
 	///<summary>Returns the hash code for this instance.</summary>
@@ -537,7 +614,7 @@ public static class DateTimeModule
 
 	[Jazor(Op.Import ,"System.DateTime.Kind.get")]
 	public static System.DateTimeKind _551add245db0b701(RuntimeModule.JDateTime instance)
-		=> instance.Kind;
+		=> (System.DateTimeKind)(int)instance.Kind;
 
 	[Jazor(Op.Import, "System.DateTime.Millisecond.get")]
 	public static Number _742a8bcf918b97e6(RuntimeModule.JDateTime instance)
@@ -740,14 +817,14 @@ public static class DateTimeModule
 	public static Array<object?> _fa25ca318f086bb6(string? s, RuntimeModule.JDateTime result)
 	{
 		if (s == null || s.Length == 0)
-			return [false, new RuntimeModule.JDateTime(new Date(0), DateTimeKindUnspecified)];
+			return [false, CreateDefaultDateTime()];
 		try
 		{
 			return [true, ParseCore(s)];
 		}
 		catch
 		{
-			return [false, new RuntimeModule.JDateTime(new Date(0), DateTimeKindUnspecified)];
+			return [false, CreateDefaultDateTime()];
 		}
 	}
 

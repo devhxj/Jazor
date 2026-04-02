@@ -50,8 +50,38 @@ public sealed class RegExp
 	[Description("@#multiline")]
 	public extern bool Multiline { get; }
 
+	/// <summary>
+	/// Returns the flags of the regular expression as a string.
+	/// </summary>
+	[Description("@#flags")]
+	public extern string Flags { get; }
+
+	/// <summary>
+	/// Returns a Boolean value indicating the state of the dotAll flag (s) used with a regular expression.
+	/// </summary>
+	[Description("@#dotAll")]
+	public extern bool DotAll { get; }
+
+	/// <summary>
+	/// Returns a Boolean value indicating the state of the sticky flag (y) used with a regular expression.
+	/// </summary>
+	[Description("@#sticky")]
+	public extern bool Sticky { get; }
+
+	/// <summary>
+	/// Returns a Boolean value indicating the state of the unicode flag (u) used with a regular expression.
+	/// </summary>
+	[Description("@#unicode")]
+	public extern bool Unicode { get; }
+
+	/// <summary>
+	/// Returns a Boolean value indicating the state of the hasIndices flag (d) used with a regular expression.
+	/// </summary>
+	[Description("@#hasIndices")]
+	public extern bool HasIndices { get; }
+
 	[Description("@#lastIndex")]
-	public extern Number LastIndex { get; }
+	public extern Number LastIndex { get; set; }
 
 	/// <summary>
 	/// @deprecated A legacy feature for browser compatibility

@@ -144,7 +144,7 @@ public sealed class SemanticWalkerTupleTest
   v$0 = func(2, 5), zzz = v$0.mmm, yyy = v$0.y;
   let p = new Point;
   v$1 = p.Deconstruct(z99, y99), z99 = v$1[0], y99 = v$1[1];
-}", script);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 
     }
 
@@ -895,7 +895,7 @@ public sealed class SemanticWalkerTupleTest
   let x, y, v$0;
   let point = new Point(1, 2);
   v$0 = point.Deconstruct(x, y), x = v$0[0], y = v$0[1];
-}", script);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 
     }
 
@@ -1069,7 +1069,7 @@ public sealed class SemanticWalkerTupleTest
   let z99, y99, v$0;
   let p = new Point;
   v$0 = p.Deconstruct(z99, y99), z99 = v$0[0], y99 = v$0[1];
-}", script);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 
     }
 
@@ -2091,10 +2091,12 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        StringAssert.Contains(script!, "points");
-        StringAssert.Contains(script, "x");
-        StringAssert.Contains(script, "y");
-        StringAssert.Contains(script, "console.log");
+        Assert.AreEqual(@"{
+  let points = [{ Item1: 1, Item2: 2 }, { Item1: 3, Item2: 4 }, { Item1: 5, Item2: 6 }];
+  for ({ x: x, y: y } of points) {
+    console.log(x + "","" + y);
+  }
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
     /// <summary>
@@ -2126,10 +2128,18 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        StringAssert.Contains(script!, "switch");
-        StringAssert.Contains(script, "Item1");
-        StringAssert.Contains(script, "Item2");
-        StringAssert.Contains(script, "\"origin\"");
+        Assert.AreEqual(@"{
+  let point = { Item1: 0, Item2: 0 };
+  (() => {
+    const v$0 = point;
+    if (v$0.Item1 === 0 && v$0.Item2 === 0) {
+      console.log(""origin"");
+      return;
+    }
+    console.log(""other"");
+    return;
+  })();
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
     #endregion

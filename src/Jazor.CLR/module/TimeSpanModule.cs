@@ -10,6 +10,18 @@ public static class TimeSpanModule
 	private static BigInt TicksPerMinute => BigInt_("600000000");
 	private static BigInt TicksPerHour => BigInt_("36000000000");
 	private static BigInt TicksPerDay => BigInt_("864000000000");
+	private static BigInt MinTimeSpanTicks => BigInt_("-9223372036854775808");
+
+	private static RuntimeModule.JTimeSpan NegateChecked(RuntimeModule.JTimeSpan instance)
+	{
+		if (instance.Ticks == MinTimeSpanTicks)
+			throw new Error("OverflowException: Negating the minimum TimeSpan value is invalid.");
+
+		return new RuntimeModule.JTimeSpan(-instance.Ticks);
+	}
+
+	private static RuntimeModule.JTimeSpan CreateFromRoundedTicks(Number value)
+		=> new(BigInt_(Math.Round_(value)));
 
 	private static RuntimeModule.JTimeSpan Create(Number days, Number hours, Number minutes, Number seconds, Number milliseconds, Number microseconds)
 	{
@@ -387,6 +399,9 @@ public static class TimeSpanModule
 	[Jazor(Op.Import ,"System.TimeSpan.CompareTo(object)")]
 	public static Number _224114f954c0aa27(RuntimeModule.JTimeSpan instance, object? value)
 	{
+		if (value == null)
+			return 1;
+
 		var other = value as RuntimeModule.JTimeSpan;
 		if (other == null)
 			throw new Error("ArgumentException: Object must be of type TimeSpan.");
@@ -412,13 +427,13 @@ public static class TimeSpanModule
 	[Jazor(Op.Import, "static System.TimeSpan.FromDays(double)")]
 	public static RuntimeModule.JTimeSpan _174093cb4f47884f(Number value)
 	{
-		// TicksPerDay = 864000000000
-		return new RuntimeModule.JTimeSpan(BigInt_(Math.Floor_(value * 864000000000d)));
+		return CreateFromRoundedTicks(value * 864000000000d);
 	}
 
 	///<summary>Returns a new <see cref="T:System.TimeSpan" /> object whose value is the absolute value of the current <see cref="T:System.TimeSpan" /> object.</summary>
 	[Jazor(Op.Import ,"System.TimeSpan.Duration()")]
-	public static RuntimeModule.JTimeSpan _eeb4ad83b79a892c(RuntimeModule.JTimeSpan instance) => new(instance.Ticks < BigInt.Zero ? -instance.Ticks : instance.Ticks);
+	public static RuntimeModule.JTimeSpan _eeb4ad83b79a892c(RuntimeModule.JTimeSpan instance)
+		=> instance.Ticks < BigInt.Zero ? NegateChecked(instance) : new RuntimeModule.JTimeSpan(instance.Ticks);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
 	[Jazor(Op.Import ,"override System.TimeSpan.Equals(object)")]
@@ -503,10 +518,7 @@ public static class TimeSpanModule
 	/// </summary>
 	[Jazor(Op.Import, "static System.TimeSpan.FromHours(double)")]
 	public static RuntimeModule.JTimeSpan _105dc0462f9876d6(Number value)
-	{
-		// TicksPerHour = 36000000000
-		return new RuntimeModule.JTimeSpan(BigInt_(Math.Floor_(value * 36000000000d)));
-	}
+		=> CreateFromRoundedTicks(value * 36000000000d);
 
 	/// <summary>
 	/// C#: TimeSpan.FromMilliseconds(double)
@@ -514,10 +526,7 @@ public static class TimeSpanModule
 	/// </summary>
 	[Jazor(Op.Import, "static System.TimeSpan.FromMilliseconds(double)")]
 	public static RuntimeModule.JTimeSpan _a6de3a3b561d553b(Number value)
-	{
-		// TicksPerMillisecond = 10000
-		return new RuntimeModule.JTimeSpan(BigInt_(Math.Floor_(value * 10000d)));
-	}
+		=> CreateFromRoundedTicks(value * 10000d);
 
 	/// <summary>
 	/// C#: TimeSpan.FromMicroseconds(double)
@@ -525,10 +534,7 @@ public static class TimeSpanModule
 	/// </summary>
 	[Jazor(Op.Import, "static System.TimeSpan.FromMicroseconds(double)")]
 	public static RuntimeModule.JTimeSpan _e05c52466faba973(Number value)
-	{
-		// TicksPerMicrosecond = 10
-		return new RuntimeModule.JTimeSpan(BigInt_(Math.Floor_(value * 10d)));
-	}
+		=> CreateFromRoundedTicks(value * 10d);
 
 	/// <summary>
 	/// C#: TimeSpan.FromMinutes(double)
@@ -536,14 +542,11 @@ public static class TimeSpanModule
 	/// </summary>
 	[Jazor(Op.Import, "static System.TimeSpan.FromMinutes(double)")]
 	public static RuntimeModule.JTimeSpan _2af67432bdd77d15(Number value)
-	{
-		// TicksPerMinute = 600000000
-		return new RuntimeModule.JTimeSpan(BigInt_(Math.Floor_(value * 600000000d)));
-	}
+		=> CreateFromRoundedTicks(value * 600000000d);
 
 	///<summary>Returns a new <see cref="T:System.TimeSpan" /> object whose value is the negated value of this instance.</summary>
 	[Jazor(Op.Import ,"System.TimeSpan.Negate()")]
-	public static RuntimeModule.JTimeSpan _63a8d2e980965d93(RuntimeModule.JTimeSpan instance) => new(-instance.Ticks);
+	public static RuntimeModule.JTimeSpan _63a8d2e980965d93(RuntimeModule.JTimeSpan instance) => NegateChecked(instance);
 
 	/// <summary>
 	/// C#: TimeSpan.FromSeconds(double)
@@ -551,10 +554,7 @@ public static class TimeSpanModule
 	/// </summary>
 	[Jazor(Op.Import, "static System.TimeSpan.FromSeconds(double)")]
 	public static RuntimeModule.JTimeSpan _77a04fa2e0b66990(Number value)
-	{
-		// TicksPerSecond = 10000000
-		return new RuntimeModule.JTimeSpan(BigInt_(Math.Floor_(value * 10000000)));
-	}
+		=> CreateFromRoundedTicks(value * 10000000d);
 
 	///<summary>Returns a new <see cref="T:System.TimeSpan" /> object whose value is the difference between the specified <see cref="T:System.TimeSpan" /> object and this instance.</summary>
 	[Jazor(Op.Import ,"System.TimeSpan.Subtract(System.TimeSpan)")]
@@ -706,7 +706,7 @@ public static class TimeSpanModule
 
 	///<summary>Returns a <see cref="T:System.TimeSpan" /> whose value is the negated value of the specified instance.</summary>
 	[Jazor(Op.Import ,"static System.TimeSpan.operator -(System.TimeSpan)")]
-	public static RuntimeModule.JTimeSpan _e8e884a7b14ce4b4(RuntimeModule.JTimeSpan t) => new(-t.Ticks);
+	public static RuntimeModule.JTimeSpan _e8e884a7b14ce4b4(RuntimeModule.JTimeSpan t) => NegateChecked(t);
 
 	///<summary>Subtracts a specified <see cref="T:System.TimeSpan" /> from another specified <see cref="T:System.TimeSpan" />.</summary>
 	[Jazor(Op.Import ,"static System.TimeSpan.operator -(System.TimeSpan, System.TimeSpan)")]

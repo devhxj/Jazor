@@ -79,13 +79,13 @@ public partial class SemanticWalker
 					return HandleTransformationFailure<SwitchStatement>(bodyOp, "Switch case body statement could not be translated to JavaScript.");
 			}
 
-			// 为每个test值创建一个SwitchCase
-			// 避免重复添加相同的consequent，只为第一个case添加语句
+			// 为每个 test 值创建一个 SwitchCase。
+			// C# 的 case label 共享同一个 body 时，语句应挂在最后一个 label 上，
+			// 这样 case 2/case 3 直接命中时也能落到真实 body，而不是跳空后继续穿透。
 			for (int i = 0; i < tests.Count; i++)
 			{
 				var testExpr = tests[i];
-				// 只有第一个case包含语句，其余case为fallthrough
-				var statements = i == 0 ? consequent : [];
+				var statements = i == tests.Count - 1 ? consequent : [];
 				cases.Add(new SwitchCase(testExpr, NodeList.From(statements)));
 			}
 		}

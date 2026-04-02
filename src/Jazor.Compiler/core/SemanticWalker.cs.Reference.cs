@@ -89,8 +89,37 @@ public partial class SemanticWalker
 		return null;
 	}
 
+	private static bool ShouldFlattenRuntimeNestedType(ITypeSymbol symbol)
+	{
+		if (symbol is not INamedTypeSymbol namedType || namedType.ContainingType is null)
+			return false;
+
+		// 当前编译器的声明侧会把用户代码中的成员类型扁平化为顶层运行时声明，
+		// 因此引用侧也必须使用同一个运行时名，不能继续保留 Outer.Inner 链。
+		// ECMAScript 绑定里的静态宿主类型例外，它们本身就是运行时宿主层级的一部分。
+		if (namedType.ContainingAssembly?.Name == "ECMAScript" && namedType.ContainingType.IsStatic)
+			return false;
+
+		return true;
+	}
+
 	private Expression? BuildFullTypeName(ITypeSymbol symbol, SenseArgument? context = null)
 	{
+		if (ShouldFlattenRuntimeNestedType(symbol))
+		{
+			var flatName = GetTypeConfigOrWhiteListName(symbol);
+			if (string.IsNullOrEmpty(flatName))
+				return null;
+
+			var modulePath = GetModuleImportPath(symbol);
+			if (!string.IsNullOrEmpty(modulePath))
+			{
+				context?.MergeImportSpecifier(modulePath!, new ImportSpecifier(new Identifier(flatName!)));
+			}
+
+			return new Identifier(flatName!);
+		}
+
 		var queue = new Stack<string>();
 		var type = symbol;
 		while (type is not null)
@@ -146,11 +175,54 @@ public partial class SemanticWalker
 		if (targetSyntax is null)
 			return null;
 
-		var target = ConvertFromSyntaxNode(targetSyntax) as Expression;
+		var target = TryBuildStaticHostExpressionFromSyntax(targetSyntax);
+		if (target is null)
+			target = ConvertFromSyntaxNode(targetSyntax) as Expression;
 		if (target is null)
 			return null;
 
 		return new MemberExpression(target, new Identifier(memberName), computed: false, optional: false);
+	}
+
+	private static Expression? TryBuildStaticHostExpressionFromSyntax(SyntaxNode syntax) =>
+		syntax switch
+		{
+			IdentifierNameSyntax identifier => new Identifier(identifier.Identifier.ValueText),
+			GenericNameSyntax generic => new Identifier(generic.Identifier.ValueText),
+			MemberAccessExpressionSyntax memberAccess => TryBuildMemberAccessHostExpression(memberAccess),
+			QualifiedNameSyntax qualifiedName => TryBuildQualifiedNameHostExpression(qualifiedName),
+			AliasQualifiedNameSyntax aliasQualifiedName => new MemberExpression(
+				new Identifier(aliasQualifiedName.Alias.Identifier.ValueText),
+				new Identifier(aliasQualifiedName.Name.Identifier.ValueText),
+				computed: false,
+				optional: false),
+			_ => null
+		};
+
+	private static Expression? TryBuildMemberAccessHostExpression(MemberAccessExpressionSyntax memberAccess)
+	{
+		var receiver = TryBuildStaticHostExpressionFromSyntax(memberAccess.Expression);
+		if (receiver is null)
+			return null;
+
+		return new MemberExpression(
+			receiver,
+			new Identifier(memberAccess.Name.Identifier.ValueText),
+			computed: false,
+			optional: false);
+	}
+
+	private static Expression? TryBuildQualifiedNameHostExpression(QualifiedNameSyntax qualifiedName)
+	{
+		var left = TryBuildStaticHostExpressionFromSyntax(qualifiedName.Left);
+		if (left is null)
+			return null;
+
+		return new MemberExpression(
+			left,
+			new Identifier(qualifiedName.Right.Identifier.ValueText),
+			computed: false,
+			optional: false);
 	}
 
 	private bool TryBuildImportedModuleMember(ITypeSymbol? containingType, string memberName, SenseArgument? context, out Expression? expression)
@@ -172,6 +244,24 @@ public partial class SemanticWalker
 		return true;
 	}
 
+	private Expression? TryBuildExtensionHostTarget(IMethodSymbol method, SenseArgument? context)
+	{
+		if (!method.IsStatic ||
+			method.ContainingAssembly?.Name != "ECMAScript")
+			return null;
+
+		if (method.ReceiverType is null)
+			return null;
+
+		// JavaScript console is a lowercase global object. Its C# receiver host still
+		// appears as Console due to host-language syntax constraints, so emit the real
+		// runtime host name directly instead of preserving the CLR-facing casing.
+		if (method.ReceiverType.Name == "Console")
+			return new Identifier("console");
+
+		return BuildFullTypeName(method.ReceiverType, context);
+	}
+
 	private bool TryBuildImportedModulePropertyAccess(IPropertySymbol property, SenseArgument? context, out Expression? expression)
 	{
 		expression = null;
@@ -185,6 +275,31 @@ public partial class SemanticWalker
 
 		expression = new CallExpression(getter, NodeList.Empty<Expression>(), optional: false);
 		return true;
+	}
+
+	private static bool TryBuildKnownLowercaseHostTarget(ISymbol symbol, SyntaxNode syntax, out Expression? expression)
+	{
+		expression = null;
+		if (symbol.ContainingAssembly?.Name != "ECMAScript")
+			return false;
+
+		ExpressionSyntax? targetSyntax = syntax switch
+		{
+			InvocationExpressionSyntax invocation when invocation.Expression is MemberAccessExpressionSyntax memberAccess => memberAccess.Expression,
+			MemberAccessExpressionSyntax memberAccess => memberAccess.Expression,
+			_ => null
+		};
+
+		if (targetSyntax is not IdentifierNameSyntax identifier)
+			return false;
+
+		if (identifier.Identifier.ValueText == "Console")
+		{
+			expression = new Identifier("console");
+			return true;
+		}
+
+		return false;
 	}
 
 	private Expression GetFieldName(IOperation includeOp, IFieldSymbol symbol)
@@ -312,6 +427,49 @@ public partial class SemanticWalker
 			NodeList.From(arguments),
 			optional: false);
 
+	private static IOperation UnwrapImplicitConversions(IOperation operation)
+	{
+		while (operation is IConversionOperation { IsImplicit: true } conversion)
+			operation = conversion.Operand;
+
+		return operation;
+	}
+
+	private bool TryExpandEcmascriptParamsArgument(
+		IMethodSymbol method,
+		IArgumentOperation arg,
+		SenseArgument argument,
+		List<Expression> destination)
+	{
+		if (method.ContainingAssembly?.Name != "ECMAScript" ||
+			arg.Parameter?.IsParams != true ||
+			arg.Parameter.Type is not IArrayTypeSymbol arrayType)
+			return false;
+
+		var value = UnwrapImplicitConversions(arg.Value);
+		switch (value)
+		{
+			case IArrayCreationOperation { Initializer: not null } arrayCreation:
+				foreach (var element in arrayCreation.Initializer.ElementValues)
+					destination.Add(TranslateTupleForTarget(element, arrayType.ElementType, argument));
+				return true;
+
+			case IArrayInitializerOperation arrayInitializer:
+				foreach (var element in arrayInitializer.ElementValues)
+					destination.Add(TranslateTupleForTarget(element, arrayType.ElementType, argument));
+				return true;
+
+			case ICollectionExpressionOperation collectionExpression:
+				foreach (var element in collectionExpression.Elements)
+					destination.Add(Translate<Expression>(element, argument));
+				return true;
+		}
+
+		var spreadTarget = TranslateTupleForTarget(arg.Value, arg.Parameter.Type, argument);
+		destination.Add(new SpreadElement(spreadTarget));
+		return true;
+	}
+
 	private static bool TryBuildIntrinsicMethodInvocation(IMethodSymbol method, Expression? instance, List<Expression> arguments, out Expression? expression)
 	{
 		expression = null;
@@ -421,6 +579,27 @@ public partial class SemanticWalker
 
 		if (instance is null)
 			return false;
+
+		if (arguments.Count == 1 &&
+			method.Name == nameof(object.ToString) &&
+			arguments[0] is StringLiteral formatLiteral)
+		{
+			var format = formatLiteral.Value;
+			if (method.ContainingType.SpecialType is SpecialType.System_Int32 or SpecialType.System_UInt32)
+			{
+				var isUpperHex = format == "X";
+				var isLowerHex = format == "x";
+				if (isUpperHex || isLowerHex)
+				{
+					var numericSource = method.ContainingType.SpecialType == SpecialType.System_Int32
+						? new NonLogicalBinaryExpression(Operator.UnsignedRightShift, instance, new NumericLiteral(0, "0"))
+						: instance;
+					var hexText = BuildInstanceMethodCall(numericSource, "toString", new NumericLiteral(16, "16"));
+					expression = BuildInstanceMethodCall(hexText, isUpperHex ? "toUpperCase" : "toLowerCase");
+					return true;
+				}
+			}
+		}
 
 		if (containingType == "System.Numerics.BigInteger")
 		{
@@ -769,15 +948,22 @@ public partial class SemanticWalker
 		}
 
 		var instance = Translate<Expression>(operation.Instance, argument, null);
+		if (instance is not null &&
+			TryBuildKnownLowercaseHostTarget(operation.Method, operation.Syntax, out var knownHost) &&
+			knownHost is not null)
+			instance = knownHost;
 		var methodName = string.IsNullOrEmpty(alias) ? Util.GetConfigOrSymbolName(operation.Method) : alias;
 		var property = new Identifier(methodName!);
 		
 		Expression callee = property;
+		var extensionHost = TryBuildExtensionHostTarget(operation.Method, argument);
 		if (instance is null)
 		{
 			if (operation.Method.IsStatic)
 			{
-				if (TryBuildImportedModuleMember(operation.Method.ContainingType, methodName!, argument, out var importedMethod) &&
+				if (extensionHost is not null)
+					callee = new MemberExpression(extensionHost, property, computed: false, optional: false);
+				else if (TryBuildImportedModuleMember(operation.Method.ContainingType, methodName!, argument, out var importedMethod) &&
 					importedMethod is not null)
 					callee = importedMethod;
 				else
@@ -787,24 +973,35 @@ public partial class SemanticWalker
 					callee = new MemberExpression(containing, property, computed: false, optional: false);
 				else
 				{
-					var qualified = TryBuildStaticQualifiedMemberFromSyntax(operation.Syntax, methodName!);
-					if (qualified is not null)
-						callee = qualified;
+					if (TryBuildKnownLowercaseHostTarget(operation.Method, operation.Syntax, out var knownStaticHost) &&
+						knownStaticHost is not null)
+						callee = new MemberExpression(knownStaticHost, property, computed: false, optional: false);
+					else
+					{
+						var qualified = TryBuildStaticQualifiedMemberFromSyntax(operation.Syntax, methodName!);
+						if (qualified is not null)
+							callee = qualified;
+					}
 				}
 				}
 			}
 		}
 		else
 		{
-			callee = operation.Method.MethodKind != MethodKind.DelegateInvoke
+			callee = operation.Method.IsStatic && extensionHost is not null
+				? new MemberExpression(extensionHost, property, computed: false, optional: false)
+				: operation.Method.MethodKind != MethodKind.DelegateInvoke
 				? new MemberExpression(instance, property, computed: false, optional: false)
 				: instance;
 
 			// 实例方法组必须绑定到实际接收者，而不是当前 lexical this。
-			callee = new CallExpression(
-				callee: new MemberExpression(callee, new Identifier("bind"), computed: false, optional: false),
-				args: NodeList.From<Expression>(instance),
-				false);
+			if (!operation.Method.IsStatic)
+			{
+				callee = new CallExpression(
+					callee: new MemberExpression(callee, new Identifier("bind"), computed: false, optional: false),
+					args: NodeList.From<Expression>(instance),
+					false);
+			}
 		}
 
 		return callee;
@@ -849,6 +1046,10 @@ public partial class SemanticWalker
 	{
 		// 处理方法调用的实例对象
 		var instance = Translate<Expression>(operation.Instance, argument, null);
+		if (instance is not null &&
+			TryBuildKnownLowercaseHostTarget(operation.TargetMethod, operation.Syntax, out var knownHost) &&
+			knownHost is not null)
+			instance = knownHost;
 		var refParas = new List<Expression>();
 		var hasReturn = !operation.TargetMethod.ReturnsVoid;
 
@@ -860,6 +1061,10 @@ public partial class SemanticWalker
 			var argContext = arg.Parameter?.RefKind is RefKind.Out
 				? argument.With(Sense.OutParameter)
 				: argument;
+
+			if (TryExpandEcmascriptParamsArgument(operation.TargetMethod, arg, argContext, arguments))
+				continue;
+
 			var right = TranslateTupleForTarget(arg.Value, arg.Parameter?.Type, argContext);
 			// ref 引用 或 out 变量引用，记住顺序
 			if (arg.Parameter?.RefKind is RefKind.Out or RefKind.Ref)
@@ -882,11 +1087,42 @@ public partial class SemanticWalker
 		var methodName = string.IsNullOrEmpty(alias) ? Util.GetConfigOrSymbolName(operation.TargetMethod) : alias;
 		var property = new Identifier(methodName!);
 		Expression callee = property;
+		var extensionHost = TryBuildExtensionHostTarget(operation.TargetMethod, argument);
 		if (instance is null)
 		{
 			if (operation.TargetMethod.IsStatic)
 			{
-				if (TryBuildImportedModuleMember(operation.TargetMethod.ContainingType, methodName!, argument, out var importedMethod) &&
+				var preferSyntaxQualifiedHost =
+					operation.TargetMethod.ContainingAssembly?.Name == "ECMAScript" &&
+					GetModuleImportPath(operation.TargetMethod.ContainingType) is null;
+				if (preferSyntaxQualifiedHost)
+				{
+					if (TryBuildKnownLowercaseHostTarget(operation.TargetMethod, operation.Syntax, out var knownStaticHost) &&
+						knownStaticHost is not null)
+						callee = new MemberExpression(knownStaticHost, property, computed: false, optional: false);
+					else
+					{
+						var qualified = TryBuildStaticQualifiedMemberFromSyntax(operation.Syntax, methodName!);
+						if (qualified is not null)
+							callee = qualified;
+						else if (extensionHost is not null)
+							callee = new MemberExpression(extensionHost, property, computed: false, optional: false);
+						else if (TryBuildImportedModuleMember(operation.TargetMethod.ContainingType, methodName!, argument, out var importedMethod) &&
+							importedMethod is not null)
+							callee = importedMethod;
+						else
+						{
+							var containing = BuildFullTypeName(operation.TargetMethod.ContainingType, argument);
+							if (containing is not null)
+								callee = new MemberExpression(containing, property, computed: false, optional: false);
+						}
+					}
+				}
+				else
+				{
+				if (extensionHost is not null)
+					callee = new MemberExpression(extensionHost, property, computed: false, optional: false);
+				else if (TryBuildImportedModuleMember(operation.TargetMethod.ContainingType, methodName!, argument, out var importedMethod) &&
 					importedMethod is not null)
 					callee = importedMethod;
 				else
@@ -896,16 +1132,25 @@ public partial class SemanticWalker
 					callee = new MemberExpression(containing, property, computed: false, optional: false);
 				else
 				{
-					var qualified = TryBuildStaticQualifiedMemberFromSyntax(operation.Syntax, methodName!);
-					if (qualified is not null)
-						callee = qualified;
+					if (TryBuildKnownLowercaseHostTarget(operation.TargetMethod, operation.Syntax, out var knownStaticHost) &&
+						knownStaticHost is not null)
+						callee = new MemberExpression(knownStaticHost, property, computed: false, optional: false);
+					else
+					{
+						var qualified = TryBuildStaticQualifiedMemberFromSyntax(operation.Syntax, methodName!);
+						if (qualified is not null)
+							callee = qualified;
+					}
+				}
 				}
 				}
 			}
 		}
 		else
 		{
-			callee = operation.TargetMethod.MethodKind != MethodKind.DelegateInvoke
+			callee = operation.TargetMethod.IsStatic && extensionHost is not null
+				? new MemberExpression(extensionHost, property, computed: false, optional: false)
+				: operation.TargetMethod.MethodKind != MethodKind.DelegateInvoke
 				? new MemberExpression(instance, property, computed: false, optional: false)
 				: instance;
 		}

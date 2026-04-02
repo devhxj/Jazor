@@ -250,28 +250,28 @@ public static class Intl
         public extern NumberFormat(string[] locales, NumberFormatOptions options);
 
         [Description("@#supportedLocalesOf")]
-        public static extern string[] supportedLocalesOf(Either<string, string[]> locales);
+        public static extern string[] SupportedLocalesOf(Either<string, string[]> locales);
 
         [Description("@#supportedLocalesOf")]
-        public static extern string[] supportedLocalesOf(string locales);
+        public static extern string[] SupportedLocalesOf(string locales);
 
         [Description("@#supportedLocalesOf")]
-        public static extern string[] supportedLocalesOf(string[] locales);
+        public static extern string[] SupportedLocalesOf(string[] locales);
 
         [Description("@#supportedLocalesOf")]
-        public static extern string[] supportedLocalesOf(Either<string, string[]> locales, NumberFormatOptions options);
+        public static extern string[] SupportedLocalesOf(Either<string, string[]> locales, NumberFormatOptions options);
 
         [Description("@#supportedLocalesOf")]
-        public static extern string[] supportedLocalesOf(string locales, NumberFormatOptions options);
+        public static extern string[] SupportedLocalesOf(string locales, NumberFormatOptions options);
 
         [Description("@#supportedLocalesOf")]
-        public static extern string[] supportedLocalesOf(string[] locales, NumberFormatOptions options);
+        public static extern string[] SupportedLocalesOf(string[] locales, NumberFormatOptions options);
 
 		[Description("@#format")]
 		public extern string Format(Number value);
 
         [Description("@#resolvedOptions")]
-        public extern ResolvedNumberFormatOptions resolvedOptions();
+        public extern ResolvedNumberFormatOptions ResolvedOptions();
 
         public extern object? GetFormat(Type? formatType);
     }

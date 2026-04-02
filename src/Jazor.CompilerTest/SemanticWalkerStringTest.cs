@@ -1553,8 +1553,8 @@ ${name}!`;
 
 		AssertScriptEqual(@"{
   let text = ""Hello"";
-  let first = text.charAt(0);
-  let last = text.charAt(text.length - 1);
+  let first = _5ad63706a889c294(text, 0);
+  let last = _5ad63706a889c294(text, text.length - 1);
 }", script);
 	}
 
@@ -1715,9 +1715,9 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		StringAssert.Contains(script, "Name:");
-		StringAssert.Contains(script, "Age:");
-		StringAssert.Contains(script, "John");
+		AssertScriptEqual(@"{
+  let formatted = _8606f3cc36d1f8ed(""Name: {0}, Age: {1}"", ""John"", 30);
+}", script);
 	}
 
 	/// <summary>
@@ -1741,8 +1741,10 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		StringAssert.Contains(script, "Pi:");
-		Assert.IsTrue(script.Contains("toFixed") || script.Contains("pi"));
+		AssertScriptEqual(@"{
+  let pi = 3.14159;
+  let formatted = `Pi: ${pi}`;
+}", script);
 	}
 
 	/// <summary>
@@ -1877,7 +1879,9 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		StringAssert.Contains(script, @"C:\\Users\\test");
+		AssertScriptEqual(@"{
+  let path = ""C:\\Users\\test"";
+}", script);
 	}
 
 	#endregion
@@ -2094,8 +2098,10 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		StringAssert.Contains(script, "join");
-		StringAssert.Contains(script, "\",\"");
+		AssertScriptEqual(@"{
+  let parts = [""a"", ""b"", ""c""];
+  let joined = Array.from(parts).join("","");
+}", script);
 	}
 
 	/// <summary>
@@ -2119,8 +2125,10 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		StringAssert.Contains(script, "split");
-		Assert.IsTrue(script.Contains(",") || script.Contains(";"));
+		AssertScriptEqual(@"{
+  let text = ""a,b;c"";
+  let parts = text.split(["","", "";""]);
+}", script);
 	}
 
 	/// <summary>
@@ -2225,8 +2233,10 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsTrue(script.Contains("padStart") || script.Contains("0"));
-		StringAssert.Contains(script, "5");
+		AssertScriptEqual(@"{
+  let text = ""42"";
+  let padded = text.padStart(5, ""0"");
+}", script);
 	}
 
 	/// <summary>
@@ -2250,8 +2260,10 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsTrue(script.Contains("padEnd") || script.Contains("-"));
-		StringAssert.Contains(script, "5");
+		AssertScriptEqual(@"{
+  let text = ""42"";
+  let padded = text.padEnd(5, ""-"");
+}", script);
 	}
 
 	#endregion
@@ -2370,8 +2382,10 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		StringAssert.Contains(script, "\"42\"");
-		Assert.IsTrue(script.Contains("parseInt") || script.Contains("Number(") || script.Contains("let num ="));
+		AssertScriptEqual(@"{
+  let numStr = ""42"";
+  let num = _151ccc6045162f8f(numStr);
+}", script);
 	}
 
 	/// <summary>
@@ -2395,8 +2409,10 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		StringAssert.Contains(script, "\"3.14\"");
-		Assert.IsTrue(script.Contains("parseFloat") || script.Contains("Number(") || script.Contains("let num ="));
+		AssertScriptEqual(@"{
+  let numStr = ""3.14"";
+  let num = _5810f85a3710b88d(numStr);
+}", script);
 	}
 
 	/// <summary>
@@ -2447,7 +2463,10 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsTrue(script.Contains("toString") || script.Contains("\"X\"") || script.Contains("16"));
+		AssertScriptEqual(@"{
+  let num = 42;
+  let hex = (num >>> 0).toString(16).toUpperCase();
+}", script);
 	}
 
 	#endregion

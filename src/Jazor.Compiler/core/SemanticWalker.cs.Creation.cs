@@ -21,6 +21,10 @@ public partial class SemanticWalker
 		if (operation.Type is null)
 			return HandleTransformationFailure<Expression>(operation, "Object creation type could not be translated to JavaScript.");
 
+		if (operation.Type is INamedTypeSymbol namedType &&
+			IsEcmascriptRecordLike(namedType))
+			return BuildEcmascriptRecordLiteral(assignObj, operation, argument);
+
 		var arguments = new List<Expression>();
 		for (var index = 0; index < operation.Arguments.Length; index++)
 		{
@@ -37,7 +41,10 @@ public partial class SemanticWalker
 
 		// 普通对象创建
 		var (mapper, typeName) = GetMapperType(operation.Type);
-		var callee = new Identifier(typeName);
+		// 类型引用统一走 BuildFullTypeName：
+		// 用户代码中的成员类型会按声明侧规则折叠成运行时扁平名，
+		// ECMAScript 宿主绑定则保留必要的层级/导入语义。
+		var callee = BuildFullTypeName(operation.Type, argument) ?? new Identifier(typeName);
 
 		Expression expr = new NewExpression(callee, NodeList.From(arguments));
 		if (mapper == TypeMapper.BigInt)
@@ -60,6 +67,10 @@ public partial class SemanticWalker
 		// 如果有初始化器，则需要用IIFE处理
 		if (operation.Initializer?.Initializers.Length > 0)
 		{
+			if (operation.Type.ContainingAssembly?.Name == "ECMAScript" &&
+				Util.HasNameResolutionBoundary(operation.Type))
+				return RecursiveObjectOrCollectionInitializer(operation.Initializer, argument);
+
 			if (TryBuildCollectionLiteral(operation.Initializer, mapper, argument, out var collectionLiteral))
 			{
 				expr = collectionLiteral;
@@ -82,6 +93,62 @@ public partial class SemanticWalker
 		return expr;
 	}
 
+	private static bool IsEcmascriptRecordLike(ITypeSymbol? typeSymbol)
+		=> typeSymbol is INamedTypeSymbol namedType &&
+		   namedType.IsRecord &&
+		   namedType.ContainingAssembly?.Name == "ECMAScript";
+
+	private Expression BuildEcmascriptRecordLiteral(Expression? assignObj, IObjectCreationOperation operation, SenseArgument argument)
+	{
+		if (operation.Type is not INamedTypeSymbol namedType)
+			return HandleTransformationFailure<Expression>(operation, "ECMAScript record type could not be translated to JavaScript.");
+
+		var nodes = new List<Node>();
+		for (var index = 0; index < operation.Arguments.Length; index++)
+		{
+			var arg = operation.Arguments[index];
+			var parameter = arg.Parameter ??
+				(operation.Constructor is not null && operation.Constructor.Parameters.Length > index
+					? operation.Constructor.Parameters[index]
+					: null);
+			var keyName = ResolveEcmascriptRecordPropertyName(namedType, parameter, index);
+			var value = TranslateTupleForTarget(arg.Value, parameter?.Type, argument);
+			nodes.Add(new ObjectProperty(
+				PropertyKind.Init,
+				key: new Identifier(keyName),
+				value: value,
+				computed: false,
+				shorthand: false,
+				method: false));
+		}
+
+		if (operation.Initializer is not null)
+			nodes.AddRange(BuildObjectLiteralMembers(operation.Initializer, argument));
+
+		Expression expr = new ObjectExpression(NodeList.From(nodes));
+		if (assignObj is not null)
+			expr = new AssignmentExpression(Operator.Assignment, assignObj, expr);
+
+		return expr;
+	}
+
+	private static string ResolveEcmascriptRecordPropertyName(INamedTypeSymbol type, IParameterSymbol? parameter, int index)
+	{
+		if (parameter is null)
+			return $"item{index}";
+
+		var property = type
+			.GetMembers()
+			.OfType<IPropertySymbol>()
+			.FirstOrDefault(member =>
+				!member.IsStatic &&
+				string.Equals(member.Name, parameter.Name, System.StringComparison.OrdinalIgnoreCase));
+
+		return property is null
+			? parameter.Name
+			: Util.GetConfigOrSymbolName(property);
+	}
+
 	private bool TryBuildCollectionLiteral(IObjectOrCollectionInitializerOperation initializer, TypeMapper mapper, SenseArgument argument, out Expression expression)
 	{
 		expression = null!;
@@ -91,6 +158,17 @@ public partial class SemanticWalker
 		var items = new List<Expression>();
 		foreach (var init in initializer.Initializers)
 		{
+			if (mapper == TypeMapper.Map &&
+				init is ISimpleAssignmentOperation simpleAssignment &&
+				simpleAssignment.Target is IPropertyReferenceOperation propertyReference &&
+				propertyReference.Arguments.Length == 1)
+			{
+				var key = Translate<Expression>(propertyReference.Arguments[0].Value, argument);
+				var value = Translate<Expression>(simpleAssignment.Value, argument);
+				items.Add(new ArrayExpression(NodeList.From<Expression?>(key, value)));
+				continue;
+			}
+
 			if (init is not IInvocationOperation invocation)
 				return false;
 
@@ -222,7 +300,7 @@ public partial class SemanticWalker
 			}
 		else if (initializer is IMemberInitializerOperation memberInitializerOp)
 			{
-				var right = RecursiveObjectOrCollectionInitializer(memberInitializerOp.Initializer);
+				var right = RecursiveObjectOrCollectionInitializer(memberInitializerOp.Initializer, argument);
 
 				// 检查属性/字段的白名单 Inline/Import 操作
 				ISymbol? memberSymbol = memberInitializerOp.InitializedMember switch
@@ -305,7 +383,7 @@ public partial class SemanticWalker
 	/// </summary>
 	/// <param name="operation"></param>
 	/// <returns>转换为字面量对象</returns>
-	private ObjectExpression RecursiveObjectOrCollectionInitializer(IObjectOrCollectionInitializerOperation operation)
+	private List<Node> BuildObjectLiteralMembers(IObjectOrCollectionInitializerOperation operation, SenseArgument argument)
 	{
 		var nodes = new List<Node>();
 		foreach (var initializer in operation.Initializers)
@@ -313,8 +391,13 @@ public partial class SemanticWalker
 			Expression? target = null, value = null;
 			if (initializer is ISimpleAssignmentOperation simpleAssignmentOp)
 			{
-				target = Translate<Expression>(simpleAssignmentOp.Target, new());
-				value = Translate<Expression>(simpleAssignmentOp.Value, new());
+				target = simpleAssignmentOp.Target switch
+				{
+					IPropertyReferenceOperation propertyReferenceOp => new Identifier(GetInitializerMemberName(propertyReferenceOp.Property)),
+					IFieldReferenceOperation fieldReferenceOp => new Identifier(GetInitializerMemberName(fieldReferenceOp.Field)),
+					_ => Translate<Expression>(simpleAssignmentOp.Target, argument)
+				};
+				value = TranslateTupleForTarget(simpleAssignmentOp.Value, simpleAssignmentOp.Target.Type, argument);
 			}
 			else if (initializer is IMemberInitializerOperation memberInitializerOp)
 			{
@@ -326,11 +409,11 @@ public partial class SemanticWalker
 				};
 
 				if (target is not null)
-					value = RecursiveObjectOrCollectionInitializer(memberInitializerOp.Initializer);
+					value = RecursiveObjectOrCollectionInitializer(memberInitializerOp.Initializer, argument);
 			}
 
 			if (target is null || value is null)
-				return HandleTransformationFailure<ObjectExpression>(operation, "Member initializer could not be translated to JavaScript.");
+				return HandleTransformationFailure<List<Node>>(operation, "Member initializer could not be translated to JavaScript.");
 
 			var prop = new ObjectProperty(
 				PropertyKind.Init,
@@ -342,8 +425,11 @@ public partial class SemanticWalker
 			);
 			nodes.Add(prop);
 		}
-		return new ObjectExpression(NodeList.From(nodes));
+		return nodes;
 	}
+
+	private ObjectExpression RecursiveObjectOrCollectionInitializer(IObjectOrCollectionInitializerOperation operation, SenseArgument argument)
+		=> new(NodeList.From(BuildObjectLiteralMembers(operation, argument)));
 
 	/// <summary>
 	///  
@@ -594,7 +680,13 @@ public partial class SemanticWalker
 		if (target is null)
 			return HandleTransformationFailure<Node>(operation.InitializedMember, "Member initializer target could not be translated to JavaScript.");
 
-		var value = Translate<Expression>(operation.Initializer, argument);
+		var targetType = operation.InitializedMember switch
+		{
+			IPropertyReferenceOperation propertyReferenceOp => propertyReferenceOp.Property.Type,
+			IFieldReferenceOperation fieldReferenceOp => fieldReferenceOp.Field.Type,
+			_ => null
+		};
+		var value = TranslateTupleForTarget(operation.Initializer, targetType, argument);
 		return new ObjectProperty(
 			PropertyKind.Init,
 			key: target,

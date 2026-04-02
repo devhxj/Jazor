@@ -161,6 +161,35 @@ public sealed class SemanticWalkerReferenceTest
 }".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
 	}
 
+	[TestMethod]
+	public void Visit_Reference_ActualEcmascriptBindings_EmitRealisticBrowserShapes()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var element = Global.Document.CreateElement(""button"", new ElementCreationOptions(Is: ""x-button""));
+                    element.AddEventListener(""click"", null, new AddEventListenerOptions(Once: true));
+                    var evt = new Event(""click"", new EventInit(Bubbles: true, Cancelable: true));
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, @"document.createElement(""button"", {");
+		StringAssert.Contains(script, @"is: ""x-button""");
+		StringAssert.Contains(script, @"element.addEventListener(""click"", null, {");
+		StringAssert.Contains(script, @"once: true");
+		StringAssert.Contains(script, @"new Event(""click"", {");
+		StringAssert.Contains(script, @"bubbles: true");
+		StringAssert.Contains(script, @"cancelable: true");
+	}
+
 	/// <summary>
 	/// 测试 VisitParameterReference - 简单参数引用
 	/// C# 示例：void Method(int x) { Console.WriteLine(x); }
@@ -523,8 +552,8 @@ public sealed class SemanticWalkerReferenceTest
 
 		Assert.AreEqual(
 @"{
-  let now = new Date;
-}", script);
+  let now = _ee9dd166a34a2fa5();
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 
 	}
 
@@ -633,6 +662,31 @@ public sealed class SemanticWalkerReferenceTest
 		Assert.AreEqual(
 @"{
   let same = Object.is(1, 1);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Invocation_ObjectStaticMethod_HasOwn_UsesJsMemberName()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                public int Value { get; set; }
+
+                void TestMethod()
+                {
+                    var hasValue = Object.HasOwn(new TestClass(), ""Value"");
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+@"{
+  let hasValue = Object.hasOwn(new TestClass, ""Value"");
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
@@ -1397,8 +1451,8 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.AreEqual(@"{
-  let utcNow = new Date;
-}", script);
+  let utcNow = _d4c39bdf47f391cf();
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>
@@ -1425,11 +1479,11 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.AreEqual(@"{
-  let now = new Date;
-  let year = now.getFullYear();
-  let month = now.getMonth() + 1;
-  let day = now.getDate();
-}", script);
+  let now = _ee9dd166a34a2fa5();
+  let year = _9d56b09432f81c05(now);
+  let month = _a8a6b6e36a0ea736(now);
+  let day = _3b9ecf5fd3c301db(now);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>
@@ -1629,8 +1683,8 @@ public sealed class SemanticWalkerReferenceTest
 
 		Assert.AreEqual(@"{
   let list = [1, 2, 3];
-  let first = list[0];
-}", script);
+  let first = _d389c31d59037b42(list, 0);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>
@@ -1658,7 +1712,7 @@ public sealed class SemanticWalkerReferenceTest
 		Assert.AreEqual(@"{
   let dict = new Map;
   dict.set(""key"", 42);
-  let value = dict.get(""key"");
+  let value = _e73dbdff85c46ddc(dict, ""key"");
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
@@ -1748,7 +1802,7 @@ public sealed class SemanticWalkerReferenceTest
   let person = null;
   let dict = new Map;
   dict.set(person?.Name, 42);
-  let value = dict.get(person?.Name);
+  let value = _e73dbdff85c46ddc(dict, person?.Name);
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
@@ -1921,7 +1975,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.AreEqual(@"{
-  let now = new Date;
+  let now = _ee9dd166a34a2fa5();
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
@@ -2027,8 +2081,8 @@ public sealed class SemanticWalkerReferenceTest
 
 		Assert.AreEqual(@"{
   let list = [1, 2, 3];
-  let first = list[0];
-}", script);
+  let first = _d389c31d59037b42(list, 0);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>
@@ -2056,7 +2110,7 @@ public sealed class SemanticWalkerReferenceTest
 		Assert.AreEqual(@"{
   let dict = new Map;
   dict.set(""key"", 42);
-  let value = dict.get(""key"");
+  let value = _e73dbdff85c46ddc(dict, ""key"");
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
@@ -2316,8 +2370,41 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+	Assert.AreEqual(@"{
   let result = TestClass.Add(1, 2);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_NestedStaticTypeMembers_UseFlattenedRuntimeTypeName()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int field = A.Field;
+                    int property = A.Value;
+                    int result = A.GetNumbers();
+                }
+
+                static class A
+                {
+                    public static int Field = 1;
+                    public static int Value => 2;
+                    public static int GetNumbers() => 3;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let field = A.Field;
+  let property = A.Value;
+  let result = A.GetNumbers();
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
@@ -2416,6 +2503,263 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
+	public void Visit_Reference_NumberAndIntlApis_UseAlignedCSharpNames()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    Number value = 1;
+                    var text = value.ToString();
+                    var localized = value.ToLocaleString();
+                    var locales = Intl.NumberFormat.SupportedLocalesOf(""en-US"");
+                    var options = new Intl.NumberFormat().ResolvedOptions();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let value = 1;
+  let text = value.toString();
+  let localized = value.toLocaleString();
+  let locales = Intl.NumberFormat.supportedLocalesOf(""en-US"");
+  let options = (new Intl.NumberFormat).resolvedOptions();
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_RegExpProperties_UseJsMemberNames()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var regex = new RegExp(""a"", ""dguy"");
+                    var flags = regex.Flags;
+                    var sticky = regex.Sticky;
+                    var unicode = regex.Unicode;
+                    var dotAll = regex.DotAll;
+                    var hasIndices = regex.HasIndices;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let regex = new RegExp(""a"", ""dguy"");
+  let flags = regex.flags;
+  let sticky = regex.sticky;
+  let unicode = regex.unicode;
+  let dotAll = regex.dotAll;
+  let hasIndices = regex.hasIndices;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_ConsoleTimeEnd_UsesJsMemberName()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    Console.Time(""work"");
+                    Console.TimeEnd(""work"");
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  console.time(""work"");
+  console.timeEnd(""work"");
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_DateNow_UsesJsMemberName()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var now = Date.Now();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let now = Date.now();
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_ArrayFromAsync_UsesJsMemberName()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var items = Array<int>.FromAsync(new int[] { 1, 2, 3 });
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let items = Array.fromAsync([1, 2, 3]);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_ArrayVariadicApis_UseJsShapes()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var array = Array<int>.Of(1, 2, 3);
+                    array.Push(4, 5);
+                    array.Unshift(0);
+                    array.Splice(2, 1, 8, 9);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let array = Array.of(1, 2, 3);
+  array.push(4, 5);
+  array.unshift(0);
+  array.splice(2, 1, 8, 9);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_TypedArrayStaticApis_UseJsShapes()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var bytes = Uint8Array.Of(1, 2, 3);
+                    var mapped = Uint8Array.From(new int[] { 1, 2, 3 }, (value, index) => (byte)(value + index));
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let bytes = Uint8Array.of(1, 2, 3);
+  let mapped = Uint8Array.from([1, 2, 3], (value, index) => {
+    return value + index;
+  }, null);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_GlobalSymbolFactory_UsesJsHostName()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var token = Symbol_(""value"");
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+	Assert.AreEqual(@"{
+  let token = Symbol(""value"");
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_ErrorMembers_UseJsMemberNames()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var error = new Error(""boom"");
+                    var message = error.Message;
+                    var cause = error.Cause;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let error = new Error(""boom"");
+  let message = error.message;
+  let cause = error.cause;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_ErrorOptionsConstructor_PreservesJsShape()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var error = new Error(""boom"", new ErrorOptions
+                    {
+                        Cause = ""root""
+                    });
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let error = new Error(""boom"", { cause: ""root"" });
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
 	public void Visit_Reference_UserStaticMethod_DoesNotUseImplicitEcmascriptMemberName()
 	{
 		var block = GetBlockOperation(@"
@@ -2465,7 +2809,9 @@ public sealed class SemanticWalkerReferenceTest
 
 		Assert.AreEqual(@"{
   let list = [1, 2, 3];
-  let doubled = Array.from(Array.from(list).map(x => x * 2));
+  let doubled = Array.from(Array.from(list).map(x => {
+    return x * 2;
+  }));
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
@@ -2519,7 +2865,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.AreEqual(@"{
-  let date = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+  let date = _d77d20d9d04e2b6b(_ee9dd166a34a2fa5());
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 

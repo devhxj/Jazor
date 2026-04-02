@@ -4,7 +4,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
-using System.Text.RegularExpressions;
 
 namespace Jazor.ComplierTest;
 
@@ -747,8 +746,13 @@ public sealed class SemanticWalkerOrdinaryTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    StringAssert.Contains(script, "await ");
-    Assert.IsTrue(Regex.IsMatch(script, @"\{\r?\n  await Task\.Delay_[a-f0-9]+\(100\);\r?\n\}"));
+    var normalized = script is null
+      ? null
+      : System.Text.RegularExpressions.Regex.Replace(script, @"Task\.Delay_[a-f0-9]+", "Task.Delay_$HASH");
+
+    AssertScriptEqual(@"{
+  await Task.Delay_$HASH(100);
+}", normalized);
 
   }
 
@@ -963,6 +967,32 @@ public sealed class SemanticWalkerOrdinaryTest
   let newPerson = { ...person, Name: ""Jane"" };
 }", script);
 
+  }
+
+  [TestMethod]
+  public void Visit_WithExpression_TupleRemapByTargetType()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var person = new Person((first: ""John"", years: 30));
+                    var newPerson = person with { Info = (name: ""Jane"", age: 40) };
+                }
+            }
+
+            record Person((string first, int years) Info);
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let person = new Person({ first: ""John"", years: 30 });
+  let newPerson = { ...person, Info: { first: ""Jane"", years: 40 } };
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
   }
 
   /// <summary>
@@ -1781,8 +1811,8 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.AreEqual(
 @"{
-  let left = BigInt(1) * 36000000000n + BigInt(0) * 600000000n + BigInt(0) * 10000000n;
-  let right = BigInt(23) * 36000000000n + BigInt(0) * 600000000n + BigInt(0) * 10000000n;
+  let left = _e9a3481b3456aad4(1, 0, 0);
+  let right = _e9a3481b3456aad4(23, 0, 0);
   let result = _888a9b439de5e7c1(left, right);
 }".Replace("\r\n", "\n"),
         script?.Replace("\r\n", "\n"));
@@ -2768,8 +2798,9 @@ public sealed class SemanticWalkerOrdinaryTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    StringAssert.Contains(script, "let result =");
-    Assert.IsTrue(script.Contains("Math.pow(2, 10)") || script.Contains("2 ** 10"));
+    AssertScriptEqual(@"{
+  let result = Math.pow(2, 10);
+}", script);
   }
 
   /// <summary>
@@ -2853,8 +2884,10 @@ public sealed class SemanticWalkerOrdinaryTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    StringAssert.Contains(script, "let value = 15;");
-    StringAssert.Contains(script, "~value");
+    AssertScriptEqual(@"{
+  let value = 15;
+  let not = ~value;
+}", script);
   }
 
   /// <summary>
@@ -3219,10 +3252,12 @@ public sealed class SemanticWalkerOrdinaryTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    StringAssert.Contains(script, "let doubleIt =");
-    StringAssert.Contains(script, "=> {");
-    StringAssert.Contains(script, "let doubled = x * 2;");
-    StringAssert.Contains(script, "return doubled;");
+    AssertScriptEqual(@"{
+  let doubleIt = x => {
+    let doubled = x * 2;
+    return doubled;
+  };
+}", script);
   }
 
   /// <summary>
