@@ -71,8 +71,11 @@
 
 **使用说明**：
 
-- `无参`和`单字符串`这2个构造函数不需要指定member，是提供给`ECMAScript`生产核心库专用的
-- `三参数`是提供给`Jazor.CLR`库专用的
+- `无参`和`单字符串`这 2 个构造函数主要给 `ECMAScript` 生产核心库使用
+- `Jazor.CLR` 中默认应使用完整三参数形式，把 `member` 明确写出来
+- `[Jazor]` 无参 = `Op.Compile`，不是“待定”或“以后补实现”的占位
+- `[Jazor("...")]` = `Op.Inline`，字符串必须是稳定的表达式模板，不是任意 JS 代码片段
+- generated 白名单必须通过 `Jazor.Compiler.Generator` 刷新；不要手改 generated 文件
 
 ### 2.2 [ECMAScript] 系列特性（用户代码标记）
 
@@ -105,6 +108,68 @@
 - `extern` = 方法不需要 C# 实现，只在白名单中标记
 - **只有 `Op.Import` 方法会被编译到 CLR module**（因为有方法体）
 - 其他 Op 类型的 `extern` 方法仅用于白名单注册，不生成 JavaScript 代码
+- producer 侧默认选择顺序是：`Allowed/Alias -> Inline -> Import -> Compile`
+- consumer 侧 `SemanticWalker` 分发顺序是：`Compile -> Alias -> Inline -> Import -> normal lowering`
+- 两个顺序同时成立，不冲突；前者解决“声明端该怎么选”，后者解决“消费端命中后谁优先”
+
+**最容易混淆的点**：
+
+- `Compile` 在 consumer 侧排第一，不代表 producer 侧应该优先选 `Compile`
+- `Import` 不是“Inline 写起来麻烦时的兜底”，而是“确实需要运行时实现”时才选
+- `Inline` 不是“只要最后 JS 看起来是一行就行”，而是“结构稳定、不会把异常协议和求值顺序藏坏”
+- `Allowed` 不是“JS 里差不多有类似概念”就能选，而是“默认 lowering 不需要再插手”才能选
+
+**速记决策**：
+
+- 只改名：`Alias`
+- 只改成稳定单表达式：`Inline`
+- 需要模块代码承接语义：`Import`
+- 必须由编译器内部直接产 AST：`Compile`
+- 当前明确不支持：`Discard`
+
+### 3.1.1 五问决策法
+
+新增成员时，按这 5 个问题从上往下问：
+
+1. 默认 lowering 已经正确了吗？
+   - 是：`Allowed`
+2. 只是名字不对，结构和语义都对吗？
+   - 是：`Alias`
+3. 能稳定写成单个 expression，并且不会把异常协议、求值顺序、tuple 形状写坏吗？
+   - 是：`Inline`
+4. 这个语义更适合作为模块 helper 承接吗？
+   - 是：`Import`
+5. 前面都不合适，而且必须由编译器内部直接接管吗？
+   - 是：`Compile`
+
+如果 5 个问题都答不稳，先不要硬标；先把语义边界写清楚再定。
+
+### 3.1.2 每个 Op 的入选条件
+
+| Op | 什么时候选 | 什么时候不要选 |
+|----|------------|----------------|
+| `Allowed` | 默认 lowering 已经正确 | 还需要改名、改模板或补异常协议 |
+| `Alias` | 只需要换宿主名/成员名 | 名字之外还要改参数、结构或返回形态 |
+| `Inline` | 稳定单表达式、无 import、无 temp、无 throw 分支协议 | 需要临时变量、复杂副作用顺序、异常协议、tuple 形状 |
+| `Import` | 需要模块代码、helper、循环、校验、异常、格式化、解析 | 其实只是稳定模板或简单改名 |
+| `Compile` | 编译器内部特例，且当前 contract 足以直接产表达式 AST | 能更清楚地放进 Inline / Import，或需要 temp/import/source map |
+| `Discard` | 当前明确不支持或 JS 无对等概念 | 只是暂时没写实现；这种情况不要用 Discard 糊掉 |
+
+### 3.1.3 禁用清单
+
+下面这些判断方式是错的：
+
+- “先标 `Compile`，以后再补”
+- “Inline 写着费劲，先改成 Import”
+- “最终 JS 只有一行，所以一定是 Inline”
+- “consumer 先试 Compile，所以 producer 也优先选 Compile”
+- “暂时没时间实现，就先 Discard”
+
+更稳的做法是：
+
+- 不确定是否该 `Inline` 时，先看它是否带异常协议或重复求值风险
+- 不确定是否该 `Compile` 时，先问它能不能更清楚地落到模块 helper
+- 不确定是否该 `Discard` 时，先确认是不是“当前明确不支持”，而不是“还没做”
 
 ### 3.2 Op.Discard - 不支持
 
@@ -130,6 +195,19 @@ public extern static string _hash(bool instance, Intl.NumberFormat? provider);
 
 JavaScript 原生支持，默认行为正确（如默认构造函数、运算符）。**不编译到 CLR module**，编译器直接使用 JS 原生行为。
 
+**入选条件**：
+
+- 默认 lowering 已经正确
+- 不需要改名
+- 不需要补模板
+- 不需要补运行时协议
+
+**不要选 Allowed 的情况**：
+
+- 名字不对但 JS 有原生成员
+- 参数/返回形态还要调整
+- 默认 lowering 会丢 C# 语义
+
 ```csharp
 // 布尔默认构造（JS 布尔是原始类型）
 [Jazor(Op.Allowed, "bool.Boolean()")]
@@ -145,6 +223,18 @@ public extern static bool _2bd9618624257446();
 ### 3.4 Op.Alias - 方法名替换
 
 JS 有原生方法但名称不同。**不编译到 CLR module**，编译器直接替换方法名。
+
+**入选条件**：
+
+- JS 原生能力已存在
+- 只差宿主名或成员名
+- 不需要额外模板和 helper
+
+**不要选 Alias 的情况**：
+
+- 需要改参数结构
+- 需要异常/边界检查
+- 需要从属性访问改成方法调用，或反过来，再加额外逻辑
 
 ```csharp
 [Jazor(Op.Alias, "override bool.ToString()", "toString")]
@@ -169,6 +259,24 @@ public extern static string _d48c2d39317daf8f(bool instance);
 | 实例方法 | 实例 | 参数1 | 参数2 |
 | 静态方法 | 参数1 | 参数2 | 参数3 |
 | 扩展方法 | 被扩展对象 | 参数1 | 参数2 |
+
+**选择边界**：
+
+- 只要能稳定表达成单个 expression，就优先 Inline
+- 但如果模板开始依赖 throw 分支、临时变量、重复求值规避、tuple 运行时对象形状，就不要继续硬塞 Inline
+- Inline 解决的是“模板稳定”，不是“看起来代码短”
+
+**典型适合 Inline**：
+
+- 常量字面量
+- 简单算术/比较模板
+- 纯宿主调用改写，如 `substring(start, start + len)`
+
+**典型不要继续 Inline**：
+
+- `list[i]`、`dict[key]` 这类带异常语义的索引器
+- 需要把参数缓存一次再比较的逻辑
+- 需要手写 tuple 结果对象布局的逻辑
 
 ```csharp
 // Equals → 严格相等
@@ -202,6 +310,19 @@ public extern static bool _49c57acefc093fcc();
 - 确实需要模块级 helper
 
 之后才使用。
+
+**入选条件**：
+
+- 需要真实方法体
+- 需要循环、多步逻辑或 helper
+- 需要异常消息、边界检查、解析/格式化协议
+- 需要 out/ref 返回包
+
+**不要选 Import 的情况**：
+
+- 只是简单改名
+- 只是稳定单表达式模板
+- 只是想绕开 Inline/Compile 约束，不是真有运行时需求
 
 当前仓库内已经做过一轮具体复审，建议直接参考 [Inline / Import 复审记录](InlineImportAudit.md) 里的迁移优先级，不要重复把适合 `Inline` 的成员继续实现成 `Import`。
 
@@ -248,13 +369,36 @@ public static bool _5dbf54319ebc8dfe(string? value)
 
 当前 producer 侧要额外注意两点：
 
-1. `Op.Compile` 现在还没有进入 `SemanticWalker` 主分发主线，基础设施已生成，但消费入口仍在收敛中。
+1. `Op.Compile` 虽然已经进入 `SemanticWalker` 主分发主线，但它仍然是编译器内部保留能力，不是常规 producer 选项。
 2. 当前 `Compile` hook 形态本质上更接近“表达式级特殊钩子”，不要把需要临时变量、import 或语句级展开的语义直接挂到这里。
 
 也就是说，现阶段更准确的选择规则是：
 
-- `Inline` 结构不稳定，但仍能稳定落成单个表达式：可以考虑 `Compile`
-- 需要声明、导入、source-origin 或完整 lowering 上下文：暂时不要直接用 `Compile`
+- 能稳定写成 `Inline`：优先 `Inline`
+- 不能稳定 `Inline`，但更适合作为运行时 helper：优先 `Import`
+- 只有既不适合 `Inline`，也不适合 `Import`，并且必须由编译器直接接管时，才考虑 `Compile`
+- `Compile` 当前仍只适合自包含表达式级改写；凡是要临时变量、import、语句级 throw 协议、source map 来源跟踪的，先不要挂
+
+**当前适合 Compile 的典型特征**：
+
+- 不需要模块 helper
+- 不需要声明提升
+- 不需要 import
+- 返回值仍然是单个 AST 表达式
+- 语义属于编译器内部保留特例，而不是普通 BCL runtime 映射
+
+**当前不要挂 Compile 的典型特征**：
+
+- 需要 `throw` 作为表达式分支约定
+- 需要稳定临时变量名
+- 需要 source map / source-origin 追踪
+- 需要 tuple 运行时形状拼装
+- 其实作为模块 helper 更清晰
+
+**一句话判断**：
+
+- “必须由编译器直接产 AST 才合理”才考虑 `Compile`
+- “模块 helper 也能清楚表达”就先不要上 `Compile`
 
 ```csharp
 // 来自 doc/BooleanModule.md
@@ -280,8 +424,8 @@ JS 有原生对应？
 └── 否 → JS 有概念？
     ├── 否 → Discard
     ├── 能稳定写成单表达式 → Inline
-    ├── 不能稳定模板化，但仍是编译期表达式改写 → Compile
-    └── 需要运行时实现/模块逻辑 → Import
+    ├── 需要运行时实现/模块逻辑/校验/异常协议 → Import
+    └── 既不适合 Inline，也不适合 Import，且必须由编译器直接接管 → Compile
 ```
 
 #### 详细决策表
@@ -293,13 +437,12 @@ JS 有原生对应？
 | JS 原生方法，同名 | `Allowed` | 运算符重载 | 无需额外代码 |
 | JS 原生方法，不同名 | `Alias` | `ToString()` → `toString()` | 只需改方法名 |
 | JS 原生属性，不同名 | `Alias` | `Count` → `size`, `Length` → `length` | 属性 getter 替换 |
-| 简单表达式（< 50字符） | `Inline` | `Equals` → `===`, `MaxValue` → 字面量 | 单行表达式可内联，优先于 `Import` |
-| 数组/集合操作 | `Inline` | `list[i]` → `arr[i]`, `list.Add` → `arr.push` | 直接映射 |
-| 模板结构不稳定，但仍可在编译期表达 | `Compile` | 特殊内建表达式改写 | 先于 `Import` 评估 |
+| 简单表达式（结构稳定） | `Inline` | `Equals` → `===`, `MaxValue` → 字面量 | 单表达式可内联，优先于 `Import` |
+| 数组/集合直接映射 | `Alias` / `Inline` / `Import` | `list.Add` → `push`，`list[i]` 需看异常语义 | 不要按“集合操作”一刀切 |
 | 解析/转换方法 | `Import` | `Parse`, `TryParse` | 需要验证和错误处理 |
 | 需要 JS 特殊逻辑 | `Import` | `Dictionary.Add` 需检查重复键 | C# 语义与 JS 不同 |
+| 编译器内置特例 | `Compile` | `TypeOf`, `GetTypeCode()` | 仅限编译器内部保留处理 |
 | JS 无概念 | `Discard` | `GetHashCode`, `IFormatProvider` 重载 | 无法等价实现 |
-| 编译器内置处理 | `Compile` | `GetTypeCode()` | 编译器特殊逻辑，且不应退化成 `Import` |
 
 #### 常见成员 Op 选择指南
 
@@ -328,9 +471,71 @@ JS 有原生对应？
 | `Add(item)` | `Alias` → `push` (Array) 或 `Import` (Dictionary) | Array 直接替换，Dictionary 需检查重复 |
 | `Contains(item)` | `Alias` → `includes` / `has` | 方法名不同 |
 | `Remove(item)` | `Alias` → `delete` 或 `Import` | Map 直接删除，List 需查找 |
-| 索引器 `this[i]` | `Inline` → `arr[i]` | 直接访问 |
+| 索引器 `this[i]` | `Inline` / `Import` / 未来 `Compile` | 是否需要越界 throw 才是关键，不要只看下标访问 |
 | `GetEnumerator()` | `Discard` | JS 迭代协议不同 |
 | `CopyTo()` | `Import` | 需要循环复制逻辑 |
+
+**直接反例**：
+
+- `string.this[int].get` 不是“下标访问看起来很直接”就能选 `Inline`
+- `Dictionary.Add` 不是“最终只是 `set`”就能选 `Alias`
+- `Parse/TryParse` 不是“能写成条件表达式”就该选 `Inline`
+- `Compile` 不是“比 Import 更高级”的默认升级路线
+
+#### 按类型簇看
+
+**string 相关**：
+
+| 成员形态 | 推荐 Op | 说明 |
+|---------|---------|------|
+| `Length` | `Alias` | 直接映射到 `length` |
+| `ToUpper/ToLower/Trim/...` | `Alias` | JS 原生方法已存在，只需改名 |
+| `IsNullOrEmpty`、`Substring(start, len)` | `Inline` | 稳定单表达式模板 |
+| `Compare`、`Format`、复杂 `Split` | `Import` | 含 null 规则、循环或完整协议 |
+| `this[int].get` | `Import`，未来可能 `Compile` | 关键不是下标访问，而是越界 `throw` 语义 |
+
+**List<T> 相关**：
+
+| 成员形态 | 推荐 Op | 说明 |
+|---------|---------|------|
+| 构造、`Count`、`Add`、`Contains` | `Inline` / `Alias` | 大多直接落到数组字面量或 Array 原生方法 |
+| `Clear`、简单 slice/range | `Inline` | 仍是稳定单表达式 |
+| `CopyTo`、`InsertRange`、`RemoveAll`、范围查找 | `Import` | 需要循环、多步逻辑或边界处理 |
+| `this[int].get` | `Import`，未来可能 `Compile` | 越界异常协议不能被“数组下标直取”掩盖 |
+
+**Dictionary<TKey, TValue> 相关**：
+
+| 成员形态 | 推荐 Op | 说明 |
+|---------|---------|------|
+| `Count`、`ContainsKey` | `Alias` | 直接映射到 `size` / `has` |
+| `Keys`、`Values` | `Inline` | `Array.from(...)` 这类稳定模板 |
+| `TryGetValue`、`Remove(key, out value)` | `Import` | 有返回包协议 |
+| `Add`、`this[key].get` | `Import`，未来可能 `Compile` | 重复键/缺失键异常是核心语义 |
+| `this[key].set` | `Inline` | 只是稳定的 `set(...)` 调用 |
+
+**时间与格式化类型**：
+
+| 成员形态 | 推荐 Op | 说明 |
+|---------|---------|------|
+| carrier 直接 `toString` | `Alias` 或 `Import` | 取决于是否真能直接复用 carrier |
+| 解析、格式化、culture/provider 相关重载 | `Import` | 协议完整，不能为了省事压成模板 |
+| 简单属性读取 | `Alias` / `Import` | 看 carrier 是否已经稳定暴露对应结构 |
+| `TryParse` / `ParseExact` / style 重载 | `Import` 或 `Discard` | 取决于是否真的支持完整协议 |
+
+**tuple / 解构相关**：
+
+| 成员形态 | 推荐 Op | 说明 |
+|---------|---------|------|
+| 普通 tuple 访问与解构 | 不在 CLR 模块层解决 | 这是编译器语法糖 lowering 问题 |
+| 返回 tuple 的运行时 helper | 优先 `Import`，必要时未来 `Compile` | 不要在 `Inline` 模板里手写 tuple 运行时对象形状 |
+| 依赖 tuple 结果等价的内建特例 | 未来扩 contract 后再评估 `Compile` | 当前 contract 还不适合承接 tuple 形状拼装 |
+
+**一眼判断的经验规则**：
+
+- 只要你在想“要不要把异常分支也塞进模板”，大概率已经不该继续 `Inline`
+- 只要你在想“这里最好缓存一下参数避免重复求值”，大概率已经不该继续 `Inline`
+- 只要你在想“其实运行时 helper 更直观”，就先选 `Import`
+- 只要你在想“这个语义只有编译器自己最清楚”，再去评估 `Compile`
 
 **特殊类型处理**：
 

@@ -131,6 +131,22 @@ public partial class Analyzer : DiagnosticAnalyzer
 	private static bool HasECMAScriptAttribute(ITypeSymbol typeSymbol)
 		=> typeSymbol.GetAttributes()
 			.Any(a => a.AttributeClass?.Name == ECMAScriptAttribute || a.AttributeClass?.Name == ECMAScriptModuleAttribute);
+
+	private static bool IsWhiteListedProperty(IPropertySymbol property)
+	{
+		if (WhiteList.Members.ContainsKey(property.OriginalDefinition.ToDisplayString(Format.NameFormat)))
+			return true;
+
+		if (property.GetMethod is not null &&
+			WhiteList.Members.ContainsKey(property.GetMethod.OriginalDefinition.ToDisplayString(Format.NameFormat)))
+			return true;
+
+		if (property.SetMethod is not null &&
+			WhiteList.Members.ContainsKey(property.SetMethod.OriginalDefinition.ToDisplayString(Format.NameFormat)))
+			return true;
+
+		return false;
+	}
 	
 	private static void CheckType(Action<Diagnostic> report, ITypeSymbol? typeSymbol,Location location)
 	{
@@ -289,7 +305,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 					// 匿名类型、特性、白名单内不检查
 					if (operation.Property.ContainingType.IsAnonymousType ||
 						InECMAScriptAttribute(operation.Property.ContainingType) ||
-						WhiteList.Members.ContainsKey(operation.Property.OriginalDefinition.ToDisplayString(Format.NameFormat)))
+						IsWhiteListedProperty(operation.Property))
 						return;
 
 					ctx.ReportDiagnostic(Diagnostic.Create(Rule,

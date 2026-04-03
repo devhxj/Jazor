@@ -5,6 +5,50 @@
 public static class Intl
 {
 	/// <summary>
+	/// Common JavaScript object shape returned by Intl <c>formatToParts()</c> APIs.
+	/// This is not a runtime global; it models the part records produced by Intl host objects.
+	/// </summary>
+	[Description("@#")]
+	public sealed class FormatPart
+	{
+		[Description("@#type")]
+		public extern string Type { get; }
+
+		[Description("@#value")]
+		public extern string Value { get; }
+	}
+
+	/// <summary>
+	/// JavaScript object shape returned by <c>Intl.ListFormat.prototype.formatToParts()</c>.
+	/// </summary>
+	[Description("@#")]
+	public sealed class ListFormatPart
+	{
+		[Description("@#type")]
+		public extern string Type { get; }
+
+		[Description("@#value")]
+		public extern string Value { get; }
+	}
+
+	/// <summary>
+	/// JavaScript object shape returned by Intl <c>formatRangeToParts()</c> APIs.
+	/// In addition to <c>type</c> and <c>value</c>, the runtime exposes a <c>source</c> field telling whether a part came from the start range, end range, or a shared section.
+	/// </summary>
+	[Description("@#")]
+	public sealed class RangeFormatPart
+	{
+		[Description("@#type")]
+		public extern string Type { get; }
+
+		[Description("@#value")]
+		public extern string Value { get; }
+
+		[Description("@#source")]
+		public extern string Source { get; }
+	}
+
+	/// <summary>
 	/// 指定比较器的用途。usage: "sort" | "search"
 	/// </summary>
 	[Description("@#")]
@@ -60,7 +104,7 @@ public static class Intl
 	}
 
 	/// <summary>
-	/// 指定特定语言或场景的排序规则。collation: "big5han" | "compat" | "dict" | "direct" | "ducet" | "emoji" | "eor" | "gb2312" | "phonebk" | "phonetic" | "pinyin" | "reformed" | "searchjl" | "stroke" | "trad" | "unihan" | "zhuyin" | undefined
+	/// 指定特定语言或场景的排序规则。collation: "big5han" | "compat" | "dict" | "direct" | "ducet" | "emoji" | "eor" | "gb2312" | "phonebk" | "phonetic" | "pinyin" | "reformed" | "searchjl" | "stroke" | "trad" | "unihan" | "zhuyin"。未指定时保持省略状态。
 	/// </summary>
 	[Description("@#")]
 	public enum Collation
@@ -270,6 +314,25 @@ public static class Intl
 		[Description("@#format")]
 		public extern string Format(Number value);
 
+		/// <summary>
+		/// Returns the localized number as JavaScript part records instead of a single concatenated string.
+		/// </summary>
+		[Description("@#formatToParts")]
+		public extern Array<FormatPart> FormatToParts(Number value);
+
+		/// <summary>
+		/// Returns a localized string representing a numeric range.
+		/// This stays on the <c>Intl.NumberFormat</c> host because JavaScript exposes it as an instance method there.
+		/// </summary>
+		[Description("@#formatRange")]
+		public extern string FormatRange(Number start, Number end);
+
+		/// <summary>
+		/// Returns a localized numeric range as JavaScript part records instead of a single concatenated string.
+		/// </summary>
+		[Description("@#formatRangeToParts")]
+		public extern Array<RangeFormatPart> FormatRangeToParts(Number start, Number end);
+
         [Description("@#resolvedOptions")]
         public extern ResolvedNumberFormatOptions ResolvedOptions();
 
@@ -283,6 +346,13 @@ public static class Intl
 
 		[Description("@#maximize")]
 		public extern Locale Maximize();
+
+		/// <summary>
+		/// Returns a locale with likely-subtag information removed where possible.
+		/// This stays on the <c>Intl.Locale</c> host to match the JavaScript runtime object directly.
+		/// </summary>
+		[Description("@#minimize")]
+		public extern Locale Minimize();
 
 		[Description("@#language")]
 		public extern string Language { get; }
@@ -426,8 +496,594 @@ public static class Intl
 		[Description("@#format")]
 		public virtual extern string Format(Number date);
 
+		/// <summary>
+		/// Returns the formatted date as JavaScript part records instead of a single concatenated string.
+		/// </summary>
+		[Description("@#formatToParts")]
+		public virtual extern Array<FormatPart> FormatToParts();
+
+		/// <summary>
+		/// Returns the formatted date as JavaScript part records instead of a single concatenated string.
+		/// </summary>
+		[Description("@#formatToParts")]
+		public virtual extern Array<FormatPart> FormatToParts(Either<Date, Number> date);
+
+		/// <summary>
+		/// Returns the formatted date as JavaScript part records instead of a single concatenated string.
+		/// </summary>
+		[Description("@#formatToParts")]
+		public virtual extern Array<FormatPart> FormatToParts(Date date);
+
+		/// <summary>
+		/// Returns the formatted date as JavaScript part records instead of a single concatenated string.
+		/// </summary>
+		[Description("@#formatToParts")]
+		public virtual extern Array<FormatPart> FormatToParts(Number date);
+
+		/// <summary>
+		/// Returns a localized string representing a date/time range.
+		/// </summary>
+		[Description("@#formatRange")]
+		public virtual extern string FormatRange(Either<Date, Number> startDate, Either<Date, Number> endDate);
+
+		/// <summary>
+		/// Returns a localized string representing a date/time range.
+		/// </summary>
+		[Description("@#formatRange")]
+		public virtual extern string FormatRange(Date startDate, Date endDate);
+
+		/// <summary>
+		/// Returns a localized string representing a date/time range.
+		/// </summary>
+		[Description("@#formatRange")]
+		public virtual extern string FormatRange(Number startDate, Number endDate);
+
+		/// <summary>
+		/// Returns a localized date/time range as JavaScript part records instead of a single concatenated string.
+		/// </summary>
+		[Description("@#formatRangeToParts")]
+		public virtual extern Array<RangeFormatPart> FormatRangeToParts(Either<Date, Number> startDate, Either<Date, Number> endDate);
+
+		/// <summary>
+		/// Returns a localized date/time range as JavaScript part records instead of a single concatenated string.
+		/// </summary>
+		[Description("@#formatRangeToParts")]
+		public virtual extern Array<RangeFormatPart> FormatRangeToParts(Date startDate, Date endDate);
+
+		/// <summary>
+		/// Returns a localized date/time range as JavaScript part records instead of a single concatenated string.
+		/// </summary>
+		[Description("@#formatRangeToParts")]
+		public virtual extern Array<RangeFormatPart> FormatRangeToParts(Number startDate, Number endDate);
+
 		[Description("@#resolvedOptions")]
 		public virtual extern ResolvedDateTimeFormatOptions ResolvedOptions();
+	}
+
+	[Description("@#")]
+	public enum RelativeTimeFormatStyle
+	{
+		[Description("@#long")]
+		Long,
+		[Description("@#short")]
+		Short,
+		[Description("@#narrow")]
+		Narrow
+	}
+
+	[Description("@#")]
+	public enum RelativeTimeFormatNumeric
+	{
+		[Description("@#always")]
+		Always,
+		[Description("@#auto")]
+		Auto
+	}
+
+	[Description("@#")]
+	public enum RelativeTimeUnit
+	{
+		[Description("@#year")]
+		Year,
+		[Description("@#quarter")]
+		Quarter,
+		[Description("@#month")]
+		Month,
+		[Description("@#week")]
+		Week,
+		[Description("@#day")]
+		Day,
+		[Description("@#hour")]
+		Hour,
+		[Description("@#minute")]
+		Minute,
+		[Description("@#second")]
+		Second
+	}
+
+	/// <summary>
+	/// JavaScript object shape returned by <c>Intl.RelativeTimeFormat.prototype.formatToParts()</c>.
+	/// Relative time parts may also carry the formatted unit that produced the part.
+	/// </summary>
+	[Description("@#")]
+	public sealed class RelativeTimeFormatPart
+	{
+		[Description("@#type")]
+		public extern string Type { get; }
+
+		[Description("@#value")]
+		public extern string Value { get; }
+
+		[Description("@#unit")]
+		public extern string? Unit { get; }
+	}
+
+	/// <summary>
+	/// Configuration object for <c>Intl.RelativeTimeFormat</c>.
+	/// It stays explicit so callers can see the JavaScript option names and value domains directly from C#.
+	/// </summary>
+	[Description("@#")]
+	public record RelativeTimeFormatOptions(
+		[property: Description("@#localeMatcher")] LocaleMatcher? LocaleMatcher = null,
+		[property: Description("@#numeric")] RelativeTimeFormatNumeric? Numeric = null,
+		[property: Description("@#style")] RelativeTimeFormatStyle? Style = null);
+
+	/// <summary>
+	/// JavaScript object shape returned by <c>Intl.RelativeTimeFormat.prototype.resolvedOptions()</c>.
+	/// </summary>
+	[Description("@#")]
+	public record ResolvedRelativeTimeFormatOptions(
+		[property: Description("@#locale")] string Locale,
+		[property: Description("@#style")] RelativeTimeFormatStyle Style,
+		[property: Description("@#numeric")] RelativeTimeFormatNumeric Numeric,
+		[property: Description("@#numberingSystem")] string NumberingSystem);
+
+	/// <summary>
+	/// Projection of JavaScript's <c>Intl.RelativeTimeFormat</c> constructor host.
+	/// </summary>
+	[Description("@#RelativeTimeFormat")]
+	public sealed class RelativeTimeFormat
+	{
+		public extern RelativeTimeFormat();
+
+		public extern RelativeTimeFormat(Either<string, string[]> locales);
+
+		public extern RelativeTimeFormat(string locales);
+
+		public extern RelativeTimeFormat(string[] locales);
+
+		public extern RelativeTimeFormat(Either<string, string[]> locales, RelativeTimeFormatOptions options);
+
+		public extern RelativeTimeFormat(string locales, RelativeTimeFormatOptions options);
+
+		public extern RelativeTimeFormat(string[] locales, RelativeTimeFormatOptions options);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(Either<string, string[]> locales);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(string locales);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(string[] locales);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(Either<string, string[]> locales, RelativeTimeFormatOptions options);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(string locales, RelativeTimeFormatOptions options);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(string[] locales, RelativeTimeFormatOptions options);
+
+		[Description("@#format")]
+		public extern string Format(Number value, RelativeTimeUnit unit);
+
+		[Description("@#formatToParts")]
+		public extern Array<RelativeTimeFormatPart> FormatToParts(Number value, RelativeTimeUnit unit);
+
+		[Description("@#resolvedOptions")]
+		public extern ResolvedRelativeTimeFormatOptions ResolvedOptions();
+	}
+
+	[Description("@#")]
+	public enum ListFormatType
+	{
+		[Description("@#conjunction")]
+		Conjunction,
+		[Description("@#disjunction")]
+		Disjunction,
+		[Description("@#unit")]
+		Unit
+	}
+
+	/// <summary>
+	/// Configuration object for <c>Intl.ListFormat</c>.
+	/// </summary>
+	[Description("@#")]
+	public record ListFormatOptions(
+		[property: Description("@#localeMatcher")] LocaleMatcher? LocaleMatcher = null,
+		[property: Description("@#type")] ListFormatType? Type = null,
+		[property: Description("@#style")] LongShortNarrow? Style = null);
+
+	/// <summary>
+	/// JavaScript object shape returned by <c>Intl.ListFormat.prototype.resolvedOptions()</c>.
+	/// </summary>
+	[Description("@#")]
+	public record ResolvedListFormatOptions(
+		[property: Description("@#locale")] string Locale,
+		[property: Description("@#type")] ListFormatType Type,
+		[property: Description("@#style")] LongShortNarrow Style);
+
+	/// <summary>
+	/// Projection of JavaScript's <c>Intl.ListFormat</c> constructor host.
+	/// </summary>
+	[Description("@#ListFormat")]
+	public sealed class ListFormat
+	{
+		public extern ListFormat();
+
+		public extern ListFormat(Either<string, string[]> locales);
+
+		public extern ListFormat(string locales);
+
+		public extern ListFormat(string[] locales);
+
+		public extern ListFormat(Either<string, string[]> locales, ListFormatOptions options);
+
+		public extern ListFormat(string locales, ListFormatOptions options);
+
+		public extern ListFormat(string[] locales, ListFormatOptions options);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(Either<string, string[]> locales);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(string locales);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(string[] locales);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(Either<string, string[]> locales, ListFormatOptions options);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(string locales, ListFormatOptions options);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(string[] locales, ListFormatOptions options);
+
+		/// <summary>
+		/// Formats a JavaScript iterable of strings into a localized list.
+		/// <see cref="IEnumerable{T}"/> is used as the common C# input surface for JavaScript iterables.
+		/// </summary>
+		[Description("@#format")]
+		public extern string Format(IEnumerable<string> list);
+
+		/// <summary>
+		/// Compatibility overload that lets C# pass separate items while JavaScript itself takes a single iterable.
+		/// </summary>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Description("@#format")]
+		public extern string Format(params string[] list);
+
+		/// <summary>
+		/// Returns the localized list as JavaScript part records instead of a single concatenated string.
+		/// </summary>
+		[Description("@#formatToParts")]
+		public extern Array<ListFormatPart> FormatToParts(IEnumerable<string> list);
+
+		/// <summary>
+		/// Compatibility overload that lets C# pass separate items while JavaScript itself takes a single iterable.
+		/// </summary>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Description("@#formatToParts")]
+		public extern Array<ListFormatPart> FormatToParts(params string[] list);
+
+		[Description("@#resolvedOptions")]
+		public extern ResolvedListFormatOptions ResolvedOptions();
+	}
+
+	[Description("@#")]
+	public enum PluralRulesType
+	{
+		[Description("@#cardinal")]
+		Cardinal,
+		[Description("@#ordinal")]
+		Ordinal
+	}
+
+	/// <summary>
+	/// Configuration object for <c>Intl.PluralRules</c>.
+	/// </summary>
+	[Description("@#")]
+	public record PluralRulesOptions(
+		[property: Description("@#localeMatcher")] LocaleMatcher? LocaleMatcher = null,
+		[property: Description("@#type")] PluralRulesType? Type = null,
+		[property: Description("@#minimumIntegerDigits")] Number? MinimumIntegerDigits = null,
+		[property: Description("@#minimumFractionDigits")] Number? MinimumFractionDigits = null,
+		[property: Description("@#maximumFractionDigits")] Number? MaximumFractionDigits = null,
+		[property: Description("@#minimumSignificantDigits")] Number? MinimumSignificantDigits = null,
+		[property: Description("@#maximumSignificantDigits")] Number? MaximumSignificantDigits = null);
+
+	/// <summary>
+	/// JavaScript object shape returned by <c>Intl.PluralRules.prototype.resolvedOptions()</c>.
+	/// </summary>
+	[Description("@#")]
+	public record ResolvedPluralRulesOptions(
+		[property: Description("@#locale")] string Locale,
+		[property: Description("@#type")] PluralRulesType Type,
+		[property: Description("@#pluralCategories")] string[] PluralCategories,
+		[property: Description("@#minimumIntegerDigits")] Number MinimumIntegerDigits,
+		[property: Description("@#minimumFractionDigits")] Number? MinimumFractionDigits = null,
+		[property: Description("@#maximumFractionDigits")] Number? MaximumFractionDigits = null,
+		[property: Description("@#minimumSignificantDigits")] Number? MinimumSignificantDigits = null,
+		[property: Description("@#maximumSignificantDigits")] Number? MaximumSignificantDigits = null);
+
+	/// <summary>
+	/// Projection of JavaScript's <c>Intl.PluralRules</c> constructor host.
+	/// </summary>
+	[Description("@#PluralRules")]
+	public sealed class PluralRules
+	{
+		public extern PluralRules();
+
+		public extern PluralRules(Either<string, string[]> locales);
+
+		public extern PluralRules(string locales);
+
+		public extern PluralRules(string[] locales);
+
+		public extern PluralRules(Either<string, string[]> locales, PluralRulesOptions options);
+
+		public extern PluralRules(string locales, PluralRulesOptions options);
+
+		public extern PluralRules(string[] locales, PluralRulesOptions options);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(Either<string, string[]> locales);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(string locales);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(string[] locales);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(Either<string, string[]> locales, PluralRulesOptions options);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(string locales, PluralRulesOptions options);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(string[] locales, PluralRulesOptions options);
+
+		[Description("@#select")]
+		public extern string Select(Number value);
+
+		/// <summary>
+		/// Returns the plural category for a numeric range.
+		/// This stays explicit because JavaScript exposes it separately from <c>select</c>.
+		/// </summary>
+		[Description("@#selectRange")]
+		public extern string SelectRange(Number start, Number end);
+
+		[Description("@#resolvedOptions")]
+		public extern ResolvedPluralRulesOptions ResolvedOptions();
+	}
+
+	[Description("@#")]
+	public enum DisplayNamesType
+	{
+		[Description("@#language")]
+		Language,
+		[Description("@#region")]
+		Region,
+		[Description("@#script")]
+		Script,
+		[Description("@#currency")]
+		Currency,
+		[Description("@#calendar")]
+		Calendar,
+		[Description("@#dateTimeField")]
+		DateTimeField
+	}
+
+	[Description("@#")]
+	public enum DisplayNamesFallback
+	{
+		[Description("@#code")]
+		Code,
+		[Description("@#none")]
+		None
+	}
+
+	[Description("@#")]
+	public enum DisplayNamesLanguageDisplay
+	{
+		[Description("@#dialect")]
+		Dialect,
+		[Description("@#standard")]
+		Standard
+	}
+
+	/// <summary>
+	/// Configuration object for <c>Intl.DisplayNames</c>.
+	/// </summary>
+	[Description("@#")]
+	public record DisplayNamesOptions(
+		[property: Description("@#localeMatcher")] LocaleMatcher? LocaleMatcher = null,
+		[property: Description("@#style")] LongShortNarrow? Style = null,
+		[property: Description("@#type")] DisplayNamesType? Type = null,
+		[property: Description("@#fallback")] DisplayNamesFallback? Fallback = null,
+		[property: Description("@#languageDisplay")] DisplayNamesLanguageDisplay? LanguageDisplay = null);
+
+	/// <summary>
+	/// JavaScript object shape returned by <c>Intl.DisplayNames.prototype.resolvedOptions()</c>.
+	/// </summary>
+	[Description("@#")]
+	public record ResolvedDisplayNamesOptions(
+		[property: Description("@#locale")] string Locale,
+		[property: Description("@#style")] LongShortNarrow Style,
+		[property: Description("@#type")] DisplayNamesType Type,
+		[property: Description("@#fallback")] DisplayNamesFallback Fallback,
+		[property: Description("@#languageDisplay")] DisplayNamesLanguageDisplay? LanguageDisplay = null);
+
+	/// <summary>
+	/// Projection of JavaScript's <c>Intl.DisplayNames</c> constructor host.
+	/// </summary>
+	[Description("@#DisplayNames")]
+	public sealed class DisplayNames
+	{
+		public extern DisplayNames(Either<string, string[]> locales, DisplayNamesOptions options);
+
+		public extern DisplayNames(string locales, DisplayNamesOptions options);
+
+		public extern DisplayNames(string[] locales, DisplayNamesOptions options);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(Either<string, string[]> locales);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(string locales);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(string[] locales);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(Either<string, string[]> locales, DisplayNamesOptions options);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(string locales, DisplayNamesOptions options);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(string[] locales, DisplayNamesOptions options);
+
+		/// <summary>
+		/// Returns the localized display name for the supplied code.
+		/// JavaScript may return <c>undefined</c> when no display name exists,
+		/// so the C# projection stays nullable and maps that absence to <see langword="null" />.
+		/// </summary>
+		[Description("@#of")]
+		public extern string? Of(string code);
+
+		[Description("@#resolvedOptions")]
+		public extern ResolvedDisplayNamesOptions ResolvedOptions();
+	}
+
+	[Description("@#")]
+	public enum SegmenterGranularity
+	{
+		[Description("@#grapheme")]
+		Grapheme,
+		[Description("@#word")]
+		Word,
+		[Description("@#sentence")]
+		Sentence
+	}
+
+	/// <summary>
+	/// Configuration object for <c>Intl.Segmenter</c>.
+	/// </summary>
+	[Description("@#")]
+	public record SegmenterOptions(
+		[property: Description("@#localeMatcher")] LocaleMatcher? LocaleMatcher = null,
+		[property: Description("@#granularity")] SegmenterGranularity? Granularity = null);
+
+	/// <summary>
+	/// JavaScript object shape returned by <c>Intl.Segmenter.prototype.resolvedOptions()</c>.
+	/// </summary>
+	[Description("@#")]
+	public record ResolvedSegmenterOptions(
+		[property: Description("@#locale")] string Locale,
+		[property: Description("@#granularity")] SegmenterGranularity Granularity);
+
+	/// <summary>
+	/// JavaScript object shape produced while iterating <c>Intl.Segmenter</c> results.
+	/// </summary>
+	[Description("@#")]
+	public sealed class SegmentData
+	{
+		[Description("@#segment")]
+		public extern string Segment { get; }
+
+		[Description("@#index")]
+		public extern Number Index { get; }
+
+		[Description("@#input")]
+		public extern string Input { get; }
+
+		/// <summary>
+		/// Only meaningful for word segmentation. JavaScript leaves this absent for other granularities, so the host projection stays nullable.
+		/// </summary>
+		[Description("@#isWordLike")]
+		public extern bool? IsWordLike { get; }
+	}
+
+	/// <summary>
+	/// JavaScript iterable object returned by <c>Intl.Segmenter.prototype.segment()</c>.
+	/// This is not a global host; it models the runtime result object directly, including <c>containing()</c>.
+	/// </summary>
+	[Description("@#")]
+	public sealed class Segments : IEnumerable<SegmentData>
+	{
+		/// <summary>
+		/// Returns the segment containing the supplied code-unit index, or <see langword="null"/> when the index is outside the input.
+		/// </summary>
+		[Description("@#containing")]
+		public extern SegmentData? Containing(Number index);
+
+		extern IEnumerator<SegmentData> IEnumerable<SegmentData>.GetEnumerator();
+
+		extern IEnumerator IEnumerable.GetEnumerator();
+	}
+
+	/// <summary>
+	/// Projection of JavaScript's <c>Intl.Segmenter</c> constructor host.
+	/// </summary>
+	[Description("@#Segmenter")]
+	public sealed class Segmenter
+	{
+		public extern Segmenter();
+
+		public extern Segmenter(Either<string, string[]> locales);
+
+		public extern Segmenter(string locales);
+
+		public extern Segmenter(string[] locales);
+
+		public extern Segmenter(Either<string, string[]> locales, SegmenterOptions options);
+
+		public extern Segmenter(string locales, SegmenterOptions options);
+
+		public extern Segmenter(string[] locales, SegmenterOptions options);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(Either<string, string[]> locales);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(string locales);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(string[] locales);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(Either<string, string[]> locales, SegmenterOptions options);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(string locales, SegmenterOptions options);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(string[] locales, SegmenterOptions options);
+
+		/// <summary>
+		/// Segments the input string and returns the JavaScript iterable result object.
+		/// </summary>
+		[Description("@#segment")]
+		public extern Segments Segment(string input);
+
+		[Description("@#resolvedOptions")]
+		public extern ResolvedSegmenterOptions ResolvedOptions();
 	}
 }
 

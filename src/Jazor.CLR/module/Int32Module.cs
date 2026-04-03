@@ -102,9 +102,8 @@ public static class Int32Module
 	/// C#: int.CompareTo(value)
 	/// JS: 返回负数、零或正数
 	/// </summary>
-	[Jazor(Op.Import, "int.CompareTo(int)")]
-	public static Number _741df6ab5c9e75bc(Number instance, Number value)
-		=> CompareCore(instance, value);
+	[Jazor(Op.Inline, "int.CompareTo(int)", "(__arg1 < __arg2 ? -1 : (__arg1 > __arg2 ? 1 : 0))")]
+	public extern static Number _741df6ab5c9e75bc(Number instance, Number value);
 
 	/// <summary>
 	/// C#: int.Equals(obj)
@@ -297,11 +296,11 @@ public static class Int32Module
 
 	/// <summary>
 	/// C#: int.CopySign(value, sign)
-	/// JS: sign >= 0 ? Math.abs(value) : -Math.abs(value)
+	/// JS: sign < 0 ? -Math.abs(value) : Math.abs(value)
+	/// int 不存在 -0，可稳定收敛为单表达式 Inline。
 	/// </summary>
-	[Jazor(Op.Import, "static int.CopySign(int, int)")]
-	public static Number _95793b26c4495935(Number value, Number sign)
-		=> sign < 0 ? -Math.Abs_(value) : Math.Abs_(value);
+	[Jazor(Op.Inline, "static int.CopySign(int, int)", "(__arg2 < 0 ? -Math.abs(__arg1) : Math.abs(__arg1))")]
+	public extern static Number _95793b26c4495935(Number value, Number sign);
 
 	/// <summary>
 	/// C#: int.Max(x, y)

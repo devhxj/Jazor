@@ -223,11 +223,10 @@ public sealed class SemanticWalkerTryCatchTest
     ///     int z = 3;
     /// }
     /// 转换结果：try { let x = 1; } catch (v$0) {
+    ///     const ex = v$0;
     ///     if (v$0 instanceof TypeError) {
-    ///         const ex = v$0;
     ///         let y = 2;
     ///     } else if (v$0 instanceof Error) {
-    ///         const ex = v$0;
     ///         let z = 3;
     ///     } else
     ///         throw v$0;
@@ -266,11 +265,10 @@ public sealed class SemanticWalkerTryCatchTest
 @"try {
   let x = 1;
 } catch (v$0) {
+  const ex = v$0;
   if (v$0 instanceof TypeError) {
-    const ex = v$0;
     let y = 2;
   } else if (v$0 instanceof Error) {
-    const ex = v$0;
     let z = 3;
   } else
     throw v$0;
@@ -291,8 +289,9 @@ public sealed class SemanticWalkerTryCatchTest
     ///     int w = 4;
     /// }
     /// 转换结果：try { let x = 1; } catch (v$0) {
-    ///     if (v$0 instanceof TypeError) { const ex = v$0; let y = 2; }
-    ///     else if (v$0 instanceof Error) { const ex = v$0; let z = 3; }
+    ///     const ex = v$0;
+    ///     if (v$0 instanceof TypeError) { let y = 2; }
+    ///     else if (v$0 instanceof Error) { let z = 3; }
     ///     else throw v$0;
     /// } finally { let w = 4; }
     /// </summary>
@@ -333,11 +332,10 @@ public sealed class SemanticWalkerTryCatchTest
 @"try {
   let x = 1;
 } catch (v$0) {
+  const ex = v$0;
   if (v$0 instanceof TypeError) {
-    const ex = v$0;
     let y = 2;
   } else if (v$0 instanceof Error) {
-    const ex = v$0;
     let z = 3;
   } else
     throw v$0;
@@ -1452,6 +1450,7 @@ catch (ex) {
     /// <summary>
     /// 测试多个同类型 catch when 子句
     /// when 过滤失败时必须继续尝试后续 catch，不能直接 rethrow 退出整个 catch 链
+    /// 同名异常变量应在合并后的 catch 顶部只绑定一次。
     /// </summary>
     [TestMethod]
     public void VisitTry_MultipleCatchWithWhen()
@@ -1490,8 +1489,8 @@ catch (ex) {
 @"try {
   throw new Error(""test"");
 } catch (v$0) {
+  const ex = v$0;
   if (v$0 instanceof Error) {
-    const ex = v$0;
     if (ex.message === ""a"") {
       console.log(""a"");
     } else if (ex.message === ""b"") {
@@ -1549,11 +1548,10 @@ catch (ex) {
 @"try {
   result = 1;
 } catch (v$0) {
+  const ex = v$0;
   if (v$0 instanceof TypeError) {
-    const ex = v$0;
     result = 2;
   } else if (v$0 instanceof Error) {
-    const ex = v$0;
     result = 3;
   } else
     throw v$0;
@@ -2409,12 +2407,56 @@ catch (ex) {
   try {
     throw new TypeError(""test"");
   } catch (v$0) {
+    const ex = v$0;
     if (v$0 instanceof TypeError) {
-      const ex = v$0;
       console.log(""argument null exception"");
     } else if (v$0 instanceof Error) {
-      const ex = v$0;
       console.log(""general exception"");
+    } else
+      throw v$0;
+  }
+}", script);
+    }
+
+    [TestMethod]
+    public void VisitCatch_MultipleCatchBlocks_WithDifferentVariableNames_KeepsBranchBindings()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    try
+                    {
+                        throw new ArgumentNullException(""test"");
+                    }
+                    catch (ArgumentNullException argEx)
+                    {
+                        Console.WriteLine(argEx.Message);
+                    }
+                    catch (Exception otherEx)
+                    {
+                        Console.WriteLine(otherEx.Message);
+                    }
+                }
+            }
+        ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"{
+  try {
+    throw new TypeError(""test"");
+  } catch (v$0) {
+    if (v$0 instanceof TypeError) {
+      const argEx = v$0;
+      console.log(argEx.message);
+    } else if (v$0 instanceof Error) {
+      const otherEx = v$0;
+      console.log(otherEx.message);
     } else
       throw v$0;
   }

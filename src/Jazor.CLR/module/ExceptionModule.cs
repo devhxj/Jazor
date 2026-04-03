@@ -49,6 +49,13 @@ public static class ExceptionModule
 	[Jazor(Op.Inline, "virtual System.Exception.Message.get", "__arg1.message")]
 	public extern static string _254136af38922fd7(Error instance);
 
+	/// <summary>
+	/// C#: ArgumentException.Message
+	/// JS: error.message
+	/// </summary>
+	[Jazor(Op.Inline, "virtual System.ArgumentException.Message.get", "__arg1.message")]
+	public extern static string _b3ef5ec5ac6d412a(Error instance);
+
 	[Jazor(Op.Discard ,"virtual System.Exception.Data.get")]
 	public extern static System.Collections.IDictionary _72d5829c989f130e(Error instance);
 

@@ -404,7 +404,9 @@ CLAUDE.md
 .omx/
 .claude/
 .dotnet/
+.dotnet-obj/
 .dotnet-out/
+.artifacts/
 .tmp/
 .vs/
 

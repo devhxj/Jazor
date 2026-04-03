@@ -13,6 +13,11 @@ public interface IArray : IEnumerable
 [ECMAScript]
 public interface IArray<T> : IArray
 {
+	/// <summary>
+	/// Direct JavaScript index access surface.
+	/// This stays non-nullable for compatibility with existing array-like mappings.
+	/// Callers that need absence-aware reads should prefer APIs such as <c>At()</c> on concrete hosts.
+	/// </summary>
 	T this[Number index] { get; }
 }
 
@@ -50,6 +55,11 @@ public partial class Array<T> : object, IArray<T>
 
 	public extern static implicit operator Array<T>(Array array);
 
+	/// <summary>
+	/// Direct JavaScript index access surface.
+	/// This stays non-nullable to preserve compatibility with CLR collection-style mappings that project to JavaScript arrays.
+	/// Use <see cref="At" /> when you need a nullable result for out-of-range access.
+	/// </summary>
 	public extern T this[Number index] { get; set; }
 
 	/// <summary>
@@ -58,23 +68,24 @@ public partial class Array<T> : object, IArray<T>
 	[Description("@#length")]
 	public extern Number Length { get; }
 
-	/////<summary>
-	/////Returns a string representation of an object.
-	/////</summary>
-	/////<returns>Returns "[object objectname]", where objectname is the name of the object type.</returns>
-	//[Description("@#toString")]
-	//public extern override string? ToString();
+	/// <summary>
+	/// Returns the JavaScript string form of the array.
+	/// This is the direct projection of <c>Array.prototype.toString()</c>.
+	/// </summary>
+	[Description("@#toString")]
+	public extern override string ToString();
 
-	///// <summary>
-	///// Returns a string representation of an array. The elements are converted to string using their toLocaleString methods.
-	///// </summary>
-	///// <returns></returns>
-	//[Description("@#toLocaleString")]
-	//public extern string ToLocaleString();
+	/// <summary>
+	/// Returns a locale-sensitive string representation of the array.
+	/// This is the direct projection of <c>Array.prototype.toLocaleString()</c>.
+	/// </summary>
+	[Description("@#toLocaleString")]
+	public extern string ToLocaleString();
 
 	/// <summary>
 	/// Removes the last element from an array and returns it.
-	/// If the array is empty, undefined is returned and the array is not modified.
+	/// If the array is empty, JavaScript returns <c>undefined</c>; this C# projection surfaces that absence as <see langword="null" />
+	/// and does not modify the array.
 	/// </summary>
 	/// <returns></returns>
 	[Description("@#pop")]
@@ -123,7 +134,7 @@ public partial class Array<T> : object, IArray<T>
 	/// <summary>
 	/// Removes the first element from an array and returns it.
 	/// </summary>
-	/// <returns>If the array is empty, undefined is returned and the array is not modified.</returns>
+	/// <returns>If the array is empty, JavaScript returns <c>undefined</c>; this C# projection surfaces that absence as <see langword="null" /> and does not modify the array.</returns>
 	[Description("@#shift")]
 	public extern T? Shift();
 
@@ -134,7 +145,7 @@ public partial class Array<T> : object, IArray<T>
 	/// </summary>
 	/// <param name="start">The beginning index of the specified portion of the array.</param>
 	/// <param name="end">The end index of the specified portion of the array. This is exclusive of the element at the index 'end'.</param>
-	/// <returns>If start is undefined, then the slice begins at index 0.If end is undefined, then the slice extends to the end of the array.</returns>
+	/// <returns>If <paramref name="start" /> is omitted, the slice begins at index 0. If <paramref name="end" /> is omitted, the slice extends to the end of the array.</returns>
 	[Description("@#slice")]
 	public extern Array<T> Slice(Number? start = null, Number? end = null);
 
@@ -186,6 +197,13 @@ public partial class Array<T> : object, IArray<T>
 	/// <returns></returns>
 	[Description("@#indexOf")]
 	public extern Number IndexOf(T searchElement, Number? fromIndex = null);
+
+	/// <summary>
+	/// Projection of JavaScript <c>Array.prototype.includes</c>.
+	/// This stays on the array host so user code can follow JavaScript runtime shape directly.
+	/// </summary>
+	[Description("@#includes")]
+	public extern bool Includes(T searchElement, Number? fromIndex = null);
 
 	/// <summary>
 	/// Returns the index of the last occurrence of a specified value in an array, or -1 if it is not present.
@@ -278,6 +296,11 @@ public partial class Array<T> : object, IArray<T>
 	[Description("@#filter")]
 	public extern Array<T> Filter(Predicate<T> predicate, object? thisArg = null);
 
+	/// <summary>
+	/// Returns the first element whose value satisfies the provided testing function.
+	/// Nullable is used because JavaScript returns <c>undefined</c> when no matching element exists,
+	/// and the C# projection maps that absence to <see langword="null" />.
+	/// </summary>
 	[Description("@#find")]
 	public extern T? Find(Func<T, Number, Array<T>, object?> predicate, object? thisArg = null);
 
@@ -291,6 +314,75 @@ public partial class Array<T> : object, IArray<T>
 	public extern T? Find(Predicate<T> predicate, object? thisArg = null);
 
 	/// <summary>
+	/// Returns a new array with nested array elements recursively concatenated up to the specified depth.
+	/// The return type is widened to <see cref="Array{T}"/> of <see cref="object"/> because JavaScript flattening changes the element shape in ways C# generics cannot faithfully express here.
+	/// </summary>
+	[Description("@#flat")]
+	public extern Array<object?> Flat(Number? depth = null);
+
+	/// <summary>
+	/// Maps each element to a value and then flattens the result by one level.
+	/// This overload covers the JavaScript case where the callback returns scalar values.
+	/// </summary>
+	[Description("@#flatMap")]
+	public extern Array<U> FlatMap<U>(Func<T, Number, Array<T>, U> callbackfn, object? thisArg = null);
+
+	[Description("@#flatMap")]
+	public extern Array<U> FlatMap<U>(Func<T, Number, U> callbackfn, object? thisArg = null);
+
+	[Description("@#flatMap")]
+	public extern Array<U> FlatMap<U>(Func<T, U> callbackfn, object? thisArg = null);
+
+	/// <summary>
+	/// Maps each element to an array and then flattens the mapped arrays by one level.
+	/// This matches the most common JavaScript <c>flatMap</c> usage while keeping the C# generic result type explicit.
+	/// </summary>
+	[Description("@#flatMap")]
+	public extern Array<U> FlatMap<U>(Func<T, Number, Array<T>, Array<U>> callbackfn, object? thisArg = null);
+
+	[Description("@#flatMap")]
+	public extern Array<U> FlatMap<U>(Func<T, Number, Array<U>> callbackfn, object? thisArg = null);
+
+	[Description("@#flatMap")]
+	public extern Array<U> FlatMap<U>(Func<T, Array<U>> callbackfn, object? thisArg = null);
+
+	/// <summary>
+	/// Returns the last element whose value satisfies the provided testing function.
+	/// Nullable is used because JavaScript returns <c>undefined</c> when no matching element exists,
+	/// and the C# projection maps that absence to <see langword="null" />.
+	/// </summary>
+	[Description("@#findLast")]
+	public extern T? FindLast(Func<T, Number, Array<T>, object?> predicate, object? thisArg = null);
+
+	[Description("@#findLast")]
+	public extern T? FindLast(Func<T, Number, object?> predicate, object? thisArg = null);
+
+	[Description("@#findLast")]
+	public extern T? FindLast(Func<T, object?> predicate, object? thisArg = null);
+
+	[Description("@#findLast")]
+	public extern T? FindLast(Predicate<T> predicate, object? thisArg = null);
+
+	/// <summary>
+	/// C# host projection of JavaScript <c>Array.prototype.at</c>.
+	/// Nullable is used because JavaScript returns <c>undefined</c> for an out-of-range index,
+	/// and the C# projection maps that absence to <see langword="null" />.
+	/// </summary>
+	[Description("@#at")]
+	public extern T? At(Number index);
+
+	/// <summary>
+	/// Calls the specified callback function for all the elements in an array.The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
+	/// </summary>
+	/// <param name="callbackfn"><para><b>(previousValue: T, currentValue: T, currentIndex: number, array: IEnumerable&lt;T&gt;) => T</b></para>A function that accepts up to four arguments. When no initial value is supplied, JavaScript uses the first array element as the initial accumulator.</param>
+	/// <returns>The accumulated result.</returns>
+	[Description("@#reduce")]
+	public extern T Reduce(Func<T, T, Number, Array<T>, T> callbackfn);
+
+	[Description("@#reduce")]
+	public extern T Reduce(Func<T, T, T> callbackfn);
+
+	/// <summary>
 	/// Calls the specified callback function for all the elements in an array.The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
 	/// </summary>
 	/// <typeparam name="U"></typeparam>
@@ -302,6 +394,17 @@ public partial class Array<T> : object, IArray<T>
 
 	[Description("@#reduce")]
 	public extern U Reduce<U>(Func<U, T, U> callbackfn, U initialValue);
+
+	/// <summary>
+	/// Calls the specified callback function for all the elements in an array, in descending order.The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
+	/// </summary>
+	/// <param name="callbackfn"><para><b>(previousValue: T, currentValue: T, currentIndex: number, array: IEnumerable&lt;T&gt;) => T</b></para>A function that accepts up to four arguments. When no initial value is supplied, JavaScript uses the last array element as the initial accumulator.</param>
+	/// <returns>The accumulated result.</returns>
+	[Description("@#reduceRight")]
+	public extern T ReduceRight(Func<T, T, Number, Array<T>, T> callbackfn);
+
+	[Description("@#reduceRight")]
+	public extern T ReduceRight(Func<T, T, T> callbackfn);
 
 	/// <summary>
 	/// Calls the specified callback function for all the elements in an array, in descending order.The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
@@ -351,6 +454,81 @@ public partial class Array<T> : object, IArray<T>
 	public extern Number FindIndex(Predicate<T> callbackfn, object? thisArg = null);
 
 	/// <summary>
+	/// Returns the index of the last element whose value satisfies the provided testing function, or <c>-1</c> if no match is found.
+	/// </summary>
+	[Description("@#findLastIndex")]
+	public extern Number FindLastIndex(Func<T, Number, Array<T>, object?> callbackfn, object? thisArg = null);
+
+	[Description("@#findLastIndex")]
+	public extern Number FindLastIndex(Func<T, Number, object?> callbackfn, object? thisArg = null);
+
+	[Description("@#findLastIndex")]
+	public extern Number FindLastIndex(Func<T, object?> callbackfn, object? thisArg = null);
+
+	[Description("@#findLastIndex")]
+	public extern Number FindLastIndex(Predicate<T> callbackfn, object? thisArg = null);
+
+	/// <summary>
+	/// Returns a copied array with the elements in reverse order.
+	/// This stays distinct from <see cref="Reverse"/> because JavaScript exposes a non-mutating copy-producing variant.
+	/// </summary>
+	[Description("@#toReversed")]
+	public extern Array<T> ToReversed();
+
+	/// <summary>
+	/// Returns a copied array with its elements sorted.
+	/// This stays distinct from <see cref="Sort(Func{T, T, Number}?)"/> because JavaScript exposes a non-mutating copy-producing variant.
+	/// </summary>
+	[Description("@#toSorted")]
+	public extern Array<T> ToSorted(Func<T, T, Number>? compareFn = null);
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[Description("@#toSorted")]
+	public extern Array<T> ToSorted(Comparison<T> compareFn);
+
+	/// <summary>
+	/// Returns a copied array with items removed and optionally inserted at the given index.
+	/// This mirrors JavaScript <c>Array.prototype.toSpliced</c>, which does not mutate the source array.
+	/// </summary>
+	[Description("@#toSpliced")]
+	public extern Array<T> ToSpliced(Number start, Number? deleteCount = null);
+
+	/// <summary>
+	/// Returns a copied array with items removed and optionally inserted at the given index.
+	/// This mirrors JavaScript <c>Array.prototype.toSpliced</c>, which does not mutate the source array.
+	/// </summary>
+	[Description("@#toSpliced")]
+	public extern Array<T> ToSpliced(Number start, Number deleteCount, params T[] items);
+
+	/// <summary>
+	/// Returns a copied array with the element at the specified index replaced.
+	/// Negative indices follow JavaScript <c>Array.prototype.with</c> semantics and count from the end.
+	/// </summary>
+	[Description("@#with")]
+	public extern Array<T> With(Number index, T value);
+
+	/// <summary>
+	/// Returns the JavaScript iterator produced by <c>Array.prototype.keys()</c>.
+	/// <see cref="IEnumerable{T}"/> is used as the common C# host surface for JavaScript iterables.
+	/// </summary>
+	[Description("@#keys")]
+	public extern IEnumerable<Number> Keys();
+
+	/// <summary>
+	/// Returns the JavaScript iterator produced by <c>Array.prototype.values()</c>.
+	/// <see cref="IEnumerable{T}"/> is used as the common C# host surface for JavaScript iterables.
+	/// </summary>
+	[Description("@#values")]
+	public extern IEnumerable<T> Values();
+
+	/// <summary>
+	/// Returns the JavaScript iterator produced by <c>Array.prototype.entries()</c>.
+	/// Each yielded item is the JavaScript two-element pair <c>[index, value]</c>.
+	/// </summary>
+	[Description("@#entries")]
+	public extern IEnumerable<Array<object?>> Entries();
+
+	/// <summary>
 	/// Creates an array from a JavaScript iterable or array-like value.
 	/// <see cref="IEnumerable{T}"/> is used here as the common C# input surface for values
 	/// such as arrays, lists, and read-only list families that map to JavaScript arrays or iterables.
@@ -367,6 +545,13 @@ public partial class Array<T> : object, IArray<T>
 	public extern static Array<T> From<U>(IEnumerable<U> arrayLike, Func<U, Number, T> mapFn, object? thisArg = null);
 
 	/// <summary>
+	/// Creates an array from a JavaScript iterable or array-like value.
+	/// This overload mirrors JavaScript <c>Array.from</c> when the caller does not need the element index in the mapping callback.
+	/// </summary>
+	[Description("@#from")]
+	public extern static Array<T> From<U>(IEnumerable<U> arrayLike, Func<U, T> mapFn, object? thisArg = null);
+
+	/// <summary>
 	/// Creates an array from a JavaScript async iterable or iterable value.
 	/// <see cref="IEnumerable{T}"/> is used here as the common C# input surface for values
 	/// such as arrays, lists, and read-only list families that map to JavaScript arrays or iterables.
@@ -381,6 +566,13 @@ public partial class Array<T> : object, IArray<T>
 	/// </summary>
 	[Description("@#fromAsync")]
 	public extern static IPromise<Array<T>> FromAsync<U>(IEnumerable<U> arrayLike, Func<U, Number, T> mapFn, object? thisArg = null);
+
+	/// <summary>
+	/// Creates an array from a JavaScript async iterable or iterable value.
+	/// This overload mirrors JavaScript <c>Array.fromAsync</c> when the caller does not need the element index in the mapping callback.
+	/// </summary>
+	[Description("@#fromAsync")]
+	public extern static IPromise<Array<T>> FromAsync<U>(IEnumerable<U> arrayLike, Func<U, T> mapFn, object? thisArg = null);
 
 	[Description("@#isArray")]
 	public extern static bool IsArray(object? value);

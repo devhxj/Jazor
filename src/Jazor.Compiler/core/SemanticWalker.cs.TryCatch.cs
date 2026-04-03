@@ -1,8 +1,10 @@
 ﻿using Acornima;
 using Acornima.Ast;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace Jazor.Compiler;
 
@@ -79,6 +81,7 @@ public partial class SemanticWalker
         else if (operation.Catches.Length > 1)
         {
             var tryParam = new Identifier(GetUniqueName(operation));
+            var sharedCatchParam = TryExtractSharedCatchParam(operation.Catches);
             var groups = new List<(string TypeName, List<ICatchClauseOperation> Clauses)>();
             foreach (var @catch in operation.Catches)
             {
@@ -95,6 +98,8 @@ public partial class SemanticWalker
                     groups.Add((typeName, new List<ICatchClauseOperation> { @catch }));
                 }
             }
+
+            var hoistSharedCatchParamOutsideGroups = sharedCatchParam is not null;
 
             Statement BuildGroupChain(List<ICatchClauseOperation> clauses, int index, Identifier? sharedParam, Statement fallback)
             {
@@ -133,24 +138,28 @@ public partial class SemanticWalker
                     : new NestedBlockStatement(NodeList.From(branchStatements));
             }
 
-            NestedBlockStatement BuildGroupBody(List<ICatchClauseOperation> clauses, Statement fallback)
+            NestedBlockStatement BuildGroupBody(List<ICatchClauseOperation> clauses, Statement fallback, Identifier? sharedParamFromCatch, bool declareSharedParam)
             {
                 var bodyStatements = new List<Statement>();
-                var parameters = new List<string>();
-                foreach (var @catch in clauses)
+                Identifier? sharedParam = sharedParamFromCatch;
+                if (sharedParam is null)
                 {
-                    var param = ExtractCatchClauseParam(@catch);
-                    if (param is null || parameters.Contains(param.Name))
-                        continue;
+                    var parameters = new List<string>();
+                    foreach (var @catch in clauses)
+                    {
+                        var param = ExtractCatchClauseParam(@catch);
+                        if (param is null || parameters.Contains(param.Name))
+                            continue;
 
-                    parameters.Add(param.Name);
+                        parameters.Add(param.Name);
+                    }
+
+                    sharedParam = parameters.Count == 1
+                        ? new Identifier(parameters[0])
+                        : null;
                 }
 
-                Identifier? sharedParam = parameters.Count == 1
-                    ? new Identifier(parameters[0])
-                    : null;
-
-                if (sharedParam is not null)
+                if (sharedParam is not null && declareSharedParam)
                 {
                     bodyStatements.Add(new VariableDeclaration(
                         VariableDeclarationKind.Const,
@@ -166,14 +175,25 @@ public partial class SemanticWalker
             {
                 var group = groups[index];
                 var fallback = chain;
-                var body = BuildGroupBody(group.Clauses, fallback);
+                var body = BuildGroupBody(group.Clauses, fallback, sharedCatchParam, !hoistSharedCatchParamOutsideGroups);
                 var test = new NonLogicalBinaryExpression(Operator.InstanceOf, tryParam, new Identifier(group.TypeName));
                 // 同一 JS 运行时类型的多个 catch 需要先聚合到一个分支里，
                 // 这样 when 过滤失败时才能继续尝试同组后续 catch，而不是提前 rethrow。
                 chain = new IfStatement(test, body, fallback);
             }
 
-            var catchBody = new NestedBlockStatement(NodeList.From<Statement>(chain));
+            var catchBodyStatements = new List<Statement>();
+            if (hoistSharedCatchParamOutsideGroups)
+            {
+                // sharedCatchParam 非空时才会进入这条分支；
+                // 这里显式收窄，避免可空分析把共享绑定误判成潜在空值。
+                catchBodyStatements.Add(new VariableDeclaration(
+                    VariableDeclarationKind.Const,
+                    NodeList.From(new VariableDeclarator(sharedCatchParam!, tryParam))));
+            }
+
+            catchBodyStatements.Add(chain);
+            var catchBody = new NestedBlockStatement(NodeList.From(catchBodyStatements));
             handler = new CatchClause(tryParam, catchBody);
         }
 
@@ -228,7 +248,39 @@ public partial class SemanticWalker
             }
         }
 
+        if (param is null &&
+            operation.Syntax is CatchClauseSyntax catchClause &&
+            catchClause.Declaration is not null &&
+            catchClause.Declaration.Identifier.ValueText.Length > 0)
+        {
+            // Roslyn 在部分 catch lowering 场景里不会稳定暴露 ExceptionDeclarationOrExpression，
+            // 回退到语法声明可以保证多 catch 合并时仍能识别共享异常变量。
+            param = new Identifier(catchClause.Declaration.Identifier.ValueText);
+        }
+
         return param;
+    }
+
+    private Identifier? TryExtractSharedCatchParam(ImmutableArray<ICatchClauseOperation> catches)
+    {
+        string? sharedName = null;
+        foreach (var @catch in catches)
+        {
+            var param = ExtractCatchClauseParam(@catch);
+            if (param is null)
+                return null;
+
+            if (sharedName is null)
+            {
+                sharedName = param.Name;
+                continue;
+            }
+
+            if (sharedName != param.Name)
+                return null;
+        }
+
+        return sharedName is null ? null : new Identifier(sharedName);
     }
 
     private static bool ContainsBareRethrow(IOperation operation)

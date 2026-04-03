@@ -10,7 +10,9 @@ public sealed class WeakRef
 	public extern WeakRef(object target);
 
 	/// <summary>
-	/// 返回 WeakRef 的目标对象，如果该对象已被垃圾收集，则返回undefined 
+	/// 返回 WeakRef 的目标对象。
+	/// 如果该对象已被垃圾收集，底层 JavaScript 会返回 <c>undefined</c>，
+	/// 此 C# 投影将该缺失值表示为 <see langword="null" />。
 	/// </summary>
 	/// <returns></returns>
 	[Description("@#deref")]
@@ -27,7 +29,9 @@ public sealed class WeakRef<T> where T : class
 	public extern WeakRef(T target);
 
 	/// <summary>
-	/// 返回 WeakRef 的目标对象，如果该对象已被垃圾收集，则返回undefined 
+	/// 返回 WeakRef 的目标对象。
+	/// 如果该对象已被垃圾收集，底层 JavaScript 会返回 <c>undefined</c>，
+	/// 此 C# 投影将该缺失值表示为 <see langword="null" />。
 	/// </summary>
 	/// <returns></returns>
 	[Description("@#deref")]

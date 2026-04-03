@@ -54,7 +54,7 @@ public static class ReadOnlyDictionaryModule<TKey, TValue> where TKey : notnull
 		var typedKey = (TKey)key;
 		if (!instance.Has(typedKey))
 			throw new Error("KeyNotFoundException: The given key was not present in the dictionary.");
-		return instance.Get(typedKey);
+		return instance.Get(typedKey)!;
 	}
 
 	/// <summary>

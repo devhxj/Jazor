@@ -297,40 +297,72 @@ public static class BigIntegerModule
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.TryParse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider, out System.Numerics.BigInteger)")]
 	public extern static Array<object?> _d733f0a0a427d970(Uint32Array value, object style, Intl.NumberFormat? provider, BigInt result);
 
-	///<summary>Compares two <see cref="T:System.Numerics.BigInteger" /> values and returns an integer that indicates whether the first value is less than, equal to, or greater than the second value.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.Compare(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
+	/// <summary>
+	/// C#: BigInteger.Compare(left, right)
+	/// JS: left < right ? -1 : (left > right ? 1 : 0)
+	/// </summary>
+	[Jazor(Op.Inline ,"static System.Numerics.BigInteger.Compare(System.Numerics.BigInteger, System.Numerics.BigInteger)", "(__arg1 < __arg2 ? -1 : (__arg1 > __arg2 ? 1 : 0))")]
 	public extern static Number _0a6134f61ab96205(BigInt left, BigInt right);
 
-	///<summary>Gets the absolute value of a <see cref="T:System.Numerics.BigInteger" /> object.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.Abs(System.Numerics.BigInteger)")]
+	/// <summary>
+	/// C#: BigInteger.Abs(value)
+	/// JS: value < 0n ? -value : value
+	/// </summary>
+	[Jazor(Op.Inline ,"static System.Numerics.BigInteger.Abs(System.Numerics.BigInteger)", "(__arg1 < 0n ? -__arg1 : __arg1)")]
 	public extern static BigInt _efd2134803006c44(BigInt value);
 
-	///<summary>Adds two <see cref="T:System.Numerics.BigInteger" /> values and returns the result.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.Add(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
+	/// <summary>
+	/// C#: BigInteger.Add(left, right)
+	/// JS: left + right
+	/// </summary>
+	[Jazor(Op.Inline ,"static System.Numerics.BigInteger.Add(System.Numerics.BigInteger, System.Numerics.BigInteger)", "(__arg1 + __arg2)")]
 	public extern static BigInt _0034b6a7a416df8e(BigInt left, BigInt right);
 
-	///<summary>Subtracts one <see cref="T:System.Numerics.BigInteger" /> value from another and returns the result.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.Subtract(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
+	/// <summary>
+	/// C#: BigInteger.Subtract(left, right)
+	/// JS: left - right
+	/// </summary>
+	[Jazor(Op.Inline ,"static System.Numerics.BigInteger.Subtract(System.Numerics.BigInteger, System.Numerics.BigInteger)", "(__arg1 - __arg2)")]
 	public extern static BigInt _31de7c0189a18bd2(BigInt left, BigInt right);
 
-	///<summary>Returns the product of two <see cref="T:System.Numerics.BigInteger" /> values.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.Multiply(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
+	/// <summary>
+	/// C#: BigInteger.Multiply(left, right)
+	/// JS: left * right
+	/// </summary>
+	[Jazor(Op.Inline ,"static System.Numerics.BigInteger.Multiply(System.Numerics.BigInteger, System.Numerics.BigInteger)", "(__arg1 * __arg2)")]
 	public extern static BigInt _8c06584cae9fcbe7(BigInt left, BigInt right);
 
-	///<summary>Divides one <see cref="T:System.Numerics.BigInteger" /> value by another and returns the result.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.Divide(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
+	/// <summary>
+	/// C#: BigInteger.Divide(dividend, divisor)
+	/// JS: dividend / divisor
+	/// </summary>
+	[Jazor(Op.Inline ,"static System.Numerics.BigInteger.Divide(System.Numerics.BigInteger, System.Numerics.BigInteger)", "(__arg1 / __arg2)")]
 	public extern static BigInt _7ff5692b085214c4(BigInt dividend, BigInt divisor);
 
-	///<summary>Performs integer division on two <see cref="T:System.Numerics.BigInteger" /> values and returns the remainder.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.Remainder(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
+	/// <summary>
+	/// C#: BigInteger.Remainder(dividend, divisor)
+	/// JS: dividend % divisor
+	/// </summary>
+	[Jazor(Op.Inline ,"static System.Numerics.BigInteger.Remainder(System.Numerics.BigInteger, System.Numerics.BigInteger)", "(__arg1 % __arg2)")]
 	public extern static BigInt _00d98488c7edf612(BigInt dividend, BigInt divisor);
 
 	///<summary>Divides one <see cref="T:System.Numerics.BigInteger" /> value by another, returns the result, and returns the remainder in an output parameter.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.DivRem(System.Numerics.BigInteger, System.Numerics.BigInteger, out System.Numerics.BigInteger)")]
-	public extern static Array<object?> _598611fb2b8a064a(BigInt dividend, BigInt divisor, BigInt remainder);
+	[Jazor(Op.Import ,"static System.Numerics.BigInteger.DivRem(System.Numerics.BigInteger, System.Numerics.BigInteger, out System.Numerics.BigInteger)")]
+	public static Array<object?> _598611fb2b8a064a(BigInt dividend, BigInt divisor, BigInt remainder)
+	{
+		if (divisor == BigInt.Zero)
+			throw new RangeError("Division by zero");
 
-	///<summary>Negates a specified <see cref="T:System.Numerics.BigInteger" /> value.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.Negate(System.Numerics.BigInteger)")]
+		var quotient = dividend / divisor;
+		var rem = dividend % divisor;
+		return [quotient, rem];
+	}
+
+	/// <summary>
+	/// C#: BigInteger.Negate(value)
+	/// JS: -value
+	/// </summary>
+	[Jazor(Op.Inline ,"static System.Numerics.BigInteger.Negate(System.Numerics.BigInteger)", "(-__arg1)")]
 	public extern static BigInt _d160232d04d4f8fe(BigInt value);
 
 	///<summary>Returns the natural (base <see langword="e" />) logarithm of a specified number.</summary>
@@ -416,12 +448,18 @@ public static class BigIntegerModule
 		return a;
 	}	
 
-	///<summary>Returns the larger of two <see cref="T:System.Numerics.BigInteger" /> values.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.Max(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
+	/// <summary>
+	/// C#: BigInteger.Max(left, right)
+	/// JS: left > right ? left : right
+	/// </summary>
+	[Jazor(Op.Inline ,"static System.Numerics.BigInteger.Max(System.Numerics.BigInteger, System.Numerics.BigInteger)", "(__arg1 > __arg2 ? __arg1 : __arg2)")]
 	public extern static BigInt _a038619e95a6c0ff(BigInt left, BigInt right);
 
-	///<summary>Returns the smaller of two <see cref="T:System.Numerics.BigInteger" /> values.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.Min(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
+	/// <summary>
+	/// C#: BigInteger.Min(left, right)
+	/// JS: left < right ? left : right
+	/// </summary>
+	[Jazor(Op.Inline ,"static System.Numerics.BigInteger.Min(System.Numerics.BigInteger, System.Numerics.BigInteger)", "(__arg1 < __arg2 ? __arg1 : __arg2)")]
 	public extern static BigInt _b3b093dd81ed2d15(BigInt left, BigInt right);
 
 	///<summary>Performs modulus division on a number raised to the power of another number.</summary>
@@ -474,37 +512,66 @@ public static class BigIntegerModule
 	[Jazor(Op.Discard ,"override System.Numerics.BigInteger.GetHashCode()")]
 	public extern static Number _fe64082374302a77(BigInt instance);
 
-	///<summary>Returns a value that indicates whether the current instance and a specified object have the same value.</summary>
-	[Jazor(Op.Discard ,"override System.Numerics.BigInteger.Equals(object)")]
+	/// <summary>
+	/// C#: value.Equals(obj)
+	/// JS: value === obj
+	/// </summary>
+	[Jazor(Op.Inline ,"override System.Numerics.BigInteger.Equals(object)", "(__arg1 === __arg2)")]
 	public extern static bool _27c2f0d965e3403d(BigInt instance, object? obj);
 
-	///<summary>Returns a value that indicates whether the current instance and a signed 64-bit integer have the same value.</summary>
-	[Jazor(Op.Discard ,"System.Numerics.BigInteger.Equals(long)")]
+	/// <summary>
+	/// C#: value.Equals(other)
+	/// JS: value === other
+	/// </summary>
+	[Jazor(Op.Inline ,"System.Numerics.BigInteger.Equals(long)", "(__arg1 === __arg2)")]
 	public extern static bool _21afeec99b7ab2ca(BigInt instance, BigInt other);
 
-	///<summary>Returns a value that indicates whether the current instance and an unsigned 64-bit integer have the same value.</summary>
-	[Jazor(Op.Discard ,"System.Numerics.BigInteger.Equals(ulong)")]
+	/// <summary>
+	/// C#: value.Equals(other)
+	/// JS: value === other
+	/// </summary>
+	[Jazor(Op.Inline ,"System.Numerics.BigInteger.Equals(ulong)", "(__arg1 === __arg2)")]
 	public extern static bool _134be6ec440e455e(BigInt instance, BigInt other);
 
-	///<summary>Returns a value that indicates whether the current instance and a specified <see cref="T:System.Numerics.BigInteger" /> object have the same value.</summary>
-	[Jazor(Op.Discard ,"System.Numerics.BigInteger.Equals(System.Numerics.BigInteger)")]
+	/// <summary>
+	/// C#: value.Equals(other)
+	/// JS: value === other
+	/// </summary>
+	[Jazor(Op.Inline ,"System.Numerics.BigInteger.Equals(System.Numerics.BigInteger)", "(__arg1 === __arg2)")]
 	public extern static bool _4d44e94420c56981(BigInt instance, BigInt other);
 
-	///<summary>Compares this instance to a signed 64-bit integer and returns an integer that indicates whether the value of this instance is less than, equal to, or greater than the value of the signed 64-bit integer.</summary>
-	[Jazor(Op.Discard ,"System.Numerics.BigInteger.CompareTo(long)")]
+	/// <summary>
+	/// C#: value.CompareTo(other)
+	/// JS: value < other ? -1 : (value > other ? 1 : 0)
+	/// </summary>
+	[Jazor(Op.Inline ,"System.Numerics.BigInteger.CompareTo(long)", "(__arg1 < __arg2 ? -1 : (__arg1 > __arg2 ? 1 : 0))")]
 	public extern static Number _77851a1e7ef48cb7(BigInt instance, BigInt other);
 
-	///<summary>Compares this instance to an unsigned 64-bit integer and returns an integer that indicates whether the value of this instance is less than, equal to, or greater than the value of the unsigned 64-bit integer.</summary>
-	[Jazor(Op.Discard ,"System.Numerics.BigInteger.CompareTo(ulong)")]
+	/// <summary>
+	/// C#: value.CompareTo(other)
+	/// JS: value < other ? -1 : (value > other ? 1 : 0)
+	/// </summary>
+	[Jazor(Op.Inline ,"System.Numerics.BigInteger.CompareTo(ulong)", "(__arg1 < __arg2 ? -1 : (__arg1 > __arg2 ? 1 : 0))")]
 	public extern static Number _64e348c0c7830a5c(BigInt instance, BigInt other);
 
-	///<summary>Compares this instance to a second <see cref="T:System.Numerics.BigInteger" /> and returns an integer that indicates whether the value of this instance is less than, equal to, or greater than the value of the specified object.</summary>
-	[Jazor(Op.Discard ,"System.Numerics.BigInteger.CompareTo(System.Numerics.BigInteger)")]
+	/// <summary>
+	/// C#: value.CompareTo(other)
+	/// JS: value < other ? -1 : (value > other ? 1 : 0)
+	/// </summary>
+	[Jazor(Op.Inline ,"System.Numerics.BigInteger.CompareTo(System.Numerics.BigInteger)", "(__arg1 < __arg2 ? -1 : (__arg1 > __arg2 ? 1 : 0))")]
 	public extern static Number _02bf2f34cf157e4d(BigInt instance, BigInt other);
 
 	///<summary>Compares this instance to a specified object and returns an integer that indicates whether the value of this instance is less than, equal to, or greater than the value of the specified object.</summary>
-	[Jazor(Op.Discard ,"System.Numerics.BigInteger.CompareTo(object)")]
-	public extern static Number _9f7b3705890bed98(BigInt instance, object? obj);
+	[Jazor(Op.Import ,"System.Numerics.BigInteger.CompareTo(object)")]
+	public static Number _9f7b3705890bed98(BigInt instance, object? obj)
+	{
+		if (obj == null)
+			return 1;
+		if (obj is BigInt bigIntValue)
+			return instance < bigIntValue ? -1 : (instance > bigIntValue ? 1 : 0);
+
+		throw new Error("ArgumentException: Object must be of type BigInteger.");
+	}
 
 	///<summary>Converts a <see cref="T:System.Numerics.BigInteger" /> value to a byte array.</summary>
 	[Jazor(Op.Import ,"System.Numerics.BigInteger.ToByteArray()")]
@@ -707,8 +774,11 @@ public static class BigIntegerModule
 				: Math.Max_(1, Math.Ceil_(bitLength / 8));        // 正数不需要符号位
 	}	
 
-	///<summary>Converts the numeric value of the current <see cref="T:System.Numerics.BigInteger" /> object to its equivalent string representation.</summary>
-	[Jazor(Op.Discard ,"override System.Numerics.BigInteger.ToString()")]
+	/// <summary>
+	/// C#: value.ToString()
+	/// JS: value.toString()
+	/// </summary>
+	[Jazor(Op.Alias ,"override System.Numerics.BigInteger.ToString()", "toString")]
 	public extern static string _a7388cc0c5bc22ad(BigInt instance);
 
 	///<summary>Converts the numeric value of the current <see cref="T:System.Numerics.BigInteger" /> object to its equivalent string representation by using the specified culture-specific formatting information.</summary>
@@ -1297,8 +1367,11 @@ public static class BigIntegerModule
 		return result;
 	}	
 
-	///<summary>Copies the sign of a value to the sign of another value.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.CopySign(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
+	/// <summary>
+	/// C#: BigInteger.CopySign(value, sign)
+	/// JS: BigInt 没有 -0，可直接按符号位切换绝对值。
+	/// </summary>
+	[Jazor(Op.Inline ,"static System.Numerics.BigInteger.CopySign(System.Numerics.BigInteger, System.Numerics.BigInteger)", "(__arg2 < 0n ? (__arg1 < 0n ? __arg1 : -__arg1) : (__arg1 < 0n ? -__arg1 : __arg1))")]
 	public extern static BigInt _aa45b92454e3abaa(BigInt value, BigInt sign);
 
 	///<summary>Creates an instance of the current type from a value, throwing an overflow exception for any values that fall outside the representable range of the current type.</summary>
@@ -1366,20 +1439,32 @@ public static class BigIntegerModule
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.CreateTruncating<TOther>(TOther)")]
 	public extern static BigInt _8457175b141355fe<TOther>(object value);
 
-	///<summary>Determines if a value represents an even integral number.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.IsEvenInteger(System.Numerics.BigInteger)")]
+	/// <summary>
+	/// C#: BigInteger.IsEvenInteger(value)
+	/// JS: value % 2n === 0n
+	/// </summary>
+	[Jazor(Op.Inline ,"static System.Numerics.BigInteger.IsEvenInteger(System.Numerics.BigInteger)", "(__arg1 % 2n === 0n)")]
 	public extern static bool _691c1425b8fac31f(BigInt value);
 
-	///<summary>Determines if a value is negative.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.IsNegative(System.Numerics.BigInteger)")]
+	/// <summary>
+	/// C#: BigInteger.IsNegative(value)
+	/// JS: value < 0n
+	/// </summary>
+	[Jazor(Op.Inline ,"static System.Numerics.BigInteger.IsNegative(System.Numerics.BigInteger)", "(__arg1 < 0n)")]
 	public extern static bool _8cb55ab054b637db(BigInt value);
 
-	///<summary>Determines if a value represents an odd integral number.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.IsOddInteger(System.Numerics.BigInteger)")]
+	/// <summary>
+	/// C#: BigInteger.IsOddInteger(value)
+	/// JS: value % 2n !== 0n
+	/// </summary>
+	[Jazor(Op.Inline ,"static System.Numerics.BigInteger.IsOddInteger(System.Numerics.BigInteger)", "(__arg1 % 2n !== 0n)")]
 	public extern static bool _8213026f03b857e7(BigInt value);
 
-	///<summary>Determines if a value is positive.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.IsPositive(System.Numerics.BigInteger)")]
+	/// <summary>
+	/// C#: BigInteger.IsPositive(value)
+	/// JS: value > 0n
+	/// </summary>
+	[Jazor(Op.Inline ,"static System.Numerics.BigInteger.IsPositive(System.Numerics.BigInteger)", "(__arg1 > 0n)")]
 	public extern static bool _386d048147df6eae(BigInt value);
 
 	///<summary>Compares two values to compute which is greater.</summary>

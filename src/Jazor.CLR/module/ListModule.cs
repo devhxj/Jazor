@@ -90,6 +90,8 @@ public static class ListModule<T>
 	/// <summary>
 	/// C#: list[index]
 	/// JS: array[index] (越界时抛出 ArgumentOutOfRangeException)
+	/// 当前仍保留 Import：语义关键点不是下标访问本身，而是越界即 throw。
+	/// 在 Compile 只有表达式级 contract 的前提下，这类索引器先不要硬迁。
 	/// </summary>
 	[Jazor(Op.Import, "System.Collections.Generic.List<T>.this[int].get")]
 	public static T _d389c31d59037b42(Array<T> instance, Number index)

@@ -75,7 +75,7 @@ export function Method() { }
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
-        Assert.Contains("不是 public", exception.Message);
+        Assert.AreEqual("类 TestClass 不是 public，无法转换", exception.Message);
     }
 
     [TestMethod]
@@ -1969,11 +1969,475 @@ export function Increment() {
         var script = module?.ToKnRECMAScript();
 
         // Assert
-        Assert.AreEqual(
+    Assert.AreEqual(
 @"import { _155212572c9a3297, _fb5a811e7a32a324 } from ""System/Numerics/BigIntegerModule.js"";
 export let Value = _155212572c9a3297(""33"");
 export function LogValue() {
   return _fb5a811e7a32a324(_155212572c9a3297(""44""));
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithDateOnlyParseAndDefaultToString_ImportsOnlyParseHelper()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public static string Format() => DateOnly.Parse("2024-01-02").ToString();
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { _e2640560d207afce } from ""System/DateOnlyModule.js"";
+export function Format() {
+  return _e2640560d207afce(""2024-01-02"").toString();
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithDateTimeOffsetParseAndFormattedToString_ImportsOnlyNeededHelpers()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public static string Format() => DateTimeOffset.Parse("2024-01-02T03:04:05+08:00").ToString("O", null);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { _25187a24d190d864, _e856edbfd7db0646 } from ""System/DateTimeOffsetModule.js"";
+export function Format() {
+  return _e856edbfd7db0646(_25187a24d190d864(""2024-01-02T03:04:05+08:00""), ""O"", null);
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithCultureInfoNameAndToString_ImportsOnlyConstructorAndToStringHelper()
+    {
+        var code = """
+            using System.Globalization;
+
+            public static class TestClass
+            {
+                public static string Format()
+                {
+                    var culture = new CultureInfo("en-US");
+                    return culture.Name + "|" + culture.ToString();
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { _559b27327f84f1af, _b7486264ae338f27 } from ""System/Globalization/CultureInfoModule.js"";
+export function Format() {
+  let culture = _b7486264ae338f27(""en-US"");
+  return culture + ""|"" + _559b27327f84f1af(culture);
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithIntegerCopySign_UsesInlineWithoutHelperImports()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public static float FloatCopy(float value, float sign) => float.CopySign(value, sign);
+
+                public static int IntCopy(int value, int sign) => int.CopySign(value, sign);
+
+                public static long LongCopy(long value, long sign) => long.CopySign(value, sign);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"export function FloatCopy(value, sign) {
+  return sign < 0 || Object.is(sign, -0) ? -Math.abs(value) : Math.abs(value);
+}
+export function IntCopy(value, sign) {
+  return sign < 0 ? -Math.abs(value) : Math.abs(value);
+}
+export function LongCopy(value, sign) {
+  return sign < 0n ? value < 0n ? value : -value : value < 0n ? -value : value;
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithInt16AndUInt16Intrinsics_UsesInlineWithoutHelperImports()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public static short SignedCopy(short value, short sign) => short.CopySign(value, sign);
+
+                public static short SignedClamp(short value, short min, short max) => short.Clamp(value, min, max);
+
+                public static int SignedMeta(short value)
+                    => short.Sign(value)
+                    + short.Abs(value)
+                    + short.Log2(value)
+                    + (short.IsEvenInteger(value) ? 1 : 0)
+                    + (short.IsNegative(value) ? 1 : 0)
+                    + (short.IsOddInteger(value) ? 1 : 0)
+                    + (short.IsPositive(value) ? 1 : 0)
+                    + (short.IsPow2(value) ? 1 : 0);
+
+                public static int SignedBounds(short left, short right) => short.Max(left, right) - short.Min(left, right);
+
+                public static ushort UnsignedClamp(ushort value, ushort min, ushort max) => ushort.Clamp(value, min, max);
+
+                public static int UnsignedMeta(ushort value)
+                    => ushort.Sign(value)
+                    + ushort.Log2(value)
+                    + (ushort.IsEvenInteger(value) ? 1 : 0)
+                    + (ushort.IsOddInteger(value) ? 1 : 0)
+                    + (ushort.IsPow2(value) ? 1 : 0);
+
+                public static int UnsignedBounds(ushort left, ushort right) => ushort.Max(left, right) - ushort.Min(left, right);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"export function SignedCopy(value, sign) {
+  return sign < 0 ? -Math.abs(value) : Math.abs(value);
+}
+export function SignedClamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+export function SignedMeta(value) {
+  return (value > 0 ? 1 : value < 0 ? -1 : 0) + Math.abs(value) + Math.floor(Math.log2(value)) + ((value & 1) === 0 ? 1 : 0) + (value < 0 ? 1 : 0) + ((value & 1) !== 0 ? 1 : 0) + (value > 0 ? 1 : 0) + (value > 0 && (value & value - 1) === 0 ? 1 : 0);
+}
+export function SignedBounds(left, right) {
+  return Math.max(left, right) - Math.min(left, right);
+}
+export function UnsignedClamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+export function UnsignedMeta(value) {
+  return (value === 0 ? 0 : 1) + Math.floor(Math.log2(value)) + ((value & 1) === 0 ? 1 : 0) + ((value & 1) !== 0 ? 1 : 0) + (value > 0 && (value & value - 1) === 0 ? 1 : 0);
+}
+export function UnsignedBounds(left, right) {
+  return Math.max(left, right) - Math.min(left, right);
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithSByteUInt32AndUInt64Intrinsics_UsesInlineWithoutHelperImports()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public static sbyte SignedCopy(sbyte value, sbyte sign) => sbyte.CopySign(value, sign);
+
+                public static sbyte SignedClamp(sbyte value, sbyte min, sbyte max) => sbyte.Clamp(value, min, max);
+
+                public static int SignedMeta(sbyte value)
+                    => sbyte.Sign(value)
+                    + sbyte.Abs(value)
+                    + sbyte.Log2(value)
+                    + (sbyte.IsEvenInteger(value) ? 1 : 0)
+                    + (sbyte.IsNegative(value) ? 1 : 0)
+                    + (sbyte.IsOddInteger(value) ? 1 : 0)
+                    + (sbyte.IsPositive(value) ? 1 : 0)
+                    + (sbyte.IsPow2(value) ? 1 : 0);
+
+                public static int SignedBounds(sbyte left, sbyte right) => sbyte.Max(left, right) - sbyte.Min(left, right);
+
+                public static uint UnsignedClamp(uint value, uint min, uint max) => uint.Clamp(value, min, max);
+
+                public static ulong UnsignedMeta(uint value)
+                    => uint.Sign(value)
+                    + uint.Log2(value)
+                    + (uint.IsEvenInteger(value) ? 1 : 0)
+                    + (uint.IsOddInteger(value) ? 1 : 0)
+                    + (uint.IsPow2(value) ? 1 : 0);
+
+                public static uint UnsignedBounds(uint left, uint right) => uint.Max(left, right) - uint.Min(left, right);
+
+                public static ulong UnsignedLongClamp(ulong value, ulong min, ulong max) => ulong.Clamp(value, min, max);
+
+                public static int UnsignedLongSign(ulong value) => ulong.Sign(value);
+
+                public static bool UnsignedLongEven(ulong value) => ulong.IsEvenInteger(value);
+
+                public static bool UnsignedLongOdd(ulong value) => ulong.IsOddInteger(value);
+
+                public static bool UnsignedLongPow2(ulong value) => ulong.IsPow2(value);
+
+                public static ulong UnsignedLongLog2(ulong value) => ulong.Log2(value);
+
+                public static ulong UnsignedLongMax(ulong left, ulong right) => ulong.Max(left, right);
+
+                public static ulong UnsignedLongMin(ulong left, ulong right) => ulong.Min(left, right);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"export function SignedCopy(value, sign) {
+  return sign < 0 ? -Math.abs(value) : Math.abs(value);
+}
+export function SignedClamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+export function SignedMeta(value) {
+  return (value > 0 ? 1 : value < 0 ? -1 : 0) + Math.abs(value) + Math.floor(Math.log2(value)) + ((value & 1) === 0 ? 1 : 0) + (value < 0 ? 1 : 0) + ((value & 1) !== 0 ? 1 : 0) + (value > 0 ? 1 : 0) + (value > 0 && (value & value - 1) === 0 ? 1 : 0);
+}
+export function SignedBounds(left, right) {
+  return Math.max(left, right) - Math.min(left, right);
+}
+export function UnsignedClamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+export function UnsignedMeta(value) {
+  return BigInt(value === 0 ? 0 : 1) + BigInt(Math.floor(Math.log2(value))) + BigInt((value & 1) === 0 ? 1 : 0) + BigInt((value & 1) !== 0 ? 1 : 0) + BigInt(value > 0 && (value & value - 1) === 0 ? 1 : 0);
+}
+export function UnsignedBounds(left, right) {
+  return Math.max(left, right) - Math.min(left, right);
+}
+export function UnsignedLongClamp(value, min, max) {
+  return value < min ? min : value > max ? max : value;
+}
+export function UnsignedLongSign(value) {
+  return value === 0n ? 0 : 1;
+}
+export function UnsignedLongEven(value) {
+  return value % 2n === 0n;
+}
+export function UnsignedLongOdd(value) {
+  return value % 2n !== 0n;
+}
+export function UnsignedLongPow2(value) {
+  return value > 0n && (value & value - 1n) === 0n;
+}
+export function UnsignedLongLog2(value) {
+  return value === 0n ? 0n : BigInt(value.toString(2).length - 1);
+}
+export function UnsignedLongMax(left, right) {
+  return left > right ? left : right;
+}
+export function UnsignedLongMin(left, right) {
+  return left < right ? left : right;
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithInt64AndMathBigIntIntrinsics_UsesInlineWithoutHelperImports()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public static long LongClamp(long value, long min, long max) => long.Clamp(value, min, max);
+
+                public static int LongSign(long value) => long.Sign(value);
+
+                public static long MathLongClamp(long value, long min, long max) => Math.Clamp(value, min, max);
+
+                public static int MathLongSign(long value) => Math.Sign(value);
+
+                public static long MathLongMax(long left, long right) => Math.Max(left, right);
+
+                public static long MathLongMin(long left, long right) => Math.Min(left, right);
+
+                public static ulong MathUnsignedLongClamp(ulong value, ulong min, ulong max) => Math.Clamp(value, min, max);
+
+                public static ulong MathUnsignedLongMax(ulong left, ulong right) => Math.Max(left, right);
+
+                public static ulong MathUnsignedLongMin(ulong left, ulong right) => Math.Min(left, right);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"export function LongClamp(value, min, max) {
+  return value < min ? min : value > max ? max : value;
+}
+export function LongSign(value) {
+  return value > 0n ? 1 : value < 0n ? -1 : 0;
+}
+export function MathLongClamp(value, min, max) {
+  return value < min ? min : value > max ? max : value;
+}
+export function MathLongSign(value) {
+  return value > 0n ? 1 : value < 0n ? -1 : 0;
+}
+export function MathLongMax(left, right) {
+  return left > right ? left : right;
+}
+export function MathLongMin(left, right) {
+  return left < right ? left : right;
+}
+export function MathUnsignedLongClamp(value, min, max) {
+  return value < min ? min : value > max ? max : value;
+}
+export function MathUnsignedLongMax(left, right) {
+  return left > right ? left : right;
+}
+export function MathUnsignedLongMin(left, right) {
+  return left < right ? left : right;
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithBigIntegerSimpleIntrinsics_UsesInlineWithoutHelperImports()
+    {
+        var code = """
+            using System.Numerics;
+
+            public static class TestClass
+            {
+                public static BigInteger Abs(BigInteger value) => BigInteger.Abs(value);
+
+                public static BigInteger Add(BigInteger left, BigInteger right) => BigInteger.Add(left, right);
+
+                public static BigInteger Copy(BigInteger value, BigInteger sign) => BigInteger.CopySign(value, sign);
+
+                public static int Compare(BigInteger left, BigInteger right) => BigInteger.Compare(left, right);
+
+                public static int CompareTo(BigInteger left, BigInteger right) => left.CompareTo(right);
+
+                public static BigInteger Divide(BigInteger left, BigInteger right) => BigInteger.Divide(left, right);
+
+                public static bool EqualsValue(BigInteger left, BigInteger right) => left.Equals(right);
+
+                public static BigInteger Max(BigInteger left, BigInteger right) => BigInteger.Max(left, right);
+
+                public static BigInteger Min(BigInteger left, BigInteger right) => BigInteger.Min(left, right);
+
+                public static bool Even(BigInteger value) => BigInteger.IsEvenInteger(value);
+
+                public static bool Negative(BigInteger value) => BigInteger.IsNegative(value);
+
+                public static BigInteger Negate(BigInteger value) => BigInteger.Negate(value);
+
+                public static bool Odd(BigInteger value) => BigInteger.IsOddInteger(value);
+
+                public static bool Positive(BigInteger value) => BigInteger.IsPositive(value);
+
+                public static BigInteger Remainder(BigInteger left, BigInteger right) => BigInteger.Remainder(left, right);
+
+                public static BigInteger Subtract(BigInteger left, BigInteger right) => BigInteger.Subtract(left, right);
+
+                public static BigInteger Multiply(BigInteger left, BigInteger right) => BigInteger.Multiply(left, right);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"export function Abs(value) {
+  return value < 0n ? -value : value;
+}
+export function Add(left, right) {
+  return left + right;
+}
+export function Copy(value, sign) {
+  return sign < 0n ? value < 0n ? value : -value : value < 0n ? -value : value;
+}
+export function Compare(left, right) {
+  return left < right ? -1 : left > right ? 1 : 0;
+}
+export function CompareTo(left, right) {
+  return left < right ? -1 : left > right ? 1 : 0;
+}
+export function Divide(left, right) {
+  return left / right;
+}
+export function EqualsValue(left, right) {
+  return left === right;
+}
+export function Max(left, right) {
+  return left > right ? left : right;
+}
+export function Min(left, right) {
+  return left < right ? left : right;
+}
+export function Even(value) {
+  return value % 2n === 0n;
+}
+export function Negative(value) {
+  return value < 0n;
+}
+export function Negate(value) {
+  return -value;
+}
+export function Odd(value) {
+  return value % 2n !== 0n;
+}
+export function Positive(value) {
+  return value > 0n;
+}
+export function Remainder(left, right) {
+  return left % right;
+}
+export function Subtract(left, right) {
+  return left - right;
+}
+export function Multiply(left, right) {
+  return left * right;
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }

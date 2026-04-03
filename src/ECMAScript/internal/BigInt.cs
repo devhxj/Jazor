@@ -35,6 +35,34 @@ public abstract class BigInt
 	[Description("@#asUintN")]
 	public extern static BigInt AsUintN(Number width, BigInt bigint);
 
+	/// <summary>
+	/// Returns a string representation of the JavaScript bigint value.
+	/// The optional radix stays on the instance surface because JavaScript exposes it as <c>BigInt.prototype.toString</c>.
+	/// </summary>
+	[Description("@#toString")]
+	public extern string ToString(Number? radix);
+
+	/// <summary>
+	/// Returns a locale-sensitive string representation of the JavaScript bigint value.
+	/// </summary>
+	[Description("@#toLocaleString")]
+	public extern string ToLocaleString(string? locales = null, Intl.NumberFormatOptions? options = null);
+
+	/// <summary>
+	/// Returns a locale-sensitive string representation of the JavaScript bigint value.
+	/// </summary>
+	[Description("@#toLocaleString")]
+	public extern string ToLocaleString(string[] locales, Intl.NumberFormatOptions? options = null);
+
+	/// <summary>
+	/// Returns the primitive bigint value carried by this host projection.
+	/// </summary>
+	[Description("@#valueOf")]
+	public extern BigInt ValueOf();
+
+	[Description("@#toString")]
+	public extern override string ToString();
+
 	public extern static BigInt operator +(BigInt a, BigInt b);
 
 	public extern static BigInt operator -(BigInt a, BigInt b);
@@ -72,6 +100,16 @@ public abstract class BigInt
 	public extern static BigInt operator |(BigInt x, BigInt y);
 
 	public extern static BigInt operator &(BigInt x, BigInt y);
+
+	/// <summary>
+	/// JavaScript bigint bitwise xor.
+	/// </summary>
+	public extern static BigInt operator ^(BigInt x, BigInt y);
+
+	/// <summary>
+	/// JavaScript bigint bitwise not.
+	/// </summary>
+	public extern static BigInt operator ~(BigInt x);
 
 	public extern static BigInt operator %(BigInt x, BigInt y);
 

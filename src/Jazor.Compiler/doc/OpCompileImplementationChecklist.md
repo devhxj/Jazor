@@ -26,9 +26,10 @@
 
 这不是保守偏好，而是当前 `Compile(handler, args)` contract 的直接结果。
 
-同时保留一条 producer 侧优先级：
+同时保留两条 producer 侧优先级：
 
 - 能稳定写成 `Inline` 的，先不要升级成 `Import`
+- 能稳定写成 `Inline` 或作为运行时 helper 落到 `Import` 的，不要升级成 `Compile`
 
 ## 第一阶段实施步骤
 
@@ -71,6 +72,7 @@
 也不应迁移这类条目：
 
 - 其实已经能稳定用 `Inline` 表达，只是实现上暂时懒得写模板
+- 更适合作为模块 helper 的运行时逻辑，只是为了少写一个 `Import` 实现而想塞进 `Compile`
 
 ### 4. 建立 `Compile_*` 模板样板
 
@@ -163,19 +165,22 @@ producer 侧优先按这个顺序判断：
 
 1. `Allowed` / `Alias`
 2. `Inline`
-3. `Compile`
-4. `Import`
+3. `Import`
+4. `Compile`
 
 重点是：
 
 - 只要 `Inline` 能稳定表达，就不要为了方便写模块函数而退到 `Import`
 - `Import` 保留给真正需要运行时实现的场景
+- `Compile` 只保留给编译器内部必须直接接管的少数特例
 
 ### 可以直接标 `Compile`
 
 - `Inline` 结构上不稳定
-- 但仍然能落成单个表达式
+- 同时也不适合作为 `Import` helper
+- 仍然能落成单个表达式
 - 不需要临时变量与导入
+- 且语义属于编译器内部保留特例，不是普通运行时库映射
 
 ### 暂时不要标 `Compile`
 
@@ -202,7 +207,8 @@ producer 侧优先按这个顺序判断：
 2. 先补返回语义和参数布局测试
 3. 先迁移 1 到 3 个“表达式安全型”条目
 4. 跑一轮白名单回归
-5. 再评估是否需要 contract 扩展
+5. 再把“其实应回到 `Inline/Import` 的条目”从 `Compile` 清走
+6. 再评估是否需要 contract 扩展
 
 ## 完成标准
 

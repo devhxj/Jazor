@@ -25,6 +25,26 @@ public interface IAllowSharedBufferSource
 }
 
 /// <summary>
+/// Bridge interface for typed arrays that JavaScript <c>Atomics</c> accepts.
+/// This is intentionally hidden because it exists only to make the C# host surface precise without introducing a new JavaScript runtime type.
+/// </summary>
+[ECMAScript]
+[EditorBrowsable(EditorBrowsableState.Never)]
+public interface IAtomicArray<T> : IArrayBufferView
+{
+}
+
+/// <summary>
+/// Bridge interface for typed arrays that JavaScript <c>Atomics.wait</c> and <c>Atomics.notify</c> accept.
+/// JavaScript restricts this further than general atomic operations, so the bridge keeps that distinction explicit.
+/// </summary>
+[ECMAScript]
+[EditorBrowsable(EditorBrowsableState.Never)]
+public interface IWaitableAtomicArray<T> : IAtomicArray<T>
+{
+}
+
+/// <summary>
 /// 底层二进制数据缓冲区的数组视图
 /// </summary>
 [ECMAScript]
@@ -61,6 +81,19 @@ public class ArrayBuffer : IBufferSource
 	public extern virtual Number ByteLength { get; }
 
 	/// <summary>
+	/// Maximum length this buffer can grow to.
+	/// This is only meaningful for resizable JavaScript array buffers.
+	/// </summary>
+	[Description("@#maxByteLength")]
+	public extern virtual Number MaxByteLength { get; }
+
+	/// <summary>
+	/// Returns whether this buffer can be resized in place by JavaScript <c>ArrayBuffer.prototype.resize</c>.
+	/// </summary>
+	[Description("@#resizable")]
+	public extern virtual bool Resizable { get; }
+
+	/// <summary>
 	/// Returns a section of an TypedArrayBuffer.
 	/// </summary>
 	/// <param name="begin"></param>
@@ -68,6 +101,25 @@ public class ArrayBuffer : IBufferSource
 	/// <returns></returns>
 	[Description("@#slice")]
 	public extern virtual ArrayBuffer Slice(Number begin, Number? end = null);
+
+	/// <summary>
+	/// Resizes a resizable JavaScript array buffer in place.
+	/// This maps to the runtime host member and is intentionally absent on fixed-length buffers at runtime.
+	/// </summary>
+	[Description("@#resize")]
+	public extern virtual void Resize(Number newByteLength);
+
+	/// <summary>
+	/// Transfers this buffer into a new JavaScript <see cref="ArrayBuffer"/>, optionally changing the byte length.
+	/// </summary>
+	[Description("@#transfer")]
+	public extern virtual ArrayBuffer Transfer(Number? newByteLength = null);
+
+	/// <summary>
+	/// Transfers this buffer into a fixed-length JavaScript <see cref="ArrayBuffer"/>.
+	/// </summary>
+	[Description("@#transferToFixedLength")]
+	public extern virtual ArrayBuffer TransferToFixedLength(Number? newByteLength = null);
 }
 
 [ECMAScript]
@@ -75,6 +127,33 @@ public class ArrayBuffer : IBufferSource
 public class SharedArrayBuffer : ArrayBuffer, IAllowSharedBufferSource
 {
 	public extern SharedArrayBuffer(Number length);
+
+	public extern SharedArrayBuffer(Number length, ArrayBufferOption? option = null);
+
+	/// <summary>
+	/// Maximum length this shared buffer can grow to.
+	/// </summary>
+	[Description("@#maxByteLength")]
+	public extern override Number MaxByteLength { get; }
+
+	/// <summary>
+	/// Returns whether this shared buffer is growable.
+	/// </summary>
+	[Description("@#growable")]
+	public extern bool Growable { get; }
+
+	/// <summary>
+	/// Grows a JavaScript <c>SharedArrayBuffer</c> in place.
+	/// </summary>
+	[Description("@#grow")]
+	public extern void Grow(Number newByteLength);
+
+	/// <summary>
+	/// Shared array buffer slicing stays on the <c>SharedArrayBuffer</c> host in JavaScript.
+	/// The covariant return keeps the C# projection aligned with that runtime behavior.
+	/// </summary>
+	[Description("@#slice")]
+	public extern override SharedArrayBuffer Slice(Number begin, Number? end = null);
 }
 
 /// <summary>
@@ -100,6 +179,19 @@ public class DataView : IArrayBufferView, IBufferSource
 
 	[Description("@#getFloat32")]
 	public virtual extern float GetFloat32(Number byteOffset, bool littleEndian);
+
+	/// <summary>
+	/// Reads a JavaScript float16 value.
+	/// The C# surface uses <see cref="float"/> to stay consistent with the existing <see cref="Float16Array"/> projection.
+	/// </summary>
+	[Description("@#getFloat16")]
+	public virtual extern float GetFloat16(Number byteOffset);
+
+	/// <summary>
+	/// Reads a JavaScript float16 value with explicit endian control.
+	/// </summary>
+	[Description("@#getFloat16")]
+	public virtual extern float GetFloat16(Number byteOffset, bool littleEndian);
 
 	[Description("@#getFloat64")]
 	public virtual extern double GetFloat64(Number byteOffset);
@@ -148,6 +240,19 @@ public class DataView : IArrayBufferView, IBufferSource
 
 	[Description("@#setFloat32")]
 	public virtual extern void SetFloat32(Number byteOffset, float value, bool littleEndian);
+
+	/// <summary>
+	/// Writes a JavaScript float16 value.
+	/// The C# surface uses <see cref="float"/> to stay consistent with the existing <see cref="Float16Array"/> projection.
+	/// </summary>
+	[Description("@#setFloat16")]
+	public virtual extern void SetFloat16(Number byteOffset, float value);
+
+	/// <summary>
+	/// Writes a JavaScript float16 value with explicit endian control.
+	/// </summary>
+	[Description("@#setFloat16")]
+	public virtual extern void SetFloat16(Number byteOffset, float value, bool littleEndian);
 
 	[Description("@#setFloat64")]
 	public virtual extern void SetFloat64(Number byteOffset, double value);
@@ -249,6 +354,13 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	public extern static TArray From<U>(IEnumerable<U> arrayLike, Func<U, Number, T> mapFn, object? thisArg = null);
 
 	/// <summary>
+	/// Creates an array from an array-like or iterable object.
+	/// This overload mirrors JavaScript <c>TypedArray.from</c> when the caller does not need the element index in the mapping callback.
+	/// </summary>
+	[Description("@#from")]
+	public extern static TArray From<U>(IEnumerable<U> arrayLike, Func<U, T> mapFn, object? thisArg = null);
+
+	/// <summary>
 	/// The ArrayBuffer instance referenced by the array.
 	/// </summary>
 	[Description("@#buffer")]
@@ -306,13 +418,22 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	public extern TArray Filter(Func<T, Number, TArray, object?> predicate, object? thisArg = null);
 
 	/// <summary>
-	/// Returns the value of the first element in the array where predicate is true, and undefined otherwise.
+	/// Returns the value of the first element in the array where predicate is true.
+	/// If no matching element exists, JavaScript returns <c>undefined</c> and this C# projection surfaces that absence as <see langword="null" />.
 	/// </summary>
-	/// <param name="predicate">find calls predicate once for each element of the array, in ascending order, until it finds one where predicate returns true. If such an element is found, find immediately returns that element value. Otherwise, find returns undefined.</param>
+	/// <param name="predicate">find calls predicate once for each element of the array, in ascending order, until it finds one where predicate returns true. If such an element is found, find immediately returns that element value. Otherwise, JavaScript returns <c>undefined</c>.</param>
 	/// <param name="thisArg">An arbitrary value passed as the JavaScript this argument to predicate. If omitted, undefined is used.</param>
 	/// <returns></returns>
 	[Description("@#find")]
 	public extern T? Find(Func<T, Number, TArray, bool> predicate, object? thisArg = null);
+
+	/// <summary>
+	/// Returns the last element whose value satisfies the provided testing function.
+	/// Nullable is used because JavaScript returns <c>undefined</c> when no matching element exists,
+	/// and the C# projection maps that absence to <see langword="null" />.
+	/// </summary>
+	[Description("@#findLast")]
+	public extern T? FindLast(Func<T, Number, TArray, object?> predicate, object? thisArg = null);
 
 	/// <summary>
 	/// Returns the index of the first element in the array where predicate is true, and -1 otherwise.
@@ -322,6 +443,12 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	/// <returns></returns>
 	[Description("@#findIndex")]
 	public extern Number FindIndex(Func<T, Number, TArray, bool> predicate, object? thisArg = null);
+
+	/// <summary>
+	/// Returns the index of the last element whose value satisfies the provided testing function, or <c>-1</c> if no match is found.
+	/// </summary>
+	[Description("@#findLastIndex")]
+	public extern Number FindLastIndex(Func<T, Number, TArray, object?> predicate, object? thisArg = null);
 
 	/// <summary>
 	/// Performs the specified action for each element in an array.
@@ -339,6 +466,13 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	/// <returns></returns>
 	[Description("@#indexOf")]
 	public extern Number IndexOf(T searchElement, Number? fromIndex = null);
+
+	/// <summary>
+	/// Projection of JavaScript <c>TypedArray.prototype.includes</c>.
+	/// This remains on the typed-array host instead of widening to a CLR collection helper.
+	/// </summary>
+	[Description("@#includes")]
+	public extern bool Includes(T searchElement, Number? fromIndex = null);
 
 	/// <summary>
 	/// Adds all the elements of an array separated by the specified separator string.
@@ -364,6 +498,14 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	public extern Number Length { get; }
 
 	/// <summary>
+	/// C# host projection of JavaScript <c>TypedArray.prototype.at</c>.
+	/// Nullable is used because JavaScript returns <c>undefined</c> for an out-of-range index,
+	/// and the C# projection maps that absence to <see langword="null" />.
+	/// </summary>
+	[Description("@#at")]
+	public extern T? At(Number index);
+
+	/// <summary>
 	/// Calls a defined callback function on each element of an array, and returns an array that contains the results.
 	/// </summary>
 	/// <param name="callbackfn"><para><b>(value: T, index: number, array: this) => T</b></para>A function that accepts up to three arguments. The map method calls the callbackfn function one time for each element in the array.</param>
@@ -375,11 +517,25 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	/// <summary>
 	/// Calls the specified callback function for all the elements in an array.The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
 	/// </summary>
+	/// <param name="callbackfn"><para><b>(previousValue: T, currentValue: T, currentIndex: number, array: this) => T</b></para>A function that accepts up to four arguments. When no initial value is supplied, JavaScript uses the first typed-array element as the initial accumulator.</param>
+	/// <returns></returns>
+	[Description("@#reduce")]
+	public extern T Reduce(Func<T, T, Number, TArray, T> callbackfn);
+
+	[Description("@#reduce")]
+	public extern T Reduce(Func<T, T, T> callbackfn);
+
+	/// <summary>
+	/// Calls the specified callback function for all the elements in an array.The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
+	/// </summary>
 	/// <param name="callbackfn">(previousValue: number, currentValue: number, currentIndex: number, array: this) => number,A function that accepts up to four arguments.The reduce method calls the callbackfn function one time for each element in the array.</param>
 	/// <param name="initialValue">If initialValue is specified, it is used as the initial value to start the accumulation.The first call to the callbackfn function provides this value as an argument instead of an array value.</param>
 	/// <returns></returns>
 	[Description("@#reduce")]
-	public extern T Reduce(Func<T, T, Number, TArray, T> callbackfn, T? initialValue = default);
+	public extern T Reduce(Func<T, T, Number, TArray, T> callbackfn, T initialValue);
+
+	[Description("@#reduce")]
+	public extern T Reduce(Func<T, T, T> callbackfn, T initialValue);
 
 	/// <summary>
 	/// Calls the specified callback function for all the elements in an array.The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
@@ -391,6 +547,20 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	[Description("@#reduce")]
 	public extern U Reduce<U>(Func<U, T, Number, TArray, U> callbackfn, U initialValue);
 
+	[Description("@#reduce")]
+	public extern U Reduce<U>(Func<U, T, U> callbackfn, U initialValue);
+
+	/// <summary>
+	/// Calls the specified callback function for all the elements in an array, in descending order.The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
+	/// </summary>
+	/// <param name="callbackfn"><para><b>(previousValue: T, currentValue: T, currentIndex: number, array: this) => T</b></para>A function that accepts up to four arguments. When no initial value is supplied, JavaScript uses the last typed-array element as the initial accumulator.</param>
+	/// <returns></returns>
+	[Description("@#reduceRight")]
+	public extern T ReduceRight(Func<T, T, Number, TArray, T> callbackfn);
+
+	[Description("@#reduceRight")]
+	public extern T ReduceRight(Func<T, T, T> callbackfn);
+
 	/// <summary>
 	/// Calls the specified callback function for all the elements in an array, in descending order.The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
 	/// </summary>
@@ -399,6 +569,9 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	/// <returns></returns>
 	[Description("@#reduceRight")]
 	public extern T ReduceRight(Func<T, T, Number, TArray, T> callbackfn, T initialValue);
+
+	[Description("@#reduceRight")]
+	public extern T ReduceRight(Func<T, T, T> callbackfn, T initialValue);
 
 	/// <summary>
 	/// Calls the specified callback function for all the elements in an array, in descending order.The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
@@ -410,12 +583,22 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	[Description("@#reduceRight")]
 	public extern U ReduceRight<U>(Func<U, T, Number, TArray, U> callbackfn, U initialValue);
 
+	[Description("@#reduceRight")]
+	public extern U ReduceRight<U>(Func<U, T, U> callbackfn, U initialValue);
+
 	/// <summary>
 	/// Reverses the elements in an Array.
 	/// </summary>
 	/// <returns></returns>
 	[Description("@#reverse")]
 	public extern TArray Reverse();
+
+	/// <summary>
+	/// Returns a copied typed array with the elements in reverse order.
+	/// Unlike <see cref="Reverse"/>, JavaScript <c>toReversed()</c> does not mutate the source typed array.
+	/// </summary>
+	[Description("@#toReversed")]
+	public extern TArray ToReversed();
 
 	/// <summary>
 	/// Copies values from a JavaScript iterable into the typed array.
@@ -454,6 +637,20 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	public extern TArray Sort(Func<T, T, Number>? compareFn = null);
 
 	/// <summary>
+	/// Returns a copied typed array with its elements sorted.
+	/// This stays on <typeparamref name="TArray"/> because JavaScript preserves the concrete typed-array host.
+	/// </summary>
+	[Description("@#toSorted")]
+	public extern TArray ToSorted(Func<T, T, Number>? compareFn = null);
+
+	/// <summary>
+	/// Returns a copied typed array with the element at the specified index replaced.
+	/// Negative indices follow JavaScript <c>TypedArray.prototype.with</c> semantics and count from the end.
+	/// </summary>
+	[Description("@#with")]
+	public extern TArray With(Number index, T value);
+
+	/// <summary>
 	/// Gets a new TArray view of the ArrayBuffer store for this array, referencing the elements at begin, inclusive, up to end, exclusive.
 	/// </summary>
 	/// <param name="begin">The index of the beginning of the array.</param>
@@ -462,17 +659,50 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	[Description("@#subarray")]
 	public extern TArray Subarray(Number? begin = null, Number? end = null);
 
-	///// <summary>
-	///// Converts a number to a string by using the current locale.
-	///// </summary>
-	///// <returns></returns>
-	//[Description("@#toLocaleString")]
-	//public extern string ToLocaleString();
+	/// <summary>
+	/// Returns the JavaScript string form of the typed array.
+	/// This is the direct projection of <c>TypedArray.prototype.toString()</c>.
+	/// </summary>
+	[Description("@#toString")]
+	public extern override string ToString();
+
+	/// <summary>
+	/// Returns a locale-sensitive string representation of the typed array.
+	/// This is the direct projection of <c>TypedArray.prototype.toLocaleString()</c>.
+	/// </summary>
+	[Description("@#toLocaleString")]
+	public extern string ToLocaleString();
+
+	/// <summary>
+	/// Returns the JavaScript iterator produced by <c>TypedArray.prototype.keys()</c>.
+	/// <see cref="IEnumerable{T}"/> is used as the common C# host surface for JavaScript iterables.
+	/// </summary>
+	[Description("@#keys")]
+	public extern IEnumerable<Number> Keys();
+
+	/// <summary>
+	/// Returns the JavaScript iterator produced by <c>TypedArray.prototype.values()</c>.
+	/// <see cref="IEnumerable{T}"/> is used as the common C# host surface for JavaScript iterables.
+	/// </summary>
+	[Description("@#values")]
+	public extern IEnumerable<T> Values();
+
+	/// <summary>
+	/// Returns the JavaScript iterator produced by <c>TypedArray.prototype.entries()</c>.
+	/// Each yielded item is the JavaScript two-element pair <c>[index, value]</c>.
+	/// </summary>
+	[Description("@#entries")]
+	public extern IEnumerable<Array<object?>> Entries();
 
 	extern IEnumerator<T> IEnumerable<T>.GetEnumerator();
 
 	extern IEnumerator IEnumerable.GetEnumerator();
 
+	/// <summary>
+	/// Direct JavaScript index access surface.
+	/// This stays non-nullable to preserve compatibility with array-like CLR projections.
+	/// Use <see cref="At" /> when you need a nullable result for out-of-range access.
+	/// </summary>
 	public extern T this[Number index] { get; set; }
 
 	//[EditorBrowsable(EditorBrowsableState.Never)]
@@ -484,7 +714,7 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 /// </summary>
 [ECMAScript]
 [Description("@#BigInt64Array")]
-public class BigInt64Array : TypedArray<BigInt, BigInt64Array>
+public class BigInt64Array : TypedArray<BigInt, BigInt64Array>, IWaitableAtomicArray<BigInt>
 {
 	public extern BigInt64Array(Number length);
 
@@ -503,7 +733,7 @@ public class BigInt64Array : TypedArray<BigInt, BigInt64Array>
 /// </summary>
 [ECMAScript]
 [Description("@#BigUint64Array")]
-public class BigUint64Array : TypedArray<BigInt, BigUint64Array>
+public class BigUint64Array : TypedArray<BigInt, BigUint64Array>, IAtomicArray<BigInt>
 {
 	public extern BigUint64Array(Number length);
 
@@ -576,7 +806,7 @@ public class Float64Array : TypedArray<double, Float64Array>
 /// </summary>
 [ECMAScript]
 [Description("@#Int8Array")]
-public class Int8Array : TypedArray<sbyte, Int8Array>
+public class Int8Array : TypedArray<sbyte, Int8Array>, IAtomicArray<sbyte>
 {
 	public extern Int8Array(Number length);
 
@@ -595,7 +825,7 @@ public class Int8Array : TypedArray<sbyte, Int8Array>
 /// </summary>
 [ECMAScript]
 [Description("@#Int16Array")]
-public class Int16Array : TypedArray<short, Int16Array>
+public class Int16Array : TypedArray<short, Int16Array>, IAtomicArray<short>
 {
 	public extern Int16Array(Number length);
 
@@ -614,7 +844,7 @@ public class Int16Array : TypedArray<short, Int16Array>
 /// </summary>
 [ECMAScript]
 [Description("@#Int32Array")]
-public class Int32Array : TypedArray<int, Int32Array>
+public class Int32Array : TypedArray<int, Int32Array>, IWaitableAtomicArray<int>
 {
 	public extern Int32Array(Number length);
 
@@ -633,7 +863,7 @@ public class Int32Array : TypedArray<int, Int32Array>
 /// </summary>
 [ECMAScript]
 [Description("@#Uint8Array")]
-public class Uint8Array : TypedArray<byte, Uint8Array>
+public class Uint8Array : TypedArray<byte, Uint8Array>, IAtomicArray<byte>
 {
 	public extern Uint8Array(Number length);
 
@@ -671,7 +901,7 @@ public class Uint8ClampedArray : TypedArray<byte, Uint8ClampedArray>
 /// </summary>
 [ECMAScript]
 [Description("@#Uint16Array")]
-public class Uint16Array : TypedArray<ushort, Uint16Array>
+public class Uint16Array : TypedArray<ushort, Uint16Array>, IAtomicArray<ushort>
 {
 	public extern Uint16Array(Number length);
 
@@ -690,7 +920,7 @@ public class Uint16Array : TypedArray<ushort, Uint16Array>
 /// </summary>
 [ECMAScript]
 [Description("@#Uint32Array")]
-public class Uint32Array : TypedArray<uint, Uint32Array>
+public class Uint32Array : TypedArray<uint, Uint32Array>, IAtomicArray<uint>
 {
 	public extern Uint32Array(Number length);
 

@@ -93,9 +93,8 @@ public static class Int16Module
 	/// C#: short.CompareTo(short)
 	/// JS: 返回负数、零或正数
 	/// </summary>
-	[Jazor(Op.Import, "short.CompareTo(short)")]
-	public static Number _4ee8d8c1e1a45502(Number instance, Number value)
-		=> CompareCore(instance, value);
+	[Jazor(Op.Inline, "short.CompareTo(short)", "(__arg1 < __arg2 ? -1 : (__arg1 > __arg2 ? 1 : 0))")]
+	public extern static Number _4ee8d8c1e1a45502(Number instance, Number value);
 
 	/// <summary>
 	/// C#: short.Equals(object)
@@ -209,28 +208,60 @@ public static class Int16Module
 	[Jazor(Op.Discard, "static short.TrailingZeroCount(short)")]
 	public extern static Number _34f7d9d508f3d3fa(Number value);
 
-	[Jazor(Op.Discard, "static short.IsPow2(short)")]
+	/// <summary>
+	/// C#: short.IsPow2(value)
+	/// JS: value > 0 && (value & (value - 1)) === 0
+	/// </summary>
+	[Jazor(Op.Inline, "static short.IsPow2(short)", "(__arg1 > 0 && (__arg1 & (__arg1 - 1)) === 0)")]
 	public extern static bool _7f2d59a3c443c4ad(Number value);
 
-	[Jazor(Op.Discard, "static short.Log2(short)")]
+	/// <summary>
+	/// C#: short.Log2(value)
+	/// JS: Math.floor(Math.log2(value))
+	/// </summary>
+	[Jazor(Op.Inline, "static short.Log2(short)", "Math.floor(Math.log2(__arg1))")]
 	public extern static Number _35f45babf0c06295(Number value);
 
-	[Jazor(Op.Discard, "static short.Clamp(short, short, short)")]
+	/// <summary>
+	/// C#: short.Clamp(value, min, max)
+	/// JS: Math.min(Math.max(value, min), max)
+	/// </summary>
+	[Jazor(Op.Inline, "static short.Clamp(short, short, short)", "Math.min(Math.max(__arg1, __arg2), __arg3)")]
 	public extern static Number _ab81977f8ce898b6(Number value, Number min, Number max);
 
-	[Jazor(Op.Discard, "static short.CopySign(short, short)")]
+	/// <summary>
+	/// C#: short.CopySign(value, sign)
+	/// JS: short 不存在 -0，可稳定收敛为单表达式。
+	/// </summary>
+	[Jazor(Op.Inline, "static short.CopySign(short, short)", "(__arg2 < 0 ? -Math.abs(__arg1) : Math.abs(__arg1))")]
 	public extern static Number _84dbfd61502b67c2(Number value, Number sign);
 
-	[Jazor(Op.Discard, "static short.Max(short, short)")]
+	/// <summary>
+	/// C#: short.Max(x, y)
+	/// JS: Math.max(x, y)
+	/// </summary>
+	[Jazor(Op.Inline, "static short.Max(short, short)", "Math.max(__arg1, __arg2)")]
 	public extern static Number _3373f84658d4d175(Number x, Number y);
 
-	[Jazor(Op.Discard, "static short.Min(short, short)")]
+	/// <summary>
+	/// C#: short.Min(x, y)
+	/// JS: Math.min(x, y)
+	/// </summary>
+	[Jazor(Op.Inline, "static short.Min(short, short)", "Math.min(__arg1, __arg2)")]
 	public extern static Number _02506ba99181e464(Number x, Number y);
 
-	[Jazor(Op.Discard, "static short.Sign(short)")]
+	/// <summary>
+	/// C#: short.Sign(value)
+	/// JS: value > 0 ? 1 : (value < 0 ? -1 : 0)
+	/// </summary>
+	[Jazor(Op.Inline, "static short.Sign(short)", "(__arg1 > 0 ? 1 : (__arg1 < 0 ? -1 : 0))")]
 	public extern static Number _566e8c96791a4a93(Number value);
 
-	[Jazor(Op.Discard, "static short.Abs(short)")]
+	/// <summary>
+	/// C#: short.Abs(value)
+	/// JS: Math.abs(value)
+	/// </summary>
+	[Jazor(Op.Inline, "static short.Abs(short)", "Math.abs(__arg1)")]
 	public extern static Number _8ce36b36c4abd947(Number value);
 
 	[Jazor(Op.Discard, "static short.CreateChecked<TOther>(TOther)")]
@@ -242,16 +273,32 @@ public static class Int16Module
 	[Jazor(Op.Discard, "static short.CreateTruncating<TOther>(TOther)")]
 	public extern static Number _4da6b11d651bbbb0<TOther>(object value);
 
-	[Jazor(Op.Discard, "static short.IsEvenInteger(short)")]
+	/// <summary>
+	/// C#: short.IsEvenInteger(value)
+	/// JS: (value & 1) === 0
+	/// </summary>
+	[Jazor(Op.Inline, "static short.IsEvenInteger(short)", "((__arg1 & 1) === 0)")]
 	public extern static bool _316df8d3092665d2(Number value);
 
-	[Jazor(Op.Discard, "static short.IsNegative(short)")]
+	/// <summary>
+	/// C#: short.IsNegative(value)
+	/// JS: value < 0
+	/// </summary>
+	[Jazor(Op.Inline, "static short.IsNegative(short)", "(__arg1 < 0)")]
 	public extern static bool _1d7ab190b3eef427(Number value);
 
-	[Jazor(Op.Discard, "static short.IsOddInteger(short)")]
+	/// <summary>
+	/// C#: short.IsOddInteger(value)
+	/// JS: (value & 1) !== 0
+	/// </summary>
+	[Jazor(Op.Inline, "static short.IsOddInteger(short)", "((__arg1 & 1) !== 0)")]
 	public extern static bool _e35c3640561ad6e4(Number value);
 
-	[Jazor(Op.Discard, "static short.IsPositive(short)")]
+	/// <summary>
+	/// C#: short.IsPositive(value)
+	/// JS: value > 0
+	/// </summary>
+	[Jazor(Op.Inline, "static short.IsPositive(short)", "(__arg1 > 0)")]
 	public extern static bool _f65c31648c1c40d7(Number value);
 
 	[Jazor(Op.Discard, "static short.MaxMagnitude(short, short)")]

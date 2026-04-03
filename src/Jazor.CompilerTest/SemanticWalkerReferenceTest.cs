@@ -65,9 +65,7 @@ public sealed class SemanticWalkerReferenceTest
 
 	// 锁定完整 JS 输出，避免弱断言漏掉引号、换行和调用形态回退。
 	private static void AssertScriptEqual(string expected, string? actual)
-	{
-		Assert.AreEqual(expected.ReplaceLineEndings(), actual?.ReplaceLineEndings());
-	}
+		=> Assert.AreEqual(expected.ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
 	
 	#region VisitLocalReference - 局部变量引用
 
@@ -252,6 +250,7 @@ public sealed class SemanticWalkerReferenceTest
                 {
                     var cmp = left.CompareTo(right);
                     var eq = left.Equals(right);
+                    var fcopy = float.CopySign(left, right);
                     var dcmp = value.CompareTo(sign);
                     var deq = value.Equals(sign);
                     var copy = double.CopySign(value, sign);
@@ -264,13 +263,361 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		AssertScriptEqual(@"{
+        AssertScriptEqual(@"{
   let cmp = isNaN(left) ? isNaN(right) ? 0 : -1 : isNaN(right) ? 1 : left < right ? -1 : left > right ? 1 : 0;
   let eq = isNaN(left) ? isNaN(right) : isNaN(right) ? false : !(left < right) && !(left > right);
+  let fcopy = right < 0 || Object.is(right, -0) ? -Math.abs(left) : Math.abs(left);
   let dcmp = isNaN(value) ? isNaN(sign) ? 0 : -1 : isNaN(sign) ? 1 : value < sign ? -1 : value > sign ? 1 : 0;
   let deq = isNaN(value) ? isNaN(sign) : isNaN(sign) ? false : !(value < sign) && !(value > sign);
   let copy = sign < 0 || Object.is(sign, -0) ? -Math.abs(value) : Math.abs(value);
   let mathCopy = sign < 0 || Object.is(sign, -0) ? -Math.abs(value) : Math.abs(value);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_BooleanSimpleMembers_UseInlineShapes()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(bool left, bool right)
+                {
+                    var text = left.ToString();
+                    var cmp = left.CompareTo(right);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let text = left ? ""True"" : ""False"";
+  let cmp = left === right ? 0 : left ? 1 : -1;
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_Int16AndUInt16Intrinsics_UseInlineShapes()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(short signedValue, short signedSign, short signedMin, short signedMax, ushort unsignedValue, ushort unsignedMin, ushort unsignedMax)
+                {
+                    var signedCopy = short.CopySign(signedValue, signedSign);
+                    var signedClamp = short.Clamp(signedValue, signedMin, signedMax);
+                    var signedSignum = short.Sign(signedValue);
+                    var signedAbs = short.Abs(signedValue);
+                    var signedEven = short.IsEvenInteger(signedValue);
+                    var signedNegative = short.IsNegative(signedValue);
+                    var signedOdd = short.IsOddInteger(signedValue);
+                    var signedPositive = short.IsPositive(signedValue);
+                    var signedPow2 = short.IsPow2(signedValue);
+                    var signedLog2 = short.Log2(signedValue);
+                    var signedMaxValue = short.Max(signedMin, signedMax);
+                    var signedMinValue = short.Min(signedMin, signedMax);
+                    var unsignedClamp = ushort.Clamp(unsignedValue, unsignedMin, unsignedMax);
+                    var unsignedSignum = ushort.Sign(unsignedValue);
+                    var unsignedEven = ushort.IsEvenInteger(unsignedValue);
+                    var unsignedOdd = ushort.IsOddInteger(unsignedValue);
+                    var unsignedPow2 = ushort.IsPow2(unsignedValue);
+                    var unsignedLog2 = ushort.Log2(unsignedValue);
+                    var unsignedMaxValue = ushort.Max(unsignedMin, unsignedMax);
+                    var unsignedMinValue = ushort.Min(unsignedMin, unsignedMax);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let signedCopy = signedSign < 0 ? -Math.abs(signedValue) : Math.abs(signedValue);
+  let signedClamp = Math.min(Math.max(signedValue, signedMin), signedMax);
+  let signedSignum = signedValue > 0 ? 1 : signedValue < 0 ? -1 : 0;
+  let signedAbs = Math.abs(signedValue);
+  let signedEven = (signedValue & 1) === 0;
+  let signedNegative = signedValue < 0;
+  let signedOdd = (signedValue & 1) !== 0;
+  let signedPositive = signedValue > 0;
+  let signedPow2 = signedValue > 0 && (signedValue & signedValue - 1) === 0;
+  let signedLog2 = Math.floor(Math.log2(signedValue));
+  let signedMaxValue = Math.max(signedMin, signedMax);
+  let signedMinValue = Math.min(signedMin, signedMax);
+  let unsignedClamp = Math.min(Math.max(unsignedValue, unsignedMin), unsignedMax);
+  let unsignedSignum = unsignedValue === 0 ? 0 : 1;
+  let unsignedEven = (unsignedValue & 1) === 0;
+  let unsignedOdd = (unsignedValue & 1) !== 0;
+  let unsignedPow2 = unsignedValue > 0 && (unsignedValue & unsignedValue - 1) === 0;
+  let unsignedLog2 = Math.floor(Math.log2(unsignedValue));
+  let unsignedMaxValue = Math.max(unsignedMin, unsignedMax);
+  let unsignedMinValue = Math.min(unsignedMin, unsignedMax);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_SByteUInt32AndUInt64Intrinsics_UseInlineShapes()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(
+                    sbyte signedValue,
+                    sbyte signedSign,
+                    sbyte signedMin,
+                    sbyte signedMax,
+                    uint unsignedValue,
+                    uint unsignedMin,
+                    uint unsignedMax,
+                    ulong ulongValue,
+                    ulong ulongMin,
+                    ulong ulongMax)
+                {
+                    var signedCopy = sbyte.CopySign(signedValue, signedSign);
+                    var signedClamp = sbyte.Clamp(signedValue, signedMin, signedMax);
+                    var signedSignum = sbyte.Sign(signedValue);
+                    var signedAbs = sbyte.Abs(signedValue);
+                    var signedEven = sbyte.IsEvenInteger(signedValue);
+                    var signedNegative = sbyte.IsNegative(signedValue);
+                    var signedOdd = sbyte.IsOddInteger(signedValue);
+                    var signedPositive = sbyte.IsPositive(signedValue);
+                    var signedPow2 = sbyte.IsPow2(signedValue);
+                    var signedLog2 = sbyte.Log2(signedValue);
+                    var signedMaxValue = sbyte.Max(signedMin, signedMax);
+                    var signedMinValue = sbyte.Min(signedMin, signedMax);
+                    var unsignedClamp = uint.Clamp(unsignedValue, unsignedMin, unsignedMax);
+                    var unsignedSignum = uint.Sign(unsignedValue);
+                    var unsignedEven = uint.IsEvenInteger(unsignedValue);
+                    var unsignedOdd = uint.IsOddInteger(unsignedValue);
+                    var unsignedPow2 = uint.IsPow2(unsignedValue);
+                    var unsignedLog2 = uint.Log2(unsignedValue);
+                    var unsignedMaxValue = uint.Max(unsignedMin, unsignedMax);
+                    var unsignedMinValue = uint.Min(unsignedMin, unsignedMax);
+                    var ulongClamp = ulong.Clamp(ulongValue, ulongMin, ulongMax);
+                    var ulongSignum = ulong.Sign(ulongValue);
+                    var ulongEven = ulong.IsEvenInteger(ulongValue);
+                    var ulongOdd = ulong.IsOddInteger(ulongValue);
+                    var ulongPow2 = ulong.IsPow2(ulongValue);
+                    var ulongLog2 = ulong.Log2(ulongValue);
+                    var ulongMaxValue = ulong.Max(ulongMin, ulongMax);
+                    var ulongMinValue = ulong.Min(ulongMin, ulongMax);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let signedCopy = signedSign < 0 ? -Math.abs(signedValue) : Math.abs(signedValue);
+  let signedClamp = Math.min(Math.max(signedValue, signedMin), signedMax);
+  let signedSignum = signedValue > 0 ? 1 : signedValue < 0 ? -1 : 0;
+  let signedAbs = Math.abs(signedValue);
+  let signedEven = (signedValue & 1) === 0;
+  let signedNegative = signedValue < 0;
+  let signedOdd = (signedValue & 1) !== 0;
+  let signedPositive = signedValue > 0;
+  let signedPow2 = signedValue > 0 && (signedValue & signedValue - 1) === 0;
+  let signedLog2 = Math.floor(Math.log2(signedValue));
+  let signedMaxValue = Math.max(signedMin, signedMax);
+  let signedMinValue = Math.min(signedMin, signedMax);
+  let unsignedClamp = Math.min(Math.max(unsignedValue, unsignedMin), unsignedMax);
+  let unsignedSignum = unsignedValue === 0 ? 0 : 1;
+  let unsignedEven = (unsignedValue & 1) === 0;
+  let unsignedOdd = (unsignedValue & 1) !== 0;
+  let unsignedPow2 = unsignedValue > 0 && (unsignedValue & unsignedValue - 1) === 0;
+  let unsignedLog2 = Math.floor(Math.log2(unsignedValue));
+  let unsignedMaxValue = Math.max(unsignedMin, unsignedMax);
+  let unsignedMinValue = Math.min(unsignedMin, unsignedMax);
+  let ulongClamp = ulongValue < ulongMin ? ulongMin : ulongValue > ulongMax ? ulongMax : ulongValue;
+  let ulongSignum = ulongValue === 0n ? 0 : 1;
+  let ulongEven = ulongValue % 2n === 0n;
+  let ulongOdd = ulongValue % 2n !== 0n;
+  let ulongPow2 = ulongValue > 0n && (ulongValue & ulongValue - 1n) === 0n;
+  let ulongLog2 = ulongValue === 0n ? 0n : BigInt(ulongValue.toString(2).length - 1);
+  let ulongMaxValue = ulongMin > ulongMax ? ulongMin : ulongMax;
+  let ulongMinValue = ulongMin < ulongMax ? ulongMin : ulongMax;
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_Int64AndMathBigIntIntrinsics_UseInlineShapes()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(long longValue, long longMin, long longMax, ulong ulongValue, ulong ulongMin, ulong ulongMax)
+                {
+                    var longClamp = long.Clamp(longValue, longMin, longMax);
+                    var longSignum = long.Sign(longValue);
+                    var longMaxValue = System.Math.Max(longMin, longMax);
+                    var longMinValue = System.Math.Min(longMin, longMax);
+                    var mathLongClamp = System.Math.Clamp(longValue, longMin, longMax);
+                    var mathLongSignum = System.Math.Sign(longValue);
+                    var ulongMaxValue = System.Math.Max(ulongMin, ulongMax);
+                    var ulongMinValue = System.Math.Min(ulongMin, ulongMax);
+                    var mathUlongClamp = System.Math.Clamp(ulongValue, ulongMin, ulongMax);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let longClamp = longValue < longMin ? longMin : longValue > longMax ? longMax : longValue;
+  let longSignum = longValue > 0n ? 1 : longValue < 0n ? -1 : 0;
+  let longMaxValue = longMin > longMax ? longMin : longMax;
+  let longMinValue = longMin < longMax ? longMin : longMax;
+  let mathLongClamp = longValue < longMin ? longMin : longValue > longMax ? longMax : longValue;
+  let mathLongSignum = longValue > 0n ? 1 : longValue < 0n ? -1 : 0;
+  let ulongMaxValue = ulongMin > ulongMax ? ulongMin : ulongMax;
+  let ulongMinValue = ulongMin < ulongMax ? ulongMin : ulongMax;
+  let mathUlongClamp = ulongValue < ulongMin ? ulongMin : ulongValue > ulongMax ? ulongMax : ulongValue;
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_BigIntegerSimpleIntrinsics_UseInlineShapes()
+	{
+		var block = GetBlockOperation(@"
+            using System.Numerics;
+
+            class TestClass
+            {
+                void TestMethod(BigInteger value, BigInteger sign, BigInteger left, BigInteger right)
+                {
+                    var abs = BigInteger.Abs(value);
+                    var add = BigInteger.Add(left, right);
+                    var copy = BigInteger.CopySign(value, sign);
+                    var divide = BigInteger.Divide(left, right);
+                    var max = BigInteger.Max(left, right);
+                    var min = BigInteger.Min(left, right);
+                    var multiply = BigInteger.Multiply(left, right);
+                    var negate = BigInteger.Negate(value);
+                    var even = BigInteger.IsEvenInteger(value);
+                    var negative = BigInteger.IsNegative(value);
+                    var odd = BigInteger.IsOddInteger(value);
+                    var positive = BigInteger.IsPositive(value);
+                    var remainder = BigInteger.Remainder(left, right);
+                    var subtract = BigInteger.Subtract(left, right);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let abs = value < 0n ? -value : value;
+  let add = left + right;
+  let copy = sign < 0n ? value < 0n ? value : -value : value < 0n ? -value : value;
+  let divide = left / right;
+  let max = left > right ? left : right;
+  let min = left < right ? left : right;
+  let multiply = left * right;
+  let negate = -value;
+  let even = value % 2n === 0n;
+  let negative = value < 0n;
+  let odd = value % 2n !== 0n;
+  let positive = value > 0n;
+  let remainder = left % right;
+  let subtract = left - right;
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_BigIntegerDivRemOut_UsesHelperReturnPacking()
+	{
+		var block = GetBlockOperation(@"
+            using System.Numerics;
+
+            class TestClass
+            {
+                void TestMethod(BigInteger left, BigInteger right)
+                {
+                    BigInteger remainder;
+                    var quotient = BigInteger.DivRem(left, right, out remainder);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let v$0;
+  let remainder;
+  let quotient = (v$0 = _598611fb2b8a064a(left, right, remainder), remainder = v$0[1], v$0[0]);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_BigIntegerCompareEqualsToString_UseWhiteListShapes()
+	{
+		var block = GetBlockOperation(@"
+            using System.Numerics;
+
+            class TestClass
+            {
+                void TestMethod(BigInteger left, BigInteger right, object obj)
+                {
+                    var cmp = BigInteger.Compare(left, right);
+                    var typedCmp = left.CompareTo(right);
+                    var typedEq = left.Equals(right);
+                    var objectEq = left.Equals(obj);
+                    var text = left.ToString();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let cmp = left < right ? -1 : left > right ? 1 : 0;
+  let typedCmp = left < right ? -1 : left > right ? 1 : 0;
+  let typedEq = left === right;
+  let objectEq = left === obj;
+  let text = left.toString();
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_PrimitiveCompareToSameType_UseInlineShapes()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(byte b1, byte b2, sbyte sb1, sbyte sb2, short s1, short s2, int i1, int i2, char c1, char c2)
+                {
+                    var byteCmp = b1.CompareTo(b2);
+                    var sbyteCmp = sb1.CompareTo(sb2);
+                    var shortCmp = s1.CompareTo(s2);
+                    var intCmp = i1.CompareTo(i2);
+                    var charCmp = c1.CompareTo(c2);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let byteCmp = b1 < b2 ? -1 : b1 > b2 ? 1 : 0;
+  let sbyteCmp = sb1 < sb2 ? -1 : sb1 > sb2 ? 1 : 0;
+  let shortCmp = s1 < s2 ? -1 : s1 > s2 ? 1 : 0;
+  let intCmp = i1 < i2 ? -1 : i1 > i2 ? 1 : 0;
+  let charCmp = c1 < c2 ? -1 : c1 > c2 ? 1 : 0;
 }", script);
 	}
 
@@ -358,6 +705,28 @@ public sealed class SemanticWalkerReferenceTest
   let isPositiveInfinity = value === Infinity;
   let isNegativeInfinity = value === -Infinity;
   let isNaN = Number.isNaN(value);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_IsFinite_WithShadowedGlobalName_UsesNumberHost()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(double value)
+                {
+                    bool isFinite = double.IsFinite(value);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let isFinite = Number.isFinite(value);
 }", script);
 	}
 
@@ -3102,7 +3471,7 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
-	public void Visit_Reference_GlobalRegExp_CompileDeclinesAndFallsBack()
+	public void Visit_Reference_GlobalRegExp_UsesOrdinaryStaticCall()
 	{
 		var block = GetBlockOperation(@"
             class TestClass
@@ -3550,6 +3919,60 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
+	public void Visit_Reference_InvalidOperationExceptionMembers_FallbackToBaseErrorMappings()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var error = new InvalidOperationException(""boom"");
+                    var message = error.Message;
+                    var stack = error.StackTrace;
+                    var text = error.ToString();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let error = new Error(""boom"");
+  let message = error.message;
+  let stack = error.stack;
+  let text = error.toString();
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_ArgumentNullExceptionMembers_FallbackToBaseErrorMappings()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var error = new ArgumentNullException(""arg"");
+                    var message = error.Message;
+                    var name = error.ParamName;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let error = new TypeError(""arg"");
+  let message = error.message;
+  let name = error.message;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
 	public void Visit_Reference_ErrorOptionsConstructor_PreservesJsShape()
 	{
 		var block = GetBlockOperation(@"
@@ -3704,8 +4127,542 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let len = ""hello"".toUpperCase().length;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 DateOnly.ToString 走运行时 carrier 的 toString，而不是退化成普通对象访问。
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_DateOnlyToString()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var date = new System.DateOnly(2024, 1, 2);
+                    var text = date.ToString();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let date = _8c5a25d777626c6c(2024, 1, 2);
+  let text = date.toString();
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 TimeOnly.ToString 绑定到 carrier 的 toString。
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_TimeOnlyToString()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var time = new System.TimeOnly(12, 30, 0);
+                    var text = time.ToString();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let time = _e9a3481b3456aad4(12, 30, 0);
+  let text = time.toString();
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 TimeSpan.ToString 绑定到 carrier 的 toString。
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_TimeSpanToString()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var span = new System.TimeSpan(1, 2, 3);
+                    var text = span.ToString();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let span = _6f22e268aec62fe7(1, 2, 3);
+  let text = span.toString();
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 DateTimeOffset.Date 不会误降级成 JS Date 的 date/getDate 访问，而是走专门 helper。
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_DateTimeOffsetDate()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var dto = new System.DateTimeOffset(2024, 1, 1, 12, 0, 0, System.TimeSpan.Zero);
+                    var date = dto.Date;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let dto = _d90dce0e1d2f06e4(2024, 1, 1, 12, 0, 0, _e5548fcde33957a6());
+  let date = _d7098a1eabebc945(dto);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 DateTimeOffset.ToString 绑定到 carrier 的 toString。
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_DateTimeOffsetToString()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var dto = new System.DateTimeOffset(2024, 1, 1, 12, 0, 0, System.TimeSpan.Zero);
+                    var text = dto.ToString();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let dto = _d90dce0e1d2f06e4(2024, 1, 1, 12, 0, 0, _e5548fcde33957a6());
+  let text = dto.toString();
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 CultureInfo 仍然按字符串 carrier 工作，Name 直接取值，ToString 走标准 helper。
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_CultureInfoNameAndToString()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var culture = new System.Globalization.CultureInfo(""en-US"");
+                    var name = culture.Name;
+                    var text = culture.ToString();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let culture = _b7486264ae338f27(""en-US"");
+  let name = culture;
+  let text = _559b27327f84f1af(culture);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 InvariantCulture 保持字符串 carrier 语义。
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_CultureInfoInvariantCulture()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var culture = System.Globalization.CultureInfo.InvariantCulture;
+                    var name = culture.Name;
+                    var text = culture.ToString();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let culture = _e4c4d53d69e72382();
+  let name = culture;
+  let text = _559b27327f84f1af(culture);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 GregorianCalendar 作为字符串 carrier 创建，并通过专门 helper 访问实例方法。
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_GregorianCalendarGetYear()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var calendar = new System.Globalization.GregorianCalendar();
+                    var year = calendar.GetYear(new System.DateTime(2024, 1, 2));
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let calendar = _23b9e8d671b5210e();
+  let year = _fd5a2cde6fb4d6f5(calendar, _4cb33a818161a3e1(2024, 1, 2));
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 Guid.ToString 走规范化 helper，而不是直接调用原生 string.toString。
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_GuidToString()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var guid = new System.Guid(""00112233-4455-6677-8899-aabbccddeeff"");
+                    var text = guid.ToString();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let guid = _24e026ca196fe82b(""00112233-4455-6677-8899-aabbccddeeff"");
+  let text = _055f1f857de6de37(guid);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 decimal.ToString 走 DecimalModule helper，而不是退化成 JS Number/String 的原生 toString。
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_DecimalToString()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    decimal value = decimal.MaxValue;
+                    var text = value.ToString();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let value = 79228162514264337593543950335;
+  let text = _65a0e4fe8ccdd829(value);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 DateOnly.Parse 绑定到 DateOnlyModule helper。
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_DateOnlyParse()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var value = System.DateOnly.Parse(""2024-01-02"");
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let value = _e2640560d207afce(""2024-01-02"");
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 DateOnly.ToString(string) 不会回退到默认 toString。
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_DateOnlyToStringFormat()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var value = new System.DateOnly(2024, 1, 2);
+                    var text = value.ToString(""O"");
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let value = _8c5a25d777626c6c(2024, 1, 2);
+  let text = _5dd96e58e55f801c(value, ""O"");
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 TimeOnly.Parse(string, provider, style) 绑定到完整 helper。
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_TimeOnlyParseWithStyle()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var value = System.TimeOnly.Parse(""12:30:00"", null, System.Globalization.DateTimeStyles.None);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let value = _b10aeed232e37ce3(""12:30:00"", null, 0);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 TimeOnly.ToString(string, provider) 绑定到格式化 helper。
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_TimeOnlyToStringFormat()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var value = new System.TimeOnly(12, 30, 0);
+                    var text = value.ToString(""O"", null);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let value = _e9a3481b3456aad4(12, 30, 0);
+  let text = _dd80539f727e11c1(value, ""O"", null);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 TimeSpan.Parse(string, provider) 绑定到 TimeSpanModule helper。
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_TimeSpanParseWithProvider()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var value = System.TimeSpan.Parse(""01:02:03"", null);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let value = _55da737da6ee6a65(""01:02:03"", null);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 TimeSpan.ToString(string, provider) 绑定到格式化 helper。
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_TimeSpanToStringFormat()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var value = new System.TimeSpan(1, 2, 3);
+                    var text = value.ToString(""c"", null);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let value = _6f22e268aec62fe7(1, 2, 3);
+  let text = _49fbba4d75df94f7(value, ""c"", null);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 DateTimeOffset.Parse(string, provider, style) 绑定到完整 helper。
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_DateTimeOffsetParseWithStyle()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var value = System.DateTimeOffset.Parse(""2024-01-02T03:04:05+08:00"", null, System.Globalization.DateTimeStyles.None);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let value = _277a1a2c7845bcdc(""2024-01-02T03:04:05+08:00"", null, 0);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 DateTimeOffset.ToString(string, provider) 绑定到格式化 helper。
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_DateTimeOffsetToStringFormat()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var value = new System.DateTimeOffset(2024, 1, 1, 12, 0, 0, System.TimeSpan.Zero);
+                    var text = value.ToString(""O"", null);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let value = _d90dce0e1d2f06e4(2024, 1, 1, 12, 0, 0, _e5548fcde33957a6());
+  let text = _e856edbfd7db0646(value, ""O"", null);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 decimal.Parse(string, provider) 绑定到 DecimalModule helper。
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_DecimalParseWithProvider()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var value = decimal.Parse(""123.45"", null);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let value = _01be2a34fe2cda4e(""123.45"", null);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 decimal.ToString(string, provider) 绑定到 DecimalModule helper。
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_DecimalToStringFormat()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var value = decimal.Parse(""123.45"", null);
+                    var text = value.ToString(""G"", null);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let value = _01be2a34fe2cda4e(""123.45"", null);
+  let text = _b1e6a06111674f0c(value, ""G"", null);
 }", script);
 	}
 

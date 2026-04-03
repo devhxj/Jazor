@@ -103,7 +103,7 @@ public static class ConditionalWeakTableModule<TKey, TValue> where TKey : class
 	{
 		var typedKey = (TKey)key;
 		if (instance.Has(typedKey))
-			return instance.Get(typedKey);
+			return instance.Get(typedKey)!;
 
 		var typedValue = (TValue)value;
 		instance.Set(typedKey, typedValue);

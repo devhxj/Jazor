@@ -10,10 +10,11 @@ public static partial class Global
 	/// </summary>
 	extension(Math)
 	{
-		///// <summary>
-		///// The mathematical constant e. This is Euler's number, the base of natural logarithms.
-		///// </summary>
-		//public extern static Number E { get; }
+		/// <summary>
+		/// Euler's number as exposed by JavaScript <c>Math.E</c>.
+		/// This remains on the <c>Math</c> host so the runtime shape stays aligned with JavaScript rather than drifting into CLR helper APIs.
+		/// </summary>
+		public extern static Number E { get; }
 
 		/// <summary>
 		/// The natural logarithm of 10.
@@ -262,6 +263,15 @@ public static partial class Global
 		/// <returns></returns>
 		[Description("@#max")]
 		public extern static Number Max_(params Number[] values);
+
+		/// <summary>
+		/// Returns the smaller of a set of supplied numeric expressions.
+		/// </summary>
+		/// <param name="val1">Numeric expressions to be evaluated.</param>
+		/// <param name="val2">Numeric expressions to be evaluated.</param>
+		/// <returns></returns>
+		[Description("@#min")]
+		public extern static Number Min_(Number val1, Number val2);
 
 		/// <summary>
 		/// Returns the smaller of a set of supplied numeric expressions.

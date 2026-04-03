@@ -74,9 +74,8 @@ public static class ByteModule
 	}
 
 	///<summary>Compares this instance to a specified 8-bit unsigned integer and returns an indication of their relative values.</summary>
-	[Jazor(Op.Import, "byte.CompareTo(byte)")]
-	public static Number _5c935ae4273a32cf(Number instance, Number value)
-		=> CompareCore(instance, value);
+	[Jazor(Op.Inline, "byte.CompareTo(byte)", "(__arg1 < __arg2 ? -1 : (__arg1 > __arg2 ? 1 : 0))")]
+	public extern static Number _5c935ae4273a32cf(Number instance, Number value);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
 	[Jazor(Op.Inline, "override byte.Equals(object)", "(__arg1 === __arg2)")]

@@ -229,28 +229,46 @@ public static class UInt16Module
 	[Jazor(Op.Discard, "static ushort.TrailingZeroCount(ushort)")]
 	public extern static Number _08ec622fc4aabafb(Number value);
 
-	///<summary>Determines if a value is a power of two.</summary>
-	[Jazor(Op.Discard, "static ushort.IsPow2(ushort)")]
+	/// <summary>
+	/// C#: ushort.IsPow2(value)
+	/// JS: value > 0 && (value & (value - 1)) === 0
+	/// </summary>
+	[Jazor(Op.Inline, "static ushort.IsPow2(ushort)", "(__arg1 > 0 && (__arg1 & (__arg1 - 1)) === 0)")]
 	public extern static bool _5e7a013434210fd3(Number value);
 
-	///<summary>Computes the log2 of a value.</summary>
-	[Jazor(Op.Discard, "static ushort.Log2(ushort)")]
+	/// <summary>
+	/// C#: ushort.Log2(value)
+	/// JS: Math.floor(Math.log2(value))
+	/// </summary>
+	[Jazor(Op.Inline, "static ushort.Log2(ushort)", "Math.floor(Math.log2(__arg1))")]
 	public extern static Number _3e54056b3d1e32ad(Number value);
 
-	///<summary>Clamps a value to an inclusive minimum and maximum value.</summary>
-	[Jazor(Op.Discard, "static ushort.Clamp(ushort, ushort, ushort)")]
+	/// <summary>
+	/// C#: ushort.Clamp(value, min, max)
+	/// JS: Math.min(Math.max(value, min), max)
+	/// </summary>
+	[Jazor(Op.Inline, "static ushort.Clamp(ushort, ushort, ushort)", "Math.min(Math.max(__arg1, __arg2), __arg3)")]
 	public extern static Number _cfa99d1fe078f42e(Number value, Number min, Number max);
 
-	///<summary>Compares two values to compute which is greater.</summary>
-	[Jazor(Op.Discard, "static ushort.Max(ushort, ushort)")]
+	/// <summary>
+	/// C#: ushort.Max(x, y)
+	/// JS: Math.max(x, y)
+	/// </summary>
+	[Jazor(Op.Inline, "static ushort.Max(ushort, ushort)", "Math.max(__arg1, __arg2)")]
 	public extern static Number _baf95be10fbe1b99(Number x, Number y);
 
-	///<summary>Compares two values to compute which is lesser.</summary>
-	[Jazor(Op.Discard, "static ushort.Min(ushort, ushort)")]
+	/// <summary>
+	/// C#: ushort.Min(x, y)
+	/// JS: Math.min(x, y)
+	/// </summary>
+	[Jazor(Op.Inline, "static ushort.Min(ushort, ushort)", "Math.min(__arg1, __arg2)")]
 	public extern static Number _5bde9c15f7f8b2f9(Number x, Number y);
 
-	///<summary>Computes the sign of a value.</summary>
-	[Jazor(Op.Discard, "static ushort.Sign(ushort)")]
+	/// <summary>
+	/// C#: ushort.Sign(value)
+	/// JS: value === 0 ? 0 : 1
+	/// </summary>
+	[Jazor(Op.Inline, "static ushort.Sign(ushort)", "(__arg1 === 0 ? 0 : 1)")]
 	public extern static Number _40243528ed598d7c(Number value);
 
 	///<summary>Creates an instance of the current type from a value, throwing an overflow exception for any values that fall outside the representable range of the current type.</summary>
@@ -265,12 +283,18 @@ public static class UInt16Module
 	[Jazor(Op.Discard, "static ushort.CreateTruncating<TOther>(TOther)")]
 	public extern static Number _e7b18638be92c02a<TOther>(object value);
 
-	///<summary>Determines if a value represents an even integral number.</summary>
-	[Jazor(Op.Discard, "static ushort.IsEvenInteger(ushort)")]
+	/// <summary>
+	/// C#: ushort.IsEvenInteger(value)
+	/// JS: (value & 1) === 0
+	/// </summary>
+	[Jazor(Op.Inline, "static ushort.IsEvenInteger(ushort)", "((__arg1 & 1) === 0)")]
 	public extern static bool _9efbbf8cbd046a16(Number value);
 
-	///<summary>Determines if a value represents an odd integral number.</summary>
-	[Jazor(Op.Discard, "static ushort.IsOddInteger(ushort)")]
+	/// <summary>
+	/// C#: ushort.IsOddInteger(value)
+	/// JS: (value & 1) !== 0
+	/// </summary>
+	[Jazor(Op.Inline, "static ushort.IsOddInteger(ushort)", "((__arg1 & 1) !== 0)")]
 	public extern static bool _fc6357bc14bbd89b(Number value);
 
 	///<summary>Tries to parse a string into a value.</summary>

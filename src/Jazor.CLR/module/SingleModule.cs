@@ -466,8 +466,11 @@ public static class SingleModule
 	[Jazor(Op.Discard ,"static float.ClampNative(float, float, float)")]
 	public extern static Number _e50ccb4182ec0a52(Number value, Number min, Number max);
 
-	///<summary>Copies the sign of a value to the sign of another value.</summary>
-	[Jazor(Op.Discard ,"static float.CopySign(float, float)")]
+	/// <summary>
+	/// C#: float.CopySign(value, sign)
+	/// JS: Number 语义与 double 同构，需要保留 -0 分支。
+	/// </summary>
+	[Jazor(Op.Inline ,"static float.CopySign(float, float)", "((__arg2 < 0 || Object.is(__arg2, -0)) ? -Math.abs(__arg1) : Math.abs(__arg1))")]
 	public extern static Number _959cd3c9f503af65(Number value, Number sign);
 
 	///<summary>Compares two values to compute which is greater.</summary>

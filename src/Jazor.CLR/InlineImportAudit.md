@@ -12,6 +12,11 @@
 - 是否会给第三方观察语义引入歧义
 - 是否会把本应在编译期完成的语法糖处理错误地下沉到运行时模块
 
+还有一条实现纪律：
+
+- `WhiteList.cs.Generate.cs` 是生成产物，只能通过 `Jazor.Compiler.Generator` 刷新
+- 不要手改 generated 白名单来“先让测试通过”
+
 本次复审覆盖：
 
 - `src/Jazor.CLR/module/*.cs`
@@ -19,7 +24,8 @@
 
 结论先写在前面：
 
-- `Alias > Inline > Compile > Import`
+- `Allowed/Alias > Inline > Import`
+- `Compile` 只保留给编译器内部必须直接接管的少数特例
 - 能稳定写成 `Inline` 的，不要继续挂 `Import`
 - 但不要为了“去 Import”而手写脆弱模板
 - 只要涉及 tuple 运行时形状、复杂校验、循环、多步副作用、模块 helper 复用，就不要强行塞回 `Inline`
@@ -111,6 +117,12 @@
   - 推荐模板：
     - `((isNaN(__arg1) || isNaN(__arg2)) ? (isNaN(__arg1) && isNaN(__arg2)) : (!(__arg1 < __arg2) && !(__arg1 > __arg2)))`
 
+- `static float.CopySign(float, float)`
+  - 与 `double.CopySign(double, double)` 形状相同
+  - 需要保留 `-0` 语义
+  - 推荐模板：
+    - `((__arg2 < 0 || Object.is(__arg2, -0)) ? -Math.abs(__arg1) : Math.abs(__arg1))`
+
 `object` 重载不要一起收缩；它们还包含类型检查和异常分支。
 
 #### 3. `DoubleModule`
@@ -138,6 +150,130 @@
   - 逻辑与 `DoubleModule` 中的 `double.CopySign(double, double)` 一致
   - 可以收缩到同一模板
 
+#### 5. `Int32Module` / `Int64Module`
+
+文件：
+
+- `src/Jazor.CLR/module/Int32Module.cs`
+- `src/Jazor.CLR/module/Int64Module.cs`
+
+- `static int.CopySign(int, int)`
+  - `int` 不存在 `-0`
+  - 可直接写成：
+    - `(__arg2 < 0 ? -Math.abs(__arg1) : Math.abs(__arg1))`
+
+- `static long.CopySign(long, long)`
+  - `BigInt` 同样不存在 `-0`
+  - 只需要按目标符号选择绝对值
+  - 可直接写成：
+    - `(__arg2 < 0n ? (__arg1 < 0n ? __arg1 : -__arg1) : (__arg1 < 0n ? -__arg1 : __arg1))`
+
+#### 6. `Int16Module` / `UInt16Module`
+
+文件：
+
+- `src/Jazor.CLR/module/Int16Module.cs`
+- `src/Jazor.CLR/module/UInt16Module.cs`
+
+这两个模块里还有一批此前停在 `Discard` 的 16 位整数简单 intrinsic，本质都属于稳定表达式：
+
+- `short.IsPow2(short)` / `ushort.IsPow2(ushort)`
+- `short.Log2(short)` / `ushort.Log2(ushort)`
+- `short.Clamp(short, short, short)` / `ushort.Clamp(ushort, ushort, ushort)`
+- `short.Max(short, short)` / `ushort.Max(ushort, ushort)`
+- `short.Min(short, short)` / `ushort.Min(ushort, ushort)`
+- `short.Sign(short)` / `ushort.Sign(ushort)`
+- `short.Abs(short)`
+- `short.IsEvenInteger(short)` / `ushort.IsEvenInteger(ushort)`
+- `short.IsOddInteger(short)` / `ushort.IsOddInteger(ushort)`
+- `short.IsNegative(short)`
+- `short.IsPositive(short)`
+- `short.CopySign(short, short)`
+
+这批都不需要运行时 helper、循环或异常分支，应该直接落回 `Inline`。
+
+#### 7. `SByteModule` / `UInt32Module` / `UInt64Module`
+
+文件：
+
+- `src/Jazor.CLR/module/SByteModule.cs`
+- `src/Jazor.CLR/module/UInt32Module.cs`
+- `src/Jazor.CLR/module/UInt64Module.cs`
+
+这三组成员与上面的 16 位整数 intrinsic 属于同一类问题，只是覆盖了 8 位、32 位和 `BigInt` 形态的无符号 64 位：
+
+- `sbyte.IsPow2(sbyte)` / `uint.IsPow2(uint)` / `ulong.IsPow2(ulong)`
+- `sbyte.Log2(sbyte)` / `uint.Log2(uint)` / `ulong.Log2(ulong)`
+- `sbyte.Clamp(sbyte, sbyte, sbyte)` / `uint.Clamp(uint, uint, uint)` / `ulong.Clamp(ulong, ulong, ulong)`
+- `sbyte.Max(sbyte, sbyte)` / `uint.Max(uint, uint)` / `ulong.Max(ulong, ulong)`
+- `sbyte.Min(sbyte, sbyte)` / `uint.Min(uint, uint)` / `ulong.Min(ulong, ulong)`
+- `sbyte.Sign(sbyte)` / `uint.Sign(uint)` / `ulong.Sign(ulong)`
+- `sbyte.Abs(sbyte)`
+- `sbyte.IsEvenInteger(sbyte)` / `uint.IsEvenInteger(uint)` / `ulong.IsEvenInteger(ulong)`
+- `sbyte.IsOddInteger(sbyte)` / `uint.IsOddInteger(uint)` / `ulong.IsOddInteger(ulong)`
+- `sbyte.IsNegative(sbyte)`
+- `sbyte.IsPositive(sbyte)`
+- `sbyte.CopySign(sbyte, sbyte)`
+
+判断理由不变：
+
+- 都能稳定收敛为单个表达式
+- 不需要 helper、循环、异常或 tuple 形状
+- `ulong` 虽然走 `BigInt`，但这批仍然只是比较、模运算、位运算和简单条件表达式
+
+因此这批也应该直接用 `Inline`，不要继续保留 `Import` 或 `Discard`。
+
+#### 8. `Int64Module` / `MathModule` 的 BigInt 整数简单成员
+
+文件：
+
+- `src/Jazor.CLR/module/Int64Module.cs`
+- `src/Jazor.CLR/module/MathModule.cs`
+
+这批成员虽然目标类型是 `BigInt`，但语义仍然只是简单比较和边界裁剪：
+
+- `long.Clamp(long, long, long)`
+- `long.Sign(long)`
+- `Math.Clamp(long, long, long)` / `Math.Clamp(ulong, ulong, ulong)`
+- `Math.Max(long, long)` / `Math.Max(ulong, ulong)`
+- `Math.Min(long, long)` / `Math.Min(ulong, ulong)`
+- `Math.Sign(long)`
+
+它们和前面已经收口的 `ulong.Clamp/Max/Min/Sign`、`long.CopySign/Max/Min/Abs` 属于同一层级：
+
+- 无 helper
+- 无异常协议
+- 无循环
+- 无临时值
+- 单个条件表达式即可稳定表达
+
+因此这批也应直接落回 `Inline`，不应继续停留在 `Import` 或 `Discard`。
+
+#### 9. `BigIntegerModule` 的简单静态 intrinsic
+
+文件：
+
+- `src/Jazor.CLR/module/BigIntegerModule.cs`
+
+这批成员虽然声明在 `System.Numerics.BigInteger` 上，但当前运行时映射就是 JS `BigInt`：
+
+- `BigInteger.Abs(BigInteger)`
+- `BigInteger.CopySign(BigInteger, BigInteger)`
+- `BigInteger.Max(BigInteger, BigInteger)`
+- `BigInteger.Min(BigInteger, BigInteger)`
+- `BigInteger.IsEvenInteger(BigInteger)`
+- `BigInteger.IsNegative(BigInteger)`
+- `BigInteger.IsOddInteger(BigInteger)`
+- `BigInteger.IsPositive(BigInteger)`
+
+它们都满足同一套 producer 侧判断：
+
+- 单个表达式可稳定表达
+- 不需要 helper、异常协议或临时值
+- BigInt 不存在 `-0`，`CopySign` 可直接按符号位切换绝对值
+
+所以这批也应优先落到 `Inline`，而不是继续停在 `Discard`。
+
 ### B. 更适合未来 `Import -> Compile`
 
 这些成员不是不能做编译期改写，而是不适合继续用裸 `Inline` 模板承载。
@@ -162,7 +298,9 @@
 - 本质仍是表达式级改写
 - 但包含边界检查或存在性检查
 - 若强行改成 `Inline`，会退化成 IIFE 或非常难读的条件表达式
-- 这类逻辑更适合未来 `Compile` 直接产 AST
+- `Compile` 主分发虽然已经接好，但第一阶段 contract 仍缺少稳定的“throw 作为表达式分支”约定
+- 在当前 contract 下硬迁移，只会把问题换成 IIFE 包装或语句级特判
+- 这类逻辑更适合未来扩完 contract 后，再由 `Compile` 直接产 AST
 
 #### 2. 需要一次性临时值的表达式
 
@@ -322,7 +460,14 @@
 - 收益直接
 - 规则示范性强
 
-### 第二批：等 `Op.Compile` 接线后再处理
+当前状态：
+
+- 已实现
+- 已重新运行 `Jazor.Compiler.Generator`
+- 已通过 `Jazor.CLR` build
+- 已通过 `Jazor.CompilerTest` 全量测试
+
+### 第二批：等 `Op.Compile` contract 扩展后再处理
 
 优先做：
 
@@ -330,6 +475,12 @@
 2. `HashSet.Add`
 3. `MaxMagnitude` / `MinMagnitude`
 4. `SinCos` / `SinCosPi`
+
+当前状态：
+
+- `Op.Compile` 主分发已经接入
+- 第一阶段真实条目和测试已经落地
+- 第二批当前的真正阻塞点不是“还没接线”，而是 contract 还不能稳定承载带 `throw` / temp / tuple 形状的表达式
 
 ## 当前结论
 
@@ -340,3 +491,84 @@
 - `CopySign`
 
 而 tuple 结果构造、带异常分支的索引器、依赖临时值的表达式，则应明确归到未来 `Compile`，不要继续让 `Inline` 模板承担结构上不合适的职责。
+
+补充复核结论：
+
+- 看起来是“一行 `Import`”的不一定就是 `Inline` 候选
+- `ReadOnlySpan` 重载转发、时间类型 runtime wrapper 构造、跨模块 helper 桥接，这三类通常仍应保留 `Import`
+
+#### 10. BigIntegerModule 的 Compare / Equals / ToString 简单成员
+
+文件：
+
+- `src/Jazor.CLR/module/BigIntegerModule.cs`
+- `src/Jazor.Compiler/core/SemanticWalker.cs.Reference.cs`
+
+收缩内容：
+
+- `BigInteger.Compare(BigInteger, BigInteger)` -> `Inline`
+- `BigInteger.CompareTo(long/ulong/BigInteger)` -> `Inline`
+- `BigInteger.Equals(object/long/ulong/BigInteger)` -> `Inline`
+- `BigInteger.ToString()` -> `Alias`
+
+保留内容：
+
+- `BigInteger.CompareTo(object)` 继续保留 `Import`
+
+原因：
+
+- typed compare/equality 都是稳定单表达式
+- `ToString()` 只是运行时成员别名，没有必要保留编译器内特判
+- `CompareTo(object)` 仍需要 `null` / 类型检查，不能冒进塞进 `Inline`
+
+附带修正：
+
+- 删除 `SemanticWalker` 中针对 `BigInteger.CompareTo/Equals/ToString` 的宽泛 intrinsic 特判
+- 原特判会把 `CompareTo(object)` 也误降级成 typed compare 形状，语义过宽，不应继续保留
+
+#### 11. BigIntegerModule 的纯算术静态成员
+
+文件：
+
+- `src/Jazor.CLR/module/BigIntegerModule.cs`
+
+收缩内容：
+
+- `BigInteger.Add(BigInteger, BigInteger)` -> `Inline`
+- `BigInteger.Subtract(BigInteger, BigInteger)` -> `Inline`
+- `BigInteger.Multiply(BigInteger, BigInteger)` -> `Inline`
+- `BigInteger.Negate(BigInteger)` -> `Inline`
+
+本轮刻意不动：
+
+- `BigInteger.Divide(BigInteger, BigInteger)`
+- `BigInteger.Remainder(BigInteger, BigInteger)`
+- `BigInteger.DivRem(...)`
+
+原因：
+
+- `+ / - / * / unary -` 都是稳定单表达式，没有 helper、异常协议或临时值
+- `Divide/Remainder` 虽然表面上也像单表达式，但除零异常协议和 runtime 错误形状还值得单独核对
+- 先收最无争议的一层，保持“稳定优先”
+
+#### 12. BigIntegerModule 的除法族成员
+
+文件：
+
+- `src/Jazor.CLR/module/BigIntegerModule.cs`
+
+收缩内容：
+
+- `BigInteger.Divide(BigInteger, BigInteger)` -> `Inline`
+- `BigInteger.Remainder(BigInteger, BigInteger)` -> `Inline`
+- `BigInteger.DivRem(BigInteger, BigInteger, out BigInteger)` -> `Import`
+
+保留内容：
+
+- `BigInteger.DivRem(BigInteger, BigInteger)` 继续保留现有 `Import`
+
+原因：
+
+- `Divide/Remainder` 与已允许的 `BigInteger.operator /`、`BigInteger.operator %` 属于同一底层运行时语义，直接落表达式最稳定
+- `DivRem(out ...)` 需要 `[returnValue, outValue]` 回写约定，不适合硬塞进 `Inline`
+- 这里继续沿用 BigInteger 现有的 JS BigInt 除零错误形状，即 `RangeError("Division by zero")`，不额外引入与当前模块不一致的异常包装

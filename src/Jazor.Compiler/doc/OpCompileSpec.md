@@ -43,11 +43,15 @@
 - `Op.Compile` 条目不会进入 `WhiteList.Members`
 - 它走的是独立于 `Alias` / `Inline` / `Import` 的分发表
 
-### 3. `SemanticWalker` 已持有分发表，但主链路还没消费
+### 3. `SemanticWalker` 已持有分发表，并已接入主链路
 
 `SemanticWalker` 构造函数里已经初始化 `_whiteListCompiles`，并调用 `Generate(...)` 完成装配。
 
-但当前 `GetWhiteListExpression(...)` 仍只消费：
+当前 `GetWhiteListExpressionCore(...)` 会先尝试：
+
+- `TryGetCompileExpression(...)`
+
+只有 `Compile_*` 返回 `null` 时，才继续回落到：
 
 - `Alias`
 - `Inline`
@@ -56,7 +60,8 @@
 所以当前状态是：
 
 - `Compile_*` 方法和字典都在
-- 但主成员映射入口还没有先尝试 `Compile`
+- 主成员映射入口已经先尝试 `Compile`
+- 但只有显式声明为 `Op.Compile` 的少数成员会命中这条路径
 
 ### 4. 当前 `Compile_*` 签名很窄
 
@@ -93,14 +98,17 @@ Expression? Compile_xxx(Expression? handler, Expression?[] args)
 
 也就是说，现阶段不要把它想成“可以承接任何复杂宿主语义”。
 
-另外还要补一条优先级约束：
+另外还要补两条 producer 侧约束：
 
 > 能稳定用 `Inline` 表达的，不要升级成 `Import`。
+
+> 能稳定用 `Inline` 或 `Import` 解决的，不要升级成 `Compile`。
 
 原因是：
 
 - `Inline` 仍属于编译期解糖
 - `Import` 会引入额外模块实现、导入收集和运行时依赖
+- `Compile` 属于编译器内部保留能力，应该只承接少数必须由编译器直接接管的内建例外
 - 对 tuple、解构、普通表达式组合这类语法糖问题，优先目标应是“生成结果等价”，而不是过早下沉到运行时 helper
 
 ## 目标分发顺序
@@ -126,7 +134,7 @@ Expression? Compile_xxx(Expression? handler, Expression?[] args)
 
 ## `handler` / `args` 契约
 
-后续真正接线时，应把参数语义固定下来。
+当前实现已经把参数语义固定下来。
 
 ### `handler`
 
@@ -225,9 +233,10 @@ Expression? Compile_xxx(Expression? handler, Expression?[] args)
 适合：
 
 - 不能稳定表达为单个模板表达式
+- 同时也不适合作为运行时 helper 落到 `Import`
 - 需要按参数结构选择不同 AST
 - 需要精细控制访问顺序
-- 未来可能要脱离“宿主 + 参数”的统一占位符模型
+- 且该语义本身属于编译器内部保留的内建改写，而不是普通库成员映射
 
 ### 仍然不适合当前 `Compile`
 
@@ -237,6 +246,7 @@ Expression? Compile_xxx(Expression? handler, Expression?[] args)
 - 合并 import specifier
 - 依赖 `IOperation` 生成稳定临时名
 - 记录或保留源位置信息
+- 需要把 `throw` 分支编码成表达式约定，而不是普通语句级 `ThrowStatement`
 
 那么它其实已经超出当前 `Compile(handler, args)` contract。
 
@@ -255,29 +265,43 @@ Expression? Compile_xxx(Expression? handler, Expression?[] args)
 
 所以 producer 侧的优先级应理解为：
 
-> `Allowed/Alias -> Inline -> Compile -> Import`
+> `Allowed/Alias -> Inline -> Import -> Compile`
 
-这里不是说所有 `Compile` 都比 `Import` 简单，而是说：
+这里的含义不是“`Compile` 比 `Import` 更强”。
+
+真正的意思是：
+
+- 先看能否直接映射
+- 再看能否稳定模板化为 `Inline`
+- 再看是否更适合作为运行时 helper 落到 `Import`
+- 只有前面都不合适、且必须由编译器内部接管时，才保留给 `Compile`
+
+consumer 侧主分发顺序仍然保持：
+
+> `Compile -> Alias -> Inline -> Import -> normal lowering`
+
+因为一旦 producer 已经明确把某个成员标成 `Compile`，consumer 就应优先信任这条内部特例分支，而不是再让普通链路抢先处理。
 
 - 能用声明式模板解决的，不要引入模块
 - 不能用模板但仍是编译期表达式改写的，再考虑 `Compile`
 - 只有确实需要运行时实现时，才落 `Import`
 
-## 接线前必须先确认的约束
+## 接线后仍需保持的约束
 
-在真正把 `Compile` 接进主链路前，建议先确认下面几条。
+`Compile` 虽然已经接进主链路，但下面几条约束仍然必须保持。
 
 ### 1. `Compile` 是否只做表达式级改写
 
-如果答案是“是”，当前签名还能成立。
+当前答案仍然是“是”，所以当前签名还能成立。
 
 如果答案是“否”，例如要：
 
 - 引入临时变量
 - 收集 import
 - 参与 sourcemap 来源记录
+- 统一表达“条件分支命中后直接抛异常”的表达式级协议
 
-那就应先扩展签名，再接主分发。
+那就应先扩展签名，而不是继续往现有签名里堆特判。
 
 ### 2. fallback 语义是否统一
 
@@ -305,7 +329,7 @@ Expression? Compile_xxx(Expression? handler, Expression?[] args)
 结合当前代码形态，更稳妥的推进顺序是：
 
 1. 先把本文档中的分发顺序和返回语义固定下来
-2. 再把 `GetWhiteListExpression(...)` 接入 `_whiteListCompiles`
+2. `GetWhiteListExpression(...)` 已接入 `_whiteListCompiles`，后续只补真实条目和回归测试
 3. 第一阶段只允许 `Compile` 处理“自包含表达式级”改写
 4. 真正需要 temp/import/source-origin 的场景，再升级 hook contract
 

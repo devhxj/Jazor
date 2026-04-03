@@ -23,9 +23,8 @@ public static class BooleanModule
 	public extern static Number _80b6c29cc0038969(bool instance);
 
 	///<summary>Converts the value of this instance to its equivalent string representation (either "True" or "False").</summary>
-	[Jazor(Op.Import, "override bool.ToString()")]
-	public static string _d48c2d39317daf8f(bool instance)
-		=> instance ? "True" : "False";
+	[Jazor(Op.Inline, "override bool.ToString()", "(__arg1 ? \"True\" : \"False\")")]
+	public extern static string _d48c2d39317daf8f(bool instance);
 
 	///<summary>Converts the value of this instance to its equivalent string representation (either "True" or "False").</summary>
 	[Jazor(Op.Discard, "bool.ToString(System.IFormatProvider)")]
@@ -56,9 +55,8 @@ public static class BooleanModule
 	}
 
 	///<summary>Compares this instance to a specified <see cref="T:System.Boolean" /> object and returns an integer that indicates their relationship to one another.</summary>
-	[Jazor(Op.Import, "bool.CompareTo(bool)")]
-	public static Number _52e94ceda3f9af79(bool instance, bool value)
-		=> CompareCore(instance, value);
+	[Jazor(Op.Inline, "bool.CompareTo(bool)", "(__arg1 === __arg2 ? 0 : (__arg1 ? 1 : -1))")]
+	public extern static Number _52e94ceda3f9af79(bool instance, bool value);
 
 	///<summary>Converts the specified string representation of a logical value to its <see cref="T:System.Boolean" /> equivalent.</summary>
 	[Jazor(Op.Import, "static bool.Parse(string)")]

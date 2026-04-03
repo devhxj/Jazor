@@ -1,6 +1,7 @@
 <Project>
+  <!-- Emit must run after a successful Build so analyzer/source-generator output and TargetPath are both finalized. -->
   <Target Name="JazorEmit"
-          AfterTargets="CoreCompile"
+          AfterTargets="Build"
           Condition="'$(DesignTimeBuild)' != 'true' and '$(JazorEmit)' == 'true' and Exists('$(TargetPath)')">
     <PropertyGroup>
       <_JazorEmitOutDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorOutDir)')), '[\\/]+$', ''))</_JazorEmitOutDir>
@@ -21,7 +22,7 @@
 
   <Target Name="JazorBundle"
           DependsOnTargets="JazorEmit"
-          AfterTargets="Build"
+          AfterTargets="JazorEmit"
           Condition="'$(DesignTimeBuild)' != 'true' and '$(JazorBundle)' == 'true' and '$(JazorEmit)' == 'true'">
     <PropertyGroup>
       <JazorManifestPath Condition="'$(JazorManifestPath)' == ''">$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorOutDir)')), '[\\/]+$', ''))\jazor-manifest.json</JazorManifestPath>

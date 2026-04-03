@@ -1,11 +1,20 @@
 namespace Jazor.Common;
 
 /// <summary>
-/// 标记编译器特殊处理成员
+/// 为类型或成员声明 Jazor 白名单映射规则。
+///
+/// 这个特性是 producer 侧事实来源：
+/// - Generator 扫描它生成白名单与 Compile 分发表
+/// - Analyzer 用生成结果决定“成员是否允许进入编译域”
+/// - Compiler 再按对应 Op 消费
+///
+/// 注意：
+/// - 这里声明的是“该成员应该如何暴露给编译器”，不是“最终 JS 一定长什么样”
+/// - generated 白名单只能通过 Generator 刷新，不应手改生成文件绕过这里
 /// </summary>
-/// <param name="member">使用 ECMAScript.Common.Util.NameFormat 格式化后的成员名称（类名或方法名）</param>
-/// <param name="op">处理方式</param>
-/// <param name="value">op是Alias时，指定替换值</param>
+/// <param name="member">使用 Jazor.Name 格式化后的完整成员签名，例如 <c>string.Length.get</c> 或 <c>static bool.Parse(string)</c></param>
+/// <param name="op">成员处理方式，见 <see cref="Op"/></param>
+/// <param name="value">附加值：Alias 时通常是 JS 名称，Inline 时通常是表达式模板</param>
 [AttributeUsage(
 	AttributeTargets.Class | AttributeTargets.Property | AttributeTargets.Method,
 	AllowMultiple = false,
@@ -19,7 +28,9 @@ internal sealed class JazorAttribute : Attribute
 	public string? Value { get; }
 
 	/// <summary>
-	/// 无参构造函数：指定需要Jazor编译器进行特殊处理
+	/// 无参形式，等价于声明 <see cref="Op.Compile"/>。
+	/// 只应在编译器内部明确拥有 Compile_* 消费逻辑时使用。
+	/// 不要把它当成“以后再说”的占位写法。
 	/// </summary>
 	public JazorAttribute()
 	{
@@ -29,7 +40,9 @@ internal sealed class JazorAttribute : Attribute
 	}
 
 	/// <summary>
-	/// 1个字符串参数构造函数：指定为内联代码调用
+	/// 单字符串形式，等价于声明 <see cref="Op.Inline"/>。
+	/// 主要给 ECMAScript 核心库使用；Jazor.CLR 一般应显式写出 member。
+	/// 这里的字符串是表达式模板，不是任意 JS 语句块。
 	/// </summary>
 	public JazorAttribute(string value)
 	{
@@ -39,7 +52,8 @@ internal sealed class JazorAttribute : Attribute
 	}
 
 	/// <summary>
-	/// 2或3个参数构造函数：详细指定
+	/// 完整形式，显式指定 producer 侧 Op、成员签名和附加值。
+	/// Jazor.CLR 中应优先使用这个构造器，让生成器输入保持明确和可审查。
 	/// </summary>
 	public JazorAttribute(Op op, string member, string? value = null)
 	{

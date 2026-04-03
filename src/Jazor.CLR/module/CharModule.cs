@@ -67,9 +67,8 @@ public static class CharModule
 	/// C#: char.CompareTo(other)
 	/// JS: 返回负数、零或正数
 	/// </summary>
-	[Jazor(Op.Import, "char.CompareTo(char)")]
-	public static Number _309d33b86c3815d8(Number instance, Number value)
-		=> CompareCore(instance, value);
+	[Jazor(Op.Inline, "char.CompareTo(char)", "(__arg1 < __arg2 ? -1 : (__arg1 > __arg2 ? 1 : 0))")]
+	public extern static Number _309d33b86c3815d8(Number instance, Number value);
 
 	/// <summary>
 	/// C#: char.ToString()

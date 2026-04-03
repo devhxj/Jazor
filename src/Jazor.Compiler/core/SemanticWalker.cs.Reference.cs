@@ -832,7 +832,9 @@ public partial class SemanticWalker
 			{
 				expression = method.Name switch
 				{
-					"Split" when arguments.Count >= 1 =>
+					// string.Split 的“多字符分隔符数组”不能直接翻成 JS split(array)。
+					// 这里只保留显然是一元字符串分隔符的直译；其余情况回退到白名单/helper。
+					"Split" when arguments.Count >= 1 && arguments[0] is StringLiteral =>
 						BuildInstanceMethodCall(instance, "split", arguments[0]),
 					"PadLeft" when arguments.Count == 1 =>
 						BuildInstanceMethodCall(instance, "padStart", arguments[0]),
@@ -936,32 +938,6 @@ public partial class SemanticWalker
 					return true;
 				}
 			}
-		}
-
-		if (containingType == "System.Numerics.BigInteger")
-		{
-			expression = method.Name switch
-			{
-				nameof(System.Numerics.BigInteger.CompareTo) when arguments.Count == 1 =>
-					new ConditionalExpression(
-						new NonLogicalBinaryExpression(Operator.LessThan, instance, arguments[0]),
-						new NumericLiteral(-1, "-1"),
-						new ConditionalExpression(
-							new NonLogicalBinaryExpression(Operator.GreaterThan, instance, arguments[0]),
-							new NumericLiteral(1, "1"),
-							new NumericLiteral(0, "0"))),
-				nameof(System.Numerics.BigInteger.Equals) when arguments.Count == 1 =>
-					new NonLogicalBinaryExpression(Operator.StrictEquality, instance, arguments[0]),
-				nameof(object.ToString) when arguments.Count == 0 =>
-					new CallExpression(
-						new MemberExpression(instance, new Identifier("toString"), computed: false, optional: false),
-						NodeList.Empty<Expression>(),
-						optional: false),
-				_ => null
-			};
-
-			if (expression is not null)
-				return true;
 		}
 
 		return false;

@@ -81,17 +81,23 @@
 
 当前处理顺序大致是：
 
-1. 用成员签名查询 `WhiteList.Members`
-2. `Alias` 时返回别名信息
-3. `Inline` 时实例化 AST 模板
-4. `Import` 时登记导入并生成对应调用表达式
+1. 先尝试独立的 `Op.Compile` 分发表
+2. `Compile` 返回 `null` 时，再查询 `WhiteList.Members`
+3. `Alias` 时返回别名信息
+4. `Inline` 时实例化 AST 模板
+5. `Import` 时登记导入并生成对应调用表达式
 
 它有两个重载：
 
 - 一个只接收参数列表
 - 一个额外接收实例表达式
 
-实例重载的作用是把实例成员统一转成“`instance + args`”的参数布局，这样白名单模板和导入调用不需要为实例/静态再拆一套入口。
+实例重载现在承担两套参数语义：
+
+- `Compile`：实例成员走 `handler + 显式 args`
+- `Alias/Inline/Import`：继续沿用历史的 `instance + args` 布局
+
+这样既把 `Compile` 接到主分发前面，又没有一次性打破既有模板和 import 规则。
 
 ### 3. 类型名查询路径
 
@@ -144,16 +150,16 @@
 
 ### `Op.Compile`
 
-当前编译器已经有生成器基础设施和 `Compile_*` 挂载点，但主消费链路仍不是以它为主。
+当前编译器已经有生成器基础设施、`Compile_*` 挂载点，并且主消费链路已经会优先尝试它。
 
 也就是说：
 
 - 基础设施在
 - 生成表在
 - 挂载方法在
-- 但当前主线行为仍主要依赖 `Alias` / `Inline` / `Import`
+- 主入口也已经先尝试 `Compile`
 
-所以它现在更接近“保留的复杂宿主扩展位”，而不是白名单主路径。
+但它仍然更接近“保留的复杂宿主扩展位”，而不是白名单主路径。原因不是没接线，而是当前 `Compile(handler, args)` contract 仍然只适合自包含表达式级改写。
 
 另外，`Op.Compile` 当前并不经过 `WhiteList.Members` 表，而是走独立的 `Compile_*` 分发表。
 

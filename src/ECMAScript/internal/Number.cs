@@ -145,6 +145,13 @@ public readonly struct Number : IEquatable<Number>, IComparable, IComparable<Num
 	public extern static Number Prototype { get; }
 
 	/// <summary>
+	/// Smallest interval between 1 and the next representable JavaScript number.
+	/// This is the static <c>Number.EPSILON</c> host member, not a CLR numeric helper.
+	/// </summary>
+	[Description("@#EPSILON")]
+	public extern static Number EPSILON { get; }
+
+	/// <summary>
 	/// The largest number that can be represented in JavaScript. Equal to approximately 1.79E+308.
 	/// </summary>
 	[Description("@#MAX_VALUE")]
@@ -207,7 +214,42 @@ public readonly struct Number : IEquatable<Number>, IComparable, IComparable<Num
 	[Description("@#isInteger")]
 	public extern static bool IsInteger(object? value);
 
-	internal bool IsNaN { get; }
+	/// <summary>
+	/// JavaScript <c>Number.parseFloat</c> alias.
+	/// This stays on the <c>Number</c> constructor host because JavaScript exposes it there in addition to the global function.
+	/// </summary>
+	[Description("@#parseFloat")]
+	public extern static Number ParseFloat(object? value);
+
+	/// <summary>
+	/// JavaScript <c>Number.parseInt</c> alias.
+	/// The optional radix matches the standard constructor-host signature.
+	/// </summary>
+	[Description("@#parseInt")]
+	public extern static Number ParseInt(object? value, Number? radix = null);
+
+	/// <summary>
+	/// JavaScript <c>Number.isFinite</c> check.
+	/// Unlike global <c>isFinite</c>, this static host does not apply JavaScript number coercion first.
+	/// </summary>
+	[Description("@#isFinite")]
+	public extern static bool IsFinite(object? value);
+
+	/// <summary>
+	/// JavaScript <c>Number.isNaN</c> check.
+	/// Unlike global <c>isNaN</c>, this static host only returns <see langword="true"/> for actual numeric <c>NaN</c> values.
+	/// </summary>
+	[Description("@#isNaN")]
+	public extern static bool IsNaN(object? value);
+
+	/// <summary>
+	/// Returns whether the supplied value is a safe JavaScript integer.
+	/// This belongs on the <c>Number</c> constructor host because JavaScript exposes it as <c>Number.isSafeInteger</c>.
+	/// </summary>
+	[Description("@#isSafeInteger")]
+	public extern static bool IsSafeInteger(object? value);
+
+	internal bool IsNaNValue { get; }
 
 	internal double Value { get; }
 

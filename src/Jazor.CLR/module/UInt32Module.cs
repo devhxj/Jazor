@@ -217,28 +217,46 @@ public static class UInt32Module
 	[Jazor(Op.Discard ,"static uint.TrailingZeroCount(uint)")]
 	public extern static Number _769ecbbaac253539(Number value);
 
-	///<summary>Determines if a value is a power of two.</summary>
-	[Jazor(Op.Discard ,"static uint.IsPow2(uint)")]
+	/// <summary>
+	/// C#: uint.IsPow2(value)
+	/// JS: value > 0 && (value & (value - 1)) === 0
+	/// </summary>
+	[Jazor(Op.Inline ,"static uint.IsPow2(uint)", "(__arg1 > 0 && (__arg1 & (__arg1 - 1)) === 0)")]
 	public extern static bool _8beae23a85345e63(Number value);
 
-	///<summary>Computes the log2 of a value.</summary>
-	[Jazor(Op.Discard ,"static uint.Log2(uint)")]
+	/// <summary>
+	/// C#: uint.Log2(value)
+	/// JS: Math.floor(Math.log2(value))
+	/// </summary>
+	[Jazor(Op.Inline ,"static uint.Log2(uint)", "Math.floor(Math.log2(__arg1))")]
 	public extern static Number _6cb21d474b7a30db(Number value);
 
-	///<summary>Clamps a value to an inclusive minimum and maximum value.</summary>
-	[Jazor(Op.Discard ,"static uint.Clamp(uint, uint, uint)")]
+	/// <summary>
+	/// C#: uint.Clamp(value, min, max)
+	/// JS: Math.min(Math.max(value, min), max)
+	/// </summary>
+	[Jazor(Op.Inline ,"static uint.Clamp(uint, uint, uint)", "Math.min(Math.max(__arg1, __arg2), __arg3)")]
 	public extern static Number _3693c701aa9899c6(Number value, Number min, Number max);
 
-	///<summary>Compares two values to compute which is greater.</summary>
-	[Jazor(Op.Discard ,"static uint.Max(uint, uint)")]
+	/// <summary>
+	/// C#: uint.Max(x, y)
+	/// JS: Math.max(x, y)
+	/// </summary>
+	[Jazor(Op.Inline ,"static uint.Max(uint, uint)", "Math.max(__arg1, __arg2)")]
 	public extern static Number _f284eae007e1fb6d(Number x, Number y);
 
-	///<summary>Compares two values to compute which is lesser.</summary>
-	[Jazor(Op.Discard ,"static uint.Min(uint, uint)")]
+	/// <summary>
+	/// C#: uint.Min(x, y)
+	/// JS: Math.min(x, y)
+	/// </summary>
+	[Jazor(Op.Inline ,"static uint.Min(uint, uint)", "Math.min(__arg1, __arg2)")]
 	public extern static Number _4f3e77f684e65319(Number x, Number y);
 
-	///<summary>Computes the sign of a value.</summary>
-	[Jazor(Op.Discard ,"static uint.Sign(uint)")]
+	/// <summary>
+	/// C#: uint.Sign(value)
+	/// JS: value === 0 ? 0 : 1
+	/// </summary>
+	[Jazor(Op.Inline ,"static uint.Sign(uint)", "(__arg1 === 0 ? 0 : 1)")]
 	public extern static Number _5942eb8a5b8a3bcc(Number value);
 
 	///<summary>Creates an instance of the current type from a value, throwing an overflow exception for any values that fall outside the representable range of the current type.</summary>
@@ -253,12 +271,18 @@ public static class UInt32Module
 	[Jazor(Op.Discard ,"static uint.CreateTruncating<TOther>(TOther)")]
 	public extern static Number _a70daf7a8645e3f0<TOther>(object value);
 
-	///<summary>Determines if a value represents an even integral number.</summary>
-	[Jazor(Op.Discard ,"static uint.IsEvenInteger(uint)")]
+	/// <summary>
+	/// C#: uint.IsEvenInteger(value)
+	/// JS: (value & 1) === 0
+	/// </summary>
+	[Jazor(Op.Inline ,"static uint.IsEvenInteger(uint)", "((__arg1 & 1) === 0)")]
 	public extern static bool _e2d0c1e7c0661ad2(Number value);
 
-	///<summary>Determines if a value represents an odd integral number.</summary>
-	[Jazor(Op.Discard ,"static uint.IsOddInteger(uint)")]
+	/// <summary>
+	/// C#: uint.IsOddInteger(value)
+	/// JS: (value & 1) !== 0
+	/// </summary>
+	[Jazor(Op.Inline ,"static uint.IsOddInteger(uint)", "((__arg1 & 1) !== 0)")]
 	public extern static bool _9c66512cee42f6d9(Number value);
 
 	///<summary>Tries to parse a string into a value.</summary>

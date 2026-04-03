@@ -18,14 +18,6 @@ partial interface IWhiteList
 	Expression? Compile_b58c68bda64ad0f8(Expression? handler, Expression?[] args);
 
 	/// <summary>
-	/// static ECMAScript.Global.RegExp(string)
-	/// </summary>
-	/// <param name="handler"></param>
-	/// <param name="args"></param>
-	/// <returns></returns>
-	Expression? Compile_42dc478b4386197f(Expression? handler, Expression?[] args);
-
-	/// <summary>
 	/// bool.GetTypeCode()
 	/// </summary>
 	/// <param name="handler"></param>

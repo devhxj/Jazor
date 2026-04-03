@@ -194,6 +194,18 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
     /// <summary>
     /// 统一消费白名单成员映射。
     ///
+    /// 这里解决的是 consumer 侧“已经声明好的 Op 应该按什么顺序尝试”，
+    /// 不是 producer 侧“新增成员时该选哪个 Op”。
+    ///
+    /// producer 侧应优先选择：
+    /// `Allowed/Alias -> Inline -> Import -> Compile`。
+    /// 这里仍然把 `Compile` 放在 consumer 分发最前面，
+    /// 是因为凡是已经进入 `_whiteListCompiles` 的成员，都应被视为编译器内部保留特例。
+    ///
+    /// 可以把两边理解成：
+    /// - producer：先决定“这个成员本质上属于模板、运行时 helper，还是编译器特例”
+    /// - consumer：一旦成员已经被 producer 明确标成 Compile，就先信任这条最窄的特例路径
+    ///
     /// 这里刻意把 `Compile` 和旧的 `Alias/Inline/Import` 分成两套参数语义：
     /// - `Compile`：`handler` 表示实例宿主，`args` 只保留显式参数
     /// - `Alias/Inline/Import`：继续沿用历史占位符布局，实例方法把宿主拼到参数前缀
@@ -208,9 +220,8 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         if (compileExpr is not null)
             return compileExpr;
 
-        var displayString = symbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
         var legacyArguments = CreateLegacyWhiteListArguments(symbol, arguments, instance);
-        if (WhiteList.Members.TryGetValue(displayString, out var entry))
+        if (TryGetWhiteListValue(WhiteList.Members, symbol, out var displayString, out var entry))
         {
             if (entry.Op == Op.Alias)
                 alias = entry.Value!;
@@ -231,12 +242,78 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
     private Expression? TryGetCompileExpression(ISymbol symbol, List<Expression> arguments, Expression? instance)
     {
-        var displayString = symbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
-        if (!_whiteListCompiles.TryGetValue(displayString, out var compile))
+        if (!TryGetWhiteListValue(_whiteListCompiles, symbol, out _, out var compile))
             return null;
 
         var (handler, explicitArgs) = CreateCompileArguments(symbol, arguments, instance);
         return compile(handler, explicitArgs);
+    }
+
+    private static bool TryGetWhiteListValue<T>(Dictionary<string, T> mappings, ISymbol symbol, out string displayString, out T value)
+        where T : notnull
+    {
+        foreach (var candidate in EnumerateWhiteListLookupSymbols(symbol))
+        {
+            var rawDisplayString = candidate.OriginalDefinition.ToDisplayString(Format.NameFormat);
+            foreach (var lookupKey in EnumerateWhiteListLookupKeys(rawDisplayString))
+            {
+                displayString = lookupKey;
+                if (mappings.TryGetValue(lookupKey, out value))
+                    return true;
+            }
+        }
+
+        displayString = symbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
+        value = default!;
+        return false;
+    }
+
+    private static IEnumerable<ISymbol> EnumerateWhiteListLookupSymbols(ISymbol symbol)
+    {
+        for (ISymbol? current = symbol.OriginalDefinition; current is not null; current = GetWhiteListFallbackSymbol(current))
+            yield return current;
+    }
+
+    private static ISymbol? GetWhiteListFallbackSymbol(ISymbol symbol)
+        => symbol switch
+        {
+            IMethodSymbol { OverriddenMethod: not null } method => method.OverriddenMethod.OriginalDefinition,
+            IPropertySymbol { OverriddenProperty: not null } property => property.OverriddenProperty.OriginalDefinition,
+            IEventSymbol { OverriddenEvent: not null } @event => @event.OverriddenEvent.OriginalDefinition,
+            _ => null
+        };
+
+    private static IEnumerable<string> EnumerateWhiteListLookupKeys(string displayString)
+    {
+        yield return displayString;
+
+        const string virtualPrefix = "virtual ";
+        const string overridePrefix = "override ";
+        const string abstractPrefix = "abstract ";
+
+        if (displayString.StartsWith(virtualPrefix, StringComparison.Ordinal))
+        {
+            yield return displayString.Substring(virtualPrefix.Length);
+            yield break;
+        }
+
+        if (displayString.StartsWith(overridePrefix, StringComparison.Ordinal))
+        {
+            yield return displayString.Substring(overridePrefix.Length);
+            yield return virtualPrefix + displayString.Substring(overridePrefix.Length);
+            yield break;
+        }
+
+        if (displayString.StartsWith(abstractPrefix, StringComparison.Ordinal))
+        {
+            yield return displayString.Substring(abstractPrefix.Length);
+            yield return virtualPrefix + displayString.Substring(abstractPrefix.Length);
+            yield break;
+        }
+
+        yield return virtualPrefix + displayString;
+        yield return overridePrefix + displayString;
+        yield return abstractPrefix + displayString;
     }
 
     private static List<Expression> CreateLegacyWhiteListArguments(ISymbol symbol, List<Expression> arguments, Expression? instance)

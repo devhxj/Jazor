@@ -1325,6 +1325,54 @@ ${name}!`;
 }", script);
 	}
 
+	[TestMethod]
+	public void Visit_String_ReplaceChar()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""Hello World"";
+					string replaced = text.Replace('o', '0');
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let text = ""Hello World"";
+  let replaced = _7d7cb13bbbbb83c8(text, ""o"", ""0"");
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_String_ReplaceIgnoreCase()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""Hello hello HeLLo"";
+					string replaced = text.Replace(""hello"", ""hi"", StringComparison.OrdinalIgnoreCase);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let text = ""Hello hello HeLLo"";
+  let replaced = _8a7510653022a974(text, ""hello"", ""hi"", 5);
+}", script);
+	}
+
 	#endregion
 
 	#region 扩展测试用例 - 特殊字符串
@@ -1680,9 +1728,9 @@ ${name}!`;
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let text = ""a,b,c"";
-  let parts = text.split("","");
+  let parts = _d8080c573d45b4b4(text, "","", 0);
 }", script);
 	}
 
@@ -2199,7 +2247,247 @@ ${name}!`;
 
 		AssertScriptEqual(@"{
   let text = ""a,b;c"";
-  let parts = text.split(["","", "";""]);
+  let parts = _5417a93b3075813a(text, ["","", "";""]);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_String_SplitMultipleChars_ParamsForm()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""a,b;c"";
+					string[] parts = text.Split(',', ';');
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let text = ""a,b;c"";
+  let parts = _5417a93b3075813a(text, ["","", "";""]);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_String_SplitChar_WithStringSplitOptions()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = "" a,, b ,"";
+					string[] parts = text.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let text = "" a,, b ,"";
+  let parts = _d8080c573d45b4b4(text, "","", 1 | 2);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_String_SplitChar_WithCountAndStringSplitOptions()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = "" a,, b , c "";
+					string[] parts = text.Split(',', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let text = "" a,, b , c "";
+  let parts = _aaa73a4811837ec7(text, "","", 2, 1 | 2);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_String_SplitChars_WithStringSplitOptions()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = "" a,; b ;"";
+					string[] parts = text.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let text = "" a,; b ;"";
+  let parts = _25c1f15b0ed2cb6e(text, ["","", "";""], 1 | 2);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_String_SplitChars_WithCount()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""a,b;c,d"";
+					string[] parts = text.Split([',', ';'], 2);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let text = ""a,b;c,d"";
+  let parts = _d03d120228c0c4ed(text, ["","", "";""], 2);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_String_SplitChars_WithCountAndStringSplitOptions()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = "" a,; b ; c "";
+					string[] parts = text.Split([',', ';'], 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let text = "" a,; b ; c "";
+  let parts = _c8e5ceed33c6c638(text, ["","", "";""], 2, 1 | 2);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_String_SplitString_WithStringSplitOptions()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = "" one ::  two :: "";
+					string[] parts = text.Split(""::"", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let text = "" one ::  two :: "";
+  let parts = _189761f781df8770(text, ""::"", 1 | 2);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_String_SplitString_WithCountAndStringSplitOptions()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = "" one ::  two :: three "";
+					string[] parts = text.Split(""::"", 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let text = "" one ::  two :: three "";
+  let parts = _96eb0a23afa7fdfb(text, ""::"", 2, 1 | 2);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_String_SplitStrings_WithStringSplitOptions()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = "" one ::  two -- three :: "";
+					string[] parts = text.Split([""::"", ""--""], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let text = "" one ::  two -- three :: "";
+  let parts = _fff99c96206a241e(text, [""::"", ""--""], 1 | 2);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_String_SplitStrings_WithCountAndStringSplitOptions()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = "" one ::  two -- three :: four "";
+					string[] parts = text.Split([""::"", ""--""], 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let text = "" one ::  two -- three :: four "";
+  let parts = _f3c7edcc7cc89a4a(text, [""::"", ""--""], 2, 1 | 2);
 }", script);
 	}
 
@@ -2338,6 +2626,300 @@ ${name}!`;
 }", script);
 	}
 
+	[TestMethod]
+	public void Visit_String_PadWithCharVariable()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""42"";
+					char pad = '0';
+					string left = text.PadLeft(5, pad);
+					string right = text.PadRight(5, pad);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let text = ""42"";
+  let pad = ""0"";
+  let left = text.padStart(5, pad);
+  let right = text.padEnd(5, pad);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_String_StartsEndsWithChar()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""hello"";
+					bool starts = text.StartsWith('h');
+					bool ends = text.EndsWith('o');
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let text = ""hello"";
+  let starts = text.startsWith(""h"");
+  let ends = text.endsWith(""o"");
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_String_IndexOfChar()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""hello world"";
+					int first = text.IndexOf('o');
+					int last = text.LastIndexOf('o');
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let text = ""hello world"";
+  let first = text.indexOf(""o"");
+  let last = text.lastIndexOf(""o"");
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_String_ContainsAndIndexedCharOverloads()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""hello world"";
+					bool contains = text.Contains('o');
+					int first = text.IndexOf('o', 5);
+					int last = text.LastIndexOf('o', 7);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let text = ""hello world"";
+  let contains = text.includes(""o"");
+  let first = text.indexOf(""o"", 5);
+  let last = text.lastIndexOf(""o"", 7);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_String_IndexedCharCountOverloads()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""hello world"";
+					int first = text.IndexOf('o', 4, 4);
+					int last = text.LastIndexOf('o', 7, 4);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let text = ""hello world"";
+  let first = _d2873e605fbed764(text, ""o"", 4, 4);
+  let last = _dbdd57f8d259ce66(text, ""o"", 7, 4);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_String_IndexedStringCountOverloads()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""hello world"";
+					int first = text.IndexOf(""or"", 5, 4);
+					int last = text.LastIndexOf(""lo"", 5, 4);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let text = ""hello world"";
+  let first = _ff549d811898fb56(text, ""or"", 5, 4);
+  let last = _c4ee024d06ee238c(text, ""lo"", 5, 4);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_String_TrimCharOverloads()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""--hello--"";
+					string trimmed = text.Trim('-');
+					string trimmedStart = text.TrimStart('-');
+					string trimmedEnd = text.TrimEnd('-');
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let text = ""--hello--"";
+  let trimmed = _5d7e005b9dcb67de(text, ""-"");
+  let trimmedStart = _561fe737e62cf332(text, ""-"");
+  let trimmedEnd = _eb362a090d734099(text, ""-"");
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_String_TrimCharArrayOverloads()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""-*-hello-*-"";
+					string trimmed = text.Trim('-', '*');
+					string trimmedStart = text.TrimStart('-', '*');
+					string trimmedEnd = text.TrimEnd('-', '*');
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let text = ""-*-hello-*-"";
+  let trimmed = _c6c444b4e71e14f7(text, [""-"", ""*""]);
+  let trimmedStart = _98731360726c6976(text, [""-"", ""*""]);
+  let trimmedEnd = _a62862c1fbaa21c3(text, [""-"", ""*""]);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_String_IndexOfAnyAndLastIndexOfAny()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""hello world"";
+					int first = text.IndexOfAny(['o', 'w']);
+					int last = text.LastIndexOfAny(['o', 'w']);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let text = ""hello world"";
+  let first = _69b749a1c6cbae78(text, [""o"", ""w""]);
+  let last = _c0212f4213a99019(text, [""o"", ""w""]);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_String_IndexOfAnyAndLastIndexOfAny_WithStartIndex()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""hello world"";
+					int first = text.IndexOfAny(['o', 'w'], 5);
+					int last = text.LastIndexOfAny(['o', 'w'], 7);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let text = ""hello world"";
+  let first = _63633a5f3b85c5a9(text, [""o"", ""w""], 5);
+  let last = _c401e64318e768c4(text, [""o"", ""w""], 7);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_String_IndexOfAnyAndLastIndexOfAny_WithStartIndexAndCount()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""hello world"";
+					int first = text.IndexOfAny(['o', 'w'], 4, 4);
+					int last = text.LastIndexOfAny(['o', 'w'], 7, 4);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let text = ""hello world"";
+  let first = _cb863079aae72451(text, [""o"", ""w""], 4, 4);
+  let last = _3c17fcef5615e7a3(text, [""o"", ""w""], 7, 4);
+}", script);
+	}
+
 	#endregion
 
 	#region 扩展测试用例 - 字符串比较
@@ -2367,7 +2949,97 @@ ${name}!`;
 		AssertScriptEqual(@"{
   let a = ""Hello"";
   let b = ""hello"";
-  let equal = a.Equals_f8e1e01e8c17e8bb(b, 5);
+  let equal = _f8e1e01e8c17e8bb(a, b, 5);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_String_ComparisonHelpers_OrdinalIgnoreCase()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""Hello World"";
+					bool starts = text.StartsWith(""hello"", StringComparison.OrdinalIgnoreCase);
+					bool ends = text.EndsWith(""WORLD"", StringComparison.OrdinalIgnoreCase);
+					bool contains = text.Contains(""LO WO"", StringComparison.OrdinalIgnoreCase);
+					bool equal = string.Equals(text, ""hello world"", StringComparison.OrdinalIgnoreCase);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let text = ""Hello World"";
+  let starts = _0333a0fd5f67d8a0(text, ""hello"", 5);
+  let ends = _946b7129a48c8114(text, ""WORLD"", 5);
+  let contains = _d52d7114d5c1b839(text, ""LO WO"", 5);
+  let equal = _b7c36408f0f172e9(text, ""hello world"", 5);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_String_SearchHelpers_OrdinalIgnoreCase()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""Hello World hello"";
+					int first = text.IndexOf(""WORLD"", StringComparison.OrdinalIgnoreCase);
+					int next = text.IndexOf(""HELLO"", 1, StringComparison.OrdinalIgnoreCase);
+					int last = text.LastIndexOf(""HELLO"", StringComparison.OrdinalIgnoreCase);
+					int lastFrom = text.LastIndexOf(""HELLO"", 10, StringComparison.OrdinalIgnoreCase);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let text = ""Hello World hello"";
+  let first = _3ae4900da2b07b27(text, ""WORLD"", 5);
+  let next = _2fabe2b831abe71e(text, ""HELLO"", 1, 5);
+  let last = _78449c135e18c4bc(text, ""HELLO"", 5);
+  let lastFrom = _359dbce44ce4a4da(text, ""HELLO"", 10, 5);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_String_SearchHelpers_OrdinalIgnoreCase_WithCountAndChar()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""Hello World hello"";
+					bool contains = text.Contains('H', StringComparison.OrdinalIgnoreCase);
+					int charIndex = text.IndexOf('W', StringComparison.OrdinalIgnoreCase);
+					int first = text.IndexOf(""WORLD"", 3, 8, StringComparison.OrdinalIgnoreCase);
+					int last = text.LastIndexOf(""HELLO"", 15, 8, StringComparison.OrdinalIgnoreCase);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let text = ""Hello World hello"";
+  let contains = _16d4b2b4de019fb2(text, ""H"", 5);
+  let charIndex = _5331447e2c855a66(text, ""W"", 5);
+  let first = _ab22561fc42166db(text, ""WORLD"", 3, 8, 5);
+  let last = _c911a06f021bd138(text, ""HELLO"", 15, 8, 5);
 }", script);
 	}
 
@@ -2400,6 +3072,58 @@ ${name}!`;
 }", script);
 	}
 
+	[TestMethod]
+	public void Visit_String_Compare_OrdinalIgnoreCase()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string a = ""Apple"";
+					string b = ""apple"";
+					int result = string.Compare(a, b, StringComparison.OrdinalIgnoreCase);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let a = ""Apple"";
+  let b = ""apple"";
+  let result = _9d940114ace1198f(a, b, 5);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_String_Compare_Substrings_OrdinalIgnoreCase()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string a = ""--Hello--"";
+					string b = ""xxhello??"";
+					int result = string.Compare(a, 2, b, 2, 5, StringComparison.OrdinalIgnoreCase);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let a = ""--Hello--"";
+  let b = ""xxhello??"";
+  let result = _d78fb9d76fca75e4(a, 2, b, 2, 5, 5);
+}", script);
+	}
+
 	/// <summary>
 	/// 测试字符串 CompareOrdinal
 	/// </summary>
@@ -2425,7 +3149,7 @@ ${name}!`;
 		AssertScriptEqual(@"{
   let a = ""a"";
   let b = ""B"";
-  let result = String.CompareOrdinal_a55d307de6e31c7b(a, b);
+  let result = _a55d307de6e31c7b(a, b);
 }", script);
 	}
 

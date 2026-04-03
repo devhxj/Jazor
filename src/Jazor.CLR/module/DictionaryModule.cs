@@ -83,13 +83,15 @@ public static class DictionaryModule<TKey, TValue>
 	/// <summary>
 	/// C#: dict[key]
 	/// JS: map.get(key) (缺失时抛出 KeyNotFoundException)
+	/// 当前仍保留 Import：存在性检查后的 throw 仍属于第二阶段 Compile contract 问题，
+	/// 不是简单的 `map.get(key)` 别名映射。
 	/// </summary>
 	[Jazor(Op.Import, "System.Collections.Generic.Dictionary<TKey, TValue>.this[TKey].get")]
 	public static TValue _e73dbdff85c46ddc(Map<TKey,TValue> instance, TKey key)
 	{
 		if (!instance.Has(key))
 			throw new Error("KeyNotFoundException: The given key was not present in the dictionary.");
-		return instance.Get(key);
+		return instance.Get(key)!;
 	}
 
 	/// <summary>
@@ -102,6 +104,8 @@ public static class DictionaryModule<TKey, TValue>
 	/// <summary>
 	/// C#: dict.Add(key, value)
 	/// JS: map.set(key, value) (注意：Map 不会检查重复键)
+	/// 当前仍保留 Import：重复键检测和异常语义仍需要稳定运行时逻辑承载，
+	/// 不要为了减少 Import 把它压成脆弱模板。
 	/// </summary>
 	[Jazor(Op.Import, "System.Collections.Generic.Dictionary<TKey, TValue>.Add(TKey, TValue)")]
 	public static void _39d6e632c4c102f9(Map<TKey,TValue> instance, TKey key, TValue value)

@@ -84,9 +84,11 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
     private IEnumerable<ImportDeclaration> BuildImportDeclarations()
     {
-        foreach (var pair in _imports)
+        foreach (var pair in _imports.OrderBy(static pair => pair.Key, System.StringComparer.Ordinal))
         {
-            var specifierList = string.Join(", ", pair.Value.Select(static specifier => specifier.ToECMAScript()));
+            var specifierList = string.Join(", ", pair.Value
+                .OrderBy(static specifier => specifier.ToECMAScript(), System.StringComparer.Ordinal)
+                .Select(static specifier => specifier.ToECMAScript()));
             var modulePath = EscapeJavaScriptString(pair.Key);
             var importScript = $"import {{ {specifierList} }} from \"{modulePath}\";";
             var importStatement = new Parser().ParseModule(importScript).Body.Single() as ImportDeclaration;

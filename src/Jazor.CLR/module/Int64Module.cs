@@ -253,23 +253,20 @@ public static class Int64Module
 	[Jazor(Op.Discard, "static long.Log2(long)")]
 	public extern static BigInt _e90fc1096a04c8f9(BigInt value);
 
-	///<summary>Clamps a value to an inclusive minimum and maximum value.</summary>
-	[Jazor(Op.Import, "static long.Clamp(long, long, long)")]
-	public static BigInt _8e63712ecf0da200(BigInt value, BigInt min, BigInt max)
-	{
-		if (value < min) return min;
-		if (value > max) return max;
-		return value;
-	}
+	/// <summary>
+	/// C#: long.Clamp(value, min, max)
+	/// JS: value < min ? min : (value > max ? max : value)
+	/// </summary>
+	[Jazor(Op.Inline, "static long.Clamp(long, long, long)", "(__arg1 < __arg2 ? __arg2 : (__arg1 > __arg3 ? __arg3 : __arg1))")]
+	public extern static BigInt _8e63712ecf0da200(BigInt value, BigInt min, BigInt max);
 
 	///<summary>Copies the sign of a value to the sign of another value.</summary>
-	[Jazor(Op.Import, "static long.CopySign(long, long)")]
-	public static BigInt _dd2c6c8297bd4df3(BigInt value, BigInt sign)
-	{
-		if ((value >= BigInt.Zero) == (sign >= BigInt.Zero))
-			return value;
-		return -value;
-	}
+	/// <summary>
+	/// C#: long.CopySign(value, sign)
+	/// JS: BigInt 没有 -0，可直接按符号位切换绝对值。
+	/// </summary>
+	[Jazor(Op.Inline, "static long.CopySign(long, long)", "(__arg2 < 0n ? (__arg1 < 0n ? __arg1 : -__arg1) : (__arg1 < 0n ? -__arg1 : __arg1))")]
+	public extern static BigInt _dd2c6c8297bd4df3(BigInt value, BigInt sign);
 
 	///<summary>Compares two values to compute which is greater.</summary>
 	[Jazor(Op.Inline, "static long.Max(long, long)", "(__arg1 > __arg2 ? __arg1 : __arg2)")]
@@ -279,14 +276,12 @@ public static class Int64Module
 	[Jazor(Op.Inline, "static long.Min(long, long)", "(__arg1 < __arg2 ? __arg1 : __arg2)")]
 	public extern static BigInt _e9f5fe363044ceda(BigInt x, BigInt y);
 
-	///<summary>Computes the sign of a value.</summary>
-	[Jazor(Op.Import, "static long.Sign(long)")]
-	public static Number _003e583f1faf343b(BigInt value)
-	{
-		if (value > BigInt.Zero) return 1;
-		if (value < BigInt.Zero) return -1;
-		return 0;
-	}
+	/// <summary>
+	/// C#: long.Sign(value)
+	/// JS: value > 0n ? 1 : (value < 0n ? -1 : 0)
+	/// </summary>
+	[Jazor(Op.Inline, "static long.Sign(long)", "(__arg1 > 0n ? 1 : (__arg1 < 0n ? -1 : 0))")]
+	public extern static Number _003e583f1faf343b(BigInt value);
 
 	///<summary>Computes the absolute of a value.</summary>
 	[Jazor(Op.Inline, "static long.Abs(long)", "(__arg1 < 0n ? -__arg1 : __arg1)")]

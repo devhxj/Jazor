@@ -11,6 +11,17 @@ public sealed class RegExp
 	public extern RegExp(string pattern, string flags);
 
 	/// <summary>
+	/// Recreates a regular expression from an existing JavaScript <see cref="RegExp"/> value.
+	/// This overload stays on the constructor host because JavaScript allows <c>new RegExp(existingRegExp)</c>.
+	/// </summary>
+	public extern RegExp(RegExp pattern);
+
+	/// <summary>
+	/// Recreates a regular expression from an existing JavaScript <see cref="RegExp"/> value and replaces its flags.
+	/// </summary>
+	public extern RegExp(RegExp pattern, string flags);
+
+	/// <summary>
 	/// Executes a search on a string using a regular expression pattern, and returns an array containing the results of that search.
 	/// </summary>
 	/// <param name="s">The String object or string literal on which to perform the search.</param>
@@ -75,6 +86,12 @@ public sealed class RegExp
 	public extern bool Unicode { get; }
 
 	/// <summary>
+	/// Returns a Boolean value indicating the state of the unicodeSets flag (v) used with a regular expression.
+	/// </summary>
+	[Description("@#unicodeSets")]
+	public extern bool UnicodeSets { get; }
+
+	/// <summary>
 	/// Returns a Boolean value indicating the state of the hasIndices flag (d) used with a regular expression.
 	/// </summary>
 	[Description("@#hasIndices")]
@@ -91,4 +108,11 @@ public sealed class RegExp
 	/// <returns></returns>
 	[Description("@#compile")]
 	public extern RegExp Compile(string pattern, string? flags);
+
+	/// <summary>
+	/// Returns the JavaScript source form of the regular expression, including delimiters and flags.
+	/// This is the direct projection of <c>RegExp.prototype.toString()</c>.
+	/// </summary>
+	[Description("@#toString")]
+	public extern override string ToString();
 }

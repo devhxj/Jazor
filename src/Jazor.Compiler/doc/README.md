@@ -17,7 +17,8 @@
 5. [WhiteList.md](./WhiteList.md)
 6. [SemanticWalker.md](./SemanticWalker.md)
 7. [SourceMap.DecisionSummary.md](./SourceMap.DecisionSummary.md)
-8. [RuntimeStaticHostResolution.md](./RuntimeStaticHostResolution.md)
+8. [RazorVue.DecisionSummary.md](./RazorVue.DecisionSummary.md)
+9. [RuntimeStaticHostResolution.md](./RuntimeStaticHostResolution.md)
 
 ---
 
@@ -51,6 +52,14 @@
 | `SourceMap Checklist` | sourcemap 后续实施清单 | [SourceMap.ImplementationChecklist.md](./SourceMap.ImplementationChecklist.md) |
 | `SourceMap Pitfalls` | sourcemap 实施注意事项与易踩坑清单 | [SourceMap.Pitfalls.md](./SourceMap.Pitfalls.md) |
 | `SourceMap Hard Rules` | sourcemap 第一阶段必须遵守的硬约束 | [SourceMap.HardRules.md](./SourceMap.HardRules.md) |
+| `RazorVue Overview` | RazorVue 文档总览与阅读顺序 | [RazorVue.Overview.md](./RazorVue.Overview.md) |
+| `RazorVue Decision Summary` | RazorVue 简版决策摘要 | [RazorVue.DecisionSummary.md](./RazorVue.DecisionSummary.md) |
+| `RazorVue Design` | RazorVue 完整设计方案 | [RazorVue.Design.md](./RazorVue.Design.md) |
+| `RazorVue Component Descriptor Spec` | RazorVue 组件描述符与注册表规范 | [RazorVue.ComponentDescriptorSpec.md](./RazorVue.ComponentDescriptorSpec.md) |
+| `RazorVue DenoHost Contract` | RazorVue 与 `DenoHost` 的 artifact / manifest 契约 | [RazorVue.DenoHostContract.md](./RazorVue.DenoHostContract.md) |
+| `RazorVue Hard Rules` | RazorVue 第一阶段必须遵守的硬约束 | [RazorVue.HardRules.md](./RazorVue.HardRules.md) |
+| `RazorVue Checklist` | RazorVue 分阶段实施清单 | [RazorVue.ImplementationChecklist.md](./RazorVue.ImplementationChecklist.md) |
+| `RazorVue Pitfalls` | RazorVue 实施注意事项与易踩坑清单 | [RazorVue.Pitfalls.md](./RazorVue.Pitfalls.md) |
 
 ---
 
@@ -125,6 +134,14 @@
 - [SourceMap.Design.md](./SourceMap.Design.md)
 - [SourceMap.ImplementationChecklist.md](./SourceMap.ImplementationChecklist.md)
 
+如果问题落在 RazorVue，优先看：
+
+- [RazorVue.DecisionSummary.md](./RazorVue.DecisionSummary.md)
+- [RazorVue.Design.md](./RazorVue.Design.md)
+- [RazorVue.ComponentDescriptorSpec.md](./RazorVue.ComponentDescriptorSpec.md)
+- [RazorVue.DenoHostContract.md](./RazorVue.DenoHostContract.md)
+- [RazorVue.ImplementationChecklist.md](./RazorVue.ImplementationChecklist.md)
+
 ---
 
 ## 相关文档
@@ -133,5 +150,6 @@
 - [SemanticWalker.md](./SemanticWalker.md)
 - [WhiteList.md](./WhiteList.md)
 - [RuntimeStaticHostResolution.md](./RuntimeStaticHostResolution.md)
+- [RazorVue.Overview.md](./RazorVue.Overview.md)
 
 ---

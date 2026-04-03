@@ -204,28 +204,46 @@ public static class UInt64Module
 	[Jazor(Op.Discard ,"static ulong.TrailingZeroCount(ulong)")]
 	public extern static BigInt _bb2bc7ee16cb0d6d(BigInt value);
 
-	///<summary>Determines if a value is a power of two.</summary>
-	[Jazor(Op.Discard ,"static ulong.IsPow2(ulong)")]
+	/// <summary>
+	/// C#: ulong.IsPow2(value)
+	/// JS: value > 0n && (value & (value - 1n)) === 0n
+	/// </summary>
+	[Jazor(Op.Inline ,"static ulong.IsPow2(ulong)", "(__arg1 > 0n && (__arg1 & (__arg1 - 1n)) === 0n)")]
 	public extern static bool _c80fbfb65612a342(BigInt value);
 
-	///<summary>Computes the log2 of a value.</summary>
-	[Jazor(Op.Discard ,"static ulong.Log2(ulong)")]
+	/// <summary>
+	/// C#: ulong.Log2(value)
+	/// JS: BigInt(value.toString(2).length - 1)
+	/// </summary>
+	[Jazor(Op.Inline ,"static ulong.Log2(ulong)", "(__arg1 === 0n ? 0n : BigInt(__arg1.toString(2).length - 1))")]
 	public extern static BigInt _d20ed6ab8300965c(BigInt value);
 
-	///<summary>Clamps a value to an inclusive minimum and maximum value.</summary>
-	[Jazor(Op.Discard ,"static ulong.Clamp(ulong, ulong, ulong)")]
+	/// <summary>
+	/// C#: ulong.Clamp(value, min, max)
+	/// JS: value < min ? min : (value > max ? max : value)
+	/// </summary>
+	[Jazor(Op.Inline ,"static ulong.Clamp(ulong, ulong, ulong)", "(__arg1 < __arg2 ? __arg2 : (__arg1 > __arg3 ? __arg3 : __arg1))")]
 	public extern static BigInt _e24be08e46ae3b3d(BigInt value, BigInt min, BigInt max);
 
-	///<summary>Compares two values to compute which is greater.</summary>
-	[Jazor(Op.Discard ,"static ulong.Max(ulong, ulong)")]
+	/// <summary>
+	/// C#: ulong.Max(x, y)
+	/// JS: x > y ? x : y
+	/// </summary>
+	[Jazor(Op.Inline ,"static ulong.Max(ulong, ulong)", "(__arg1 > __arg2 ? __arg1 : __arg2)")]
 	public extern static BigInt _111d38c016458f17(BigInt x, BigInt y);
 
-	///<summary>Compares two values to compute which is lesser.</summary>
-	[Jazor(Op.Discard ,"static ulong.Min(ulong, ulong)")]
+	/// <summary>
+	/// C#: ulong.Min(x, y)
+	/// JS: x < y ? x : y
+	/// </summary>
+	[Jazor(Op.Inline ,"static ulong.Min(ulong, ulong)", "(__arg1 < __arg2 ? __arg1 : __arg2)")]
 	public extern static BigInt _a48607bf4fa7c1ee(BigInt x, BigInt y);
 
-	///<summary>Computes the sign of a value.</summary>
-	[Jazor(Op.Discard ,"static ulong.Sign(ulong)")]
+	/// <summary>
+	/// C#: ulong.Sign(value)
+	/// JS: value === 0n ? 0 : 1
+	/// </summary>
+	[Jazor(Op.Inline ,"static ulong.Sign(ulong)", "(__arg1 === 0n ? 0 : 1)")]
 	public extern static Number _ab7319ddbba9bccc(BigInt value);
 
 	///<summary>Creates an instance of the current type from a value, throwing an overflow exception for any values that fall outside the representable range of the current type.</summary>
@@ -240,12 +258,18 @@ public static class UInt64Module
 	[Jazor(Op.Discard ,"static ulong.CreateTruncating<TOther>(TOther)")]
 	public extern static BigInt _5ad09c91e9747ed2<TOther>(object value);
 
-	///<summary>Determines if a value represents an even integral number.</summary>
-	[Jazor(Op.Discard ,"static ulong.IsEvenInteger(ulong)")]
+	/// <summary>
+	/// C#: ulong.IsEvenInteger(value)
+	/// JS: (value % 2n) === 0n
+	/// </summary>
+	[Jazor(Op.Inline ,"static ulong.IsEvenInteger(ulong)", "((__arg1 % 2n) === 0n)")]
 	public extern static bool _789a47bcce335ad4(BigInt value);
 
-	///<summary>Determines if a value represents an odd integral number.</summary>
-	[Jazor(Op.Discard ,"static ulong.IsOddInteger(ulong)")]
+	/// <summary>
+	/// C#: ulong.IsOddInteger(value)
+	/// JS: (value % 2n) !== 0n
+	/// </summary>
+	[Jazor(Op.Inline ,"static ulong.IsOddInteger(ulong)", "((__arg1 % 2n) !== 0n)")]
 	public extern static bool _211da5b4be2dd676(BigInt value);
 
 	///<summary>Tries to parse a string into a value.</summary>

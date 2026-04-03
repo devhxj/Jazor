@@ -746,13 +746,16 @@ public sealed class SemanticWalkerOrdinaryTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    var normalized = script is null
-      ? null
-      : System.Text.RegularExpressions.Regex.Replace(script, @"Task\.Delay_[a-f0-9]+", "Task.Delay_$HASH");
+    var statement = GetOperationAt<IExpressionStatementOperation>(block);
+    var awaitOperation = statement.Operation as IAwaitOperation;
+    Assert.IsNotNull(awaitOperation);
+    var invocation = awaitOperation.Operation as IInvocationOperation;
+    Assert.IsNotNull(invocation);
+    var delayMethodName = $"Task.{Util.GetConfigOrSymbolName(invocation.TargetMethod)}";
 
-    AssertScriptEqual(@"{
-  await Task.Delay_$HASH(100);
-}", normalized);
+    AssertScriptEqual($@"{{
+  await {delayMethodName}(100);
+}}", script);
 
   }
 

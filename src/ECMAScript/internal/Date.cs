@@ -80,6 +80,13 @@ public sealed class Date
 	public extern Number GetFullYear();
 
 	/// <summary>
+	/// Legacy JavaScript year getter.
+	/// This remains exposed because many runtimes still provide <c>Date.prototype.getYear</c> for web compatibility.
+	/// </summary>
+	[Description("@#getYear")]
+	public extern Number GetYear();
+
+	/// <summary>
 	/// Gets the year using Universal Coordinated Time (UTC).
 	/// </summary>
 	/// <returns></returns>
@@ -320,6 +327,13 @@ public sealed class Date
 	public extern Number SetFullYear(Number year, Number? month = default, Number? date = default);
 
 	/// <summary>
+	/// Legacy JavaScript year setter.
+	/// This remains exposed because many runtimes still provide <c>Date.prototype.setYear</c> for web compatibility.
+	/// </summary>
+	[Description("@#setYear")]
+	public extern Number SetYear(Number year);
+
+	/// <summary>
 	/// Sets the year value in the Date object using Universal Coordinated Time (UTC).
 	/// </summary>
 	/// <param name="year">A numeric value equal to the year.</param>
@@ -337,6 +351,13 @@ public sealed class Date
 	public extern string ToUTCString();
 
 	/// <summary>
+	/// Legacy JavaScript alias for <see cref="ToUTCString"/>.
+	/// This stays exposed because browsers and JavaScript runtimes still provide <c>Date.prototype.toGMTString</c>.
+	/// </summary>
+	[Description("@#toGMTString")]
+	public extern string ToGMTString();
+
+	/// <summary>
 	/// Returns a date as a string value in ISO format.
 	/// </summary>
 	/// <returns></returns>
@@ -345,12 +366,13 @@ public sealed class Date
 	public extern string ToISOString();
 
 	/// <summary>
-	/// Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization.
+	/// Used by <c>JSON.stringify</c> to transform the date for JSON serialization.
+	/// Nullable is used because JavaScript returns <c>null</c> when the date is invalid.
 	/// </summary>
 	/// <param name="key"></param>
 	/// <returns></returns>
 	[Description("@#toJSON")]
-	public extern string ToJSON(object? key = null);
+	public extern string? ToJSON(object? key = null);
 
 	/// <summary>
 	/// Parses a string containing a date, and returns the number of milliseconds between that date and midnight, January 1, 1970.

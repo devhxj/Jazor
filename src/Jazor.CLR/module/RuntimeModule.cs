@@ -3,9 +3,6 @@ namespace Jazor.CLR;
 [ECMAScriptModule("System/RuntimeModule.js")]
 public static class RuntimeModule
 {
-	private static BigInt MinTimeSpanTicks => BigInt_("-9223372036854775808");
-	private static BigInt MaxTimeSpanTicks => BigInt_("9223372036854775807");
-
 	private static void EnsureWholeNumber(Number value, string message)
 	{
 		if (IsNaN(value) || Math.Floor_(value) != value || value < Number.MIN_SAFE_INTEGER || value > Number.MAX_SAFE_INTEGER)
@@ -274,7 +271,7 @@ public static class RuntimeModule
 
 		public JTimeSpan(BigInt ticks)
 		{
-			if (ticks < MinTimeSpanTicks || ticks > MaxTimeSpanTicks)
+			if (ticks < BigInt_("-9223372036854775808") || ticks > BigInt_("9223372036854775807"))
 				throw new Error("OverflowException: TimeSpan is too long or too short.");
 
 			this.Ticks = ticks;

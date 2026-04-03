@@ -322,8 +322,11 @@ public static class MathModule
 	[Jazor(Op.Inline, "static System.Math.Clamp(int, int, int)", "Math.min(Math.max(__arg1, __arg2), __arg3)")]
 	public extern static Number _ac5962f496c6acc0(Number value, Number min, Number max);
 
-	///<summary>Returns <paramref name="value" /> clamped to the inclusive range of <paramref name="min" /> and <paramref name="max" />.</summary>
-	[Jazor(Op.Discard ,"static System.Math.Clamp(long, long, long)")]
+	/// <summary>
+	/// C#: Math.Clamp(long)
+	/// JS: BigInt 比较后返回边界或原值
+	/// </summary>
+	[Jazor(Op.Inline ,"static System.Math.Clamp(long, long, long)", "(__arg1 < __arg2 ? __arg2 : (__arg1 > __arg3 ? __arg3 : __arg1))")]
 	public extern static BigInt _d74b585d391b448a(BigInt value, BigInt min, BigInt max);
 
 	///<summary>Returns <paramref name="value" /> clamped to the inclusive range of <paramref name="min" /> and <paramref name="max" />.</summary>
@@ -346,8 +349,11 @@ public static class MathModule
 	[Jazor(Op.Inline, "static System.Math.Clamp(uint, uint, uint)", "Math.min(Math.max(__arg1, __arg2), __arg3)")]
 	public extern static Number _8322034639d6a05c(Number value, Number min, Number max);
 
-	///<summary>Returns <paramref name="value" /> clamped to the inclusive range of <paramref name="min" /> and <paramref name="max" />.</summary>
-	[Jazor(Op.Discard ,"static System.Math.Clamp(ulong, ulong, ulong)")]
+	/// <summary>
+	/// C#: Math.Clamp(ulong)
+	/// JS: BigInt 比较后返回边界或原值
+	/// </summary>
+	[Jazor(Op.Inline ,"static System.Math.Clamp(ulong, ulong, ulong)", "(__arg1 < __arg2 ? __arg2 : (__arg1 > __arg3 ? __arg3 : __arg1))")]
 	public extern static BigInt _f1743d6e0c7a2101(BigInt value, BigInt min, BigInt max);
 
 	///<summary>Returns <paramref name="value" /> clamped to the inclusive range of <paramref name="min" /> and <paramref name="max" />.</summary>
@@ -392,8 +398,11 @@ public static class MathModule
 	[Jazor(Op.Alias, "static System.Math.Max(int, int)", "max")]
 	public extern static Number _c89f0321e6ece69a(Number val1, Number val2);
 
-	///<summary>Returns the larger of two 64-bit signed integers.</summary>
-	[Jazor(Op.Discard ,"static System.Math.Max(long, long)")]
+	/// <summary>
+	/// C#: Math.Max(long, long)
+	/// JS: val1 > val2 ? val1 : val2
+	/// </summary>
+	[Jazor(Op.Inline ,"static System.Math.Max(long, long)", "(__arg1 > __arg2 ? __arg1 : __arg2)")]
 	public extern static BigInt _1513b88bb1abfff1(BigInt val1, BigInt val2);
 
 	///<summary>Returns the larger of two native signed integers.</summary>
@@ -416,8 +425,11 @@ public static class MathModule
 	[Jazor(Op.Alias, "static System.Math.Max(uint, uint)", "max")]
 	public extern static Number _6638c647001d2908(Number val1, Number val2);
 
-	///<summary>Returns the larger of two 64-bit unsigned integers.</summary>
-	[Jazor(Op.Discard ,"static System.Math.Max(ulong, ulong)")]
+	/// <summary>
+	/// C#: Math.Max(ulong, ulong)
+	/// JS: val1 > val2 ? val1 : val2
+	/// </summary>
+	[Jazor(Op.Inline ,"static System.Math.Max(ulong, ulong)", "(__arg1 > __arg2 ? __arg1 : __arg2)")]
 	public extern static BigInt _3ac884b966eeb605(BigInt val1, BigInt val2);
 
 	///<summary>Returns the larger of two native unsigned integers.</summary>
@@ -450,8 +462,11 @@ public static class MathModule
 	[Jazor(Op.Alias, "static System.Math.Min(int, int)", "min")]
 	public extern static Number _7fb229bda6fa1941(Number val1, Number val2);
 
-	///<summary>Returns the smaller of two 64-bit signed integers.</summary>
-	[Jazor(Op.Discard ,"static System.Math.Min(long, long)")]
+	/// <summary>
+	/// C#: Math.Min(long, long)
+	/// JS: val1 < val2 ? val1 : val2
+	/// </summary>
+	[Jazor(Op.Inline ,"static System.Math.Min(long, long)", "(__arg1 < __arg2 ? __arg1 : __arg2)")]
 	public extern static BigInt _b98fea9bd3e4ce52(BigInt val1, BigInt val2);
 
 	///<summary>Returns the smaller of two native signed integers.</summary>
@@ -474,8 +489,11 @@ public static class MathModule
 	[Jazor(Op.Alias, "static System.Math.Min(uint, uint)", "min")]
 	public extern static Number _849b5d874239b92c(Number val1, Number val2);
 
-	///<summary>Returns the smaller of two 64-bit unsigned integers.</summary>
-	[Jazor(Op.Discard ,"static System.Math.Min(ulong, ulong)")]
+	/// <summary>
+	/// C#: Math.Min(ulong, ulong)
+	/// JS: val1 < val2 ? val1 : val2
+	/// </summary>
+	[Jazor(Op.Inline ,"static System.Math.Min(ulong, ulong)", "(__arg1 < __arg2 ? __arg1 : __arg2)")]
 	public extern static BigInt _d468e999912e1120(BigInt val1, BigInt val2);
 
 	///<summary>Returns the smaller of two native unsigned integers.</summary>
@@ -548,8 +566,11 @@ public static class MathModule
 	[Jazor(Op.Alias, "static System.Math.Sign(int)", "sign")]
 	public extern static Number _cfeb8757509066b2(Number value);
 
-	///<summary>Returns an integer that indicates the sign of a 64-bit signed integer.</summary>
-	[Jazor(Op.Discard ,"static System.Math.Sign(long)")]
+	/// <summary>
+	/// C#: Math.Sign(long)
+	/// JS: value > 0n ? 1 : (value < 0n ? -1 : 0)
+	/// </summary>
+	[Jazor(Op.Inline ,"static System.Math.Sign(long)", "(__arg1 > 0n ? 1 : (__arg1 < 0n ? -1 : 0))")]
 	public extern static Number _5354f93121b296ff(BigInt value);
 
 	///<summary>Returns an integer that indicates the sign of a native sized signed integer.</summary>

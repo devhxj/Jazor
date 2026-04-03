@@ -83,9 +83,8 @@ public static class SByteModule
 	/// C#: sbyte.CompareTo(sbyte)
 	/// JS: 返回负数、零或正数
 	/// </summary>
-	[Jazor(Op.Import, "sbyte.CompareTo(sbyte)")]
-	public static Number _a0ff7e0ac34c91a8(Number instance, Number value)
-		=> CompareCore(instance, value);
+	[Jazor(Op.Inline, "sbyte.CompareTo(sbyte)", "(__arg1 < __arg2 ? -1 : (__arg1 > __arg2 ? 1 : 0))")]
+	public extern static Number _a0ff7e0ac34c91a8(Number instance, Number value);
 
 	/// <summary>
 	/// C#: sbyte.Equals(object)
@@ -195,4 +194,88 @@ public static class SByteModule
 	///<summary>Returns the <see cref="T:System.TypeCode" /> for value type <see cref="T:System.SByte" />.</summary>
 	[Jazor(Op.Discard ,"sbyte.GetTypeCode()")]
 	public extern static System.TypeCode _05739d4cc5ffd426(Number instance);
+
+	/// <summary>
+	/// C#: sbyte.IsPow2(value)
+	/// JS: value > 0 && (value & (value - 1)) === 0
+	/// </summary>
+	[Jazor(Op.Inline, "static sbyte.IsPow2(sbyte)", "(__arg1 > 0 && (__arg1 & (__arg1 - 1)) === 0)")]
+	public extern static bool _3b8d7a0f05a9ec28(Number value);
+
+	/// <summary>
+	/// C#: sbyte.Log2(value)
+	/// JS: Math.floor(Math.log2(value))
+	/// </summary>
+	[Jazor(Op.Inline, "static sbyte.Log2(sbyte)", "Math.floor(Math.log2(__arg1))")]
+	public extern static Number _c7771128a1f02ad8(Number value);
+
+	/// <summary>
+	/// C#: sbyte.Clamp(value, min, max)
+	/// JS: Math.min(Math.max(value, min), max)
+	/// </summary>
+	[Jazor(Op.Inline, "static sbyte.Clamp(sbyte, sbyte, sbyte)", "Math.min(Math.max(__arg1, __arg2), __arg3)")]
+	public extern static Number _db44db712712ea4f(Number value, Number min, Number max);
+
+	/// <summary>
+	/// C#: sbyte.CopySign(value, sign)
+	/// JS: sbyte 不存在 -0，可稳定收敛为单表达式。
+	/// </summary>
+	[Jazor(Op.Inline, "static sbyte.CopySign(sbyte, sbyte)", "(__arg2 < 0 ? -Math.abs(__arg1) : Math.abs(__arg1))")]
+	public extern static Number _2e6f06fdfb86a6af(Number value, Number sign);
+
+	/// <summary>
+	/// C#: sbyte.Max(x, y)
+	/// JS: Math.max(x, y)
+	/// </summary>
+	[Jazor(Op.Inline, "static sbyte.Max(sbyte, sbyte)", "Math.max(__arg1, __arg2)")]
+	public extern static Number _1245152faa5cf445(Number x, Number y);
+
+	/// <summary>
+	/// C#: sbyte.Min(x, y)
+	/// JS: Math.min(x, y)
+	/// </summary>
+	[Jazor(Op.Inline, "static sbyte.Min(sbyte, sbyte)", "Math.min(__arg1, __arg2)")]
+	public extern static Number _3b6013cb3a10995b(Number x, Number y);
+
+	/// <summary>
+	/// C#: sbyte.Sign(value)
+	/// JS: value > 0 ? 1 : (value < 0 ? -1 : 0)
+	/// </summary>
+	[Jazor(Op.Inline, "static sbyte.Sign(sbyte)", "(__arg1 > 0 ? 1 : (__arg1 < 0 ? -1 : 0))")]
+	public extern static Number _8bc4cc5f2d3df6f4(Number value);
+
+	/// <summary>
+	/// C#: sbyte.Abs(value)
+	/// JS: Math.abs(value)
+	/// </summary>
+	[Jazor(Op.Inline, "static sbyte.Abs(sbyte)", "Math.abs(__arg1)")]
+	public extern static Number _f0d5d38874458f27(Number value);
+
+	/// <summary>
+	/// C#: sbyte.IsEvenInteger(value)
+	/// JS: (value & 1) === 0
+	/// </summary>
+	[Jazor(Op.Inline, "static sbyte.IsEvenInteger(sbyte)", "((__arg1 & 1) === 0)")]
+	public extern static bool _2478ea52e7902af1(Number value);
+
+	/// <summary>
+	/// C#: sbyte.IsNegative(value)
+	/// JS: value < 0
+	/// </summary>
+	[Jazor(Op.Inline, "static sbyte.IsNegative(sbyte)", "(__arg1 < 0)")]
+	public extern static bool _0beea582baf99b4c(Number value);
+
+	/// <summary>
+	/// C#: sbyte.IsOddInteger(value)
+	/// JS: (value & 1) !== 0
+	/// </summary>
+	[Jazor(Op.Inline, "static sbyte.IsOddInteger(sbyte)", "((__arg1 & 1) !== 0)")]
+	public extern static bool _15bce1f47dc022eb(Number value);
+
+	/// <summary>
+	/// C#: sbyte.IsPositive(value)
+	/// JS: value > 0
+	/// </summary>
+	[Jazor(Op.Inline, "static sbyte.IsPositive(sbyte)", "(__arg1 > 0)")]
+	public extern static bool _f1b22dc04ea66c02(Number value);
 }

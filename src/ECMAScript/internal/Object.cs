@@ -67,18 +67,18 @@ public static partial class Global
 		/// consumed through dynamic property/index access rather than a CLR prototype contract.
 		/// </summary>
 		/// <param name="proto">The object to use as the prototype. May be null.</param>
-		/// <returns>A newly created object, or null when the JavaScript result is null.</returns>
+		/// <returns>A newly created JavaScript object.</returns>
 		[Description("@#create")]
-		public extern static IObject? Create(object? proto);
+		public extern static IObject Create(object? proto);
 
 		/// <summary>
 		/// Creates a new JavaScript object with the specified prototype and property descriptors.
 		/// </summary>
 		/// <param name="proto">The object to use as the prototype. May be null.</param>
 		/// <param name="propertiesObject">A JavaScript object containing property descriptors.</param>
-		/// <returns>A newly created object, or null when the JavaScript result is null.</returns>
+		/// <returns>A newly created JavaScript object.</returns>
 		[Description("@#create")]
-		public extern static IObject? Create(object? proto, PropertyDescriptorMap propertiesObject);
+		public extern static IObject Create(object? proto, PropertyDescriptorMap propertiesObject);
 
 		/// <summary>
 		///  确定两个值是否为相同值。如果以下其中一项成立，则两个值相同：<br/>
@@ -244,7 +244,21 @@ public static partial class Global
 		/// <param name="entries">Pairs of property keys and values.</param>
 		/// <returns>A newly created JavaScript object.</returns>
 		[Description("@#fromEntries")]
-		public extern static IObject? FromEntries(IEnumerable<Array<object?>> entries);
+		public extern static IObject FromEntries(IEnumerable<Array<object?>> entries);
+
+		/// <summary>
+		/// Groups iterable values by a JavaScript property key and returns the grouped result as an object.
+		/// The return type stays as <see cref="IObject"/> because JavaScript produces an object-like result whose keys are consumed through dynamic property access.
+		/// </summary>
+		[Description("@#groupBy")]
+		public extern static IObject GroupBy<T>(IEnumerable<T> items, Func<T, Number, PropertyKey> callbackfn);
+
+		/// <summary>
+		/// Groups iterable values by a JavaScript property key and returns the grouped result as an object.
+		/// This overload mirrors the JavaScript callback shape when the caller does not need the index argument.
+		/// </summary>
+		[Description("@#groupBy")]
+		public extern static IObject GroupBy<T>(IEnumerable<T> items, Func<T, PropertyKey> callbackfn);
 
 		/// <summary>
 		/// Returns whether the object has the specified own property.

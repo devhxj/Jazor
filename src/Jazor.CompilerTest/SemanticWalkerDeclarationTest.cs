@@ -1176,6 +1176,146 @@ public sealed class SemanticWalkerDeclarationTest
     }
 
     [TestMethod]
+    public void Visit_OutDeclaration_DateOnlyTryParse()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    if (System.DateOnly.TryParse(""2024-01-02"", out var value))
+                    {
+                        Console.WriteLine(value.ToString());
+                    }
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{
+  let value, v$0;
+  if (v$0 = _b14e4d5a572477d0(""2024-01-02"", value), value = v$0[1], v$0[0]) {
+    console.log(value.toString());
+  }
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_OutDeclaration_TimeOnlyTryParse()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    if (System.TimeOnly.TryParse(""12:30:00"", out var value))
+                    {
+                        Console.WriteLine(value.ToString());
+                    }
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{
+  let value, v$0;
+  if (v$0 = _ee7de3e005ab6751(""12:30:00"", value), value = v$0[1], v$0[0]) {
+    console.log(value.toString());
+  }
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_OutDeclaration_TimeSpanTryParse()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    if (System.TimeSpan.TryParse(""01:02:03"", out var value))
+                    {
+                        Console.WriteLine(value.ToString());
+                    }
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{
+  let value, v$0;
+  if (v$0 = _6fb85ef4d11b9143(""01:02:03"", value), value = v$0[1], v$0[0]) {
+    console.log(value.toString());
+  }
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_OutDeclaration_DateTimeOffsetTryParse()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    if (System.DateTimeOffset.TryParse(""2024-01-02T03:04:05+08:00"", out var value))
+                    {
+                        Console.WriteLine(value.ToString());
+                    }
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{
+  let value, v$0;
+  if (v$0 = _2fd90dc37b274014(""2024-01-02T03:04:05+08:00"", value), value = v$0[1], v$0[0]) {
+    console.log(value.toString());
+  }
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_OutDeclaration_DecimalTryParse()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    if (decimal.TryParse(""123.45"", out var value))
+                    {
+                        Console.WriteLine(value.ToString());
+                    }
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{
+  let value, v$0;
+  if (v$0 = _e96278809bb50e35(""123.45"", value), value = v$0[1], v$0[0]) {
+    console.log(_65a0e4fe8ccdd829(value));
+  }
+}", script);
+    }
+
+    [TestMethod]
     public void Visit_OutDeclaration_MultipleOut()
     {
         var block = GetBlockOperation(@"

@@ -49,8 +49,9 @@ public static class StringModule
 	}
 
 	///<summary>Compares two specified <see cref="T:System.String" /> objects using the specified rules, and returns an integer that indicates their relative position in the sort order.</summary>
-	[Jazor(Op.Discard ,"static string.Compare(string, string, System.StringComparison)")]
-	public extern static Number _9d940114ace1198f(string? strA, string? strB, object comparisonType);
+	[Jazor(Op.Import ,"static string.Compare(string, string, System.StringComparison)")]
+	public static Number _9d940114ace1198f(string? strA, string? strB, object comparisonType)
+		=> _20874c0b43640318(strA, strB, IsOrdinalIgnoreCase(comparisonType));
 
 	///<summary>Compares two specified <see cref="T:System.String" /> objects using the specified comparison options and culture-specific information to influence the comparison, and returns an integer that indicates the relationship of the two strings to each other in the sort order.</summary>
 	[Jazor(Op.Discard ,"static string.Compare(string, string, System.Globalization.CultureInfo, System.Globalization.CompareOptions)")]
@@ -77,12 +78,18 @@ public static class StringModule
 	public extern static Number _6de73d4e145d51a4(string? strA, Number indexA, string? strB, Number indexB, Number length, String? culture, object options);
 
 	///<summary>Compares substrings of two specified <see cref="T:System.String" /> objects using the specified rules, and returns an integer that indicates their relative position in the sort order.</summary>
-	[Jazor(Op.Discard ,"static string.Compare(string, int, string, int, int, System.StringComparison)")]
-	public extern static Number _d78fb9d76fca75e4(string? strA, Number indexA, string? strB, Number indexB, Number length, object comparisonType);
+	[Jazor(Op.Import ,"static string.Compare(string, int, string, int, int, System.StringComparison)")]
+	public static Number _d78fb9d76fca75e4(string? strA, Number indexA, string? strB, Number indexB, Number length, object comparisonType)
+	{
+		var sliceA = SliceOrEmpty(strA, indexA, length);
+		var sliceB = SliceOrEmpty(strB, indexB, length);
+		return _20874c0b43640318(sliceA, sliceB, IsOrdinalIgnoreCase(comparisonType));
+	}
 
 	///<summary>Compares two specified <see cref="T:System.String" /> objects by evaluating the numeric values of the corresponding <see cref="T:System.Char" /> objects in each string.</summary>
-	[Jazor(Op.Discard ,"static string.CompareOrdinal(string, string)")]
-	public extern static Number _a55d307de6e31c7b(string? strA, string? strB);
+	[Jazor(Op.Import ,"static string.CompareOrdinal(string, string)")]
+	public static Number _a55d307de6e31c7b(string? strA, string? strB)
+		=> _e16eea9fe3891a62(strA, strB);
 
 	///<summary>Compares substrings of two specified <see cref="T:System.String" /> objects by evaluating the numeric values of the corresponding <see cref="T:System.Char" /> objects in each substring.</summary>
 	[Jazor(Op.Discard ,"static string.CompareOrdinal(string, int, string, int, int)")]
@@ -104,15 +111,21 @@ public static class StringModule
 	public extern static bool _33de316681320ec7(string instance, string value);
 
 	///<summary>Determines whether the end of this string instance matches the specified string when compared using the specified comparison option.</summary>
-	[Jazor(Op.Discard ,"string.EndsWith(string, System.StringComparison)")]
-	public extern static bool _946b7129a48c8114(string instance, string value, object comparisonType);
+	[Jazor(Op.Import ,"string.EndsWith(string, System.StringComparison)")]
+	public static bool _946b7129a48c8114(string instance, string value, object comparisonType)
+		=> IsOrdinalIgnoreCase(comparisonType)
+			? instance.ToLower().EndsWith(value.ToLower())
+			: instance.EndsWith(value);
 
 	///<summary>Determines whether the end of this string instance matches the specified string when compared using the specified culture.</summary>
 	[Jazor(Op.Discard ,"string.EndsWith(string, bool, System.Globalization.CultureInfo)")]
 	public extern static bool _679207cac049d3c6(string instance, string value, bool ignoreCase, String? culture);
 
-	///<summary>Determines whether the end of this string instance matches the specified character.</summary>
-	[Jazor(Op.Discard ,"string.EndsWith(char)")]
+	/// <summary>
+	/// C#: str.EndsWith(value)
+	/// JS: str.endsWith(value)
+	/// </summary>
+	[Jazor(Op.Alias, "string.EndsWith(char)", "endsWith")]
 	public extern static bool _7619ce4eda48c8e8(string instance, Number value);
 
 	///<summary>Determines whether this instance and a specified object, which must also be a <see cref="T:System.String" /> object, have the same value.</summary>
@@ -124,16 +137,22 @@ public static class StringModule
 	public extern static bool _6ee9bc86e4384225(string instance, string? value);
 
 	///<summary>Determines whether this string and a specified <see cref="T:System.String" /> object have the same value. A parameter specifies the culture, case, and sort rules used in the comparison.</summary>
-	[Jazor(Op.Discard ,"string.Equals(string, System.StringComparison)")]
-	public extern static bool _f8e1e01e8c17e8bb(string instance, string? value, object comparisonType);
+	[Jazor(Op.Import ,"string.Equals(string, System.StringComparison)")]
+	public static bool _f8e1e01e8c17e8bb(string instance, string? value, object comparisonType)
+		=> IsOrdinalIgnoreCase(comparisonType)
+			? (instance?.ToLower() == value?.ToLower())
+			: instance == value;
 
 	///<summary>Determines whether two specified <see cref="T:System.String" /> objects have the same value.</summary>
 	[Jazor(Op.Discard ,"static string.Equals(string, string)")]
 	public extern static bool _e6b1648151c863d5(string? a, string? b);
 
 	///<summary>Determines whether two specified <see cref="T:System.String" /> objects have the same value. A parameter specifies the culture, case, and sort rules used in the comparison.</summary>
-	[Jazor(Op.Discard ,"static string.Equals(string, string, System.StringComparison)")]
-	public extern static bool _b7c36408f0f172e9(string? a, string? b, object comparisonType);
+	[Jazor(Op.Import ,"static string.Equals(string, string, System.StringComparison)")]
+	public static bool _b7c36408f0f172e9(string? a, string? b, object comparisonType)
+		=> IsOrdinalIgnoreCase(comparisonType)
+			? (a?.ToLower() == b?.ToLower())
+			: a == b;
 
 	///<summary>Determines whether two specified strings have the same value.</summary>
 	[Jazor(Op.Allowed ,"static string.operator ==(string, string)")]
@@ -159,6 +178,22 @@ public static class StringModule
 	[Jazor(Op.Discard ,"static string.GetHashCode(System.ReadOnlySpan<char>, System.StringComparison)")]
 	public extern static Number _d123047f69d911f5(Uint32Array value, object comparisonType);
 
+	private static bool IsOrdinalIgnoreCase(object comparisonType)
+		=> comparisonType is Number value && value == 5;
+
+	private static string SliceOrEmpty(string? value, Number start, Number length)
+	{
+		if (string.IsNullOrEmpty(value))
+			return value ?? "";
+
+		if (start >= value.Length || length <= 0)
+			return "";
+
+		var available = value.Length - start;
+		var take = length < available ? length : available;
+		return value.Substring(start, take);
+	}
+
 	/// <summary>
 	/// C#: str.StartsWith(value)
 	/// JS: str.startsWith(value)
@@ -167,15 +202,21 @@ public static class StringModule
 	public extern static bool _1cda198f8257d023(string instance, string value);
 
 	///<summary>Determines whether the beginning of this string instance matches the specified string when compared using the specified comparison option.</summary>
-	[Jazor(Op.Discard ,"string.StartsWith(string, System.StringComparison)")]
-	public extern static bool _0333a0fd5f67d8a0(string instance, string value, object comparisonType);
+	[Jazor(Op.Import ,"string.StartsWith(string, System.StringComparison)")]
+	public static bool _0333a0fd5f67d8a0(string instance, string value, object comparisonType)
+		=> IsOrdinalIgnoreCase(comparisonType)
+			? instance.ToLower().StartsWith(value.ToLower())
+			: instance.StartsWith(value);
 
 	///<summary>Determines whether the beginning of this string instance matches the specified string when compared using the specified culture.</summary>
 	[Jazor(Op.Discard ,"string.StartsWith(string, bool, System.Globalization.CultureInfo)")]
 	public extern static bool _16d66a076936ebd2(string instance, string value, bool ignoreCase, String? culture);
 
-	///<summary>Determines whether this string instance starts with the specified character.</summary>
-	[Jazor(Op.Discard ,"string.StartsWith(char)")]
+	/// <summary>
+	/// C#: str.StartsWith(value)
+	/// JS: str.startsWith(value)
+	/// </summary>
+	[Jazor(Op.Alias, "string.StartsWith(char)", "startsWith")]
 	public extern static bool _ef46304ffa6d6ccf(string instance, Number value);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.String" /> class to the Unicode characters indicated in the specified character array.</summary>
@@ -304,6 +345,8 @@ public static class StringModule
 	/// <summary>
 	/// C#: str[index]
 	/// JS: str[index] (越界时抛出 IndexOutOfRangeException)
+	/// 当前仍保留 Import：第一阶段 Compile contract 还没有统一的 throw-expression / IIFE 约定，
+	/// 这里如果硬迁移，只会把越界分支重新编码成更脆弱的表达式技巧。
 	/// </summary>
 	[Jazor(Op.Import, "string.this[int].get")]
 	public static string _5ad63706a889c294(string instance, Number index)
@@ -585,12 +628,16 @@ public static class StringModule
 	public extern static string _80ebf2c83f8072e2(string instance, string oldValue, string? newValue, bool ignoreCase, String? culture);
 
 	///<summary>Returns a new string in which all occurrences of a specified string in the current instance are replaced with another specified string, using the provided comparison type.</summary>
-	[Jazor(Op.Discard ,"string.Replace(string, string, System.StringComparison)")]
-	public extern static string _8a7510653022a974(string instance, string oldValue, string? newValue, object comparisonType);
+	[Jazor(Op.Import ,"string.Replace(string, string, System.StringComparison)")]
+	public static string _8a7510653022a974(string instance, string oldValue, string? newValue, object comparisonType)
+		=> IsOrdinalIgnoreCase(comparisonType)
+			? ReplaceAllIgnoreCase(instance, oldValue, newValue ?? "")
+			: instance.ReplaceAll(oldValue, newValue ?? "");
 
 	///<summary>Returns a new string in which all occurrences of a specified Unicode character in this instance are replaced with another specified Unicode character.</summary>
-	[Jazor(Op.Discard ,"string.Replace(char, char)")]
-	public extern static string _7d7cb13bbbbb83c8(string instance, Number oldChar, Number newChar);
+	[Jazor(Op.Import ,"string.Replace(char, char)")]
+	public static string _7d7cb13bbbbb83c8(string instance, Number oldChar, Number newChar)
+		=> instance.ReplaceAll(oldChar.ToString(), newChar.ToString());
 
 	/// <summary>
 	/// C#: str.Replace(oldValue, newValue)
@@ -609,52 +656,361 @@ public static class StringModule
 	public extern static string _35041c0250b36108(string instance, string replacementText);
 
 	///<summary>Splits a string into substrings based on a specified delimiting character and, optionally, options.</summary>
-	[Jazor(Op.Discard ,"string.Split(char, System.StringSplitOptions)")]
-	public extern static string[] _d8080c573d45b4b4(string instance, Number separator, object options);
+	[Jazor(Op.Import ,"string.Split(char, System.StringSplitOptions)")]
+	public static string[] _d8080c573d45b4b4(string instance, Number separator, object options)
+		=> ApplySplitOptions(instance.Split(separator.ToString()), options);
 
 	///<summary>Splits a string into a maximum number of substrings based on a specified delimiting character and, optionally, options.        Splits a string into a maximum number of substrings based on the provided character separator, optionally omitting empty substrings from the result.</summary>
-	[Jazor(Op.Discard ,"string.Split(char, int, System.StringSplitOptions)")]
-	public extern static string[] _aaa73a4811837ec7(string instance, Number separator, Number count, object options);
+	[Jazor(Op.Import ,"string.Split(char, int, System.StringSplitOptions)")]
+	public static string[] _aaa73a4811837ec7(string instance, Number separator, Number count, object options)
+	{
+		if (count <= 0)
+			return [];
+
+		if (count == 1)
+			return ApplySplitOptions([instance], options);
+
+		var trimEntries = false;
+		var removeEmptyEntries = false;
+		if (options is Number splitOptions)
+		{
+			trimEntries = (splitOptions & 2) != 0;
+			removeEmptyEntries = (splitOptions & 1) != 0;
+		}
+
+		var token = separator.ToString();
+		var result = new Array<string>();
+		var start = 0;
+		while (result.Length < count - 1)
+		{
+			var index = instance.IndexOf(token, start);
+			if (index < 0)
+				break;
+
+			var part = instance.Substring(start, index - start);
+			part = trimEntries ? part.Trim() : part;
+			if (!removeEmptyEntries || part.Length != 0)
+				result.Push(part);
+
+			start = index + token.Length;
+		}
+
+		var tail = instance.Substring(start);
+		tail = trimEntries ? tail.Trim() : tail;
+		if (!removeEmptyEntries || tail.Length != 0)
+			result.Push(tail);
+
+		return result;
+	}
 
 	/// <summary>
-	/// C#: str.Split(separator)
-	/// JS: str.split(separator)
-	/// Note: This is a simplified mapping, C# Split has more options
+	/// C#: str.Split(separatorChars)
+	/// JS: str.split(RegExp("[...]"))
+	/// Note: 多字符分隔在 JS 中不能直接传数组给 split；这里统一构造字符类正则。
 	/// </summary>
-	[Jazor(Op.Alias, "string.Split(params char[])", "split")]
-	public extern static string[] _62c8810ea13dba45(string instance, string separator);
+	[Jazor(Op.Import, "string.Split(params char[])")]
+	public static string[] _62c8810ea13dba45(string instance, object? separator)
+	{
+		if (separator is null)
+			return instance.Split(RegExp(@"\s+"));
+
+		if (separator is string singleSeparator)
+			return instance.Split(RegExp(BuildSplitCharClassPattern(singleSeparator)));
+
+		if (separator is Array<string> separators)
+			return instance.Split(RegExp(BuildSplitCharClassPattern(separators)));
+
+		return instance.Split(RegExp(@"\s+"));
+	}
+
+	private static string BuildSplitCharClassPattern(string separator)
+	{
+		if (separator.Length == 0)
+			return @"\s+";
+
+		var pattern = "[";
+		for (var i = 0; i < separator.Length; i++)
+			pattern += EscapeRegexCharClassChar(separator[i]);
+
+		return pattern + "]";
+	}
+
+	private static string BuildSplitCharClassPattern(Array<string> separators)
+	{
+		if (separators.Length == 0)
+			return @"\s+";
+
+		var pattern = "[";
+		var hasSeparator = false;
+		for (var i = 0; i < separators.Length; i++)
+		{
+			var separator = (string?)separators[i];
+			if (separator is null || separator.Length == 0)
+				continue;
+
+			hasSeparator = true;
+			for (var j = 0; j < separator.Length; j++)
+				pattern += EscapeRegexCharClassChar(separator[j]);
+		}
+
+		return hasSeparator ? pattern + "]" : @"\s+";
+	}
+
+	private static string EscapeRegexCharClassChar(char ch) => ch switch
+	{
+		'\\' => "\\\\",
+		']' => "\\]",
+		'^' => "\\^",
+		'-' => "\\-",
+		_ => ch.ToString()
+	};
+
+	private static string[] ApplySplitOptions(string[] parts, object options)
+	{
+		var trimEntries = false;
+		var removeEmptyEntries = false;
+		if (options is Number splitOptions)
+		{
+			trimEntries = (splitOptions & 2) != 0;
+			removeEmptyEntries = (splitOptions & 1) != 0;
+		}
+
+		var result = new Array<string>();
+		foreach (var part in parts)
+		{
+			var current = trimEntries ? part.Trim() : part;
+			if (removeEmptyEntries && current.Length == 0)
+				continue;
+
+			result.Push(current);
+		}
+
+		return result;
+	}
+
+	private static string[] SplitByCharSetWithLimitAndOptions(string instance, object separator, Number count, object options)
+	{
+		if (count <= 0)
+			return [];
+
+		var trimEntries = false;
+		var removeEmptyEntries = false;
+		if (options is Number splitOptions)
+		{
+			trimEntries = (splitOptions & 2) != 0;
+			removeEmptyEntries = (splitOptions & 1) != 0;
+		}
+
+		if (count == 1)
+			return ApplySplitOptions([instance], options);
+
+		var any = NormalizeCharSet(separator);
+		var result = new Array<string>();
+		var start = 0;
+		for (var i = 0; i < instance.Length && result.Length < count - 1; i++)
+		{
+			if (!any.Contains(instance[i].ToString()))
+				continue;
+
+			var part = instance.Substring(start, i - start);
+			part = trimEntries ? part.Trim() : part;
+			if (!removeEmptyEntries || part.Length != 0)
+				result.Push(part);
+
+			start = i + 1;
+		}
+
+		var tail = instance.Substring(start);
+		tail = trimEntries ? tail.Trim() : tail;
+		if (!removeEmptyEntries || tail.Length != 0)
+			result.Push(tail);
+
+		return result;
+	}
+
+	private static string[] SplitByStringsWithLimitAndOptions(string instance, object separator, Number count, object options)
+	{
+		if (count <= 0)
+			return [];
+
+		var trimEntries = false;
+		var removeEmptyEntries = false;
+		if (options is Number splitOptions)
+		{
+			trimEntries = (splitOptions & 2) != 0;
+			removeEmptyEntries = (splitOptions & 1) != 0;
+		}
+
+		if (count == 1)
+			return ApplySplitOptions([instance], options);
+
+		var separators = NormalizeStringSeparators(separator);
+		var result = new Array<string>();
+		var start = 0;
+		while (result.Length < count - 1)
+		{
+			var bestIndex = -1;
+			string? bestSeparator = null;
+			for (var i = 0; i < separators.Length; i++)
+			{
+				var item = (string?)separators[i];
+				if (item is null)
+					continue;
+
+				var index = instance.IndexOf(item, start);
+				if (index < 0)
+					continue;
+
+				if (bestIndex < 0 || index < bestIndex)
+				{
+					bestIndex = index;
+					bestSeparator = item;
+				}
+			}
+
+			if (bestIndex < 0 || bestSeparator is null)
+				break;
+
+			var part = instance.Substring(start, bestIndex - start);
+			part = trimEntries ? part.Trim() : part;
+			if (!removeEmptyEntries || part.Length != 0)
+				result.Push(part);
+
+			start = bestIndex + bestSeparator.Length;
+		}
+
+		var tail = instance.Substring(start);
+		tail = trimEntries ? tail.Trim() : tail;
+		if (!removeEmptyEntries || tail.Length != 0)
+			result.Push(tail);
+
+		return result;
+	}
+
+	private static string ReplaceAllIgnoreCase(string instance, string oldValue, string newValue)
+	{
+		if (oldValue.Length == 0)
+			return instance;
+
+		var source = instance.ToLower();
+		var target = oldValue.ToLower();
+		var result = "";
+		var start = 0;
+		while (true)
+		{
+			var index = source.IndexOf(target, start);
+			if (index < 0)
+				break;
+
+			result += instance.Substring(start, index - start);
+			result += newValue;
+			start = index + oldValue.Length;
+		}
+
+		return start == 0 ? instance : result + instance.Substring(start);
+	}
+
+	private static Array<string> NormalizeStringSeparators(object separator)
+	{
+		var result = new Array<string>();
+		switch (separator)
+		{
+			case string single when single.Length != 0:
+				result.Push(single);
+				break;
+			case Array<string> many:
+				for (var i = 0; i < many.Length; i++)
+				{
+					var item = (string?)many[i];
+					if (item is not null && item.Length != 0)
+						result.Push(item);
+				}
+
+				break;
+		}
+
+		return result;
+	}
 
 	///<summary>Splits a string into substrings based on specified delimiting characters.</summary>
-	[Jazor(Op.Discard ,"string.Split(params System.ReadOnlySpan<char>)")]
-	public extern static string[] _5417a93b3075813a(string instance,  Uint32Array separator);
+	[Jazor(Op.Import ,"string.Split(params System.ReadOnlySpan<char>)")]
+	public static string[] _5417a93b3075813a(string instance, object? separator)
+		=> _62c8810ea13dba45(instance, separator);
 
 	///<summary>Splits a string into a maximum number of substrings based on specified delimiting characters.</summary>
-	[Jazor(Op.Discard ,"string.Split(char[], int)")]
-	public extern static string[] _d03d120228c0c4ed(string instance, object separator, Number count);
+	[Jazor(Op.Import ,"string.Split(char[], int)")]
+	public static string[] _d03d120228c0c4ed(string instance, object separator, Number count)
+		=> SplitByCharSetWithLimitAndOptions(instance, separator, count, 0);
 
 	///<summary>Splits a string into substrings based on specified delimiting characters and options.</summary>
-	[Jazor(Op.Discard ,"string.Split(char[], System.StringSplitOptions)")]
-	public extern static string[] _25c1f15b0ed2cb6e(string instance, object separator, object options);
+	[Jazor(Op.Import ,"string.Split(char[], System.StringSplitOptions)")]
+	public static string[] _25c1f15b0ed2cb6e(string instance, object separator, object options)
+		=> ApplySplitOptions(_62c8810ea13dba45(instance, separator), options);
 
 	///<summary>Splits a string into a maximum number of substrings based on specified delimiting characters and, optionally, options.</summary>
-	[Jazor(Op.Discard ,"string.Split(char[], int, System.StringSplitOptions)")]
-	public extern static string[] _c8e5ceed33c6c638(string instance, object separator, Number count, object options);
+	[Jazor(Op.Import ,"string.Split(char[], int, System.StringSplitOptions)")]
+	public static string[] _c8e5ceed33c6c638(string instance, object separator, Number count, object options)
+		=> SplitByCharSetWithLimitAndOptions(instance, separator, count, options);
 
 	///<summary>Splits a string into substrings that are based on the provided string separator.</summary>
-	[Jazor(Op.Discard ,"string.Split(string, System.StringSplitOptions)")]
-	public extern static string[] _189761f781df8770(string instance, string? separator, object options);
+	[Jazor(Op.Import ,"string.Split(string, System.StringSplitOptions)")]
+	public static string[] _189761f781df8770(string instance, string? separator, object options)
+		=> ApplySplitOptions(instance.Split(separator), options);
 
 	///<summary>Splits a string into a maximum number of substrings based on a specified delimiting string and, optionally, options.</summary>
-	[Jazor(Op.Discard ,"string.Split(string, int, System.StringSplitOptions)")]
-	public extern static string[] _96eb0a23afa7fdfb(string instance, string? separator, Number count, object options);
+	[Jazor(Op.Import ,"string.Split(string, int, System.StringSplitOptions)")]
+	public static string[] _96eb0a23afa7fdfb(string instance, string? separator, Number count, object options)
+	{
+		if (count <= 0)
+			return [];
+
+		if (count == 1)
+			return ApplySplitOptions([instance], options);
+
+		if (string.IsNullOrEmpty(separator))
+			return ApplySplitOptions(instance.Split(separator), options);
+
+		var trimEntries = false;
+		var removeEmptyEntries = false;
+		if (options is Number splitOptions)
+		{
+			trimEntries = (splitOptions & 2) != 0;
+			removeEmptyEntries = (splitOptions & 1) != 0;
+		}
+
+		var result = new Array<string>();
+		var start = 0;
+		while (result.Length < count - 1)
+		{
+			var index = instance.IndexOf(separator, start);
+			if (index < 0)
+				break;
+
+			var part = instance.Substring(start, index - start);
+			part = trimEntries ? part.Trim() : part;
+			if (!removeEmptyEntries || part.Length != 0)
+				result.Push(part);
+
+			start = index + separator.Length;
+		}
+
+		var tail = instance.Substring(start);
+		tail = trimEntries ? tail.Trim() : tail;
+		if (!removeEmptyEntries || tail.Length != 0)
+			result.Push(tail);
+
+		return result;
+	}
 
 	///<summary>Splits a string into substrings based on a specified delimiting string and, optionally, options.</summary>
-	[Jazor(Op.Discard ,"string.Split(string[], System.StringSplitOptions)")]
-	public extern static string[] _fff99c96206a241e(string instance, object separator, object options);
+	[Jazor(Op.Import ,"string.Split(string[], System.StringSplitOptions)")]
+	public static string[] _fff99c96206a241e(string instance, object separator, object options)
+		=> SplitByStringsWithLimitAndOptions(instance, separator, instance.Length + 1, options);
 
 	///<summary>Splits a string into a maximum number of substrings based on specified delimiting strings and, optionally, options.</summary>
-	[Jazor(Op.Discard ,"string.Split(string[], int, System.StringSplitOptions)")]
-	public extern static string[] _f3c7edcc7cc89a4a(string instance, object separator, Number count, object options);
+	[Jazor(Op.Import ,"string.Split(string[], int, System.StringSplitOptions)")]
+	public static string[] _f3c7edcc7cc89a4a(string instance, object separator, Number count, object options)
+		=> SplitByStringsWithLimitAndOptions(instance, separator, count, options);
 
 	/// <summary>
 	/// C#: str.Substring(startIndex)
@@ -714,13 +1070,43 @@ public static class StringModule
 	[Jazor(Op.Alias, "string.Trim()", "trim")]
 	public extern static string _eb98ee79e16b7ad4(string instance);
 
-	///<summary>Removes all leading and trailing instances of a character from the current string.</summary>
-	[Jazor(Op.Discard ,"string.Trim(char)")]
-	public extern static string _5d7e005b9dcb67de(string instance, Number trimChar);
+	/// <summary>
+	/// C#: str.Trim(trimChar)
+	/// JS: 移除首尾连续的指定字符
+	/// </summary>
+	[Jazor(Op.Import ,"string.Trim(char)")]
+	public static string _5d7e005b9dcb67de(string instance, Number trimChar)
+	{
+		var token = trimChar.ToString() ?? "";
+		if (token.Length == 0)
+			return instance;
+
+		var start = 0;
+		var end = instance.Length - 1;
+		while (start <= end && instance[start].ToString() == token)
+			start++;
+
+		while (end >= start && instance[end].ToString() == token)
+			end--;
+
+		return start > end ? string.Empty : instance.Substring(start, end - start + 1);
+	}
 
 	///<summary>Removes all leading and trailing occurrences of a set of characters specified in an array from the current string.</summary>
-	[Jazor(Op.Discard ,"string.Trim(params char[])")]
-	public extern static string _c6c444b4e71e14f7(string instance,  object trimChars);
+	[Jazor(Op.Import ,"string.Trim(params char[])")]
+	public static string _c6c444b4e71e14f7(string instance, object trimChars)
+	{
+		var any = NormalizeCharSet(trimChars);
+		var start = 0;
+		var end = instance.Length - 1;
+		while (start <= end && any.Contains(instance[start].ToString()))
+			start++;
+
+		while (end >= start && any.Contains(instance[end].ToString()))
+			end--;
+
+		return start > end ? string.Empty : instance.Substring(start, end - start + 1);
+	}
 
 	///<summary>Removes all leading and trailing occurrences of a set of characters specified in a span from the current string.</summary>
 	[Jazor(Op.Discard ,"string.Trim(params System.ReadOnlySpan<char>)")]
@@ -733,13 +1119,35 @@ public static class StringModule
 	[Jazor(Op.Alias, "string.TrimStart()", "trimStart")]
 	public extern static string _1ca7f6e7edd1e070(string instance);
 
-	///<summary>Removes all the leading occurrences of a specified character from the current string.</summary>
-	[Jazor(Op.Discard ,"string.TrimStart(char)")]
-	public extern static string _561fe737e62cf332(string instance, Number trimChar);
+	/// <summary>
+	/// C#: str.TrimStart(trimChar)
+	/// JS: 移除开头连续的指定字符
+	/// </summary>
+	[Jazor(Op.Import ,"string.TrimStart(char)")]
+	public static string _561fe737e62cf332(string instance, Number trimChar)
+	{
+		var token = trimChar.ToString() ?? "";
+		if (token.Length == 0)
+			return instance;
+
+		var start = 0;
+		while (start < instance.Length && instance[start].ToString() == token)
+			start++;
+
+		return start == 0 ? instance : instance.Substring(start);
+	}
 
 	///<summary>Removes all the leading occurrences of a set of characters specified in an array from the current string.</summary>
-	[Jazor(Op.Discard ,"string.TrimStart(params char[])")]
-	public extern static string _98731360726c6976(string instance,  object trimChars);
+	[Jazor(Op.Import ,"string.TrimStart(params char[])")]
+	public static string _98731360726c6976(string instance, object trimChars)
+	{
+		var any = NormalizeCharSet(trimChars);
+		var start = 0;
+		while (start < instance.Length && any.Contains(instance[start].ToString()))
+			start++;
+
+		return start == 0 ? instance : instance.Substring(start);
+	}
 
 	///<summary>Removes all the leading occurrences of a set of characters specified in a span from the current string.</summary>
 	[Jazor(Op.Discard ,"string.TrimStart(params System.ReadOnlySpan<char>)")]
@@ -752,13 +1160,35 @@ public static class StringModule
 	[Jazor(Op.Alias, "string.TrimEnd()", "trimEnd")]
 	public extern static string _760bdb666072200b(string instance);
 
-	///<summary>Removes all the trailing occurrences of a character from the current string.</summary>
-	[Jazor(Op.Discard ,"string.TrimEnd(char)")]
-	public extern static string _eb362a090d734099(string instance, Number trimChar);
+	/// <summary>
+	/// C#: str.TrimEnd(trimChar)
+	/// JS: 移除结尾连续的指定字符
+	/// </summary>
+	[Jazor(Op.Import ,"string.TrimEnd(char)")]
+	public static string _eb362a090d734099(string instance, Number trimChar)
+	{
+		var token = trimChar.ToString() ?? "";
+		if (token.Length == 0)
+			return instance;
+
+		var end = instance.Length - 1;
+		while (end >= 0 && instance[end].ToString() == token)
+			end--;
+
+		return end == instance.Length - 1 ? instance : end < 0 ? string.Empty : instance.Substring(0, end + 1);
+	}
 
 	///<summary>Removes all the trailing occurrences of a set of characters specified in an array from the current string.</summary>
-	[Jazor(Op.Discard ,"string.TrimEnd(params char[])")]
-	public extern static string _a62862c1fbaa21c3(string instance,  object trimChars);
+	[Jazor(Op.Import ,"string.TrimEnd(params char[])")]
+	public static string _a62862c1fbaa21c3(string instance, object trimChars)
+	{
+		var any = NormalizeCharSet(trimChars);
+		var end = instance.Length - 1;
+		while (end >= 0 && any.Contains(instance[end].ToString()))
+			end--;
+
+		return end == instance.Length - 1 ? instance : end < 0 ? string.Empty : instance.Substring(0, end + 1);
+	}
 
 	///<summary>Removes all the trailing occurrences of a set of characters specified in a span from the current string.</summary>
 	[Jazor(Op.Discard ,"string.TrimEnd(params System.ReadOnlySpan<char>)")]
@@ -772,44 +1202,116 @@ public static class StringModule
 	public extern static bool _c42ed9bafadfb16c(string instance, string value);
 
 	///<summary>Returns a value indicating whether a specified string occurs within this string, using the specified comparison rules.</summary>
-	[Jazor(Op.Discard ,"string.Contains(string, System.StringComparison)")]
-	public extern static bool _d52d7114d5c1b839(string instance, string value, object comparisonType);
+	[Jazor(Op.Import ,"string.Contains(string, System.StringComparison)")]
+	public static bool _d52d7114d5c1b839(string instance, string value, object comparisonType)
+		=> IsOrdinalIgnoreCase(comparisonType)
+			? instance.ToLower().Includes(value.ToLower())
+			: instance.Includes(value);
 
-	///<summary>Returns a value indicating whether a specified character occurs within this string.</summary>
-	[Jazor(Op.Discard ,"string.Contains(char)")]
+	/// <summary>
+	/// C#: str.Contains(value)
+	/// JS: str.includes(value)
+	/// </summary>
+	[Jazor(Op.Alias, "string.Contains(char)", "includes")]
 	public extern static bool _5de05262ccc56b2e(string instance, Number value);
 
 	///<summary>Returns a value indicating whether a specified character occurs within this string, using the specified comparison rules.</summary>
-	[Jazor(Op.Discard ,"string.Contains(char, System.StringComparison)")]
-	public extern static bool _16d4b2b4de019fb2(string instance, Number value, object comparisonType);
+	[Jazor(Op.Import ,"string.Contains(char, System.StringComparison)")]
+	public static bool _16d4b2b4de019fb2(string instance, Number value, object comparisonType)
+	{
+		var token = value.ToString();
+		return IsOrdinalIgnoreCase(comparisonType)
+			? instance.ToLower().Includes(token.ToLower())
+			: instance.Includes(token);
+	}
 
-	///<summary>Reports the zero-based index of the first occurrence of the specified Unicode character in this string.</summary>
-	[Jazor(Op.Discard ,"string.IndexOf(char)")]
+	/// <summary>
+	/// C#: str.IndexOf(value)
+	/// JS: str.indexOf(value)
+	/// </summary>
+	[Jazor(Op.Alias, "string.IndexOf(char)", "indexOf")]
 	public extern static Number _9c8b4ffa28964fba(string instance, Number value);
 
-	///<summary>Reports the zero-based index of the first occurrence of the specified Unicode character in this string. The search starts at a specified character position.</summary>
-	[Jazor(Op.Discard ,"string.IndexOf(char, int)")]
+	/// <summary>
+	/// C#: str.IndexOf(value, startIndex)
+	/// JS: str.indexOf(value, startIndex)
+	/// </summary>
+	[Jazor(Op.Alias, "string.IndexOf(char, int)", "indexOf")]
 	public extern static Number _c98394955f62f130(string instance, Number value, Number startIndex);
 
 	///<summary>Reports the zero-based index of the first occurrence of the specified Unicode character in this string. A parameter specifies the type of search to use for the specified character.</summary>
-	[Jazor(Op.Discard ,"string.IndexOf(char, System.StringComparison)")]
-	public extern static Number _5331447e2c855a66(string instance, Number value, object comparisonType);
+	[Jazor(Op.Import ,"string.IndexOf(char, System.StringComparison)")]
+	public static Number _5331447e2c855a66(string instance, Number value, object comparisonType)
+	{
+		var token = value.ToString();
+		return IsOrdinalIgnoreCase(comparisonType)
+			? instance.ToLower().IndexOf(token.ToLower())
+			: instance.IndexOf(token);
+	}
 
 	///<summary>Reports the zero-based index of the first occurrence of the specified character in this instance. The search starts at a specified character position and examines a specified number of character positions.</summary>
-	[Jazor(Op.Discard ,"string.IndexOf(char, int, int)")]
-	public extern static Number _d2873e605fbed764(string instance, Number value, Number startIndex, Number count);
+	[Jazor(Op.Import ,"string.IndexOf(char, int, int)")]
+	public static Number _d2873e605fbed764(string instance, Number value, Number startIndex, Number count)
+	{
+		var target = value.ToString();
+		var end = startIndex + count;
+		for (var i = startIndex; i < end && i < instance.Length; i++)
+		{
+			if (instance[i].ToString() == target)
+				return i;
+		}
 
-	///<summary>Reports the zero-based index of the first occurrence in this instance of any character in a specified array of Unicode characters.</summary>
-	[Jazor(Op.Discard ,"string.IndexOfAny(char[])")]
-	public extern static Number _69b749a1c6cbae78(string instance, object anyOf);
+		return -1;
+	}
+
+	/// <summary>
+	/// C#: str.IndexOfAny(anyOf)
+	/// JS: 返回任一字符首次出现的位置
+	/// </summary>
+	[Jazor(Op.Import ,"string.IndexOfAny(char[])")]
+	public static Number _69b749a1c6cbae78(string instance, object anyOf)
+	{
+		var any = NormalizeCharSet(anyOf);
+		for (var i = 0; i < instance.Length; i++)
+		{
+			var current = instance[i].ToString();
+			if (any.Contains(current))
+				return i;
+		}
+
+		return -1;
+	}
 
 	///<summary>Reports the zero-based index of the first occurrence in this instance of any character in a specified array of Unicode characters. The search starts at a specified character position.</summary>
-	[Jazor(Op.Discard ,"string.IndexOfAny(char[], int)")]
-	public extern static Number _63633a5f3b85c5a9(string instance, object anyOf, Number startIndex);
+	[Jazor(Op.Import ,"string.IndexOfAny(char[], int)")]
+	public static Number _63633a5f3b85c5a9(string instance, object anyOf, Number startIndex)
+	{
+		var any = NormalizeCharSet(anyOf);
+		for (var i = startIndex; i < instance.Length; i++)
+		{
+			var current = instance[i].ToString();
+			if (any.Contains(current))
+				return i;
+		}
+
+		return -1;
+	}
 
 	///<summary>Reports the zero-based index of the first occurrence in this instance of any character in a specified array of Unicode characters. The search starts at a specified character position and examines a specified number of character positions.</summary>
-	[Jazor(Op.Discard ,"string.IndexOfAny(char[], int, int)")]
-	public extern static Number _cb863079aae72451(string instance, object anyOf, Number startIndex, Number count);
+	[Jazor(Op.Import ,"string.IndexOfAny(char[], int, int)")]
+	public static Number _cb863079aae72451(string instance, object anyOf, Number startIndex, Number count)
+	{
+		var any = NormalizeCharSet(anyOf);
+		var end = startIndex + count;
+		for (var i = startIndex; i < end && i < instance.Length; i++)
+		{
+			var current = instance[i].ToString();
+			if (any.Contains(current))
+				return i;
+		}
+
+		return -1;
+	}
 
 	/// <summary>
 	/// C#: str.IndexOf(value)
@@ -826,44 +1328,152 @@ public static class StringModule
 	public extern static Number _8c391718b5fbe536(string instance, string value, Number startIndex);
 
 	///<summary>Reports the zero-based index of the first occurrence of the specified string in this instance. The search starts at a specified character position and examines a specified number of character positions.</summary>
-	[Jazor(Op.Discard ,"string.IndexOf(string, int, int)")]
-	public extern static Number _ff549d811898fb56(string instance, string value, Number startIndex, Number count);
+	[Jazor(Op.Import ,"string.IndexOf(string, int, int)")]
+	public static Number _ff549d811898fb56(string instance, string value, Number startIndex, Number count)
+	{
+		var end = startIndex + count - value.Length;
+		for (var i = startIndex; i <= end && i + value.Length <= instance.Length; i++)
+		{
+			if (instance.Substring(i, value.Length) == value)
+				return i;
+		}
+
+		return -1;
+	}
 
 	///<summary>Reports the zero-based index of the first occurrence of the specified string in the current <see cref="T:System.String" /> object. A parameter specifies the type of search to use for the specified string.</summary>
-	[Jazor(Op.Discard ,"string.IndexOf(string, System.StringComparison)")]
-	public extern static Number _3ae4900da2b07b27(string instance, string value, object comparisonType);
+	[Jazor(Op.Import ,"string.IndexOf(string, System.StringComparison)")]
+	public static Number _3ae4900da2b07b27(string instance, string value, object comparisonType)
+		=> IsOrdinalIgnoreCase(comparisonType)
+			? instance.ToLower().IndexOf(value.ToLower())
+			: instance.IndexOf(value);
 
 	///<summary>Reports the zero-based index of the first occurrence of the specified string in the current <see cref="T:System.String" /> object. Parameters specify the starting search position in the current string and the type of search to use for the specified string.</summary>
-	[Jazor(Op.Discard ,"string.IndexOf(string, int, System.StringComparison)")]
-	public extern static Number _2fabe2b831abe71e(string instance, string value, Number startIndex, object comparisonType);
+	[Jazor(Op.Import ,"string.IndexOf(string, int, System.StringComparison)")]
+	public static Number _2fabe2b831abe71e(string instance, string value, Number startIndex, object comparisonType)
+		=> IsOrdinalIgnoreCase(comparisonType)
+			? instance.ToLower().IndexOf(value.ToLower(), startIndex)
+			: instance.IndexOf(value, startIndex);
 
 	///<summary>Reports the zero-based index of the first occurrence of the specified string in the current <see cref="T:System.String" /> object. Parameters specify the starting search position in the current string, the number of characters in the current string to search, and the type of search to use for the specified string.</summary>
-	[Jazor(Op.Discard ,"string.IndexOf(string, int, int, System.StringComparison)")]
-	public extern static Number _ab22561fc42166db(string instance, string value, Number startIndex, Number count, object comparisonType);
+	[Jazor(Op.Import ,"string.IndexOf(string, int, int, System.StringComparison)")]
+	public static Number _ab22561fc42166db(string instance, string value, Number startIndex, Number count, object comparisonType)
+		=> IsOrdinalIgnoreCase(comparisonType)
+			? _ff549d811898fb56(instance.ToLower(), value.ToLower(), startIndex, count)
+			: _ff549d811898fb56(instance, value, startIndex, count);
 
-	///<summary>Reports the zero-based index position of the last occurrence of a specified Unicode character within this instance.</summary>
-	[Jazor(Op.Discard ,"string.LastIndexOf(char)")]
+	/// <summary>
+	/// C#: str.LastIndexOf(value)
+	/// JS: str.lastIndexOf(value)
+	/// </summary>
+	[Jazor(Op.Alias, "string.LastIndexOf(char)", "lastIndexOf")]
 	public extern static Number _da9a8971cb787f7f(string instance, Number value);
 
-	///<summary>Reports the zero-based index position of the last occurrence of a specified Unicode character within this instance. The search starts at a specified character position and proceeds backward toward the beginning of the string.</summary>
-	[Jazor(Op.Discard ,"string.LastIndexOf(char, int)")]
+	/// <summary>
+	/// C#: str.LastIndexOf(value, startIndex)
+	/// JS: str.lastIndexOf(value, startIndex)
+	/// </summary>
+	[Jazor(Op.Alias, "string.LastIndexOf(char, int)", "lastIndexOf")]
 	public extern static Number _b21118cfc4c55581(string instance, Number value, Number startIndex);
 
 	///<summary>Reports the zero-based index position of the last occurrence of the specified Unicode character in a substring within this instance. The search starts at a specified character position and proceeds backward toward the beginning of the string for a specified number of character positions.</summary>
-	[Jazor(Op.Discard ,"string.LastIndexOf(char, int, int)")]
-	public extern static Number _dbdd57f8d259ce66(string instance, Number value, Number startIndex, Number count);
+	[Jazor(Op.Import ,"string.LastIndexOf(char, int, int)")]
+	public static Number _dbdd57f8d259ce66(string instance, Number value, Number startIndex, Number count)
+	{
+		var target = value.ToString();
+		var end = startIndex >= instance.Length ? Number_(instance.Length - 1) : startIndex;
+		var begin = end - count + 1;
+		if (begin < 0)
+			begin = 0;
 
-	///<summary>Reports the zero-based index position of the last occurrence in this instance of one or more characters specified in a Unicode array.</summary>
-	[Jazor(Op.Discard ,"string.LastIndexOfAny(char[])")]
-	public extern static Number _c0212f4213a99019(string instance, object anyOf);
+		for (var i = end; i >= begin; i--)
+		{
+			if (instance[i].ToString() == target)
+				return i;
+		}
+
+		return -1;
+	}
+
+	/// <summary>
+	/// C#: str.LastIndexOfAny(anyOf)
+	/// JS: 返回任一字符最后一次出现的位置
+	/// </summary>
+	[Jazor(Op.Import ,"string.LastIndexOfAny(char[])")]
+	public static Number _c0212f4213a99019(string instance, object anyOf)
+	{
+		var any = NormalizeCharSet(anyOf);
+		for (var i = instance.Length - 1; i >= 0; i--)
+		{
+			var current = instance[i].ToString();
+			if (any.Contains(current))
+				return i;
+		}
+
+		return -1;
+	}
+
+	private static HashSet<string> NormalizeCharSet(object anyOf)
+	{
+		var set = new HashSet<string>(StringComparer.Ordinal);
+
+		switch (anyOf)
+		{
+			case string single:
+				for (var i = 0; i < single.Length; i++)
+					set.Add(single[i].ToString());
+				break;
+			case Array<string> many:
+				for (var i = 0; i < many.Length; i++)
+				{
+					var item = (string?)many[i];
+					if (string.IsNullOrEmpty(item))
+						continue;
+
+					for (var j = 0; j < item.Length; j++)
+						set.Add(item[j].ToString());
+				}
+				break;
+		}
+
+		return set;
+	}
 
 	///<summary>Reports the zero-based index position of the last occurrence in this instance of one or more characters specified in a Unicode array. The search starts at a specified character position and proceeds backward toward the beginning of the string.</summary>
-	[Jazor(Op.Discard ,"string.LastIndexOfAny(char[], int)")]
-	public extern static Number _c401e64318e768c4(string instance, object anyOf, Number startIndex);
+	[Jazor(Op.Import ,"string.LastIndexOfAny(char[], int)")]
+	public static Number _c401e64318e768c4(string instance, object anyOf, Number startIndex)
+	{
+		var any = NormalizeCharSet(anyOf);
+		var index = startIndex >= instance.Length ? Number_(instance.Length - 1) : startIndex;
+		for (var i = index; i >= 0; i--)
+		{
+			var current = instance[i].ToString();
+			if (any.Contains(current))
+				return i;
+		}
+
+		return -1;
+	}
 
 	///<summary>Reports the zero-based index position of the last occurrence in this instance of one or more characters specified in a Unicode array. The search starts at a specified character position and proceeds backward toward the beginning of the string for a specified number of character positions.</summary>
-	[Jazor(Op.Discard ,"string.LastIndexOfAny(char[], int, int)")]
-	public extern static Number _3c17fcef5615e7a3(string instance, object anyOf, Number startIndex, Number count);
+	[Jazor(Op.Import ,"string.LastIndexOfAny(char[], int, int)")]
+	public static Number _3c17fcef5615e7a3(string instance, object anyOf, Number startIndex, Number count)
+	{
+		var any = NormalizeCharSet(anyOf);
+		var end = startIndex >= instance.Length ? Number_(instance.Length - 1) : startIndex;
+		var begin = end - count + 1;
+		if (begin < 0)
+			begin = 0;
+
+		for (var i = end; i >= begin; i--)
+		{
+			var current = instance[i].ToString();
+			if (any.Contains(current))
+				return i;
+		}
+
+		return -1;
+	}
 
 	/// <summary>
 	/// C#: str.LastIndexOf(value)
@@ -880,18 +1490,42 @@ public static class StringModule
 	public extern static Number _404d5ed27b7e190a(string instance, string value, Number startIndex);
 
 	///<summary>Reports the zero-based index position of the last occurrence of a specified string within this instance. The search starts at a specified character position and proceeds backward toward the beginning of the string for a specified number of character positions.</summary>
-	[Jazor(Op.Discard ,"string.LastIndexOf(string, int, int)")]
-	public extern static Number _c4ee024d06ee238c(string instance, string value, Number startIndex, Number count);
+	[Jazor(Op.Import ,"string.LastIndexOf(string, int, int)")]
+	public static Number _c4ee024d06ee238c(string instance, string value, Number startIndex, Number count)
+	{
+		var end = startIndex >= instance.Length ? Number_(instance.Length - 1) : startIndex;
+		var begin = end - count + 1;
+		if (begin < 0)
+			begin = 0;
+
+		var maxStart = end - value.Length + 1;
+		for (var i = maxStart; i >= begin; i--)
+		{
+			if (i >= 0 && i + value.Length <= instance.Length && instance.Substring(i, value.Length) == value)
+				return i;
+		}
+
+		return -1;
+	}
 
 	///<summary>Reports the zero-based index of the last occurrence of a specified string within the current <see cref="T:System.String" /> object. A parameter specifies the type of search to use for the specified string.</summary>
-	[Jazor(Op.Discard ,"string.LastIndexOf(string, System.StringComparison)")]
-	public extern static Number _78449c135e18c4bc(string instance, string value, object comparisonType);
+	[Jazor(Op.Import ,"string.LastIndexOf(string, System.StringComparison)")]
+	public static Number _78449c135e18c4bc(string instance, string value, object comparisonType)
+		=> IsOrdinalIgnoreCase(comparisonType)
+			? instance.ToLower().LastIndexOf(value.ToLower())
+			: instance.LastIndexOf(value);
 
 	///<summary>Reports the zero-based index of the last occurrence of a specified string within the current <see cref="T:System.String" /> object. The search starts at a specified character position and proceeds backward toward the beginning of the string. A parameter specifies the type of comparison to perform when searching for the specified string.</summary>
-	[Jazor(Op.Discard ,"string.LastIndexOf(string, int, System.StringComparison)")]
-	public extern static Number _359dbce44ce4a4da(string instance, string value, Number startIndex, object comparisonType);
+	[Jazor(Op.Import ,"string.LastIndexOf(string, int, System.StringComparison)")]
+	public static Number _359dbce44ce4a4da(string instance, string value, Number startIndex, object comparisonType)
+		=> IsOrdinalIgnoreCase(comparisonType)
+			? instance.ToLower().LastIndexOf(value.ToLower(), startIndex)
+			: instance.LastIndexOf(value, startIndex);
 
 	///<summary>Reports the zero-based index position of the last occurrence of a specified string within this instance. The search starts at a specified character position and proceeds backward toward the beginning of the string for the specified number of character positions. A parameter specifies the type of comparison to perform when searching for the specified string.</summary>
-	[Jazor(Op.Discard ,"string.LastIndexOf(string, int, int, System.StringComparison)")]
-	public extern static Number _c911a06f021bd138(string instance, string value, Number startIndex, Number count, object comparisonType);
+	[Jazor(Op.Import ,"string.LastIndexOf(string, int, int, System.StringComparison)")]
+	public static Number _c911a06f021bd138(string instance, string value, Number startIndex, Number count, object comparisonType)
+		=> IsOrdinalIgnoreCase(comparisonType)
+			? _c4ee024d06ee238c(instance.ToLower(), value.ToLower(), startIndex, count)
+			: _c4ee024d06ee238c(instance, value, startIndex, count);
 }
