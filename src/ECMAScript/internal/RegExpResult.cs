@@ -18,36 +18,6 @@ public sealed class RegExpResult : IArray<string>
     [Description("@#index")]
     public extern Number Index { get; }
 
-    ///<summary>
-    ///Returns the character position where the next match begins in a searched Strings.
-    ///</summary>
-    [Description("@#lastIndex")]
-    public extern Number LastIndex { get; }
-
-    ///<summary>
-    ///Returns the last matched characters from any regular expression search. Read-only.
-    ///</summary>
-    [Description("@#lastMatch")]
-    public extern string LastMatch { get; }
-
-    ///<summary>
-    ///Returns the last parenthesized submatch from any regular expression search, if any. Read-only.
-    ///</summary>
-    [Description("@#lastParen")]
-    public extern string LastParen { get; }
-
-    ///<summary>
-    ///Returns the characters from the beginning of a searched Strings up to the position before the beginning of the last match. Read-only.
-    ///</summary>
-    [Description("@#leftContext")]
-    public extern string LeftContext { get; }
-
-    ///<summary>
-    ///Returns the characters from the position following the last match to the end of the searched Strings. Read-only.
-    ///</summary>
-    [Description("@#rightContext")]
-    public extern string RightContext { get; }
-
     /// <summary>
     /// Named capture groups returned by <c>RegExp.prototype.exec</c>.
     /// This is exposed as <see cref="IObject"/> because the value is consumed through
@@ -56,10 +26,10 @@ public sealed class RegExpResult : IArray<string>
     [Description("@#groups")]
     public extern IObject? Groups { get; }
 
-    public extern string this[uint index] { get; }
+    public extern string this[Number index] { get; }
 
     [Description("@#length")]
-    public extern uint Length { get; }
+    public extern Number Length { get; }
 
     public extern IEnumerator GetEnumerator();
 }

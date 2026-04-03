@@ -21,13 +21,13 @@ public static partial class Global
 		public extern bool Includes(string? searchString);
 
 		[Description("@#includes")]
-		public extern bool Includes(string? searchString, uint position);
+		public extern bool Includes(string? searchString, Number position);
 
 		[Description("@#fromCodePoint")]
-		public extern static string FromCodePoint(uint num);
+		public extern static string FromCodePoint(Number num);
 
 		[Description("@#fromCodePoint")]
-		public extern static string FromCodePoint(params uint[] nums);
+		public extern static string FromCodePoint(params Number[] nums);
 
 		[Description("@#replace")]
 		public extern string Replace(string pattern, string replacement);
@@ -39,13 +39,19 @@ public static partial class Global
 		public extern string Replace(IPattern pattern, string replacement);
 
 		[Description("@#localeCompare")]
-		public extern int LocaleCompare(string compareString);
+		public extern Number LocaleCompare(string compareString);
 
 		[Description("@#localeCompare")]
-		public extern int LocaleCompare(string compareString, string? locales);
+		public extern Number LocaleCompare(string compareString, string? locales);
 
 		[Description("@#localeCompare")]
-		public extern int LocaleCompare(string compareString, string? locales, object options);
+		public extern Number LocaleCompare(string compareString, string? locales, object options);
+
+		[Description("@#localeCompare")]
+		public extern Number LocaleCompare(string compareString, string[] locales);
+
+		[Description("@#localeCompare")]
+		public extern Number LocaleCompare(string compareString, string[] locales, object options);
 
 		public extern static bool operator >(string x, string y);
 

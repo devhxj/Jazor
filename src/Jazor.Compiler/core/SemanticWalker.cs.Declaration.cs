@@ -20,9 +20,14 @@ public partial class SemanticWalker
 	public override Node? VisitArrayInitializer(IArrayInitializerOperation operation, SenseArgument argument)
 	{
 		var elements = new List<Expression?>();
+		var elementTargetType = operation.Parent switch
+		{
+			IArrayCreationOperation arrayCreation => GetCollectionElementTargetType(arrayCreation.Type),
+			_ => null
+		};
 		foreach (var element in operation.ElementValues)
 		{
-			Translate(elements, element, argument, null);
+			elements.Add(TranslateTupleForTarget(element, elementTargetType, argument));
 		}
 		return new ArrayExpression(NodeList.From(elements));
 	}

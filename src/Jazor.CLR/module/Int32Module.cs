@@ -19,6 +19,46 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "int","Number")]
 public static class Int32Module
 {
+	private static Number CompareCore(Number left, Number right)
+		=> left < right ? -1 : (left > right ? 1 : 0);
+
+	private static bool TryParseInt32Core(string? s, out Number value)
+	{
+		value = 0;
+		if (s == null)
+			return false;
+
+		var trimmed = s.Trim();
+		if (trimmed.Length == 0)
+			return false;
+
+		var start = 0;
+		var first = trimmed[0];
+		if (first == '+' || first == '-')
+		{
+			if (trimmed.Length == 1)
+				return false;
+
+			start = 1;
+		}
+
+		for (var i = start; i < trimmed.Length; i++)
+		{
+			var ch = trimmed[i];
+			if (ch < '0' || ch > '9')
+				return false;
+		}
+
+		var parsed = Number_(trimmed);
+		if (IsNaN(parsed) || Math.Floor_(parsed) != parsed)
+			return false;
+		if (parsed < -2147483648 || parsed > 2147483647)
+			return false;
+
+		value = parsed;
+		return true;
+	}
+
 	/// <summary>
 	/// C#: int.MaxValue
 	/// JS: Number.MAX_SAFE_INTEGER (简化) 或 2147483647
@@ -45,17 +85,26 @@ public static class Int32Module
 
 	/// <summary>
 	/// C#: int.CompareTo(obj)
-	/// JS: instance - obj
+	/// JS: 与 .NET 一致的 CompareTo 规则，单独处理 null 和类型检查
 	/// </summary>
-	[Jazor(Op.Inline, "int.CompareTo(object)", "(__arg1 - (__arg2 ?? 0))")]
-	public extern static Number _b03337a2a71c762d(Number instance, object? value);
+	[Jazor(Op.Import, "int.CompareTo(object)")]
+	public static Number _b03337a2a71c762d(Number instance, object? value)
+	{
+		if (value == null)
+			return 1;
+		if (TypeOf(value) != "number")
+			throw new Error("ArgumentException: Object must be of type Int32.");
+
+		return CompareCore(instance, (Number)value);
+	}
 
 	/// <summary>
 	/// C#: int.CompareTo(value)
-	/// JS: instance - value
+	/// JS: 返回负数、零或正数
 	/// </summary>
-	[Jazor(Op.Inline, "int.CompareTo(int)", "(__arg1 - __arg2)")]
-	public extern static Number _741df6ab5c9e75bc(Number instance, Number value);
+	[Jazor(Op.Import, "int.CompareTo(int)")]
+	public static Number _741df6ab5c9e75bc(Number instance, Number value)
+		=> CompareCore(instance, value);
 
 	/// <summary>
 	/// C#: int.Equals(obj)
@@ -98,26 +147,17 @@ public static class Int32Module
 
 	/// <summary>
 	/// C#: int.Parse(s)
-	/// JS: parseInt(s, 10) with validation
+	/// JS: 只接受十进制整数字符串，拒绝尾随垃圾字符
 	/// </summary>
 	[Jazor(Op.Import, "static int.Parse(string)")]
 	public static Number _151ccc6045162f8f(string? s)
 	{
 		if (s == null)
 			throw new Error("ArgumentNullException: String cannot be null.");
-
-		var trimmed = s.Trim();
-		var num = ParseInt(trimmed, 10);
-
-		// Check if parsing succeeded
-		if (IsNaN(num))
+		if (!TryParseInt32Core(s, out var value))
 			throw new Error($"FormatException: String '{s}' was not recognized as a valid Int32.");
 
-		// Check int range: -2147483648 to 2147483647
-		if (num < -2147483648 || num > 2147483647)
-			throw new Error($"OverflowException: Value '{s}' was either too large or too small for an Int32.");
-
-		return num;
+		return value;
 	}
 
 	[Jazor(Op.Discard, "static int.Parse(string, System.Globalization.NumberStyles)")]
@@ -139,21 +179,10 @@ public static class Int32Module
 	[Jazor(Op.Import, "static int.TryParse(string, out int)")]
 	public static Array<object?> _16e2a901535b765e(string? s, Number result)
 	{
-		if (s == null)
+		if (!TryParseInt32Core(s, out var value))
 			return [false, 0];
 
-		var trimmed = s.Trim();
-		var num = ParseInt(trimmed, 10);
-
-		// Check if parsing succeeded
-		if (IsNaN(num))
-			return [false, 0];
-
-		// Check int range: -2147483648 to 2147483647
-		if (num < -2147483648 || num > 2147483647)
-			return [false, 0];
-
-		return [true, num];
+		return [true, value];
 	}
 
 	[Jazor(Op.Discard, "static int.TryParse(System.ReadOnlySpan<char>, out int)")]
@@ -173,15 +202,15 @@ public static class Int32Module
 
 	/// <summary>
 	/// C#: int.DivRem(a, b)
-	/// JS: [Math.floor(a / b), a % b]
+	/// JS: 商按 .NET 整数除法语义向零截断
 	/// </summary>
 	[Jazor(Op.Import, "static int.DivRem(int, int)")]
 	public static (int Quotient, int Remainder) _d4cc9914e60e5643(Number left, Number right)
 	{
 		if (right == 0)
 			throw new Error("DivideByZeroException");
-		var quotient = Math.Floor_(left / right);
-		var remainder = left % right;
+		var quotient = Math.Trunc_(left / right);
+		var remainder = left - quotient * right;
 		return ((int)quotient, (int)remainder);
 	}
 
@@ -270,8 +299,9 @@ public static class Int32Module
 	/// C#: int.CopySign(value, sign)
 	/// JS: sign >= 0 ? Math.abs(value) : -Math.abs(value)
 	/// </summary>
-	[Jazor(Op.Inline, "static int.CopySign(int, int)", "(__arg2 >= 0 ? Math.abs(__arg1) : -Math.abs(__arg1))")]
-	public extern static Number _95793b26c4495935(Number value, Number sign);
+	[Jazor(Op.Import, "static int.CopySign(int, int)")]
+	public static Number _95793b26c4495935(Number value, Number sign)
+		=> sign < 0 ? -Math.Abs_(value) : Math.Abs_(value);
 
 	/// <summary>
 	/// C#: int.Max(x, y)
@@ -340,17 +370,37 @@ public static class Int32Module
 
 	/// <summary>
 	/// C#: int.MaxMagnitude(x, y)
-	/// JS: Math.abs(x) > Math.abs(y) ? x : y
+	/// JS: 先比较绝对值，绝对值相同再按数值大小决胜
 	/// </summary>
-	[Jazor(Op.Inline, "static int.MaxMagnitude(int, int)", "(Math.abs(__arg1) > Math.abs(__arg2) ? __arg1 : __arg2)")]
-	public extern static Number _a36b4a6dbd50fa77(Number x, Number y);
+	[Jazor(Op.Import, "static int.MaxMagnitude(int, int)")]
+	public static Number _a36b4a6dbd50fa77(Number x, Number y)
+	{
+		var absX = Math.Abs_(x);
+		var absY = Math.Abs_(y);
+		if (absX > absY)
+			return x;
+		if (absX < absY)
+			return y;
+
+		return CompareCore(x, y) >= 0 ? x : y;
+	}
 
 	/// <summary>
 	/// C#: int.MinMagnitude(x, y)
-	/// JS: Math.abs(x) < Math.abs(y) ? x : y
+	/// JS: 先比较绝对值，绝对值相同再按数值大小决胜
 	/// </summary>
-	[Jazor(Op.Inline, "static int.MinMagnitude(int, int)", "(Math.abs(__arg1) < Math.abs(__arg2) ? __arg1 : __arg2)")]
-	public extern static Number _d0c6a74fd11d24bf(Number x, Number y);
+	[Jazor(Op.Import, "static int.MinMagnitude(int, int)")]
+	public static Number _d0c6a74fd11d24bf(Number x, Number y)
+	{
+		var absX = Math.Abs_(x);
+		var absY = Math.Abs_(y);
+		if (absX < absY)
+			return x;
+		if (absX > absY)
+			return y;
+
+		return CompareCore(x, y) <= 0 ? x : y;
+	}
 
 	[Jazor(Op.Discard, "static int.TryParse(string, System.IFormatProvider, out int)")]
 	public extern static Array<object?> _a1335dcbd870906d(string? s, Intl.NumberFormat? provider, Number result);

@@ -17,6 +17,135 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "System.Collections.Generic.HashSet<T>","Set")]
 public static class HashSetModule<T>
 {
+	// Keep set-comparison logic in imports so the emitted whitelist stays tree-shakeable
+	// without embedding multi-branch JS snippets in string templates.
+	internal static Set<T> CreateLookupSet(IEnumerable<T> values)
+	{
+		var lookup = new Set<T>();
+		foreach (var value in values)
+			lookup.Add(value);
+		return lookup;
+	}
+
+	internal static void UnionWithCore(Set<T> instance, IEnumerable<T> other)
+	{
+		foreach (var item in other)
+			instance.Add(item);
+	}
+
+	internal static void IntersectWithCore(Set<T> instance, IEnumerable<T> other)
+	{
+		var lookup = CreateLookupSet(other);
+		foreach (var item in instance)
+		{
+			var current = (T)item;
+			if (!lookup.Has(current))
+				instance.Delete(current);
+		}
+	}
+
+	internal static void ExceptWithCore(Set<T> instance, IEnumerable<T> other)
+	{
+		foreach (var item in other)
+			instance.Delete(item);
+	}
+
+	internal static void SymmetricExceptWithCore(Set<T> instance, IEnumerable<T> other)
+	{
+		var lookup = CreateLookupSet(other);
+		foreach (var item in lookup)
+		{
+			var current = (T)item;
+			if (instance.Has(current))
+				instance.Delete(current);
+			else
+				instance.Add(current);
+		}
+	}
+
+	internal static bool IsSubsetOfCore(Set<T> instance, IEnumerable<T> other)
+	{
+		var lookup = CreateLookupSet(other);
+		foreach (var item in instance)
+		{
+			var current = (T)item;
+			if (!lookup.Has(current))
+				return false;
+		}
+
+		return true;
+	}
+
+	internal static bool IsProperSubsetOfCore(Set<T> instance, IEnumerable<T> other)
+	{
+		var lookup = CreateLookupSet(other);
+		if (instance.Size >= lookup.Size)
+			return false;
+
+		foreach (var item in instance)
+		{
+			var current = (T)item;
+			if (!lookup.Has(current))
+				return false;
+		}
+
+		return true;
+	}
+
+	internal static bool IsSupersetOfCore(Set<T> instance, IEnumerable<T> other)
+	{
+		foreach (var item in other)
+		{
+			if (!instance.Has(item))
+				return false;
+		}
+
+		return true;
+	}
+
+	internal static bool IsProperSupersetOfCore(Set<T> instance, IEnumerable<T> other)
+	{
+		var lookup = CreateLookupSet(other);
+		if (instance.Size <= lookup.Size)
+			return false;
+
+		foreach (var item in lookup)
+		{
+			var current = (T)item;
+			if (!instance.Has(current))
+				return false;
+		}
+
+		return true;
+	}
+
+	internal static bool OverlapsCore(Set<T> instance, IEnumerable<T> other)
+	{
+		foreach (var item in other)
+		{
+			if (instance.Has(item))
+				return true;
+		}
+
+		return false;
+	}
+
+	internal static bool SetEqualsCore(Set<T> instance, IEnumerable<T> other)
+	{
+		var lookup = CreateLookupSet(other);
+		if (instance.Size != lookup.Size)
+			return false;
+
+		foreach (var item in lookup)
+		{
+			var current = (T)item;
+			if (!instance.Has(current))
+				return false;
+		}
+
+		return true;
+	}
+
 	/// <summary>
 	/// C#: new HashSet<T>()
 	/// JS: new Set()
@@ -37,11 +166,11 @@ public static class HashSetModule<T>
 	/// JS: new Set(collection)
 	/// </summary>
 	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.HashSet(System.Collections.Generic.IEnumerable<T>)", "new Set(__arg1)")]
-	public extern static Set<T> _1bd2e054852d9d5f(Array<T> collection);
+	public extern static Set<T> _1bd2e054852d9d5f(IEnumerable<T> collection);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Collections.Generic.HashSet`1" /> class that uses the specified equality comparer for the set type, contains elements copied from the specified collection, and has sufficient capacity to accommodate the number of elements copied.</summary>
 	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.HashSet(System.Collections.Generic.IEnumerable<T>, System.Collections.Generic.IEqualityComparer<T>)")]
-	public extern static Set<T> _fe5bb664d9f9c877(Array<T> collection, object comparer);
+	public extern static Set<T> _fe5bb664d9f9c877(IEnumerable<T> collection, object comparer);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Collections.Generic.HashSet`1" /> class that uses the specified equality comparer for the set type, and has sufficient capacity to accommodate <paramref name="capacity" /> elements.</summary>
 	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.HashSet(int, System.Collections.Generic.IEqualityComparer<T>)")]
@@ -118,71 +247,81 @@ public static class HashSetModule<T>
 	/// C#: set.UnionWith(other)
 	/// JS: 遍历 other，添加所有元素
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.UnionWith(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { for (var item of other) set.add(item); })(__arg1, __arg2)")]
-	public extern static void _b2bd5d22aadd44a8(Set<T> instance, Array<T> other);
+	[Jazor(Op.Import, "System.Collections.Generic.HashSet<T>.UnionWith(System.Collections.Generic.IEnumerable<T>)")]
+	public static void _b2bd5d22aadd44a8(Set<T> instance, IEnumerable<T> other)
+		=> UnionWithCore(instance, other);
 
 	/// <summary>
 	/// C#: set.IntersectWith(other)
 	/// JS: 保留同时存在于两个集合中的元素
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.IntersectWith(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { for (var item of set) { var found = false; for (var o of other) { if (o === item) { found = true; break; } } if (!found) set.delete(item); } })(__arg1, __arg2)")]
-	public extern static void _3a6a072035334578(Set<T> instance, Array<T> other);
+	[Jazor(Op.Import, "System.Collections.Generic.HashSet<T>.IntersectWith(System.Collections.Generic.IEnumerable<T>)")]
+	public static void _3a6a072035334578(Set<T> instance, IEnumerable<T> other)
+		=> IntersectWithCore(instance, other);
 
 	/// <summary>
 	/// C#: set.ExceptWith(other)
 	/// JS: 从 instance 中删除 other 中的所有元素
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.ExceptWith(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { for (var item of other) set.delete(item); })(__arg1, __arg2)")]
-	public extern static void _373e2e9ed1fb3f5b(Set<T> instance, Array<T> other);
+	[Jazor(Op.Import, "System.Collections.Generic.HashSet<T>.ExceptWith(System.Collections.Generic.IEnumerable<T>)")]
+	public static void _373e2e9ed1fb3f5b(Set<T> instance, IEnumerable<T> other)
+		=> ExceptWithCore(instance, other);
 
 	/// <summary>
 	/// C#: set.SymmetricExceptWith(other)
 	/// JS: 保留只存在于一个集合中的元素
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.SymmetricExceptWith(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { var otherSet = new Set(other); for (var item of otherSet) { if (set.has(item)) set.delete(item); else set.add(item); } })(__arg1, __arg2)")]
-	public extern static void _a22fe44dc0ae9ad2(Set<T> instance, Array<T> other);
+	[Jazor(Op.Import, "System.Collections.Generic.HashSet<T>.SymmetricExceptWith(System.Collections.Generic.IEnumerable<T>)")]
+	public static void _a22fe44dc0ae9ad2(Set<T> instance, IEnumerable<T> other)
+		=> SymmetricExceptWithCore(instance, other);
 
 	/// <summary>
 	/// C#: set.IsSubsetOf(other)
 	/// JS: 检查 instance 是否是 other 的子集
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.IsSubsetOf(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { var otherSet = new Set(other); for (var item of set) { if (!otherSet.has(item)) return false; } return true; })(__arg1, __arg2)")]
-	public extern static bool _23c8bcfc6b71d2b1(Set<T> instance, Array<T> other);
+	[Jazor(Op.Import, "System.Collections.Generic.HashSet<T>.IsSubsetOf(System.Collections.Generic.IEnumerable<T>)")]
+	public static bool _23c8bcfc6b71d2b1(Set<T> instance, IEnumerable<T> other)
+		=> IsSubsetOfCore(instance, other);
 
 	/// <summary>
 	/// C#: set.IsProperSubsetOf(other)
 	/// JS: 检查 instance 是否是 other 的真子集
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.IsProperSubsetOf(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { var otherSet = new Set(other); if (set.size >= otherSet.size) return false; for (var item of set) { if (!otherSet.has(item)) return false; } return true; })(__arg1, __arg2)")]
-	public extern static bool _fb8566ae66aa9591(Set<T> instance, Array<T> other);
+	[Jazor(Op.Import, "System.Collections.Generic.HashSet<T>.IsProperSubsetOf(System.Collections.Generic.IEnumerable<T>)")]
+	public static bool _fb8566ae66aa9591(Set<T> instance, IEnumerable<T> other)
+		=> IsProperSubsetOfCore(instance, other);
 
 	/// <summary>
 	/// C#: set.IsSupersetOf(other)
 	/// JS: 检查 instance 是否是 other 的超集
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.IsSupersetOf(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { var otherSet = new Set(other); for (var item of otherSet) { if (!set.has(item)) return false; } return true; })(__arg1, __arg2)")]
-	public extern static bool _3be7fbb1d68799fb(Set<T> instance, Array<T> other);
+	[Jazor(Op.Import, "System.Collections.Generic.HashSet<T>.IsSupersetOf(System.Collections.Generic.IEnumerable<T>)")]
+	public static bool _3be7fbb1d68799fb(Set<T> instance, IEnumerable<T> other)
+		=> IsSupersetOfCore(instance, other);
 
 	/// <summary>
 	/// C#: set.IsProperSupersetOf(other)
 	/// JS: 检查 instance 是否是 other 的真超集
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.IsProperSupersetOf(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { var otherSet = new Set(other); if (set.size <= otherSet.size) return false; for (var item of otherSet) { if (!set.has(item)) return false; } return true; })(__arg1, __arg2)")]
-	public extern static bool _cc0cc2d0f5be70db(Set<T> instance, Array<T> other);
+	[Jazor(Op.Import, "System.Collections.Generic.HashSet<T>.IsProperSupersetOf(System.Collections.Generic.IEnumerable<T>)")]
+	public static bool _cc0cc2d0f5be70db(Set<T> instance, IEnumerable<T> other)
+		=> IsProperSupersetOfCore(instance, other);
 
 	/// <summary>
 	/// C#: set.Overlaps(other)
 	/// JS: 检查是否有交集
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.Overlaps(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { var otherSet = new Set(other); for (var item of otherSet) { if (set.has(item)) return true; } return false; })(__arg1, __arg2)")]
-	public extern static bool _84709aa8ff70a52a(Set<T> instance, Array<T> other);
+	[Jazor(Op.Import, "System.Collections.Generic.HashSet<T>.Overlaps(System.Collections.Generic.IEnumerable<T>)")]
+	public static bool _84709aa8ff70a52a(Set<T> instance, IEnumerable<T> other)
+		=> OverlapsCore(instance, other);
 
 	/// <summary>
 	/// C#: set.SetEquals(other)
 	/// JS: 检查两个集合是否相等
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.SetEquals(System.Collections.Generic.IEnumerable<T>)", "((set, other) => { var otherSet = new Set(other); if (set.size !== otherSet.size) return false; for (var item of otherSet) { if (!set.has(item)) return false; } return true; })(__arg1, __arg2)")]
-	public extern static bool _55425d259e5f54ea(Set<T> instance, Array<T> other);
+	[Jazor(Op.Import, "System.Collections.Generic.HashSet<T>.SetEquals(System.Collections.Generic.IEnumerable<T>)")]
+	public static bool _55425d259e5f54ea(Set<T> instance, IEnumerable<T> other)
+		=> SetEqualsCore(instance, other);
 
 	///<summary>Copies the elements of a <see cref="T:System.Collections.Generic.HashSet`1" /> object to an array.</summary>
 	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.CopyTo(T[])")]

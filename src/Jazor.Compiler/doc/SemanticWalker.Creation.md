@@ -1,169 +1,296 @@
-# SemanticWalker.cs.Creation.cs 分析文档
+# `SemanticWalker.cs.Creation.cs`
 
-## 1. 文件概述
+## 定位
 
-**文件路径**: `core/SemanticWalker.cs.Creation.cs`
+`SemanticWalker.cs.Creation.cs` 负责“创建类”语义节点的 lowering。
 
-**职责**: 处理对象和数组创建操作的转换。
+它处理的不只是 `new Type()`，还包括：
 
-**代码行数**: ~422 行
+- 对象创建
+- 对象/集合初始化器
+- ECMAScript record-like 创建
+- 匿名对象
+- 数组创建
+- 泛型类型参数对象创建
+- 委托创建
 
-## 2. 支持的创建类型
+对应代码：
 
-| C# 操作 | JavaScript 结果 |
-|---------|----------------|
-| `new MyClass()` | `new MyClass()` |
-| `new List<int> { 1, 2 }` | `[1, 2]` |
-| `new { Name = "John" }` | `{ name: "John" }` |
-| `new int[5]` | `new Array(5)` |
-| `new int[] { 1, 2, 3 }` | `[1, 2, 3]` |
-| `new BigInteger(123)` | `BigInt(123)` |
+- `src/Jazor.Compiler/core/SemanticWalker.cs.Creation.cs`
 
-## 3. 核心方法
+## 当前职责
 
-### 3.1 BuildObjectCreation
+这部分逻辑可以分成六条主线。
 
-**处理流程**：
-1. 获取类型映射
-2. 转换构造函数参数
-3. 处理白名单映射
-4. 处理初始化器
+### 1. 普通对象创建
 
-**关键代码**：
+最基础的路径是 `BuildObjectCreation(...)`。
+
+它先处理参数，再确定目标类型在当前映射里应该落成什么宿主表达式，然后再决定最终是：
+
+- `new Type(...)`
+- `Type(...)`
+- 数组字面量
+- 白名单映射表达式
+
+也就是说，`new` 在这里不是机械保留，而是会根据类型映射和构造器映射进一步改写。
+
+### 2. 带初始化器的对象创建
+
+如果对象创建后还跟着初始化器，当前通常有两种路径：
+
+- 能直接落成集合字面量时，优先直接落字面量
+- 否则使用 IIFE 包装初始化过程
+
+典型例子：
+
 ```csharp
-// 特殊类型处理
-var (mapper, typeName) = GetMapperType(operation.Type);
-Expression expr = new NewExpression(callee, NodeList.From(arguments));
-
-if (mapper == TypeMapper.BigInt)
-    expr = new CallExpression(callee, NodeList.From(arguments), false);  // BigInt()
-else if (mapper == TypeMapper.Array)
-    expr = new ArrayExpression(NodeList.From<Expression?>(arguments));    // []
+var obj = new TestClass { Name = "Test", Value = 42 };
 ```
 
-### 3.2 BuildObjectOrCollectionInitializer
+当前会生成：
 
-处理带初始化器的对象创建，使用 IIFE 包装：
-
-```csharp
-// C# 示例
-new MyClass { Prop1 = val1, Prop2 = val2 }
-
-// JavaScript 结果
-(() => {
-    let _obj = new MyClass();
-    _obj.prop1 = val1;
-    _obj.prop2 = val2;
-    return _obj;
-})()
+```js
+let obj = (() => {
+  let v$0 = new TestClass;
+  v$0.Name = "Test";
+  v$0.Value = 42;
+  return v$0;
+})();
 ```
 
-### 3.3 VisitAnonymousObjectCreation
+这条路径的目标不是“生成最短代码”，而是：
+
+- 保持求值顺序正确
+- 允许嵌套初始化器继续展开
+- 让对象创建和成员赋值共享已有 lowering 规则
+
+### 3. 集合初始化器与集合字面宿主
+
+当前实现不是把所有集合初始化器都降成 IIFE。
+
+对于已经有明确 JS 集合宿主的类型，会优先直接落成字面宿主：
+
+- `List<T>` / 数组映射 -> `[...]`
+- `HashSet<T>` / `Set<T>` 映射 -> `new Set([...])`
+- `Dictionary<TKey, TValue>` / `Map<TKey, TValue>` 映射 -> `new Map([[k, v], ...])`
+
+这条路径由 `TryBuildCollectionLiteral(...)` 处理。
+
+它的意义很直接：
+
+- 避免把本来就能直接表达的 JS 集合再包成初始化器流程
+- 让 CLR 集合桥接类型尽量对齐真实 JS 容器 shape
+
+### 4. ECMAScript record-like 创建
+
+如果目标类型是 ECMAScript 程序集里的 record-like 类型，当前不会走普通 `new` 对象创建路径，而是直接落成对象字面量。
+
+这条路径由：
+
+- `IsEcmascriptRecordLike(...)`
+- `BuildEcmascriptRecordLiteral(...)`
+
+负责。
+
+它会：
+
+- 读取构造参数
+- 按 record 属性名恢复 key
+- 合并初始化器成员
+- 最终产出 `ObjectExpression`
+
+这意味着这些类型在当前语义里更接近“带静态协议的 JS 对象字面量”，而不是普通 CLR class 构造实例。
+
+### 5. 数组创建
+
+数组创建现在覆盖的情况比旧文档写得更完整。
+
+当前主要分三类：
+
+- 一维带初始化器数组 -> `ArrayExpression`
+- 一维按大小创建 -> `new Array(size)`
+- 多维/嵌套数组 -> 递归数组字面量或递归 `Array(...).fill().map(...)`
+
+也就是说，多维数组不再只是“明确不支持”。
+
+当前实现里：
+
+- 如果多维数组有初始化器，走 `BuildNestedArrayInitializer(...)`
+- 如果多维数组只有维度大小，走 `BuildMultiDimensionalArray(...)`
+
+这条路径的目标是给出可运行的 JS 结构，而不是强行保持 CLR 数组运行时模型。
+
+### 6. 委托创建
+
+当前 `VisitDelegateCreation(...)` 非常直接：
+
+- 直接回落到 `Visit(operation.Target, argument)`
+
+这意味着委托创建是否需要额外包装，主要取决于目标表达式本身怎么 lower，而不是在 `Creation` 路径里单独造一层委托对象。
+
+## 当前关键规则
+
+### 1. tuple 边界在创建路径里同样有效
+
+`Creation` 不是 tuple remap 的例外区。
+
+当前这些位置都会显式走 `TranslateTupleForTarget(...)`：
+
+- 构造函数参数
+- 对象初始化器赋值
+- 集合初始化器元素
+- 数组元素
+- record-like 参数
+
+也就是说，创建路径不会因为“这是 `new`”就绕过 tuple runtime shape 规则。
+
+### 2. 初始化器成员名优先走 setter / 字段映射
+
+对象初始化器里的成员名不是简单取属性名。
+
+当前通过 `GetInitializerMemberName(...)` 决定最终 key / member name。
+
+这让初始化器可以正确复用：
+
+- setter 对应的白名单别名
+- 字段自身的白名单别名
+
+所以创建路径和普通引用路径在名字规则上是一致的。
+
+### 3. 创建路径也消费白名单
+
+这部分不是“只看类型映射，不看成员映射”。
+
+当前会消费白名单的点包括：
+
+- 构造函数白名单映射
+- 初始化器里的 setter / 成员白名单映射
+- 集合初始化器里的调用映射
+
+也就是说，一个创建表达式里的构造、赋值、Add 调用，仍然可能分别落到不同的白名单规则上。
+
+## 现状与典型结果
+
+### 普通对象
 
 ```csharp
-// C# 示例
-new { Name = "John", Age = 25 }
-
-// JavaScript 结果
-{ name: "John", age: 25 }
+var obj = new object();
 ```
 
-### 3.4 VisitArrayCreation
-
-```csharp
-// 带初始化器
-new int[] { 1, 2, 3 } → [1, 2, 3]
-
-// 指定大小
-new int[5] → new Array(5)
-
-// 多维数组 - 不支持
-new int[,] { {1,2}, {3,4} } → 抛出异常
+```js
+let obj = new Object;
 ```
 
-### 3.5 VisitDelegateCreation
+### 构造映射
 
 ```csharp
-// C# 示例
-Action action = Method;
-
-// JavaScript 结果
-method.bind(this)  // 或直接引用
+var exception = new System.Exception("Error message");
 ```
 
-## 4. 初始化器处理
+```js
+let exception = new Error("Error message");
+```
 
-### 4.1 对象初始化器
+### 集合初始化器
 
 ```csharp
-private List<Expression> BuildObjectCreationInitializer(
-    Expression? obj,
-    IObjectOrCollectionInitializerOperation initializers,
-    WalkerArgument argument)
+var list = new List<int> { 1, 2, 3 };
+var set = new HashSet<int> { 1, 2, 3 };
+```
+
+```js
+let list = [1, 2, 3];
+let set = new Set([1, 2, 3]);
+```
+
+### 字典初始化器
+
+```csharp
+var dict = new Dictionary<string, int>
 {
-    // 处理 ISimpleAssignmentOperation
-    // 处理 IMemberInitializerOperation
-    // 处理 IInvocationOperation (集合添加方法)
-}
+    { "one", 1 },
+    { "two", 2 }
+};
 ```
 
-### 4.2 嵌套对象初始化
+```js
+let dict = new Map([["one", 1], ["two", 2]]);
+```
+
+### 匿名对象
 
 ```csharp
-// C# 示例
-new Person { Address = new Address { City = "NYC" } }
-
-// 递归处理嵌套对象
-if (simpleAssignmentOp.Value is IObjectCreationOperation subObjectCreationOp &&
-    subObjectCreationOp.Initializer is not null)
-{
-    var sequenceExpr = BuildObjectCreation(left, subObjectCreationOp, argument);
-}
+var anonymous = new { Name = "Test", Value = 42 };
 ```
 
-## 5. 已知缺陷
+```js
+let anonymous = { Name: "Test", Value: 42 };
+```
 
-### 5.1 高优先级缺陷
+注意这里的现状是：匿名对象当前保留当前视图键名，不自动做额外 camel 化。
 
-| 缺陷 | 影响 | 建议修复方案 |
-|------|------|-------------|
-| **多维数组不支持** | `new int[,]` 转换失败 | 设计替代方案或明确拒绝 |
-| **集合初始化器方法调用不完整** | 复杂初始化可能失败 | 完善 Add 方法处理 |
+## 初始化器展开方式
 
-### 5.2 中优先级缺陷
+`BuildObjectCreationInitializer(...)` 是当前初始化器展开的主入口。
 
-| 缺陷 | 影响 | 建议修复方案 |
-|------|------|-------------|
-| **IIFE 增加代码复杂度** | 生成代码可读性差 | 考虑优化为简单序列 |
-| **泛型类型参数对象创建不完整** | `new T()` 可能失败 | 改进泛型处理 |
+它会处理三类 initializer：
 
-## 6. AST 节点映射
+- `ISimpleAssignmentOperation`
+- `IMemberInitializerOperation`
+- `IInvocationOperation`
 
-| C# 结构 | JavaScript AST | 备注 |
-|---------|---------------|------|
-| `new Class()` | `NewExpression` | 标准构造 |
-| `new Class { }` | `CallExpression` (IIFE) | 带初始化器 |
-| `new { }` | `ObjectExpression` | 匿名对象 |
-| `new int[] { }` | `ArrayExpression` | 数组字面量 |
-| `new int[n]` | `NewExpression` | 指定大小 |
+分别对应：
 
-## 7. 测试覆盖
+- 直接成员赋值
+- 嵌套对象/集合初始化器
+- 集合 `Add(...)` 一类调用
 
-**当前状态**: ~40 个测试
+这让对象初始化器、集合初始化器和嵌套初始化器都可以共用同一条展开主线。
 
-**测试场景**：
-- ✅ 简单对象创建
-- ✅ 带参数构造
-- ✅ 对象初始化器
-- ✅ 匿名对象
-- ✅ 数组创建
-- ✅ 集合初始化器
+## 何时直接变成对象字面量
 
-## 8. 相关文档
+当前不是所有创建都必须保留构造语义。
+
+会直接落成对象字面量的典型情况有：
+
+- 匿名对象
+- ECMAScript record-like
+- 递归对象/集合初始化器生成的嵌套字面量
+
+这和整体设计保持一致：
+
+- 能直接用稳定 JS shape 表达时，优先直接表达
+- 不为了保留 CLR 外形而额外制造宿主层
+
+## 当前边界
+
+这份文件当前不承诺这些事情：
+
+- 还原完整 CLR 对象模型
+- 保证所有集合类型都能落成最优 JS 宿主
+- 让所有初始化器都不用 IIFE
+- 保持和 CLR 匿名类型/record 运行时细节完全一致
+
+它当前更偏向：
+
+- 结果等价
+- runtime shape 尽量贴近 JS
+- 创建路径与 tuple / 白名单 / 引用路径规则保持一致
+
+## 推荐阅读
+
+建议结合下面这些文档一起看：
+
+1. [SemanticWalker.md](./SemanticWalker.md)
+2. [SemanticWalker.Creation.md](./SemanticWalker.Creation.md)
+3. [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
+4. [SemanticWalker.Tuple.md](./SemanticWalker.Tuple.md)
+5. [SemanticWalker.WhiteList.md](./SemanticWalker.WhiteList.md)
+
+## 相关文档
 
 - [SemanticWalker.md](./SemanticWalker.md)
 - [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
-
----
-
-**最后更新**: 2026-03-03
+- [SemanticWalker.Tuple.md](./SemanticWalker.Tuple.md)
+- [SemanticWalker.WhiteList.md](./SemanticWalker.WhiteList.md)

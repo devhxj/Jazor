@@ -22,7 +22,7 @@ public sealed class WeakRef
 /// </summary>
 [ECMAScript]
 [Description("@#WeakRef")]
-public sealed class WeakRef<T>
+public sealed class WeakRef<T> where T : class
 {
 	public extern WeakRef(T target);
 

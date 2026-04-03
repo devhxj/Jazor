@@ -18,6 +18,9 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "char","String")]
 public static class CharModule
 {
+	private static Number CompareCore(Number left, Number right)
+		=> left < right ? -1 : (left > right ? 1 : 0);
+
 	[Jazor(Op.Discard, "char.Char()")]
 	public extern static Number _920bd6d3d675c7b2();
 
@@ -47,17 +50,26 @@ public static class CharModule
 
 	/// <summary>
 	/// C#: char.CompareTo(obj)
-	/// JS: instance - (obj as number)
+	/// JS: 与 .NET 一致的 CompareTo 规则，单独处理 null 和类型检查
 	/// </summary>
-	[Jazor(Op.Inline, "char.CompareTo(object)", "(__arg1 - (__arg2 ?? 0))")]
-	public extern static Number _ddf9c5affdc041df(Number instance, object? value);
+	[Jazor(Op.Import, "char.CompareTo(object)")]
+	public static Number _ddf9c5affdc041df(Number instance, object? value)
+	{
+		if (value == null)
+			return 1;
+		if (TypeOf(value) != "number")
+			throw new Error("ArgumentException: Object must be of type Char.");
+
+		return CompareCore(instance, (Number)value);
+	}
 
 	/// <summary>
 	/// C#: char.CompareTo(other)
-	/// JS: instance - other
+	/// JS: 返回负数、零或正数
 	/// </summary>
-	[Jazor(Op.Inline, "char.CompareTo(char)", "(__arg1 - __arg2)")]
-	public extern static Number _309d33b86c3815d8(Number instance, Number value);
+	[Jazor(Op.Import, "char.CompareTo(char)")]
+	public static Number _309d33b86c3815d8(Number instance, Number value)
+		=> CompareCore(instance, value);
 
 	/// <summary>
 	/// C#: char.ToString()

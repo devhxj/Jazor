@@ -8,10 +8,40 @@ public static class GregorianCalendarModule
 	private static Number CurrentEra => 0;
 	private static Number DefaultTwoDigitYearMax => 2029;
 
+	private static Number LocalizedCalendarType => 1;
+	private static Number USEnglishCalendarType => 2;
+	private static Number MiddleEastFrenchCalendarType => 9;
+	private static Number ArabicCalendarType => 10;
+	private static Number TransliteratedEnglishCalendarType => 11;
+	private static Number TransliteratedFrenchCalendarType => 12;
+
 	private static void EnsureWholeNumber(Number value, string message)
 	{
 		if (IsNaN(value) || Math.Floor_(value) != value || value < Number.MIN_SAFE_INTEGER || value > Number.MAX_SAFE_INTEGER)
 			throw new Error(message);
+	}
+
+	private static Number GetCalendarTypeValue(object type)
+	{
+		if (type is Number numberType)
+			return numberType;
+		if (type is System.Globalization.GregorianCalendarTypes enumType)
+			return Number_((int)enumType);
+
+		throw new Error("ArgumentException: Invalid GregorianCalendarTypes value.");
+	}
+
+	private static void ValidateCalendarType(object type)
+	{
+		var value = GetCalendarTypeValue(type);
+		EnsureWholeNumber(value, "ArgumentOutOfRangeException: GregorianCalendarTypes value was not valid.");
+		if (value != LocalizedCalendarType
+			&& value != USEnglishCalendarType
+			&& value != MiddleEastFrenchCalendarType
+			&& value != ArabicCalendarType
+			&& value != TransliteratedEnglishCalendarType
+			&& value != TransliteratedFrenchCalendarType)
+			throw new Error("ArgumentOutOfRangeException: GregorianCalendarTypes value was not valid.");
 	}
 
 	private static void ValidateEra(Number era)
@@ -59,8 +89,9 @@ public static class GregorianCalendarModule
 	public static RuntimeModule.JDateTime _7ba83b2ccdd567b5(string instance)
 		=> DateTimeModule._eb38dc04224730ea();
 
-	[Jazor(Op.Discard ,"override System.Globalization.GregorianCalendar.AlgorithmType.get")]
-	public extern static System.Globalization.CalendarAlgorithmType _2c293866a460d9ea(string instance);
+	[Jazor(Op.Import ,"override System.Globalization.GregorianCalendar.AlgorithmType.get")]
+	public static System.Globalization.CalendarAlgorithmType _2c293866a460d9ea(string instance)
+		=> System.Globalization.CalendarAlgorithmType.SolarCalendar;
 
 	/// <summary>
 	/// C#: new GregorianCalendar()
@@ -73,13 +104,18 @@ public static class GregorianCalendarModule
 	///<summary>Initializes a new instance of the <see cref="T:System.Globalization.GregorianCalendar" /> class using the specified <see cref="T:System.Globalization.GregorianCalendarTypes" /> value.</summary>
 	[Jazor(Op.Import, "System.Globalization.GregorianCalendar.GregorianCalendar(System.Globalization.GregorianCalendarTypes)")]
 	public static string _c043a86ee7a70c81(object type)
-		=> CalendarId;
+	{
+		ValidateCalendarType(type);
+		return CalendarId;
+	}
 
-	[Jazor(Op.Discard ,"virtual System.Globalization.GregorianCalendar.CalendarType.get")]
-	public extern static System.Globalization.GregorianCalendarTypes _33a82cf70a73ecdd(string instance);
+	[Jazor(Op.Import ,"virtual System.Globalization.GregorianCalendar.CalendarType.get")]
+	public static System.Globalization.GregorianCalendarTypes _33a82cf70a73ecdd(string instance)
+		=> System.Globalization.GregorianCalendarTypes.Localized;
 
-	[Jazor(Op.Discard ,"virtual System.Globalization.GregorianCalendar.CalendarType.set")]
-	public extern static void _ab29134350e86147(string instance, object value);
+	[Jazor(Op.Import ,"virtual System.Globalization.GregorianCalendar.CalendarType.set")]
+	public static void _ab29134350e86147(string instance, object value)
+		=> ValidateCalendarType(value);
 
 	///<summary>Returns a <see cref="T:System.DateTime" /> that is the specified number of months away from the specified <see cref="T:System.DateTime" />.</summary>
 	[Jazor(Op.Import ,"override System.Globalization.GregorianCalendar.AddMonths(System.DateTime, int)")]
@@ -137,7 +173,7 @@ public static class GregorianCalendarModule
 		=> 1;
 
 	[Jazor(Op.Import ,"override System.Globalization.GregorianCalendar.Eras.get")]
-	public static int[] _c01c2927eaf2fefe(string instance)
+	public static Number[] _c01c2927eaf2fefe(string instance)
 		=> [1];
 
 	/// <summary>
@@ -207,13 +243,22 @@ public static class GregorianCalendarModule
 	///<summary>Returns a <see cref="T:System.DateTime" /> that is set to the specified date and time in the specified era.</summary>
 	[Jazor(Op.Import ,"override System.Globalization.GregorianCalendar.ToDateTime(int, int, int, int, int, int, int, int)")]
 	public static RuntimeModule.JDateTime _29ccd13d5e5508f8(string instance, Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond, Number era)
-		=> new(RuntimeModule.CreateLocalDateTime(year, month, day, hour, minute, second, millisecond), 0);
+	{
+		ValidateEra(era);
+		return new(RuntimeModule.CreateLocalDateTime(year, month, day, hour, minute, second, millisecond), 0);
+	}
 
-	[Jazor(Op.Discard ,"override System.Globalization.GregorianCalendar.TwoDigitYearMax.get")]
-	public extern static Number _e32c11e11fbe2e3b(string instance);
+	[Jazor(Op.Import ,"override System.Globalization.GregorianCalendar.TwoDigitYearMax.get")]
+	public static Number _e32c11e11fbe2e3b(string instance)
+		=> DefaultTwoDigitYearMax;
 
-	[Jazor(Op.Discard ,"override System.Globalization.GregorianCalendar.TwoDigitYearMax.set")]
-	public extern static void _9537b0490ec80689(string instance, Number value);
+	[Jazor(Op.Import ,"override System.Globalization.GregorianCalendar.TwoDigitYearMax.set")]
+	public static void _9537b0490ec80689(string instance, Number value)
+	{
+		EnsureWholeNumber(value, "ArgumentOutOfRangeException: TwoDigitYearMax must be a whole number.");
+		if (value < 99 || value > 9999)
+			throw new Error("ArgumentOutOfRangeException: TwoDigitYearMax must be between 99 and 9999.");
+	}
 
 	///<summary>Converts the specified year to a four-digit year by using the <see cref="P:System.Globalization.GregorianCalendar.TwoDigitYearMax" /> property to determine the appropriate century.</summary>
 	[Jazor(Op.Import ,"override System.Globalization.GregorianCalendar.ToFourDigitYear(int)")]

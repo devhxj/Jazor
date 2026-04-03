@@ -8,12 +8,16 @@ using Microsoft.CodeAnalysis;
 namespace Jazor.Compiler;
 
 /// <summary>
-/// 
+/// 编译器共享的符号、名称和 AST 辅助工具。
+///
+/// 这里的规则大多服务于“C# 声明侧”到“JS 运行时侧”的名称与宿主对齐，
+/// 因此很多 helper 不只是字符串工具，而是运行时映射判定的一部分。
 /// </summary>
 public static class Util
 {
     private const string ECMAScriptAssemblyName = "ECMAScript";
     private const string ECMAScriptAttributeName = "ECMAScriptAttribute";
+    private const string ECMAScriptModuleAttributeName = "ECMAScriptModuleAttribute";
 
     private enum JsNameConfigKind
     {
@@ -30,18 +34,14 @@ public static class Util
     }
 
     /// <summary>
-    /// 
+    /// 以仓库测试使用的 KnR 风格输出 ECMAScript 文本。
     /// </summary>
-    /// <param name="node"></param>
-    /// <returns></returns>
     public static string ToKnRECMAScript(this Node node)
         => node.ToJavaScript(KnRJavaScriptTextFormatterOptions.Default, AstToJavaScriptOptions.Default);
 
     /// <summary>
-    /// 
+    /// 以默认 writer 选项输出 ECMAScript 文本。
     /// </summary>
-    /// <param name="node"></param>
-    /// <returns></returns>
     public static string ToECMAScript(this Node node)
         => node.ToJavaScript(JavaScriptTextWriterOptions.Default, AstToJavaScriptOptions.Default);
 
@@ -105,10 +105,13 @@ public static class Util
     }
 
     /// <summary>
-    /// 
+    /// 获取最终用于输出的符号名。
+    ///
+    /// 规则顺序：
+    /// 1. 优先使用显式配置名。
+    /// 2. Roslyn 隐式 backing field 改写为稳定哈希名，避免泄漏 CLR 内部格式。
+    /// 3. 普通方法仅在确实存在重载时追加哈希后缀。
     /// </summary>
-    /// <param name="symbol"></param>
-    /// <returns></returns>
     public static string GetConfigOrSymbolName(ISymbol symbol)
     {
         var name = GetSymbolConfigName(symbol);
@@ -149,7 +152,46 @@ public static class Util
     private static bool HasAttribute(ISymbol? symbol, string attributeName)
         => symbol?.GetAttributes().Any(attr => attr.AttributeClass?.Name == attributeName) == true;
 
+    private static bool IsRuntimeMarkerType(ISymbol? symbol)
+        => HasAttribute(symbol, ECMAScriptAttributeName) ||
+           HasAttribute(symbol, ECMAScriptModuleAttributeName);
+
+    /// <summary>
+    /// 判断一个类型是否属于 ECMAScript 运行时映射类型。
+    ///
+    /// 这里同时要求：
+    /// - 类型来自 <c>ECMAScript</c> 程序集
+    /// - 类型自身带有运行时标记特性
+    ///
+    /// 这样可以避免仅凭程序集名或类型名误判普通 CLR 类型。
+    /// </summary>
+    public static bool IsECMAScriptRuntimeType(ITypeSymbol? symbol)
+        => symbol?.ContainingAssembly?.Name == ECMAScriptAssemblyName &&
+           IsRuntimeMarkerType(symbol);
+
+    /// <summary>
+    /// 判断一个符号是否属于 ECMAScript 运行时映射域。
+    ///
+    /// 对成员符号，这里不是检查成员自己是否带标记，而是检查其宿主类型是否是
+    /// ECMAScript 运行时类型。这样字段、属性、方法可以共享同一套运行时宿主规则，
+    /// 例如静态宿主选择、方法名后缀跳过、全局对象映射等。
+    /// </summary>
+    public static bool IsECMAScriptRuntimeSymbol(ISymbol? symbol)
+        => symbol switch
+        {
+            null => false,
+            ITypeSymbol typeSymbol => IsECMAScriptRuntimeType(typeSymbol),
+            _ => symbol.ContainingAssembly?.Name == ECMAScriptAssemblyName &&
+                 IsECMAScriptRuntimeType(symbol.ContainingType)
+        };
+
+    /// <summary>
+    /// ECMAScript 运行时宿主上的方法名默认直接视为运行时 API 名称，不再追加重载哈希。
+    ///
+    /// 原因是这些宿主最终对齐的是 JS 运行时对象，而不是 CLR 的 overload surface。
+    /// 如果在这里追加哈希后缀，会无端扩大 C# / JS 的命名割裂。
+    /// </summary>
     private static bool ShouldSkipMethodOverloadSuffix(IMethodSymbol methodSymbol)
         => methodSymbol.ContainingAssembly?.Name == ECMAScriptAssemblyName &&
-           HasAttribute(methodSymbol.ContainingType, ECMAScriptAttributeName);
+           IsRuntimeMarkerType(methodSymbol.ContainingType);
 }

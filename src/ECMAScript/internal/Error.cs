@@ -1,5 +1,7 @@
 ﻿using System.Reflection;
 
+using System.Collections.Generic;
+
 namespace ECMAScript;
 
 [ECMAScript]
@@ -37,52 +39,10 @@ public class Error : Exception
 
 	public extern Error(string message);
 
-	public extern Error(string message, string? stack = null);
-
 	public extern Error(string message, ErrorOptions? options);
 
 	[Description("@#toString")]
 	public extern override string ToString();
-
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public extern override IDictionary Data { get; }
-
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public extern override Exception GetBaseException();
-
-	//[EditorBrowsable(EditorBrowsableState.Never)]
-	//[Obsolete]
-	//public extern override void GetObjectData(SerializationInfo info, StreamingContext context);
-
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public extern override string? HelpLink { get; set; }
-
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public extern override string? Source { get; set; }
-
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public extern override string StackTrace { get; }
-
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public extern new Exception InnerException { get; }
-
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public extern new MethodBase TargetSite { get; }
-
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public extern new Type GetType();
-
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public extern override int GetHashCode();
-
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public extern override bool Equals(object? obj);
-
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public extern static new bool Equals(object objA, object objB);
-
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public extern static new bool ReferenceEquals(object objA, object objB);
 }
 
 [ECMAScript]
@@ -93,8 +53,6 @@ public class EvalError : Error
 	public override string Name => "EvalError";
 
 	public extern EvalError(string message);
-
-	public extern EvalError(string message, string? stack = null);
 
 	public extern EvalError(string message, ErrorOptions? options);
 }
@@ -108,8 +66,6 @@ public class RangeError : Error
 
 	public extern RangeError(string message);
 
-	public extern RangeError(string message, string? stack = null);
-
 	public extern RangeError(string message, ErrorOptions? options);
 }
 
@@ -121,8 +77,6 @@ public class ReferenceError : Error
 	public override string Name => "ReferenceError";
 
 	public extern ReferenceError(string message);
-
-	public extern ReferenceError(string message, string? stack = null);
 
 	public extern ReferenceError(string message, ErrorOptions? options);
 }
@@ -136,8 +90,6 @@ public class SyntaxError : Error
 
 	public extern SyntaxError(string message);
 
-	public extern SyntaxError(string message, string? stack = null);
-
 	public extern SyntaxError(string message, ErrorOptions? options);
 }
 
@@ -149,8 +101,6 @@ public class TypeError : Error
 	public override string Name => "TypeError";
 
 	public extern TypeError(string message);
-
-	public extern TypeError(string message, string? stack = null);
 
 	public extern TypeError(string message, ErrorOptions? options);
 }
@@ -164,8 +114,6 @@ public class URIError : Error
 
 	public extern URIError(string message);
 
-	public extern URIError(string message, string? stack = null);
-
 	public extern URIError(string message, ErrorOptions? options);
 }
 
@@ -176,10 +124,23 @@ public class AggregateError : Error
 	[Description("@#name")]
 	public override string Name => "AggregateError";
 
+	/// <summary>
+	/// JavaScript <c>AggregateError.prototype.errors</c> array.
+	/// </summary>
 	[Description("@#errors")]
-	public IReadOnlyList<object?> Errors { get; }
+	public Array<object?> Errors { get; }
 
-	public extern AggregateError(IReadOnlyList<object?> errors, string? message = null, string? stack = null);
+	/// <summary>
+	/// Creates an <c>AggregateError</c> from a JavaScript iterable of error values.
+	/// <see cref="IEnumerable{T}"/> is used here as the common C# input surface for values
+	/// such as arrays, lists, and read-only list families that map to JavaScript arrays or iterables.
+	/// </summary>
+	public extern AggregateError(IEnumerable<object?> errors, string? message = null);
 
-	public extern AggregateError(IReadOnlyList<object?> errors, string? message, ErrorOptions? options);
+	/// <summary>
+	/// Creates an <c>AggregateError</c> from a JavaScript iterable of error values.
+	/// <see cref="IEnumerable{T}"/> is used here as the common C# input surface for values
+	/// such as arrays, lists, and read-only list families that map to JavaScript arrays or iterables.
+	/// </summary>
+	public extern AggregateError(IEnumerable<object?> errors, string? message, ErrorOptions? options);
 }

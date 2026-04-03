@@ -5,6 +5,7 @@ namespace Jazor.CLR;
 public static class DateOnlyModule
 {
 	private static Number MaxDayNumber => 3652058;
+	private static Number AllowedDateTimeStylesMask => 7;
 
 	private static void EnsureWholeNumber(Number value, string message)
 	{
@@ -48,26 +49,67 @@ public static class DateOnlyModule
 		return value;
 	}
 
-	private static RuntimeModule.JDateOnly ParseCore(string s)
-	{
-		if (s.Length == 10 && s[4] == '-' && s[7] == '-')
-		{
-			var year = Number_(s.Substring(0, 4));
-			var month = Number_(s.Substring(5, 2));
-			var day = Number_(s.Substring(8, 2));
-			var date = RuntimeModule.CreateUtcDate(year, month, day);
-			if (date.GetUTCFullYear() != year || date.GetUTCMonth() + 1 != month || date.GetUTCDate() != day)
-				throw new Error($"FormatException: String '{s}' was not recognized as a valid DateOnly.");
+	private static bool IsAsciiDigit(char value)
+		=> value >= '0' && value <= '9';
 
-			return new RuntimeModule.JDateOnly(year, month, day);
+	private static bool TryParseIsoDate(string text, out Number year, out Number month, out Number day)
+	{
+		year = 0;
+		month = 0;
+		day = 0;
+
+		if (text.Length != 10 || text[4] != '-' || text[7] != '-')
+			return false;
+
+		for (var i = 0; i < text.Length; i++)
+		{
+			if (i == 4 || i == 7)
+				continue;
+
+			if (!IsAsciiDigit(text[i]))
+				return false;
 		}
 
-		var parsed = new Date(s);
+		year = Number_(text.Substring(0, 4));
+		month = Number_(text.Substring(5, 2));
+		day = Number_(text.Substring(8, 2));
+		if (year < 1 || year > 9999 || month < 1 || month > 12)
+			return false;
+
+		var daysInMonth = RuntimeModule.GetDaysInMonth(year, month);
+		return day >= 1 && day <= daysInMonth;
+	}
+
+	private static RuntimeModule.JDateOnly ParseCore(string s)
+	{
+		var text = s.Trim();
+		if (text.Length == 0)
+			throw new Error("FormatException: String was not recognized as a valid DateOnly.");
+
+		if (TryParseIsoDate(text, out var year, out var month, out var day))
+			return new RuntimeModule.JDateOnly(year, month, day);
+
+		var parsed = new Date(text);
 		if (IsNaN(parsed.GetTime()))
 			throw new Error($"FormatException: String '{s}' was not recognized as a valid DateOnly.");
 
 		return new RuntimeModule.JDateOnly(parsed.GetFullYear(), parsed.GetMonth() + 1, parsed.GetDate());
 	}
+
+	private static Number GetDateTimeStylesValue(object style)
+	{
+		if (style is Number numberStyle)
+			return numberStyle;
+		if (style is System.Globalization.DateTimeStyles enumStyle)
+			return Number_((int)enumStyle);
+		if (style == null)
+			return 0;
+
+		throw new Error("ArgumentException: Invalid DateTimeStyles value.");
+	}
+
+	private static bool IsSupportedDateTimeStyles(Number style)
+		=> style >= 0 && Math.Floor_(style) == style && (style & ~AllowedDateTimeStylesMask) == 0;
 
 	[Jazor(Op.Import ,"System.DateOnly.DateOnly()")]
 	public static RuntimeModule.JDateOnly _5f8053a9657a0844() => new(1, 1, 1);
@@ -306,7 +348,13 @@ public static class DateOnlyModule
 	///<summary>Converts a memory span that contains string representation of a date to its <see cref="T:System.DateOnly" /> equivalent by using culture-specific format information and a formatting style.</summary>
 	[Jazor(Op.Import ,"static System.DateOnly.Parse(System.ReadOnlySpan<char>, System.IFormatProvider, System.Globalization.DateTimeStyles)")]
 	public static RuntimeModule.JDateOnly _ec2f441fb253f83c(string s, Intl.NumberFormat? provider, object style)
-		=> ParseCore(s);
+	{
+		var styleValue = GetDateTimeStylesValue(style);
+		if (!IsSupportedDateTimeStyles(styleValue))
+			throw new Error("ArgumentException: The only supported DateTimeStyles values are AllowLeadingWhite, AllowTrailingWhite, AllowInnerWhite, and AllowWhiteSpaces.");
+
+		return ParseCore(s);
+	}
 
 	///<summary>Converts the specified span representation of a date to its <see cref="T:System.DateOnly" /> equivalent using the specified format, culture-specific format information, and style.            The format of the string representation must match the specified format exactly or an exception is thrown.</summary>
 	[Jazor(Op.Discard ,"static System.DateOnly.ParseExact(System.ReadOnlySpan<char>, System.ReadOnlySpan<char>, System.IFormatProvider, System.Globalization.DateTimeStyles)")]
@@ -328,7 +376,7 @@ public static class DateOnlyModule
 	///<summary>Converts a string that contains string representation of a date to its <see cref="T:System.DateOnly" /> equivalent by using culture-specific format information and a formatting style.</summary>
 	[Jazor(Op.Import ,"static System.DateOnly.Parse(string, System.IFormatProvider, System.Globalization.DateTimeStyles)")]
 	public static RuntimeModule.JDateOnly _60b758dae2c14037(string s, Intl.NumberFormat? provider, object style)
-		=> ParseCore(s);
+		=> _ec2f441fb253f83c(s, provider, style);
 
 	///<summary>Converts the specified string representation of a date to its <see cref="T:System.DateOnly" /> equivalent using the specified format.            The format of the string representation must match the specified format exactly or an exception is thrown.</summary>
 	[Jazor(Op.Discard ,"static System.DateOnly.ParseExact(string, string)")]
@@ -354,7 +402,13 @@ public static class DateOnlyModule
 	///<summary>Converts the specified span representation of a date to its <see cref="T:System.DateOnly" /> equivalent using the specified array of formats, culture-specific format information, and style. And returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Import ,"static System.DateOnly.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, System.Globalization.DateTimeStyles, out System.DateOnly)")]
 	public static Array<object?> _0df2e2de9cba3b73(string s, Intl.NumberFormat? provider, object style, RuntimeModule.JDateOnly result)
-		=> _b14e4d5a572477d0(s, result);
+	{
+		var styleValue = GetDateTimeStylesValue(style);
+		if (!IsSupportedDateTimeStyles(styleValue))
+			return [false, new RuntimeModule.JDateOnly(1, 1, 1)];
+
+		return _b14e4d5a572477d0(s, result);
+	}
 
 	///<summary>Converts the specified span representation of a date to its <see cref="T:System.DateOnly" /> equivalent using the specified format and style.            The format of the string representation must match the specified format exactly. The method returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.DateOnly.TryParseExact(System.ReadOnlySpan<char>, System.ReadOnlySpan<char>, out System.DateOnly)")]
@@ -392,7 +446,13 @@ public static class DateOnlyModule
 	///<summary>Converts the specified string representation of a date to its <see cref="T:System.DateOnly" /> equivalent using the specified array of formats, culture-specific format information, and style. And returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Import ,"static System.DateOnly.TryParse(string, System.IFormatProvider, System.Globalization.DateTimeStyles, out System.DateOnly)")]
 	public static Array<object?> _025d467c3006d36b(string? s, Intl.NumberFormat? provider, object style, RuntimeModule.JDateOnly result)
-		=> _b14e4d5a572477d0(s, result);
+	{
+		var styleValue = GetDateTimeStylesValue(style);
+		if (!IsSupportedDateTimeStyles(styleValue))
+			return [false, new RuntimeModule.JDateOnly(1, 1, 1)];
+
+		return _b14e4d5a572477d0(s, result);
+	}
 
 	///<summary>Converts the specified string representation of a date to its <see cref="T:System.DateOnly" /> equivalent using the specified format and style.            The format of the string representation must match the specified format exactly. The method returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.DateOnly.TryParseExact(string, string, out System.DateOnly)")]

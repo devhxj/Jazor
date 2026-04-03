@@ -1,22 +1,16 @@
 ﻿namespace ECMAScript;
 
+/// <summary>
+/// JavaScript <c>Date</c> runtime host.
+/// Deliberately omits CLR comparison and formatting interfaces so the public surface stays close to JavaScript.
+/// </summary>
 [ECMAScript]
 [Description("@#Date")]
-public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFormattable
+public sealed class Date
 {
 	public extern Date();
 
 	public extern Date(Number value);
-
-	public extern Date(DateOnly date);
-
-	public extern Date(TimeOnly time);
-
-	public extern Date(DateTime dateTime);
-
-	public extern Date(DateTimeOffset dateTimeOffset);
-
-	public extern Date(TimeSpan timeSpan);
 
 	public extern Date(string dateString);
 
@@ -391,29 +385,9 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 
 	public extern static implicit operator string(Date value);
 
-	public extern static implicit operator DateTime(Date value);
-
-	public extern static implicit operator DateTimeOffset(Date value);
-
-	public extern static implicit operator DateOnly(Date value);
-
-	public extern static implicit operator TimeOnly(Date value);
-
-	public extern static implicit operator TimeSpan(Date value);
-
 	public extern static implicit operator Date(Number value);
 
 	public extern static implicit operator Date(string value);
-
-	public extern static implicit operator Date(DateTimeOffset value);
-
-	public extern static implicit operator Date(DateTime value);
-
-	public extern static implicit operator Date(DateOnly value);
-
-	public extern static implicit operator Date(TimeOnly value);
-
-	public extern static implicit operator Date(TimeSpan value);
 
 	public extern static bool operator ==(Date left, Date right);
 
@@ -427,20 +401,13 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 
 	public extern static bool operator >=(Date left, Date right);
 
-
+	// Kept only to satisfy C#'s operator contract for == and != on the host type.
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public extern override bool Equals(object? obj);
 
+	// Kept only to satisfy C#'s operator contract for == and != on the host type.
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public extern override int GetHashCode();
-
-	extern string IFormattable.ToString(string? format, IFormatProvider? formatProvider);
-
-	extern int IComparable.CompareTo(object? obj);
-
-	extern int IComparable<Date>.CompareTo(Date? other);
-
-	extern bool IEquatable<Date>.Equals(Date? other);
 
 	/// <summary>
 	/// Converts a date and time to a string by using the current or specified locale.
@@ -458,7 +425,7 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	/// <param name="options">An object that contains one or more properties that specify comparison options.</param>
 	/// <returns></returns>
 	[Description("@#toLocaleString")]
-	public extern string ToLocaleString(IEnumerable<string> locales, Intl.DateTimeFormatOptions? options = null);
+	public extern string ToLocaleString(string[] locales, Intl.DateTimeFormatOptions? options = null);
 
 	/// <summary>
 	/// Converts a date to a string by using the current or specified locale.
@@ -476,7 +443,7 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	/// <param name="options">An object that contains one or more properties that specify comparison options.</param>
 	/// <returns></returns>
 	[Description("@#toLocaleDateString")]
-	public extern string ToLocaleDateString(IEnumerable<string> locales, Intl.DateTimeFormatOptions? options = null);
+	public extern string ToLocaleDateString(string[] locales, Intl.DateTimeFormatOptions? options = null);
 
 	/// <summary>
 	/// Converts a time to a string by using the current or specified locale.
@@ -494,6 +461,6 @@ public sealed class Date : IEquatable<Date>, IComparable<Date>, IComparable, IFo
 	/// <param name="options">An object that contains one or more properties that specify comparison options.</param>
 	/// <returns></returns>
 	[Description("@#toLocaleTimeString")]
-	public extern string ToLocaleTimeString(IEnumerable<string> locales, Intl.DateTimeFormatOptions? options = null);
+	public extern string ToLocaleTimeString(string[] locales, Intl.DateTimeFormatOptions? options = null);
 }
 

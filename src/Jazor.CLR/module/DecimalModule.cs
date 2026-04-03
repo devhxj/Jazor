@@ -6,6 +6,18 @@ public static class DecimalModule
 {
 	private static Number MaxFractionDigits => 28;
 	private static BigInt MaxDecimalUnscaled => BigInt_("79228162514264337593543950335");
+	private static BigInt Int64MinValue => BigInt_("-9223372036854775808");
+	private static BigInt Int64MaxValue => BigInt_("9223372036854775807");
+	private static BigInt UInt64MaxValue => BigInt_("18446744073709551615");
+	private static BigInt Int32MinValue => BigInt_("-2147483648");
+	private static BigInt Int32MaxValue => BigInt_("2147483647");
+	private static BigInt UInt32MaxValue => BigInt_("4294967295");
+	private static BigInt Int16MinValue => BigInt_("-32768");
+	private static BigInt Int16MaxValue => BigInt_("32767");
+	private static BigInt UInt16MaxValue => BigInt_("65535");
+	private static BigInt SByteMinValue => BigInt_("-128");
+	private static BigInt SByteMaxValue => BigInt_("127");
+	private static BigInt ByteMaxValue => BigInt_("255");
 
 	private static Array<object?> CreateParts(BigInt unscaled, Number scale)
 		=> [unscaled, scale];
@@ -182,6 +194,88 @@ public static class DecimalModule
 		return GetUnscaled(value) * Pow10(targetScale - scale);
 	}
 
+	private static BigInt TruncateToIntegralValue(string value)
+	{
+		var parts = ParseDecimal(value);
+		var scale = GetScale(parts);
+		if (scale == 0)
+			return GetUnscaled(parts);
+
+		return GetUnscaled(parts) / Pow10(scale);
+	}
+
+	private static Number ToCheckedNumber(string value, BigInt min, BigInt max, string typeName)
+	{
+		var integral = TruncateToIntegralValue(value);
+		if (integral < min || integral > max)
+			throw new Error($"OverflowException: Value was either too large or too small for a {typeName}.");
+
+		return Number_(integral);
+	}
+
+	private static BigInt ToCheckedBigInt(string value, BigInt min, BigInt max, string typeName)
+	{
+		var integral = TruncateToIntegralValue(value);
+		if (integral < min || integral > max)
+			throw new Error($"OverflowException: Value was either too large or too small for a {typeName}.");
+
+		return integral;
+	}
+
+	private static Number GetMidpointRoundingValue(object mode)
+	{
+		if (mode is Number numberMode)
+			return numberMode;
+		if (mode is System.MidpointRounding enumMode)
+			return Number_((int)enumMode);
+
+		throw new Error("ArgumentException: Invalid MidpointRounding value.");
+	}
+
+	private static string RoundDecimal(string value, Number decimals, object? mode = null)
+	{
+		if (Math.Floor_(decimals) != decimals || decimals < 0 || decimals > MaxFractionDigits)
+			throw new Error("ArgumentOutOfRangeException: Decimal digits must be between 0 and 28.");
+
+		var modeValue = mode == null ? Number_(0) : GetMidpointRoundingValue(mode);
+		if (modeValue < 0 || modeValue > 4 || Math.Floor_(modeValue) != modeValue)
+			throw new Error("ArgumentException: Invalid MidpointRounding value.");
+
+		var parts = ParseDecimal(value);
+		var scale = GetScale(parts);
+		var unscaled = GetUnscaled(parts);
+		if (scale <= decimals)
+			return FormatDecimal(unscaled, scale);
+
+		var trimScale = scale - decimals;
+		var divisor = Pow10(trimScale);
+		var quotient = unscaled / divisor;
+		var remainder = unscaled % divisor;
+		if (remainder == BigInt.Zero)
+			return FormatDecimal(quotient, decimals);
+
+		var negative = unscaled < BigInt.Zero;
+		if (modeValue == 2)
+			return FormatDecimal(quotient, decimals);
+		if (modeValue == 3)
+			return FormatDecimal(negative ? quotient - BigInt_(1) : quotient, decimals);
+		if (modeValue == 4)
+			return FormatDecimal(negative ? quotient : quotient + BigInt_(1), decimals);
+
+		var absoluteRemainder = negative ? -remainder : remainder;
+		var comparison = absoluteRemainder * BigInt_(2) - divisor;
+		if (comparison < BigInt.Zero)
+			return FormatDecimal(quotient, decimals);
+
+		var step = negative ? -BigInt_(1) : BigInt_(1);
+		if (comparison > BigInt.Zero || modeValue == 1)
+			return FormatDecimal(quotient + step, decimals);
+
+		return quotient % BigInt_(2) == BigInt.Zero
+			? FormatDecimal(quotient, decimals)
+			: FormatDecimal(quotient + step, decimals);
+	}
+
 	private static Number CompareDecimal(string left, string right)
 	{
 		var a = ParseDecimal(left);
@@ -353,6 +447,26 @@ public static class DecimalModule
 	//decimal.MaxValue = 79228162514264337593543950335;
 
 	//decimal.MinValue = -79228162514264337593543950335;
+
+	[Jazor(Op.Import, "static readonly decimal.Zero")]
+	public static string _5faf9ddf65d02495()
+		=> "0";
+
+	[Jazor(Op.Import, "static readonly decimal.One")]
+	public static string _3db06a98834e6ef8()
+		=> "1";
+
+	[Jazor(Op.Import, "static readonly decimal.MinusOne")]
+	public static string _9311127a9ca2b91d()
+		=> "-1";
+
+	[Jazor(Op.Import, "static readonly decimal.MaxValue")]
+	public static string _6a4e5f697d4fc607()
+		=> "79228162514264337593543950335";
+
+	[Jazor(Op.Import, "static readonly decimal.MinValue")]
+	public static string _cc6392a7d6df1e14()
+		=> "-79228162514264337593543950335";
 
 	/// <summary>
 	/// C#: new decimal()
@@ -654,20 +768,24 @@ public static class DecimalModule
 		=> NegateDecimal(d);
 
 	///<summary>Rounds a decimal value to the nearest integer.</summary>
-	[Jazor(Op.Discard ,"static decimal.Round(decimal)")]
-	public extern static string _4a816369b59f1ca3(string d);
+	[Jazor(Op.Import ,"static decimal.Round(decimal)")]
+	public static string _4a816369b59f1ca3(string d)
+		=> RoundDecimal(d, 0);
 
 	///<summary>Rounds a <see cref="T:System.Decimal" /> value to a specified number of decimal places.</summary>
-	[Jazor(Op.Discard ,"static decimal.Round(decimal, int)")]
-	public extern static string _bc3a974d51c694ab(string d, Number decimals);
+	[Jazor(Op.Import ,"static decimal.Round(decimal, int)")]
+	public static string _bc3a974d51c694ab(string d, Number decimals)
+		=> RoundDecimal(d, decimals);
 
 	///<summary>Rounds a decimal value to an integer using the specified rounding strategy.</summary>
-	[Jazor(Op.Discard ,"static decimal.Round(decimal, System.MidpointRounding)")]
-	public extern static string _a334f7e82122cfc2(string d, object mode);
+	[Jazor(Op.Import ,"static decimal.Round(decimal, System.MidpointRounding)")]
+	public static string _a334f7e82122cfc2(string d, object mode)
+		=> RoundDecimal(d, 0, mode);
 
 	///<summary>Rounds a decimal value to the specified precision using the specified rounding strategy.</summary>
-	[Jazor(Op.Discard ,"static decimal.Round(decimal, int, System.MidpointRounding)")]
-	public extern static string _09ee3a4652dbe73c(string d, Number decimals, object mode);
+	[Jazor(Op.Import ,"static decimal.Round(decimal, int, System.MidpointRounding)")]
+	public static string _09ee3a4652dbe73c(string d, Number decimals, object mode)
+		=> RoundDecimal(d, decimals, mode);
 
 	///<summary>Subtracts a specified <see cref="T:System.Decimal" /> value from another.</summary>
 	[Jazor(Op.Import ,"static decimal.Subtract(decimal, decimal)")]
@@ -675,44 +793,54 @@ public static class DecimalModule
 		=> SubtractDecimal(d1, d2);
 
 	///<summary>Converts the value of the specified <see cref="T:System.Decimal" /> to the equivalent 8-bit unsigned integer.</summary>
-	[Jazor(Op.Discard ,"static decimal.ToByte(decimal)")]
-	public extern static Number _d2aabede7e0207c1(string value);
+	[Jazor(Op.Import ,"static decimal.ToByte(decimal)")]
+	public static Number _d2aabede7e0207c1(string value)
+		=> ToCheckedNumber(value, BigInt.Zero, ByteMaxValue, "Byte");
 
 	///<summary>Converts the value of the specified <see cref="T:System.Decimal" /> to the equivalent 8-bit signed integer.</summary>
-	[Jazor(Op.Discard ,"static decimal.ToSByte(decimal)")]
-	public extern static Number _175bf5ee849fcf8f(string value);
+	[Jazor(Op.Import ,"static decimal.ToSByte(decimal)")]
+	public static Number _175bf5ee849fcf8f(string value)
+		=> ToCheckedNumber(value, SByteMinValue, SByteMaxValue, "SByte");
 
 	///<summary>Converts the value of the specified <see cref="T:System.Decimal" /> to the equivalent 16-bit signed integer.</summary>
-	[Jazor(Op.Discard ,"static decimal.ToInt16(decimal)")]
-	public extern static Number _5df8c6a064c50c5f(string value);
+	[Jazor(Op.Import ,"static decimal.ToInt16(decimal)")]
+	public static Number _5df8c6a064c50c5f(string value)
+		=> ToCheckedNumber(value, Int16MinValue, Int16MaxValue, "Int16");
 
 	///<summary>Converts the value of the specified <see cref="T:System.Decimal" /> to the equivalent double-precision floating-point number.</summary>
-	[Jazor(Op.Discard ,"static decimal.ToDouble(decimal)")]
-	public extern static Number _cfbbd251b43c99f4(string d);
+	[Jazor(Op.Import ,"static decimal.ToDouble(decimal)")]
+	public static Number _cfbbd251b43c99f4(string d)
+		=> Number_(NormalizeDecimal(d));
 
 	///<summary>Converts the value of the specified <see cref="T:System.Decimal" /> to the equivalent 32-bit signed integer.</summary>
-	[Jazor(Op.Discard ,"static decimal.ToInt32(decimal)")]
-	public extern static Number _ad71e0d1a8679244(string d);
+	[Jazor(Op.Import ,"static decimal.ToInt32(decimal)")]
+	public static Number _ad71e0d1a8679244(string d)
+		=> ToCheckedNumber(d, Int32MinValue, Int32MaxValue, "Int32");
 
 	///<summary>Converts the value of the specified <see cref="T:System.Decimal" /> to the equivalent 64-bit signed integer.</summary>
-	[Jazor(Op.Discard ,"static decimal.ToInt64(decimal)")]
-	public extern static BigInt _7a077e2e1baba462(string d);
+	[Jazor(Op.Import ,"static decimal.ToInt64(decimal)")]
+	public static BigInt _7a077e2e1baba462(string d)
+		=> ToCheckedBigInt(d, Int64MinValue, Int64MaxValue, "Int64");
 
 	///<summary>Converts the value of the specified <see cref="T:System.Decimal" /> to the equivalent 16-bit unsigned integer.</summary>
-	[Jazor(Op.Discard ,"static decimal.ToUInt16(decimal)")]
-	public extern static Number _21bc553743dd324b(string value);
+	[Jazor(Op.Import ,"static decimal.ToUInt16(decimal)")]
+	public static Number _21bc553743dd324b(string value)
+		=> ToCheckedNumber(value, BigInt.Zero, UInt16MaxValue, "UInt16");
 
 	///<summary>Converts the value of the specified <see cref="T:System.Decimal" /> to the equivalent 32-bit unsigned integer.</summary>
-	[Jazor(Op.Discard ,"static decimal.ToUInt32(decimal)")]
-	public extern static Number _c975b2e5b2f4c009(string d);
+	[Jazor(Op.Import ,"static decimal.ToUInt32(decimal)")]
+	public static Number _c975b2e5b2f4c009(string d)
+		=> ToCheckedNumber(d, BigInt.Zero, UInt32MaxValue, "UInt32");
 
 	///<summary>Converts the value of the specified <see cref="T:System.Decimal" /> to the equivalent 64-bit unsigned integer.</summary>
-	[Jazor(Op.Discard ,"static decimal.ToUInt64(decimal)")]
-	public extern static BigInt _9b15def492d41a4a(string d);
+	[Jazor(Op.Import ,"static decimal.ToUInt64(decimal)")]
+	public static BigInt _9b15def492d41a4a(string d)
+		=> ToCheckedBigInt(d, BigInt.Zero, UInt64MaxValue, "UInt64");
 
 	///<summary>Converts the value of the specified <see cref="T:System.Decimal" /> to the equivalent single-precision floating-point number.</summary>
-	[Jazor(Op.Discard ,"static decimal.ToSingle(decimal)")]
-	public extern static Number _1450e4ab34b1a945(string d);
+	[Jazor(Op.Import ,"static decimal.ToSingle(decimal)")]
+	public static Number _1450e4ab34b1a945(string d)
+		=> Number_(NormalizeDecimal(d));
 
 	///<summary>Returns the integral digits of the specified <see cref="T:System.Decimal" />; any fractional digits are discarded.</summary>
 	[Jazor(Op.Import ,"static decimal.Truncate(decimal)")]
@@ -720,92 +848,114 @@ public static class DecimalModule
 		=> TruncateDecimal(d);
 
 	///<summary>Defines an implicit conversion of an 8-bit unsigned integer to a <see cref="T:System.Decimal" />.</summary>
-	[Jazor(Op.Discard ,"static decimal.implicit operator decimal(byte)")]
-	public extern static string _c605c67b2cd1973c();
+	[Jazor(Op.Import ,"static decimal.implicit operator decimal(byte)")]
+	public static string _c605c67b2cd1973c(Number value)
+		=> value.ToString()!;
 
 	///<summary>Defines an implicit conversion of an 8-bit signed integer to a <see cref="T:System.Decimal" />. This API is not CLS-compliant.</summary>
-	[Jazor(Op.Discard ,"static decimal.implicit operator decimal(sbyte)")]
-	public extern static string _e8d5240b7aa52784();
+	[Jazor(Op.Import ,"static decimal.implicit operator decimal(sbyte)")]
+	public static string _e8d5240b7aa52784(Number value)
+		=> value.ToString()!;
 
 	///<summary>Defines an implicit conversion of a 16-bit signed integer to a <see cref="T:System.Decimal" />.</summary>
-	[Jazor(Op.Discard ,"static decimal.implicit operator decimal(short)")]
-	public extern static string _8635fe57a74e1249();
+	[Jazor(Op.Import ,"static decimal.implicit operator decimal(short)")]
+	public static string _8635fe57a74e1249(Number value)
+		=> value.ToString()!;
 
 	///<summary>Defines an implicit conversion of a 16-bit unsigned integer to a <see cref="T:System.Decimal" />. This API is not CLS-compliant.</summary>
-	[Jazor(Op.Discard ,"static decimal.implicit operator decimal(ushort)")]
-	public extern static string _7c3cfa0de18bd43c();
+	[Jazor(Op.Import ,"static decimal.implicit operator decimal(ushort)")]
+	public static string _7c3cfa0de18bd43c(Number value)
+		=> value.ToString()!;
 
 	///<summary>Defines an implicit conversion of a Unicode character to a <see cref="T:System.Decimal" />.</summary>
-	[Jazor(Op.Discard ,"static decimal.implicit operator decimal(char)")]
-	public extern static string _d4af042bf014fd51();
+	[Jazor(Op.Import ,"static decimal.implicit operator decimal(char)")]
+	public static string _d4af042bf014fd51(Number value)
+		=> value.ToString()!;
 
 	///<summary>Defines an implicit conversion of a 32-bit signed integer to a <see cref="T:System.Decimal" />.</summary>
-	[Jazor(Op.Discard ,"static decimal.implicit operator decimal(int)")]
-	public extern static string _f5a5d600ccd38777();
+	[Jazor(Op.Import ,"static decimal.implicit operator decimal(int)")]
+	public static string _f5a5d600ccd38777(Number value)
+		=> value.ToString()!;
 
 	///<summary>Defines an implicit conversion of a 32-bit unsigned integer to a <see cref="T:System.Decimal" />. This API is not CLS-compliant.</summary>
-	[Jazor(Op.Discard ,"static decimal.implicit operator decimal(uint)")]
-	public extern static string _d8b659cd861d2409();
+	[Jazor(Op.Import ,"static decimal.implicit operator decimal(uint)")]
+	public static string _d8b659cd861d2409(Number value)
+		=> value.ToString()!;
 
 	///<summary>Defines an implicit conversion of a 64-bit signed integer to a <see cref="T:System.Decimal" />.</summary>
-	[Jazor(Op.Discard ,"static decimal.implicit operator decimal(long)")]
-	public extern static string _23103e069358ca06();
+	[Jazor(Op.Import ,"static decimal.implicit operator decimal(long)")]
+	public static string _23103e069358ca06(BigInt value)
+		=> value.ToString()!;
 
 	///<summary>Defines an implicit conversion of a 64-bit unsigned integer to a <see cref="T:System.Decimal" />. This API is not CLS-compliant.</summary>
-	[Jazor(Op.Discard ,"static decimal.implicit operator decimal(ulong)")]
-	public extern static string _7ab8c627f74cb718();
+	[Jazor(Op.Import ,"static decimal.implicit operator decimal(ulong)")]
+	public static string _7ab8c627f74cb718(BigInt value)
+		=> value.ToString()!;
 
 	///<summary>Defines an explicit conversion of a single-precision floating-point number to a <see cref="T:System.Decimal" />.</summary>
-	[Jazor(Op.Discard ,"static decimal.explicit operator decimal(float)")]
-	public extern static string _f456cac2ae523add();
+	[Jazor(Op.Import ,"static decimal.explicit operator decimal(float)")]
+	public static string _f456cac2ae523add(Number value)
+		=> CreateDecimalFromNumber(value);
 
 	///<summary>Defines an explicit conversion of a double-precision floating-point number to a <see cref="T:System.Decimal" />.</summary>
-	[Jazor(Op.Discard ,"static decimal.explicit operator decimal(double)")]
-	public extern static string _8f3a66f6dc828dff();
+	[Jazor(Op.Import ,"static decimal.explicit operator decimal(double)")]
+	public static string _8f3a66f6dc828dff(Number value)
+		=> CreateDecimalFromNumber(value);
 
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Decimal" /> to an 8-bit unsigned integer.</summary>
-	[Jazor(Op.Discard ,"static decimal.explicit operator byte(decimal)")]
-	public extern static Number _a8bfc1feb93c39cb();
+	[Jazor(Op.Import ,"static decimal.explicit operator byte(decimal)")]
+	public static Number _a8bfc1feb93c39cb(string value)
+		=> _d2aabede7e0207c1(value);
 
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Decimal" /> to an 8-bit signed integer. This API is not CLS-compliant.</summary>
-	[Jazor(Op.Discard ,"static decimal.explicit operator sbyte(decimal)")]
-	public extern static Number _824c1dbd3e6691ba();
+	[Jazor(Op.Import ,"static decimal.explicit operator sbyte(decimal)")]
+	public static Number _824c1dbd3e6691ba(string value)
+		=> _175bf5ee849fcf8f(value);
 
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Decimal" /> to a Unicode character.</summary>
-	[Jazor(Op.Discard ,"static decimal.explicit operator char(decimal)")]
-	public extern static Number _e2c93b47df7960a8();
+	[Jazor(Op.Import ,"static decimal.explicit operator char(decimal)")]
+	public static Number _e2c93b47df7960a8(string value)
+		=> ToCheckedNumber(value, BigInt.Zero, UInt16MaxValue, "Char");
 
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Decimal" /> to a 16-bit signed integer.</summary>
-	[Jazor(Op.Discard ,"static decimal.explicit operator short(decimal)")]
-	public extern static Number _8f4ca64a21fb08cc();
+	[Jazor(Op.Import ,"static decimal.explicit operator short(decimal)")]
+	public static Number _8f4ca64a21fb08cc(string value)
+		=> _5df8c6a064c50c5f(value);
 
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Decimal" /> to a 16-bit unsigned integer. This API is not CLS-compliant.</summary>
-	[Jazor(Op.Discard ,"static decimal.explicit operator ushort(decimal)")]
-	public extern static Number _3e209c4283c6e05e();
+	[Jazor(Op.Import ,"static decimal.explicit operator ushort(decimal)")]
+	public static Number _3e209c4283c6e05e(string value)
+		=> _21bc553743dd324b(value);
 
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Decimal" /> to a 32-bit signed integer.</summary>
-	[Jazor(Op.Discard ,"static decimal.explicit operator int(decimal)")]
-	public extern static Number _bc03e302b86b6800();
+	[Jazor(Op.Import ,"static decimal.explicit operator int(decimal)")]
+	public static Number _bc03e302b86b6800(string value)
+		=> _ad71e0d1a8679244(value);
 
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Decimal" /> to a 32-bit unsigned integer. This API is not CLS-compliant.</summary>
-	[Jazor(Op.Discard ,"static decimal.explicit operator uint(decimal)")]
-	public extern static Number _dea1c1c9c8f2b495();
+	[Jazor(Op.Import ,"static decimal.explicit operator uint(decimal)")]
+	public static Number _dea1c1c9c8f2b495(string value)
+		=> _c975b2e5b2f4c009(value);
 
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Decimal" /> to a 64-bit signed integer.</summary>
-	[Jazor(Op.Discard ,"static decimal.explicit operator long(decimal)")]
-	public extern static BigInt _df6860f57d568704();
+	[Jazor(Op.Import ,"static decimal.explicit operator long(decimal)")]
+	public static BigInt _df6860f57d568704(string value)
+		=> _7a077e2e1baba462(value);
 
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Decimal" /> to a 64-bit unsigned integer. This API is not CLS-compliant.</summary>
-	[Jazor(Op.Discard ,"static decimal.explicit operator ulong(decimal)")]
-	public extern static BigInt _047386be34a2d276();
+	[Jazor(Op.Import ,"static decimal.explicit operator ulong(decimal)")]
+	public static BigInt _047386be34a2d276(string value)
+		=> _9b15def492d41a4a(value);
 
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Decimal" /> to a single-precision floating-point number.</summary>
-	[Jazor(Op.Discard ,"static decimal.explicit operator float(decimal)")]
-	public extern static Number _2de5f5a183f9455b();
+	[Jazor(Op.Import ,"static decimal.explicit operator float(decimal)")]
+	public static Number _2de5f5a183f9455b(string value)
+		=> _1450e4ab34b1a945(value);
 
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Decimal" /> to a double-precision floating-point number.</summary>
-	[Jazor(Op.Discard ,"static decimal.explicit operator double(decimal)")]
-	public extern static Number _2db2eb304fe215ee();
+	[Jazor(Op.Import ,"static decimal.explicit operator double(decimal)")]
+	public static Number _2db2eb304fe215ee(string value)
+		=> _cfbbd251b43c99f4(value);
 
 	///<summary>Returns the value of the <see cref="T:System.Decimal" /> operand (the sign of the operand is unchanged).</summary>
 	[Jazor(Op.Import ,"static decimal.operator +(decimal)")]
@@ -946,8 +1096,18 @@ public static class DecimalModule
 	public extern static string _5c966a3c7ee1bf4c<TOther>(object value);
 
 	///<summary>Determines if a value is in its canonical representation.</summary>
-	[Jazor(Op.Discard ,"static decimal.IsCanonical(decimal)")]
-	public extern static bool _b80d517d733633a6(string value);
+	[Jazor(Op.Import ,"static decimal.IsCanonical(decimal)")]
+	public static bool _b80d517d733633a6(string value)
+	{
+		try
+		{
+			return value == NormalizeDecimal(value);
+		}
+		catch
+		{
+			return false;
+		}
+	}
 
 	///<summary>Determines if a value represents an even integral number.</summary>
 	[Jazor(Op.Import ,"static decimal.IsEvenInteger(decimal)")]
@@ -981,12 +1141,32 @@ public static class DecimalModule
 		=> SignDecimal(value) >= 0;
 
 	///<summary>Compares two values to compute which is greater.</summary>
-	[Jazor(Op.Discard ,"static decimal.MaxMagnitude(decimal, decimal)")]
-	public extern static string _becce0ac49342bb2(string x, string y);
+	[Jazor(Op.Import ,"static decimal.MaxMagnitude(decimal, decimal)")]
+	public static string _becce0ac49342bb2(string x, string y)
+	{
+		var ax = AbsDecimal(x);
+		var ay = AbsDecimal(y);
+		var comparison = CompareDecimal(ax, ay);
+		if (comparison > 0)
+			return NormalizeDecimal(x);
+		if (comparison < 0)
+			return NormalizeDecimal(y);
+		return CompareDecimal(x, y) >= 0 ? NormalizeDecimal(x) : NormalizeDecimal(y);
+	}
 
 	///<summary>Compares two values to compute which is lesser.</summary>
-	[Jazor(Op.Discard ,"static decimal.MinMagnitude(decimal, decimal)")]
-	public extern static string _5df17b0a512de878(string x, string y);
+	[Jazor(Op.Import ,"static decimal.MinMagnitude(decimal, decimal)")]
+	public static string _5df17b0a512de878(string x, string y)
+	{
+		var ax = AbsDecimal(x);
+		var ay = AbsDecimal(y);
+		var comparison = CompareDecimal(ax, ay);
+		if (comparison < 0)
+			return NormalizeDecimal(x);
+		if (comparison > 0)
+			return NormalizeDecimal(y);
+		return CompareDecimal(x, y) <= 0 ? NormalizeDecimal(x) : NormalizeDecimal(y);
+	}
 
 	///<summary>Tries to parse a string into a value.</summary>
 	[Jazor(Op.Import ,"static decimal.TryParse(string, System.IFormatProvider, out decimal)")]

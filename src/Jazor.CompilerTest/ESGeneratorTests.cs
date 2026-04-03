@@ -10,6 +10,9 @@ namespace Jazor.ComplierTest;
 [TestClass]
 public sealed class ESGeneratorTests
 {
+    private static void AssertNormalizedContains(string expectedSnippet, string actual)
+        => StringAssert.Contains(actual.ReplaceLineEndings("\n"), expectedSnippet.ReplaceLineEndings("\n"));
+
     [TestMethod]
     public void GenerateCatalog_WithReferencedModuleAssembly_DoesNotProduceTypeConflictWarnings()
     {
@@ -59,8 +62,29 @@ public sealed class ESGeneratorTests
             .ToArray();
 
         Assert.AreEqual(0, conflicts.Length, string.Join("\n", conflicts.Select(static x => x.ToString())));
-        StringAssert.Contains(generatedSource, "public static global::System.Collections.IEnumerable GetModules()");
-        StringAssert.Contains(generatedSource, "private sealed class GeneratedModule");
+        AssertNormalizedContains(
+            """
+                    public static global::System.Collections.IEnumerable GetModules()
+                    {
+                        return _modules;
+                    }
+            """,
+            generatedSource);
+        AssertNormalizedContains(
+            """
+                    private sealed class GeneratedModule
+                    {
+                        public GeneratedModule(string assemblyName, string typeName, string id, string relativePath, string content, string hash)
+                        {
+                            AssemblyName = assemblyName;
+                            TypeName = typeName;
+                            Id = id;
+                            RelativePath = relativePath;
+                            Content = content;
+                            Hash = hash;
+                        }
+            """,
+            generatedSource);
         Assert.IsFalse(generatedSource.Contains("public sealed class GeneratedModule", System.StringComparison.Ordinal));
     }
 

@@ -18,6 +18,44 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "ushort", "Number")]
 public static class UInt16Module
 {
+	private static bool TryParseUInt16Core(string? s, out Number value)
+	{
+		value = 0;
+		if (s == null)
+			return false;
+
+		var trimmed = s.Trim();
+		if (trimmed.Length == 0)
+			return false;
+
+		var start = 0;
+		if (trimmed[0] == '+')
+		{
+			if (trimmed.Length == 1)
+				return false;
+
+			start = 1;
+		}
+		else if (trimmed[0] == '-')
+			return false;
+
+		for (var i = start; i < trimmed.Length; i++)
+		{
+			var ch = trimmed[i];
+			if (ch < '0' || ch > '9')
+				return false;
+		}
+
+		var parsed = Number_(trimmed);
+		if (IsNaN(parsed) || Math.Floor_(parsed) != parsed)
+			return false;
+		if (parsed < 0 || parsed > 65535)
+			return false;
+
+		value = parsed;
+		return true;
+	}
+
 	/// <summary>
 	/// C#: ushort.MaxValue
 	/// JS: 65535
@@ -37,10 +75,19 @@ public static class UInt16Module
 
 	/// <summary>
 	/// C#: ushort.CompareTo(object)
-	/// JS: (instance < value ? -1 : (instance > value ? 1 : 0))
+	/// JS: 与 .NET 一致的 CompareTo 规则，单独处理 null 和类型检查
 	/// </summary>
-	[Jazor(Op.Inline, "ushort.CompareTo(object)", "(__arg1 < (__arg2 ?? 0) ? -1 : (__arg1 > (__arg2 ?? 0) ? 1 : 0))")]
-	public extern static Number _d8d8b9cba9bd3347(Number instance, object? value);
+	[Jazor(Op.Import, "ushort.CompareTo(object)")]
+	public static Number _d8d8b9cba9bd3347(Number instance, object? value)
+	{
+		if (value == null)
+			return 1;
+		if (TypeOf(value) != "number")
+			throw new Error("ArgumentException: Object must be of type UInt16.");
+
+		var number = (Number)value;
+		return instance < number ? -1 : (instance > number ? 1 : 0);
+	}
 
 	/// <summary>
 	/// C#: ushort.CompareTo(ushort)
@@ -96,26 +143,17 @@ public static class UInt16Module
 
 	/// <summary>
 	/// C#: ushort.Parse(s)
-	/// JS: parseInt(s, 10) with validation
+	/// JS: 只接受十进制整数字符串，拒绝尾随垃圾字符
 	/// </summary>
 	[Jazor(Op.Import, "static ushort.Parse(string)")]
 	public static Number _bfae72f49db4f3c9(string? s)
 	{
 		if (s == null)
 			throw new Error("ArgumentNullException: String cannot be null.");
-
-		var trimmed = s.Trim();
-		var num = ParseInt(trimmed, 10);
-
-		// Check if parsing succeeded
-		if (IsNaN(num))
+		if (!TryParseUInt16Core(s, out var value))
 			throw new Error($"FormatException: String '{s}' was not recognized as a valid UInt16.");
 
-		// 验证 ushort 范围: 0-65535
-		if (num < 0 || num > 65535)
-			throw new Error($"OverflowException: Value '{s}' was either too large or too small for a UInt16.");
-
-		return num;
+		return value;
 	}
 
 	///<summary>Converts the string representation of a number in a specified style to its 16-bit unsigned integer equivalent. This method is not CLS-compliant. The CLS-compliant alternative is <see cref="M:System.Int32.Parse(System.String,System.Globalization.NumberStyles)" />.</summary>
@@ -141,21 +179,10 @@ public static class UInt16Module
 	[Jazor(Op.Import, "static ushort.TryParse(string, out ushort)")]
 	public static Array<object?> _2efd27d401f7def7(string? s, Number result)
 	{
-		if (s == null)
+		if (!TryParseUInt16Core(s, out var value))
 			return [false, 0];
 
-		var trimmed = s.Trim();
-		var v = ParseInt(trimmed, 10);
-
-		// Check if parsing succeeded
-		if (IsNaN(v))
-			return [false, 0];
-
-		// 验证 ushort 范围: 0-65535
-		if (v >= 0 && v <= 65535)
-			return [true, v];
-
-		return [false, 0];
+		return [true, value];
 	}
 
 	///<summary>Tries to convert the span representation of a number to its 16-bit unsigned integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>

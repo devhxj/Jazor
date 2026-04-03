@@ -1,37 +1,47 @@
-# SemanticWalker.cs.Switch.cs 分析文档
+# `SemanticWalker.cs.Switch.cs`
 
-## 1. 文件概述
+## 定位
 
-**文件路径**: `core/SemanticWalker.cs.Switch.cs`
+`SemanticWalker.cs.Switch.cs` 负责 `switch` 语句的分流和传统 `switch` case lowering。
 
-**职责**: 处理 switch 语句和表达式的转换。
+对应代码：
 
-**代码行数**: ~170 行
+- `src/Jazor.Compiler/core/SemanticWalker.cs.Switch.cs`
 
-## 2. 核心设计
+这份文件的边界需要说清楚：
 
-### 2.1 双路径转换策略
+- 传统常量 `switch` 的主体在这里
+- 模式匹配 `switch` 的主体实现不在这里，而是转交给 `Pattern` 路径
+- `switch expression` 也不在这里，而在 `SemanticWalker.cs.Pattern.cs`
 
-文件检测 switch 是否包含模式匹配，采用不同策略：
+所以这份文档应理解为：
+
+- “`switch` 语句入口和传统 case lowering 文档”
+
+而不是：
+
+- “所有 switch 相关语义的总文档”
+
+## 当前职责
+
+### 1. 入口分流
+
+`VisitSwitch(...)` 当前先判断 `switch` 是否包含 pattern case：
+
+- 包含 pattern case -> 调用 `VisitSwitchPatternMatching(...)`
+- 不包含 pattern case -> 调用 `VisitSwitchTraditional(...)`
+
+这意味着当前 `Switch` 文件本身既是实现文件，也是一个调度边界。
+
+### 2. 传统 `switch` 生成
+
+`VisitSwitchTraditional(...)` 负责最普通的 case/value 形式。
+
+典型结果：
 
 ```csharp
-public override Node? VisitSwitch(ISwitchOperation operation, WalkerArgument argument)
+switch (value)
 {
-    var hasPatternCase = operation.Cases
-        .Any(x=>x.Clauses.Any(y=>y.CaseKind == CaseKind.Pattern));
-
-    if (hasPatternCase)
-        return VisitSwitchPatternMatching(operation, argument);  // IIFE + if-else
-
-    return VisitSwitchTraditional(operation, argument);  // 传统 switch
-}
-```
-
-### 2.2 传统 switch 转换
-
-```csharp
-// C# 示例
-switch (value) {
     case 1:
         DoOne();
         break;
@@ -42,124 +52,248 @@ switch (value) {
         DoDefault();
         break;
 }
+```
 
-// JavaScript 结果
+```js
 switch (value) {
+  case 1:
+    DoOne();
+    break;
+  case 2:
+    DoTwo();
+    break;
+  default:
+    DoDefault();
+    break;
+}
+```
+
+### 3. case label 收敛
+
+每个 `ISwitchCaseOperation` 可能包含多个 clause。
+
+当前实现会：
+
+1. 先把所有 clause 转成 `tests`
+2. 再翻译 case body
+3. 为每个 test 都生成一个 `SwitchCase`
+
+但有一个关键规则：
+
+- 共享 body 的多个 label 中，真正的 body 只挂在最后一个 label 上
+
+这样 `case 1: case 2: ...` 命中 `case 2` 时，仍然能落到真实语句体，而不是变成空穿透。
+
+### 4. `default` 的处理
+
+`VisitDefaultCaseClause(...)` 本身不生成节点。
+
+当前做法是：
+
+- 在 `VisitSwitchTraditional(...)` 中看到 `CaseKind.Default`
+- 直接往 `tests` 里放 `null`
+- 再由 `SwitchCase(test: null, ...)` 表示 `default`
+
+所以 `VisitDefaultCaseClause(...)` 更像一个保留入口，而不是实际构造点。
+
+### 5. 单值 case 子句
+
+`VisitSingleValueCaseClause(...)` 当前非常直接：
+
+- 把 case value 翻译成一个普通表达式
+
+它不在这里额外做模式语义处理。
+
+## 当前关键规则
+
+### 1. 模式 `switch` 不在本文件展开
+
+当前如果 `switch` 里出现 pattern case，这里只负责识别并分流。
+
+真正的模式匹配实现位于：
+
+- `SemanticWalker.cs.Pattern.cs`
+
+这点和旧文档里“模式 switch 尚未实现”的说法已经不一致，当前文档必须按实际代码纠正。
+
+### 2. 多个 case label 共享 body 时，body 挂到最后一个 label
+
+这是传统 `switch` 转换里最重要的结构规则。
+
+例如：
+
+```csharp
+case 1:
+case 2:
+    break;
+```
+
+会生成：
+
+```js
+case 1:
+case 2:
+  break;
+```
+
+而不是把 `break` 错挂到第一个 label 上。
+
+### 3. `default` 通过 `test = null` 表示
+
+这与 Acornima/ESTree 的 `SwitchCase` 约定一致，不需要额外造特殊节点。
+
+### 4. case body 允许 statement / expression 混合
+
+当前翻译 case body 时：
+
+- `Statement` 直接加入 consequent
+- `Expression` 包装成 `NonSpecialExpressionStatement`
+
+这保证普通表达式也能稳定出现在 case 体内。
+
+## 现状与典型结果
+
+### 单个 case
+
+```csharp
+switch (value)
+{
     case 1:
-        doOne();
+        break;
+}
+```
+
+```js
+switch (value) {
+  case 1:
+    break;
+}
+```
+
+### 多个 case
+
+```csharp
+switch (value)
+{
+    case 1:
         break;
     case 2:
-        doTwo();
         break;
-    default:
-        doDefault();
 }
 ```
 
-### 2.3 模式匹配 switch 转换
-
-当包含模式匹配时，转换为 IIFE + if-else 链：
-
-```csharp
-// C# 示例
-switch (obj) {
-    case string s when s.Length > 0:
-        Console.WriteLine(s);
-        break;
-    case int i:
-        Console.WriteLine(i);
-        break;
+```js
+switch (value) {
+  case 1:
+    break;
+  case 2:
+    break;
 }
-
-// JavaScript 结果（概念）
-((obj) => {
-    if (typeof obj === "string" && obj.length > 0) {
-        console.log(obj);
-        return;
-    }
-    if (typeof obj === "number") {
-        console.log(obj);
-        return;
-    }
-})(obj);
 ```
 
-## 3. 方法详解
+### fallthrough
 
-### 3.1 VisitSwitchTraditional
-
-**处理流程**：
-1. 转换 discriminant 表达式
-2. 遍历每个 case 子句
-3. 转换 case 条件和 body
-4. 构建 SwitchCase 节点
-
-**关键代码**：
 ```csharp
-// 处理 default case
-if (clause.CaseKind == CaseKind.Default)
-    tests.Add(null);  // null 表示 default case
-
-// 处理多个条件共享同一个 body
-for (int i = 0; i < tests.Count; i++)
+switch (value)
 {
-    var testExpr = tests[i];
-    var statements = i == 0 ? consequent : [];  // 只有第一个有语句
-    cases.Add(new SwitchCase(testExpr, NodeList.From(statements)));
+    case 1:
+    case 2:
+        break;
 }
 ```
 
-### 3.2 VisitDefaultCaseClause
+```js
+switch (value) {
+  case 1:
+  case 2:
+    break;
+}
+```
 
-返回 `null`，实际处理在 `VisitSwitch` 中完成。
+### `default`
 
-### 3.3 VisitSwitchCase
+```csharp
+switch (value)
+{
+    default:
+        break;
+}
+```
 
-将 switch case 转换为块语句，用于模式匹配场景。
+```js
+switch (value) {
+  default:
+    break;
+}
+```
 
-### 3.4 VisitSingleValueCaseClause
+## 和 Pattern 路径的边界
 
-转换单值 case 子句的条件表达式。
+当前这些能力不在本文件内完成：
 
-## 4. 已知缺陷
+- pattern case
+- `when` 守卫参与的模式分支
+- `switch expression`
+- property pattern / relational pattern / tuple pattern
 
-### 4.1 高优先级缺陷
+它们属于：
 
-| 缺陷 | 影响 | 建议修复方案 |
-|------|------|-------------|
-| **模式匹配 switch 未完全实现** | `VisitSwitchPatternMatching` 未在当前文件中 | 实现完整 IIFE 生成逻辑 |
-| **fallthrough 处理不完整** | C# 不支持 fallthrough 但 JS 需要 break | 确保每个 case 添加 break |
+- `SemanticWalker.cs.Pattern.cs`
 
-### 4.2 中优先级缺陷
+所以阅读 `SemanticWalkerSwitchTest` 时，需要区分：
 
-| 缺陷 | 影响 | 建议修复方案 |
-|------|------|-------------|
-| **when 条件处理不明确** | 可能未正确处理 guard 条件 | 在模式匹配分支中明确处理 |
+- 传统 switch 测试用于验证本文件
+- pattern / switch expression 测试更多是在验证 `Pattern` 路径
 
-## 5. AST 节点映射
+## 当前边界
 
-| C# 结构 | JavaScript AST | 备注 |
-|---------|---------------|------|
-| switch 语句 | `SwitchStatement` | 传统模式 |
-| switch 表达式 | IIFE + if-else | 模式匹配模式 |
-| case 子句 | `SwitchCase` | 含 test 和 consequent |
-| default | `SwitchCase(test=null)` | test 为 null |
+这部分当前已经解决的是：
 
-## 6. 测试覆盖
+- `switch` 入口分流
+- 传统常量 `switch`
+- `default`
+- 多 label 共享 body
 
-**当前状态**: ~80 个测试
+它没有试图做这些事情：
 
-**测试场景**：
-- ✅ 传统常量 switch
-- ✅ default case
-- ✅ 多条件 case
-- ✅ 模式匹配 switch（部分）
+- 在本文件内部实现完整模式匹配 switch
+- 在本文件内部实现 `switch expression`
+- 把所有 `switch` 语义集中到一个 partial 文件里
 
-## 7. 相关文档
+## 相关测试
 
-- [SemanticWalker.Pattern.md](./SemanticWalker.Pattern.md)
+主要测试在：
+
+- `src/Jazor.CompilerTest/SemanticWalkerSwitchTest.cs`
+
+建议重点看这些场景：
+
+- `VisitSwitch_SingleCase`
+- `VisitSwitch_MultipleCases`
+- `VisitSwitch_WithDefault`
+- `VisitSwitch_Fallthrough`
+- `VisitSwitch_MultipleFallthrough`
+- `VisitSwitch_MultipleCasesSameCode`
+
+如果要看模式路径，再对照：
+
+- `VisitSwitch_PatternMatching_TypePattern`
+- `VisitSwitch_PatternMatching_RelationalPattern`
+- `VisitSwitch_WithWhenClause`
+- `VisitSwitchExpression_SimpleConstants`
+
+## 推荐阅读
+
+建议按这个顺序看：
+
+1. [SemanticWalker.md](./SemanticWalker.md)
+2. [SemanticWalker.Switch.md](./SemanticWalker.Switch.md)
+3. [SemanticWalker.Pattern.md](./SemanticWalker.Pattern.md)
+4. [SemanticWalker.Ordinary.md](./SemanticWalker.Ordinary.md)
+
+## 相关文档
+
 - [SemanticWalker.md](./SemanticWalker.md)
-
----
-
-**最后更新**: 2026-03-03
+- [SemanticWalker.Pattern.md](./SemanticWalker.Pattern.md)
+- [SemanticWalker.Ordinary.md](./SemanticWalker.Ordinary.md)
+- [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)

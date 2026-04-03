@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Acornima.Ast;
 using Jazor.Compiler;
+using Jazor.Name;
 using Basic.Reference.Assemblies;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -11,6 +12,9 @@ namespace Jazor.ComplierTest;
 [TestClass]
 public sealed class AstConverterTests
 {
+    private static string ImportBindingName(string modulePath, string importedName)
+        => $"i${Format.HashName($"{modulePath}\0{importedName}").TrimStart('_')}";
+
     private static (INamedTypeSymbol, SemanticModel) CompileAndGetSymbol(string code)
     {
         var compilation = CSharpCompilation.Create(
@@ -2083,6 +2087,420 @@ export function Create() {
 export function Create() {
   return get_Value();
 }
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithCrossModuleStaticReferenceViaAlias_GeneratesModuleImport()
+    {
+        // Arrange
+        var code = """
+            using System;
+            using Runtime = Demo.RuntimeModule;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo
+            {
+                [ECMAScript.ECMAScriptModule("System/RuntimeModule.js")]
+                public static class RuntimeModule
+                {
+                    public static int Make() => 42;
+                }
+
+                [ECMAScript.ECMAScriptModule("System/ConsumerModule.js")]
+                public static class ConsumerModule
+                {
+                    public static int Create() => Runtime.Make();
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(code);
+        var consumer = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "ConsumerModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+        var converter = new AstConverter(consumer, semanticModel);
+
+        // Act
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        // Assert
+        Assert.AreEqual(
+@"import { Make } from ""System/RuntimeModule.js"";
+export function Create() {
+  return Make();
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithCrossModuleMethodReference_GeneratesModuleImport()
+    {
+        // Arrange
+        var code = """
+            using System;
+            using Runtime = Demo.RuntimeModule;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo
+            {
+                [ECMAScript.ECMAScriptModule("System/RuntimeModule.js")]
+                public static class RuntimeModule
+                {
+                    public static int Make() => 42;
+                }
+
+                [ECMAScript.ECMAScriptModule("System/ConsumerModule.js")]
+                public static class ConsumerModule
+                {
+                    public static int Create()
+                    {
+                        Func<int> factory = Runtime.Make;
+                        return factory();
+                    }
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(code);
+        var consumer = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "ConsumerModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+        var converter = new AstConverter(consumer, semanticModel);
+
+        // Act
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        // Assert
+        Assert.AreEqual(
+@"import { Make } from ""System/RuntimeModule.js"";
+export function Create() {
+  let factory = Make;
+  return factory();
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithCrossModuleStaticPropertyReferenceViaAlias_GeneratesGetterImport()
+    {
+        // Arrange
+        var code = """
+            using System;
+            using Runtime = Demo.RuntimeModule;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo
+            {
+                [ECMAScript.ECMAScriptModule("System/RuntimeModule.js")]
+                public static class RuntimeModule
+                {
+                    public static int Value { get; } = 42;
+                }
+
+                [ECMAScript.ECMAScriptModule("System/ConsumerModule.js")]
+                public static class ConsumerModule
+                {
+                    public static int Create() => Runtime.Value;
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(code);
+        var consumer = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "ConsumerModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+        var converter = new AstConverter(consumer, semanticModel);
+
+        // Act
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        // Assert
+        Assert.AreEqual(
+@"import { get_Value } from ""System/RuntimeModule.js"";
+export function Create() {
+  return get_Value();
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithCrossModuleStaticPropertyReferenceViaGlobalAlias_GeneratesGetterImport()
+    {
+        // Arrange
+        var code = """
+            using System;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo
+            {
+                [ECMAScript.ECMAScriptModule("System/RuntimeModule.js")]
+                public static class RuntimeModule
+                {
+                    public static int Value { get; } = 42;
+                }
+
+                [ECMAScript.ECMAScriptModule("System/ConsumerModule.js")]
+                public static class ConsumerModule
+                {
+                    public static int Create() => global::Demo.RuntimeModule.Value;
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(code);
+        var consumer = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "ConsumerModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+        var converter = new AstConverter(consumer, semanticModel);
+
+        // Act
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        // Assert
+        Assert.AreEqual(
+@"import { get_Value } from ""System/RuntimeModule.js"";
+export function Create() {
+  return get_Value();
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithCrossModuleNestedClassStaticReference_GeneratesNestedTypeImport()
+    {
+        // Arrange
+        var code = """
+            using System;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo
+            {
+                [ECMAScript.ECMAScriptModule("System/RuntimeModule.js")]
+                public static class RuntimeModule
+                {
+                    public class Helpers
+                    {
+                        public static int Make() => 42;
+                    }
+                }
+
+                [ECMAScript.ECMAScriptModule("System/ConsumerModule.js")]
+                public static class ConsumerModule
+                {
+                    public static int Create() => RuntimeModule.Helpers.Make();
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(code);
+        var consumer = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "ConsumerModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+        var converter = new AstConverter(consumer, semanticModel);
+
+        // Act
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        // Assert
+        Assert.AreEqual(
+@"import { Helpers } from ""System/RuntimeModule.js"";
+export function Create() {
+  return Helpers.Make();
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithCrossModuleImportShadowedByLocalVariable_UsesAliasedImport()
+    {
+        var code = """
+            using System;
+            using Runtime = Demo.RuntimeModule;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo
+            {
+                [ECMAScript.ECMAScriptModule("System/RuntimeModule.js")]
+                public static class RuntimeModule
+                {
+                    public static int Make() => 42;
+                }
+
+                [ECMAScript.ECMAScriptModule("System/ConsumerModule.js")]
+                public static class ConsumerModule
+                {
+                    public static int Create()
+                    {
+                        var Make = 1;
+                        return Runtime.Make() + Make;
+                    }
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(code);
+        var consumer = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "ConsumerModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+        var converter = new AstConverter(consumer, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        var makeId = ImportBindingName("System/RuntimeModule.js", "Make");
+        Assert.AreEqual(
+$@"import {{ Make as {makeId} }} from ""System/RuntimeModule.js"";
+export function Create() {{
+  let Make = 1;
+  return {makeId}() + Make;
+}}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithCrossModuleDuplicateImportNames_UsesDistinctAliasedImports()
+    {
+        var code = """
+            using System;
+            using Left = Demo.LeftModule;
+            using Right = Demo.RightModule;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo
+            {
+                [ECMAScript.ECMAScriptModule("System/LeftModule.js")]
+                public static class LeftModule
+                {
+                    public static int Make() => 1;
+                }
+
+                [ECMAScript.ECMAScriptModule("System/RightModule.js")]
+                public static class RightModule
+                {
+                    public static int Make() => 2;
+                }
+
+                [ECMAScript.ECMAScriptModule("System/ConsumerModule.js")]
+                public static class ConsumerModule
+                {
+                    public static int Create() => Left.Make() + Right.Make();
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(code);
+        var consumer = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "ConsumerModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+        var converter = new AstConverter(consumer, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        var rightMakeId = ImportBindingName("System/RightModule.js", "Make");
+        Assert.AreEqual(
+$@"import {{ Make }} from ""System/LeftModule.js"";
+import {{ Make as {rightMakeId} }} from ""System/RightModule.js"";
+export function Create() {{
+  return Make() + {rightMakeId}();
+}}
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
 

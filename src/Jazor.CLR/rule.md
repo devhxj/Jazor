@@ -191,6 +191,20 @@ public extern static bool _49c57acefc093fcc();
 
 需要完整 JavaScript 实现。**会编译到 CLR module**，提供 C# 方法体。
 
+但要先记住一条优先级规则：
+
+> 能稳定用 `Inline` 表达的，就不要用 `Import`。
+
+`Import` 不是“写模板麻烦时的兜底方案”，而是：
+
+- 确实需要运行时实现
+- 确实需要多步逻辑
+- 确实需要模块级 helper
+
+之后才使用。
+
+当前仓库内已经做过一轮具体复审，建议直接参考 [Inline / Import 复审记录](InlineImportAudit.md) 里的迁移优先级，不要重复把适合 `Inline` 的成员继续实现成 `Import`。
+
 ```csharp
 [Jazor(Op.Import, "static bool.Parse(string)")]
 public static bool _hash(string? value)
@@ -220,6 +234,7 @@ public static bool _5dbf54319ebc8dfe(string? value)
 - C#没有`===`，使用`object.Equal`实现`===`，也可以用object.Is
 - `ECMAScript.Global`映射的js的`GlobalThis`对象
 - 避免调用 C#原生方法如`int.Parse`，强转如`(int)a`，而是使用js映射方法如`ParseInt`和`Number`类型
+- 如果同样结果可以稳定写成 `Inline`，优先回到 `Inline`
 
 ### 3.7 Op.Compile - 编译器特殊处理
 
@@ -231,6 +246,16 @@ public static bool _5dbf54319ebc8dfe(string? value)
 | 占位符 | 使用 `__argN` | 由编译器决定 |
 | 适用场景 | 简单表达式替换 | 复杂逻辑、编译器内置处理 |
 
+当前 producer 侧要额外注意两点：
+
+1. `Op.Compile` 现在还没有进入 `SemanticWalker` 主分发主线，基础设施已生成，但消费入口仍在收敛中。
+2. 当前 `Compile` hook 形态本质上更接近“表达式级特殊钩子”，不要把需要临时变量、import 或语句级展开的语义直接挂到这里。
+
+也就是说，现阶段更准确的选择规则是：
+
+- `Inline` 结构不稳定，但仍能稳定落成单个表达式：可以考虑 `Compile`
+- 需要声明、导入、source-origin 或完整 lowering 上下文：暂时不要直接用 `Compile`
+
 ```csharp
 // 来自 doc/BooleanModule.md
 // 成员：bool.GetTypeCode()
@@ -238,6 +263,11 @@ public static bool _5dbf54319ebc8dfe(string? value)
 [Jazor(Op.Compile, "bool.GetTypeCode()")]
 public extern static System.TypeCode _eb6a23c2a874fdf1(bool instance);
 ```
+
+编译器消费约定与实施顺序，见：
+
+- `src/Jazor.Compiler/doc/OpCompileSpec.md`
+- `src/Jazor.Compiler/doc/OpCompileImplementationChecklist.md`
 
 ### 3.8 Op 类型选择决策
 
@@ -249,9 +279,9 @@ JS 有原生对应？
 ├── 是，名称不同 → Alias
 └── 否 → JS 有概念？
     ├── 否 → Discard
-    ├── 简单表达式 → Inline
-    ├── 复杂逻辑 → Import
-    └── 编译器处理 → Compile
+    ├── 能稳定写成单表达式 → Inline
+    ├── 不能稳定模板化，但仍是编译期表达式改写 → Compile
+    └── 需要运行时实现/模块逻辑 → Import
 ```
 
 #### 详细决策表
@@ -263,12 +293,13 @@ JS 有原生对应？
 | JS 原生方法，同名 | `Allowed` | 运算符重载 | 无需额外代码 |
 | JS 原生方法，不同名 | `Alias` | `ToString()` → `toString()` | 只需改方法名 |
 | JS 原生属性，不同名 | `Alias` | `Count` → `size`, `Length` → `length` | 属性 getter 替换 |
-| 简单表达式（< 50字符） | `Inline` | `Equals` → `===`, `MaxValue` → 字面量 | 单行表达式可内联 |
+| 简单表达式（< 50字符） | `Inline` | `Equals` → `===`, `MaxValue` → 字面量 | 单行表达式可内联，优先于 `Import` |
 | 数组/集合操作 | `Inline` | `list[i]` → `arr[i]`, `list.Add` → `arr.push` | 直接映射 |
+| 模板结构不稳定，但仍可在编译期表达 | `Compile` | 特殊内建表达式改写 | 先于 `Import` 评估 |
 | 解析/转换方法 | `Import` | `Parse`, `TryParse` | 需要验证和错误处理 |
 | 需要 JS 特殊逻辑 | `Import` | `Dictionary.Add` 需检查重复键 | C# 语义与 JS 不同 |
 | JS 无概念 | `Discard` | `GetHashCode`, `IFormatProvider` 重载 | 无法等价实现 |
-| 编译器内置处理 | `Compile` | `GetTypeCode()` | 编译器特殊逻辑 |
+| 编译器内置处理 | `Compile` | `GetTypeCode()` | 编译器特殊逻辑，且不应退化成 `Import` |
 
 #### 常见成员 Op 选择指南
 
@@ -283,6 +314,10 @@ JS 有原生对应？
 | `TryParse(string, out T)` | `Import` | 需返回数组 |
 | 静态常量（MaxValue等） | `Inline` | 字面量内联 |
 | 带 IFormatProvider 重载 | `Discard` | JS 无格式化区域概念 |
+
+补充原则：
+
+- 只要成员还能稳定写成表达式模板，就不要因为“后续可能会复杂”而提前改成 `Import`
 
 **集合类型成员**：
 
@@ -916,6 +951,7 @@ public static Array<object?> _hash(string? value, Type result)
 2. **ToString 使用 Alias**：JS 原生支持 `toString()`，直接调用原生方法效率更高
 3. **Equals 使用 Inline**：`===` 与 C# `Equals` 语义一致，内联避免函数调用开销
 4. **Parse/TryParse 使用 Import**：解析逻辑复杂，需完整 JS 实现
+5. **Import 是最后手段**：只要能稳定 `Inline`，就不要引入模块实现和导入成本
 
 ### 13.3 模块开发状态说明
 

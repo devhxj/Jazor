@@ -192,6 +192,33 @@ tuple `==` / `!=` 会递归 lower 成逐槽位比较：
 - 对象初始化器 remap
 - 复杂源值缓存
 
+## 与 SourceMap 的关系
+
+tuple 是 sourcemap 设计里的重点语法域。
+
+原因不是 tuple 本身特殊，而是它最能代表 Jazor 当前编译器的 lowering 形态：
+
+- 一个源表达式可能展开成多个 JS 片段
+- 会插入缓存变量和中间赋值
+- 运行时 shape 与源语法视角不完全一致
+
+因此后续 sourcemap 实现必须遵守这几条：
+
+1. sourcemap 服务的是源级调试体验，不是还原 lowered object 细节
+2. 一个 tuple 源节点映射到多个 JS 片段是允许的
+3. temp 变量和缓存赋值应视为 synthetic，不能主导主要断点位置
+4. tuple projection / deconstruct / swap 的关键子表达式应尽量保留各自源来源
+
+也就是说，tuple 的 sourcemap 标准与 tuple lowering 标准保持一致：
+
+- lowering 追求代码结果等价
+- sourcemap 追求调试结果等价
+
+完整方案见：
+
+- [SourceMap.DecisionSummary.md](./SourceMap.DecisionSummary.md)
+- [SourceMap.Design.md](./SourceMap.Design.md)
+
 ## 结论
 
 当前 tuple lowering 的核心标准是：

@@ -4,6 +4,8 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>","Map")]
 public static class ReadOnlyDictionaryModule<TKey, TValue> where TKey : notnull
 {
+	// Keep TryGetValue in an import so the out-value contract is expressed directly in Jazor
+	// rather than hidden in a conditional JS expression.
 	///<summary>Initializes a new instance of the <see cref="T:System.Collections.ObjectModel.ReadOnlyDictionary`2" /> class that is a wrapper around the specified dictionary.</summary>
 	[Jazor(Op.Inline, "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.ReadOnlyDictionary(System.Collections.Generic.IDictionary<TKey, TValue>)", "__arg1")]
 	public extern static Map<TKey,TValue> _b22e987e1be225aa(object dictionary);
@@ -32,8 +34,15 @@ public static class ReadOnlyDictionaryModule<TKey, TValue> where TKey : notnull
 	/// C#: instance.TryGetValue(key, out value)
 	/// JS: [has, value]
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.TryGetValue(TKey, out TValue)", "(__arg1.has(__arg2) ? [true, __arg1.get(__arg2)] : [false, null])")]
-	public extern static Array<object?> _19af957975f1546f(Map<TKey,TValue> instance, object key, object value);
+	[Jazor(Op.Import, "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.TryGetValue(TKey, out TValue)")]
+	public static Array<object?> _19af957975f1546f(Map<TKey,TValue> instance, object key, object value)
+	{
+		var typedKey = (TKey)key;
+		if (!instance.Has(typedKey))
+			return [false, null];
+
+		return [true, instance.Get(typedKey)];
+	}
 
 	/// <summary>
 	/// C#: instance[key]

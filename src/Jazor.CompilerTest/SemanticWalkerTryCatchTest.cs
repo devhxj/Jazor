@@ -4,7 +4,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
-using System.Text.RegularExpressions;
 
 namespace Jazor.ComplierTest;
 
@@ -107,7 +106,7 @@ public sealed class SemanticWalkerTryCatchTest
         var node = walker.VisitTry(tryOp, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
             @"try {
   let x = 1;
 } catch (ex) {
@@ -156,7 +155,7 @@ public sealed class SemanticWalkerTryCatchTest
         var node = walker.VisitTry(tryOp, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
             @"try {
   let x = 1;
 } catch (ex) {
@@ -201,7 +200,7 @@ public sealed class SemanticWalkerTryCatchTest
         var node = walker.VisitTry(tryOp, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
             @"try {
   let x = 1;
 } finally {
@@ -218,19 +217,20 @@ public sealed class SemanticWalkerTryCatchTest
     /// C# 示例：
     /// try {
     ///     int x = 1;
-    /// } catch (ArgumentException ex) {
+    /// } catch (ArgumentNullException ex) {
     ///     int y = 2;
     /// } catch (InvalidOperationException ex) {
     ///     int z = 3;
     /// }
     /// 转换结果：try { let x = 1; } catch (v$0) {
-    ///     if (v$0 instanceof ArgumentException) {
+    ///     if (v$0 instanceof TypeError) {
     ///         const ex = v$0;
     ///         let y = 2;
-    ///     } else if (v$0 instanceof InvalidOperationException) {
+    ///     } else if (v$0 instanceof Error) {
     ///         const ex = v$0;
     ///         let z = 3;
-    ///     }
+    ///     } else
+    ///         throw v$0;
     /// }
     /// </summary>
     [TestMethod]
@@ -245,7 +245,7 @@ public sealed class SemanticWalkerTryCatchTest
                     {
                         int x = 1;
                     }
-                    catch (ArgumentException ex)
+                    catch (ArgumentNullException ex)
                     {
                         int y = 2;
                     }
@@ -266,14 +266,14 @@ public sealed class SemanticWalkerTryCatchTest
 @"try {
   let x = 1;
 } catch (v$0) {
-  if (v$0 instanceof ArgumentException) {
+  if (v$0 instanceof TypeError) {
     const ex = v$0;
     let y = 2;
-  }
-  if (v$0 instanceof Error) {
+  } else if (v$0 instanceof Error) {
     const ex = v$0;
     let z = 3;
-  }
+  } else
+    throw v$0;
 }", script);
 
     }
@@ -283,7 +283,7 @@ public sealed class SemanticWalkerTryCatchTest
     /// C# 示例：
     /// try {
     ///     int x = 1;
-    /// } catch (ArgumentException ex) {
+    /// } catch (ArgumentNullException ex) {
     ///     int y = 2;
     /// } catch (Exception ex) {
     ///     int z = 3;
@@ -291,8 +291,9 @@ public sealed class SemanticWalkerTryCatchTest
     ///     int w = 4;
     /// }
     /// 转换结果：try { let x = 1; } catch (v$0) {
-    ///     if (v$0 instanceof ArgumentException) { const ex = v$0; let y = 2; }
-    ///     else if (v$0 instanceof Exception) { const ex = v$0; let z = 3; }
+    ///     if (v$0 instanceof TypeError) { const ex = v$0; let y = 2; }
+    ///     else if (v$0 instanceof Error) { const ex = v$0; let z = 3; }
+    ///     else throw v$0;
     /// } finally { let w = 4; }
     /// </summary>
     [TestMethod]
@@ -307,7 +308,7 @@ public sealed class SemanticWalkerTryCatchTest
                     {
                         int x = 1;
                     }
-                    catch (ArgumentException ex)
+                    catch (ArgumentNullException ex)
                     {
                         int y = 2;
                     }
@@ -328,18 +329,18 @@ public sealed class SemanticWalkerTryCatchTest
         var node = walker.VisitTry(tryOp, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"try {
   let x = 1;
 } catch (v$0) {
-  if (v$0 instanceof ArgumentException) {
+  if (v$0 instanceof TypeError) {
     const ex = v$0;
     let y = 2;
-  }
-  if (v$0 instanceof Error) {
+  } else if (v$0 instanceof Error) {
     const ex = v$0;
     let z = 3;
-  }
+  } else
+    throw v$0;
 } finally {
   let w = 4;
 }", script);
@@ -354,7 +355,7 @@ public sealed class SemanticWalkerTryCatchTest
     /// 测试 throw 语句转换
     /// C# 示例：
     /// throw new Exception("error");
-    /// 转换结果：throw new Exception("error");
+    /// 转换结果：throw new Error("error");
     /// </summary>
     [TestMethod]
     public void VisitThrow_WithException()
@@ -382,7 +383,7 @@ public sealed class SemanticWalkerTryCatchTest
     /// 测试 throw 语句与字符串字面量
     /// C# 示例：
     /// throw new Exception("test message");
-    /// 转换结果：throw new Exception("test message");
+    /// 转换结果：throw new Error("test message");
     /// </summary>
     [TestMethod]
     public void VisitThrow_StringLiteral()
@@ -414,7 +415,7 @@ public sealed class SemanticWalkerTryCatchTest
     /// } catch (Exception ex) {
     ///     int x = 1;
     /// }
-    /// 转换结果：try { throw new Exception("error"); } catch (ex) { let x = 1; }
+    /// 转换结果：try { throw new Error("error"); } catch (ex) { let x = 1; }
     /// </summary>
     [TestMethod]
     public void VisitTry_WithThrowInBody()
@@ -441,7 +442,7 @@ public sealed class SemanticWalkerTryCatchTest
         var node = walker.VisitTry(tryOp, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"try {
   throw new Error(""error"");
 } catch (ex) {
@@ -458,7 +459,7 @@ public sealed class SemanticWalkerTryCatchTest
     /// } catch (Exception ex) {
     ///     throw;
     /// }
-    /// 转换结果：try { let x = 1; } catch (ex) { throw v$0; }
+    /// 转换结果：try { let x = 1; } catch (ex) { throw ex; }
     /// </summary>
     [TestMethod]
     public void VisitTry_WithThrowInCatch()
@@ -485,7 +486,7 @@ public sealed class SemanticWalkerTryCatchTest
         var node = walker.VisitTry(tryOp, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"try {
   let x = 1;
 } catch (ex) {
@@ -544,7 +545,7 @@ public sealed class SemanticWalkerTryCatchTest
         var node = walker.VisitTry(tryOp, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"try {
   try {
     let x = 1;
@@ -595,7 +596,7 @@ public sealed class SemanticWalkerTryCatchTest
         var node = walker.VisitCatchClause(catchOp, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"(ex) {
   let x = 1;
 }", script);
@@ -639,7 +640,7 @@ public sealed class SemanticWalkerTryCatchTest
         var node = walker.VisitTry(tryOp, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"try { }
 catch (ex) {
   let x = 1;
@@ -680,7 +681,7 @@ catch (ex) {
         var node = walker.VisitTry(tryOp, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"try {
   let x = 1;
 } catch (ex) { }", script);
@@ -720,7 +721,7 @@ catch (ex) {
         var node = walker.VisitTry(tryOp, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"try {
   let x = 1;
 } finally { }", script);
@@ -735,7 +736,7 @@ catch (ex) {
     /// } catch (Exception ex) {
     ///     string msg = ex.Message;
     /// }
-    /// 转换结果：try { throw new Exception("error"); } catch (ex) { let msg = ex.Message; }
+    /// 转换结果：try { throw new Error("error"); } catch (ex) { let msg = ex.message; }
     /// </summary>
     [TestMethod]
     public void VisitTry_UseExceptionVariable()
@@ -762,7 +763,7 @@ catch (ex) {
         var node = walker.VisitTry(tryOp, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"try {
   throw new Error(""error"");
 } catch (ex) {
@@ -783,7 +784,7 @@ catch (ex) {
     /// } catch (Exception ex) when (ex.Message.Contains("error")) {
     ///     string msg = ex.Message;
     /// }
-    /// 转换结果：try { throw new Exception("error"); } catch (ex) { if (!(ex.Message.contains("error"))) throw ex; let msg = ex.Message; }
+    /// 转换结果：try { throw new Error("error"); } catch (ex) { if (!ex.message.includes("error")) throw ex; let msg = ex.message; }
     /// </summary>
     [TestMethod]
     public void VisitCatchClause_WithWhenClause()
@@ -810,11 +811,7 @@ catch (ex) {
         var node = walker.VisitTry(tryOp, new());
         var script = node?.ToKnRECMAScript();
 
-        // Console.WriteLine("=== Actual Output ===");
-        // Console.WriteLine(script);
-        // Console.WriteLine("=== End Output ===");
-
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"try {
   throw new Error(""error"");
 } catch (ex) {
@@ -833,7 +830,7 @@ catch (ex) {
     /// } catch (Exception ex) when (ex != null) {
     ///     string msg = ex.Message;
     /// }
-    /// 转换结果：try { throw new Exception("error"); } catch (ex) { if (!(ex !== null)) throw ex; let msg = ex.Message; }
+    /// 转换结果：try { throw new Error("error"); } catch (ex) { if (!(ex !== null)) throw ex; let msg = ex.message; }
     /// </summary>
     [TestMethod]
     public void VisitCatchClause_WithWhenClause_SimpleCondition()
@@ -880,6 +877,7 @@ catch (ex) {
     /// } catch (Exception ex) when (ex != null && ex.Message.Length > 0) {
     ///     string msg = ex.Message;
     /// }
+    /// 转换结果：try { throw new Error("error"); } catch (ex) { if (!(ex !== null && ex.message.length > 0)) throw ex; let msg = ex.message; }
     /// </summary>
     [TestMethod]
     public void VisitCatchClause_WithWhenClause_LogicalAndCondition()
@@ -925,8 +923,9 @@ catch (ex) {
     /// try {
     ///     throw new Exception("error");
     /// } catch (Exception) when (true) {
-    ///     string msg = ""caught"";
+    ///     string msg = "a";
     /// }
+    /// 转换结果：try { throw new Error("error"); } catch (v$0) { if (!true) throw v$0; let msg = "a"; }
     /// </summary>
     [TestMethod]
     public void VisitCatchClause_WithWhenClause_NoExceptionVariable()
@@ -944,10 +943,6 @@ catch (ex) {
                     {
                         string msg = ""a"";
                     }
-                    catch (RangeError ex) when (true)
-                    {
-                        string msg = ""b"";
-                    }
                 }
             }
         ");
@@ -961,17 +956,9 @@ catch (ex) {
 @"try {
   throw new Error(""error"");
 } catch (v$0) {
-  if (v$0 instanceof Error) {
-    if (!true)
-      throw v$0;
-    let msg = ""a"";
-  }
-  if (v$0 instanceof RangeError) {
-    const ex = v$0;
-    if (!true)
-      throw v$0;
-    let msg = ""b"";
-  }
+  if (!true)
+    throw v$0;
+  let msg = ""a"";
 }", script);
 
     }
@@ -1098,7 +1085,7 @@ catch (ex) {
         var node = walker.VisitTry(tryOp, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"try {
   try {
     try {
@@ -1145,7 +1132,7 @@ catch (ex) {
         var node = walker.VisitTry(tryOp, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"try {
   for (let i = 0; i < 3; i++) {
     console.log(i);
@@ -1185,7 +1172,7 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"{
   for (let i = 0; i < 3; i++) {
     try {
@@ -1229,7 +1216,7 @@ catch (ex) {
         var node = walker.VisitTry(tryOp, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"try {
   let x = 1;
 } finally {
@@ -1292,7 +1279,7 @@ catch (ex) {
         var node = walker.VisitTry(tryOp, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"try {
   let x = 1;
 } finally {
@@ -1336,7 +1323,7 @@ catch (ex) {
         var node = walker.VisitTry(tryOp, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"try {
   let x = 1;
 } catch (ex) {
@@ -1374,7 +1361,7 @@ catch (ex) {
         var node = walker.VisitTry(tryOp, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"try {
   let x = 1;
 } catch {
@@ -1414,7 +1401,7 @@ catch (ex) {
         var node = walker.VisitTry(tryOp, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"try {
   throw new Error(""test"");
 } catch (ex) {
@@ -1452,7 +1439,7 @@ catch (ex) {
         var node = walker.VisitTry(tryOp, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"try {
   throw new Error(""error message"");
 } catch (ex) {
@@ -1463,7 +1450,8 @@ catch (ex) {
     }
 
     /// <summary>
-    /// 测试多个 catch when 子句
+    /// 测试多个同类型 catch when 子句
+    /// when 过滤失败时必须继续尝试后续 catch，不能直接 rethrow 退出整个 catch 链
     /// </summary>
     [TestMethod]
     public void VisitTry_MultipleCatchWithWhen()
@@ -1498,26 +1486,21 @@ catch (ex) {
         var node = walker.VisitTry(tryOp, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"try {
   throw new Error(""test"");
 } catch (v$0) {
   if (v$0 instanceof Error) {
     const ex = v$0;
-    if (!(ex.message === ""a""))
-      throw v$0;
-    console.log(""a"");
-  }
-  if (v$0 instanceof Error) {
-    const ex = v$0;
-    if (!(ex.message === ""b""))
-      throw v$0;
-    console.log(""b"");
-  }
-  if (v$0 instanceof Error) {
-    const ex = v$0;
-    console.log(""other"");
-  }
+    if (ex.message === ""a"") {
+      console.log(""a"");
+    } else if (ex.message === ""b"") {
+      console.log(""b"");
+    } else {
+      console.log(""other"");
+    }
+  } else
+    throw v$0;
 }", script);
     }
 
@@ -1541,7 +1524,7 @@ catch (ex) {
                     {
                         result = 1;
                     }
-                    catch (ArgumentException ex)
+                    catch (ArgumentNullException ex)
                     {
                         result = 2;
                     }
@@ -1562,22 +1545,21 @@ catch (ex) {
         var node = walker.VisitTry(tryOp, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsTrue(Regex.IsMatch(script, """
-^try \{
+        AssertScriptEqual(
+@"try {
   result = 1;
-\} catch \((?<err>v\$\d+)\) \{
-  if \(\k<err> instanceof (ArgumentException|Error)\) \{
-    const ex = \k<err>;
+} catch (v$0) {
+  if (v$0 instanceof TypeError) {
+    const ex = v$0;
     result = 2;
-  \}
-  if \(\k<err> instanceof Error\) \{
-    const ex = \k<err>;
+  } else if (v$0 instanceof Error) {
+    const ex = v$0;
     result = 3;
-  \}
-\} finally \{
+  } else
+    throw v$0;
+} finally {
   result = 4;
-\}$
-""".Replace("\n", "\r?\n")));
+}", script);
     }
 
     /// <summary>
@@ -1609,7 +1591,7 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"{
   let x = 0;
   try {
@@ -1726,9 +1708,14 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        StringAssert.Contains(script, "console.log(\"Format error\")");
-        Assert.IsTrue(Regex.IsMatch(script, """_[a-f0-9]+\("abc"\)"""));
-        Assert.IsTrue(script.Contains("catch"));
+        AssertScriptEqual(
+@"{
+  try {
+    _151ccc6045162f8f(""abc"");
+  } catch (ex) {
+    console.log(""Format error"");
+  }
+}", script);
     }
 
     /// <summary>
@@ -1759,8 +1746,17 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        StringAssert.Contains(script, "console.log(\"Overflow\")");
-        Assert.IsTrue(script.Contains("catch"));
+        AssertScriptEqual(
+@"{
+  let value = 2147483647;
+  try {
+    {
+      value += 1;
+    }
+  } catch {
+    console.log(""Overflow"");
+  }
+}", script);
     }
 
     #endregion
@@ -1801,7 +1797,7 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"{
   try {
     try {
@@ -1856,7 +1852,7 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"{
   try {
     try {
@@ -1905,7 +1901,7 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"{
   try {
     console.log(""try"");
@@ -1942,7 +1938,7 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"{
   try {
     return 1;
@@ -1982,7 +1978,7 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"{
   try {
     console.log(""try"");
@@ -2194,7 +2190,7 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"{
   try {
     let x = 1;
@@ -2238,7 +2234,7 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"{
   try {
     throw new Error(""test"");
@@ -2276,7 +2272,7 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"{
   try {
     throw new Error(""original"");
@@ -2324,10 +2320,18 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        StringAssert.Contains(script, "console.log(\"inner\")");
-        StringAssert.Contains(script, "console.log(\"inner finally\")");
-        StringAssert.Contains(script, "console.log(\"outer finally\")");
-        Assert.IsTrue(Regex.Matches(script!, @"finally \{").Count >= 2);
+        AssertScriptEqual(
+@"{
+  try {
+    try {
+      console.log(""inner"");
+    } finally {
+      console.log(""inner finally"");
+    }
+  } finally {
+    console.log(""outer finally"");
+  }
+}", script);
     }
 
     /// <summary>
@@ -2357,10 +2361,16 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        StringAssert.Contains(script, "throw new Error(\"test\")");
-        StringAssert.Contains(script, "ex.message.includes(\"test\")");
-        StringAssert.Contains(script, "console.log(\"caught test exception\")");
-        Assert.IsTrue(script.Contains("if (") || script.Contains("catch"));
+        AssertScriptEqual(
+@"{
+  try {
+    throw new Error(""test"");
+  } catch (ex) {
+    if (!ex.message.includes(""test""))
+      throw ex;
+    console.log(""caught test exception"");
+  }
+}", script);
     }
 
     /// <summary>
@@ -2376,11 +2386,11 @@ catch (ex) {
                 {
                     try
                     {
-                        throw new ArgumentException(""test"");
+                        throw new ArgumentNullException(""test"");
                     }
-                    catch (ArgumentException ex)
+                    catch (ArgumentNullException ex)
                     {
-                        Console.WriteLine(""argument exception"");
+                        Console.WriteLine(""argument null exception"");
                     }
                     catch (Exception ex)
                     {
@@ -2394,10 +2404,21 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        StringAssert.Contains(script, "throw new ArgumentException(\"test\")");
-        StringAssert.Contains(script, "console.log(\"argument exception\")");
-        StringAssert.Contains(script, "console.log(\"general exception\")");
-        Assert.IsTrue(script.Contains("if (") || script.Contains("else if"));
+        AssertScriptEqual(
+@"{
+  try {
+    throw new TypeError(""test"");
+  } catch (v$0) {
+    if (v$0 instanceof TypeError) {
+      const ex = v$0;
+      console.log(""argument null exception"");
+    } else if (v$0 instanceof Error) {
+      const ex = v$0;
+      console.log(""general exception"");
+    } else
+      throw v$0;
+  }
+}", script);
     }
 
     /// <summary>
@@ -2427,7 +2448,7 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"{
   try {
     console.log(""try block"");
@@ -2702,11 +2723,11 @@ catch (ex) {
                 {
                     try
                     {
-                        throw new InvalidOperationException(""test"");
+                        throw new ArgumentNullException(""test"");
                     }
-                    catch (InvalidOperationException)
+                    catch (ArgumentNullException)
                     {
-                        Console.WriteLine(""invalid operation"");
+                        Console.WriteLine(""argument null"");
                     }
                     catch (Exception)
                     {
@@ -2722,14 +2743,14 @@ catch (ex) {
 
         AssertScriptEqual(@"{
   try {
-    throw new Error(""test"");
+    throw new TypeError(""test"");
   } catch (v$0) {
-    if (v$0 instanceof Error) {
-      console.log(""invalid operation"");
-    }
-    if (v$0 instanceof Error) {
+    if (v$0 instanceof TypeError) {
+      console.log(""argument null"");
+    } else if (v$0 instanceof Error) {
       console.log(""other exception"");
-    }
+    } else
+      throw v$0;
   }
 }", script);
     }

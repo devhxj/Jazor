@@ -33,12 +33,6 @@ public sealed class Symbol
 	[Description("@#toString")]
 	public extern override string ToString();
 
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public extern override bool Equals(object? obj);
-
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public extern override int GetHashCode();
-
 	/// <summary>
 	/// Retrieves or creates a symbol from the global registry.
 	/// </summary>
@@ -50,10 +44,4 @@ public sealed class Symbol
 	/// </summary>
 	[Description("@#keyFor")]
 	public extern static string? KeyFor(Symbol sym);
-
-	/// <summary>
-	/// Allow implicit conversion to string for easier logging and debugging
-	/// </summary>
-	/// <param name="symbol"></param>
-	public extern static implicit operator string?(Symbol symbol);
 }

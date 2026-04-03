@@ -1,100 +1,10 @@
 namespace ECMAScript;
 
-
-/// <summary>
-/// A function that accepts up to three arguments. The every method calls the predicate function for each element in the array until the predicate returns a value which is coercible to the Boolean value false, or until the end of the array.
-/// </summary>
-/// <typeparam name="T"></typeparam>
-/// <typeparam name="S"></typeparam>
-/// <param name="value">value</param>
-/// <param name="index">index</param>
-/// <param name="array">array</param>
-/// <returns></returns>
-[ECMAScript]
-public delegate S Predicate<T, S>(T value, uint index, Array<T> array);
-
-/// <summary>
-/// A function that accepts up to three arguments. The map method calls the callbackfn function one time for each element in the array.
-/// </summary>
-/// <typeparam name="T"></typeparam>
-/// <typeparam name="U"></typeparam>
-/// <param name="Value"></param>
-/// <param name="index"></param>
-/// <param name="array"></param>
-/// <returns></returns>
-[ECMAScript]
-public delegate U CallbackFunc<T, U>(T Value, uint index, Array<T> array);
-
-/// <summary>
-/// A function that accepts up to three arguments. The map method calls the callbackfn function one time for each element in the array.
-/// </summary>
-/// <typeparam name="T"></typeparam>
-/// <typeparam name="U"></typeparam>
-/// <param name="Value"></param>
-/// <param name="index"></param>
-/// <param name="array"></param>
-[ECMAScript]
-public delegate void CallbackFunc1<T, U>(T Value, uint index, Array<T> array);
-
-/// <summary>
-/// A function that accepts up to three arguments. The map method calls the callbackfn function one time for each element in the array.
-/// </summary>
-/// <typeparam name="T"></typeparam>
-/// <typeparam name="U"></typeparam>
-/// <param name="Value"></param>
-/// <param name="index"></param>
-/// <returns></returns>
-[ECMAScript]
-public delegate U CallbackFunc2<T, U>(T Value, uint index);
-
-/// <summary>
-/// A function that accepts up to three arguments. The map method calls the callbackfn function one time for each element in the array.
-/// </summary>
-/// <typeparam name="T"></typeparam>
-/// <typeparam name="U"></typeparam>
-/// <param name="Value"></param>
-/// <param name="index"></param>
-[ECMAScript]
-public delegate void CallbackFunc3<T, U>(T Value, uint index);
-
-/// <summary>
-/// A function that accepts up to three arguments. The map method calls the callbackfn function one time for each element in the array.
-/// </summary>
-/// <typeparam name="T"></typeparam>
-/// <typeparam name="U"></typeparam>
-/// <param name="Value"></param>
-/// <param name="index"></param>
-[ECMAScript]
-public delegate void CallbackFunc4<T, U>(T Value);
-
-/// <summary>
-/// A function that accepts up to three arguments. The map method calls the callbackfn function one time for each element in the array.
-/// </summary>
-/// <typeparam name="T"></typeparam>
-/// <typeparam name="U"></typeparam>
-/// <param name="Value"></param>
-/// <param name="index"></param>
-[ECMAScript]
-public delegate U CallbackFunc5<T, U>(T Value);
-
-/// <summary>
-/// A function that accepts up to four arguments. The reduce method calls the callbackfn function one time for each element in the array.
-/// </summary>
-/// <typeparam name="T"></typeparam>
-/// <typeparam name="U"></typeparam>
-/// <param name="previousValue"></param>
-/// <param name="currentValue"></param>
-/// <param name="currentIndex"></param>
-/// <param name="array"></param>
-/// <returns></returns>
-[ECMAScript]
-public delegate U ReduceFunc<T, U>(U previousValue, T currentValue, uint currentIndex, Array<T> array);
-
 [ECMAScript]
 public interface IArray : IEnumerable
 {
 	[Description("@#length")]
-	uint Length { get; }
+	Number Length { get; }
 
 	[Description("@#isArray")]
 	static extern bool IsArray(object? obj);
@@ -103,11 +13,13 @@ public interface IArray : IEnumerable
 [ECMAScript]
 public interface IArray<T> : IArray
 {
-	T this[uint index] { get; }
+	T this[Number index] { get; }
 }
 
 /// <summary>
-/// 
+/// JavaScript <c>Array</c> runtime host.
+/// Hidden members near the end of this type exist only for CLR bridge scenarios such as collection initializers;
+/// they are not intended to redefine the JavaScript runtime shape.
 /// </summary>
 /// <typeparam name="T"></typeparam>
 [ECMAScript]
@@ -116,7 +28,7 @@ public partial class Array<T> : object, IArray<T>
 {
 	public extern Array();
 
-	public extern Array(uint size);
+	public extern Array(Number size);
 
 	public extern Array(T item);
 
@@ -126,7 +38,7 @@ public partial class Array<T> : object, IArray<T>
 
 	public extern static implicit operator T[](Array<T> x);
 
-	public extern static implicit operator List<T>[](Array<T> x);
+	public extern static implicit operator List<T>(Array<T> x);
 
 	public extern static implicit operator Array<T>(T[] array);
 
@@ -138,13 +50,13 @@ public partial class Array<T> : object, IArray<T>
 
 	public extern static implicit operator Array<T>(Array array);
 
-	public extern T this[uint index] { get; set; }
+	public extern T this[Number index] { get; set; }
 
 	/// <summary>
 	/// Gets or sets the length of the array. This is a number one higher than the highest index in the array.
 	/// </summary>
 	[Description("@#length")]
-	public extern uint Length { get; }
+	public extern Number Length { get; }
 
 	/////<summary>
 	/////Returns a string representation of an object.
@@ -174,11 +86,7 @@ public partial class Array<T> : object, IArray<T>
 	/// <param name="items">New elements to add to the array.</param>
 	/// <returns></returns>
 	[Description("@#push")]
-	public extern double Push(params T[] items);
-
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	[Description("@#push")]
-	public extern double Push_(T item);
+	public extern Number Push(params T[] items);
 
 	/// <summary>
 	/// Combines two or more arrays.
@@ -187,7 +95,7 @@ public partial class Array<T> : object, IArray<T>
 	/// <param name="items">Additional arrays and/or items to add to the end of the array.</param>
 	/// <returns></returns>
 	[Description("@#concat")]
-	public extern IEnumerable<T> Concat(params IEnumerable<T>[] items);
+	public extern Array<T> Concat(params IEnumerable<T>[] items);
 
 	/// <summary>
 	/// Combines two or more arrays.
@@ -195,7 +103,7 @@ public partial class Array<T> : object, IArray<T>
 	/// <param name="items">Additional arrays and/or items to add to the end of the array.</param>
 	/// <returns>This method returns a new array without modifying any existing arrays.</returns>
 	[Description("@#concat")]
-	public extern IEnumerable<T> Concat(params T[] items);
+	public extern Array<T> Concat(params T[] items);
 
 	/// <summary>
 	/// Adds all the elements of an array into a string, separated by the specified separator string.
@@ -228,7 +136,7 @@ public partial class Array<T> : object, IArray<T>
 	/// <param name="end">The end index of the specified portion of the array. This is exclusive of the element at the index 'end'.</param>
 	/// <returns>If start is undefined, then the slice begins at index 0.If end is undefined, then the slice extends to the end of the array.</returns>
 	[Description("@#slice")]
-	public extern Array<T> Slice(double? start = null, double? end = null);
+	public extern Array<T> Slice(Number? start = null, Number? end = null);
 
 	/// <summary>
 	/// Sorts an array in place.
@@ -237,8 +145,9 @@ public partial class Array<T> : object, IArray<T>
 	/// <param name="compareFn"><para><b>(a: T, b: T) => number</b></para>Function used to determine the order of the elements.It is expected to return</param>
 	/// <returns>a negative value if the first argument is less than the second argument, zero if they're equal, and a positive value otherwise.If omitted, the elements are sorted in ascending, UTF-16 code unit order.</returns>
 	[Description("@#sort")]
-	public extern Array<T> Sort(Func<T, T, double>? compareFn = null);
+	public extern Array<T> Sort(Func<T, T, Number>? compareFn = null);
 
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	[Description("@#sort")]
 	public extern Array<T> Sort(Comparison<T> compareFn);
 
@@ -249,7 +158,7 @@ public partial class Array<T> : object, IArray<T>
 	/// <param name="deleteCount">The number of elements to remove.</param>
 	/// <returns>An array containing the elements that were deleted.</returns>
 	[Description("@#splice")]
-	public extern Array<T> Splice(double start, double? deleteCount = null);
+	public extern Array<T> Splice(Number start, Number? deleteCount = null);
 
 	/// <summary>
 	/// Removes elements from an array and, if necessary, inserts new elements in their place, returning the deleted elements.
@@ -259,7 +168,7 @@ public partial class Array<T> : object, IArray<T>
 	/// <param name="items">Elements to insert into the array in place of the deleted elements.</param>
 	/// <returns>An array containing the elements that were deleted.</returns>
 	[Description("@#splice")]
-	public extern Array<T> Splice(double start, double deleteCount, params T[] items);
+	public extern Array<T> Splice(Number start, Number deleteCount, params T[] items);
 
 	/// <summary>
 	/// Inserts new elements at the start of an array, and returns the new length of the array.
@@ -267,7 +176,7 @@ public partial class Array<T> : object, IArray<T>
 	/// <param name="items">Elements to insert at the start of the array.</param>
 	/// <returns></returns>
 	[Description("@#unshift")]
-	public extern double Unshift(params T[] items);
+	public extern Number Unshift(params T[] items);
 
 	/// <summary>
 	/// Returns the index of the first occurrence of a value in an array, or -1 if it is not present.
@@ -276,7 +185,7 @@ public partial class Array<T> : object, IArray<T>
 	/// <param name="fromIndex">The array index at which to begin the search.If fromIndex is omitted, the search starts at index 0.</param>
 	/// <returns></returns>
 	[Description("@#indexOf")]
-	public extern double IndexOf(T searchElement, double? fromIndex = null);
+	public extern Number IndexOf(T searchElement, Number? fromIndex = null);
 
 	/// <summary>
 	/// Returns the index of the last occurrence of a specified value in an array, or -1 if it is not present.
@@ -285,17 +194,7 @@ public partial class Array<T> : object, IArray<T>
 	/// <param name="fromIndex">The array index at which to begin searching backward.If fromIndex is omitted, the search starts at the last index in the array.</param>
 	/// <returns></returns>
 	[Description("@#lastIndexOf")]
-	public extern double LastIndexOf(T searchElement, double? fromIndex = null);
-
-	/// <summary>
-	/// Determines whether all the members of an array satisfy the specified test.
-	/// </summary>
-	/// <typeparam name="S"></typeparam>
-	/// <param name="predicate"><para><b>(value: T, index: number, array: IEnumerable&lt;T&gt;) =&gt; value is S</b></para>A function that accepts up to three arguments. The every method calls the predicate function for each element in the array until the predicate returns a value which is coercible to the Boolean value false, or until the end of the array.</param>
-	/// <param name="thisArg">An object to which the this keyword can refer in the predicate function.If thisArg is omitted, undefined is used as the this value.</param>
-	/// <returns></returns>
-	[Description("@#every")]
-	public extern Array<S> Every<S>(Predicate<T, S> predicate, object? thisArg = null) where S : T;
+	public extern Number LastIndexOf(T searchElement, Number? fromIndex = null);
 
 	/// <summary>
 	/// Determines whether all the members of an array satisfy the specified test.
@@ -304,7 +203,13 @@ public partial class Array<T> : object, IArray<T>
 	/// <param name="thisArg">An object to which the this keyword can refer in the predicate function.If thisArg is omitted, undefined is used as the this value.</param>
 	/// <returns></returns>
 	[Description("@#every")]
-	public extern bool Every(Predicate<T, object?> predicate, object? thisArg = null);
+	public extern bool Every(Func<T, Number, Array<T>, object?> predicate, object? thisArg = null);
+
+	[Description("@#every")]
+	public extern bool Every(Func<T, Number, object?> predicate, object? thisArg = null);
+
+	[Description("@#every")]
+	public extern bool Every(Func<T, object?> predicate, object? thisArg = null);
 
 	[Description("@#every")]
 	public extern bool Every(Predicate<T> predicate, object? thisArg = null);
@@ -316,7 +221,13 @@ public partial class Array<T> : object, IArray<T>
 	/// <param name="thisArg">An object to which the this keyword can refer in the predicate function.If thisArg is omitted, undefined is used as the this value.</param>
 	/// <returns></returns>
 	[Description("@#some")]
-	public extern bool Some(Predicate<T, object?> predicate, object? thisArg = null);
+	public extern bool Some(Func<T, Number, Array<T>, object?> predicate, object? thisArg = null);
+
+	[Description("@#some")]
+	public extern bool Some(Func<T, Number, object?> predicate, object? thisArg = null);
+
+	[Description("@#some")]
+	public extern bool Some(Func<T, object?> predicate, object? thisArg = null);
 
 	[Description("@#some")]
 	public extern bool Some(Predicate<T> predicate, object? thisArg = null);
@@ -327,18 +238,9 @@ public partial class Array<T> : object, IArray<T>
 	/// <param name="callbackfn"><para><b>(value: T, index: number, array: IEnumerable<T>) => void</b></para>A function that accepts up to three arguments. forEach calls the callbackfn function one time for each element in the array.</param>
 	/// <param name="thisArg">An object to which the this keyword can refer in the callbackfn function.If thisArg is omitted, undefined is used as the this value.</param>
 	[Description("@#forEach")]
-	public extern void ForEach(CallbackFunc<T, uint> callbackfn, object? thisArg = null);
+	public extern void ForEach(Action<T, Number, Array<T>> callbackfn, object? thisArg = null);
 	[Description("@#forEach")]
-	public extern void ForEach(CallbackFunc1<T, uint> callbackfn, object? thisArg = null);
-	[Description("@#forEach")]
-	public extern void ForEach(CallbackFunc2<T, uint> callbackfn, object? thisArg = null);
-	[Description("@#forEach")]
-	public extern void ForEach(CallbackFunc3<T, uint> callbackfn, object? thisArg = null);
-	[Description("@#forEach")]
-	public extern void ForEach(CallbackFunc4<T, uint> callbackfn, object? thisArg = null);
-	[Description("@#forEach")]
-	public extern void ForEach(CallbackFunc5<T, uint> callbackfn, object? thisArg = null);
-
+	public extern void ForEach(Action<T, Number> callbackfn, object? thisArg = null);
 	[Description("@#forEach")]
 	public extern void ForEach(Action<T> callbackfn, object? thisArg = null);
 
@@ -350,39 +252,40 @@ public partial class Array<T> : object, IArray<T>
 	/// <param name="thisArg">An object to which the this keyword can refer in the callbackfn function.If thisArg is omitted, undefined is used as the this value.</param>
 	/// <returns></returns>
 	[Description("@#map")]
-	public extern Array<U> Map<U>(CallbackFunc<T, U> callbackfn, object? thisArg = null);
+	public extern Array<U> Map<U>(Func<T, Number, Array<T>, U> callbackfn, object? thisArg = null);
 
 	[Description("@#map")]
-	public extern Array<U> Map<U>(CallbackFunc2<T, U> callbackfn, object? thisArg = null);
+	public extern Array<U> Map<U>(Func<T, Number, U> callbackfn, object? thisArg = null);
 
 	[Description("@#map")]
-	public extern Array<U> Map<U>(CallbackFunc5<T, U> callbackfn, object? thisArg = null);
+	public extern Array<U> Map<U>(Func<T, U> callbackfn, object? thisArg = null);
 
 	/// <summary>
 	/// Returns the elements of an array that meet the condition specified in a callback function.
 	/// </summary>
-	/// <typeparam name="S"></typeparam>
-	/// <param name="predicate"><para><b>(value: T, index: number, array: IEnumerable<T>) => value is S</b></para>A function that accepts up to three arguments.The filter method calls the predicate function one time for each element in the array.</param>
-	/// <param name="thisArg">An object to which the this keyword can refer in the predicate function.If thisArg is omitted, undefined is used as the this value.</param>
-	/// <returns></returns>
-	[Description("@#filter")]
-	public extern Array<S> Filter<S>(Predicate<T, S> predicate, object? thisArg = null) where S : T;
-
-	[Description("@#filter")]
-	public extern Array<S> Filter<S>(Predicate<T> predicate, object? thisArg = null) where S : T;
-
-	/// <summary>
-	/// Returns the elements of an array that meet the condition specified in a callback function.
-	/// </summary>
-	/// <typeparam name="S"></typeparam>
 	/// <param name="predicate"><para><b>(value: T, index: number, array: IEnumerable<T>) => unknown</b></para>A function that accepts up to three arguments.The filter method calls the predicate function one time for each element in the array.</param>
 	/// <param name="thisArg">An object to which the this keyword can refer in the predicate function.If thisArg is omitted, undefined is used as the this value.</param>
 	/// <returns></returns>
 	[Description("@#filter")]
-	public extern IEnumerable<T> Filter<S>(Predicate<T, object?> predicate, object? thisArg = null);
+	public extern Array<T> Filter(Func<T, Number, Array<T>, object?> predicate, object? thisArg = null);
+
+	[Description("@#filter")]
+	public extern Array<T> Filter(Func<T, Number, object?> predicate, object? thisArg = null);
+
+	[Description("@#filter")]
+	public extern Array<T> Filter(Func<T, object?> predicate, object? thisArg = null);
+
+	[Description("@#filter")]
+	public extern Array<T> Filter(Predicate<T> predicate, object? thisArg = null);
 
 	[Description("@#find")]
-	public extern T? Find<S>(Predicate<T, S> predicate, object? thisArg = null);
+	public extern T? Find(Func<T, Number, Array<T>, object?> predicate, object? thisArg = null);
+
+	[Description("@#find")]
+	public extern T? Find(Func<T, Number, object?> predicate, object? thisArg = null);
+
+	[Description("@#find")]
+	public extern T? Find(Func<T, object?> predicate, object? thisArg = null);
 
 	[Description("@#find")]
 	public extern T? Find(Predicate<T> predicate, object? thisArg = null);
@@ -395,7 +298,10 @@ public partial class Array<T> : object, IArray<T>
 	/// <param name="initialValue">If initialValue is specified, it is used as the initial value to start the accumulation.The first call to the callbackfn function provides this value as an argument instead of an array value.</param>
 	/// <returns></returns>
 	[Description("@#reduce")]
-	public extern U Reduce<U>(ReduceFunc<T, U> callbackfn, U initialValue);
+	public extern U Reduce<U>(Func<U, T, Number, Array<T>, U> callbackfn, U initialValue);
+
+	[Description("@#reduce")]
+	public extern U Reduce<U>(Func<U, T, U> callbackfn, U initialValue);
 
 	/// <summary>
 	/// Calls the specified callback function for all the elements in an array, in descending order.The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
@@ -405,7 +311,10 @@ public partial class Array<T> : object, IArray<T>
 	/// <param name="initialValue">If initialValue is specified, it is used as the initial value to start the accumulation.The first call to the callbackfn function provides this value as an argument instead of an array value.</param>
 	/// <returns></returns>
 	[Description("@#reduceRight")]
-	public extern U ReduceRight<U>(ReduceFunc<T, U> callbackfn, U initialValue);
+	public extern U ReduceRight<U>(Func<U, T, Number, Array<T>, U> callbackfn, U initialValue);
+
+	[Description("@#reduceRight")]
+	public extern U ReduceRight<U>(Func<U, T, U> callbackfn, U initialValue);
 
 	/// <summary>
 	/// 用一个固定值填充一个数组中从起始索引（默认为 0）到终止索引（默认为 array.length）内的全部元素。它返回修改后的数组。
@@ -427,25 +336,51 @@ public partial class Array<T> : object, IArray<T>
 	/// </param>
 	/// <returns>经 value 填充修改后的数组。</returns>
 	[Description("@#fill")]
-	public extern Array<U> Fill<U>(U value, uint? start = null, uint? end = null);
+	public extern Array<T> Fill(T value, Number? start = null, Number? end = null);
 
 	[Description("@#findIndex")]
-	public extern Number FindIndex<U>(ReduceFunc<T, U> callbackfn, object? thisArg = null);
+	public extern Number FindIndex(Func<T, Number, Array<T>, object?> callbackfn, object? thisArg = null);
 
 	[Description("@#findIndex")]
-	public extern Number FindIndex(Predicate<T> callbackfn);
+	public extern Number FindIndex(Func<T, Number, object?> callbackfn, object? thisArg = null);
 
+	[Description("@#findIndex")]
+	public extern Number FindIndex(Func<T, object?> callbackfn, object? thisArg = null);
+
+	[Description("@#findIndex")]
+	public extern Number FindIndex(Predicate<T> callbackfn, object? thisArg = null);
+
+	/// <summary>
+	/// Creates an array from a JavaScript iterable or array-like value.
+	/// <see cref="IEnumerable{T}"/> is used here as the common C# input surface for values
+	/// such as arrays, lists, and read-only list families that map to JavaScript arrays or iterables.
+	/// </summary>
 	[Description("@#from")]
-	public extern static IEnumerable<T> From(IEnumerable<T> arrayLike);
+	public extern static Array<T> From(IEnumerable<T> arrayLike);
 
+	/// <summary>
+	/// Creates an array from a JavaScript iterable or array-like value.
+	/// <see cref="IEnumerable{T}"/> is used here as the common C# input surface for values
+	/// such as arrays, lists, and read-only list families that map to JavaScript arrays or iterables.
+	/// </summary>
 	[Description("@#from")]
-	public extern static IEnumerable<T> From<U>(IEnumerable<U> arrayLike, Func<U, int, T> mapFn, object? thisArg = null);
+	public extern static Array<T> From<U>(IEnumerable<U> arrayLike, Func<U, Number, T> mapFn, object? thisArg = null);
 
+	/// <summary>
+	/// Creates an array from a JavaScript async iterable or iterable value.
+	/// <see cref="IEnumerable{T}"/> is used here as the common C# input surface for values
+	/// such as arrays, lists, and read-only list families that map to JavaScript arrays or iterables.
+	/// </summary>
 	[Description("@#fromAsync")]
-	public extern static IPromise<IEnumerable<T>> FromAsync(IEnumerable<T> arrayLike);
+	public extern static IPromise<Array<T>> FromAsync(IEnumerable<T> arrayLike);
 
+	/// <summary>
+	/// Creates an array from a JavaScript async iterable or iterable value.
+	/// <see cref="IEnumerable{T}"/> is used here as the common C# input surface for values
+	/// such as arrays, lists, and read-only list families that map to JavaScript arrays or iterables.
+	/// </summary>
 	[Description("@#fromAsync")]
-	public extern static IPromise<IEnumerable<T>> FromAsync<U>(IEnumerable<U> arrayLike, Func<U, int, T> mapFn, object? thisArg = null);
+	public extern static IPromise<Array<T>> FromAsync<U>(IEnumerable<U> arrayLike, Func<U, Number, T> mapFn, object? thisArg = null);
 
 	[Description("@#isArray")]
 	public extern static bool IsArray(object? value);
@@ -453,21 +388,10 @@ public partial class Array<T> : object, IArray<T>
 	[Description("@#of")]
 	public extern static Array<T> Of(params T[] value);
 
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public extern new Type GetType();
-
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public extern override int GetHashCode();
-
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public extern override bool Equals(object? obj);
-
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public extern static new bool Equals(object objA, object objB);
-
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public extern static new bool ReferenceEquals(object objA, object objB);
-
+	/// <summary>
+	/// CLR bridge members kept for collection-initializer and collection-like interop.
+	/// They do not correspond to distinct JavaScript <c>Array.prototype</c> members.
+	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public extern void Add(T item);
 
@@ -486,19 +410,16 @@ public partial class Array<T> : object, IArray<T>
 	extern IEnumerator IEnumerable.GetEnumerator();
 
 	//extern IEnumerator<T> IEnumerable<T>.GetEnumerator();
-
-	[Jazor("[]")]
-	public extern static Array<T> Empty { get; }
 }
 
 public static partial class Global
 {
 	extension(Array array)
 	{
+		/// <summary>
+		/// Mirrors JavaScript's <c>Array.isArray</c> static check on the global <c>Array</c> constructor host.
+		/// </summary>
 		[Description("@#isArray")]
 		public extern static bool IsArray(object? obj);
-
-		[Jazor("[]")]
-		public extern static bool Empty { get; }
 	}
 }

@@ -23,7 +23,7 @@ public interface IObject
 	/// <summary>
 	/// Represents JavaScript index access on object-like values.
 	/// </summary>
-	IObject? this[uint index] { get; }
+	IObject? this[Number index] { get; }
 }
 
 public static partial class Global
@@ -238,6 +238,8 @@ public static partial class Global
 
 		/// <summary>
 		/// Creates an object from key-value entries.
+		/// <see cref="IEnumerable{T}"/> is used here as the common C# input surface for values
+		/// such as arrays, lists, and read-only list families that map to JavaScript arrays or iterables.
 		/// </summary>
 		/// <param name="entries">Pairs of property keys and values.</param>
 		/// <returns>A newly created JavaScript object.</returns>

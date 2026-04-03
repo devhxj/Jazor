@@ -1220,8 +1220,9 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsTrue(script!.Contains("let longText = "));
-		Assert.IsTrue(script!.Contains("very long string"));
+		Assert.AreEqual(@"{
+  let longText = ""This is a very long string that contains many characters and words to test how the compiler handles longer text content in string literals. It should be converted correctly to JavaScript without any issues."";
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	#endregion

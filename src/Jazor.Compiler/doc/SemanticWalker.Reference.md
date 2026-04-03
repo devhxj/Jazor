@@ -1,218 +1,260 @@
-# SemanticWalker.cs.Reference.cs 分析文档
+# `SemanticWalker.cs.Reference.cs`
 
-## 1. 文件概述
+## 定位
 
-**文件路径**: `core/SemanticWalker.cs.Reference.cs`
+`SemanticWalker.cs.Reference.cs` 负责把“引用类” `IOperation` 转成对应的 JavaScript AST。
 
-**职责**: 处理字段、属性、方法引用和调用操作。
+这里的“引用”不只是简单的 `obj.member`。当前文件同时处理：
 
-**代码行数**: ~584 行
+- 局部变量、参数、`this`
+- 字段、属性、索引器
+- 方法组引用、普通调用
+- 静态成员宿主修正
+- ECMAScript 运行时宿主归一化
+- 导入式宿主成员
+- `ref` / `out` 调用回写
 
-## 2. 支持的引用类型
+对应代码文件：
 
-| C# 操作 | JavaScript 结果 |
-|---------|----------------|
-| 局部变量引用 | `localVar` |
-| 参数引用 | `param` |
-| 字段引用 | `obj.field` |
-| 属性引用 | `obj.property` |
-| 方法引用 | `obj.method` (可能需要 bind) |
-| 方法调用 | `obj.method(args)` |
-| 数组索引 | `array[index]` |
-| 实例引用 (this) | `this` |
+- `src/Jazor.Compiler/core/SemanticWalker.cs.Reference.cs`
 
-## 3. 核心方法
+## 当前职责
 
-### 3.1 VisitLocalReference / VisitParameterReference
+这部分逻辑可以分成五类。
 
-```csharp
-public override Node? VisitLocalReference(ILocalReferenceOperation operation, WalkerArgument argument)
-    => new Identifier(operation.Local.Name);
+### 1. 基础引用
 
-public override Node? VisitParameterReference(IParameterReferenceOperation operation, WalkerArgument argument)
-    => new Identifier(operation.Parameter.Name);
-```
+最简单的局部变量、参数、实例引用会直接落成基础 AST：
 
-### 3.2 VisitFieldReference
+- `VisitLocalReference` -> `Identifier`
+- `VisitParameterReference` -> `Identifier`
+- `VisitInstanceReference` -> `ThisExpression` / 其他实例表达式
 
-```csharp
-public override Node? VisitFieldReference(IFieldReferenceOperation operation, WalkerArgument argument)
-{
-    // 静态常量字段特殊处理
-    if (operation.Instance is null)
-        return GetFieldName(operation, operation.Field);
+这一层没有额外运行时修正，主要负责把 Roslyn 引用节点翻译成最直接的 JS 表达形式。
 
-    // 隐式接收者
-    if (operation.Instance is IInstanceReferenceOperation instanceRef &&
-        instanceRef.ReferenceKind == InstanceReferenceKind.ImplicitReceiver)
-    {
-        return GetFieldName(operation, operation.Field);
-    }
+### 2. 成员访问
 
-    // 普通实例字段访问
-    var expr = Translate<Expression>(operation.Instance, argument);
-    return new MemberExpression(expr, new Identifier(fieldName), computed: false, optional: false);
-}
-```
+字段和属性访问都围绕 `MemberExpression` 构造，但会先经过若干映射步骤。
 
-### 3.3 VisitPropertyReference
+主要规则：
+
+- 枚举值、特殊常量字段优先走专门映射
+- 白名单别名优先于默认成员名
+- 初始化器场景优先看 setter 映射
+- 索引器和带参数属性会直接转成计算属性访问
+- 静态属性需要额外做“最终宿主选择”
+
+例如：
 
 ```csharp
-public override Node? VisitPropertyReference(IPropertyReferenceOperation operation, WalkerArgument argument)
-{
-    var instance = Translate<Expression>(operation.Instance, argument, null);
-
-    // 白名单检查
-    var mapperExpr = GetWhiteListExpression(operation.Property.GetMethod!, argument, [], instance, out var alias);
-    if (mapperExpr is not null)
-        return mapperExpr;
-
-    // 静态属性
-    if (operation.Property.IsStatic && operation.Property.ContainingType is not null)
-    {
-        var containing = BuildFullTypeName(operation.Property.ContainingType);
-        return new MemberExpression(containing, property, computed: false, optional: false);
-    }
-
-    // 实例属性
-    return new MemberExpression(instance, property, computed: false, optional: false);
-}
+array[0]
 ```
 
-### 3.4 VisitInvocation
-
-处理方法调用，包括 ref/out 参数：
+```js
+array[0]
+```
 
 ```csharp
-public override Node? VisitInvocation(IInvocationOperation operation, WalkerArgument argument)
-{
-    var instance = Translate<Expression>(operation.Instance, argument, null);
-    var refParas = new List<Expression>();
-    var arguments = new List<Expression>();
-
-    // 处理参数
-    foreach (var arg in operation.Arguments)
-    {
-        var right = Translate<Expression>(arg.Value, argument);
-        if (arg.Parameter?.RefKind is RefKind.Out or RefKind.Ref)
-            refParas.Add(right);
-        arguments.Add(right);
-    }
-
-    // 白名单检查
-    var mapperExpr = GetWhiteListExpression(operation.TargetMethod, argument, arguments, instance, out var alias);
-    if (mapperExpr is not null)
-        return BuildInvExpr(hasReturn, mapperExpr, refParas, argument);
-
-    // 构建调用
-    var callExpr = new CallExpression(callee, NodeList.From(arguments), optional: false);
-    return BuildInvExpr(hasReturn, callExpr, refParas, argument);
-}
+Console.WriteLine
 ```
 
-### 3.5 处理 ref/out 参数
+最终不会保留 `Console`，而是归一到真实运行时宿主。
+
+### 3. 方法组与普通调用
+
+`VisitMethodReference` 和 `VisitInvocation` 共用大部分宿主选择逻辑。
+
+它们都会先决定：
+
+1. 成员名是什么
+2. 宿主是谁
+3. 是否命中白名单 / intrinsic / import
+4. 是否需要把 CLR 风格宿主改成真实 JS 宿主
+
+之后再分别生成：
+
+- 方法组引用
+- `CallExpression`
+
+这也是为什么“实例调用”和“方法组引用”都能共享同一套 `Console -> console`、`Bytes -> Uint8Array` 归一化逻辑。
+
+### 4. 运行时静态宿主解析
+
+这是当前 `Reference` 语法域里最重要的特殊逻辑之一。
+
+问题本质：
+
+- 成员的声明宿主不一定等于真实 JS 运行时宿主
+- 调用点语法写下来的宿主也不一定就是最终应输出的宿主
+- 既不能只信声明宿主，也不能只信语法文本
+
+典型例子：
 
 ```csharp
-Expression BuildInvExpr(bool hasReturns, Expression expr, List<Expression> refs, WalkerArgument ctx)
-{
-    if (refs.Count > 0)
-    {
-        // 使用临时变量存储返回值
-        // 返回值 + ref 参数值 组成数组
-        // 生成逗号表达式
-        var tempId = new Identifier(GetUniqueName(operation));
-        var declarator = new VariableDeclarator(tempId, null);
-        ctx.AddVarDeclarator(declarator, _recursionDepth);
+using Bytes = ECMAScript.Uint8Array;
 
-        expressions.Add(new AssignmentExpression(Operator.Assignment, tempId, expr));
-        // 从数组中提取 ref 参数值
-        // ...
-        return new SequenceExpression(NodeList.From(expressions));
-    }
-    return expr;
-}
+var bytes = Bytes.Of(1, 2, 3);
+Number size = Bytes.BYTES_PER_ELEMENT;
+Func<byte[], Uint8Array> factory = Bytes.Of;
 ```
 
-### 3.6 VisitArrayElementReference
+应输出：
 
-处理数组索引和范围操作：
+```js
+let bytes = Uint8Array.of(1, 2, 3);
+let size = Uint8Array.BYTES_PER_ELEMENT;
+let factory = Uint8Array.of;
+```
+
+当前实现依赖这组 helper：
+
+- `TryBuildPreferredRuntimeStaticMemberAccess(...)`
+  统一决定静态属性、静态方法、方法组引用的最终宿主
+- `TryGetStaticSourceHostTypeFromSyntax(...)`
+  从调用点语法 + `SemanticModel` 恢复实际宿主类型
+- `IsStaticHostOverrideCompatible(...)`
+  用继承链、接口实现、泛型原型定义判断能否安全覆盖声明宿主
+- `TryGetSpecializedRuntimeHostType(...)`
+  从 self-typed 泛型约束恢复更具体的运行时宿主
+- `TryBuildRuntimeHostExpression(...)`
+  把宿主类型映射成最终 JS host 表达式
+
+更完整说明见：
+
+- [RuntimeStaticHostResolution.md](./RuntimeStaticHostResolution.md)
+
+### 5. `ref` / `out` 回写
+
+`VisitInvocation` 里对 `ref` / `out` 参数不会尝试模拟 CLR 引用语义对象。
+
+当前策略是：
+
+- 先把调用结果存到临时变量
+- 再从返回结构中依次回写 `ref` / `out` 参数
+- 用逗号表达式把“调用 + 回写 + 最终值”串起来
+
+这和当前编译器其他 lowering 保持一致：优先保持结果等价和求值顺序正确，而不是引入新的运行时包装层。
+
+## 名称与宿主选择顺序
+
+当前 `Reference` 路径里，成员名和宿主大致按下面顺序确定。
+
+### 1. 成员名
+
+优先级：
+
+1. 白名单别名
+2. 显式名称配置
+3. 默认符号名
+
+这部分和 `Util.GetConfigOrSymbolName(...)`、`GetMethodConfigOrWhiteListName(...)`、`GetInitializerMemberName(...)` 配合完成。
+
+### 2. 宿主
+
+普通情况下，宿主来源于：
+
+- 实例表达式本身
+- `BuildFullTypeName(...)`
+- 导入式模块成员
+
+ECMAScript 运行时映射场景下，还会额外经过：
+
+- `NormalizeRuntimeReceiverHostInstance(...)`
+- `NormalizeRuntimeReceiverHostCallee(...)`
+- `TryBuildPreferredRuntimeStaticMemberAccess(...)`
+
+也就是说，`Reference` 最终产出的不是“按 C# 文本直接拼出来的宿主”，而是“在当前规则下最接近真实 JS runtime shape 的宿主”。
+
+## 运行时宿主归一化
+
+当前文件明确处理了一类很常见的割裂来源：C# 为了可书写性必须保留 CLR 风格名称，但 JS 运行时实际是另一个宿主名。
+
+典型例子：
 
 ```csharp
-public override Node? VisitArrayElementReference(IArrayElementReferenceOperation operation, WalkerArgument argument)
-{
-    if (operation.Indices.Length != 1)
-        return HandleTransformationFailure<Node>(operation, "Multi-dimensional array access is not supported");
-
-    // 从末尾索引: array[^1] → array[array.length - 1]
-    // 范围操作: array[1..^4] → array.slice(1, array.length - 4)
-    // 普通索引: array[0]
-}
+Console.WriteLine("x");
 ```
 
-## 4. 特殊常量字段处理
+输出：
 
-GetFieldName 处理特殊常量：
-
-```csharp
-private Expression GetFieldName(IOperation includeOp, IFieldSymbol symbol)
-{
-    return (symbol.Name, symbol.ContainingType.SpecialType) switch
-    {
-        ("PositiveInfinity", SpecialType.System_Double) => new Identifier("Infinity"),
-        ("NegativeInfinity", SpecialType.System_Double) => new Identifier("-Infinity"),
-        ("NaN", SpecialType.System_Double) => new Identifier("NaN"),
-        ("Epsilon", SpecialType.System_Double) => new MemberExpression(new Identifier("Number"), new Identifier("EPSILON"), ...),
-        ("MaxValue", SpecialType.System_Double) => new MemberExpression(new Identifier("Number"), new Identifier("MAX_VALUE"), ...),
-        // ...
-    };
-}
+```js
+console.log("x");
 ```
 
-## 5. 已知缺陷
+这里不是简单“成员重命名”。
 
-### 5.1 高优先级缺陷
+完整过程通常包含两层：
 
-| 缺陷 | 影响 | 建议修复方案 |
-|------|------|-------------|
-| **ref/out 参数处理复杂** | 生成代码冗长 | 优化 ref/out 处理逻辑 |
-| **方法引用 bind 不完整** | this 绑定可能错误 | 完善 this 绑定检测 |
+1. `WriteLine` -> `log`
+2. `Console` -> `console`
 
-### 5.2 中优先级缺陷
+前者主要由白名单/名称映射负责，后者主要由 `Reference` 里的运行时宿主归一化负责。
 
-| 缺陷 | 影响 | 建议修复方案 |
-|------|------|-------------|
-| **扩展方法处理** | 需要特殊处理 | 完善扩展方法支持 |
-| **静态方法调用路径** | 可能生成冗长的路径 | 优化静态方法调用 |
+## 导入式宿主
 
-## 6. AST 节点映射
+如果类型带有 `[ECMAScriptModule(...)]`，`Reference` 会优先把对应成员视为导入式宿主成员。
 
-| C# 操作 | JavaScript AST | 备注 |
-|---------|---------------|------|
-| 变量引用 | `Identifier` | 直接名称 |
-| 字段/属性访问 | `MemberExpression` | computed=false |
-| 方法调用 | `CallExpression` | callee + arguments |
-| 数组索引 | `MemberExpression` | computed=true |
-| 条件访问 | `MemberExpression` | optional=true |
-| this | `ThisExpression` | - |
+当前行为：
 
-## 7. 测试覆盖
+- 引用阶段会把 `ImportSpecifier` 合并到上下文
+- 成员访问本身直接落成局部标识符引用
+- 模块根类型不会重复把自己当成导入成员
 
-**当前状态**: ~50 个测试
+这让“按模块导入的宿主类型”和“全局运行时宿主类型”能共用同一套引用转换入口。
 
-**测试场景**：
-- ✅ 局部变量引用
-- ✅ 参数引用
-- ✅ 字段引用
-- ✅ 属性引用
-- ✅ 方法调用
-- ✅ 数组索引
-- ✅ ref/out 参数
+## 特殊字段与边界值
 
-## 8. 相关文档
+`GetFieldName(...)` 还承担一部分运行时常量映射：
+
+- `double.PositiveInfinity` -> `Infinity`
+- `double.NaN` / `float.NaN` -> `NaN`
+- `double.Epsilon` -> `Number.EPSILON`
+- `double.MaxValue` -> `Number.MAX_VALUE`
+- `long.MaxValue` / `long.MinValue` -> bigint 字面量
+
+这部分属于“字段引用路径里的值语义修正”，不是单独的 creation / ordinary 逻辑。
+
+## 当前边界
+
+这份文件当前解决的是“引用与调用如何落成正确 JS 访问路径”。
+
+它没有试图做这些事情：
+
+- 模拟完整 CLR overload dispatch
+- 建立独立的运行时包装宿主层
+- 为所有继承问题提供统一 CLR 级语义仿真
+- 让 `ref` / `out` 变成真实引用对象
+
+换句话说，这里的目标一直是：
+
+- 保持当前编译器 lowering 结果稳定
+- 尽量恢复真实 JS 运行时 shape
+- 不额外制造 C# / JS 的新割裂
+
+## 相关测试
+
+主要测试在：
+
+- `src/Jazor.CompilerTest/SemanticWalkerReferenceTest.cs`
+
+其中建议重点关注这些场景：
+
+- 运行时宿主归一化
+- 静态宿主选择
+- `using` 类型别名不泄漏到 JS
+- 方法组引用与普通调用共用宿主修正
+- 索引器和数组元素访问
+- `ref` / `out` 回写
+
+与静态宿主解析直接相关的测试示例：
+
+- `Visit_MethodReference_TypedArrayStaticMethod_UsesConcreteRuntimeHost`
+- `Visit_Reference_TypedArrayAliasHost_UsesConcreteRuntimeHost`
+- `Visit_Reference_RuntimeStaticProperty_UsesImplicitEcmascriptMemberName`
+
+## 相关文档
 
 - [SemanticWalker.md](./SemanticWalker.md)
 - [SemanticWalker.WhiteList.md](./SemanticWalker.WhiteList.md)
-
----
-
-**最后更新**: 2026-03-03
+- [RuntimeStaticHostResolution.md](./RuntimeStaticHostResolution.md)
+- [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)

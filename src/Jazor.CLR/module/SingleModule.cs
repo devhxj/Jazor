@@ -17,6 +17,28 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "float","Number")]
 public static class SingleModule
 {
+	private static bool AreEqualCore(Number left, Number right)
+	{
+		if (IsNaN(left) || IsNaN(right))
+			return IsNaN(left) && IsNaN(right);
+
+		return !(left < right) && !(left > right);
+	}
+
+	private static Number CompareCore(Number left, Number right)
+	{
+		if (IsNaN(left))
+			return IsNaN(right) ? 0 : -1;
+		if (IsNaN(right))
+			return 1;
+		if (left < right)
+			return -1;
+		if (left > right)
+			return 1;
+
+		return 0;
+	}
+
 	// 常量 - 使用 Op.Inline
 	[Jazor(Op.Inline, "static float.MinValue", "-3.4028235E+38")]
 	public extern static Number _minValue();
@@ -60,9 +82,9 @@ public static class SingleModule
 
 	/// <summary>
 	/// C#: float.IsInfinity(f)
-	/// JS: !isFinite(f)
+	/// JS: f === Infinity || f === -Infinity
 	/// </summary>
-	[Jazor(Op.Inline, "static float.IsInfinity(float)", "!isFinite(__arg1)")]
+	[Jazor(Op.Inline, "static float.IsInfinity(float)", "(__arg1 === Infinity || __arg1 === -Infinity)")]
 	public extern static bool _47887f5e1e35e199(Number f);
 
 	/// <summary>
@@ -103,16 +125,24 @@ public static class SingleModule
 
 	/// <summary>
 	/// C#: float.CompareTo(object)
-	/// JS: instance - (value ?? 0)
+	/// JS: 与 .NET 一致的 CompareTo 规则，单独处理 null 和 NaN
 	/// </summary>
-	[Jazor(Op.Inline, "float.CompareTo(object)", "(__arg1 - (__arg2 ?? 0))")]
-	public extern static Number _0b80f2f2f1a3c1a6(Number instance, object? value);
+	[Jazor(Op.Import, "float.CompareTo(object)")]
+	public static Number _0b80f2f2f1a3c1a6(Number instance, object? value)
+	{
+		if (value == null)
+			return 1;
+		if (TypeOf(value) != "number")
+			throw new Error("ArgumentException: Object must be of type Single.");
+
+		return CompareCore(instance, (Number)value);
+	}
 
 	/// <summary>
 	/// C#: float.CompareTo(float)
-	/// JS: instance - value
+	/// JS: 直接内联 CompareCore 的 NaN / 比较规则
 	/// </summary>
-	[Jazor(Op.Inline, "float.CompareTo(float)", "(__arg1 - __arg2)")]
+	[Jazor(Op.Inline, "float.CompareTo(float)", "(isNaN(__arg1) ? (isNaN(__arg2) ? 0 : -1) : (isNaN(__arg2) ? 1 : (__arg1 < __arg2 ? -1 : (__arg1 > __arg2 ? 1 : 0))))")]
 	public extern static Number _f6880f77edc2efe5(Number instance, Number value);
 
 	///<summary>Returns a value that indicates whether two specified <xref data-throw-if-not-resolved="true" uid="System.Single"></xref> values are equal.</summary>
@@ -141,16 +171,22 @@ public static class SingleModule
 
 	/// <summary>
 	/// C#: float.Equals(object)
-	/// JS: instance === obj
+	/// JS: 与 .NET 一致，NaN.Equals(NaN) 返回 true
 	/// </summary>
-	[Jazor(Op.Inline, "override float.Equals(object)", "(__arg1 === __arg2)")]
-	public extern static bool _eb69b50c7032a809(Number instance, object? obj);
+	[Jazor(Op.Import, "override float.Equals(object)")]
+	public static bool _eb69b50c7032a809(Number instance, object? obj)
+	{
+		if (obj == null || TypeOf(obj) != "number")
+			return false;
+
+		return AreEqualCore(instance, (Number)obj);
+	}
 
 	/// <summary>
 	/// C#: float.Equals(float)
-	/// JS: instance === obj
+	/// JS: 直接内联 AreEqualCore，保留 NaN.Equals(NaN) == true
 	/// </summary>
-	[Jazor(Op.Inline, "float.Equals(float)", "(__arg1 === __arg2)")]
+	[Jazor(Op.Inline, "float.Equals(float)", "(isNaN(__arg1) ? isNaN(__arg2) : (isNaN(__arg2) ? false : (!(__arg1 < __arg2) && !(__arg1 > __arg2))))")]
 	public extern static bool _5c45db76bd764c38(Number instance, Number obj);
 
 	///<summary>Returns the hash code for this instance.</summary>

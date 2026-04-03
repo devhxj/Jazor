@@ -94,20 +94,23 @@ public static class BigIntegerModule
 			var view = new DataView(buffer);
 			value.ForEach((item, index) => view.SetUint8(index, item));
 
-			return value.Length switch
-			{
-				2 => isUnsigned ?
-					BigInt_(view.GetUint16(0, !isBigEndian)) :
-					BigInt_(view.GetInt16(0, !isBigEndian)),
-				4 => isUnsigned ?
-					BigInt_(view.GetUint32(0, !isBigEndian)) :
-					BigInt_(view.GetInt32(0, !isBigEndian)),
-				8 => isUnsigned ?
-					view.GetBigUint64(0, !isBigEndian) :
-					view.GetBigInt64(0, !isBigEndian),
-				// 3/5/6/7字节长度使用非标准处理
-				_ => ProcessNonStandardLength(value, isUnsigned, isBigEndian)
-			};
+			if (value.Length == 2)
+				return isUnsigned
+					? BigInt_(view.GetUint16(0, !isBigEndian))
+					: BigInt_(view.GetInt16(0, !isBigEndian));
+
+			if (value.Length == 4)
+				return isUnsigned
+					? BigInt_(view.GetUint32(0, !isBigEndian))
+					: BigInt_(view.GetInt32(0, !isBigEndian));
+
+			if (value.Length == 8)
+				return isUnsigned
+					? view.GetBigUint64(0, !isBigEndian)
+					: view.GetBigInt64(0, !isBigEndian);
+
+			// 3/5/6/7字节长度使用非标准处理
+			return ProcessNonStandardLength(value, isUnsigned, isBigEndian);
 		}
 
 		// 处理超过8字节以上的非标准长度

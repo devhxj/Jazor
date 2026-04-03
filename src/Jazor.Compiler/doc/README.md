@@ -1,11 +1,10 @@
-# Jazor.Compiler 核心代码分析索引
+# Jazor.Compiler 文档索引
 
 ## 概述
 
-本文档汇总 Jazor.Compiler 项目核心代码文件的设计思路、缺陷和需完善内容。
+本文档汇总 Jazor.Compiler 当前仍然有参考价值的设计说明、实现说明和专题文档。
 
-**分析时间**: 2026-03-06
-**分析依据**: rule.md v1.0
+这里优先指向“当前实现事实”和“已确认的设计约束”，不再把历史分析、阶段性判断和已过时的缺陷列表作为主入口。
 
 ## 推荐阅读路径
 
@@ -17,6 +16,8 @@
 4. [TransformationRoadmap.md](./TransformationRoadmap.md)
 5. [WhiteList.md](./WhiteList.md)
 6. [SemanticWalker.md](./SemanticWalker.md)
+7. [SourceMap.DecisionSummary.md](./SourceMap.DecisionSummary.md)
+8. [RuntimeStaticHostResolution.md](./RuntimeStaticHostResolution.md)
 
 ---
 
@@ -34,17 +35,26 @@
 | `Optimizer.cs` | AST 优化器 | [Optimizer.md](./Optimizer.md) |
 | `ESGenerator.cs` | 增量源生成器 | [ESGenerator.md](./ESGenerator.md) |
 | `Transformation Pipeline` | 端到端语法转化总说明 | [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md) |
+| `Runtime Static Host Resolution` | 运行时静态成员宿主选择与继承兼容规则 | [RuntimeStaticHostResolution.md](./RuntimeStaticHostResolution.md) |
 | `Architecture Overview` | 编译器整体方案架构图与职责边界 | [ArchitectureOverview.md](./ArchitectureOverview.md) |
 | `Architecture Simplified` | 面向新成员和汇报的一页版架构说明 | [ArchitectureOverview.Simplified.md](./ArchitectureOverview.Simplified.md) |
 | `Transformation Roadmap` | 闭环状态、欠账和下一阶段动作 | [TransformationRoadmap.md](./TransformationRoadmap.md) |
 | `Module Conversion Spec` | 模块层转换规范 | [ModuleConversionSpec.md](./ModuleConversionSpec.md) |
 | `Walker Extension Spec` | `SemanticWalker` 扩展规范 | [WalkerExtensionSpec.md](./WalkerExtensionSpec.md) |
 | `Inline AST Template Spec` | `Op.Inline` 的 AST 模板规范 | [InlineAstTemplateSpec.md](./InlineAstTemplateSpec.md) |
+| `OpCompile Spec` | `Op.Compile` 的分发语义与边界约定 | [OpCompileSpec.md](./OpCompileSpec.md) |
+| `OpCompile Checklist` | `Op.Compile` 的分阶段实施清单 | [OpCompileImplementationChecklist.md](./OpCompileImplementationChecklist.md) |
 | `Closure Checklist` | 转化链路闭环清单 | [TransformationClosureChecklist.md](./TransformationClosureChecklist.md) |
+| `SourceMap Decision Summary` | sourcemap 简版决策摘要 | [SourceMap.DecisionSummary.md](./SourceMap.DecisionSummary.md) |
+| `SourceMap Overview` | sourcemap 文档总览与阅读顺序 | [SourceMap.Overview.md](./SourceMap.Overview.md) |
+| `SourceMap Design` | sourcemap 完整设计方案 | [SourceMap.Design.md](./SourceMap.Design.md) |
+| `SourceMap Checklist` | sourcemap 后续实施清单 | [SourceMap.ImplementationChecklist.md](./SourceMap.ImplementationChecklist.md) |
+| `SourceMap Pitfalls` | sourcemap 实施注意事项与易踩坑清单 | [SourceMap.Pitfalls.md](./SourceMap.Pitfalls.md) |
+| `SourceMap Hard Rules` | sourcemap 第一阶段必须遵守的硬约束 | [SourceMap.HardRules.md](./SourceMap.HardRules.md) |
 
 ---
 
-## SemanticWalker 分部文件分析
+## SemanticWalker 分部文件索引
 
 | 文件 | 职责 | 行数 | 文档 |
 |------|------|------|------|
@@ -63,52 +73,6 @@
 | `SemanticWalker.cs.NotSupport.cs` | 不支持的操作 | ~525 | [SemanticWalker.NotSupport.md](./SemanticWalker.NotSupport.md) |
 | `SemanticWalker.cs.WhiteList.cs` | 白名单处理 | ~130 | [SemanticWalker.WhiteList.md](./SemanticWalker.WhiteList.md) |
 | `SemanticWalker.cs.Generate.cs` | 白名单生成 | 自动生成 | - |
-
----
-
-## 缺陷汇总
-
-### 按优先级分类
-
-#### 🔴 P0 - 严重缺陷
-
-| 缺陷 | 文件 | 影响 |
-|------|------|------|
-| ESGenerator 未实际转换 AST 到 JavaScript | ESGenerator.cs | 生成的代码无效 |
-
-#### 🟡 P1 - 高优先级缺陷
-
-| 缺陷 | 文件 | 影响 |
-|------|------|------|
-| 不支持嵌套类扁平化 | AstConverter.cs | 嵌套类转换失败 |
-| 导入声明未实际生成 | WalkerArgument.cs, AstConverter.cs | 无法导入外部模块 |
-| 白名单数据不一致风险 | WhiteList.cs | 编译器和分析器可能不同步 |
-| 解构赋值复杂度高 | SemanticWalker.cs.Tuple.cs | 代码难以维护 |
-
-#### 🟢 P2 - 中优先级缺陷
-
-| 缺陷 | 文件 | 影响 |
-|------|------|------|
-| 异步方法未标记 async | AstConverter.cs | async/await 功能不完整 |
-| 不支持泛型类 | AstConverter.cs | 泛型类无法转换 |
-| 不支持继承 | AstConverter.cs | 继承的成员未处理 |
-| 副作用检测不完整 | Optimizer.cs | 可能错误优化 |
-| 缺少常量折叠优化 | Optimizer.cs | 简单表达式未简化 |
-| 查询性能优化 | WhiteList.cs | 字符串比较性能一般 |
-| 模式匹配 switch 未完全实现 | SemanticWalker.cs.Switch.cs | 某些场景可能失败 |
-| 多维数组不支持 | SemanticWalker.cs.Creation.cs | new int[,] 转换失败 |
-
----
-
-## 已解决的缺陷
-
-| 缺陷 | 解决版本 | 解决方案 |
-|------|----------|----------|
-| 模式匹配依赖向上遍历 | v1.1 | 通过 `SenseArgument.PatternInput` 显式传递 |
-| 变量声明位置分散 | v1.2 | `VisitBlock` flush 移到循环后，声明提升到块顶 |
-| 函数体变量泄漏到外部块 | v1.2 | `VisitLocalFunction`/`VisitAnonymousFunction` 使用 `WithNewScope()` |
-| try/catch/finally 体变量泄漏 | v1.2 | 各自使用 `WithNewScope()` 隔离 |
-| switch case 体变量泄漏 | v1.2 | `VisitSwitchPatternMatching` 使用 `WithNewScope()` |
 
 ---
 
@@ -137,105 +101,37 @@
 
 ---
 
-## 各分部文件缺陷详情
+## 使用建议
 
-### SemanticWalker.cs.Pattern.cs
+如果只是想快速建立当前实现认知，推荐按这个顺序阅读：
 
-| 缺陷 | 影响 | 建议修复方案 |
-|------|------|-------------|
-| 列表模式生成的代码冗长 | 性能和可读性问题 | 优化生成更简洁的检查链 |
+1. [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)
+2. [SemanticWalker.md](./SemanticWalker.md)
+3. [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
+4. [SemanticWalker.Tuple.md](./SemanticWalker.Tuple.md)
+5. [RuntimeStaticHostResolution.md](./RuntimeStaticHostResolution.md)
 
-### SemanticWalker.cs.Loop.cs
+如果问题落在宿主 API 映射、运行时 shape 或命名边界，优先看：
 
-| 缺陷 | 影响 | 建议修复方案 |
-|------|------|-------------|
-| foreach 不支持异步迭代标记 | `await foreach` 可能不正确 | 检查 `@await` 标记 |
-| for 循环初始化多变量声明可能不完整 | 某些复杂声明可能失败 | 完善多声明处理逻辑 |
+- [WhiteList.md](./WhiteList.md)
+- [SemanticWalker.WhiteList.md](./SemanticWalker.WhiteList.md)
+- [OpCompileSpec.md](./OpCompileSpec.md)
+- [OpCompileImplementationChecklist.md](./OpCompileImplementationChecklist.md)
+- [RuntimeStaticHostResolution.md](./RuntimeStaticHostResolution.md)
 
-### SemanticWalker.cs.Switch.cs
+如果问题落在 sourcemap，优先看：
 
-| 缺陷 | 影响 | 建议修复方案 |
-|------|------|-------------|
-| 模式匹配 switch 未完全实现 | `VisitSwitchPatternMatching` 未在当前文件中 | 实现完整 IIFE 生成逻辑 |
-| fallthrough 处理不完整 | C# 不支持 fallthrough 但 JS 需要 break | 确保每个 case 添加 break |
-
-### SemanticWalker.cs.String.cs
-
-| 缺陷 | 影响 | 建议修复方案 |
-|------|------|-------------|
-| 格式化说明符未处理 | `{value:F2}` 格式丢失 | 解析格式说明符并生成对应代码 |
-| CultureInfo 未考虑 | 区域性格式化被忽略 | 添加区域性感知处理 |
-
-### SemanticWalker.cs.Creation.cs
-
-| 缺陷 | 影响 | 建议修复方案 |
-|------|------|-------------|
-| 多维数组不支持 | `new int[,]` 转换失败 | 设计替代方案或明确拒绝 |
-| 集合初始化器方法调用不完整 | 复杂初始化可能失败 | 完善 Add 方法处理 |
-
-### SemanticWalker.cs.Tuple.cs
-
-| 缺陷 | 影响 | 建议修复方案 |
-|------|------|-------------|
-| 解构赋值复杂度高 | 代码难以维护 | 重构为独立的解构服务 |
-| 自定义 Deconstruct 处理不完整 | 某些场景可能失败 | 完善方法查找和调用 |
-
-### SemanticWalker.cs.Invalid.cs
-
-| 缺陷 | 影响 | 建议修复方案 |
-|------|------|-------------|
-| 语义信息丢失 | 无类型信息可能导致错误转换 | 尽量在 IOperation 层面处理 |
-| 不支持所有语法节点 | 某些节点会抛出异常 | 扩展支持的语法节点类型 |
-
----
-
-## 改进路线图
-
-### Phase 1: 核心功能修复
-
-1. **ESGenerator 实际转换** - 实现 AST 到 JavaScript 代码的转换
-2. **嵌套类支持** - 实现嵌套类扁平化处理
-
-### Phase 2: 代码质量提升
-
-1. ~~**WalkerArgument 优化**~~ - ✅ 已完成（SenseArgument）
-2. ~~**模式匹配重构**~~ - ✅ 已完成（PatternInput 传递）
-3. ~~**变量声明集中化**~~ - ✅ 已完成（块顶提升）
-4. ~~**函数边界隔离**~~ - ✅ 已完成（WithNewScope）
-
-### Phase 3: 功能完善
-
-1. **异步支持完善** - 标记 async 方法
-2. **泛型支持** - 添加泛型参数处理
-3. **继承支持** - 遍历基类成员
-
----
-
-## 测试覆盖状态
-
-| 模块 | 状态 | 测试数量 |
-|------|------|---------|
-| 模式匹配 (Pattern) | ✅ 完整 | ~150 |
-| 循环语句 (Loop) | ✅ 完整 | ~50 |
-| Switch | ✅ 完整 | ~80 |
-| 字符串插值 (String) | ✅ 完整 | ~30 |
-| 异常处理 (TryCatch) | ✅ 完整 | ~40 |
-| 元组 (Tuple) | ✅ 完整 | ~30 |
-| 创建表达式 (Creation) | ✅ 完整 | ~40 |
-| 引用操作 (Reference) | ✅ 完整 | ~50 |
-| 变量声明 (Declaration) | ✅ 完整 | ~30 |
-| 普通运算 (Ordinary) | ✅ 完整 | ~33 |
-| 无效操作处理 (Invalid) | ✅ 完整 | ~20 |
-| **总计** | **✅ 全部通过** | **533** |
+- [SourceMap.DecisionSummary.md](./SourceMap.DecisionSummary.md)
+- [SourceMap.Design.md](./SourceMap.Design.md)
+- [SourceMap.ImplementationChecklist.md](./SourceMap.ImplementationChecklist.md)
 
 ---
 
 ## 相关文档
 
-- [rule.md](../rule.md) - 开发规则文档
-- [task.md](../task.md) - 任务追踪文档
-- [readme.md](../readme.md) - 项目说明
+- [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)
+- [SemanticWalker.md](./SemanticWalker.md)
+- [WhiteList.md](./WhiteList.md)
+- [RuntimeStaticHostResolution.md](./RuntimeStaticHostResolution.md)
 
 ---
-
-**最后更新**: 2026-03-06

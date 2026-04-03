@@ -89,6 +89,78 @@ public sealed class SemanticWalkerStringTest
 }", script);
 	}
 
+	[TestMethod]
+	public void Visit_String_Includes_WithPosition()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    string value = ""hello"";
+                    bool hasEll = value.Includes(""ell"", 1);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let value = ""hello"";
+  let hasEll = value.includes(""ell"", 1);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_String_LocaleCompare_ReturnsNumberShape()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    string left = ""a"";
+                    Number result = left.LocaleCompare(""b"");
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let left = ""a"";
+  let result = left.localeCompare(""b"");
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_String_LocaleCompare_WithLocaleArray()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    string left = ""a"";
+                    Number result = left.LocaleCompare(""b"", new[] { ""en-US"", ""zh-CN"" });
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let left = ""a"";
+  let result = left.localeCompare(""b"", [""en-US"", ""zh-CN""]);
+}", script);
+	}
+
 	#region 简单插值字符串测试
 
 	/// <summary>
@@ -1553,8 +1625,8 @@ ${name}!`;
 
 		AssertScriptEqual(@"{
   let text = ""Hello"";
-  let first = _5ad63706a889c294(text, 0);
-  let last = _5ad63706a889c294(text, text.length - 1);
+  let first = text[0];
+  let last = text[text.length - 1];
 }", script);
 	}
 

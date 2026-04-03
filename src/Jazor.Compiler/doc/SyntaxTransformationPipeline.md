@@ -58,7 +58,7 @@
 | `[ECMAScriptInline]` | 用户自带 JS 代码 | 预留扩展点 | 未统一接入 |
 | `[Jazor(Op.Alias)]` | 宿主名映射 | `WhiteList`、`SemanticWalker` | 已进入主链路 |
 | `[Jazor(Op.Inline)]` | 简单模板表达式 | `WhiteList`、`SemanticWalker` | 已进入主链路，但有结构性风险 |
-| `[Jazor(Op.Import)]` | 导入式宿主实现 | `SemanticWalker`、`SenseArgument` | 只收集，未完整输出 |
+| `[Jazor(Op.Import)]` | 导入式宿主实现 | `SemanticWalker`、`SenseArgument`、`AstConverter` | 已进入主链路 |
 | `[Jazor(Op.Compile)]` | 复杂宿主编译钩子 | Generator 基础设施 | 已生成，未完整接入 |
 
 ## 3. 总体转化流水线
@@ -80,7 +80,37 @@ ECMAScript / Jazor.CLR 运行库
                                   └─ Acornima AST
 ```
 
-注意：当前 `ESGenerator` 仍输出占位 JavaScript 文本，尚未把真实 AST 序列化结果接到最终源码输出，这属于已知未闭环点。
+注意：当前 `ESGenerator` 已经把真实 AST 序列化结果收集进生成的模块目录表，但它输出的是 C# catalog，而不是直接落盘 `.mjs` 文件。
+
+### 3.2 与 SourceMap 的关系
+
+当前 sourcemap 方案已经确定，但实现明确延后到编译器主体稳定之后。
+
+原因是 sourcemap 在本项目里不是单纯的“文本附属文件”，而是依赖整条转化链路的稳定结构：
+
+```text
+Roslyn IOperation
+    -> SemanticWalker / AstConverter 给 AST 节点标源来源
+    -> JavaScript writer 输出文本并构建 source map
+    -> ESGenerator / Emit 写出 .mjs 与 .mjs.map
+```
+
+这意味着：
+
+1. sourcemap 不能在 `SemanticWalker` 内直接拼 `mappings`
+2. 也不能等到 emit 阶段再从最终 JS 文本反推
+3. 它必须建立在稳定 lowering 结果之上
+
+当前决策是：
+
+- 先完成编译器主体
+- 再按“三层方案”接入 sourcemap
+
+详见：
+
+- [SourceMap.DecisionSummary.md](./SourceMap.DecisionSummary.md)
+- [SourceMap.Design.md](./SourceMap.Design.md)
+- [SourceMap.ImplementationChecklist.md](./SourceMap.ImplementationChecklist.md)
 
 ### 3.1 事实优先级
 
@@ -89,7 +119,7 @@ ECMAScript / Jazor.CLR 运行库
 1. 当前源码实现
 2. 当前测试断言
 3. 新总说明文档
-4. 旧分析文档 / rule 文档 / README 中的历史表述
+4. 旧版文档 / rule 文档 / README 中的历史表述
 
 这样做的原因是：本仓库已有多份历史文档包含阶段性判断，不能直接视为现状。
 
@@ -118,14 +148,21 @@ ECMAScript / Jazor.CLR 运行库
 
 ### 4.3 现状与风险
 
-- `Inline` 当前实现是“参数 AST → JavaScript 字符串 → 模板替换 → Parser 再解析”。
-- 这适合简单表达式，不适合对象字面量、逗号表达式、复杂 tuple/collection 场景。
+- `Inline` 当前实现已经升级为“模板预解析 AST + 占位符重写 + 缓存复用”。
+- 这解决了旧方案里“参数先转字符串再 parse”导致的结构不稳定问题。
+- `Inline` 现在的主要风险不再是实现机制本身，而是边界误用：
+  - 把需要控制求值顺序、临时变量或参数形状分支的语义继续塞进模板
+  - 把应由 `Op.Compile` 接管的逻辑继续停留在声明式模板层
+- `Op.Compile` 的分发基础设施已生成，但主入口尚未优先接入；同时当前 `Compile(handler, args)` contract 仍偏窄，天然更适合表达式级钩子，而不是完整 lowering 子系统。
 - 已选定的演进策略是：
   1. 保留 `Inline` 的字符串声明方式
-  2. 内部实现升级为“模板 AST + 占位符替换”
+  2. 内部持续使用“模板 AST + 占位符替换”
   3. 复杂宿主语义继续落到 `Op.Compile`
 
-具体方案见 [InlineAstTemplateSpec.md](./InlineAstTemplateSpec.md)。
+具体方案见：
+
+- [InlineAstTemplateSpec.md](./InlineAstTemplateSpec.md)
+- [OpCompileSpec.md](./OpCompileSpec.md)
 
 ## 5. Analyzer 约束边界
 
@@ -166,9 +203,9 @@ Analyzer 的职责不是生成代码，而是收紧输入域。凡是 Analyzer �
 - `public`、`internal` 视为模块公开成员
 - 其他访问级别视为私有，不导出
 
-### 6.4 当前未闭环点
+### 6.4 当前边界与扩展点
 
-- `_imports` 列表尚未由 `SenseArgument` 回填，`Op.Import` 还不能真正生成 `ImportDeclaration`
+- 顶层模块类型当前仍要求 `public` 且为顶层类型
 - 方法统一生成为 `async: false`、`generator: false`，与 `SemanticWalker` 某些函数级推断还未对齐
 - 单个 `SemanticModel` 被复用于所有 `DeclaringSyntaxReferences`，跨文件/partial 声明存在脆弱性
 
@@ -199,7 +236,7 @@ Analyzer 的职责不是生成代码，而是收紧输入域。凡是 Analyzer �
 - 变量声明提升：`AddVarDeclarator` / `FlushVarDeclarator`
 - 导入规范收集：`MergeImportSpecifier`
 
-其中变量声明提升已经在多个 block/try/catch/function 路径中实际使用；导入收集目前只收集、不落盘。
+其中变量声明提升已经在多个 block/try/catch/function 路径中实际使用；导入收集也已经通过 `AstConverter` 提升为模块级 `ImportDeclaration`。
 
 ### 7.3 语法域划分
 
@@ -219,6 +256,29 @@ Analyzer 的职责不是生成代码，而是收紧输入域。凡是 Analyzer �
 
 文档、代码、测试三者在目录结构上是一一对应的，这也是未来扩展新语法时应保持的组织方式。
 
+### 7.3.1 `Reference` 语法域里的运行时宿主修正
+
+`Reference` 不只是“把字段/属性/方法访问翻译成成员表达式”。
+
+它还承担一类很关键的运行时对齐工作：
+
+- 当 C# 声明宿主和 JS 真实宿主不一致时，修正最终宿主
+- 当静态成员声明在基类上、但运行时应挂到具体子类型上时，保留具体宿主
+- 当调用点使用 `using` 类型别名时，避免把别名名词泄漏到最终 JS
+
+例如：
+
+- `Console.WriteLine` -> `console.log`
+- `Bytes.Of(...)` -> `Uint8Array.of(...)`
+- `Uint8Array.BYTES_PER_ELEMENT` 不应退回成 `TypedArray.BYTES_PER_ELEMENT`
+
+这部分不是单纯的白名单改名，而是“运行时静态宿主解析”问题，当前由
+`SemanticWalker.cs.Reference.cs` 内部一组 helper 统一处理。
+
+详见：
+
+- [RuntimeStaticHostResolution.md](./RuntimeStaticHostResolution.md)
+
 ### 7.4 语法域决策矩阵
 
 新增一个 C# 语法点时，应先判断它属于哪一层问题：
@@ -227,7 +287,7 @@ Analyzer 的职责不是生成代码，而是收紧输入域。凡是 Analyzer �
 |----------|----------|----------|------|
 | 模块成员拆解 | `AstConverter` | 静态字段、模块级属性、嵌套类 | 影响 module 顶层结构 |
 | 语义表达式/语句转换 | `SemanticWalker` | 模式匹配、解构、条件访问 | 影响 `IOperation -> ESTree` |
-| 宿主 API 改写 | `WhiteList` | `Console.WriteLine -> console.log` | 影响符号级映射 |
+| 宿主 API 改写 | `WhiteList` + `SemanticWalker.Reference` | `Console.WriteLine -> console.log` | 白名单负责成员映射，引用域负责最终宿主修正 |
 | 复杂宿主语义 | `Op.Compile` | 需要保留 AST 结构的内建 API | 不适合字符串模板 |
 | 输入合法性收紧 | `Analyzer` | 事件、非法外部类型、嵌套 ES 类型 | 应尽早失败 |
 | 后处理优化 | `Optimizer` | 常量折叠、死代码、表达式规范化 | 不能改变语义 |
@@ -244,12 +304,12 @@ Analyzer 的职责不是生成代码，而是收紧输入域。凡是 Analyzer �
 当前仓库里实际存在两条“AST 之后”的路径：
 
 - 测试路径：直接调用 `ToKnRECMAScript()` / `ToECMAScript()`，把 Acornima AST 序列化成 JavaScript 文本
-- 生成器路径：`ESGenerator` 目前仍输出占位字符串，还没有把 `AstConverter` 的真实结果接到文件产物
+- 生成器路径：`ESGenerator` 把 `AstConverter` 的真实结果收集到 `ModuleCatalog` 生成物中
 
 另外，`Optimizer.cs` 已存在，但当前主链路没有发现统一接入点。因此应理解为：
 
 - “C# -> ESTree” 是当前已经实现的主能力
-- “ESTree -> 优化 -> 真实生成物” 仍处于未完全闭环状态
+- “ESTree -> 优化 -> 直接 `.mjs` 产物” 仍未被建立为主链路
 
 ### 8.1 输出层的未来闭环顺序
 
@@ -303,11 +363,9 @@ Analyzer 的职责不是生成代码，而是收紧输入域。凡是 Analyzer �
 
 这部分必须单列，因为仓库中旧文档和当前实现存在偏差。
 
-- `ESGenerator` 还没有接入真实 AST 序列化输出
 - `ECMAScriptInlineAttribute` 当前未进入主转换链路
 - `ECMAScriptIgnoreAttribute` 当前未见统一消费入口
 - `Op.Compile` 的生成基础设施已在，但 `SemanticWalker` 主分发尚未优先走该路径
-- 导入收集存在，但 `AstConverter` 未输出 `ImportDeclaration`
 - `Optimizer` 已存在，但未见稳定接入主生成链路
 - 一些文档仍宣称测试“全部通过”或某模块“完整”，与当前测试状态不一致
 
@@ -388,4 +446,4 @@ Analyzer 的职责不是生成代码，而是收紧输入域。凡是 Analyzer �
 
 **结论**
 
-Jazor 当前真正可靠的“语法转化主线”是：`[Jazor]` 生成白名单，`[ECMAScriptModule]` 进入编译域，Analyzer 缩小输入集合，`AstConverter` 做模块拆解，`SemanticWalker` 做语义下沉。未来要提升健壮性，重点不是继续堆 `Inline` 模板，而是补齐 `Op.Compile`、导入闭环和严格的测试/文档同步机制。
+Jazor 当前真正可靠的“语法转化主线”是：`[Jazor]` 生成白名单，`[ECMAScriptModule]` 进入编译域，Analyzer 缩小输入集合，`AstConverter` 做模块拆解，`SemanticWalker` 做语义下沉，`ESGenerator` 收集模块目录表。未来要提升健壮性，重点不是继续堆 `Inline` 模板，而是补齐 `Op.Compile`、明确最终模块落盘策略，以及继续保持测试/文档同步。

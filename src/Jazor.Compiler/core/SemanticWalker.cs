@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Operations;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace Jazor.Compiler;
@@ -184,38 +185,97 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         return operation.Member;
     }
 
-    private static Expression? GetWhiteListExpression(ISymbol symbol, SenseArgument context, List<Expression> arguments, out string? alias)
+    private Expression? GetWhiteListExpression(ISymbol symbol, SenseArgument context, List<Expression> arguments, out string? alias)
+        => GetWhiteListExpressionCore(symbol, context, arguments, instance: null, out alias);
+
+    private Expression? GetWhiteListExpression(ISymbol symbol, SenseArgument context, List<Expression> arguments, Expression? instance, out string? alias)
+        => GetWhiteListExpressionCore(symbol, context, arguments, instance, out alias);
+
+    /// <summary>
+    /// 统一消费白名单成员映射。
+    ///
+    /// 这里刻意把 `Compile` 和旧的 `Alias/Inline/Import` 分成两套参数语义：
+    /// - `Compile`：`handler` 表示实例宿主，`args` 只保留显式参数
+    /// - `Alias/Inline/Import`：继续沿用历史占位符布局，实例方法把宿主拼到参数前缀
+    ///
+    /// 这样既能把 `Compile` 接到主分发优先级前面，又不会一次性打坏既有模板和导入规则。
+    /// </summary>
+    private Expression? GetWhiteListExpressionCore(ISymbol symbol, SenseArgument context, List<Expression> arguments, Expression? instance, out string? alias)
     {
         alias = null;
+
+        var compileExpr = TryGetCompileExpression(symbol, arguments, instance);
+        if (compileExpr is not null)
+            return compileExpr;
+
         var displayString = symbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
+        var legacyArguments = CreateLegacyWhiteListArguments(symbol, arguments, instance);
         if (WhiteList.Members.TryGetValue(displayString, out var entry))
         {
             if (entry.Op == Op.Alias)
                 alias = entry.Value!;
 
             else if (entry.Op == Op.Inline)
-                return InstantiateInlineTemplate(displayString, entry.Value!, arguments);
+                return InstantiateInlineTemplate(displayString, entry.Value!, legacyArguments);
 
             else if (entry.Op == Op.Import)
             {
-                // 生成导入调用
-                var id = new Identifier(entry.Value!);
-                context.MergeImportSpecifier(entry.Path!, new ImportSpecifier(id));
-                return new CallExpression(id, NodeList.From(arguments), optional: false);
+                // Import 仍沿用历史参数语义：实例宿主拼到实参数组前缀。
+                var id = context.BindImportSpecifier(entry.Path!, entry.Value!);
+                return new CallExpression(id, NodeList.From(legacyArguments), optional: false);
             }
         }
 
         return null;
     }
 
-    private static Expression? GetWhiteListExpression(ISymbol symbol, SenseArgument context, List<Expression> arguments, Expression? instance, out string? alias)
+    private Expression? TryGetCompileExpression(ISymbol symbol, List<Expression> arguments, Expression? instance)
     {
-        var args = new List<Expression>();
-        if (!symbol.IsStatic && instance is not null)
-            args.Add(instance);
-        args.AddRange(arguments);
+        var displayString = symbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
+        if (!_whiteListCompiles.TryGetValue(displayString, out var compile))
+            return null;
 
-        return GetWhiteListExpression(symbol, context, args, out alias);
+        var (handler, explicitArgs) = CreateCompileArguments(symbol, arguments, instance);
+        return compile(handler, explicitArgs);
+    }
+
+    private static List<Expression> CreateLegacyWhiteListArguments(ISymbol symbol, List<Expression> arguments, Expression? instance)
+    {
+        if (symbol.IsStatic || instance is null)
+            return arguments;
+
+        var legacyArguments = new List<Expression>(arguments.Count + 1) { instance };
+        legacyArguments.AddRange(arguments);
+        return legacyArguments;
+    }
+
+    private static (Expression? Handler, Expression?[] Args) CreateCompileArguments(ISymbol symbol, List<Expression> arguments, Expression? instance)
+    {
+        if (symbol.IsStatic)
+            return (null, ToNullableExpressionArray(arguments));
+
+        // 普通调用路径会显式传入 instance；
+        // 方法组等路径可能还保留“宿主在参数前缀”的旧布局，这里顺手拆开。
+        if (instance is not null)
+            return (instance, ToNullableExpressionArray(arguments));
+
+        if (arguments.Count == 0)
+            throw new InvalidOperationException($"Jazor 无法为实例成员 {symbol.Name} 绑定 Compile handler。");
+
+        var compileArgs = new Expression?[arguments.Count - 1];
+        for (var i = 1; i < arguments.Count; i++)
+            compileArgs[i - 1] = arguments[i];
+
+        return (arguments[0], compileArgs);
+    }
+
+    private static Expression?[] ToNullableExpressionArray(List<Expression> arguments)
+    {
+        var result = new Expression?[arguments.Count];
+        for (var i = 0; i < arguments.Count; i++)
+            result[i] = arguments[i];
+
+        return result;
     }
 
     private int _recursionDepth;

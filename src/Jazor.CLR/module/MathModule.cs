@@ -16,6 +16,50 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "System.Math", "Math")]
 public static class MathModule
 {
+	private static Number CompareCore(Number left, Number right)
+	{
+		if (IsNaN(left))
+			return IsNaN(right) ? 0 : -1;
+		if (IsNaN(right))
+			return 1;
+		if (left < right)
+			return -1;
+		if (left > right)
+			return 1;
+
+		return 0;
+	}
+
+	private static Number MaxMagnitudeCore(Number x, Number y)
+	{
+		if (IsNaN(x) || IsNaN(y))
+			return Number.NaN;
+
+		var absX = Math.Abs_(x);
+		var absY = Math.Abs_(y);
+		if (absX > absY)
+			return x;
+		if (absX < absY)
+			return y;
+
+		return CompareCore(x, y) >= 0 ? x : y;
+	}
+
+	private static Number MinMagnitudeCore(Number x, Number y)
+	{
+		if (IsNaN(x) || IsNaN(y))
+			return Number.NaN;
+
+		var absX = Math.Abs_(x);
+		var absY = Math.Abs_(y);
+		if (absX < absY)
+			return x;
+		if (absX > absY)
+			return y;
+
+		return CompareCore(x, y) <= 0 ? x : y;
+	}
+
 	// 常量 - 使用 Op.Inline
 	/// <summary>
 	/// C#: Math.E
@@ -115,8 +159,9 @@ public static class MathModule
 	public extern static Number _f1029100ea8114ab(Number a);
 
 	///<summary>Returns the sine and cosine of the specified angle.</summary>
-	[Jazor(Op.Inline, "static System.Math.SinCos(double)", "({ Sin: Math.sin(__arg1), Cos: Math.cos(__arg1) })")]
-	public extern static (double Sin, double Cos) _4dcadff583296186(Number x);
+	[Jazor(Op.Import, "static System.Math.SinCos(double)")]
+	public static (double Sin, double Cos) _4dcadff583296186(Number x)
+		=> (Sin: Math.Sin_(x), Cos: Math.Cos_(x));
 
 	///<summary>Returns the hyperbolic sine of the specified angle.</summary>
 	[Jazor(Op.Alias, "static System.Math.Sinh(double)", "sinh")]
@@ -155,8 +200,9 @@ public static class MathModule
 	public extern static Number _6ed2ee0733ac7051(Number value);
 
 	///<summary>Returns the absolute value of a <see cref="T:System.Decimal" /> number.</summary>
-	[Jazor(Op.Discard ,"static System.Math.Abs(decimal)")]
-	public extern static string _eab3564b2663dff6(string value);
+	[Jazor(Op.Import ,"static System.Math.Abs(decimal)")]
+	public static string _eab3564b2663dff6(string value)
+		=> DecimalModule._e85678b4de2283e8(value);
 
 	///<summary>Returns the absolute value of a double-precision floating-point number.</summary>
 	[Jazor(Op.Alias, "static System.Math.Abs(double)", "abs")]
@@ -199,7 +245,7 @@ public static class MathModule
 	public extern static Number _655bd4d428ca20ea(Number x);
 
 	///<summary>Returns a value with the magnitude of <paramref name="x" /> and the sign of <paramref name="y" />.</summary>
-	[Jazor(Op.Inline, "static System.Math.CopySign(double, double)", "(Math.abs(__arg1) * Math.sign(__arg2))")]
+	[Jazor(Op.Inline, "static System.Math.CopySign(double, double)", "((__arg2 < 0 || Object.is(__arg2, -0)) ? -Math.abs(__arg1) : Math.abs(__arg1))")]
 	public extern static Number _f51bc6e5d8ce272b(Number x, Number y);
 
 	///<summary>Calculates the quotient of two 32-bit signed integers and also returns the remainder in an output parameter.</summary>
@@ -251,16 +297,18 @@ public static class MathModule
 	public extern static (nuint Quotient, nuint Remainder) _1b2439f6e0d31865(object left, object right);
 
 	///<summary>Returns the smallest integral value that is greater than or equal to the specified decimal number.</summary>
-	[Jazor(Op.Discard ,"static System.Math.Ceiling(decimal)")]
-	public extern static string _84cbc0eaf2d899af(string d);
+	[Jazor(Op.Import ,"static System.Math.Ceiling(decimal)")]
+	public static string _84cbc0eaf2d899af(string d)
+		=> DecimalModule._84028a6e79626057(d);
 
 	///<summary>Returns <paramref name="value" /> clamped to the inclusive range of <paramref name="min" /> and <paramref name="max" />.</summary>
 	[Jazor(Op.Inline, "static System.Math.Clamp(byte, byte, byte)", "Math.min(Math.max(__arg1, __arg2), __arg3)")]
 	public extern static Number _8921213084b6685c(Number value, Number min, Number max);
 
 	///<summary>Returns <paramref name="value" /> clamped to the inclusive range of <paramref name="min" /> and <paramref name="max" />.</summary>
-	[Jazor(Op.Discard ,"static System.Math.Clamp(decimal, decimal, decimal)")]
-	public extern static string _735e24a467fce432(string value, string min, string max);
+	[Jazor(Op.Import ,"static System.Math.Clamp(decimal, decimal, decimal)")]
+	public static string _735e24a467fce432(string value, string min, string max)
+		=> DecimalModule._e886400fbfdbdaaa(value, min, max);
 
 	///<summary>Returns <paramref name="value" /> clamped to the inclusive range of <paramref name="min" /> and <paramref name="max" />.</summary>
 	[Jazor(Op.Inline, "static System.Math.Clamp(double, double, double)", "Math.min(Math.max(__arg1, __arg2), __arg3)")]
@@ -307,8 +355,9 @@ public static class MathModule
 	public extern static nuint _25b262a1a57d5d06(object value, object min, object max);
 
 	///<summary>Returns the largest integral value less than or equal to the specified decimal number.</summary>
-	[Jazor(Op.Discard ,"static System.Math.Floor(decimal)")]
-	public extern static string _b12193a7b6647a82(string d);
+	[Jazor(Op.Import ,"static System.Math.Floor(decimal)")]
+	public static string _b12193a7b6647a82(string d)
+		=> DecimalModule._518facaaeeb29ead(d);
 
 	///<summary>Returns the remainder resulting from the division of a specified number by another specified number.</summary>
 	[Jazor(Op.Discard ,"static System.Math.IEEERemainder(double, double)")]
@@ -327,8 +376,9 @@ public static class MathModule
 	public extern static Number _a26e415f31a1dd41(Number val1, Number val2);
 
 	///<summary>Returns the larger of two decimal numbers.</summary>
-	[Jazor(Op.Discard ,"static System.Math.Max(decimal, decimal)")]
-	public extern static string _68326de2fcd99278(string val1, string val2);
+	[Jazor(Op.Import ,"static System.Math.Max(decimal, decimal)")]
+	public static string _68326de2fcd99278(string val1, string val2)
+		=> DecimalModule._872018e11335480a(val1, val2);
 
 	///<summary>Returns the larger of two double-precision floating-point numbers.</summary>
 	[Jazor(Op.Alias, "static System.Math.Max(double, double)", "max")]
@@ -375,16 +425,18 @@ public static class MathModule
 	public extern static nuint _7f3becc9b24d51d3(object val1, object val2);
 
 	///<summary>Returns the larger magnitude of two double-precision floating-point numbers.</summary>
-	[Jazor(Op.Inline, "static System.Math.MaxMagnitude(double, double)", "((Math.abs(__arg1) >= Math.abs(__arg2)) ? __arg1 : __arg2)")]
-	public extern static Number _7922e74207558715(Number x, Number y);
+	[Jazor(Op.Import, "static System.Math.MaxMagnitude(double, double)")]
+	public static Number _7922e74207558715(Number x, Number y)
+		=> MaxMagnitudeCore(x, y);
 
 	///<summary>Returns the smaller of two 8-bit unsigned integers.</summary>
 	[Jazor(Op.Alias, "static System.Math.Min(byte, byte)", "min")]
 	public extern static Number _f8806316e956dbb8(Number val1, Number val2);
 
 	///<summary>Returns the smaller of two decimal numbers.</summary>
-	[Jazor(Op.Discard ,"static System.Math.Min(decimal, decimal)")]
-	public extern static string _87f14d6593efd87f(string val1, string val2);
+	[Jazor(Op.Import ,"static System.Math.Min(decimal, decimal)")]
+	public static string _87f14d6593efd87f(string val1, string val2)
+		=> DecimalModule._ceb21f954af742e7(val1, val2);
 
 	///<summary>Returns the smaller of two double-precision floating-point numbers.</summary>
 	[Jazor(Op.Alias, "static System.Math.Min(double, double)", "min")]
@@ -431,8 +483,9 @@ public static class MathModule
 	public extern static nuint _c03fe2f175939d3a(object val1, object val2);
 
 	///<summary>Returns the smaller magnitude of two double-precision floating-point numbers.</summary>
-	[Jazor(Op.Inline, "static System.Math.MinMagnitude(double, double)", "((Math.abs(__arg1) <= Math.abs(__arg2)) ? __arg1 : __arg2)")]
-	public extern static Number _44776725ec896ede(Number x, Number y);
+	[Jazor(Op.Import, "static System.Math.MinMagnitude(double, double)")]
+	public static Number _44776725ec896ede(Number x, Number y)
+		=> MinMagnitudeCore(x, y);
 
 	///<summary>Returns an estimate of the reciprocal of a specified number.</summary>
 	[Jazor(Op.Inline, "static System.Math.ReciprocalEstimate(double)", "(1 / __arg1)")]
@@ -443,20 +496,24 @@ public static class MathModule
 	public extern static Number _5ab45aaeb89fbf4c(Number d);
 
 	///<summary>Rounds a decimal value to the nearest integral value, and rounds midpoint values to the nearest even number.</summary>
-	[Jazor(Op.Discard ,"static System.Math.Round(decimal)")]
-	public extern static string _257741f3e4260d82(string d);
+	[Jazor(Op.Import ,"static System.Math.Round(decimal)")]
+	public static string _257741f3e4260d82(string d)
+		=> DecimalModule._4a816369b59f1ca3(d);
 
 	///<summary>Rounds a decimal value to a specified number of fractional digits, and rounds midpoint values to the nearest even number.</summary>
-	[Jazor(Op.Discard ,"static System.Math.Round(decimal, int)")]
-	public extern static string _10e883cf6d89b70c(string d, Number decimals);
+	[Jazor(Op.Import ,"static System.Math.Round(decimal, int)")]
+	public static string _10e883cf6d89b70c(string d, Number decimals)
+		=> DecimalModule._bc3a974d51c694ab(d, decimals);
 
 	///<summary>Rounds a decimal value an integer using the specified rounding convention.</summary>
-	[Jazor(Op.Discard ,"static System.Math.Round(decimal, System.MidpointRounding)")]
-	public extern static string _584a7b2219b578fa(string d, object mode);
+	[Jazor(Op.Import ,"static System.Math.Round(decimal, System.MidpointRounding)")]
+	public static string _584a7b2219b578fa(string d, object mode)
+		=> DecimalModule._a334f7e82122cfc2(d, mode);
 
 	///<summary>Rounds a decimal value to a specified number of fractional digits using the specified rounding convention.</summary>
-	[Jazor(Op.Discard ,"static System.Math.Round(decimal, int, System.MidpointRounding)")]
-	public extern static string _b955eff4c2d1fa63(string d, Number decimals, object mode);
+	[Jazor(Op.Import ,"static System.Math.Round(decimal, int, System.MidpointRounding)")]
+	public static string _b955eff4c2d1fa63(string d, Number decimals, object mode)
+		=> DecimalModule._09ee3a4652dbe73c(d, decimals, mode);
 
 	///<summary>Rounds a double-precision floating-point value to the nearest integral value, and rounds midpoint values to the nearest even number.</summary>
 	[Jazor(Op.Alias, "static System.Math.Round(double)", "round")]
@@ -475,8 +532,9 @@ public static class MathModule
 	public extern static Number _ef441dda2abcc022(Number value, Number digits, object mode);
 
 	///<summary>Returns an integer that indicates the sign of a decimal number.</summary>
-	[Jazor(Op.Discard ,"static System.Math.Sign(decimal)")]
-	public extern static Number _8d626104a531d041(string value);
+	[Jazor(Op.Import ,"static System.Math.Sign(decimal)")]
+	public static Number _8d626104a531d041(string value)
+		=> DecimalModule._ed803cf9c8c052f1(value);
 
 	///<summary>Returns an integer that indicates the sign of a double-precision floating-point number.</summary>
 	[Jazor(Op.Alias, "static System.Math.Sign(double)", "sign")]
@@ -507,8 +565,9 @@ public static class MathModule
 	public extern static Number _c0668680ba7ef96e(Number value);
 
 	///<summary>Calculates the integral part of a specified decimal number.</summary>
-	[Jazor(Op.Discard ,"static System.Math.Truncate(decimal)")]
-	public extern static string _abd9211e1e7514b4(string d);
+	[Jazor(Op.Import ,"static System.Math.Truncate(decimal)")]
+	public static string _abd9211e1e7514b4(string d)
+		=> DecimalModule._be8b149ea0e1d76b(d);
 
 	///<summary>Calculates the integral part of a specified double-precision floating-point number.</summary>
 	[Jazor(Op.Alias, "static System.Math.Truncate(double)", "trunc")]

@@ -1,178 +1,246 @@
-# SemanticWalker.cs.Declaration.cs 分析文档
+# `SemanticWalker.cs.Declaration.cs`
 
-## 1. 文件概述
+## 定位
 
-**文件路径**: `core/SemanticWalker.cs.Declaration.cs`
+`SemanticWalker.cs.Declaration.cs` 负责声明和初始化器相关 lowering。
 
-**职责**: 处理变量声明和初始化器的转换。
+对应代码：
 
-**代码行数**: ~140 行
+- `src/Jazor.Compiler/core/SemanticWalker.cs.Declaration.cs`
 
-## 2. 支持的声明类型
+当前文件覆盖的不是“所有声明语义”，而是这几类非常具体的节点：
 
-| C# 操作 | JavaScript 结果 |
-|---------|----------------|
-| `int x = 5;` | `let x = 5;` |
-| `int x = 5, y = 10;` | `let x = 5, y = 10;` |
-| `out var result` | 临时变量声明 |
-| 数组初始化器 | `[1, 2, 3]` |
-| 字段初始化器 | 直接返回初始化值 |
+- 数组初始化器
+- 字段 / 属性 / 变量初始化器
+- 变量声明符 / 变量声明 / 声明组
+- `out` / declaration expression
 
-## 3. 方法详解
+## 当前职责
 
-### 3.1 VisitVariableDeclarator
+### 1. 初始化值向目标类型对齐
+
+当前文件里一个重要主线是：
+
+- 初始化器不仅翻译值，还会按目标类型做 tuple 视图对齐
+
+这体现在：
+
+- `VisitArrayInitializer(...)`
+- `VisitFieldInitializer(...)`
+- `VisitPropertyInitializer(...)`
+- `VisitVariableDeclarator(...)`
+
+它们都会在适当位置调用 `TranslateTupleForTarget(...)`。
+
+也就是说，这份文件不只是“把右值塞给左值”，还承担了声明边界上的 tuple runtime shape 对齐。
+
+### 2. 数组初始化器
+
+`VisitArrayInitializer(...)` 会遍历元素列表，并根据父级数组类型推导元素目标类型。
+
+典型结果：
 
 ```csharp
-public override Node? VisitVariableDeclarator(IVariableDeclaratorOperation operation, WalkerArgument argument)
-{
-    var identifier = new Identifier(operation.Symbol.Name);
-    var init = Translate<Expression>(operation.Initializer, argument, null);
-    return new VariableDeclarator(identifier, init);
-}
+new int[] { 1, 2, 3 }
 ```
 
-### 3.2 VisitVariableDeclaration
+```js
+[1, 2, 3]
+```
+
+如果元素本身是 tuple，当前还会按目标元素类型做 remap，而不是简单保留原投影视图。
+
+### 3. 普通变量声明
+
+`VisitVariableDeclarator(...)`、`VisitVariableDeclaration(...)`、`VisitVariableDeclarationGroup(...)` 共同负责把局部变量声明落成：
+
+```js
+let ...
+```
+
+典型结果：
 
 ```csharp
-// C# 示例
 int x = 5, y = 10;
+```
 
-// JavaScript 结果
+```js
 let x = 5, y = 10;
-
-public override Node? VisitVariableDeclaration(IVariableDeclarationOperation operation, WalkerArgument argument)
-{
-    var declarators = new List<VariableDeclarator>();
-    foreach (var declarator in operation.Declarators)
-        Translate(declarators, declarator, argument);
-
-    return new VariableDeclaration(VariableDeclarationKind.Let, NodeList.From(declarators));
-}
 ```
 
-### 3.3 VisitVariableDeclarationGroup
+当前实现统一使用 `let`，不在这里区分 `const`。
 
-处理多声明组：
+### 4. 字段 / 属性初始化器
+
+`VisitFieldInitializer(...)` 和 `VisitPropertyInitializer(...)` 当前只返回初始化值表达式本身。
+
+这说明这两个入口主要承担：
+
+- 为上层 class / member 转换提供初始化表达式
+
+而不是在这里直接生成完整类成员语法。
+
+### 5. `out` 声明表达式
+
+`VisitDeclarationExpression(...)` 当前服务于：
+
+- `out var result`
+- `out int value`
+
+这条路径的关键点不是直接输出一条 `let` 语句，而是：
+
+- 先返回标识符表达式
+- 如果当前语义是 `Sense.OutParameter`，把对应 declarator 收集进 `SenseArgument`
+
+之后由外层 block 在合适位置统一 flush 出声明。
+
+## 当前关键规则
+
+### 1. tuple remap 发生在声明边界
+
+当前这些入口都可能成为 tuple 视图切换边界：
+
+- 数组元素
+- 字段初始化
+- 属性初始化
+- 变量声明初始化
+
+所以 `Declaration` 文件和 `Tuple` 路径是直接耦合的，而不是完全独立。
+
+### 2. 普通局部声明直接生成 `let`
+
+`VisitVariableDeclaration(...)` 和 `VisitVariableDeclarationGroup(...)` 当前都会直接返回：
+
+```js
+let ...
+```
+
+这和旧文档里“声明位置分散仍待收集”的说法不一致。当前真实情况是：
+
+- 普通局部声明直接按当前位置输出
+- `out` 变量等需要预声明的场景，才通过上下文收集后再由外层统一输出
+
+### 3. `out` 变量的预声明不在 `VisitDeclarationExpression(...)` 内直接写出
+
+`DeclarationExpression` 当前只做两件事：
+
+1. 返回表达式形式的变量名
+2. 在 `Sense.OutParameter` 下登记 declarator
+
+真正的：
+
+```js
+let result;
+```
+
+会在更外层 block flush 时出现。
+
+### 4. 字段 / 属性初始化器不负责成员壳
+
+这两个入口当前只关心“初始化值是什么”，不负责类成员结构本身。
+
+## 现状与典型结果
+
+### 数组初始化器
 
 ```csharp
-// C# 示例
+var numbers = new int[] { 1, 2, 3 };
+```
+
+```js
+let numbers = [1, 2, 3];
+```
+
+### 变量声明组
+
+```csharp
 int a = 1, b = 2, c;
+string x = "hello", y = "world";
+```
 
-// 注意：通常 Declarations 只有一个元素
-public override Node? VisitVariableDeclarationGroup(IVariableDeclarationGroupOperation operation, WalkerArgument argument)
+```js
+let a = 1, b = 2, c;
+let x = "hello", y = "world";
+```
+
+### `out var`
+
+```csharp
+if (int.TryParse(input, out var result))
 {
-    var declarators = new List<VariableDeclarator>();
-    foreach (var declaration in operation.Declarations)
-        foreach (var declarator in declaration.Declarators)
-            Translate(declarators, declarator, argument);
-
-    return new VariableDeclaration(VariableDeclarationKind.Let, NodeList.From(declarators));
+    Console.WriteLine(result);
 }
 ```
 
-### 3.4 VisitDeclarationExpression
-
-处理 `out var` 声明：
-
-```csharp
-// C# 示例
-if (int.TryParse(input, out var result)) { ... }
-
-// 处理逻辑
-public override Node? VisitDeclarationExpression(IDeclarationExpressionOperation operation, WalkerArgument argument)
-{
-    var expr = Translate<Expression>(operation.Expression, argument);
-    if (operation.Parent is IArgumentOperation)
-    {
-        var declarator = new VariableDeclarator(expr, null);
-        argument.AddVarDeclarator(declarator, _recursionDepth);
-    }
-    return expr;
+```js
+let result, v$0;
+if (v$0 = _16e2a901535b765e(input, result), result = v$0[1], v$0[0]) {
+  console.log(result);
 }
 ```
 
-### 3.5 VisitArrayInitializer
+这里可以看到：
+
+- `result` 的声明被提前到外层
+- `DeclarationExpression` 本身只是整个 lowering 链上的一环
+
+### 字段 / 属性初始化器的 tuple 对齐
 
 ```csharp
-// C# 示例
-new int[] { 1, 2, 3, 4, 5 }
-
-// JavaScript 结果
-[1, 2, 3, 4, 5]
-
-public override Node? VisitArrayInitializer(IArrayInitializerOperation operation, WalkerArgument argument)
-{
-    var elements = new List<Expression?>();
-    foreach (var element in operation.ElementValues)
-    {
-        Translate(elements, element, argument, null);
-    }
-    return new ArrayExpression(NodeList.From(elements));
-}
+private (string first, int years) person = (name: "John", age: 30);
 ```
 
-## 4. 变量声明位置问题
-
-### 4.1 当前行为
-
-变量声明被分散插入到各个 statement 之间：
-
-```csharp
-// 生成结果
-statement1;
-let tempVar;
-statement2;
+```js
+{ first: "John", years: 30 }
 ```
 
-### 4.2 问题
+## 当前边界
 
-- 与 JavaScript 最佳实践不一致
-- 可能存在 TDZ（暂时性死区）问题
+这部分当前已经解决的是：
 
-### 4.3 建议
+- 数组初始化器
+- 普通局部声明
+- 字段 / 属性初始化器取值
+- `out` 声明表达式收集
+- 声明边界上的 tuple remap
 
-收集所有声明并集中在块开头。
+它没有试图做这些事情：
 
-## 5. 已知缺陷
+- 在这里处理完整类成员生成
+- 在这里决定所有变量声明最终 flush 位置
+- 区分 `const` / `let`
+- 支持 `using` 声明
 
-### 5.1 中优先级缺陷
+其中 `using` 相关语义当前明确属于不支持路径。
 
-| 缺陷 | 影响 | 建议修复方案 |
-|------|------|-------------|
-| **声明位置分散** | 生成代码可读性差 | 收集声明并集中在块开头 |
-| **const vs let 未区分** | 统一使用 let | 根据是否可变选择 const/let |
+## 相关测试
 
-### 5.2 低优先级缺陷
+主要测试在：
 
-| 缺陷 | 影响 | 建议修复方案 |
-|------|------|-------------|
-| **using 声明不支持** | 明确拒绝 | 在 NotSupport 中已处理 |
+- `src/Jazor.CompilerTest/SemanticWalkerDeclarationTest.cs`
 
-## 6. AST 节点映射
+建议重点看这些场景：
 
-| C# 结构 | JavaScript AST | 备注 |
-|---------|---------------|------|
-| 变量声明 | `VariableDeclaration` | kind = let |
-| 变量声明符 | `VariableDeclarator` | id + init |
-| 数组初始化器 | `ArrayExpression` | 元素列表 |
-| out var 声明 | `VariableDeclarator` | 添加到 argument |
+- `Visit_ArrayInitializer`
+- `Visit_VariableDeclaration`
+- `Visit_VariableDeclarationGroup`
+- `Visit_DeclarationExpression_OutVar`
+- `DirectVisit_FieldInitializer_TupleRemapByTargetType`
+- `DirectVisit_PropertyInitializer_TupleRemapByTargetType`
+- `DirectVisit_VariableDeclarator_TupleRemapByTargetType`
 
-## 7. 测试覆盖
+## 推荐阅读
 
-**当前状态**: ~30 个测试
+建议按这个顺序看：
 
-**测试场景**：
-- ✅ 单变量声明
-- ✅ 多变量声明
-- ✅ 带初始化器声明
-- ✅ out var 声明
-- ✅ 数组初始化器
+1. [SemanticWalker.md](./SemanticWalker.md)
+2. [SemanticWalker.Declaration.md](./SemanticWalker.Declaration.md)
+3. [SemanticWalker.Tuple.md](./SemanticWalker.Tuple.md)
+4. [WalkerArgument.md](./WalkerArgument.md)
 
-## 8. 相关文档
+## 相关文档
 
 - [SemanticWalker.md](./SemanticWalker.md)
+- [SemanticWalker.Tuple.md](./SemanticWalker.Tuple.md)
 - [WalkerArgument.md](./WalkerArgument.md)
-
----
-
-**最后更新**: 2026-03-03
+- [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)

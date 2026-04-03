@@ -18,6 +18,10 @@ public static class DateTimeOffsetModule
 	private static Number DateTimeKindUtc => 1;
 	private static Number DateTimeKindLocal => 2;
 	private static Number MinValueMilliseconds => -62135596800000d;
+	private static Number DateTimeStylesNoCurrentDateDefault => 8;
+	private static Number DateTimeStylesAdjustToUniversal => 16;
+	private static Number DateTimeStylesAssumeLocal => 32;
+	private static Number DateTimeStylesAssumeUniversal => 64;
 
 	private static void EnsureWholeNumber(Number value, string message)
 	{
@@ -179,6 +183,355 @@ public static class DateTimeOffsetModule
 		return CreateFromUtcTicks(utcTicks, offsetTicks);
 	}
 
+	private static bool HasUtcSuffix(string input)
+		=> input.EndsWith("Z") || input.EndsWith("z");
+
+	private static bool HasExplicitOffset(string input)
+	{
+		var timeIndex = input.LastIndexOf('T');
+		var spaceIndex = input.LastIndexOf(' ');
+		if (spaceIndex > timeIndex)
+			timeIndex = spaceIndex;
+
+		if (input.Length >= 6)
+		{
+			var signIndex = input.Length - 6;
+			var sign = input[signIndex];
+			if ((sign == '+' || sign == '-') && input[input.Length - 3] == ':' && signIndex > timeIndex)
+				return true;
+		}
+
+		if (input.Length >= 5)
+		{
+			var signIndex = input.Length - 5;
+			var sign = input[signIndex];
+			if ((sign == '+' || sign == '-') && signIndex > timeIndex)
+				return true;
+		}
+
+		if (input.Length >= 3)
+		{
+			var signIndex = input.Length - 3;
+			var sign = input[signIndex];
+			if ((sign == '+' || sign == '-') && signIndex > timeIndex)
+				return true;
+		}
+
+		return false;
+	}
+
+	private static bool IsAsciiDigit(char value)
+		=> value >= '0' && value <= '9';
+
+	private static bool TryParseTwoDigits(string text, int start, out Number value)
+	{
+		value = 0;
+		if (start < 0 || start + 2 > text.Length)
+			return false;
+		if (!IsAsciiDigit(text[start]) || !IsAsciiDigit(text[start + 1]))
+			return false;
+
+		value = Number_(text.Substring(start, 2));
+		return true;
+	}
+
+	private static bool TryParseIsoDate(string text, out Number year, out Number month, out Number day)
+	{
+		year = 0;
+		month = 0;
+		day = 0;
+
+		if (text.Length != 10 || text[4] != '-' || text[7] != '-')
+			return false;
+
+		for (var i = 0; i < text.Length; i++)
+		{
+			if (i == 4 || i == 7)
+				continue;
+
+			if (!IsAsciiDigit(text[i]))
+				return false;
+		}
+
+		year = Number_(text.Substring(0, 4));
+		month = Number_(text.Substring(5, 2));
+		day = Number_(text.Substring(8, 2));
+		if (year < 1 || year > 9999 || month < 1 || month > 12)
+			return false;
+
+		var daysInMonth = RuntimeModule.GetDaysInMonth(year, month);
+		return day >= 1 && day <= daysInMonth;
+	}
+
+	private static bool TryParseIsoDateTime(
+		string text,
+		out Number year,
+		out Number month,
+		out Number day,
+		out Number hour,
+		out Number minute,
+		out Number second,
+		out Number millisecond,
+		out BigInt subMillisecondTicks,
+		out bool hasExplicitOffset,
+		out BigInt offsetTicks)
+	{
+		year = 0;
+		month = 0;
+		day = 0;
+		hour = 0;
+		minute = 0;
+		second = 0;
+		millisecond = 0;
+		subMillisecondTicks = ZeroTicks;
+		hasExplicitOffset = false;
+		offsetTicks = ZeroTicks;
+
+		if (text.Length < 16)
+			return false;
+		if (!TryParseIsoDate(text.Substring(0, 10), out year, out month, out day))
+			return false;
+
+		var separator = text[10];
+		if (separator != 'T' && separator != ' ')
+			return false;
+		if (!TryParseTwoDigits(text, 11, out hour) || text[13] != ':' || !TryParseTwoDigits(text, 14, out minute))
+			return false;
+		if (hour > 23 || minute > 59)
+			return false;
+
+		var index = 16;
+		if (index < text.Length && text[index] == ':')
+		{
+			if (!TryParseTwoDigits(text, index + 1, out second))
+				return false;
+			if (second > 59)
+				return false;
+			index += 3;
+		}
+
+		if (index < text.Length && text[index] == '.')
+		{
+			index++;
+			var fractionStart = index;
+			while (index < text.Length && IsAsciiDigit(text[index]))
+				index++;
+
+			var digits = text.Substring(fractionStart, index - fractionStart);
+			if (digits.Length == 0 || digits.Length > 7)
+				return false;
+
+			while (digits.Length < 7)
+				digits += "0";
+
+			millisecond = Number_(digits.Substring(0, 3));
+			subMillisecondTicks = BigInt_(digits.Substring(3, 4));
+		}
+
+		if (index == text.Length)
+			return true;
+
+		hasExplicitOffset = true;
+		if (index == text.Length - 1 && (text[index] == 'Z' || text[index] == 'z'))
+			return true;
+
+		var sign = text[index];
+		if (sign != '+' && sign != '-')
+			return false;
+
+		var remaining = text.Length - index - 1;
+		Number offsetHours;
+		Number offsetMinutes;
+		if (remaining == 2)
+		{
+			if (!TryParseTwoDigits(text, index + 1, out offsetHours))
+				return false;
+			offsetMinutes = 0;
+		}
+		else if (remaining == 4)
+		{
+			if (!TryParseTwoDigits(text, index + 1, out offsetHours) || !TryParseTwoDigits(text, index + 3, out offsetMinutes))
+				return false;
+		}
+		else if (remaining == 5 && text[index + 3] == ':')
+		{
+			if (!TryParseTwoDigits(text, index + 1, out offsetHours) || !TryParseTwoDigits(text, index + 4, out offsetMinutes))
+				return false;
+		}
+		else
+		{
+			return false;
+		}
+
+		if (offsetHours > 14 || offsetMinutes > 59 || (offsetHours == 14 && offsetMinutes != 0))
+			return false;
+
+		offsetTicks = BigInt_(offsetHours * 60 + offsetMinutes) * OffsetMinuteTicks;
+		if (sign == '-')
+			offsetTicks = -offsetTicks;
+
+		return true;
+	}
+
+	private static bool TryParseTimeOnly(
+		string text,
+		out Number hour,
+		out Number minute,
+		out Number second,
+		out Number millisecond,
+		out BigInt subMillisecondTicks,
+		out bool hasExplicitOffset,
+		out BigInt offsetTicks)
+	{
+		hour = 0;
+		minute = 0;
+		second = 0;
+		millisecond = 0;
+		subMillisecondTicks = ZeroTicks;
+		hasExplicitOffset = false;
+		offsetTicks = ZeroTicks;
+
+		if (text.Length < 5)
+			return false;
+		if (!TryParseTwoDigits(text, 0, out hour) || text[2] != ':' || !TryParseTwoDigits(text, 3, out minute))
+			return false;
+		if (hour > 23 || minute > 59)
+			return false;
+
+		var index = 5;
+		if (index < text.Length && text[index] == ':')
+		{
+			if (!TryParseTwoDigits(text, index + 1, out second))
+				return false;
+			if (second > 59)
+				return false;
+			index += 3;
+		}
+
+		if (index < text.Length && text[index] == '.')
+		{
+			index++;
+			var fractionStart = index;
+			while (index < text.Length && IsAsciiDigit(text[index]))
+				index++;
+
+			var digits = text.Substring(fractionStart, index - fractionStart);
+			if (digits.Length == 0 || digits.Length > 7)
+				return false;
+
+			while (digits.Length < 7)
+				digits += "0";
+
+			millisecond = Number_(digits.Substring(0, 3));
+			subMillisecondTicks = BigInt_(digits.Substring(3, 4));
+		}
+
+		if (index == text.Length)
+			return true;
+
+		hasExplicitOffset = true;
+		if (index == text.Length - 1 && (text[index] == 'Z' || text[index] == 'z'))
+			return true;
+
+		var sign = text[index];
+		if (sign != '+' && sign != '-')
+			return false;
+
+		var remaining = text.Length - index - 1;
+		Number offsetHours;
+		Number offsetMinutes;
+		if (remaining == 2)
+		{
+			if (!TryParseTwoDigits(text, index + 1, out offsetHours))
+				return false;
+			offsetMinutes = 0;
+		}
+		else if (remaining == 4)
+		{
+			if (!TryParseTwoDigits(text, index + 1, out offsetHours) || !TryParseTwoDigits(text, index + 3, out offsetMinutes))
+				return false;
+		}
+		else if (remaining == 5 && text[index + 3] == ':')
+		{
+			if (!TryParseTwoDigits(text, index + 1, out offsetHours) || !TryParseTwoDigits(text, index + 4, out offsetMinutes))
+				return false;
+		}
+		else
+		{
+			return false;
+		}
+
+		if (offsetHours > 14 || offsetMinutes > 59 || (offsetHours == 14 && offsetMinutes != 0))
+			return false;
+
+		offsetTicks = BigInt_(offsetHours * 60 + offsetMinutes) * OffsetMinuteTicks;
+		if (sign == '-')
+			offsetTicks = -offsetTicks;
+
+		return true;
+	}
+
+	private static BigInt CreateRoundedTicksFromDouble(Number value)
+	{
+		if (DoubleModule._24e14b276e0c7e30(value))
+			throw new Error("ArgumentException: Value cannot be NaN.");
+
+		if (!DoubleModule._aed2927097617729(value))
+			throw new Error("ArgumentOutOfRangeException: Value must be finite.");
+
+		var rounded = Math.Round_(value);
+		if (!DoubleModule._aed2927097617729(rounded))
+			throw new Error("ArgumentOutOfRangeException: Value is outside the supported DateTimeOffset range.");
+
+		return BigInt_(rounded);
+	}
+
+	private static Number GetDateTimeStylesValue(object styles)
+	{
+		if (styles is Number numberStyle)
+			return numberStyle;
+		if (styles is System.Globalization.DateTimeStyles enumStyle)
+			return Number_((int)enumStyle);
+		if (styles == null)
+			return 0;
+
+		throw new Error("ArgumentException: Invalid DateTimeStyles value.");
+	}
+
+	private static void ValidateDateTimeStyles(Number styles)
+	{
+		if (styles < 0 || Math.Floor_(styles) != styles)
+			throw new Error("ArgumentException: Invalid DateTimeStyles value.");
+
+		if ((styles & DateTimeStylesNoCurrentDateDefault) != 0)
+			throw new Error("ArgumentException: NoCurrentDateDefault is not allowed when parsing DateTimeOffset.");
+
+		var hasAssumeLocal = (styles & DateTimeStylesAssumeLocal) != 0;
+		var hasAssumeUniversal = (styles & DateTimeStylesAssumeUniversal) != 0;
+		if (hasAssumeLocal && hasAssumeUniversal)
+			throw new Error("ArgumentException: AssumeLocal and AssumeUniversal cannot both be set.");
+	}
+
+	private static RuntimeModule.JDateTimeOffset ApplyDateTimeStyles(RuntimeModule.JDateTimeOffset value, string input, object styles)
+	{
+		var styleValue = GetDateTimeStylesValue(styles);
+		ValidateDateTimeStyles(styleValue);
+
+		var text = input.Trim();
+		var hasExplicitZone = HasUtcSuffix(text) || HasExplicitOffset(text);
+		var adjustToUniversal = (styleValue & DateTimeStylesAdjustToUniversal) != 0;
+		var assumeUniversal = (styleValue & DateTimeStylesAssumeUniversal) != 0;
+
+		var result = value;
+		if (!hasExplicitZone && assumeUniversal)
+			result = CreateFromUtcTicks(GetTicks(value), ZeroTicks);
+
+		if (adjustToUniversal)
+			return CreateFromUtcTicks(GetUtcTicks(result), ZeroTicks);
+
+		return result;
+	}
+
 	private static BigInt ResolveParsedOffsetTicks(string input, Date parsedDate)
 	{
 		var timeIndex = input.LastIndexOf('T');
@@ -287,16 +640,55 @@ public static class DateTimeOffsetModule
 		if (s.Length == 0)
 			throw new Error("FormatException: String was not recognized as a valid DateTimeOffset.");
 
+		if (TryParseTimeOnly(s, out var timeHour, out var timeMinute, out var timeSecond, out var timeMillisecond, out var timeSubMillisecondTicks, out var timeHasExplicitOffset, out var timeOffsetTicks))
+		{
+			var now = new Date();
+			var currentYear = now.GetFullYear();
+			var currentMonth = now.GetMonth() + 1;
+			var currentDay = now.GetDate();
+			if (!timeHasExplicitOffset)
+			{
+				var localDateTime = RuntimeModule.CreateLocalDateTime(currentYear, currentMonth, currentDay, timeHour, timeMinute, timeSecond, timeMillisecond);
+				var localOffsetTicks = BigInt_(-localDateTime.GetTimezoneOffset()) * OffsetMinuteTicks;
+				var utcTicks = BigInt_(localDateTime.GetTime()) * TicksPerMillisecond + timeSubMillisecondTicks + UnixEpochTicks;
+				return CreateFromUtcTicks(utcTicks, localOffsetTicks);
+			}
+
+			var localTicks = CreateLocalTicks(currentYear, currentMonth, currentDay, timeHour, timeMinute, timeSecond, timeMillisecond) + timeSubMillisecondTicks;
+			return CreateFromUtcTicks(localTicks - timeOffsetTicks, timeOffsetTicks);
+		}
+
+		if (TryParseIsoDate(s, out var year, out var month, out var day))
+		{
+			var date = RuntimeModule.CreateLocalDate(year, month, day);
+			var utcTicks = BigInt_(date.GetTime()) * TicksPerMillisecond + UnixEpochTicks;
+			return CreateWithLocalOffset(utcTicks);
+		}
+
+		if (TryParseIsoDateTime(s, out year, out month, out day, out var hour, out var minute, out var second, out var millisecond, out var subMillisecondTicks, out var hasExplicitOffset, out var offsetTicks))
+		{
+			if (!hasExplicitOffset)
+			{
+				var localDateTime = RuntimeModule.CreateLocalDateTime(year, month, day, hour, minute, second, millisecond);
+				var localOffsetTicks = BigInt_(-localDateTime.GetTimezoneOffset()) * OffsetMinuteTicks;
+				var utcTicks = BigInt_(localDateTime.GetTime()) * TicksPerMillisecond + subMillisecondTicks + UnixEpochTicks;
+				return CreateFromUtcTicks(utcTicks, localOffsetTicks);
+			}
+
+			var localTicks = CreateLocalTicks(year, month, day, hour, minute, second, millisecond) + subMillisecondTicks;
+			return CreateFromUtcTicks(localTicks - offsetTicks, offsetTicks);
+		}
+
 		var parsed = new Date(s);
 		if (IsNaN(parsed.GetTime()))
 			throw new Error($"FormatException: String '{input}' was not recognized as a valid DateTimeOffset.");
 
-		var offsetTicks = ResolveParsedOffsetTicks(s, parsed);
-		if (offsetTicks < -MaxOffsetTicks || offsetTicks > MaxOffsetTicks)
+		var resolvedOffsetTicks = ResolveParsedOffsetTicks(s, parsed);
+		if (resolvedOffsetTicks < -MaxOffsetTicks || resolvedOffsetTicks > MaxOffsetTicks)
 			throw new Error($"FormatException: String '{input}' was not recognized as a valid DateTimeOffset.");
 
-		var subMillisecondTicks = ExtractSubMillisecondTicks(s);
-		return CreateFromUtcTicks(BigInt_(parsed.GetTime()) * TicksPerMillisecond + subMillisecondTicks + UnixEpochTicks, offsetTicks);
+		var parsedSubMillisecondTicks = ExtractSubMillisecondTicks(s);
+		return CreateFromUtcTicks(BigInt_(parsed.GetTime()) * TicksPerMillisecond + parsedSubMillisecondTicks + UnixEpochTicks, resolvedOffsetTicks);
 	}
 
 	/// <summary>
@@ -582,14 +974,6 @@ public static class DateTimeOffsetModule
 		=> new(instance.OffsetTicks);
 
 	/// <summary>
-	/// C#: instance.TotalOffsetMinutes
-	/// JS: -instance.getTimezoneOffset()
-	/// </summary>
-	[Jazor(Op.Import, "System.DateTimeOffset.TotalOffsetMinutes.get")]
-	public static Number _cad0683315440ded(RuntimeModule.JDateTimeOffset instance)
-		=> Number_(instance.OffsetTicks / OffsetMinuteTicks);
-
-	/// <summary>
 	/// C#: instance.Second
 	/// JS: instance.getSeconds()
 	/// </summary>
@@ -652,7 +1036,7 @@ public static class DateTimeOffsetModule
 	/// </summary>
 	[Jazor(Op.Import, "System.DateTimeOffset.AddDays(double)")]
 	public static RuntimeModule.JDateTimeOffset _7fd735ce2102a3cc(RuntimeModule.JDateTimeOffset instance, Number days)
-		=> CreateFromUtcTicks(GetUtcTicks(instance) + BigInt_(Math.Round_(days * 864000000000d)), instance.OffsetTicks);
+		=> CreateFromUtcTicks(GetUtcTicks(instance) + CreateRoundedTicksFromDouble(days * 864000000000d), instance.OffsetTicks);
 
 	/// <summary>
 	/// C#: instance.AddHours(hours)
@@ -660,7 +1044,7 @@ public static class DateTimeOffsetModule
 	/// </summary>
 	[Jazor(Op.Import, "System.DateTimeOffset.AddHours(double)")]
 	public static RuntimeModule.JDateTimeOffset _309c83b8a2fbc988(RuntimeModule.JDateTimeOffset instance, Number hours)
-		=> CreateFromUtcTicks(GetUtcTicks(instance) + BigInt_(Math.Round_(hours * 36000000000d)), instance.OffsetTicks);
+		=> CreateFromUtcTicks(GetUtcTicks(instance) + CreateRoundedTicksFromDouble(hours * 36000000000d), instance.OffsetTicks);
 
 	/// <summary>
 	/// C#: instance.AddMilliseconds(milliseconds)
@@ -668,7 +1052,7 @@ public static class DateTimeOffsetModule
 	/// </summary>
 	[Jazor(Op.Import, "System.DateTimeOffset.AddMilliseconds(double)")]
 	public static RuntimeModule.JDateTimeOffset _1528b452af6dd41d(RuntimeModule.JDateTimeOffset instance, Number milliseconds)
-		=> CreateFromUtcTicks(GetUtcTicks(instance) + BigInt_(Math.Round_(milliseconds * 10000d)), instance.OffsetTicks);
+		=> CreateFromUtcTicks(GetUtcTicks(instance) + CreateRoundedTicksFromDouble(milliseconds * 10000d), instance.OffsetTicks);
 
 	/// <summary>
 	/// C#: instance.AddMicroseconds(microseconds)
@@ -676,7 +1060,7 @@ public static class DateTimeOffsetModule
 	/// </summary>
 	[Jazor(Op.Import, "System.DateTimeOffset.AddMicroseconds(double)")]
 	public static RuntimeModule.JDateTimeOffset _4775ccfee8ed671f(RuntimeModule.JDateTimeOffset instance, Number microseconds)
-		=> CreateFromUtcTicks(GetUtcTicks(instance) + BigInt_(Math.Round_(microseconds * 10d)), instance.OffsetTicks);
+		=> CreateFromUtcTicks(GetUtcTicks(instance) + CreateRoundedTicksFromDouble(microseconds * 10d), instance.OffsetTicks);
 
 	/// <summary>
 	/// C#: instance.AddMinutes(minutes)
@@ -684,7 +1068,7 @@ public static class DateTimeOffsetModule
 	/// </summary>
 	[Jazor(Op.Import, "System.DateTimeOffset.AddMinutes(double)")]
 	public static RuntimeModule.JDateTimeOffset _97aff1e2f4740394(RuntimeModule.JDateTimeOffset instance, Number minutes)
-		=> CreateFromUtcTicks(GetUtcTicks(instance) + BigInt_(Math.Round_(minutes * 600000000d)), instance.OffsetTicks);
+		=> CreateFromUtcTicks(GetUtcTicks(instance) + CreateRoundedTicksFromDouble(minutes * 600000000d), instance.OffsetTicks);
 
 	/// <summary>
 	/// C#: instance.AddMonths(months)
@@ -700,7 +1084,7 @@ public static class DateTimeOffsetModule
 	/// </summary>
 	[Jazor(Op.Import, "System.DateTimeOffset.AddSeconds(double)")]
 	public static RuntimeModule.JDateTimeOffset _54a4d6d554458fdb(RuntimeModule.JDateTimeOffset instance, Number seconds)
-		=> CreateFromUtcTicks(GetUtcTicks(instance) + BigInt_(Math.Round_(seconds * 10000000d)), instance.OffsetTicks);
+		=> CreateFromUtcTicks(GetUtcTicks(instance) + CreateRoundedTicksFromDouble(seconds * 10000000d), instance.OffsetTicks);
 
 	/// <summary>
 	/// C#: instance.AddTicks(ticks)
@@ -811,7 +1195,7 @@ public static class DateTimeOffsetModule
 	///<summary>Returns the hash code for the current <see cref="T:System.DateTimeOffset" /> object.</summary>
 	[Jazor(Op.Import ,"override System.DateTimeOffset.GetHashCode()")]
 	public static Number _484d626eb36d071d(RuntimeModule.JDateTimeOffset instance)
-		=> Number_(GetUtcTicks(instance) % BigInt_("2147483647"));
+		=> RuntimeModule.GetInt64HashCode(GetUtcTicks(instance));
 
 	///<summary>Converts the specified string representation of a date, time, and offset to its <see cref="T:System.DateTimeOffset" /> equivalent.</summary>
 	[Jazor(Op.Import ,"static System.DateTimeOffset.Parse(string)")]
@@ -826,12 +1210,12 @@ public static class DateTimeOffsetModule
 	///<summary>Converts the specified string representation of a date and time to its <see cref="T:System.DateTimeOffset" /> equivalent using the specified culture-specific format information and formatting style.</summary>
 	[Jazor(Op.Import ,"static System.DateTimeOffset.Parse(string, System.IFormatProvider, System.Globalization.DateTimeStyles)")]
 	public static RuntimeModule.JDateTimeOffset _277a1a2c7845bcdc(string input, Intl.NumberFormat? formatProvider, object styles)
-		=> ParseCore(input);
+		=> ApplyDateTimeStyles(ParseCore(input), input, styles);
 
 	///<summary>Converts the specified span representation of a date and time to its <see cref="T:System.DateTimeOffset" /> equivalent using the specified culture-specific format information and formatting style.</summary>
 	[Jazor(Op.Import ,"static System.DateTimeOffset.Parse(System.ReadOnlySpan<char>, System.IFormatProvider, System.Globalization.DateTimeStyles)")]
 	public static RuntimeModule.JDateTimeOffset _948a165174740d96(string input, Intl.NumberFormat? formatProvider, object styles)
-		=> ParseCore(input);
+		=> ApplyDateTimeStyles(ParseCore(input), input, styles);
 
 	///<summary>Converts the specified string representation of a date and time to its <see cref="T:System.DateTimeOffset" /> equivalent using the specified format and culture-specific format information. The format of the string representation must match the specified format exactly.</summary>
 	[Jazor(Op.Discard ,"static System.DateTimeOffset.ParseExact(string, string, System.IFormatProvider)")]
@@ -940,12 +1324,25 @@ public static class DateTimeOffsetModule
 	///<summary>Tries to convert a specified string representation of a date and time to its <see cref="T:System.DateTimeOffset" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Import ,"static System.DateTimeOffset.TryParse(string, System.IFormatProvider, System.Globalization.DateTimeStyles, out System.DateTimeOffset)")]
 	public static Array<object?> _62fe5aa144f2c9e1(string? input, Intl.NumberFormat? formatProvider, object styles, RuntimeModule.JDateTimeOffset result)
-		=> _2fd90dc37b274014(input, result);
+	{
+		ValidateDateTimeStyles(GetDateTimeStylesValue(styles));
+		if (input == null || input.Length == 0)
+			return [false, CreateDefaultDateTimeOffset()];
+
+		try
+		{
+			return [true, ApplyDateTimeStyles(ParseCore(input), input, styles)];
+		}
+		catch
+		{
+			return [false, CreateDefaultDateTimeOffset()];
+		}
+	}
 
 	///<summary>Tries to convert a specified span representation of a date and time to its <see cref="T:System.DateTimeOffset" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Import ,"static System.DateTimeOffset.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, System.Globalization.DateTimeStyles, out System.DateTimeOffset)")]
 	public static Array<object?> _9dd0fca0c6a9a4de(string input, Intl.NumberFormat? formatProvider, object styles, RuntimeModule.JDateTimeOffset result)
-		=> _2fd90dc37b274014(input, result);
+		=> _62fe5aa144f2c9e1(input, formatProvider, styles, result);
 
 	///<summary>Converts the specified string representation of a date and time to its <see cref="T:System.DateTimeOffset" /> equivalent using the specified format, culture-specific format information, and style. The format of the string representation must match the specified format exactly.</summary>
 	[Jazor(Op.Discard ,"static System.DateTimeOffset.TryParseExact(string, string, System.IFormatProvider, System.Globalization.DateTimeStyles, out System.DateTimeOffset)")]

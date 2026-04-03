@@ -5,7 +5,7 @@ namespace Jazor.CLR;
 public static class StringModule
 {
 	///<summary>Represents the empty string. This field is read-only.</summary>
-	[Jazor(Op.Inline, "static readonly string.Empty", "\\\"\\\"")]
+	[Jazor(Op.Inline, "static readonly string.Empty", "\"\"")]
 	public extern static string _b16f79dc7b155be3();
 
 	///<summary>Retrieves the system's reference to the specified <see cref="T:System.String" />.</summary>
@@ -234,14 +234,14 @@ public static class StringModule
 	/// C#: str.ToCharArray()
 	/// JS: str.split("")
 	/// </summary>
-	[Jazor(Op.Inline, "string.ToCharArray()", """__arg1.split(\"\")""")]
+	[Jazor(Op.Inline, "string.ToCharArray()", "__arg1.split(\"\")")]
 	public extern static char[] _7b8eb7b3d52c463d(string instance);
 
 	/// <summary>
 	/// C#: str.ToCharArray(startIndex, length)
 	/// JS: str.substring(startIndex, startIndex + length).split("")
 	/// </summary>
-	[Jazor(Op.Inline, "string.ToCharArray(int, int)", """__arg1.substring(__arg2, __arg2 + __arg3).split(\"\")""")]
+	[Jazor(Op.Inline, "string.ToCharArray(int, int)", "__arg1.substring(__arg2, __arg2 + __arg3).split(\"\")")]
 	public extern static char[] _53042938adf57f41(string instance, Number startIndex, Number length);
 
 	/// <summary>

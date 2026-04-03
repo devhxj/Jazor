@@ -1,4 +1,6 @@
+using Acornima;
 using Acornima.Ast;
+using Jazor.Name;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,6 +15,13 @@ public record struct SenseArgument
     /// <summary>语义场景标识</summary>
     public Sense Sense { get; init; }
 
+    /// <summary>
+    /// 是否在最终模块输出阶段启用导入别名。
+    /// 仅在真正会把导入 hoist 到模块顶层时才需要开启，
+    /// 这样可以避免普通 walker 直测被内部别名噪音污染。
+    /// </summary>
+    public bool UseImportAliases { get; init; }
+
     /// <summary>模式匹配输入表达式</summary>
     public Expression? PatternInput { get; init; }
 
@@ -25,6 +34,9 @@ public record struct SenseArgument
     // ===== 依赖项收集（原 WalkerArgument 功能，直接内联）=====
     private readonly Dictionary<string, VariableDeclarator>? _declarators;
     private readonly Dictionary<string, List<ImportDeclarationSpecifier>>? _specifiers;
+    private readonly Dictionary<string, string>? _importBindings;
+    private readonly Dictionary<string, string>? _importLocalBindings;
+    private readonly HashSet<string>? _reservedImportNames;
 
     /// <summary>默认参数</summary>
     public static SenseArgument Default => new();
@@ -33,43 +45,60 @@ public record struct SenseArgument
     public SenseArgument()
     {
         Sense = Sense.Any;
+        UseImportAliases = false;
         PatternInput = null;
         CatchExceptionVar = null;
         SwitchExpressionVar = null;
         _declarators = [];
         _specifiers = [];
+        _importBindings = [];
+        _importLocalBindings = [];
+        _reservedImportNames = [];
     }
 
     /// <summary>完整构造函数</summary>
     public SenseArgument(
         Sense Sense = Sense.Any,
+        bool UseImportAliases = false,
         Expression? PatternInput = null,
         string? CatchExceptionVar = null,
         string? SwitchExpressionVar = null)
     {
         this.Sense = Sense;
+        this.UseImportAliases = UseImportAliases;
         this.PatternInput = PatternInput;
         this.CatchExceptionVar = CatchExceptionVar;
         this.SwitchExpressionVar = SwitchExpressionVar;
         _declarators = [];
         _specifiers = [];
+        _importBindings = [];
+        _importLocalBindings = [];
+        _reservedImportNames = [];
     }
 
     /// <summary>内部构造函数（用于 WithNewScope，共享 specifiers）</summary>
     private SenseArgument(
         Sense sense,
+        bool useImportAliases,
         Expression? patternInput,
         string? catchExceptionVar,
         string? switchExpressionVar,
         Dictionary<string, VariableDeclarator>? declarators,
-        Dictionary<string, List<ImportDeclarationSpecifier>>? specifiers)
+        Dictionary<string, List<ImportDeclarationSpecifier>>? specifiers,
+        Dictionary<string, string>? importBindings,
+        Dictionary<string, string>? importLocalBindings,
+        HashSet<string>? reservedImportNames)
     {
         Sense = sense;
+        UseImportAliases = useImportAliases;
         PatternInput = patternInput;
         CatchExceptionVar = catchExceptionVar;
         SwitchExpressionVar = switchExpressionVar;
         _declarators = declarators;
         _specifiers = specifiers;
+        _importBindings = importBindings;
+        _importLocalBindings = importLocalBindings;
+        _reservedImportNames = reservedImportNames;
     }
 
     // ===== 依赖项状态检查 =====
@@ -82,7 +111,7 @@ public record struct SenseArgument
     // ===== Sense 变更 =====
     /// <summary>创建新实例，设置 Sense</summary>
     public SenseArgument With(Sense sense)
-        => new(sense, PatternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers);
+        => new(sense, UseImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames);
 
     // ===== 作用域隔离 =====
     /// <summary>
@@ -90,27 +119,36 @@ public record struct SenseArgument
     /// 共享导入字典，创建新的变量声明字典。
     /// </summary>
     public SenseArgument WithNewScope()
-        => new(Sense, PatternInput, CatchExceptionVar, SwitchExpressionVar, [], _specifiers);
+        => new(Sense, UseImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, [], _specifiers, _importBindings, _importLocalBindings, _reservedImportNames);
 
     // ===== 模式匹配上下文 =====
     /// <summary>设置模式匹配输入表达式</summary>
     public SenseArgument WithPatternInput(Expression? input)
-        => new(Sense, input, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers);
+        => new(Sense, UseImportAliases, input, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames);
 
     // ===== 异常处理上下文 =====
     /// <summary>设置 Catch 异常参数名</summary>
     public SenseArgument WithCatchVar(string? varName)
-        => new(Sense, PatternInput, varName, SwitchExpressionVar, _declarators, _specifiers);
+        => new(Sense, UseImportAliases, PatternInput, varName, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames);
 
     // ===== Switch 表达式上下文 =====
     /// <summary>设置 Switch 表达式变量名</summary>
     public SenseArgument WithSwitchVar(string? varName)
-        => new(Sense, PatternInput, CatchExceptionVar, varName, _declarators, _specifiers);
+        => new(Sense, UseImportAliases, PatternInput, CatchExceptionVar, varName, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames);
 
     // ===== 组合设置 =====
     /// <summary>设置 Sense 和 PatternInput</summary>
     public SenseArgument With(Sense sense, Expression patternInput)
-        => new(sense, patternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers);
+        => new(sense, UseImportAliases, patternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames);
+
+    public SenseArgument WithImportAliases(bool useImportAliases = true)
+        => new(Sense, useImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames);
+
+    public SenseArgument WithImportContext(
+        Dictionary<string, string> importBindings,
+        Dictionary<string, string> importLocalBindings,
+        HashSet<string> reservedImportNames)
+        => new(Sense, UseImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, importBindings, importLocalBindings, reservedImportNames);
 
     // ===== 依赖项操作 =====
     /// <summary>
@@ -137,6 +175,61 @@ public record struct SenseArgument
             list.Add(specifier);
         else
             _specifiers.Add(modulePath, [specifier]);
+    }
+
+    /// <summary>
+    /// 为模块导入返回一个稳定的内部绑定名。
+    /// 当前策略是“模块级保守判定”：
+    /// 只要整个模块里已经存在同名声明，或已有其它导入占用了该名字，
+    /// 就为当前导入分配一个稳定的别名；否则保留原始导入名。
+    /// 这样做不会逐使用点分析词法可见性，但可以保证输出稳定、决策一致，
+    /// 也避免在不同 walker 路径里出现同一导入被重复分配不同本地名的情况。
+    /// </summary>
+    public Identifier BindImportSpecifier(string? modulePath, string importedName)
+    {
+        if (string.IsNullOrWhiteSpace(importedName))
+            return new Identifier(importedName ?? string.Empty);
+
+        if (string.IsNullOrWhiteSpace(modulePath))
+            return new Identifier(importedName);
+
+        if (_specifiers is null || _importBindings is null)
+            return new Identifier(importedName);
+
+        if (!UseImportAliases)
+        {
+            MergeImportSpecifier(modulePath!, new ImportSpecifier(new Identifier(importedName)));
+            return new Identifier(importedName);
+        }
+
+        var key = $"{modulePath}\0{importedName}";
+        if (_importBindings.TryGetValue(key, out var localName))
+            return new Identifier(localName);
+
+        var preferRawImportName =
+            (_reservedImportNames is null || !_reservedImportNames.Contains(importedName)) &&
+            (_importLocalBindings is null || !_importLocalBindings.TryGetValue(importedName, out var existingKey) || existingKey == key);
+
+        if (preferRawImportName)
+        {
+            localName = importedName;
+            MergeImportSpecifier(modulePath!, new ImportSpecifier(new Identifier(importedName)));
+        }
+        else
+        {
+            localName = $"i${Format.HashName(key).TrimStart('_')}";
+            var specifier = CreateAliasedImportSpecifier(importedName, localName);
+            if (_specifiers.TryGetValue(modulePath!, out var list))
+                list.Add(specifier);
+            else
+                _specifiers.Add(modulePath!, [specifier]);
+        }
+
+        if (_importLocalBindings is not null)
+            _importLocalBindings[localName] = key;
+
+        _importBindings.Add(key, localName);
+        return new Identifier(localName);
     }
 
     /// <summary>
@@ -170,5 +263,16 @@ public record struct SenseArgument
 
         _specifiers.Clear();
         return result;
+    }
+
+    private static ImportDeclarationSpecifier CreateAliasedImportSpecifier(string importedName, string localName)
+    {
+        if (string.Equals(importedName, localName, System.StringComparison.Ordinal))
+            return new ImportSpecifier(new Identifier(importedName));
+
+        var importScript = $"import {{ {importedName} as {localName} }} from \"__jazor_internal__\";";
+        var importDeclaration = new Parser().ParseModule(importScript).Body.Single() as ImportDeclaration;
+        return importDeclaration?.Specifiers.Single()
+            ?? throw new InvalidOperationException($"Jazor 无法生成导入别名：{importedName} -> {localName}");
     }
 }

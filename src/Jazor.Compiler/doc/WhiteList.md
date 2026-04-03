@@ -1,140 +1,219 @@
-# WhiteList 分析文档
+# `WhiteList`
 
-## 1. 文件概述
+## 定位
 
-**文件路径**: `WhiteList.cs` 及其分文件
+`WhiteList` 是 Jazor 编译器消费宿主映射规则的静态数据中心。
 
-**职责**: 白名单核心，存储允许使用的类型和成员映射信息。
+它不负责具体 lowering，也不负责最终语法树拼接；它负责回答两个最基础的问题：
 
-## 2. 核心设计思路
+1. 某个类型有没有运行时映射规则
+2. 某个成员有没有运行时映射规则
 
-### 2.1 数据结构
+对应数据主要在：
+
+- `WhiteList.Types`
+- `WhiteList.Members`
+
+相关生成产物和消费代码分布在：
+
+- `src/Jazor.Compiler/WhiteList.cs.Generate.cs`
+- `src/Jazor.Compiler/core/SemanticWalker.cs`
+- `src/Jazor.Compiler/core/SemanticWalker.cs.Reference.cs`
+
+## 它解决什么问题
+
+Jazor 不是直接把所有 CLR 类型和成员原样发成 JavaScript。
+
+很多 API 都需要一个“宿主映射事实层”，例如：
+
+- `Console.WriteLine` 为什么会变成 `console.log`
+- `System.Math` 为什么会落到 `Math`
+- 某些 API 为什么不是简单改名，而是要展开成模板
+- 某些成员为什么需要从模块导入，而不是从全局宿主访问
+
+`WhiteList` 就是这层事实来源。
+
+## 当前数据模型
+
+从使用方式看，`WhiteList` 现在可以理解成两张表。
+
+### 1. `Types`
+
+键是类型签名，值是该类型对应的宿主规则。
+
+它主要用于：
+
+- 类型名改写
+- 运行时宿主名恢复
+- 宿主构造器映射
+
+### 2. `Members`
+
+键是成员签名，值是该成员对应的宿主规则。
+
+它主要用于：
+
+- 方法名改写
+- 属性 getter / setter 映射
+- 运算符方法映射
+- inline 模板映射
+- import 成员映射
+
+## 当前 `Op` 语义
+
+### `Op.Alias`
+
+最常见。
+
+表示：
+
+- 类型或成员在最终 JS 里应使用另一个名字
+
+典型用途：
+
+- `WriteLine` -> `log`
+- `Console` -> `console`
+
+### `Op.Inline`
+
+表示：
+
+- 这个成员不能只靠改名表达
+- 需要展开成表达式模板
+
+当前模板已经不是纯字符串替换模型，而是“预解析 AST + 参数占位符重写”模型。
+
+### `Op.Import`
+
+表示：
+
+- 这个符号的实现来自模块导入
+- 不是普通全局宿主或普通成员访问
+
+### `Op.Compile`
+
+表示：
+
+- 为更复杂的宿主语义预留编译器挂载点
+
+当前基础设施已经存在，但它还不是主线消费入口。
+
+另外，`Op.Compile` 条目不经过 `WhiteList.Members` 常规表，而是由生成器额外产出 `Compile_*` 接口和分发表。
+
+它的主分发顺序、fallback 语义和与 `Inline` 的边界，见：
+
+- [OpCompileSpec.md](./OpCompileSpec.md)
+
+### `Op.Allowed`
+
+表示：
+
+- 允许按普通 lowering 路径继续处理
+
+### `Op.Discard`
+
+表示：
+
+- 该符号不应按普通 ECMAScript 映射继续使用
+
+## 生成来源
+
+`WhiteList` 不是手写维护的完整规则表，它主要来自运行时映射侧的声明式标注。
+
+整体链路大致是：
+
+```text
+ECMAScript.dll / Jazor.CLR.dll
+    -> [Jazor(Op.*)] 标注
+    -> 编译器生成器扫描
+    -> WhiteList.cs.Generate.cs
+    -> SemanticWalker / Analyzer / 其他消费侧读取
+```
+
+所以 `WhiteList` 的核心价值不是“把规则硬编码在编译器里”，而是把运行时映射声明集中投影成编译器可查询的数据表。
+
+## 当前消费方
+
+`WhiteList` 最主要的消费方是 `SemanticWalker`。
+
+常见消费位置包括：
+
+- 类型名恢复
+- 成员别名映射
+- inline 模板实例化
+- import 成员调用
+- 运行时宿主表达式构造
+
+但它不是只服务于一个语法域。
+
+当前会在这些路径里间接或直接参与：
+
+- `Reference`
+- `Creation`
+- `Ordinary`
+- `Pattern`
+
+## 与 `SemanticWalker` 的关系
+
+两者关系可以概括成一句话：
+
+> `WhiteList` 提供映射事实，`SemanticWalker` 负责把这些事实落到具体 AST。
+
+这也意味着两点：
+
+### 1. 白名单不等于最终结果
+
+同一个白名单规则，最终输出还会受到这些因素影响：
+
+- 当前语义节点类型
+- 当前实例/静态调用形态
+- 当前宿主是否需要运行时归一化
+- 当前是否在初始化器、模式匹配、条件访问等特殊上下文里
+
+### 2. 运行时宿主问题不可能只靠白名单解决
+
+例如：
 
 ```csharp
-internal static partial class WhiteList
-{
-    // 类型白名单：类型全名 → 处理方式
-    public static readonly Dictionary<string, WhiteListValue> Types;
-
-    // 成员白名单：成员签名 → 处理方式
-    public static readonly Dictionary<string, WhiteListValue> Members;
-}
+Console.WriteLine("x");
 ```
 
-### 2.2 WhiteListValue 结构
+最终结果里的：
 
-```csharp
-internal sealed class WhiteListValue
-{
-    public Op Op { get; }           // 操作类型
-    public string? Value { get; }   // 映射值（方法名、内联代码等）
-    public string? Path { get; }    // 模块路径（用于 Import）
-}
-```
+- `WriteLine -> log` 更多是白名单问题
+- `Console -> console` 更多是运行时宿主归一化问题
 
-### 2.3 Op 类型处理
+也就是说，白名单给出“名字怎么映射”，但“最终挂到哪个宿主上”还要靠语义层决定。
 
-| Op 类型 | 处理方式 | Value 含义 |
-|---------|---------|-----------|
-| `Alias` | 替换方法名 | JavaScript 方法名 |
-| `Inline` | 内联表达式 | JavaScript 表达式模板 |
-| `Import` | 模块调用 | 函数哈希名 |
-| `Allowed` | 原生支持 | 无 |
-| `Discard` | 不支持 | 无 |
-| `Compile` | 编译器处理 | 无 |
+## 当前边界
 
-### 2.4 生成机制
+`WhiteList` 当前不是这些东西：
 
-白名单数据由 `WhiteList.cs.Generate.cs` 自动生成：
+- 完整的 CLR 语义数据库
+- 自动保证所有映射都闭环的验证器
+- 最终 JavaScript 生成器
+- import 落盘器
 
-```
-Jazor.CLR.dll / ECMAScript.dll
-        │
-        ▼
-[Jazor] 特性扫描
-        │
-        ▼
-WhiteListGenerator
-        │
-        ▼
-WhiteList.cs.Generate.cs
-```
+更准确地说，它现在是：
 
-## 3. 使用流程
+- 编译器宿主映射规则的静态事实源
+- 由生成器维护的查询表
+- 供 `SemanticWalker` 等组件消费的基础设施
 
-### 3.1 类型映射查询
+## 推荐阅读
 
-```csharp
-// 在 GetMapperType 中
-if (WhiteList.Types.TryGetValue(displayName, out var entry) && entry.Op == Op.Alias)
-{
-    // 使用 entry.Value 作为 JavaScript 类型名
-}
-```
+建议按这个顺序看：
 
-### 3.2 成员映射查询
+1. [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)
+2. [WhiteList.md](./WhiteList.md)
+3. [SemanticWalker.WhiteList.md](./SemanticWalker.WhiteList.md)
+4. [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
+5. [RuntimeStaticHostResolution.md](./RuntimeStaticHostResolution.md)
 
-```csharp
-// 在 GetWhiteListExpression 中
-if (WhiteList.Members.TryGetValue(displayString, out var entry))
-{
-    if (entry.Op == Op.Alias)
-        alias = entry.Value!;
-    else if (entry.Op == Op.Inline)
-        // 解析并替换占位符
-    else if (entry.Op == Op.Import)
-        // 生成模块调用
-}
-```
+## 相关文档
 
-## 4. 已知缺陷
-
-### 4.1 高优先级缺陷
-
-| 缺陷 | 影响 | 建议修复方案 |
-|------|------|-------------|
-| **白名单数据不一致** | 编译器和分析器可能使用不同版本 | 确保生成过程同步 |
-| **缺少验证机制** | 无法验证白名单完整性 | 添加白名单验证测试 |
-
-### 4.2 中优先级缺陷
-
-| 缺陷 | 影响 | 建议修复方案 |
-|------|------|-------------|
-| **查询使用字符串比较** | 性能一般 | 使用 Symbol 比较或缓存 |
-| **缺少版本管理** | 无法追踪变更 | 添加版本信息和变更日志 |
-
-### 4.3 低优先级缺陷
-
-| 缺陷 | 影响 | 建议修复方案 |
-|------|------|-------------|
-| **错误消息不友好** | 调试困难 | 添加详细的错误消息 |
-| **缺少文档** | 难以理解映射规则 | 自动生成文档 |
-
-## 5. 需完善内容
-
-### 5.1 功能完善
-
-- [ ] 添加白名单验证机制
-- [ ] 支持运行时动态查询优化
-- [ ] 添加白名单变更追踪
-
-### 5.2 代码质量
-
-- [ ] 添加单元测试
-- [ ] 优化查询性能
-- [ ] 改善错误消息
-
-### 5.3 工具支持
-
-- [ ] 添加白名单可视化工具
-- [ ] 自动生成白名单文档
-- [ ] 支持白名单差异比较
-
-## 6. 相关文档
-
-- [SemanticWalker.md](./SemanticWalker.md)
-- [Jazor.CLR/rule.md](../../Jazor.CLR/rule.md)
-
----
-
-**最后更新**: 2026-03-03
+- [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)
+- [SemanticWalker.WhiteList.md](./SemanticWalker.WhiteList.md)
+- [OpCompileSpec.md](./OpCompileSpec.md)
+- [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
+- [RuntimeStaticHostResolution.md](./RuntimeStaticHostResolution.md)

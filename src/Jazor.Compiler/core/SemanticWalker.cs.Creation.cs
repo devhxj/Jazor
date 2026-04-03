@@ -107,6 +107,9 @@ public partial class SemanticWalker
 		for (var index = 0; index < operation.Arguments.Length; index++)
 		{
 			var arg = operation.Arguments[index];
+			if (arg.ArgumentKind == ArgumentKind.DefaultValue)
+				continue;
+
 			var parameter = arg.Parameter ??
 				(operation.Constructor is not null && operation.Constructor.Parameters.Length > index
 					? operation.Constructor.Parameters[index]
@@ -163,8 +166,13 @@ public partial class SemanticWalker
 				simpleAssignment.Target is IPropertyReferenceOperation propertyReference &&
 				propertyReference.Arguments.Length == 1)
 			{
-				var key = Translate<Expression>(propertyReference.Arguments[0].Value, argument);
-				var value = Translate<Expression>(simpleAssignment.Value, argument);
+				// 集合字面量直接落成 JS array/Set/Map 时，同样不能绕开 tuple 边界规则。
+				// 这里沿用索引器/参数的目标类型做 remap，避免集合元素里的 tuple 名字透传错误。
+				var key = TranslateTupleForTarget(
+					propertyReference.Arguments[0].Value,
+					propertyReference.Arguments[0].Parameter?.Type,
+					argument);
+				var value = TranslateTupleForTarget(simpleAssignment.Value, propertyReference.Property.Type, argument);
 				items.Add(new ArrayExpression(NodeList.From<Expression?>(key, value)));
 				continue;
 			}
@@ -176,15 +184,24 @@ public partial class SemanticWalker
 			{
 				if (invocation.Arguments.Length != 1)
 					return false;
-				items.Add(Translate<Expression>(invocation.Arguments[0].Value, argument));
+				items.Add(TranslateTupleForTarget(
+					invocation.Arguments[0].Value,
+					invocation.Arguments[0].Parameter?.Type,
+					argument));
 			}
 			else
 			{
 				if (invocation.Arguments.Length != 2)
 					return false;
 
-				var key = Translate<Expression>(invocation.Arguments[0].Value, argument);
-				var value = Translate<Expression>(invocation.Arguments[1].Value, argument);
+				var key = TranslateTupleForTarget(
+					invocation.Arguments[0].Value,
+					invocation.Arguments[0].Parameter?.Type,
+					argument);
+				var value = TranslateTupleForTarget(
+					invocation.Arguments[1].Value,
+					invocation.Arguments[1].Parameter?.Type,
+					argument);
 				items.Add(new ArrayExpression(NodeList.From<Expression?>(key, value)));
 			}
 		}
@@ -581,7 +598,7 @@ public partial class SemanticWalker
 		if (operation.Type is IArrayTypeSymbol arrayType && arrayType.Rank > 1)
 		{
 			if (operation.Initializer is not null)
-				return BuildNestedArrayInitializer(operation.Initializer, argument);
+				return BuildNestedArrayInitializer(operation.Initializer, argument, arrayType.ElementType);
 
 			var dimensions = operation.DimensionSizes
 				.Select(dimension => Translate<Expression>(dimension, argument))
@@ -592,9 +609,10 @@ public partial class SemanticWalker
 		var elements = new List<Expression?>();
 		if (operation.Initializer is not null)
 		{
+			var elementTargetType = GetCollectionElementTargetType(operation.Type);
 			foreach (var element in operation.Initializer.ElementValues)
 			{
-				Translate(elements, element, argument, null);
+				elements.Add(TranslateTupleForTarget(element, elementTargetType, argument));
 			}
 		}
 		else
@@ -622,15 +640,15 @@ public partial class SemanticWalker
 		return new ArrayExpression(NodeList.From(elements));
 	}
 
-	private Expression BuildNestedArrayInitializer(IArrayInitializerOperation initializer, SenseArgument argument)
+	private Expression BuildNestedArrayInitializer(IArrayInitializerOperation initializer, SenseArgument argument, ITypeSymbol? elementTargetType = null)
 	{
 		var elements = new List<Expression?>(initializer.ElementValues.Length);
 		foreach (var element in initializer.ElementValues)
 		{
 			if (element is IArrayInitializerOperation nestedInitializer)
-				elements.Add(BuildNestedArrayInitializer(nestedInitializer, argument));
+				elements.Add(BuildNestedArrayInitializer(nestedInitializer, argument, elementTargetType));
 			else
-				Translate(elements, element, argument, null);
+				elements.Add(TranslateTupleForTarget(element, elementTargetType, argument));
 		}
 
 		return new ArrayExpression(NodeList.From(elements));

@@ -6,7 +6,8 @@ public static class CultureInfoModule
 {
 	private const string InvariantCultureName = "";
 	private const string InvariantCultureDisplayName = "Invariant Language (Invariant Country)";
-	private const string InvariantIetfLanguageTag = "iv";
+	private const string InvariantIetfLanguageTag = "";
+	private const string InvariantCultureByIetfName = "iv";
 	private const string InvariantThreeLetterIsoLanguageName = "ivl";
 	private const string InvariantThreeLetterWindowsLanguageName = "IVL";
 
@@ -17,6 +18,33 @@ public static class CultureInfoModule
 			hash = ((hash << 5) - hash) + text[i];
 
 		return hash | 0;
+	}
+
+	private static bool IsNeutralCultureCore(string instance)
+	{
+		var normalized = NormalizeCultureInfo(instance);
+		if (normalized.Length == 0)
+			return false;
+
+		var index = normalized.LastIndexOf('-');
+		if (index < 0)
+			return true;
+
+		var last = normalized.Substring(index + 1);
+		if (last.Length == 2)
+			return false;
+		if (last.Length == 3)
+		{
+			for (var i = 0; i < 3; i++)
+			{
+				if (last[i] < '0' || last[i] > '9')
+					return true;
+			}
+
+			return false;
+		}
+
+		return true;
 	}
 
 	private static string GetParentCulture(string instance)
@@ -32,7 +60,7 @@ public static class CultureInfoModule
 	}
 
 	private static string GetLanguagePart(string instance)
-		=> instance.Length == 0 ? InvariantIetfLanguageTag : instance.Split('-')[0];
+		=> instance.Length == 0 ? InvariantCultureByIetfName : instance.Split('-')[0];
 
 	private static string GetIetfLanguageTag(string instance)
 		=> instance.Length == 0 ? InvariantIetfLanguageTag : instance;
@@ -44,24 +72,40 @@ public static class CultureInfoModule
 	{
 		if (name.Length == 0)
 			return InvariantCultureName;
+		if (name == InvariantCultureByIetfName)
+			return InvariantCultureName;
 
 		var supported = Intl.DateTimeFormat.SupportedLocalesOf(name);
 		if (supported.Length == 0)
 			throw new Error($"CultureNotFoundException: Culture '{name}' is not supported.");
 
 		var resolved = supported[0]!;
-		if (resolved.Contains("-"))
+		var locale = new Intl.Locale(resolved).Maximize();
+		var language = locale.Language;
+		var region = locale.Region;
+		var script = locale.Script;
+		if (region == null || region.Length == 0)
 			return resolved;
+		if (resolved == "zh" || resolved == "zh-Hans")
+			return "zh-CN";
+		if (resolved == "zh-Hant")
+			return "zh-HK";
+		if (script == null || script.Length == 0)
+			return language + "-" + region;
+		if (language == "zh")
+			return language + "-" + region;
+		if (script == "Latn" && language != "az" && language != "uz" && language != "sr")
+			return language + "-" + region;
 
-		var worldLocale = resolved + "-001";
-		var worldSupported = Intl.DateTimeFormat.SupportedLocalesOf(worldLocale);
-		return worldSupported.Length != 0 ? worldLocale : resolved;
+		return language + "-" + script + "-" + region;
 	}
 
 	private static string CreateCultureInfo(string name)
 	{
 		if (name.Length == 0)
 			return InvariantCultureName;
+		if (name == InvariantCultureByIetfName)
+			return InvariantCultureByIetfName;
 
 		var supported = Intl.DateTimeFormat.SupportedLocalesOf(name);
 		if (supported.Length == 0)
@@ -74,11 +118,24 @@ public static class CultureInfoModule
 		=> throw new Error($"NotSupportedException: LCID-based CultureInfo constructors are not supported: {culture}.");
 
 	private static string GetCultureInfoByIetfLanguageTag(string name)
-	{
-		if (name == InvariantIetfLanguageTag)
-			return InvariantCultureName;
+		=> CreateCultureInfo(name);
 
-		return CreateCultureInfo(name);
+	private static string NormalizeCultureInfo(string instance)
+		=> instance.Length == 0 ? InvariantCultureName : CreateCultureInfo(instance);
+
+	private static string GetCurrentCultureName()
+		=> CreateCultureInfo(new Intl.NumberFormat().ResolvedOptions().Locale);
+
+	private static string GetCurrentUICultureName()
+	{
+		try
+		{
+			return CreateCultureInfo(Global.Window.Navigator.Language);
+		}
+		catch
+		{
+			return GetCurrentCultureName();
+		}
 	}
 
 	/// <summary>
@@ -125,28 +182,31 @@ public static class CultureInfoModule
 	/// C#: CultureInfo.CurrentCulture
 	/// JS: Intl.DateTimeFormat().resolvedOptions().locale
 	/// </summary>
-	[Jazor(Op.Inline, "static System.Globalization.CultureInfo.CurrentCulture.get", "Intl.DateTimeFormat().resolvedOptions().locale")]
-	public extern static String _1a26e2e2e4e0ca1d();
+	[Jazor(Op.Import, "static System.Globalization.CultureInfo.CurrentCulture.get")]
+	public static String _1a26e2e2e4e0ca1d()
+		=> GetCurrentCultureName();
 
 	[Jazor(Op.Discard ,"static System.Globalization.CultureInfo.CurrentCulture.set")]
 	public extern static void _82cfca57d721204e(String value);
 
 	/// <summary>
 	/// C#: CultureInfo.CurrentUICulture
-	/// JS: navigator.language || 'en'
+	/// JS: navigator.language || Intl.DateTimeFormat().resolvedOptions().locale
 	/// </summary>
-	[Jazor(Op.Inline, "static System.Globalization.CultureInfo.CurrentUICulture.get", "(typeof navigator !== 'undefined' ? navigator.language : 'en')")]
-	public extern static String _eca32c250ead7de9();
+	[Jazor(Op.Import, "static System.Globalization.CultureInfo.CurrentUICulture.get")]
+	public static String _eca32c250ead7de9()
+		=> GetCurrentUICultureName();
 
 	[Jazor(Op.Discard ,"static System.Globalization.CultureInfo.CurrentUICulture.set")]
 	public extern static void _7e355a1a63351619(String value);
 
 	/// <summary>
 	/// C#: CultureInfo.InstalledUICulture
-	/// JS: 'en' (default)
+	/// JS: navigator.language || Intl.DateTimeFormat().resolvedOptions().locale
 	/// </summary>
-	[Jazor(Op.Inline, "static System.Globalization.CultureInfo.InstalledUICulture.get", "'en'")]
-	public extern static String _98e743867688a06d();
+	[Jazor(Op.Import, "static System.Globalization.CultureInfo.InstalledUICulture.get")]
+	public static String _98e743867688a06d()
+		=> GetCurrentUICultureName();
 
 	[Jazor(Op.Discard ,"static System.Globalization.CultureInfo.DefaultThreadCurrentCulture.get")]
 	public extern static String? _3c1fdac9ccc43427();
@@ -268,18 +328,27 @@ public static class CultureInfoModule
 	public static bool _dfe1a8cc1c9e5e52(string instance, object? value)
 	{
 		var other = value as string;
-		return other != null && instance == other;
+		if (other == null)
+			return false;
+		try
+		{
+			return NormalizeCultureInfo(instance) == NormalizeCultureInfo(other);
+		}
+		catch
+		{
+			return false;
+		}
 	}
 
 	///<summary>Serves as a hash function for the current <see cref="T:System.Globalization.CultureInfo" />, suitable for hashing algorithms and data structures, such as a hash table.</summary>
 	[Jazor(Op.Import ,"override System.Globalization.CultureInfo.GetHashCode()")]
 	public static Number _b3aae6e43cf38d8a(string instance)
-		=> GetStringHashCode(instance);
+		=> GetStringHashCode(NormalizeCultureInfo(instance));
 
 	///<summary>Returns a string containing the name of the current <see cref="T:System.Globalization.CultureInfo" /> in the format languagecode2-country/regioncode2.</summary>
 	[Jazor(Op.Import ,"override System.Globalization.CultureInfo.ToString()")]
 	public static string _559b27327f84f1af(string instance)
-		=> instance;
+		=> NormalizeCultureInfo(instance);
 
 	///<summary>Gets an object that defines how to format the specified type.</summary>
 	[Jazor(Op.Discard ,"virtual System.Globalization.CultureInfo.GetFormat(System.Type)")]
@@ -287,7 +356,7 @@ public static class CultureInfoModule
 
 	[Jazor(Op.Import ,"virtual System.Globalization.CultureInfo.IsNeutralCulture.get")]
 	public static bool _0bedb111138c14ed(string instance)
-		=> instance.Length != 0 && !instance.Contains("-");
+		=> IsNeutralCultureCore(instance);
 
 	[Jazor(Op.Discard ,"System.Globalization.CultureInfo.CultureTypes.get")]
 	public extern static System.Globalization.CultureTypes _7309acaa147028c6(string instance);
@@ -305,8 +374,8 @@ public static class CultureInfoModule
 	public extern static void _a72ad1794743a630(string instance, object value);
 
 	///<summary>Refreshes cached culture-related information.</summary>
-	[Jazor(Op.Import ,"System.Globalization.CultureInfo.ClearCachedData()")]
-	public static void _73e163fe0d6f4c41(string instance)
+	[Jazor(Op.Import ,"static System.Globalization.CultureInfo.ClearCachedData()")]
+	public static void _73e163fe0d6f4c41()
 	{
 	}
 
@@ -325,7 +394,10 @@ public static class CultureInfoModule
 	///<summary>Gets an alternate user interface culture suitable for console applications when the default graphic user interface culture is unsuitable.</summary>
 	[Jazor(Op.Import ,"System.Globalization.CultureInfo.GetConsoleFallbackUICulture()")]
 	public static String _e746a9049464da41(string instance)
-		=> instance;
+	{
+		var normalized = NormalizeCultureInfo(instance);
+		return normalized == InvariantCultureByIetfName ? InvariantCultureName : normalized;
+	}
 
 	///<summary>Creates a copy of the current <see cref="T:System.Globalization.CultureInfo" />.</summary>
 	[Jazor(Op.Import ,"virtual System.Globalization.CultureInfo.Clone()")]

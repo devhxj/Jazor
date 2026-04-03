@@ -78,34 +78,102 @@ public partial class SemanticWalker
         }
         else if (operation.Catches.Length > 1)
         {
-            // 定义catch使用的param
             var tryParam = new Identifier(GetUniqueName(operation));
-            List<Statement> alternates = [];
+            var groups = new List<(string TypeName, List<ICatchClauseOperation> Clauses)>();
             foreach (var @catch in operation.Catches)
             {
                 var (_, typeName) = GetMapperType(@catch.ExceptionType);
-                var right = new Identifier(typeName);
-                // 传递 tryParam 作为 exceptionParam，用于 when 条件检查
-                var statements = ExtractCatchClauseBody(@catch, argument, tryParam);
-                var param = ExtractCatchClauseParam(@catch);
-                if (param is not null)
+
+                if (groups.Count > 0 && groups[groups.Count - 1].TypeName == typeName)
                 {
-                    // 需要定义一个变量，将tryParam转为当前catch的param
-                    var catchParamDeclarator = new VariableDeclarator(param, tryParam);
-                    var catchParamDeclaration = new VariableDeclaration(
-                        VariableDeclarationKind.Const,
-                        NodeList.From(catchParamDeclarator));
-                    statements.Insert(0, catchParamDeclaration);
+                    var last = groups[groups.Count - 1];
+                    last.Clauses.Add(@catch);
+                    groups[groups.Count - 1] = last;
                 }
-                var body = new NestedBlockStatement(NodeList.From(statements));
-                var test = new NonLogicalBinaryExpression(Operator.InstanceOf, tryParam, right);
-                alternates.Add(new IfStatement(test, body, null));
+                else
+                {
+                    groups.Add((typeName, new List<ICatchClauseOperation> { @catch }));
+                }
             }
 
-            if (alternates.Count == 0)
-                return HandleTransformationFailure<Node>(operation, "Try statement catch clause could not be translated to JavaScript.");
+            Statement BuildGroupChain(List<ICatchClauseOperation> clauses, int index, Identifier? sharedParam, Statement fallback)
+            {
+                if (index >= clauses.Count)
+                    return fallback;
 
-            var catchBody = new NestedBlockStatement(NodeList.From(alternates));
+                var @catch = clauses[index];
+                var currentParam = ExtractCatchClauseParam(@catch);
+                var branchStatements = new List<Statement>();
+
+                if (sharedParam is null && currentParam is not null)
+                {
+                    branchStatements.Add(new VariableDeclaration(
+                        VariableDeclarationKind.Const,
+                        NodeList.From(new VariableDeclarator(currentParam, tryParam))));
+                }
+
+                var handlerStatements = ExtractCatchHandlerStatements(@catch, argument, tryParam);
+                if (@catch.Filter is not null)
+                {
+                    var filterExpr = TranslateExpression(@catch.Filter, argument);
+                    var consequent = new NestedBlockStatement(NodeList.From(handlerStatements));
+                    var alternate = BuildGroupChain(clauses, index + 1, sharedParam, fallback);
+                    branchStatements.Add(new IfStatement(filterExpr, consequent, alternate));
+                }
+                else
+                {
+                    if (index > 0)
+                        branchStatements.Add(new NestedBlockStatement(NodeList.From(handlerStatements)));
+                    else
+                        branchStatements.AddRange(handlerStatements);
+                }
+
+                return branchStatements.Count == 1
+                    ? branchStatements[0]
+                    : new NestedBlockStatement(NodeList.From(branchStatements));
+            }
+
+            NestedBlockStatement BuildGroupBody(List<ICatchClauseOperation> clauses, Statement fallback)
+            {
+                var bodyStatements = new List<Statement>();
+                var parameters = new List<string>();
+                foreach (var @catch in clauses)
+                {
+                    var param = ExtractCatchClauseParam(@catch);
+                    if (param is null || parameters.Contains(param.Name))
+                        continue;
+
+                    parameters.Add(param.Name);
+                }
+
+                Identifier? sharedParam = parameters.Count == 1
+                    ? new Identifier(parameters[0])
+                    : null;
+
+                if (sharedParam is not null)
+                {
+                    bodyStatements.Add(new VariableDeclaration(
+                        VariableDeclarationKind.Const,
+                        NodeList.From(new VariableDeclarator(sharedParam, tryParam))));
+                }
+
+                bodyStatements.Add(BuildGroupChain(clauses, 0, sharedParam, fallback));
+                return new NestedBlockStatement(NodeList.From(bodyStatements));
+            }
+
+            Statement chain = new ThrowStatement(tryParam);
+            for (var index = groups.Count - 1; index >= 0; index--)
+            {
+                var group = groups[index];
+                var fallback = chain;
+                var body = BuildGroupBody(group.Clauses, fallback);
+                var test = new NonLogicalBinaryExpression(Operator.InstanceOf, tryParam, new Identifier(group.TypeName));
+                // 同一 JS 运行时类型的多个 catch 需要先聚合到一个分支里，
+                // 这样 when 过滤失败时才能继续尝试同组后续 catch，而不是提前 rethrow。
+                chain = new IfStatement(test, body, fallback);
+            }
+
+            var catchBody = new NestedBlockStatement(NodeList.From<Statement>(chain));
             handler = new CatchClause(tryParam, catchBody);
         }
 
@@ -219,6 +287,12 @@ public partial class SemanticWalker
             bodyStatements.Add(filterCheck);
         }
 
+        bodyStatements.AddRange(ExtractCatchHandlerStatements(operation, argument, exceptionParam));
+        return bodyStatements;
+    }
+
+    private List<Statement> ExtractCatchHandlerStatements(ICatchClauseOperation operation, SenseArgument argument, Identifier? exceptionParam)
+    {
         // catch 体：隔离 scope，变量声明不泄漏到 catch 外
         // 同时传递异常参数名（用于 re-throw）
         var catchContext = (exceptionParam is not null
@@ -226,13 +300,14 @@ public partial class SemanticWalker
             : argument).WithNewScope();
         var catchPending = TranslateOperationsToStatements(operation.Handler.Operations, catchContext);
 
+        var statements = new List<Statement>();
         if (catchContext.HasVarDeclarator)
         {
             var declarators = catchContext.FlushVarDeclarator();
-            bodyStatements.Add(new VariableDeclaration(VariableDeclarationKind.Let, declarators));
+            statements.Add(new VariableDeclaration(VariableDeclarationKind.Let, declarators));
         }
-        bodyStatements.AddRange(catchPending);
-        return bodyStatements;
+        statements.AddRange(catchPending);
+        return statements;
     }
 
     /// <summary>

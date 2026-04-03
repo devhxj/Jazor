@@ -332,6 +332,13 @@ public static class RuntimeModule
 		return probe.GetUTCDate();
 	}
 
+	public static Number GetInt64HashCode(BigInt value)
+	{
+		var low = (int)Number_(BigInt.AsIntN(32, value));
+		var high = (int)Number_(BigInt.AsIntN(32, value >> BigInt_(32)));
+		return low ^ high;
+	}
+
 	private static void EnsureValidDateParts(Number year, Number month, Number day)
 	{
 		EnsureYearAndMonth(year, month);

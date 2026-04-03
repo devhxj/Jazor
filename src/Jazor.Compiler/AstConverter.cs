@@ -2,6 +2,7 @@ using Acornima;
 using Acornima.Ast;
 using Jazor.Name;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.Globalization;
@@ -32,6 +33,9 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     private readonly INamedTypeSymbol _classSymbol = classSymbol;
     private readonly SemanticModel _classModel = classModel;
     private readonly Dictionary<string, List<ImportDeclarationSpecifier>> _imports = [];
+    private readonly Dictionary<string, string> _importBindings = [];
+    private readonly Dictionary<string, string> _importLocalBindings = [];
+    private readonly HashSet<string> _reservedImportNames = BuildReservedImportNames(classSymbol);
 
     /// <summary>
     /// 将C# 14 ClassDeclarationSyntax 转换为Acornima.Ast.Module(es6+ module)
@@ -109,6 +113,16 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 _imports.Add(pair.Key, [.. pair.Value]);
         }
     }
+
+    /// <summary>
+    /// 为模块输出阶段创建共享导入上下文。
+    /// 这里刻意让整个模块共用同一份导入绑定状态，
+    /// 这样同一个外部符号在不同方法、字段初始化器或成员转换过程中
+    /// 都会得到同一个本地名字，不会因为访问顺序不同而抖动。
+    /// </summary>
+    private SenseArgument CreateImportAwareArgument(Sense sense)
+        => new SenseArgument(sense, UseImportAliases: true)
+            .WithImportContext(_importBindings, _importLocalBindings, _reservedImportNames);
 
     /// <summary>
     /// 
@@ -235,7 +249,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             if (operation is not null)
             {
                 var walker = new SemanticWalker(_classSymbol);
-                var argument = new SenseArgument(Sense.FunctionBody);
+                var argument = CreateImportAwareArgument(Sense.FunctionBody);
                 body = walker.Visit(operation, argument) as FunctionBody;
                 MergeImports(argument);
             }
@@ -246,7 +260,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             if (operation is not null)
             {
                 var walker = new SemanticWalker(_classSymbol);
-                var argument = new SenseArgument(Sense.Any);
+                var argument = CreateImportAwareArgument(Sense.Any);
                 var stmt = walker.Visit(operation, argument) switch
                 {
                     Statement s => s,
@@ -405,7 +419,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         if (operation is not null)
         {
             var walker = new SemanticWalker();
-            var argument = new SenseArgument(Sense.FunctionBody);
+            var argument = CreateImportAwareArgument(Sense.FunctionBody);
             body = walker.Visit(operation, argument) as FunctionBody
                 ?? throw new NotSupportedException($"Jazor cannot suport {symbol.Name}.");
             MergeImports(argument);
@@ -545,7 +559,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             throw new NotSupportedException($"Jazor cannot suport {symbol.Name}.");
 
         var walker = new SemanticWalker();
-        var argument = new SenseArgument(Sense.FunctionBody);
+        var argument = CreateImportAwareArgument(Sense.FunctionBody);
         var body = walker.Visit(operation, argument) as FunctionBody
             ?? throw new NotSupportedException($"Jazor cannot suport {symbol.Name}.");
         MergeImports(argument);
@@ -709,7 +723,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         if (operation is not null)
         {
             var walker = new SemanticWalker(_classSymbol);
-            var argument = new SenseArgument(Sense.Any);
+            var argument = CreateImportAwareArgument(Sense.Any);
             var expr = walker.Visit(operation, argument) as Expression;
             MergeImports(argument);
             if (expr is not null)
@@ -797,6 +811,146 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             .Replace("\r", "\\r")
             .Replace("\t", "\\t")
             .Replace("\v", "\\v");
+    }
+
+    /// <summary>
+    /// 收集模块级保留名。
+    /// 这不是逐词法作用域的精确遮蔽分析，而是为导入绑定提供一个稳定的保守上界：
+    /// 只要名字在模块成员或任意局部声明里出现过，就视为该名字可能与导入冲突。
+    /// 这样会放大一部分本可直接使用原名的场景，但能避免漏判导致的错误绑定。
+    /// </summary>
+    private static HashSet<string> BuildReservedImportNames(INamedTypeSymbol classSymbol)
+    {
+        var names = new HashSet<string>(System.StringComparer.Ordinal);
+
+        foreach (var member in classSymbol.GetMembers())
+        {
+            switch (member)
+            {
+                case IFieldSymbol field:
+                    names.Add(GetModuleFieldDeclaredName(field));
+                    break;
+                case IMethodSymbol method when ShouldReserveModuleMethodName(method):
+                    names.Add(Util.GetConfigOrSymbolName(method));
+                    break;
+                case INamedTypeSymbol type when type.TypeKind is TypeKind.Class or TypeKind.Enum:
+                    names.Add(Util.GetConfigOrSymbolName(type));
+                    break;
+            }
+        }
+
+        foreach (var syntaxRef in classSymbol.DeclaringSyntaxReferences)
+        {
+            if (syntaxRef.GetSyntax() is not ClassDeclarationSyntax classSyntax)
+                continue;
+
+            var collector = new DeclaredNameCollector();
+            collector.Visit(classSyntax);
+            names.UnionWith(collector.Names);
+        }
+
+        return names;
+    }
+
+    private static bool ShouldReserveModuleMethodName(IMethodSymbol method)
+    {
+        if (method.MethodKind == MethodKind.SharedConstructor && method.IsImplicitlyDeclared)
+            return false;
+
+        if (method.IsInitOnly)
+            return false;
+
+        return method.MethodKind is MethodKind.Ordinary or MethodKind.PropertyGet or MethodKind.PropertySet or MethodKind.SharedConstructor;
+    }
+
+    private static string GetModuleFieldDeclaredName(IFieldSymbol symbol)
+    {
+        if (symbol.AssociatedSymbol is IPropertySymbol && symbol.IsImplicitlyDeclared)
+            return Format.HashName(symbol.AssociatedSymbol!.OriginalDefinition.ToDisplayString(Format.NameFormat));
+
+        return Util.GetConfigOrSymbolName(symbol);
+    }
+
+    /// <summary>
+    /// 仅用于构建模块级保留名集合。
+    /// 这里收集的是“声明过哪些名字”，而不是“这些名字在何处可见”，
+    /// 因此服务的是保守冲突判定，不承担精确词法作用域解析职责。
+    /// </summary>
+    private sealed class DeclaredNameCollector : CSharpSyntaxWalker
+    {
+        public HashSet<string> Names { get; } = new(System.StringComparer.Ordinal);
+
+        public override void VisitParameter(ParameterSyntax node)
+        {
+            Add(node.Identifier);
+            base.VisitParameter(node);
+        }
+
+        public override void VisitVariableDeclarator(VariableDeclaratorSyntax node)
+        {
+            Add(node.Identifier);
+            base.VisitVariableDeclarator(node);
+        }
+
+        public override void VisitSingleVariableDesignation(SingleVariableDesignationSyntax node)
+        {
+            Add(node.Identifier);
+            base.VisitSingleVariableDesignation(node);
+        }
+
+        public override void VisitForEachStatement(ForEachStatementSyntax node)
+        {
+            Add(node.Identifier);
+            base.VisitForEachStatement(node);
+        }
+
+        public override void VisitCatchDeclaration(CatchDeclarationSyntax node)
+        {
+            Add(node.Identifier);
+            base.VisitCatchDeclaration(node);
+        }
+
+        public override void VisitLocalFunctionStatement(LocalFunctionStatementSyntax node)
+        {
+            Add(node.Identifier);
+            base.VisitLocalFunctionStatement(node);
+        }
+
+        public override void VisitFromClause(FromClauseSyntax node)
+        {
+            Add(node.Identifier);
+            base.VisitFromClause(node);
+        }
+
+        public override void VisitJoinClause(JoinClauseSyntax node)
+        {
+            Add(node.Identifier);
+            base.VisitJoinClause(node);
+        }
+
+        public override void VisitJoinIntoClause(JoinIntoClauseSyntax node)
+        {
+            Add(node.Identifier);
+            base.VisitJoinIntoClause(node);
+        }
+
+        public override void VisitLetClause(LetClauseSyntax node)
+        {
+            Add(node.Identifier);
+            base.VisitLetClause(node);
+        }
+
+        public override void VisitQueryContinuation(QueryContinuationSyntax node)
+        {
+            Add(node.Identifier);
+            base.VisitQueryContinuation(node);
+        }
+
+        private void Add(SyntaxToken identifier)
+        {
+            if (!identifier.IsKind(SyntaxKind.None) && !string.IsNullOrWhiteSpace(identifier.ValueText))
+                Names.Add(identifier.ValueText);
+        }
     }
 
 	private static bool IsNumeric(SpecialType type)

@@ -1,3 +1,4 @@
+using Acornima.Ast;
 using ECMAScript;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
@@ -60,6 +61,12 @@ public sealed class SemanticWalkerReferenceTest
 		}
 
 		throw new InvalidOperationException("未找到可分析的操作");
+	}
+
+	// 锁定完整 JS 输出，避免弱断言漏掉引号、换行和调用形态回退。
+	private static void AssertScriptEqual(string expected, string? actual)
+	{
+		Assert.AreEqual(expected.ReplaceLineEndings(), actual?.ReplaceLineEndings());
 	}
 	
 	#region VisitLocalReference - 局部变量引用
@@ -180,14 +187,178 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.IsNotNull(script);
-		StringAssert.Contains(script, @"document.createElement(""button"", {");
-		StringAssert.Contains(script, @"is: ""x-button""");
-		StringAssert.Contains(script, @"element.addEventListener(""click"", null, {");
-		StringAssert.Contains(script, @"once: true");
-		StringAssert.Contains(script, @"new Event(""click"", {");
-		StringAssert.Contains(script, @"bubbles: true");
-		StringAssert.Contains(script, @"cancelable: true");
+		Assert.AreEqual(@"{
+  let element = document.createElement(""button"", { is: ""x-button"" });
+  element.addEventListener(""click"", null, { once: true });
+  let evt = new Event(""click"", { bubbles: true, cancelable: true });
+}".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+	}
+
+	[TestMethod]
+	public void Visit_Reference_StringBuilderAppendLine_UsesInlineSequence()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(string text)
+                {
+                    var sb = new System.Text.StringBuilder();
+                    var appended = sb.AppendLine(text);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let sb = [];
+  let appended = (sb.push(...(text ?? '').split('')), sb.push('\n'), sb);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_StringBuilderAppendLineWithoutValue_UsesInlineSequence()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var sb = new System.Text.StringBuilder();
+                    var appended = sb.AppendLine();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let sb = [];
+  let appended = (sb.push('\n'), sb);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_NumericInlineTemplates_DoNotFallBackToImportHelpers()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(float left, float right, double value, double sign)
+                {
+                    var cmp = left.CompareTo(right);
+                    var eq = left.Equals(right);
+                    var dcmp = value.CompareTo(sign);
+                    var deq = value.Equals(sign);
+                    var copy = double.CopySign(value, sign);
+                    var mathCopy = System.Math.CopySign(value, sign);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let cmp = isNaN(left) ? isNaN(right) ? 0 : -1 : isNaN(right) ? 1 : left < right ? -1 : left > right ? 1 : 0;
+  let eq = isNaN(left) ? isNaN(right) : isNaN(right) ? false : !(left < right) && !(left > right);
+  let dcmp = isNaN(value) ? isNaN(sign) ? 0 : -1 : isNaN(sign) ? 1 : value < sign ? -1 : value > sign ? 1 : 0;
+  let deq = isNaN(value) ? isNaN(sign) : isNaN(sign) ? false : !(value < sign) && !(value > sign);
+  let copy = sign < 0 || Object.is(sign, -0) ? -Math.abs(value) : Math.abs(value);
+  let mathCopy = sign < 0 || Object.is(sign, -0) ? -Math.abs(value) : Math.abs(value);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_StringBuilderAppend_UsesInlineSequence()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(string text)
+                {
+                    var sb = new System.Text.StringBuilder();
+                    var appended = sb.Append(text);
+                    var value = sb.ToString();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let sb = [];
+  let appended = (sb.push(...(text ?? '').split('')), sb);
+  let value = sb.join('');
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_StringBuilderClearAndLength_UseInlineShapes()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(string text)
+                {
+                    var sb = new System.Text.StringBuilder(text);
+                    var length = sb.Length;
+                    var cleared = sb.Clear();
+                    var nextLength = sb.Length;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let sb = (text ?? '').split('');
+  let length = sb.length;
+  let cleared = (sb.length = 0, sb);
+  let nextLength = sb.length;
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_NumericStaticPredicates_UseInlineShapes()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(double value)
+                {
+                    var negativeZero = double.NegativeZero;
+                    var isNegative = double.IsNegative(negativeZero);
+                    var isInfinity = double.IsInfinity(value);
+                    var isPositiveInfinity = double.IsPositiveInfinity(value);
+                    var isNegativeInfinity = double.IsNegativeInfinity(value);
+                    var isNaN = double.IsNaN(value);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		// 局部变量名与全局 isNaN 冲突时，当前实现会提升到 Number.isNaN 以避免遮蔽。
+		AssertScriptEqual(@"{
+  let negativeZero = -0;
+  let isNegative = Object.is(negativeZero, -0) || negativeZero < 0;
+  let isInfinity = value === Infinity || value === -Infinity;
+  let isPositiveInfinity = value === Infinity;
+  let isNegativeInfinity = value === -Infinity;
+  let isNaN = Number.isNaN(value);
+}", script);
 	}
 
 	/// <summary>
@@ -643,6 +814,31 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
+	public void Visit_Reference_IObjectNumericIndexer_UsesJsIndexAccess()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    IObject obj = Object.Create(null)!;
+                    var value = obj[1];
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+@"{
+  let obj = Object.create(null);
+  let value = obj[1];
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
 	public void Visit_Invocation_ObjectStaticMethod_Is()
 	{
 		var block = GetBlockOperation(@"
@@ -717,6 +913,192 @@ public sealed class SemanticWalkerReferenceTest
   let abs = Math.abs;
 }", script);
 
+	}
+
+	[TestMethod]
+	public void Visit_MethodReference_TypedArrayStaticMethod_UsesConcreteRuntimeHost()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    Func<byte[], Uint8Array> factory = Uint8Array.Of;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+@"{
+  let factory = Uint8Array.of;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_TypedArrayAliasHost_UsesConcreteRuntimeHost()
+	{
+		var block = GetBlockOperation(@"
+            using Bytes = ECMAScript.Uint8Array;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var bytes = Bytes.Of(1, 2, 3);
+                    Number size = Bytes.BYTES_PER_ELEMENT;
+                    Func<byte[], Uint8Array> factory = Bytes.Of;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+@"{
+  let bytes = Uint8Array.of(1, 2, 3);
+  let size = Uint8Array.BYTES_PER_ELEMENT;
+  let factory = Uint8Array.of;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_TypedArrayNamespaceAliasHost_UsesConcreteRuntimeHost()
+	{
+		var block = GetBlockOperation(@"
+            using E = ECMAScript;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var bytes = E.Uint8Array.Of(1, 2, 3);
+                    Number size = E.Uint8Array.BYTES_PER_ELEMENT;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+@"{
+  let bytes = Uint8Array.of(1, 2, 3);
+  let size = Uint8Array.BYTES_PER_ELEMENT;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_TypedArrayGlobalAliasHost_UsesConcreteRuntimeHost()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var bytes = global::ECMAScript.Uint8Array.Of(1, 2, 3);
+                    Number size = global::ECMAScript.Uint8Array.BYTES_PER_ELEMENT;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+@"{
+  let bytes = Uint8Array.of(1, 2, 3);
+  let size = Uint8Array.BYTES_PER_ELEMENT;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_ArrayAliasHost_UsesRuntimeHost()
+	{
+		var block = GetBlockOperation(@"
+            using IntArray = ECMAScript.Array<int>;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var created = IntArray.Of(1, 2, 3);
+                    var mapped = IntArray.From(new int[] { 1, 2, 3 }, (value, index) => value + index);
+                    var isArray = IntArray.IsArray(new int[] { 1, 2, 3 });
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+@"{
+  let created = Array.of(1, 2, 3);
+  let mapped = Array.from([1, 2, 3], (value, index) => {
+    return value + index;
+  });
+  let isArray = Array.isArray([1, 2, 3]);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_NestedStaticHostAlias_UsesRuntimeHost()
+	{
+		var block = GetBlockOperation(@"
+            using NumberFormatter = ECMAScript.Intl.NumberFormat;
+            using I18n = ECMAScript.Intl;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var locales = NumberFormatter.SupportedLocalesOf(""en-US"");
+                    var locales2 = I18n.NumberFormat.SupportedLocalesOf(""zh-CN"");
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+@"{
+  let locales = Intl.NumberFormat.supportedLocalesOf(""en-US"");
+  let locales2 = Intl.NumberFormat.supportedLocalesOf(""zh-CN"");
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_NestedStaticHostGlobalAlias_UsesRuntimeHost()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var locales = global::ECMAScript.Intl.NumberFormat.SupportedLocalesOf(""en-US"");
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+@"{
+  let locales = Intl.NumberFormat.supportedLocalesOf(""en-US"");
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	/// <summary>
@@ -1683,7 +2065,7 @@ public sealed class SemanticWalkerReferenceTest
 
 		Assert.AreEqual(@"{
   let list = [1, 2, 3];
-  let first = _d389c31d59037b42(list, 0);
+  let first = list[0];
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
@@ -1712,7 +2094,7 @@ public sealed class SemanticWalkerReferenceTest
 		Assert.AreEqual(@"{
   let dict = new Map;
   dict.set(""key"", 42);
-  let value = _e73dbdff85c46ddc(dict, ""key"");
+  let value = dict[""key""];
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
@@ -1802,7 +2184,7 @@ public sealed class SemanticWalkerReferenceTest
   let person = null;
   let dict = new Map;
   dict.set(person?.Name, 42);
-  let value = _e73dbdff85c46ddc(dict, person?.Name);
+  let value = dict[person?.Name];
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
@@ -1988,7 +2370,11 @@ public sealed class SemanticWalkerReferenceTest
                 void TestMethod()
                 {
                     var buffer = new ArrayBuffer(8);
-                    var byteLength = buffer.ByteLength;
+                    Number byteLength = buffer.ByteLength;
+                    var sliced = buffer.Slice(0, 4);
+                    var view = new DataView(buffer, 1, 2);
+                    Number byteOffset = view.ByteOffset;
+                    Number bytesPerElement = Uint8Array.BYTES_PER_ELEMENT;
                 }
             }
         ");
@@ -2000,6 +2386,40 @@ public sealed class SemanticWalkerReferenceTest
 		Assert.AreEqual(@"{
   let buffer = new ArrayBuffer(8);
   let byteLength = buffer.byteLength;
+  let sliced = buffer.slice(0, 4);
+  let view = new DataView(buffer, 1, 2);
+  let byteOffset = view.byteOffset;
+  let bytesPerElement = Uint8Array.BYTES_PER_ELEMENT;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_DataViewApis_UseJsShapes()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var buffer = new ArrayBuffer(8);
+                    var view = new DataView(buffer, 0, 8);
+                    byte first = view.GetUint8(0);
+                    view.SetUint8(1, 255);
+                    var big = view.GetBigInt64(0, true);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let buffer = new ArrayBuffer(8);
+  let view = new DataView(buffer, 0, 8);
+  let first = view.getUint8(0);
+  view.setUint8(1, 255);
+  let big = view.getBigInt64(0, true);
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
@@ -2081,7 +2501,7 @@ public sealed class SemanticWalkerReferenceTest
 
 		Assert.AreEqual(@"{
   let list = [1, 2, 3];
-  let first = _d389c31d59037b42(list, 0);
+  let first = list[0];
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
@@ -2110,7 +2530,7 @@ public sealed class SemanticWalkerReferenceTest
 		Assert.AreEqual(@"{
   let dict = new Map;
   dict.set(""key"", 42);
-  let value = _e73dbdff85c46ddc(dict, ""key"");
+  let value = dict[""key""];
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
@@ -2513,6 +2933,7 @@ public sealed class SemanticWalkerReferenceTest
                     Number value = 1;
                     var text = value.ToString();
                     var localized = value.ToLocaleString();
+                    var localizedDate = new Date().ToLocaleDateString(new[] { ""en-US"", ""zh-CN"" });
                     var locales = Intl.NumberFormat.SupportedLocalesOf(""en-US"");
                     var options = new Intl.NumberFormat().ResolvedOptions();
                 }
@@ -2523,12 +2944,41 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+	Assert.AreEqual(@"{
   let value = 1;
   let text = value.toString();
   let localized = value.toLocaleString();
+  let localizedDate = (new Date).toLocaleDateString([""en-US"", ""zh-CN""]);
   let locales = Intl.NumberFormat.supportedLocalesOf(""en-US"");
   let options = (new Intl.NumberFormat).resolvedOptions();
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_IntlConstructors_UseJsRuntimeHosts()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var collator = new Intl.Collator(""en-US"");
+                    var comparer = collator.Compare(""a"", ""b"");
+                    var dtf = new Intl.DateTimeFormat(""en-US"");
+                    var text = dtf.Format(new Date());
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let collator = new Intl.Collator(""en-US"");
+  let comparer = collator.compare(""a"", ""b"");
+  let dtf = new Intl.DateTimeFormat(""en-US"");
+  let text = dtf.format(new Date);
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
@@ -2564,6 +3014,150 @@ public sealed class SemanticWalkerReferenceTest
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
+	[TestMethod]
+	public void Visit_Reference_RegExpExecResult_UsesJsResultShape()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var regex = new RegExp(""(?<word>a)"", ""g"");
+                    var result = regex.Exec(""ab"")!;
+                    var input = result.Input;
+                    var index = result.Index;
+                    var groups = result.Groups;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let regex = new RegExp(""(?<word>a)"", ""g"");
+  let result = regex.exec(""ab"");
+  let input = result.input;
+  let index = result.index;
+  let groups = result.groups;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_WeakCollections_RequireObjectTargets()
+	{
+		var block = GetBlockOperation(@"
+            class Box
+            {
+            }
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var key = new Box();
+                    var map = new WeakMap<Box, int>();
+                    map.Set(key, 1);
+
+                    var weak = new WeakRef<Box>(key);
+                    var target = weak.Deref();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let key = new Box;
+  let map = new WeakMap;
+  map.set(key, 1);
+  let weak = new WeakRef(key);
+  let target = weak.deref();
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_GlobalTypeOf_UsesCompileHook()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(object value)
+                {
+                    var kind = TypeOf(value);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let kind = typeof value;
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_GlobalRegExp_CompileDeclinesAndFallsBack()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var regex = RegExp(""a"");
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let regex = RegExp(""a"");
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_BooleanGetTypeCode_UsesCompileHook()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    bool flag = true;
+                    var code = flag.GetTypeCode();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let flag = true;
+  let code = 3;
+}", script);
+	}
+
+	[TestMethod]
+	public void Compile_GlobalTypeOf_InvalidHandler_Throws()
+	{
+		var walker = new SemanticWalker(true);
+
+		Assert.Throws<InvalidOperationException>(() =>
+			walker.Compile_b58c68bda64ad0f8(
+				new Identifier("host"),
+				[new Identifier("value")]));
+	}
+	
 	[TestMethod]
 	public void Visit_Reference_ConsoleTimeEnd_UsesJsMemberName()
 	{
@@ -2618,6 +3212,7 @@ public sealed class SemanticWalkerReferenceTest
             {
                 void TestMethod()
                 {
+                    var mapped = Array<int>.From(new int[] { 1, 2, 3 }, (value, index) => value + index);
                     var items = Array<int>.FromAsync(new int[] { 1, 2, 3 });
                 }
             }
@@ -2628,7 +3223,32 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.AreEqual(@"{
+  let mapped = Array.from([1, 2, 3], (value, index) => {
+    return value + index;
+  });
   let items = Array.fromAsync([1, 2, 3]);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_ArrayIsArray_UsesJsMemberName()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var isArray = Array.IsArray(new int[] { 1, 2, 3 });
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let isArray = Array.isArray([1, 2, 3]);
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
@@ -2641,9 +3261,10 @@ public sealed class SemanticWalkerReferenceTest
                 void TestMethod()
                 {
                     var array = Array<int>.Of(1, 2, 3);
-                    array.Push(4, 5);
-                    array.Unshift(0);
-                    array.Splice(2, 1, 8, 9);
+                    var combined = array.Concat(4, 5);
+                    Number pushed = array.Push(4, 5);
+                    Number unshifted = array.Unshift(0);
+                    var removed = array.Splice(2, 1, 8, 9);
                 }
             }
         ");
@@ -2654,9 +3275,91 @@ public sealed class SemanticWalkerReferenceTest
 
 		Assert.AreEqual(@"{
   let array = Array.of(1, 2, 3);
-  array.push(4, 5);
-  array.unshift(0);
-  array.splice(2, 1, 8, 9);
+  let combined = array.concat(4, 5);
+  let pushed = array.push(4, 5);
+  let unshifted = array.unshift(0);
+  let removed = array.splice(2, 1, 8, 9);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_ArrayResize_UsesRefLowering()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[] numbers = [1, 2, 3];
+                    Array.Resize(ref numbers, 5);
+                    var length = numbers.Length;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let v$0;
+  let numbers = [1, 2, 3];
+  v$0 = _127013d39cf5bff9(numbers, 5), numbers = v$0[0];
+  let length = numbers.length;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_ArrayInstanceApis_UseJsShapes()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var array = Array<int>.Of(1, 2, 3);
+                    Number length = array.Length;
+                    Number last = array.LastIndexOf(2);
+                    var sliced = array.Slice(1, 2);
+                    var mappedSimple = array.Map(value => value + 1);
+                    array.ForEach((value, index) => { });
+                    var every = array.Every(value => value > 0);
+                    var filtered = array.Filter((value, index, self) => value > 1);
+                    var found = array.Find((value, index, self) => value == 2);
+                    var index = array.FindIndex(value => value == 3);
+                    var filled = array.Fill(0, 1, 2);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let array = Array.of(1, 2, 3);
+  let length = array.length;
+  let last = array.lastIndexOf(2);
+  let sliced = array.slice(1, 2);
+  let mappedSimple = array.map(value => {
+    return value + 1;
+  });
+  array.forEach((value, index) => {
+    return;
+  });
+  let every = array.every(value => {
+    return value > 0;
+  });
+  let filtered = array.filter((value, index, self) => {
+    return value > 1;
+  });
+  let found = array.find((value, index, self) => {
+    return value === 2;
+  });
+  let index = array.findIndex(value => {
+    return value === 3;
+  });
+  let filled = array.fill(0, 1, 2);
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
@@ -2670,6 +3373,8 @@ public sealed class SemanticWalkerReferenceTest
                 {
                     var bytes = Uint8Array.Of(1, 2, 3);
                     var mapped = Uint8Array.From(new int[] { 1, 2, 3 }, (value, index) => (byte)(value + index));
+                    var signed = BigInt64Array.Of(BigInt.One, BigInt.Two);
+                    var unsigned = BigUint64Array.From(new[] { BigInt.One, BigInt.Two });
                 }
             }
         ");
@@ -2682,7 +3387,117 @@ public sealed class SemanticWalkerReferenceTest
   let bytes = Uint8Array.of(1, 2, 3);
   let mapped = Uint8Array.from([1, 2, 3], (value, index) => {
     return value + index;
-  }, null);
+  });
+  let signed = BigInt64Array.of(1n, 2n);
+  let unsigned = BigUint64Array.from([1n, 2n]);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_TypedArrayInstanceApis_UseJsShapes()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var signed = Int8Array.Of(-1, 2, -1);
+                    var bigSigned = BigInt64Array.Of(BigInt.One, BigInt.Two);
+                    Number first = signed.IndexOf(-1);
+                    Number last = signed.LastIndexOf(-1);
+                    Number found = signed.FindIndex((value, index, array) => value < 0);
+                    Number bigFound = bigSigned.IndexOf(BigInt.One);
+                    var mapped = signed.Map((value, index, array) => value);
+                    var sorted = signed.Sort((left, right) => left - right);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let signed = Int8Array.of(-1, 2, -1);
+  let bigSigned = BigInt64Array.of(1n, 2n);
+  let first = signed.indexOf(-1);
+  let last = signed.lastIndexOf(-1);
+  let found = signed.findIndex((value, index, array) => {
+    return value < 0;
+  });
+  let bigFound = bigSigned.indexOf(1n);
+  let mapped = signed.map((value, index, array) => {
+    return value;
+  });
+  let sorted = signed.sort((left, right) => {
+    return left - right;
+  });
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_MapAndSetForEach_UseJsCallbackShapes()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var set = new Set<int>();
+                    set.Add(1);
+                    set.ForEach((value, key, self) => { }, new { tag = 1 });
+
+                    var map = new Map<string, int>();
+                    map.Set(""one"", 1);
+                    map.ForEach((value, key, self) => { }, new { tag = 2 });
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let set = new Set;
+  set.add(1);
+  set.forEach((value, key, self) => {
+    return;
+  }, { tag: 1 });
+  let map = new Map;
+  map.set(""one"", 1);
+  map.forEach((value, key, self) => {
+    return;
+  }, { tag: 2 });
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_MapAndSetConstructors_UseJsIterableShapes()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    Array<object?>[] entries = [[""one"", 1], [""two"", 2]];
+                    int[] values = [1, 2, 3];
+
+                    var map = new Map<string, int>(entries);
+                    var set = new Set<int>(values);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let entries = [[""one"", 1], [""two"", 2]];
+  let values = [1, 2, 3];
+  let map = new Map(entries);
+  let set = new Set(values);
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 

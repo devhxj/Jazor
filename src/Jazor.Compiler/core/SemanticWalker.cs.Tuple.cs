@@ -15,9 +15,10 @@ public partial class SemanticWalker
 	/// (1, "hello", true)          // 元组字面量
 	/// var tuple = (x, y);         // 元组创建
 	/// (double Sum, int Count) t2 = (4.5, 3);// 命名元组创建
-	/// 转换结果：{ Item1: 1, Item2: "hello", Item3: true } 或 { Sum: 4.5, Count: 3 } （使用对象模拟）
+	/// 转换结果：{ Item1: 1, Item2: "hello", Item3: true } 或 { Sum: 4.5, Count: 3 }。
 	/// <para/>
-	/// 这里仅负责“当前 tuple 视图”的字面量落地。当前编译器对 tuple 的 lowering 规则是：
+	/// 这里仅负责“当前 tuple 视图”的对象字面量落地，不负责跨边界 remap。
+	/// 当前编译器对 tuple 的 lowering 规则是：
 	/// 1. tuple 只是一层语法糖，解构/比较/swap 等语义一律按“位置”处理；
 	/// 2. 运行时不引入新的 tuple 类型，最终只落成普通对象；
 	/// 3. 对外对象 shape 由“当前静态视图名字”决定，命名 tuple 在业务上视为稳定协议；
@@ -33,27 +34,6 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitTuple(ITupleOperation operation, SenseArgument argument)
 	{
-		/*
-		var elements = new List<Expression?>();
-		var tupleType = (INamedTypeSymbol)operation.NaturalType!;
-		for (var index = 0; index < operation.Elements.Length; index++)
-		{
-			var fieldName = tupleType.TupleElements[index].Name;
-			var element = operation.Elements[index];
-			var key = new StringLiteral(fieldName, $"'{fieldName}'");
-			var value = Translate<Expression>(element, argument);
-			var array = new ArrayExpression(NodeList.From<Expression?>(key, value));
-			elements.Add(array);
-		}
-
-		var obj = new Identifier("Tuple");
-		var prop = new Identifier("Create");
-		var func = new MemberExpression(obj, prop, false, false);
-		var args = new ArrayExpression(NodeList.From(elements));
-		var call = new CallExpression(func, NodeList.From<Expression>(args), false);
-		return call;
-		*/
-		
 		var nodes = new List<Node>();
 		var tupleType = (INamedTypeSymbol)operation.NaturalType!;
 		for (var index = 0; index < operation.Elements.Length; index++)
@@ -79,6 +59,10 @@ public partial class SemanticWalker
 	/// tuple 的运行时协议由“当前静态视图名字”决定。
 	/// 只要目标视图和源视图名字不同，就需要在边界上显式重映射，
 	/// 避免把 tuple 名字误当成可忽略的纯语法信息。
+	/// <para/>
+	/// 这里专门处理 Roslyn 已经显式给出 conversion 的场景。
+	/// 如果 IOperation 树里根本没有 conversion，仍然要走 TranslateTupleForTarget(...)
+	/// 主动在赋值/参数/return 等边界做 remap。
 	/// </summary>
 	private Expression? TryTranslateTupleConversion(IConversionOperation operation, SenseArgument argument)
 	{
@@ -99,6 +83,9 @@ public partial class SemanticWalker
 	/// 这个 helper 是 tuple 边界规则的统一入口：
 	/// - return / assignment / invocation / object creation / initializer
 	/// 都应该复用它，而不是各自直接 Translate(value)。
+	/// <para/>
+	/// 这里故意不追求“C# tuple 名字不参与类型系统”的纯语义结论，而是遵循当前编译器约定：
+	/// 位置负责语义，名字负责运行时协议，边界上由 remap 把两者接起来。
 	/// </summary>
 	private Expression TranslateTupleForTarget(IOperation source, ITypeSymbol? targetType, SenseArgument argument)
 	{
@@ -108,6 +95,20 @@ public partial class SemanticWalker
 			return BuildTupleProjection(source, sourceTupleType, targetTupleType, argument);
 
 		return Translate<Expression>(source, argument);
+	}
+
+	/// <summary>
+	/// 当 tuple 作为数组/集合元素时，目标视图来自元素类型而不是当前表达式本身。
+	/// 这里统一抽出元素目标类型，避免数组创建、集合表达式、集合字面量各自猜一套规则。
+	/// </summary>
+	private static ITypeSymbol? GetCollectionElementTargetType(ITypeSymbol? targetType)
+	{
+		return targetType switch
+		{
+			IArrayTypeSymbol arrayType => arrayType.ElementType,
+			INamedTypeSymbol namedType when namedType.TypeArguments.Length > 0 => namedType.TypeArguments[0],
+			_ => null
+		};
 	}
 
 	/// <summary>
@@ -161,6 +162,11 @@ public partial class SemanticWalker
 	/// (name, age) -> (first, years)
 	/// 会 lower 成 { first: source.name, years: source.age }，
 	/// 而不是把原对象直接赋给目标变量。
+	/// <para/>
+	/// 实现上需要同时处理三类源值：
+	/// 1. tuple 字面量：直接递归翻译各元素；
+	/// 2. 简单引用：直接按字段取值；
+	/// 3. 复杂表达式：先整体缓存，再按字段读取，避免重复求值。
 	/// </summary>
 	private Expression BuildTupleProjection(
 		object source,
@@ -176,6 +182,9 @@ public partial class SemanticWalker
 			{
 				if (ShouldCacheTupleSource(sourceOperation))
 				{
+					// projection 会按字段多次读取源值。
+					// 对调用、属性、复杂表达式必须先整体缓存，
+					// 否则会重复触发 getter/调用，改变原语义。
 					var tempId = new Identifier(GetUniqueName(sourceOperation));
 					var init = Translate<Expression>(sourceOperation, argument);
 					var declarator = new VariableDeclarator(tempId, init);
@@ -202,6 +211,7 @@ public partial class SemanticWalker
 			if (sourceField.Type is INamedTypeSymbol nestedSourceType && nestedSourceType.IsTupleType &&
 				targetField.Type is INamedTypeSymbol nestedTargetType && nestedTargetType.IsTupleType)
 			{
+				// 嵌套 tuple 仍然按“位置匹配、目标名字落地”的同一规则递归 remap。
 				var nestedSource = tupleLiteral is not null
 					? (object)tupleLiteral.Elements[index]
 					: new MemberExpression(sourceExpression!, new Identifier(sourceField.Name), false, false);
@@ -236,6 +246,8 @@ public partial class SemanticWalker
 	/// - ((int,int))GetTuple()
 	/// - SomePropertyReturningTuple
 	/// 都不能在 remap / compare / deconstruct 中被重复求值。
+	/// <para/>
+	/// 这里故意放宽“什么算复杂源值”的判断：宁可多缓存一次，也不能重复求值。
 	/// </summary>
 	private static bool ShouldCacheTupleSource(IOperation operation)
 	{
@@ -252,7 +264,13 @@ public partial class SemanticWalker
 	}
 
 	/// <summary>
-	/// 处理解构赋值操作
+	/// 处理解构赋值操作。
+	/// <para/>
+	/// 这里的核心目标不是模拟 CLR tuple 运行时，而是把 C# 解构语法糖展开成“结果等价”的 JS 赋值序列。
+	/// 展开时需要同时满足三条约束：
+	/// 1. 仍然按位置读取 tuple 槽位；
+	/// 2. 复杂右值最多求值一次；
+	/// 3. 自引用场景必须先缓存右侧元素，再回写左侧目标。
 	/// </summary>
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
@@ -297,7 +315,9 @@ public partial class SemanticWalker
 		return new SequenceExpression(NodeList.From(expressions));
 
 		/// <summary>
-		/// 从 value 获取元组字段的值表达式
+		/// 从 value 获取某个 tuple 槽位的值表达式。
+		/// 这里统一处理“源值是字面量 / 已缓存表达式 / 普通操作 / 已翻译表达式”四种情况，
+		/// 避免解构主流程在每个分支里重复判断来源形态。
 		/// </summary>
 		/// <param name="value">值来源（IOperation 或 Expression）</param>
 		/// <param name="fieldName">字段名</param>
@@ -371,6 +391,8 @@ public partial class SemanticWalker
 
 			return value switch
 			{
+				// 只有右侧某个元素会读取左侧目标局部变量时，才需要把“槽位值”单独缓存。
+				// 这样既能保证 swap / 自引用解构正确，又不会对所有元素都无差别引入临时变量。
 				ITupleOperation tupleOp => ReferencesTargetLocal(tupleOp.Elements[index], targetLocals),
 				IConversionOperation { Operand: ITupleOperation conversionTuple } => ReferencesTargetLocal(conversionTuple.Elements[index], targetLocals),
 				_ => false
@@ -423,6 +445,8 @@ public partial class SemanticWalker
 
 					if (ShouldCacheTupleField(value, index, targetLocals))
 					{
+						// 右侧这个槽位会引用左侧目标局部变量。
+						// 必须先把槽位值缓存下来，再进行后续赋值，否则会被前面已执行的回写污染。
 						var cacheId = new Identifier(GetUniqueName(target, $"tuple{index}"));
 						var cacheDecl = new VariableDeclarator(cacheId, null);
 						argument.AddVarDeclarator(cacheDecl, _recursionDepth);
@@ -474,7 +498,10 @@ public partial class SemanticWalker
 			}
 			else if (valueType.TypeKind == TypeKind.Class && value is IOperation expr)
 			{
-				// 自定义解构
+				// 自定义 Deconstruct 与 tuple 直接字段访问是两条路径：
+				// 1. tuple 解构：按对象字段直接展开；
+				// 2. 自定义 Deconstruct：先调用实例 Deconstruct(...)，
+				//    再按当前编译器约定从返回数组中取出各 out 值。
 				ITupleOperation tupleResult;
 				bool isDeclarationExpressionTarget = false;
 				if (target is IDeclarationExpressionOperation declarationExpr && declarationExpr.Expression is ITupleOperation t1)
@@ -531,8 +558,11 @@ public partial class SemanticWalker
 					}
 				}
 
-				// Deconstruct方法参数是out参数且无返回值，但js不支持out/ref
-				// 所以编译器会把Deconstruct方法编成普通参数，然后返回数组对象输出本该由out参数输出的值
+				// Deconstruct 方法在 C# 中通过 out 参数写回且无返回值，
+				// 但 JS 没有 out/ref。
+				// 当前编译器约定把它 lower 成：
+				// - 普通参数调用
+				// - 返回一个数组，数组元素就是原本 out 参数的输出值
 				var obj = Translate<Expression>(expr, argument);
 				var prop = new Identifier("Deconstruct");
 				var func = new MemberExpression(obj, prop, false, false);
@@ -543,7 +573,7 @@ public partial class SemanticWalker
 				argument.AddVarDeclarator(deconstructDecl, _recursionDepth);
 				exprs.Add(new AssignmentExpression(Operator.Assignment, deconstructId, call));
 
-				// 从数组中取值赋给目标值
+				// 从返回数组中取值，再回写到目标变量或临时嵌套 tuple 引用。
 				for (var i = 0; i < args.Count; i++)
 				{
 					var indexer = new NumericLiteral(i, i.ToString());
@@ -553,7 +583,7 @@ public partial class SemanticWalker
 				}
 
 				IMethodSymbol method;
-				// 处理嵌套元组中的解构参数
+				// 如果 out 参数对应的是嵌套 tuple，这里继续递归展开。
 				if (expr is IInvocationOperation invocation)
 					method = invocation.TargetMethod;
 				else
@@ -605,7 +635,7 @@ public partial class SemanticWalker
 	/// - C# 编译器保证左右元组元素类型和个数必须相同
 	/// - 递归处理嵌套元组
 	/// - 使用严格相等 (===) 和严格不等 (!==) 运算符
-	/// - 对于 IInvocationOperation，会创建临时变量缓存结果
+	/// - 对于调用、属性等复杂源值，会创建临时变量缓存结果，避免重复求值
 	/// </summary>
 	/// <param name="operation">元组二元操作</param>
 	/// <param name="argument">上下文参数，用于存放临时变量定义</param>
@@ -652,13 +682,6 @@ public partial class SemanticWalker
 	}
 
 	/// <summary>
-	/// 构建元组二元比较表达式（递归辅助方法）
-	/// </summary>
-	/// <param name="left">左操作数及其类型</param>
-	/// <param name="right">右操作数及其类型</param>
-	/// <param name="isEq">是否为相等比较（true: ==, false: !=）</param>
-	/// <param name="argument">上下文参数</param>
-	/// <returns>构建的逻辑表达式，失败返回 null</returns>
 	/// <summary>
 	/// 元组比较操作数的处理结果
 	/// </summary>
@@ -667,7 +690,10 @@ public partial class SemanticWalker
 	private readonly record struct TupleOperandResult(Expression? Expression, ITupleOperation? TupleOperation);
 
 	/// <summary>
-	/// 处理元组比较操作数
+	/// 处理元组比较操作数。
+	/// <para/>
+	/// 比较场景和 remap / deconstruct 一样，也可能多次读取同一个 tuple 源值。
+	/// 因此这里会把复杂操作数先缓存成一个表达式入口，后续统一按字段读取。
 	/// </summary>
 	private TupleOperandResult ProcessTupleOperand(object target, SenseArgument argument)
 	{
@@ -693,7 +719,9 @@ public partial class SemanticWalker
 	}
 
 	/// <summary>
-	/// 获取元组元素的表达式
+	/// 获取比较时某个 tuple 槽位的表达式。
+	/// 如果原操作数本身就是 tuple 字面量，则直接使用对应元素表达式；
+	/// 否则从缓存后的对象表达式按字段取值。
 	/// </summary>
 	private Expression? GetTupleElementExpression(
 		in TupleOperandResult operand,
@@ -714,11 +742,12 @@ public partial class SemanticWalker
 		bool isEq,
 		SenseArgument argument)
 	{
-		// 类型防御性检查
+		// 类型防御性检查：正常情况下 Roslyn 已保证左右都是同形 tuple，
+		// 这里保留兜底只是为了让失败路径更明确。
 		if (left.Type is not INamedTypeSymbol leftType || right.Type is not INamedTypeSymbol rightType)
 			return null;
 
-		// 处理左右操作数
+		// 先把左右操作数归一化成“tuple 字面量”或“可按字段读取的表达式入口”。
 		var leftResult = ProcessTupleOperand(left.Target, argument);
 		var rightResult = ProcessTupleOperand(right.Target, argument);
 

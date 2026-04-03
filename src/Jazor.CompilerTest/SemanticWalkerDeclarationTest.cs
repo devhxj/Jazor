@@ -4,7 +4,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
-using System.Text.RegularExpressions;
 
 namespace Jazor.ComplierTest;
 
@@ -1140,7 +1139,12 @@ public sealed class SemanticWalkerDeclarationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsTrue(Regex.IsMatch(script, @"\{\r?\n  let number, (?<tmp>v\$\d+);\r?\n  if \(\k<tmp> = _[a-f0-9]+\(""123"", number\), number = \k<tmp>\[1\], \k<tmp>\[0\]\) \{\r?\n    console\.log\(number\);\r?\n  \}\r?\n\}"));
+        AssertScriptEqual(@"{
+  let number, v$0;
+  if (v$0 = _16e2a901535b765e(""123"", number), number = v$0[1], v$0[0]) {
+    console.log(number);
+  }
+}", script);
     }
 
     [TestMethod]
@@ -1163,7 +1167,12 @@ public sealed class SemanticWalkerDeclarationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsTrue(Regex.IsMatch(script, @"\{\r?\n  let value, (?<tmp>v\$\d+);\r?\n  if \(\k<tmp> = _[a-f0-9]+\(""3\.14"", value\), value = \k<tmp>\[1\], \k<tmp>\[0\]\) \{\r?\n    console\.log\(value\);\r?\n  \}\r?\n\}"));
+        AssertScriptEqual(@"{
+  let value, v$0;
+  if (v$0 = _a29d389185c5e37d(""3.14"", value), value = v$0[1], v$0[0]) {
+    console.log(value);
+  }
+}", script);
     }
 
     [TestMethod]
@@ -1186,7 +1195,13 @@ public sealed class SemanticWalkerDeclarationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsTrue(Regex.IsMatch(script, @"\{\r?\n  let a, (?<tmp1>v\$\d+), b, (?<tmp2>v\$\d+);\r?\n  let dict = new Map;\r?\n  \k<tmp1> = _[a-f0-9]+\((dict), ""a"", a\), a = \k<tmp1>\[1\], \k<tmp1>\[0\];\r?\n  \k<tmp2> = _[a-f0-9]+\(\1, ""b"", b\), b = \k<tmp2>\[1\], \k<tmp2>\[0\];\r?\n  console\.log\(a \+ b\);\r?\n\}"));
+        AssertScriptEqual(@"{
+  let a, v$0, b, v$1;
+  let dict = new Map;
+  v$0 = _7db4d9112b4ba3c4(dict, ""a"", a), a = v$0[1], v$0[0];
+  v$1 = _7db4d9112b4ba3c4(dict, ""b"", b), b = v$1[1], v$1[0];
+  console.log(a + b);
+}", script);
     }
 
     #endregion
@@ -1758,7 +1773,12 @@ public sealed class SemanticWalkerDeclarationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.IsTrue(Regex.IsMatch(script, @"\{\r?\n  let a, (?<tmp1>v\$\d+), b, (?<tmp2>v\$\d+);\r?\n  if \(\(\k<tmp1> = _[a-f0-9]+\(""1"", a\), a = \k<tmp1>\[1\], \k<tmp1>\[0\]\) && \(\k<tmp2> = _[a-f0-9]+\(""2"", b\), b = \k<tmp2>\[1\], \k<tmp2>\[0\]\)\) \{\r?\n    console\.log\(a \+ b\);\r?\n  \}\r?\n\}"));
+        AssertScriptEqual(@"{
+  let a, v$0, b, v$1;
+  if ((v$0 = _16e2a901535b765e(""1"", a), a = v$0[1], v$0[0]) && (v$1 = _16e2a901535b765e(""2"", b), b = v$1[1], v$1[0])) {
+    console.log(a + b);
+  }
+}", script);
     }
 
     #endregion

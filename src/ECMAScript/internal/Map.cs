@@ -1,23 +1,19 @@
 namespace ECMAScript;
 
-/// <summary>
-/// 
-/// </summary>
-/// <typeparam name="TKey"></typeparam>
-/// <typeparam name="TValue"></typeparam>
-/// <param name="Value"></param>
-/// <param name="key"></param>
-/// <param name="map"></param>
-[ECMAScript]
-public delegate void MapCallbackFunc<TKey, TValue>(TValue Value, TKey key, Map<TKey, TValue> map);
-
-[ECMAScript]
-public delegate void MapCallbackFunc(object? Value, object key, Map map);
-
 [ECMAScript]
 [Description("@#Map")]
 public sealed class Map<TKey, TValue> : IEnumerable
 {
+	public extern Map();
+
+	/// <summary>
+	/// Creates a map from a JavaScript iterable of <c>[key, value]</c> entries.
+	/// <see cref="IEnumerable{T}"/> is used here as the common C# input surface for values
+	/// such as arrays, lists, and read-only list families that map to JavaScript iterables.
+	/// Each inner <see cref="Array{T}"/> represents one JavaScript two-element entry.
+	/// </summary>
+	public extern Map(IEnumerable<Array<object?>> entries);
+
 	public extern TValue this[TKey key] { get; set; }
 
 	[Description("@#set")]
@@ -35,8 +31,13 @@ public sealed class Map<TKey, TValue> : IEnumerable
 	[Description("@#clear")]
 	public extern void Clear();
 
+	/// <summary>
+	/// Calls callbackfn once for each key-value pair in insertion order.
+	/// </summary>
+	/// <param name="callbackfn"><para><b>(value: TValue, key: TKey, map: Map&lt;TKey, TValue&gt;) => void</b></para>A function invoked for each entry.</param>
+	/// <param name="thisArg">An arbitrary value passed as the JavaScript this argument to callbackfn. If omitted, undefined is used.</param>
 	[Description("@#forEach")]
-	public extern void ForEach(MapCallbackFunc<TKey, TValue> callbackfn);
+	public extern void ForEach(Action<TValue, TKey, Map<TKey, TValue>> callbackfn, object? thisArg = null);
 
 	extern IEnumerator IEnumerable.GetEnumerator();
 
@@ -48,6 +49,16 @@ public sealed class Map<TKey, TValue> : IEnumerable
 [Description("@#Map")]
 public sealed class Map : IEnumerable
 {
+	public extern Map();
+
+	/// <summary>
+	/// Creates a map from a JavaScript iterable of <c>[key, value]</c> entries.
+	/// <see cref="IEnumerable{T}"/> is used here as the common C# input surface for values
+	/// such as arrays, lists, and read-only list families that map to JavaScript iterables.
+	/// Each inner <see cref="Array{T}"/> represents one JavaScript two-element entry.
+	/// </summary>
+	public extern Map(IEnumerable<Array<object?>> entries);
+
 	public extern object? this[object key] { get; set; }
 
 	[Description("@#set")]
@@ -65,8 +76,13 @@ public sealed class Map : IEnumerable
 	[Description("@#clear")]
 	public extern void Clear();
 
+	/// <summary>
+	/// Calls callbackfn once for each key-value pair in insertion order.
+	/// </summary>
+	/// <param name="callbackfn"><para><b>(value: unknown, key: unknown, map: Map) => void</b></para>A function invoked for each entry.</param>
+	/// <param name="thisArg">An arbitrary value passed as the JavaScript this argument to callbackfn. If omitted, undefined is used.</param>
 	[Description("@#forEach")]
-	public extern void ForEach(MapCallbackFunc callbackfn);
+	public extern void ForEach(Action<object?, object, Map> callbackfn, object? thisArg = null);
 
 	extern IEnumerator IEnumerable.GetEnumerator();
 
@@ -76,8 +92,18 @@ public sealed class Map : IEnumerable
 
 [ECMAScript]
 [Description("@#WeakMap")]
-public sealed class WeakMap<TKey, TValue>  //where TKey : class
+public sealed class WeakMap<TKey, TValue> where TKey : class
 {
+	public extern WeakMap();
+
+	/// <summary>
+	/// Creates a weak map from a JavaScript iterable of <c>[key, value]</c> entries.
+	/// <see cref="IEnumerable{T}"/> is used here as the common C# input surface for values
+	/// such as arrays, lists, and read-only list families that map to JavaScript iterables.
+	/// Each inner <see cref="Array{T}"/> represents one JavaScript two-element entry.
+	/// </summary>
+	public extern WeakMap(IEnumerable<Array<object?>> entries);
+
 	[Description("@#set")]
 	public extern WeakMap<TKey, TValue> Set(TKey key, TValue value);
 
@@ -93,8 +119,18 @@ public sealed class WeakMap<TKey, TValue>  //where TKey : class
 
 [ECMAScript]
 [Description("@#WeakMap")]
-public sealed class WeakMap //where TKey : class
+public sealed class WeakMap
 {
+	public extern WeakMap();
+
+	/// <summary>
+	/// Creates a weak map from a JavaScript iterable of <c>[key, value]</c> entries.
+	/// <see cref="IEnumerable{T}"/> is used here as the common C# input surface for values
+	/// such as arrays, lists, and read-only list families that map to JavaScript iterables.
+	/// Each inner <see cref="Array{T}"/> represents one JavaScript two-element entry.
+	/// </summary>
+	public extern WeakMap(IEnumerable<Array<object?>> entries);
+
 	[Description("@#set")]
 	public extern WeakMap Set(object key, object? value);
 

@@ -17,6 +17,46 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "short","Number")]
 public static class Int16Module
 {
+	private static Number CompareCore(Number left, Number right)
+		=> left < right ? -1 : (left > right ? 1 : 0);
+
+	private static bool TryParseInt16Core(string? s, out Number value)
+	{
+		value = 0;
+		if (s == null)
+			return false;
+
+		var trimmed = s.Trim();
+		if (trimmed.Length == 0)
+			return false;
+
+		var start = 0;
+		var first = trimmed[0];
+		if (first == '+' || first == '-')
+		{
+			if (trimmed.Length == 1)
+				return false;
+
+			start = 1;
+		}
+
+		for (var i = start; i < trimmed.Length; i++)
+		{
+			var ch = trimmed[i];
+			if (ch < '0' || ch > '9')
+				return false;
+		}
+
+		var parsed = Number_(trimmed);
+		if (IsNaN(parsed) || Math.Floor_(parsed) != parsed)
+			return false;
+		if (parsed < -32768 || parsed > 32767)
+			return false;
+
+		value = parsed;
+		return true;
+	}
+
 	/// <summary>
 	/// C#: short.MaxValue
 	/// JS: 32767
@@ -36,17 +76,26 @@ public static class Int16Module
 
 	/// <summary>
 	/// C#: short.CompareTo(object)
-	/// JS: (instance - (value ?? 0))
+	/// JS: 与 .NET 一致的 CompareTo 规则，单独处理 null 和类型检查
 	/// </summary>
-	[Jazor(Op.Inline, "short.CompareTo(object)", "(__arg1 - (__arg2 ?? 0))")]
-	public extern static Number _16417ddcfd71e8e5(Number instance, object? value);
+	[Jazor(Op.Import, "short.CompareTo(object)")]
+	public static Number _16417ddcfd71e8e5(Number instance, object? value)
+	{
+		if (value == null)
+			return 1;
+		if (TypeOf(value) != "number")
+			throw new Error("ArgumentException: Object must be of type Int16.");
+
+		return CompareCore(instance, (Number)value);
+	}
 
 	/// <summary>
 	/// C#: short.CompareTo(short)
-	/// JS: (instance - value)
+	/// JS: 返回负数、零或正数
 	/// </summary>
-	[Jazor(Op.Inline, "short.CompareTo(short)", "(__arg1 - __arg2)")]
-	public extern static Number _4ee8d8c1e1a45502(Number instance, Number value);
+	[Jazor(Op.Import, "short.CompareTo(short)")]
+	public static Number _4ee8d8c1e1a45502(Number instance, Number value)
+		=> CompareCore(instance, value);
 
 	/// <summary>
 	/// C#: short.Equals(object)
@@ -89,26 +138,17 @@ public static class Int16Module
 
 	/// <summary>
 	/// C#: short.Parse(s)
-	/// JS: parseInt(s, 10) with validation
+	/// JS: 只接受十进制整数字符串，拒绝尾随垃圾字符
 	/// </summary>
 	[Jazor(Op.Import, "static short.Parse(string)")]
 	public static Number _8a975b9eda8ac957(string? s)
 	{
 		if (s == null)
 			throw new Error("ArgumentNullException: String cannot be null.");
-
-		var trimmed = s.Trim();
-		var num = ParseInt(trimmed, 10);
-
-		// Check if parsing succeeded
-		if (IsNaN(num))
+		if (!TryParseInt16Core(s, out var value))
 			throw new Error($"FormatException: String '{s}' was not recognized as a valid Int16.");
 
-		// Check short range: -32768 to 32767
-		if (num < -32768 || num > 32767)
-			throw new Error($"OverflowException: Value '{s}' was either too large or too small for an Int16.");
-
-		return num;
+		return value;
 	}
 
 	[Jazor(Op.Discard, "static short.Parse(string, System.Globalization.NumberStyles)")]
@@ -130,21 +170,10 @@ public static class Int16Module
 	[Jazor(Op.Import, "static short.TryParse(string, out short)")]
 	public static Array<object?> _65bc2566851a5ef7(string? s, Number result)
 	{
-		if (s == null)
+		if (!TryParseInt16Core(s, out var value))
 			return [false, 0];
 
-		var trimmed = s.Trim();
-		var num = ParseInt(trimmed, 10);
-
-		// Check if parsing succeeded
-		if (IsNaN(num))
-			return [false, 0];
-
-		// Check short range: -32768 to 32767
-		if (num < -32768 || num > 32767)
-			return [false, 0];
-
-		return [true, num];
+		return [true, value];
 	}
 
 	[Jazor(Op.Discard, "static short.TryParse(System.ReadOnlySpan<char>, out short)")]

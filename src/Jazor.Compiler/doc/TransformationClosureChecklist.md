@@ -25,40 +25,41 @@
 
 ## 3. P0 清单
 
-### P0-1 接通 `ESGenerator` 的真实输出
+### P0-1 明确 `ESGenerator` 的最终产物策略
 
 现状：
 
 - `AstConverter` 已能生成 AST
-- `ESGenerator` 仍写死占位字符串
+- `ESGenerator` 已生成包含模块内容的 `ModuleCatalog`
+- 但是否直接落盘 `.mjs` 仍不是当前主链路
 
 目标：
 
-- 直接把 `AstConverter.Convert()` 的结果序列化为 `.mjs`
-- 转换失败时输出结构化错误信息，不输出误导性占位代码
+- 明确 catalog 模式是否就是最终设计
+- 如果不是，则定义 catalog -> 文件产物 的后续闭环层
 
 完成标准：
 
-- 生成器输出来自真实 AST
-- 至少有一个集成测试验证 `.mjs` 内容
+- 文档、测试、生成物三者对齐
+- 不再把“catalog”与“直接模块文件输出”混写
 
-### P0-2 打通 `Op.Import` 到模块头 `ImportDeclaration`
+### P0-2 稳定 `Op.Import` 的模块头输出行为
 
 现状：
 
 - `SemanticWalker` 能收集 import specifier
 - `SenseArgument` 能保存导入分组
-- `AstConverter` 未回填 `_imports`
+- `AstConverter` 已能输出去重后的 `ImportDeclaration`
 
 目标：
 
-- 增加 import flush 能力
-- 在模块头生成去重后的 `ImportDeclaration`
+- 保证 import 绑定、去重、别名策略稳定
+- 用专门测试锁定模块头输出形态
 
 完成标准：
 
-- `Op.Import` 不再只是“记录调用”
-- 有专门测试验证导入声明生成与合并
+- `Op.Import` 模块头输出有稳定断言
+- 重复导入、别名冲突、跨方法收集都有回归覆盖
 
 ### P0-3 明确“模块类输入契约”并在代码中强制执行
 
@@ -84,15 +85,26 @@
 
 - Generator 已生成 `Compile_*` 接口和装配字典
 - `SemanticWalker` 主流程未优先调用 `_whiteListCompiles`
+- 当前 `Compile(handler, args)` contract 仍偏窄，只适合表达式级钩子
 
 目标：
 
-- 让复杂宿主映射可以真正脱离字符串模板
+- 先让表达式级复杂宿主映射脱离模板
+- 不把需要 temp/import/source-origin 的 lowering 误塞进当前 contract
 
 完成标准：
 
 - `GetWhiteListExpression` 先尝试 `Compile`
-- 至少迁移一批结构敏感白名单条目
+- `Compile` 的返回语义和 fallback 语义被测试锁定
+- 至少迁移 1 个真实表达式级条目
+- 需要更强上下文的场景被显式留给下一阶段 contract 扩展
+
+补充约束：
+
+- `handler` 单独承载实例宿主
+- `args` 只承载真实参数
+- `throw` 不能静默 fallback
+- 详细实施顺序见 [OpCompileImplementationChecklist.md](./OpCompileImplementationChecklist.md)
 
 ### P1-2 约束 `Inline` 使用边界
 
@@ -148,7 +160,7 @@
 
 现状：
 
-- 部分 README / 分析文档仍写“已完成”“全部通过”
+- 部分 README / 旧版文档仍写“已完成”“全部通过”
 - 与当前测试结果和源码状态不一致
 
 目标：

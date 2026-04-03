@@ -18,6 +18,74 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "double", "Number")]
 public static class DoubleModule
 {
+	private static bool IsInfinityCore(Number value)
+		=> Object.Is(value, Number.POSITIVE_INFINITY) || Object.Is(value, Number.NEGATIVE_INFINITY);
+
+	private static bool IsFiniteCore(Number value)
+		=> !IsNaN(value) && !IsInfinityCore(value);
+
+	private static bool AreEqualCore(Number left, Number right)
+	{
+		if (IsNaN(left) || IsNaN(right))
+			return IsNaN(left) && IsNaN(right);
+
+		return !(left < right) && !(left > right);
+	}
+
+	private static Number CompareCore(Number left, Number right)
+	{
+		if (IsNaN(left))
+			return IsNaN(right) ? 0 : -1;
+		if (IsNaN(right))
+			return 1;
+		if (left < right)
+			return -1;
+		if (left > right)
+			return 1;
+
+		return 0;
+	}
+
+	private static bool IsPow2Core(Number value)
+	{
+		if (!IsFiniteCore(value) || value <= 0)
+			return false;
+
+		// JS Number 没有可直接复用的 64 位尾数位运算，这里退化为判定 log2 是否为整数。
+		var exponent = Math.Log2_(value);
+		return IsFiniteCore(exponent) && Math.Floor_(exponent) == exponent;
+	}
+
+	private static Number MaxMagnitudeCore(Number x, Number y)
+	{
+		if (IsNaN(x) || IsNaN(y))
+			return Number.NaN;
+
+		var absX = Math.Abs_(x);
+		var absY = Math.Abs_(y);
+		if (absX > absY)
+			return x;
+		if (absX < absY)
+			return y;
+
+		return CompareCore(x, y) >= 0 ? x : y;
+	}
+
+	private static Number MinMagnitudeCore(Number x, Number y)
+	{
+		if (IsNaN(x) || IsNaN(y))
+			return Number.NaN;
+
+		var absX = Math.Abs_(x);
+		var absY = Math.Abs_(y);
+		if (absX < absY)
+			return x;
+		if (absX > absY)
+			return y;
+
+		return CompareCore(x, y) <= 0 ? x : y;
+	}
+
 	// 常量 - 使用 Op.Inline
 	[Jazor(Op.Inline, "static double.MinValue", "-Number.MAX_VALUE")]
 	public extern static Number _minValue();
@@ -56,7 +124,7 @@ public static class DoubleModule
 	[Jazor(Op.Alias, "static double.IsFinite(double)", "isFinite")]
 	public extern static bool _aed2927097617729(Number d);
 
-	[Jazor(Op.Alias, "static double.IsInfinity(double)", "!isFinite")]
+	[Jazor(Op.Inline, "static double.IsInfinity(double)", "(__arg1 === Infinity || __arg1 === -Infinity)")]
 	public extern static bool _8dab2b2ebaef92eb(Number d);
 
 	[Jazor(Op.Alias, "static double.IsNaN(double)", "isNaN")]
@@ -78,14 +146,28 @@ public static class DoubleModule
 	public extern static bool _a48f9d7298aa7e76(Number d);
 
 	// CompareTo 和 Equals
-	[Jazor(Op.Inline, "double.CompareTo(object)", "(__arg1 - (__arg2 ?? 0))")]
-	public extern static Number _b0d483b6deae2278(Number instance, object? value);
+	[Jazor(Op.Import, "double.CompareTo(object)")]
+	public static Number _b0d483b6deae2278(Number instance, object? value)
+	{
+		if (value == null)
+			return 1;
+		if (TypeOf(value) != "number")
+			throw new Error("ArgumentException: Object must be of type Double.");
 
-	[Jazor(Op.Inline, "double.CompareTo(double)", "(__arg1 - __arg2)")]
+		return CompareCore(instance, (Number)value);
+	}
+
+	[Jazor(Op.Inline, "double.CompareTo(double)", "(isNaN(__arg1) ? (isNaN(__arg2) ? 0 : -1) : (isNaN(__arg2) ? 1 : (__arg1 < __arg2 ? -1 : (__arg1 > __arg2 ? 1 : 0))))")]
 	public extern static Number _7b8150796366d2b1(Number instance, Number value);
 
-	[Jazor(Op.Inline, "override double.Equals(object)", "(__arg1 === __arg2)")]
-	public extern static bool _b5f97a04bba189b0(Number instance, object? obj);
+	[Jazor(Op.Import, "override double.Equals(object)")]
+	public static bool _b5f97a04bba189b0(Number instance, object? obj)
+	{
+		if (obj == null || TypeOf(obj) != "number")
+			return false;
+
+		return AreEqualCore(instance, (Number)obj);
+	}
 
 	// 操作符 - 使用 Op.Allowed
 	[Jazor(Op.Allowed, "static double.operator ==(double, double)")]
@@ -106,7 +188,7 @@ public static class DoubleModule
 	[Jazor(Op.Allowed, "static double.operator >=(double, double)")]
 	public extern static bool _4f7605355b48150a(Number left, Number right);
 
-	[Jazor(Op.Inline, "double.Equals(double)", "(__arg1 === __arg2)")]
+	[Jazor(Op.Inline, "double.Equals(double)", "(isNaN(__arg1) ? isNaN(__arg2) : (isNaN(__arg2) ? false : (!(__arg1 < __arg2) && !(__arg1 > __arg2))))")]
 	public extern static bool _6c01d37504f73181(Number instance, Number obj);
 
 	[Jazor(Op.Discard, "override double.GetHashCode()")]
@@ -197,8 +279,9 @@ public static class DoubleModule
 	public extern static System.TypeCode _faf3eda13d4c24c6(Number instance);
 
 	// 数学方法
-	[Jazor(Op.Inline, "static double.IsPow2(double)", "(__arg1 > 0 && (__arg1 & (__arg1 - 1)) === 0)")]
-	public extern static bool _0f9f49a802919a8f(Number value);
+	[Jazor(Op.Import, "static double.IsPow2(double)")]
+	public static bool _0f9f49a802919a8f(Number value)
+		=> IsPow2Core(value);
 
 	[Jazor(Op.Alias, "static double.Log2(double)", "log2")]
 	public extern static Number _3ca26f53faecc630(Number value);
@@ -323,7 +406,7 @@ public static class DoubleModule
 	[Jazor(Op.Discard, "static double.ClampNative(double, double, double)")]
 	public extern static Number _ead55aa3a172f045(Number value, Number min, Number max);
 
-	[Jazor(Op.Inline, "static double.CopySign(double, double)", "(Math.abs(__arg1) * Math.sign(__arg2))")]
+	[Jazor(Op.Inline, "static double.CopySign(double, double)", "((__arg2 < 0 || Object.is(__arg2, -0)) ? -Math.abs(__arg1) : Math.abs(__arg1))")]
 	public extern static Number _7d753440d9da2ba5(Number value, Number sign);
 
 	[Jazor(Op.Alias, "static double.Max(double, double)", "max")]
@@ -371,17 +454,19 @@ public static class DoubleModule
 	[Jazor(Op.Inline, "static double.IsPositive(double)", "(__arg1 > 0 || Object.is(__arg1, 0))")]
 	public extern static bool _c1220c050b39d180(Number value);
 
-	[Jazor(Op.Inline, "static double.IsRealNumber(double)", "(!isNaN(__arg1))")]
+	[Jazor(Op.Inline, "static double.IsRealNumber(double)", "(!isNaN(__arg1) && __arg1 !== Infinity && __arg1 !== -Infinity)")]
 	public extern static bool _0e7439da8bbce1ab(Number value);
 
-	[Jazor(Op.Alias, "static double.MaxMagnitude(double, double)", "max")]
-	public extern static Number _b6202851542d164c(Number x, Number y);
+	[Jazor(Op.Import, "static double.MaxMagnitude(double, double)")]
+	public static Number _b6202851542d164c(Number x, Number y)
+		=> MaxMagnitudeCore(x, y);
 
 	[Jazor(Op.Discard, "static double.MaxMagnitudeNumber(double, double)")]
 	public extern static Number _7f7b38b043f3f42f(Number x, Number y);
 
-	[Jazor(Op.Alias, "static double.MinMagnitude(double, double)", "min")]
-	public extern static Number _bb1daa880a2ad14e(Number x, Number y);
+	[Jazor(Op.Import, "static double.MinMagnitude(double, double)")]
+	public static Number _bb1daa880a2ad14e(Number x, Number y)
+		=> MinMagnitudeCore(x, y);
 
 	[Jazor(Op.Discard, "static double.MinMagnitudeNumber(double, double)")]
 	public extern static Number _315c6cdfa11efcf2(Number x, Number y);
@@ -464,11 +549,16 @@ public static class DoubleModule
 	[Jazor(Op.Alias, "static double.Sin(double)", "sin")]
 	public extern static Number _82a42c3870a8a263(Number x);
 
-	[Jazor(Op.Inline, "static double.SinCos(double)", "({ sin: Math.sin(__arg1), cos: Math.cos(__arg1) })")]
-	public extern static (double Sin, double Cos) _bc56189e3e1f8a22(Number x);
+	[Jazor(Op.Import, "static double.SinCos(double)")]
+	public static (double Sin, double Cos) _bc56189e3e1f8a22(Number x)
+		=> (Sin: Math.Sin_(x), Cos: Math.Cos_(x));
 
-	[Jazor(Op.Inline, "static double.SinCosPi(double)", "({ sin: Math.sin(__arg1 * Math.PI), cos: Math.cos(__arg1 * Math.PI) })")]
-	public extern static (double SinPi, double CosPi) _0f4aeef5d225794d(Number x);
+	[Jazor(Op.Import, "static double.SinCosPi(double)")]
+	public static (double SinPi, double CosPi) _0f4aeef5d225794d(Number x)
+	{
+		var angle = x * Math.PI;
+		return (SinPi: Math.Sin_(angle), CosPi: Math.Cos_(angle));
+	}
 
 	[Jazor(Op.Inline, "static double.SinPi(double)", "Math.sin(__arg1 * Math.PI)")]
 	public extern static Number _364c4226f027481d(Number x);

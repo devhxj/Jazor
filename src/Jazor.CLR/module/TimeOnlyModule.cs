@@ -11,6 +11,24 @@ public static class TimeOnlyModule
 	private static BigInt TicksPerHour => BigInt_("36000000000");
 	private static BigInt TicksPerMinute => BigInt_("600000000");
 	private static BigInt TicksPerSecond => BigInt_("10000000");
+	private static Number AllowedDateTimeStylesMask => 7;
+
+	private static bool IsAsciiDigit(char value)
+		=> value >= '0' && value <= '9';
+
+	private static bool IsDigits(string text)
+	{
+		if (text.Length == 0)
+			return false;
+
+		for (var i = 0; i < text.Length; i++)
+		{
+			if (!IsAsciiDigit(text[i]))
+				return false;
+		}
+
+		return true;
+	}
 
 	private static void ValidateTimeParts(Number hour, Number minute, Number second, Number millisecond, Number microsecond)
 	{
@@ -31,6 +49,35 @@ public static class TimeOnlyModule
 			+ BigInt_(microsecond) * BigInt_(10));
 	}
 
+	private static BigInt CreateRoundedTicksFromDouble(Number value)
+	{
+		if (DoubleModule._24e14b276e0c7e30(value))
+			throw new Error("ArgumentException: Value cannot be NaN.");
+
+		if (!DoubleModule._aed2927097617729(value))
+			throw new Error("ArgumentOutOfRangeException: Value must be finite.");
+
+		var rounded = Math.Round_(value);
+		if (!DoubleModule._aed2927097617729(rounded))
+			throw new Error("ArgumentOutOfRangeException: Value is outside the supported TimeOnly range.");
+
+		return BigInt_(rounded);
+	}
+
+	private static Array<object?> AddWithWrappedDays(RuntimeModule.JTimeOnly instance, BigInt deltaTicks)
+	{
+		var total = instance.Ticks + deltaTicks;
+		var wrapped = Number_(total / TicksPerDay);
+		var result = total % TicksPerDay;
+		if (result < BigInt.Zero)
+		{
+			result += TicksPerDay;
+			wrapped--;
+		}
+
+		return [new RuntimeModule.JTimeOnly(result), wrapped];
+	}
+
 	private static RuntimeModule.JTimeOnly CreateTimeOnlyFromTicks(BigInt ticks)
 	{
 		if (ticks < BigInt.Zero || ticks >= TicksPerDay)
@@ -41,27 +88,38 @@ public static class TimeOnlyModule
 
 	private static RuntimeModule.JTimeOnly ParseCore(string s)
 	{
-		var first = s.IndexOf(':');
+		var text = s.Trim();
+		if (text.Length == 0)
+			throw new Error("FormatException: String was not recognized as a valid TimeOnly.");
+
+		var first = text.IndexOf(':');
 		if (first < 0)
 			throw new Error($"FormatException: String '{s}' was not recognized as a valid TimeOnly.");
 
-		var second = s.IndexOf(':', first + 1);
-		var hour = Number_(s.Substring(0, first));
-		var minuteText = second < 0 ? s.Substring(first + 1) : s.Substring(first + 1, second - first - 1);
+		var second = text.IndexOf(':', first + 1);
+		var hourText = text.Substring(0, first);
+		var minuteText = second < 0 ? text.Substring(first + 1) : text.Substring(first + 1, second - first - 1);
+		if (!IsDigits(hourText) || !IsDigits(minuteText))
+			throw new Error($"FormatException: String '{s}' was not recognized as a valid TimeOnly.");
+
+		var hour = Number_(hourText);
 		var minute = Number_(minuteText);
 		var secondValue = 0;
 		var fractionTicks = BigInt.Zero;
 
 		if (second >= 0)
 		{
-			var fractionIndex = s.IndexOf('.', second + 1);
-			var secondText = fractionIndex < 0 ? s.Substring(second + 1) : s.Substring(second + 1, fractionIndex - second - 1);
+			var fractionIndex = text.IndexOf('.', second + 1);
+			var secondText = fractionIndex < 0 ? text.Substring(second + 1) : text.Substring(second + 1, fractionIndex - second - 1);
+			if (!IsDigits(secondText))
+				throw new Error($"FormatException: String '{s}' was not recognized as a valid TimeOnly.");
+
 			secondValue = Number_(secondText);
 
 			if (fractionIndex >= 0)
 			{
-				var fractionText = s.Substring(fractionIndex + 1);
-				if (fractionText.Length == 0 || fractionText.Length > 7)
+				var fractionText = text.Substring(fractionIndex + 1);
+				if (fractionText.Length == 0 || fractionText.Length > 7 || !IsDigits(fractionText))
 					throw new Error($"FormatException: String '{s}' was not recognized as a valid TimeOnly.");
 
 				while (fractionText.Length < 7)
@@ -78,6 +136,21 @@ public static class TimeOnlyModule
 
 		return new RuntimeModule.JTimeOnly(BigInt_(hour) * TicksPerHour + BigInt_(minute) * TicksPerMinute + BigInt_(secondValue) * TicksPerSecond + fractionTicks);
 	}
+
+	private static Number GetDateTimeStylesValue(object style)
+	{
+		if (style is Number numberStyle)
+			return numberStyle;
+		if (style is System.Globalization.DateTimeStyles enumStyle)
+			return Number_((int)enumStyle);
+		if (style == null)
+			return 0;
+
+		throw new Error("ArgumentException: Invalid DateTimeStyles value.");
+	}
+
+	private static bool IsSupportedDateTimeStyles(Number style)
+		=> style >= 0 && Math.Floor_(style) == style && (style & ~AllowedDateTimeStylesMask) == 0;
 
 	[Jazor(Op.Import ,"System.TimeOnly.TimeOnly()")]
 	public static RuntimeModule.JTimeOnly _9f78f92d0753f4cf() => new(BigInt.Zero);
@@ -227,7 +300,7 @@ public static class TimeOnlyModule
 	[Jazor(Op.Import, "System.TimeOnly.AddHours(double)")]
 	public static RuntimeModule.JTimeOnly _8e71fa0d2695e84f(RuntimeModule.JTimeOnly instance, Number value)
 	{
-		var delta = new RuntimeModule.JTimeSpan(BigInt_(Math.Round_(value * 36000000000d)));
+		var delta = new RuntimeModule.JTimeSpan(CreateRoundedTicksFromDouble(value * 36000000000d));
 		return _4c935b985e7b6e02(instance, delta);
 	}
 
@@ -237,17 +310,7 @@ public static class TimeOnlyModule
 	/// </summary>
 	[Jazor(Op.Import, "System.TimeOnly.AddHours(double, out int)")]
 	public static Array<object?> _ad6cad38823a5ef6(RuntimeModule.JTimeOnly instance, Number value, Number wrappedDays)
-	{
-		var total = instance.Ticks + BigInt_(Math.Round_(value * 36000000000d));
-		var wrapped = Number_(total / TicksPerDay);
-		var result = total % TicksPerDay;
-		if (result < BigInt.Zero)
-		{
-			result += TicksPerDay;
-			wrapped--;
-		}
-		return [new RuntimeModule.JTimeOnly(result), wrapped];
-	}
+		=> AddWithWrappedDays(instance, CreateRoundedTicksFromDouble(value * 36000000000d));
 
 	/// <summary>
 	/// C#: instance.AddMinutes(value)
@@ -256,7 +319,7 @@ public static class TimeOnlyModule
 	[Jazor(Op.Import, "System.TimeOnly.AddMinutes(double)")]
 	public static RuntimeModule.JTimeOnly _77bd7db30cbf3bc9(RuntimeModule.JTimeOnly instance, Number value)
 	{
-		var delta = new RuntimeModule.JTimeSpan(BigInt_(Math.Round_(value * 600000000d)));
+		var delta = new RuntimeModule.JTimeSpan(CreateRoundedTicksFromDouble(value * 600000000d));
 		return _4c935b985e7b6e02(instance, delta);
 	}
 
@@ -266,17 +329,7 @@ public static class TimeOnlyModule
 	/// </summary>
 	[Jazor(Op.Import, "System.TimeOnly.AddMinutes(double, out int)")]
 	public static Array<object?> _e698cb9920401887(RuntimeModule.JTimeOnly instance, Number value, Number wrappedDays)
-	{
-		var total = instance.Ticks + BigInt_(Math.Round_(value * 600000000d));
-		var wrapped = Number_(total / TicksPerDay);
-		var result = total % TicksPerDay;
-		if (result < BigInt.Zero)
-		{
-			result += TicksPerDay;
-			wrapped--;
-		}
-		return [new RuntimeModule.JTimeOnly(result), wrapped];
-	}
+		=> AddWithWrappedDays(instance, CreateRoundedTicksFromDouble(value * 600000000d));
 
 	/// <summary>
 	/// C#: instance.IsBetween(start, end)
@@ -404,12 +457,18 @@ public static class TimeOnlyModule
 	///<summary>Returns the hash code for this instance.</summary>
 	[Jazor(Op.Import ,"override System.TimeOnly.GetHashCode()")]
 	public static Number _ec44c7db9ffc5397(RuntimeModule.JTimeOnly instance)
-		=> Number_(instance.Ticks % BigInt_("2147483647"));
+		=> RuntimeModule.GetInt64HashCode(instance.Ticks);
 
 	///<summary>Converts a memory span that contains string representation of a time to its <xref data-throw-if-not-resolved="true" uid="System.TimeOnly"></xref> equivalent by using culture-specific format information and a formatting style.</summary>
 	[Jazor(Op.Import ,"static System.TimeOnly.Parse(System.ReadOnlySpan<char>, System.IFormatProvider, System.Globalization.DateTimeStyles)")]
 	public static RuntimeModule.JTimeOnly _5c89b5211b528926(string s, Intl.NumberFormat? provider, object style)
-		=> ParseCore(s);
+	{
+		var styleValue = GetDateTimeStylesValue(style);
+		if (!IsSupportedDateTimeStyles(styleValue))
+			throw new Error("ArgumentException: The only supported DateTimeStyles values are AllowLeadingWhite, AllowTrailingWhite, AllowInnerWhite, and AllowWhiteSpaces.");
+
+		return ParseCore(s);
+	}
 
 	///<summary>Converts the specified span representation of a time to its <see cref="T:System.TimeOnly" /> equivalent using the specified format, culture-specific format information, and style.            The format of the string representation must match the specified format exactly or an exception is thrown.</summary>
 	[Jazor(Op.Discard ,"static System.TimeOnly.ParseExact(System.ReadOnlySpan<char>, System.ReadOnlySpan<char>, System.IFormatProvider, System.Globalization.DateTimeStyles)")]
@@ -431,7 +490,7 @@ public static class TimeOnlyModule
 	///<summary>Converts the string representation of a time to its <see cref="T:System.TimeOnly" /> equivalent by using culture-specific format information and a formatting style.</summary>
 	[Jazor(Op.Import ,"static System.TimeOnly.Parse(string, System.IFormatProvider, System.Globalization.DateTimeStyles)")]
 	public static RuntimeModule.JTimeOnly _b10aeed232e37ce3(string s, Intl.NumberFormat? provider, object style)
-		=> ParseCore(s);
+		=> _5c89b5211b528926(s, provider, style);
 
 	///<summary>Converts the specified string representation of a time to its <see cref="T:System.TimeOnly" /> equivalent using the specified format.            The format of the string representation must match the specified format exactly or an exception is thrown.</summary>
 	[Jazor(Op.Discard ,"static System.TimeOnly.ParseExact(string, string)")]
@@ -457,7 +516,13 @@ public static class TimeOnlyModule
 	///<summary>Converts the specified span representation of a time to its <xref data-throw-if-not-resolved="true" uid="System.TimeOnly"></xref> equivalent using the specified array of formats, culture-specific format information and style, and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Import ,"static System.TimeOnly.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, System.Globalization.DateTimeStyles, out System.TimeOnly)")]
 	public static Array<object?> _33c24989822cc33a(string s, Intl.NumberFormat? provider, object style, RuntimeModule.JTimeOnly result)
-		=> _ee7de3e005ab6751(s, result);
+	{
+		var styleValue = GetDateTimeStylesValue(style);
+		if (!IsSupportedDateTimeStyles(styleValue))
+			return [false, new RuntimeModule.JTimeOnly(BigInt.Zero)];
+
+		return _ee7de3e005ab6751(s, result);
+	}
 
 	///<summary>Converts the specified span representation of a time to its <see cref="T:System.TimeOnly" /> equivalent using the specified format and style.            The format of the string representation must match the specified format exactly. The method returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.TimeOnly.TryParseExact(System.ReadOnlySpan<char>, System.ReadOnlySpan<char>, out System.TimeOnly)")]
@@ -495,7 +560,13 @@ public static class TimeOnlyModule
 	///<summary>Converts the specified string representation of a time to its <see cref="T:System.TimeOnly" /> equivalent using the specified array of formats, culture-specific format information and style, and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Import ,"static System.TimeOnly.TryParse(string, System.IFormatProvider, System.Globalization.DateTimeStyles, out System.TimeOnly)")]
 	public static Array<object?> _c9d76d7d723eb7f2(string? s, Intl.NumberFormat? provider, object style, RuntimeModule.JTimeOnly result)
-		=> _ee7de3e005ab6751(s, result);
+	{
+		var styleValue = GetDateTimeStylesValue(style);
+		if (!IsSupportedDateTimeStyles(styleValue))
+			return [false, new RuntimeModule.JTimeOnly(BigInt.Zero)];
+
+		return _ee7de3e005ab6751(s, result);
+	}
 
 	///<summary>Converts the specified string representation of a time to its <see cref="T:System.TimeOnly" /> equivalent using the specified format and style.            The format of the string representation must match the specified format exactly. The method returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.TimeOnly.TryParseExact(string, string, out System.TimeOnly)")]

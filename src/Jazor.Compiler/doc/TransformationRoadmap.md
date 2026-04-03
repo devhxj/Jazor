@@ -31,8 +31,8 @@
 
 ### 2.3 未完全闭环
 
-- `ESGenerator` 真实 JavaScript 产物接回
-- `ImportDeclaration` 最终落盘
+- `ESGenerator` 最终产物策略完全定型
+- `Op.Import` 输出形态与测试矩阵继续稳定
 - `Op.Compile` 复杂宿主语义体系化
 - `Inline` 的 AST 模板化演进
 - 更完整的泛型、继承、嵌套模块增强
@@ -72,18 +72,20 @@
 
 ## 3.3 Bucket C: Host Semantics Upgrade
 
-目标：减少字符串模板式 `Inline` 的结构风险。
+目标：稳定 `Inline` / `Compile` 分工，减少宿主映射的结构性风险。
 
 范围：
 
 - 保留现有 `[Jazor(Op.Inline, ...)]` 的声明方式
 - 内部升级为 AST 模板 + 占位符替换
-- 复杂宿主语义优先提升到 `Op.Compile`
+- 先把表达式级复杂宿主语义提升到 `Op.Compile`
+- 需要 temp/import/source-origin 的语义，等 `Compile` contract 扩展后再接
 
 完成标准：
 
 - 结构性表达式不再依赖“先字符串替换再 parse”
 - `Inline` 和 `Compile` 的边界在文档和代码中一致
+- `Compile` 第一阶段只承载表达式级 hook，不越界承担完整 lowering
 
 ## 3.4 Bucket D: Module Capability Upgrade
 
@@ -144,4 +146,6 @@
 - [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)
 - [TransformationClosureChecklist.md](./TransformationClosureChecklist.md)
 - [InlineAstTemplateSpec.md](./InlineAstTemplateSpec.md)
+- [OpCompileSpec.md](./OpCompileSpec.md)
+- [OpCompileImplementationChecklist.md](./OpCompileImplementationChecklist.md)
 - [WalkerExtensionSpec.md](./WalkerExtensionSpec.md)

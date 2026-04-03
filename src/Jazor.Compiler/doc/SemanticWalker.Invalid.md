@@ -1,167 +1,101 @@
-# SemanticWalker.cs.Invalid.cs 分析文档
+# `VisitInvalid` 现状说明
 
-## 1. 文件概述
+## 定位
 
-**文件路径**: `core/SemanticWalker.cs.Invalid.cs`
+`IInvalidOperation` 的处理入口目前不在单独的 `SemanticWalker.cs.Invalid.cs` 文件中，而是在：
 
-**职责**: 处理 `IInvalidOperation`，提供从语法节点层面的备用转换路径。
+- `src/Jazor.Compiler/core/SemanticWalker.cs.NotSupport.cs`
 
-**代码行数**: ~152 行
+对应实现是：
 
-## 2. 设计思路
+- `VisitInvalid(IInvalidOperation operation, SenseArgument argument)`
 
-### 2.1 触发场景
+这和旧文档描述的“语法节点级回退转换器”已经不一致，当前文档需要按真实代码修正。
 
-`IInvalidOperation` 在以下情况出现：
-- 编译器优化导致操作被折叠
-- 上下文信息不完整
-- 编译器内部中间状态
+## 当前职责
 
-**注意**：在诊断器正常工作的情况下，理论上不应触发此方法。
+当前 `VisitInvalid(...)` 的职责非常简单：
 
-### 2.2 回退策略
+- 遇到 `IInvalidOperation` 时直接失败
+- 通过 `HandleTransformationFailure(...)` 抛出不支持转换错误
 
-```
-IOperation 层面转换失败
-        │
-        ▼
-检测 IInvalidOperation
-        │
-        ▼
-回退到 SyntaxNode 层面
-        │
-        ▼
-基于语法节点类型转换
-        │
-        ▼
-JavaScript AST
-```
+也就是说，当前实现把 `IInvalidOperation` 视为：
 
-## 3. 方法详解
+- 不应进入正常 lowering 主线的异常输入
 
-### 3.1 VisitInvalid
+而不是：
 
-```csharp
-public override Node? VisitInvalid(IInvalidOperation operation, WalkerArgument argument)
-    => ConvertFromSyntaxNode(operation.Syntax);
-```
+- 需要额外兜底支持的一类常规节点
 
-### 3.2 ConvertFromSyntaxNode
+## 当前关键规则
 
-基于 C# 语法节点类型进行模式匹配：
+### 1. 没有语法级兜底转换
 
-```csharp
-private Node ConvertFromSyntaxNode(SyntaxNode node)
-{
-    var result = node switch
-    {
-        // 字面量
-        LiteralExpressionSyntax lit => lit.Token.Value switch
-        {
-            null => Null,
-            bool b => new BooleanLiteral(b, b.ToString().ToLower()),
-            char c => new StringLiteral(c.ToString(), $"'{c}'"),
-            string s => new StringLiteral(s, $"'{s}'"),
-            int i => new NumericLiteral(i, i.ToString()),
-            // ... 其他数值类型
-        },
+旧文档里提到的这套策略当前并不存在：
 
-        // 标识符
-        IdentifierNameSyntax id => new Identifier(id.Identifier.Text),
+- 从 `IInvalidOperation` 回退到 `SyntaxNode`
+- 再按语法节点类型手工构造 AST
 
-        // 成员访问
-        MemberAccessExpressionSyntax ma => new MemberExpression(
-            (Expression)ConvertFromSyntaxNode(ma.Expression),
-            new Identifier(ma.Name.Identifier.Text),
-            computed: false,
-            optional: false),
+当前真实实现没有这条路径。
 
-        // 方法调用
-        InvocationExpressionSyntax ie => new CallExpression(...),
+### 2. `IInvalidOperation` 被视为异常状态
 
-        // 二元运算
-        BinaryExpressionSyntax be => be.OperatorToken.Kind() switch
-        {
-            SyntaxKind.PlusToken => new NonLogicalBinaryExpression(Operator.Addition, ...),
-            SyntaxKind.AmpersandAmpersandToken => new LogicalExpression(Operator.LogicalAnd, ...),
-            // ...
-        },
+从测试注释和实现现状看，当前假设是：
 
-        // 更多语法节点类型...
-    };
+- 在诊断正常、语义分析正常的输入下，理论上不应依赖 `VisitInvalid(...)`
 
-    return result ?? HandleTransformationFailure(node, $"Unsupported syntax node kind: {node.Kind()}.");
-}
-```
+因此这里选择的是：
 
-## 4. 支持的语法节点类型
+- 快速失败
 
-| 语法节点 | 转换结果 |
-|---------|---------|
-| `LiteralExpressionSyntax` | 字面量 AST |
-| `IdentifierNameSyntax` | `Identifier` |
-| `ParenthesizedExpressionSyntax` | 解包内部表达式 |
-| `InvocationExpressionSyntax` | `CallExpression` |
-| `ObjectCreationExpressionSyntax` | `NewExpression` |
-| `MemberAccessExpressionSyntax` | `MemberExpression` |
-| `ConditionalAccessExpressionSyntax` | `ConditionalExpression` |
-| `ElementAccessExpressionSyntax` | `MemberExpression` (computed) |
-| `AssignmentExpressionSyntax` | `AssignmentExpression` |
-| `ConditionalExpressionSyntax` | `ConditionalExpression` |
-| `BinaryExpressionSyntax` | 对应二元表达式 |
-| `PrefixUnaryExpressionSyntax` | 对应一元表达式 |
-| `PostfixUnaryExpressionSyntax` | `UpdateExpression` |
-| `CastExpressionSyntax` | 解包内部表达式 |
-| `AwaitExpressionSyntax` | `AwaitExpression` |
-| `TupleExpressionSyntax` | `SequenceExpression` |
-| `DefaultExpressionSyntax` | `Null` |
+而不是：
 
-## 5. 已知缺陷
+- 带有较强猜测性的容错转换
 
-### 5.1 高优先级缺陷
+### 3. `VisitInvalid` 属于不支持策略的一部分
 
-| 缺陷 | 影响 | 建议修复方案 |
-|------|------|-------------|
-| **语义信息丢失** | 无类型信息可能导致错误转换 | 尽量在 IOperation 层面处理 |
-| **不支持所有语法节点** | 某些节点会抛出异常 | 扩展支持的语法节点类型 |
+它当前与 `using`、`lock`、dynamic、函数指针、UTF-8 字符串等不支持节点放在同一文件中，不是偶然。
 
-### 5.2 中优先级缺陷
+这表达了当前设计态度：
 
-| 缺陷 | 影响 | 建议修复方案 |
-|------|------|-------------|
-| **条件访问处理简化** | `a?.b?.c` 可能不完整 | 完善条件访问链处理 |
-| **转换表达式未处理** | 强制类型转换被忽略 | 考虑运行时类型检查 |
+- `IInvalidOperation` 不是一个“弱支持分支”
+- 而是与其他无法稳定映射到 JS 的输入一样，直接拒绝
 
-## 6. 设计权衡
+## 现状与测试
 
-### 6.1 为什么需要此文件
+当前仓库里关于 `Invalid` 的测试文件是：
 
-**原因**：
-- IOperation 是 Roslyn lowering 后的结果
-- 某些表达式被优化或折叠
-- 需要回退到原始语法保持语义
+- `src/Jazor.CompilerTest/SemanticWalkerInvalidTest.cs`
 
-### 6.2 局限性
+但该文件中的直接测试目前处于注释状态，并且文件开头已经明确写了：
 
-- 缺少类型信息
-- 缺少语义分析结果
-- 可能无法正确处理重载决策
+- 理论上在没有诊断错误的情况下，不应该出现 `InvalidOperation`
 
-## 7. 测试覆盖
+这和当前实现是一致的。
 
-**当前状态**: 有专门测试
+## 当前边界
 
-**测试场景**：
-- ✅ 字面量回退
-- ✅ 成员访问回退
-- ✅ 方法调用回退
-- ✅ 运算符回退
+这部分当前没有提供这些能力：
 
-## 8. 相关文档
+- 对 `IInvalidOperation` 的语法级 fallback
+- 基于 `SyntaxNode` 的手工推断式 AST 恢复
+- 把语义异常节点继续“尽力转换”
+
+它当前提供的只有：
+
+- 一个明确的失败点
+- 一个清晰的设计信号：`IInvalidOperation` 不在受支持 lowering 面内
+
+## 推荐阅读
+
+建议按这个顺序看：
+
+1. [SemanticWalker.md](./SemanticWalker.md)
+2. [SemanticWalker.NotSupport.md](./SemanticWalker.NotSupport.md)
+3. [SemanticWalker.Invalid.md](./SemanticWalker.Invalid.md)
+
+## 相关文档
 
 - [SemanticWalker.md](./SemanticWalker.md)
-- [rule.md](../rule.md)
-
----
-
-**最后更新**: 2026-03-03
+- [SemanticWalker.NotSupport.md](./SemanticWalker.NotSupport.md)
+- [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)

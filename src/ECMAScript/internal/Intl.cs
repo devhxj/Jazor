@@ -142,7 +142,7 @@ public static class Intl
 		[property: Description("@#numeric")] bool numeric);
 
 	[Description("@#Collator")]
-	public abstract class Collator
+	public class Collator
 	{
 		public extern Collator();
 
@@ -232,7 +232,7 @@ public static class Intl
 		[property: Description("@#maximumSignificantDigits")] Number? MaximumSignificantDigits,
 		[property: Description("@#useGrouping")] bool UseGrouping);
 
-    [Description("@#NumberFormat")]
+	[Description("@#NumberFormat")]
     public sealed class NumberFormat : IFormatProvider
     {
         public extern NumberFormat();
@@ -275,6 +275,30 @@ public static class Intl
 
         public extern object? GetFormat(Type? formatType);
     }
+
+	[Description("@#Locale")]
+	public sealed class Locale
+	{
+		public extern Locale(string tag);
+
+		[Description("@#maximize")]
+		public extern Locale Maximize();
+
+		[Description("@#language")]
+		public extern string Language { get; }
+
+		[Description("@#script")]
+		public extern string? Script { get; }
+
+		[Description("@#region")]
+		public extern string? Region { get; }
+
+		[Description("@#baseName")]
+		public extern string BaseName { get; }
+
+		[Description("@#toString")]
+		public extern override string ToString();
+	}
 
     [Description("@#")]
 	public enum FormatMatcher
@@ -356,7 +380,7 @@ public static class Intl
 		[property: Description("@#timeZoneName")] string? TimeZoneName = null);
 
 	[Description("@#DateTimeFormat")]
-	public abstract class DateTimeFormat
+	public class DateTimeFormat
 	{
 		public extern DateTimeFormat();
 

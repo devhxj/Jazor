@@ -18,16 +18,65 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "byte","Number")]
 public static class ByteModule
 {
+	private static Number CompareCore(Number left, Number right)
+		=> left < right ? -1 : (left > right ? 1 : 0);
+
+	private static bool TryParseByteCore(string? s, out Number value)
+	{
+		value = 0;
+		if (s == null)
+			return false;
+
+		var trimmed = s.Trim();
+		if (trimmed.Length == 0)
+			return false;
+
+		var start = 0;
+		var first = trimmed[0];
+		if (first == '+' || first == '-')
+		{
+			if (trimmed.Length == 1)
+				return false;
+
+			start = 1;
+		}
+
+		for (var i = start; i < trimmed.Length; i++)
+		{
+			var ch = trimmed[i];
+			if (ch < '0' || ch > '9')
+				return false;
+		}
+
+		var parsed = Number_(trimmed);
+		if (IsNaN(parsed) || Math.Floor_(parsed) != parsed)
+			return false;
+		if (parsed < 0 || parsed > 255)
+			return false;
+
+		value = parsed;
+		return true;
+	}
+
 	[Jazor(Op.Discard ,"byte.Byte()")]
 	public extern static Number _c16a6a35ab0f1a78();
 
 	///<summary>Compares this instance to a specified object and returns an indication of their relative values.</summary>
-	[Jazor(Op.Inline, "byte.CompareTo(object)", "(__arg1 - (__arg2 ?? 0))")]
-	public extern static Number _7aaf4c67dc6c9c9a(Number instance, object? value);
+	[Jazor(Op.Import, "byte.CompareTo(object)")]
+	public static Number _7aaf4c67dc6c9c9a(Number instance, object? value)
+	{
+		if (value == null)
+			return 1;
+		if (TypeOf(value) != "number")
+			throw new Error("ArgumentException: Object must be of type Byte.");
+
+		return CompareCore(instance, (Number)value);
+	}
 
 	///<summary>Compares this instance to a specified 8-bit unsigned integer and returns an indication of their relative values.</summary>
-	[Jazor(Op.Inline, "byte.CompareTo(byte)", "(__arg1 - __arg2)")]
-	public extern static Number _5c935ae4273a32cf(Number instance, Number value);
+	[Jazor(Op.Import, "byte.CompareTo(byte)")]
+	public static Number _5c935ae4273a32cf(Number instance, Number value)
+		=> CompareCore(instance, value);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
 	[Jazor(Op.Inline, "override byte.Equals(object)", "(__arg1 === __arg2)")]
@@ -67,26 +116,17 @@ public static class ByteModule
 
 	/// <summary>
 	/// C#: byte.Parse(s)
-	/// JS: parseInt(s, 10) with validation
+	/// JS: 只接受十进制整数字符串，拒绝尾随垃圾字符
 	/// </summary>
 	[Jazor(Op.Import, "static byte.Parse(string)")]
 	public static Number _8719e4b3055c5188(string? s)
 	{
 		if (s == null)
 			throw new Error("ArgumentNullException: String cannot be null.");
-
-		var trimmed = s.Trim();
-		var num = ParseInt(trimmed, 10);
-
-		// Check if parsing succeeded
-		if (IsNaN(num))
+		if (!TryParseByteCore(s, out var value))
 			throw new Error($"FormatException: String '{s}' was not recognized as a valid Byte.");
 
-		// 验证 byte 范围: 0-255
-		if (num < 0 || num > 255)
-			throw new Error($"OverflowException: Value '{s}' was either too large or too small for a Byte.");
-
-		return num;
+		return value;
 	}
 
 	///<summary>Converts the string representation of a number in a specified style to its byte equivalent.</summary>
@@ -112,21 +152,10 @@ public static class ByteModule
 	[Jazor(Op.Import, "static byte.TryParse(string, out byte)")]
 	public static Array<object?> _03c07d3f3ee012f9(string? s, Number result)
 	{
-		if (s == null)
+		if (!TryParseByteCore(s, out var value))
 			return [false, 0];
 
-		var trimmed = s.Trim();
-		var v = ParseInt(trimmed, 10);
-
-		// Check if parsing succeeded
-		if (IsNaN(v))
-			return [false, 0];
-
-		// 验证 byte 范围: 0-255
-		if (v >= 0 && v <= 255)
-			return [true, v];
-
-		return [false, 0];
+		return [true, value];
 	}
 
 	///<summary>Tries to convert the span representation of a number to its byte equivalent, and returns a value that indicates whether the conversion succeeded.</summary>

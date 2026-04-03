@@ -103,6 +103,25 @@ public partial class SemanticWalker
 		return true;
 	}
 
+	/// <summary>
+	/// 获取类型在运行时应归属的模块路径。
+	///
+	/// 对于被声明侧扁平化成顶层导出的嵌套类型，模块路径并不写在嵌套类型自身，
+	/// 而是写在它所属的外层模块类上。因此这里需要沿包含链向上追溯，
+	/// 让引用侧也能从同一个模块导入那个扁平化后的运行时名字。
+	/// </summary>
+	private static string? GetEffectiveModuleImportPath(ITypeSymbol symbol)
+	{
+		for (var current = symbol; current is not null; current = current.ContainingType)
+		{
+			var modulePath = GetModuleImportPath(current);
+			if (!string.IsNullOrWhiteSpace(modulePath))
+				return modulePath;
+		}
+
+		return null;
+	}
+
 	private Expression? BuildFullTypeName(ITypeSymbol symbol, SenseArgument? context = null)
 	{
 		if (ShouldFlattenRuntimeNestedType(symbol))
@@ -111,10 +130,11 @@ public partial class SemanticWalker
 			if (string.IsNullOrEmpty(flatName))
 				return null;
 
-			var modulePath = GetModuleImportPath(symbol);
+			var modulePath = GetEffectiveModuleImportPath(symbol);
 			if (!string.IsNullOrEmpty(modulePath))
 			{
-				context?.MergeImportSpecifier(modulePath!, new ImportSpecifier(new Identifier(flatName!)));
+				if (context is SenseArgument importContext)
+					return importContext.BindImportSpecifier(modulePath!, flatName!);
 			}
 
 			return new Identifier(flatName!);
@@ -137,7 +157,8 @@ public partial class SemanticWalker
 			{
 				if (_moduleRootType is null || !SymbolEqualityComparer.Default.Equals(type, _moduleRootType))
 				{
-					context?.MergeImportSpecifier(modulePath!, new ImportSpecifier(new Identifier(name!)));
+					if (context is SenseArgument importContext)
+						return importContext.BindImportSpecifier(modulePath!, name!);
 				}
 
 				queue.Push(name!);
@@ -163,12 +184,30 @@ public partial class SemanticWalker
 		return expr;
 	}
 
-	private Expression? TryBuildStaticQualifiedMemberFromSyntax(SyntaxNode syntax, string memberName)
+	/// <summary>
+	/// 从静态成员访问语法中提取“宿主”部分。
+	/// 例如：
+	/// - <c>Array.Of(...)</c> -> <c>Array</c>
+	/// - <c>Uint8Array.BYTES_PER_ELEMENT</c> -> <c>Uint8Array</c>
+	/// 这里故意保留调用点写下来的宿主，因为某些运行时 API 的成员声明在泛型基类上，
+	/// 但真实 JavaScript 宿主应当是调用点上的具体类型。
+	/// </summary>
+	private Expression? TryBuildStaticMemberTargetFromSyntax(SyntaxNode syntax)
 	{
-		ExpressionSyntax? targetSyntax = syntax switch
+		// Roslyn 在不同静态访问形态下给到的 syntax 颗粒度不一致。
+		// 这里先把 "名字节点" 提升回完整成员访问节点，后面才能稳定提取宿主。
+		var effectiveSyntax = syntax switch
+		{
+			IdentifierNameSyntax or GenericNameSyntax when syntax.Parent is MemberAccessExpressionSyntax or QualifiedNameSyntax
+				=> syntax.Parent,
+			_ => syntax
+		};
+
+		ExpressionSyntax? targetSyntax = effectiveSyntax switch
 		{
 			InvocationExpressionSyntax invocation when invocation.Expression is MemberAccessExpressionSyntax memberAccess => memberAccess.Expression,
 			MemberAccessExpressionSyntax memberAccess => memberAccess.Expression,
+			QualifiedNameSyntax qualifiedName => qualifiedName.Left,
 			_ => null
 		};
 
@@ -178,6 +217,12 @@ public partial class SemanticWalker
 		var target = TryBuildStaticHostExpressionFromSyntax(targetSyntax);
 		if (target is null)
 			target = ConvertFromSyntaxNode(targetSyntax) as Expression;
+		return target;
+	}
+
+	private Expression? TryBuildStaticQualifiedMemberFromSyntax(SyntaxNode syntax, string memberName)
+	{
+		var target = TryBuildStaticMemberTargetFromSyntax(syntax);
 		if (target is null)
 			return null;
 
@@ -239,9 +284,288 @@ public partial class SemanticWalker
 			SymbolEqualityComparer.Default.Equals(containingType, _moduleRootType))
 			return false;
 
-		context?.MergeImportSpecifier(modulePath!, new ImportSpecifier(new Identifier(memberName)));
-		expression = new Identifier(memberName);
+		var importId = context?.BindImportSpecifier(modulePath!, memberName) ?? new Identifier(memberName);
+		expression = importId;
 		return true;
+	}
+
+	/// <summary>
+	/// 为 ECMAScript 运行时静态成员选择最终宿主。
+	///
+	/// 这里解决的是“声明宿主”和“真实 JS 宿主”不一定相同的问题：
+	/// - 普通映射场景应优先使用运行时宿主，例如 <c>System.Console -> console</c>。
+	/// - 如果静态成员声明在基类/泛型基类上，而调用点实际使用的是更具体的运行时类型，
+	///   则必须保留那个更具体的宿主，例如
+	///   <c>TypedArray&lt;T, TArray&gt;</c> 上声明的成员，在
+	///   <c>Uint8Array.Of(...)</c> / <c>Uint8Array.BYTES_PER_ELEMENT</c> 上
+	///   仍应输出到 <c>Uint8Array</c>。
+	///
+	/// 选择顺序：
+	/// 1. 先从声明宿主推导一个稳定的运行时宿主。
+	/// 2. 再从调用点语法 + 语义里恢复“用户真正写下的宿主类型”。
+	/// 3. 只有当调用点宿主与声明宿主在继承/接口/泛型原型定义上兼容时，才允许覆盖。
+	/// 4. 两边都恢复不完整时，才退回语法宿主，避免把具体类型降成抽象基类。
+	/// </summary>
+	private bool TryBuildPreferredRuntimeStaticMemberAccess(ISymbol symbol, SyntaxNode syntax, SemanticModel? semanticModel, string memberName, out Expression? expression)
+	{
+		expression = null;
+		var isRuntime = Util.IsECMAScriptRuntimeSymbol(symbol);
+		if (!isRuntime)
+			return false;
+
+		var hostType = symbol switch
+		{
+			IMethodSymbol { IsStatic: true } method => method.ReceiverType ?? method.ContainingType,
+			_ => symbol.ContainingType
+		};
+		if (hostType is null)
+			return false;
+
+		var runtimeHost = TryBuildRuntimeHostExpression(hostType);
+		if (runtimeHost is null)
+			return false;
+
+		// 优先用语义模型恢复调用点宿主，而不是只信语法文本。
+		// 这样 using Bytes = Uint8Array 这类别名最终仍会落到 Uint8Array，而不是 Bytes。
+		var sourceHostType = TryGetStaticSourceHostTypeFromSyntax(syntax, semanticModel);
+		if (sourceHostType is not null &&
+			IsStaticHostOverrideCompatible(sourceHostType, hostType))
+		{
+			var sourceRuntimeHost = TryBuildRuntimeHostExpression(sourceHostType);
+			if (sourceRuntimeHost is not null)
+			{
+				expression = new MemberExpression(sourceRuntimeHost, new Identifier(memberName), computed: false, optional: false);
+				return true;
+			}
+		}
+
+		var syntaxHost = TryBuildStaticMemberTargetFromSyntax(syntax);
+		var specializedRuntimeHostType = TryGetSpecializedRuntimeHostType(hostType);
+		if (syntaxHost is null)
+		{
+			// 没有可复用的语法宿主时，只在“声明宿主能恢复出更具体的运行时宿主”场景下强制改写。
+			// 否则交给普通路径处理，避免为所有静态成员都重复输出一层宿主。
+			if (specializedRuntimeHostType is null)
+				return false;
+
+			expression = new MemberExpression(runtimeHost, new Identifier(memberName), computed: false, optional: false);
+			return true;
+		}
+
+		// 两边已经一致时，通常交给普通路径继续输出即可。
+		// 但“具体宿主是从泛型约束恢复出来”的场景例外：普通路径会退回声明宿主，
+		// 例如又变回 TypedArray.BYTES_PER_ELEMENT，因此这里仍要显式输出运行时宿主。
+		if (syntaxHost.ToECMAScript() == runtimeHost.ToECMAScript())
+		{
+			if (specializedRuntimeHostType is null)
+				return false;
+
+			expression = new MemberExpression(runtimeHost, new Identifier(memberName), computed: false, optional: false);
+			return true;
+		}
+
+		// 泛型基类上的静态成员经常被具体运行时子类型复用。
+		// 但如果语义信息已经能恢复出真实宿主，就不再保留调用点文本，
+		// 否则像 using Bytes = Uint8Array 这种 C# 别名会被错误发成 Bytes.of。
+		// 只有在拿不到语义化具体宿主时，才退回调用点宿主，避免 Uint8Array.of 被降成 TypedArray.of。
+		// 其他普通静态宿主则优先采用运行时映射后的真实 host，例如 System.Console -> console。
+		var preferredHost = hostType is INamedTypeSymbol { IsGenericType: true } && specializedRuntimeHostType is null
+			? syntaxHost
+			: runtimeHost;
+		expression = new MemberExpression(preferredHost, new Identifier(memberName), computed: false, optional: false);
+		return true;
+	}
+
+	/// <summary>
+	/// 从静态访问的语法节点中恢复调用点宿主对应的语义类型。
+	///
+	/// 这里不能只取语法文本：
+	/// - <c>Bytes.Of(...)</c> 里的 <c>Bytes</c> 可能是 using alias；
+	/// - <c>Namespace.Type.Member</c> / <c>Outer.Inner.Member</c> 需要拿到最终绑定后的类型；
+	/// - Roslyn 在属性、方法组、调用三种静态访问上给出的 syntax 颗粒度并不一致。
+	/// </summary>
+	private static ITypeSymbol? TryGetStaticSourceHostTypeFromSyntax(SyntaxNode syntax, SemanticModel? semanticModel)
+	{
+		if (semanticModel is null)
+			return null;
+
+		var effectiveSyntax = syntax switch
+		{
+			IdentifierNameSyntax or GenericNameSyntax when syntax.Parent is MemberAccessExpressionSyntax or QualifiedNameSyntax
+				=> syntax.Parent,
+			_ => syntax
+		};
+
+		var targetSyntax = effectiveSyntax switch
+		{
+			InvocationExpressionSyntax invocation when invocation.Expression is MemberAccessExpressionSyntax memberAccess => memberAccess.Expression,
+			MemberAccessExpressionSyntax memberAccess => memberAccess.Expression,
+			QualifiedNameSyntax qualifiedName => qualifiedName.Left,
+			_ => null
+		};
+		if (targetSyntax is null)
+			return null;
+
+		var symbol = semanticModel.GetSymbolInfo(targetSyntax).Symbol;
+		if (symbol is IAliasSymbol alias && alias.Target is ITypeSymbol aliasType)
+			return aliasType;
+
+		if (symbol is ITypeSymbol typeSymbol)
+			return typeSymbol;
+
+		return semanticModel.GetTypeInfo(targetSyntax).Type;
+	}
+
+	/// <summary>
+	/// 判断调用点宿主是否可以安全覆盖声明宿主。
+	///
+	/// 允许覆盖的前提是：调用点宿主必须就是声明宿主本身，或者能通过
+	/// “继承链 / 接口实现 / 泛型原型定义一致”证明两者属于同一套运行时 API。
+	/// 这样既能支持基类声明、子类复用的静态成员，也能避免把无关类型错误改写到一起。
+	/// </summary>
+	private static bool IsStaticHostOverrideCompatible(ITypeSymbol sourceHostType, ITypeSymbol declaredHostType)
+	{
+		if (SymbolEqualityComparer.Default.Equals(sourceHostType, declaredHostType) ||
+			SymbolEqualityComparer.Default.Equals(sourceHostType.OriginalDefinition, declaredHostType.OriginalDefinition))
+			return true;
+
+		if (sourceHostType is not INamedTypeSymbol sourceNamed)
+			return false;
+
+		for (var current = sourceNamed.BaseType; current is not null; current = current.BaseType)
+		{
+			if (SymbolEqualityComparer.Default.Equals(current, declaredHostType) ||
+				SymbolEqualityComparer.Default.Equals(current.OriginalDefinition, declaredHostType.OriginalDefinition))
+				return true;
+		}
+
+		return sourceNamed.AllInterfaces.Any(@interface =>
+			SymbolEqualityComparer.Default.Equals(@interface, declaredHostType) ||
+			SymbolEqualityComparer.Default.Equals(@interface.OriginalDefinition, declaredHostType.OriginalDefinition));
+	}
+
+	private static string? TryExtractExtensionReceiverDisplayName(ITypeSymbol? type)
+	{
+		if (type is null)
+			return null;
+
+		var display = type.OriginalDefinition.ToDisplayString(Format.NameFormat);
+		const string marker = ".extension(";
+		var start = display.IndexOf(marker, System.StringComparison.Ordinal);
+		if (start < 0)
+			return null;
+
+		start += marker.Length;
+		var end = display.LastIndexOf(')');
+		if (end <= start)
+			return null;
+
+		return display.Substring(start, end - start);
+	}
+
+	private static string? TryGetTypeAliasFromWhiteList(string displayName)
+	{
+		if (WhiteList.Types.TryGetValue(displayName, out var entry) &&
+			entry.Op == Op.Alias &&
+			!string.IsNullOrEmpty(entry.Value))
+			return entry.Value;
+
+		return null;
+	}
+
+	/// <summary>
+	/// 尝试从“自类型泛型约束”里恢复真实运行时宿主。
+	///
+	/// 典型例子是 <c>TypedArray&lt;T, TArray&gt;</c>：
+	/// 静态成员声明在泛型基类上，但第二个类型参数才是真正的 JS 构造器，
+	/// 例如 <c>Uint8Array</c>、<c>BigInt64Array</c>。
+	///
+	/// 这里不靠类型名硬编码，而是查找“某个类型参数的约束再次引用了当前泛型定义本身”。
+	/// 一旦命中这种 self-typed 约束，并且对应类型实参本身也是 ECMAScript 运行时类型，
+	/// 就把它视为更具体的最终宿主。
+	/// </summary>
+	private static ITypeSymbol? TryGetSpecializedRuntimeHostType(ITypeSymbol? type)
+	{
+		if (type is not INamedTypeSymbol namedType || !namedType.IsGenericType)
+			return null;
+
+		var originalDefinition = namedType.OriginalDefinition;
+		var count = System.Math.Min(namedType.TypeParameters.Length, namedType.TypeArguments.Length);
+		for (var index = 0; index < count; index++)
+		{
+			var typeArgument = namedType.TypeArguments[index];
+			if (typeArgument.TypeKind == TypeKind.TypeParameter)
+				continue;
+
+			var typeParameter = namedType.TypeParameters[index];
+			var matchesSelfTypedConstraint = typeParameter.ConstraintTypes.Any(constraintType =>
+				constraintType is INamedTypeSymbol constraintNamed &&
+				SymbolEqualityComparer.Default.Equals(constraintNamed.OriginalDefinition, originalDefinition));
+			if (!matchesSelfTypedConstraint)
+				continue;
+
+			if (Util.IsECMAScriptRuntimeSymbol(typeArgument))
+				return typeArgument;
+		}
+
+		return null;
+	}
+
+	/// <summary>
+	/// 根据现有类型映射推导运行时宿主表达式。
+	///
+	/// 这里不引入额外的 StaticHost 表，直接复用当前设计里已经稳定存在的两类信息：
+	/// - 类型别名白名单，例如 <c>System.Console -> console</c>
+	/// - ECMAScript 扩展宿主上的接收者类型
+	/// </summary>
+	private Expression? TryBuildRuntimeHostExpression(ITypeSymbol? type, SenseArgument? context = null)
+	{
+		if (type is null)
+			return null;
+
+		// 先尝试恢复“语义上更具体”的运行时宿主。
+		// 这能避开 C# using 类型别名等纯语法名字，把 TypedArray<T, TArray> 正确落到 Uint8Array 之类的真实 JS host。
+		var specializedRuntimeHostType = TryGetSpecializedRuntimeHostType(type);
+		if (specializedRuntimeHostType is not null)
+		{
+			var specializedHost = BuildFullTypeName(specializedRuntimeHostType, context);
+			if (specializedHost is not null)
+				return specializedHost;
+		}
+
+		// 优先走现有类型映射。
+		// 这条路径已经覆盖白名单别名、模块导入和名称边界，能直接复用当前设计。
+		var host = BuildFullTypeName(type, context);
+		if (host is not null)
+			return host;
+
+		// 兜底处理 ECMAScript 扩展宿主。
+		// 某些 API 的声明宿主不是最终 JS 对象本身，而是 extension(receiver) 这种桥接类型。
+		var receiverDisplayName = TryExtractExtensionReceiverDisplayName(type);
+		if (string.IsNullOrEmpty(receiverDisplayName))
+			return null;
+
+		var alias = TryGetTypeAliasFromWhiteList(receiverDisplayName!);
+		return string.IsNullOrEmpty(alias) ? null : new Identifier(alias!);
+	}
+
+	private static string? TryGetRuntimeHostSourceName(ITypeSymbol? type)
+	{
+		if (type is null)
+			return null;
+
+		// 这里取“源码里最可能出现的宿主名”，用于识别 Console.Log / Array.Of 这类
+		// 尚未归一化的接收端写法，然后再替换成真实运行时 host。
+		if (!string.IsNullOrEmpty(type.Name))
+			return type.Name;
+
+		var receiverDisplayName = TryExtractExtensionReceiverDisplayName(type);
+		if (string.IsNullOrEmpty(receiverDisplayName))
+			return null;
+
+		var simpleName = receiverDisplayName!.Split('.').Last();
+		var genericIndex = simpleName.IndexOf('<');
+		return genericIndex >= 0 ? simpleName.Substring(0, genericIndex) : simpleName;
 	}
 
 	private Expression? TryBuildExtensionHostTarget(IMethodSymbol method, SenseArgument? context)
@@ -253,13 +577,7 @@ public partial class SemanticWalker
 		if (method.ReceiverType is null)
 			return null;
 
-		// JavaScript console is a lowercase global object. Its C# receiver host still
-		// appears as Console due to host-language syntax constraints, so emit the real
-		// runtime host name directly instead of preserving the CLR-facing casing.
-		if (method.ReceiverType.Name == "Console")
-			return new Identifier("console");
-
-		return BuildFullTypeName(method.ReceiverType, context);
+		return TryBuildRuntimeHostExpression(method.ReceiverType, context);
 	}
 
 	private bool TryBuildImportedModulePropertyAccess(IPropertySymbol property, SenseArgument? context, out Expression? expression)
@@ -277,29 +595,48 @@ public partial class SemanticWalker
 		return true;
 	}
 
-	private static bool TryBuildKnownLowercaseHostTarget(ISymbol symbol, SyntaxNode syntax, out Expression? expression)
+	/// <summary>
+	/// 当调用点把运行时宿主写成 CLR 名称时，统一替换成真实 JavaScript 宿主。
+	/// 例如 <c>Console.Log</c> 的实例部分会先表现为 <c>Console</c>，
+	/// 这里再归一化为 <c>console</c>。
+	/// </summary>
+	private Expression NormalizeRuntimeReceiverHostInstance(Expression instance, IMethodSymbol method)
 	{
-		expression = null;
-		if (symbol.ContainingAssembly?.Name != "ECMAScript")
-			return false;
+		var hostType = method.ReceiverType ?? method.ContainingType;
+		if (hostType is null || instance is not Identifier identifier)
+			return instance;
 
-		ExpressionSyntax? targetSyntax = syntax switch
-		{
-			InvocationExpressionSyntax invocation when invocation.Expression is MemberAccessExpressionSyntax memberAccess => memberAccess.Expression,
-			MemberAccessExpressionSyntax memberAccess => memberAccess.Expression,
-			_ => null
-		};
+		var sourceName = TryGetRuntimeHostSourceName(hostType);
+		if (string.IsNullOrEmpty(sourceName) ||
+			!string.Equals(identifier.Name, sourceName, System.StringComparison.Ordinal))
+			return instance;
 
-		if (targetSyntax is not IdentifierNameSyntax identifier)
-			return false;
+		// 只改写“裸宿主标识符”场景，避免误伤更复杂的用户表达式。
+		return TryBuildRuntimeHostExpression(hostType) ?? instance;
+	}
 
-		if (identifier.Identifier.ValueText == "Console")
-		{
-			expression = new Identifier("console");
-			return true;
-		}
+	/// <summary>
+	/// 与 <see cref="NormalizeRuntimeReceiverHostInstance"/> 类似，但作用于已经拼好的成员访问表达式。
+	/// 这样方法组引用和普通调用都能共用同一套宿主归一化逻辑。
+	/// </summary>
+	private Expression NormalizeRuntimeReceiverHostCallee(Expression callee, IMethodSymbol method)
+	{
+		var hostType = method.ReceiverType ?? method.ContainingType;
+		if (hostType is null ||
+			callee is not MemberExpression { Object: Identifier identifier, Property: var property, Computed: var computed, Optional: var optional })
+			return callee;
 
-		return false;
+		var sourceName = TryGetRuntimeHostSourceName(hostType);
+		if (string.IsNullOrEmpty(sourceName) ||
+			!string.Equals(identifier.Name, sourceName, System.StringComparison.Ordinal))
+			return callee;
+
+		var runtimeHost = TryBuildRuntimeHostExpression(hostType);
+		if (runtimeHost is null)
+			return callee;
+
+		// 保留原成员名与可选/计算属性形态，只替换宿主部分。
+		return new MemberExpression(runtimeHost, property, computed, optional);
 	}
 
 	private Expression GetFieldName(IOperation includeOp, IFieldSymbol symbol)
@@ -878,6 +1215,14 @@ public partial class SemanticWalker
 			arguments.Add(Translate<Expression>(propertyArgument.Value, argContext));
 		}
 
+		if (instance is not null &&
+			arguments.Count > 0 &&
+			(operation.Property.IsIndexer || operation.Property.Parameters.Length > 0))
+		{
+			var indexerOptional = operation.Instance is IConditionalAccessInstanceOperation;
+			return new MemberExpression(instance, arguments[0], computed: true, optional: indexerOptional);
+		}
+
 		// 检查白名单映射
 		var mapperExpr = GetWhiteListExpression(operation.Property.GetMethod!, argument, arguments, instance, out var alias);
 		if (mapperExpr is not null)
@@ -903,6 +1248,10 @@ public partial class SemanticWalker
 			if (TryBuildImportedModulePropertyAccess(operation.Property, argument, out var importedProperty) &&
 				importedProperty is not null)
 				return importedProperty;
+
+			if (TryBuildPreferredRuntimeStaticMemberAccess(operation.Property, operation.Syntax, operation.SemanticModel, propertyName!, out var preferredStaticProperty) &&
+				preferredStaticProperty is not null)
+				return preferredStaticProperty;
 
 			// 生成类型标识符作为对象
 			var containing = BuildFullTypeName(operation.Property.ContainingType, argument);
@@ -948,11 +1297,9 @@ public partial class SemanticWalker
 		}
 
 		var instance = Translate<Expression>(operation.Instance, argument, null);
-		if (instance is not null &&
-			TryBuildKnownLowercaseHostTarget(operation.Method, operation.Syntax, out var knownHost) &&
-			knownHost is not null)
-			instance = knownHost;
 		var methodName = string.IsNullOrEmpty(alias) ? Util.GetConfigOrSymbolName(operation.Method) : alias;
+		if (instance is not null)
+			instance = NormalizeRuntimeReceiverHostInstance(instance, operation.Method);
 		var property = new Identifier(methodName!);
 		
 		Expression callee = property;
@@ -961,28 +1308,25 @@ public partial class SemanticWalker
 		{
 			if (operation.Method.IsStatic)
 			{
-				if (extensionHost is not null)
+				if (TryBuildPreferredRuntimeStaticMemberAccess(operation.Method, operation.Syntax, operation.SemanticModel, methodName!, out var preferredStaticCallee) &&
+					preferredStaticCallee is not null)
+					callee = preferredStaticCallee;
+				else if (extensionHost is not null)
 					callee = new MemberExpression(extensionHost, property, computed: false, optional: false);
 				else if (TryBuildImportedModuleMember(operation.Method.ContainingType, methodName!, argument, out var importedMethod) &&
 					importedMethod is not null)
 					callee = importedMethod;
 				else
 				{
-				var containing = BuildFullTypeName(operation.Method.ContainingType, argument);
-				if (containing is not null)
-					callee = new MemberExpression(containing, property, computed: false, optional: false);
-				else
-				{
-					if (TryBuildKnownLowercaseHostTarget(operation.Method, operation.Syntax, out var knownStaticHost) &&
-						knownStaticHost is not null)
-						callee = new MemberExpression(knownStaticHost, property, computed: false, optional: false);
-					else
+					var containing = BuildFullTypeName(operation.Method.ContainingType, argument);
+					if (containing is not null)
+						callee = new MemberExpression(containing, property, computed: false, optional: false);
+					else if (!Util.IsECMAScriptRuntimeSymbol(operation.Method))
 					{
 						var qualified = TryBuildStaticQualifiedMemberFromSyntax(operation.Syntax, methodName!);
 						if (qualified is not null)
 							callee = qualified;
 					}
-				}
 				}
 			}
 		}
@@ -1004,6 +1348,7 @@ public partial class SemanticWalker
 			}
 		}
 
+		callee = NormalizeRuntimeReceiverHostCallee(callee, operation.Method);
 		return callee;
 	}
 
@@ -1046,21 +1391,25 @@ public partial class SemanticWalker
 	{
 		// 处理方法调用的实例对象
 		var instance = Translate<Expression>(operation.Instance, argument, null);
-		if (instance is not null &&
-			TryBuildKnownLowercaseHostTarget(operation.TargetMethod, operation.Syntax, out var knownHost) &&
-			knownHost is not null)
-			instance = knownHost;
 		var refParas = new List<Expression>();
 		var hasReturn = !operation.TargetMethod.ReturnsVoid;
 
 		// 处理方法调用的参数
 		var arguments = new List<Expression>();
-		foreach (var arg in operation.Arguments)
+		for (var index = 0; index < operation.Arguments.Length; index++)
 		{
+			var arg = operation.Arguments[index];
 			// 为 out 参数传递 OutParameter 上下文
 			var argContext = arg.Parameter?.RefKind is RefKind.Out
 				? argument.With(Sense.OutParameter)
 				: argument;
+
+			var isTrailingEcmascriptDefaultArgument =
+				operation.TargetMethod.ContainingAssembly?.Name == "ECMAScript" &&
+				arg.ArgumentKind == ArgumentKind.DefaultValue &&
+				operation.Arguments.Skip(index).All(static x => x.ArgumentKind == ArgumentKind.DefaultValue);
+			if (isTrailingEcmascriptDefaultArgument)
+				continue;
 
 			if (TryExpandEcmascriptParamsArgument(operation.TargetMethod, arg, argContext, arguments))
 				continue;
@@ -1085,6 +1434,8 @@ public partial class SemanticWalker
 
 		// 判断方法调用的类型
 		var methodName = string.IsNullOrEmpty(alias) ? Util.GetConfigOrSymbolName(operation.TargetMethod) : alias;
+		if (instance is not null)
+			instance = NormalizeRuntimeReceiverHostInstance(instance, operation.TargetMethod);
 		var property = new Identifier(methodName!);
 		Expression callee = property;
 		var extensionHost = TryBuildExtensionHostTarget(operation.TargetMethod, argument);
@@ -1092,57 +1443,25 @@ public partial class SemanticWalker
 		{
 			if (operation.TargetMethod.IsStatic)
 			{
-				var preferSyntaxQualifiedHost =
-					operation.TargetMethod.ContainingAssembly?.Name == "ECMAScript" &&
-					GetModuleImportPath(operation.TargetMethod.ContainingType) is null;
-				if (preferSyntaxQualifiedHost)
-				{
-					if (TryBuildKnownLowercaseHostTarget(operation.TargetMethod, operation.Syntax, out var knownStaticHost) &&
-						knownStaticHost is not null)
-						callee = new MemberExpression(knownStaticHost, property, computed: false, optional: false);
-					else
-					{
-						var qualified = TryBuildStaticQualifiedMemberFromSyntax(operation.Syntax, methodName!);
-						if (qualified is not null)
-							callee = qualified;
-						else if (extensionHost is not null)
-							callee = new MemberExpression(extensionHost, property, computed: false, optional: false);
-						else if (TryBuildImportedModuleMember(operation.TargetMethod.ContainingType, methodName!, argument, out var importedMethod) &&
-							importedMethod is not null)
-							callee = importedMethod;
-						else
-						{
-							var containing = BuildFullTypeName(operation.TargetMethod.ContainingType, argument);
-							if (containing is not null)
-								callee = new MemberExpression(containing, property, computed: false, optional: false);
-						}
-					}
-				}
-				else
-				{
-				if (extensionHost is not null)
+				if (TryBuildPreferredRuntimeStaticMemberAccess(operation.TargetMethod, operation.Syntax, operation.SemanticModel, methodName!, out var preferredStaticCallee) &&
+					preferredStaticCallee is not null)
+					callee = preferredStaticCallee;
+				else if (extensionHost is not null)
 					callee = new MemberExpression(extensionHost, property, computed: false, optional: false);
 				else if (TryBuildImportedModuleMember(operation.TargetMethod.ContainingType, methodName!, argument, out var importedMethod) &&
 					importedMethod is not null)
 					callee = importedMethod;
 				else
 				{
-				var containing = BuildFullTypeName(operation.TargetMethod.ContainingType, argument);
-				if (containing is not null)
-					callee = new MemberExpression(containing, property, computed: false, optional: false);
-				else
-				{
-					if (TryBuildKnownLowercaseHostTarget(operation.TargetMethod, operation.Syntax, out var knownStaticHost) &&
-						knownStaticHost is not null)
-						callee = new MemberExpression(knownStaticHost, property, computed: false, optional: false);
-					else
+					var containing = BuildFullTypeName(operation.TargetMethod.ContainingType, argument);
+					if (containing is not null)
+						callee = new MemberExpression(containing, property, computed: false, optional: false);
+					else if (!Util.IsECMAScriptRuntimeSymbol(operation.TargetMethod))
 					{
 						var qualified = TryBuildStaticQualifiedMemberFromSyntax(operation.Syntax, methodName!);
 						if (qualified is not null)
 							callee = qualified;
 					}
-				}
-				}
 				}
 			}
 		}
@@ -1155,6 +1474,7 @@ public partial class SemanticWalker
 				: instance;
 		}
 
+		callee = NormalizeRuntimeReceiverHostCallee(callee, operation.TargetMethod);
 		var callExpr = new CallExpression(callee, NodeList.From(arguments), optional: false);
 		return BuildInvExpr(hasReturn, callExpr, refParas, argument);
 

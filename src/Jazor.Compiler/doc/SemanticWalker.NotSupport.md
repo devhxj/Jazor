@@ -1,176 +1,197 @@
-# SemanticWalker.cs.NotSupport.cs 分析文档
+# `SemanticWalker.cs.NotSupport.cs`
 
-## 1. 文件概述
+## 定位
 
-**文件路径**: `core/SemanticWalker.cs.NotSupport.cs`
+`SemanticWalker.cs.NotSupport.cs` 集中定义“不进入 JS lowering 面”的 `IOperation`。
 
-**职责**: 定义所有不支持转换为 JavaScript 的 C# 特性，并抛出明确的异常。
+对应代码：
 
-**代码行数**: ~525 行
+- `src/Jazor.Compiler/core/SemanticWalker.cs.NotSupport.cs`
 
-## 2. 不支持特性分类
+这份文件不是零散的异常集合，而是编译器语义边界的明确出口：
 
-### 2.1 事件系统
+- 某些 C# 能力无法稳定映射到 JS
+- 某些 Roslyn / VB / FlowAnalysis 节点本来就不是目标输入面
+- 某些特性会显著放大 C# / JS 运行时割裂，当前选择直接拒绝
 
-| 操作 | 原因 |
-|------|------|
-| `IRaiseEventOperation` | JavaScript 事件模型与 C# 多播事件模型根本不同 |
-| `IEventReferenceOperation` | C# 事件支持多播委托、线程安全访问、弱引用 |
-| `IEventAssignmentOperation` | JavaScript 事件是简单的回调函数模式 |
+## 当前职责
 
-### 2.2 动态类型
+### 1. 快速失败
 
-| 操作 | 原因 |
-|------|------|
-| `IDynamicObjectCreationOperation` | C# 动态绑定语义与 JavaScript 静态分派模型不可通约 |
-| `IDynamicMemberReferenceOperation` | 运行时解析、重载决策、动态分派 |
-| `IDynamicInvocationOperation` | 无法保证语义等价 |
-| `IDynamicIndexerAccessOperation` | 需要编译时确定类型信息 |
-
-### 2.3 LINQ
-
-| 操作 | 原因 |
-|------|------|
-| `ITranslatedQueryOperation` | LINQ 提供延迟执行、表达式树，JavaScript 没有对应构造 |
-
-### 2.4 类型和内存操作
-
-| 操作 | 原因 |
-|------|------|
-| `ITypeOfOperation` | C# typeof 获取类型信息 vs JavaScript typeof 获取值类型 |
-| `ISizeOfOperation` | JavaScript 是安全语言，没有直接的内存大小概念 |
-| `IAddressOfOperation` | JavaScript 不支持指针操作 |
-
-### 2.5 资源管理
-
-| 操作 | 原因 |
-|------|------|
-| `IUsingOperation` | JavaScript 没有内置的资源管理机制 |
-| `IUsingDeclarationOperation` | 没有确定性析构 |
-
-### 2.6 线程同步
-
-| 操作 | 原因 |
-|------|------|
-| `ILockOperation` | JavaScript 是单线程语言，没有锁机制 |
-
-### 2.7 编译器内部操作
-
-| 操作 | 原因 |
-|------|------|
-| `IStopOperation` | 编译器内部标记 |
-| `IEndOperation` | 编译器内部标记 |
-| `IMethodBodyOperation` | 编译器内部操作 |
-| `IConstructorBodyOperation` | 编译器内部操作 |
-| `ICaughtExceptionOperation` | 编译器内部操作 |
-| `IStaticLocalInitializationSemaphoreOperation` | 编译器内部操作 |
-| `IFlowAnonymousFunctionOperation` | 编译器内部操作 |
-| `IFlowCaptureOperation` | 编译器内部操作 |
-| `IFlowCaptureReferenceOperation` | 编译器内部操作 |
-
-### 2.8 VB.NET 特有功能
-
-| 操作 | 原因 |
-|------|------|
-| `IForToLoopOperation` | VB.NET 特有 |
-| `IRangeCaseClauseOperation` | VB.NET 特有 |
-| `IRelationalCaseClauseOperation` | VB.NET 特有 |
-| `IReDimOperation` | VB.NET 特有 |
-| `IReDimClauseOperation` | VB.NET 特有 |
-
-### 2.9 其他不支持
-
-| 操作 | 原因 |
-|------|------|
-| `IRangeOperation` (独立) | C# Range 必须在索引器中消费 |
-| `IInterpolatedStringHandlerCreationOperation` | 插值字符串处理器框架无法重现 |
-| `IInterpolatedStringAppendOperation` | 依赖于处理器上下文 |
-| `IInterpolatedStringHandlerArgumentPlaceholderOperation` | 编译器内部操作 |
-| `IFunctionPointerInvocationOperation` | JavaScript 不支持函数指针 |
-| `IUtf8StringOperation` | UTF-8 字节与 UTF-16 字符串不兼容 |
-| `IInlineArrayAccessOperation` | JavaScript 没有内联数组概念 |
-
-## 3. 异常消息设计
-
-每个不支持操作都提供：
-1. 明确的不支持声明
-2. 具体的原因说明
-3. 替代方案建议（如果有）
-
-### 3.1 示例消息
+当前大多数入口都是：
 
 ```csharp
-// 事件操作
-"Event references are not supported in JavaScript conversion."
-
-// 动态操作
-"Dynamic object creation is not supported in JavaScript conversion."
-
-// 资源管理
-"Using statements are not supported in JavaScript conversion."
-
-// 附带替代方案
-// "Alternative: In JavaScript, use try-finally block to manage resources manually."
+=> HandleTransformationFailure<Node>(operation, "...");
 ```
 
-## 4. 替代方案指南
+也就是：
 
-### 4.1 事件替代
+- 一旦命中这些 operation
+- 立即停止当前转换
+- 返回带明确原因的 transformation failure
 
-```javascript
-// C#: event += handler
-// JavaScript: addEventListener('event', handler)
-// 或自定义事件发射器模式
+### 2. 归档“不支持语义”
+
+当前这份文件记录的不是单一类别，而是整个“不支持面”。
+
+主要包括：
+
+- 资源管理：`using` / `using declaration`
+- 事件系统：raise / event reference / event assignment
+- dynamic：动态创建、动态成员访问、动态调用、动态索引
+- CLR / unsafe：`sizeof`、取地址、函数指针
+- 查询 / 高级运行时：translated query、插值字符串处理器、UTF-8 字符串
+- 编译器内部 / flow analysis：`Stop`、`End`、`FlowCapture`、`CaughtException` 等
+- VB 特有节点：`ForToLoop`、`RangeCaseClause`、`ReDim` 等
+- 其他明确拒绝的输入：独立 `RangeOperation`、`InlineArrayAccess`、`IInvalidOperation`
+
+### 3. 文档化当前设计边界
+
+这份文件在实际作用上还承担一个工程角色：
+
+- 告诉后续维护者“哪些语义当前是明确不做的”
+
+这比让 unsupported 逻辑散落在各个 partial 文件里更清楚。
+
+## 当前关键规则
+
+### 1. 不支持不等于“暂时没写”
+
+当前许多拒绝分支不是单纯实现空缺，而是设计边界。
+
+例如：
+
+- `using`
+- dynamic
+- 事件系统
+- 函数指针
+- 独立 `RangeOperation`
+
+这些都不只是“以后补个 AST 节点”就能解决的问题，而是涉及 C# / JS 运行时模型差异。
+
+### 2. 编译器内部节点直接拒绝
+
+像这些 operation：
+
+- `IStopOperation`
+- `IEndOperation`
+- `ICaughtExceptionOperation`
+- `IFlowCaptureOperation`
+- `IFlowCaptureReferenceOperation`
+- `IFlowAnonymousFunctionOperation`
+- `IStaticLocalInitializationSemaphoreOperation`
+
+当前都直接失败。
+
+原因很直接：
+
+- 它们不是面向最终 JS 输出的稳定语言语义
+- 而是 Roslyn 内部或分析阶段节点
+
+### 3. `RangeOperation` 只允许作为别处 lowering 的组成部分
+
+当前 `VisitRangeOperation(...)` 明确拒绝“独立 range”。
+
+这说明当前设计只接受：
+
+- range 在索引器 / 切片语义中被上层专门消费
+
+而不接受：
+
+- 把 range 当成一个独立 JS 运行时对象直接输出
+
+### 4. `VisitInvalid(...)` 已归并到不支持路径
+
+这也是当前现状的一个重要信号：
+
+- `IInvalidOperation` 没有单独 fallback 转换器
+- 它现在就是不支持路径的一部分
+
+## 现状与典型边界
+
+### `using`
+
+```csharp
+using var file = File.OpenRead("data.txt");
 ```
 
-### 4.2 动态类型替代
+当前结果：
 
-```javascript
-// C#: dynamic obj
-// JavaScript: 使用普通对象 {} 或 Map
+- 直接 transformation failure
+
+### dynamic
+
+```csharp
+dynamic obj = GetObject();
+obj.Run();
 ```
 
-### 4.3 LINQ 替代
+当前结果：
 
-```javascript
-// C#: collection.Where(x => x > 0).Select(x => x * 2)
-// JavaScript: collection.filter(x => x > 0).map(x => x * 2)
-// 或使用 lodash
+- 直接 transformation failure
+
+### 独立 `Range`
+
+```csharp
+var range = 1..5;
 ```
 
-### 4.4 资源管理替代
+当前结果：
 
-```javascript
-// C#: using (var resource = ...)
-// JavaScript:
-try {
-    // 使用资源
-} finally {
-    resource.close();
-}
+- 直接 transformation failure
+
+### 插值字符串处理器
+
+```csharp
+WriteInterpolated($"Hello {name}");
 ```
 
-## 5. 设计原则
+如果语义依赖自定义 interpolated string handler，当前结果也是：
 
-1. **快速失败**: 遇到不支持特性立即抛出异常
-2. **明确原因**: 告知用户为什么不支持
-3. **提供替代方案**: 帮助用户找到解决方法
+- 直接 transformation failure
 
-## 6. 测试覆盖
+## 当前边界
 
-**当前状态**: 有测试验证异常抛出
+这份文件当前并不提供：
 
-**测试场景**：
-- ✅ 事件操作抛出异常
-- ✅ 动态操作抛出异常
-- ✅ LINQ 抛出异常
-- ✅ 编译器内部操作抛出异常
+- 自动 polyfill
+- 运行时仿真层
+- “尽量翻译”的降级输出
+- 为 unsupported 特性偷偷改写成语义近似物
 
-## 7. 相关文档
+当前提供的是：
+
+- 明确拒绝
+- 失败点集中化
+- 边界可读性
+
+这和整个编译器当前方向一致：宁可清晰失败，也不制造运行时语义错配。
+
+## 相关测试
+
+这部分没有形成一个完整独立的 `NotSupport` 测试文件，但有多个测试从不同语法域覆盖了失败行为。
+
+当前可直接关注：
+
+- `src/Jazor.CompilerTest/SemanticWalkerDeclarationTest.cs`
+  - `Visit_UsingDeclaration_Basic`
+- `src/Jazor.CompilerTest/SemanticWalkerTryCatchTest.cs`
+  - `VisitTry_UsingInTry`
+- `src/Jazor.CompilerTest/SemanticWalkerInvalidTest.cs`
+  - 当前以说明性注释为主，反映 `IInvalidOperation` 不应进入正常路径
+
+## 推荐阅读
+
+建议按这个顺序看：
+
+1. [SemanticWalker.md](./SemanticWalker.md)
+2. [SemanticWalker.NotSupport.md](./SemanticWalker.NotSupport.md)
+3. [SemanticWalker.Invalid.md](./SemanticWalker.Invalid.md)
+4. [SemanticWalker.Pattern.md](./SemanticWalker.Pattern.md)
+
+## 相关文档
 
 - [SemanticWalker.md](./SemanticWalker.md)
-- [rule.md](../rule.md) - 详细的不支持特性列表
-
----
-
-**最后更新**: 2026-03-03
+- [SemanticWalker.Invalid.md](./SemanticWalker.Invalid.md)
+- [SemanticWalker.Pattern.md](./SemanticWalker.Pattern.md)
+- [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)

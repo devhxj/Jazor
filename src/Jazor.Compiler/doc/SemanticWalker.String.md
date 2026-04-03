@@ -1,186 +1,290 @@
-# SemanticWalker.cs.String.cs 分析文档
+# `SemanticWalker.cs.String.cs`
 
-## 1. 文件概述
+## 定位
 
-**文件路径**: `core/SemanticWalker.cs.String.cs`
+`SemanticWalker.cs.String.cs` 当前主要负责“插值字符串”相关 lowering。
 
-**职责**: 处理字符串插值，将 C# 插值字符串转换为 JavaScript 模板字符串。
+对应代码：
 
-**代码行数**: ~189 行
+- `src/Jazor.Compiler/core/SemanticWalker.cs.String.cs`
 
-## 2. 核心转换
+这份文件的职责边界需要明确一下：
 
-### 2.1 插值字符串转模板字符串
+- 它负责把 Roslyn 的插值字符串 `IOperation` 转成 `TemplateLiteral` 或 `StringLiteral`
+- 它不负责大多数 `string` 实例方法、静态方法、属性映射
 
-```csharp
-// C# 示例
-$"Hello {name}, you have {count} messages."
+后者更多是由 `Reference` / `WhiteList` 路径处理，所以不能把所有字符串 API 的行为都归到这份文件。
 
-// JavaScript 结果
-`Hello ${name}, you have ${count} messages.`
-```
+## 当前职责
 
-### 2.2 AST 节点映射
+### 1. 插值文本片段
 
-| C# 类型 | JavaScript AST | 用途 |
-|---------|---------------|------|
-| `IInterpolatedStringOperation` | `TemplateLiteral` | 完整插值字符串 |
-| `IInterpolatedStringTextOperation` | `TemplateElement` | 静态文本部分 |
-| `IInterpolationOperation` | `Expression` | 动态表达式部分 |
-| `IInterpolatedStringAdditionOperation` | `TemplateLiteral` | 编译器生成的拼接 |
+`VisitInterpolatedStringText(...)` 处理插值字符串中的静态文本部分。
 
-## 3. 方法详解
-
-### 3.1 VisitInterpolatedString
-
-**处理流程**：
-1. 遍历 `operation.Parts`
-2. 文本部分 → `TemplateElement`
-3. 表达式部分 → 转换为 Expression
-4. 确保 quasi 和 expression 数量关系正确
-5. 构建 `TemplateLiteral`
-
-**关键逻辑**：
-```csharp
-// 核心逻辑：确保表达式前有一个 quasi
-if (quasis.Count == expressions.Count)
-{
-    quasis.Add(new TemplateElement(TemplateValue.From("", ""), tail: false));
-}
-```
-
-**优化**：如果无表达式，返回更简单的 `StringLiteral`：
-```csharp
-if (expressions.Count == 0 && quasis.Count == 1)
-{
-    var cookedValue = quasis[0].Value.Cooked ?? "";
-    return new StringLiteral(cookedValue, $"'{cookedValue}'");
-}
-```
-
-### 3.2 VisitInterpolatedStringAddition
-
-处理编译器生成的二叉树结构：
+例如：
 
 ```csharp
-// 编译器可能将 "a{b}c{d}e" 表示为：
-// Addition(Addition(Addition("a", b), "c"), Addition(d, "e"))
-
-void Collect(IOperation? node)
-{
-    switch (node)
-    {
-        case IInterpolatedStringAdditionOperation add:
-            Collect(add.Left);   // 递归展开
-            Collect(add.Right);
-            break;
-        case ILiteralOperation { ConstantValue: { HasValue: true, Value: string cookedValue } }:
-            quasis.Add(new TemplateElement(...));
-            break;
-        default:
-            Translate(exprs, node, argument);  // 动态表达式
-            break;
-    }
-}
-```
-
-### 3.3 CookedToRaw 方法
-
-处理转义字符：
-
-```csharp
-string CookedToRaw(string cooked)
-{
-    var sb = new StringBuilder(cooked.Length);
-    foreach (var c in cooked)
-    {
-        switch (c)
-        {
-            case '`': sb.Append("\\`"); break;
-            case '\\': sb.Append("\\\\"); break;
-            case '$': sb.Append("\\$"); break;
-            case '\r': sb.Append("\\r"); break;
-            case '\n': sb.Append("\\n"); break;
-            case '\t': sb.Append("\\t"); break;
-            default: sb.Append(c); break;
-        }
-    }
-    return sb.ToString();
-}
-```
-
-## 4. 已知缺陷
-
-### 4.1 中优先级缺陷
-
-| 缺陷 | 影响 | 建议修复方案 |
-|------|------|-------------|
-| **格式化说明符未处理** | `{value:F2}` 格式丢失 | 解析格式说明符并生成对应代码 |
-| **CultureInfo 未考虑** | 区域性格式化被忽略 | 添加区域性感知处理 |
-
-### 4.2 低优先级缺陷
-
-| 缺陷 | 影响 | 建议修复方案 |
-|------|------|-------------|
-| **复杂嵌套插值** | 可能有边界情况失败 | 添加更多测试用例 |
-
-## 5. 转换示例
-
-### 5.1 简单插值
-
-```csharp
-// C#
 $"Hello {name}!"
-
-// JavaScript
-`Hello ${name}!`
 ```
 
-### 5.2 表达式插值
+其中 `"Hello "` 和 `"!"` 会先各自落成文本值，再参与模板字符串拼装。
+
+### 2. 插值表达式片段
+
+`VisitInterpolation(...)` 当前只负责返回插值里的表达式本体。
+
+当前事实是：
+
+- 它不会额外处理格式说明符
+- 它不会主动引入文化区格式化逻辑
+- `{expr:F2}` 这类格式信息当前不会在这里被展开
+
+也就是说，这一层只保留“表达式插入模板字符串”的核心语义。
+
+### 3. 编译器拆分出来的插值拼接树
+
+`VisitInterpolatedStringAddition(...)` 处理 `IInterpolatedStringAdditionOperation`。
+
+Roslyn 在某些情况下会把插值内容表示成二叉拼接树，而不是直接给出最终模板结构。当前实现会递归压平这棵树，再重建：
+
+- `quasis`
+- `expressions`
+
+最后统一生成 `TemplateLiteral`。
+
+### 4. 标准插值字符串
+
+`VisitInterpolatedString(...)` 处理 `IInterpolatedStringOperation` 的标准路径。
+
+它会：
+
+1. 顺序遍历 `operation.Parts`
+2. 文本部分写入 `quasis`
+3. 表达式部分写入 `expressions`
+4. 在需要时补空 quasi
+5. 最后修正尾部 quasi 的 `tail`
+
+这保证了生成的模板字符串满足 JS AST 对 quasi / expression 数量关系的要求。
+
+## 当前关键规则
+
+### 1. 表达式前必须有 quasi
+
+JS `TemplateLiteral` 要求每个表达式前面都有一个 quasi。
+
+所以当前实现在遇到插值表达式时，如果发现：
+
+- `quasis.Count == expressions.Count`
+
+就会先补一个空 quasi。
+
+这让下面这些边界都能稳定成立：
+
+- 以表达式开头
+- 连续多个表达式
+- 整个字符串只有表达式
+
+### 2. 尾部 quasi 必须显式存在
+
+如果字符串以表达式结尾，当前实现会补一个空尾 quasi，并把它标为 `tail: true`。
+
+例如：
 
 ```csharp
-// C#
-$"Value: {x + y}"
-
-// JavaScript
-`Value: ${x + y}`
+$"Value: {x}"
 ```
 
-### 5.3 连续表达式
+最终需要的是：
 
-```csharp
-// C#
-$"{a}{b}{c}"
-
-// JavaScript
-`${a}${b}${c}`
+```js
+`Value: ${x}`
 ```
 
-### 5.4 纯文本
+而不是缺少结尾 quasi 的非法模板结构。
+
+### 3. 纯文本插值会退化成普通字符串字面量
+
+如果整个插值字符串最终没有任何表达式，并且只剩一个 quasi，当前实现会直接返回 `StringLiteral`。
+
+例如：
 
 ```csharp
-// C#
 $"Hello World"
+```
 
-// JavaScript (优化为 StringLiteral)
+会输出：
+
+```js
 'Hello World'
 ```
 
-## 6. 测试覆盖
+这说明当前设计并不执着于“源代码写了 `$""` 就必须保留模板字符串外形”，而是优先落成更直接的 JS 结果。
 
-**当前状态**: ~30 个测试
+### 4. `IInterpolatedStringAdditionOperation` 会做 raw 转义修正
 
-**测试场景**：
-- ✅ 简单插值
-- ✅ 多表达式插值
-- ✅ 表达式插值
-- ✅ 连续表达式
-- ✅ 纯文本优化
+`VisitInterpolatedStringAddition(...)` 内部的 `CookedToRaw(...)` 会显式处理这些字符：
 
-## 7. 相关文档
+- `` ` ``
+- `\`
+- `$`
+- `\r`
+- `\n`
+- `\t`
+
+这是为了保证生成的 `TemplateValue` 同时持有：
+
+- C# 已解释后的 cooked 值
+- JS 模板字符串需要的 raw 值
+
+### 5. `VisitInterpolatedString(...)` 和 `VisitInterpolatedStringAddition(...)` 不是重复实现
+
+两者都生成模板字符串，但入口不同：
+
+- 一个处理标准 `IInterpolatedStringOperation`
+- 一个处理编译器展开后的 addition 树
+
+它们共同服务于“把插值语义稳定落成 JS 模板字符串”，而不是两个相互竞争的分支。
+
+## 现状与典型结果
+
+### 普通插值
+
+```csharp
+string message = $"Hello {name}!";
+```
+
+```js
+let message = `Hello ${name}!`;
+```
+
+### 以表达式开头
+
+```csharp
+string message = $"{count} items";
+```
+
+```js
+let message = `${count} items`;
+```
+
+### 以表达式结尾
+
+```csharp
+string message = $"Value: {x}";
+```
+
+```js
+let message = `Value: ${x}`;
+```
+
+### 连续表达式
+
+```csharp
+string message = $"{x}{y}{z}";
+```
+
+```js
+let message = `${x}${y}${z}`;
+```
+
+### 纯文本插值
+
+```csharp
+string message = $"Hello World";
+```
+
+```js
+let message = 'Hello World';
+```
+
+### 插值格式说明符当前会被忽略
+
+```csharp
+string formatted = $"Pi: {pi:F2}";
+```
+
+```js
+let formatted = `Pi: ${pi}`;
+```
+
+这不是文档上的假设，而是当前实现的直接结果。
+
+## 和其他字符串映射的边界
+
+虽然 `SemanticWalkerStringTest` 里有大量 `string` API 测试，但这些行为并不都来自 `SemanticWalker.cs.String.cs`。
+
+例如下列映射主要依赖宿主映射 / 白名单消费：
+
+- `value.Length` -> `value.length`
+- `value.Contains(...)` -> `value.includes(...)`
+- `value.Substring(...)` -> `value.substring(...)`
+- `string.Join(...)` -> `Array.from(parts).join(...)`
+- `string.IsNullOrWhiteSpace(...)` -> `!value?.trim()`
+
+所以这份文档当前应理解为：
+
+- “插值字符串 lowering 文档”
+
+而不是：
+
+- “整个 `string` 类型映射总文档”
+
+如果关心字符串 API 如何落地，应同时看 `Reference` 和 `WhiteList` 文档。
+
+## 当前边界
+
+这部分当前没有处理这些事情：
+
+- 插值格式说明符的运行时实现
+- `CultureInfo` / 本地化格式化
+- 全部 `string` 实例方法和静态方法映射
+- 所有字符串相关优化
+
+它当前聚焦的是：
+
+- 正确构造 JS `TemplateLiteral`
+- 维护 quasi / expression 结构合法性
+- 在可退化时输出更直接的 `StringLiteral`
+
+## 相关测试
+
+主要测试在：
+
+- `src/Jazor.CompilerTest/SemanticWalkerStringTest.cs`
+
+建议重点看这些场景：
+
+- `Visit_InterpolatedString_Simple`
+- `Visit_InterpolatedString_TextOnly`
+- `Visit_InterpolatedString_StartsWithExpression`
+- `Visit_InterpolatedString_EndsWithExpression`
+- `Visit_InterpolatedString_ConsecutiveExpressions`
+- `Visit_InterpolatedString_WithEscapes`
+- `Visit_InterpolatedString_Multiline`
+- `Visit_InterpolatedString_Format`
+
+如果要看字符串 API 宿主映射，可以再对照：
+
+- `Visit_String_Length`
+- `Visit_String_Contains`
+- `Visit_String_Substring`
+- `Visit_String_Join`
+- `Visit_String_IsNullOrWhiteSpace`
+
+但这些测试不应被误读为全部由本文件独立负责。
+
+## 推荐阅读
+
+建议按这个顺序看：
+
+1. [SemanticWalker.md](./SemanticWalker.md)
+2. [SemanticWalker.String.md](./SemanticWalker.String.md)
+3. [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
+4. [SemanticWalker.WhiteList.md](./SemanticWalker.WhiteList.md)
+
+## 相关文档
 
 - [SemanticWalker.md](./SemanticWalker.md)
-
----
-
-**最后更新**: 2026-03-03
+- [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
+- [SemanticWalker.WhiteList.md](./SemanticWalker.WhiteList.md)
+- [InlineAstTemplateSpec.md](./InlineAstTemplateSpec.md)

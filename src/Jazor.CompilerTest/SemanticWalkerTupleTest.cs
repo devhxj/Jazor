@@ -1795,6 +1795,32 @@ public sealed class SemanticWalkerTupleTest
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
+    [TestMethod]
+    public void Visit_Tuple_ValueTupleCreateTwoElements()
+    {
+        var block = GetBlockOperation(@"
+            using System;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var pair = ValueTuple.Create(1, 2);
+                    int sum = pair.Item1 + pair.Item2;
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(@"{
+  let pair = { Item1: 1, Item2: 2 };
+  let sum = pair.Item1 + pair.Item2;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+    }
+
     /// <summary>
     /// 测试元组 - 五元素元组
     /// </summary>

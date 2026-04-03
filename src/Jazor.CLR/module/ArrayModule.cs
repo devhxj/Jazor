@@ -71,7 +71,7 @@ public static class ArrayModule<T>
 	/// <summary>
 	/// C#: Array.Resize&lt;T&gt;(ref T[], int)
 	/// JS: JavaScript 数组可动态调整大小
-	/// ref 参数处理：返回 [null, newArray]
+	/// ref 参数处理：返回 [newArray]
 	/// </summary>
 	[Jazor(Op.Import, "static System.Array.Resize<T>(ref T[], int)")]
 	public static Array<object?> _127013d39cf5bff9(Array<T>? array, Number newSize)
@@ -79,15 +79,15 @@ public static class ArrayModule<T>
 		if (newSize < 0)
 			throw new Error("ArgumentOutOfRangeException: newSize is less than zero");
 
-		var newArray = Array<T>.Empty;
+		var newArray = new Array<T>(newSize);
 		if (array == null)
-			return [null, newArray];
+			return [newArray];
 
 		Number copyLength = Math.Min(array.Length, newSize);
 		for (Number i = 0; i < copyLength; i++)
 			newArray[i] = array[i];
 
-		return [null, newArray];
+		return [newArray];
 	}
 
 	/// <summary>
@@ -698,7 +698,7 @@ public static class ArrayModule<T>
 	/// JS: array.map(converter)
 	/// </summary>
 	[Jazor(Op.Import, "static System.Array.ConvertAll<TInput, TOutput>(TInput[], System.Converter<TInput, TOutput>)")]
-	public static TOutput[] _a73f4ff0bddcc6f6<TInput, TOutput>(Array<TInput> array, CallbackFunc<TInput, TOutput> converter)
+	public static TOutput[] _a73f4ff0bddcc6f6<TInput, TOutput>(Array<TInput> array, Func<TInput, TOutput> converter)
 	{
 		if (array == null)
 			throw new Error("ArgumentNullException: array is null");
@@ -833,7 +833,7 @@ public static class ArrayModule<T>
 			throw new Error("ArgumentNullException: array is null");
 		if (match == null)
 			throw new Error("ArgumentNullException: match is null");
-		return array.Filter<T>(match);
+		return array.Filter(match);
 	}
 
 	///<summary>Searches for an element that matches the conditions defined by the specified predicate, and returns the zero-based index of the first occurrence within the entire <see cref="T:System.Array" />.</summary>

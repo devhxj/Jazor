@@ -1308,9 +1308,10 @@ public partial class SemanticWalker
 	public override Node? VisitCollectionExpression(ICollectionExpressionOperation operation, SenseArgument argument)
 	{
 		var elements = new List<Expression?>();
+		var elementTargetType = GetCollectionElementTargetType(operation.Type);
 		foreach (var element in operation.Elements)
 		{
-			Translate(elements, element, argument, null);
+			elements.Add(TranslateTupleForTarget(element, elementTargetType, argument));
 		}
 		return new ArrayExpression(NodeList.From(elements));
 	}

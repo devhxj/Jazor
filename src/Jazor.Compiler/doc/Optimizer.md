@@ -1,189 +1,226 @@
-# Optimizer 分析文档
+# `Optimizer`
 
-## 1. 文件概述
+## 定位
 
-**文件路径**: `Optimizer.cs`
+`Optimizer` 当前是一个非常窄的 AST 优化器。
 
-**职责**: AST 优化器，优化表达式中的冗余问题。
+对应代码：
 
-## 2. 核心设计思路
+- `src/Jazor.Compiler/Optimizer.cs`
 
-### 2.1 优化目标
+它现在只公开一个入口：
 
-当前主要优化同一层级逻辑运算中的子表达式冗余问题：
+- `OptimizeLogical(Expression expression)`
 
-```
-// 优化前
-(a > 0 && a > 0 && b > 0)
+所以这份文档应理解为：
 
-// 优化后
-(a > 0 && b > 0)
-```
+- “逻辑表达式去重优化说明”
 
-### 2.2 优化流程
+而不是：
 
-```
-Expression
-    │
-    ▼
-检查是否为 LogicalExpression
-    │
-    ├── 否 → 直接返回
-    │
-    └── 是 → 递归优化子节点
-              │
-              ▼
-         检查是否有副作用
-              │
-              ├── 是 → 重建表达式（不优化）
-              │
-              └── 否 → 收集同级操作数
-                        │
-                        ▼
-                   去重
-                        │
-                        ▼
-                   重建树结构
+- “通用 JS AST 优化框架总文档”
+
+## 当前职责
+
+### 1. 同运算符逻辑树去重
+
+当前优化目标只有一类：
+
+- 同一层级逻辑表达式中重复的纯子表达式
+
+例如：
+
+```js
+a && a
 ```
 
-### 2.3 副作用检测
+会被简化为：
 
-优化器会检测表达式是否包含副作用，有副作用的表达式不进行去重优化：
-
-```csharp
-static bool IsEffect(Expression e)
-{
-    return e switch
-    {
-        // 无副作用 - 纯值
-        Identifier => false,
-        Literal => false,
-        ThisExpression => false,
-        // ... 其他无副作用类型
-
-        // 需要递归检查
-        LogicalExpression le => IsEffect(le.Left) || IsEffect(le.Right),
-        // ...
-
-        // 其他默认有副作用
-        _ => true
-    };
-}
-```
-
-## 3. 已知缺陷
-
-### 4.1 高优先级缺陷
-
-| 缺陷 | 影响 | 建议修复方案 |
-|------|------|-------------|
-| **仅支持逻辑表达式优化** | 其他优化机会被忽略 | 添加更多优化规则 |
-| **缺少常量折叠** | 简单表达式未简化 | 实现常量折叠优化 |
-
-### 4.2 中优先级缺陷
-
-| 缺陷 | 影响 | 建议修复方案 |
-|------|------|-------------|
-| **副作用检测不完整** | 可能错误优化有副作用的表达式 | 完善副作用检测逻辑 |
-| **使用字符串比较去重** | 性能一般 | 使用结构化比较 |
-
-### 4.3 低优先级缺陷
-
-| 缺陷 | 影响 | 建议修复方案 |
-|------|------|-------------|
-| **缺少死代码消除** | 无用代码未移除 | 添加死代码消除优化 |
-| **缺少内联优化** | 简单函数未内联 | 添加内联优化 |
-
-## 4. 建议添加的优化
-
-### 4.1 常量折叠
-
-```javascript
-// 优化前
-1 + 2
-true && false
-a === a
-
-// 优化后
-3
-false
-true
-```
-
-### 4.2 死代码消除
-
-```javascript
-// 优化前
-if (true) { a } else { b }
-if (false) { a }
-
-// 优化后
+```js
 a
-(无)
 ```
 
-### 4.3 简化表达式
+而：
 
-```javascript
-// 优化前
-!!a
-a === true
-a === null || a === undefined
+```js
+(a && b) && a
+```
 
-// 优化后
-Boolean(a)
+会被简化为：
+
+```js
+a && b
+```
+
+### 2. 递归优化子树
+
+即使最终不做去重，`OptimizeLogical(...)` 也会先递归优化：
+
+- `logical.Left`
+- `logical.Right`
+
+所以它既是“顶层去重器”，也是逻辑树的递归整理入口。
+
+### 3. 副作用保护
+
+去重前，当前实现会先检测左右子树是否包含副作用。
+
+只要任一侧判定为有副作用：
+
+- 不做跨操作数去重
+- 但如果子节点已经被递归优化，仍会重建当前 `LogicalExpression`
+
+这条规则是当前优化器最重要的保守边界。
+
+## 当前关键规则
+
+### 1. 只处理 `LogicalExpression`
+
+如果输入不是 `LogicalExpression`，当前直接原样返回。
+
+也就是说，这里不负责：
+
+- 常量折叠
+- 算术表达式简化
+- 条件表达式重写
+- 死代码消除
+
+### 2. 只扁平化“相同运算符”的逻辑链
+
+`Flatten(...)` 只会继续展开：
+
+- `&&` 链中的 `&&`
+- `||` 链中的 `||`
+
+不会跨运算符混合扁平化。
+
+所以：
+
+```js
+a && (b || a)
+```
+
+不会因为外层已经有 `a` 就把内层 `a` 去掉。
+
+### 3. 去重键当前基于脚本串
+
+当前唯一性判断使用的是：
+
+- `operand.ToKnRECMAScript()`
+
+也就是说，优化器当前不是做结构哈希，而是用规范化后的 JS 文本串去重。
+
+这很实用，也足够支撑当前规模，但应被理解为当前实现策略，而不是抽象语义相等判定框架。
+
+### 4. 副作用检测是保守的
+
+`IsEffect(...)` 只把一部分明确无副作用的节点当成 pure：
+
+- `Identifier`
+- `Literal`
+- `ThisExpression`
+- `Super`
+- 函数 / 类表达式定义本身
+- 若干递归可判定节点
+
+其他节点默认按“可能有副作用”处理。
+
+例如：
+
+- 调用表达式
+- 赋值
+- 更新表达式
+
+都会阻止去重优化。
+
+### 5. `MemberExpression` 的计算属性访问也会阻止优化
+
+当前对 `MemberExpression` 的判定里，只要：
+
+- `Computed == true`
+
+就视为有副作用风险。
+
+这说明优化器对索引访问、动态 key 访问是保守处理的。
+
+## 现状与典型结果
+
+### 简单重复
+
+```js
+a && a
+```
+
+```js
 a
-a == null
 ```
 
-### 4.4 条件表达式简化
+### 多操作数去重
 
-```javascript
-// 优化前
-a ? true : false
-a ? false : true
-
-// 优化后
-Boolean(a)
-!a
+```js
+(a && b) && a
 ```
 
-## 5. 需完善内容
+```js
+a && b
+```
 
-### 5.1 功能完善
+### 不同运算符不混合
 
-- [ ] 实现常量折叠优化
-- [ ] 实现死代码消除
-- [ ] 实现表达式简化
-- [ ] 完善副作用检测
+```js
+a && (b || a)
+```
 
-### 5.2 代码质量
+当前不会被进一步改成别的结构。
 
-- [ ] 添加单元测试
-- [ ] 添加性能基准测试
-- [ ] 优化去重比较逻辑
+### 含副作用时保持保守
 
-### 5.3 架构改进
+```js
+a && foo()
+```
 
-- [ ] 支持优化规则注册
-- [ ] 支持优化级别配置
-- [ ] 添加优化统计信息
+当前不会尝试把 `foo()` 与其他文本相同片段做跨树去重。
 
-## 6. 测试状态
+## 当前边界
 
-**当前状态**: 有专门的优化器测试
+这部分当前已经解决的是：
 
-**建议添加的测试**:
-- 常量折叠测试
-- 死代码消除测试
-- 表达式简化测试
-- 副作用检测测试
+- `&&` / `||` 逻辑树递归去重
+- 基于副作用保护的保守优化
+- 左结合重建
 
-## 7. 相关文档
+它没有试图做这些事情：
 
-- [SemanticWalker.md](./SemanticWalker.md)
-- [rule.md](../rule.md)
+- 常量折叠
+- 死代码消除
+- 一元 / 二元表达式代数简化
+- 通用插件化优化框架
 
----
+## 相关测试
 
-**最后更新**: 2026-03-03
+主要测试在：
+
+- `src/Jazor.CompilerTest/OptimizerTest.cs`
+
+建议重点看这些场景：
+
+- `OptimizeLogical_SimpleAndDuplicate_ReturnsSingleOperand`
+- `OptimizeLogical_SimpleOrDuplicate_ReturnsSingleOperand`
+- `OptimizeLogical_ThreeOperandsWithDuplicate_RemovesDuplicate`
+- `OptimizeLogical_IdenticalSubExprWithDifferentOps_Deduplicated`
+- `OptimizeLogical_NestedDifferentOperators_PreservesStructure`
+- `OptimizeLogical_ComplexNestedExpression_OptimizesCorrectly`
+
+## 推荐阅读
+
+建议按这个顺序看：
+
+1. [SemanticWalker.Pattern.md](./SemanticWalker.Pattern.md)
+2. [Optimizer.md](./Optimizer.md)
+3. [SemanticWalker.Ordinary.md](./SemanticWalker.Ordinary.md)
+
+## 相关文档
+
+- [SemanticWalker.Pattern.md](./SemanticWalker.Pattern.md)
+- [SemanticWalker.Ordinary.md](./SemanticWalker.Ordinary.md)
+- [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)

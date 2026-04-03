@@ -1,195 +1,351 @@
-# SemanticWalker.cs.TryCatch.cs 分析文档
+# `SemanticWalker.cs.TryCatch.cs`
 
-## 1. 文件概述
+## 定位
 
-**文件路径**: `core/SemanticWalker.cs.TryCatch.cs`
+`SemanticWalker.cs.TryCatch.cs` 负责把 `try` / `catch` / `finally` / `throw` 相关 `IOperation` lower 成 JavaScript AST。
 
-**职责**: 处理 try-catch-finally 语句的转换。
+对应代码：
 
-**代码行数**: ~235 行
+- `src/Jazor.Compiler/core/SemanticWalker.cs.TryCatch.cs`
 
-## 2. 核心转换
+这部分不是简单做语法直译。当前实现需要同时处理：
 
-### 2.1 基本结构
+- C# 多 `catch` 到 JavaScript 单 `catch` 的结构收敛
+- `when` 过滤器
+- `catch` 是否需要绑定异常变量
+- 裸 `throw;` 的重新抛出来源
+- `try` / `catch` / `finally` 各自的作用域隔离
+
+## 当前职责
+
+### 1. `try` / `finally` 主体翻译
+
+`VisitTry(...)` 会先把 `try`、每个 `catch`、`finally` 分别放进独立 scope。
+
+当前规则是：
+
+- `try` 体变量声明不会泄漏到外层
+- 每个 `catch` 体变量声明不会互相泄漏
+- `finally` 体变量声明也独立处理
+- 每个局部 scope 内收集到的声明会先 flush 成 `let`
+
+这和当前 `SenseArgument.WithNewScope()` 的用法一致，目标是让生成结果保持 JS block scope 语义。
+
+### 2. 多 `catch` 合并
+
+JavaScript 只有一个 `catch`，所以多个 C# `catch` 不会直接一一对应输出。
+
+当前实现会：
+
+1. 生成一个共享的 `catch (v$N)` 参数
+2. 把 C# `catch` 按映射后的 JS 运行时异常类型分组
+3. 在 `catch` 内构造 `if` / `else if` / fallback 链
+4. 未命中任何分支时 `throw v$N`
+
+典型结果：
 
 ```csharp
-// C# 示例
-try {
-    RiskyOperation();
-} catch (Exception ex) {
-    HandleError(ex);
-} finally {
-    Cleanup();
+try
+{
+    Work();
 }
-
-// JavaScript 结果
-try {
-    riskyOperation();
-} catch (ex) {
-    handleError(ex);
-} finally {
-    cleanup();
+catch (ArgumentNullException ex)
+{
+    HandleArg(ex);
+}
+catch (Exception ex)
+{
+    HandleAny(ex);
 }
 ```
 
-### 2.2 多 catch 处理
-
-JavaScript 只支持单个 catch，需要合并多个 catch 并使用 instanceof 分发：
-
-```csharp
-// C# 示例
-try { ... }
-catch (IOException ex) { HandleIO(ex); }
-catch (ArgumentException ex) { HandleArg(ex); }
-
-// JavaScript 结果
-try { ... }
-catch (_ex) {
-    if (_ex instanceof IOException) {
-        const ex = _ex;
-        handleIO(ex);
-    } else if (_ex instanceof ArgumentException) {
-        const ex = _ex;
-        handleArg(ex);
-    }
+```js
+try {
+  Work();
+} catch (v$0) {
+  if (v$0 instanceof TypeError) {
+    const ex = v$0;
+    HandleArg(ex);
+  } else if (v$0 instanceof Error) {
+    const ex = v$0;
+    HandleAny(ex);
+  } else
+    throw v$0;
 }
 ```
 
-### 2.3 when 条件处理
+### 3. 同运行时类型 `catch` 分组
+
+这是当前实现里最重要的细节之一。
+
+多个 `catch` 即使在 C# 类型上不同，只要映射到同一个 JS 运行时类型，就不能简单拆成并列 `else if`。
+
+原因是：
+
+- 这些 `catch` 在 JS 侧看到的是同一个 `instanceof` 结果
+- 如果前一个同组 `catch` 带 `when`，过滤失败后必须继续尝试同组后续分支
+- 不能因为第一个 `when` 失败就提前 `throw`
+
+所以当前实现先按 `typeName` 做相邻分组，再在组内继续构造链式判断。
+
+这正是 `BuildGroupChain(...)` / `BuildGroupBody(...)` 存在的原因。
+
+### 4. `when` 过滤器
+
+`when` 不会单独变成新的 `catch`。当前策略是把过滤条件插进 `catch` 体内。
+
+典型结果：
 
 ```csharp
-// C# 示例
-catch (Exception ex) when (ex.Message.Contains("error")) {
-    HandleError(ex);
+catch (Exception ex) when (ex.Message.Contains("test"))
+{
+    Log(ex);
 }
+```
 
-// JavaScript 结果
+```js
 catch (ex) {
-    if (!(ex.message.includes("error"))) throw ex;
-    handleError(ex);
+  if (!ex.message.includes("test"))
+    throw ex;
+  Log(ex);
 }
 ```
 
-## 3. 方法详解
+这里的关键点是：
 
-### 3.1 VisitTry
+- `when` 本身仍在已捕获异常的上下文里求值
+- 过滤失败时重新抛出当前异常
+- 在多 `catch` 同组场景里，过滤失败会继续落到同组后续分支，而不是直接结束整个 `catch`
 
-**处理流程**：
-1. 转换 body 语句
-2. 处理 catch 子句（单 catch vs 多 catch）
-3. 处理 finally 块
-4. 构建 `TryStatement`
+### 5. `catch` 参数按需绑定
 
-**多 catch 处理关键代码**：
-```csharp
-if (operation.Catches.Length > 1)
-{
-    var tryParam = new Identifier(GetUniqueName(operation));
-    foreach (var @catch in operation.Catches)
-    {
-        var (_, typeName) = GetMapperType(@catch.ExceptionType);
-        var test = new NonLogicalBinaryExpression(Operator.InstanceOf, tryParam, right);
-        alternates.Add(new IfStatement(test, body, null));
-    }
-    handler = new CatchClause(tryParam, catchBody);
-}
-```
+并不是所有 `catch` 都必须生成 `catch (ex)`。
 
-### 3.2 ExtractCatchClauseParam
+`RequiresCatchBinding(...)` 当前只在这些情况下要求绑定异常变量：
 
-从异常声明中提取变量名：
+- 存在 `when`
+- `catch` 显式声明了变量
+- `catch` 体内包含裸 `throw;`
+
+因此下面这种代码会直接生成无参 `catch`：
 
 ```csharp
-// 支持的声明类型
-switch (operation.ExceptionDeclarationOrExpression)
+catch
 {
-    case ILocalReferenceOperation localRef:
-        param = new Identifier(localRef.Local.Name);
-        break;
-    case IParameterReferenceOperation paramRef:
-        param = new Identifier(paramRef.Parameter.Name);
-        break;
-    case IVariableDeclaratorOperation varDeclarator:
-        param = new Identifier(varDeclarator.Symbol.Name);
-        break;
+    Console.WriteLine("caught");
 }
 ```
 
-### 3.3 ExtractCatchClauseBody
+```js
+catch {
+  console.log("caught");
+}
+```
 
-处理 when 条件和 catch body：
+这样做的目的很直接：不在不需要的时候额外制造 JS 参数名。
+
+### 6. 裸 `throw;`
+
+`VisitThrow(...)` 对裸 `throw;` 不会凭空构造异常对象。
+
+当前实现依赖 `SenseArgument.CatchExceptionVar`：
+
+- 如果当前位于有异常变量上下文的 `catch` 中，输出 `throw ex;`
+- 如果当前上下文拿不到捕获变量，则直接报 transformation failure
+
+这条规则保证了 rethrow 只在语义成立的地方被允许。
+
+## 当前关键规则
+
+### 1. `try`、每个 `catch`、`finally` 都单独建 scope
+
+当前实现不是整条 `try` 语句共用一个变量收集器，而是分块处理。
+
+这样可以避免：
+
+- `try` 内局部声明泄漏到 `catch`
+- 某个 `catch` 的临时变量跑到其他 `catch`
+- `finally` 中的局部声明污染外层
+
+### 2. 多 `catch` 的 fallback 永远是重新抛出
+
+只要是多 `catch` 合并场景，最终链尾都会保留：
+
+```js
+throw v$N;
+```
+
+这保证 JS 单 `catch` 不会吞掉未命中的异常。
+
+### 3. 同组多个 `catch` 会尝试共享参数名
+
+如果同一运行时类型组内多个分支使用相同异常变量名，当前实现会先：
+
+```js
+const ex = v$0;
+```
+
+再在组内复用它。
+
+如果变量名不一致，则按分支单独声明。这让生成结果更接近源代码的绑定关系，也避免无意义重复声明。
+
+### 4. `throw` 的转换不区分“try 内抛出”和“普通位置抛出”
+
+有显式异常表达式时：
+
+- 直接翻译该表达式
+
+没有异常表达式时：
+
+- 只能从当前 `catch` 上下文取异常变量
+
+这条规则让 `throw new Exception(...)` 和 `throw ex;` 走统一路径，而 `throw;` 作为特例由上下文补足。
+
+## 现状与典型结果
+
+### 单个 `catch`
 
 ```csharp
-// when 条件过滤器
-if (operation.Filter is not null)
+try
 {
-    var filterExpr = TranslateExpression(operation.Filter, argument);
-    var notFilter = new NonUpdateUnaryExpression(Operator.LogicalNot, filterExpr);
-    var throwStmt = new ThrowStatement(throwExpr);
-    var filterCheck = new IfStatement(notFilter, throwStmt, null);
-    bodyStatements.Add(filterCheck);
+    int x = 1;
+}
+catch (Exception ex)
+{
+    int y = 2;
 }
 ```
 
-### 3.4 VisitThrow
+```js
+try {
+  let x = 1;
+} catch (ex) {
+  let y = 2;
+}
+```
 
-处理 throw 语句，支持重新抛出：
+### `catch` 无变量
 
 ```csharp
-// C#: throw;
-// JS: throw ex;  (使用外层 catch 的参数)
-
-if (operation.Exception is null)
+try
 {
-    // 重新抛出，需要从外层 catch 获取异常变量
-    if (@try.Catches.Length == 1)
-    {
-        var param = ExtractCatchClauseParam(@try.Catches[0]);
-        expr = param;
-    }
+    throw new Exception();
+}
+catch
+{
+    Console.WriteLine("caught");
 }
 ```
 
-## 4. 已知缺陷
+```js
+try {
+  throw new Error;
+} catch {
+  console.log("caught");
+}
+```
 
-### 4.1 中优先级缺陷
+### 带 `when`
 
-| 缺陷 | 影响 | 建议修复方案 |
-|------|------|-------------|
-| **异常类型映射不完整** | 某些类型可能 instanceof 失败 | 使用白名单映射异常类型 |
-| **when 条件中的变量作用域** | 可能引用错误变量 | 确保 when 条件使用正确的异常参数 |
+```csharp
+try
+{
+    throw new Exception("test");
+}
+catch (Exception ex) when (ex.Message.Contains("test"))
+{
+    Console.WriteLine("ok");
+}
+```
 
-### 4.2 低优先级缺陷
+```js
+try {
+  throw new Error("test");
+} catch (ex) {
+  if (!ex.message.includes("test"))
+    throw ex;
+  console.log("ok");
+}
+```
 
-| 缺陷 | 影响 | 建议修复方案 |
-|------|------|-------------|
-| **重新抛出参数查找复杂** | 代码可读性差 | 封装为专门的方法 |
+### `catch` 中 rethrow
 
-## 5. AST 节点映射
+```csharp
+try
+{
+    Work();
+}
+catch (Exception ex)
+{
+    Log(ex);
+    throw;
+}
+```
 
-| C# 结构 | JavaScript AST | 备注 |
-|---------|---------------|------|
-| try | `TryStatement` | 包含 block, handler, finalizer |
-| catch | `CatchClause` | 包含 param 和 body |
-| finally | `NestedBlockStatement` | 作为 finalizer |
-| throw | `ThrowStatement` | 支持重新抛出 |
+```js
+try {
+  Work();
+} catch (ex) {
+  Log(ex);
+  throw ex;
+}
+```
 
-## 6. 测试覆盖
+### `finally` 保持原始控制流位置
 
-**当前状态**: ~40 个测试
+当前实现不会重写 `finally` 的控制流语义。像 `return`、`throw`、`break`、`continue` 仍然直接出现在 `finally` 体内，由后续 JS 运行时行为决定最终效果。
 
-**测试场景**：
-- ✅ 简单 try-catch
-- ✅ try-catch-finally
-- ✅ 多 catch 子句
-- ✅ when 条件
-- ✅ throw 语句
-- ✅ 重新抛出
+## 当前边界
 
-## 7. 相关文档
+这部分当前已经解决的是：
+
+- `try` / `catch` / `finally` 的基础 lowering
+- 多 `catch` 收敛
+- `when` 过滤
+- 裸 `throw;` 在 `catch` 内的重抛
+
+它没有试图做这些事情：
+
+- 建立独立的异常运行时层
+- 在 JS 侧模拟 CLR 精确异常类型体系
+- 让 `catch` 保留 C# 的多子句语法外形
+- 支持脱离 `catch` 上下文的裸 `throw;`
+
+另外，异常类型命中依赖当前类型映射结果，所以“哪个 C# 异常最终映射到哪个 JS 宿主类型”并不在这份文件里决定，而是复用全局类型映射结果。
+
+## 相关测试
+
+主要测试在：
+
+- `src/Jazor.CompilerTest/SemanticWalkerTryCatchTest.cs`
+
+建议重点看这些场景：
+
+- `VisitTry_SingleCatch`
+- `VisitTry_MultipleCatches`
+- `VisitTry_MultipleCatchWithWhen`
+- `VisitTry_CatchWithoutVariable`
+- `VisitCatch_NoVariable`
+- `VisitCatch_Rethrow`
+- `VisitCatch_WhenCondition`
+- `VisitTry_ReturnInFinally`
+- `VisitTry_LoopInFinally`
+- `VisitTry_TryInFinally`
+
+这些测试基本覆盖了当前文件最重要的结构性行为。
+
+## 推荐阅读
+
+建议按这个顺序看：
+
+1. [SemanticWalker.md](./SemanticWalker.md)
+2. [SemanticWalker.TryCatch.md](./SemanticWalker.TryCatch.md)
+3. [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
+4. [SemanticWalker.WhiteList.md](./SemanticWalker.WhiteList.md)
+
+## 相关文档
 
 - [SemanticWalker.md](./SemanticWalker.md)
-
----
-
-**最后更新**: 2026-03-03
+- [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
+- [SemanticWalker.WhiteList.md](./SemanticWalker.WhiteList.md)
+- [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)

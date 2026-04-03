@@ -21,7 +21,12 @@ public partial class SemanticWalker
 	/// <returns></returns>
 	public Expression? Compile_b58c68bda64ad0f8(Expression? handler, Expression?[] args)
 	{
-		return null;
+		if (handler is not null)
+			throw new InvalidOperationException("ECMAScript.Global.TypeOf(object) 不应接收实例 handler。");
+		if (args.Length != 1 || args[0] is not Expression value)
+			throw new InvalidOperationException("ECMAScript.Global.TypeOf(object) 需要且仅需要一个显式参数。");
+
+		return new NonUpdateUnaryExpression(Operator.TypeOf, value);
 	}
 
 	/// <summary>
@@ -32,6 +37,8 @@ public partial class SemanticWalker
 	/// <returns></returns>
 	public Expression? Compile_42dc478b4386197f(Expression? handler, Expression?[] args)
 	{
+		// 第一阶段故意让 RegExp 继续回落到普通静态调用路径：
+		// 现有输出已经稳定且不需要额外 compile-only 语义。
 		return null;
 	}
 
@@ -125,7 +132,12 @@ public partial class SemanticWalker
 
 	public Expression? Compile_eb6a23c2a874fdf1(Expression? handler, Expression?[] args)
 	{
-		return null;
+		if (handler is null)
+			throw new InvalidOperationException("bool.GetTypeCode() 需要实例 handler。");
+		if (args.Length != 0)
+			throw new InvalidOperationException("bool.GetTypeCode() 不应接收显式参数。");
+
+		return new NumericLiteral((double)TypeCode.Boolean, ((int)TypeCode.Boolean).ToString());
 	}
 	
 }

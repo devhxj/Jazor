@@ -406,16 +406,17 @@ public class Promise : IPromise
     public static extern IPromise Reject(Error e);
 
     /// <summary>
-    /// Returns a promise that will resolve when all promises passed in are resolved.
-    /// If any is rejected, it will stop waiting and reject the final promise.
+    /// Compatibility overload that lets C# call <c>Promise.all</c> with separate arguments.
+    /// JavaScript itself takes a single iterable.
     /// </summary>
     /// <param name="promises">Promises to wait on.</param>
     /// <returns></returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#all")]
     public static extern IPromise All(params IPromise[] promises);
 
     /// <summary>
-    /// Returns a promise that will resolve when all promises in the Enumerable are resolved.
+    /// C# projection of the JavaScript <c>Promise.all(iterable)</c> overload.
     /// If any is rejected, it will stop waiting and reject the final promise.
     /// </summary>
     /// <param name="promises">Promises to wait on.</param>
@@ -444,18 +445,17 @@ public class Promise : IPromise
     public static extern IPromise All(IEnumerable<PromiseResult> tasks);
 
     /// <summary>
-    /// Returns a promise that will resolve when all promises passed in are resolved.
-    /// The final promise will contain the results of the passed in promises. You will
-    /// need to cast them to their final types.
-    /// If any is rejected, it will stop waiting and reject the final promise.
+    /// Compatibility overload that lets C# call <c>Promise.all</c> with separate arguments.
+    /// JavaScript itself takes a single iterable.
     /// </summary>
     /// <param name="promises"></param>
     /// <returns></returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#all")]
     public static extern IPromise<object[]> All(params IPromise<object>[] promises);
 
     /// <summary>
-    /// Returns a promise that will resolve when all promises passed in are resolved.
+    /// C# projection of the JavaScript <c>Promise.all(iterable)</c> overload.
     /// The final promise will contain the results of the passed in promises. You will
     /// need to cast them to their final types.
     /// If any is rejected, it will stop waiting and reject the final promise.
@@ -490,15 +490,17 @@ public class Promise : IPromise
     public static extern IPromise<object[]> All(IEnumerable<PromiseResult<object>> tasks);
 
     /// <summary>
-    /// Returns a <see cref="IPromise"/> that resolves if any of the promises resolve. If none do, it
-    /// resolves with the first to reject.
+    /// Compatibility overload that lets C# call <c>Promise.any</c> with separate arguments.
+    /// JavaScript itself takes a single iterable.
     /// </summary>
     /// <param name="promises"><see cref="IPromise"/>s on which to wait</param>
     /// <returns></returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#any")]
     public static extern IPromise Any(params IPromise[] promises);
 
     /// <summary>
+    /// C# projection of the JavaScript <c>Promise.any(iterable)</c> overload.
     /// Returns a <see cref="IPromise"/> that resolves if any of the promises resolve. If none do, it
     /// resolves with the first to reject.
     /// </summary>
@@ -548,15 +550,17 @@ public class Promise : IPromise
     public static extern IPromise<object> Any(IEnumerable<PromiseResult<object>> tasks);
 
     /// <summary>
-    /// Returns a <see cref="IPromise"/> that resolves if any of the promises resolve. If none do, it
-    /// resolves with the first to reject.
+    /// Compatibility overload that lets C# call <c>Promise.any</c> with separate arguments.
+    /// JavaScript itself takes a single iterable.
     /// </summary>
     /// <param name="promises"><see cref="IPromise{T}"/>s on which to wait</param>
     /// <returns></returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#any")]
     public static extern IPromise<object> Any(params IPromise<object>[] promises);
 
     /// <summary>
+    /// C# projection of the JavaScript <c>Promise.any(iterable)</c> overload.
     /// Returns a <see cref="IPromise"/> that resolves if any of the promises resolve. If none do, it
     /// resolves with the first to reject.
     /// </summary>
@@ -572,6 +576,7 @@ public class Promise : IPromise
     [Description("@#any")]
     public static extern IPromise<T> Any<T>(IEnumerable<IPromise<T>> promises);
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#any")]
     public static extern IPromise<T> Any<T>(params IPromise<T>[] promises);
 
@@ -585,10 +590,12 @@ public class Promise : IPromise
     public static extern IPromise Race(IEnumerable<IPromise> promises);
 
     /// <summary>
-    /// Returns a <see cref="IPromise"/> that is resolved as soon as any one of the passed in promises resolves.
+    /// Compatibility overload that lets C# call <c>Promise.race</c> with separate arguments.
+    /// JavaScript itself takes a single iterable.
     /// </summary>
     /// <param name="promises"><see cref="IPromise"/>s on which to wait.</param>
     /// <returns></returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#race")]
     public static extern IPromise Race(params IPromise[] promises);
 
@@ -619,10 +626,12 @@ public class Promise : IPromise
     public static extern IPromise<object> Race(IEnumerable<IPromise<object>> promises);
 
     /// <summary>
-    /// Returns a <see cref="IPromise{T}"/> that is resolved as soon as any one of the passed in promises resolves.
+    /// Compatibility overload that lets C# call <c>Promise.race</c> with separate arguments.
+    /// JavaScript itself takes a single iterable.
     /// </summary>
     /// <param name="promises"><see cref="IPromise{T}"/>s on which to wait.</param>
     /// <returns></returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#race")]
     public static extern IPromise<object> Race(params IPromise<object>[] promises);
 
@@ -767,16 +776,28 @@ public sealed class Promise<T> : Promise, IPromise<T>
 
     [Description("@#all")]
     /// <summary>
-    /// Returns a promise that will resolve when all promises passed in are resolved.
+    /// Compatibility overload that lets C# call <c>Promise.all</c> with separate arguments.
+    /// JavaScript itself takes a single iterable.
+    /// </summary>
+    /// <param name="promises"></param>
+    /// <returns></returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public static extern IPromise<T[]> All(params IPromise<T>[] promises);
+
+    [Description("@#all")]
+    /// <summary>
+    /// C# projection of the JavaScript <c>Promise.all(iterable)</c> overload.
+    /// Returns a promise that will resolve when all promises in the iterable are resolved.
     /// The final promise will contain the results of the passed in promises.
     /// If any is rejected, it will stop waiting and reject the final promise.
     /// </summary>
     /// <param name="promises"></param>
     /// <returns></returns>
-    public static extern IPromise<T[]> All(params IPromise<T>[] promises);
+    public static extern IPromise<T[]> All(IEnumerable<IPromise<T>> promises);
 
     [Description("@#all")]
     /// <summary>
+    /// Compatibility overload used by async lowering. JavaScript itself takes a single iterable.
     /// Returns a promise that will resolve when all passed in tasks are resolved.
     /// If any is rejected, it will stop waiting and reject the final promise.
     /// </summary>
@@ -788,6 +809,7 @@ public sealed class Promise<T> : Promise, IPromise<T>
     [Description("@#any")]
     public static extern IPromise<T> Any(IEnumerable<IPromise<T>> promises);
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#any")]
     public static extern IPromise<T> Any(params IPromise<T>[] promises);
 

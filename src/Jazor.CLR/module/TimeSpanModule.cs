@@ -12,6 +12,35 @@ public static class TimeSpanModule
 	private static BigInt TicksPerDay => BigInt_("864000000000");
 	private static BigInt MinTimeSpanTicks => BigInt_("-9223372036854775808");
 
+	private static bool IsAsciiDigit(char value)
+		=> value >= '0' && value <= '9';
+
+	private static bool IsDigits(string text)
+	{
+		if (text.Length == 0)
+			return false;
+
+		for (var i = 0; i < text.Length; i++)
+		{
+			if (!IsAsciiDigit(text[i]))
+				return false;
+		}
+
+		return true;
+	}
+
+	private static void EnsureWholeNumber(Number value, string message)
+	{
+		if (IsNaN(value) || Math.Floor_(value) != value || value < Number.MIN_SAFE_INTEGER || value > Number.MAX_SAFE_INTEGER)
+			throw new Error(message);
+	}
+
+	private static BigInt ToWholeBigInt(Number value, string message)
+	{
+		EnsureWholeNumber(value, message);
+		return BigInt_(value);
+	}
+
 	private static RuntimeModule.JTimeSpan NegateChecked(RuntimeModule.JTimeSpan instance)
 	{
 		if (instance.Ticks == MinTimeSpanTicks)
@@ -21,18 +50,45 @@ public static class TimeSpanModule
 	}
 
 	private static RuntimeModule.JTimeSpan CreateFromRoundedTicks(Number value)
-		=> new(BigInt_(Math.Round_(value)));
-
-	private static RuntimeModule.JTimeSpan Create(Number days, Number hours, Number minutes, Number seconds, Number milliseconds, Number microseconds)
 	{
-		var ticks = BigInt_(days) * TicksPerDay
-			+ BigInt_(hours) * TicksPerHour
-			+ BigInt_(minutes) * TicksPerMinute
-			+ BigInt_(seconds) * TicksPerSecond
-			+ BigInt_(milliseconds) * TicksPerMillisecond
-			+ BigInt_(microseconds) * TicksPerMicrosecond;
+		if (DoubleModule._24e14b276e0c7e30(value))
+			throw new Error("ArgumentException: TimeSpan value cannot be NaN.");
+
+		if (!DoubleModule._aed2927097617729(value))
+			throw new Error("OverflowException: TimeSpan is too long or too short.");
+
+		var rounded = Math.Round_(value);
+		if (!DoubleModule._aed2927097617729(rounded))
+			throw new Error("OverflowException: TimeSpan is too long or too short.");
+
+		return new(BigInt_(rounded));
+	}
+
+	private static RuntimeModule.JTimeSpan Create(BigInt days, BigInt hours, BigInt minutes, BigInt seconds, BigInt milliseconds, BigInt microseconds)
+	{
+		var ticks = days * TicksPerDay
+			+ hours * TicksPerHour
+			+ minutes * TicksPerMinute
+			+ seconds * TicksPerSecond
+			+ milliseconds * TicksPerMillisecond
+			+ microseconds * TicksPerMicrosecond;
 		return new RuntimeModule.JTimeSpan(ticks);
 	}
+
+	private static RuntimeModule.JTimeSpan Create(Number days, Number hours, Number minutes, Number seconds, Number milliseconds, Number microseconds)
+		=> Create(
+			ToWholeBigInt(days, "ArgumentOutOfRangeException: Days must be a whole number."),
+			ToWholeBigInt(hours, "ArgumentOutOfRangeException: Hours must be a whole number."),
+			ToWholeBigInt(minutes, "ArgumentOutOfRangeException: Minutes must be a whole number."),
+			ToWholeBigInt(seconds, "ArgumentOutOfRangeException: Seconds must be a whole number."),
+			ToWholeBigInt(milliseconds, "ArgumentOutOfRangeException: Milliseconds must be a whole number."),
+			ToWholeBigInt(microseconds, "ArgumentOutOfRangeException: Microseconds must be a whole number."));
+
+	private static RuntimeModule.JTimeSpan MultiplyByDouble(RuntimeModule.JTimeSpan instance, Number factor)
+		=> CreateFromRoundedTicks(Number_(instance.Ticks) * factor);
+
+	private static RuntimeModule.JTimeSpan DivideByDouble(RuntimeModule.JTimeSpan instance, Number divisor)
+		=> CreateFromRoundedTicks(Number_(instance.Ticks) / divisor);
 
 	private static RuntimeModule.JTimeSpan ParseCore(string input)
 	{
@@ -90,6 +146,9 @@ public static class TimeSpanModule
 				throw new Error($"FormatException: String '{input}' was not recognized as a valid TimeSpan.");
 		}
 
+		if (!IsDigits(dayText) || !IsDigits(hourText) || !IsDigits(minuteText) || !IsDigits(secondText))
+			throw new Error($"FormatException: String '{input}' was not recognized as a valid TimeSpan.");
+
 		var days = Number_(dayText);
 		var hours = Number_(hourText);
 		var minutes = Number_(minuteText);
@@ -106,7 +165,7 @@ public static class TimeSpanModule
 		var fractionTicks = BigInt.Zero;
 		if (fractionText.Length > 0)
 		{
-			if (fractionText.Length > 7)
+			if (fractionText.Length > 7 || !IsDigits(fractionText))
 				throw new Error($"FormatException: String '{input}' was not recognized as a valid TimeSpan.");
 
 			while (fractionText.Length < 7)
@@ -456,7 +515,7 @@ public static class TimeSpanModule
 	///<summary>Returns a hash code for this instance.</summary>
 	[Jazor(Op.Import ,"override System.TimeSpan.GetHashCode()")]
 	public static Number _650390adf244b5eb(RuntimeModule.JTimeSpan instance)
-		=> Number_(instance.Ticks % BigInt_("2147483647"));
+		=> RuntimeModule.GetInt64HashCode(instance.Ticks);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.TimeSpan" /> structure to a specified number of days.</summary>
 	[Jazor(Op.Import ,"static System.TimeSpan.FromDays(int)")]
@@ -466,7 +525,7 @@ public static class TimeSpanModule
 	///<summary>Initializes a new instance of the <see cref="T:System.TimeSpan" /> structure to a specified number of days, hours, minutes, seconds, milliseconds, and microseconds.</summary>
 	[Jazor(Op.Import ,"static System.TimeSpan.FromDays(int, int, long, long, long, long)")]
 	public static RuntimeModule.JTimeSpan _3e2fa32df3160e87(Number days, Number hours, BigInt minutes, BigInt seconds, BigInt milliseconds, BigInt microseconds)
-		=> Create(days, hours, Number_(minutes), Number_(seconds), Number_(milliseconds), Number_(microseconds));
+		=> Create(ToWholeBigInt(days, "ArgumentOutOfRangeException: Days must be a whole number."), ToWholeBigInt(hours, "ArgumentOutOfRangeException: Hours must be a whole number."), minutes, seconds, milliseconds, microseconds);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.TimeSpan" /> structure to a specified number of hours.</summary>
 	[Jazor(Op.Import ,"static System.TimeSpan.FromHours(int)")]
@@ -476,41 +535,41 @@ public static class TimeSpanModule
 	///<summary>Initializes a new instance of the <see cref="T:System.TimeSpan" /> structure to a specified number of hours, minutes, seconds, milliseconds, and microseconds.</summary>
 	[Jazor(Op.Import ,"static System.TimeSpan.FromHours(int, long, long, long, long)")]
 	public static RuntimeModule.JTimeSpan _f307370e05d16ca3(Number hours, BigInt minutes, BigInt seconds, BigInt milliseconds, BigInt microseconds)
-		=> Create(0, hours, Number_(minutes), Number_(seconds), Number_(milliseconds), Number_(microseconds));
+		=> Create(BigInt.Zero, ToWholeBigInt(hours, "ArgumentOutOfRangeException: Hours must be a whole number."), minutes, seconds, milliseconds, microseconds);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.TimeSpan" /> structure to a specified number of minutes.</summary>
 	[Jazor(Op.Import ,"static System.TimeSpan.FromMinutes(long)")]
 	public static RuntimeModule.JTimeSpan _059d32e87cf36f24(BigInt minutes)
-		=> Create(0, 0, Number_(minutes), 0, 0, 0);
+		=> Create(BigInt.Zero, BigInt.Zero, minutes, BigInt.Zero, BigInt.Zero, BigInt.Zero);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.TimeSpan" /> structure to a specified number of minutes, seconds, milliseconds, and microseconds.</summary>
 	[Jazor(Op.Import ,"static System.TimeSpan.FromMinutes(long, long, long, long)")]
 	public static RuntimeModule.JTimeSpan _f07d6f07ee70a1bd(BigInt minutes, BigInt seconds, BigInt milliseconds, BigInt microseconds)
-		=> Create(0, 0, Number_(minutes), Number_(seconds), Number_(milliseconds), Number_(microseconds));
+		=> Create(BigInt.Zero, BigInt.Zero, minutes, seconds, milliseconds, microseconds);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.TimeSpan" /> structure to a specified number of seconds.</summary>
 	[Jazor(Op.Import ,"static System.TimeSpan.FromSeconds(long)")]
 	public static RuntimeModule.JTimeSpan _e0c33d45a9703e74(BigInt seconds)
-		=> Create(0, 0, 0, Number_(seconds), 0, 0);
+		=> Create(BigInt.Zero, BigInt.Zero, BigInt.Zero, seconds, BigInt.Zero, BigInt.Zero);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.TimeSpan" /> structure to a specified number of seconds, milliseconds, and microseconds.</summary>
 	[Jazor(Op.Import ,"static System.TimeSpan.FromSeconds(long, long, long)")]
 	public static RuntimeModule.JTimeSpan _60df3ea4b8b2693c(BigInt seconds, BigInt milliseconds, BigInt microseconds)
-		=> Create(0, 0, 0, Number_(seconds), Number_(milliseconds), Number_(microseconds));
+		=> Create(BigInt.Zero, BigInt.Zero, BigInt.Zero, seconds, milliseconds, microseconds);
 
 	[Jazor(Op.Import ,"static System.TimeSpan.FromMilliseconds(long)")]
 	public static RuntimeModule.JTimeSpan _9dc3c54535eb1333(BigInt milliseconds)
-		=> Create(0, 0, 0, 0, Number_(milliseconds), 0);
+		=> Create(BigInt.Zero, BigInt.Zero, BigInt.Zero, BigInt.Zero, milliseconds, BigInt.Zero);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.TimeSpan" /> structure to a specified number of milliseconds, and microseconds.</summary>
 	[Jazor(Op.Import ,"static System.TimeSpan.FromMilliseconds(long, long)")]
 	public static RuntimeModule.JTimeSpan _4bf16885c28b9c57(BigInt milliseconds, BigInt microseconds)
-		=> Create(0, 0, 0, 0, Number_(milliseconds), Number_(microseconds));
+		=> Create(BigInt.Zero, BigInt.Zero, BigInt.Zero, BigInt.Zero, milliseconds, microseconds);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.TimeSpan" /> structure to a specified number of microseconds.</summary>
 	[Jazor(Op.Import ,"static System.TimeSpan.FromMicroseconds(long)")]
 	public static RuntimeModule.JTimeSpan _5864e2e6b3820640(BigInt microseconds)
-		=> Create(0, 0, 0, 0, 0, Number_(microseconds));
+		=> Create(BigInt.Zero, BigInt.Zero, BigInt.Zero, BigInt.Zero, BigInt.Zero, microseconds);
 
 	/// <summary>
 	/// C#: TimeSpan.FromHours(double)
@@ -562,11 +621,11 @@ public static class TimeSpanModule
 
 	///<summary>Returns a new <see cref="T:System.TimeSpan" /> object which value is the result of multiplication of this instance and the specified <paramref name="factor" />.</summary>
 	[Jazor(Op.Import ,"System.TimeSpan.Multiply(double)")]
-	public static RuntimeModule.JTimeSpan _a1b4efac0485c39e(RuntimeModule.JTimeSpan instance, Number factor) => new(BigInt_(Math.Round_(Number_(instance.Ticks) * factor)));
+	public static RuntimeModule.JTimeSpan _a1b4efac0485c39e(RuntimeModule.JTimeSpan instance, Number factor) => MultiplyByDouble(instance, factor);
 
 	///<summary>Returns a new <see cref="T:System.TimeSpan" /> object whose value is the result of dividing this instance by the specified <paramref name="divisor" />.</summary>
 	[Jazor(Op.Import ,"System.TimeSpan.Divide(double)")]
-	public static RuntimeModule.JTimeSpan _871609175f846ae9(RuntimeModule.JTimeSpan instance, Number divisor) => new(BigInt_(Math.Round_(Number_(instance.Ticks) / divisor)));
+	public static RuntimeModule.JTimeSpan _871609175f846ae9(RuntimeModule.JTimeSpan instance, Number divisor) => DivideByDouble(instance, divisor);
 
 	///<summary>Returns a new <see cref="T:System.Double" /> value that's the result of dividing this instance by <paramref name="ts" />.</summary>
 	[Jazor(Op.Import ,"System.TimeSpan.Divide(System.TimeSpan)")]
@@ -722,15 +781,15 @@ public static class TimeSpanModule
 
 	///<summary>Returns a new <xref data-throw-if-not-resolved="true" uid="System.TimeSpan"></xref> object whose value is the result of multiplying the specified <code data-dev-comment-type="paramref">timeSpan</code> instance and the specified <code data-dev-comment-type="paramref">factor</code>.</summary>
 	[Jazor(Op.Import ,"static System.TimeSpan.operator *(System.TimeSpan, double)")]
-	public static RuntimeModule.JTimeSpan _f2a4ea62d054d8a3(RuntimeModule.JTimeSpan timeSpan, Number factor) => new(BigInt_(Math.Round_(Number_(timeSpan.Ticks) * factor)));
+	public static RuntimeModule.JTimeSpan _f2a4ea62d054d8a3(RuntimeModule.JTimeSpan timeSpan, Number factor) => MultiplyByDouble(timeSpan, factor);
 
 	///<summary>Returns a new <xref data-throw-if-not-resolved="true" uid="System.TimeSpan"></xref> object whose value is the result of multiplying the specified <code data-dev-comment-type="paramref">factor</code> and the specified <code data-dev-comment-type="paramref">timeSpan</code> instance.</summary>
 	[Jazor(Op.Import ,"static System.TimeSpan.operator *(double, System.TimeSpan)")]
-	public static RuntimeModule.JTimeSpan _90eaec13ec0f9fea(Number factor, RuntimeModule.JTimeSpan timeSpan) => new(BigInt_(Math.Round_(factor * Number_(timeSpan.Ticks))));
+	public static RuntimeModule.JTimeSpan _90eaec13ec0f9fea(Number factor, RuntimeModule.JTimeSpan timeSpan) => MultiplyByDouble(timeSpan, factor);
 
 	///<summary>Returns a new <xref data-throw-if-not-resolved="true" uid="System.TimeSpan"></xref> object whose value is the result of dividing the specified <code data-dev-comment-type="paramref">timeSpan</code> by the specified <code data-dev-comment-type="paramref">divisor</code>.</summary>
 	[Jazor(Op.Import ,"static System.TimeSpan.operator /(System.TimeSpan, double)")]
-	public static RuntimeModule.JTimeSpan _eba9e2c9c23d7df9(RuntimeModule.JTimeSpan timeSpan, Number divisor) => new(BigInt_(Math.Round_(Number_(timeSpan.Ticks) / divisor)));
+	public static RuntimeModule.JTimeSpan _eba9e2c9c23d7df9(RuntimeModule.JTimeSpan timeSpan, Number divisor) => DivideByDouble(timeSpan, divisor);
 
 	///<summary>Returns a new <xref data-throw-if-not-resolved="true" uid="System.Double"></xref> value that's the result of dividing <code data-dev-comment-type="paramref">t1</code> by <code data-dev-comment-type="paramref">t2</code>.</summary>
 	[Jazor(Op.Import ,"static System.TimeSpan.operator /(System.TimeSpan, System.TimeSpan)")]

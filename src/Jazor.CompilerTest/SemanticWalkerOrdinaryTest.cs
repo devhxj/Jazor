@@ -1015,10 +1015,32 @@ public sealed class SemanticWalkerOrdinaryTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    AssertScriptEqual(@"{
   let array = [1, 2, 3, 4, 5];
 }", script);
 
+  }
+
+  [TestMethod]
+  public void Visit_CollectionExpression_TupleElements_RemapNames()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    (string first, int years)[] array = [(name: ""John"", age: 30)];
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let array = [{ first: ""John"", years: 30 }];
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
   }
 
   /// <summary>

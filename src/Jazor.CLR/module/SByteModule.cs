@@ -7,6 +7,46 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "sbyte", "Number")]
 public static class SByteModule
 {
+	private static Number CompareCore(Number left, Number right)
+		=> left < right ? -1 : (left > right ? 1 : 0);
+
+	private static bool TryParseSByteCore(string? s, out Number value)
+	{
+		value = 0;
+		if (s == null)
+			return false;
+
+		var trimmed = s.Trim();
+		if (trimmed.Length == 0)
+			return false;
+
+		var start = 0;
+		var first = trimmed[0];
+		if (first == '+' || first == '-')
+		{
+			if (trimmed.Length == 1)
+				return false;
+
+			start = 1;
+		}
+
+		for (var i = start; i < trimmed.Length; i++)
+		{
+			var ch = trimmed[i];
+			if (ch < '0' || ch > '9')
+				return false;
+		}
+
+		var parsed = Number_(trimmed);
+		if (IsNaN(parsed) || Math.Floor_(parsed) != parsed)
+			return false;
+		if (parsed < -128 || parsed > 127)
+			return false;
+
+		value = parsed;
+		return true;
+	}
+
 	/// <summary>
 	/// C#: sbyte.MaxValue
 	/// JS: 127
@@ -26,17 +66,26 @@ public static class SByteModule
 
 	/// <summary>
 	/// C#: sbyte.CompareTo(object)
-	/// JS: instance - (obj ?? 0)
+	/// JS: 与 .NET 一致的 CompareTo 规则，单独处理 null 和类型检查
 	/// </summary>
-	[Jazor(Op.Inline, "sbyte.CompareTo(object)", "(__arg1 - (__arg2 ?? 0))")]
-	public extern static Number _f8a387725694962f(Number instance, object? obj);
+	[Jazor(Op.Import, "sbyte.CompareTo(object)")]
+	public static Number _f8a387725694962f(Number instance, object? obj)
+	{
+		if (obj == null)
+			return 1;
+		if (TypeOf(obj) != "number")
+			throw new Error("ArgumentException: Object must be of type SByte.");
+
+		return CompareCore(instance, (Number)obj);
+	}
 
 	/// <summary>
 	/// C#: sbyte.CompareTo(sbyte)
-	/// JS: instance - value
+	/// JS: 返回负数、零或正数
 	/// </summary>
-	[Jazor(Op.Inline, "sbyte.CompareTo(sbyte)", "(__arg1 - __arg2)")]
-	public extern static Number _a0ff7e0ac34c91a8(Number instance, Number value);
+	[Jazor(Op.Import, "sbyte.CompareTo(sbyte)")]
+	public static Number _a0ff7e0ac34c91a8(Number instance, Number value)
+		=> CompareCore(instance, value);
 
 	/// <summary>
 	/// C#: sbyte.Equals(object)
@@ -85,20 +134,17 @@ public static class SByteModule
 
 	/// <summary>
 	/// C#: sbyte.Parse(s)
-	/// JS: parseInt(s, 10) with validation (-128 to 127)
+	/// JS: 只接受十进制整数字符串，拒绝尾随垃圾字符
 	/// </summary>
 	[Jazor(Op.Import, "static sbyte.Parse(string)")]
 	public static Number _fc6fdbb937cb390a(string? s)
 	{
 		if (s == null)
 			throw new Error("ArgumentNullException: String cannot be null.");
-		var trimmed = s.Trim();
-		var num = ParseInt(trimmed, 10);
-		if (IsNaN(num))
+		if (!TryParseSByteCore(s, out var value))
 			throw new Error($"FormatException: String '{s}' was not recognized as a valid SByte.");
-		if (num < -128 || num > 127)
-			throw new Error($"OverflowException: Value '{s}' was either too large or too small for an SByte.");
-		return num;
+
+		return value;
 	}
 
 	///<summary>Converts the string representation of a number in a specified style to its 8-bit signed integer equivalent.</summary>
@@ -124,13 +170,10 @@ public static class SByteModule
 	[Jazor(Op.Import, "static sbyte.TryParse(string, out sbyte)")]
 	public static Array<object?> _d9082c2537283f95(string? s, Number result)
 	{
-		if (s == null)
+		if (!TryParseSByteCore(s, out var value))
 			return [false, 0];
-		var trimmed = s.Trim();
-		var num = ParseInt(trimmed, 10);
-		if (IsNaN(num) || num < -128 || num > 127)
-			return [false, 0];
-		return [true, num];
+
+		return [true, value];
 	}
 
 	///<summary>Tries to convert the span representation of a number to its <see cref="T:System.SByte" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>

@@ -17,6 +17,44 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "uint", "Number")]
 public static class UInt32Module
 {
+	private static bool TryParseUInt32Core(string? s, out Number value)
+	{
+		value = 0;
+		if (s == null)
+			return false;
+
+		var trimmed = s.Trim();
+		if (trimmed.Length == 0)
+			return false;
+
+		var start = 0;
+		if (trimmed[0] == '+')
+		{
+			if (trimmed.Length == 1)
+				return false;
+
+			start = 1;
+		}
+		else if (trimmed[0] == '-')
+			return false;
+
+		for (var i = start; i < trimmed.Length; i++)
+		{
+			var ch = trimmed[i];
+			if (ch < '0' || ch > '9')
+				return false;
+		}
+
+		var parsed = Number_(trimmed);
+		if (IsNaN(parsed) || Math.Floor_(parsed) != parsed)
+			return false;
+		if (parsed < 0 || parsed > 4294967295)
+			return false;
+
+		value = parsed;
+		return true;
+	}
+
 	/// <summary>
 	/// C#: uint.MaxValue
 	/// JS: 4294967295
@@ -44,10 +82,11 @@ public static class UInt32Module
 	{
 		if (value == null)
 			return 1;
-		// Check if value is a Number
-		if (value is Number numValue)
-			return instance < numValue ? -1 : (instance > numValue ? 1 : 0);
-		throw new Error("ArgumentException: Object must be of type UInt32.");
+		if (TypeOf(value) != "number")
+			throw new Error("ArgumentException: Object must be of type UInt32.");
+
+		var number = (Number)value;
+		return instance < number ? -1 : (instance > number ? 1 : 0);
 	}
 
 	///<summary>Compares this instance to a specified 32-bit unsigned integer and returns an indication of their relative values.</summary>
@@ -92,23 +131,17 @@ public static class UInt32Module
 
 	/// <summary>
 	/// C#: uint.Parse(s)
-	/// JS: ParseInt(s, 10) with validation
+	/// JS: 只接受十进制整数字符串，拒绝尾随垃圾字符
 	/// </summary>
 	[Jazor(Op.Import, "static uint.Parse(string)")]
 	public static Number _eb335b8243aba32a(string? s)
 	{
 		if (s == null)
 			throw new Error("ArgumentNullException: String cannot be null.");
-
-		var trimmed = s.Trim();
-		var result = ParseInt(trimmed, 10);
-		// Check if it's a valid number
-		if (IsNaN(result))
+		if (!TryParseUInt32Core(s, out var value))
 			throw new Error($"FormatException: String '{s}' was not recognized as a valid UInt32.");
-		// Check uint range: 0 to 4294967295
-		if (result < 0 || result > 4294967295)
-			throw new Error($"OverflowException: Value '{s}' was either too large or too small for a UInt32.");
-		return result;
+
+		return value;
 	}
 
 	///<summary>Converts the string representation of a number in a specified style to its 32-bit unsigned integer equivalent.</summary>
@@ -134,18 +167,10 @@ public static class UInt32Module
 	[Jazor(Op.Import, "static uint.TryParse(string, out uint)")]
 	public static Array<object?> _ad4f3364f146e5da(string? s, Number result)
 	{
-		if (s == null)
+		if (!TryParseUInt32Core(s, out var value))
 			return [false, 0];
 
-		var trimmed = s.Trim();
-		var parsed = ParseInt(trimmed, 10);
-		// Check if it's a valid number
-		if (IsNaN(parsed))
-			return [false, 0];
-		// Check uint range: 0 to 4294967295
-		if (parsed < 0 || parsed > 4294967295)
-			return [false, 0];
-		return [true, parsed];
+		return [true, value];
 	}
 
 	///<summary>Tries to convert the span representation of a number to its 32-bit unsigned integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
