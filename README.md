@@ -45,52 +45,27 @@ Jazor is a high-performance C# to JavaScript compiler that aims to achieve seman
 ```
 Jazor/
 ├── src/
-│   ├── ECMAScript/                 # Core ECMAScript implementation
-│   │   ├── attribute/             # ECMAScript attribute definitions
-│   │   ├── generate/              # Auto-generated type bindings
-│   │   └── Global.cs              # Global methods and properties
-│   ├── ECMAScript.CLR/            # CLR runtime support
-│   │   ├── BooleanModule.cs       # Boolean type implementation
-│   │   ├── StringModule.cs        # String type implementation
-│   │   ├── DateTimeModule.cs      # DateTime type implementation
-│   │   ├── BigIntegerModule.cs    # BigInteger type implementation
-│   │   └── ...                    # Other CLR type modules
-│   ├── ECMAScript.Analyzer/       # Static code analyzer
-│   │   └── WhiteList.cs            # White list for type and member validation
-│   ├── ECMAScript.Compiler/       # C# to JavaScript compiler
-│   │   ├── AstConverter.cs        # Class-level converter (C# class → ES6 module)
-│   │   ├── SemanticWalker.cs      # Operation-level converter (IOperation → JS AST)
-│   │   │   ├── SemanticWalker.cs.Declaration.cs    # Variable declarations
-│   │   │   ├── SemanticWalker.cs.Ordinary.cs       # Operators, expressions
-│   │   │   ├── SemanticWalker.cs.Reference.cs      # References, array indexing
-│   │   │   ├── SemanticWalker.cs.Loop.cs           # Loops
-│   │   │   ├── SemanticWalker.cs.Switch.cs         # Switch statements/expressions
-│   │   │   ├── SemanticWalker.cs.Pattern.cs        # Pattern matching
-│   │   │   ├── SemanticWalker.cs.String.cs         # String interpolation
-│   │   │   ├── SemanticWalker.cs.TryCatch.cs       # Exception handling
-│   │   │   ├── SemanticWalker.cs.Creation.cs       # Object/array creation
-│   │   │   ├── SemanticWalker.cs.Tuple.cs          # Tuples and deconstruction
-│   │   │   ├── SemanticWalker.cs.Invalid.cs        # SyntaxNode fallback
-│   │   │   └── SemanticWalker.cs.NotSupport.cs    # Unsupported operations
-│   │   ├── WalkerArgument.cs       # Conversion context parameter
-│   │   ├── StatementGroup.cs        # Statement grouping utilities
-│   │   ├── AstTransformationException.cs  # Exception definitions
-│   │   └── ESGenerator.cs         # Source generator for ECMAScript.g.cs
-│   ├── ECMAScript.Server/         # Compilation server
-│   ├── ECMAScript.Test/           # Manual test console
-│   ├── Jazor.CompilerTest/        # Compiler tests (MSTest)
-│   ├── Jazor.EmitTest/            # Emit and bundle tests (MSTest)
-│   ├── ECMAScript.WebIDL/         # WebIDL collection worker (TypeScript/Deno)
-│   ├── ECMAScript.WebIDL.Generator/ # C# host for the WebIDL pipeline
-│   ├── ECMAScript.Common/         # Common types and utilities
-│   └── ECMASCript.MSBuild/        # MSBuild integration
-├── README.md                      # This file
-└── README_CN.md                   # Chinese version
+│   ├── ECMAScript/                  # Core ECMAScript runtime surface
+│   ├── Jazor.Compiler/              # C# to JavaScript compiler
+│   ├── Jazor.Compiler.Generator/    # Source generation pipeline
+│   ├── Jazor.Analyzer/              # Static analyzer and whitelist validation
+│   ├── Jazor.CLR/                   # CLR runtime support modules
+│   ├── Jazor.Emit/                  # Emit and packaging pipeline
+│   ├── Jazor.Razor/                 # Razor syntax support
+│   ├── Jazor.RazorVue/              # RazorVue integration surface
+│   ├── Jazor.RazorVue.Analysis/     # RazorVue analysis and lowering
+│   ├── Jazor.CompilerTest/          # Compiler tests (MSTest)
+│   ├── Jazor.EmitTest/              # Emit and bundle tests (MSTest)
+│   ├── ECMAScript.WebIDL/           # WebIDL collection worker (TypeScript/Deno)
+│   └── ECMAScript.WebIDL.Generator/ # C# host for the WebIDL pipeline
+├── docs/                            # Repository-level documentation hub
+├── README.md                        # This file
+└── README_CN.md                     # Chinese version
 ```
 
 ## Core Components
 
-### 1. ECMAScript.Compiler
+### 1. Jazor.Compiler
 
 The core compiler component with a two-layer conversion architecture:
 
@@ -106,17 +81,16 @@ The core compiler component with a two-layer conversion architecture:
 - Supports fallback to SyntaxNode conversion for optimized code via `IInvalidOperation`
 - **ESGenerator**: Source generator that automatically creates `ECMAScript.g.cs` files
 
-**Status**: ✅ Core complete | 533 tests passing (100%) | Build successful
-See [Jazor.Compiler readme](src/Jazor.Compiler/readme.md) for detailed documentation.
+See [Jazor.Compiler README](src/Jazor.Compiler/README.md) for the latest module-specific status and detailed documentation.
 
-### 2. ECMAScript.Analyzer
+### 2. Jazor.Analyzer
 
 Static code analyzer that provides syntax validation for classes marked with `[ECMAScriptModule]` or `[ECMAScript]` attributes:
 - Validates type usage according to supported type mappings
 - Ensures only compatible members are used in ECMAScript-tagged classes via white list
 - Provides compile-time error reporting for unsupported operations
 
-### 3. ECMAScript.CLR
+### 3. Jazor.CLR
 
 CLR runtime support providing ES6+ module implementations for all supported native C# types:
 - Written in C# (syntax-compatible with JavaScript) but compiled to ES6 modules
@@ -129,7 +103,7 @@ CLR runtime support providing ES6+ module implementations for all supported nati
 - ⚠️ Partial (7-8/10): 12 modules (31%)
 - 🔴 Needs work (< 7/10): 0 modules
 
-See [Jazor.CLR readme](src/Jazor.CLR/readme.md) for detailed module documentation.
+See [Jazor.CLR README](src/Jazor.CLR/README.md) for the latest module-specific status and detailed documentation.
 
 ### 4. ECMAScript.WebIDL
 
@@ -143,12 +117,12 @@ The pipeline is being migrated to a split architecture:
 - `src/ECMAScript.WebIDL` keeps the `webref` / `webidl2` collection layer
 - `src/ECMAScript.WebIDL.Generator` hosts Deno through `DenoHost` and persists a stable JSON inventory for the future C# emitter
 
-### 5. ECMAScript.Server
+### 5. Jazor.Emit
 
-Compilation server providing named pipe-based compilation services:
-- Supports continuous compilation
-- Provides remote compilation interface
-- Integrates into development workflows
+Emit and packaging pipeline for turning generated modules into host-facing outputs:
+- shapes emitted runtime/module assets
+- supports bundle-oriented output flows
+- is covered by dedicated emit and bundle tests
 
 ## Supported C# Types and Type Mapping
 
