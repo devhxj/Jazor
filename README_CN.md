@@ -6,9 +6,16 @@
 # Jazor - C# 到 JavaScript 编译器（支持模块系统）
 
 [![.NET](https://img.shields.io/badge/.NET-10.0-blue.svg)](https://dotnet.microsoft.com/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE.txt)
 
 Jazor 是一个高性能的 C# 到 JavaScript 编译器，旨在实现 C# 代码到 JavaScript 代码的语义等价转换。该项目基于 Roslyn 编译器平台，通过 AST（抽象语法树）转换技术，精确地将 C# 代码转换为可在浏览器或 Node.js 环境中运行的 JavaScript 代码。
+
+## 文档导航
+
+- [仓库文档中心](docs/README.md)
+- [当前项目阶段评审](docs/status/2026-04-04-project-stage-assessment.md)
+- [文档治理规则](docs/guides/documentation-governance.md)
+- [Compiler 深度文档入口](src/Jazor.Compiler/doc/README.md)
 
 ## 主要特性
 
@@ -34,52 +41,27 @@ Jazor 是一个高性能的 C# 到 JavaScript 编译器，旨在实现 C# 代码
 ```
 Jazor/
 ├── src/
-│   ├── ECMAScript/                 # 核心 ECMAScript 实现
-│   │   ├── attribute/             # ECMAScript 特性定义
-│   │   ├── generate/              # 自动生成的类型绑定
-│   │   └── Global.cs              # 全局方法和属性
-│   ├── ECMAScript.CLR/            # CLR 运行时支持
-│   │   ├── BooleanModule.cs       # Boolean 类型实现
-│   │   ├── StringModule.cs        # String 类型实现
-│   │   ├── DateTimeModule.cs      # DateTime 类型实现
-│   │   ├── BigIntegerModule.cs    # BigInteger 类型实现
-│   │   └── ...                    # 其他 CLR 类型模块
-│   ├── ECMAScript.Analyzer/       # 静态代码分析器
-│   │   └── WhiteList.cs            # 白名单（类型和成员验证）
-│   ├── ECMAScript.Compiler/       # C# 到 JavaScript 编译器
-│   │   ├── AstConverter.cs        # 类级别转换器（C# 类 → ES6 模块）
-│   │   ├── SemanticWalker.cs      # 操作级别转换器（IOperation → JS AST）
-│   │   │   ├── SemanticWalker.cs.Declaration.cs    # 变量声明
-│   │   │   ├── SemanticWalker.cs.Ordinary.cs       # 运算符、表达式
-│   │   │   ├── SemanticWalker.cs.Reference.cs      # 引用、数组索引
-│   │   │   ├── SemanticWalker.cs.Loop.cs           # 循环语句
-│   │   │   ├── SemanticWalker.cs.Switch.cs         # switch 语句/表达式
-│   │   │   ├── SemanticWalker.cs.Pattern.cs        # 模式匹配
-│   │   │   ├── SemanticWalker.cs.String.cs         # 字符串插值
-│   │   │   ├── SemanticWalker.cs.TryCatch.cs       # 异常处理
-│   │   │   ├── SemanticWalker.cs.Creation.cs       # 对象/数组创建
-│   │   │   ├── SemanticWalker.cs.Tuple.cs          # 元组和解构
-│   │   │   ├── SemanticWalker.cs.Invalid.cs        # SyntaxNode 回退
-│   │   │   └── SemanticWalker.cs.NotSupport.cs    # 不支持的操作
-│   │   ├── WalkerArgument.cs       # 转换上下文参数
-│   │   ├── StatementGroup.cs        # 语句分组工具
-│   │   ├── AstTransformationException.cs  # 异常定义
-│   │   └── ESGenerator.cs         # ECMAScript.g.cs 的源代码生成器
-│   ├── ECMAScript.Server/         # 编译服务器
-│   ├── ECMAScript.Test/           # 手动测试控制台
-│   ├── ECMAScript.ComplierTest/   # 编译器测试（MSTest）
-│   ├── ECMAScript.WebIDL/         # WebIDL 采集层（TypeScript/Deno）
-│   ├── ECMAScript.WebIDL.Generator/ # WebIDL 管线的 C# 宿主
-│   ├── ECMAScript.Common/         # 公共类型和工具
-│   └── ECMASCript.MSBuild/        # MSBuild 集成
-├── PROJECT_RULES.md               # 项目开发规则
-├── README.md                      # 英文版本文档
-└── README_CN.md                   # 本文件
+│   ├── ECMAScript/                  # 核心 ECMAScript 运行时表面
+│   ├── Jazor.Compiler/              # C# 到 JavaScript 编译器
+│   ├── Jazor.Compiler.Generator/    # 源生成与编译管线
+│   ├── Jazor.Analyzer/              # 静态分析与白名单校验
+│   ├── Jazor.CLR/                   # CLR 运行时支持模块
+│   ├── Jazor.Emit/                  # Emit 与打包输出管线
+│   ├── Jazor.Razor/                 # Razor 语法支持
+│   ├── Jazor.RazorVue/              # RazorVue 集成层
+│   ├── Jazor.RazorVue.Analysis/     # RazorVue 分析与 lowering
+│   ├── Jazor.CompilerTest/          # 编译器测试（MSTest）
+│   ├── Jazor.EmitTest/              # Emit 与 bundle 测试（MSTest）
+│   ├── ECMAScript.WebIDL/           # WebIDL 采集层（TypeScript/Deno）
+│   └── ECMAScript.WebIDL.Generator/ # WebIDL 管线的 C# 宿主
+├── docs/                            # 仓库级文档中心
+├── README.md                        # 英文版本文档
+└── README_CN.md                     # 本文件
 ```
 
 ## 核心组件
 
-### 1. ECMAScript.Compiler
+### 1. Jazor.Compiler
 
 核心编译器组件，采用两层转换架构：
 
@@ -95,17 +77,16 @@ Jazor/
 - 支持通过 `IInvalidOperation` 回退到 SyntaxNode 转换
 - **ESGenerator**：源代码生成器，自动创建包含转换后 JavaScript 内容的 `ECMAScript.g.cs` 文件
 
-**状态**：✅ 核心功能完成 | 533 个测试全部通过 (100%) | 构建成功
-详见 [Jazor.Compiler readme](src/Jazor.Compiler/readme.md)。
+详见 [Jazor.Compiler README](src/Jazor.Compiler/README.md) 了解最新的模块状态与详细说明。
 
-### 2. ECMAScript.Analyzer
+### 2. Jazor.Analyzer
 
 静态代码分析器，为标记了 `[ECMAScriptModule]` 或 `[ECMAScript]` 特性的类提供语法验证：
 - 根据支持的类型映射验证类型使用
 - 通过白名单确保只在 ECMAScript 标记的类中使用兼容的成员
 - 为不支持的操作提供编译时错误报告
 
-### 3. ECMAScript.CLR
+### 3. Jazor.CLR
 
 CLR 运行时支持，为所有支持的原生 C# 类型提供 ES6+ 模块实现：
 - 使用 C# 编写（语法贴合 JavaScript）但编译为 ES6 模块
@@ -118,7 +99,7 @@ CLR 运行时支持，为所有支持的原生 C# 类型提供 ES6+ 模块实现
 - ⚠️ 部分完善 (7-8/10)：12 个模块 (31%)
 - 🔴 需完善 (< 7/10)：0 个模块
 
-详见 [Jazor.CLR readme](src/Jazor.CLR/readme.md)。
+详见 [Jazor.CLR README](src/Jazor.CLR/README.md) 了解最新的模块状态与详细说明。
 
 ### 4. ECMAScript.WebIDL
 
@@ -132,12 +113,12 @@ Web API 绑定生成器，自动从 Web IDL 规范生成 C# 类型绑定。支�
 - `src/ECMAScript.WebIDL` 保留 `webref` / `webidl2` 采集层
 - `src/ECMAScript.WebIDL.Generator` 通过 `DenoHost` 承载 Deno，并为后续 C# emitter 落稳定 JSON IR
 
-### 5. ECMAScript.Server
+### 5. Jazor.Emit
 
-编译服务器，提供基于命名管道的编译服务：
-- 支持持续编译
-- 提供远程编译接口
-- 集成到开发工作流
+Emit 与打包输出管线，负责把生成结果整理为宿主可消费的输出：
+- 组织运行时与模块输出资产
+- 支持面向 bundle 的输出流程
+- 由独立的 emit / bundle 测试覆盖
 
 ## 支持的 C# 类型和类型映射
 
@@ -321,18 +302,18 @@ dotnet build
 dotnet test
 
 # 运行特定测试项目
-dotnet test src/ECMAScript.ComplierTest
+dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj
 
 # 运行单个测试类
-dotnet test --filter "SemanticWalkerPatternTest"
+dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticWalkerPatternTest"
 
 # 运行单个测试方法
-dotnet test --filter "SemanticWalkerPatternTest.Visit_IsPattern_Constant"
+dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticWalkerPatternTest.Visit_IsPattern_Constant"
 ```
 
 ## 贡献指南
 
-我们欢迎社区贡献！请阅读 [PROJECT_RULES.md](PROJECT_RULES.md) 了解详细的开发规则和贡献流程。
+我们欢迎社区贡献！请在提交 Pull Request 前先阅读仓库文档，并遵循代码库中现有的约定。
 
 ### 开发流程
 1. Fork 项目仓库
@@ -349,7 +330,7 @@ dotnet test --filter "SemanticWalkerPatternTest.Visit_IsPattern_Constant"
 
 ## 许可证
 
-本项目采用 MIT 许可证。详情请参阅 [LICENSE](LICENSE) 文件。
+本项目采用 MIT 许可证。详情请参阅 [LICENSE.txt](LICENSE.txt) 文件。
 
 ## 联系方式
 

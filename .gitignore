@@ -5,6 +5,7 @@
 
 # Local workspace files
 .claude/
+.worktrees/
 src/.vscode/
 src/ECMAScript.WebIDL/.vscode/
 
