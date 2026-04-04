@@ -5,6 +5,8 @@
 
 # Local workspace files
 .claude/
+src/.vscode/
+src/ECMAScript.WebIDL/.vscode/
 
 # User-specific files
 *.rsuser
