@@ -3,12 +3,14 @@ namespace ECMAScript.WebIDL.Generator;
 internal sealed record GeneratorOptions(
     string RepositoryRoot,
     string WorkerPath,
+    string DenoConfigPath,
     string OutputDirectory,
     string InventoryFileName)
 {
     public static GeneratorOptions Parse(string[] args, RepositoryLayout layout)
     {
         var workerPath = layout.DefaultWorkerPath;
+        var denoConfigPath = layout.DefaultDenoConfigPath;
         var outputDirectory = layout.DefaultOutputDirectory;
         var inventoryFileName = "webidl.inventory.json";
 
@@ -19,6 +21,9 @@ internal sealed record GeneratorOptions(
                 case "--worker":
                     workerPath = RequireValue(args, ++i, "--worker");
                     break;
+                case "--deno-config":
+                    denoConfigPath = RequireValue(args, ++i, "--deno-config");
+                    break;
                 case "--out":
                     outputDirectory = RequireValue(args, ++i, "--out");
                     break;
@@ -28,7 +33,7 @@ internal sealed record GeneratorOptions(
             }
         }
 
-        return new GeneratorOptions(layout.RepositoryRoot, workerPath, outputDirectory, inventoryFileName);
+        return new GeneratorOptions(layout.RepositoryRoot, workerPath, denoConfigPath, outputDirectory, inventoryFileName);
     }
 
     private static string RequireValue(string[] args, int index, string optionName)

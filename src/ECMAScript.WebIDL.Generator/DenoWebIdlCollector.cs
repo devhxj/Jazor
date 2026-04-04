@@ -24,6 +24,11 @@ internal sealed class DenoWebIdlCollector
             throw new FileNotFoundException("The Deno worker entrypoint was not found.", _options.WorkerPath);
         }
 
+        if (!File.Exists(_options.DenoConfigPath))
+        {
+            throw new FileNotFoundException("The Deno config file was not found.", _options.DenoConfigPath);
+        }
+
         Directory.CreateDirectory(_options.OutputDirectory);
         var tempFile = Path.Combine(_options.OutputDirectory, $"{Path.GetRandomFileName()}.json");
 
@@ -31,7 +36,6 @@ internal sealed class DenoWebIdlCollector
         {
             var workerDirectory = Path.GetDirectoryName(_options.WorkerPath)
                 ?? throw new InvalidOperationException("Could not determine the Deno worker directory.");
-            var denoConfigPath = Path.Combine(_options.RepositoryRoot, "src", "ECMAScript.WebIDL", "deno.json");
             var executeOptions = new DenoExecuteBaseOptions
             {
                 WorkingDirectory = workerDirectory,
@@ -41,7 +45,7 @@ internal sealed class DenoWebIdlCollector
             {
                 "run",
                 "--config",
-                denoConfigPath,
+                _options.DenoConfigPath,
                 "--quiet",
                 "--allow-read",
                 "--allow-write",
