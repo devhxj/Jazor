@@ -6,13 +6,20 @@
 # Jazor - C# to JavaScript Compiler with Module System
 
 [![.NET](https://img.shields.io/badge/.NET-10.0-blue.svg)](https://dotnet.microsoft.com/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE.txt)
 
 > ⚠️ **EXPERIMENTAL DEMO** ⚠️\
 > This library is a pilot project, and its API and features are subject to change during development, and may ultimately not be completed.
 ---
 
 Jazor is a high-performance C# to JavaScript compiler that aims to achieve semantically equivalent conversion from C# code to JavaScript code. Based on the Roslyn compiler platform, this project utilizes AST (Abstract Syntax Tree) transformation technology to precisely convert C# code into JavaScript code that can run in browsers or Node.js environments.
+
+## Documentation Map
+
+- [Repository documentation hub](docs/README.md)
+- [Current project stage assessment](docs/status/2026-04-04-project-stage-assessment.md)
+- [Documentation governance rules](docs/guides/documentation-governance.md)
+- [Compiler deep-dive index](src/Jazor.Compiler/doc/README.md)
 
 ## Key Features
 
@@ -77,7 +84,6 @@ Jazor/
 │   ├── ECMAScript.WebIDL.Generator/ # C# host for the WebIDL pipeline
 │   ├── ECMAScript.Common/         # Common types and utilities
 │   └── ECMASCript.MSBuild/        # MSBuild integration
-├── PROJECT_RULES.md               # Project development rules
 ├── README.md                      # This file
 └── README_CN.md                   # Chinese version
 ```
@@ -343,7 +349,7 @@ dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticW
 
 ## Contributing
 
-We welcome community contributions! Please read [PROJECT_RULES.md](PROJECT_RULES.md) for detailed development rules and contribution guidelines.
+We welcome community contributions! Please review the repository documentation and follow the conventions described in the codebase before opening a Pull Request.
 
 ### Development Workflow
 1. Fork the project repository
@@ -360,7 +366,7 @@ We welcome community contributions! Please read [PROJECT_RULES.md](PROJECT_RULES
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE.txt](LICENSE.txt) file for details.
 
 ## Contact
 

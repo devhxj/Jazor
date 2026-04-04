@@ -6,9 +6,16 @@
 # Jazor - C# 到 JavaScript 编译器（支持模块系统）
 
 [![.NET](https://img.shields.io/badge/.NET-10.0-blue.svg)](https://dotnet.microsoft.com/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE.txt)
 
 Jazor 是一个高性能的 C# 到 JavaScript 编译器，旨在实现 C# 代码到 JavaScript 代码的语义等价转换。该项目基于 Roslyn 编译器平台，通过 AST（抽象语法树）转换技术，精确地将 C# 代码转换为可在浏览器或 Node.js 环境中运行的 JavaScript 代码。
+
+## 文档导航
+
+- [仓库文档中心](docs/README.md)
+- [当前项目阶段评审](docs/status/2026-04-04-project-stage-assessment.md)
+- [文档治理规则](docs/guides/documentation-governance.md)
+- [Compiler 深度文档入口](src/Jazor.Compiler/doc/README.md)
 
 ## 主要特性
 
@@ -72,7 +79,6 @@ Jazor/
 │   ├── ECMAScript.WebIDL.Generator/ # WebIDL 管线的 C# 宿主
 │   ├── ECMAScript.Common/         # 公共类型和工具
 │   └── ECMASCript.MSBuild/        # MSBuild 集成
-├── PROJECT_RULES.md               # 项目开发规则
 ├── README.md                      # 英文版本文档
 └── README_CN.md                   # 本文件
 ```
@@ -332,7 +338,7 @@ dotnet test --filter "SemanticWalkerPatternTest.Visit_IsPattern_Constant"
 
 ## 贡献指南
 
-我们欢迎社区贡献！请阅读 [PROJECT_RULES.md](PROJECT_RULES.md) 了解详细的开发规则和贡献流程。
+我们欢迎社区贡献！请在提交 Pull Request 前先阅读仓库文档，并遵循代码库中现有的约定。
 
 ### 开发流程
 1. Fork 项目仓库
@@ -349,7 +355,7 @@ dotnet test --filter "SemanticWalkerPatternTest.Visit_IsPattern_Constant"
 
 ## 许可证
 
-本项目采用 MIT 许可证。详情请参阅 [LICENSE](LICENSE) 文件。
+本项目采用 MIT 许可证。详情请参阅 [LICENSE.txt](LICENSE.txt) 文件。
 
 ## 联系方式
 
