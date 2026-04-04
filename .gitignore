@@ -402,6 +402,7 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 .kilocode
+AGENTS.md
 CLAUDE.md
 .omc/
 .omx/
