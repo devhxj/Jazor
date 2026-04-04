@@ -3,6 +3,9 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
+# Local workspace files
+.claude/
+
 # User-specific files
 *.rsuser
 *.suo
@@ -409,4 +412,4 @@ CLAUDE.md
 .artifacts/
 .tmp/
 .vs/
-
+.tmp-webidl-out/
