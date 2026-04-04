@@ -1,0 +1,14 @@
+using System.Collections.Immutable;
+
+namespace Jazor.RazorVue.Analysis.Descriptor;
+
+public sealed record VueSlotDescriptor(
+    string Name,
+    bool IsDefault,
+    ImmutableArray<VueSlotParameterDescriptor> Parameters,
+    bool Required);
+
+public sealed record VueSlotParameterDescriptor(
+    string Name,
+    string TypeName);
+

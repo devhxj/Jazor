@@ -436,7 +436,7 @@ the resolution model is incomplete.
 
 When the compiler sees an upper-case component-like tag:
 
-1. resolve an explicit alias or fully-qualified match first
+1. resolve an explicit fully-qualified component match first
 2. reserve intrinsic component names and resolve intrinsic matches
 3. resolve visible user components from current namespace and imported namespaces
 4. resolve visible library components from imported namespaces
@@ -492,8 +492,32 @@ Examples:
 
 Recommended behavior:
 
-- fully-qualified or aliased usage resolves the ambiguity
+- fully-qualified usage resolves the ambiguity
 - simple-name fallback does not
+
+## 13.4 Phase-one author syntax for ambiguity resolution
+
+Phase one should keep component author syntax intentionally narrow.
+
+Supported resolution forms:
+
+- simple component name when unambiguous
+- fully-qualified component name when disambiguation is required
+
+Examples:
+
+- `<Dialog />`
+- `<Demo.Components.Dialog />`
+
+Phase one should not require a custom target attribute or target selector syntax for this problem.
+
+Phase one also should not promise alias-qualified component tags unless the compiler can prove a stable lowered form for them in generated Razor output.
+
+Recommended management rule:
+
+- simple name is the default authoring form
+- fully-qualified component name is the only required ambiguity escape in phase one
+- alias-based component tag resolution is deferred until it has a stable semantic extraction path
 
 ## 14. Strictness Rules
 

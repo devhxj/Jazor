@@ -185,6 +185,14 @@ But it must not be replaced with:
 - analyzer-only hidden state
 - raw string concatenation as the only handoff
 
+The carrier production/consumption split must also remain explicit:
+
+- analyzer diagnostics/discovery
+- compiler-owned snapshot extraction
+- compiler-owned lowering
+- compiler-owned catalog/materialization
+- host-side consumption
+
 ## 14. Rule 13. Vue defines runtime lifecycle semantics
 
 Phase one runtime lifecycle semantics are Vue-first.
@@ -246,6 +254,9 @@ The compiler must not fall back to a global short-name search.
 
 If multiple visible components share the same short name,
 phase one must report an ambiguity diagnostic.
+
+Phase-one ambiguity escape is limited to fully-qualified component names.
+Do not make alias-qualified tag syntax a phase-one requirement unless its lowered semantic form is proven stable.
 
 ## 18. Rule 17. Intrinsic component names are reserved
 
@@ -369,6 +380,12 @@ Phase one source-origin metadata must also preserve:
 - stable span or stable segment identity
 - generated fallback span when exact source is unavailable
 - explicit mapping quality
+
+And phase one must preserve provenance of the origin record itself, distinguishing:
+
+- Razor-backed source mapping
+- generated-syntax-derived mapping
+- generated-only fallback
 
 ## 25. Rule 24. Artifact identity must be stable and split
 

@@ -231,6 +231,14 @@ Recommended phase-one chain:
 4. emission materializes `RazorVueCatalog` plus manifest/sidecar outputs
 5. `DenoHost` consumes those outputs
 
+Recommended ownership by stage:
+
+- analyzer project owns diagnostics and discovery rules
+- compiler-owned extraction driver owns `RazorVueSemanticSnapshot`
+- Vue lowering/emission layer owns `VueCompiledArtifact`
+- catalog/materialization layer owns `RazorVueCatalog`, manifest, and origin sidecars
+- `DenoHost` owns only host consumption and build orchestration
+
 ## 7.1 Migration compatibility with current `ModuleCatalog`
 
 The repository already ships a plain module flow where generated source embeds module metadata into the target assembly.
@@ -313,6 +321,23 @@ but it does require:
 - stable spans or stable segment identity
 - generated fallback location when exact source is unavailable
 - explicit mapping quality
+
+Recommended provenance field:
+
+```csharp
+public enum RazorVueOriginProvenance
+{
+    RazorSourceMap,
+    GeneratedSyntaxLocation,
+    GeneratedFallback
+}
+```
+
+That provenance should be preserved so downstream tooling can distinguish:
+
+- exact Razor-backed mappings
+- generated-code-derived mappings
+- generated-only fallback records
 
 ## 10. Validation Expectations
 

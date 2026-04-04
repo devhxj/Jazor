@@ -37,13 +37,13 @@ public sealed class ModuleBundlerTests
         Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
         Assert.IsTrue(File.Exists(workspace.OutputPath));
 
-        var script = await File.ReadAllTextAsync(workspace.OutputPath);
+        var script = await File.ReadAllTextAsync(workspace.OutputPath, TestContext.CancellationTokenSource.Token);
         Assert.AreNotEqual(string.Empty, script);
-        StringAssert.Contains(script, "function Add(left, right)");
-        StringAssert.Contains(script, "var Value = 42;");
-        StringAssert.Contains(script, "export {");
-        StringAssert.Contains(script, "Add");
-        StringAssert.Contains(script, "Value");
+		Assert.Contains("function Add(left, right)", script);
+		Assert.Contains("var Value = 42;", script);
+		Assert.Contains("export {", script);
+		Assert.Contains("Add", script);
+		Assert.Contains("Value", script);
     }
 
     [TestMethod]
@@ -96,14 +96,14 @@ public sealed class ModuleBundlerTests
         Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
         Assert.IsTrue(File.Exists(workspace.OutputPath));
 
-        var script = await File.ReadAllTextAsync(workspace.OutputPath);
+        var script = await File.ReadAllTextAsync(workspace.OutputPath, TestContext.CancellationTokenSource.Token);
         Assert.AreNotEqual(string.Empty, script);
-        StringAssert.Contains(script, "function Prefix()");
-        StringAssert.Contains(script, "function Compose(name)");
-        StringAssert.Contains(script, "function Greet(name)");
-        StringAssert.Contains(script, "function Boot()");
-        StringAssert.Contains(script, "export {");
-        StringAssert.Contains(script, "Boot");
+		Assert.Contains("function Prefix()", script);
+		Assert.Contains("function Compose(name)", script);
+		Assert.Contains("function Greet(name)", script);
+		Assert.Contains("function Boot()", script);
+		Assert.Contains("export {", script);
+		Assert.Contains("Boot", script);
     }
 
     private static void WriteModule(string rootDirectory, string relativePath, string content)
@@ -147,4 +147,6 @@ public sealed class ModuleBundlerTests
             }
         }
     }
+
+	public TestContext TestContext { get; set; }
 }

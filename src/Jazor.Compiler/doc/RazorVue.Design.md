@@ -1,9 +1,19 @@
 # RazorVue Design
 
-This document defines the RazorVue design for Jazor.Compiler.
+This document defines the RazorVue design across the Jazor compiler, Razor substrate, Vue authoring library, and RazorVue analysis layer.
 
-It is a pre-implementation design document, not a statement of current implementation.
-The current repository does not yet contain a complete RazorVue pipeline.
+It is primarily an architecture document.
+It does not attempt to mirror every current implementation detail line by line.
+
+The current repository now contains a partial RazorVue pipeline, including:
+
+- entry discovery and analyzer split
+- descriptor extraction
+- `RazorVueCatalog` generation
+- emit/manifest materialization
+- a minimal real Vue render-function emission lane for a limited `BuildRenderTree` subset
+
+The repository still does not contain a complete phase-one RazorVue pipeline.
 
 This document exists to:
 
@@ -18,6 +28,25 @@ Related documents:
 - [RazorVue.HardRules.md](./RazorVue.HardRules.md)
 - [RazorVue.ImplementationChecklist.md](./RazorVue.ImplementationChecklist.md)
 - [RazorVue.Pitfalls.md](./RazorVue.Pitfalls.md)
+
+## 0. Project Split
+
+The public project split is:
+
+- `Jazor.Compiler`
+  owns compiler core orchestration, shared contracts, static-module generation, and RazorVue core lowering primitives
+- `Jazor.Razor`
+  owns the Razor-facing base component substrate (`JazorComponent`)
+- `Jazor.RazorVue`
+  owns the Vue-facing authoring substrate (`VueComponent`) and future Vue-first helper APIs
+- `Jazor.RazorVue.Analysis`
+  owns the RazorVue generator/analyzer-facing entry that turns `[ECMAScriptModule]` Razor components into compiler artifacts
+
+This split is intentional:
+
+- author-facing runtime types do not belong in the compiler core
+- Vue analysis entry does not belong in the Vue authoring runtime
+- the existing static-module path stays isolated from RazorVue analysis growth
 
 ## 1. Goals
 
@@ -229,6 +258,27 @@ It is that the pipeline must have an explicit semantic carrier instead of:
 - repeated re-analysis in later stages
 - direct analyzer-to-host coupling
 - temporary string-only handoff
+
+### 7.2.3 Production and consumption surfaces
+
+Phase one must also define where each carrier is produced and consumed.
+
+Recommended implementation boundary:
+
+1. analyzer runs as diagnostics/discovery only
+2. a compiler-owned extraction driver builds `RazorVueSemanticSnapshot` from the final compilation view
+3. lowering consumes `RazorVueSemanticSnapshot` and produces `VueCompiledArtifact`
+4. a catalog/materialization stage consumes `VueCompiledArtifact` and emits `RazorVueCatalog` plus manifest/sidecars
+5. `DenoHost` consumes only the materialized compiler-owned outputs
+
+Important constraint:
+
+- `RazorVueSemanticSnapshot` must not depend on hidden analyzer state
+- `VueCompiledArtifact` must not be reconstructed by `DenoHost`
+- compiler-owned extraction must run on a compilation view where generated Razor component code is already available
+
+Phase one does not need to freeze the final class name of the driver,
+but it does need to freeze this production/consumption split.
 
 ### 7.3 Build ownership remains with `DenoHost`
 
@@ -515,6 +565,19 @@ but it must preserve whether a node has:
 
 Without this distinction, later sourcemap and HMR work will still require redesign.
 
+### 18.1.1 Source-origin provenance strategy
+
+Phase one source-origin data should be produced through a layered provenance strategy.
+
+Recommended order:
+
+1. use Razor toolchain/source-mapping data when available
+2. otherwise use generated C# syntax/operation locations tied to Razor-generated files
+3. otherwise fall back to generated-only origin records
+
+This means phase one does not promise exact `.razor` mapping for every node.
+It does promise that every node records which provenance tier produced its origin data.
+
 ### 18.2 HMR reservation
 
 Artifacts should also reserve stable identity information such as:
@@ -584,6 +647,35 @@ Phase one closes only the minimal loop:
 - Vue render-function ESM emission
 - artifact + manifest generation
 - `DenoHost` consumption path
+
+### 20.1 Current implementation checkpoint
+
+The current implementation has already closed these parts of the loop:
+
+- RazorVue component discovery
+- `JazorComponent` / `VueComponent` constraints
+- props / emits / slots extraction
+- real Vue ESM artifact emission
+- artifact + manifest generation
+- emit-side host handoff shape for `DenoHost`
+
+The current implementation has only a minimal render extraction/lowering subset proven in tests:
+
+- `OpenElement`
+- `CloseElement`
+- `AddAttribute`
+- `AddContent`
+- `AddMarkupContent`
+- simple parameter-backed template expressions
+
+The current implementation does not yet claim complete support for:
+
+- component-node lowering
+- broad control-flow coverage
+- lifecycle sugar lowering
+- general component-member logic inside template expressions
+- final sourcemap output
+- runtime HMR behavior
 
 Deferred work includes:
 

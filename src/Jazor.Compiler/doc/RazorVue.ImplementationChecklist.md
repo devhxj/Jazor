@@ -1,5 +1,9 @@
 # RazorVue Implementation Checklist
 
+> Status: Active phase-one implementation artifact.
+> Positioning: Primary execution checklist for the RazorVue phase-one lane.
+> Note: Use this as staged implementation guidance; checklist items may mix completed, partial, and still-open slices.
+
 This document breaks the RazorVue design into execution phases.
 
 It is not meant to repeat design reasoning.
@@ -37,6 +41,38 @@ Phase one is considered complete only when the project can:
 7. preserve minimal source-origin metadata
 8. preserve minimal HMR identity metadata
 
+## 2.1 Current Progress Snapshot
+
+The repository has already completed the following implementation slices:
+
+- P0 foundation and migration boundary
+- P1 discovery and diagnostics
+- P2 component contract extraction
+- P6 artifact emission
+- emit-side materialization and manifest transition for `RazorVueCatalog`
+
+The repository has partially completed:
+
+- P4 minimal `BuildRenderTree` extraction
+- P5 Razor -> Vue lowering
+
+The currently proven lowering subset is:
+
+- HTML elements
+- attributes
+- text nodes
+- simple expressions backed by parameter properties
+- fallback/default slot rendering when no render tree exists
+
+The following checklist items remain effectively open even if some scaffolding exists:
+
+- general component-node lowering
+- full logic extraction
+- lifecycle sugar lowering
+- broader control-flow coverage validation
+- final `DenoHost` end-to-end integration
+- final HMR/sourcemap outputs
+
 ## 3. P0. Foundation and Constraints
 
 ### 3.1 Define semantic carrier and host migration boundary
@@ -48,12 +84,14 @@ Tasks:
   - `VueCompiledArtifact`
   - `RazorVueCatalog` or equivalent
 - define how RazorVue output coexists with the current `ModuleCatalog` / `Jazor.Emit` path
+- define which layer produces and consumes each carrier
 
 Acceptance:
 
 - semantic extraction does not depend on hidden analyzer state
 - build-facing emission has a concrete carrier
 - current static-module flow remains intact during transition
+- stage ownership is explicit before implementation starts
 
 ### 3.2 Add base classes
 
@@ -95,11 +133,16 @@ Tasks:
   - source span or stable segment identity
   - generated fallback span
   - mapping quality
+- define provenance tiers:
+  - Razor source mapping
+  - generated syntax location
+  - generated fallback
 
 Acceptance:
 
 - source-origin metadata is more than category labels
 - later sourcemap/HMR work does not require redesigning origin storage
+- provenance quality is explicit
 
 ### 3.5 Define component resolution rules
 
@@ -108,11 +151,13 @@ Tasks:
 - define `using`-driven visibility rules
 - define intrinsic-name reservation
 - define ambiguity diagnostics
+- define phase-one disambiguation syntax
 
 Acceptance:
 
 - library adoption stays `using`-based
 - component name conflicts are deterministic
+- fully-qualified component names are the required phase-one ambiguity escape
 
 ### 3.6 Add doc index entry
 

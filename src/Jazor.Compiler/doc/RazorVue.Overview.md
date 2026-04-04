@@ -16,9 +16,35 @@ It answers three questions:
 The current state of RazorVue is:
 
 - main direction is designed
-- implementation is not yet complete
+- implementation is partially landed
 - phase one scope is intentionally limited
 - HMR and sourcemap are architecturally reserved but not fully implemented
+
+As of the current implementation lane, the repository already has:
+
+- `[ECMAScriptModule]` entry split between static modules and RazorVue components
+- `Jazor.Razor` / `Jazor.RazorVue` base hierarchy
+- analyzer diagnostics for RazorVue entry and misuse rules
+- component descriptor extraction for props / emits / slots
+- `Jazor.RazorVue.Analysis` generator entry plus compiler-owned `RazorVueCatalog` / emit materialization
+- a minimal `BuildRenderTree` extraction lane that can emit real Vue `defineComponent + setup + render`
+
+The current proven render-function subset is still narrow.
+It is intentionally focused on the first usable loop:
+
+- HTML element nodes
+- attributes
+- text content
+- simple template expressions
+- default slot outlet fallback
+
+The following are still not complete phase-one coverage:
+
+- full component-node lowering
+- full logic extraction
+- lifecycle sugar lowering
+- comprehensive Razor syntax coverage
+- runtime HMR and final sourcemap output
 
 Current consensus is:
 
@@ -35,10 +61,11 @@ The main fixed conclusions are:
 2. `[ECMAScriptModule]` remains the unified entry marker.
 3. Razor components must inherit `JazorComponent`.
 4. The base hierarchy is `ComponentBase -> JazorComponent -> VueComponent`.
-5. RazorVue does not build its main path on source-generator ordering.
-6. Razor components do not reuse plain static-module lowering.
-7. The compiler emits Vue ESM artifacts and `DenoHost` owns the unified build.
-8. HMR and sourcemap are reserved in architecture through metadata, not fully implemented in phase one.
+5. Final public project split is `Jazor.Compiler` + `Jazor.Razor` + `Jazor.RazorVue` + `Jazor.RazorVue.Analysis`.
+6. RazorVue does not build its main path on source-generator ordering.
+7. Razor components do not reuse plain static-module lowering.
+8. The compiler emits Vue ESM artifacts and `DenoHost` owns the unified build.
+9. HMR and sourcemap are reserved in architecture through metadata, not fully implemented in phase one.
 
 ## 4. Document Roles
 
@@ -54,16 +81,19 @@ Use it when:
 ### 4.2 Full design
 
 - [RazorVue.Design.md](./RazorVue.Design.md)
+- [RazorVue.ProjectResponsibilities.md](./RazorVue.ProjectResponsibilities.md)
 
 Use it when:
 
 - you need architecture, boundaries, and responsibilities
 - you need to understand why the design is shaped this way
+- you need the current project split and extension seam
 
 ### 4.3 Focused specs
 
 - [RazorVue.ComponentDescriptorSpec.md](./RazorVue.ComponentDescriptorSpec.md)
 - [RazorVue.DenoHostContract.md](./RazorVue.DenoHostContract.md)
+- [RazorVue.ImplementationSkeleton.md](./RazorVue.ImplementationSkeleton.md)
 
 Use them when:
 
@@ -71,7 +101,31 @@ Use them when:
 - you are implementing host-facing artifact/manifest flow
 - you need narrower, implementation-facing specs than the main design doc
 
-### 4.4 Hard constraints
+### 4.4 Review memo
+
+- [RazorVue.Review.md](./RazorVue.Review.md)
+
+Use it when:
+
+- you want the double-pass review result
+- you want the remaining risks and immediate next step in one place
+
+### 4.5 HMR package
+
+- [RazorVue.Hmr.Overview.md](./RazorVue.Hmr.Overview.md)
+- [RazorVue.Hmr.DecisionSummary.md](./RazorVue.Hmr.DecisionSummary.md)
+- [RazorVue.Hmr.Design.md](./RazorVue.Hmr.Design.md)
+- [RazorVue.Hmr.HardRules.md](./RazorVue.Hmr.HardRules.md)
+- [RazorVue.Hmr.ImplementationChecklist.md](./RazorVue.Hmr.ImplementationChecklist.md)
+- [RazorVue.Hmr.Pitfalls.md](./RazorVue.Hmr.Pitfalls.md)
+
+Use them when:
+
+- you are preparing future HMR support
+- you need the reserved identity/change model
+- you need the compiler/`DenoHost` HMR boundary
+
+### 4.6 Hard constraints
 
 - [RazorVue.HardRules.md](./RazorVue.HardRules.md)
 
@@ -80,16 +134,18 @@ Use it when:
 - you need review rules
 - you need to know what cannot be decided ad hoc during implementation
 
-### 4.5 Implementation sequencing
+### 4.7 Implementation sequencing
 
 - [RazorVue.ImplementationChecklist.md](./RazorVue.ImplementationChecklist.md)
+- [RazorVue.ImplementationSkeleton.md](./RazorVue.ImplementationSkeleton.md)
+- [RazorVue.FirstPrPlan.md](./RazorVue.FirstPrPlan.md)
 
 Use it when:
 
 - implementation is actually starting
 - you need phased execution and acceptance gates
 
-### 4.6 Common failure modes
+### 4.8 Common failure modes
 
 - [RazorVue.Pitfalls.md](./RazorVue.Pitfalls.md)
 
@@ -115,9 +171,14 @@ Read in this order:
 2. [RazorVue.Design.md](./RazorVue.Design.md)
 3. [RazorVue.ComponentDescriptorSpec.md](./RazorVue.ComponentDescriptorSpec.md)
 4. [RazorVue.DenoHostContract.md](./RazorVue.DenoHostContract.md)
-5. [RazorVue.HardRules.md](./RazorVue.HardRules.md)
-6. [RazorVue.Pitfalls.md](./RazorVue.Pitfalls.md)
-7. [RazorVue.ImplementationChecklist.md](./RazorVue.ImplementationChecklist.md)
+5. [RazorVue.Hmr.DecisionSummary.md](./RazorVue.Hmr.DecisionSummary.md)
+6. [RazorVue.Hmr.Design.md](./RazorVue.Hmr.Design.md)
+7. [RazorVue.Hmr.HardRules.md](./RazorVue.Hmr.HardRules.md)
+8. [RazorVue.ImplementationSkeleton.md](./RazorVue.ImplementationSkeleton.md)
+9. [RazorVue.FirstPrPlan.md](./RazorVue.FirstPrPlan.md)
+10. [RazorVue.HardRules.md](./RazorVue.HardRules.md)
+11. [RazorVue.Pitfalls.md](./RazorVue.Pitfalls.md)
+12. [RazorVue.ImplementationChecklist.md](./RazorVue.ImplementationChecklist.md)
 
 ### 5.3 If you are reviewing code/design
 
@@ -126,18 +187,21 @@ Read in this order:
 1. [RazorVue.HardRules.md](./RazorVue.HardRules.md)
 2. [RazorVue.Pitfalls.md](./RazorVue.Pitfalls.md)
 3. [RazorVue.Design.md](./RazorVue.Design.md)
-4. [RazorVue.ComponentDescriptorSpec.md](./RazorVue.ComponentDescriptorSpec.md)
-5. [RazorVue.DenoHostContract.md](./RazorVue.DenoHostContract.md)
+4. [RazorVue.Hmr.HardRules.md](./RazorVue.Hmr.HardRules.md)
+5. [RazorVue.Hmr.Pitfalls.md](./RazorVue.Hmr.Pitfalls.md)
+6. [RazorVue.ComponentDescriptorSpec.md](./RazorVue.ComponentDescriptorSpec.md)
+7. [RazorVue.DenoHostContract.md](./RazorVue.DenoHostContract.md)
 
-## 6. What Must Be Reconfirmed Before Implementation
+## 6. What Must Be Reconfirmed Before The Next Implementation Stage
 
-Before real implementation starts, re-check at least:
+Before the next implementation stage starts, re-check at least:
 
 1. `JazorComponent` / `VueComponent` API surface is still aligned with current goals
 2. analyzer remains the accepted main semantic extraction point
 3. the plain static-module path does not need major entry refactoring first
 4. `DenoHost` manifest expectations are still compatible with the planned artifact model
 5. HMR/sourcemap reservation requirements are still present in the implementation plan
+6. HMR identity and boundary classification are still aligned with the reserved artifact model
 
 ## 7. One-line Conclusion
 
@@ -145,4 +209,5 @@ If you need to resume RazorVue later, start here, then read:
 
 1. [RazorVue.DecisionSummary.md](./RazorVue.DecisionSummary.md)
 2. [RazorVue.HardRules.md](./RazorVue.HardRules.md)
-3. [RazorVue.ImplementationChecklist.md](./RazorVue.ImplementationChecklist.md)
+3. [RazorVue.Hmr.DecisionSummary.md](./RazorVue.Hmr.DecisionSummary.md)
+4. [RazorVue.ImplementationChecklist.md](./RazorVue.ImplementationChecklist.md)

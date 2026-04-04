@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Jazor.Compiler\Jazor.Compiler.csproj" />
+    <ProjectReference Include="..\Jazor.RazorVue.Analysis\Jazor.RazorVue.Analysis.csproj" />
   </ItemGroup>
 
   <ItemGroup>

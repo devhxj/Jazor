@@ -1,10 +1,11 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 using System;
 using System.Collections.Immutable;
 using System.Linq;
 using Jazor.Compiler;
+using Jazor.RazorVue.Analysis;
 using Jazor.Name;
 
 namespace Jazor.Analyzer;
@@ -78,6 +79,12 @@ public partial class Analyzer : DiagnosticAnalyzer
 
 			// 跳过未被特性标注
 			if (!hasAttribute && !InECMAScriptAttribute(symbol))
+				return;
+
+			var razorVueSymbols = RazorVueKnownSymbols.TryCreate(startContext.Compilation);
+			// RazorVue entries are validated by dedicated analyzers so the legacy
+			// ECMAScript whitelist rules do not reject ComponentBase-style surfaces.
+			if (razorVueSymbols is not null && razorVueSymbols.IsInRazorVueScope(symbol))
 				return;
 
 			// 处理字段、属性初始值
@@ -449,4 +456,5 @@ public partial class Analyzer : DiagnosticAnalyzer
 		return false;
 	}
 }
+
 
