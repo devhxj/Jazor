@@ -1467,13 +1467,39 @@ public static class BigIntegerModule
 	[Jazor(Op.Inline ,"static System.Numerics.BigInteger.IsPositive(System.Numerics.BigInteger)", "(__arg1 > 0n)")]
 	public extern static bool _386d048147df6eae(BigInt value);
 
-	///<summary>Compares two values to compute which is greater.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.MaxMagnitude(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
-	public extern static BigInt _d305de2c64e85995(BigInt x, BigInt y);
+	/// <summary>
+	/// C#: BigInteger.MaxMagnitude(x, y)
+	/// JS: 先比较绝对值，绝对值相同再按数值大小决胜
+	/// </summary>
+	[Jazor(Op.Import ,"static System.Numerics.BigInteger.MaxMagnitude(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
+	public static BigInt _d305de2c64e85995(BigInt x, BigInt y)
+	{
+		var absX = x < BigInt.Zero ? -x : x;
+		var absY = y < BigInt.Zero ? -y : y;
+		if (absX > absY)
+			return x;
+		if (absX < absY)
+			return y;
 
-	///<summary>Compares two values to compute which is lesser.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.MinMagnitude(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
-	public extern static BigInt _fef56ccd17b22e88(BigInt x, BigInt y);
+		return x > y ? x : y;
+	}
+
+	/// <summary>
+	/// C#: BigInteger.MinMagnitude(x, y)
+	/// JS: 先比较绝对值，绝对值相同再按数值大小决胜
+	/// </summary>
+	[Jazor(Op.Import ,"static System.Numerics.BigInteger.MinMagnitude(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
+	public static BigInt _fef56ccd17b22e88(BigInt x, BigInt y)
+	{
+		var absX = x < BigInt.Zero ? -x : x;
+		var absY = y < BigInt.Zero ? -y : y;
+		if (absX < absY)
+			return x;
+		if (absX > absY)
+			return y;
+
+		return x < y ? x : y;
+	}
 
 	///<summary>Tries to parse a string into a value.</summary>
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.TryParse(string, System.IFormatProvider, out System.Numerics.BigInteger)")]

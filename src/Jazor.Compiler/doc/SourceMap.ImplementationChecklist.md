@@ -1,5 +1,9 @@
 # Jazor SourceMap 实施清单
 
+> Status: Design frozen, implementation deferred.
+> Positioning: Deferred implementation checklist for a later compiler phase.
+> Note: The design direction is considered stable enough for future execution, but sourcemap work should remain postponed until the compiler main path settles.
+
 ## 1. 文档定位
 
 本文档是 [SourceMap.Design.md](./SourceMap.Design.md) 的配套实施清单。

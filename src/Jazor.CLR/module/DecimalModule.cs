@@ -18,6 +18,20 @@ public static class DecimalModule
 	private static BigInt SByteMinValue => BigInt_("-128");
 	private static BigInt SByteMaxValue => BigInt_("127");
 	private static BigInt ByteMaxValue => BigInt_("255");
+	private static Number AllowLeadingWhiteStyle => Number_((int)System.Globalization.NumberStyles.AllowLeadingWhite);
+	private static Number AllowTrailingWhiteStyle => Number_((int)System.Globalization.NumberStyles.AllowTrailingWhite);
+	private static Number AllowLeadingSignStyle => Number_((int)System.Globalization.NumberStyles.AllowLeadingSign);
+	private static Number AllowTrailingSignStyle => Number_((int)System.Globalization.NumberStyles.AllowTrailingSign);
+	private static Number AllowParenthesesStyle => Number_((int)System.Globalization.NumberStyles.AllowParentheses);
+	private static Number AllowDecimalPointStyle => Number_((int)System.Globalization.NumberStyles.AllowDecimalPoint);
+	private static Number AllowThousandsStyle => Number_((int)System.Globalization.NumberStyles.AllowThousands);
+	private static Number AllowExponentStyle => Number_((int)System.Globalization.NumberStyles.AllowExponent);
+	private static Number AllowCurrencySymbolStyle => Number_((int)System.Globalization.NumberStyles.AllowCurrencySymbol);
+	private static Number AllowHexSpecifierStyle => Number_((int)System.Globalization.NumberStyles.AllowHexSpecifier);
+	private static Number AllowBinarySpecifierStyle => Number_((int)System.Globalization.NumberStyles.AllowBinarySpecifier);
+	private static Number NumberStyleNumber => Number_((int)System.Globalization.NumberStyles.Number);
+	private static Number DefaultFixedPrecision => 2;
+	private static Number DefaultNumberPrecision => 2;
 
 	private static Array<object?> CreateParts(BigInt unscaled, Number scale)
 		=> [unscaled, scale];
@@ -27,6 +41,94 @@ public static class DecimalModule
 
 	private static Number GetScale(Array<object?> parts)
 		=> (Number)parts[1]!;
+
+	private static Array<object?> CreateNumberSymbols(
+		string groupSeparator,
+		string decimalSeparator,
+		Number primaryGroupSize,
+		Number secondaryGroupSize)
+		=> [groupSeparator, decimalSeparator, primaryGroupSize, secondaryGroupSize];
+
+	private static string GetGroupSeparator(Array<object?> symbols)
+		=> (string)symbols[0]!;
+
+	private static string GetDecimalSeparator(Array<object?> symbols)
+		=> (string)symbols[1]!;
+
+	private static Number GetPrimaryGroupSize(Array<object?> symbols)
+		=> (Number)symbols[2]!;
+
+	private static Number GetSecondaryGroupSize(Array<object?> symbols)
+		=> (Number)symbols[3]!;
+
+	private static bool HasStyle(Number style, Number flag)
+		=> (((style | 0) & (flag | 0)) == (flag | 0));
+
+	private static Number GetNumberStylesValue(object style)
+	{
+		if (style is Number numberStyle)
+			return numberStyle | 0;
+		if (style is System.Globalization.NumberStyles enumStyle)
+			return Number_((int)enumStyle);
+
+		throw new Error("ArgumentException: Invalid NumberStyles value.");
+	}
+
+	private static void ValidateDecimalNumberStyles(Number style)
+	{
+		if (Math.Floor_(style) != style || style < 0)
+			throw new Error("ArgumentException: An undefined NumberStyles value is not supported.");
+		if (HasStyle(style, AllowHexSpecifierStyle) || HasStyle(style, AllowBinarySpecifierStyle))
+			throw new Error("ArgumentException: The number style AllowHexSpecifier or AllowBinarySpecifier is not supported on floating point data types.");
+	}
+
+	private static Array<object?> GetNumberSymbols(object? provider)
+	{
+		if (provider is string locale)
+		{
+			if (locale.Length == 0)
+				return CreateNumberSymbols(",", ".", 3, 3);
+
+			return GetNumberSymbols(new Intl.NumberFormat(locale));
+		}
+
+		if (provider is Intl.NumberFormat numberFormat)
+			return GetNumberSymbols(numberFormat);
+
+		return GetNumberSymbols(new Intl.NumberFormat());
+	}
+
+	private static Array<object?> GetNumberSymbols(Intl.NumberFormat numberFormat)
+	{
+		var groupSeparator = ",";
+		var decimalSeparator = ".";
+		var integerParts = new Array<Number>();
+		var parts = numberFormat.FormatToParts(123456789.1);
+		for (var i = 0; i < parts.Length; i++)
+		{
+			var part = parts[i]!;
+			if (part.Type == "group" && groupSeparator.Length == 0)
+				groupSeparator = part.Value;
+			else if (part.Type == "group")
+				groupSeparator = part.Value;
+			else if (part.Type == "decimal")
+				decimalSeparator = part.Value;
+			else if (part.Type == "integer")
+				integerParts.Push(part.Value.Length);
+		}
+
+		var primaryGroupSize = 3;
+		var secondaryGroupSize = 3;
+		if (integerParts.Length > 0)
+		{
+			primaryGroupSize = integerParts[integerParts.Length - 1]!;
+			secondaryGroupSize = integerParts.Length > 1
+				? integerParts[integerParts.Length - 2]!
+				: primaryGroupSize;
+		}
+
+		return CreateNumberSymbols(groupSeparator, decimalSeparator, primaryGroupSize, secondaryGroupSize);
+	}
 
 	private static BigInt Pow10(Number exponent)
 	{
@@ -77,7 +179,7 @@ public static class DecimalModule
 		return CreateParts(unscaled, scale);
 	}
 
-	private static Array<object?> ParseDecimal(string value)
+	private static Array<object?> ParseDecimal(string value, bool allowExponent = true)
 	{
 		var s = value.Trim();
 		if (s.Length == 0)
@@ -98,6 +200,8 @@ public static class DecimalModule
 			exponentIndex = s.IndexOf('E');
 		if (exponentIndex >= 0)
 		{
+			if (!allowExponent)
+				throw new Error($"FormatException: String '{value}' was not recognized as a valid Decimal.");
 			if (exponentIndex == 0 || exponentIndex == s.Length - 1)
 				throw new Error($"FormatException: String '{value}' was not recognized as a valid Decimal.");
 
@@ -149,6 +253,118 @@ public static class DecimalModule
 		return NormalizeParts(unscaled, scale);
 	}
 
+	private static string NormalizeDecimal(string value)
+	{
+		var parts = ParseDecimal(value);
+		return FormatDecimal(GetUnscaled(parts), GetScale(parts));
+	}
+
+	private static string RemoveAllOccurrences(string value, string token)
+		=> token.Length == 0 ? value : value.Replace(token, "");
+
+	private static string ReplaceDecimalSeparator(string value, string decimalSeparator)
+	{
+		if (decimalSeparator.Length == 0 || decimalSeparator == ".")
+			return value;
+
+		return value.Replace(decimalSeparator, ".");
+	}
+
+	private static string NormalizeExternalDecimalText(string value, Number style, object? provider)
+	{
+		ValidateDecimalNumberStyles(style);
+
+		var text = value;
+		var allowLeadingWhite = HasStyle(style, AllowLeadingWhiteStyle);
+		var allowTrailingWhite = HasStyle(style, AllowTrailingWhiteStyle);
+		if (allowLeadingWhite && allowTrailingWhite)
+			text = text.Trim();
+		else if (allowLeadingWhite)
+			text = text.TrimStart();
+		else if (allowTrailingWhite)
+			text = text.TrimEnd();
+
+		if (text.Length == 0)
+			throw new Error($"FormatException: String '{value}' was not recognized as a valid Decimal.");
+
+		var negative = false;
+		if (HasStyle(style, AllowParenthesesStyle) && text.Length >= 2 && text[0] == '(' && text[text.Length - 1] == ')')
+		{
+			negative = true;
+			text = text.Substring(1, text.Length - 2);
+			if (allowLeadingWhite && allowTrailingWhite)
+				text = text.Trim();
+			else if (allowLeadingWhite)
+				text = text.TrimStart();
+			else if (allowTrailingWhite)
+				text = text.TrimEnd();
+		}
+
+		if (text.Length == 0)
+			throw new Error($"FormatException: String '{value}' was not recognized as a valid Decimal.");
+
+		if (text[0] == '+' || text[0] == '-')
+		{
+			if (!HasStyle(style, AllowLeadingSignStyle))
+				throw new Error($"FormatException: String '{value}' was not recognized as a valid Decimal.");
+
+			negative = text[0] == '-' ? !negative : negative;
+			text = text.Substring(1);
+		}
+
+		if (text.Length == 0)
+			throw new Error($"FormatException: String '{value}' was not recognized as a valid Decimal.");
+
+		if (text[text.Length - 1] == '+' || text[text.Length - 1] == '-')
+		{
+			if (!HasStyle(style, AllowTrailingSignStyle))
+				throw new Error($"FormatException: String '{value}' was not recognized as a valid Decimal.");
+
+			negative = text[text.Length - 1] == '-' ? !negative : negative;
+			text = text.Substring(0, text.Length - 1);
+		}
+
+		if (text.Length == 0)
+			throw new Error($"FormatException: String '{value}' was not recognized as a valid Decimal.");
+
+		var symbols = GetNumberSymbols(provider);
+		var groupSeparator = GetGroupSeparator(symbols);
+		var decimalSeparator = GetDecimalSeparator(symbols);
+		if (groupSeparator.Length != 0)
+		{
+			if (HasStyle(style, AllowThousandsStyle))
+				text = RemoveAllOccurrences(text, groupSeparator);
+			else if (text.IndexOf(groupSeparator) >= 0)
+				throw new Error($"FormatException: String '{value}' was not recognized as a valid Decimal.");
+		}
+
+		if (decimalSeparator != ".")
+		{
+			if (text.IndexOf(decimalSeparator) >= 0)
+			{
+				if (!HasStyle(style, AllowDecimalPointStyle))
+					throw new Error($"FormatException: String '{value}' was not recognized as a valid Decimal.");
+
+				text = ReplaceDecimalSeparator(text, decimalSeparator);
+			}
+		}
+
+		if (!HasStyle(style, AllowDecimalPointStyle) && text.IndexOf('.') >= 0)
+			throw new Error($"FormatException: String '{value}' was not recognized as a valid Decimal.");
+
+		if (negative)
+			text = "-" + text;
+
+		return text;
+	}
+
+	private static string ParseDecimalExternal(string value, Number style, object? provider)
+	{
+		var normalized = NormalizeExternalDecimalText(value, style, provider);
+		var parts = ParseDecimal(normalized, HasStyle(style, AllowExponentStyle));
+		return FormatDecimal(GetUnscaled(parts), GetScale(parts));
+	}
+
 	private static string FormatDecimal(BigInt unscaled, Number scale)
 	{
 		var normalized = NormalizeParts(unscaled, scale);
@@ -171,10 +387,132 @@ public static class DecimalModule
 		return negative ? "-" + text : text;
 	}
 
-	private static string NormalizeDecimal(string value)
+	private static string FormatDecimalToScale(string value, Number scale)
 	{
 		var parts = ParseDecimal(value);
-		return FormatDecimal(GetUnscaled(parts), GetScale(parts));
+		var unscaled = GetUnscaled(parts);
+		var negative = unscaled < BigInt.Zero;
+		var absolute = negative ? -unscaled : unscaled;
+		var digits = absolute.ToString()!;
+		if (scale == 0)
+			return negative ? "-" + digits : digits;
+
+		if (digits.Length <= scale)
+			digits = RepeatZero(scale - digits.Length + 1) + digits;
+
+		var split = digits.Length - scale;
+		var text = digits.Substring(0, split) + "." + digits.Substring(split);
+		return negative ? "-" + text : text;
+	}
+
+	private static string InsertGroupSeparators(
+		string integerDigits,
+		string separator,
+		Number primaryGroupSize,
+		Number secondaryGroupSize)
+	{
+		if (separator.Length == 0 || integerDigits.Length <= primaryGroupSize)
+			return integerDigits;
+
+		var groups = new Array<string>();
+		var end = integerDigits.Length;
+		var size = primaryGroupSize;
+		while (end > size)
+		{
+			groups.Push(integerDigits.Substring(end - size, size));
+			end -= size;
+			size = secondaryGroupSize;
+		}
+
+		var result = integerDigits.Substring(0, end);
+		for (var i = groups.Length - 1; i >= 0; i--)
+			result += separator + groups[i]!;
+
+		return result;
+	}
+
+	private static string ApplyNumberSeparators(string value, object? provider)
+	{
+		var symbols = GetNumberSymbols(provider);
+		var groupSeparator = GetGroupSeparator(symbols);
+		var decimalSeparator = GetDecimalSeparator(symbols);
+		var primaryGroupSize = GetPrimaryGroupSize(symbols);
+		var secondaryGroupSize = GetSecondaryGroupSize(symbols);
+		var sign = "";
+		var digits = value;
+		if (digits[0] == '-')
+		{
+			sign = "-";
+			digits = digits.Substring(1);
+		}
+
+		var dotIndex = digits.IndexOf('.');
+		var integerDigits = dotIndex >= 0 ? digits.Substring(0, dotIndex) : digits;
+		var fractionDigits = dotIndex >= 0 ? digits.Substring(dotIndex + 1) : "";
+		var groupedInteger = InsertGroupSeparators(integerDigits, groupSeparator, primaryGroupSize, secondaryGroupSize);
+		if (fractionDigits.Length == 0)
+			return sign + groupedInteger;
+
+		return sign + groupedInteger + decimalSeparator + fractionDigits;
+	}
+
+	private static Number ParsePrecision(string format, Number defaultValue)
+	{
+		if (format.Length == 1)
+			return defaultValue;
+
+		var precisionText = format.Substring(1);
+		for (var i = 0; i < precisionText.Length; i++)
+		{
+			var c = precisionText[i];
+			if (c < '0' || c > '9')
+				throw new Error("FormatException: Format specifier was invalid.");
+		}
+
+		return Number_(precisionText);
+	}
+
+	private static bool IsSimpleCustomDecimalFormat(string format)
+	{
+		for (var i = 0; i < format.Length; i++)
+		{
+			var c = format[i];
+			if (c != '0' && c != '#' && c != '.' && c != ',')
+				return false;
+		}
+
+		return true;
+	}
+
+	private static string FormatDecimalWithFormat(string value, string? format, object? provider)
+	{
+		if (format == null || format.Length == 0)
+			return NormalizeDecimal(value);
+
+		var specifier = format[0];
+		if ((specifier == 'G' || specifier == 'g') && format.Length == 1)
+			return NormalizeDecimal(value);
+		if (specifier == 'F' || specifier == 'f')
+		{
+			var precision = ParsePrecision(format, DefaultFixedPrecision);
+			return FormatDecimalToScale(RoundDecimal(value, precision), precision);
+		}
+		if (specifier == 'N' || specifier == 'n')
+		{
+			var precision = ParsePrecision(format, DefaultNumberPrecision);
+			return ApplyNumberSeparators(
+				FormatDecimalToScale(RoundDecimal(value, precision), precision),
+				provider);
+		}
+		if (IsSimpleCustomDecimalFormat(format))
+		{
+			var dotIndex = format.IndexOf('.');
+			var scale = dotIndex < 0 ? 0 : format.Length - dotIndex - 1;
+			var formatted = FormatDecimalToScale(RoundDecimal(value, scale), scale);
+			return format.IndexOf(',') >= 0 ? ApplyNumberSeparators(formatted, provider) : formatted;
+		}
+
+		throw new Error("FormatException: Format specifier was invalid.");
 	}
 
 	private static string CreateDecimalFromNumber(Number value)
@@ -654,9 +992,7 @@ public static class DecimalModule
 	/// </summary>
 	[Jazor(Op.Import, "decimal.ToString(string)")]
 	public static string _af32d07083f1da07(string instance, string? format)
-	{
-		return NormalizeDecimal(instance);
-	}
+		=> FormatDecimalWithFormat(instance, format, null);
 
 	/// <summary>
 	/// C#: instance.ToString(provider)
@@ -664,12 +1000,12 @@ public static class DecimalModule
 	/// </summary>
 	[Jazor(Op.Import, "decimal.ToString(System.IFormatProvider)")]
 	public static string _6234ba988b3e006d(string instance, Intl.NumberFormat? provider)
-		=> NormalizeDecimal(instance);
+		=> FormatDecimalWithFormat(instance, null, provider);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation using the specified format and culture-specific format information.</summary>
 	[Jazor(Op.Import ,"decimal.ToString(string, System.IFormatProvider)")]
 	public static string _b1e6a06111674f0c(string instance, string? format, Intl.NumberFormat? provider)
-		=> NormalizeDecimal(instance);
+		=> FormatDecimalWithFormat(instance, format, provider);
 
 	///<summary>Tries to format the value of the current decimal instance into the provided span of characters.</summary>
 	[Jazor(Op.Discard ,"decimal.TryFormat(System.Span<char>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)")]
@@ -682,27 +1018,27 @@ public static class DecimalModule
 	///<summary>Converts the string representation of a number to its <see cref="T:System.Decimal" /> equivalent.</summary>
 	[Jazor(Op.Import ,"static decimal.Parse(string)")]
 	public static string _91a2436283a24315(string s)
-		=> NormalizeDecimal(s);
+		=> ParseDecimalExternal(s, NumberStyleNumber, null);
 
 	///<summary>Converts the string representation of a number in a specified style to its <see cref="T:System.Decimal" /> equivalent.</summary>
 	[Jazor(Op.Import ,"static decimal.Parse(string, System.Globalization.NumberStyles)")]
 	public static string _79a0e8ede29256cc(string s, object style)
-		=> NormalizeDecimal(s);
+		=> ParseDecimalExternal(s, GetNumberStylesValue(style), null);
 
 	///<summary>Converts the string representation of a number to its <see cref="T:System.Decimal" /> equivalent using the specified culture-specific format information.</summary>
 	[Jazor(Op.Import ,"static decimal.Parse(string, System.IFormatProvider)")]
 	public static string _01be2a34fe2cda4e(string s, Intl.NumberFormat? provider)
-		=> NormalizeDecimal(s);
+		=> ParseDecimalExternal(s, NumberStyleNumber, provider);
 
 	///<summary>Converts the string representation of a number to its <see cref="T:System.Decimal" /> equivalent using the specified style and culture-specific format.</summary>
 	[Jazor(Op.Import ,"static decimal.Parse(string, System.Globalization.NumberStyles, System.IFormatProvider)")]
 	public static string _f525a420b2d600ec(string s, object style, Intl.NumberFormat? provider)
-		=> NormalizeDecimal(s);
+		=> ParseDecimalExternal(s, GetNumberStylesValue(style), provider);
 
 	///<summary>Converts the span representation of a number to its <see cref="T:System.Decimal" /> equivalent using the specified style and culture-specific format.</summary>
 	[Jazor(Op.Import ,"static decimal.Parse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider)")]
 	public static string _8e0c949ee2411c7f(string s, object style, Intl.NumberFormat? provider)
-		=> NormalizeDecimal(s);
+		=> ParseDecimalExternal(s, GetNumberStylesValue(style), provider);
 
 	///<summary>Converts the string representation of a number to its <see cref="T:System.Decimal" /> equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Import ,"static decimal.TryParse(string, out decimal)")]
@@ -713,7 +1049,7 @@ public static class DecimalModule
 
 		try
 		{
-			return [true, NormalizeDecimal(s)];
+			return [true, ParseDecimalExternal(s, NumberStyleNumber, null)];
 		}
 		catch
 		{
@@ -733,12 +1069,26 @@ public static class DecimalModule
 	///<summary>Converts the string representation of a number to its <see cref="T:System.Decimal" /> equivalent using the specified style and culture-specific format. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Import ,"static decimal.TryParse(string, System.Globalization.NumberStyles, System.IFormatProvider, out decimal)")]
 	public static Array<object?> _b4ecd2424c9a371e(string? s, object style, Intl.NumberFormat? provider, string result)
-		=> _e96278809bb50e35(s, result);
+	{
+		var styleValue = GetNumberStylesValue(style);
+		ValidateDecimalNumberStyles(styleValue);
+		if (s == null || s.Length == 0)
+			return [false, "0"];
+
+		try
+		{
+			return [true, ParseDecimalExternal(s, styleValue, provider)];
+		}
+		catch
+		{
+			return [false, "0"];
+		}
+	}
 
 	///<summary>Converts the span representation of a number to its <see cref="T:System.Decimal" /> equivalent using the specified style and culture-specific format. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Import ,"static decimal.TryParse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider, out decimal)")]
 	public static Array<object?> _ed6b24306e2ef5cd(string s, object style, Intl.NumberFormat? provider, string result)
-		=> _e96278809bb50e35(s, result);
+		=> _b4ecd2424c9a371e(s, style, provider, result);
 
 	///<summary>Converts the value of a specified instance of <see cref="T:System.Decimal" /> to its equivalent binary representation.</summary>
 	[Jazor(Op.Discard ,"static decimal.GetBits(decimal)")]
@@ -1033,7 +1383,7 @@ public static class DecimalModule
 		=> CompareDecimal(d1, d2) >= 0;
 
 	///<summary>Returns the <see cref="T:System.TypeCode" /> for value type <see cref="T:System.Decimal" />.</summary>
-	[Jazor(Op.Discard ,"decimal.GetTypeCode()")]
+	[Jazor(Op.Inline ,"decimal.GetTypeCode()", "15")]
 	public extern static System.TypeCode _323e061741a92593(string instance);
 
 	///<summary>Converts a value to a specified integer type using saturation on overflow</summary>
@@ -1171,17 +1521,29 @@ public static class DecimalModule
 	///<summary>Tries to parse a string into a value.</summary>
 	[Jazor(Op.Import ,"static decimal.TryParse(string, System.IFormatProvider, out decimal)")]
 	public static Array<object?> _a3ffdb214a9c82a0(string? s, Intl.NumberFormat? provider, string result)
-		=> _e96278809bb50e35(s, result);
+	{
+		if (s == null || s.Length == 0)
+			return [false, "0"];
+
+		try
+		{
+			return [true, ParseDecimalExternal(s, NumberStyleNumber, provider)];
+		}
+		catch
+		{
+			return [false, "0"];
+		}
+	}
 
 	///<summary>Parses a span of characters into a value.</summary>
 	[Jazor(Op.Import ,"static decimal.Parse(System.ReadOnlySpan<char>, System.IFormatProvider)")]
 	public static string _c644fa2b15360347(string s, Intl.NumberFormat? provider)
-		=> NormalizeDecimal(s);
+		=> ParseDecimalExternal(s, NumberStyleNumber, provider);
 
 	///<summary>Tries to parse a span of characters into a value.</summary>
 	[Jazor(Op.Import ,"static decimal.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, out decimal)")]
 	public static Array<object?> _7ac8df441c1485cf(string s, Intl.NumberFormat? provider, string result)
-		=> _e96278809bb50e35(s, result);
+		=> _a3ffdb214a9c82a0(s, provider, result);
 
 	///<summary>Parses a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static decimal.Parse(System.ReadOnlySpan<byte>, System.Globalization.NumberStyles, System.IFormatProvider)")]

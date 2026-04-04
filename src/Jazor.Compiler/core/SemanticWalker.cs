@@ -103,6 +103,9 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
                     else if (displayName == "System.DateTimeOffset")
                         return (TypeMapper.Object, "Object");
 
+                    else if (IsSystemHalfType(typeSymbol) || displayName == "System.Half")
+                        return (TypeMapper.Number, "Number");
+
                     else if (displayName == "System.TimeOnly")
                         return (TypeMapper.BigInt, "BigInt");
 
@@ -171,6 +174,10 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         var unknownName = GetTypeConfigOrWhiteListName(typeSymbol);
         return (TypeMapper.Unknown, unknownName ?? typeSymbol.Name);
     }
+
+    private static bool IsSystemHalfType(ITypeSymbol? typeSymbol)
+        => typeSymbol?.OriginalDefinition is { Name: "Half" } original &&
+           original.ContainingNamespace?.ToDisplayString() == "System";
 
     private static ISymbol GetWhiteListSymbol(IMemberReferenceOperation operation, bool isRead = true)
     {
@@ -270,8 +277,101 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
     private static IEnumerable<ISymbol> EnumerateWhiteListLookupSymbols(ISymbol symbol)
     {
-        for (ISymbol? current = symbol.OriginalDefinition; current is not null; current = GetWhiteListFallbackSymbol(current))
+        var seen = new HashSet<ISymbol>(SymbolEqualityComparer.Default);
+
+        foreach (var candidate in EnumerateWithOverrideFallback(symbol.OriginalDefinition))
+        {
+            if (seen.Add(candidate))
+                yield return candidate;
+        }
+
+        // 某些泛型数学静态成员在语义模型里会先绑定到接口投影符号，
+        // 但白名单声明的是具体类型上的实现成员。
+        // 这里按“同容器、同名字、同参数形状”再回退一次，把 lookup 拉回稳定的实现面。
+        foreach (var candidate in EnumerateContainingTypeImplementationCandidates(symbol))
+        {
+            foreach (var fallback in EnumerateWithOverrideFallback(candidate))
+            {
+                if (seen.Add(fallback))
+                    yield return fallback;
+            }
+        }
+    }
+
+    private static IEnumerable<ISymbol> EnumerateWithOverrideFallback(ISymbol symbol)
+    {
+        for (ISymbol? current = symbol; current is not null; current = GetWhiteListFallbackSymbol(current))
             yield return current;
+    }
+
+    private static IEnumerable<ISymbol> EnumerateContainingTypeImplementationCandidates(ISymbol symbol)
+    {
+        if (symbol.ContainingType is null)
+            yield break;
+
+        if (symbol is IMethodSymbol method)
+        {
+            foreach (var candidate in symbol.ContainingType.GetMembers(method.Name).OfType<IMethodSymbol>())
+            {
+                if (!IsCompatibleMethodCandidate(method, candidate))
+                    continue;
+
+                yield return candidate.OriginalDefinition;
+            }
+
+            yield break;
+        }
+
+        if (symbol is IPropertySymbol property)
+        {
+            foreach (var candidate in symbol.ContainingType.GetMembers(property.Name).OfType<IPropertySymbol>())
+            {
+                if (!IsCompatiblePropertyCandidate(property, candidate))
+                    continue;
+
+                yield return candidate.OriginalDefinition;
+            }
+        }
+    }
+
+    private static bool IsCompatibleMethodCandidate(IMethodSymbol source, IMethodSymbol candidate)
+    {
+        if (source.MethodKind != candidate.MethodKind ||
+            source.Name != candidate.Name ||
+            source.IsStatic != candidate.IsStatic ||
+            source.Arity != candidate.Arity ||
+            source.Parameters.Length != candidate.Parameters.Length)
+            return false;
+
+        for (var i = 0; i < source.Parameters.Length; i++)
+        {
+            if (!SymbolEqualityComparer.Default.Equals(
+                    source.Parameters[i].Type.OriginalDefinition,
+                    candidate.Parameters[i].Type.OriginalDefinition))
+                return false;
+        }
+
+        return true;
+    }
+
+    private static bool IsCompatiblePropertyCandidate(IPropertySymbol source, IPropertySymbol candidate)
+    {
+        if (source.Name != candidate.Name ||
+            source.IsStatic != candidate.IsStatic ||
+            source.Parameters.Length != candidate.Parameters.Length)
+            return false;
+
+        for (var i = 0; i < source.Parameters.Length; i++)
+        {
+            if (!SymbolEqualityComparer.Default.Equals(
+                    source.Parameters[i].Type.OriginalDefinition,
+                    candidate.Parameters[i].Type.OriginalDefinition))
+                return false;
+        }
+
+        return SymbolEqualityComparer.Default.Equals(
+            source.Type.OriginalDefinition,
+            candidate.Type.OriginalDefinition);
     }
 
     private static ISymbol? GetWhiteListFallbackSymbol(ISymbol symbol)
@@ -286,6 +386,11 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
     private static IEnumerable<string> EnumerateWhiteListLookupKeys(string displayString)
     {
         yield return displayString;
+
+        var normalizedStaticDisplay = NormalizeStaticAbstractLikeDisplay(displayString);
+        if (normalizedStaticDisplay is { Length: > 0 } &&
+            !string.Equals(normalizedStaticDisplay, displayString, StringComparison.Ordinal))
+            yield return normalizedStaticDisplay;
 
         const string virtualPrefix = "virtual ";
         const string overridePrefix = "override ";
@@ -314,6 +419,25 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         yield return virtualPrefix + displayString;
         yield return overridePrefix + displayString;
         yield return abstractPrefix + displayString;
+
+        static string? NormalizeStaticAbstractLikeDisplay(string text)
+        {
+            const string staticAbstractPrefix = "static abstract ";
+            const string staticVirtualPrefix = "static virtual ";
+            const string staticOverridePrefix = "static override ";
+            const string staticSealedPrefix = "static sealed ";
+
+            if (text.StartsWith(staticAbstractPrefix, StringComparison.Ordinal))
+                return "static " + text.Substring(staticAbstractPrefix.Length);
+            if (text.StartsWith(staticVirtualPrefix, StringComparison.Ordinal))
+                return "static " + text.Substring(staticVirtualPrefix.Length);
+            if (text.StartsWith(staticOverridePrefix, StringComparison.Ordinal))
+                return "static " + text.Substring(staticOverridePrefix.Length);
+            if (text.StartsWith(staticSealedPrefix, StringComparison.Ordinal))
+                return "static " + text.Substring(staticSealedPrefix.Length);
+
+            return null;
+        }
     }
 
     private static List<Expression> CreateLegacyWhiteListArguments(ISymbol symbol, List<Expression> arguments, Expression? instance)

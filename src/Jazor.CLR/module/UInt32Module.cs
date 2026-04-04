@@ -190,31 +190,53 @@ public static class UInt32Module
 	public extern static Array<object?> _11ae080219d3fb62(Uint32Array s, object style, Intl.NumberFormat? provider, Number result);
 
 	///<summary>Returns the <see cref="T:System.TypeCode" /> for value type <see cref="T:System.UInt32" />.</summary>
-	[Jazor(Op.Discard ,"uint.GetTypeCode()")]
+	[Jazor(Op.Inline ,"uint.GetTypeCode()", "10")]
 	public extern static System.TypeCode _64eb872ab8e376c7(Number instance);
 
-	///<summary>Computes the quotient and remainder of two values.</summary>
-	[Jazor(Op.Discard ,"static uint.DivRem(uint, uint)")]
-	public extern static (uint Quotient, uint Remainder) _8a073d758132b5bb(Number left, Number right);
+	/// <summary>
+	/// C#: uint.DivRem(left, right)
+	/// JS: 无符号整除场景可稳定按 floor 计算商
+	/// </summary>
+	[Jazor(Op.Import ,"static uint.DivRem(uint, uint)")]
+	public static (uint Quotient, uint Remainder) _8a073d758132b5bb(Number left, Number right)
+	{
+		if (right == 0)
+			throw new Error("DivideByZeroException");
+		var quotient = Math.Floor_(left / right);
+		var remainder = left % right;
+		return ((uint)quotient, (uint)remainder);
+	}
 
 	///<summary>Computes the number of leading zeros in a value.</summary>
-	[Jazor(Op.Discard ,"static uint.LeadingZeroCount(uint)")]
+	[Jazor(Op.Inline ,"static uint.LeadingZeroCount(uint)", "Math.clz32(__arg1)")]
 	public extern static Number _6ca4bd298f6f135e(Number value);
 
-	///<summary>Computes the number of bits that are set in a value.</summary>
-	[Jazor(Op.Discard ,"static uint.PopCount(uint)")]
-	public extern static Number _96cd49e102b39e5b(Number value);
+	/// <summary>
+	/// C#: uint.PopCount(value)
+	/// JS: 使用 32 位汉明权重算法，helper 比长 Inline 更稳定
+	/// </summary>
+	[Jazor(Op.Import ,"static uint.PopCount(uint)")]
+	public static Number _96cd49e102b39e5b(Number value)
+	{
+		uint v = (uint)value;
+		v = v - ((v >> 1) & 0x55555555);
+		v = (v & 0x33333333) + ((v >> 2) & 0x33333333);
+		v = (v + (v >> 4)) & 0x0F0F0F0F;
+		v = v + (v >> 8);
+		v = v + (v >> 16);
+		return (int)(v & 0x3F);
+	}
 
 	///<summary>Rotates a value left by a given amount.</summary>
-	[Jazor(Op.Discard ,"static uint.RotateLeft(uint, int)")]
+	[Jazor(Op.Inline ,"static uint.RotateLeft(uint, int)", "((((__arg1 << (__arg2 & 31)) | (__arg1 >>> (32 - (__arg2 & 31))))) >>> 0)")]
 	public extern static Number _580f8710a620f39b(Number value, Number rotateAmount);
 
 	///<summary>Rotates a value right by a given amount.</summary>
-	[Jazor(Op.Discard ,"static uint.RotateRight(uint, int)")]
+	[Jazor(Op.Inline ,"static uint.RotateRight(uint, int)", "((((__arg1 >>> (__arg2 & 31)) | (__arg1 << (32 - (__arg2 & 31))))) >>> 0)")]
 	public extern static Number _465afaf2de09680f(Number value, Number rotateAmount);
 
 	///<summary>Computes the number of trailing zeros in a value.</summary>
-	[Jazor(Op.Discard ,"static uint.TrailingZeroCount(uint)")]
+	[Jazor(Op.Inline ,"static uint.TrailingZeroCount(uint)", "(__arg1 === 0 ? 32 : (31 - Math.clz32(((__arg1 >>> 0) & (-(__arg1 >>> 0))))))")]
 	public extern static Number _769ecbbaac253539(Number value);
 
 	/// <summary>

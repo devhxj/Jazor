@@ -28,15 +28,5 @@ public partial class SemanticWalker
 
 		return new NonUpdateUnaryExpression(Operator.TypeOf, value);
 	}
-
-	public Expression? Compile_eb6a23c2a874fdf1(Expression? handler, Expression?[] args)
-	{
-		if (handler is null)
-			throw new InvalidOperationException("bool.GetTypeCode() 需要实例 handler。");
-		if (args.Length != 0)
-			throw new InvalidOperationException("bool.GetTypeCode() 不应接收显式参数。");
-
-		return new NumericLiteral((double)TypeCode.Boolean, ((int)TypeCode.Boolean).ToString());
-	}
 	
 }

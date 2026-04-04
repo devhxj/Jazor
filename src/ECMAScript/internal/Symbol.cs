@@ -8,6 +8,13 @@ namespace ECMAScript;
 [Description("@#Symbol")]
 public sealed class Symbol
 {
+	/// <summary>
+	/// JavaScript <c>Symbol.prototype</c> object.
+	/// Keeping this on the constructor host avoids inventing a separate CLR helper surface.
+	/// </summary>
+	[Description("@#prototype")]
+	public extern static Symbol Prototype { get; }
+
 	// Well-known Symbols
 	[Description("@#hasInstance")]
 	public extern static Symbol HasInstance { get; }
@@ -46,6 +53,22 @@ public sealed class Symbol
 	/// </summary>
 	[Description("@#description")]
 	public extern string? Description { get; }
+
+	/// <summary>
+	/// Hidden protocol bridge for JavaScript <c>Symbol.prototype[@@toPrimitive]</c>.
+	/// JavaScript ignores the hint and returns the wrapped symbol value directly.
+	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[Description("@#@@toPrimitive")]
+	public extern Symbol ToPrimitive_();
+
+	/// <summary>
+	/// Hidden projection of JavaScript <c>Symbol.prototype[@@toStringTag]</c>.
+	/// This stays hidden because it is primarily used by host protocol machinery such as <c>Object.prototype.toString</c>.
+	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[Description("@#@@toStringTag")]
+	public extern string ToStringTag_ { get; }
 
 	[Description("@#toString")]
 	public extern override string ToString();

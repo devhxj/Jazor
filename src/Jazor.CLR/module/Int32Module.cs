@@ -11,7 +11,7 @@ namespace Jazor.CLR;
 /// Op 类型选择原则：
 /// - Allowed: 操作符（+ - * / % == != &lt; &gt; &lt;= &gt;=）
 /// - Inline: 简单比较和运算
-/// - Alias: JS Math 方法
+/// - Alias: 只有成员名和最终宿主都稳定时才直接映射原生方法
 /// - Import: 需要完整实现的复杂逻辑（Parse/TryParse）
 /// - Discard: 不支持的功能
 /// </summary>
@@ -196,7 +196,7 @@ public static class Int32Module
 	[Jazor(Op.Discard, "static int.TryParse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider, out int)")]
 	public extern static Array<object?> _b745c572061e8b30(Uint32Array s, object style, Intl.NumberFormat? provider, Number result);
 
-	[Jazor(Op.Discard, "int.GetTypeCode()")]
+	[Jazor(Op.Inline, "int.GetTypeCode()", "9")]
 	public extern static System.TypeCode _5c5bca3bf690f9b1(Number instance);
 
 	/// <summary>
@@ -217,7 +217,7 @@ public static class Int32Module
 	/// C#: int.LeadingZeroCount(value)
 	/// JS: Math.clz32(value)
 	/// </summary>
-	[Jazor(Op.Alias, "static int.LeadingZeroCount(int)", "clz32")]
+	[Jazor(Op.Inline, "static int.LeadingZeroCount(int)", "Math.clz32(__arg1)")]
 	public extern static Number _f4458d4939549cbc(Number value);
 
 	/// <summary>
@@ -254,24 +254,10 @@ public static class Int32Module
 
 	/// <summary>
 	/// C#: int.TrailingZeroCount(value)
-	/// JS: 使用位运算 (使用 ctz 算法)
+	/// JS: 先提取最低位 1，再通过 clz32 还原位索引；零值单独返回 32
 	/// </summary>
-	[Jazor(Op.Import, "static int.TrailingZeroCount(int)")]
-	public static Number _43a8a807a2b103c8(Number value)
-	{
-		if (value == 0)
-			return 32;
-
-		// 使用位运算
-		int v = (int)value;
-		int count = 0;
-		while ((v & 1) == 0)
-		{
-			v >>= 1;
-			count++;
-		}
-		return count;
-	}
+	[Jazor(Op.Inline, "static int.TrailingZeroCount(int)", "(__arg1 === 0 ? 32 : (31 - Math.clz32((__arg1 & (-__arg1)))))")]
+	public extern static Number _43a8a807a2b103c8(Number value);
 
 	/// <summary>
 	/// C#: int.IsPow2(value)
@@ -305,29 +291,32 @@ public static class Int32Module
 	/// <summary>
 	/// C#: int.Max(x, y)
 	/// JS: Math.max(x, y)
+	/// Note: 这里不能依赖 int -> Number 的 Alias 宿主，否则会退化成错误的 Number.max
 	/// </summary>
-	[Jazor(Op.Alias, "static int.Max(int, int)", "max")]
+	[Jazor(Op.Inline, "static int.Max(int, int)", "Math.max(__arg1, __arg2)")]
 	public extern static Number _a98fdc6e84d091b3(Number x, Number y);
 
 	/// <summary>
 	/// C#: int.Min(x, y)
 	/// JS: Math.min(x, y)
+	/// Note: 这里不能依赖 int -> Number 的 Alias 宿主，否则会退化成错误的 Number.min
 	/// </summary>
-	[Jazor(Op.Alias, "static int.Min(int, int)", "min")]
+	[Jazor(Op.Inline, "static int.Min(int, int)", "Math.min(__arg1, __arg2)")]
 	public extern static Number _a0b140070c2e6328(Number x, Number y);
 
 	/// <summary>
 	/// C#: int.Sign(value)
-	/// JS: Math.sign(value)
+	/// JS: value > 0 ? 1 : (value < 0 ? -1 : 0)
 	/// </summary>
-	[Jazor(Op.Alias, "static int.Sign(int)", "sign")]
+	[Jazor(Op.Inline, "static int.Sign(int)", "(__arg1 > 0 ? 1 : (__arg1 < 0 ? -1 : 0))")]
 	public extern static Number _ab2e55d493adcdd8(Number value);
 
 	/// <summary>
 	/// C#: int.Abs(value)
 	/// JS: Math.abs(value)
+	/// Note: 这里不能依赖 int -> Number 的 Alias 宿主，否则会退化成错误的 Number.abs
 	/// </summary>
-	[Jazor(Op.Alias, "static int.Abs(int)", "abs")]
+	[Jazor(Op.Inline, "static int.Abs(int)", "Math.abs(__arg1)")]
 	public extern static Number _49bf8261f5cf3a4b(Number value);
 
 	[Jazor(Op.Discard, "static int.CreateChecked<TOther>(TOther)")]

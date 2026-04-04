@@ -20,22 +20,44 @@ public sealed class ErrorOptions
 public class Error : Exception
 {
 	/// <summary>
+	/// JavaScript <c>Error.prototype</c> object.
+	/// This stays on the constructor host so the mapped surface remains recognizable from JavaScript.
+	/// </summary>
+	[Description("@#prototype")]
+	public extern static Error Prototype { get; }
+
+	/// <summary>
+	/// Returns whether the supplied value is a JavaScript error object.
+	/// This mirrors JavaScript <c>Error.isError</c> and checks runtime error branding rather than CLR inheritance.
+	/// </summary>
+	[Description("@#isError")]
+	public extern static bool IsError(object? arg);
+
+	/// <summary>
 	/// The error message as exposed by JavaScript <c>Error.prototype.message</c>.
+	/// This stays as a mapped host member so reads observe the runtime error object rather than CLR exception text synthesis.
 	/// </summary>
 	[Description("@#message")]
-	public new string? Message => base.Message;
+	public new extern string? Message { get; }
 
+	/// <summary>
+	/// JavaScript <c>Error.prototype.name</c>.
+	/// This remains runtime-backed instead of hard-coded so custom error instances can still expose overridden names.
+	/// </summary>
 	[Description("@#name")]
-	public virtual string Name => "Error";
+	public extern virtual string Name { get; }
 
 	/// <summary>
 	/// Optional value that caused this error.
 	/// </summary>
 	[Description("@#cause")]
-	public object? Cause { get; }
+	public extern object? Cause { get; }
 
+	/// <summary>
+	/// JavaScript stack text when the runtime provides it.
+	/// </summary>
 	[Description("@#stack")]
-	public string? Stack => StackTrace;
+	public extern string? Stack { get; }
 
 	/// <summary>
 	/// Creates a JavaScript error without an explicit message.
@@ -61,8 +83,15 @@ public class Error : Exception
 [Description("@#EvalError")]
 public class EvalError : Error
 {
+	/// <summary>
+	/// JavaScript <c>EvalError.prototype</c> object.
+	/// This intentionally hides <see cref="Error.Prototype"/> because the runtime constructor has its own prototype object.
+	/// </summary>
+	[Description("@#prototype")]
+	public new extern static EvalError Prototype { get; }
+
 	[Description("@#name")]
-	public override string Name => "EvalError";
+	public extern override string Name { get; }
 
 	/// <summary>
 	/// Creates a JavaScript <c>EvalError</c> without an explicit message.
@@ -83,8 +112,15 @@ public class EvalError : Error
 [Description("@#RangeError")]
 public class RangeError : Error
 {
+	/// <summary>
+	/// JavaScript <c>RangeError.prototype</c> object.
+	/// This intentionally hides <see cref="Error.Prototype"/> because the runtime constructor has its own prototype object.
+	/// </summary>
+	[Description("@#prototype")]
+	public new extern static RangeError Prototype { get; }
+
 	[Description("@#name")]
-	public override string Name => "RangeError";
+	public extern override string Name { get; }
 
 	/// <summary>
 	/// Creates a JavaScript <c>RangeError</c> without an explicit message.
@@ -105,8 +141,15 @@ public class RangeError : Error
 [Description("@#ReferenceError")]
 public class ReferenceError : Error
 {
+	/// <summary>
+	/// JavaScript <c>ReferenceError.prototype</c> object.
+	/// This intentionally hides <see cref="Error.Prototype"/> because the runtime constructor has its own prototype object.
+	/// </summary>
+	[Description("@#prototype")]
+	public new extern static ReferenceError Prototype { get; }
+
 	[Description("@#name")]
-	public override string Name => "ReferenceError";
+	public extern override string Name { get; }
 
 	/// <summary>
 	/// Creates a JavaScript <c>ReferenceError</c> without an explicit message.
@@ -127,8 +170,15 @@ public class ReferenceError : Error
 [Description("@#SyntaxError")]
 public class SyntaxError : Error
 {
+	/// <summary>
+	/// JavaScript <c>SyntaxError.prototype</c> object.
+	/// This intentionally hides <see cref="Error.Prototype"/> because the runtime constructor has its own prototype object.
+	/// </summary>
+	[Description("@#prototype")]
+	public new extern static SyntaxError Prototype { get; }
+
 	[Description("@#name")]
-	public override string Name => "SyntaxError";
+	public extern override string Name { get; }
 
 	/// <summary>
 	/// Creates a JavaScript <c>SyntaxError</c> without an explicit message.
@@ -149,8 +199,15 @@ public class SyntaxError : Error
 [Description("@#TypeError")]
 public class TypeError : Error
 {
+	/// <summary>
+	/// JavaScript <c>TypeError.prototype</c> object.
+	/// This intentionally hides <see cref="Error.Prototype"/> because the runtime constructor has its own prototype object.
+	/// </summary>
+	[Description("@#prototype")]
+	public new extern static TypeError Prototype { get; }
+
 	[Description("@#name")]
-	public override string Name => "TypeError";
+	public extern override string Name { get; }
 
 	/// <summary>
 	/// Creates a JavaScript <c>TypeError</c> without an explicit message.
@@ -171,8 +228,15 @@ public class TypeError : Error
 [Description("@#URIError")]
 public class URIError : Error
 {
+	/// <summary>
+	/// JavaScript <c>URIError.prototype</c> object.
+	/// This intentionally hides <see cref="Error.Prototype"/> because the runtime constructor has its own prototype object.
+	/// </summary>
+	[Description("@#prototype")]
+	public new extern static URIError Prototype { get; }
+
 	[Description("@#name")]
-	public override string Name => "URIError";
+	public extern override string Name { get; }
 
 	/// <summary>
 	/// Creates a JavaScript <c>URIError</c> without an explicit message.
@@ -193,14 +257,21 @@ public class URIError : Error
 [Description("@#AggregateError")]
 public class AggregateError : Error
 {
+	/// <summary>
+	/// JavaScript <c>AggregateError.prototype</c> object.
+	/// This intentionally hides <see cref="Error.Prototype"/> because the runtime constructor has its own prototype object.
+	/// </summary>
+	[Description("@#prototype")]
+	public new extern static AggregateError Prototype { get; }
+
 	[Description("@#name")]
-	public override string Name => "AggregateError";
+	public extern override string Name { get; }
 
 	/// <summary>
 	/// JavaScript <c>AggregateError.prototype.errors</c> array.
 	/// </summary>
 	[Description("@#errors")]
-	public Array<object?> Errors { get; }
+	public extern Array<object?> Errors { get; }
 
 	/// <summary>
 	/// Creates an <c>AggregateError</c> from a JavaScript iterable of error values.
@@ -231,22 +302,29 @@ public class AggregateError : Error
 [Description("@#SuppressedError")]
 public class SuppressedError : Error
 {
+	/// <summary>
+	/// JavaScript <c>SuppressedError.prototype</c> object.
+	/// This intentionally hides <see cref="Error.Prototype"/> because the runtime constructor has its own prototype object.
+	/// </summary>
+	[Description("@#prototype")]
+	public new extern static SuppressedError Prototype { get; }
+
 	[Description("@#name")]
-	public override string Name => "SuppressedError";
+	public extern override string Name { get; }
 
 	/// <summary>
 	/// The later error value that replaced the previously active one during disposal.
 	/// JavaScript allows any value here, not just <see cref="Error"/>.
 	/// </summary>
 	[Description("@#error")]
-	public object? Error { get; }
+	public extern object? Error { get; }
 
 	/// <summary>
 	/// The earlier error value that became suppressed by <see cref="Error"/>.
 	/// JavaScript allows any value here, not just <see cref="Error"/>.
 	/// </summary>
 	[Description("@#suppressed")]
-	public object? Suppressed { get; }
+	public extern object? Suppressed { get; }
 
 	/// <summary>
 	/// Creates a JavaScript <c>SuppressedError</c> without an explicit message.

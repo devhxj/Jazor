@@ -8,17 +8,15 @@ namespace Jazor.Compiler;
 /// <summary>
 /// 自定义注释节点
 /// </summary>
-public sealed class LineComment : Statement
+public sealed class BlockComment(in string comment) : Expression(NodeType.Extension)
 {
-    public LineComment(in string comment) : base(NodeType.Extension) => Comment = comment;
-
-    public string Comment { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+    public string Comment { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; } = comment;
 
     protected override object? Accept(AstVisitor visitor)
     {
         if (visitor is AstToJavaScriptConverter v)
         {
-            v.Writer.WriteLineComment(Comment, TriviaFlags.LeadingNewLineRequired);
+            v.Writer.WriteBlockComment([Comment], TriviaFlags.None);
         }
 
         return this;

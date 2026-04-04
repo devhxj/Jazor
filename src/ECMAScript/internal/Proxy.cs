@@ -37,6 +37,7 @@ public static class Proxy
 	/// Creates a revocable JavaScript proxy together with its paired revoke callback.
 	/// This models JavaScript <c>Proxy.revocable(target, handler)</c> directly on the <c>Proxy</c> host.
 	/// </summary>
+	[Description("@#revocable")]
 	public extern static RevocableProxy<TTarget> Revocable<TTarget>(TTarget target, ProxyHandler<TTarget> handler) where TTarget : class;
 }
 
@@ -132,13 +133,15 @@ public abstract class ProxyHandler<TTarget> where TTarget : class
 
 	/// <summary>
 	/// Trap for function invocation.
+	/// The receiver and argument list stay nullable because JavaScript call sites may supply any runtime values there.
 	/// </summary>
 	[Description("@#apply")]
-	public extern virtual object? Apply(TTarget target, object thisArg, object[] argumentsList);
+	public extern virtual object? Apply(TTarget target, object? thisArg, object?[] argumentsList);
 
 	/// <summary>
 	/// Trap for constructor invocation with <c>new</c>.
+	/// The argument list stays nullable because JavaScript constructor calls may supply any runtime values there.
 	/// </summary>
 	[Description("@#construct")]
-	public extern virtual object? Construct(TTarget target, object[] argumentsList, object newTarget);
+	public extern virtual object? Construct(TTarget target, object?[] argumentsList, object newTarget);
 }

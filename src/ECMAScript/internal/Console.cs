@@ -6,11 +6,12 @@ public static partial class Global
 	{
 		/// <summary>
 		/// 如果断言为 false，则将一个错误消息写入控制台。如果断言是 true，没有任何反应。
+		/// 参数列表保持可空并接受任意值，因为 JavaScript 控制台格式化本来就按运行时值处理参数。
 		/// </summary>
 		/// <param name="assertion">一个布尔表达式。如果 assertion 为假，消息将会被输出到控制台之中。</param>
 		/// <param name="obj">被用来输出的 Javascript 对象列表，最后输出的字符串是各个对象依次拼接的结果。</param>
 		[Description("@#assert")]
-		public extern static void Assert(bool assertion, params object[] obj);
+		public extern static void Assert(bool assertion, params object?[] obj);
 
 		/// <summary>
 		/// 如果断言为 false，则将一个错误消息写入控制台。如果断言是 true，没有任何反应。
@@ -19,7 +20,7 @@ public static partial class Global
 		/// <param name="msg">一个包含零个或多个子串的 Javascript 字符串。</param>
 		/// <param name="subst">各个消息作为字串的 Javascript 对象。这个参数可以让你能够控制输出的格式。</param>
 		[Description("@#assert")]
-		public extern static void Assert(bool assertion, string msg, params string[] subst);
+		public extern static void Assert(bool assertion, string msg, params object?[] subst);
 
 		/// <summary>
 		/// 清空控制台，但前提是该控制台允许清空。像浏览器运行的图形控制台就允许清空，而像 Node 运行的终端上显示的控制台则不支持它，调用该方法将不会产生任何效果（也不会报错）。
@@ -55,7 +56,7 @@ public static partial class Global
 		/// <param name="msg">包含零个或多个替换字符串的 JavaScript 字符串，这些替换字符串会按照连续的顺序用 subst1 到 substN 进行替换。</param>
 		/// <param name="subst">包含零个或多个替换字符串的 JavaScript 字符串，这些替换字符串会按照连续的顺序用 subst1 到 substN 进行替换。</param>
 		[Description("@#debug")]
-		public extern static void Debug(string msg, params string?[] subst);
+		public extern static void Debug(string msg, params object?[] subst);
 
 		/// <summary>
 		/// 可以显示指定 JavaScript 对象的属性列表，并以交互式的形式展现。输出结果呈现为分层列表，包含展开/折叠的三角形图标，可用于查看子对象的内容。
@@ -78,21 +79,23 @@ public static partial class Global
 		/// <param name="msg">一个字符串，它包含零个或多个替代字符串。</param>
 		/// <param name="subst">要输出的 JavaScript 对象列表。这些对象的字符串形式按顺序加起来然后输出。</param>
 		[Description("@#error")]
-		public extern static void Error(string msg, params string?[] subst);
+		public extern static void Error(string msg, params object?[] subst);
 
 		/// <summary>
 		/// 在 Web 控制台上创建一个新的分组。随后输出到控制台上的内容都会被添加一个缩进，表示该内容属于当前分组，直到调用 console.groupEnd() 之后，当前分组结束。
+		/// 参数列表保持可空并接受任意值，以匹配 JavaScript 控制台的分组标题和附加输出参数。
 		/// </summary>
-		/// <param name="label">分组标签。</param>
+		/// <param name="label">分组标题或附加输出参数。</param>
 		[Description("@#group")]
-		public extern static void Group(string? label = null);
+		public extern static void Group(params object?[] label);
 
 		/// <summary>
 		/// 在 Web 控制台上创建一个新的分组。与 console.group() 方法的不同点是，新建的分组默认是折叠的。用户必须点击一个按钮才能将折叠的内容打开。
+		/// 参数列表保持可空并接受任意值，以匹配 JavaScript 控制台的分组标题和附加输出参数。
 		/// </summary>
-		/// <param name="label">分组标签。</param>
+		/// <param name="label">分组标题或附加输出参数。</param>
 		[Description("@#groupCollapsed")]
-		public extern static void GroupCollapsed(string? label = null);
+		public extern static void GroupCollapsed(params object?[] label);
 
 		/// <summary>
 		/// 在 Web 控制台中退出一格缩进 (结束分组). 请参阅 console 中的Using groups in the console 来获取它的用法和示例。
@@ -113,7 +116,7 @@ public static partial class Global
 		/// <param name="msg">JavaScript 字符串。可包含零个或多个替换字符串。</param>
 		/// <param name="subst">用于替换 msg 内的替换字符串的 JavaScript 对象。可以对输出的格式进行额外的控制。</param>
 		[Description("@#info")]
-		public extern static void Info(string msg, params string?[] subst);
+		public extern static void Info(string msg, params object?[] subst);
 
 		/// <summary>
 		/// 向 Web 控制台输出一条信息。这条信息可能是单个字符串（包括可选的替代字符串），也可能是一个或多个对象。
@@ -128,7 +131,7 @@ public static partial class Global
 		/// <param name="msg">一个 JavaScript 字符串，其中包含零个或多个替代字符串。</param>
 		/// <param name="subst">JavaScript 对象，用来依次替换 msg 中的替代字符串。你可以在替代字符串中指定对象的输出格式。</param>
 		[Description("@#log")]
-		public extern static void Log(string msg, params string?[] subst);
+		public extern static void Log(string msg, params object?[] subst);
 
 		/// <summary>
 		/// 将数据以表格的形式显示。
@@ -137,9 +140,9 @@ public static partial class Global
 		/// 表格的第一列是 index。如果数据 data 是一个数组，那么这一列的单元格的值就是数组的索引。如果数据是一个对象，那么它们的值就是各对象的属性名称。注意（在 FireFox 中）console.table 被限制为只显示 1000 行（第一行是被标记的索引（原文：labeled index））。
 		/// </summary>
 		/// <param name="data">要显示的数据。必须是数组或对象。</param>
-		/// <param name="columns">一个包含列的名称的数组。</param>
+		/// <param name="columns">列名列表。<see cref="IEnumerable{T}"/> 用作 JavaScript 列名数组的通用 C# 输入面。</param>
 		[Description("@#table")]
-		public extern static void Table(object? data, string[]? columns = null);
+		public extern static void Table(object? data, IEnumerable<string>? columns = null);
 
 		/// <summary>
 		/// 你可以启动一个计时器来跟踪某一个操作的占用时长。每一个计时器必须拥有唯一的名字，页面中最多能同时运行 10,000 个计时器。当以此计时器名字为参数调用 console.timeEnd() 时，浏览器将以毫秒为单位，输出对应计时器所经过的时间。
@@ -189,6 +192,6 @@ public static partial class Global
 		/// <param name="msg">一个 JavaScript 字符串，其中包含零个或多个替代字符串。</param>
 		/// <param name="subst">零个或多个 Javascript 对象 依次替换 msg 中的替代字符串，你可以在替代字符串中指定对象的输出格式。</param>
 		[Description("@#warn")]
-		public extern static void Warn(string msg, params string?[] subst);
+		public extern static void Warn(string msg, params object?[] subst);
 	}
 }

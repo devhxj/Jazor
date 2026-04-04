@@ -17,6 +17,5 @@ public partial class SemanticWalker
 	{
 		// 初始白名单特殊编译处理
 		funcs["static ECMAScript.Global.TypeOf(object)"] = Compile_b58c68bda64ad0f8;
-		funcs["bool.GetTypeCode()"] = Compile_eb6a23c2a874fdf1;
 	}
 }

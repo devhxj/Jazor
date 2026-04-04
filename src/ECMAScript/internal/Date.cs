@@ -8,6 +8,13 @@
 [Description("@#Date")]
 public sealed class Date
 {
+	/// <summary>
+	/// JavaScript <c>Date.prototype</c> object.
+	/// Exposing this on the constructor host keeps the public surface aligned with the runtime host shape.
+	/// </summary>
+	[Description("@#prototype")]
+	public extern static Date Prototype { get; }
+
 	public extern Date();
 
 	public extern Date(Number value);
@@ -366,6 +373,14 @@ public sealed class Date
 	public extern string ToISOString();
 
 	/// <summary>
+	/// Hidden protocol bridge for JavaScript <c>Date.prototype[@@toPrimitive]</c>.
+	/// The runtime may produce either a string or a number depending on the supplied hint, so the bridge stays union-shaped.
+	/// </summary>
+	[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+	[Description("@#@@toPrimitive")]
+	public extern Either<string, Number> ToPrimitive_(string? hint = null);
+
+	/// <summary>
 	/// Used by <c>JSON.stringify</c> to transform the date for JSON serialization.
 	/// Nullable is used because JavaScript returns <c>null</c> when the date is invalid.
 	/// </summary>
@@ -433,6 +448,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Converts a date and time to a string by using the current or specified locale.
+	/// <see cref="IEnumerable{T}"/> is used as the common C# input surface for JavaScript locale lists.
 	/// </summary>
 	/// <param name="locales">A locale string or array of locale strings that contain one or more language or locale tags.If you include more than one locale string, list them in descending order of priority so that the first entry is the preferred locale.If you omit this parameter, the default locale of the JavaScript runtime is used.</param>
 	/// <param name="options">An object that contains one or more properties that specify comparison options.</param>
@@ -441,16 +457,24 @@ public sealed class Date
 	public extern string ToLocaleString(string? locales = null, Intl.DateTimeFormatOptions? options = null);
 
 	/// <summary>
+	/// C# convenience overload for the JavaScript form that omits <c>locales</c> and only supplies options.
+	/// This exists because C# cannot naturally skip the leading locale argument in method calls.
+	/// </summary>
+	[Description("@#toLocaleString")]
+	public extern string ToLocaleString(Intl.DateTimeFormatOptions options);
+
+	/// <summary>
 	/// Converts a date and time to a string by using the current or specified locale.
 	/// </summary>
 	/// <param name="locales">A locale string or array of locale strings that contain one or more language or locale tags.If you include more than one locale string, list them in descending order of priority so that the first entry is the preferred locale.If you omit this parameter, the default locale of the JavaScript runtime is used.</param>
 	/// <param name="options">An object that contains one or more properties that specify comparison options.</param>
 	/// <returns></returns>
 	[Description("@#toLocaleString")]
-	public extern string ToLocaleString(string[] locales, Intl.DateTimeFormatOptions? options = null);
+	public extern string ToLocaleString(IEnumerable<string> locales, Intl.DateTimeFormatOptions? options = null);
 
 	/// <summary>
 	/// Converts a date to a string by using the current or specified locale.
+	/// <see cref="IEnumerable{T}"/> is used as the common C# input surface for JavaScript locale lists.
 	/// </summary>
 	/// <param name="locales">A locale string or array of locale strings that contain one or more language or locale tags.If you include more than one locale string, list them in descending order of priority so that the first entry is the preferred locale.If you omit this parameter, the default locale of the JavaScript runtime is used.</param>
 	/// <param name="options">An object that contains one or more properties that specify comparison options.</param>
@@ -459,16 +483,24 @@ public sealed class Date
 	public extern string ToLocaleDateString(string? locales = null, Intl.DateTimeFormatOptions? options = null);
 
 	/// <summary>
+	/// C# convenience overload for the JavaScript form that omits <c>locales</c> and only supplies options.
+	/// This exists because C# cannot naturally skip the leading locale argument in method calls.
+	/// </summary>
+	[Description("@#toLocaleDateString")]
+	public extern string ToLocaleDateString(Intl.DateTimeFormatOptions options);
+
+	/// <summary>
 	/// Converts a date to a string by using the current or specified locale.
 	/// </summary>
 	/// <param name="locales">A locale string or array of locale strings that contain one or more language or locale tags.If you include more than one locale string, list them in descending order of priority so that the first entry is the preferred locale.If you omit this parameter, the default locale of the JavaScript runtime is used.</param>
 	/// <param name="options">An object that contains one or more properties that specify comparison options.</param>
 	/// <returns></returns>
 	[Description("@#toLocaleDateString")]
-	public extern string ToLocaleDateString(string[] locales, Intl.DateTimeFormatOptions? options = null);
+	public extern string ToLocaleDateString(IEnumerable<string> locales, Intl.DateTimeFormatOptions? options = null);
 
 	/// <summary>
 	/// Converts a time to a string by using the current or specified locale.
+	/// <see cref="IEnumerable{T}"/> is used as the common C# input surface for JavaScript locale lists.
 	/// </summary>
 	/// <param name="locales">A locale string or array of locale strings that contain one or more language or locale tags.If you include more than one locale string, list them in descending order of priority so that the first entry is the preferred locale.If you omit this parameter, the default locale of the JavaScript runtime is used.</param>
 	/// <param name="options">An object that contains one or more properties that specify comparison options.</param>
@@ -477,12 +509,19 @@ public sealed class Date
 	public extern string ToLocaleTimeString(string? locales = null, Intl.DateTimeFormatOptions? options = null);
 
 	/// <summary>
+	/// C# convenience overload for the JavaScript form that omits <c>locales</c> and only supplies options.
+	/// This exists because C# cannot naturally skip the leading locale argument in method calls.
+	/// </summary>
+	[Description("@#toLocaleTimeString")]
+	public extern string ToLocaleTimeString(Intl.DateTimeFormatOptions options);
+
+	/// <summary>
 	/// Converts a time to a string by using the current or specified locale.
 	/// </summary>
 	/// <param name="locales">A locale string or array of locale strings that contain one or more language or locale tags.If you include more than one locale string, list them in descending order of priority so that the first entry is the preferred locale.If you omit this parameter, the default locale of the JavaScript runtime is used.</param>
 	/// <param name="options">An object that contains one or more properties that specify comparison options.</param>
 	/// <returns></returns>
 	[Description("@#toLocaleTimeString")]
-	public extern string ToLocaleTimeString(string[] locales, Intl.DateTimeFormatOptions? options = null);
+	public extern string ToLocaleTimeString(IEnumerable<string> locales, Intl.DateTimeFormatOptions? options = null);
 }
 

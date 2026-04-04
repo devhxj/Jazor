@@ -37,6 +37,9 @@ public static partial class Global
 	/// Members that C# instance dispatch cannot project faithfully, such as
 	/// <c>Object.prototype.toString()</c> on <see cref="object"/>, are intentionally omitted
 	/// instead of being exposed under misleading CLR-only shapes.
+	/// Likewise, the callable <c>Object(...)</c> coercion entry point is intentionally
+	/// not exposed here because its boxed-wrapper result shape does not map cleanly to
+	/// the public C# host model.
 	/// </summary>
 	extension(object obj)
 	{
@@ -54,12 +57,13 @@ public static partial class Global
 		/// <summary>
 		/// Copies enumerable own properties from one or more source objects onto the target object.
 		/// The target instance itself is returned so the original static type is preserved in C#.
+		/// Source values are nullable because JavaScript allows <c>null</c>-like values in the source list and handles them at runtime.
 		/// </summary>
 		/// <param name="target">The target object to mutate.</param>
 		/// <param name="source">One or more source objects whose properties will be copied.</param>
 		/// <returns>The same <paramref name="target"/> instance after assignment.</returns>
 		[Description("@#assign")]
-		public extern static TTarget Assign<TTarget>(TTarget target, params object[] source);
+		public extern static TTarget Assign<TTarget>(TTarget target, params object?[] source);
 
 		/// <summary>
 		/// Creates a new JavaScript object with the specified prototype.
@@ -189,6 +193,20 @@ public static partial class Global
 		public extern string ToLocaleString();
 
 		/// <summary>
+		/// Returns a locale-sensitive string representation of the object.
+		/// JavaScript keeps these parameters for historical compatibility and ECMA-402 forwarding, even though plain <c>Object.prototype.toLocaleString</c> delegates to <c>toString()</c>.
+		/// </summary>
+		[Description("@#toLocaleString")]
+		public extern string ToLocaleString(object? reserved1, object? reserved2 = null);
+
+		/// <summary>
+		/// Returns the underlying JavaScript object value for this host projection.
+		/// This is the direct projection of <c>Object.prototype.valueOf()</c>.
+		/// </summary>
+		[Description("@#valueOf")]
+		public extern object ValueOf();
+
+		/// <summary>
 		/// Determines whether an object has a property with the specified name.
 		/// </summary>
 		/// <param name="v">A property name.</param>
@@ -211,6 +229,42 @@ public static partial class Global
 		/// <returns></returns>
 		[Description("@#propertyIsEnumerable")]
 		public extern bool PropertyIsEnumerable(PropertyKey v);
+
+		/// <summary>
+		/// Legacy JavaScript accessor for the current prototype.
+		/// This member is exposed under its exact JavaScript name because C# can represent it directly,
+		/// which keeps the public surface closer to <c>Object.prototype</c> without an extra host alias.
+		/// </summary>
+		[Description("@#__proto__")]
+		public extern object? __proto__ { get; set; }
+
+		/// <summary>
+		/// Legacy JavaScript helper that installs a getter for the supplied property key on the current object.
+		/// The getter delegate matches the accessor shape carried by JavaScript property descriptors.
+		/// </summary>
+		[Description("@#__defineGetter__")]
+		public extern void __defineGetter__(PropertyKey property, Func<object?> getter);
+
+		/// <summary>
+		/// Legacy JavaScript helper that installs a setter for the supplied property key on the current object.
+		/// The setter delegate matches the accessor shape carried by JavaScript property descriptors.
+		/// </summary>
+		[Description("@#__defineSetter__")]
+		public extern void __defineSetter__(PropertyKey property, Action<object?> setter);
+
+		/// <summary>
+		/// Legacy JavaScript helper that looks up an inherited or own getter for the supplied property key.
+		/// JavaScript returns <c>undefined</c> when no getter exists, and this projection surfaces that absence as <see langword="null" />.
+		/// </summary>
+		[Description("@#__lookupGetter__")]
+		public extern Func<object?>? __lookupGetter__(PropertyKey property);
+
+		/// <summary>
+		/// Legacy JavaScript helper that looks up an inherited or own setter for the supplied property key.
+		/// JavaScript returns <c>undefined</c> when no setter exists, and this projection surfaces that absence as <see langword="null" />.
+		/// </summary>
+		[Description("@#__lookupSetter__")]
+		public extern Action<object?>? __lookupSetter__(PropertyKey property);
 
 		/// <summary>
 		/// Returns the names of the enumerable string properties and methods of an object.
@@ -245,6 +299,14 @@ public static partial class Global
 		/// <returns>A newly created JavaScript object.</returns>
 		[Description("@#fromEntries")]
 		public extern static IObject FromEntries(IEnumerable<Array<object?>> entries);
+
+		/// <summary>
+		/// Creates an object from key-value entries.
+		/// This overload accepts any C# sequence-of-sequences that maps cleanly to JavaScript's iterable-of-entry input.
+		/// Each inner sequence is consumed as one JavaScript entry, and the runtime uses its first two produced values as the property key and value.
+		/// </summary>
+		[Description("@#fromEntries")]
+		public extern static IObject FromEntries(IEnumerable<IEnumerable<object?>> entries);
 
 		/// <summary>
 		/// Groups iterable values by a JavaScript property key and returns the grouped result as an object.

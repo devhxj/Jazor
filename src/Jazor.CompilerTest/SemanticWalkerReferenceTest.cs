@@ -5,6 +5,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
+using System.Collections;
+using System.Reflection;
 
 namespace Jazor.ComplierTest;
 
@@ -275,6 +277,226 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
+	public void Visit_Reference_SingleMathIntrinsics_UseDirectMathShapes()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(float value, float left, float right, float third)
+                {
+                    var log2 = float.Log2(value);
+                    var expM1 = float.ExpM1(value);
+                    var ceil = float.Ceiling(value);
+                    var floor = float.Floor(value);
+                    var round = float.Round(value);
+                    var trunc = float.Truncate(value);
+                    var atan2Pi = float.Atan2Pi(left, right);
+                    var fused = float.FusedMultiplyAdd(left, right, third);
+                    var ieee = float.Ieee754Remainder(left, right);
+                    var lerp = float.Lerp(left, right, third);
+                    var reciprocal = float.ReciprocalEstimate(value);
+                    var acosh = float.Acosh(value);
+                    var logBase = float.Log(left, right);
+                    var clamp = float.Clamp(value, left, right);
+                    var max = float.Max(left, right);
+                    var abs = float.Abs(value);
+                    var even = float.IsEvenInteger(value);
+                    var integer = float.IsInteger(value);
+                    var positive = float.IsPositive(value);
+                    var real = float.IsRealNumber(value);
+                    var pow = float.Pow(left, right);
+                    var sqrt = float.Sqrt(value);
+                    var acosPi = float.AcosPi(value);
+                    var cosPi = float.CosPi(value);
+                    var deg = float.DegreesToRadians(value);
+                    var sin = float.Sin(value);
+                    var tanPi = float.TanPi(value);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let log2 = Math.log2(value);
+  let expM1 = Math.exp(value) - 1;
+  let ceil = Math.ceil(value);
+  let floor = Math.floor(value);
+  let round = Math.round(value);
+  let trunc = Math.trunc(value);
+  let atan2Pi = Math.atan2(left, right) / Math.PI;
+  let fused = left * right + third;
+  let ieee = left - right * Math.round(left / right);
+  let lerp = left + (right - left) * third;
+  let reciprocal = 1 / value;
+  let acosh = Math.acosh(value);
+  let logBase = Math.log(left) / Math.log(right);
+  let clamp = Math.max(left, Math.min(value, right));
+  let max = Math.max(left, right);
+  let abs = Math.abs(value);
+  let even = value % 2 === 0;
+  let integer = Number.isInteger(value);
+  let positive = value > 0 || Object.is(value, 0);
+  let real = !isNaN(value) && value !== Infinity && value !== -Infinity;
+  let pow = Math.pow(left, right);
+  let sqrt = Math.sqrt(value);
+  let acosPi = Math.acos(value) / Math.PI;
+  let cosPi = Math.cos(value * Math.PI);
+  let deg = value * Math.PI / 180;
+  let sin = Math.sin(value);
+  let tanPi = Math.tan(value * Math.PI);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_DoubleMathIntrinsics_UseMathHostInsteadOfNumberHost()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(double value, double left, double right)
+                {
+                    var log2 = double.Log2(value);
+                    var exp = double.Exp(value);
+                    var max = double.Max(left, right);
+                    var abs = double.Abs(value);
+                    var pow = double.Pow(left, right);
+                    var sqrt = double.Sqrt(value);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let log2 = Math.log2(value);
+  let exp = Math.exp(value);
+  let max = Math.max(left, right);
+  let abs = Math.abs(value);
+  let pow = Math.pow(left, right);
+  let sqrt = Math.sqrt(value);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_FloatingPointMaxMinNumber_UseInlineNaNFallback()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(float fleft, float fright, double dleft, double dright)
+                {
+                    var fmax = float.MaxNumber(fleft, fright);
+                    var fmin = float.MinNumber(fleft, fright);
+                    var dmax = double.MaxNumber(dleft, dright);
+                    var dmin = double.MinNumber(dleft, dright);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let fmax = isNaN(fleft) ? fright : isNaN(fright) ? fleft : Math.max(fleft, fright);
+  let fmin = isNaN(fleft) ? fright : isNaN(fright) ? fleft : Math.min(fleft, fright);
+  let dmax = isNaN(dleft) ? dright : isNaN(dright) ? dleft : Math.max(dleft, dright);
+  let dmin = isNaN(dleft) ? dright : isNaN(dright) ? dleft : Math.min(dleft, dright);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_FloatingPointSignAndPow2_UseRuntimeHelpers()
+	{
+		var block = GetBlockOperation(@"
+            using System;
+
+            class TestClass
+            {
+                void TestMethod(float fvalue, double dvalue)
+                {
+                    var fsign = float.Sign(fvalue);
+                    var fpow2 = float.IsPow2(fvalue);
+                    var dsign = double.Sign(dvalue);
+                    var dpow2 = double.IsPow2(dvalue);
+                    var mathFSign = Math.Sign(fvalue);
+                    var mathDSign = Math.Sign(dvalue);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let fsign = _323a6b94e62b2729(fvalue);
+  let fpow2 = _0dcf89ab5d6bd60c(fvalue);
+  let dsign = _eee146c74a9bc322(dvalue);
+  let dpow2 = _0f9f49a802919a8f(dvalue);
+  let mathFSign = _c0668680ba7ef96e(fvalue);
+  let mathDSign = _9a554cfca79bdc59(dvalue);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_FloatingPointNormalClassification_UseInlineThresholdChecks()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(float fvalue, double dvalue)
+                {
+                    var fnormal = float.IsNormal(fvalue);
+                    var fsubnormal = float.IsSubnormal(fvalue);
+                    var dnormal = double.IsNormal(dvalue);
+                    var dsubnormal = double.IsSubnormal(dvalue);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let fnormal = isFinite(fvalue) && fvalue !== 0 && Math.abs(fvalue) >= 1.17549435e-38;
+  let fsubnormal = isFinite(fvalue) && fvalue !== 0 && Math.abs(fvalue) < 1.17549435e-38;
+  let dnormal = isFinite(dvalue) && dvalue !== 0 && Math.abs(dvalue) >= 2.2250738585072014e-308;
+  let dsubnormal = isFinite(dvalue) && dvalue !== 0 && Math.abs(dvalue) < 2.2250738585072014e-308;
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_SingleSinCos_UsesRuntimeHelpers()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(float value)
+                {
+                    var pair = float.SinCos(value);
+                    var pairPi = float.SinCosPi(value);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let pair = _9905e3952bca67bc(value);
+  let pairPi = _2c792a5d6ef88cd1(value);
+}", script);
+	}
+
+	[TestMethod]
 	public void Visit_Reference_BooleanSimpleMembers_UseInlineShapes()
 	{
 		var block = GetBlockOperation(@"
@@ -299,6 +521,54 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
+	public void Visit_Reference_Int32Intrinsics_UseInlineShapes()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(int value, int sign, int min, int max)
+                {
+                    var copy = int.CopySign(value, sign);
+                    var clamp = int.Clamp(value, min, max);
+                    var signum = int.Sign(value);
+                    var abs = int.Abs(value);
+                    var even = int.IsEvenInteger(value);
+                    var negative = int.IsNegative(value);
+                    var odd = int.IsOddInteger(value);
+                    var positive = int.IsPositive(value);
+                    var pow2 = int.IsPow2(value);
+                    var log2 = int.Log2(value);
+                    var leadingZeros = int.LeadingZeroCount(value);
+                    var trailingZeros = int.TrailingZeroCount(value);
+                    var maxValue = int.Max(min, max);
+                    var minValue = int.Min(min, max);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let copy = sign < 0 ? -Math.abs(value) : Math.abs(value);
+  let clamp = Math.min(Math.max(value, min), max);
+  let signum = value > 0 ? 1 : value < 0 ? -1 : 0;
+  let abs = Math.abs(value);
+  let even = (value & 1) === 0;
+  let negative = value < 0;
+  let odd = (value & 1) !== 0;
+  let positive = value > 0;
+  let pow2 = value > 0 && (value & value - 1) === 0;
+  let log2 = Math.floor(Math.log2(value));
+  let leadingZeros = Math.clz32(value);
+  let trailingZeros = value === 0 ? 32 : 31 - Math.clz32(value & -value);
+  let maxValue = Math.max(min, max);
+  let minValue = Math.min(min, max);
+}", script);
+	}
+
+	[TestMethod]
 	public void Visit_Reference_Int16AndUInt16Intrinsics_UseInlineShapes()
 	{
 		var block = GetBlockOperation(@"
@@ -316,6 +586,10 @@ public sealed class SemanticWalkerReferenceTest
                     var signedPositive = short.IsPositive(signedValue);
                     var signedPow2 = short.IsPow2(signedValue);
                     var signedLog2 = short.Log2(signedValue);
+                    var signedLeadingZeros = short.LeadingZeroCount(signedValue);
+                    var signedTrailingZeros = short.TrailingZeroCount(signedValue);
+                    var signedRotateLeft = short.RotateLeft(signedValue, 3);
+                    var signedRotateRight = short.RotateRight(signedValue, 5);
                     var signedMaxValue = short.Max(signedMin, signedMax);
                     var signedMinValue = short.Min(signedMin, signedMax);
                     var unsignedClamp = ushort.Clamp(unsignedValue, unsignedMin, unsignedMax);
@@ -324,6 +598,10 @@ public sealed class SemanticWalkerReferenceTest
                     var unsignedOdd = ushort.IsOddInteger(unsignedValue);
                     var unsignedPow2 = ushort.IsPow2(unsignedValue);
                     var unsignedLog2 = ushort.Log2(unsignedValue);
+                    var unsignedLeadingZeros = ushort.LeadingZeroCount(unsignedValue);
+                    var unsignedTrailingZeros = ushort.TrailingZeroCount(unsignedValue);
+                    var unsignedRotateLeft = ushort.RotateLeft(unsignedValue, 3);
+                    var unsignedRotateRight = ushort.RotateRight(unsignedValue, 5);
                     var unsignedMaxValue = ushort.Max(unsignedMin, unsignedMax);
                     var unsignedMinValue = ushort.Min(unsignedMin, unsignedMax);
                 }
@@ -345,6 +623,10 @@ public sealed class SemanticWalkerReferenceTest
   let signedPositive = signedValue > 0;
   let signedPow2 = signedValue > 0 && (signedValue & signedValue - 1) === 0;
   let signedLog2 = Math.floor(Math.log2(signedValue));
+  let signedLeadingZeros = signedValue === 0 ? 16 : Math.clz32(signedValue & 0xFFFF) - 16;
+  let signedTrailingZeros = signedValue === 0 ? 16 : Math.floor(Math.log2(signedValue & 0xFFFF & -(signedValue & 0xFFFF)));
+  let signedRotateLeft = (((signedValue & 0xFFFF) << (3 & 15) | (signedValue & 0xFFFF) >>> 16 - (3 & 15)) & 0xFFFF) << 16 >> 16;
+  let signedRotateRight = (((signedValue & 0xFFFF) >>> (5 & 15) | (signedValue & 0xFFFF) << 16 - (5 & 15)) & 0xFFFF) << 16 >> 16;
   let signedMaxValue = Math.max(signedMin, signedMax);
   let signedMinValue = Math.min(signedMin, signedMax);
   let unsignedClamp = Math.min(Math.max(unsignedValue, unsignedMin), unsignedMax);
@@ -353,8 +635,138 @@ public sealed class SemanticWalkerReferenceTest
   let unsignedOdd = (unsignedValue & 1) !== 0;
   let unsignedPow2 = unsignedValue > 0 && (unsignedValue & unsignedValue - 1) === 0;
   let unsignedLog2 = Math.floor(Math.log2(unsignedValue));
+  let unsignedLeadingZeros = unsignedValue === 0 ? 16 : Math.clz32(unsignedValue & 0xFFFF) - 16;
+  let unsignedTrailingZeros = unsignedValue === 0 ? 16 : Math.floor(Math.log2(unsignedValue & 0xFFFF & -(unsignedValue & 0xFFFF)));
+  let unsignedRotateLeft = (unsignedValue << (3 & 15) | unsignedValue >>> 16 - (3 & 15)) & 0xFFFF;
+  let unsignedRotateRight = (unsignedValue >>> (5 & 15) | unsignedValue << 16 - (5 & 15)) & 0xFFFF;
   let unsignedMaxValue = Math.max(unsignedMin, unsignedMax);
   let unsignedMinValue = Math.min(unsignedMin, unsignedMax);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_UInt16AndUInt32DivRem_UseImportHelpers()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(ushort ushortLeft, ushort ushortRight, uint uintLeft, uint uintRight)
+                {
+                    var ushortPair = ushort.DivRem(ushortLeft, ushortRight);
+                    var ushortQuotient = ushortPair.Quotient;
+                    var ushortRemainder = ushortPair.Remainder;
+                    var uintPair = uint.DivRem(uintLeft, uintRight);
+                    var uintQuotient = uintPair.Quotient;
+                    var uintRemainder = uintPair.Remainder;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let ushortPair = _80e78c0aa0b98fef(ushortLeft, ushortRight);
+  let ushortQuotient = ushortPair.Quotient;
+  let ushortRemainder = ushortPair.Remainder;
+  let uintPair = _8a073d758132b5bb(uintLeft, uintRight);
+  let uintQuotient = uintPair.Quotient;
+  let uintRemainder = uintPair.Remainder;
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_Int16DivRemAndPopCount_UseImportHelpers()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(short left, short right, short value)
+                {
+                    var pair = short.DivRem(left, right);
+                    var quotient = pair.Quotient;
+                    var remainder = pair.Remainder;
+                    var count = short.PopCount(value);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let pair = _b2c1f15fae072110(left, right);
+  let quotient = pair.Quotient;
+  let remainder = pair.Remainder;
+  let count = _1636c956519f95fa(value);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_UInt16AndUInt32PopCount_UseImportHelpers()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(ushort ushortValue, uint uintValue)
+                {
+                    var ushortCount = ushort.PopCount(ushortValue);
+                    var uintCount = uint.PopCount(uintValue);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let ushortCount = _2ea0cab4f3f489d9(ushortValue);
+  let uintCount = _96cd49e102b39e5b(uintValue);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_ByteIntrinsics_UseInlineShapes()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(byte value, byte min, byte max)
+                {
+                    var clamp = byte.Clamp(value, min, max);
+                    var signum = byte.Sign(value);
+                    var even = byte.IsEvenInteger(value);
+                    var odd = byte.IsOddInteger(value);
+                    var pow2 = byte.IsPow2(value);
+                    var log2 = byte.Log2(value);
+                    var maxValue = byte.Max(min, max);
+                    var minValue = byte.Min(min, max);
+                    var leadingZeros = byte.LeadingZeroCount(value);
+                    var popCount = byte.PopCount(value);
+                    var trailingZeros = byte.TrailingZeroCount(value);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let clamp = Math.min(Math.max(value, min), max);
+  let signum = value === 0 ? 0 : 1;
+  let even = (value & 1) === 0;
+  let odd = (value & 1) !== 0;
+  let pow2 = value > 0 && (value & value - 1) === 0;
+  let log2 = Math.floor(Math.log2(value));
+  let maxValue = Math.max(min, max);
+  let minValue = Math.min(min, max);
+  let leadingZeros = value === 0 ? 8 : Math.clz32(value & 0xFF) - 24;
+  let popCount = (value & 1) + (value >> 1 & 1) + (value >> 2 & 1) + (value >> 3 & 1) + (value >> 4 & 1) + (value >> 5 & 1) + (value >> 6 & 1) + (value >> 7 & 1);
+  let trailingZeros = value === 0 ? 8 : Math.floor(Math.log2(value & 0xFF & -(value & 0xFF)));
 }", script);
 	}
 
@@ -394,6 +806,10 @@ public sealed class SemanticWalkerReferenceTest
                     var unsignedOdd = uint.IsOddInteger(unsignedValue);
                     var unsignedPow2 = uint.IsPow2(unsignedValue);
                     var unsignedLog2 = uint.Log2(unsignedValue);
+                    var unsignedLeadingZeros = uint.LeadingZeroCount(unsignedValue);
+                    var unsignedTrailingZeros = uint.TrailingZeroCount(unsignedValue);
+                    var unsignedRotateLeft = uint.RotateLeft(unsignedValue, 3);
+                    var unsignedRotateRight = uint.RotateRight(unsignedValue, 5);
                     var unsignedMaxValue = uint.Max(unsignedMin, unsignedMax);
                     var unsignedMinValue = uint.Min(unsignedMin, unsignedMax);
                     var ulongClamp = ulong.Clamp(ulongValue, ulongMin, ulongMax);
@@ -431,6 +847,10 @@ public sealed class SemanticWalkerReferenceTest
   let unsignedOdd = (unsignedValue & 1) !== 0;
   let unsignedPow2 = unsignedValue > 0 && (unsignedValue & unsignedValue - 1) === 0;
   let unsignedLog2 = Math.floor(Math.log2(unsignedValue));
+  let unsignedLeadingZeros = Math.clz32(unsignedValue);
+  let unsignedTrailingZeros = unsignedValue === 0 ? 32 : 31 - Math.clz32(unsignedValue >>> 0 & -(unsignedValue >>> 0));
+  let unsignedRotateLeft = (unsignedValue << (3 & 31) | unsignedValue >>> 32 - (3 & 31)) >>> 0;
+  let unsignedRotateRight = (unsignedValue >>> (5 & 31) | unsignedValue << 32 - (5 & 31)) >>> 0;
   let unsignedMaxValue = Math.max(unsignedMin, unsignedMax);
   let unsignedMinValue = Math.min(unsignedMin, unsignedMax);
   let ulongClamp = ulongValue < ulongMin ? ulongMin : ulongValue > ulongMax ? ulongMax : ulongValue;
@@ -556,6 +976,136 @@ public sealed class SemanticWalkerReferenceTest
   let v$0;
   let remainder;
   let quotient = (v$0 = _598611fb2b8a064a(left, right, remainder), remainder = v$0[1], v$0[0]);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_BigIntegerMaxMinMagnitude_UsesRuntimeHelpers()
+	{
+		var block = GetBlockOperation(@"
+            using System.Numerics;
+
+            class TestClass
+            {
+                void TestMethod(BigInteger left, BigInteger right)
+                {
+                    var max = BigInteger.MaxMagnitude(left, right);
+                    var min = BigInteger.MinMagnitude(left, right);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let max = _d305de2c64e85995(left, right);
+  let min = _fef56ccd17b22e88(left, right);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_Int64MaxMinMagnitude_UsesRuntimeHelpers()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(long left, long right)
+                {
+                    var max = long.MaxMagnitude(left, right);
+                    var min = long.MinMagnitude(left, right);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let max = _9618dc0d855ee729(left, right);
+  let min = _bfad1ee52075b36e(left, right);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_SingleMagnitudeHelpers_UseRuntimeHelpers()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(float left, float right)
+                {
+                    var max = float.MaxMagnitude(left, right);
+                    var maxNumber = float.MaxMagnitudeNumber(left, right);
+                    var min = float.MinMagnitude(left, right);
+                    var minNumber = float.MinMagnitudeNumber(left, right);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let max = _7c146ff0a50e958f(left, right);
+  let maxNumber = _b7b1d7781578b7e0(left, right);
+  let min = _e5a7b14f707c69f7(left, right);
+  let minNumber = _4a2ec5d010e27cb1(left, right);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_DoubleMagnitudeNumberHelpers_UseRuntimeHelpers()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(double left, double right)
+                {
+                    var max = double.MaxMagnitude(left, right);
+                    var maxNumber = double.MaxMagnitudeNumber(left, right);
+                    var min = double.MinMagnitude(left, right);
+                    var minNumber = double.MinMagnitudeNumber(left, right);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let max = _b6202851542d164c(left, right);
+  let maxNumber = _7f7b38b043f3f42f(left, right);
+  let min = _bb1daa880a2ad14e(left, right);
+  let minNumber = _315c6cdfa11efcf2(left, right);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_Int16MaxMinMagnitude_UsesRuntimeHelpers()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(short left, short right)
+                {
+                    var max = short.MaxMagnitude(left, right);
+                    var min = short.MinMagnitude(left, right);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let max = _ea75510d32bc8099(left, right);
+  let min = _63d3d54252a49e29(left, right);
 }", script);
 	}
 
@@ -3493,7 +4043,7 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
-	public void Visit_Reference_BooleanGetTypeCode_UsesCompileHook()
+	public void Visit_Reference_BooleanGetTypeCode_UsesInlineConstant()
 	{
 		var block = GetBlockOperation(@"
             class TestClass
@@ -3514,6 +4064,120 @@ public sealed class SemanticWalkerReferenceTest
   let flag = true;
   let code = 3;
 }", script);
+	}
+
+	[TestMethod]
+	public void WhiteList_BooleanGetTypeCode_UsesInlineRule()
+	{
+		var membersField = typeof(SemanticWalker).Assembly
+			.GetType("Jazor.Compiler.WhiteList", throwOnError: true)!
+			.GetField("Members", BindingFlags.Public | BindingFlags.Static);
+		var members = (IDictionary?)membersField?.GetValue(null);
+
+		Assert.IsNotNull(members);
+		Assert.IsTrue(members.Contains("bool.GetTypeCode()"));
+
+		var value = members["bool.GetTypeCode()"];
+		Assert.IsNotNull(value);
+
+		var valueType = value.GetType();
+		var op = valueType.GetProperty("Op", BindingFlags.Instance | BindingFlags.Public)?.GetValue(value)?.ToString();
+		var template = (string?)valueType.GetProperty("Value", BindingFlags.Instance | BindingFlags.Public)?.GetValue(value);
+
+		Assert.AreEqual("Inline", op);
+		Assert.AreEqual("3", template);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_PrimitiveGetTypeCode_UseInlineConstants()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(byte b, char c, short s, int i, long l, sbyte sb, float f, double d, decimal m, ushort us, uint ui, ulong ul, string str, System.DateTime dt)
+                {
+                    var byteCode = b.GetTypeCode();
+                    var charCode = c.GetTypeCode();
+                    var shortCode = s.GetTypeCode();
+                    var intCode = i.GetTypeCode();
+                    var longCode = l.GetTypeCode();
+                    var sbyteCode = sb.GetTypeCode();
+                    var floatCode = f.GetTypeCode();
+                    var doubleCode = d.GetTypeCode();
+                    var decimalCode = m.GetTypeCode();
+                    var ushortCode = us.GetTypeCode();
+                    var uintCode = ui.GetTypeCode();
+                    var ulongCode = ul.GetTypeCode();
+                    var stringCode = str.GetTypeCode();
+                    var dateTimeCode = dt.GetTypeCode();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let byteCode = 6;
+  let charCode = 4;
+  let shortCode = 7;
+  let intCode = 9;
+  let longCode = 11;
+  let sbyteCode = 5;
+  let floatCode = 13;
+  let doubleCode = 14;
+  let decimalCode = 15;
+  let ushortCode = 8;
+  let uintCode = 10;
+  let ulongCode = 12;
+  let stringCode = 18;
+  let dateTimeCode = 16;
+}", script);
+	}
+
+	[TestMethod]
+	public void WhiteList_PrimitiveGetTypeCode_UseInlineConstants()
+	{
+		var expected = new Dictionary<string, string>
+		{
+			["byte.GetTypeCode()"] = "6",
+			["char.GetTypeCode()"] = "4",
+			["short.GetTypeCode()"] = "7",
+			["int.GetTypeCode()"] = "9",
+			["long.GetTypeCode()"] = "11",
+			["sbyte.GetTypeCode()"] = "5",
+			["float.GetTypeCode()"] = "13",
+			["double.GetTypeCode()"] = "14",
+			["decimal.GetTypeCode()"] = "15",
+			["ushort.GetTypeCode()"] = "8",
+			["uint.GetTypeCode()"] = "10",
+			["ulong.GetTypeCode()"] = "12",
+			["string.GetTypeCode()"] = "18",
+			["System.DateTime.GetTypeCode()"] = "16",
+		};
+
+		var membersField = typeof(SemanticWalker).Assembly
+			.GetType("Jazor.Compiler.WhiteList", throwOnError: true)!
+			.GetField("Members", BindingFlags.Public | BindingFlags.Static);
+		var members = (IDictionary?)membersField?.GetValue(null);
+
+		Assert.IsNotNull(members);
+
+		foreach (var pair in expected)
+		{
+			Assert.IsTrue(members.Contains(pair.Key), $"missing whitelist entry: {pair.Key}");
+
+			var value = members[pair.Key];
+			Assert.IsNotNull(value, $"missing whitelist value: {pair.Key}");
+
+			var valueType = value.GetType();
+			var op = valueType.GetProperty("Op", BindingFlags.Instance | BindingFlags.Public)?.GetValue(value)?.ToString();
+			var template = (string?)valueType.GetProperty("Value", BindingFlags.Instance | BindingFlags.Public)?.GetValue(value);
+
+			Assert.AreEqual("Inline", op, $"unexpected op for {pair.Key}");
+			Assert.AreEqual(pair.Value, template, $"unexpected inline template for {pair.Key}");
+		}
 	}
 
 	[TestMethod]
@@ -4263,7 +4927,7 @@ public sealed class SemanticWalkerReferenceTest
 
 		AssertScriptEqual(@"{
   let dto = _d90dce0e1d2f06e4(2024, 1, 1, 12, 0, 0, _e5548fcde33957a6());
-  let text = dto.toString();
+  let text = _2aaccc10061a3bb0(dto);
 }", script);
 	}
 
@@ -4326,7 +4990,65 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	/// <summary>
-	/// 测试 GregorianCalendar 作为字符串 carrier 创建，并通过专门 helper 访问实例方法。
+	/// 测试 CultureInfo.EnglishName / NativeName 绑定到专门 helper，而不是退化成字符串属性访问。
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_CultureInfoLocalizedNames()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var culture = new System.Globalization.CultureInfo(""zh-CN"");
+                    var englishName = culture.EnglishName;
+                    var nativeName = culture.NativeName;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let culture = _b7486264ae338f27(""zh-CN"");
+  let englishName = _97ad9637d1f75e7c(culture);
+  let nativeName = _a4804f687bfc0013(culture);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 CultureInfo 的三字母语言代码属性绑定到模块 helper。
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_CultureInfoThreeLetterLanguageNames()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var culture = new System.Globalization.CultureInfo(""en-US"");
+                    var iso = culture.ThreeLetterISOLanguageName;
+                    var windows = culture.ThreeLetterWindowsLanguageName;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let culture = _b7486264ae338f27(""en-US"");
+  let iso = _285ede13a469ce7b(culture);
+  let windows = _1f981ccac713f3d9(culture);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 GregorianCalendar 通过专门 helper 创建，并访问实例方法。
 	/// </summary>
 	[TestMethod]
 	public void Visit_Reference_GregorianCalendarGetYear()
@@ -4349,6 +5071,64 @@ public sealed class SemanticWalkerReferenceTest
 		AssertScriptEqual(@"{
   let calendar = _23b9e8d671b5210e();
   let year = _fd5a2cde6fb4d6f5(calendar, _4cb33a818161a3e1(2024, 1, 2));
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 GregorianCalendar 的实例状态不会丢失。
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_GregorianCalendarStatefulMembers()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var calendar = new System.Globalization.GregorianCalendar(System.Globalization.GregorianCalendarTypes.USEnglish);
+                    calendar.TwoDigitYearMax = 2099;
+                    var year = calendar.ToFourDigitYear(30);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let calendar = _c043a86ee7a70c81(2);
+  _9537b0490ec80689(calendar, 2099);
+  let year = _cca1b99b56b6a322(calendar, 30);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试 CultureInfo.Calendar 返回 GregorianCalendar wrapper，并继续走实例 helper。
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_CultureInfoCalendarChain()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var culture = new System.Globalization.CultureInfo(""en-US"");
+                    var calendar = culture.Calendar;
+                    var year = calendar.ToFourDigitYear(30);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let culture = _b7486264ae338f27(""en-US"");
+  let calendar = _2ab4f6aaba1be337(culture);
+  let year = _8e7d51754b95ea42(calendar, 30);
 }", script);
 	}
 

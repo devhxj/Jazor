@@ -12,21 +12,44 @@ public static class Reflect
 {
 	/// <summary>
 	/// Invokes a target function with the supplied <c>this</c> value and argument list.
+	/// The argument list stays nullable because JavaScript call arguments can carry <see langword="null" /> values directly.
 	/// </summary>
 	[Description("@#apply")]
-	public extern static object? Apply(object target, object thisArg, object[] argumentsList);
+	public extern static object? Apply(object target, object? thisArg, object?[] argumentsList);
+
+	/// <summary>
+	/// Invokes a target function with the supplied <c>this</c> value and argument list.
+	/// This overload accepts any C# sequence family that maps cleanly to the JavaScript argument-list surface.
+	/// </summary>
+	[Description("@#apply")]
+	public extern static object? Apply(object target, object? thisArg, IEnumerable<object?> argumentsList);
 
 	/// <summary>
 	/// Invokes a target as a constructor.
+	/// The argument list stays nullable because JavaScript constructor arguments can carry <see langword="null" /> values directly.
 	/// </summary>
 	[Description("@#construct")]
-	public extern static object Construct(object target, object[] argumentsList);
+	public extern static object Construct(object target, object?[] argumentsList);
+
+	/// <summary>
+	/// Invokes a target as a constructor.
+	/// This overload accepts any C# sequence family that maps cleanly to the JavaScript argument-list surface.
+	/// </summary>
+	[Description("@#construct")]
+	public extern static object Construct(object target, IEnumerable<object?> argumentsList);
 
 	/// <summary>
 	/// Invokes a target as a constructor with an explicit <c>newTarget</c>.
 	/// </summary>
 	[Description("@#construct")]
-	public extern static object Construct(object target, object[] argumentsList, object newTarget);
+	public extern static object Construct(object target, object?[] argumentsList, object newTarget);
+
+	/// <summary>
+	/// Invokes a target as a constructor with an explicit <c>newTarget</c>.
+	/// This overload accepts any C# sequence family that maps cleanly to the JavaScript argument-list surface.
+	/// </summary>
+	[Description("@#construct")]
+	public extern static object Construct(object target, IEnumerable<object?> argumentsList, object newTarget);
 
 	/// <summary>
 	/// Defines or reconfigures a property and reports the JavaScript boolean result directly.

@@ -394,7 +394,37 @@
 
 所以这批继续保留 `Import`。
 
-#### 3. 依赖循环或范围处理的集合方法
+#### 3. 浮点 / 整数 magnitude helper
+
+文件：
+
+- `src/Jazor.CLR/module/SingleModule.cs`
+- `src/Jazor.CLR/module/DoubleModule.cs`
+- `src/Jazor.CLR/module/MathModule.cs`
+- `src/Jazor.CLR/module/Int16Module.cs`
+- `src/Jazor.CLR/module/Int32Module.cs`
+- `src/Jazor.CLR/module/Int64Module.cs`
+- `src/Jazor.CLR/module/BigIntegerModule.cs`
+
+典型成员：
+
+- `float.MaxMagnitude` / `float.MinMagnitude`
+- `float.MaxMagnitudeNumber` / `float.MinMagnitudeNumber`
+- `double.MaxMagnitude` / `double.MinMagnitude`
+- `double.MaxMagnitudeNumber` / `double.MinMagnitudeNumber`
+- `System.Math.MaxMagnitude(double, double)` / `System.Math.MinMagnitude(double, double)`
+- `short/int/long/BigInteger.MaxMagnitude` / `MinMagnitude`
+
+原因：
+
+- 这批成员虽然“理论上能写成表达式”，但真实语义包含绝对值比较、tie-break 和 `NaN` / `±0` 细节
+- 浮点族里，`MaxMagnitude(-0, +0)` 需要返回 `+0`，`MinMagnitude(-0, +0)` 需要返回 `-0`
+- `MaxMagnitudeNumber` / `MinMagnitudeNumber` 还要在 `NaN` 输入时切到“返回另一侧”的协议
+- 把这套规则硬塞成长 `Inline` 模板只会增加脆弱性，不利于后续审查
+
+因此这批更适合保留成小型 `Import` helper，而不是为了减少 import 数量继续压成模板字符串。
+
+#### 4. 依赖循环或范围处理的集合方法
 
 文件：
 
@@ -424,7 +454,7 @@
 
 这批不应为了追求“少 Import”而回退。
 
-#### 4. `string.Compare` / `string.Format`
+#### 5. `string.Compare` / `string.Format`
 
 文件：
 
@@ -480,7 +510,8 @@
 
 - `Op.Compile` 主分发已经接入
 - 第一阶段真实条目和测试已经落地
-- 第二批当前的真正阻塞点不是“还没接线”，而是 contract 还不能稳定承载带 `throw` / temp / tuple 形状的表达式
+- 浮点 / 整型 magnitude 家族里，`SingleModule` / `DoubleModule` / `Int16Module` 已按“稳定优先”提前落地为 `Import` helper，并补了针对 `NaN` / `±0` / tie-break 的刻画测试
+- 第二批剩余阻塞点不是“还没接线”，而是 contract 还不能稳定承载带 `throw` / temp / tuple 形状的表达式
 
 ## 当前结论
 
@@ -572,3 +603,36 @@
 - `Divide/Remainder` 与已允许的 `BigInteger.operator /`、`BigInteger.operator %` 属于同一底层运行时语义，直接落表达式最稳定
 - `DivRem(out ...)` 需要 `[returnValue, outValue]` 回写约定，不适合硬塞进 `Inline`
 - 这里继续沿用 BigInteger 现有的 JS BigInt 除零错误形状，即 `RangeError("Division by zero")`，不额外引入与当前模块不一致的异常包装
+
+#### 13. BigIntegerModule 的 MaxMagnitude / MinMagnitude
+
+文件：
+
+- `src/Jazor.CLR/module/BigIntegerModule.cs`
+
+收缩内容：
+
+- `BigInteger.MaxMagnitude(BigInteger, BigInteger)` -> `Import`
+- `BigInteger.MinMagnitude(BigInteger, BigInteger)` -> `Import`
+
+原因：
+
+- 真实 .NET 语义是“先比较绝对值；绝对值相同再按数值大小决胜”
+- 这类规则虽然能勉强写成 `Inline`，但会变成重复绝对值展开的长条件表达式，可读性和稳定性都变差
+- 保留成小型 helper 更稳，也更容易和运行时语义刻画测试对齐
+
+#### 14. Int64Module 的 MaxMagnitude / MinMagnitude tie-break 修正
+
+文件：
+
+- `src/Jazor.CLR/module/Int64Module.cs`
+
+修正内容：
+
+- `long.MaxMagnitude(long, long)` 绝对值相同时改为返回数值更大的那个
+- `long.MinMagnitude(long, long)` 绝对值相同时改为返回数值更小的那个
+
+原因：
+
+- 旧实现对 `|x| == |y|` 的情况直接偏向左值，这和真实 .NET 语义不一致
+- `long` 当前仍保留为 `Import` helper，修这里最小、最稳，不需要调整编译器消费路径

@@ -17,12 +17,4 @@ partial interface IWhiteList
 	/// <returns></returns>
 	Expression? Compile_b58c68bda64ad0f8(Expression? handler, Expression?[] args);
 
-	/// <summary>
-	/// bool.GetTypeCode()
-	/// </summary>
-	/// <param name="handler"></param>
-	/// <param name="args"></param>
-	/// <returns></returns>
-	Expression? Compile_eb6a23c2a874fdf1(Expression? handler, Expression?[] args);
-
 }

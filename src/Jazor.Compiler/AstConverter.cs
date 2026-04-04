@@ -154,6 +154,9 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     /// <exception cref="NotSupportedException"></exception>
     private async Task ConvertModuleMethod(List<Statement> statements, IMethodSymbol symbol)
     {
+        if (symbol.AssociatedSymbol is IEventSymbol eventSymbol)
+            throw new NotSupportedException($"Jazor 模块类不支持Event:{eventSymbol.Name}。");
+
         if (symbol.MethodKind == MethodKind.SharedConstructor)
         {
             if (symbol.IsImplicitlyDeclared)
@@ -381,10 +384,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
     private PropertyDefinition ConvertMemberField(IFieldSymbol symbol)
     {
-        var name = GetSymbolName(symbol);
-        var init = symbol.HasConstantValue
-            ? CreateEqualsValueClauseSyntaxLiteral(symbol.Type.SpecialType, symbol.ConstantValue)
-            : null;
+        var name = GetMemberFieldDeclaredName(symbol);
+        var init = GetMemberFieldInitializer(symbol);
 
         Expression identifier = ShouldBePrivate(symbol.DeclaredAccessibility)
             ? new PrivateIdentifier(name)
@@ -398,20 +399,97 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         );
     }
 
+    private Expression? GetMemberFieldInitializer(IFieldSymbol symbol)
+    {
+        if (symbol.HasConstantValue)
+            return CreateEqualsValueClauseSyntaxLiteral(symbol.Type.SpecialType, symbol.ConstantValue);
+
+        foreach (var item in symbol.DeclaringSyntaxReferences)
+        {
+            if (item.GetSyntax() is VariableDeclaratorSyntax syntax && syntax.Initializer is not null)
+                return CreateEqualsValueClauseSyntaxLiteral(syntax.Initializer);
+        }
+
+        if (symbol.AssociatedSymbol is IPropertySymbol property)
+        {
+            foreach (var item in property.DeclaringSyntaxReferences)
+            {
+                if (item.GetSyntax() is PropertyDeclarationSyntax syntax && syntax.Initializer is not null)
+                    return CreateEqualsValueClauseSyntaxLiteral(syntax.Initializer);
+            }
+        }
+
+        return null;
+    }
+
+    private FunctionBody? ConvertMemberOperationToFunctionBody(IOperation operation, bool returnsVoid)
+    {
+        var walker = new SemanticWalker();
+        var argument = CreateImportAwareArgument(Sense.Any);
+        var visited = walker.Visit(operation, argument);
+        MergeImports(argument);
+
+        return visited switch
+        {
+            FunctionBody body => body,
+            NestedBlockStatement block => new FunctionBody(block.Body, true),
+            Statement statement => new FunctionBody(NodeList.From(statement), true),
+            Expression expression => new FunctionBody(
+                NodeList.From<Statement>(
+                    returnsVoid
+                        ? new NonSpecialExpressionStatement(expression)
+                        : new ReturnStatement(expression)),
+                true),
+            _ => null
+        };
+    }
+
     private MethodDefinition ConvertMemberMethod(IMethodSymbol symbol)
     {
+        if (symbol.AssociatedSymbol is IEventSymbol eventSymbol)
+            throw new NotSupportedException($"Jazor member class does not support Event:{eventSymbol.Name}.");
+
+        if (symbol.IsAbstract)
+        {
+            if (symbol.AssociatedSymbol is IPropertySymbol propertySymbol)
+                throw new NotSupportedException($"Jazor member class does not support abstract property {propertySymbol.Name}.");
+
+            throw new NotSupportedException($"Jazor member class does not support abstract method {symbol.Name}.");
+        }
+
         IOperation? operation = null;
         foreach (var reference in symbol.DeclaringSyntaxReferences)
         {
-            var methodDecl = (MethodDeclarationSyntax)reference.GetSyntax();
-            if (methodDecl.Body is not null)
+            var syntax = reference.GetSyntax();
+            if (syntax is MethodDeclarationSyntax methodDecl)
             {
-                operation = _classModel.GetOperation(methodDecl.Body);
-                break;
+                if (methodDecl.Body is not null)
+                {
+                    operation = _classModel.GetOperation(methodDecl.Body);
+                    break;
+                }
+                else if (methodDecl.ExpressionBody is not null)
+                {
+                    operation = _classModel.GetOperation(methodDecl.ExpressionBody);
+                    break;
+                }
             }
-            else if (methodDecl.ExpressionBody is not null)
+            else if (syntax is AccessorDeclarationSyntax accessorDecl)
             {
-                operation = _classModel.GetOperation(methodDecl.ExpressionBody);
+                if (accessorDecl.Body is not null)
+                {
+                    operation = _classModel.GetOperation(accessorDecl.Body);
+                    break;
+                }
+                else if (accessorDecl.ExpressionBody is not null)
+                {
+                    operation = _classModel.GetOperation(accessorDecl.ExpressionBody);
+                    break;
+                }
+            }
+            else if (syntax is ArrowExpressionClauseSyntax arrowExpr)
+            {
+                operation = _classModel.GetOperation(arrowExpr.Expression);
                 break;
             }
         }
@@ -420,16 +498,13 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         FunctionBody body;
         if (operation is not null)
         {
-            var walker = new SemanticWalker();
-            var argument = CreateImportAwareArgument(Sense.FunctionBody);
-            body = walker.Visit(operation, argument) as FunctionBody
-                ?? throw new NotSupportedException($"Jazor cannot suport {symbol.Name}.");
-            MergeImports(argument);
+            body = ConvertMemberOperationToFunctionBody(operation, symbol.ReturnsVoid)
+                ?? throw new NotSupportedException($"Jazor member class failed to convert body for {symbol.Name}.");
         }
-        //如果没有方法体，并且是属性的get、set方法，则是自动属性
+        // Body-less property accessors only map to auto-properties.
         else if (isProperty)
         {
-            var backName = $"<{symbol.AssociatedSymbol!.Name}>k__BackingField";
+            var backName = GetMemberBackingFieldName((IPropertySymbol)symbol.AssociatedSymbol!);
             var backField = new PrivateIdentifier(backName);
 
             if (symbol.MethodKind == MethodKind.PropertyGet)
@@ -459,7 +534,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             }
         }
         else
-            throw new NotSupportedException($"Jazor cannot suport {symbol.Name}.");
+            throw new NotSupportedException($"Jazor member class method {symbol.Name} requires a body.");
 
         var parameters = new List<Node>();
         if (symbol.Parameters.Length > 0)
@@ -467,7 +542,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             foreach (var p in symbol.Parameters)
             {
                 var parameter = ConvertParameter(p)
-                    ?? throw new NotSupportedException($"Jazor cannot suport {p.Name}.");
+                    ?? throw new NotSupportedException($"Jazor member class does not support parameter {p.Name} on {symbol.Name}.");
                 parameters.Add(parameter);
             }
         }
@@ -497,6 +572,9 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
     private List<ClassProperty> ConvertMemberProperty(IPropertySymbol symbol)
     {
+        if ((symbol.GetMethod?.IsAbstract ?? false) || (symbol.SetMethod?.IsAbstract ?? false))
+            throw new NotSupportedException($"Jazor member class does not support abstract property {symbol.Name}.");
+
         var properties = new List<ClassProperty>();
         // 找出BackingField
         var backName = $"<{symbol.Name}>k__BackingField";
@@ -520,8 +598,11 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         // 处理 setter
         if (symbol.SetMethod is not null)
         {
-            var setFuncDecl = ConvertMemberMethod(symbol.SetMethod);
-            properties.Add(setFuncDecl);
+            if (!IsInitOnlyAccessor(symbol.SetMethod))
+            {
+                var setFuncDecl = ConvertMemberMethod(symbol.SetMethod);
+                properties.Add(setFuncDecl);
+            }
         }
 
         return properties;
@@ -529,11 +610,11 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
     private MethodDefinition ConvertMemberConstructor(IMethodSymbol symbol)
     {
-        if (symbol.MethodKind != MethodKind.Constructor)
-            throw new NotSupportedException($"Jazor cannot suport {symbol.Name}.");
-
-        if (symbol.IsStatic)
+        if (symbol.MethodKind == MethodKind.SharedConstructor)
             throw new NotSupportedException($"Jazor member class does not support static constructor {symbol.Name}.");
+
+        if (symbol.MethodKind != MethodKind.Constructor)
+            throw new NotSupportedException($"Jazor member class does not support constructor kind {symbol.MethodKind}:{symbol.Name}.");
 
         IOperation? operation = null;
         foreach (var reference in symbol.DeclaringSyntaxReferences)
@@ -558,13 +639,10 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         }
 
         if (operation is null)
-            throw new NotSupportedException($"Jazor cannot suport {symbol.Name}.");
+            throw new NotSupportedException($"Jazor member class constructor {symbol.Name} requires a body.");
 
-        var walker = new SemanticWalker();
-        var argument = CreateImportAwareArgument(Sense.FunctionBody);
-        var body = walker.Visit(operation, argument) as FunctionBody
-            ?? throw new NotSupportedException($"Jazor cannot suport {symbol.Name}.");
-        MergeImports(argument);
+        var body = ConvertMemberOperationToFunctionBody(operation, returnsVoid: true)
+            ?? throw new NotSupportedException($"Jazor member class failed to convert constructor body for {symbol.Name}.");
 
         var parameters = new List<Node>();
         if (symbol.Parameters.Length > 0)
@@ -572,7 +650,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             foreach (var p in symbol.Parameters)
             {
                 var parameter = ConvertParameter(p)
-                    ?? throw new NotSupportedException($"Jazor cannot suport {p.Name}.");
+                    ?? throw new NotSupportedException($"Jazor member class does not support parameter {p.Name} on {symbol.Name}.");
                 parameters.Add(parameter);
             }
         }
@@ -599,21 +677,29 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         {
             switch (member)
             {
+                case IFieldSymbol field when field.AssociatedSymbol is IPropertySymbol && field.IsImplicitlyDeclared:
+                    break;
                 case IFieldSymbol field:
                     nodes.Add(ConvertMemberField(field));
                     break;
                 case IPropertySymbol prop:
                     nodes.AddRange(ConvertMemberProperty(prop));
                     break;
-                case IMethodSymbol ctor when ctor.MethodKind == MethodKind.Constructor:
+                case IMethodSymbol accessor when accessor.AssociatedSymbol is IPropertySymbol:
+                    break;
+                case IMethodSymbol ctor when ctor.MethodKind is MethodKind.Constructor or MethodKind.SharedConstructor:
                     if (!ctor.IsImplicitlyDeclared)
                         nodes.Add(ConvertMemberConstructor(ctor));
                     break;
+                case IMethodSymbol accessor when accessor.AssociatedSymbol is IEventSymbol eventSymbol:
+                    throw new NotSupportedException($"Jazor member class does not support Event:{eventSymbol.Name}.");
                 case IMethodSymbol func when func.MethodKind == MethodKind.Ordinary:
                     nodes.Add(ConvertMemberMethod(func));
                     break;
+                case IEventSymbol eventSymbol:
+                    throw new NotSupportedException($"Jazor member class does not support Event:{eventSymbol.Name}.");
                 default:
-                    throw new NotSupportedException();
+                    throw new NotSupportedException($"Jazor member class does not support {member.Kind}:{member.Name}.");
             }
         }
 
@@ -626,6 +712,42 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         );
 
         return declaration;
+    }
+
+    private string GetMemberBackingFieldName(IPropertySymbol property)
+    {
+        var backingField = property.ContainingType
+            .GetMembers($"<{property.Name}>k__BackingField")
+            .OfType<IFieldSymbol>()
+            .FirstOrDefault();
+
+        if (backingField is not null)
+            return GetMemberFieldDeclaredName(backingField);
+
+        return Format.HashName(property.OriginalDefinition.ToDisplayString(Format.NameFormat));
+    }
+
+    private static string GetMemberFieldDeclaredName(IFieldSymbol symbol)
+    {
+        if (symbol.AssociatedSymbol is IPropertySymbol && symbol.IsImplicitlyDeclared)
+            return Format.HashName(symbol.AssociatedSymbol!.OriginalDefinition.ToDisplayString(Format.NameFormat));
+
+        return symbol.Name;
+    }
+
+    private static bool IsInitOnlyAccessor(IMethodSymbol method)
+    {
+        if (!method.IsInitOnly && method.MethodKind != MethodKind.PropertySet)
+            return false;
+
+        foreach (var reference in method.DeclaringSyntaxReferences)
+        {
+            if (reference.GetSyntax() is AccessorDeclarationSyntax accessor &&
+                accessor.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.InitAccessorDeclaration))
+                return true;
+        }
+
+        return method.IsInitOnly;
     }
 
     private Declaration ConvertModuleClass(INamedTypeSymbol symbol)
@@ -689,26 +811,38 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         return declaration;
     }
 
-    private static Expression ConvertParameter(IParameterSymbol parameter)
+    private Expression ConvertParameter(IParameterSymbol parameter)
     {
         var identifier = new Identifier(parameter.Name);
         if (parameter.HasExplicitDefaultValue)
         {
-            var val = parameter.ExplicitDefaultValue;
-            var right = CreateEqualsValueClauseSyntaxLiteral(parameter.Type.SpecialType, val);
+            var right = CreateParameterDefaultValue(parameter);
             return new AssignmentExpression("=", identifier, right);
         }
 
         return identifier;
     }
 
+    private Expression CreateParameterDefaultValue(IParameterSymbol parameter)
+    {
+        foreach (var reference in parameter.DeclaringSyntaxReferences)
+        {
+            if (reference.GetSyntax() is ParameterSyntax syntax && syntax.Default is not null)
+                return CreateEqualsValueClauseSyntaxLiteral(syntax.Default);
+        }
+
+        return CreateEqualsValueClauseSyntaxLiteral(parameter.Type.SpecialType, parameter.ExplicitDefaultValue);
+    }
+
     private static Expression CreateEqualsValueClauseSyntaxLiteral(SpecialType type, object? value)
     {
+        _ = type;
         if (value is null)
-            throw new NotSupportedException($"Cannot convert null to literal.");
-
-        if (type == SpecialType.None)
+        {
+            // Optional parameters and const reference fields can carry a null constant
+            // without a useful SpecialType discriminator, so null must lower directly.
             return new NullLiteral("null");
+        }
 
         return CreateLiteralExpression(value);
     }
@@ -721,7 +855,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         if (value is LiteralExpressionSyntax lit)
             return CreateLiteralExpression(lit.Token.Value);
 
-        var operation = _classModel.GetOperation(syntax);
+        var operation = _classModel.GetOperation(value) ?? _classModel.GetOperation(syntax);
         if (operation is not null)
         {
             var walker = new SemanticWalker(_classSymbol);
@@ -779,6 +913,9 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
     private static Expression CreateLiteralExpression(object? value)
     {
+        if (value is not null && TryCreateSpecialLiteralExpression(value, out var special))
+            return special;
+
         return value switch
         {
             null => new NullLiteral("null"),
@@ -798,6 +935,22 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             decimal dec => new NumericLiteral(System.Convert.ToDouble(dec), dec.ToString(CultureInfo.InvariantCulture)),
             _ => throw new NotSupportedException($"Unsupported literal type: {value.GetType()}")
         };
+    }
+
+    private static bool TryCreateSpecialLiteralExpression(object value, out Expression expression)
+    {
+        if (value.GetType().FullName == "System.Half")
+        {
+            var number = System.Convert.ToDouble(value, CultureInfo.InvariantCulture);
+            var raw = value is IFormattable formattable
+                ? formattable.ToString("R", CultureInfo.InvariantCulture)
+                : number.ToString("R", CultureInfo.InvariantCulture);
+            expression = new NumericLiteral(number, raw);
+            return true;
+        }
+
+        expression = null!;
+        return false;
     }
 
     private static string EscapeJavaScriptString(string value)
@@ -974,7 +1127,23 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         };
     }
 
-    private string GetSymbolName(ISymbol symbol) => symbol.Name;
+    private string GetSymbolName(ISymbol symbol)
+    {
+        if (symbol is IMethodSymbol method &&
+            (method.MethodKind == MethodKind.PropertyGet || method.MethodKind == MethodKind.PropertySet))
+        {
+            if (method.AssociatedSymbol is IPropertySymbol property)
+                return property.Name;
+
+            if (method.Name.StartsWith("get_", StringComparison.Ordinal) || method.Name.StartsWith("set_", StringComparison.Ordinal))
+                return method.Name.Substring(4);
+        }
+
+        if (symbol is IMethodSymbol { AssociatedSymbol: IPropertySymbol propertySymbol })
+            return propertySymbol.Name;
+
+        return symbol.Name;
+    }
 
     /// <summary>
     /// 约定，C# 的Public 和 Internal 都是Public，其余都是private

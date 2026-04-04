@@ -4,8 +4,22 @@ namespace ECMAScript;
 
 [ECMAScript]
 [Description("@#RegExp")]
-public sealed class RegExp
+public sealed class RegExp : IPattern, IMatchPattern, IMatchAllPattern, ISearchPattern, ISplitPattern
 {
+	/// <summary>
+	/// JavaScript <c>RegExp.prototype</c> object.
+	/// Keeping this on the constructor host avoids splitting the runtime host into an extra CLR wrapper.
+	/// </summary>
+	[Description("@#prototype")]
+	public extern static RegExp Prototype { get; }
+
+	/// <summary>
+	/// Escapes regular-expression syntax characters in arbitrary text.
+	/// This is the direct projection of JavaScript <c>RegExp.escape</c>.
+	/// </summary>
+	[Description("@#escape")]
+	public extern static string Escape(string text);
+
 	public extern RegExp(string pattern);
 
 	public extern RegExp(string pattern, string flags);
@@ -115,4 +129,40 @@ public sealed class RegExp
 	/// </summary>
 	[Description("@#toString")]
 	public extern override string ToString();
+
+	/// <summary>
+	/// Hidden protocol bridge for JavaScript <c>RegExp.prototype[@@replace]</c>.
+	/// The replacement argument stays as <see cref="object"/> because JavaScript accepts either a string or a callback function here.
+	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[Description("@#@@replace")]
+	extern string IPattern.SymbolReplace(string value, object? replacement);
+
+	/// <summary>
+	/// Hidden protocol bridge for JavaScript <c>RegExp.prototype[@@match]</c>.
+	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[Description("@#@@match")]
+	extern Array<string?>? IMatchPattern.SymbolMatch(string value);
+
+	/// <summary>
+	/// Hidden protocol bridge for JavaScript <c>RegExp.prototype[@@matchAll]</c>.
+	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[Description("@#@@matchAll")]
+	extern IEnumerable<RegExpResult> IMatchAllPattern.SymbolMatchAll(string value);
+
+	/// <summary>
+	/// Hidden protocol bridge for JavaScript <c>RegExp.prototype[@@search]</c>.
+	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[Description("@#@@search")]
+	extern Number ISearchPattern.SymbolSearch(string value);
+
+	/// <summary>
+	/// Hidden protocol bridge for JavaScript <c>RegExp.prototype[@@split]</c>.
+	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[Description("@#@@split")]
+	extern Array<string> ISplitPattern.SymbolSplit(string value, Number? limit);
 }

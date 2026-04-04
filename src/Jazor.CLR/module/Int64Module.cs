@@ -177,7 +177,7 @@ public static class Int64Module
 	public extern static Array<object?> _c1dce355b4dded70(Uint32Array s, object style, Intl.NumberFormat? provider, BigInt result);
 
 	///<summary>Returns the <see cref="T:System.TypeCode" /> for value type <see cref="T:System.Int64" />.</summary>
-	[Jazor(Op.Discard, "long.GetTypeCode()")]
+	[Jazor(Op.Inline, "long.GetTypeCode()", "11")]
 	public extern static System.TypeCode _5efdcf3dff57ebdf(BigInt instance);
 
 	///<summary>Computes the quotient and remainder of two values.</summary>
@@ -321,7 +321,12 @@ public static class Int64Module
 	{
 		var absX = x < BigInt.Zero ? -x : x;
 		var absY = y < BigInt.Zero ? -y : y;
-		return absX >= absY ? x : y;
+		if (absX > absY)
+			return x;
+		if (absX < absY)
+			return y;
+
+		return x > y ? x : y;
 	}
 
 	///<summary>Compares two values to compute which is lesser.</summary>
@@ -330,7 +335,12 @@ public static class Int64Module
 	{
 		var absX = x < BigInt.Zero ? -x : x;
 		var absY = y < BigInt.Zero ? -y : y;
-		return absX <= absY ? x : y;
+		if (absX < absY)
+			return x;
+		if (absX > absY)
+			return y;
+
+		return x < y ? x : y;
 	}
 
 	///<summary>Tries to parse a string into a value.</summary>

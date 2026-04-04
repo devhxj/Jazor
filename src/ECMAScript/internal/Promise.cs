@@ -423,16 +423,18 @@ public sealed class PromiseWithResolvers
 {
 	/// <summary>
 	/// Promise instance paired with the resolver callbacks returned by JavaScript <c>Promise.withResolvers()</c>.
+	/// The non-generic host still carries arbitrary JavaScript fulfillment values, so the promise surface remains value-bearing here.
 	/// </summary>
 	[Description("@#promise")]
-	public extern IPromise Promise { get; }
+	public extern IPromise<object?> Promise { get; }
 
 	/// <summary>
 	/// Fulfillment callback paired with <see cref="Promise"/>.
 	/// It is modeled as a property because JavaScript returns it as a function-valued field on the result object.
+	/// The non-generic host still accepts an arbitrary JavaScript fulfillment value.
 	/// </summary>
 	[Description("@#resolve")]
-	public extern Action Resolve { get; }
+	public extern Action<object?> Resolve { get; }
 
 	/// <summary>
 	/// JavaScript promises can be rejected with any value, not just <see cref="Error"/>.
@@ -473,6 +475,13 @@ public sealed class PromiseWithResolvers<T>
 public class Promise : IPromise
 {
     /// <summary>
+    /// JavaScript <c>Promise.prototype</c> object.
+    /// This stays on the non-generic constructor host so the public surface still reads like the JavaScript runtime.
+    /// </summary>
+    [Description("@#prototype")]
+    public static extern Promise Prototype { get; }
+
+    /// <summary>
     /// Returns a promise that is already resolved.
     /// </summary>
     /// <remarks>This is useful for wrapping code in a promise without having to worry if the callback in
@@ -487,6 +496,20 @@ public class Promise : IPromise
     /// </summary>
     [Description("@#resolve")]
     public static extern IPromise<object?> Resolve(object? value);
+
+    /// <summary>
+    /// Returns a promise that adopts the supplied JavaScript promise-like value.
+    /// This overload preserves the non-generic promise host in C# when the input is already promise-shaped.
+    /// </summary>
+    [Description("@#resolve")]
+    public static extern IPromise Resolve(IPromise value);
+
+    /// <summary>
+    /// Bridge-only overload for compiler-lowered async results that should follow JavaScript <c>Promise.resolve</c> assimilation.
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [Description("@#resolve")]
+    public static extern IPromise Resolve(PromiseResult value);
 
     /// <summary>
     /// Returns a promise that has already been rejected.
@@ -510,8 +533,50 @@ public class Promise : IPromise
     public static extern PromiseWithResolvers WithResolvers();
 
     /// <summary>
+    /// Calls the callback immediately and wraps its completion in a JavaScript promise.
+    /// This is the direct projection of <c>Promise.try(callback)</c> for callbacks that do not return a value.
+    /// </summary>
+    [Description("@#try")]
+    public static extern IPromise Try(Action callback);
+
+    /// <summary>
+    /// Calls the callback immediately and wraps the returned JavaScript promise in the usual promise assimilation rules.
+    /// This keeps the host close to <c>Promise.try(callback)</c> without forcing callers through CLR task abstractions.
+    /// </summary>
+    [Description("@#try")]
+    public static extern IPromise Try(Func<IPromise> callback);
+
+    /// <summary>
+    /// Bridge-only overload for compiler-lowered async callbacks that surface <see cref="PromiseResult"/> instead of an explicit promise object.
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [Description("@#try")]
+    public static extern IPromise Try(Func<PromiseResult> callback);
+
+    /// <summary>
+    /// Calls the callback immediately and resolves the returned value through JavaScript promise semantics.
+    /// This is the direct projection of <c>Promise.try(callback)</c> for typed fulfillment values.
+    /// </summary>
+    [Description("@#try")]
+    public static extern IPromise<T> Try<T>(Func<T> callback);
+
+    /// <summary>
+    /// Calls the callback immediately and adopts the returned typed JavaScript promise.
+    /// </summary>
+    [Description("@#try")]
+    public static extern IPromise<T> Try<T>(Func<IPromise<T>> callback);
+
+    /// <summary>
+    /// Bridge-only overload for compiler-lowered async callbacks that surface <see cref="PromiseResult{T}"/> instead of an explicit promise object.
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [Description("@#try")]
+    public static extern IPromise<T> Try<T>(Func<PromiseResult<T>> callback);
+
+    /// <summary>
     /// Compatibility overload that lets C# call <c>Promise.all</c> with separate arguments.
     /// JavaScript itself takes a single iterable.
+    /// Nullable element types are used because non-generic JavaScript promises may fulfill with <see langword="null" />.
     /// </summary>
     /// <param name="promises">Promises to wait on.</param>
     /// <returns></returns>
@@ -556,7 +621,7 @@ public class Promise : IPromise
     /// <returns></returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#all")]
-    public static extern IPromise<object[]> All(params IPromise<object>[] promises);
+    public static extern IPromise<object?[]> All(params IPromise<object?>[] promises);
 
     /// <summary>
     /// C# projection of the JavaScript <c>Promise.all(iterable)</c> overload.
@@ -567,7 +632,7 @@ public class Promise : IPromise
     /// <param name="promises"></param>
     /// <returns></returns>
     [Description("@#all")]
-    public static extern IPromise<object[]> All(IEnumerable<IPromise<object>> promises);
+    public static extern IPromise<object?[]> All(IEnumerable<IPromise<object?>> promises);
 
     /// <summary>
     /// Returns a promise that will resolve when all tasks passed in are resolved.
@@ -579,7 +644,7 @@ public class Promise : IPromise
     /// <returns></returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#all")]
-    public static extern IPromise<object[]> All(params PromiseResult<object>[] tasks);
+    public static extern IPromise<object?[]> All(params PromiseResult<object?>[] tasks);
 
     /// <summary>
     /// Returns a promise that will resolve when all tasks in the Enumerable are resolved.
@@ -591,7 +656,7 @@ public class Promise : IPromise
     /// <returns></returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#all")]
-    public static extern IPromise<object[]> All(IEnumerable<PromiseResult<object>> tasks);
+    public static extern IPromise<object?[]> All(IEnumerable<PromiseResult<object?>> tasks);
 
     /// <summary>
     /// C# projection of JavaScript <c>Promise.allSettled(iterable)</c>.
@@ -678,6 +743,7 @@ public class Promise : IPromise
     /// <summary>
     /// Returns a <see cref="IPromise"/> that resolves if any of the tasks resolve. If none do, it
     /// resolves with the first to reject.
+    /// Nullable is used because the winning JavaScript fulfillment value may be <see langword="null" />.
     /// </summary>
     /// <param name="tasks"><see cref="PromiseResult"/>s on which to wait</param>
     /// <returns></returns>
@@ -703,7 +769,7 @@ public class Promise : IPromise
     /// <returns></returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#any")]
-    public static extern IPromise<object> Any(params PromiseResult<object>[] tasks);
+    public static extern IPromise<object?> Any(params PromiseResult<object?>[] tasks);
 
     /// <summary>
     /// Returns a <see cref="IPromise"/> that resolves if any of the tasks resolve. If none do, it
@@ -713,7 +779,7 @@ public class Promise : IPromise
     /// <returns></returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#any")]
-    public static extern IPromise<object> Any(IEnumerable<PromiseResult<object>> tasks);
+    public static extern IPromise<object?> Any(IEnumerable<PromiseResult<object?>> tasks);
 
     /// <summary>
     /// Compatibility overload that lets C# call <c>Promise.any</c> with separate arguments.
@@ -723,7 +789,7 @@ public class Promise : IPromise
     /// <returns></returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#any")]
-    public static extern IPromise<object> Any(params IPromise<object>[] promises);
+    public static extern IPromise<object?> Any(params IPromise<object?>[] promises);
 
     /// <summary>
     /// C# projection of the JavaScript <c>Promise.any(iterable)</c> overload.
@@ -733,7 +799,7 @@ public class Promise : IPromise
     /// <param name="promises"><see cref="IEnumerable{T}"/> of <see cref="IPromise{T}"/>s on which to wait</param>
     /// <returns></returns>
     [Description("@#any")]
-    public static extern IPromise<object> Any(IEnumerable<IPromise<object>> promises);
+    public static extern IPromise<object?> Any(IEnumerable<IPromise<object?>> promises);
 
     /// <summary>
     /// Returns a promise that fulfills as soon as any of the given promises fulfill,
@@ -785,11 +851,12 @@ public class Promise : IPromise
 
     /// <summary>
     /// Returns a <see cref="IPromise{T}"/> that is resolved as soon as any one of the passed in promises resolves.
+    /// Nullable is used because the winning JavaScript fulfillment value may be <see langword="null" />.
     /// </summary>
     /// <param name="promises"><see cref="IEnumerable{T}"/> of <see cref="IPromise{T}"/>s on which to wait.</param>
     /// <returns></returns>
     [Description("@#race")]
-    public static extern IPromise<object> Race(IEnumerable<IPromise<object>> promises);
+    public static extern IPromise<object?> Race(IEnumerable<IPromise<object?>> promises);
 
     /// <summary>
     /// Compatibility overload that lets C# call <c>Promise.race</c> with separate arguments.
@@ -799,7 +866,7 @@ public class Promise : IPromise
     /// <returns></returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#race")]
-    public static extern IPromise<object> Race(params IPromise<object>[] promises);
+    public static extern IPromise<object?> Race(params IPromise<object?>[] promises);
 
     /// <summary>
     /// Returns a <see cref="IPromise{T}"/> that is resolved as soon as any one of the passed in promises resolves.
@@ -808,7 +875,7 @@ public class Promise : IPromise
     /// <returns></returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#race")]
-    public static extern IPromise<object> Race(IEnumerable<PromiseResult<object>> tasks);
+    public static extern IPromise<object?> Race(IEnumerable<PromiseResult<object?>> tasks);
 
     /// <summary>
     /// Returns a <see cref="IPromise{T}"/> that is resolved as soon as any one of the passed in promises resolves.
@@ -817,35 +884,38 @@ public class Promise : IPromise
     /// <returns></returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#race")]
-    public static extern IPromise<object> Race(params PromiseResult<object>[] tasks);
+    public static extern IPromise<object?> Race(params PromiseResult<object?>[] tasks);
 
     protected extern Promise();
 
     /// <summary>
-    /// Creates a promise that can be resolved with the passed in callback
+    /// Creates a promise whose executor can resolve with an arbitrary JavaScript fulfillment value.
+    /// The non-generic host uses <see cref="Action{T}"/> so C# can express the standard JavaScript <c>resolve(value)</c> shape directly.
     /// </summary>
     /// <param name="callback">Callback that can use the first parameter to resolve the promise.</param>
-    public extern Promise(Action<Action> callback);
+    public extern Promise(Action<Action<object?>> callback);
 
     /// <summary>
     /// Creates a promise that can be resolved or rejected with the passed in callback.
+    /// The resolve callback accepts arbitrary JavaScript fulfillment values.
     /// </summary>
     /// <param name="callback">Callback that can use the first parameter to resolve the promise,
     /// and the second parameter to reject the promise.</param>
-    public extern Promise(Action<Action, Action> callback);
+    public extern Promise(Action<Action<object?>, Action> callback);
 
     /// <summary>
     /// Creates a promise that can be resolved or rejected with the passed in callback.
+    /// The resolve callback accepts arbitrary JavaScript fulfillment values.
     /// </summary>
     /// <param name="callback">Callback that can use the first parameter to resolve the promise,
     /// and the second parameter to reject the promise with a given exception.</param>
-    public extern Promise(Action<Action, Action<Error>> callback);
+    public extern Promise(Action<Action<object?>, Action<Error>> callback);
 
     /// <summary>
     /// Creates a promise that can be resolved or rejected with the passed in callback.
     /// JavaScript allows the reject callback to receive any runtime value, not only <see cref="Error"/> instances.
     /// </summary>
-    public extern Promise(Action<Action, Action<object?>> callback);
+    public extern Promise(Action<Action<object?>, Action<object?>> callback);
 
     [Description("@#then")]
     public extern IPromise Then(Action onFulfilled);
@@ -938,6 +1008,20 @@ public sealed class Promise<T> : Promise, IPromise<T>
     [Description("@#resolve")]
     public static extern IPromise<T> Resolve(T arg);
 
+    /// <summary>
+    /// Returns a promise that adopts the supplied typed JavaScript promise-like value.
+    /// This keeps the fulfillment type visible in C# while matching JavaScript <c>Promise.resolve</c> assimilation semantics.
+    /// </summary>
+    [Description("@#resolve")]
+    public static extern IPromise<T> Resolve(IPromise<T> arg);
+
+    /// <summary>
+    /// Bridge-only overload for compiler-lowered async results that should preserve the typed fulfillment shape.
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [Description("@#resolve")]
+    public static extern IPromise<T> Resolve(PromiseResult<T> arg);
+
     [Description("@#reject")]
     /// <summary>
     /// Returns a promise that is rejected with the <paramref name="ex"/> exception.
@@ -958,6 +1042,26 @@ public sealed class Promise<T> : Promise, IPromise<T>
     /// </summary>
     [Description("@#withResolvers")]
     public static extern new PromiseWithResolvers<T> WithResolvers();
+
+    /// <summary>
+    /// Calls the callback immediately and resolves the returned value through JavaScript promise semantics.
+    /// This typed host keeps the fulfillment type visible in C# while still mapping to <c>Promise.try(callback)</c>.
+    /// </summary>
+    [Description("@#try")]
+    public static extern IPromise<T> Try(Func<T> callback);
+
+    /// <summary>
+    /// Calls the callback immediately and adopts the returned typed JavaScript promise.
+    /// </summary>
+    [Description("@#try")]
+    public static extern IPromise<T> Try(Func<IPromise<T>> callback);
+
+    /// <summary>
+    /// Bridge-only overload for compiler-lowered async callbacks that surface <see cref="PromiseResult{T}"/> instead of an explicit promise object.
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [Description("@#try")]
+    public static extern IPromise<T> Try(Func<PromiseResult<T>> callback);
 
     [Description("@#all")]
     /// <summary>

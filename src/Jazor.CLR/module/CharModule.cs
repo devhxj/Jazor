@@ -269,7 +269,7 @@ public static class CharModule
 	[Jazor(Op.Inline, "static char.ToLowerInvariant(char)", "String.fromCharCode(__arg1).toLowerCase().charCodeAt(0)")]
 	public extern static Number _76274ed9d45c0127(Number c);
 
-	[Jazor(Op.Discard, "char.GetTypeCode()")]
+	[Jazor(Op.Inline, "char.GetTypeCode()", "4")]
 	public extern static System.TypeCode _84932c09c59d9b51(Number instance);
 
 	/// <summary>

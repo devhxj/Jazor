@@ -323,7 +323,7 @@ public static class StringModule
 	public extern static System.Text.StringRuneEnumerator _1e33e6a38a2179d0(string instance);
 
 	///<summary>Returns the <see cref="T:System.TypeCode" /> for the <see cref="T:System.String" /> class.</summary>
-	[Jazor(Op.Discard ,"string.GetTypeCode()")]
+	[Jazor(Op.Inline ,"string.GetTypeCode()", "18")]
 	public extern static System.TypeCode _b4f593c93e2f2c61(string instance);
 
 	///<summary>Indicates whether this string is in Unicode normalization form C.</summary>

@@ -1,5 +1,9 @@
 # Transformation Closure Checklist
 
+> Status: Active phase-one implementation artifact.
+> Positioning: Closure checklist for compiler transformation work.
+> Note: Tracks prioritized closure items for the current implementation lane and should be read as execution guidance, not completion proof.
+
 ## 1. 目标
 
 本文档把现有规范进一步落到“可执行闭环项”。判断标准不是功能多少，而是：

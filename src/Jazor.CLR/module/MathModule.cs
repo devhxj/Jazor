@@ -42,7 +42,8 @@ public static class MathModule
 		if (absX < absY)
 			return y;
 
-		return CompareCore(x, y) >= 0 ? x : y;
+		// .NET 在同绝对值 tie-break 时会保留数值更大的那个，这里顺带修正 +0 / -0。
+		return Math.Max_(x, y);
 	}
 
 	private static Number MinMagnitudeCore(Number x, Number y)
@@ -57,7 +58,8 @@ public static class MathModule
 		if (absX > absY)
 			return y;
 
-		return CompareCore(x, y) <= 0 ? x : y;
+		// .NET 在同绝对值 tie-break 时会保留数值更小的那个，这里顺带修正 +0 / -0。
+		return Math.Min_(x, y);
 	}
 
 	// 常量 - 使用 Op.Inline
@@ -555,8 +557,9 @@ public static class MathModule
 		=> DecimalModule._ed803cf9c8c052f1(value);
 
 	///<summary>Returns an integer that indicates the sign of a double-precision floating-point number.</summary>
-	[Jazor(Op.Alias, "static System.Math.Sign(double)", "sign")]
-	public extern static Number _9a554cfca79bdc59(Number value);
+	[Jazor(Op.Import, "static System.Math.Sign(double)")]
+	public static Number _9a554cfca79bdc59(Number value)
+		=> DoubleModule.SignCore(value);
 
 	///<summary>Returns an integer that indicates the sign of a 16-bit signed integer.</summary>
 	[Jazor(Op.Alias, "static System.Math.Sign(short)", "sign")]
@@ -582,8 +585,9 @@ public static class MathModule
 	public extern static Number _88575fe160876695(Number value);
 
 	///<summary>Returns an integer that indicates the sign of a single-precision floating-point number.</summary>
-	[Jazor(Op.Alias, "static System.Math.Sign(float)", "sign")]
-	public extern static Number _c0668680ba7ef96e(Number value);
+	[Jazor(Op.Import, "static System.Math.Sign(float)")]
+	public static Number _c0668680ba7ef96e(Number value)
+		=> SingleModule.SignCore(value);
 
 	///<summary>Calculates the integral part of a specified decimal number.</summary>
 	[Jazor(Op.Import ,"static System.Math.Truncate(decimal)")]

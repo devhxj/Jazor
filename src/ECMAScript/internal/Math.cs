@@ -199,12 +199,27 @@ public static partial class Global
 		public extern static Number Fround_(Number x);
 
 		/// <summary>
+		/// Returns the nearest IEEE 754 binary16 representation of a number, re-expanded as a JavaScript number.
+		/// This is the direct projection of JavaScript <c>Math.f16round</c>.
+		/// </summary>
+		[Description("@#f16round")]
+		public extern static Number F16round_(Number x);
+
+		/// <summary>
 		/// returns the square root of the sum of squares of its arguments.
 		/// </summary>
 		/// <param name="values"></param>
 		/// <returns></returns>
 		[Description("@#hypot")]
 		public extern static Number Hypot_(params Number[] values);
+
+		/// <summary>
+		/// Sums an iterable of JavaScript numbers using the runtime's precise summation algorithm.
+		/// <see cref="IEnumerable{T}"/> is used as the common C# input surface for the JavaScript iterable input.
+		/// This is the direct projection of JavaScript <c>Math.sumPrecise</c>.
+		/// </summary>
+		[Description("@#sumPrecise")]
+		public extern static Number SumPrecise_(IEnumerable<Number> items);
 
 		/// <summary>
 		/// Returns the result of the C-like 32-bit multiplication of the two parameters.

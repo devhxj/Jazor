@@ -1,12 +1,11 @@
 namespace Jazor.CLR;
 
 [ECMAScriptModule("System/Globalization/GregorianCalendarModule.js")]
-[Jazor(Op.Alias, "System.Globalization.GregorianCalendar","String")]
+[Jazor(Op.Alias, "System.Globalization.GregorianCalendar","Object")]
 public static class GregorianCalendarModule
 {
-	private const string CalendarId = "GregorianCalendar";
 	private static Number CurrentEra => 0;
-	private static Number DefaultTwoDigitYearMax => 2029;
+	private static Number DefaultTwoDigitYearMax => 2049;
 
 	private static Number LocalizedCalendarType => 1;
 	private static Number USEnglishCalendarType => 2;
@@ -82,49 +81,52 @@ public static class GregorianCalendarModule
 	public extern static Number _fa491b52106d378d();
 
 	[Jazor(Op.Import ,"override System.Globalization.GregorianCalendar.MinSupportedDateTime.get")]
-	public static RuntimeModule.JDateTime _13ca7ecb3e3aade5(string instance)
+	public static RuntimeModule.JDateTime _13ca7ecb3e3aade5(RuntimeModule.JGregorianCalendar instance)
 		=> DateTimeModule._fad0c74e1c9df5bb();
 
 	[Jazor(Op.Import ,"override System.Globalization.GregorianCalendar.MaxSupportedDateTime.get")]
-	public static RuntimeModule.JDateTime _7ba83b2ccdd567b5(string instance)
+	public static RuntimeModule.JDateTime _7ba83b2ccdd567b5(RuntimeModule.JGregorianCalendar instance)
 		=> DateTimeModule._eb38dc04224730ea();
 
 	[Jazor(Op.Import ,"override System.Globalization.GregorianCalendar.AlgorithmType.get")]
-	public static System.Globalization.CalendarAlgorithmType _2c293866a460d9ea(string instance)
+	public static System.Globalization.CalendarAlgorithmType _2c293866a460d9ea(RuntimeModule.JGregorianCalendar instance)
 		=> System.Globalization.CalendarAlgorithmType.SolarCalendar;
 
 	/// <summary>
 	/// C#: new GregorianCalendar()
-	/// JS: ({})
+	/// JS: new JGregorianCalendar(Localized, 2029)
 	/// </summary>
 	[Jazor(Op.Import, "System.Globalization.GregorianCalendar.GregorianCalendar()")]
-	public static string _23b9e8d671b5210e()
-		=> CalendarId;
+	public static RuntimeModule.JGregorianCalendar _23b9e8d671b5210e()
+		=> new(LocalizedCalendarType, DefaultTwoDigitYearMax);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Globalization.GregorianCalendar" /> class using the specified <see cref="T:System.Globalization.GregorianCalendarTypes" /> value.</summary>
 	[Jazor(Op.Import, "System.Globalization.GregorianCalendar.GregorianCalendar(System.Globalization.GregorianCalendarTypes)")]
-	public static string _c043a86ee7a70c81(object type)
+	public static RuntimeModule.JGregorianCalendar _c043a86ee7a70c81(object type)
 	{
 		ValidateCalendarType(type);
-		return CalendarId;
+		return new(GetCalendarTypeValue(type), DefaultTwoDigitYearMax);
 	}
 
 	[Jazor(Op.Import ,"virtual System.Globalization.GregorianCalendar.CalendarType.get")]
-	public static System.Globalization.GregorianCalendarTypes _33a82cf70a73ecdd(string instance)
-		=> System.Globalization.GregorianCalendarTypes.Localized;
+	public static System.Globalization.GregorianCalendarTypes _33a82cf70a73ecdd(RuntimeModule.JGregorianCalendar instance)
+		=> (System.Globalization.GregorianCalendarTypes)(int)instance.CalendarType;
 
 	[Jazor(Op.Import ,"virtual System.Globalization.GregorianCalendar.CalendarType.set")]
-	public static void _ab29134350e86147(string instance, object value)
-		=> ValidateCalendarType(value);
+	public static void _ab29134350e86147(RuntimeModule.JGregorianCalendar instance, object value)
+	{
+		ValidateCalendarType(value);
+		instance.CalendarType = GetCalendarTypeValue(value);
+	}
 
 	///<summary>Returns a <see cref="T:System.DateTime" /> that is the specified number of months away from the specified <see cref="T:System.DateTime" />.</summary>
 	[Jazor(Op.Import ,"override System.Globalization.GregorianCalendar.AddMonths(System.DateTime, int)")]
-	public static RuntimeModule.JDateTime _1c4bd410ce12db05(string instance, RuntimeModule.JDateTime time, Number months)
+	public static RuntimeModule.JDateTime _1c4bd410ce12db05(RuntimeModule.JGregorianCalendar instance, RuntimeModule.JDateTime time, Number months)
 		=> DateTimeModule._aae197b95f9024a4(time, months);
 
 	///<summary>Returns a <see cref="T:System.DateTime" /> that is the specified number of years away from the specified <see cref="T:System.DateTime" />.</summary>
 	[Jazor(Op.Import ,"override System.Globalization.GregorianCalendar.AddYears(System.DateTime, int)")]
-	public static RuntimeModule.JDateTime _705c207141cada42(string instance, RuntimeModule.JDateTime time, Number years)
+	public static RuntimeModule.JDateTime _705c207141cada42(RuntimeModule.JGregorianCalendar instance, RuntimeModule.JDateTime time, Number years)
 		=> DateTimeModule._3353d31b02f2bed8(time, years);
 
 	/// <summary>
@@ -132,17 +134,17 @@ public static class GregorianCalendarModule
 	/// JS: time.getDate()
 	/// </summary>
 	[Jazor(Op.Import, "override System.Globalization.GregorianCalendar.GetDayOfMonth(System.DateTime)")]
-	public static Number _5f5d0a874674bdea(string instance, RuntimeModule.JDateTime time)
+	public static Number _5f5d0a874674bdea(RuntimeModule.JGregorianCalendar instance, RuntimeModule.JDateTime time)
 		=> time.Date.GetDate();
 
 	///<summary>Returns the day of the week in the specified <see cref="T:System.DateTime" />.</summary>
 	[Jazor(Op.Import ,"override System.Globalization.GregorianCalendar.GetDayOfWeek(System.DateTime)")]
-	public static System.DayOfWeek _6cdddcc68587ea95(string instance, RuntimeModule.JDateTime time)
+	public static System.DayOfWeek _6cdddcc68587ea95(RuntimeModule.JGregorianCalendar instance, RuntimeModule.JDateTime time)
 		=> (System.DayOfWeek)(int)time.Date.GetDay();
 
 	///<summary>Returns the day of the year in the specified <see cref="T:System.DateTime" />.</summary>
 	[Jazor(Op.Import ,"override System.Globalization.GregorianCalendar.GetDayOfYear(System.DateTime)")]
-	public static Number _81e475ed63f62602(string instance, RuntimeModule.JDateTime time)
+	public static Number _81e475ed63f62602(RuntimeModule.JGregorianCalendar instance, RuntimeModule.JDateTime time)
 	{
 		var year = time.Date.GetFullYear();
 		var start = Date.UTC(year, 0, 0);
@@ -152,7 +154,7 @@ public static class GregorianCalendarModule
 
 	///<summary>Returns the number of days in the specified month in the specified year in the specified era.</summary>
 	[Jazor(Op.Import ,"override System.Globalization.GregorianCalendar.GetDaysInMonth(int, int, int)")]
-	public static Number _ce58c7d4d1c36fe3(string instance, Number year, Number month, Number era)
+	public static Number _ce58c7d4d1c36fe3(RuntimeModule.JGregorianCalendar instance, Number year, Number month, Number era)
 	{
 		ValidateEra(era);
 		return RuntimeModule.GetDaysInMonth(year, month);
@@ -160,7 +162,7 @@ public static class GregorianCalendarModule
 
 	///<summary>Returns the number of days in the specified year in the specified era.</summary>
 	[Jazor(Op.Import ,"override System.Globalization.GregorianCalendar.GetDaysInYear(int, int)")]
-	public static Number _7545c4d66f0f3604(string instance, Number year, Number era)
+	public static Number _7545c4d66f0f3604(RuntimeModule.JGregorianCalendar instance, Number year, Number era)
 	{
 		ValidateEra(era);
 		ValidateYear(year);
@@ -169,11 +171,11 @@ public static class GregorianCalendarModule
 
 	///<summary>Returns the era in the specified <see cref="T:System.DateTime" />.</summary>
 	[Jazor(Op.Import ,"override System.Globalization.GregorianCalendar.GetEra(System.DateTime)")]
-	public static Number _21a6ebc60ed3b388(string instance, RuntimeModule.JDateTime time)
+	public static Number _21a6ebc60ed3b388(RuntimeModule.JGregorianCalendar instance, RuntimeModule.JDateTime time)
 		=> 1;
 
 	[Jazor(Op.Import ,"override System.Globalization.GregorianCalendar.Eras.get")]
-	public static Number[] _c01c2927eaf2fefe(string instance)
+	public static Number[] _c01c2927eaf2fefe(RuntimeModule.JGregorianCalendar instance)
 		=> [1];
 
 	/// <summary>
@@ -181,12 +183,12 @@ public static class GregorianCalendarModule
 	/// JS: (time.getMonth() + 1)
 	/// </summary>
 	[Jazor(Op.Import, "override System.Globalization.GregorianCalendar.GetMonth(System.DateTime)")]
-	public static Number _ce76f400b1aa26d3(string instance, RuntimeModule.JDateTime time)
+	public static Number _ce76f400b1aa26d3(RuntimeModule.JGregorianCalendar instance, RuntimeModule.JDateTime time)
 		=> time.Date.GetMonth() + 1;
 
 	///<summary>Returns the number of months in the specified year in the specified era.</summary>
 	[Jazor(Op.Import ,"override System.Globalization.GregorianCalendar.GetMonthsInYear(int, int)")]
-	public static Number _5df8d3230f9681b9(string instance, Number year, Number era)
+	public static Number _5df8d3230f9681b9(RuntimeModule.JGregorianCalendar instance, Number year, Number era)
 	{
 		ValidateEra(era);
 		ValidateYear(year);
@@ -198,12 +200,12 @@ public static class GregorianCalendarModule
 	/// JS: time.getFullYear()
 	/// </summary>
 	[Jazor(Op.Import, "override System.Globalization.GregorianCalendar.GetYear(System.DateTime)")]
-	public static Number _fd5a2cde6fb4d6f5(string instance, RuntimeModule.JDateTime time)
+	public static Number _fd5a2cde6fb4d6f5(RuntimeModule.JGregorianCalendar instance, RuntimeModule.JDateTime time)
 		=> time.Date.GetFullYear();
 
 	///<summary>Determines whether the specified date in the specified era is a leap day.</summary>
 	[Jazor(Op.Import ,"override System.Globalization.GregorianCalendar.IsLeapDay(int, int, int, int)")]
-	public static bool _10c29328b0ef4014(string instance, Number year, Number month, Number day, Number era)
+	public static bool _10c29328b0ef4014(RuntimeModule.JGregorianCalendar instance, Number year, Number month, Number day, Number era)
 	{
 		ValidateEra(era);
 		ValidateDate(year, month, day);
@@ -212,7 +214,7 @@ public static class GregorianCalendarModule
 
 	///<summary>Calculates the leap month for a specified year and era.</summary>
 	[Jazor(Op.Import ,"override System.Globalization.GregorianCalendar.GetLeapMonth(int, int)")]
-	public static Number _91a08597c1c93445(string instance, Number year, Number era)
+	public static Number _91a08597c1c93445(RuntimeModule.JGregorianCalendar instance, Number year, Number era)
 	{
 		ValidateEra(era);
 		ValidateYear(year);
@@ -221,7 +223,7 @@ public static class GregorianCalendarModule
 
 	///<summary>Determines whether the specified month in the specified year in the specified era is a leap month.</summary>
 	[Jazor(Op.Import ,"override System.Globalization.GregorianCalendar.IsLeapMonth(int, int, int)")]
-	public static bool _9917941c9da950b5(string instance, Number year, Number month, Number era)
+	public static bool _9917941c9da950b5(RuntimeModule.JGregorianCalendar instance, Number year, Number month, Number era)
 	{
 		ValidateEra(era);
 		ValidateMonth(year, month);
@@ -233,7 +235,7 @@ public static class GregorianCalendarModule
 	/// JS: year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)
 	/// </summary>
 	[Jazor(Op.Import, "override System.Globalization.GregorianCalendar.IsLeapYear(int, int)")]
-	public static bool _4c3723e9b82aa507(string instance, Number year, Number era)
+	public static bool _4c3723e9b82aa507(RuntimeModule.JGregorianCalendar instance, Number year, Number era)
 	{
 		ValidateEra(era);
 		ValidateYear(year);
@@ -242,27 +244,29 @@ public static class GregorianCalendarModule
 
 	///<summary>Returns a <see cref="T:System.DateTime" /> that is set to the specified date and time in the specified era.</summary>
 	[Jazor(Op.Import ,"override System.Globalization.GregorianCalendar.ToDateTime(int, int, int, int, int, int, int, int)")]
-	public static RuntimeModule.JDateTime _29ccd13d5e5508f8(string instance, Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond, Number era)
+	public static RuntimeModule.JDateTime _29ccd13d5e5508f8(RuntimeModule.JGregorianCalendar instance, Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond, Number era)
 	{
 		ValidateEra(era);
 		return new(RuntimeModule.CreateLocalDateTime(year, month, day, hour, minute, second, millisecond), 0);
 	}
 
 	[Jazor(Op.Import ,"override System.Globalization.GregorianCalendar.TwoDigitYearMax.get")]
-	public static Number _e32c11e11fbe2e3b(string instance)
-		=> DefaultTwoDigitYearMax;
+	public static Number _e32c11e11fbe2e3b(RuntimeModule.JGregorianCalendar instance)
+		=> instance.TwoDigitYearMax;
 
 	[Jazor(Op.Import ,"override System.Globalization.GregorianCalendar.TwoDigitYearMax.set")]
-	public static void _9537b0490ec80689(string instance, Number value)
+	public static void _9537b0490ec80689(RuntimeModule.JGregorianCalendar instance, Number value)
 	{
 		EnsureWholeNumber(value, "ArgumentOutOfRangeException: TwoDigitYearMax must be a whole number.");
 		if (value < 99 || value > 9999)
 			throw new Error("ArgumentOutOfRangeException: TwoDigitYearMax must be between 99 and 9999.");
+
+		instance.TwoDigitYearMax = value;
 	}
 
 	///<summary>Converts the specified year to a four-digit year by using the <see cref="P:System.Globalization.GregorianCalendar.TwoDigitYearMax" /> property to determine the appropriate century.</summary>
 	[Jazor(Op.Import ,"override System.Globalization.GregorianCalendar.ToFourDigitYear(int)")]
-	public static Number _cca1b99b56b6a322(string instance, Number year)
+	public static Number _cca1b99b56b6a322(RuntimeModule.JGregorianCalendar instance, Number year)
 	{
 		EnsureWholeNumber(year, "ArgumentOutOfRangeException: Year must be a whole number.");
 		if (year < 0 || year > 9999)
@@ -270,8 +274,8 @@ public static class GregorianCalendarModule
 		if (year >= 100)
 			return year;
 
-		var century = Math.Floor_(DefaultTwoDigitYearMax / 100) * 100;
-		var pivot = DefaultTwoDigitYearMax % 100;
+		var century = Math.Floor_(instance.TwoDigitYearMax / 100) * 100;
+		var pivot = instance.TwoDigitYearMax % 100;
 		return year <= pivot ? century + year : century - 100 + year;
 	}
 }

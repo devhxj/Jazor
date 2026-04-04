@@ -192,7 +192,7 @@ public static class SByteModule
 	public extern static Array<object?> _9d5e37148ebfe7f5(Uint32Array s, object style, Intl.NumberFormat? provider);
 
 	///<summary>Returns the <see cref="T:System.TypeCode" /> for value type <see cref="T:System.SByte" />.</summary>
-	[Jazor(Op.Discard ,"sbyte.GetTypeCode()")]
+	[Jazor(Op.Inline ,"sbyte.GetTypeCode()", "5")]
 	public extern static System.TypeCode _05739d4cc5ffd426(Number instance);
 
 	/// <summary>

@@ -2,27 +2,166 @@
 
 ## 概述
 
-本文档汇总 Jazor.Compiler 当前仍然有参考价值的设计说明、实现说明和专题文档。
+本文档汇总 `Jazor.Compiler/doc` 当前仍有参考价值的设计说明、实现说明、专题文档与阶段性材料。
 
-这里优先指向“当前实现事实”和“已确认的设计约束”，不再把历史分析、阶段性判断和已过时的缺陷列表作为主入口。
+整理原则：
 
-## 推荐阅读路径
-
-如果你是第一次进入该目录，建议按以下顺序阅读：
-
-1. [ArchitectureOverview.Simplified.md](./ArchitectureOverview.Simplified.md)
-2. [ArchitectureOverview.md](./ArchitectureOverview.md)
-3. [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)
-4. [TransformationRoadmap.md](./TransformationRoadmap.md)
-5. [WhiteList.md](./WhiteList.md)
-6. [SemanticWalker.md](./SemanticWalker.md)
-7. [SourceMap.DecisionSummary.md](./SourceMap.DecisionSummary.md)
-8. [RazorVue.DecisionSummary.md](./RazorVue.DecisionSummary.md)
-9. [RuntimeStaticHostResolution.md](./RuntimeStaticHostResolution.md)
+- 优先指向“当前实现事实”和“长期有效的设计约束”
+- 将专题文档通过专题入口聚合，而不是在根索引中平铺全部子文档
+- 将阶段性计划、实施清单、复核记录与主规范分层，降低过时信息干扰
 
 ---
 
-## 核心文件列表
+## 一、入口文档
+
+如果你是第一次进入该目录，建议先读这些文档：
+
+1. [ArchitectureOverview.Simplified.md](./ArchitectureOverview.Simplified.md)
+2. [ArchitectureOverview.md](./ArchitectureOverview.md)
+3. [TransformationRoadmap.md](./TransformationRoadmap.md)
+4. [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)
+
+这四份文档分别负责：
+
+- 一页版整体认知
+- 完整架构边界
+- 当前闭环状态与下一阶段动作
+- 编译主链路与转换流程
+
+---
+
+## 二、长期有效规范
+
+这部分文档更偏“长期有效的设计/实现说明”，适合作为稳定参考。
+
+### 2.1 转换核心
+
+- [AstConverter.md](./AstConverter.md)
+- [SemanticWalker.md](./SemanticWalker.md)
+- [WalkerArgument.md](./WalkerArgument.md)
+- [ModuleConversionSpec.md](./ModuleConversionSpec.md)
+- [WalkerExtensionSpec.md](./WalkerExtensionSpec.md)
+
+`SemanticWalker` 分部文档请从主入口进入：
+
+- [SemanticWalker.Pattern.md](./SemanticWalker.Pattern.md)
+- [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
+- [SemanticWalker.Loop.md](./SemanticWalker.Loop.md)
+- [SemanticWalker.Switch.md](./SemanticWalker.Switch.md)
+- [SemanticWalker.String.md](./SemanticWalker.String.md)
+- [SemanticWalker.TryCatch.md](./SemanticWalker.TryCatch.md)
+- [SemanticWalker.Creation.md](./SemanticWalker.Creation.md)
+- [SemanticWalker.Tuple.md](./SemanticWalker.Tuple.md)
+- [SemanticWalker.Declaration.md](./SemanticWalker.Declaration.md)
+- [SemanticWalker.Invalid.md](./SemanticWalker.Invalid.md)
+- [SemanticWalker.NotSupport.md](./SemanticWalker.NotSupport.md)
+- [SemanticWalker.WhiteList.md](./SemanticWalker.WhiteList.md)
+
+### 2.2 白名单 / 宿主映射 / 运行时边界
+
+- [WhiteList.md](./WhiteList.md)
+- [RuntimeStaticHostResolution.md](./RuntimeStaticHostResolution.md)
+- [InlineAstTemplateSpec.md](./InlineAstTemplateSpec.md)
+- [OpCompileSpec.md](./OpCompileSpec.md)
+
+### 2.3 生成与输出
+
+- [ESGenerator.md](./ESGenerator.md)
+- [Optimizer.md](./Optimizer.md)
+
+---
+
+## 三、专题文档
+
+专题文档采用“专题入口 -> 详细设计/规则/清单”的结构。根索引只保留专题入口，避免信息平铺。
+
+### 3.1 SourceMap 专题
+
+入口：
+
+- [SourceMap.Overview.md](./SourceMap.Overview.md)
+
+状态：
+
+- 设计已明确
+- 当前策略是暂缓实现，等待编译器主体进一步稳定
+
+专题内包含：决策摘要、完整设计、硬约束、实施清单、坑点说明。
+
+### 3.2 RazorVue 专题
+
+入口：
+
+- [RazorVue.Overview.md](./RazorVue.Overview.md)
+
+状态：
+
+- 主方向已定
+- 已有部分实现落地
+- phase one 范围刻意收敛
+
+专题内包含：决策摘要、完整设计、项目职责拆分、组件描述符规范、`DenoHost` 契约、硬约束、坑点与实施材料。
+
+### 3.3 RazorVue HMR 子专题
+
+入口：
+
+- [RazorVue.Hmr.Overview.md](./RazorVue.Hmr.Overview.md)
+
+状态：
+
+- 架构已预留
+- runtime HMR 尚未完整实现
+- 当前以 compiler-owned identity / metadata 设计为主
+
+专题内包含：决策摘要、完整设计、硬约束、实施清单、坑点说明。
+
+---
+
+## 四、阶段性材料
+
+这一组文档更偏“阶段计划 / 实施清单 / 复核记录”。
+
+它们仍然有参考价值，但更容易随着代码推进而过时，不应作为首次阅读主入口。
+
+### 4.1 编译器主线阶段材料
+
+- [TransformationClosureChecklist.md](./TransformationClosureChecklist.md)
+- [OpCompileImplementationChecklist.md](./OpCompileImplementationChecklist.md)
+
+### 4.2 SourceMap 阶段材料
+
+- [SourceMap.DecisionSummary.md](./SourceMap.DecisionSummary.md)
+- [SourceMap.HardRules.md](./SourceMap.HardRules.md)
+- [SourceMap.ImplementationChecklist.md](./SourceMap.ImplementationChecklist.md)
+- [SourceMap.Pitfalls.md](./SourceMap.Pitfalls.md)
+- [SourceMap.Design.md](./SourceMap.Design.md)
+
+### 4.3 RazorVue 阶段材料
+
+- [RazorVue.DecisionSummary.md](./RazorVue.DecisionSummary.md)
+- [RazorVue.Design.md](./RazorVue.Design.md)
+- [RazorVue.ProjectResponsibilities.md](./RazorVue.ProjectResponsibilities.md)
+- [RazorVue.ComponentDescriptorSpec.md](./RazorVue.ComponentDescriptorSpec.md)
+- [RazorVue.DenoHostContract.md](./RazorVue.DenoHostContract.md)
+- [RazorVue.HardRules.md](./RazorVue.HardRules.md)
+- [RazorVue.Pitfalls.md](./RazorVue.Pitfalls.md)
+- [RazorVue.ImplementationChecklist.md](./RazorVue.ImplementationChecklist.md)
+- [RazorVue.ImplementationSkeleton.md](./RazorVue.ImplementationSkeleton.md)
+- [RazorVue.FirstPrPlan.md](./RazorVue.FirstPrPlan.md)
+- [RazorVue.Review.md](./RazorVue.Review.md)
+
+### 4.4 RazorVue HMR 阶段材料
+
+- [RazorVue.Hmr.DecisionSummary.md](./RazorVue.Hmr.DecisionSummary.md)
+- [RazorVue.Hmr.Design.md](./RazorVue.Hmr.Design.md)
+- [RazorVue.Hmr.HardRules.md](./RazorVue.Hmr.HardRules.md)
+- [RazorVue.Hmr.ImplementationChecklist.md](./RazorVue.Hmr.ImplementationChecklist.md)
+- [RazorVue.Hmr.Pitfalls.md](./RazorVue.Hmr.Pitfalls.md)
+
+---
+
+## 五、核心文件索引
 
 | 文件 | 职责 | 文档 |
 |------|------|------|
@@ -35,121 +174,54 @@
 | `WhiteList.cs` | 白名单核心 | [WhiteList.md](./WhiteList.md) |
 | `Optimizer.cs` | AST 优化器 | [Optimizer.md](./Optimizer.md) |
 | `ESGenerator.cs` | 增量源生成器 | [ESGenerator.md](./ESGenerator.md) |
-| `Transformation Pipeline` | 端到端语法转化总说明 | [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md) |
 | `Runtime Static Host Resolution` | 运行时静态成员宿主选择与继承兼容规则 | [RuntimeStaticHostResolution.md](./RuntimeStaticHostResolution.md) |
-| `Architecture Overview` | 编译器整体方案架构图与职责边界 | [ArchitectureOverview.md](./ArchitectureOverview.md) |
-| `Architecture Simplified` | 面向新成员和汇报的一页版架构说明 | [ArchitectureOverview.Simplified.md](./ArchitectureOverview.Simplified.md) |
-| `Transformation Roadmap` | 闭环状态、欠账和下一阶段动作 | [TransformationRoadmap.md](./TransformationRoadmap.md) |
-| `Module Conversion Spec` | 模块层转换规范 | [ModuleConversionSpec.md](./ModuleConversionSpec.md) |
-| `Walker Extension Spec` | `SemanticWalker` 扩展规范 | [WalkerExtensionSpec.md](./WalkerExtensionSpec.md) |
-| `Inline AST Template Spec` | `Op.Inline` 的 AST 模板规范 | [InlineAstTemplateSpec.md](./InlineAstTemplateSpec.md) |
-| `OpCompile Spec` | `Op.Compile` 的分发语义与边界约定 | [OpCompileSpec.md](./OpCompileSpec.md) |
-| `OpCompile Checklist` | `Op.Compile` 的分阶段实施清单 | [OpCompileImplementationChecklist.md](./OpCompileImplementationChecklist.md) |
-| `Closure Checklist` | 转化链路闭环清单 | [TransformationClosureChecklist.md](./TransformationClosureChecklist.md) |
-| `SourceMap Decision Summary` | sourcemap 简版决策摘要 | [SourceMap.DecisionSummary.md](./SourceMap.DecisionSummary.md) |
-| `SourceMap Overview` | sourcemap 文档总览与阅读顺序 | [SourceMap.Overview.md](./SourceMap.Overview.md) |
-| `SourceMap Design` | sourcemap 完整设计方案 | [SourceMap.Design.md](./SourceMap.Design.md) |
-| `SourceMap Checklist` | sourcemap 后续实施清单 | [SourceMap.ImplementationChecklist.md](./SourceMap.ImplementationChecklist.md) |
-| `SourceMap Pitfalls` | sourcemap 实施注意事项与易踩坑清单 | [SourceMap.Pitfalls.md](./SourceMap.Pitfalls.md) |
-| `SourceMap Hard Rules` | sourcemap 第一阶段必须遵守的硬约束 | [SourceMap.HardRules.md](./SourceMap.HardRules.md) |
-| `RazorVue Overview` | RazorVue 文档总览与阅读顺序 | [RazorVue.Overview.md](./RazorVue.Overview.md) |
-| `RazorVue Decision Summary` | RazorVue 简版决策摘要 | [RazorVue.DecisionSummary.md](./RazorVue.DecisionSummary.md) |
-| `RazorVue Design` | RazorVue 完整设计方案 | [RazorVue.Design.md](./RazorVue.Design.md) |
-| `RazorVue Component Descriptor Spec` | RazorVue 组件描述符与注册表规范 | [RazorVue.ComponentDescriptorSpec.md](./RazorVue.ComponentDescriptorSpec.md) |
-| `RazorVue DenoHost Contract` | RazorVue 与 `DenoHost` 的 artifact / manifest 契约 | [RazorVue.DenoHostContract.md](./RazorVue.DenoHostContract.md) |
-| `RazorVue Hard Rules` | RazorVue 第一阶段必须遵守的硬约束 | [RazorVue.HardRules.md](./RazorVue.HardRules.md) |
-| `RazorVue Checklist` | RazorVue 分阶段实施清单 | [RazorVue.ImplementationChecklist.md](./RazorVue.ImplementationChecklist.md) |
-| `RazorVue Pitfalls` | RazorVue 实施注意事项与易踩坑清单 | [RazorVue.Pitfalls.md](./RazorVue.Pitfalls.md) |
 
 ---
 
-## SemanticWalker 分部文件索引
+## 六、使用建议
 
-| 文件 | 职责 | 行数 | 文档 |
-|------|------|------|------|
-| `SemanticWalker.cs` | 主入口、类型映射、Translate 方法族 | ~470 | [SemanticWalker.md](./SemanticWalker.md) |
-| `SemanticWalker.cs.Pattern.cs` | 模式匹配 | ~800+ | [SemanticWalker.Pattern.md](./SemanticWalker.Pattern.md) |
-| `SemanticWalker.cs.Reference.cs` | 字段/属性/方法引用 | ~585 | [SemanticWalker.Reference.md](./SemanticWalker.Reference.md) |
-| `SemanticWalker.cs.Loop.cs` | 循环语句 | ~145 | [SemanticWalker.Loop.md](./SemanticWalker.Loop.md) |
-| `SemanticWalker.cs.Switch.cs` | Switch 语句/表达式 | ~170 | [SemanticWalker.Switch.md](./SemanticWalker.Switch.md) |
-| `SemanticWalker.cs.String.cs` | 字符串插值 | ~189 | [SemanticWalker.String.md](./SemanticWalker.String.md) |
-| `SemanticWalker.cs.TryCatch.cs` | 异常处理 | ~240 | [SemanticWalker.TryCatch.md](./SemanticWalker.TryCatch.md) |
-| `SemanticWalker.cs.Creation.cs` | 对象/数组创建 | ~422 | [SemanticWalker.Creation.md](./SemanticWalker.Creation.md) |
-| `SemanticWalker.cs.Tuple.cs` | 元组和解构 | ~560 | [SemanticWalker.Tuple.md](./SemanticWalker.Tuple.md) |
-| `SemanticWalker.cs.Declaration.cs` | 变量声明 | ~140 | [SemanticWalker.Declaration.md](./SemanticWalker.Declaration.md) |
-| `SemanticWalker.cs.Ordinary.cs` | 二元/一元运算 | ~800+ | [SemanticWalker.Ordinary.md](./SemanticWalker.Ordinary.md) |
-| `SemanticWalker.cs.Invalid.cs` | IInvalidOperation 处理 | ~152 | [SemanticWalker.Invalid.md](./SemanticWalker.Invalid.md) |
-| `SemanticWalker.cs.NotSupport.cs` | 不支持的操作 | ~525 | [SemanticWalker.NotSupport.md](./SemanticWalker.NotSupport.md) |
-| `SemanticWalker.cs.WhiteList.cs` | 白名单处理 | ~130 | [SemanticWalker.WhiteList.md](./SemanticWalker.WhiteList.md) |
-| `SemanticWalker.cs.Generate.cs` | 白名单生成 | 自动生成 | - |
+### 6.1 想快速建立整体认知
 
----
+按这个顺序读：
 
-## 设计决策说明
+1. [ArchitectureOverview.Simplified.md](./ArchitectureOverview.Simplified.md)
+2. [ArchitectureOverview.md](./ArchitectureOverview.md)
+3. [TransformationRoadmap.md](./TransformationRoadmap.md)
+4. [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)
+5. [SemanticWalker.md](./SemanticWalker.md)
 
-### 关于 Parser 的使用
+### 6.2 问题落在宿主 API 映射 / 运行时 shape / 命名边界
 
-对于白名单中的内联代码模板（`Op.Inline`），使用 Parser 解析是**必要的设计选择**，而非缺陷。原因如下：
-
-1. **模板复杂性**：内联代码模板可能包含任意复杂的 JavaScript 表达式
-2. **维护成本**：为每种可能的 AST 结构编写直接构造代码会导致代码量爆炸
-3. **运行时安全**：Parser 提供了语法验证和标准 AST 生成
-
-详见 [SemanticWalker.WhiteList.md](./SemanticWalker.WhiteList.md#43-使用-parser-解析内联代码的设计决策)。
-
-### 关于变量声明与作用域隔离
-
-**核心原则**：凡是对应 JS 函数边界或独立作用域的地方，必须隔离 `_declarators`，共享 `_specifiers`。
-
-| 数据 | 传播方向 | 函数边界行为 |
-|------|---------|------------|
-| `_declarators`（变量声明） | 向上冒泡到最近的块 | **不能**穿越函数边界 |
-| `_specifiers`（import 声明） | 向上冒泡到模块顶层 | **必须**穿越函数边界 |
-
-`WalkerArgument.WithNewDeclarators()` 实现了这个隔离策略。
-
----
-
-## 使用建议
-
-如果只是想快速建立当前实现认知，推荐按这个顺序阅读：
-
-1. [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)
-2. [SemanticWalker.md](./SemanticWalker.md)
-3. [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
-4. [SemanticWalker.Tuple.md](./SemanticWalker.Tuple.md)
-5. [RuntimeStaticHostResolution.md](./RuntimeStaticHostResolution.md)
-
-如果问题落在宿主 API 映射、运行时 shape 或命名边界，优先看：
+优先看：
 
 - [WhiteList.md](./WhiteList.md)
 - [SemanticWalker.WhiteList.md](./SemanticWalker.WhiteList.md)
 - [OpCompileSpec.md](./OpCompileSpec.md)
-- [OpCompileImplementationChecklist.md](./OpCompileImplementationChecklist.md)
 - [RuntimeStaticHostResolution.md](./RuntimeStaticHostResolution.md)
 
-如果问题落在 sourcemap，优先看：
+### 6.3 问题落在 SourceMap
 
-- [SourceMap.DecisionSummary.md](./SourceMap.DecisionSummary.md)
-- [SourceMap.Design.md](./SourceMap.Design.md)
-- [SourceMap.ImplementationChecklist.md](./SourceMap.ImplementationChecklist.md)
+先从专题入口进入：
 
-如果问题落在 RazorVue，优先看：
+- [SourceMap.Overview.md](./SourceMap.Overview.md)
 
-- [RazorVue.DecisionSummary.md](./RazorVue.DecisionSummary.md)
-- [RazorVue.Design.md](./RazorVue.Design.md)
-- [RazorVue.ComponentDescriptorSpec.md](./RazorVue.ComponentDescriptorSpec.md)
-- [RazorVue.DenoHostContract.md](./RazorVue.DenoHostContract.md)
-- [RazorVue.ImplementationChecklist.md](./RazorVue.ImplementationChecklist.md)
+### 6.4 问题落在 RazorVue
 
----
+先从专题入口进入：
 
-## 相关文档
-
-- [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)
-- [SemanticWalker.md](./SemanticWalker.md)
-- [WhiteList.md](./WhiteList.md)
-- [RuntimeStaticHostResolution.md](./RuntimeStaticHostResolution.md)
 - [RazorVue.Overview.md](./RazorVue.Overview.md)
+- [RazorVue.Hmr.Overview.md](./RazorVue.Hmr.Overview.md)
 
 ---
+
+## 七、备注
+
+当前目录中有一部分文档属于“阶段性实施材料”，例如首批 PR 计划、实现骨架、复核纪要、专题实施清单等。
+
+这些文档不是无效文档，但在阅读时应优先把它们视为：
+
+- 阶段方案
+- 实施辅助材料
+- 历史上下文
+
+而不是默认视为当前唯一权威规范。

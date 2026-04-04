@@ -93,6 +93,7 @@ public static class BooleanModule
 	public static Array<object?> _619c4d1c94319558(string value, bool result) => _dada4bbdacd7aa19(value, result);
 
 	///<summary>Returns the type code for the <see cref="T:System.Boolean" /> value type.</summary>
-	[Jazor(Op.Compile, "bool.GetTypeCode()")]
+	// TypeCode.Boolean 是稳定常量 3，这里直接内联，避免为常量返回保留编译器特判。
+	[Jazor(Op.Inline, "bool.GetTypeCode()", "3")]
 	public extern static System.TypeCode _eb6a23c2a874fdf1(bool instance);
 }

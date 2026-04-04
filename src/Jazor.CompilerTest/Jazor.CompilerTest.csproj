@@ -1,4 +1,4 @@
-<Project Sdk="MSTest.Sdk/4.0.0-preview.25415.9">
+﻿<Project Sdk="MSTest.Sdk/4.1.0">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <LangVersion>latest</LangVersion>
@@ -8,19 +8,23 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Jazor.Compiler\Jazor.Compiler.csproj" />
+    <ProjectReference Include="..\Jazor.Razor\Jazor.Razor.csproj" />
+    <ProjectReference Include="..\Jazor.RazorVue\Jazor.RazorVue.csproj" />
+    <ProjectReference Include="..\Jazor.RazorVue.Analysis\Jazor.RazorVue.Analysis.csproj" />
+    <ProjectReference Include="..\Jazor.Analyzer\Jazor.Analyzer.csproj" />
     <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="6.0.4">
+    <PackageReference Include="coverlet.collector" Version="8.0.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Basic.Reference.Assemblies.Net100" Version="1.8.4" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="18.3.0" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Update="MSTest.TestFramework" Version="4.0.2" />
+    <PackageReference Update="MSTest.TestFramework" Version="4.1.0" />
   </ItemGroup>
 </Project>

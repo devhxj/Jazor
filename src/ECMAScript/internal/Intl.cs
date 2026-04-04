@@ -49,6 +49,31 @@ public static class Intl
 	}
 
 	/// <summary>
+	/// Canonicalizes a locale identifier or locale list using the JavaScript <c>Intl</c> host.
+	/// Locale lists use <see cref="IEnumerable{T}"/> so C# sequence families can map to the single JavaScript locale-list input.
+	/// </summary>
+	[Description("@#getCanonicalLocales")]
+	public static extern string[] GetCanonicalLocales(Either<string, IEnumerable<string>> locales);
+
+	/// <summary>
+	/// Canonicalizes a single locale identifier using the JavaScript <c>Intl</c> host.
+	/// </summary>
+	[Description("@#getCanonicalLocales")]
+	public static extern string[] GetCanonicalLocales(string locales);
+
+	/// <summary>
+	/// Canonicalizes a locale list using the JavaScript <c>Intl</c> host.
+	/// </summary>
+	[Description("@#getCanonicalLocales")]
+	public static extern string[] GetCanonicalLocales(IEnumerable<string> locales);
+
+	/// <summary>
+	/// Returns the values currently supported by the runtime for the supplied ECMA-402 key such as <c>calendar</c>, <c>collation</c>, or <c>timeZone</c>.
+	/// </summary>
+	[Description("@#supportedValuesOf")]
+	public static extern string[] SupportedValuesOf(string key);
+
+	/// <summary>
 	/// 指定比较器的用途。usage: "sort" | "search"
 	/// </summary>
 	[Description("@#")]
@@ -188,37 +213,53 @@ public static class Intl
 	[Description("@#Collator")]
 	public class Collator
 	{
+		/// <summary>
+		/// JavaScript <c>Intl.Collator.prototype</c> object.
+		/// Keeping this on the constructor host preserves the recognizable runtime host boundary.
+		/// </summary>
+		[Description("@#prototype")]
+		public extern static Collator Prototype { get; }
+
 		public extern Collator();
 
-		public extern Collator(Either<string, string[]> locales);
+		/// <summary>
+		/// Locale lists use <see cref="IEnumerable{T}"/> so C# sequence families can map to the single JavaScript locale-list input.
+		/// </summary>
+		public extern Collator(Either<string, IEnumerable<string>> locales);
 
 		public extern Collator(string locales);
 
-		public extern Collator(string[] locales);
+		public extern Collator(IEnumerable<string> locales);
 
-		public extern Collator(Either<string, string[]> locales, CollatorOptions options);
+		/// <summary>
+		/// C# convenience overload for the JavaScript form that omits <c>locales</c> and only supplies options.
+		/// This exists because C# cannot naturally express an omitted leading optional argument at construction sites.
+		/// </summary>
+		public extern Collator(CollatorOptions options);
+
+		public extern Collator(Either<string, IEnumerable<string>> locales, CollatorOptions options);
 
 		public extern Collator(string locales, CollatorOptions options);
 
-		public extern Collator(string[] locales, CollatorOptions options);
+		public extern Collator(IEnumerable<string> locales, CollatorOptions options);
 
 		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(Either<string, string[]> locales);
+		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales);
 
 		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(string[] locales);
+		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales);
 
 		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(Either<string, string[]> locales, CollatorOptions options);
+		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales, CollatorOptions options);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales, CollatorOptions options);
 
 		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(string[] locales, CollatorOptions options);
+		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales, CollatorOptions options);
 
 		[Description("@#compare")]
 		public virtual extern Number Compare(string x, string y);
@@ -235,7 +276,9 @@ public static class Intl
 		[Description("@#percent")]
 		Percent,  // 百分比格式（如 0.5 → "50%"）
 		[Description("@#currency")]
-		Currency  // 货币格式（如 1000 → "$1,000.00"）
+		Currency,  // 货币格式（如 1000 → "$1,000.00"）
+		[Description("@#unit")]
+		Unit
 	}
 
 	[Description("@#")]
@@ -245,80 +288,248 @@ public static class Intl
 		Code,
 		[Description("@#symbol")]
 		Symbol,
+		[Description("@#narrowSymbol")]
+		NarrowSymbol,
 		[Description("@#name")]
 		Name
 	}
 
 	[Description("@#")]
+	public enum NumberFormatCurrencySign
+	{
+		[Description("@#standard")]
+		Standard,
+		[Description("@#accounting")]
+		Accounting
+	}
+
+	[Description("@#")]
+	public enum NumberFormatNotation
+	{
+		[Description("@#standard")]
+		Standard,
+		[Description("@#scientific")]
+		Scientific,
+		[Description("@#engineering")]
+		Engineering,
+		[Description("@#compact")]
+		Compact
+	}
+
+	[Description("@#")]
+	public enum CompactDisplay
+	{
+		[Description("@#short")]
+		Short,
+		[Description("@#long")]
+		Long
+	}
+
+	[Description("@#")]
+	public enum NumberFormatSignDisplay
+	{
+		[Description("@#auto")]
+		Auto,
+		[Description("@#never")]
+		Never,
+		[Description("@#always")]
+		Always,
+		[Description("@#exceptZero")]
+		ExceptZero,
+		[Description("@#negative")]
+		Negative
+	}
+
+	[Description("@#")]
+	public enum NumberFormatUseGrouping
+	{
+		[Description("@#auto")]
+		Auto,
+		[Description("@#always")]
+		Always,
+		[Description("@#min2")]
+		Min2
+	}
+
+	[Description("@#")]
+	public enum RoundingMode
+	{
+		[Description("@#ceil")]
+		Ceil,
+		[Description("@#floor")]
+		Floor,
+		[Description("@#expand")]
+		Expand,
+		[Description("@#trunc")]
+		Trunc,
+		[Description("@#halfCeil")]
+		HalfCeil,
+		[Description("@#halfFloor")]
+		HalfFloor,
+		[Description("@#halfExpand")]
+		HalfExpand,
+		[Description("@#halfTrunc")]
+		HalfTrunc,
+		[Description("@#halfEven")]
+		HalfEven
+	}
+
+	[Description("@#")]
+	public enum RoundingPriority
+	{
+		[Description("@#auto")]
+		Auto,
+		[Description("@#morePrecision")]
+		MorePrecision,
+		[Description("@#lessPrecision")]
+		LessPrecision
+	}
+
+	[Description("@#")]
+	public enum TrailingZeroDisplay
+	{
+		[Description("@#auto")]
+		Auto,
+		[Description("@#stripIfInteger")]
+		StripIfInteger
+	}
+
+	[Description("@#")]
 	public record NumberFormatOptions(
-		[property: Description("@#localeMatcher")] LocaleMatcher? LocaleMatcher,
-		[property: Description("@#style")] NumberFormatOptionsStyle? Style,
-		[property: Description("@#currency")] string? Currency,
-		[property: Description("@#currencyDisplay")] NumberFormatOptionsCurrencyDisplay? CurrencyDisplay,
-		[property: Description("@#useGrouping")] bool? UseGrouping,
-		[property: Description("@#minimumIntegerDigits")] Number? MinimumIntegerDigits,
-		[property: Description("@#minimumFractionDigits")] Number? MinimumFractionDigits,
-		[property: Description("@#maximumFractionDigits")] Number? MaximumFractionDigits,
-		[property: Description("@#minimumSignificantDigits")] Number? MinimumSignificantDigits,
-		[property: Description("@#maximumSignificantDigits")] Number? MaximumSignificantDigits);
+		[property: Description("@#localeMatcher")] LocaleMatcher? LocaleMatcher = null,
+		[property: Description("@#numberingSystem")] string? NumberingSystem = null,
+		[property: Description("@#style")] NumberFormatOptionsStyle? Style = null,
+		[property: Description("@#currency")] string? Currency = null,
+		[property: Description("@#currencyDisplay")] NumberFormatOptionsCurrencyDisplay? CurrencyDisplay = null,
+		[property: Description("@#currencySign")] NumberFormatCurrencySign? CurrencySign = null,
+		[property: Description("@#unit")] string? Unit = null,
+		[property: Description("@#unitDisplay")] LongShortNarrow? UnitDisplay = null,
+		[property: Description("@#notation")] NumberFormatNotation? Notation = null,
+		[property: Description("@#compactDisplay")] CompactDisplay? CompactDisplay = null,
+		/// <summary>
+		/// JavaScript accepts booleans and string modes here.
+		/// The union keeps the public host close to the runtime surface without forcing callers through CLR-only helper wrappers.
+		/// </summary>
+		[property: Description("@#useGrouping")] Either<bool, NumberFormatUseGrouping>? UseGrouping = null,
+		[property: Description("@#signDisplay")] NumberFormatSignDisplay? SignDisplay = null,
+		[property: Description("@#minimumIntegerDigits")] Number? MinimumIntegerDigits = null,
+		[property: Description("@#minimumFractionDigits")] Number? MinimumFractionDigits = null,
+		[property: Description("@#maximumFractionDigits")] Number? MaximumFractionDigits = null,
+		[property: Description("@#minimumSignificantDigits")] Number? MinimumSignificantDigits = null,
+		[property: Description("@#maximumSignificantDigits")] Number? MaximumSignificantDigits = null,
+		[property: Description("@#roundingIncrement")] Number? RoundingIncrement = null,
+		[property: Description("@#roundingMode")] RoundingMode? RoundingMode = null,
+		[property: Description("@#roundingPriority")] RoundingPriority? RoundingPriority = null,
+		[property: Description("@#trailingZeroDisplay")] TrailingZeroDisplay? TrailingZeroDisplay = null);
 
 	[Description("@#")]
 	public record ResolvedNumberFormatOptions(
 		[property: Description("@#locale")] string Locale,
 		[property: Description("@#numberingSystem")] string NumberingSystem,
 		[property: Description("@#style")] NumberFormatOptionsStyle Style,
-		[property: Description("@#currency")] string Currency,
-		[property: Description("@#currencyDisplay")] NumberFormatOptionsCurrencyDisplay CurrencyDisplay,
+		[property: Description("@#currency")] string? Currency,
+		[property: Description("@#currencyDisplay")] NumberFormatOptionsCurrencyDisplay? CurrencyDisplay,
+		[property: Description("@#currencySign")] NumberFormatCurrencySign? CurrencySign,
+		[property: Description("@#unit")] string? Unit,
+		[property: Description("@#unitDisplay")] LongShortNarrow? UnitDisplay,
 		[property: Description("@#minimumIntegerDigits")] Number MinimumIntegerDigits,
 		[property: Description("@#minimumFractionDigits")] Number MinimumFractionDigits,
 		[property: Description("@#maximumFractionDigits")] Number MaximumFractionDigits,
 		[property: Description("@#minimumSignificantDigits")] Number? MinimumSignificantDigits,
 		[property: Description("@#maximumSignificantDigits")] Number? MaximumSignificantDigits,
-		[property: Description("@#useGrouping")] bool UseGrouping);
+		[property: Description("@#useGrouping")] Either<bool, NumberFormatUseGrouping> UseGrouping,
+		[property: Description("@#notation")] NumberFormatNotation Notation,
+		[property: Description("@#compactDisplay")] CompactDisplay? CompactDisplay,
+		[property: Description("@#signDisplay")] NumberFormatSignDisplay SignDisplay,
+		[property: Description("@#roundingIncrement")] Number RoundingIncrement,
+		[property: Description("@#roundingMode")] RoundingMode RoundingMode,
+		[property: Description("@#roundingPriority")] RoundingPriority RoundingPriority,
+		[property: Description("@#trailingZeroDisplay")] TrailingZeroDisplay TrailingZeroDisplay);
 
 	[Description("@#NumberFormat")]
     public sealed class NumberFormat : IFormatProvider
     {
+		/// <summary>
+		/// JavaScript <c>Intl.NumberFormat.prototype</c> object.
+		/// Keeping this on the constructor host preserves the recognizable runtime host boundary.
+		/// </summary>
+		[Description("@#prototype")]
+		public extern static NumberFormat Prototype { get; }
+
         public extern NumberFormat();
 
-        public extern NumberFormat(Either<string, string[]> locales);
+        /// <summary>
+        /// Locale lists use <see cref="IEnumerable{T}"/> so C# sequence families can map to the single JavaScript locale-list input.
+        /// </summary>
+        public extern NumberFormat(Either<string, IEnumerable<string>> locales);
 
         public extern NumberFormat(string locales);
 
-        public extern NumberFormat(string[] locales);
+        public extern NumberFormat(IEnumerable<string> locales);
 
-        public extern NumberFormat(Either<string, string[]> locales, NumberFormatOptions options);
+		/// <summary>
+		/// C# convenience overload for the JavaScript form that omits <c>locales</c> and only supplies options.
+		/// This exists because C# cannot naturally express an omitted leading optional argument at construction sites.
+		/// </summary>
+		public extern NumberFormat(NumberFormatOptions options);
+
+        public extern NumberFormat(Either<string, IEnumerable<string>> locales, NumberFormatOptions options);
 
         public extern NumberFormat(string locales, NumberFormatOptions options);
 
-        public extern NumberFormat(string[] locales, NumberFormatOptions options);
+        public extern NumberFormat(IEnumerable<string> locales, NumberFormatOptions options);
 
         [Description("@#supportedLocalesOf")]
-        public static extern string[] SupportedLocalesOf(Either<string, string[]> locales);
+        public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales);
 
         [Description("@#supportedLocalesOf")]
         public static extern string[] SupportedLocalesOf(string locales);
 
         [Description("@#supportedLocalesOf")]
-        public static extern string[] SupportedLocalesOf(string[] locales);
+        public static extern string[] SupportedLocalesOf(IEnumerable<string> locales);
 
         [Description("@#supportedLocalesOf")]
-        public static extern string[] SupportedLocalesOf(Either<string, string[]> locales, NumberFormatOptions options);
+        public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales, NumberFormatOptions options);
 
         [Description("@#supportedLocalesOf")]
         public static extern string[] SupportedLocalesOf(string locales, NumberFormatOptions options);
 
         [Description("@#supportedLocalesOf")]
-        public static extern string[] SupportedLocalesOf(string[] locales, NumberFormatOptions options);
+        public static extern string[] SupportedLocalesOf(IEnumerable<string> locales, NumberFormatOptions options);
 
 		[Description("@#format")]
 		public extern string Format(Number value);
+
+		/// <summary>
+		/// Formats a JavaScript bigint without forcing callers through a CLR number conversion that JavaScript itself does not require.
+		/// </summary>
+		[Description("@#format")]
+		public extern string Format(BigInt value);
+
+		/// <summary>
+		/// Formats any JavaScript mathematical value accepted by <c>Intl.NumberFormat</c>.
+		/// The union keeps the public host aligned with JavaScript's runtime coercion surface for numbers, bigints, and decimal strings.
+		/// </summary>
+		[Description("@#format")]
+		public extern string Format(Either<Number, BigInt, string> value);
 
 		/// <summary>
 		/// Returns the localized number as JavaScript part records instead of a single concatenated string.
 		/// </summary>
 		[Description("@#formatToParts")]
 		public extern Array<FormatPart> FormatToParts(Number value);
+
+		/// <summary>
+		/// Returns the localized bigint as JavaScript part records instead of a single concatenated string.
+		/// </summary>
+		[Description("@#formatToParts")]
+		public extern Array<FormatPart> FormatToParts(BigInt value);
+
+		/// <summary>
+		/// Returns the localized mathematical value as JavaScript part records instead of a single concatenated string.
+		/// </summary>
+		[Description("@#formatToParts")]
+		public extern Array<FormatPart> FormatToParts(Either<Number, BigInt, string> value);
 
 		/// <summary>
 		/// Returns a localized string representing a numeric range.
@@ -328,10 +539,35 @@ public static class Intl
 		public extern string FormatRange(Number start, Number end);
 
 		/// <summary>
+		/// Returns a localized string representing a bigint range.
+		/// </summary>
+		[Description("@#formatRange")]
+		public extern string FormatRange(BigInt start, BigInt end);
+
+		/// <summary>
+		/// Returns a localized string representing a JavaScript mathematical-value range.
+		/// The union keeps the public host aligned with JavaScript's runtime coercion surface for numbers, bigints, and decimal strings.
+		/// </summary>
+		[Description("@#formatRange")]
+		public extern string FormatRange(Either<Number, BigInt, string> start, Either<Number, BigInt, string> end);
+
+		/// <summary>
 		/// Returns a localized numeric range as JavaScript part records instead of a single concatenated string.
 		/// </summary>
 		[Description("@#formatRangeToParts")]
 		public extern Array<RangeFormatPart> FormatRangeToParts(Number start, Number end);
+
+		/// <summary>
+		/// Returns a localized bigint range as JavaScript part records instead of a single concatenated string.
+		/// </summary>
+		[Description("@#formatRangeToParts")]
+		public extern Array<RangeFormatPart> FormatRangeToParts(BigInt start, BigInt end);
+
+		/// <summary>
+		/// Returns a localized mathematical-value range as JavaScript part records instead of a single concatenated string.
+		/// </summary>
+		[Description("@#formatRangeToParts")]
+		public extern Array<RangeFormatPart> FormatRangeToParts(Either<Number, BigInt, string> start, Either<Number, BigInt, string> end);
 
         [Description("@#resolvedOptions")]
         public extern ResolvedNumberFormatOptions ResolvedOptions();
@@ -342,7 +578,19 @@ public static class Intl
 	[Description("@#Locale")]
 	public sealed class Locale
 	{
+		/// <summary>
+		/// JavaScript <c>Intl.Locale.prototype</c> object.
+		/// Keeping this on the constructor host preserves the recognizable runtime host boundary.
+		/// </summary>
+		[Description("@#prototype")]
+		public extern static Locale Prototype { get; }
+
 		public extern Locale(string tag);
+
+		/// <summary>
+		/// Creates a locale while overriding individual Unicode locale components through the JavaScript options bag.
+		/// </summary>
+		public extern Locale(string tag, LocaleOptions options);
 
 		[Description("@#maximize")]
 		public extern Locale Maximize();
@@ -357,8 +605,40 @@ public static class Intl
 		[Description("@#language")]
 		public extern string Language { get; }
 
+		[Description("@#calendar")]
+		public extern string? Calendar { get; }
+
+		[Description("@#caseFirst")]
+		public extern CaseFirst? CaseFirst { get; }
+
+		[Description("@#collation")]
+		public extern string? Collation { get; }
+
+		/// <summary>
+		/// Canonical Unicode first-day identifier such as <c>mon</c> or <c>sun</c>.
+		/// </summary>
+		[Description("@#firstDayOfWeek")]
+		public extern string? FirstDayOfWeek { get; }
+
+		[Description("@#hourCycle")]
+		public extern HourCycle? HourCycle { get; }
+
 		[Description("@#script")]
 		public extern string? Script { get; }
+
+		/// <summary>
+		/// Canonical variant subtags carried by this locale.
+		/// JavaScript exposes the canonicalized variant sequence as a single string and omits it when no variants exist,
+		/// so the C# projection stays nullable and maps that absence to <see langword="null" />.
+		/// </summary>
+		[Description("@#variants")]
+		public extern string? Variants { get; }
+
+		[Description("@#numberingSystem")]
+		public extern string? NumberingSystem { get; }
+
+		[Description("@#numeric")]
+		public extern bool? Numeric { get; }
 
 		[Description("@#region")]
 		public extern string? Region { get; }
@@ -366,8 +646,103 @@ public static class Intl
 		[Description("@#baseName")]
 		public extern string BaseName { get; }
 
+		/// <summary>
+		/// Returns the runtime-supported calendar identifiers for this locale.
+		/// </summary>
+		[Description("@#getCalendars")]
+		public extern string[] GetCalendars();
+
+		/// <summary>
+		/// Returns the runtime-supported collation identifiers for this locale.
+		/// </summary>
+		[Description("@#getCollations")]
+		public extern string[] GetCollations();
+
+		/// <summary>
+		/// Returns the runtime-supported hour cycles for this locale.
+		/// </summary>
+		[Description("@#getHourCycles")]
+		public extern string[] GetHourCycles();
+
+		/// <summary>
+		/// Returns the runtime-supported numbering systems for this locale.
+		/// </summary>
+		[Description("@#getNumberingSystems")]
+		public extern string[] GetNumberingSystems();
+
+		/// <summary>
+		/// Returns the runtime-supported time zones for this locale.
+		/// </summary>
+		[Description("@#getTimeZones")]
+		public extern string[] GetTimeZones();
+
+		/// <summary>
+		/// Returns the JavaScript text-info record for this locale.
+		/// </summary>
+		[Description("@#getTextInfo")]
+		public extern LocaleTextInfo GetTextInfo();
+
+		/// <summary>
+		/// Returns the JavaScript week-info record for this locale.
+		/// </summary>
+		[Description("@#getWeekInfo")]
+		public extern LocaleWeekInfo GetWeekInfo();
+
 		[Description("@#toString")]
 		public extern override string ToString();
+	}
+
+	[Description("@#")]
+	public enum HourCycle
+	{
+		[Description("@#h11")]
+		H11,
+		[Description("@#h12")]
+		H12,
+		[Description("@#h23")]
+		H23,
+		[Description("@#h24")]
+		H24
+	}
+
+	/// <summary>
+	/// JavaScript options bag for <c>Intl.Locale</c>.
+	/// </summary>
+	[Description("@#")]
+	public record LocaleOptions(
+		[property: Description("@#language")] string? Language = null,
+		[property: Description("@#script")] string? Script = null,
+		[property: Description("@#region")] string? Region = null,
+		[property: Description("@#variants")] string? Variants = null,
+		[property: Description("@#calendar")] string? Calendar = null,
+		[property: Description("@#collation")] string? Collation = null,
+		[property: Description("@#firstDayOfWeek")] string? FirstDayOfWeek = null,
+		[property: Description("@#hourCycle")] HourCycle? HourCycle = null,
+		[property: Description("@#caseFirst")] CaseFirst? CaseFirst = null,
+		[property: Description("@#numeric")] bool? Numeric = null,
+		[property: Description("@#numberingSystem")] string? NumberingSystem = null);
+
+	/// <summary>
+	/// JavaScript object shape returned by <c>Intl.Locale.prototype.getTextInfo()</c>.
+	/// </summary>
+	[Description("@#")]
+	public sealed class LocaleTextInfo
+	{
+		[Description("@#direction")]
+		public extern string Direction { get; }
+	}
+
+	/// <summary>
+	/// JavaScript object shape returned by <c>Intl.Locale.prototype.getWeekInfo()</c>.
+	/// </summary>
+	[Description("@#")]
+	public sealed class LocaleWeekInfo
+	{
+		[Description("@#firstDay")]
+		public extern string FirstDay { get; }
+
+		[Description("@#weekend")]
+		public extern string[] Weekend { get; }
 	}
 
     [Description("@#")]
@@ -400,6 +775,19 @@ public static class Intl
 	}
 
 	[Description("@#")]
+	public enum DateTimeStyle
+	{
+		[Description("@#full")]
+		Full,
+		[Description("@#long")]
+		Long,
+		[Description("@#medium")]
+		Medium,
+		[Description("@#short")]
+		Short
+	}
+
+	[Description("@#")]
 	public enum TimeZoneName
 	{
 		[Description("@#short")]
@@ -417,19 +805,37 @@ public static class Intl
 	}
 
 	[Description("@#")]
+	public enum FractionalSecondDigits
+	{
+		[Description("@#1")]
+		One = 1,
+		[Description("@#2")]
+		Two = 2,
+		[Description("@#3")]
+		Three = 3
+	}
+
+	[Description("@#")]
 	public record DateTimeFormatOptions(
 		[property: Description("@#localeMatcher")] LocaleMatcher? LocaleMatcher = null,
+		[property: Description("@#calendar")] string? Calendar = null,
+		[property: Description("@#numberingSystem")] string? NumberingSystem = null,
 		[property: Description("@#weekday")] LongShortNarrow? Weekday = null,
 		[property: Description("@#era")] LongShortNarrow? Era = null,
 		[property: Description("@#year")] NumericTwoDigit? Year = null,
 		[property: Description("@#month")] Either<NumericTwoDigit, LongShortNarrow>? Month = null,
 		[property: Description("@#day")] NumericTwoDigit? Day = null,
+		[property: Description("@#dayPeriod")] LongShortNarrow? DayPeriod = null,
 		[property: Description("@#hour")] NumericTwoDigit? Hour = null,
 		[property: Description("@#minute")] NumericTwoDigit? Minute = null,
 		[property: Description("@#second")] NumericTwoDigit? Second = null,
+		[property: Description("@#fractionalSecondDigits")] FractionalSecondDigits? FractionalSecondDigits = null,
 		[property: Description("@#timeZoneName")] TimeZoneName? TimeZoneName = null,
 		[property: Description("@#formatMatcher")] FormatMatcher? FormatMatcher = null,
 		[property: Description("@#hour12")] bool? Hour12 = null,
+		[property: Description("@#hourCycle")] HourCycle? HourCycle = null,
+		[property: Description("@#dateStyle")] DateTimeStyle? DateStyle = null,
+		[property: Description("@#timeStyle")] DateTimeStyle? TimeStyle = null,
 		[property: Description("@#timeZone")] string? TimeZone = null);
 
 	[Description("@#")]
@@ -438,51 +844,72 @@ public static class Intl
 		[property: Description("@#calendar")] string Calendar,
 		[property: Description("@#numberingSystem")] string NumberingSystem,
 		[property: Description("@#timeZone")] string TimeZone,
+		[property: Description("@#hourCycle")] HourCycle? HourCycle = null,
 		[property: Description("@#hour12")] bool? Hour12 = null,
 		[property: Description("@#weekday")] string? Weekday = null,
 		[property: Description("@#era")] string? Era = null,
 		[property: Description("@#year")] string? Year = null,
 		[property: Description("@#month")] string? Month = null,
 		[property: Description("@#day")] string? Day = null,
+		[property: Description("@#dayPeriod")] string? DayPeriod = null,
 		[property: Description("@#hour")] string? Hour = null,
 		[property: Description("@#minute")] string? Minute = null,
 		[property: Description("@#second")] string? Second = null,
-		[property: Description("@#timeZoneName")] string? TimeZoneName = null);
+		[property: Description("@#fractionalSecondDigits")] Number? FractionalSecondDigits = null,
+		[property: Description("@#timeZoneName")] string? TimeZoneName = null,
+		[property: Description("@#dateStyle")] DateTimeStyle? DateStyle = null,
+		[property: Description("@#timeStyle")] DateTimeStyle? TimeStyle = null);
 
 	[Description("@#DateTimeFormat")]
 	public class DateTimeFormat
 	{
+		/// <summary>
+		/// JavaScript <c>Intl.DateTimeFormat.prototype</c> object.
+		/// Keeping this on the constructor host preserves the recognizable runtime host boundary.
+		/// </summary>
+		[Description("@#prototype")]
+		public extern static DateTimeFormat Prototype { get; }
+
 		public extern DateTimeFormat();
 
-		public extern DateTimeFormat(Either<string, string[]> locales);
+		/// <summary>
+		/// Locale lists use <see cref="IEnumerable{T}"/> so C# sequence families can map to the single JavaScript locale-list input.
+		/// </summary>
+		public extern DateTimeFormat(Either<string, IEnumerable<string>> locales);
 
 		public extern DateTimeFormat(string locales);
 
-		public extern DateTimeFormat(string[] locales);
+		public extern DateTimeFormat(IEnumerable<string> locales);
 
-		public extern DateTimeFormat(Either<string, string[]> locales, DateTimeFormatOptions options);
+		/// <summary>
+		/// C# convenience overload for the JavaScript form that omits <c>locales</c> and only supplies options.
+		/// This exists because C# cannot naturally express an omitted leading optional argument at construction sites.
+		/// </summary>
+		public extern DateTimeFormat(DateTimeFormatOptions options);
+
+		public extern DateTimeFormat(Either<string, IEnumerable<string>> locales, DateTimeFormatOptions options);
 
 		public extern DateTimeFormat(string locales, DateTimeFormatOptions options);
 
-		public extern DateTimeFormat(string[] locales, DateTimeFormatOptions options);
+		public extern DateTimeFormat(IEnumerable<string> locales, DateTimeFormatOptions options);
 
 		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(Either<string, string[]> locales);
+		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales);
 
 		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(string[] locales);
+		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales);
 
 		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(Either<string, string[]> locales, DateTimeFormatOptions options);
+		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales, DateTimeFormatOptions options);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales, DateTimeFormatOptions options);
 
 		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(string[] locales, DateTimeFormatOptions options);
+		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales, DateTimeFormatOptions options);
 
 		[Description("@#format")]
 		public virtual extern string Format();
@@ -644,37 +1071,53 @@ public static class Intl
 	[Description("@#RelativeTimeFormat")]
 	public sealed class RelativeTimeFormat
 	{
+		/// <summary>
+		/// JavaScript <c>Intl.RelativeTimeFormat.prototype</c> object.
+		/// Keeping this on the constructor host preserves the recognizable runtime host boundary.
+		/// </summary>
+		[Description("@#prototype")]
+		public extern static RelativeTimeFormat Prototype { get; }
+
 		public extern RelativeTimeFormat();
 
-		public extern RelativeTimeFormat(Either<string, string[]> locales);
+		/// <summary>
+		/// Locale lists use <see cref="IEnumerable{T}"/> so C# sequence families can map to the single JavaScript locale-list input.
+		/// </summary>
+		public extern RelativeTimeFormat(Either<string, IEnumerable<string>> locales);
 
 		public extern RelativeTimeFormat(string locales);
 
-		public extern RelativeTimeFormat(string[] locales);
+		public extern RelativeTimeFormat(IEnumerable<string> locales);
 
-		public extern RelativeTimeFormat(Either<string, string[]> locales, RelativeTimeFormatOptions options);
+		/// <summary>
+		/// C# convenience overload for the JavaScript form that omits <c>locales</c> and only supplies options.
+		/// This exists because C# cannot naturally express an omitted leading optional argument at construction sites.
+		/// </summary>
+		public extern RelativeTimeFormat(RelativeTimeFormatOptions options);
+
+		public extern RelativeTimeFormat(Either<string, IEnumerable<string>> locales, RelativeTimeFormatOptions options);
 
 		public extern RelativeTimeFormat(string locales, RelativeTimeFormatOptions options);
 
-		public extern RelativeTimeFormat(string[] locales, RelativeTimeFormatOptions options);
+		public extern RelativeTimeFormat(IEnumerable<string> locales, RelativeTimeFormatOptions options);
 
 		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(Either<string, string[]> locales);
+		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales);
 
 		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(string[] locales);
+		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales);
 
 		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(Either<string, string[]> locales, RelativeTimeFormatOptions options);
+		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales, RelativeTimeFormatOptions options);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales, RelativeTimeFormatOptions options);
 
 		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(string[] locales, RelativeTimeFormatOptions options);
+		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales, RelativeTimeFormatOptions options);
 
 		[Description("@#format")]
 		public extern string Format(Number value, RelativeTimeUnit unit);
@@ -682,8 +1125,205 @@ public static class Intl
 		[Description("@#formatToParts")]
 		public extern Array<RelativeTimeFormatPart> FormatToParts(Number value, RelativeTimeUnit unit);
 
+	[Description("@#resolvedOptions")]
+	public extern ResolvedRelativeTimeFormatOptions ResolvedOptions();
+	}
+
+	[Description("@#")]
+	public enum DurationFormatStyle
+	{
+		[Description("@#long")]
+		Long,
+		[Description("@#short")]
+		Short,
+		[Description("@#narrow")]
+		Narrow,
+		[Description("@#digital")]
+		Digital
+	}
+
+	[Description("@#")]
+	public enum DurationDisplay
+	{
+		[Description("@#auto")]
+		Auto,
+		[Description("@#always")]
+		Always
+	}
+
+	/// <summary>
+	/// Numeric-only duration-unit style used by sub-second units.
+	/// This stays separate because JavaScript allows <c>numeric</c> but not <c>2-digit</c> for these units.
+	/// </summary>
+	[Description("@#")]
+	public enum DurationNumericStyle
+	{
+		[Description("@#numeric")]
+		Numeric
+	}
+
+	/// <summary>
+	/// JavaScript options bag for <c>Intl.DurationFormat</c>.
+	/// The per-unit style properties mirror the runtime option names directly, while the runtime still enforces which style combinations are valid for each unit.
+	/// </summary>
+	[Description("@#")]
+	public record DurationFormatOptions(
+		[property: Description("@#localeMatcher")] LocaleMatcher? LocaleMatcher = null,
+		[property: Description("@#numberingSystem")] string? NumberingSystem = null,
+		[property: Description("@#style")] DurationFormatStyle? Style = null,
+		[property: Description("@#years")] LongShortNarrow? Years = null,
+		[property: Description("@#yearsDisplay")] DurationDisplay? YearsDisplay = null,
+		[property: Description("@#months")] LongShortNarrow? Months = null,
+		[property: Description("@#monthsDisplay")] DurationDisplay? MonthsDisplay = null,
+		[property: Description("@#weeks")] LongShortNarrow? Weeks = null,
+		[property: Description("@#weeksDisplay")] DurationDisplay? WeeksDisplay = null,
+		[property: Description("@#days")] LongShortNarrow? Days = null,
+		[property: Description("@#daysDisplay")] DurationDisplay? DaysDisplay = null,
+		[property: Description("@#hours")] Either<LongShortNarrow, NumericTwoDigit>? Hours = null,
+		[property: Description("@#hoursDisplay")] DurationDisplay? HoursDisplay = null,
+		[property: Description("@#minutes")] Either<LongShortNarrow, NumericTwoDigit>? Minutes = null,
+		[property: Description("@#minutesDisplay")] DurationDisplay? MinutesDisplay = null,
+		[property: Description("@#seconds")] Either<LongShortNarrow, NumericTwoDigit>? Seconds = null,
+		[property: Description("@#secondsDisplay")] DurationDisplay? SecondsDisplay = null,
+		[property: Description("@#milliseconds")] Either<LongShortNarrow, DurationNumericStyle>? Milliseconds = null,
+		[property: Description("@#millisecondsDisplay")] DurationDisplay? MillisecondsDisplay = null,
+		[property: Description("@#microseconds")] Either<LongShortNarrow, DurationNumericStyle>? Microseconds = null,
+		[property: Description("@#microsecondsDisplay")] DurationDisplay? MicrosecondsDisplay = null,
+		[property: Description("@#nanoseconds")] Either<LongShortNarrow, DurationNumericStyle>? Nanoseconds = null,
+		[property: Description("@#nanosecondsDisplay")] DurationDisplay? NanosecondsDisplay = null,
+		[property: Description("@#fractionalDigits")] Number? FractionalDigits = null);
+
+	/// <summary>
+	/// JavaScript object shape returned by <c>Intl.DurationFormat.prototype.resolvedOptions()</c>.
+	/// </summary>
+	[Description("@#")]
+	public record ResolvedDurationFormatOptions(
+		[property: Description("@#locale")] string Locale,
+		[property: Description("@#numberingSystem")] string NumberingSystem,
+		[property: Description("@#style")] DurationFormatStyle Style,
+		[property: Description("@#years")] LongShortNarrow? Years = null,
+		[property: Description("@#yearsDisplay")] DurationDisplay? YearsDisplay = null,
+		[property: Description("@#months")] LongShortNarrow? Months = null,
+		[property: Description("@#monthsDisplay")] DurationDisplay? MonthsDisplay = null,
+		[property: Description("@#weeks")] LongShortNarrow? Weeks = null,
+		[property: Description("@#weeksDisplay")] DurationDisplay? WeeksDisplay = null,
+		[property: Description("@#days")] LongShortNarrow? Days = null,
+		[property: Description("@#daysDisplay")] DurationDisplay? DaysDisplay = null,
+		[property: Description("@#hours")] Either<LongShortNarrow, NumericTwoDigit>? Hours = null,
+		[property: Description("@#hoursDisplay")] DurationDisplay? HoursDisplay = null,
+		[property: Description("@#minutes")] Either<LongShortNarrow, NumericTwoDigit>? Minutes = null,
+		[property: Description("@#minutesDisplay")] DurationDisplay? MinutesDisplay = null,
+		[property: Description("@#seconds")] Either<LongShortNarrow, NumericTwoDigit>? Seconds = null,
+		[property: Description("@#secondsDisplay")] DurationDisplay? SecondsDisplay = null,
+		[property: Description("@#milliseconds")] Either<LongShortNarrow, DurationNumericStyle>? Milliseconds = null,
+		[property: Description("@#millisecondsDisplay")] DurationDisplay? MillisecondsDisplay = null,
+		[property: Description("@#microseconds")] Either<LongShortNarrow, DurationNumericStyle>? Microseconds = null,
+		[property: Description("@#microsecondsDisplay")] DurationDisplay? MicrosecondsDisplay = null,
+		[property: Description("@#nanoseconds")] Either<LongShortNarrow, DurationNumericStyle>? Nanoseconds = null,
+		[property: Description("@#nanosecondsDisplay")] DurationDisplay? NanosecondsDisplay = null,
+		[property: Description("@#fractionalDigits")] Number? FractionalDigits = null);
+
+	/// <summary>
+	/// JavaScript duration-like input consumed by <c>Intl.DurationFormat</c>.
+	/// This is not a global host; it models the object-shaped runtime input directly.
+	/// </summary>
+	[Description("@#")]
+	public record DurationInput(
+		[property: Description("@#years")] Number? Years = null,
+		[property: Description("@#months")] Number? Months = null,
+		[property: Description("@#weeks")] Number? Weeks = null,
+		[property: Description("@#days")] Number? Days = null,
+		[property: Description("@#hours")] Number? Hours = null,
+		[property: Description("@#minutes")] Number? Minutes = null,
+		[property: Description("@#seconds")] Number? Seconds = null,
+		[property: Description("@#milliseconds")] Number? Milliseconds = null,
+		[property: Description("@#microseconds")] Number? Microseconds = null,
+		[property: Description("@#nanoseconds")] Number? Nanoseconds = null);
+
+	/// <summary>
+	/// JavaScript object shape returned by <c>Intl.DurationFormat.prototype.formatToParts()</c>.
+	/// </summary>
+	[Description("@#")]
+	public sealed class DurationFormatPart
+	{
+		[Description("@#type")]
+		public extern string Type { get; }
+
+		[Description("@#value")]
+		public extern string Value { get; }
+
+		[Description("@#unit")]
+		public extern string? Unit { get; }
+	}
+
+	/// <summary>
+	/// Projection of JavaScript's <c>Intl.DurationFormat</c> constructor host.
+	/// </summary>
+	[Description("@#DurationFormat")]
+	public sealed class DurationFormat
+	{
+		/// <summary>
+		/// JavaScript <c>Intl.DurationFormat.prototype</c> object.
+		/// Keeping this on the constructor host preserves the recognizable runtime host boundary.
+		/// </summary>
+		[Description("@#prototype")]
+		public extern static DurationFormat Prototype { get; }
+
+		public extern DurationFormat();
+
+		/// <summary>
+		/// Locale lists use <see cref="IEnumerable{T}"/> so C# sequence families can map to the single JavaScript locale-list input.
+		/// </summary>
+		public extern DurationFormat(Either<string, IEnumerable<string>> locales);
+
+		public extern DurationFormat(string locales);
+
+		public extern DurationFormat(IEnumerable<string> locales);
+
+		/// <summary>
+		/// C# convenience overload for the JavaScript form that omits <c>locales</c> and only supplies options.
+		/// This exists because C# cannot naturally express an omitted leading optional argument at construction sites.
+		/// </summary>
+		public extern DurationFormat(DurationFormatOptions options);
+
+		public extern DurationFormat(Either<string, IEnumerable<string>> locales, DurationFormatOptions options);
+
+		public extern DurationFormat(string locales, DurationFormatOptions options);
+
+		public extern DurationFormat(IEnumerable<string> locales, DurationFormatOptions options);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(string locales);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales, DurationFormatOptions options);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(string locales, DurationFormatOptions options);
+
+		[Description("@#supportedLocalesOf")]
+		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales, DurationFormatOptions options);
+
+		/// <summary>
+		/// Formats a JavaScript duration-like input object.
+		/// </summary>
+		[Description("@#format")]
+		public extern string Format(DurationInput duration);
+
+		/// <summary>
+		/// Returns the formatted duration as JavaScript part records instead of a single concatenated string.
+		/// </summary>
+		[Description("@#formatToParts")]
+		public extern Array<DurationFormatPart> FormatToParts(DurationInput duration);
+
 		[Description("@#resolvedOptions")]
-		public extern ResolvedRelativeTimeFormatOptions ResolvedOptions();
+		public extern ResolvedDurationFormatOptions ResolvedOptions();
 	}
 
 	[Description("@#")]
@@ -721,37 +1361,53 @@ public static class Intl
 	[Description("@#ListFormat")]
 	public sealed class ListFormat
 	{
+		/// <summary>
+		/// JavaScript <c>Intl.ListFormat.prototype</c> object.
+		/// Keeping this on the constructor host preserves the recognizable runtime host boundary.
+		/// </summary>
+		[Description("@#prototype")]
+		public extern static ListFormat Prototype { get; }
+
 		public extern ListFormat();
 
-		public extern ListFormat(Either<string, string[]> locales);
+		/// <summary>
+		/// Locale lists use <see cref="IEnumerable{T}"/> so C# sequence families can map to the single JavaScript locale-list input.
+		/// </summary>
+		public extern ListFormat(Either<string, IEnumerable<string>> locales);
 
 		public extern ListFormat(string locales);
 
-		public extern ListFormat(string[] locales);
+		public extern ListFormat(IEnumerable<string> locales);
 
-		public extern ListFormat(Either<string, string[]> locales, ListFormatOptions options);
+		/// <summary>
+		/// C# convenience overload for the JavaScript form that omits <c>locales</c> and only supplies options.
+		/// This exists because C# cannot naturally express an omitted leading optional argument at construction sites.
+		/// </summary>
+		public extern ListFormat(ListFormatOptions options);
+
+		public extern ListFormat(Either<string, IEnumerable<string>> locales, ListFormatOptions options);
 
 		public extern ListFormat(string locales, ListFormatOptions options);
 
-		public extern ListFormat(string[] locales, ListFormatOptions options);
+		public extern ListFormat(IEnumerable<string> locales, ListFormatOptions options);
 
 		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(Either<string, string[]> locales);
+		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales);
 
 		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(string[] locales);
+		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales);
 
 		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(Either<string, string[]> locales, ListFormatOptions options);
+		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales, ListFormatOptions options);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales, ListFormatOptions options);
 
 		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(string[] locales, ListFormatOptions options);
+		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales, ListFormatOptions options);
 
 		/// <summary>
 		/// Formats a JavaScript iterable of strings into a localized list.
@@ -800,11 +1456,17 @@ public static class Intl
 	public record PluralRulesOptions(
 		[property: Description("@#localeMatcher")] LocaleMatcher? LocaleMatcher = null,
 		[property: Description("@#type")] PluralRulesType? Type = null,
+		[property: Description("@#notation")] NumberFormatNotation? Notation = null,
+		[property: Description("@#compactDisplay")] CompactDisplay? CompactDisplay = null,
 		[property: Description("@#minimumIntegerDigits")] Number? MinimumIntegerDigits = null,
 		[property: Description("@#minimumFractionDigits")] Number? MinimumFractionDigits = null,
 		[property: Description("@#maximumFractionDigits")] Number? MaximumFractionDigits = null,
 		[property: Description("@#minimumSignificantDigits")] Number? MinimumSignificantDigits = null,
-		[property: Description("@#maximumSignificantDigits")] Number? MaximumSignificantDigits = null);
+		[property: Description("@#maximumSignificantDigits")] Number? MaximumSignificantDigits = null,
+		[property: Description("@#roundingIncrement")] Number? RoundingIncrement = null,
+		[property: Description("@#roundingMode")] RoundingMode? RoundingMode = null,
+		[property: Description("@#roundingPriority")] RoundingPriority? RoundingPriority = null,
+		[property: Description("@#trailingZeroDisplay")] TrailingZeroDisplay? TrailingZeroDisplay = null);
 
 	/// <summary>
 	/// JavaScript object shape returned by <c>Intl.PluralRules.prototype.resolvedOptions()</c>.
@@ -813,12 +1475,18 @@ public static class Intl
 	public record ResolvedPluralRulesOptions(
 		[property: Description("@#locale")] string Locale,
 		[property: Description("@#type")] PluralRulesType Type,
+		[property: Description("@#notation")] NumberFormatNotation Notation,
+		[property: Description("@#compactDisplay")] CompactDisplay? CompactDisplay,
 		[property: Description("@#pluralCategories")] string[] PluralCategories,
 		[property: Description("@#minimumIntegerDigits")] Number MinimumIntegerDigits,
-		[property: Description("@#minimumFractionDigits")] Number? MinimumFractionDigits = null,
-		[property: Description("@#maximumFractionDigits")] Number? MaximumFractionDigits = null,
-		[property: Description("@#minimumSignificantDigits")] Number? MinimumSignificantDigits = null,
-		[property: Description("@#maximumSignificantDigits")] Number? MaximumSignificantDigits = null);
+		[property: Description("@#minimumFractionDigits")] Number? MinimumFractionDigits,
+		[property: Description("@#maximumFractionDigits")] Number? MaximumFractionDigits,
+		[property: Description("@#minimumSignificantDigits")] Number? MinimumSignificantDigits,
+		[property: Description("@#maximumSignificantDigits")] Number? MaximumSignificantDigits,
+		[property: Description("@#roundingIncrement")] Number RoundingIncrement,
+		[property: Description("@#roundingMode")] RoundingMode RoundingMode,
+		[property: Description("@#roundingPriority")] RoundingPriority RoundingPriority,
+		[property: Description("@#trailingZeroDisplay")] TrailingZeroDisplay TrailingZeroDisplay);
 
 	/// <summary>
 	/// Projection of JavaScript's <c>Intl.PluralRules</c> constructor host.
@@ -826,40 +1494,63 @@ public static class Intl
 	[Description("@#PluralRules")]
 	public sealed class PluralRules
 	{
+		/// <summary>
+		/// JavaScript <c>Intl.PluralRules.prototype</c> object.
+		/// Keeping this on the constructor host preserves the recognizable runtime host boundary.
+		/// </summary>
+		[Description("@#prototype")]
+		public extern static PluralRules Prototype { get; }
+
 		public extern PluralRules();
 
-		public extern PluralRules(Either<string, string[]> locales);
+		/// <summary>
+		/// Locale lists use <see cref="IEnumerable{T}"/> so C# sequence families can map to the single JavaScript locale-list input.
+		/// </summary>
+		public extern PluralRules(Either<string, IEnumerable<string>> locales);
 
 		public extern PluralRules(string locales);
 
-		public extern PluralRules(string[] locales);
+		public extern PluralRules(IEnumerable<string> locales);
 
-		public extern PluralRules(Either<string, string[]> locales, PluralRulesOptions options);
+		/// <summary>
+		/// C# convenience overload for the JavaScript form that omits <c>locales</c> and only supplies options.
+		/// This exists because C# cannot naturally express an omitted leading optional argument at construction sites.
+		/// </summary>
+		public extern PluralRules(PluralRulesOptions options);
+
+		public extern PluralRules(Either<string, IEnumerable<string>> locales, PluralRulesOptions options);
 
 		public extern PluralRules(string locales, PluralRulesOptions options);
 
-		public extern PluralRules(string[] locales, PluralRulesOptions options);
+		public extern PluralRules(IEnumerable<string> locales, PluralRulesOptions options);
 
 		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(Either<string, string[]> locales);
+		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales);
 
 		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(string[] locales);
+		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales);
 
 		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(Either<string, string[]> locales, PluralRulesOptions options);
+		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales, PluralRulesOptions options);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales, PluralRulesOptions options);
 
 		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(string[] locales, PluralRulesOptions options);
+		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales, PluralRulesOptions options);
 
 		[Description("@#select")]
 		public extern string Select(Number value);
+
+		/// <summary>
+		/// Returns the plural category for any JavaScript mathematical value accepted by <c>Intl.PluralRules</c>.
+		/// The union keeps the public host aligned with JavaScript's runtime coercion surface for numbers, bigints, and decimal strings.
+		/// </summary>
+		[Description("@#select")]
+		public extern string Select(Either<Number, BigInt, string> value);
 
 		/// <summary>
 		/// Returns the plural category for a numeric range.
@@ -867,6 +1558,12 @@ public static class Intl
 		/// </summary>
 		[Description("@#selectRange")]
 		public extern string SelectRange(Number start, Number end);
+
+		/// <summary>
+		/// Returns the plural category for any JavaScript mathematical-value range accepted by <c>Intl.PluralRules</c>.
+		/// </summary>
+		[Description("@#selectRange")]
+		public extern string SelectRange(Either<Number, BigInt, string> start, Either<Number, BigInt, string> end);
 
 		[Description("@#resolvedOptions")]
 		public extern ResolvedPluralRulesOptions ResolvedOptions();
@@ -935,29 +1632,45 @@ public static class Intl
 	[Description("@#DisplayNames")]
 	public sealed class DisplayNames
 	{
-		public extern DisplayNames(Either<string, string[]> locales, DisplayNamesOptions options);
+		/// <summary>
+		/// JavaScript <c>Intl.DisplayNames.prototype</c> object.
+		/// Keeping this on the constructor host preserves the recognizable runtime host boundary.
+		/// </summary>
+		[Description("@#prototype")]
+		public extern static DisplayNames Prototype { get; }
+
+		/// <summary>
+		/// C# convenience overload for the JavaScript form that omits <c>locales</c> and only supplies options.
+		/// This exists because C# cannot naturally express an omitted leading optional argument at construction sites.
+		/// </summary>
+		public extern DisplayNames(DisplayNamesOptions options);
+
+		/// <summary>
+		/// Locale lists use <see cref="IEnumerable{T}"/> so C# sequence families can map to the single JavaScript locale-list input.
+		/// </summary>
+		public extern DisplayNames(Either<string, IEnumerable<string>> locales, DisplayNamesOptions options);
 
 		public extern DisplayNames(string locales, DisplayNamesOptions options);
 
-		public extern DisplayNames(string[] locales, DisplayNamesOptions options);
+		public extern DisplayNames(IEnumerable<string> locales, DisplayNamesOptions options);
 
 		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(Either<string, string[]> locales);
+		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales);
 
 		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(string[] locales);
+		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales);
 
 		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(Either<string, string[]> locales, DisplayNamesOptions options);
+		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales, DisplayNamesOptions options);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales, DisplayNamesOptions options);
 
 		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(string[] locales, DisplayNamesOptions options);
+		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales, DisplayNamesOptions options);
 
 		/// <summary>
 		/// Returns the localized display name for the supplied code.
@@ -1044,38 +1757,54 @@ public static class Intl
 	[Description("@#Segmenter")]
 	public sealed class Segmenter
 	{
+		/// <summary>
+		/// JavaScript <c>Intl.Segmenter.prototype</c> object.
+		/// Keeping this on the constructor host preserves the recognizable runtime host boundary.
+		/// </summary>
+		[Description("@#prototype")]
+		public extern static Segmenter Prototype { get; }
+
 		public extern Segmenter();
 
-		public extern Segmenter(Either<string, string[]> locales);
+		/// <summary>
+		/// Locale lists use <see cref="IEnumerable{T}"/> so C# sequence families can map to the single JavaScript locale-list input.
+		/// </summary>
+		public extern Segmenter(Either<string, IEnumerable<string>> locales);
 
 		public extern Segmenter(string locales);
 
-		public extern Segmenter(string[] locales);
+		public extern Segmenter(IEnumerable<string> locales);
 
-		public extern Segmenter(Either<string, string[]> locales, SegmenterOptions options);
+		/// <summary>
+		/// C# convenience overload for the JavaScript form that omits <c>locales</c> and only supplies options.
+		/// This exists because C# cannot naturally express an omitted leading optional argument at construction sites.
+		/// </summary>
+		public extern Segmenter(SegmenterOptions options);
+
+		public extern Segmenter(Either<string, IEnumerable<string>> locales, SegmenterOptions options);
 
 		public extern Segmenter(string locales, SegmenterOptions options);
 
-		public extern Segmenter(string[] locales, SegmenterOptions options);
+		public extern Segmenter(IEnumerable<string> locales, SegmenterOptions options);
 
 		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(Either<string, string[]> locales);
+		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales);
 
 		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(string[] locales);
+		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales);
 
 		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(Either<string, string[]> locales, SegmenterOptions options);
+		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales, SegmenterOptions options);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales, SegmenterOptions options);
 
 		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(string[] locales, SegmenterOptions options);
-
+		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales, SegmenterOptions options);
+		
 		/// <summary>
 		/// Segments the input string and returns the JavaScript iterable result object.
 		/// </summary>

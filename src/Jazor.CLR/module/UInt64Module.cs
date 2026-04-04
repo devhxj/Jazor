@@ -177,7 +177,7 @@ public static class UInt64Module
 	public extern static Array<object?> _988cf0fe6e5934e4(Uint32Array s, object style, Intl.NumberFormat? provider, BigInt result);
 
 	///<summary>Returns the <see cref="T:System.TypeCode" /> for value type <see cref="T:System.UInt64" />.</summary>
-	[Jazor(Op.Discard ,"ulong.GetTypeCode()")]
+	[Jazor(Op.Inline ,"ulong.GetTypeCode()", "12")]
 	public extern static System.TypeCode _84c4fbd7bbbd131e(BigInt instance);
 
 	///<summary>Computes the quotient and remainder of two values.</summary>

@@ -83,6 +83,28 @@ public partial class Array<T> : object, IArray<T>
 	public extern string ToLocaleString();
 
 	/// <summary>
+	/// Returns a locale-sensitive string representation of the array.
+	/// JavaScript forwards <paramref name="locales" /> and <paramref name="options" /> to each element's own <c>toLocaleString</c> method.
+	/// </summary>
+	[Description("@#toLocaleString")]
+	public extern string ToLocaleString(string? locales, object? options = null);
+
+	/// <summary>
+	/// C# convenience overload for the JavaScript form that omits <c>locales</c> and only supplies options.
+	/// This exists because C# cannot naturally skip the leading locale argument in method calls.
+	/// </summary>
+	[Description("@#toLocaleString")]
+	public extern string ToLocaleString(object? options);
+
+	/// <summary>
+	/// Returns a locale-sensitive string representation of the array.
+	/// <see cref="IEnumerable{T}"/> is used as the common C# input surface for JavaScript locale lists.
+	/// JavaScript forwards <paramref name="locales" /> and <paramref name="options" /> to each element's own <c>toLocaleString</c> method.
+	/// </summary>
+	[Description("@#toLocaleString")]
+	public extern string ToLocaleString(IEnumerable<string>? locales, object? options = null);
+
+	/// <summary>
 	/// Removes the last element from an array and returns it.
 	/// If the array is empty, JavaScript returns <c>undefined</c>; this C# projection surfaces that absence as <see langword="null" />
 	/// and does not modify the array.
@@ -218,7 +240,7 @@ public partial class Array<T> : object, IArray<T>
 	/// Determines whether all the members of an array satisfy the specified test.
 	/// </summary>
 	/// <param name="predicate"><para><b>(value: T, index: number, array: IEnumerable<T>) => unknown</b></para>A function that accepts up to three arguments. The every method calls the predicate function for each element in the array until the predicate returns a value which is coercible to the Boolean value false, or until the end of the array.</param>
-	/// <param name="thisArg">An object to which the this keyword can refer in the predicate function.If thisArg is omitted, undefined is used as the this value.</param>
+	/// <param name="thisArg">An object to which the this keyword can refer in the predicate function. If omitted, JavaScript uses its default callback receiver; this projection does not expose <c>undefined</c> as a separate public value.</param>
 	/// <returns></returns>
 	[Description("@#every")]
 	public extern bool Every(Func<T, Number, Array<T>, object?> predicate, object? thisArg = null);
@@ -226,17 +248,22 @@ public partial class Array<T> : object, IArray<T>
 	[Description("@#every")]
 	public extern bool Every(Func<T, Number, object?> predicate, object? thisArg = null);
 
-	[Description("@#every")]
-	public extern bool Every(Func<T, object?> predicate, object? thisArg = null);
+		[Description("@#every")]
+		public extern bool Every(Func<T, object?> predicate, object? thisArg = null);
 
-	[Description("@#every")]
-	public extern bool Every(Predicate<T> predicate, object? thisArg = null);
+		/// <summary>
+		/// CLR convenience overload.
+		/// Hidden because JavaScript array predicates are truthy/falsy-based and the object-returning overloads above are the primary runtime-shaped surface.
+		/// </summary>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Description("@#every")]
+		public extern bool Every(Predicate<T> predicate, object? thisArg = null);
 
 	/// <summary>
 	/// Determines whether the specified callback function returns true for any element of an array.
 	/// </summary>
 	/// <param name="predicate"><para><b>(value: T, index: number, array: IEnumerable<T>) => unknown</b></para>A function that accepts up to three arguments.The some method calls the predicate function for each element in the array until the predicate returns a value which is coercible to the Boolean value true, or until the end of the array.</param>
-	/// <param name="thisArg">An object to which the this keyword can refer in the predicate function.If thisArg is omitted, undefined is used as the this value.</param>
+	/// <param name="thisArg">An object to which the this keyword can refer in the predicate function. If omitted, JavaScript uses its default callback receiver; this projection does not expose <c>undefined</c> as a separate public value.</param>
 	/// <returns></returns>
 	[Description("@#some")]
 	public extern bool Some(Func<T, Number, Array<T>, object?> predicate, object? thisArg = null);
@@ -244,17 +271,22 @@ public partial class Array<T> : object, IArray<T>
 	[Description("@#some")]
 	public extern bool Some(Func<T, Number, object?> predicate, object? thisArg = null);
 
-	[Description("@#some")]
-	public extern bool Some(Func<T, object?> predicate, object? thisArg = null);
+		[Description("@#some")]
+		public extern bool Some(Func<T, object?> predicate, object? thisArg = null);
 
-	[Description("@#some")]
-	public extern bool Some(Predicate<T> predicate, object? thisArg = null);
+		/// <summary>
+		/// CLR convenience overload.
+		/// Hidden because JavaScript array predicates are truthy/falsy-based and the object-returning overloads above are the primary runtime-shaped surface.
+		/// </summary>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Description("@#some")]
+		public extern bool Some(Predicate<T> predicate, object? thisArg = null);
 
 	/// <summary>
 	/// Performs the specified action for each element in an array.
 	/// </summary>
 	/// <param name="callbackfn"><para><b>(value: T, index: number, array: IEnumerable<T>) => void</b></para>A function that accepts up to three arguments. forEach calls the callbackfn function one time for each element in the array.</param>
-	/// <param name="thisArg">An object to which the this keyword can refer in the callbackfn function.If thisArg is omitted, undefined is used as the this value.</param>
+	/// <param name="thisArg">An object to which the this keyword can refer in the callbackfn function. If omitted, JavaScript uses its default callback receiver; this projection does not expose <c>undefined</c> as a separate public value.</param>
 	[Description("@#forEach")]
 	public extern void ForEach(Action<T, Number, Array<T>> callbackfn, object? thisArg = null);
 	[Description("@#forEach")]
@@ -267,7 +299,7 @@ public partial class Array<T> : object, IArray<T>
 	/// </summary>
 	/// <typeparam name="U"></typeparam>
 	/// <param name="callbackfn"><para><b>(value: T, index: number, array: IEnumerable<T>) => U</b></para>A function that accepts up to three arguments. The map method calls the callbackfn function one time for each element in the array.</param>
-	/// <param name="thisArg">An object to which the this keyword can refer in the callbackfn function.If thisArg is omitted, undefined is used as the this value.</param>
+	/// <param name="thisArg">An object to which the this keyword can refer in the callbackfn function. If omitted, JavaScript uses its default callback receiver; this projection does not expose <c>undefined</c> as a separate public value.</param>
 	/// <returns></returns>
 	[Description("@#map")]
 	public extern Array<U> Map<U>(Func<T, Number, Array<T>, U> callbackfn, object? thisArg = null);
@@ -282,7 +314,7 @@ public partial class Array<T> : object, IArray<T>
 	/// Returns the elements of an array that meet the condition specified in a callback function.
 	/// </summary>
 	/// <param name="predicate"><para><b>(value: T, index: number, array: IEnumerable<T>) => unknown</b></para>A function that accepts up to three arguments.The filter method calls the predicate function one time for each element in the array.</param>
-	/// <param name="thisArg">An object to which the this keyword can refer in the predicate function.If thisArg is omitted, undefined is used as the this value.</param>
+	/// <param name="thisArg">An object to which the this keyword can refer in the predicate function. If omitted, JavaScript uses its default callback receiver; this projection does not expose <c>undefined</c> as a separate public value.</param>
 	/// <returns></returns>
 	[Description("@#filter")]
 	public extern Array<T> Filter(Func<T, Number, Array<T>, object?> predicate, object? thisArg = null);
@@ -290,11 +322,16 @@ public partial class Array<T> : object, IArray<T>
 	[Description("@#filter")]
 	public extern Array<T> Filter(Func<T, Number, object?> predicate, object? thisArg = null);
 
-	[Description("@#filter")]
-	public extern Array<T> Filter(Func<T, object?> predicate, object? thisArg = null);
+		[Description("@#filter")]
+		public extern Array<T> Filter(Func<T, object?> predicate, object? thisArg = null);
 
-	[Description("@#filter")]
-	public extern Array<T> Filter(Predicate<T> predicate, object? thisArg = null);
+		/// <summary>
+		/// CLR convenience overload.
+		/// Hidden because JavaScript array predicates are truthy/falsy-based and the object-returning overloads above are the primary runtime-shaped surface.
+		/// </summary>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Description("@#filter")]
+		public extern Array<T> Filter(Predicate<T> predicate, object? thisArg = null);
 
 	/// <summary>
 	/// Returns the first element whose value satisfies the provided testing function.
@@ -307,11 +344,16 @@ public partial class Array<T> : object, IArray<T>
 	[Description("@#find")]
 	public extern T? Find(Func<T, Number, object?> predicate, object? thisArg = null);
 
-	[Description("@#find")]
-	public extern T? Find(Func<T, object?> predicate, object? thisArg = null);
+		[Description("@#find")]
+		public extern T? Find(Func<T, object?> predicate, object? thisArg = null);
 
-	[Description("@#find")]
-	public extern T? Find(Predicate<T> predicate, object? thisArg = null);
+		/// <summary>
+		/// CLR convenience overload.
+		/// Hidden because JavaScript array predicates are truthy/falsy-based and the object-returning overloads above are the primary runtime-shaped surface.
+		/// </summary>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Description("@#find")]
+		public extern T? Find(Predicate<T> predicate, object? thisArg = null);
 
 	/// <summary>
 	/// Returns a new array with nested array elements recursively concatenated up to the specified depth.
@@ -357,11 +399,16 @@ public partial class Array<T> : object, IArray<T>
 	[Description("@#findLast")]
 	public extern T? FindLast(Func<T, Number, object?> predicate, object? thisArg = null);
 
-	[Description("@#findLast")]
-	public extern T? FindLast(Func<T, object?> predicate, object? thisArg = null);
+		[Description("@#findLast")]
+		public extern T? FindLast(Func<T, object?> predicate, object? thisArg = null);
 
-	[Description("@#findLast")]
-	public extern T? FindLast(Predicate<T> predicate, object? thisArg = null);
+		/// <summary>
+		/// CLR convenience overload.
+		/// Hidden because JavaScript array predicates are truthy/falsy-based and the object-returning overloads above are the primary runtime-shaped surface.
+		/// </summary>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Description("@#findLast")]
+		public extern T? FindLast(Predicate<T> predicate, object? thisArg = null);
 
 	/// <summary>
 	/// C# host projection of JavaScript <c>Array.prototype.at</c>.
@@ -447,11 +494,16 @@ public partial class Array<T> : object, IArray<T>
 	[Description("@#findIndex")]
 	public extern Number FindIndex(Func<T, Number, object?> callbackfn, object? thisArg = null);
 
-	[Description("@#findIndex")]
-	public extern Number FindIndex(Func<T, object?> callbackfn, object? thisArg = null);
+		[Description("@#findIndex")]
+		public extern Number FindIndex(Func<T, object?> callbackfn, object? thisArg = null);
 
-	[Description("@#findIndex")]
-	public extern Number FindIndex(Predicate<T> callbackfn, object? thisArg = null);
+		/// <summary>
+		/// CLR convenience overload.
+		/// Hidden because JavaScript array predicates are truthy/falsy-based and the object-returning overloads above are the primary runtime-shaped surface.
+		/// </summary>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Description("@#findIndex")]
+		public extern Number FindIndex(Predicate<T> callbackfn, object? thisArg = null);
 
 	/// <summary>
 	/// Returns the index of the last element whose value satisfies the provided testing function, or <c>-1</c> if no match is found.
@@ -462,11 +514,16 @@ public partial class Array<T> : object, IArray<T>
 	[Description("@#findLastIndex")]
 	public extern Number FindLastIndex(Func<T, Number, object?> callbackfn, object? thisArg = null);
 
-	[Description("@#findLastIndex")]
-	public extern Number FindLastIndex(Func<T, object?> callbackfn, object? thisArg = null);
+		[Description("@#findLastIndex")]
+		public extern Number FindLastIndex(Func<T, object?> callbackfn, object? thisArg = null);
 
-	[Description("@#findLastIndex")]
-	public extern Number FindLastIndex(Predicate<T> callbackfn, object? thisArg = null);
+		/// <summary>
+		/// CLR convenience overload.
+		/// Hidden because JavaScript array predicates are truthy/falsy-based and the object-returning overloads above are the primary runtime-shaped surface.
+		/// </summary>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Description("@#findLastIndex")]
+		public extern Number FindLastIndex(Predicate<T> callbackfn, object? thisArg = null);
 
 	/// <summary>
 	/// Returns a copied array with the elements in reverse order.
@@ -560,6 +617,13 @@ public partial class Array<T> : object, IArray<T>
 	public extern static IPromise<Array<T>> FromAsync(IEnumerable<T> arrayLike);
 
 	/// <summary>
+	/// Creates an array from promise-like JavaScript items and awaits each element before storing it.
+	/// <see cref="IPromise{T}"/> is used as the host surface for JavaScript promise-like values.
+	/// </summary>
+	[Description("@#fromAsync")]
+	public extern static IPromise<Array<T>> FromAsync(IEnumerable<IPromise<T>> arrayLike);
+
+	/// <summary>
 	/// Creates an array from a JavaScript async iterable or iterable value.
 	/// <see cref="IEnumerable{T}"/> is used here as the common C# input surface for values
 	/// such as arrays, lists, and read-only list families that map to JavaScript arrays or iterables.
@@ -568,11 +632,80 @@ public partial class Array<T> : object, IArray<T>
 	public extern static IPromise<Array<T>> FromAsync<U>(IEnumerable<U> arrayLike, Func<U, Number, T> mapFn, object? thisArg = null);
 
 	/// <summary>
+	/// Creates an array from a JavaScript iterable and awaits each mapper result before storing it.
+	/// This matches the JavaScript case where <c>Array.fromAsync</c> receives an async mapping callback.
+	/// </summary>
+	[Description("@#fromAsync")]
+	public extern static IPromise<Array<T>> FromAsync<U>(IEnumerable<U> arrayLike, Func<U, Number, IPromise<T>> mapFn, object? thisArg = null);
+
+	/// <summary>
+	/// Bridge-only overload for compiler-lowered async mapping callbacks.
+	/// JavaScript still sees the usual async mapper behavior; the bridge type only exists on the C# side.
+	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[Description("@#fromAsync")]
+	public extern static IPromise<Array<T>> FromAsync<U>(IEnumerable<U> arrayLike, Func<U, Number, PromiseResult<T>> mapFn, object? thisArg = null);
+
+	/// <summary>
+	/// Creates an array from promise-like JavaScript items and applies a synchronous mapping callback to the awaited source values.
+	/// </summary>
+	[Description("@#fromAsync")]
+	public extern static IPromise<Array<T>> FromAsync<U>(IEnumerable<IPromise<U>> arrayLike, Func<U, Number, T> mapFn, object? thisArg = null);
+
+	/// <summary>
+	/// Creates an array from promise-like JavaScript items and applies an async mapping callback to the awaited source values.
+	/// </summary>
+	[Description("@#fromAsync")]
+	public extern static IPromise<Array<T>> FromAsync<U>(IEnumerable<IPromise<U>> arrayLike, Func<U, Number, IPromise<T>> mapFn, object? thisArg = null);
+
+	/// <summary>
+	/// Bridge-only overload for compiler-lowered async mapping callbacks over promise-like source items.
+	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[Description("@#fromAsync")]
+	public extern static IPromise<Array<T>> FromAsync<U>(IEnumerable<IPromise<U>> arrayLike, Func<U, Number, PromiseResult<T>> mapFn, object? thisArg = null);
+
+	/// <summary>
 	/// Creates an array from a JavaScript async iterable or iterable value.
 	/// This overload mirrors JavaScript <c>Array.fromAsync</c> when the caller does not need the element index in the mapping callback.
 	/// </summary>
 	[Description("@#fromAsync")]
 	public extern static IPromise<Array<T>> FromAsync<U>(IEnumerable<U> arrayLike, Func<U, T> mapFn, object? thisArg = null);
+
+	/// <summary>
+	/// Creates an array from a JavaScript iterable and awaits each mapper result before storing it.
+	/// This overload mirrors JavaScript <c>Array.fromAsync</c> when the caller does not need the element index in the async mapping callback.
+	/// </summary>
+	[Description("@#fromAsync")]
+	public extern static IPromise<Array<T>> FromAsync<U>(IEnumerable<U> arrayLike, Func<U, IPromise<T>> mapFn, object? thisArg = null);
+
+	/// <summary>
+	/// Bridge-only overload for compiler-lowered async mapping callbacks without the index parameter.
+	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[Description("@#fromAsync")]
+	public extern static IPromise<Array<T>> FromAsync<U>(IEnumerable<U> arrayLike, Func<U, PromiseResult<T>> mapFn, object? thisArg = null);
+
+	/// <summary>
+	/// Creates an array from promise-like JavaScript items and applies a synchronous mapping callback to the awaited source values.
+	/// This overload mirrors JavaScript <c>Array.fromAsync</c> when the caller does not need the element index in the mapping callback.
+	/// </summary>
+	[Description("@#fromAsync")]
+	public extern static IPromise<Array<T>> FromAsync<U>(IEnumerable<IPromise<U>> arrayLike, Func<U, T> mapFn, object? thisArg = null);
+
+	/// <summary>
+	/// Creates an array from promise-like JavaScript items and applies an async mapping callback to the awaited source values.
+	/// This overload mirrors JavaScript <c>Array.fromAsync</c> when the caller does not need the element index in the mapping callback.
+	/// </summary>
+	[Description("@#fromAsync")]
+	public extern static IPromise<Array<T>> FromAsync<U>(IEnumerable<IPromise<U>> arrayLike, Func<U, IPromise<T>> mapFn, object? thisArg = null);
+
+	/// <summary>
+	/// Bridge-only overload for compiler-lowered async mapping callbacks over promise-like source items without the index parameter.
+	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[Description("@#fromAsync")]
+	public extern static IPromise<Array<T>> FromAsync<U>(IEnumerable<IPromise<U>> arrayLike, Func<U, PromiseResult<T>> mapFn, object? thisArg = null);
 
 	[Description("@#isArray")]
 	public extern static bool IsArray(object? value);

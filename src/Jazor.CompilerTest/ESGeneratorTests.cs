@@ -4,6 +4,9 @@ using System.Security.Cryptography;
 using System.Text;
 using Basic.Reference.Assemblies;
 using Jazor.Compiler;
+using Jazor.Razor;
+using Jazor.RazorVue;
+using Jazor.RazorVue.Analysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -434,6 +437,359 @@ public sealed class ESGeneratorTests
             generatedSource);
     }
 
+    [TestMethod]
+    public void GenerateCatalog_WithNonPublicModule_ReportsExactDiagnosticAndSkipsSource()
+    {
+        var compilation = CreateCompilation(
+            "NonPublic.Modules",
+            """
+            using System;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule("internal-only")]
+            internal static class HiddenModule
+            {
+                public static int Value = 1;
+            }
+            """);
+
+        var (_, runResult) = RunGeneratorWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORG001")
+            .ToArray();
+        var generatedSources = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(
+            "Failed to generate JavaScript module for 'HiddenModule': 类 HiddenModule 不是 public，无法转换",
+            diagnostics[0].GetMessage());
+        Assert.AreEqual(0, generatedSources.Length);
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithNestedModule_ReportsExactDiagnosticAndSkipsSource()
+    {
+        var compilation = CreateCompilation(
+            "Nested.Modules",
+            """
+            using System;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            public static class OuterModule
+            {
+                [ECMAScript.ECMAScriptModule("nested-inner")]
+                public static class InnerModule
+                {
+                    public static int Value = 1;
+                }
+            }
+            """);
+
+        var (_, runResult) = RunGeneratorWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORG001")
+            .ToArray();
+        var generatedSources = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(
+            "Failed to generate JavaScript module for 'OuterModule.InnerModule': 嵌套类 InnerModule 需要扁平化处理",
+            diagnostics[0].GetMessage());
+        Assert.AreEqual(0, generatedSources.Length);
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithEscapedModuleContent_EscapesCatalogStringLiteralExactly()
+    {
+        var compilation = CreateCompilation(
+            "EscapedContent.Modules",
+            """
+            using System;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule("specials")]
+            public static class SpecialModule
+            {
+                public static string QuoteString = "He said \"Hello\"";
+                public static string SpecialString = "Hello\nWorld\t!";
+            }
+            """);
+
+        var outputCompilation = RunGenerator(compilation, out var generatedSource);
+        var diagnostics = outputCompilation.GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+
+        const string moduleContent = "export let QuoteString = \"He said \\\"Hello\\\"\";\r\nexport let SpecialString = \"Hello\\nWorld\\t!\";\r\n";
+        var moduleHash = ComputeSha256Hex(moduleContent);
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", diagnostics.Select(static x => x.ToString())));
+        AssertGeneratedSourceEqual(
+            $$"""
+            // <auto-generated/>
+            #nullable enable
+            namespace Jazor.Generated
+            {
+                [global::System.Runtime.CompilerServices.CompilerGenerated]
+                public static partial class ModuleCatalog
+                {
+                    public static string AssemblyName { get; } = "EscapedContent.Modules";
+
+                    public static global::System.Collections.IEnumerable GetModules()
+                    {
+                        return _modules;
+                    }
+
+                    [global::System.Runtime.CompilerServices.CompilerGenerated]
+                    private sealed class GeneratedModule
+                    {
+                        public GeneratedModule(string assemblyName, string typeName, string id, string relativePath, string content, string hash)
+                        {
+                            AssemblyName = assemblyName;
+                            TypeName = typeName;
+                            Id = id;
+                            RelativePath = relativePath;
+                            Content = content;
+                            Hash = hash;
+                        }
+
+                        public string AssemblyName { get; }
+                        public string TypeName { get; }
+                        public string Id { get; }
+                        public string RelativePath { get; }
+                        public string Content { get; }
+                        public string Hash { get; }
+                    }
+
+                    private static readonly GeneratedModule[] _modules = new GeneratedModule[]
+                    {
+                        new GeneratedModule(
+                            assemblyName: "EscapedContent.Modules",
+                            typeName: "SpecialModule",
+                            id: "SpecialModule",
+                            relativePath: "specials.mjs",
+                            content: {{EscapeCSharpString(moduleContent)}},
+                            hash: "{{moduleHash}}"),
+                    };
+                }
+            }
+            """ + Environment.NewLine,
+            generatedSource);
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithVueComponent_EmitsRazorVueCatalogOnly()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.Generated",
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/counter-card")]
+                public class CounterCard : VueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<int> ValueChanged { get; set; }
+
+                    protected override void BuildRenderTree(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddAttribute(1, "data-count", Value);
+                        builder.AddContent(2, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var hints = runResult.Results.SelectMany(static result => result.GeneratedSources).Select(static source => source.HintName).ToArray();
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+
+        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.ModuleCatalog.g.cs");
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "public static partial class RazorVueCatalog");
+        StringAssert.Contains(generatedSource, "components/counter-card.mjs");
+        StringAssert.Contains(generatedSource, "CounterCard");
+        StringAssert.Contains(generatedSource, "defineComponent");
+        StringAssert.Contains(generatedSource, "h(\\\"section\\\", { \\\"data-count\\\": props.value }, props.value)");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithNestedVueComponentUsage_EmitsNestedComponentRenderCall()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.Success.Generated",
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : VueComponent
+                {
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/parent-card")]
+                public class ParentCard : VueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<ChildCard>(0);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        StringAssert.Contains(generatedSource, "import ChildCardComponent from \\\"./components/child-card.mjs\\\";");
+        StringAssert.Contains(generatedSource, "return () => h(ChildCardComponent, null, null);");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithNestedVueComponentUsage_EmitsPropsAndDefaultSlot()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.PropsSlots.Generated",
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : VueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? ChildContent { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/parent-card")]
+                public class ParentCard : VueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<ChildCard>(0);
+                        builder.AddAttribute(1, "Value", Value);
+                        builder.AddContent(2, "inner");
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        StringAssert.Contains(generatedSource, "h(ChildCardComponent, { \\\"value\\\": props.value }, { default: () => \\\"inner\\\" })");
+    }
+
     private static Compilation CreateCompilation(string assemblyName, string source, params MetadataReference[] extraReferences)
     {
         var references = Net100.References.All
@@ -451,18 +807,41 @@ public sealed class ESGeneratorTests
     private static Compilation RunGenerator(Compilation compilation, out string generatedSource)
     {
         var (outputCompilation, runResult) = RunGeneratorWithResult(compilation);
-        generatedSource = runResult.Results
-            .SelectMany(static result => result.GeneratedSources)
-            .Single(static source => source.HintName == "Jazor.Generated.ModuleCatalog.g.cs")
-            .SourceText
-            .ToString();
+        generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.ModuleCatalog.g.cs");
 
         return outputCompilation;
     }
 
+    private static string GetGeneratedSource(GeneratorDriverRunResult runResult, string hintName)
+        => runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Single(source => source.HintName == hintName)
+            .SourceText
+            .ToString();
+
     private static (Compilation OutputCompilation, GeneratorDriverRunResult RunResult) RunGeneratorWithResult(Compilation compilation)
     {
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(new ESGenerator());
+        ISourceGenerator[] generators =
+        [
+            new ESGenerator().AsSourceGenerator()
+        ];
+
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(generators);
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out _);
+
+        var runResult = driver.GetRunResult();
+        return (outputCompilation, runResult);
+    }
+
+    private static (Compilation OutputCompilation, GeneratorDriverRunResult RunResult) RunAllGeneratorsWithResult(Compilation compilation)
+    {
+        ISourceGenerator[] generators =
+        [
+            new ESGenerator().AsSourceGenerator(),
+            new RazorVueGenerator().AsSourceGenerator()
+        ];
+
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(generators);
         driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out _);
 
         var runResult = driver.GetRunResult();

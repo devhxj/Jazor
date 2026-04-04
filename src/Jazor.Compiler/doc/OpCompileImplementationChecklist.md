@@ -1,5 +1,9 @@
 # `Op.Compile` 实施清单
 
+> Status: Active phase-one implementation artifact.
+> Positioning: Focused checklist for first-stage `Op.Compile` wiring.
+> Note: Defines the current contract boundary and sequencing for implementation; later contract expansion belongs to a later phase.
+
 ## 目标
 
 这份清单不是重新定义 `Op.Compile` 语义，而是把：
@@ -170,6 +174,7 @@ producer 侧优先按这个顺序判断：
 
 重点是：
 
+- `Alias` 只有在成员名和最终 JS 宿主都稳定时才保留；若宿主可能退化到错误 host，优先回到 `Inline`
 - 只要 `Inline` 能稳定表达，就不要为了方便写模块函数而退到 `Import`
 - `Import` 保留给真正需要运行时实现的场景
 - `Compile` 只保留给编译器内部必须直接接管的少数特例
@@ -188,8 +193,12 @@ producer 侧优先按这个顺序判断：
 - 需要 import
 - 需要声明或临时缓存
 - 需要依赖 pattern / tuple / ref-out 上下文
+- 只是返回稳定常量，例如 `bool.GetTypeCode()`
 
 这类条目现在即便挂成 `Compile`，后面也只能在接线时卡住。
+
+当前仓库里的保留样例是 `ECMAScript.Global.TypeOf(object)`。
+像 `bool.GetTypeCode()` 这种稳定常量已经回落到 `Inline`，不再占用 compile 通道。
 
 ### 也不要直接标 `Import`
 

@@ -33,9 +33,33 @@ public static partial class Global
 	public extern static RegExp RegExp(string value, string flags);
 
 	/// <summary>
+	/// C# host projection of JavaScript global <c>RegExp(existingRegExp)</c>.
+	/// This stays on <see cref="Global"/> because JavaScript allows the global constructor function to be called with an existing regular expression value.
+	/// </summary>
+	public extern static RegExp RegExp(RegExp value);
+
+	/// <summary>
+	/// C# host projection of JavaScript global <c>RegExp(existingRegExp, flags)</c>.
+	/// This overload exists only to match the JavaScript constructor/function call surface,
+	/// not to introduce a separate CLR regex abstraction.
+	/// </summary>
+	public extern static RegExp RegExp(RegExp value, string flags);
+
+	/// <summary>
 	/// C# host name for JavaScript <c>Number(...)</c>.
 	/// The trailing underscore only avoids naming conflicts on the C# side.
 	/// </summary>
+	[Description("@#Number")]
+	public extern static Number Number_();
+
+	/// <summary>
+	/// C# host name for JavaScript <c>Number(...)</c>.
+	/// This overload keeps JavaScript's value-coercion entry point available for arbitrary runtime values.
+	/// The trailing underscore only avoids naming conflicts on the C# side.
+	/// </summary>
+	[Description("@#Number")]
+	public extern static Number Number_(object? value);
+
 	[Description("@#Number")]
 	public extern static Number Number_(Number value);
 
@@ -44,6 +68,36 @@ public static partial class Global
 
 	[Description("@#Number")]
 	public extern static Number Number_(string value);
+
+	/// <summary>
+	/// C# host name for JavaScript <c>String()</c>.
+	/// The trailing underscore only avoids naming conflicts on the C# side.
+	/// </summary>
+	[Description("@#String")]
+	public extern static string String_();
+
+	/// <summary>
+	/// C# host name for JavaScript <c>String(...)</c>.
+	/// This overload keeps JavaScript's value-to-string coercion entry point available for arbitrary runtime values.
+	/// The trailing underscore only avoids naming conflicts on the C# side.
+	/// </summary>
+	[Description("@#String")]
+	public extern static string String_(object? value);
+
+	/// <summary>
+	/// C# host name for JavaScript <c>Boolean()</c>.
+	/// The trailing underscore only avoids naming conflicts on the C# side.
+	/// </summary>
+	[Description("@#Boolean")]
+	public extern static bool Boolean_();
+
+	/// <summary>
+	/// C# host name for JavaScript <c>Boolean(...)</c>.
+	/// This overload keeps JavaScript's truthiness conversion entry point available for arbitrary runtime values.
+	/// The trailing underscore only avoids naming conflicts on the C# side.
+	/// </summary>
+	[Description("@#Boolean")]
+	public extern static bool Boolean_(object? value);
 
 	/// <summary>
 	/// C# host name for JavaScript <c>BigInt(...)</c>.
@@ -60,11 +114,27 @@ public static partial class Global
 	public extern static BigInt BigInt_(string value);
 
 	/// <summary>
+	/// C# host name for JavaScript <c>BigInt(...)</c>.
+	/// This overload keeps JavaScript's bigint conversion entry point available for arbitrary runtime values.
+	/// The trailing underscore only avoids naming conflicts on the C# side.
+	/// Runtime failures still follow JavaScript <c>BigInt</c> conversion semantics.
+	/// </summary>
+	[Description("@#BigInt")]
+	public extern static BigInt BigInt_(object? value);
+
+	/// <summary>
 	/// C# host name for JavaScript <c>Symbol(...)</c>.
 	/// The trailing underscore only avoids naming conflicts with the <see cref="Symbol"/> type.
 	/// </summary>
 	[Description("@#Symbol")]
 	public extern static Symbol Symbol_(string? description = null);
+
+	/// <summary>
+	/// C# host name for JavaScript <c>Symbol(...)</c>.
+	/// JavaScript accepts any description value and stringifies it at runtime when it is not <c>undefined</c>.
+	/// </summary>
+	[Description("@#Symbol")]
+	public extern static Symbol Symbol_(object? description);
 
 	[Description("@#document")]
 	public extern static Document Document { get; }
@@ -82,10 +152,17 @@ public static partial class Global
 
 	/// <summary>
 	/// C# host projection of JavaScript global <c>parseInt</c>.
-	/// The optional radix matches the JavaScript global function shape.
+	/// This overload preserves JavaScript's omitted-radix behavior instead of forcing a CLR-side default value.
 	/// </summary>
 	[Description("@#parseInt")]
-	public extern static Number ParseInt(object? value, ushort radix = 10);
+	public extern static Number ParseInt(object? value);
+
+	/// <summary>
+	/// C# host projection of JavaScript global <c>parseInt</c> with an explicit radix.
+	/// Nullable is used so the public host can still represent JavaScript's "argument omitted" shape when needed.
+	/// </summary>
+	[Description("@#parseInt")]
+	public extern static Number ParseInt(object? value, Number? radix);
 
 	/// <summary>
 	/// C# host projection of JavaScript global <c>isNaN</c>.
@@ -149,6 +226,20 @@ public static partial class Global
 	/// </summary>
 	[Description("@#decodeURIComponent")]
 	public extern static string DecodeURIComponent(string encodedURIComponent);
+
+	/// <summary>
+	/// Legacy JavaScript global <c>escape</c>.
+	/// This remains on <see cref="Global"/> because JavaScript exposes it on <c>globalThis</c> for web compatibility.
+	/// </summary>
+	[Description("@#escape")]
+	public extern static string Escape(string text);
+
+	/// <summary>
+	/// Legacy JavaScript global <c>unescape</c>.
+	/// This remains on <see cref="Global"/> because JavaScript exposes it on <c>globalThis</c> for web compatibility.
+	/// </summary>
+	[Description("@#unescape")]
+	public extern static string Unescape(string text);
 
 	/// <summary>
 	/// C# host projection of JavaScript global <c>queueMicrotask</c>.

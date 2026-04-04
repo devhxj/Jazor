@@ -8,6 +8,13 @@ namespace ECMAScript;
 [Description("@#DisposableStack")]
 public sealed class DisposableStack
 {
+	/// <summary>
+	/// JavaScript <c>DisposableStack.prototype</c> object.
+	/// Keeping this on the constructor host preserves the recognizable JavaScript runtime shape.
+	/// </summary>
+	[Description("@#prototype")]
+	public extern static DisposableStack Prototype { get; }
+
 	public extern DisposableStack();
 
 	/// <summary>
@@ -58,6 +65,13 @@ public sealed class DisposableStack
 [Description("@#AsyncDisposableStack")]
 public sealed class AsyncDisposableStack
 {
+	/// <summary>
+	/// JavaScript <c>AsyncDisposableStack.prototype</c> object.
+	/// Keeping this on the constructor host preserves the recognizable JavaScript runtime shape.
+	/// </summary>
+	[Description("@#prototype")]
+	public extern static AsyncDisposableStack Prototype { get; }
+
 	public extern AsyncDisposableStack();
 
 	/// <summary>

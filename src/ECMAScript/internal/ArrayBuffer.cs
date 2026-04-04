@@ -70,6 +70,13 @@ public interface IArrayBufferView
 [Description("@#ArrayBuffer")]
 public class ArrayBuffer : IBufferSource
 {
+	/// <summary>
+	/// JavaScript <c>ArrayBuffer.prototype</c> object.
+	/// This remains on the constructor host so the public surface matches the runtime host boundary.
+	/// </summary>
+	[Description("@#prototype")]
+	public extern static ArrayBuffer Prototype { get; }
+
 	public extern ArrayBuffer(Number length);
 
 	public extern ArrayBuffer(Number length, ArrayBufferOption? option = null);
@@ -126,6 +133,13 @@ public class ArrayBuffer : IBufferSource
 [Description("@#SharedArrayBuffer")]
 public class SharedArrayBuffer : ArrayBuffer, IAllowSharedBufferSource
 {
+	/// <summary>
+	/// JavaScript <c>SharedArrayBuffer.prototype</c> object.
+	/// This intentionally hides <see cref="ArrayBuffer.Prototype"/> because JavaScript exposes a distinct prototype object on the <c>SharedArrayBuffer</c> constructor.
+	/// </summary>
+	[Description("@#prototype")]
+	public new extern static SharedArrayBuffer Prototype { get; }
+
 	public extern SharedArrayBuffer(Number length);
 
 	public extern SharedArrayBuffer(Number length, ArrayBufferOption? option = null);
@@ -163,6 +177,13 @@ public class SharedArrayBuffer : ArrayBuffer, IAllowSharedBufferSource
 [Description("@#DataView")]
 public class DataView : IArrayBufferView, IBufferSource
 {
+	/// <summary>
+	/// JavaScript <c>DataView.prototype</c> object.
+	/// Exposing this on the constructor host avoids inventing a separate CLR-side helper type.
+	/// </summary>
+	[Description("@#prototype")]
+	public extern static DataView Prototype { get; }
+
 	public extern DataView(ArrayBuffer buffer, Number? byteOffset = null, Number? byteLength = null);
 
 	[Description("@#buffer")]
@@ -390,10 +411,10 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	public extern TArray CopyWithin(Number target, Number start, Number? end = null);
 
 	/// <summary>
-	/// Determines whether all the members of an array satisfy the specified test.
+	/// Determines whether all the elements of the typed array satisfy the specified test.
 	/// </summary>
-	/// <param name="predicate"><para><b>(value: T, index: number, array: ICollection<T>) => unknown</b></para>A function that accepts up to three arguments. The every method calls the predicate function for each element in the array until the predicate returns a value which is coercible to the Boolean value false, or until the end of the array.</param>
-	/// <param name="thisArg">An arbitrary value passed as the JavaScript this argument to predicate. If omitted, undefined is used.</param>
+	/// <param name="predicate"><para><b>(value: T, index: number, array: this) => unknown</b></para>A function that accepts up to three arguments. The every method calls the predicate function for each element in the typed array until the predicate returns a value which is coercible to the Boolean value false, or until the end of the array.</param>
+	/// <param name="thisArg">An arbitrary value passed as the JavaScript this argument to predicate. If omitted, JavaScript uses its default callback receiver; this projection does not expose <c>undefined</c> as a separate public value.</param>
 	/// <returns></returns>
 	[Description("@#every")]
 	public extern bool Every(Func<T, Number, TArray, object?> predicate, object? thisArg = null);
@@ -412,20 +433,21 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	/// Returns the elements of an array that meet the condition specified in a callback function.
 	/// </summary>
 	/// <param name="predicate"><para><b>(value: T, index: number, array: this) => unknown</b></para>A function that accepts up to three arguments. The filter method calls the predicate function one time for each element in the array.</param>
-	/// <param name="thisArg">An arbitrary value passed as the JavaScript this argument to predicate. If omitted, undefined is used.</param>
+	/// <param name="thisArg">An arbitrary value passed as the JavaScript this argument to predicate. If omitted, JavaScript uses its default callback receiver; this projection does not expose <c>undefined</c> as a separate public value.</param>
 	/// <returns></returns>
 	[Description("@#filter")]
 	public extern TArray Filter(Func<T, Number, TArray, object?> predicate, object? thisArg = null);
 
 	/// <summary>
-	/// Returns the value of the first element in the array where predicate is true.
+	/// Returns the value of the first element in the typed array where the predicate result is truthy.
 	/// If no matching element exists, JavaScript returns <c>undefined</c> and this C# projection surfaces that absence as <see langword="null" />.
+	/// The callback result stays as <see cref="object"/> because JavaScript uses truthy/falsy coercion here rather than requiring a strict boolean.
 	/// </summary>
-	/// <param name="predicate">find calls predicate once for each element of the array, in ascending order, until it finds one where predicate returns true. If such an element is found, find immediately returns that element value. Otherwise, JavaScript returns <c>undefined</c>.</param>
-	/// <param name="thisArg">An arbitrary value passed as the JavaScript this argument to predicate. If omitted, undefined is used.</param>
+	/// <param name="predicate">find calls predicate once for each element of the typed array, in ascending order, until it finds one where predicate returns a truthy value. If such an element is found, find immediately returns that element value. Otherwise, JavaScript returns <c>undefined</c>.</param>
+	/// <param name="thisArg">An arbitrary value passed as the JavaScript this argument to predicate. If omitted, JavaScript uses its default callback receiver; this projection does not expose <c>undefined</c> as a separate public value.</param>
 	/// <returns></returns>
 	[Description("@#find")]
-	public extern T? Find(Func<T, Number, TArray, bool> predicate, object? thisArg = null);
+	public extern T? Find(Func<T, Number, TArray, object?> predicate, object? thisArg = null);
 
 	/// <summary>
 	/// Returns the last element whose value satisfies the provided testing function.
@@ -436,13 +458,14 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	public extern T? FindLast(Func<T, Number, TArray, object?> predicate, object? thisArg = null);
 
 	/// <summary>
-	/// Returns the index of the first element in the array where predicate is true, and -1 otherwise.
+	/// Returns the index of the first element in the typed array whose predicate result is truthy, and <c>-1</c> otherwise.
+	/// The callback result stays as <see cref="object"/> because JavaScript uses truthy/falsy coercion here rather than requiring a strict boolean.
 	/// </summary>
-	/// <param name="predicate"><para><b>(value: T, index: number, array: this) => boolean</b></para>findIndex calls predicate once for each element of the array, in ascending order, until it finds one where predicate returns true. If such an element is found, findIndex immediately returns that element index. Otherwise, findIndex returns -1.</param>
-	/// <param name="thisArg">An arbitrary value passed as the JavaScript this argument to predicate. If omitted, undefined is used.</param>
+	/// <param name="predicate"><para><b>(value: T, index: number, array: this) => unknown</b></para>findIndex calls predicate once for each element of the typed array, in ascending order, until it finds one where predicate returns a truthy value. If such an element is found, findIndex immediately returns that element index. Otherwise, findIndex returns -1.</param>
+	/// <param name="thisArg">An arbitrary value passed as the JavaScript this argument to predicate. If omitted, JavaScript uses its default callback receiver; this projection does not expose <c>undefined</c> as a separate public value.</param>
 	/// <returns></returns>
 	[Description("@#findIndex")]
-	public extern Number FindIndex(Func<T, Number, TArray, bool> predicate, object? thisArg = null);
+	public extern Number FindIndex(Func<T, Number, TArray, object?> predicate, object? thisArg = null);
 
 	/// <summary>
 	/// Returns the index of the last element whose value satisfies the provided testing function, or <c>-1</c> if no match is found.
@@ -454,7 +477,7 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	/// Performs the specified action for each element in an array.
 	/// </summary>
 	/// <param name="callbackfn"><para><b>(value: T, index: number, array: this) => void</b></para>A function that accepts up to three arguments. forEach calls the callbackfn function one time for each element in the array.</param>
-	/// <param name="thisArg">An arbitrary value passed as the JavaScript this argument to callbackfn. If omitted, undefined is used.</param>
+	/// <param name="thisArg">An arbitrary value passed as the JavaScript this argument to callbackfn. If omitted, JavaScript uses its default callback receiver; this projection does not expose <c>undefined</c> as a separate public value.</param>
 	[Description("@#forEach")]
 	public extern void ForEach(Action<T, Number, TArray> callbackfn, object? thisArg = null);
 
@@ -509,7 +532,7 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	/// Calls a defined callback function on each element of an array, and returns an array that contains the results.
 	/// </summary>
 	/// <param name="callbackfn"><para><b>(value: T, index: number, array: this) => T</b></para>A function that accepts up to three arguments. The map method calls the callbackfn function one time for each element in the array.</param>
-	/// <param name="thisArg">An arbitrary value passed as the JavaScript this argument to callbackfn. If omitted, undefined is used.</param>
+	/// <param name="thisArg">An arbitrary value passed as the JavaScript this argument to callbackfn. If omitted, JavaScript uses its default callback receiver; this projection does not expose <c>undefined</c> as a separate public value.</param>
 	/// <returns></returns>
 	[Description("@#map")]
 	public extern TArray Map(Func<T, Number, TArray, T> callbackfn, object? thisArg = null);
@@ -620,10 +643,10 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	public extern TArray Slice(Number? start = null, Number? end = null);
 
 	/// <summary>
-	/// Determines whether the specified callback function returns true for any element of an array.
+	/// Determines whether the specified callback function returns a truthy value for any element of the typed array.
 	/// </summary>
-	/// <param name="predicate"><para><b>(value: T, index: number, array: this) => unknown</b></para>A function that accepts up to three arguments. The some method calls the predicate function for each element in the array until the predicate returns a value which is coercible to the Boolean value true, or until the end of the array.</param>
-	/// <param name="thisArg">An arbitrary value passed as the JavaScript this argument to predicate. If omitted, undefined is used.</param>
+	/// <param name="predicate"><para><b>(value: T, index: number, array: this) => unknown</b></para>A function that accepts up to three arguments. The some method calls the predicate function for each element in the typed array until the predicate returns a value which is coercible to the Boolean value true, or until the end of the array.</param>
+	/// <param name="thisArg">An arbitrary value passed as the JavaScript this argument to predicate. If omitted, JavaScript uses its default callback receiver; this projection does not expose <c>undefined</c> as a separate public value.</param>
 	/// <returns></returns>
 	[Description("@#some")]
 	public extern bool Some(Func<T, Number, TArray, object?> predicate, object? thisArg = null);
@@ -674,6 +697,28 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	public extern string ToLocaleString();
 
 	/// <summary>
+	/// Returns a locale-sensitive string representation of the typed array.
+	/// JavaScript forwards <paramref name="locales" /> and <paramref name="options" /> to each element's own <c>toLocaleString</c> method.
+	/// </summary>
+	[Description("@#toLocaleString")]
+	public extern string ToLocaleString(string? locales, object? options = null);
+
+	/// <summary>
+	/// C# convenience overload for the JavaScript form that omits <c>locales</c> and only supplies options.
+	/// This exists because C# cannot naturally skip the leading locale argument in method calls.
+	/// </summary>
+	[Description("@#toLocaleString")]
+	public extern string ToLocaleString(object? options);
+
+	/// <summary>
+	/// Returns a locale-sensitive string representation of the typed array.
+	/// <see cref="IEnumerable{T}"/> is used as the common C# input surface for JavaScript locale lists.
+	/// JavaScript forwards <paramref name="locales" /> and <paramref name="options" /> to each element's own <c>toLocaleString</c> method.
+	/// </summary>
+	[Description("@#toLocaleString")]
+	public extern string ToLocaleString(IEnumerable<string>? locales, object? options = null);
+
+	/// <summary>
 	/// Returns the JavaScript iterator produced by <c>TypedArray.prototype.keys()</c>.
 	/// <see cref="IEnumerable{T}"/> is used as the common C# host surface for JavaScript iterables.
 	/// </summary>
@@ -716,6 +761,13 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 [Description("@#BigInt64Array")]
 public class BigInt64Array : TypedArray<BigInt, BigInt64Array>, IWaitableAtomicArray<BigInt>
 {
+	/// <summary>
+	/// JavaScript <c>BigInt64Array.prototype</c> object.
+	/// The concrete typed-array constructor host exposes this directly so the runtime shape stays visible in C#.
+	/// </summary>
+	[Description("@#prototype")]
+	public extern static BigInt64Array Prototype { get; }
+
 	public extern BigInt64Array(Number length);
 
 	public extern BigInt64Array(BigInt64Array array);
@@ -735,6 +787,13 @@ public class BigInt64Array : TypedArray<BigInt, BigInt64Array>, IWaitableAtomicA
 [Description("@#BigUint64Array")]
 public class BigUint64Array : TypedArray<BigInt, BigUint64Array>, IAtomicArray<BigInt>
 {
+	/// <summary>
+	/// JavaScript <c>BigUint64Array.prototype</c> object.
+	/// The concrete typed-array constructor host exposes this directly so the runtime shape stays visible in C#.
+	/// </summary>
+	[Description("@#prototype")]
+	public extern static BigUint64Array Prototype { get; }
+
 	public extern BigUint64Array(Number length);
 
 	public extern BigUint64Array(BigUint64Array array);
@@ -751,6 +810,13 @@ public class BigUint64Array : TypedArray<BigInt, BigUint64Array>, IAtomicArray<B
 [Description("@#Float16Array")]
 public class Float16Array : TypedArray<float, Float16Array>
 {
+	/// <summary>
+	/// JavaScript <c>Float16Array.prototype</c> object.
+	/// The concrete typed-array constructor host exposes this directly so the runtime shape stays visible in C#.
+	/// </summary>
+	[Description("@#prototype")]
+	public extern static Float16Array Prototype { get; }
+
 	public extern Float16Array(Number length);
 
 	public extern Float16Array(Float16Array array);
@@ -770,6 +836,13 @@ public class Float16Array : TypedArray<float, Float16Array>
 [Description("@#Float32Array")]
 public class Float32Array : TypedArray<float, Float32Array>
 {
+	/// <summary>
+	/// JavaScript <c>Float32Array.prototype</c> object.
+	/// The concrete typed-array constructor host exposes this directly so the runtime shape stays visible in C#.
+	/// </summary>
+	[Description("@#prototype")]
+	public extern static Float32Array Prototype { get; }
+
 	public extern Float32Array(Number length);
 
 	public extern Float32Array(Float32Array array);
@@ -789,6 +862,13 @@ public class Float32Array : TypedArray<float, Float32Array>
 [Description("@#Float64Array")]
 public class Float64Array : TypedArray<double, Float64Array>
 {
+	/// <summary>
+	/// JavaScript <c>Float64Array.prototype</c> object.
+	/// The concrete typed-array constructor host exposes this directly so the runtime shape stays visible in C#.
+	/// </summary>
+	[Description("@#prototype")]
+	public extern static Float64Array Prototype { get; }
+
 	public extern Float64Array(Number length);
 
 	public extern Float64Array(Float64Array array);
@@ -808,6 +888,13 @@ public class Float64Array : TypedArray<double, Float64Array>
 [Description("@#Int8Array")]
 public class Int8Array : TypedArray<sbyte, Int8Array>, IAtomicArray<sbyte>
 {
+	/// <summary>
+	/// JavaScript <c>Int8Array.prototype</c> object.
+	/// The concrete typed-array constructor host exposes this directly so the runtime shape stays visible in C#.
+	/// </summary>
+	[Description("@#prototype")]
+	public extern static Int8Array Prototype { get; }
+
 	public extern Int8Array(Number length);
 
 	public extern Int8Array(Int8Array array);
@@ -827,6 +914,13 @@ public class Int8Array : TypedArray<sbyte, Int8Array>, IAtomicArray<sbyte>
 [Description("@#Int16Array")]
 public class Int16Array : TypedArray<short, Int16Array>, IAtomicArray<short>
 {
+	/// <summary>
+	/// JavaScript <c>Int16Array.prototype</c> object.
+	/// The concrete typed-array constructor host exposes this directly so the runtime shape stays visible in C#.
+	/// </summary>
+	[Description("@#prototype")]
+	public extern static Int16Array Prototype { get; }
+
 	public extern Int16Array(Number length);
 
 	public extern Int16Array(Int16Array array);
@@ -846,6 +940,13 @@ public class Int16Array : TypedArray<short, Int16Array>, IAtomicArray<short>
 [Description("@#Int32Array")]
 public class Int32Array : TypedArray<int, Int32Array>, IWaitableAtomicArray<int>
 {
+	/// <summary>
+	/// JavaScript <c>Int32Array.prototype</c> object.
+	/// The concrete typed-array constructor host exposes this directly so the runtime shape stays visible in C#.
+	/// </summary>
+	[Description("@#prototype")]
+	public extern static Int32Array Prototype { get; }
+
 	public extern Int32Array(Number length);
 
 	public extern Int32Array(Int32Array array);
@@ -865,6 +966,13 @@ public class Int32Array : TypedArray<int, Int32Array>, IWaitableAtomicArray<int>
 [Description("@#Uint8Array")]
 public class Uint8Array : TypedArray<byte, Uint8Array>, IAtomicArray<byte>
 {
+	/// <summary>
+	/// JavaScript <c>Uint8Array.prototype</c> object.
+	/// The concrete typed-array constructor host exposes this directly so the runtime shape stays visible in C#.
+	/// </summary>
+	[Description("@#prototype")]
+	public extern static Uint8Array Prototype { get; }
+
 	public extern Uint8Array(Number length);
 
 	public extern Uint8Array(Uint8Array array);
@@ -884,6 +992,13 @@ public class Uint8Array : TypedArray<byte, Uint8Array>, IAtomicArray<byte>
 [Description("@#Uint8ClampedArray")]
 public class Uint8ClampedArray : TypedArray<byte, Uint8ClampedArray>
 {
+	/// <summary>
+	/// JavaScript <c>Uint8ClampedArray.prototype</c> object.
+	/// The concrete typed-array constructor host exposes this directly so the runtime shape stays visible in C#.
+	/// </summary>
+	[Description("@#prototype")]
+	public extern static Uint8ClampedArray Prototype { get; }
+
 	public extern Uint8ClampedArray(Number length);
 
 	public extern Uint8ClampedArray(Uint8ClampedArray array);
@@ -903,6 +1018,13 @@ public class Uint8ClampedArray : TypedArray<byte, Uint8ClampedArray>
 [Description("@#Uint16Array")]
 public class Uint16Array : TypedArray<ushort, Uint16Array>, IAtomicArray<ushort>
 {
+	/// <summary>
+	/// JavaScript <c>Uint16Array.prototype</c> object.
+	/// The concrete typed-array constructor host exposes this directly so the runtime shape stays visible in C#.
+	/// </summary>
+	[Description("@#prototype")]
+	public extern static Uint16Array Prototype { get; }
+
 	public extern Uint16Array(Number length);
 
 	public extern Uint16Array(Uint16Array array);
@@ -922,6 +1044,13 @@ public class Uint16Array : TypedArray<ushort, Uint16Array>, IAtomicArray<ushort>
 [Description("@#Uint32Array")]
 public class Uint32Array : TypedArray<uint, Uint32Array>, IAtomicArray<uint>
 {
+	/// <summary>
+	/// JavaScript <c>Uint32Array.prototype</c> object.
+	/// The concrete typed-array constructor host exposes this directly so the runtime shape stays visible in C#.
+	/// </summary>
+	[Description("@#prototype")]
+	public extern static Uint32Array Prototype { get; }
+
 	public extern Uint32Array(Number length);
 
 	public extern Uint32Array(Uint32Array array);

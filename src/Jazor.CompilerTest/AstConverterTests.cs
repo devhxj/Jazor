@@ -15,6 +15,15 @@ public sealed class AstConverterTests
     private static string ImportBindingName(string modulePath, string importedName)
         => $"i${Format.HashName($"{modulePath}\0{importedName}").TrimStart('_')}";
 
+    private static void AssertScriptEqual(string expected, string? actual)
+        => Assert.AreEqual(expected.ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
+
+    private static string PropertyBackingFieldName(INamedTypeSymbol containingType, string propertyName)
+    {
+        var property = containingType.GetMembers(propertyName).OfType<IPropertySymbol>().Single();
+        return Format.HashName(property.OriginalDefinition.ToDisplayString(Format.NameFormat));
+    }
+
     private static (INamedTypeSymbol, SemanticModel) CompileAndGetSymbol(string code)
     {
         var compilation = CSharpCompilation.Create(
@@ -26,6 +35,26 @@ public sealed class AstConverterTests
         var syntaxTree = compilation.SyntaxTrees.First();
         var semanticModel = compilation.GetSemanticModel(syntaxTree);
         var classDeclaration = syntaxTree.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>().First();
+        var classSymbol = semanticModel.GetDeclaredSymbol(classDeclaration);
+
+        Assert.IsNotNull(classSymbol);
+        return (classSymbol, semanticModel);
+    }
+
+    private static (INamedTypeSymbol, SemanticModel) CompileAndGetSymbol(string code, string className)
+    {
+        var compilation = CSharpCompilation.Create(
+            "TestAssembly",
+            [CSharpSyntaxTree.ParseText(code)],
+            Net100.References.All,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var syntaxTree = compilation.SyntaxTrees.First();
+        var semanticModel = compilation.GetSemanticModel(syntaxTree);
+        var classDeclaration = syntaxTree.GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Single(node => node.Identifier.Text == className);
         var classSymbol = semanticModel.GetDeclaredSymbol(classDeclaration);
 
         Assert.IsNotNull(classSymbol);
@@ -256,12 +285,12 @@ export function set_Property(value) {
 
         // Act
         var result = await converter.Convert();
+        var script = result?.ToKnRECMAScript();
 
         // Assert
-        Assert.IsNotNull(result);
-        var exportDeclaration = result.Body.OfType<ExportNamedDeclaration>().FirstOrDefault();
-        Assert.IsNotNull(exportDeclaration);
-        Assert.IsInstanceOfType(exportDeclaration.Declaration, typeof(VariableDeclaration));
+        AssertScriptEqual(
+@"export const TestEnum = Object.freeze({ Value1: 0, Value2: 5 });
+", script);
     }
 
     [TestMethod]
@@ -307,6 +336,584 @@ export function set_Property(value) {
   }
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_NestedClassSymbol_ThrowsNotSupportedException()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class NestedClass
+                {
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code, "NestedClass");
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+
+        Assert.AreEqual("嵌套类 NestedClass 需要扁平化处理", exception.Message);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithStaticNestedClass_ThrowsNotSupportedException()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public static class NestedHelpers
+                {
+                    public static int Value = 1;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+
+        Assert.AreEqual("Jazor 模块类中不支持静态成员类NestedHelpers。", exception.Message);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedInterface_ThrowsNotSupportedException()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public interface IMarker
+                {
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+
+        Assert.AreEqual("Jazor 模块类不支持NamedType:IMarker。", exception.Message);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedStruct_ThrowsNotSupportedException()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public struct Data
+                {
+                    public int Value;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+
+        Assert.AreEqual("Jazor 模块类不支持NamedType:Data。", exception.Message);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedClassEvent_ThrowsNotSupportedException()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class NestedClass
+                {
+                    public event System.EventHandler? Changed;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+
+        Assert.AreEqual("Jazor member class does not support Event:Changed.", exception.Message);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedClassStaticConstructor_ThrowsNotSupportedException()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class NestedClass
+                {
+                    static NestedClass()
+                    {
+                    }
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+
+        Assert.AreEqual("Jazor member class does not support static constructor .cctor.", exception.Message);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedClassConstructorInitializer_ThrowsNotSupportedException()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class NestedClass
+                {
+                    public NestedClass() : this(1)
+                    {
+                    }
+
+                    public NestedClass(int value)
+                    {
+                    }
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+
+        Assert.AreEqual("Jazor member class does not support constructor initializer on .ctor.", exception.Message);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedClassNestedInterface_ThrowsNotSupportedException()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class NestedClass
+                {
+                    public interface IMarker
+                    {
+                    }
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+
+        Assert.AreEqual("Jazor member class does not support NamedType:IMarker.", exception.Message);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedAbstractMethod_ThrowsNotSupportedException()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public abstract class NestedClass
+                {
+                    public abstract int Compute();
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+
+        Assert.AreEqual("Jazor member class does not support abstract method Compute.", exception.Message);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedAbstractProperty_ThrowsNotSupportedException()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public abstract class NestedClass
+                {
+                    public abstract int Value { get; }
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+
+        Assert.AreEqual("Jazor member class does not support abstract property Value.", exception.Message);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedClassNestedEnum_ThrowsNotSupportedException()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class NestedClass
+                {
+                    public enum Kind
+                    {
+                        One
+                    }
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+
+        Assert.AreEqual("Jazor member class does not support NamedType:Kind.", exception.Message);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedExternMethod_ThrowsNotSupportedException()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class NestedClass
+                {
+                    public extern int Native();
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+
+        Assert.AreEqual("Jazor member class method Native requires a body.", exception.Message);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedClassFieldInitializer_PreservesInitializer()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class NestedClass
+                {
+                    public int Value = 42;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export class NestedClass {
+  Value = 42;
+}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedAutoPropertyInitializer_GeneratesHashedBackingField()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class NestedClass
+                {
+                    public int Value { get; set; } = 42;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var nestedClass = classSymbol.GetTypeMembers("NestedClass").Single();
+        var backingFieldName = PropertyBackingFieldName(nestedClass, "Value");
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+$@"export class NestedClass {{
+  #{backingFieldName} = 42;
+  get Value() {{
+    return this.#{backingFieldName};
+  }}
+  set Value(value) {{
+    this.#{backingFieldName} = value;
+  }}
+}}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedInitOnlyPropertyInitializer_GeneratesGetterOnly()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class NestedClass
+                {
+                    public int Value { get; init; } = 42;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var nestedClass = classSymbol.GetTypeMembers("NestedClass").Single();
+        var backingFieldName = PropertyBackingFieldName(nestedClass, "Value");
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+$@"export class NestedClass {{
+  #{backingFieldName} = 42;
+  get Value() {{
+    return this.#{backingFieldName};
+  }}
+}}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedStaticAutoPropertyInitializer_GeneratesStaticHashedBackingField()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class NestedClass
+                {
+                    public static int Value { get; set; } = 42;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var nestedClass = classSymbol.GetTypeMembers("NestedClass").Single();
+        var backingFieldName = PropertyBackingFieldName(nestedClass, "Value");
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+$@"export class NestedClass {{
+  static #{backingFieldName} = 42;
+  static get Value() {{
+    return this.#{backingFieldName};
+  }}
+  static set Value(value) {{
+    this.#{backingFieldName} = value;
+  }}
+}}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedStaticPropertyDateTimeInitializer_MergesImports()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public class NestedClass
+                {
+                    public static DateTime Value { get; } = new DateTime(2024, 1, 2);
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var nestedClass = classSymbol.GetTypeMembers("NestedClass").Single();
+        var backingFieldName = PropertyBackingFieldName(nestedClass, "Value");
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+$@"import {{ _4cb33a818161a3e1 }} from ""System/DateTimeModule.js"";
+export class NestedClass {{
+  static #{backingFieldName} = _4cb33a818161a3e1(2024, 1, 2);
+  static get Value() {{
+    return this.#{backingFieldName};
+  }}
+}}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedClassExplicitGetterProperty_GeneratesAccessorMethods()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class NestedClass
+                {
+                    public int Value
+                    {
+                        get { return 1; }
+                    }
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export class NestedClass {
+  get Value() {
+    return 1;
+  }
+}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedClassExpressionBodyMethod_GeneratesMethod()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class NestedClass
+                {
+                    public int Square(int x) => x * x;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export class NestedClass {
+  Square(x) {
+    return x * x;
+  }
+}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedClassArrowProperty_GeneratesGetterMethod()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class NestedClass
+                {
+                    public int Value => 1;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export class NestedClass {
+  get Value() {
+    return 1;
+  }
+}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedClassExpressionBodyAccessors_GeneratesAccessorMethods()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class NestedClass
+                {
+                    public int current = 1;
+
+                    public int Value
+                    {
+                        get => current;
+                        set => current = value;
+                    }
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export class NestedClass {
+  current = 1;
+  get Value() {
+    return this.current;
+  }
+  set Value(value) {
+    this.current = value;
+  }
+}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedClassExpressionBodyConstructor_GeneratesConstructor()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class NestedClass
+                {
+                    public int Value;
+
+                    public NestedClass() => Value = 1;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export class NestedClass {
+  Value;
+  constructor() {
+    this.Value = 1;
+  }
+}
+", script);
     }
 
     #region 静态字段测试
@@ -950,7 +1557,7 @@ export function Method_04bbed0f7a07bb40(a, b) {
     }
 
     [TestMethod]
-    public async Task Convert_ClassWithStaticConstructor_GeneratesInit()
+    public async Task Convert_ClassWithStaticConstructor_ThrowsNotSupportedException()
     {
         // Arrange
         var code = """
@@ -968,7 +1575,8 @@ export function Method_04bbed0f7a07bb40(a, b) {
         var converter = new AstConverter(classSymbol, semanticModel);
 
         // Assert
-        await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+        Assert.AreEqual("Jazor 模块类.cctor不支持静态构造函数。", exception.Message);
 
     }
 
@@ -1036,7 +1644,7 @@ export function Method_04bbed0f7a07bb40(a, b) {
     #region 特殊类型测试
 
     [TestMethod]
-    public async Task Convert_ClassWithDelegate_ReturnsNull()
+    public async Task Convert_ClassWithDelegate_ThrowsNotSupportedException()
     {
         // Arrange
         var code = """
@@ -1050,7 +1658,8 @@ export function Method_04bbed0f7a07bb40(a, b) {
         var converter = new AstConverter(classSymbol, semanticModel);
 
         // Assert
-        await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+        Assert.AreEqual("Jazor 模块类不支持NamedType:MathOp。", exception.Message);
 
     }
 
@@ -1068,8 +1677,27 @@ export function Method_04bbed0f7a07bb40(a, b) {
         var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
         var converter = new AstConverter(classSymbol, semanticModel);
 
-        // Act & Assert - 事件的 add/remove 方法不支持转换
-        await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+        // Act & Assert - 事件声明本身当前不支持导出
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+        Assert.AreEqual("Jazor 模块类不支持Event:MyEvent。", exception.Message);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithExternMethod_ThrowsNotSupportedException()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public static extern int Native();
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+
+        Assert.AreEqual("Jazor 不支持转换方法 Native，无法从操作生成函数体。", exception.Message);
     }
 
     #endregion
@@ -1095,10 +1723,34 @@ export function Method_04bbed0f7a07bb40(a, b) {
         var script = module?.ToKnRECMAScript();
 
         // Assert
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"export let NullableField = null;
 ", script);
 
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithConstNullStringField_GeneratesNullDeclaration()
+    {
+        // Arrange
+        var code = """
+            public static class TestClass
+            {
+                public const string? Missing = null;
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        // Act
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        // Assert
+        AssertScriptEqual(
+@"export const Missing = null;
+", script);
     }
 
     [TestMethod]
@@ -1655,10 +2307,272 @@ export function get_Doubled() {
         var script = module?.ToKnRECMAScript();
 
         // Assert
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"export let CharField = ""A"";
 ", script);
 
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNameOfFieldInitializer_UsesDoubleQuotedStringLiteral()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public static string ClassName = nameof(TestClass);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export let ClassName = ""TestClass"";
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithDefaultDateTimeField_UsesDefaultConstructorHelper()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public static DateTime Value = default(DateTime);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"import { _bfa8ee5dd46e2005 } from ""System/DateTimeModule.js"";
+export let Value = _bfa8ee5dd46e2005();
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithDefaultDateTimeOffsetField_UsesDefaultConstructorHelper()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public static DateTimeOffset Value = default(DateTimeOffset);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"import { _12b4f3f1dc14bea9 } from ""System/DateTimeOffsetModule.js"";
+export let Value = _12b4f3f1dc14bea9();
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithDefaultTimeSpanField_GeneratesZeroBigInt()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public static TimeSpan Value = default(TimeSpan);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export let Value = 0n;
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithDefaultDateOnlyField_UsesDefaultConstructorHelper()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public static DateOnly Value = default(DateOnly);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"import { _5f8053a9657a0844 } from ""System/DateOnlyModule.js"";
+export let Value = _5f8053a9657a0844();
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithDefaultTimeOnlyField_GeneratesZeroBigInt()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public static TimeOnly Value = default(TimeOnly);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export let Value = 0n;
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithDefaultBigIntegerField_GeneratesZeroBigInt()
+    {
+        var code = """
+            using System.Numerics;
+
+            public static class TestClass
+            {
+                public static BigInteger Value = default(BigInteger);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export let Value = 0n;
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithDefaultHalfField_GeneratesZeroNumber()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public static Half Value = default(Half);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export let Value = 0;
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithDefaultEnumField_GeneratesZero()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public enum Kind
+                {
+                    None = 0,
+                    One = 1
+                }
+
+                public static Kind Value = default(Kind);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export const Kind = Object.freeze({ None: 0, One: 1 });
+export let Value = 0;
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithDefaultCharField_GeneratesNullCharacterString()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public static char Value = default(char);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export let Value = ""\0"";
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithConstEnumField_GeneratesNumericLiteral()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public enum Kind
+                {
+                    None = 0,
+                    One = 1
+                }
+
+                public const Kind Value = Kind.One;
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export const Kind = Object.freeze({ None: 0, One: 1 });
+export const Value = 1;
+", script);
     }
 
     #endregion
@@ -1726,9 +2640,9 @@ export function get_Doubled() {
     }
 
     [TestMethod]
-    public async Task Convert_MethodWithNullableDefaultParameter_ThrowsNotSupportedException()
+    public async Task Convert_MethodWithNullableDefaultParameter_GeneratesNullDefaultLiteral()
     {
-        // Arrange - null 默认值当前不支持
+        // Arrange
         var code = """
             public static class TestClass
             {
@@ -1741,8 +2655,75 @@ export function get_Doubled() {
         var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
         var converter = new AstConverter(classSymbol, semanticModel);
 
-        // Act & Assert - null 默认值当前不支持
-        await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+        // Act
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        // Assert
+        AssertScriptEqual(
+@"export function Process(name = null) { }
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_MethodWithEnumDefaultParameter_GeneratesNumericDefaultLiteral()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public enum Kind
+                {
+                    None = 0,
+                    One = 1
+                }
+
+                public static int Check(Kind value = Kind.One)
+                {
+                    return (int)value;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export const Kind = Object.freeze({ None: 0, One: 1 });
+export function Check(value = 1) {
+  return value;
+}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_MethodWithHalfDefaultParameter_GeneratesNumericDefaultLiteral()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public static int Check(Half value = (Half)1.5f)
+                {
+                    return 0;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export function Check(value = 1.5) {
+  return 0;
+}
+", script);
     }
 
     #endregion
@@ -2062,6 +3043,136 @@ export function Format() {
     }
 
     [TestMethod]
+    public async Task Convert_ClassWithDateOnlyStringConcat_ImportsOnlyParseHelper()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public static string Format() => "date=" + DateOnly.Parse("2024-01-02");
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { _e2640560d207afce } from ""System/DateOnlyModule.js"";
+export function Format() {
+  return ""date="" + _e2640560d207afce(""2024-01-02"");
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithDateTimeOffsetStringConcat_ImportsOnlyParseHelper()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public static string Format() => "dto=" + DateTimeOffset.Parse("2024-01-02T03:04:05+08:00");
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { _25187a24d190d864 } from ""System/DateTimeOffsetModule.js"";
+export function Format() {
+  return ""dto="" + _25187a24d190d864(""2024-01-02T03:04:05+08:00"");
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithDateTimeStringConcat_ImportsOnlyConstructorHelper()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public static string Format() => "dt=" + new DateTime(2024, 1, 2);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { _4cb33a818161a3e1 } from ""System/DateTimeModule.js"";
+export function Format() {
+  return ""dt="" + _4cb33a818161a3e1(2024, 1, 2);
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithTimeOnlyStringConcat_ImportsOnlyConstructorHelper()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public static string Format() => "time=" + new TimeOnly(12, 30, 0);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { _e9a3481b3456aad4 } from ""System/TimeOnlyModule.js"";
+export function Format() {
+  return ""time="" + _e9a3481b3456aad4(12, 30, 0);
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithTimeSpanStringConcat_ImportsOnlyConstructorHelper()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public static string Format() => "span=" + new TimeSpan(1, 2, 3);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { _6f22e268aec62fe7 } from ""System/TimeSpanModule.js"";
+export function Format() {
+  return ""span="" + _6f22e268aec62fe7(1, 2, 3);
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
     public async Task Convert_ClassWithIntegerCopySign_UsesInlineWithoutHelperImports()
     {
         var code = """
@@ -2097,6 +3208,82 @@ export function LongCopy(value, sign) {
     }
 
     [TestMethod]
+    public async Task Convert_ClassWithInt32Intrinsics_UsesInlineWithoutHelperImports()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public static int SignedCopy(int value, int sign) => int.CopySign(value, sign);
+
+                public static int SignedClamp(int value, int min, int max) => int.Clamp(value, min, max);
+
+                public static int SignedMeta(int value)
+                    => int.Sign(value)
+                    + int.Abs(value)
+                    + int.Log2(value)
+                    + int.LeadingZeroCount(value)
+                    + int.TrailingZeroCount(value)
+                    + (int.IsEvenInteger(value) ? 1 : 0)
+                    + (int.IsNegative(value) ? 1 : 0)
+                    + (int.IsOddInteger(value) ? 1 : 0)
+                    + (int.IsPositive(value) ? 1 : 0)
+                    + (int.IsPow2(value) ? 1 : 0);
+
+                public static int SignedBounds(int left, int right) => int.Max(left, right) - int.Min(left, right);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"export function SignedCopy(value, sign) {
+  return sign < 0 ? -Math.abs(value) : Math.abs(value);
+}
+export function SignedClamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+export function SignedMeta(value) {
+  return (value > 0 ? 1 : value < 0 ? -1 : 0) + Math.abs(value) + Math.floor(Math.log2(value)) + Math.clz32(value) + (value === 0 ? 32 : 31 - Math.clz32(value & -value)) + ((value & 1) === 0 ? 1 : 0) + (value < 0 ? 1 : 0) + ((value & 1) !== 0 ? 1 : 0) + (value > 0 ? 1 : 0) + (value > 0 && (value & value - 1) === 0 ? 1 : 0);
+}
+export function SignedBounds(left, right) {
+  return Math.max(left, right) - Math.min(left, right);
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithPrimitiveGetTypeCode_UsesInlineConstants()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public static int Sum(byte b, int i, string s, DateTime dt)
+                    => b.GetTypeCode() + i.GetTypeCode() + s.GetTypeCode() + dt.GetTypeCode();
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export function Sum(b, i, s, dt) {
+  return 6 + 9 + 18 + 16;
+}
+", script);
+    }
+
+    [TestMethod]
     public async Task Convert_ClassWithInt16AndUInt16Intrinsics_UsesInlineWithoutHelperImports()
     {
         var code = """
@@ -2112,6 +3299,10 @@ export function LongCopy(value, sign) {
                     => short.Sign(value)
                     + short.Abs(value)
                     + short.Log2(value)
+                    + short.LeadingZeroCount(value)
+                    + short.TrailingZeroCount(value)
+                    + short.RotateLeft(value, 3)
+                    + short.RotateRight(value, 5)
                     + (short.IsEvenInteger(value) ? 1 : 0)
                     + (short.IsNegative(value) ? 1 : 0)
                     + (short.IsOddInteger(value) ? 1 : 0)
@@ -2125,6 +3316,10 @@ export function LongCopy(value, sign) {
                 public static int UnsignedMeta(ushort value)
                     => ushort.Sign(value)
                     + ushort.Log2(value)
+                    + ushort.LeadingZeroCount(value)
+                    + ushort.TrailingZeroCount(value)
+                    + ushort.RotateLeft(value, 3)
+                    + ushort.RotateRight(value, 5)
                     + (ushort.IsEvenInteger(value) ? 1 : 0)
                     + (ushort.IsOddInteger(value) ? 1 : 0)
                     + (ushort.IsPow2(value) ? 1 : 0);
@@ -2147,7 +3342,7 @@ export function SignedClamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 export function SignedMeta(value) {
-  return (value > 0 ? 1 : value < 0 ? -1 : 0) + Math.abs(value) + Math.floor(Math.log2(value)) + ((value & 1) === 0 ? 1 : 0) + (value < 0 ? 1 : 0) + ((value & 1) !== 0 ? 1 : 0) + (value > 0 ? 1 : 0) + (value > 0 && (value & value - 1) === 0 ? 1 : 0);
+  return (value > 0 ? 1 : value < 0 ? -1 : 0) + Math.abs(value) + Math.floor(Math.log2(value)) + (value === 0 ? 16 : Math.clz32(value & 0xFFFF) - 16) + (value === 0 ? 16 : Math.floor(Math.log2(value & 0xFFFF & -(value & 0xFFFF)))) + ((((value & 0xFFFF) << (3 & 15) | (value & 0xFFFF) >>> 16 - (3 & 15)) & 0xFFFF) << 16 >> 16) + ((((value & 0xFFFF) >>> (5 & 15) | (value & 0xFFFF) << 16 - (5 & 15)) & 0xFFFF) << 16 >> 16) + ((value & 1) === 0 ? 1 : 0) + (value < 0 ? 1 : 0) + ((value & 1) !== 0 ? 1 : 0) + (value > 0 ? 1 : 0) + (value > 0 && (value & value - 1) === 0 ? 1 : 0);
 }
 export function SignedBounds(left, right) {
   return Math.max(left, right) - Math.min(left, right);
@@ -2156,10 +3351,154 @@ export function UnsignedClamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 export function UnsignedMeta(value) {
-  return (value === 0 ? 0 : 1) + Math.floor(Math.log2(value)) + ((value & 1) === 0 ? 1 : 0) + ((value & 1) !== 0 ? 1 : 0) + (value > 0 && (value & value - 1) === 0 ? 1 : 0);
+  return (value === 0 ? 0 : 1) + Math.floor(Math.log2(value)) + (value === 0 ? 16 : Math.clz32(value & 0xFFFF) - 16) + (value === 0 ? 16 : Math.floor(Math.log2(value & 0xFFFF & -(value & 0xFFFF)))) + ((value << (3 & 15) | value >>> 16 - (3 & 15)) & 0xFFFF) + ((value >>> (5 & 15) | value << 16 - (5 & 15)) & 0xFFFF) + ((value & 1) === 0 ? 1 : 0) + ((value & 1) !== 0 ? 1 : 0) + (value > 0 && (value & value - 1) === 0 ? 1 : 0);
 }
 export function UnsignedBounds(left, right) {
   return Math.max(left, right) - Math.min(left, right);
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithByteIntrinsics_UsesInlineWithoutHelperImports()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public static byte UnsignedClamp(byte value, byte min, byte max) => byte.Clamp(value, min, max);
+
+                public static int UnsignedMeta(byte value)
+                    => byte.Sign(value)
+                    + byte.Log2(value)
+                    + (byte.IsEvenInteger(value) ? 1 : 0)
+                    + (byte.IsOddInteger(value) ? 1 : 0)
+                    + (byte.IsPow2(value) ? 1 : 0);
+
+                public static int UnsignedCounts(byte value)
+                    => byte.LeadingZeroCount(value)
+                    + byte.PopCount(value)
+                    + byte.TrailingZeroCount(value);
+
+                public static int UnsignedBounds(byte left, byte right) => byte.Max(left, right) - byte.Min(left, right);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"export function UnsignedClamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+export function UnsignedMeta(value) {
+  return (value === 0 ? 0 : 1) + Math.floor(Math.log2(value)) + ((value & 1) === 0 ? 1 : 0) + ((value & 1) !== 0 ? 1 : 0) + (value > 0 && (value & value - 1) === 0 ? 1 : 0);
+}
+export function UnsignedCounts(value) {
+  return (value === 0 ? 8 : Math.clz32(value & 0xFF) - 24) + ((value & 1) + (value >> 1 & 1) + (value >> 2 & 1) + (value >> 3 & 1) + (value >> 4 & 1) + (value >> 5 & 1) + (value >> 6 & 1) + (value >> 7 & 1)) + (value === 0 ? 8 : Math.floor(Math.log2(value & 0xFF & -(value & 0xFF))));
+}
+export function UnsignedBounds(left, right) {
+  return Math.max(left, right) - Math.min(left, right);
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithUInt16AndUInt32DivRem_UsesImportHelpers()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public static int Sum(ushort ushortLeft, ushort ushortRight, uint uintLeft, uint uintRight)
+                {
+                    var ushortPair = ushort.DivRem(ushortLeft, ushortRight);
+                    var uintPair = uint.DivRem(uintLeft, uintRight);
+                    return ushortPair.Quotient
+                        + ushortPair.Remainder
+                        + (int)uintPair.Quotient
+                        + (int)uintPair.Remainder;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { _80e78c0aa0b98fef } from ""System/UInt16Module.js"";
+import { _8a073d758132b5bb } from ""System/UInt32Module.js"";
+export function Sum(ushortLeft, ushortRight, uintLeft, uintRight) {
+  let ushortPair = _80e78c0aa0b98fef(ushortLeft, ushortRight);
+  let uintPair = _8a073d758132b5bb(uintLeft, uintRight);
+  return ushortPair.Quotient + ushortPair.Remainder + uintPair.Quotient + uintPair.Remainder;
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithInt16DivRemAndPopCount_UsesImportHelpers()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public static int Sum(short left, short right, short value)
+                {
+                    var pair = short.DivRem(left, right);
+                    return pair.Quotient + pair.Remainder + short.PopCount(value);
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { _1636c956519f95fa, _b2c1f15fae072110 } from ""System/Int16Module.js"";
+export function Sum(left, right, value) {
+  let pair = _b2c1f15fae072110(left, right);
+  return pair.Quotient + pair.Remainder + _1636c956519f95fa(value);
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithUInt16AndUInt32PopCount_UsesImportHelpers()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public static ulong Sum(ushort ushortValue, uint uintValue)
+                    => (ulong)ushort.PopCount(ushortValue) + (ulong)uint.PopCount(uintValue);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { _2ea0cab4f3f489d9 } from ""System/UInt16Module.js"";
+import { _96cd49e102b39e5b } from ""System/UInt32Module.js"";
+export function Sum(ushortValue, uintValue) {
+  return BigInt(_2ea0cab4f3f489d9(ushortValue)) + BigInt(_96cd49e102b39e5b(uintValue));
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
@@ -2193,6 +3532,10 @@ export function UnsignedBounds(left, right) {
                 public static ulong UnsignedMeta(uint value)
                     => uint.Sign(value)
                     + uint.Log2(value)
+                    + uint.LeadingZeroCount(value)
+                    + uint.TrailingZeroCount(value)
+                    + uint.RotateLeft(value, 3)
+                    + uint.RotateRight(value, 5)
                     + (uint.IsEvenInteger(value) ? 1 : 0)
                     + (uint.IsOddInteger(value) ? 1 : 0)
                     + (uint.IsPow2(value) ? 1 : 0);
@@ -2240,7 +3583,7 @@ export function UnsignedClamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 export function UnsignedMeta(value) {
-  return BigInt(value === 0 ? 0 : 1) + BigInt(Math.floor(Math.log2(value))) + BigInt((value & 1) === 0 ? 1 : 0) + BigInt((value & 1) !== 0 ? 1 : 0) + BigInt(value > 0 && (value & value - 1) === 0 ? 1 : 0);
+  return BigInt(value === 0 ? 0 : 1) + BigInt(Math.floor(Math.log2(value))) + BigInt(Math.clz32(value)) + BigInt(value === 0 ? 32 : 31 - Math.clz32(value >>> 0 & -(value >>> 0))) + BigInt((value << (3 & 31) | value >>> 32 - (3 & 31)) >>> 0) + BigInt((value >>> (5 & 31) | value << 32 - (5 & 31)) >>> 0) + BigInt((value & 1) === 0 ? 1 : 0) + BigInt((value & 1) !== 0 ? 1 : 0) + BigInt(value > 0 && (value & value - 1) === 0 ? 1 : 0);
 }
 export function UnsignedBounds(left, right) {
   return Math.max(left, right) - Math.min(left, right);
@@ -2438,6 +3781,450 @@ export function Subtract(left, right) {
 }
 export function Multiply(left, right) {
   return left * right;
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithBigIntegerMagnitudeHelpers_UsesRuntimeImports()
+    {
+        var code = """
+            using System.Numerics;
+
+            public static class TestClass
+            {
+                public static BigInteger Max(BigInteger left, BigInteger right) => BigInteger.MaxMagnitude(left, right);
+
+                public static BigInteger Min(BigInteger left, BigInteger right) => BigInteger.MinMagnitude(left, right);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { _d305de2c64e85995, _fef56ccd17b22e88 } from ""System/Numerics/BigIntegerModule.js"";
+export function Max(left, right) {
+  return _d305de2c64e85995(left, right);
+}
+export function Min(left, right) {
+  return _fef56ccd17b22e88(left, right);
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithInt64MagnitudeHelpers_UsesRuntimeImports()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public static long Max(long left, long right) => long.MaxMagnitude(left, right);
+
+                public static long Min(long left, long right) => long.MinMagnitude(left, right);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { _9618dc0d855ee729, _bfad1ee52075b36e } from ""System/Int64Module.js"";
+export function Max(left, right) {
+  return _9618dc0d855ee729(left, right);
+}
+export function Min(left, right) {
+  return _bfad1ee52075b36e(left, right);
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithSingleMagnitudeHelpers_UsesRuntimeImports()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public static float Max(float left, float right) => float.MaxMagnitude(left, right);
+
+                public static float MaxNumber(float left, float right) => float.MaxMagnitudeNumber(left, right);
+
+                public static float Min(float left, float right) => float.MinMagnitude(left, right);
+
+                public static float MinNumber(float left, float right) => float.MinMagnitudeNumber(left, right);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { _4a2ec5d010e27cb1, _7c146ff0a50e958f, _b7b1d7781578b7e0, _e5a7b14f707c69f7 } from ""System/SingleModule.js"";
+export function Max(left, right) {
+  return _7c146ff0a50e958f(left, right);
+}
+export function MaxNumber(left, right) {
+  return _b7b1d7781578b7e0(left, right);
+}
+export function Min(left, right) {
+  return _e5a7b14f707c69f7(left, right);
+}
+export function MinNumber(left, right) {
+  return _4a2ec5d010e27cb1(left, right);
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithSingleMathIntrinsics_UsesDirectMathWithoutImports()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public static double Run(float value, float left, float right, float third)
+                {
+                    var log2 = float.Log2(value);
+                    var expM1 = float.ExpM1(value);
+                    var ceil = float.Ceiling(value);
+                    var floor = float.Floor(value);
+                    var round = float.Round(value);
+                    var trunc = float.Truncate(value);
+                    var atan2Pi = float.Atan2Pi(left, right);
+                    var fused = float.FusedMultiplyAdd(left, right, third);
+                    var ieee = float.Ieee754Remainder(left, right);
+                    var lerp = float.Lerp(left, right, third);
+                    var reciprocal = float.ReciprocalEstimate(value);
+                    var acosh = float.Acosh(value);
+                    var logBase = float.Log(left, right);
+                    var clamp = float.Clamp(value, left, right);
+                    var max = float.Max(left, right);
+                    var abs = float.Abs(value);
+                    var even = float.IsEvenInteger(value);
+                    var integer = float.IsInteger(value);
+                    var positive = float.IsPositive(value);
+                    var real = float.IsRealNumber(value);
+                    var pow = float.Pow(left, right);
+                    var sqrt = float.Sqrt(value);
+                    var acosPi = float.AcosPi(value);
+                    var cosPi = float.CosPi(value);
+                    var deg = float.DegreesToRadians(value);
+                    var sin = float.Sin(value);
+                    var tanPi = float.TanPi(value);
+
+                    return log2 + expM1 + ceil + floor + round + trunc + atan2Pi + fused + ieee + lerp + reciprocal + acosh + logBase + clamp + max + abs
+                        + (even ? 1 : 0) + (integer ? 1 : 0) + (positive ? 1 : 0) + (real ? 1 : 0)
+                        + pow + sqrt + acosPi + cosPi + deg + sin + tanPi;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"export function Run(value, left, right, third) {
+  let log2 = Math.log2(value);
+  let expM1 = Math.exp(value) - 1;
+  let ceil = Math.ceil(value);
+  let floor = Math.floor(value);
+  let round = Math.round(value);
+  let trunc = Math.trunc(value);
+  let atan2Pi = Math.atan2(left, right) / Math.PI;
+  let fused = left * right + third;
+  let ieee = left - right * Math.round(left / right);
+  let lerp = left + (right - left) * third;
+  let reciprocal = 1 / value;
+  let acosh = Math.acosh(value);
+  let logBase = Math.log(left) / Math.log(right);
+  let clamp = Math.max(left, Math.min(value, right));
+  let max = Math.max(left, right);
+  let abs = Math.abs(value);
+  let even = value % 2 === 0;
+  let integer = Number.isInteger(value);
+  let positive = value > 0 || Object.is(value, 0);
+  let real = !isNaN(value) && value !== Infinity && value !== -Infinity;
+  let pow = Math.pow(left, right);
+  let sqrt = Math.sqrt(value);
+  let acosPi = Math.acos(value) / Math.PI;
+  let cosPi = Math.cos(value * Math.PI);
+  let deg = value * Math.PI / 180;
+  let sin = Math.sin(value);
+  let tanPi = Math.tan(value * Math.PI);
+  return log2 + expM1 + ceil + floor + round + trunc + atan2Pi + fused + ieee + lerp + reciprocal + acosh + logBase + clamp + max + abs + (even ? 1 : 0) + (integer ? 1 : 0) + (positive ? 1 : 0) + (real ? 1 : 0) + pow + sqrt + acosPi + cosPi + deg + sin + tanPi;
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithDoubleMathIntrinsics_UsesMathHostWithoutImports()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public static double Run(double value, double left, double right)
+                {
+                    var log2 = double.Log2(value);
+                    var exp = double.Exp(value);
+                    var max = double.Max(left, right);
+                    var abs = double.Abs(value);
+                    var pow = double.Pow(left, right);
+                    var sqrt = double.Sqrt(value);
+
+                    return log2 + exp + max + abs + pow + sqrt;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"export function Run(value, left, right) {
+  let log2 = Math.log2(value);
+  let exp = Math.exp(value);
+  let max = Math.max(left, right);
+  let abs = Math.abs(value);
+  let pow = Math.pow(left, right);
+  let sqrt = Math.sqrt(value);
+  return log2 + exp + max + abs + pow + sqrt;
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithFloatingPointMaxMinNumber_UsesInlineNaNFallbackWithoutImports()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public static double Run(float fleft, float fright, double dleft, double dright)
+                {
+                    var fmax = float.MaxNumber(fleft, fright);
+                    var fmin = float.MinNumber(fleft, fright);
+                    var dmax = double.MaxNumber(dleft, dright);
+                    var dmin = double.MinNumber(dleft, dright);
+
+                    return fmax + fmin + dmax + dmin;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"export function Run(fleft, fright, dleft, dright) {
+  let fmax = isNaN(fleft) ? fright : isNaN(fright) ? fleft : Math.max(fleft, fright);
+  let fmin = isNaN(fleft) ? fright : isNaN(fright) ? fleft : Math.min(fleft, fright);
+  let dmax = isNaN(dleft) ? dright : isNaN(dright) ? dleft : Math.max(dleft, dright);
+  let dmin = isNaN(dleft) ? dright : isNaN(dright) ? dleft : Math.min(dleft, dright);
+  return fmax + fmin + dmax + dmin;
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithFloatingPointSignAndPow2_UsesRuntimeImports()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public static int FloatSign(float value) => float.Sign(value);
+
+                public static bool FloatPow2(float value) => float.IsPow2(value);
+
+                public static int DoubleSign(double value) => double.Sign(value);
+
+                public static bool DoublePow2(double value) => double.IsPow2(value);
+
+                public static int MathFloatSign(float value) => Math.Sign(value);
+
+                public static int MathDoubleSign(double value) => Math.Sign(value);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { _0f9f49a802919a8f, _eee146c74a9bc322 } from ""System/DoubleModule.js"";
+import { _9a554cfca79bdc59, _c0668680ba7ef96e } from ""System/MathModule.js"";
+import { _0dcf89ab5d6bd60c, _323a6b94e62b2729 } from ""System/SingleModule.js"";
+export function FloatSign(value) {
+  return _323a6b94e62b2729(value);
+}
+export function FloatPow2(value) {
+  return _0dcf89ab5d6bd60c(value);
+}
+export function DoubleSign(value) {
+  return _eee146c74a9bc322(value);
+}
+export function DoublePow2(value) {
+  return _0f9f49a802919a8f(value);
+}
+export function MathFloatSign(value) {
+  return _c0668680ba7ef96e(value);
+}
+export function MathDoubleSign(value) {
+  return _9a554cfca79bdc59(value);
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithFloatingPointNormalClassification_UsesInlineThresholdChecks()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public static bool FloatNormal(float value) => float.IsNormal(value);
+
+                public static bool FloatSubnormal(float value) => float.IsSubnormal(value);
+
+                public static bool DoubleNormal(double value) => double.IsNormal(value);
+
+                public static bool DoubleSubnormal(double value) => double.IsSubnormal(value);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"export function FloatNormal(value) {
+  return isFinite(value) && value !== 0 && Math.abs(value) >= 1.17549435e-38;
+}
+export function FloatSubnormal(value) {
+  return isFinite(value) && value !== 0 && Math.abs(value) < 1.17549435e-38;
+}
+export function DoubleNormal(value) {
+  return isFinite(value) && value !== 0 && Math.abs(value) >= 2.2250738585072014e-308;
+}
+export function DoubleSubnormal(value) {
+  return isFinite(value) && value !== 0 && Math.abs(value) < 2.2250738585072014e-308;
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithSingleSinCos_UsesRuntimeImports()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public static (float Sin, float Cos) Pair(float value) => float.SinCos(value);
+
+                public static (float SinPi, float CosPi) PairPi(float value) => float.SinCosPi(value);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { _2c792a5d6ef88cd1, _9905e3952bca67bc } from ""System/SingleModule.js"";
+export function Pair(value) {
+  return _9905e3952bca67bc(value);
+}
+export function PairPi(value) {
+  return _2c792a5d6ef88cd1(value);
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithDoubleMagnitudeHelpers_UsesRuntimeImports()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public static double Max(double left, double right) => double.MaxMagnitude(left, right);
+
+                public static double MaxNumber(double left, double right) => double.MaxMagnitudeNumber(left, right);
+
+                public static double Min(double left, double right) => double.MinMagnitude(left, right);
+
+                public static double MinNumber(double left, double right) => double.MinMagnitudeNumber(left, right);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { _315c6cdfa11efcf2, _7f7b38b043f3f42f, _b6202851542d164c, _bb1daa880a2ad14e } from ""System/DoubleModule.js"";
+export function Max(left, right) {
+  return _b6202851542d164c(left, right);
+}
+export function MaxNumber(left, right) {
+  return _7f7b38b043f3f42f(left, right);
+}
+export function Min(left, right) {
+  return _bb1daa880a2ad14e(left, right);
+}
+export function MinNumber(left, right) {
+  return _315c6cdfa11efcf2(left, right);
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithInt16MagnitudeHelpers_UsesRuntimeImports()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public static short Max(short left, short right) => short.MaxMagnitude(left, right);
+
+                public static short Min(short left, short right) => short.MinMagnitude(left, right);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { _63d3d54252a49e29, _ea75510d32bc8099 } from ""System/Int16Module.js"";
+export function Max(left, right) {
+  return _ea75510d32bc8099(left, right);
+}
+export function Min(left, right) {
+  return _63d3d54252a49e29(left, right);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }

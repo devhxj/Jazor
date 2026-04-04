@@ -358,6 +358,23 @@ public partial class SemanticWalker
 		//  数值字面量：42 / 3.14
 		else if (mapper == TypeMapper.Number)
 		{
+			if (IsSystemHalfType(type))
+			{
+				var halfValue = Convert.ToDouble(value, System.Globalization.CultureInfo.InvariantCulture);
+
+				if (double.IsNaN(halfValue))
+					return new Identifier("NaN");
+				if (double.IsPositiveInfinity(halfValue))
+					return new Identifier("Infinity");
+				if (double.IsNegativeInfinity(halfValue))
+					return new NonUpdateUnaryExpression(Operator.UnaryNegation, new Identifier("Infinity"));
+
+				return new NumericLiteral(
+					halfValue,
+					valueStr ?? halfValue.ToString("R", System.Globalization.CultureInfo.InvariantCulture)
+				);
+			}
+
 			// 对于 decimal 类型，需要处理精度损失问题
 			// decimal 范围约为 ±7.9×10²⁸，double 范围约为 ±1.7×10³⁰⁸
 			// double 范围更大，不会溢出，但 decimal 有 28-29 位精度，double 只有 15-16 位
@@ -993,7 +1010,7 @@ public partial class SemanticWalker
 		if (string.IsNullOrEmpty(name) || name is null)
 			return HandleTransformationFailure<Node>(operation.Argument, "NameOf expression could not be translated to JavaScript.");
 
-		return new StringLiteral(name, $"'{name}'");
+		return new StringLiteral(name, $"\"{name}\"");
 	}
 
 	/// <summary>
@@ -1010,10 +1027,23 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitDefaultValue(IDefaultValueOperation operation, SenseArgument argument)
 	{
-		// default(T) 转换为适当的默认值
-		return operation.Type?.SpecialType switch
+		var type = operation.Type;
+		if (type is null)
+			return new NullLiteral("null");
+
+		if (type.TypeKind == TypeKind.Enum)
+			return new NumericLiteral(0, "0");
+
+		if (!type.IsValueType)
+			return new NullLiteral("null");
+
+		if (IsSystemHalfType(type))
+			return new NumericLiteral(0, "0");
+
+		return type.SpecialType switch
 		{
 			SpecialType.System_Boolean => new BooleanLiteral(false, "false"),
+			SpecialType.System_Char => new StringLiteral("\0", "\"\\0\""),
 			SpecialType.System_String => new NullLiteral("null"),
 			SpecialType.System_SByte or
 			SpecialType.System_Byte or
@@ -1021,13 +1051,33 @@ public partial class SemanticWalker
 			SpecialType.System_UInt16 or
 			SpecialType.System_Int32 or
 			SpecialType.System_UInt32 or
-			SpecialType.System_Int64 or
-			SpecialType.System_UInt64 or
 			SpecialType.System_Single or
 			SpecialType.System_Double or
 			SpecialType.System_Decimal => new NumericLiteral(0, "0"),
-			_ => new NullLiteral("null")
+			SpecialType.System_Int64 or
+			SpecialType.System_UInt64 => new BigIntLiteral(new System.Numerics.BigInteger(0), "0n"),
+			_ => GetDefaultValueTypeExpression(type, argument)
+				?? new NullLiteral("null")
 		};
+	}
+
+	private Expression? GetDefaultValueTypeExpression(ITypeSymbol type, SenseArgument argument)
+	{
+		var (mapper, _) = GetMapperType(type);
+		if (mapper == TypeMapper.Number)
+			return new NumericLiteral(0, "0");
+
+		if (mapper == TypeMapper.BigInt)
+			return new BigIntLiteral(new System.Numerics.BigInteger(0), "0n");
+
+		if (type is not INamedTypeSymbol namedType)
+			return null;
+
+		var ctor = namedType.InstanceConstructors.FirstOrDefault(static x => x.Parameters.Length == 0);
+		if (ctor is null)
+			return null;
+
+		return GetWhiteListExpression(ctor, argument, [], out _);
 	}
 
 	/// <summary>

@@ -863,7 +863,7 @@ public sealed class SemanticWalkerOrdinaryTest
     var node = walker.Visit(block, new());
     var script = node?.ToECMAScript();
 
-    Assert.AreEqual(@"{let name='TestMethod'}", script);
+    Assert.AreEqual(@"{let name=""TestMethod""}", script);
   }
 
   /// <summary>
@@ -887,6 +887,41 @@ public sealed class SemanticWalkerOrdinaryTest
     var script = node?.ToECMAScript();
 
     Assert.AreEqual(@"{let x=0}", script);
+  }
+
+  [TestMethod]
+  public void Visit_DefaultValue_SpecialValueTypes()
+  {
+    var block = GetBlockOperation(@"
+            using System;
+            using System.Numerics;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    DateTime dt = default(DateTime);
+                    DateTimeOffset dto = default(DateTimeOffset);
+                    DateOnly day = default(DateOnly);
+                    TimeOnly time = default(TimeOnly);
+                    TimeSpan span = default(TimeSpan);
+                    BigInteger big = default(BigInteger);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let dt = _bfa8ee5dd46e2005();
+  let dto = _12b4f3f1dc14bea9();
+  let day = _5f8053a9657a0844();
+  let time = 0n;
+  let span = 0n;
+  let big = 0n;
+}", script);
   }
 
   /// <summary>
@@ -1152,7 +1187,7 @@ public sealed class SemanticWalkerOrdinaryTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    AssertScriptEqual(@"{
   let x = 42;
   let str = ""Hello"";
   let flag = true;
@@ -1175,7 +1210,7 @@ public sealed class SemanticWalkerOrdinaryTest
   let array = [1, 2, 3, 4, 5];
   let array2 = [...array, 6, 7];
   let defaultVal = 0;
-  let methodName = 'TestMethod';
+  let methodName = ""TestMethod"";
   let d = 3.14;
   let i = d;
   let testStr = null;

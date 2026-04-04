@@ -49,14 +49,38 @@ public static class CultureInfoModule
 
 	private static string GetParentCulture(string instance)
 	{
-		if (instance.Length == 0)
+		var normalized = NormalizeCultureInfo(instance);
+		if (normalized.Length == 0)
+			return InvariantCultureName;
+		if (normalized == InvariantCultureByIetfName)
 			return InvariantCultureName;
 
-		var index = instance.LastIndexOf('-');
+		var locale = new Intl.Locale(normalized);
+		var language = locale.Language;
+		var script = locale.Script;
+		var region = locale.Region;
+		if (region != null && region.Length != 0)
+		{
+			if (script != null && script.Length != 0)
+				return language + "-" + script;
+			if (language == "zh")
+			{
+				var maximizedScript = locale.Maximize().Script;
+				if (maximizedScript != null && maximizedScript.Length != 0)
+					return language + "-" + maximizedScript;
+			}
+
+			return language;
+		}
+
+		if (script != null && script.Length != 0)
+			return language;
+
+		var index = normalized.LastIndexOf('-');
 		if (index < 0)
 			return InvariantCultureName;
 
-		return instance.Substring(0, index);
+		return normalized.Substring(0, index);
 	}
 
 	private static string GetLanguagePart(string instance)
@@ -65,8 +89,286 @@ public static class CultureInfoModule
 	private static string GetIetfLanguageTag(string instance)
 		=> instance.Length == 0 ? InvariantIetfLanguageTag : instance;
 
+	private static Intl.DisplayNames CreateLanguageDisplayNames(string locale)
+		=> new(
+			locale,
+			new Intl.DisplayNamesOptions(
+				Type: Intl.DisplayNamesType.Language,
+				Fallback: Intl.DisplayNamesFallback.Code,
+				LanguageDisplay: Intl.DisplayNamesLanguageDisplay.Dialect));
+
+	private static string GetLocalizedCultureName(string instance, string displayLocale)
+	{
+		var normalized = NormalizeCultureInfo(instance);
+		if (normalized.Length == 0)
+			return InvariantCultureDisplayName;
+		if (normalized == InvariantCultureByIetfName)
+			return InvariantCultureByIetfName;
+
+		try
+		{
+			var displayNames = CreateLanguageDisplayNames(displayLocale);
+			var value = displayNames.Of(normalized);
+			return value ?? normalized;
+		}
+		catch
+		{
+			return normalized;
+		}
+	}
+
 	private static string GetDisplayName(string instance)
-		=> instance.Length == 0 ? InvariantCultureDisplayName : instance;
+		=> GetLocalizedCultureName(instance, GetCurrentUICultureName());
+
+	private static string GetNativeName(string instance)
+	{
+		var normalized = NormalizeCultureInfo(instance);
+		return normalized.Length == 0
+			? InvariantCultureDisplayName
+			: GetLocalizedCultureName(normalized, normalized);
+	}
+
+	private static string GetEnglishName(string instance)
+		=> GetLocalizedCultureName(instance, "en");
+
+	private static string GetThreeLetterIsoLanguageName(string instance)
+	{
+		var normalized = NormalizeCultureInfo(instance);
+		if (normalized.Length == 0)
+			return InvariantThreeLetterIsoLanguageName;
+		if (normalized == InvariantCultureByIetfName)
+			return "";
+
+		var language = GetLanguagePart(normalized);
+		switch (language)
+		{
+			case "aa": return "aar";
+			case "af": return "afr";
+			case "ak": return "aka";
+			case "am": return "amh";
+			case "ar": return "ara";
+			case "as": return "asm";
+			case "az": return "aze";
+			case "ba": return "bak";
+			case "be": return "bel";
+			case "bg": return "bul";
+			case "bm": return "bam";
+			case "bn": return "ben";
+			case "bo": return "bod";
+			case "br": return "bre";
+			case "bs": return "bos";
+			case "ca": return "cat";
+			case "ce": return "che";
+			case "co": return "cos";
+			case "cs": return "ces";
+			case "cu": return "chu";
+			case "cv": return "chv";
+			case "cy": return "cym";
+			case "da": return "dan";
+			case "de": return "deu";
+			case "dv": return "div";
+			case "dz": return "dzo";
+			case "ee": return "ewe";
+			case "el": return "ell";
+			case "en": return "eng";
+			case "eo": return "epo";
+			case "es": return "spa";
+			case "et": return "est";
+			case "eu": return "eus";
+			case "fa": return "fas";
+			case "ff": return "ful";
+			case "fi": return "fin";
+			case "fo": return "fao";
+			case "fr": return "fra";
+			case "fy": return "fry";
+			case "ga": return "gle";
+			case "gd": return "gla";
+			case "gl": return "glg";
+			case "gn": return "grn";
+			case "gu": return "guj";
+			case "gv": return "glv";
+			case "ha": return "hau";
+			case "he": return "heb";
+			case "hi": return "hin";
+			case "hr": return "hrv";
+			case "hu": return "hun";
+			case "hy": return "hye";
+			case "ia": return "ina";
+			case "id": return "ind";
+			case "ig": return "ibo";
+			case "ii": return "iii";
+			case "is": return "isl";
+			case "it": return "ita";
+			case "iu": return "iku";
+			case "ja": return "jpn";
+			case "jv": return "jav";
+			case "ka": return "kat";
+			case "ki": return "kik";
+			case "kk": return "kaz";
+			case "kl": return "kal";
+			case "km": return "khm";
+			case "kn": return "kan";
+			case "ko": return "kor";
+			case "kr": return "kau";
+			case "ks": return "kas";
+			case "kw": return "cor";
+			case "ky": return "kir";
+			case "la": return "lat";
+			case "lb": return "ltz";
+			case "lg": return "lug";
+			case "ln": return "lin";
+			case "lo": return "lao";
+			case "lt": return "lit";
+			case "lu": return "lub";
+			case "lv": return "lav";
+			case "mg": return "mlg";
+			case "mi": return "mri";
+			case "mk": return "mkd";
+			case "ml": return "mal";
+			case "mn": return "mon";
+			case "mr": return "mar";
+			case "ms": return "msa";
+			case "mt": return "mlt";
+			case "my": return "mya";
+			case "nb": return "nob";
+			case "nd": return "nde";
+			case "ne": return "nep";
+			case "nl": return "nld";
+			case "nn": return "nno";
+			case "no": return "nor";
+			case "nr": return "nbl";
+			case "oc": return "oci";
+			case "om": return "orm";
+			case "or": return "ori";
+			case "os": return "oss";
+			case "pa": return "pan";
+			case "pl": return "pol";
+			case "ps": return "pus";
+			case "pt": return "por";
+			case "qu": return "que";
+			case "rm": return "roh";
+			case "rn": return "run";
+			case "ro": return "ron";
+			case "ru": return "rus";
+			case "rw": return "kin";
+			case "sa": return "san";
+			case "sc": return "srd";
+			case "sd": return "snd";
+			case "se": return "sme";
+			case "sg": return "sag";
+			case "si": return "sin";
+			case "sk": return "slk";
+			case "sl": return "slv";
+			case "sn": return "sna";
+			case "so": return "som";
+			case "sq": return "sqi";
+			case "sr": return "srp";
+			case "ss": return "ssw";
+			case "st": return "sot";
+			case "su": return "sun";
+			case "sv": return "swe";
+			case "sw": return "swa";
+			case "ta": return "tam";
+			case "te": return "tel";
+			case "tg": return "tgk";
+			case "th": return "tha";
+			case "ti": return "tir";
+			case "tk": return "tuk";
+			case "tn": return "tsn";
+			case "to": return "ton";
+			case "tr": return "tur";
+			case "ts": return "tso";
+			case "tt": return "tat";
+			case "ug": return "uig";
+			case "uk": return "ukr";
+			case "ur": return "urd";
+			case "uz": return "uzb";
+			case "ve": return "ven";
+			case "vi": return "vie";
+			case "vo": return "vol";
+			case "wo": return "wol";
+			case "xh": return "xho";
+			case "yi": return "yid";
+			case "yo": return "yor";
+			case "zh": return "zho";
+			case "zu": return "zul";
+			default: return language.Length == 3 ? language : language;
+		}
+	}
+
+	private static string GetThreeLetterWindowsLanguageName(string instance)
+	{
+		var normalized = NormalizeCultureInfo(instance);
+		if (normalized.Length == 0)
+			return InvariantThreeLetterWindowsLanguageName;
+		if (normalized == InvariantCultureByIetfName)
+			return "ZZZ";
+
+		switch (normalized)
+		{
+			case "ar-SA":
+				return "ARA";
+			case "ar-EG":
+				return "ARE";
+			case "en":
+			case "en-US":
+				return "ENU";
+			case "en-GB":
+				return "ENG";
+			case "nb-NO":
+				return "NOR";
+			case "nn-NO":
+				return "NON";
+			case "es-ES":
+				return "ESN";
+			case "es-MX":
+				return "ESM";
+			case "pt-PT":
+				return "PTG";
+			case "pt-BR":
+				return "PTB";
+			case "sv-SE":
+				return "SVE";
+			case "tr-TR":
+				return "TRK";
+			case "pl-PL":
+				return "PLK";
+			case "cs-CZ":
+				return "CSY";
+			case "zh":
+			case "zh-CN":
+			case "zh-Hans":
+				return "CHS";
+			case "zh-TW":
+				return "CHT";
+			case "zh-HK":
+				return "ZHH";
+			case "sr":
+				return "SRB";
+			case "sr-Cyrl":
+			case "sr-Cyrl-RS":
+				return "SRO";
+			case "sr-Latn":
+			case "sr-Latn-RS":
+				return "SRM";
+			case "az-Cyrl":
+			case "az-Cyrl-AZ":
+				return "AZC";
+			case "az":
+			case "az-Latn":
+			case "az-Latn-AZ":
+				return "AZE";
+			case "bs":
+			case "bs-Latn":
+			case "bs-Latn-BA":
+				return "BSB";
+			case "bs-Cyrl":
+			case "bs-Cyrl-BA":
+				return "BSC";
+		}
+
+		return GetThreeLetterIsoLanguageName(normalized).ToUpper();
+	}
 
 	private static string CreateSpecificCulture(string name)
 	{
@@ -283,7 +585,7 @@ public static class CultureInfoModule
 	/// </summary>
 	[Jazor(Op.Import, "virtual System.Globalization.CultureInfo.NativeName.get")]
 	public static string _a4804f687bfc0013(string instance)
-		=> GetDisplayName(instance);
+		=> GetNativeName(instance);
 
 	/// <summary>
 	/// C#: instance.EnglishName
@@ -291,7 +593,7 @@ public static class CultureInfoModule
 	/// </summary>
 	[Jazor(Op.Import, "virtual System.Globalization.CultureInfo.EnglishName.get")]
 	public static string _97ad9637d1f75e7c(string instance)
-		=> GetDisplayName(instance);
+		=> GetEnglishName(instance);
 
 	/// <summary>
 	/// C#: instance.TwoLetterISOLanguageName
@@ -307,7 +609,7 @@ public static class CultureInfoModule
 	/// </summary>
 	[Jazor(Op.Import, "virtual System.Globalization.CultureInfo.ThreeLetterISOLanguageName.get")]
 	public static string _285ede13a469ce7b(string instance)
-		=> instance.Length == 0 ? InvariantThreeLetterIsoLanguageName : instance.Split('-')[0];
+		=> GetThreeLetterIsoLanguageName(instance);
 
 	/// <summary>
 	/// C#: instance.ThreeLetterWindowsLanguageName
@@ -315,7 +617,7 @@ public static class CultureInfoModule
 	/// </summary>
 	[Jazor(Op.Import, "virtual System.Globalization.CultureInfo.ThreeLetterWindowsLanguageName.get")]
 	public static string _1f981ccac713f3d9(string instance)
-		=> instance.Length == 0 ? InvariantThreeLetterWindowsLanguageName : instance.Split('-')[0];
+		=> GetThreeLetterWindowsLanguageName(instance);
 
 	[Jazor(Op.Discard ,"virtual System.Globalization.CultureInfo.CompareInfo.get")]
 	public extern static System.Globalization.CompareInfo _90f3bc0ef0b5d452(string instance);
@@ -380,11 +682,11 @@ public static class CultureInfoModule
 	}
 
 	[Jazor(Op.Import ,"virtual System.Globalization.CultureInfo.Calendar.get")]
-	public static string _2ab4f6aaba1be337(string instance)
+	public static RuntimeModule.JGregorianCalendar _2ab4f6aaba1be337(string instance)
 		=> GregorianCalendarModule._23b9e8d671b5210e();
 
 	[Jazor(Op.Import ,"virtual System.Globalization.CultureInfo.OptionalCalendars.get")]
-	public static string[] _5031598284c711b5(string instance)
+	public static RuntimeModule.JGregorianCalendar[] _5031598284c711b5(string instance)
 		=> [GregorianCalendarModule._23b9e8d671b5210e()];
 
 	[Jazor(Op.Import ,"System.Globalization.CultureInfo.UseUserOverride.get")]

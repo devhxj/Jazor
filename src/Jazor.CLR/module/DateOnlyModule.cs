@@ -140,7 +140,7 @@ public static class DateOnlyModule
 	/// JS: create wrapper
 	/// </summary>
 	[Jazor(Op.Import, "System.DateOnly.DateOnly(int, int, int, System.Globalization.Calendar)")]
-	public static RuntimeModule.JDateOnly _c0568bfa1df0ef59(Number year, Number month, Number day, string calendar) => new(year, month, day);
+	public static RuntimeModule.JDateOnly _c0568bfa1df0ef59(Number year, Number month, Number day, object calendar) => new(year, month, day);
 
 	/// <summary>
 	/// C#: DateOnly.FromDayNumber(dayNumber)

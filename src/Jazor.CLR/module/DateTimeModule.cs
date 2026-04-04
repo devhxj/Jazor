@@ -22,6 +22,7 @@ public static class DateTimeModule
 	private static BigInt FileTimeUnixEpochTicks => BigInt_("116444736000000000");
 	private static BigInt TicksPerMicrosecond => BigInt_("10");
 	private static BigInt TicksPerMillisecond => BigInt_("10000");
+	private static BigInt OffsetMinuteTicks => BigInt_("600000000");
 	private static BigInt ZeroTicks => BigInt.Zero;
 	private static BigInt BinaryKindShift => BigInt_("4611686018427387904");
 	private static BigInt BinaryLocalMask => BigInt_("9223372036854775808");
@@ -177,6 +178,665 @@ public static class DateTimeModule
 				now.GetUTCSeconds(),
 				now.GetUTCMilliseconds()),
 			DateTimeKindUtc);
+	}
+
+	private static string GetProviderLocale(object? provider)
+	{
+		if (provider is string locale)
+			return locale;
+		if (provider is Intl.NumberFormat numberFormat)
+			return numberFormat.ResolvedOptions().Locale;
+
+		return new Intl.DateTimeFormat().ResolvedOptions().Locale;
+	}
+
+	private static string JoinFormatParts(Array<Intl.FormatPart> parts)
+	{
+		var text = "";
+		for (var i = 0; i < parts.Length; i++)
+			text += parts[i]!.Value;
+
+		return text;
+	}
+
+	private static string GetInvariantMonthName(Number month)
+	{
+		switch (month | 0)
+		{
+			case 1: return "January";
+			case 2: return "February";
+			case 3: return "March";
+			case 4: return "April";
+			case 5: return "May";
+			case 6: return "June";
+			case 7: return "July";
+			case 8: return "August";
+			case 9: return "September";
+			case 10: return "October";
+			case 11: return "November";
+			case 12: return "December";
+			default: throw new Error("ArgumentOutOfRangeException: Month must be between 1 and 12.");
+		}
+	}
+
+	private static string GetInvariantAbbreviatedMonthName(Number month)
+	{
+		switch (month | 0)
+		{
+			case 1: return "Jan";
+			case 2: return "Feb";
+			case 3: return "Mar";
+			case 4: return "Apr";
+			case 5: return "May";
+			case 6: return "Jun";
+			case 7: return "Jul";
+			case 8: return "Aug";
+			case 9: return "Sep";
+			case 10: return "Oct";
+			case 11: return "Nov";
+			case 12: return "Dec";
+			default: throw new Error("ArgumentOutOfRangeException: Month must be between 1 and 12.");
+		}
+	}
+
+	private static string GetInvariantDayName(Number dayOfWeek)
+	{
+		switch (dayOfWeek | 0)
+		{
+			case 0: return "Sunday";
+			case 1: return "Monday";
+			case 2: return "Tuesday";
+			case 3: return "Wednesday";
+			case 4: return "Thursday";
+			case 5: return "Friday";
+			case 6: return "Saturday";
+			default: throw new Error("ArgumentOutOfRangeException: DayOfWeek must be between 0 and 6.");
+		}
+	}
+
+	private static string GetInvariantAbbreviatedDayName(Number dayOfWeek)
+	{
+		switch (dayOfWeek | 0)
+		{
+			case 0: return "Sun";
+			case 1: return "Mon";
+			case 2: return "Tue";
+			case 3: return "Wed";
+			case 4: return "Thu";
+			case 5: return "Fri";
+			case 6: return "Sat";
+			default: throw new Error("ArgumentOutOfRangeException: DayOfWeek must be between 0 and 6.");
+		}
+	}
+
+	private static bool IsAsciiLetter(char value)
+		=> (value >= 'A' && value <= 'Z') || (value >= 'a' && value <= 'z');
+
+	private static string GetLocalizedMonthName(string locale, Number month, bool abbreviated)
+	{
+		if (locale.Length == 0)
+			return abbreviated ? GetInvariantAbbreviatedMonthName(month) : GetInvariantMonthName(month);
+
+		return JoinFormatParts(new Intl.DateTimeFormat(
+			locale,
+			new Intl.DateTimeFormatOptions(
+				Month: abbreviated ? Intl.LongShortNarrow.Short : Intl.LongShortNarrow.Long,
+				TimeZone: "UTC")).FormatToParts(new Date(Date.UTC(2000, month - 1, 1))));
+	}
+
+	private static string GetLocalizedDayName(string locale, Number dayOfWeek, bool abbreviated)
+	{
+		if (locale.Length == 0)
+			return abbreviated ? GetInvariantAbbreviatedDayName(dayOfWeek) : GetInvariantDayName(dayOfWeek);
+
+		return JoinFormatParts(new Intl.DateTimeFormat(
+			locale,
+			new Intl.DateTimeFormatOptions(
+				Weekday: abbreviated ? Intl.LongShortNarrow.Short : Intl.LongShortNarrow.Long,
+				TimeZone: "UTC")).FormatToParts(new Date(Date.UTC(2024, 0, 7 + dayOfWeek))));
+	}
+
+	private static string GetDateSeparator(string locale)
+	{
+		if (locale.Length == 0)
+			return "/";
+
+		var parts = new Intl.DateTimeFormat(
+			locale,
+			new Intl.DateTimeFormatOptions(
+				Year: Intl.NumericTwoDigit.Numeric,
+				Month: Intl.NumericTwoDigit.TwoDigit,
+				Day: Intl.NumericTwoDigit.TwoDigit,
+				TimeZone: "UTC")).FormatToParts(new Date(Date.UTC(2000, 0, 2)));
+		for (var i = 0; i < parts.Length; i++)
+		{
+			var part = parts[i]!;
+			if (part.Type == "literal" && part.Value.Length != 0)
+				return part.Value;
+		}
+
+		return "/";
+	}
+
+	private static string GetTimeSeparator(string locale)
+	{
+		if (locale.Length == 0)
+			return ":";
+
+		var parts = new Intl.DateTimeFormat(
+			locale,
+			new Intl.DateTimeFormatOptions(
+				Hour: Intl.NumericTwoDigit.TwoDigit,
+				Minute: Intl.NumericTwoDigit.TwoDigit,
+				Hour12: false,
+				TimeZone: "UTC")).FormatToParts(new Date(Date.UTC(2000, 0, 2, 3, 4, 5)));
+		for (var i = 0; i < parts.Length; i++)
+		{
+			var part = parts[i]!;
+			if (part.Type == "literal" && part.Value.Length != 0)
+				return part.Value;
+		}
+
+		return ":";
+	}
+
+	private static string GetLocalizedDayPeriod(Date date, string locale)
+	{
+		if (locale.Length == 0)
+			return date.GetHours() < 12 ? "AM" : "PM";
+
+		var parts = new Intl.DateTimeFormat(
+			locale,
+			new Intl.DateTimeFormatOptions(
+				Hour: Intl.NumericTwoDigit.Numeric,
+				Hour12: true)).FormatToParts(date);
+		for (var i = 0; i < parts.Length; i++)
+		{
+			var part = parts[i]!;
+			if (part.Type == "dayPeriod")
+				return part.Value;
+		}
+
+		return date.GetHours() < 12 ? "AM" : "PM";
+	}
+
+	private static string FormatOffsetTicks(BigInt offsetTicks, int count)
+	{
+		var negative = offsetTicks < BigInt.Zero;
+		var absolute = negative ? -offsetTicks : offsetTicks;
+		var totalMinutes = absolute / OffsetMinuteTicks;
+		var hours = Number_(totalMinutes / BigInt_(60));
+		var minutes = Number_(totalMinutes % BigInt_(60));
+		var sign = negative ? "-" : "+";
+
+		if (count <= 1)
+			return sign + hours;
+		if (count == 2)
+			return sign + RuntimeModule.Pad2(hours);
+
+		return sign + RuntimeModule.Pad2(hours) + ":" + RuntimeModule.Pad2(minutes);
+	}
+
+	private static string GetRoundtripSuffix(RuntimeModule.JDateTime instance)
+	{
+		if (instance.Kind == DateTimeKindUtc)
+			return "Z";
+		if (instance.Kind == DateTimeKindLocal)
+			return FormatOffsetTicks(BigInt_(-instance.Date.GetTimezoneOffset()) * OffsetMinuteTicks, 3);
+
+		return "";
+	}
+
+	private static string FormatInvariantGeneralDateTime(RuntimeModule.JDateTime instance, bool includeSeconds)
+	{
+		var date = instance.Date;
+		var text = RuntimeModule.Pad2(date.GetMonth() + 1)
+			+ "/"
+			+ RuntimeModule.Pad2(date.GetDate())
+			+ "/"
+			+ RuntimeModule.PadLeft(date.GetFullYear().ToString()!, 4)
+			+ " "
+			+ RuntimeModule.Pad2(date.GetHours())
+			+ ":"
+			+ RuntimeModule.Pad2(date.GetMinutes());
+		if (includeSeconds)
+			text += ":" + RuntimeModule.Pad2(date.GetSeconds());
+
+		return text;
+	}
+
+	private static string FormatInvariantShortDate(RuntimeModule.JDateTime instance)
+	{
+		var date = instance.Date;
+		return RuntimeModule.Pad2(date.GetMonth() + 1)
+			+ "/"
+			+ RuntimeModule.Pad2(date.GetDate())
+			+ "/"
+			+ RuntimeModule.PadLeft(date.GetFullYear().ToString()!, 4);
+	}
+
+	private static string FormatInvariantLongDate(RuntimeModule.JDateTime instance)
+	{
+		var date = instance.Date;
+		return GetInvariantDayName(date.GetDay())
+			+ ", "
+			+ RuntimeModule.Pad2(date.GetDate())
+			+ " "
+			+ GetInvariantMonthName(date.GetMonth() + 1)
+			+ " "
+			+ RuntimeModule.PadLeft(date.GetFullYear().ToString()!, 4);
+	}
+
+	private static string FormatInvariantTime(RuntimeModule.JDateTime instance, bool includeSeconds)
+	{
+		var date = instance.Date;
+		var text = RuntimeModule.Pad2(date.GetHours())
+			+ ":"
+			+ RuntimeModule.Pad2(date.GetMinutes());
+		if (includeSeconds)
+			text += ":" + RuntimeModule.Pad2(date.GetSeconds());
+
+		return text;
+	}
+
+	private static string FormatMonthDay(RuntimeModule.JDateTime instance, object? provider)
+	{
+		var locale = GetProviderLocale(provider);
+		if (locale.Length == 0)
+			return GetInvariantMonthName(instance.Date.GetMonth() + 1) + " " + RuntimeModule.Pad2(instance.Date.GetDate());
+
+		return FormatLocaleDateTime(
+			instance.Date,
+			locale,
+			new Intl.DateTimeFormatOptions(
+				Month: Intl.LongShortNarrow.Long,
+				Day: Intl.NumericTwoDigit.TwoDigit));
+	}
+
+	private static string FormatYearMonth(RuntimeModule.JDateTime instance, object? provider)
+	{
+		var locale = GetProviderLocale(provider);
+		if (locale.Length == 0)
+			return RuntimeModule.PadLeft(instance.Date.GetFullYear().ToString()!, 4) + " " + GetInvariantMonthName(instance.Date.GetMonth() + 1);
+
+		return FormatLocaleDateTime(
+			instance.Date,
+			locale,
+			new Intl.DateTimeFormatOptions(
+				Year: Intl.NumericTwoDigit.Numeric,
+				Month: Intl.LongShortNarrow.Long));
+	}
+
+	private static string FormatFullDateTime(RuntimeModule.JDateTime instance, bool includeSeconds, object? provider)
+		=> FormatLongDate(instance, provider) + " " + FormatTime(instance, includeSeconds, provider);
+
+	private static Date GetUniversalDateTimeForFormatting(RuntimeModule.JDateTime instance)
+	{
+		var date = instance.Date;
+		if (instance.Kind == DateTimeKindUtc)
+		{
+			return new Date(Date.UTC(
+				date.GetFullYear(),
+				date.GetMonth(),
+				date.GetDate(),
+				date.GetHours(),
+				date.GetMinutes(),
+				date.GetSeconds(),
+				date.GetMilliseconds()));
+		}
+
+		return new Date(date.GetTime());
+	}
+
+	private static string FormatUniversalFullDateTime(RuntimeModule.JDateTime instance, object? provider)
+	{
+		var utc = GetUniversalDateTimeForFormatting(instance);
+		var locale = GetProviderLocale(provider);
+		if (locale.Length == 0)
+		{
+			return GetInvariantDayName(utc.GetUTCDay())
+				+ ", "
+				+ RuntimeModule.Pad2(utc.GetUTCDate())
+				+ " "
+				+ GetInvariantMonthName(utc.GetUTCMonth() + 1)
+				+ " "
+				+ RuntimeModule.PadLeft(utc.GetUTCFullYear().ToString()!, 4)
+				+ " "
+				+ RuntimeModule.Pad2(utc.GetUTCHours())
+				+ ":"
+				+ RuntimeModule.Pad2(utc.GetUTCMinutes())
+				+ ":"
+				+ RuntimeModule.Pad2(utc.GetUTCSeconds());
+		}
+
+		return JoinFormatParts(new Intl.DateTimeFormat(
+			locale,
+			new Intl.DateTimeFormatOptions(
+				Weekday: Intl.LongShortNarrow.Long,
+				Year: Intl.NumericTwoDigit.Numeric,
+				Month: Intl.LongShortNarrow.Long,
+				Day: Intl.NumericTwoDigit.TwoDigit,
+				Hour: Intl.NumericTwoDigit.TwoDigit,
+				Minute: Intl.NumericTwoDigit.TwoDigit,
+				Second: Intl.NumericTwoDigit.TwoDigit,
+				Hour12: false,
+				TimeZone: "UTC")).FormatToParts(utc));
+	}
+
+	private static string FormatRfc1123DateTime(RuntimeModule.JDateTime instance)
+	{
+		var date = instance.Date;
+		return GetInvariantAbbreviatedDayName(date.GetDay())
+			+ ", "
+			+ RuntimeModule.Pad2(date.GetDate())
+			+ " "
+			+ GetInvariantAbbreviatedMonthName(date.GetMonth() + 1)
+			+ " "
+			+ RuntimeModule.PadLeft(date.GetFullYear().ToString()!, 4)
+			+ " "
+			+ RuntimeModule.Pad2(date.GetHours())
+			+ ":"
+			+ RuntimeModule.Pad2(date.GetMinutes())
+			+ ":"
+			+ RuntimeModule.Pad2(date.GetSeconds())
+			+ " GMT";
+	}
+
+	private static string FormatLocaleDateTime(Date date, string locale, Intl.DateTimeFormatOptions options)
+		=> JoinFormatParts(new Intl.DateTimeFormat(locale, options).FormatToParts(date));
+
+	private static string FormatGeneralDateTime(RuntimeModule.JDateTime instance, bool includeSeconds, object? provider)
+	{
+		var locale = GetProviderLocale(provider);
+		if (locale.Length == 0)
+			return FormatInvariantGeneralDateTime(instance, includeSeconds);
+
+		return FormatLocaleDateTime(
+			instance.Date,
+			locale,
+			new Intl.DateTimeFormatOptions(
+				Year: Intl.NumericTwoDigit.Numeric,
+				Month: Intl.NumericTwoDigit.TwoDigit,
+				Day: Intl.NumericTwoDigit.TwoDigit,
+				Hour: Intl.NumericTwoDigit.TwoDigit,
+				Minute: Intl.NumericTwoDigit.TwoDigit,
+				Second: includeSeconds ? Intl.NumericTwoDigit.TwoDigit : null,
+				Hour12: false));
+	}
+
+	private static string FormatShortDate(RuntimeModule.JDateTime instance, object? provider)
+	{
+		var locale = GetProviderLocale(provider);
+		if (locale.Length == 0)
+			return FormatInvariantShortDate(instance);
+
+		return FormatLocaleDateTime(
+			instance.Date,
+			locale,
+			new Intl.DateTimeFormatOptions(
+				Year: Intl.NumericTwoDigit.Numeric,
+				Month: Intl.NumericTwoDigit.TwoDigit,
+				Day: Intl.NumericTwoDigit.TwoDigit));
+	}
+
+	private static string FormatLongDate(RuntimeModule.JDateTime instance, object? provider)
+	{
+		var locale = GetProviderLocale(provider);
+		if (locale.Length == 0)
+			return FormatInvariantLongDate(instance);
+
+		return FormatLocaleDateTime(
+			instance.Date,
+			locale,
+			new Intl.DateTimeFormatOptions(
+				Weekday: Intl.LongShortNarrow.Long,
+				Year: Intl.NumericTwoDigit.Numeric,
+				Month: Intl.LongShortNarrow.Long,
+				Day: Intl.NumericTwoDigit.TwoDigit));
+	}
+
+	private static string FormatTime(RuntimeModule.JDateTime instance, bool includeSeconds, object? provider)
+	{
+		var locale = GetProviderLocale(provider);
+		if (locale.Length == 0)
+			return FormatInvariantTime(instance, includeSeconds);
+
+		return FormatLocaleDateTime(
+			instance.Date,
+			locale,
+			new Intl.DateTimeFormatOptions(
+				Hour: Intl.NumericTwoDigit.TwoDigit,
+				Minute: Intl.NumericTwoDigit.TwoDigit,
+				Second: includeSeconds ? Intl.NumericTwoDigit.TwoDigit : null,
+				Hour12: false));
+	}
+
+	private static string FormatRoundtripDateTime(RuntimeModule.JDateTime instance)
+	{
+		var date = instance.Date;
+		return RuntimeModule.FormatDateOnlyText(date.GetFullYear(), date.GetMonth() + 1, date.GetDate())
+			+ "T"
+			+ RuntimeModule.Pad2(date.GetHours())
+			+ ":"
+			+ RuntimeModule.Pad2(date.GetMinutes())
+			+ ":"
+			+ RuntimeModule.Pad2(date.GetSeconds())
+			+ "."
+			+ RuntimeModule.Pad7(BigInt_(date.GetMilliseconds()) * TicksPerMillisecond + instance.SubMillisecondTicks)
+			+ GetRoundtripSuffix(instance);
+	}
+
+	private static string FormatSortableDateTime(RuntimeModule.JDateTime instance)
+	{
+		var date = instance.Date;
+		return RuntimeModule.FormatDateOnlyText(date.GetFullYear(), date.GetMonth() + 1, date.GetDate())
+			+ "T"
+			+ RuntimeModule.Pad2(date.GetHours())
+			+ ":"
+			+ RuntimeModule.Pad2(date.GetMinutes())
+			+ ":"
+			+ RuntimeModule.Pad2(date.GetSeconds());
+	}
+
+	private static string FormatUniversalSortableDateTime(RuntimeModule.JDateTime instance)
+		=> FormatSortableDateTime(instance).Replace("T", " ") + "Z";
+
+	private static string FormatFraction(BigInt fraction, int count, bool trimTrailingZeros)
+	{
+		var text = RuntimeModule.Pad7(fraction);
+		if (count < 7)
+			text = text.Substring(0, count);
+		if (!trimTrailingZeros)
+			return text;
+
+		while (text.Length > 0 && text[text.Length - 1] == '0')
+			text = text.Substring(0, text.Length - 1);
+
+		return text;
+	}
+
+	private static string FormatCustomToken(RuntimeModule.JDateTime instance, char token, int count, string locale, string dateSeparator, string timeSeparator)
+	{
+		var date = instance.Date;
+		var year = date.GetFullYear();
+		var month = date.GetMonth() + 1;
+		var day = date.GetDate();
+		var hour = date.GetHours();
+		var hour12 = hour % 12;
+		if (hour12 == 0)
+			hour12 = 12;
+		var minute = date.GetMinutes();
+		var second = date.GetSeconds();
+		var fraction = BigInt_(date.GetMilliseconds()) * TicksPerMillisecond + instance.SubMillisecondTicks;
+		var offset = instance.Kind == DateTimeKindLocal
+			? BigInt_(-date.GetTimezoneOffset()) * OffsetMinuteTicks
+			: BigInt.Zero;
+		var suffix = GetRoundtripSuffix(instance);
+
+		switch (token)
+		{
+			case 'y':
+				if (count == 2)
+					return RuntimeModule.Pad2(year % 100);
+				return RuntimeModule.PadLeft(year.ToString()!, count < 4 ? 4 : count);
+			case 'M':
+				if (count == 1)
+					return month.ToString()!;
+				if (count == 2)
+					return RuntimeModule.Pad2(month);
+				if (count == 3)
+					return GetLocalizedMonthName(locale, month, true);
+				return GetLocalizedMonthName(locale, month, false);
+			case 'd':
+				if (count == 1)
+					return day.ToString()!;
+				if (count == 2)
+					return RuntimeModule.Pad2(day);
+				if (count == 3)
+					return GetLocalizedDayName(locale, date.GetDay(), true);
+				return GetLocalizedDayName(locale, date.GetDay(), false);
+			case 'H':
+				return count == 1 ? hour.ToString()! : RuntimeModule.Pad2(hour);
+			case 'h':
+				return count == 1 ? hour12.ToString()! : RuntimeModule.Pad2(hour12);
+			case 'm':
+				return count == 1 ? minute.ToString()! : RuntimeModule.Pad2(minute);
+			case 's':
+				return count == 1 ? second.ToString()! : RuntimeModule.Pad2(second);
+			case 't':
+				var dayPeriod = GetLocalizedDayPeriod(date, locale);
+				return count == 1
+					? dayPeriod.Substring(0, 1)
+					: dayPeriod;
+			case 'f':
+				return FormatFraction(fraction, count, false);
+			case 'F':
+				return FormatFraction(fraction, count, true);
+			case 'z':
+				return instance.Kind == DateTimeKindLocal ? FormatOffsetTicks(offset, count) : "";
+			case 'K':
+				return suffix;
+			case ':':
+				return timeSeparator;
+			case '/':
+				return dateSeparator;
+			default:
+				var text = "";
+				for (var j = 0; j < count; j++)
+					text += token;
+				return text;
+		}
+	}
+
+	private static string FormatCustomDateTime(RuntimeModule.JDateTime instance, string format, object? provider)
+	{
+		var locale = GetProviderLocale(provider);
+		var dateSeparator = GetDateSeparator(locale);
+		var timeSeparator = GetTimeSeparator(locale);
+		var text = "";
+
+		for (var i = 0; i < format.Length;)
+		{
+			var token = format[i];
+			if (token == '%')
+			{
+				if (i + 1 >= format.Length || format[i + 1] == '%')
+					throw new Error("FormatException: Input string was not in a correct format.");
+
+				text += FormatCustomToken(instance, format[i + 1], 1, locale, dateSeparator, timeSeparator);
+
+				i += 2;
+				continue;
+			}
+
+			if (token == '\\')
+			{
+				if (i + 1 < format.Length)
+					text += format[i + 1];
+
+				i += 2;
+				continue;
+			}
+
+			if (token == '\'' || token == '"')
+			{
+				var quote = token;
+				i++;
+				while (i < format.Length && format[i] != quote)
+				{
+					text += format[i];
+					i++;
+				}
+
+				if (i < format.Length)
+					i++;
+
+				continue;
+			}
+
+			var count = 1;
+			while (i + count < format.Length && format[i + count] == token)
+				count++;
+
+			text += FormatCustomToken(instance, token, count, locale, dateSeparator, timeSeparator);
+
+			i += count;
+		}
+
+		return text;
+	}
+
+	private static string FormatDateTime(RuntimeModule.JDateTime instance, string? format, object? provider)
+	{
+		if (format == null || format.Length == 0)
+			return FormatGeneralDateTime(instance, true, provider);
+
+		if (format.Length == 1)
+		{
+			switch (format[0])
+			{
+				case 'f':
+					return FormatFullDateTime(instance, false, provider);
+				case 'F':
+					return FormatFullDateTime(instance, true, provider);
+				case 'O':
+				case 'o':
+					return FormatRoundtripDateTime(instance);
+				case 'G':
+					return FormatGeneralDateTime(instance, true, provider);
+				case 'g':
+					return FormatGeneralDateTime(instance, false, provider);
+				case 'M':
+				case 'm':
+					return FormatMonthDay(instance, provider);
+				case 'R':
+				case 'r':
+					return FormatRfc1123DateTime(instance);
+				case 'd':
+					return FormatShortDate(instance, provider);
+				case 'D':
+					return FormatLongDate(instance, provider);
+				case 't':
+					return FormatTime(instance, false, provider);
+				case 'T':
+					return FormatTime(instance, true, provider);
+				case 's':
+					return FormatSortableDateTime(instance);
+				case 'u':
+					return FormatUniversalSortableDateTime(instance);
+				case 'U':
+					return FormatUniversalFullDateTime(instance, provider);
+				case 'Y':
+				case 'y':
+					return FormatYearMonth(instance, provider);
+				default:
+					if (IsAsciiLetter(format[0]))
+						throw new Error("FormatException: Input string was not in a correct format.");
+					break;
+			}
+		}
+
+		return FormatCustomDateTime(instance, format, provider);
 	}
 
 	private static bool IsAsciiDigit(char value)
@@ -656,6 +1316,8 @@ public static class DateTimeModule
 			if (timeKind == DateTimeKindUnspecified)
 				return new RuntimeModule.JDateTime(CreateLocalDateTime(currentYear, currentMonth, currentDay, timeHour, timeMinute, timeSecond, timeMillisecond), DateTimeKindUnspecified, timeSubMillisecondTicks);
 
+			// .NET DateTime.Parse 默认会把显式时区输入转换到本地时间，Kind 也落到 Local。
+			// 只有配合 RoundtripKind 时，ApplyDateTimeStyles 才会把 "Z" 保留成 Utc。
 			var utcTicks = CreateUtcDateTimeTicks(currentYear, currentMonth, currentDay, timeHour, timeMinute, timeSecond, timeMillisecond) + timeSubMillisecondTicks - timeOffsetTicks;
 			return CreateFromInstantTicks(utcTicks, DateTimeKindLocal);
 		}
@@ -668,6 +1330,7 @@ public static class DateTimeModule
 			if (kind == DateTimeKindUnspecified)
 				return new RuntimeModule.JDateTime(CreateLocalDateTime(year, month, day, hour, minute, second, millisecond), DateTimeKindUnspecified, subMillisecondTicks);
 
+			// 带显式时区的输入同样先归一到本地 DateTime，后续样式再决定是否提升为 Utc。
 			var utcTicks = CreateUtcDateTimeTicks(year, month, day, hour, minute, second, millisecond) + subMillisecondTicks - offsetTicks;
 			return CreateFromInstantTicks(utcTicks, DateTimeKindLocal);
 		}
@@ -679,6 +1342,7 @@ public static class DateTimeModule
 		var parsedSubMillisecondTicks = ExtractSubMillisecondTicks(s);
 
 		if (HasUtcSuffix(s))
+			// 与 .NET 一致：DateTime.Parse(..., DateTimeStyles.None) 遇到 "Z" 先变成本地时间。
 			return CreateFromInstantTicks(BigInt_(parsed.GetTime()) * TicksPerMillisecond + parsedSubMillisecondTicks + UnixEpochTicks, DateTimeKindLocal);
 
 		if (HasExplicitOffset(s))
@@ -1171,41 +1835,42 @@ public static class DateTimeModule
 	///<summary>Converts the value of the current <see cref="T:System.DateTime" /> object to its equivalent long date string representation.</summary>
 	[Jazor(Op.Import ,"System.DateTime.ToLongDateString()")]
 	public static string _6e78dc03eecdd423(RuntimeModule.JDateTime instance)
-		=> instance.ToString();
+		=> FormatDateTime(instance, "D", null);
 
 	///<summary>Converts the value of the current <see cref="T:System.DateTime" /> object to its equivalent long time string representation.</summary>
 	[Jazor(Op.Import ,"System.DateTime.ToLongTimeString()")]
 	public static string _ab161bb1563732af(RuntimeModule.JDateTime instance)
-		=> instance.ToString();
+		=> FormatDateTime(instance, "T", null);
 
 	///<summary>Converts the value of the current <see cref="T:System.DateTime" /> object to its equivalent short date string representation.</summary>
 	[Jazor(Op.Import ,"System.DateTime.ToShortDateString()")]
 	public static string _6a67d54f5c865e5e(RuntimeModule.JDateTime instance)
-		=> instance.ToString();
+		=> FormatDateTime(instance, "d", null);
 
 	///<summary>Converts the value of the current <see cref="T:System.DateTime" /> object to its equivalent short time string representation.</summary>
 	[Jazor(Op.Import ,"System.DateTime.ToShortTimeString()")]
 	public static string _af2d02ec0c0a300d(RuntimeModule.JDateTime instance)
-		=> instance.ToString();
+		=> FormatDateTime(instance, "t", null);
 
 	///<summary>Converts the value of the current <see cref="T:System.DateTime" /> object to its equivalent string representation using the formatting conventions of the current culture.</summary>
-	[Jazor(Op.Alias, "override System.DateTime.ToString()", "toString")]
-	public extern static string _6659b3b5d1f081dd(RuntimeModule.JDateTime instance);
+	[Jazor(Op.Import, "override System.DateTime.ToString()")]
+	public static string _6659b3b5d1f081dd(RuntimeModule.JDateTime instance)
+		=> FormatDateTime(instance, null, null);
 
 	///<summary>Converts the value of the current <see cref="T:System.DateTime" /> object to its equivalent string representation using the specified format and the formatting conventions of the current culture.</summary>
 	[Jazor(Op.Import ,"System.DateTime.ToString(string)")]
 	public static string _3ee3e9478fe9a1fb(RuntimeModule.JDateTime instance, string? format)
-		=> instance.ToString();
+		=> FormatDateTime(instance, format, null);
 
 	///<summary>Converts the value of the current <see cref="T:System.DateTime" /> object to its equivalent string representation using the specified culture-specific format information.</summary>
 	[Jazor(Op.Import ,"System.DateTime.ToString(System.IFormatProvider)")]
 	public static string _606066f0ee1488c6(RuntimeModule.JDateTime instance, Intl.NumberFormat? provider)
-		=> instance.ToString();
+		=> FormatDateTime(instance, null, provider);
 
 	///<summary>Converts the value of the current <see cref="T:System.DateTime" /> object to its equivalent string representation using the specified format and culture-specific format information.</summary>
 	[Jazor(Op.Import ,"System.DateTime.ToString(string, System.IFormatProvider)")]
 	public static string _85393faf5839b9ef(RuntimeModule.JDateTime instance, string? format, Intl.NumberFormat? provider)
-		=> instance.ToString();
+		=> FormatDateTime(instance, format, provider);
 
 	///<summary>Tries to format the value of the current datetime instance into the provided span of characters.</summary>
 	[Jazor(Op.Discard ,"System.DateTime.TryFormat(System.Span<char>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)")]
@@ -1356,7 +2021,7 @@ public static class DateTimeModule
 	public extern static string[] _10c081a451aa4b71(RuntimeModule.JDateTime instance, Number format, Intl.NumberFormat? provider);
 
 	///<summary>Returns the <see cref="T:System.TypeCode" /> for value type <see cref="T:System.DateTime" />.</summary>
-	[Jazor(Op.Discard ,"System.DateTime.GetTypeCode()")]
+	[Jazor(Op.Inline ,"System.DateTime.GetTypeCode()", "16")]
 	public extern static System.TypeCode _9164c7979da236d5(RuntimeModule.JDateTime instance);
 
 	///<summary>Tries to parse a string into a value.</summary>

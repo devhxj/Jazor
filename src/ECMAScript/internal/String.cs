@@ -5,7 +5,55 @@
 [EditorBrowsable(EditorBrowsableState.Never)]
 public interface IPattern
 {
-	string SymbolReplace(string value);
+	/// <summary>
+	/// Bridge for JavaScript <c>@@replace</c>.
+	/// The replacement argument stays as <see cref="object"/> because JavaScript accepts either a string or a callback function here.
+	/// </summary>
+	string SymbolReplace(string value, object? replacement);
+}
+
+[ECMAScript]
+[Description("@#")]
+[EditorBrowsable(EditorBrowsableState.Never)]
+public interface IMatchPattern
+{
+	/// <summary>
+	/// Bridge for JavaScript <c>@@match</c>.
+	/// </summary>
+	Array<string?>? SymbolMatch(string value);
+}
+
+[ECMAScript]
+[Description("@#")]
+[EditorBrowsable(EditorBrowsableState.Never)]
+public interface IMatchAllPattern
+{
+	/// <summary>
+	/// Bridge for JavaScript <c>@@matchAll</c>.
+	/// </summary>
+	IEnumerable<RegExpResult> SymbolMatchAll(string value);
+}
+
+[ECMAScript]
+[Description("@#")]
+[EditorBrowsable(EditorBrowsableState.Never)]
+public interface ISearchPattern
+{
+	/// <summary>
+	/// Bridge for JavaScript <c>@@search</c>.
+	/// </summary>
+	Number SymbolSearch(string value);
+}
+
+[ECMAScript]
+[Description("@#")]
+[EditorBrowsable(EditorBrowsableState.Never)]
+public interface ISplitPattern
+{
+	/// <summary>
+	/// Bridge for JavaScript <c>@@split</c>.
+	/// </summary>
+	Array<string> SymbolSplit(string value, Number? limit = null);
 }
 
 /// <summary>
@@ -109,6 +157,13 @@ public static partial class Global
 		public extern string Replace(IPattern pattern, string replacement);
 
 		/// <summary>
+		/// Projection of JavaScript <c>String.prototype.replace</c> for objects that participate in the JavaScript <c>@@replace</c> protocol.
+		/// The replacement callback remains available because JavaScript forwards it to the protocol method unchanged.
+		/// </summary>
+		[Description("@#replace")]
+		public extern string Replace(IPattern pattern, Func<string, string> replacement);
+
+		/// <summary>
 		/// Projection of JavaScript <c>String.prototype.replaceAll</c>.
 		/// This stays separate from <c>replace</c> because JavaScript treats them as distinct runtime members.
 		/// </summary>
@@ -136,6 +191,20 @@ public static partial class Global
 		public extern string ReplaceAll(RegExp pattern, Func<string, string> replacement);
 
 		/// <summary>
+		/// Projection of JavaScript <c>String.prototype.replaceAll</c> for objects that participate in the JavaScript <c>@@replace</c> protocol.
+		/// This stays on the string host so protocol-shaped JavaScript patterns can be consumed without introducing a CLR-specific wrapper API.
+		/// </summary>
+		[Description("@#replaceAll")]
+		public extern string ReplaceAll(IPattern pattern, string replacement);
+
+		/// <summary>
+		/// Projection of JavaScript <c>String.prototype.replaceAll</c> for objects that participate in the JavaScript <c>@@replace</c> protocol.
+		/// The replacement callback remains available because JavaScript forwards it to the protocol method unchanged.
+		/// </summary>
+		[Description("@#replaceAll")]
+		public extern string ReplaceAll(IPattern pattern, Func<string, string> replacement);
+
+		/// <summary>
 		/// Projection of JavaScript <c>String.prototype.split</c>.
 		/// <see cref="Array{T}"/> is used because JavaScript returns a real array rather than an iterator.
 		/// </summary>
@@ -148,6 +217,12 @@ public static partial class Global
 		/// </summary>
 		[Description("@#split")]
 		public extern Array<string> Split(RegExp separator, Number? limit = null);
+
+		/// <summary>
+		/// Projection of JavaScript <c>String.prototype.split</c> for objects that participate in the JavaScript <c>@@split</c> protocol.
+		/// </summary>
+		[Description("@#split")]
+		public extern Array<string> Split(ISplitPattern separator, Number? limit = null);
 
 		/// <summary>
 		/// Projection of JavaScript <c>String.prototype.substring</c>.
@@ -281,6 +356,12 @@ public static partial class Global
 		public extern Array<string?>? Match(string pattern);
 
 		/// <summary>
+		/// Projection of JavaScript <c>String.prototype.match</c> for objects that participate in the JavaScript <c>@@match</c> protocol.
+		/// </summary>
+		[Description("@#match")]
+		public extern Array<string?>? Match(IMatchPattern pattern);
+
+		/// <summary>
 		/// Returns the JavaScript iterator produced by <c>String.prototype.matchAll()</c>.
 		/// <see cref="IEnumerable{T}"/> is used as the common C# host surface for JavaScript iterables.
 		/// </summary>
@@ -295,6 +376,12 @@ public static partial class Global
 		public extern IEnumerable<RegExpResult> MatchAll(string pattern);
 
 		/// <summary>
+		/// Returns the JavaScript iterator produced by <c>String.prototype.matchAll()</c> for objects that participate in the JavaScript <c>@@matchAll</c> protocol.
+		/// </summary>
+		[Description("@#matchAll")]
+		public extern IEnumerable<RegExpResult> MatchAll(IMatchAllPattern pattern);
+
+		/// <summary>
 		/// Projection of JavaScript <c>String.prototype.search</c>.
 		/// </summary>
 		[Description("@#search")]
@@ -307,6 +394,12 @@ public static partial class Global
 		[Description("@#search")]
 		public extern Number Search(string pattern);
 
+		/// <summary>
+		/// Projection of JavaScript <c>String.prototype.search</c> for objects that participate in the JavaScript <c>@@search</c> protocol.
+		/// </summary>
+		[Description("@#search")]
+		public extern Number Search(ISearchPattern pattern);
+
 		[Description("@#localeCompare")]
 		public extern Number LocaleCompare(string compareString);
 
@@ -314,13 +407,23 @@ public static partial class Global
 		public extern Number LocaleCompare(string compareString, string? locales);
 
 		[Description("@#localeCompare")]
-		public extern Number LocaleCompare(string compareString, string? locales, object options);
+		public extern Number LocaleCompare(string compareString, string? locales, Intl.CollatorOptions options);
+
+		/// <summary>
+		/// C# convenience overload for the JavaScript form that omits <c>locales</c> and only supplies options.
+		/// This exists because C# cannot naturally skip the leading locale argument in method calls.
+		/// </summary>
+		[Description("@#localeCompare")]
+		public extern Number LocaleCompare(string compareString, Intl.CollatorOptions options);
+
+		/// <summary>
+		/// Locale lists use <see cref="IEnumerable{T}"/> so arrays, lists, and other C# sequence shapes can map to the single JavaScript locale-list input.
+		/// </summary>
+		[Description("@#localeCompare")]
+		public extern Number LocaleCompare(string compareString, IEnumerable<string> locales);
 
 		[Description("@#localeCompare")]
-		public extern Number LocaleCompare(string compareString, string[] locales);
-
-		[Description("@#localeCompare")]
-		public extern Number LocaleCompare(string compareString, string[] locales, object options);
+		public extern Number LocaleCompare(string compareString, IEnumerable<string> locales, Intl.CollatorOptions options);
 
 		/// <summary>
 		/// Returns the primitive string value carried by this host projection.
@@ -332,9 +435,10 @@ public static partial class Global
 		/// <summary>
 		/// Concatenates the string arguments to the end of the current string.
 		/// This stays as a runtime host member because JavaScript exposes it as <c>String.prototype.concat</c>.
+		/// Arguments are nullable because JavaScript applies string coercion to arbitrary runtime values, including <see langword="null" />.
 		/// </summary>
 		[Description("@#concat")]
-		public extern string Concat(params string[] strings);
+		public extern string Concat(params object?[] strings);
 
 		/// <summary>
 		/// Projection of JavaScript <c>String.prototype.toUpperCase</c>.
@@ -356,9 +460,10 @@ public static partial class Global
 
 		/// <summary>
 		/// Projection of JavaScript <c>String.prototype.toLocaleUpperCase</c> for locale lists.
+		/// <see cref="IEnumerable{T}"/> is used as the common C# input surface for JavaScript locale lists.
 		/// </summary>
 		[Description("@#toLocaleUpperCase")]
-		public extern string ToLocaleUpperCase(string[] locales);
+		public extern string ToLocaleUpperCase(IEnumerable<string> locales);
 
 		/// <summary>
 		/// Projection of JavaScript <c>String.prototype.toLocaleLowerCase</c>.
@@ -368,9 +473,10 @@ public static partial class Global
 
 		/// <summary>
 		/// Projection of JavaScript <c>String.prototype.toLocaleLowerCase</c> for locale lists.
+		/// <see cref="IEnumerable{T}"/> is used as the common C# input surface for JavaScript locale lists.
 		/// </summary>
 		[Description("@#toLocaleLowerCase")]
-		public extern string ToLocaleLowerCase(string[] locales);
+		public extern string ToLocaleLowerCase(IEnumerable<string> locales);
 
 		/// <summary>
 		/// Projection of JavaScript <c>String.prototype.normalize</c>.

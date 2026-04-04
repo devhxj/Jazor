@@ -94,10 +94,11 @@ public static class RuntimeModule
 		[Description("@#toPrimitive")]
 		public object ToPrimitive(string? hint)
 		{
-			if (hint == "string")
-				return ToString();
+			// default hint 也走字符串分支，避免 JS 的 `"" + value` 把日期包装对象错误压成数值。
+			if (hint == "number")
+				return ValueOf();
 
-			return ValueOf();
+			return ToString();
 		}
 	}
 
@@ -166,10 +167,11 @@ public static class RuntimeModule
 		[Description("@#toPrimitive")]
 		public object ToPrimitive(string? hint)
 		{
-			if (hint == "string")
-				return ToString();
+			// default hint 也走字符串分支，避免 JS 的 `"" + value` 把日期包装对象错误压成数值。
+			if (hint == "number")
+				return ValueOf();
 
-			return ValueOf();
+			return ToString();
 		}
 	}
 
@@ -211,10 +213,10 @@ public static class RuntimeModule
 		[Description("@#toPrimitive")]
 		public object ToPrimitive(string? hint)
 		{
-			if (hint == "string")
-				return ToString();
+			if (hint == "number")
+				return ValueOf();
 
-			return ValueOf();
+			return ToString();
 		}
 	}
 
@@ -257,10 +259,10 @@ public static class RuntimeModule
 		[Description("@#toPrimitive")]
 		public object ToPrimitive(string? hint)
 		{
-			if (hint == "string")
-				return ToString();
+			if (hint == "number")
+				return ValueOf();
 
-			return ValueOf();
+			return ToString();
 		}
 	}
 
@@ -313,11 +315,43 @@ public static class RuntimeModule
 		[Description("@#toPrimitive")]
 		public object ToPrimitive(string? hint)
 		{
-			if (hint == "string")
-				return ToString();
+			if (hint == "number")
+				return ValueOf();
 
-			return ValueOf();
+			return ToString();
 		}
+	}
+
+	public sealed class JGregorianCalendar
+	{
+		[Description("@#calendarType")]
+		public Number CalendarType { get; set; }
+
+		[Description("@#twoDigitYearMax")]
+		public Number TwoDigitYearMax { get; set; }
+
+		public JGregorianCalendar(Number calendarType, Number twoDigitYearMax)
+		{
+			this.CalendarType = calendarType;
+			this.TwoDigitYearMax = twoDigitYearMax;
+			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptor
+			{
+				Value = (Func<string?, object>)ToPrimitive,
+				Configurable = true
+			});
+		}
+
+		[Description("@#toString")]
+		public override string ToString()
+			=> "System.Globalization.GregorianCalendar";
+
+		[Description("@#valueOf")]
+		public string ValueOf()
+			=> ToString();
+
+		[Description("@#toPrimitive")]
+		public object ToPrimitive(string? hint)
+			=> ToString();
 	}
 
 	public static Number GetDaysInMonth(Number year, Number month)

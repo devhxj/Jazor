@@ -5,6 +5,13 @@
 [Jazor]
 public abstract class BigInt
 {
+	/// <summary>
+	/// JavaScript <c>BigInt.prototype</c> object.
+	/// This stays on the constructor host to keep the public surface aligned with the JavaScript runtime shape.
+	/// </summary>
+	[Description("@#prototype")]
+	public extern static BigInt Prototype { get; }
+
 	[Jazor("0n")]
 	public extern static BigInt Zero { get; }
 
@@ -49,10 +56,18 @@ public abstract class BigInt
 	public extern string ToLocaleString(string? locales = null, Intl.NumberFormatOptions? options = null);
 
 	/// <summary>
-	/// Returns a locale-sensitive string representation of the JavaScript bigint value.
+	/// C# convenience overload for the JavaScript form that omits <c>locales</c> and only supplies options.
+	/// This exists because C# cannot naturally skip the leading locale argument in method calls.
 	/// </summary>
 	[Description("@#toLocaleString")]
-	public extern string ToLocaleString(string[] locales, Intl.NumberFormatOptions? options = null);
+	public extern string ToLocaleString(Intl.NumberFormatOptions options);
+
+	/// <summary>
+	/// Returns a locale-sensitive string representation of the JavaScript bigint value.
+	/// <see cref="IEnumerable{T}"/> is used as the common C# input surface for JavaScript locale lists.
+	/// </summary>
+	[Description("@#toLocaleString")]
+	public extern string ToLocaleString(IEnumerable<string> locales, Intl.NumberFormatOptions? options = null);
 
 	/// <summary>
 	/// Returns the primitive bigint value carried by this host projection.
@@ -83,15 +98,38 @@ public abstract class BigInt
 
 	public extern static bool operator >(BigInt x, BigInt y);
 
+	/// <summary>
+	/// JavaScript allows relational comparison between bigint and number values.
+	/// These mixed overloads keep that runtime surface available in C# without implying that arithmetic mixing is valid.
+	/// </summary>
+	public extern static bool operator >(BigInt x, Number y);
+
 	public extern static bool operator >=(BigInt x, BigInt y);
 
 	public extern static bool operator >=(BigInt x, Number y);
 
 	public extern static bool operator <(BigInt x, BigInt y);
 
+	/// <summary>
+	/// JavaScript allows relational comparison between bigint and number values.
+	/// These mixed overloads keep that runtime surface available in C# without implying that arithmetic mixing is valid.
+	/// </summary>
+	public extern static bool operator <(BigInt x, Number y);
+
 	public extern static bool operator <=(BigInt x, BigInt y);
 
 	public extern static bool operator <=(BigInt x, Number y);
+
+	/// <summary>
+	/// Symmetric mixed relational overloads are exposed so C# can express the same JavaScript comparison surface regardless of operand order.
+	/// </summary>
+	public extern static bool operator >(Number x, BigInt y);
+
+	public extern static bool operator >=(Number x, BigInt y);
+
+	public extern static bool operator <(Number x, BigInt y);
+
+	public extern static bool operator <=(Number x, BigInt y);
 
 	public extern static BigInt operator >>(BigInt x, BigInt y);
 

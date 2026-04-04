@@ -9,6 +9,13 @@ namespace ECMAScript;
 public sealed class FinalizationRegistry
 {
 	/// <summary>
+	/// JavaScript <c>FinalizationRegistry.prototype</c> object.
+	/// Exposing this on the constructor host keeps the C# surface close to the runtime host shape.
+	/// </summary>
+	[Description("@#prototype")]
+	public extern static FinalizationRegistry Prototype { get; }
+
+	/// <summary>
 	/// Creates a registry whose cleanup callback receives the held value supplied at registration time.
 	/// </summary>
 	/// <param name="cleanupCallback">JavaScript cleanup callback invoked with the held value after the target becomes collectible.</param>
@@ -17,7 +24,7 @@ public sealed class FinalizationRegistry
 	/// <summary>
 	/// Registers a target with a held value.
 	/// </summary>
-	/// <param name="target">Target object to observe weakly.</param>
+	/// <param name="target">Target value to observe weakly. JavaScript allows objects and non-global symbols here.</param>
 	/// <param name="heldValue">Value delivered back to the cleanup callback.</param>
 	[Description("@#register")]
 	public extern void Register(object target, object? heldValue);
@@ -25,9 +32,9 @@ public sealed class FinalizationRegistry
 	/// <summary>
 	/// Registers a target with a held value and an explicit unregister token.
 	/// </summary>
-	/// <param name="target">Target object to observe weakly.</param>
+	/// <param name="target">Target value to observe weakly. JavaScript allows objects and non-global symbols here.</param>
 	/// <param name="heldValue">Value delivered back to the cleanup callback.</param>
-	/// <param name="unregisterToken">Token that can later be passed to <see cref="Unregister"/>.</param>
+	/// <param name="unregisterToken">Token that can later be passed to <see cref="Unregister"/>. JavaScript uses the same weakly held value rule here.</param>
 	[Description("@#register")]
 	public extern void Register(object target, object? heldValue, object unregisterToken);
 

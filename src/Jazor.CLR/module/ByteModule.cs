@@ -10,7 +10,7 @@ namespace Jazor.CLR;
 /// Op 类型选择原则：
 /// - Allowed: 操作符（+ - * / % == != &lt; &gt; &lt;= &gt;=）
 /// - Inline: 简单比较和运算
-/// - Alias: JS Math 方法
+/// - Alias: 只有成员名和最终宿主都稳定时才直接映射原生方法
 /// - Import: 需要完整实现的复杂逻辑（Parse/TryParse）
 /// - Discard: 不支持的功能
 /// </summary>
@@ -174,7 +174,7 @@ public static class ByteModule
 	public extern static Array<object?> _761e5b49fdeccb96(string s, object style, Intl.NumberFormat? provider, Number result);
 
 	///<summary>Returns the TypeCode for value type Byte.</summary>
-	[Jazor(Op.Discard, "byte.GetTypeCode()")]
+	[Jazor(Op.Inline, "byte.GetTypeCode()", "6")]
 	public extern static System.TypeCode _1695fafe88707bc5(Number instance);
 
 	/// <summary>
@@ -207,39 +207,17 @@ public static class ByteModule
 
 	/// <summary>
 	/// C#: byte.LeadingZeroCount(value)
-	/// JS: 8 - Math.clz32(value) for 8-bit
-	/// Note: Math.clz32 works on 32-bit, for 8-bit we need to adjust
+	/// JS: Math.clz32(value & 0xFF) - 24，零值单独返回 8
 	/// </summary>
-	[Jazor(Op.Import, "static byte.LeadingZeroCount(byte)")]
-	public static Number _9526f26e93e4c913(Number value)
-	{
-		// For 8-bit value, leading zeros = 8 - bit position of highest 1
-		// Or use clz32 and subtract 24 (since clz32 treats input as 32-bit)
-		var v = value;
-		if (v == 0) return 8;
-
-		// Count leading zeros in 8-bit value
-		int count = 0;
-		if ((v & 0xF0) == 0) { count += 4; v <<= 4; }
-		if ((v & 0xC0) == 0) { count += 2; v <<= 2; }
-		if ((v & 0x80) == 0) { count += 1; }
-		return count;
-	}
+	[Jazor(Op.Inline, "static byte.LeadingZeroCount(byte)", "(__arg1 === 0 ? 8 : (Math.clz32((__arg1 & 0xFF)) - 24))")]
+	public extern static Number _9526f26e93e4c913(Number value);
 
 	/// <summary>
 	/// C#: byte.PopCount(value)
-	/// JS: 使用位运算计算
+	/// JS: 8 位展开求和，避免额外 helper 和不稳定宿主
 	/// </summary>
-	[Jazor(Op.Import, "static byte.PopCount(byte)")]
-	public static Number _c5ae774e00ea2202(Number value)
-	{
-		// 汉明权重算法 for 8-bit
-		int v = value;
-		v = v - ((v >> 1) & 0x55);
-		v = (v & 0x33) + ((v >> 2) & 0x33);
-		v = (v + (v >> 4)) & 0x0F;
-		return v;
-	}
+	[Jazor(Op.Inline, "static byte.PopCount(byte)", "((__arg1 & 1) + ((__arg1 >> 1) & 1) + ((__arg1 >> 2) & 1) + ((__arg1 >> 3) & 1) + ((__arg1 >> 4) & 1) + ((__arg1 >> 5) & 1) + ((__arg1 >> 6) & 1) + ((__arg1 >> 7) & 1))")]
+	public extern static Number _c5ae774e00ea2202(Number value);
 
 	/// <summary>
 	/// C#: byte.RotateLeft(value, amount)
@@ -257,23 +235,10 @@ public static class ByteModule
 
 	/// <summary>
 	/// C#: byte.TrailingZeroCount(value)
-	/// JS: 使用位运算
+	/// JS: 先提取最低位 1，再对其做 log2；零值单独返回 8
 	/// </summary>
-	[Jazor(Op.Import, "static byte.TrailingZeroCount(byte)")]
-	public static Number _88ad71d45f9ffca7(Number value)
-	{
-		if (value == 0)
-			return 8;
-
-		int v = value;
-		int count = 0;
-		while ((v & 1) == 0)
-		{
-			v >>= 1;
-			count++;
-		}
-		return count;
-	}
+	[Jazor(Op.Inline, "static byte.TrailingZeroCount(byte)", "(__arg1 === 0 ? 8 : Math.floor(Math.log2(((__arg1 & 0xFF) & (-(__arg1 & 0xFF))))))")]
+	public extern static Number _88ad71d45f9ffca7(Number value);
 
 	/// <summary>
 	/// C#: byte.IsPow2(value)
@@ -299,23 +264,24 @@ public static class ByteModule
 	/// <summary>
 	/// C#: byte.Max(x, y)
 	/// JS: Math.max(x, y)
+	/// Note: 这里不能依赖 byte -> Number 的 Alias 宿主，否则会退化成错误的 Number.max
 	/// </summary>
-	[Jazor(Op.Alias, "static byte.Max(byte, byte)", "max")]
+	[Jazor(Op.Inline, "static byte.Max(byte, byte)", "Math.max(__arg1, __arg2)")]
 	public extern static Number _04555e3eb1c7a9ce(Number x, Number y);
 
 	/// <summary>
 	/// C#: byte.Min(x, y)
 	/// JS: Math.min(x, y)
+	/// Note: 这里不能依赖 byte -> Number 的 Alias 宿主，否则会退化成错误的 Number.min
 	/// </summary>
-	[Jazor(Op.Alias, "static byte.Min(byte, byte)", "min")]
+	[Jazor(Op.Inline, "static byte.Min(byte, byte)", "Math.min(__arg1, __arg2)")]
 	public extern static Number _01cc0a43897afd75(Number x, Number y);
 
 	/// <summary>
 	/// C#: byte.Sign(value)
-	/// JS: Math.sign(value)
-	/// Note: For unsigned byte, always returns 0 or 1
+	/// JS: unsigned byte 只有 0 和正值，所以直接收敛成 0/1 表达式
 	/// </summary>
-	[Jazor(Op.Alias, "static byte.Sign(byte)", "sign")]
+	[Jazor(Op.Inline, "static byte.Sign(byte)", "(__arg1 === 0 ? 0 : 1)")]
 	public extern static Number _683fdf4d3120d162(Number value);
 
 	///<summary>Creates an instance of the current type from a value, throwing an overflow exception for any values that fall outside the representable range of the current type.</summary>

@@ -1282,7 +1282,7 @@ public sealed class SemanticWalkerDeclarationTest
         AssertScriptEqual(@"{
   let value, v$0;
   if (v$0 = _2fd90dc37b274014(""2024-01-02T03:04:05+08:00"", value), value = v$0[1], v$0[0]) {
-    console.log(value.toString());
+    console.log(_2aaccc10061a3bb0(value));
   }
 }", script);
     }

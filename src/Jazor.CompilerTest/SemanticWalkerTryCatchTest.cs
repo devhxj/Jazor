@@ -2745,9 +2745,9 @@ catch (ex) {
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        AssertScriptEqual(@"{
+AssertScriptEqual(@"{
   if (value === null) {
-    throw new TypeError('value');
+    throw new TypeError(""value"");
   }
 }", script);
     }

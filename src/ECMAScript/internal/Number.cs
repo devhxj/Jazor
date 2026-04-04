@@ -192,6 +192,7 @@ public readonly struct Number : IEquatable<Number>, IComparable, IComparable<Num
 
 	/// <summary>
 	/// Converts a number to a string by using the current or specified locale.
+	/// <see cref="IEnumerable{T}"/> is used as the common C# input surface for JavaScript locale lists.
 	/// </summary>
 	/// <param name="locales">A locale string or array of locale strings that contain one or more language or locale tags.If you include more than one locale string, list them in descending order of priority so that the first entry is the preferred locale.If you omit this parameter, the default locale of the JavaScript runtime is used.</param>
 	/// <param name="options">An object that contains one or more properties that specify comparison options.</param>
@@ -200,13 +201,20 @@ public readonly struct Number : IEquatable<Number>, IComparable, IComparable<Num
 	public extern string ToLocaleString(string? locales, Intl.NumberFormatOptions? options = null);
 
 	/// <summary>
+	/// C# convenience overload for the JavaScript form that omits <c>locales</c> and only supplies options.
+	/// This exists because C# cannot naturally skip the leading locale argument in method calls.
+	/// </summary>
+	[Description("@#toLocaleString")]
+	public extern string ToLocaleString(Intl.NumberFormatOptions options);
+
+	/// <summary>
 	/// Converts a number to a string by using the current or specified locale.
 	/// </summary>
 	/// <param name="locales">A locale string or array of locale strings that contain one or more language or locale tags.If you include more than one locale string, list them in descending order of priority so that the first entry is the preferred locale.If you omit this parameter, the default locale of the JavaScript runtime is used.</param>
 	/// <param name="options">An object that contains one or more properties that specify comparison options.</param>
 	/// <returns></returns>
 	[Description("@#toLocaleString")]
-	public extern string ToLocaleString(string[]? locales, Intl.NumberFormatOptions? options = null);
+	public extern string ToLocaleString(IEnumerable<string>? locales, Intl.NumberFormatOptions? options = null);
 
 	[Description("@#toString")]
 	public extern override string ToString();

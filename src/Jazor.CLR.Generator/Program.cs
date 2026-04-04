@@ -48,7 +48,8 @@ var outTypes = new Type[]{
 	typeof(ConditionalWeakTable<,>),
 	typeof(GregorianCalendar),
 	typeof(CultureInfo),
-	typeof(Array)
+	typeof(Array),
+	typeof(Guid)
 };
 var operatorNames = new Dictionary<string, string>
 {
@@ -121,6 +122,7 @@ var typeMaps = new Dictionary<Type, string>()
 	{typeof(GregorianCalendar),"Date"},
 	{typeof(CultureInfo),"String"},
 	{typeof(Console),"Object"},
+	{typeof(Guid),"String"},
 };
 var nameMaps = new Dictionary<string, string>()
 {

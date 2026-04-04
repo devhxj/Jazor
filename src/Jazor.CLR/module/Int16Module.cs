@@ -57,6 +57,30 @@ public static class Int16Module
 		return true;
 	}
 
+	private static Number MaxMagnitudeCore(Number x, Number y)
+	{
+		var absX = Math.Abs_(x);
+		var absY = Math.Abs_(y);
+		if (absX > absY)
+			return x;
+		if (absX < absY)
+			return y;
+
+		return CompareCore(x, y) >= 0 ? x : y;
+	}
+
+	private static Number MinMagnitudeCore(Number x, Number y)
+	{
+		var absX = Math.Abs_(x);
+		var absY = Math.Abs_(y);
+		if (absX < absY)
+			return x;
+		if (absX > absY)
+			return y;
+
+		return CompareCore(x, y) <= 0 ? x : y;
+	}
+
 	/// <summary>
 	/// C#: short.MaxValue
 	/// JS: 32767
@@ -187,25 +211,48 @@ public static class Int16Module
 	[Jazor(Op.Discard, "static short.TryParse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider, out short)")]
 	public extern static Array<object?> _74bca5547a182d94(Uint32Array s, object style, Intl.NumberFormat? provider, Number result);
 
-	[Jazor(Op.Discard, "short.GetTypeCode()")]
+	[Jazor(Op.Inline, "short.GetTypeCode()", "7")]
 	public extern static System.TypeCode _40232ebb0dcadbf1(Number instance);
 
-	[Jazor(Op.Discard, "static short.DivRem(short, short)")]
-	public extern static (short Quotient, short Remainder) _b2c1f15fae072110(Number left, Number right);
+	/// <summary>
+	/// C#: short.DivRem(left, right)
+	/// JS: 商按 .NET 整数除法语义向零截断
+	/// </summary>
+	[Jazor(Op.Import, "static short.DivRem(short, short)")]
+	public static (short Quotient, short Remainder) _b2c1f15fae072110(Number left, Number right)
+	{
+		if (right == 0)
+			throw new Error("DivideByZeroException");
+		var quotient = Math.Trunc_(left / right);
+		var remainder = left - quotient * right;
+		return ((short)quotient, (short)remainder);
+	}
 
-	[Jazor(Op.Discard, "static short.LeadingZeroCount(short)")]
+	[Jazor(Op.Inline, "static short.LeadingZeroCount(short)", "(__arg1 === 0 ? 16 : (Math.clz32((__arg1 & 0xFFFF)) - 16))")]
 	public extern static Number _52aba2834bccd915(Number value);
 
-	[Jazor(Op.Discard, "static short.PopCount(short)")]
-	public extern static Number _1636c956519f95fa(Number value);
+	/// <summary>
+	/// C#: short.PopCount(value)
+	/// JS: 先归一到 16 位补码，再使用汉明权重算法
+	/// </summary>
+	[Jazor(Op.Import, "static short.PopCount(short)")]
+	public static Number _1636c956519f95fa(Number value)
+	{
+		uint v = (ushort)(short)value;
+		v = v - ((v >> 1) & 0x5555);
+		v = (v & 0x3333) + ((v >> 2) & 0x3333);
+		v = (v + (v >> 4)) & 0x0F0F;
+		v = v + (v >> 8);
+		return (int)(v & 0x1F);
+	}
 
-	[Jazor(Op.Discard, "static short.RotateLeft(short, int)")]
+	[Jazor(Op.Inline, "static short.RotateLeft(short, int)", "(((((__arg1 & 0xFFFF) << (__arg2 & 15)) | ((__arg1 & 0xFFFF) >>> (16 - (__arg2 & 15)))) & 0xFFFF) << 16 >> 16)")]
 	public extern static Number _bae87098d1a8d51f(Number value, Number rotateAmount);
 
-	[Jazor(Op.Discard, "static short.RotateRight(short, int)")]
+	[Jazor(Op.Inline, "static short.RotateRight(short, int)", "(((((__arg1 & 0xFFFF) >>> (__arg2 & 15)) | ((__arg1 & 0xFFFF) << (16 - (__arg2 & 15)))) & 0xFFFF) << 16 >> 16)")]
 	public extern static Number _9d0ea1985ea5d86c(Number value, Number rotateAmount);
 
-	[Jazor(Op.Discard, "static short.TrailingZeroCount(short)")]
+	[Jazor(Op.Inline, "static short.TrailingZeroCount(short)", "(__arg1 === 0 ? 16 : Math.floor(Math.log2(((__arg1 & 0xFFFF) & (-(__arg1 & 0xFFFF))))))")]
 	public extern static Number _34f7d9d508f3d3fa(Number value);
 
 	/// <summary>
@@ -301,11 +348,21 @@ public static class Int16Module
 	[Jazor(Op.Inline, "static short.IsPositive(short)", "(__arg1 > 0)")]
 	public extern static bool _f65c31648c1c40d7(Number value);
 
-	[Jazor(Op.Discard, "static short.MaxMagnitude(short, short)")]
-	public extern static Number _ea75510d32bc8099(Number x, Number y);
+	/// <summary>
+	/// C#: short.MaxMagnitude(x, y)
+	/// JS: 先比较绝对值；相同绝对值时按数值大小决胜。
+	/// </summary>
+	[Jazor(Op.Import, "static short.MaxMagnitude(short, short)")]
+	public static Number _ea75510d32bc8099(Number x, Number y)
+		=> MaxMagnitudeCore(x, y);
 
-	[Jazor(Op.Discard, "static short.MinMagnitude(short, short)")]
-	public extern static Number _63d3d54252a49e29(Number x, Number y);
+	/// <summary>
+	/// C#: short.MinMagnitude(x, y)
+	/// JS: 先比较绝对值；相同绝对值时按数值大小决胜。
+	/// </summary>
+	[Jazor(Op.Import, "static short.MinMagnitude(short, short)")]
+	public static Number _63d3d54252a49e29(Number x, Number y)
+		=> MinMagnitudeCore(x, y);
 
 	[Jazor(Op.Discard, "static short.TryParse(string, System.IFormatProvider, out short)")]
 	public extern static Array<object?> _1726573b3ed2620b(string? s, Intl.NumberFormat? provider, Number result);

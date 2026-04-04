@@ -1,6 +1,6 @@
 # WebIDL Inventory
 
-- Generated: `2026-04-01T03:49:41.2250000+00:00`
+- Generated: `2026-04-03T09:37:14.1530000+00:00`
 - Files: `369`
 - Declarations: `3298`
 - Event targets: `147`

@@ -24,8 +24,7 @@ public partial class SemanticWalker
 		if (symbol is IPropertySymbol property && property.SetMethod is not null)
 			whiteListSymbol = property.SetMethod;
 
-		var displayString = whiteListSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
-		if (WhiteList.Members.TryGetValue(displayString, out var entry) &&
+		if (TryGetWhiteListValue(WhiteList.Members, whiteListSymbol, out _, out var entry) &&
 			entry.Op == Op.Alias &&
 			!string.IsNullOrEmpty(entry.Value))
 			return entry.Value!;
@@ -40,8 +39,7 @@ public partial class SemanticWalker
 	private static string GetMethodConfigOrWhiteListName(IMethodSymbol method)
 	{
 		// 1. 先检查白名单别名
-		var displayString = method.OriginalDefinition.ToDisplayString(Format.NameFormat);
-		if (WhiteList.Members.TryGetValue(displayString, out var entry) &&
+		if (TryGetWhiteListValue(WhiteList.Members, method, out _, out var entry) &&
 			entry.Op == Op.Alias &&
 			!string.IsNullOrEmpty(entry.Value))
 			return entry.Value!;
@@ -414,6 +412,37 @@ public partial class SemanticWalker
 			return typeSymbol;
 
 		return semanticModel.GetTypeInfo(targetSyntax).Type;
+	}
+
+	/// <summary>
+	/// 某些泛型数学静态成员在调用点会先绑定成接口投影方法，
+	/// 例如 <c>ushort.PopCount</c> / <c>uint.PopCount</c>。
+	/// 这类符号若直接查白名单，会漏掉具体类型上的映射，随后退回错误的 runtime host。
+	///
+	/// 这里仅在“静态接口方法 + 能从调用点恢复具体宿主”时，尝试拉回实现面。
+	/// 普通成员路径保持不变，避免扩大影响面。
+	/// </summary>
+	private static IMethodSymbol ResolveStaticInterfaceProjectionMethod(IMethodSymbol method, SyntaxNode syntax, SemanticModel? semanticModel)
+	{
+		if (!method.IsStatic || method.ContainingType?.TypeKind != TypeKind.Interface)
+			return method;
+
+		if (TryGetStaticSourceHostTypeFromSyntax(syntax, semanticModel) is not INamedTypeSymbol sourceHostType ||
+			!IsStaticHostOverrideCompatible(sourceHostType, method.ContainingType))
+			return method;
+
+		if (sourceHostType.FindImplementationForInterfaceMember(method) is IMethodSymbol implementation)
+			return implementation;
+
+		foreach (var candidate in sourceHostType.GetMembers(method.Name).OfType<IMethodSymbol>())
+		{
+			if (candidate.IsStatic &&
+				candidate.Arity == method.Arity &&
+				candidate.Parameters.Length == method.Parameters.Length)
+				return candidate;
+		}
+
+		return method;
 	}
 
 	/// <summary>
@@ -1257,7 +1286,8 @@ public partial class SemanticWalker
 			.Select(i => new Identifier($"{name}${i}") as Expression)
 			.ToList();
 
-		var valueExpr = GetWhiteListExpression(operation.Method, argument, args, out var alias);
+		var whiteListMethod = ResolveStaticInterfaceProjectionMethod(operation.Method, operation.Syntax, operation.SemanticModel);
+		var valueExpr = GetWhiteListExpression(whiteListMethod, argument, args, out var alias);
 		if (valueExpr is not null)
 		{
 			// 生成箭头函数表达式作为代理方法
@@ -1400,7 +1430,8 @@ public partial class SemanticWalker
 		}
 
 		// 检查白名单映射
-		var mapperExpr = GetWhiteListExpression(operation.TargetMethod, argument, arguments, instance, out var alias);
+		var whiteListMethod = ResolveStaticInterfaceProjectionMethod(operation.TargetMethod, operation.Syntax, operation.SemanticModel);
+		var mapperExpr = GetWhiteListExpression(whiteListMethod, argument, arguments, instance, out var alias);
 		if (mapperExpr is not null)
 			return BuildInvExpr(hasReturn, mapperExpr, refParas, argument);
 

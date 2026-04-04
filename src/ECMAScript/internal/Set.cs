@@ -124,7 +124,7 @@ public sealed class Set<T> : IEnumerable, ISetLike<T> //where T : class
 	/// In JavaScript Set.prototype.forEach, the second callback argument repeats the value rather than exposing an index.
 	/// </summary>
 	/// <param name="callbackfn"><para><b>(value: T, key: T, set: Set&lt;T&gt;) => void</b></para>A function invoked for each value.</param>
-	/// <param name="thisArg">An arbitrary value passed as the JavaScript this argument to callbackfn. If omitted, undefined is used.</param>
+	/// <param name="thisArg">An arbitrary value passed as the JavaScript this argument to callbackfn. If omitted, JavaScript uses its default callback receiver; this projection does not expose <c>undefined</c> as a separate public value.</param>
 	[Description("@#forEach")]
 	public extern void ForEach(Action<T, T, Set<T>> callbackfn, object? thisArg = null);
 	[Description("@#forEach")]
@@ -140,25 +140,33 @@ public sealed class Set<T> : IEnumerable, ISetLike<T> //where T : class
 
 [ECMAScript]
 [Description("@#Set")]
-public sealed class Set : IEnumerable, ISetLike<object>
+public sealed class Set : IEnumerable, ISetLike<object?>
 {
+	/// <summary>
+	/// JavaScript <c>Set.prototype</c> object.
+	/// The non-generic constructor host carries this member so the runtime shape stays recognizable in C#.
+	/// </summary>
+	[Description("@#prototype")]
+	public extern static Set Prototype { get; }
+
 	public extern Set();
 
 	/// <summary>
 	/// Creates a set from a JavaScript iterable of values.
 	/// <see cref="IEnumerable{T}"/> is used here as the common C# input surface for values
 	/// such as arrays, lists, and read-only list families that map to JavaScript arrays or iterables.
+	/// Nullable element types are used because JavaScript <c>Set</c> accepts <see langword="null" /> as an ordinary stored value.
 	/// </summary>
-	public extern Set(IEnumerable<object> values);
+	public extern Set(IEnumerable<object?> values);
 
 	[Description("@#add")]
-	public extern Set Add(object value);
+	public extern Set Add(object? value);
 
 	[Description("@#has")]
-	public extern bool Has(object value);
+	public extern bool Has(object? value);
 
 	[Description("@#delete")]
-	public extern bool Delete(object value);
+	public extern bool Delete(object? value);
 
 	[Description("@#clear")]
 	public extern void Clear();
@@ -168,46 +176,46 @@ public sealed class Set : IEnumerable, ISetLike<object>
 	/// This mirrors JavaScript <c>Set.prototype.union</c> and does not mutate the source set.
 	/// </summary>
 	[Description("@#union")]
-	public extern Set Union(ISetLike<object> other);
+	public extern Set Union(ISetLike<object?> other);
 
 	/// <summary>
 	/// Returns a new set containing values present in both this set and the other set-like operand.
 	/// This mirrors JavaScript <c>Set.prototype.intersection</c> and does not mutate the source set.
 	/// </summary>
 	[Description("@#intersection")]
-	public extern Set Intersection(ISetLike<object> other);
+	public extern Set Intersection(ISetLike<object?> other);
 
 	/// <summary>
 	/// Returns a new set containing values present in this set but not in the other set-like operand.
 	/// This mirrors JavaScript <c>Set.prototype.difference</c> and does not mutate the source set.
 	/// </summary>
 	[Description("@#difference")]
-	public extern Set Difference(ISetLike<object> other);
+	public extern Set Difference(ISetLike<object?> other);
 
 	/// <summary>
 	/// Returns a new set containing values present in exactly one of the two set-like operands.
 	/// This mirrors JavaScript <c>Set.prototype.symmetricDifference</c> and does not mutate the source set.
 	/// </summary>
 	[Description("@#symmetricDifference")]
-	public extern Set SymmetricDifference(ISetLike<object> other);
+	public extern Set SymmetricDifference(ISetLike<object?> other);
 
 	/// <summary>
 	/// Returns whether every value in this set is also present in the other set-like operand.
 	/// </summary>
 	[Description("@#isSubsetOf")]
-	public extern bool IsSubsetOf(ISetLike<object> other);
+	public extern bool IsSubsetOf(ISetLike<object?> other);
 
 	/// <summary>
 	/// Returns whether every value in the other set-like operand is also present in this set.
 	/// </summary>
 	[Description("@#isSupersetOf")]
-	public extern bool IsSupersetOf(ISetLike<object> other);
+	public extern bool IsSupersetOf(ISetLike<object?> other);
 
 	/// <summary>
 	/// Returns whether this set and the other set-like operand share no values.
 	/// </summary>
 	[Description("@#isDisjointFrom")]
-	public extern bool IsDisjointFrom(ISetLike<object> other);
+	public extern bool IsDisjointFrom(ISetLike<object?> other);
 
 	/// <summary>
 	/// Returns the JavaScript iterator produced by <c>Set.prototype.keys()</c>.
@@ -215,34 +223,34 @@ public sealed class Set : IEnumerable, ISetLike<object>
 	/// <see cref="IEnumerable{T}"/> is used as the common C# host surface for JavaScript iterables.
 	/// </summary>
 	[Description("@#keys")]
-	public extern IEnumerable<object> Keys();
+	public extern IEnumerable<object?> Keys();
 
 	/// <summary>
 	/// Returns the JavaScript iterator produced by <c>Set.prototype.values()</c>.
 	/// <see cref="IEnumerable{T}"/> is used as the common C# host surface for JavaScript iterables.
 	/// </summary>
 	[Description("@#values")]
-	public extern IEnumerable<object> Values();
+	public extern IEnumerable<object?> Values();
 
 	/// <summary>
 	/// Returns the JavaScript iterator produced by <c>Set.prototype.entries()</c>.
 	/// Each yielded item is the JavaScript two-element pair <c>[value, value]</c>.
 	/// </summary>
 	[Description("@#entries")]
-	public extern IEnumerable<Array<object>> Entries();
+	public extern IEnumerable<Array<object?>> Entries();
 
 	/// <summary>
 	/// Calls callbackfn once for each value in insertion order.
 	/// In JavaScript Set.prototype.forEach, the second callback argument repeats the value rather than exposing an index.
 	/// </summary>
 	/// <param name="callbackfn"><para><b>(value: unknown, key: unknown, set: Set) => void</b></para>A function invoked for each value.</param>
-	/// <param name="thisArg">An arbitrary value passed as the JavaScript this argument to callbackfn. If omitted, undefined is used.</param>
+	/// <param name="thisArg">An arbitrary value passed as the JavaScript this argument to callbackfn. If omitted, JavaScript uses its default callback receiver; this projection does not expose <c>undefined</c> as a separate public value.</param>
 	[Description("@#forEach")]
-	public extern void ForEach(Action<object, object, Set> callbackfn, object? thisArg = null);
+	public extern void ForEach(Action<object?, object?, Set> callbackfn, object? thisArg = null);
 	[Description("@#forEach")]
-	public extern void ForEach(Action<object, object> callbackfn, object? thisArg = null);
+	public extern void ForEach(Action<object?, object?> callbackfn, object? thisArg = null);
 	[Description("@#forEach")]
-	public extern void ForEach(Action<object> callbackfn, object? thisArg = null);
+	public extern void ForEach(Action<object?> callbackfn, object? thisArg = null);
 
 	[Description("@#size")]
 	public extern Number Size { get; }
@@ -261,6 +269,8 @@ public sealed class WeakSet<T> where T : class
 	/// <see cref="IEnumerable{T}"/> is used here as the common C# input surface for values
 	/// such as arrays, lists, and read-only list families that map to JavaScript arrays or iterables.
 	/// WeakSet itself is not enumerable in JavaScript, so this host intentionally does not implement <see cref="IEnumerable" />.
+	/// The <c>class</c> constraint is only a C# approximation of JavaScript weakly held values;
+	/// the runtime still enforces the actual <c>CanBeHeldWeakly</c> rule and may reject values such as strings.
 	/// </summary>
 	public extern WeakSet(IEnumerable<T> values);
 
@@ -278,6 +288,13 @@ public sealed class WeakSet<T> where T : class
 [Description("@#WeakSet")]
 public sealed class WeakSet
 {
+	/// <summary>
+	/// JavaScript <c>WeakSet.prototype</c> object.
+	/// The non-generic constructor host carries this member so the runtime shape stays visible in C#.
+	/// </summary>
+	[Description("@#prototype")]
+	public extern static WeakSet Prototype { get; }
+
 	public extern WeakSet();
 
 	/// <summary>
@@ -285,6 +302,8 @@ public sealed class WeakSet
 	/// <see cref="IEnumerable{T}"/> is used here as the common C# input surface for values
 	/// such as arrays, lists, and read-only list families that map to JavaScript arrays or iterables.
 	/// WeakSet itself is not enumerable in JavaScript, so this host intentionally does not implement <see cref="IEnumerable" />.
+	/// Values are intentionally not nullable on this host because JavaScript weak-set entries must be weakly held values.
+	/// That includes objects and non-global symbols; the runtime performs the final validity check.
 	/// </summary>
 	public extern WeakSet(IEnumerable<object> values);
 
