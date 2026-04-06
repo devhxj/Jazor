@@ -1,7 +1,8 @@
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Reflection;
 using DenoHost.Core;
+using Jazor.Emit.SourceMaps;
 
 namespace Jazor.Emit;
 
@@ -14,6 +15,10 @@ internal sealed class ModuleBundler
     private static readonly Regex ImportOnlyPattern = new(
         "(?<prefix>\\bimport\\s+[\"'])(?<path>[^\"']+)(?<suffix>[\"'])",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+    private static readonly UTF8Encoding Utf8WithoutBom = new(encoderShouldEmitUTF8Identifier: false);
+    private static readonly SourceMapChainBuilder ChainBuilder = new();
+    private static readonly SourceMapWriter SourceMapWriter = new();
 
     public async Task<BundleResult> BundleAsync(BundleOptions options)
     {
@@ -70,15 +75,17 @@ internal sealed class ModuleBundler
 
             var content = await File.ReadAllTextAsync(sourcePath);
             var rewritten = RewriteModuleImports(content, relativePath, knownPaths);
-            await File.WriteAllTextAsync(targetPath, rewritten, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            await File.WriteAllTextAsync(targetPath, rewritten, Utf8WithoutBom);
+
+            var sourceMapPath = sourcePath + ".map";
+            if (!File.Exists(sourceMapPath))
+                continue;
+
+            await File.WriteAllTextAsync(targetPath + ".map", await File.ReadAllTextAsync(sourceMapPath), Utf8WithoutBom);
         }
 
         var tempEntryPath = Path.Combine(bundleWorkspace, "__jazor_bundle_entry__.mjs");
-        var entrySource = string.Join(
-            Environment.NewLine,
-            entryRelativePaths.Select(static relativePath => $"export * from \"./{relativePath}\";"));
-
-        await File.WriteAllTextAsync(tempEntryPath, entrySource, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+        await WriteBundleEntryAsync(tempEntryPath, bundleWorkspace, entryRelativePaths);
 
         try
         {
@@ -87,6 +94,7 @@ internal sealed class ModuleBundler
                 "bundle",
                 "--platform",
                 "browser",
+                "--sourcemap=external",
                 "-o",
                 options.OutputPath,
                 Path.GetFileName(tempEntryPath)
@@ -99,6 +107,8 @@ internal sealed class ModuleBundler
                 },
                 commandArgs);
 
+            await TryRewriteBundleSourceMapAsync(options.OutputPath, bundleWorkspace, relativePaths, tempEntryPath);
+            await EnsureBundleSourceMappingUrlAsync(options.OutputPath);
             return BundleResult.Success(options.OutputPath, relativePaths.Length);
         }
         catch (Exception ex)
@@ -117,6 +127,236 @@ internal sealed class ModuleBundler
             }
         }
     }
+
+    private static async Task WriteBundleEntryAsync(string tempEntryPath, string bundleWorkspace, IReadOnlyList<string> entryRelativePaths)
+    {
+        var entryLines = entryRelativePaths
+            .Select(static relativePath => $"export * from \"./{relativePath}\";")
+            .ToArray();
+        var entrySource = string.Join(Environment.NewLine, entryLines);
+        var entryMapPath = tempEntryPath + ".map";
+        var entryMap = await BuildEntrySourceMapAsync(bundleWorkspace, Path.GetFileName(tempEntryPath), entryRelativePaths);
+        var entryCode = SourceMapWriter.AppendSourceMappingUrl(entrySource, Path.GetFileName(entryMapPath));
+
+        await File.WriteAllTextAsync(tempEntryPath, entryCode, Utf8WithoutBom);
+        await File.WriteAllTextAsync(entryMapPath, SourceMapWriter.Write(entryMap), Utf8WithoutBom);
+    }
+
+    private static async Task<SourceMapDocument> BuildEntrySourceMapAsync(string bundleWorkspace, string entryFileName, IReadOnlyList<string> entryRelativePaths)
+    {
+        var sources = new List<SourceMapSource>(entryRelativePaths.Count);
+        var segments = new List<SourceMapSegment>(entryRelativePaths.Count);
+
+        for (var index = 0; index < entryRelativePaths.Count; index++)
+        {
+            var relativePath = entryRelativePaths[index];
+            var modulePath = Path.Combine(bundleWorkspace, relativePath.Replace('/', Path.DirectorySeparatorChar));
+            var moduleContent = File.Exists(modulePath)
+                ? await File.ReadAllTextAsync(modulePath)
+                : null;
+
+            sources.Add(new SourceMapSource(relativePath, moduleContent));
+            segments.Add(new SourceMapSegment(index, 0, index, 0, 0));
+        }
+
+        return new SourceMapDocument(entryFileName, sources, segments);
+    }
+
+    private static async Task TryRewriteBundleSourceMapAsync(string outputPath, string bundleWorkspace, IReadOnlyList<string> relativePaths, string tempEntryPath)
+    {
+        try
+        {
+            await RewriteBundleSourceMapAsync(outputPath, bundleWorkspace, relativePaths, tempEntryPath);
+        }
+        catch
+        {
+        }
+    }
+
+    private static async Task RewriteBundleSourceMapAsync(string outputPath, string bundleWorkspace, IReadOnlyList<string> relativePaths, string tempEntryPath)
+    {
+        var bundleMapPath = GetBundleMapPath(outputPath);
+        if (!File.Exists(bundleMapPath))
+            return;
+
+        var outputDirectory = Path.GetDirectoryName(Path.GetFullPath(outputPath)) ?? string.Empty;
+        var moduleMapJsonByPath = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var sourceAliasByPath = new Dictionary<string, SourceMapSource>(StringComparer.OrdinalIgnoreCase);
+        foreach (var relativePath in relativePaths)
+        {
+            var workspaceModulePath = Path.Combine(bundleWorkspace, relativePath.Replace('/', Path.DirectorySeparatorChar));
+            var workspaceModuleMapPath = workspaceModulePath + ".map";
+            if (!File.Exists(workspaceModuleMapPath))
+                continue;
+
+            var mapJson = await File.ReadAllTextAsync(workspaceModuleMapPath);
+            var mapDocument = ChainBuilder.Chain(mapJson, new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
+            AddModuleMapLookup(moduleMapJsonByPath, relativePath, mapJson);
+            AddModuleMapLookup(moduleMapJsonByPath, "./" + relativePath, mapJson);
+            AddModuleMapLookup(moduleMapJsonByPath, Path.GetFileName(relativePath), mapJson);
+            AddModuleMapLookup(moduleMapJsonByPath, workspaceModulePath, mapJson);
+            AddModuleMapLookup(moduleMapJsonByPath, NormalizeSourceLookupKey(workspaceModulePath), mapJson);
+            AddModuleMapLookup(moduleMapJsonByPath, new Uri(Path.GetFullPath(workspaceModulePath)).AbsoluteUri, mapJson);
+            AddOutputRelativeLookup(moduleMapJsonByPath, outputDirectory, workspaceModulePath, mapJson);
+            AddSourceAliases(sourceAliasByPath, outputDirectory, workspaceModulePath, mapDocument.Sources);
+        }
+
+        var entryMapPath = tempEntryPath + ".map";
+        if (File.Exists(entryMapPath))
+        {
+            var entryMapJson = await File.ReadAllTextAsync(entryMapPath);
+            AddModuleMapLookup(moduleMapJsonByPath, Path.GetFileName(tempEntryPath), entryMapJson);
+            AddModuleMapLookup(moduleMapJsonByPath, "./" + Path.GetFileName(tempEntryPath), entryMapJson);
+            AddModuleMapLookup(moduleMapJsonByPath, tempEntryPath, entryMapJson);
+            AddModuleMapLookup(moduleMapJsonByPath, NormalizeSourceLookupKey(tempEntryPath), entryMapJson);
+            AddModuleMapLookup(moduleMapJsonByPath, new Uri(Path.GetFullPath(tempEntryPath)).AbsoluteUri, entryMapJson);
+            AddOutputRelativeLookup(moduleMapJsonByPath, outputDirectory, tempEntryPath, entryMapJson);
+        }
+
+        var bundleMapJson = await File.ReadAllTextAsync(bundleMapPath);
+        var chainedDocument = ChainBuilder.Chain(bundleMapJson, moduleMapJsonByPath);
+        chainedDocument = RewriteAliasedSources(chainedDocument, sourceAliasByPath);
+        var finalDocument = chainedDocument with { File = Path.GetFileName(outputPath) };
+        await File.WriteAllTextAsync(bundleMapPath, SourceMapWriter.Write(finalDocument), Utf8WithoutBom);
+    }
+
+    private static void AddSourceAliases(
+        Dictionary<string, SourceMapSource> sourceAliasByPath,
+        string outputDirectory,
+        string workspaceModulePath,
+        IReadOnlyList<SourceMapSource> sources)
+    {
+        var workspaceModuleDirectory = Path.GetDirectoryName(workspaceModulePath) ?? Path.GetDirectoryName(Path.GetFullPath(workspaceModulePath)) ?? string.Empty;
+        foreach (var source in sources)
+        {
+            var fullSourcePath = Path.GetFullPath(Path.Combine(workspaceModuleDirectory, source.Path.Replace('/', Path.DirectorySeparatorChar)));
+            AddSourceAlias(sourceAliasByPath, Path.GetRelativePath(outputDirectory, fullSourcePath), source);
+            AddSourceAlias(sourceAliasByPath, fullSourcePath, source);
+            AddSourceAlias(sourceAliasByPath, new Uri(fullSourcePath).AbsoluteUri, source);
+        }
+    }
+
+    private static void AddSourceAlias(Dictionary<string, SourceMapSource> sourceAliasByPath, string key, SourceMapSource source)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+            return;
+
+        sourceAliasByPath[key] = source;
+        sourceAliasByPath[NormalizeSourceLookupKey(key)] = source;
+    }
+
+    private static SourceMapDocument RewriteAliasedSources(SourceMapDocument document, IReadOnlyDictionary<string, SourceMapSource> sourceAliasByPath)
+    {
+        if (sourceAliasByPath.Count == 0)
+            return document;
+
+        var sources = new List<SourceMapSource>();
+        var sourceIndexByPath = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        var remappedSegments = new List<SourceMapSegment>(document.Segments.Count);
+
+        foreach (var segment in document.Segments)
+        {
+            if (segment.SourceIndex < 0 || segment.SourceIndex >= document.Sources.Count)
+                continue;
+
+            var source = document.Sources[segment.SourceIndex];
+            source = ResolveAliasedSource(source, sourceAliasByPath);
+
+            var sourceIndex = GetOrAddSourceIndex(sources, sourceIndexByPath, source);
+            remappedSegments.Add(segment with { SourceIndex = sourceIndex });
+        }
+
+        return document with { Sources = sources, Segments = remappedSegments };
+    }
+
+    private static SourceMapSource ResolveAliasedSource(SourceMapSource source, IReadOnlyDictionary<string, SourceMapSource> sourceAliasByPath)
+    {
+        if (sourceAliasByPath.TryGetValue(source.Path, out var aliasedSource))
+            return aliasedSource;
+
+        var normalizedPath = NormalizeSourceLookupKey(source.Path);
+        if (sourceAliasByPath.TryGetValue(normalizedPath, out aliasedSource))
+            return aliasedSource;
+
+        foreach (var candidate in sourceAliasByPath.Values)
+        {
+            var candidatePath = NormalizeSourceLookupKey(candidate.Path);
+            if (string.IsNullOrWhiteSpace(candidatePath))
+                continue;
+
+            if (normalizedPath.EndsWith("/" + candidatePath, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(normalizedPath, candidatePath, StringComparison.OrdinalIgnoreCase))
+                return candidate;
+        }
+
+        return source;
+    }
+
+    private static int GetOrAddSourceIndex(List<SourceMapSource> sources, Dictionary<string, int> sourceIndexByPath, SourceMapSource source)
+    {
+        var normalizedPath = NormalizeSourceLookupKey(source.Path);
+        if (sourceIndexByPath.TryGetValue(normalizedPath, out var index))
+            return index;
+
+        index = sources.Count;
+        sources.Add(source);
+        sourceIndexByPath[normalizedPath] = index;
+        return index;
+    }
+
+    private static string NormalizeSourceLookupKey(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return string.Empty;
+
+        var normalized = path.Trim();
+        if (Uri.TryCreate(normalized, UriKind.Absolute, out var uri) && uri.IsFile)
+            normalized = uri.LocalPath;
+
+        normalized = normalized.Replace('\\', '/');
+        while (normalized.StartsWith("./", StringComparison.Ordinal))
+            normalized = normalized[2..];
+
+        return normalized;
+    }
+
+    private static void AddOutputRelativeLookup(Dictionary<string, string> lookup, string outputDirectory, string targetPath, string mapJson)
+    {
+        if (string.IsNullOrWhiteSpace(outputDirectory))
+            return;
+
+        var relativeToOutput = Path.GetRelativePath(outputDirectory, Path.GetFullPath(targetPath)).Replace('\\', '/');
+        AddModuleMapLookup(lookup, relativeToOutput, mapJson);
+        if (!relativeToOutput.StartsWith("./", StringComparison.Ordinal) &&
+            !relativeToOutput.StartsWith("../", StringComparison.Ordinal))
+        {
+            AddModuleMapLookup(lookup, "./" + relativeToOutput, mapJson);
+        }
+    }
+
+    private static void AddModuleMapLookup(Dictionary<string, string> lookup, string key, string mapJson)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+            return;
+
+        lookup[key] = mapJson;
+    }
+
+    private static async Task EnsureBundleSourceMappingUrlAsync(string outputPath)
+    {
+        if (!File.Exists(outputPath))
+            return;
+
+        var code = await File.ReadAllTextAsync(outputPath);
+        if (code.Contains("sourceMappingURL=", StringComparison.Ordinal))
+            return;
+
+        var updated = SourceMapWriter.AppendSourceMappingUrl(code, Path.GetFileName(GetBundleMapPath(outputPath)));
+        await File.WriteAllTextAsync(outputPath, updated, Utf8WithoutBom);
+    }
+
+    private static string GetBundleMapPath(string outputPath)
+        => outputPath + ".map";
 
     private static string GetRootAssemblyName(ManifestModel manifest)
     {

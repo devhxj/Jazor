@@ -30,8 +30,6 @@ internal sealed class RazorVueModuleWriter
         var skipped = 0;
         var deleted = 0;
 
-        // The aggregate manifest may merge multiple RazorVue catalogs, so each
-        // entry keeps its originating assembly name instead of inferring from component ids.
         var nextManifest = RazorVueManifestModel.Create(rootAssemblyPath, catalogs);
 
         foreach (var artifact in artifacts)

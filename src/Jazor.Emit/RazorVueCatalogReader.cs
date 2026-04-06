@@ -92,9 +92,9 @@ internal static class RazorVueCatalogReader
                 ReadString(entryType, entry, "SourceFilePath"),
                 ReadInt32(entryType, entry, "SourceSpanStart"),
                 ReadInt32(entryType, entry, "SourceSpanLength"),
-                ReadNullableString(entryType, entry, "GeneratedFilePath"),
-                ReadNullableInt32(entryType, entry, "GeneratedSpanStart"),
-                ReadNullableInt32(entryType, entry, "GeneratedSpanLength"),
+                TryReadNullableString(entryType, entry, "GeneratedFilePath"),
+                TryReadNullableInt32(entryType, entry, "GeneratedSpanStart"),
+                TryReadNullableInt32(entryType, entry, "GeneratedSpanLength"),
                 ReadInt32(entryType, entry, "StartLine"),
                 ReadInt32(entryType, entry, "StartColumn"),
                 ReadEnum<RazorVueMappingQualityRecord>(entryType, entry, "MappingQuality"),
@@ -129,6 +129,20 @@ internal static class RazorVueCatalogReader
             return value;
 
         throw new InvalidOperationException($"Property '{propertyName}' was not found on '{itemType.FullName}'.");
+    }
+
+    private static int? TryReadNullableInt32(Type itemType, object item, string propertyName)
+    {
+        var property = itemType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
+        if (property is null)
+            return null;
+
+        return property.GetValue(item) switch
+        {
+            null => null,
+            int value => value,
+            _ => throw new InvalidOperationException($"Property '{propertyName}' on '{itemType.FullName}' is not an Int32.")
+        };
     }
 
     private static int? ReadNullableInt32(Type itemType, object item, string propertyName)
@@ -198,6 +212,20 @@ internal static class RazorVueCatalogReader
             return value;
 
         throw new InvalidOperationException($"Property '{propertyName}' was not found on '{itemType.FullName}'.");
+    }
+
+    private static string? TryReadNullableString(Type itemType, object item, string propertyName)
+    {
+        var property = itemType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+        if (property is null)
+            return null;
+
+        return property.GetValue(property.GetMethod?.IsStatic == true ? null : item) switch
+        {
+            null => null,
+            string value => value,
+            _ => throw new InvalidOperationException($"Property '{propertyName}' on '{itemType.FullName}' is not a string.")
+        };
     }
 
     private static string? ReadNullableString(Type itemType, object item, string propertyName)

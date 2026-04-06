@@ -55,6 +55,14 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
+    private static readonly DiagnosticDescriptor RazorVueUnsupportedSetupLogicLowering = new(
+        id: "JAZORVGA006",
+        title: "RazorVue setup logic lowering is unsupported",
+        messageFormat: "{0}",
+        category: "Jazor.RazorVue.Analysis",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var componentCandidates = context.SyntaxProvider.ForAttributeWithMetadataName(
@@ -108,6 +116,10 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         {
             context.ReportDiagnostic(CreateCompilationIssueDiagnostic(issueException, candidate));
         }
+        catch (NotSupportedException ex) when (TryCreateUnsupportedSetupLogicIssueException(ex, candidate, out var issueException))
+        {
+            context.ReportDiagnostic(CreateCompilationIssueDiagnostic(issueException, candidate));
+        }
         catch (global::System.Exception ex)
         {
             var location = candidate?.Location ?? Location.None;
@@ -130,10 +142,60 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
             RazorVueIssueCode.AmbiguousComponentName => RazorVueAmbiguousComponentName,
             RazorVueIssueCode.ReservedIntrinsicNameCollision => RazorVueReservedIntrinsicNameCollision,
             RazorVueIssueCode.UnsupportedLifecycleLowering => RazorVueUnsupportedLifecycleLowering,
+            RazorVueIssueCode.UnsupportedSetupLogicLowering => RazorVueUnsupportedSetupLogicLowering,
             _ => RazorVueGenerationFailed
         };
         var location = TryCreateLocation(issueException.Origin) ?? candidate?.Location ?? Location.None;
         return Diagnostic.Create(descriptor, location, issueException.Issue.Message);
+    }
+
+    private static bool TryCreateUnsupportedSetupLogicIssueException(
+        NotSupportedException exception,
+        ModuleCandidate? candidate,
+        out RazorVueCompilationIssueException issueException)
+    {
+        issueException = null!;
+        if (candidate?.ClassSymbol is null)
+            return false;
+
+        var message = exception.Message;
+        if (string.IsNullOrWhiteSpace(message) || !message.Contains("component method", StringComparison.Ordinal))
+            return false;
+
+        var methodName = ExtractQuotedIdentifier(message);
+        if (string.IsNullOrWhiteSpace(methodName))
+            return false;
+
+        var method = candidate.ClassSymbol.GetMembers(methodName!)
+            .OfType<IMethodSymbol>()
+            .FirstOrDefault(static member => !member.IsStatic);
+        if (method is null)
+            return false;
+
+        var originLocation = method.Locations.FirstOrDefault(static location => location.IsInSource);
+        var origin = originLocation is null
+            ? null
+            : RazorVueSourceOrigin.FromLocation(originLocation, RazorVueOriginKind.Logic);
+        var issue = new RazorVueCompilationIssue(
+            RazorVueIssueCode.UnsupportedSetupLogicLowering,
+            RazorVueIssueSeverity.Error,
+            $"RazorVue setup lowering does not support method '{method.Name}' in component '{method.ContainingType.ToDisplayString()}'.",
+            ImmutableArray<string>.Empty);
+        issueException = new RazorVueCompilationIssueException(issue, method.ContainingType.ToDisplayString(), origin);
+        return true;
+    }
+
+    private static string? ExtractQuotedIdentifier(string message)
+    {
+        var start = message.IndexOf("'", StringComparison.Ordinal);
+        if (start < 0)
+            return null;
+
+        var end = message.IndexOf("'", start + 1, StringComparison.Ordinal);
+        if (end <= start)
+            return null;
+
+        return message.Substring(start + 1, end - start - 1);
     }
 
     private static Location? TryCreateLocation(RazorVueSourceOrigin? origin)
