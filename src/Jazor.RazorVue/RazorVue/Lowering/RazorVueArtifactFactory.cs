@@ -442,7 +442,7 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         RazorVueExpressionEmitter expressionEmitter,
         VueLogicMethodDescriptor method)
     {
-        if (method.Arity != 0 || method.IsAsync || method.MethodSymbol.DeclaringSyntaxReferences.Length == 0)
+        if (method.IsAsync || method.MethodSymbol.DeclaringSyntaxReferences.Length == 0)
             throw CreateUnsupportedSetupLoweringException(method.MethodSymbol);
 
         var syntax = method.MethodSymbol.DeclaringSyntaxReferences[0].GetSyntax();
@@ -465,7 +465,9 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             var methodBuilder = new StringBuilder();
             methodBuilder.Append("    function ")
                 .Append(ToLowerCamelCase(method.Name))
-                .AppendLine("() {");
+                .Append('(')
+                .Append(string.Join(", ", method.MethodSymbol.Parameters.Select(static parameter => parameter.Name)))
+                .AppendLine(") {");
             methodBuilder.Append("      return ")
                 .Append(expression)
                 .AppendLine(";");

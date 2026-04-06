@@ -554,11 +554,15 @@ internal sealed class RazorVueExpressionEmitter
 
         if (IsCurrentComponentMember(invocation.TargetMethod, invocation.Instance))
         {
-            if (invocation.Arguments.Length != 0)
+            // Keep render-side helper lowering conservative by requiring the call-site
+            // arity to match the helper signature exactly; unsupported method shapes still
+            // fail later in setup lowering.
+            if (invocation.Arguments.Length != invocation.TargetMethod.Parameters.Length)
                 throw CreateUnsupportedSetupLogicException(invocation.TargetMethod);
 
             _requiredSetupMethods.Add(invocation.TargetMethod);
-            return ToLowerCamelCase(invocation.TargetMethod.Name) + "()";
+            return ToLowerCamelCase(invocation.TargetMethod.Name) + "(" +
+                   string.Join(", ", invocation.Arguments.Select(argument => EmitExpression(argument.Value))) + ")";
         }
 
         var target = invocation.Instance is not null
@@ -578,11 +582,12 @@ internal sealed class RazorVueExpressionEmitter
 
         if (IsCurrentComponentMember(invocation.TargetMethod, invocation.Instance))
         {
-            if (invocation.Arguments.Length != 0)
+            if (invocation.Arguments.Length != invocation.TargetMethod.Parameters.Length)
                 throw CreateUnsupportedSetupLogicException(invocation.TargetMethod);
 
             _requiredSetupMethods.Add(invocation.TargetMethod);
-            return ToLowerCamelCase(invocation.TargetMethod.Name) + "()";
+            return ToLowerCamelCase(invocation.TargetMethod.Name) + "(" +
+                   string.Join(", ", invocation.Arguments.Select(argument => EmitSetupExpression(argument.Value))) + ")";
         }
 
         var target = invocation.Instance is not null

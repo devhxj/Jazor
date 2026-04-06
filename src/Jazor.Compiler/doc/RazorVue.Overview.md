@@ -22,7 +22,7 @@ The current state of RazorVue is:
 - the current stage is phase-one closure work around the minimal path
 - phase-one scope remains intentionally limited
 - HMR and sourcemap remain metadata-first, reserved for later milestones
-- the current logic lane is still a conservative subset, but it now includes lifecycle safe-subset lowering plus a minimal setup-side logic closure for simple fields and zero-arg helpers
+- the current logic lane is still a conservative subset, but it now includes lifecycle safe-subset lowering plus a minimal setup-side logic closure for simple fields and helper calls whose arguments can be lowered safely
 
 As of the current implementation lane, the repository already has:
 
@@ -40,7 +40,7 @@ As of the current implementation lane, the repository already has:
 - proven component-node lowering for props, emit/listener wiring, and default / named / scoped slot flow
 - minimal structural lowering for `if` and `foreach`
 - lifecycle safe-subset lowering for `OnInitialized*`, `OnParametersSet*`, and `OnAfterRender*`, including `watch(..., { immediate: true })` and `firstRender` bridging
-- minimal setup-side logic lowering for simple instance fields and zero-arg helper methods that can be projected safely into `setup()`
+- minimal setup-side logic lowering for simple instance fields and helper methods whose arguments can be projected safely into `setup()`
 - artifact identity/hash shaping and basic HMR boundary classification
 
 The following are still not complete phase-one coverage:

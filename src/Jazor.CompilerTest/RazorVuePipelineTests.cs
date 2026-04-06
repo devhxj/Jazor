@@ -2049,6 +2049,110 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersSingleArgumentComponentMethodIntoSetupScope()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/method-card")]
+                public class MethodCard : VueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    private readonly string TitleText = "Count: ";
+
+                    private string FormatTitle(int value)
+                    {
+                        return TitleText + value;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "span");
+                        builder.AddContent(1, FormatTitle(Value));
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const titleText = \"Count: \";");
+        StringAssert.Contains(artifact.ModuleCode, "function formatTitle(value)");
+        StringAssert.Contains(artifact.ModuleCode, "return (titleText + value);");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"span\", null, formatTitle(props.value));");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersTwoArgumentComponentMethodIntoSetupScope()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/method-card")]
+                public class MethodCard : VueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    private readonly string TitleText = "Count: ";
+
+                    private string FormatTitle(int value, int scale)
+                    {
+                        return TitleText + (value * scale);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "span");
+                        builder.AddContent(1, FormatTitle(Value, 2));
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const titleText = \"Count: \";");
+        StringAssert.Contains(artifact.ModuleCode, "function formatTitle(value, scale)");
+        StringAssert.Contains(artifact.ModuleCode, "return (titleText + (value * scale));");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"span\", null, formatTitle(props.value, 2));");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_ThrowsCompilationIssueForInheritedNonParameterLifecyclePayload()
     {
         var context = CreateContext(
