@@ -1,5 +1,8 @@
 # RazorVue 阶段评估（2026-04-06）
 
+> Status: current status snapshot
+> Positioning: Workstream-specific status snapshot for the active RazorVue lane.
+
 ## 1. 评估范围
 
 本次评估聚焦 RazorVue 当前已经进入主干的设计实现，不重新定义一套新架构，而是基于现有代码、测试与文档，回答三个问题：

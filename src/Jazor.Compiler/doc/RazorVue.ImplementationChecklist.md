@@ -74,10 +74,11 @@ The currently proven lowering subset is:
 - lifecycle safe-subset lowering for `OnInitialized*`, `OnParametersSet*`, and `OnAfterRender*`
 - `OnParametersSet*` immediate watch bridging
 - `OnAfterRender*` explicit `firstRender` bridging
+- minimal setup-side logic lowering for simple instance fields and zero-arg helper methods
 
 The following checklist items remain effectively open even if some scaffolding exists:
 
-- broader logic extraction outside the current lifecycle/EventCallback safe subset
+- broader logic extraction outside the current lifecycle/EventCallback/setup-field/helper safe subset
 - full component-instance semantics
 - `Dispose*`, `ShouldRender`, and `SetParametersAsync` runtime-equivalent lowering
 - broader control-flow coverage validation
@@ -85,7 +86,7 @@ The following checklist items remain effectively open even if some scaffolding e
 - final `DenoHost` end-to-end integration
 - final HMR/sourcemap outputs
 
-The current fallback for unsupported analysis/lowering shapes is still `JAZORVGA001` from `RazorVueGenerator` in the general case. The current thin `Jazor.RazorVue.Analysis` host path also projects structured issue diagnostics for `JAZORVGA002` (component not found), `JAZORVGA003` (ambiguous short component name), `JAZORVGA004` (reserved intrinsic-name collision), and `JAZORVGA005` (unsupported lifecycle lowering).
+The current fallback for unsupported analysis/lowering shapes is still `JAZORVGA001` from `RazorVueGenerator` in the general case. The current thin `Jazor.RazorVue.Analysis` host path also projects structured issue diagnostics for `JAZORVGA002` (component not found), `JAZORVGA003` (ambiguous short component name), `JAZORVGA004` (reserved intrinsic-name collision), `JAZORVGA005` (unsupported lifecycle lowering), and `JAZORVGA006` (unsupported setup-side logic lowering).
 
 ## 3. P0. Foundation and Constraints
 

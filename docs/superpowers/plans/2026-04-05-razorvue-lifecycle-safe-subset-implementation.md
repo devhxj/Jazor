@@ -1,5 +1,8 @@
 # RazorVue Lifecycle Safe Subset Implementation Plan
 
+> Status: active plan
+> Positioning: Execution-level implementation plan for the current RazorVue lifecycle-safe-subset lane.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 让 RazorVue 的 `OnInitialized*`、`OnParametersSet*`、`OnAfterRender*` 从“存在性元数据/空 hook 壳”升级为“安全子集可执行、超界即明确诊断”的稳定主链路。

@@ -109,6 +109,32 @@ internal static class RazorVueEntryClassifier
         return builder.ToImmutable();
     }
 
+    public static ImmutableArray<IFieldSymbol> FindLogicFields(INamedTypeSymbol symbol)
+    {
+        var builder = ImmutableArray.CreateBuilder<IFieldSymbol>();
+        var seenNames = new HashSet<string>(StringComparer.Ordinal);
+
+        for (var current = symbol; current is not null; current = current.BaseType)
+        {
+            foreach (var field in current.GetMembers().OfType<IFieldSymbol>())
+            {
+                // Keep setup-side field discovery conservative until lowering exists.
+                if (field.IsStatic || !field.Locations.Any(static location => location.IsInSource))
+                    continue;
+
+                if (field.AssociatedSymbol is not null || field.IsImplicitlyDeclared)
+                    continue;
+
+                if (!seenNames.Add(field.Name))
+                    continue;
+
+                builder.Add(field);
+            }
+        }
+
+        return builder.ToImmutable();
+    }
+
     private static IMethodSymbol? FindOrdinaryMethod(INamedTypeSymbol symbol, string methodName, int parameterCount)
         => FindHierarchyMethod(symbol, methodName, method =>
             method.MethodKind == MethodKind.Ordinary &&

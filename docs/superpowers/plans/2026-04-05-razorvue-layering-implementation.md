@@ -1,5 +1,8 @@
 # RazorVue Layering Refactor Implementation Plan
 
+> Status: active plan
+> Positioning: Execution-level implementation plan for the RazorVue layering closure lane.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 把 RazorVue 核心语义从 `Jazor.RazorVue.Analysis` 迁回 `Jazor.RazorVue`，让 `Analysis` 收敛为薄 generator/analyzer 入口层。

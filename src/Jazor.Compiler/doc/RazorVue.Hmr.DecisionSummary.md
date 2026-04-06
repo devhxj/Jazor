@@ -1,5 +1,8 @@
 # RazorVue HMR Decision Summary
 
+> Status: active reference
+> Positioning: Reserved-lane decision summary for future RazorVue HMR work; runtime implementation remains deferred.
+
 ## 1. What This Document Solves
 
 This is a short document that keeps only the final decisions for the RazorVue HMR direction.

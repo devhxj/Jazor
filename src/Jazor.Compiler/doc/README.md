@@ -113,6 +113,7 @@
 - 架构已预留
 - runtime HMR 尚未完整实现
 - 当前以 compiler-owned identity / metadata 设计为主
+- 当前不应把它理解为 active runtime implementation lane
 
 专题内包含：决策摘要、完整设计、硬约束、实施清单、坑点说明。
 
@@ -122,14 +123,19 @@
 
 这一组文档更偏“阶段计划 / 实施清单 / 复核记录”。
 
-它们仍然有参考价值，但更容易随着代码推进而过时，不应作为首次阅读主入口。
+为了降低 active 与 historical 混杂，本节拆成两类：
 
-### 4.1 编译器主线阶段材料
+- 当前仍可能直接指导执行的材料
+- 更偏历史上下文或阶段性复核的材料
+
+### 4.1 当前 active implementation materials
+
+#### 编译器主线
 
 - [TransformationClosureChecklist.md](./TransformationClosureChecklist.md)
 - [OpCompileImplementationChecklist.md](./OpCompileImplementationChecklist.md)
 
-### 4.2 SourceMap 阶段材料
+#### SourceMap
 
 - [SourceMap.DecisionSummary.md](./SourceMap.DecisionSummary.md)
 - [SourceMap.HardRules.md](./SourceMap.HardRules.md)
@@ -137,7 +143,7 @@
 - [SourceMap.Pitfalls.md](./SourceMap.Pitfalls.md)
 - [SourceMap.Design.md](./SourceMap.Design.md)
 
-### 4.3 RazorVue 阶段材料
+#### RazorVue
 
 - [RazorVue.DecisionSummary.md](./RazorVue.DecisionSummary.md)
 - [RazorVue.Design.md](./RazorVue.Design.md)
@@ -148,16 +154,29 @@
 - [RazorVue.Pitfalls.md](./RazorVue.Pitfalls.md)
 - [RazorVue.ImplementationChecklist.md](./RazorVue.ImplementationChecklist.md)
 - [RazorVue.ImplementationSkeleton.md](./RazorVue.ImplementationSkeleton.md)
-- [RazorVue.FirstPrPlan.md](./RazorVue.FirstPrPlan.md)
-- [RazorVue.Review.md](./RazorVue.Review.md)
 
-### 4.4 RazorVue HMR 阶段材料
+#### RazorVue HMR
 
 - [RazorVue.Hmr.DecisionSummary.md](./RazorVue.Hmr.DecisionSummary.md)
 - [RazorVue.Hmr.Design.md](./RazorVue.Hmr.Design.md)
 - [RazorVue.Hmr.HardRules.md](./RazorVue.Hmr.HardRules.md)
 - [RazorVue.Hmr.ImplementationChecklist.md](./RazorVue.Hmr.ImplementationChecklist.md)
 - [RazorVue.Hmr.Pitfalls.md](./RazorVue.Hmr.Pitfalls.md)
+
+说明：
+
+- 这一组当前更接近 reserved architecture lane
+- 若未来进入 active implementation，应先更新各文档 `Status` 与 repo-level bridge
+
+### 4.2 历史或阶段性上下文材料
+
+- [RazorVue.FirstPrPlan.md](./RazorVue.FirstPrPlan.md)
+- [RazorVue.Review.md](./RazorVue.Review.md)
+
+说明：
+
+- 是否 active，优先看文档开头的 `Status`
+- repo-level 当前执行入口请看 [docs/plans/project-execution-index.md](../../../docs/plans/project-execution-index.md)
 
 ---
 

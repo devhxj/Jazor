@@ -33,9 +33,15 @@ public sealed class RazorVueEmitIntegrationTests
         var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
         var outputDirectory = Path.Combine(root, "wwwroot", "jazor");
         var manifestPath = RazorVueModuleWriter.GetManifestPath(Path.Combine(outputDirectory, "jazor-manifest.json"));
+        var sourceFilePath = Path.Combine(root, "Counter.razor");
+        var modulePath = Path.Combine(outputDirectory, "components", "counter-card.mjs");
+        var mapPath = modulePath + ".map";
 
         try
         {
+            Directory.CreateDirectory(root);
+            File.WriteAllText(sourceFilePath, "Counter component source");
+
             var result = writer.Write(
                 rootAssemblyPath: Path.Combine(root, "Demo.Host.dll"),
                 outputDirectory,
@@ -60,9 +66,12 @@ public sealed class RazorVueEmitIntegrationTests
                                 new RazorVueEmitRuntimeHints(true, false, true, false, false, false),
                                 [
                                     new RazorVueEmitSourceOriginRecord(
-                                        "Counter.razor",
+                                        sourceFilePath,
                                         12,
                                         8,
+                                        "components/counter-card.mjs",
+                                        0,
+                                        38,
                                         2,
                                         4,
                                         RazorVueMappingQualityRecord.MappedFromGenerated,
@@ -74,8 +83,18 @@ public sealed class RazorVueEmitIntegrationTests
 
             Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
             Assert.AreEqual(1, result.Written);
-            Assert.IsTrue(File.Exists(Path.Combine(outputDirectory, "components", "counter-card.mjs")));
+            Assert.IsTrue(File.Exists(modulePath));
+            Assert.IsTrue(File.Exists(mapPath));
             Assert.IsTrue(File.Exists(manifestPath));
+
+            var moduleCode = File.ReadAllText(modulePath);
+            StringAssert.Contains(moduleCode, "//# sourceMappingURL=counter-card.mjs.map");
+
+            using var map = JsonDocument.Parse(File.ReadAllText(mapPath));
+            Assert.AreEqual("components/counter-card.mjs", map.RootElement.GetProperty("file").GetString());
+            Assert.AreEqual(sourceFilePath, map.RootElement.GetProperty("sources")[0].GetString());
+            Assert.AreEqual("Counter component source", map.RootElement.GetProperty("sourcesContent")[0].GetString());
+            Assert.AreNotEqual(string.Empty, map.RootElement.GetProperty("mappings").GetString());
 
             var manifest = RazorVueManifestModel.TryLoad(manifestPath);
             Assert.IsNotNull(manifest);
@@ -198,6 +217,7 @@ public sealed class RazorVueEmitIntegrationTests
             Assert.AreEqual(0, firstRun.ExitCode, firstRun.ToString());
             Assert.IsTrue(File.Exists(razorVueManifestPath));
             Assert.IsTrue(File.Exists(Path.Combine(outputDirectory, "components", "counter-card.mjs")));
+            Assert.IsTrue(File.Exists(Path.Combine(outputDirectory, "components", "counter-card.mjs.map")));
 
             var secondRun = await RunDotNetAsync(root,
                 [
@@ -217,6 +237,7 @@ public sealed class RazorVueEmitIntegrationTests
 
             Assert.AreEqual(0, secondRun.ExitCode, secondRun.ToString());
             Assert.IsFalse(File.Exists(Path.Combine(outputDirectory, "components", "counter-card.mjs")));
+            Assert.IsFalse(File.Exists(Path.Combine(outputDirectory, "components", "counter-card.mjs.map")));
             Assert.IsTrue(File.Exists(razorVueManifestPath));
 
             using var manifest = JsonDocument.Parse(await File.ReadAllTextAsync(razorVueManifestPath));

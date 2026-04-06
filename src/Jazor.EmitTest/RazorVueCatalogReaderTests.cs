@@ -1,4 +1,15 @@
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using Basic.Reference.Assemblies;
 using Jazor.Emit;
+using Jazor.Razor;
+using Jazor.RazorVue;
+using Jazor.RazorVue.Analysis;
+using Jazor.RazorVue.Artifacts;
+using Microsoft.AspNetCore.Components;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Jazor.EmitTest
 {
@@ -24,6 +35,215 @@ namespace Jazor.EmitTest
             Assert.IsTrue(artifact.Hints.SupportsSsr);
             Assert.HasCount(1, artifact.SourceOrigins);
             Assert.AreEqual(RazorVueMappingQualityRecord.MappedFromGenerated, artifact.SourceOrigins[0].MappingQuality);
+            Assert.AreEqual("components/counter-card.mjs", artifact.SourceOrigins[0].GeneratedFilePath);
+            Assert.AreEqual(0, artifact.SourceOrigins[0].GeneratedSpanStart);
+            Assert.AreEqual(38, artifact.SourceOrigins[0].GeneratedSpanLength);
+        }
+
+        [TestMethod]
+        public void RazorVueCatalogReader_ReadsGeneratedCatalogFromRealGeneratorAssembly()
+        {
+            const string sourcePath = "CounterCard.razor";
+            var compilation = CreateRazorVueCompilation(
+                "RazorVue.Reader.Integration.Tests",
+                """
+                using System;
+                using Jazor.RazorVue;
+                using Microsoft.AspNetCore.Components;
+
+                namespace ECMAScript
+                {
+                    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                    public sealed class ECMAScriptModuleAttribute : Attribute
+                    {
+                        public ECMAScriptModuleAttribute() { }
+                        public ECMAScriptModuleAttribute(string import) { }
+                    }
+                }
+
+                namespace Demo.Components
+                {
+                    [ECMAScript.ECMAScriptModule("./components/counter-card")]
+                    public class CounterCard : VueComponent
+                    {
+                        [Parameter]
+                        public int Value { get; set; }
+                    }
+                }
+                """,
+                sourcePath);
+            var location = compilation.GetTypeByMetadataName("Demo.Components.CounterCard")!
+                .Locations
+                .Single(static item => item.IsInSource);
+            var expectedOrigin = RazorVueSourceOrigin.FromLocation(location, RazorVueOriginKind.Component);
+            var assembly = CompileRazorVueGeneratedAssembly(compilation);
+
+            var catalog = RazorVueCatalogReader.TryRead(assembly);
+
+            Assert.IsNotNull(catalog);
+            Assert.HasCount(1, catalog.Artifacts);
+            Assert.HasCount(1, catalog.Artifacts[0].SourceOrigins);
+            Assert.AreEqual(expectedOrigin.GeneratedFilePath, catalog.Artifacts[0].SourceOrigins[0].GeneratedFilePath);
+            Assert.AreEqual(expectedOrigin.GeneratedSpanStart, catalog.Artifacts[0].SourceOrigins[0].GeneratedSpanStart);
+            Assert.AreEqual(expectedOrigin.GeneratedSpanLength, catalog.Artifacts[0].SourceOrigins[0].GeneratedSpanLength);
+        }
+
+        [TestMethod]
+        public void RazorVueCatalogReader_ThrowsWhenSourceOriginsIsNull()
+        {
+            var assembly = CompileCatalogAssembly(
+                "RazorVue.Reader.NullSourceOrigins",
+                """
+                public string ComponentName => "CounterCard";
+                public string RelativeModulePath => "components/counter-card.mjs";
+                public string ModuleCode => "export default {};";
+                public string[] Imports => new[] { "vue" };
+                public string[] Styles => Array.Empty<string>();
+                public GeneratedIdentity Identity => new();
+                public GeneratedHints Hints => new();
+                public GeneratedOrigin[]? SourceOrigins => null;
+                """);
+
+            var exception = Assert.ThrowsExactly<InvalidOperationException>(() => RazorVueCatalogReader.TryRead(assembly));
+            StringAssert.Contains(exception.Message, "SourceOrigins");
+        }
+
+        [TestMethod]
+        public void RazorVueCatalogReader_ThrowsWhenSourceOriginsContainsNullEntry()
+        {
+            var assembly = CompileCatalogAssembly(
+                "RazorVue.Reader.NullSourceOriginEntry",
+                """
+                public string ComponentName => "CounterCard";
+                public string RelativeModulePath => "components/counter-card.mjs";
+                public string ModuleCode => "export default {};";
+                public string[] Imports => new[] { "vue" };
+                public string[] Styles => Array.Empty<string>();
+                public GeneratedIdentity Identity => new();
+                public GeneratedHints Hints => new();
+                public GeneratedOrigin[] SourceOrigins => new GeneratedOrigin?[] { null };
+                """);
+
+            var exception = Assert.ThrowsExactly<InvalidOperationException>(() => RazorVueCatalogReader.TryRead(assembly));
+            StringAssert.Contains(exception.Message, "SourceOrigins");
+        }
+
+        [TestMethod]
+        public void RazorVueCatalogReader_ThrowsWhenImportsIsNull()
+        {
+            var assembly = CompileCatalogAssembly(
+                "RazorVue.Reader.NullImports",
+                """
+                public string ComponentName => "CounterCard";
+                public string RelativeModulePath => "components/counter-card.mjs";
+                public string ModuleCode => "export default {};";
+                public string[]? Imports => null;
+                public string[] Styles => Array.Empty<string>();
+                public GeneratedIdentity Identity => new();
+                public GeneratedHints Hints => new();
+                public GeneratedOrigin[] SourceOrigins => new[] { new GeneratedOrigin() };
+                """);
+
+            var exception = Assert.ThrowsExactly<InvalidOperationException>(() => RazorVueCatalogReader.TryRead(assembly));
+            StringAssert.Contains(exception.Message, "Imports");
+        }
+
+        [TestMethod]
+        public void RazorVueCatalogReader_ThrowsWhenImportsContainsNullEntry()
+        {
+            var assembly = CompileCatalogAssembly(
+                "RazorVue.Reader.NullImportEntry",
+                """
+                public string ComponentName => "CounterCard";
+                public string RelativeModulePath => "components/counter-card.mjs";
+                public string ModuleCode => "export default {};";
+                public string[] Imports => new string?[] { null };
+                public string[] Styles => Array.Empty<string>();
+                public GeneratedIdentity Identity => new();
+                public GeneratedHints Hints => new();
+                public GeneratedOrigin[] SourceOrigins => new[] { new GeneratedOrigin() };
+                """);
+
+            var exception = Assert.ThrowsExactly<InvalidOperationException>(() => RazorVueCatalogReader.TryRead(assembly));
+            StringAssert.Contains(exception.Message, "Imports");
+        }
+
+        [TestMethod]
+        public void RazorVueCatalogReader_ThrowsWhenStylesIsNull()
+        {
+            var assembly = CompileCatalogAssembly(
+                "RazorVue.Reader.NullStyles",
+                """
+                public string ComponentName => "CounterCard";
+                public string RelativeModulePath => "components/counter-card.mjs";
+                public string ModuleCode => "export default {};";
+                public string[] Imports => new[] { "vue" };
+                public string[]? Styles => null;
+                public GeneratedIdentity Identity => new();
+                public GeneratedHints Hints => new();
+                public GeneratedOrigin[] SourceOrigins => new[] { new GeneratedOrigin() };
+                """);
+
+            var exception = Assert.ThrowsExactly<InvalidOperationException>(() => RazorVueCatalogReader.TryRead(assembly));
+            StringAssert.Contains(exception.Message, "Styles");
+        }
+
+        [TestMethod]
+        public void RazorVueCatalogReader_ThrowsWhenStylesContainsNullEntry()
+        {
+            var assembly = CompileCatalogAssembly(
+                "RazorVue.Reader.NullStyleEntry",
+                """
+                public string ComponentName => "CounterCard";
+                public string RelativeModulePath => "components/counter-card.mjs";
+                public string ModuleCode => "export default {};";
+                public string[] Imports => new[] { "vue" };
+                public string[] Styles => new string?[] { null };
+                public GeneratedIdentity Identity => new();
+                public GeneratedHints Hints => new();
+                public GeneratedOrigin[] SourceOrigins => new[] { new GeneratedOrigin() };
+                """);
+
+            var exception = Assert.ThrowsExactly<InvalidOperationException>(() => RazorVueCatalogReader.TryRead(assembly));
+            StringAssert.Contains(exception.Message, "Styles");
+        }
+
+        [TestMethod]
+        public void RazorVueCatalogReader_ThrowsWhenGetArtifactsContainsNullEntry()
+        {
+            var assembly = CompileCatalogAssembly(
+                "RazorVue.Reader.NullArtifactEntry",
+                DefaultGeneratedArtifactMembers,
+                getArtifactsExpression: "new object?[] { null }");
+
+            var exception = Assert.ThrowsExactly<InvalidOperationException>(() => RazorVueCatalogReader.TryRead(assembly));
+            StringAssert.Contains(exception.Message, "null artifact entry");
+        }
+
+        [TestMethod]
+        public void RazorVueCatalogReader_ThrowsWhenGeneratedSpanStartIsNotInt32OrNull()
+        {
+            var assembly = CompileCatalogAssembly(
+                "RazorVue.Reader.BadGeneratedSpanStart",
+                DefaultGeneratedArtifactMembers,
+                """
+                private sealed class GeneratedOrigin
+                {
+                    public string SourceFilePath => "Counter.razor";
+                    public int SourceSpanStart => 12;
+                    public int SourceSpanLength => 8;
+                    public string? GeneratedFilePath => "components/counter-card.mjs";
+                    public string GeneratedSpanStart => "0";
+                    public int? GeneratedSpanLength => 38;
+                    public int StartLine => 2;
+                    public int StartColumn => 4;
+                    public GeneratedMappingQuality MappingQuality => GeneratedMappingQuality.MappedFromGenerated;
+                    public GeneratedOriginProvenance Provenance => GeneratedOriginProvenance.GeneratedSyntaxLocation;
+                }
+                """);
+
+            var exception = Assert.ThrowsExactly<InvalidOperationException>(() => RazorVueCatalogReader.TryRead(assembly));
+            StringAssert.Contains(exception.Message, "GeneratedSpanStart");
         }
 
         [TestMethod]
@@ -66,6 +286,146 @@ namespace Jazor.EmitTest
                     Directory.Delete(directory, recursive: true);
             }
         }
+
+        private const string DefaultGeneratedArtifactMembers =
+            """
+            public string ComponentName => "CounterCard";
+            public string RelativeModulePath => "components/counter-card.mjs";
+            public string ModuleCode => "export default {};";
+            public string[] Imports => new[] { "vue" };
+            public string[] Styles => Array.Empty<string>();
+            public GeneratedIdentity Identity => new();
+            public GeneratedHints Hints => new();
+            public GeneratedOrigin[] SourceOrigins => new[] { new GeneratedOrigin() };
+            """;
+
+        private static Assembly CompileCatalogAssembly(string assemblyName, string artifactMembers, string? generatedOriginType = null, string? getArtifactsExpression = null)
+        {
+            var source = $$"""
+            using System;
+
+            namespace Jazor.Generated
+            {
+                public static class RazorVueCatalog
+                {
+                    public static string AssemblyName => "{{assemblyName}}";
+
+                    public static System.Collections.IEnumerable GetArtifacts()
+                        => {{getArtifactsExpression ?? "new object[] { new GeneratedArtifact() }"}};
+
+                    private sealed class GeneratedArtifact
+                    {
+            {{artifactMembers}}
+                    }
+
+                    private sealed class GeneratedIdentity
+                    {
+                        public string ComponentId => "CounterCard";
+                        public string ModuleId => "components/counter-card.mjs";
+                        public string DescriptorHash => "descriptor-hash";
+                        public string TemplateHash => "template-hash";
+                        public string LogicHash => "logic-hash";
+                        public GeneratedHmrBoundaryKind HmrBoundaryKind => GeneratedHmrBoundaryKind.LogicSafe;
+                    }
+
+                    private sealed class GeneratedHints
+                    {
+                        public bool RequiresVueRuntime => true;
+                        public bool RequiresHydration => false;
+                        public bool SupportsSsr => true;
+                        public bool UsesTeleport => false;
+                        public bool UsesSuspense => false;
+                        public bool UsesKeepAlive => false;
+                    }
+
+            {{generatedOriginType ??
+            """
+                    private sealed class GeneratedOrigin
+                    {
+                        public string SourceFilePath => "Counter.razor";
+                        public int SourceSpanStart => 12;
+                        public int SourceSpanLength => 8;
+                        public string? GeneratedFilePath => "components/counter-card.mjs";
+                        public int? GeneratedSpanStart => 0;
+                        public int? GeneratedSpanLength => 38;
+                        public int StartLine => 2;
+                        public int StartColumn => 4;
+                        public GeneratedMappingQuality MappingQuality => GeneratedMappingQuality.MappedFromGenerated;
+                        public GeneratedOriginProvenance Provenance => GeneratedOriginProvenance.GeneratedSyntaxLocation;
+                    }
+            """}}
+
+                    private enum GeneratedHmrBoundaryKind
+                    {
+                        Unknown,
+                        TemplateOnly,
+                        LogicSafe,
+                        FullReloadRequired
+                    }
+
+                    private enum GeneratedMappingQuality
+                    {
+                        ExactSource,
+                        MappedFromGenerated,
+                        GeneratedOnly
+                    }
+
+                    private enum GeneratedOriginProvenance
+                    {
+                        RazorSourceMap,
+                        GeneratedSyntaxLocation,
+                        GeneratedFallback
+                    }
+                }
+            }
+            """;
+
+            return CompileAssembly(CreateCompilation(assemblyName, source, $"{assemblyName}.g.cs", CreateBaseReferences()));
+        }
+
+        private static CSharpCompilation CreateRazorVueCompilation(string assemblyName, string source, string sourcePath)
+            => CreateCompilation(assemblyName, source, sourcePath, CreateRazorVueReferences());
+
+        private static CSharpCompilation CreateCompilation(string assemblyName, string source, string sourcePath, IEnumerable<MetadataReference> references)
+            => CSharpCompilation.Create(
+                assemblyName: assemblyName,
+                syntaxTrees: [CSharpSyntaxTree.ParseText(source, path: sourcePath)],
+                references: references,
+                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        private static Assembly CompileRazorVueGeneratedAssembly(Compilation compilation)
+        {
+            GeneratorDriver driver = CSharpGeneratorDriver.Create([
+                new RazorVueGenerator().AsSourceGenerator()
+            ]);
+            driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out _);
+
+            var diagnostics = outputCompilation.GetDiagnostics()
+                .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+                .ToArray();
+            Assert.AreEqual(0, diagnostics.Length, string.Join("\n", diagnostics.Select(static diagnostic => diagnostic.ToString())));
+
+            return CompileAssembly(outputCompilation);
+        }
+
+        private static Assembly CompileAssembly(Compilation compilation)
+        {
+            using var stream = new MemoryStream();
+            var emitResult = compilation.Emit(stream);
+            Assert.IsTrue(emitResult.Success, string.Join("\n", emitResult.Diagnostics.Select(static diagnostic => diagnostic.ToString())));
+            stream.Position = 0;
+            return Assembly.Load(stream.ToArray());
+        }
+
+        private static IEnumerable<MetadataReference> CreateBaseReferences()
+            => Net100.References.All.Cast<MetadataReference>();
+
+        private static IEnumerable<MetadataReference> CreateRazorVueReferences()
+            => CreateBaseReferences().Concat([
+                MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location)
+            ]);
     }
 }
 
@@ -106,6 +466,9 @@ namespace Jazor.Generated
                         sourceFilePath: "Counter.razor",
                         sourceSpanStart: 12,
                         sourceSpanLength: 8,
+                        generatedFilePath: "components/counter-card.mjs",
+                        generatedSpanStart: 0,
+                        generatedSpanLength: 38,
                         startLine: 2,
                         startColumn: 4,
                         mappingQuality: GeneratedMappingQuality.MappedFromGenerated,
@@ -169,6 +532,9 @@ namespace Jazor.Generated
             string sourceFilePath,
             int sourceSpanStart,
             int sourceSpanLength,
+            string generatedFilePath,
+            int generatedSpanStart,
+            int generatedSpanLength,
             int startLine,
             int startColumn,
             GeneratedMappingQuality mappingQuality,
@@ -177,6 +543,9 @@ namespace Jazor.Generated
             public string SourceFilePath { get; } = sourceFilePath;
             public int SourceSpanStart { get; } = sourceSpanStart;
             public int SourceSpanLength { get; } = sourceSpanLength;
+            public string GeneratedFilePath { get; } = generatedFilePath;
+            public int GeneratedSpanStart { get; } = generatedSpanStart;
+            public int GeneratedSpanLength { get; } = generatedSpanLength;
             public int StartLine { get; } = startLine;
             public int StartColumn { get; } = startColumn;
             public GeneratedMappingQuality MappingQuality { get; } = mappingQuality;

@@ -326,11 +326,16 @@ public static bool _5dbf54319ebc8dfe(string? value)
 | `long`, `ulong`, `Int128`, `UInt128`, `BigInteger` | `BigInt` |
 | `char`, `string` | `string` |
 | `DateTime`, `DateTimeOffset`, `DateOnly`, `TimeOnly` | `Date` |
-| `List<T>`, `IList<T>`, `IEnumerable<T>`, `T[]` | `Array<T>` |
+| `List<T>`, `IList<T>`, `T[]` | `Array<T>` |
+| `IEnumerable<T>` | 抽象可枚举输入面 | 仅在需要数组语义的 API 上按需物化为 `Array<T>`，不视为类型级别别名 |
 | `Dictionary<K,V>`, `IDictionary<K,V>` | `Map<TKey, TValue>` |
 | `HashSet<T>`, `ISet<T>` | `Set<T>` |
 | `object` | `object` |
 | `void` | `void` |
+
+> `IEnumerable<T>` 在 Jazor.CLR 中表示“可枚举协议/输入面”，不是 JavaScript `Array<T>` 的直接类型别名。
+> 例如 `Array.from(...)`、`List<T>(IEnumerable<T>)`、`System.Linq.Enumerable.Where/Select/ToList/ToArray` 这些入口会在边界显式物化。
+> 当前可把 `System.Linq.Enumerable` 理解为一组把 `IEnumerable<T>` 投影到数组操作的 helper，而不是把 `IEnumerable<T>` 本体降格成数组。
 
 ### 特殊类型
 

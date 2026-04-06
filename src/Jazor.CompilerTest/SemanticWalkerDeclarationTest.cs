@@ -1550,9 +1550,9 @@ public sealed class SemanticWalkerDeclarationTest
         AssertScriptEqual(
 @"{
   let list = [1, 2, 3];
-  let filtered = Array.from(Array.from(list).filter(x => {
+  let filtered = list.filter(x => {
     return x > 1;
-  }));
+  });
 }", script);
     }
 

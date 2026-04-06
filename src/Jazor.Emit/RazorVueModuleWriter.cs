@@ -1,3 +1,4 @@
+using Jazor.Emit.SourceMaps;
 using System.Text;
 
 namespace Jazor.Emit;
@@ -5,6 +6,8 @@ namespace Jazor.Emit;
 internal sealed class RazorVueModuleWriter
 {
     private static readonly UTF8Encoding Utf8WithoutBom = new(encoderShouldEmitUTF8Identifier: false);
+    private static readonly SourceMapBuilder ModuleMapBuilder = new();
+    private static readonly SourceMapWriter ModuleMapWriter = new();
 
     public WriteResult Write(
         string rootAssemblyPath,
@@ -17,8 +20,6 @@ internal sealed class RazorVueModuleWriter
 
         var normalizedOutputDirectory = EnsureDirectorySeparator(Path.GetFullPath(outputDirectory));
         var existingManifest = RazorVueManifestModel.TryLoad(manifestPath);
-        var existingByPath = existingManifest?.Modules.ToDictionary(static module => module.RelativeModulePath, StringComparer.OrdinalIgnoreCase)
-            ?? new Dictionary<string, RazorVueManifestEntry>(StringComparer.OrdinalIgnoreCase);
         var artifacts = catalogs
             .SelectMany(static catalog => catalog.Artifacts)
             .OrderBy(static artifact => artifact.RelativeModulePath, StringComparer.OrdinalIgnoreCase)
@@ -36,22 +37,33 @@ internal sealed class RazorVueModuleWriter
         foreach (var artifact in artifacts)
         {
             var targetPath = GetTargetPath(normalizedOutputDirectory, artifact.RelativeModulePath);
+            var mapPath = GetSourceMapPath(targetPath);
             var targetDirectory = Path.GetDirectoryName(targetPath);
             if (!string.IsNullOrEmpty(targetDirectory))
                 Directory.CreateDirectory(targetDirectory);
 
-            var contentHash = ComputeSha256Hex(artifact.ModuleCode);
-            if (existingByPath.TryGetValue(artifact.RelativeModulePath, out var existingEntry) &&
-                StringComparer.Ordinal.Equals(existingEntry.ContentHash, contentHash) &&
-                File.Exists(targetPath))
-            {
-                skipped++;
-            }
-            else
-            {
-                File.WriteAllText(targetPath, artifact.ModuleCode, Utf8WithoutBom);
+            var sourceMap = ModuleMapBuilder.BuildModuleMap(
+                artifact.RelativeModulePath,
+                artifact.ModuleCode,
+                artifact.SourceOrigins,
+                TryReadSourceContent);
+            var moduleCode = ModuleMapWriter.AppendSourceMappingUrl(artifact.ModuleCode, Path.GetFileName(mapPath));
+            var mapJson = ModuleMapWriter.Write(sourceMap);
+
+            var moduleChanged = !File.Exists(targetPath)
+                || !string.Equals(File.ReadAllText(targetPath), moduleCode, StringComparison.Ordinal);
+            if (moduleChanged)
+                File.WriteAllText(targetPath, moduleCode, Utf8WithoutBom);
+
+            var mapChanged = !File.Exists(mapPath)
+                || !string.Equals(File.ReadAllText(mapPath), mapJson, StringComparison.Ordinal);
+            if (mapChanged)
+                File.WriteAllText(mapPath, mapJson, Utf8WithoutBom);
+
+            if (moduleChanged || mapChanged)
                 written++;
-            }
+            else
+                skipped++;
         }
 
         if (clean && existingManifest is not null)
@@ -65,12 +77,8 @@ internal sealed class RazorVueModuleWriter
                 if (currentPaths.Contains(oldModule.RelativeModulePath))
                     continue;
 
-                var oldTargetPath = GetTargetPath(normalizedOutputDirectory, oldModule.RelativeModulePath);
-                if (File.Exists(oldTargetPath))
-                {
-                    File.Delete(oldTargetPath);
-                    deleted++;
-                }
+                DeleteIfExists(GetTargetPath(normalizedOutputDirectory, oldModule.RelativeModulePath), ref deleted);
+                DeleteIfExists(GetTargetPath(normalizedOutputDirectory, oldModule.RelativeModulePath) + ".map", ref deleted);
             }
         }
 
@@ -86,11 +94,43 @@ internal sealed class RazorVueModuleWriter
         return Path.Combine(directory, fileName + "-razorvue" + extension);
     }
 
-    private static string ComputeSha256Hex(string content)
+    private static string? TryReadSourceContent(string sourcePath)
     {
-        using var sha = System.Security.Cryptography.SHA256.Create();
-        var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(content ?? string.Empty));
-        return string.Concat(bytes.Select(static item => item.ToString("X2")));
+        if (string.IsNullOrWhiteSpace(sourcePath))
+            return null;
+
+        try
+        {
+            return File.Exists(sourcePath) ? File.ReadAllText(sourcePath) : null;
+        }
+        catch (IOException)
+        {
+            return null;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return null;
+        }
+        catch (ArgumentException)
+        {
+            return null;
+        }
+        catch (NotSupportedException)
+        {
+            return null;
+        }
+    }
+
+    private static string GetSourceMapPath(string modulePath)
+        => modulePath + ".map";
+
+    private static void DeleteIfExists(string path, ref int deleted)
+    {
+        if (!File.Exists(path))
+            return;
+
+        File.Delete(path);
+        deleted++;
     }
 
     private static string GetTargetPath(string normalizedOutputDirectory, string relativePath)

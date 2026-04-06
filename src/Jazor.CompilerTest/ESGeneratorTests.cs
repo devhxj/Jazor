@@ -7756,6 +7756,62 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateCatalog_WithUnsupportedSetupLogicLowering_ReportsStructuredDiagnostic()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.SetupLogic.Generated",
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/bad-helper")]
+                public class BadHelper : VueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    public string FormatTitle(int step)
+                        => (Value + step).ToString();
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, FormatTitle(1));
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA006")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        StringAssert.Contains(diagnostics[0].GetMessage(), "FormatTitle");
+    }
+
+    [TestMethod]
     public void GenerateCatalog_WithUnsupportedLifecycleLowering_ReportsJAZORVGA005()
     {
         var compilation = CreateCompilation(

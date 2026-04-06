@@ -1963,7 +1963,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsForComponentFieldUsedInTemplateExpression()
+    public void RazorVue_Pipeline_LowersComponentFieldUsedInTemplateExpressionIntoSetupScope()
     {
         var context = CreateContext(
             """
@@ -1998,12 +1998,13 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<NotSupportedException>(() => new RazorVuePipeline().Execute(context));
-        StringAssert.Contains(exception.Message, "does not support component field '_count'");
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "let _count = 1;");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"span\", null, _count);");
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsForComponentMethodCalledInTemplateExpression()
+    public void RazorVue_Pipeline_LowersComponentMethodCalledInTemplateExpressionIntoSetupScope()
     {
         var context = CreateContext(
             """
@@ -2041,8 +2042,10 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<NotSupportedException>(() => new RazorVuePipeline().Execute(context));
-        StringAssert.Contains(exception.Message, "does not support calling component method 'Calculate'");
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "function calculate()");
+        StringAssert.Contains(artifact.ModuleCode, "return 42;");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"span\", null, calculate());");
     }
 
     [TestMethod]
@@ -6136,6 +6139,57 @@ public sealed class RazorVuePipelineTests
 
         var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersSupportedSetupFieldAndHelperIntoSetupScope()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/helper-card")]
+                public class HelperCard : VueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    private readonly string TitleText = "Count: ";
+
+                    public string FormatTitle()
+                        => TitleText + Value;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, FormatTitle());
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "const titleText = \"Count: \";");
+        StringAssert.Contains(artifact.ModuleCode, "function formatTitle()");
+        StringAssert.Contains(artifact.ModuleCode, "return (titleText + props.value);");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", null, formatTitle());");
     }
 
     [TestMethod]

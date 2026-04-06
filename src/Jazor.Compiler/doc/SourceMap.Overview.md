@@ -1,5 +1,8 @@
 # Jazor SourceMap 文档总览
 
+> Status: active reference
+> Positioning: Main deep-doc entry point for the current SourceMap document set.
+
 ## 1. 文档定位
 
 本文档是 Jazor sourcemap 方案的总入口。
@@ -15,14 +18,19 @@
 当前 sourcemap 在项目中的状态是：
 
 - 设计已冻结主方向
-- 实现明确延后
-- 现阶段只维护文档，不改编译器行为
+- 通用实现仍然偏保守
+- 但与 RazorVue 相关的 bundle chaining 已进入当前执行层
 
 当前共识是：
 
 1. 先完成编译器主体
-2. 再实现 sourcemap
-3. sourcemap 第一阶段只做模块级 map
+2. sourcemap 仍然要控制范围
+3. 第一阶段先以模块级 map 为主
+4. bundle chaining 已有单独执行计划，需要以当前计划为准
+
+相关执行入口：
+
+- [2026-04-06-razorvue-sourcemap-bundle-chaining-implementation.md](../../../docs/superpowers/plans/2026-04-06-razorvue-sourcemap-bundle-chaining-implementation.md)
 
 ## 3. 核心结论
 
@@ -36,6 +44,9 @@
 3. tuple / deconstruct / pattern / with / collection 这类 lowering 允许一源多目标
 4. synthetic 节点不应主导调试体验
 5. 第一阶段不做 bundle map chaining
+
+这条旧结论现在只适用于 broad sourcemap program 的保守范围判断。
+若进入当前 RazorVue 相关 active lane，应以仓库级状态与当前执行计划为准。
 
 ## 4. 文档分工
 

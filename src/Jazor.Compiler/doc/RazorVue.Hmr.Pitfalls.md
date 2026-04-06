@@ -1,5 +1,8 @@
 # RazorVue HMR Pitfalls
 
+> Status: active reference
+> Positioning: Reserved-lane risk reference for future RazorVue HMR work; not a current implementation-progress document.
+
 This document collects the mistakes that are most likely to derail RazorVue HMR.
 
 It exists so later implementation can avoid repeating predictable bad turns.

@@ -24,6 +24,7 @@ internal static partial class WhiteList
 		types["decimal"] = new(Op.Alias, "String");
 		types["System.Collections.Generic.Dictionary<TKey, TValue>"] = new(Op.Alias, "Map");
 		types["double"] = new(Op.Alias, "Number");
+		types["System.Linq.Enumerable"] = new(Op.Alias, "Array");
 		types["System.InvalidOperationException"] = new(Op.Alias, "Error");
 		types["System.ArgumentNullException"] = new(Op.Alias, "TypeError");
 		types["System.DivideByZeroException"] = new(Op.Alias, "Error");
@@ -908,6 +909,12 @@ internal static partial class WhiteList
 		members["static double.SinPi(double)"] = new(Op.Inline, "Math.sin(__arg1 * Math.PI)");
 		members["static double.Tan(double)"] = new(Op.Inline, "Math.tan(__arg1)");
 		members["static double.TanPi(double)"] = new(Op.Inline, "Math.tan(__arg1 * Math.PI)");
+		members["static System.Linq.Enumerable.Where<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, bool>)"] = new(Op.Import, "_a0d3305d7a8d4c01", "System/Linq/EnumerableModule.js");
+		members["static System.Linq.Enumerable.Where<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, int, bool>)"] = new(Op.Import, "_0f6f6fe4a8e94447", "System/Linq/EnumerableModule.js");
+		members["static System.Linq.Enumerable.Select<TSource, TResult>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TResult>)"] = new(Op.Import, "_0d5df18d09084f3b", "System/Linq/EnumerableModule.js");
+		members["static System.Linq.Enumerable.Select<TSource, TResult>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, int, TResult>)"] = new(Op.Import, "_aab4dc2444d44402", "System/Linq/EnumerableModule.js");
+		members["static System.Linq.Enumerable.ToList<TSource>(System.Collections.Generic.IEnumerable<TSource>)"] = new(Op.Import, "_6293e95141f14a55", "System/Linq/EnumerableModule.js");
+		members["static System.Linq.Enumerable.ToArray<TSource>(System.Collections.Generic.IEnumerable<TSource>)"] = new(Op.Import, "_ea56f0fe56c44ae7", "System/Linq/EnumerableModule.js");
 		members["System.Exception.Exception()"] = new(Op.Inline, "new Error()");
 		members["System.Exception.Exception(string)"] = new(Op.Inline, "new Error(__arg1)");
 		members["virtual System.Exception.Message.get"] = new(Op.Inline, "__arg1.message");

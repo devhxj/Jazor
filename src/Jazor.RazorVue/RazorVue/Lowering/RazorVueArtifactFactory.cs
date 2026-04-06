@@ -152,11 +152,17 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         logicShape.AppendLine("lifecycle:dispose=" + snapshot.Lifecycle.HasDispose);
         logicShape.AppendLine("lifecycle:disposeAsync=" + snapshot.Lifecycle.HasDisposeAsync);
 
+        foreach (var field in snapshot.Logic.Fields
+                     .OrderBy(static field => field.Name, StringComparer.Ordinal))
+        {
+            logicShape.AppendLine("field:" + field.Name + "|" + field.IsReadOnly + "|" + DescribeSetupFieldShape(field.FieldSymbol));
+        }
+
         foreach (var method in snapshot.Logic.Methods
                      .OrderBy(static method => method.Name, StringComparer.Ordinal)
                      .ThenBy(static method => method.Arity))
         {
-            logicShape.AppendLine("logic:" + method.Name + "|" + method.Arity + "|" + method.IsAsync);
+            logicShape.AppendLine("logic:" + method.Name + "|" + method.Arity + "|" + method.IsAsync + "|" + DescribeSetupMethodShape(method.MethodSymbol));
         }
 
         return logicShape.ToString();
@@ -185,7 +191,7 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
                                            HasSupportedLifecycleLowering(snapshot, snapshot.OnAfterRenderAsyncMethod, true);
         // HMR should only escalate to LogicSafe when lifecycle methods actually lower
         // into runtime hooks; no-op methods should behave like pure template changes.
-        if (hasSupportedLifecycleLowering || snapshot.Logic.Methods.Length > 0)
+        if (hasSupportedLifecycleLowering || snapshot.Logic.Fields.Length > 0 || snapshot.Logic.Methods.Length > 0)
             return HmrBoundaryKind.LogicSafe;
 
         if (HasTemplateShape(renderTree))
@@ -265,6 +271,7 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         var descriptor = snapshot.Descriptor;
         var builder = new StringBuilder();
         AppendVueImports(builder, snapshot, resolvedComponents);
+        var renderExpression = expressionEmitter.EmitFragment(renderTree);
         builder.AppendLine();
         builder.AppendLine("export default defineComponent({");
         builder.Append("  name: \"").Append(descriptor.Name).AppendLine("\",");
@@ -272,7 +279,8 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         builder.Append("  emits: ").Append(FormatStringArray(descriptor.Emits.Select(static emit => emit.Name))).AppendLine(",");
         builder.AppendLine("  setup(props, { emit, slots, expose, attrs }) {");
         AppendLifecycleLowering(builder, snapshot);
-        builder.Append("    return () => ").Append(expressionEmitter.EmitFragment(renderTree)).AppendLine(";");
+        AppendSetupLogicLowering(builder, snapshot, expressionEmitter);
+        builder.Append("    return () => ").Append(renderExpression).AppendLine(";");
         builder.AppendLine("  }");
         builder.AppendLine("});");
         return builder.ToString();
@@ -346,6 +354,127 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             AppendAfterRenderHook(builder, onAfterRenderAsyncEmitCall, awaitResult: true);
             if (onAfterRenderAsyncEmitCall.UsesFirstRender)
                 builder.AppendLine("    }");
+        }
+    }
+
+    private static void AppendSetupLogicLowering(
+        StringBuilder builder,
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter expressionEmitter)
+    {
+        var emittedFields = new HashSet<IFieldSymbol>(SymbolEqualityComparer.Default);
+        var emittedMethods = new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default);
+        var fieldBlocks = new List<string>();
+        var methodBlocks = new List<string>();
+
+        while (true)
+        {
+            var nextFields = expressionEmitter.GetRequiredSetupFields()
+                .Where(field => !emittedFields.Contains(field.FieldSymbol))
+                .OrderBy(static field => field.Name, StringComparer.Ordinal)
+                .ToArray();
+            var nextMethods = expressionEmitter.GetRequiredSetupMethods()
+                .Where(method => !emittedMethods.Contains(method.MethodSymbol))
+                .OrderBy(static method => method.Name, StringComparer.Ordinal)
+                .ThenBy(static method => method.Arity)
+                .ToArray();
+
+            if (nextFields.Length == 0 && nextMethods.Length == 0)
+                break;
+
+            foreach (var field in nextFields)
+            {
+                emittedFields.Add(field.FieldSymbol);
+                fieldBlocks.Add(BuildSetupFieldLowering(snapshot, expressionEmitter, field));
+            }
+
+            foreach (var method in nextMethods)
+            {
+                emittedMethods.Add(method.MethodSymbol);
+                methodBlocks.Add(BuildSetupMethodLowering(snapshot, expressionEmitter, method));
+            }
+        }
+
+        foreach (var fieldBlock in fieldBlocks)
+            builder.Append(fieldBlock);
+
+        foreach (var methodBlock in methodBlocks)
+            builder.Append(methodBlock);
+    }
+
+    private static string BuildSetupFieldLowering(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter expressionEmitter,
+        VueLogicFieldDescriptor field)
+    {
+        if (field.FieldSymbol.DeclaringSyntaxReferences.Length == 0)
+            throw CreateUnsupportedSetupLoweringException(field.FieldSymbol);
+
+        var syntax = field.FieldSymbol.DeclaringSyntaxReferences[0].GetSyntax();
+        if (syntax is not VariableDeclaratorSyntax declarator || declarator.Initializer is null)
+            throw CreateUnsupportedSetupLoweringException(field.FieldSymbol);
+
+        var semanticModel = snapshot.Compilation.GetSemanticModel(declarator.SyntaxTree);
+        var operation = semanticModel.GetOperation(declarator.Initializer.Value);
+        if (operation is null)
+            throw CreateUnsupportedSetupLoweringException(field.FieldSymbol);
+
+        try
+        {
+            var expression = expressionEmitter.EmitSetupExpression(operation);
+            var fieldBuilder = new StringBuilder();
+            fieldBuilder.Append("    ")
+                .Append(field.IsReadOnly ? "const " : "let ")
+                .Append(ToLowerCamelCase(field.Name))
+                .Append(" = ")
+                .Append(expression)
+                .AppendLine(";");
+            return fieldBuilder.ToString();
+        }
+        catch (NotSupportedException)
+        {
+            throw CreateUnsupportedSetupLoweringException(field.FieldSymbol);
+        }
+    }
+
+    private static string BuildSetupMethodLowering(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter expressionEmitter,
+        VueLogicMethodDescriptor method)
+    {
+        if (method.Arity != 0 || method.IsAsync || method.MethodSymbol.DeclaringSyntaxReferences.Length == 0)
+            throw CreateUnsupportedSetupLoweringException(method.MethodSymbol);
+
+        var syntax = method.MethodSymbol.DeclaringSyntaxReferences[0].GetSyntax();
+        if (syntax is not MethodDeclarationSyntax methodSyntax)
+            throw CreateUnsupportedSetupLoweringException(method.MethodSymbol);
+
+        ExpressionSyntax expressionSyntax = methodSyntax.ExpressionBody?.Expression
+            ?? (methodSyntax.Body?.Statements.Count == 1 && methodSyntax.Body.Statements[0] is ReturnStatementSyntax returnStatement && returnStatement.Expression is not null
+                ? returnStatement.Expression
+                : throw CreateUnsupportedSetupLoweringException(method.MethodSymbol));
+
+        var semanticModel = snapshot.Compilation.GetSemanticModel(expressionSyntax.SyntaxTree);
+        var operation = semanticModel.GetOperation(expressionSyntax);
+        if (operation is null)
+            throw CreateUnsupportedSetupLoweringException(method.MethodSymbol);
+
+        try
+        {
+            var expression = expressionEmitter.EmitSetupExpression(operation);
+            var methodBuilder = new StringBuilder();
+            methodBuilder.Append("    function ")
+                .Append(ToLowerCamelCase(method.Name))
+                .AppendLine("() {");
+            methodBuilder.Append("      return ")
+                .Append(expression)
+                .AppendLine(";");
+            methodBuilder.AppendLine("    }");
+            return methodBuilder.ToString();
+        }
+        catch (NotSupportedException)
+        {
+            throw CreateUnsupportedSetupLoweringException(method.MethodSymbol);
         }
     }
 
@@ -668,6 +797,54 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             $"RazorVue lifecycle lowering does not support method '{method.Name}' in component '{method.ContainingType.ToDisplayString()}'.",
             ImmutableArray<string>.Empty);
         return new RazorVueCompilationIssueException(issue, method.ContainingType.ToDisplayString(), origin);
+    }
+
+    private static RazorVueCompilationIssueException CreateUnsupportedSetupLoweringException(ISymbol symbol)
+    {
+        var originLocation = symbol.Locations.FirstOrDefault(static location => location.IsInSource);
+        var origin = originLocation is null
+            ? null
+            : RazorVueSourceOrigin.FromLocation(originLocation, RazorVueOriginKind.Logic);
+        var issue = new RazorVueCompilationIssue(
+            RazorVueIssueCode.UnsupportedSetupLogicLowering,
+            RazorVueIssueSeverity.Error,
+            $"RazorVue setup lowering does not support member '{symbol.Name}' in component '{symbol.ContainingType?.ToDisplayString() ?? string.Empty}'.",
+            ImmutableArray<string>.Empty);
+        return new RazorVueCompilationIssueException(issue, symbol.ContainingType?.ToDisplayString() ?? string.Empty, origin);
+    }
+
+    private static string DescribeSetupFieldShape(IFieldSymbol field)
+    {
+        if (field.DeclaringSyntaxReferences.Length == 0)
+            return "unsupported";
+
+        var syntax = field.DeclaringSyntaxReferences[0].GetSyntax();
+        if (syntax is not VariableDeclaratorSyntax declarator || declarator.Initializer is null)
+            return "unsupported";
+
+        return declarator.Initializer.Value.ToString();
+    }
+
+    private static string DescribeSetupMethodShape(IMethodSymbol method)
+    {
+        if (method.DeclaringSyntaxReferences.Length == 0)
+            return "unsupported";
+
+        var syntax = method.DeclaringSyntaxReferences[0].GetSyntax();
+        if (syntax is not MethodDeclarationSyntax methodSyntax)
+            return "unsupported";
+
+        if (methodSyntax.ExpressionBody is not null)
+            return methodSyntax.ExpressionBody.Expression.ToString();
+
+        if (methodSyntax.Body?.Statements.Count == 1 &&
+            methodSyntax.Body.Statements[0] is ReturnStatementSyntax returnStatement &&
+            returnStatement.Expression is not null)
+        {
+            return returnStatement.Expression.ToString();
+        }
+
+        return "unsupported";
     }
 
     private sealed record SupportedEmitCall(string EmitName, string? PayloadExpression, bool UsesFirstRender);

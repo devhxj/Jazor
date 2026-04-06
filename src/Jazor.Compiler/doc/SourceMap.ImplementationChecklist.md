@@ -1,14 +1,18 @@
 # Jazor SourceMap 实施清单
 
-> Status: Design frozen, implementation deferred.
-> Positioning: Deferred implementation checklist for a later compiler phase.
-> Note: The design direction is considered stable enough for future execution, but sourcemap work should remain postponed until the compiler main path settles.
+> Status: Design frozen, broad rollout deferred; partial active lane exists.
+> Positioning: Main SourceMap checklist remains conservative, but some RazorVue-related execution slices may proceed earlier.
+> Note: Use this checklist as the stable broad-program reference. When a narrower active plan exists, that plan defines current execution scope.
 
 ## 1. 文档定位
 
 本文档是 [SourceMap.Design.md](./SourceMap.Design.md) 的配套实施清单。
 
 目标不是重复设计讨论，而是把 sourcemap 后续落地拆成可执行步骤，方便在编译器主体稳定后按顺序推进。
+
+当前 narrower active lane：
+
+- [2026-04-06-razorvue-sourcemap-bundle-chaining-implementation.md](../../../docs/superpowers/plans/2026-04-06-razorvue-sourcemap-bundle-chaining-implementation.md)
 
 ## 2. 启动前门槛
 

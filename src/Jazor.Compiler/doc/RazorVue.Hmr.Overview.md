@@ -1,5 +1,8 @@
 # RazorVue HMR Overview
 
+> Status: active reference
+> Positioning: Reserved-lane overview for future RazorVue HMR work; not a claim of active runtime implementation.
+
 ## 1. Document Position
 
 This document is the entry point for the RazorVue HMR document set.
@@ -9,7 +12,7 @@ It answers four questions:
 
 1. what HMR state RazorVue is currently in
 2. what each HMR document is for
-3. what order to read them in
+3. what order to read them in when HMR work resumes
 4. what must still be reconfirmed before implementation starts
 
 ## 2. Current State

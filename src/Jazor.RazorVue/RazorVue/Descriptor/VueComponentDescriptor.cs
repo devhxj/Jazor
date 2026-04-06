@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Immutable;
+using Microsoft.CodeAnalysis;
 
 namespace Jazor.RazorVue.Descriptor;
 
@@ -39,12 +40,21 @@ public sealed record VueLifecycleDescriptor(
 public sealed record VueLogicMethodDescriptor(
     string Name,
     int Arity,
-    bool IsAsync);
+    bool IsAsync,
+    IMethodSymbol MethodSymbol);
+
+public sealed record VueLogicFieldDescriptor(
+    string Name,
+    bool IsReadOnly,
+    IFieldSymbol FieldSymbol);
 
 public sealed record VueLogicDescriptor(
+    ImmutableArray<VueLogicFieldDescriptor> Fields,
     ImmutableArray<VueLogicMethodDescriptor> Methods)
 {
-    public static VueLogicDescriptor Empty { get; } = new(ImmutableArray<VueLogicMethodDescriptor>.Empty);
+    public static VueLogicDescriptor Empty { get; } = new(
+        ImmutableArray<VueLogicFieldDescriptor>.Empty,
+        ImmutableArray<VueLogicMethodDescriptor>.Empty);
 }
 
 public enum VueComponentSourceKind

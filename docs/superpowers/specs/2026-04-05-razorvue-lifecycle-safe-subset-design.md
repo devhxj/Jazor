@@ -1,5 +1,8 @@
 # RazorVue 生命周期安全子集 lowering 设计
 
+> Status: active reference
+> Positioning: Execution-facing design reference for the current RazorVue lifecycle-safe-subset lane.
+
 - 日期：2026-04-05
 - 范围：在现有 RazorVue 主链路上补齐 lifecycle lowering，使 `OnInitialized*`、`OnParametersSet*`、`OnAfterRender*` 进入可执行的安全子集；超出边界时提供明确诊断。
 - 目标：把 RazorVue 从“生命周期只记录存在性或空 hook 壳”推进到“安全子集可执行、超界即明确失败”的稳定主链路。

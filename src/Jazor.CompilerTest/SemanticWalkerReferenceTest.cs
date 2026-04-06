@@ -4711,9 +4711,9 @@ public sealed class SemanticWalkerReferenceTest
 
 		Assert.AreEqual(@"{
   let list = [1, 2, 3];
-  let doubled = Array.from(Array.from(list).map(x => {
+  let doubled = list.map(x => {
     return x * 2;
-  }));
+  });
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 

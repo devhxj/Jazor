@@ -281,6 +281,46 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.IsTrue(refresh.IsAsync);
     }
 
+    [TestMethod]
+    public void RazorVue_Snapshot_ContainsSupportedLogicFieldsAndHelpers()
+    {
+        var snapshot = CreateSingleSnapshot(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/helper-card")]
+                public class HelperCard : VueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    private readonly string TitleText = "Count: ";
+
+                    public string FormatTitle()
+                        => TitleText + Value;
+                }
+            }
+            """);
+
+        Assert.AreEqual(1, snapshot.Logic.Fields.Length);
+        Assert.AreEqual("TitleText", snapshot.Logic.Fields[0].Name);
+        Assert.AreEqual("FormatTitle", snapshot.Logic.Methods.Single().Name);
+    }
+
     private static RazorVueCompilationContext CreateContext(string source)
     {
         var compilation = CreateCompilation(source);

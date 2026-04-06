@@ -58,6 +58,7 @@ public sealed class RazorVueCompilationContext
                 RazorVueEntryClassifier.FindDisposeMethod(symbol),
                 RazorVueEntryClassifier.FindDisposeAsyncMethod(symbol),
                 RazorVueEntryClassifier.FindLogicMethods(symbol),
+                RazorVueEntryClassifier.FindLogicFields(symbol),
                 RazorVueEntryKind.RazorVueComponent));
         }
 
@@ -85,11 +86,15 @@ public sealed class RazorVueCompilationContext
             HasDispose: candidate.DisposeMethod is not null,
             HasDisposeAsync: candidate.DisposeAsyncMethod is not null);
         var logicMethods = candidate.LogicMethods
-            .Select(static method => new VueLogicMethodDescriptor(method.Name, method.Parameters.Length, method.IsAsync))
+            .Select(static method => new VueLogicMethodDescriptor(method.Name, method.Parameters.Length, method.IsAsync, method))
             .ToImmutableArray();
-        var logic = logicMethods.IsDefaultOrEmpty
+        var logicFields = candidate.LogicFields
+            // Preserve Roslyn field carriers for upcoming setup-side lowering.
+            .Select(static field => new VueLogicFieldDescriptor(field.Name, field.IsReadOnly, field))
+            .ToImmutableArray();
+        var logic = logicMethods.IsDefaultOrEmpty && logicFields.IsDefaultOrEmpty
             ? VueLogicDescriptor.Empty
-            : new VueLogicDescriptor(logicMethods);
+            : new VueLogicDescriptor(logicFields, logicMethods);
         // Keep the first snapshot carrier tied to Roslyn locations so later
         // sourcemap/HMR work has a stable source identity anchor.
         var origins = candidate.ComponentSymbol.Locations

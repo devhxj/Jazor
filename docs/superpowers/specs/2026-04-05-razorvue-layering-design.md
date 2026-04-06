@@ -1,5 +1,8 @@
 # RazorVue Layering Refactor Design
 
+> Status: active reference
+> Positioning: Execution-facing design reference for the RazorVue layering closure lane.
+
 **Date:** 2026-04-05
 
 ## Goal

@@ -17,9 +17,26 @@ Jazor is a high-performance C# to JavaScript compiler that aims to achieve seman
 ## Documentation Map
 
 - [Repository documentation hub](docs/README.md)
+- [Current workstream dashboard](docs/status/2026-04-06-project-workstream-dashboard.md)
+- [Project execution index](docs/plans/project-execution-index.md)
+- [Project program roadmap](docs/plans/project-program-roadmap.md)
 - [Current project stage assessment](docs/status/2026-04-04-project-stage-assessment.md)
+- [Compiler mainline status](docs/status/2026-04-06-compiler-mainline-status.md)
+- [Emit and host materialization status](docs/status/2026-04-06-emit-host-materialization-status.md)
+- [Architecture and subsystem bridge](docs/architecture/README.md)
+- [Module-level bridge](docs/architecture/modules/README.md)
+- [Emit local docs](src/Jazor.Emit/doc/README.md)
 - [Documentation governance rules](docs/guides/documentation-governance.md)
 - [Compiler deep-dive index](src/Jazor.Compiler/doc/README.md)
+
+If you are resuming project work, read in this order:
+
+1. `docs/status/2026-04-04-project-stage-assessment.md`
+2. `docs/status/2026-04-06-project-workstream-dashboard.md`
+3. `docs/plans/project-execution-index.md`
+4. `docs/plans/project-program-roadmap.md`
+5. `docs/architecture/README.md`
+6. Then enter the relevant subsystem docs
 
 ## Key Features
 
@@ -103,7 +120,7 @@ CLR runtime support providing ES6+ module implementations for all supported nati
 - ⚠️ Partial (7-8/10): 12 modules (31%)
 - 🔴 Needs work (< 7/10): 0 modules
 
-See [Jazor.CLR README](src/Jazor.CLR/README.md) for the latest module-specific status and detailed documentation.
+See [Jazor.CLR README](src/Jazor.CLR/readme.md) for the latest module-specific status and detailed documentation.
 
 ### 4. ECMAScript.WebIDL
 

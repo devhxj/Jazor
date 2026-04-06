@@ -1,9 +1,12 @@
 # RazorVue HMR Hard Rules
 
+> Status: active reference
+> Positioning: Reserved-lane constraint reference for future RazorVue HMR work; not a signal that runtime HMR is already active.
+
 This document fixes the HMR implementation rules that cannot remain ambiguous.
 
 It does not repeat all HMR design discussion.
-It exists to lock the boundaries that implementation and review must not keep renegotiating.
+It exists to lock the boundaries that later implementation and review must not keep renegotiating.
 
 Related documents:
 

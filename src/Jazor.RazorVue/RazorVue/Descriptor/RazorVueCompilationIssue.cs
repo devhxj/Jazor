@@ -13,7 +13,8 @@ public enum RazorVueIssueCode
     ComponentNotFound,
     AmbiguousComponentName,
     ReservedIntrinsicNameCollision,
-    UnsupportedLifecycleLowering
+    UnsupportedLifecycleLowering,
+    UnsupportedSetupLogicLowering
 }
 
 public enum RazorVueIssueSeverity

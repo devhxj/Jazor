@@ -787,6 +787,77 @@ public partial class SemanticWalker
 			NodeList.From(value),
 			optional: false);
 
+	private bool IsConcreteArrayLikeType(ITypeSymbol? typeSymbol)
+	{
+		if (typeSymbol is null)
+			return false;
+
+		var displayName = typeSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
+		if (displayName is "System.Collections.Generic.IEnumerable" or "System.Collections.Generic.IEnumerable<T>")
+			return false;
+
+		return GetMapperType(typeSymbol).Mapper == TypeMapper.Array;
+	}
+
+	private static bool IsArrayProducingExpression(Expression expression)
+	{
+		switch (expression)
+		{
+			case ArrayExpression:
+				return true;
+
+			case NewExpression { Callee: Identifier { Name: "Array" } }:
+				return true;
+
+			case CallExpression { Callee: MemberExpression { Object: Identifier { Name: "Array" }, Property: Identifier { Name: "from" or "of" } } }:
+				return true;
+
+			case CallExpression { Callee: MemberExpression { Property: Identifier { Name: var methodName } } }:
+				return methodName is
+					"concat" or
+					"filter" or
+					"flat" or
+					"flatMap" or
+					"map" or
+					"slice" or
+					"splice" or
+					"toReversed" or
+					"toSorted" or
+					"toSpliced";
+
+			default:
+				return false;
+		}
+	}
+
+	private bool TryBuildEnumerableArrayLikeIntrinsic(IInvocationOperation operation, IMethodSymbol method, List<Expression> arguments, out Expression? expression)
+	{
+		expression = null;
+		if (arguments.Count == 0)
+			return false;
+
+		var sourceOperation = UnwrapImplicitConversions(operation.Arguments[0].Value);
+		var sourceExpression = arguments[0];
+		var hasArrayLikeSource = IsConcreteArrayLikeType(sourceOperation.Type) || IsArrayProducingExpression(sourceExpression);
+		if (!hasArrayLikeSource)
+			return false;
+
+		expression = method.Name switch
+		{
+			"Where" when arguments.Count == 2 =>
+				BuildInstanceMethodCall(sourceExpression, "filter", arguments[1]),
+			"Select" when arguments.Count == 2 =>
+				BuildInstanceMethodCall(sourceExpression, "map", arguments[1]),
+			"ToList" when arguments.Count == 1 =>
+				IsArrayProducingExpression(sourceExpression) ? sourceExpression : BuildArrayFrom(sourceExpression),
+			"ToArray" when arguments.Count == 1 =>
+				IsArrayProducingExpression(sourceExpression) ? sourceExpression : BuildArrayFrom(sourceExpression),
+			_ => null
+		};
+
+		return expression is not null;
+	}
+
 	private static Expression BuildInstanceMethodCall(Expression instance, string methodName, params Expression[] arguments) =>
 		new CallExpression(
 			new MemberExpression(instance, new Identifier(methodName), computed: false, optional: false),
@@ -836,13 +907,17 @@ public partial class SemanticWalker
 		return true;
 	}
 
-	private static bool TryBuildIntrinsicMethodInvocation(IMethodSymbol method, Expression? instance, List<Expression> arguments, out Expression? expression)
+	private bool TryBuildIntrinsicMethodInvocation(IInvocationOperation operation, IMethodSymbol method, Expression? instance, List<Expression> arguments, out Expression? expression)
 	{
 		expression = null;
 		if (method.ContainingType is null)
 			return false;
 
 		var containingType = method.ContainingType.OriginalDefinition.ToDisplayString(Format.NameFormat);
+		if (containingType == "System.Linq.Enumerable" &&
+			TryBuildEnumerableArrayLikeIntrinsic(operation, method, arguments, out expression))
+			return true;
+
 		if (method.ContainingType.SpecialType == SpecialType.System_String || containingType == "string")
 		{
 			if (method.IsStatic)
@@ -912,37 +987,6 @@ public partial class SemanticWalker
 				if (expression is not null)
 					return true;
 			}
-		}
-
-		if (containingType == "System.Linq.Enumerable")
-		{
-			expression = method.Name switch
-			{
-				"Where" when arguments.Count == 2 =>
-					new CallExpression(
-						new MemberExpression(
-							BuildArrayFrom(arguments[0]),
-							new Identifier("filter"),
-							computed: false,
-							optional: false),
-						NodeList.From(arguments[1]),
-						optional: false),
-				"Select" when arguments.Count == 2 =>
-					new CallExpression(
-						new MemberExpression(
-							BuildArrayFrom(arguments[0]),
-							new Identifier("map"),
-							computed: false,
-							optional: false),
-						NodeList.From(arguments[1]),
-						optional: false),
-				"ToList" when arguments.Count == 1 =>
-					BuildArrayFrom(arguments[0]),
-				_ => null
-			};
-
-			if (expression is not null)
-				return true;
 		}
 
 		if (instance is null)
@@ -1431,13 +1475,13 @@ public partial class SemanticWalker
 
 		// 检查白名单映射
 		var whiteListMethod = ResolveStaticInterfaceProjectionMethod(operation.TargetMethod, operation.Syntax, operation.SemanticModel);
+		if (TryBuildIntrinsicMethodInvocation(operation, whiteListMethod, instance, arguments, out var intrinsicExpr) &&
+			intrinsicExpr is not null)
+			return BuildInvExpr(hasReturn, intrinsicExpr, refParas, argument);
+
 		var mapperExpr = GetWhiteListExpression(whiteListMethod, argument, arguments, instance, out var alias);
 		if (mapperExpr is not null)
 			return BuildInvExpr(hasReturn, mapperExpr, refParas, argument);
-
-		if (TryBuildIntrinsicMethodInvocation(operation.TargetMethod, instance, arguments, out var intrinsicExpr) &&
-			intrinsicExpr is not null)
-			return BuildInvExpr(hasReturn, intrinsicExpr, refParas, argument);
 
 		// 判断方法调用的类型
 		var methodName = string.IsNullOrEmpty(alias) ? Util.GetConfigOrSymbolName(operation.TargetMethod) : alias;

@@ -1,5 +1,8 @@
 # RazorVue HMR Design
 
+> Status: active reference
+> Positioning: Reserved-lane design reference for RazorVue HMR; not an active implementation plan.
+
 This document defines the RazorVue HMR design.
 
 It is a pre-implementation design document.

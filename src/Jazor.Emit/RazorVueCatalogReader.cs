@@ -21,7 +21,7 @@ internal static class RazorVueCatalogReader
         foreach (var item in items)
         {
             if (item is null)
-                continue;
+                throw new InvalidOperationException($"GetArtifacts in '{assembly.Location}' contains a null artifact entry.");
 
             artifacts.Add(ReadArtifact(item.GetType(), item));
         }
@@ -79,20 +79,22 @@ internal static class RazorVueCatalogReader
 
     private static IReadOnlyList<RazorVueEmitSourceOriginRecord> ReadOrigins(Type itemType, object item)
     {
-        if (ReadEnumerable(itemType, item, "SourceOrigins") is not { } items)
-            return [];
+        var items = ReadRequiredEnumerable(itemType, item, "SourceOrigins");
 
         var origins = new List<RazorVueEmitSourceOriginRecord>();
         foreach (var entry in items)
         {
             if (entry is null)
-                continue;
+                throw new InvalidOperationException($"Property 'SourceOrigins' on '{itemType.FullName}' contains a null entry.");
 
             var entryType = entry.GetType();
             origins.Add(new RazorVueEmitSourceOriginRecord(
                 ReadString(entryType, entry, "SourceFilePath"),
                 ReadInt32(entryType, entry, "SourceSpanStart"),
                 ReadInt32(entryType, entry, "SourceSpanLength"),
+                ReadNullableString(entryType, entry, "GeneratedFilePath"),
+                ReadNullableInt32(entryType, entry, "GeneratedSpanStart"),
+                ReadNullableInt32(entryType, entry, "GeneratedSpanLength"),
                 ReadInt32(entryType, entry, "StartLine"),
                 ReadInt32(entryType, entry, "StartColumn"),
                 ReadEnum<RazorVueMappingQualityRecord>(entryType, entry, "MappingQuality"),
@@ -129,6 +131,20 @@ internal static class RazorVueCatalogReader
         throw new InvalidOperationException($"Property '{propertyName}' was not found on '{itemType.FullName}'.");
     }
 
+    private static int? ReadNullableInt32(Type itemType, object item, string propertyName)
+    {
+        var property = itemType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
+        if (property is null)
+            throw new InvalidOperationException($"Property '{propertyName}' was not found on '{itemType.FullName}'.");
+
+        return property.GetValue(item) switch
+        {
+            null => null,
+            int value => value,
+            _ => throw new InvalidOperationException($"Property '{propertyName}' on '{itemType.FullName}' is not an Int32.")
+        };
+    }
+
     private static TEnum ReadEnum<TEnum>(Type itemType, object item, string propertyName)
         where TEnum : struct
     {
@@ -141,16 +157,38 @@ internal static class RazorVueCatalogReader
 
     private static string[] ReadStringArray(Type itemType, object item, string propertyName)
     {
-        if (ReadEnumerable(itemType, item, propertyName) is not { } items)
-            return [];
+        var items = ReadRequiredEnumerable(itemType, item, propertyName);
 
-        return items.OfType<object>().Select(static entry => entry?.ToString() ?? string.Empty).ToArray();
+        var values = new List<string>();
+        foreach (var entry in items)
+        {
+            if (entry is not string value)
+                throw new InvalidOperationException($"Property '{propertyName}' on '{itemType.FullName}' contains a non-string entry.");
+
+            values.Add(value);
+        }
+
+        return values.ToArray();
+    }
+
+    private static System.Collections.IEnumerable ReadRequiredEnumerable(Type itemType, object item, string propertyName)
+    {
+        return ReadEnumerable(itemType, item, propertyName)
+            ?? throw new InvalidOperationException($"Property '{propertyName}' on '{itemType.FullName}' returned null.");
     }
 
     private static System.Collections.IEnumerable? ReadEnumerable(Type itemType, object item, string propertyName)
     {
         var property = itemType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
-        return property?.GetValue(item) as System.Collections.IEnumerable;
+        if (property is null)
+            throw new InvalidOperationException($"Property '{propertyName}' was not found on '{itemType.FullName}'.");
+
+        return property.GetValue(item) switch
+        {
+            null => null,
+            System.Collections.IEnumerable value => value,
+            _ => throw new InvalidOperationException($"Property '{propertyName}' on '{itemType.FullName}' is not enumerable.")
+        };
     }
 
     private static string ReadString(Type itemType, object item, string propertyName)
@@ -160,6 +198,20 @@ internal static class RazorVueCatalogReader
             return value;
 
         throw new InvalidOperationException($"Property '{propertyName}' was not found on '{itemType.FullName}'.");
+    }
+
+    private static string? ReadNullableString(Type itemType, object item, string propertyName)
+    {
+        var property = itemType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+        if (property is null)
+            throw new InvalidOperationException($"Property '{propertyName}' was not found on '{itemType.FullName}'.");
+
+        return property.GetValue(property.GetMethod?.IsStatic == true ? null : item) switch
+        {
+            null => null,
+            string value => value,
+            _ => throw new InvalidOperationException($"Property '{propertyName}' on '{itemType.FullName}' is not a string.")
+        };
     }
 
     private static string NormalizeRelativePath(string relativePath)
@@ -213,6 +265,9 @@ internal sealed record RazorVueEmitSourceOriginRecord(
     string SourceFilePath,
     int SourceSpanStart,
     int SourceSpanLength,
+    string? GeneratedFilePath,
+    int? GeneratedSpanStart,
+    int? GeneratedSpanLength,
     int StartLine,
     int StartColumn,
     RazorVueMappingQualityRecord MappingQuality,

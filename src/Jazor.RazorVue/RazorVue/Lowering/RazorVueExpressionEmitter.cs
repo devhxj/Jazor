@@ -25,6 +25,11 @@ internal sealed class RazorVueExpressionEmitter
     private readonly ImmutableDictionary<string, string> _componentReferences;
     private readonly ImmutableDictionary<string, ImmutableDictionary<string, string>> _componentEmitsByRazorAlias;
 
+    private readonly ImmutableDictionary<string, VueLogicFieldDescriptor> _logicFieldsByName;
+    private readonly ImmutableDictionary<string, ImmutableArray<VueLogicMethodDescriptor>> _logicMethodsByName;
+    private readonly HashSet<IFieldSymbol> _requiredSetupFields;
+    private readonly HashSet<IMethodSymbol> _requiredSetupMethods;
+
     public RazorVueExpressionEmitter(
         RazorVueSemanticSnapshot snapshot,
         ImmutableDictionary<string, string>? componentReferences = null,
@@ -50,6 +55,18 @@ internal sealed class RazorVueExpressionEmitter
         _componentPropsByPublicName = BuildComponentPropsByPublicName(resolvedComponents);
         _componentSlotsByPublicName = BuildComponentSlotsByPublicName(resolvedComponents);
         _componentEmitsByRazorAlias = componentEmitsByRazorAlias ?? ImmutableDictionary<string, ImmutableDictionary<string, string>>.Empty;
+        _logicFieldsByName = snapshot.Logic.Fields.ToImmutableDictionary(
+            static field => field.Name,
+            static field => field,
+            StringComparer.Ordinal);
+        _logicMethodsByName = snapshot.Logic.Methods
+            .GroupBy(static method => method.Name, StringComparer.Ordinal)
+            .ToImmutableDictionary(
+                static group => group.Key,
+                static group => group.ToImmutableArray(),
+                StringComparer.Ordinal);
+        _requiredSetupFields = new HashSet<IFieldSymbol>(SymbolEqualityComparer.Default);
+        _requiredSetupMethods = new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default);
     }
 
     internal static LifecyclePayloadEmission EmitLifecyclePayload(IMethodSymbol method, IOperation operation, bool allowFirstRenderPayload)
@@ -261,6 +278,35 @@ internal sealed class RazorVueExpressionEmitter
         };
     }
 
+    internal string EmitSetupExpression(IOperation operation)
+    {
+        var current = Unwrap(operation);
+        if (current is null)
+            return "undefined";
+
+        return current switch
+        {
+            ILiteralOperation literal => EmitLiteral(literal),
+            ILocalReferenceOperation local => local.Local.Name,
+            IParameterReferenceOperation parameter => parameter.Parameter.Name,
+            IPropertyReferenceOperation property => EmitSetupPropertyReference(property),
+            IFieldReferenceOperation field => EmitSetupFieldReference(field),
+            IBinaryOperation binary => "(" + EmitSetupExpression(binary.LeftOperand) + " " +
+                                       GetBinaryOperator(binary.OperatorKind) + " " +
+                                       EmitSetupExpression(binary.RightOperand) + ")",
+            IUnaryOperation unary => GetUnaryOperator(unary.OperatorKind) + EmitSetupExpression(unary.Operand),
+            IInvocationOperation invocation => EmitSetupInvocation(invocation),
+            IInterpolatedStringOperation interpolated => EmitSetupInterpolatedString(interpolated),
+            IConditionalOperation conditional when conditional.WhenTrue is not null && conditional.WhenFalse is not null =>
+                "(" + EmitSetupExpression(conditional.Condition) + " ? " +
+                EmitSetupExpression(conditional.WhenTrue) + " : " +
+                EmitSetupExpression(conditional.WhenFalse) + ")",
+            IDefaultValueOperation => "null",
+            _ => throw new NotSupportedException(
+                $"RazorVue setup-side logic does not support expression '{current.Kind}' in component '{_snapshot.Descriptor.FullName}'.")
+        };
+    }
+
     private static LifecyclePayloadEmission EmitLifecyclePayloadCore(
         IMethodSymbol method,
         IOperation? operation,
@@ -387,12 +433,51 @@ internal sealed class RazorVueExpressionEmitter
         return EmitMemberTarget(property.Instance) + "." + property.Property.Name;
     }
 
+    private string EmitSetupPropertyReference(IPropertyReferenceOperation property)
+    {
+        if (IsCurrentComponentMember(property.Property, property.Instance))
+        {
+            if (_propsByPublicName.TryGetValue(property.Property.Name, out var prop))
+                return "props." + prop.Name;
+
+            throw CreateUnsupportedSetupLogicException(
+                property.Property,
+                $"RazorVue setup-side logic only supports component [Parameter] properties. Unsupported member: '{property.Property.Name}'.");
+        }
+
+        return EmitMemberTarget(property.Instance) + "." + property.Property.Name;
+    }
+
     private string EmitFieldReference(IFieldReferenceOperation field)
     {
         if (IsCurrentComponentMember(field.Field, field.Instance))
         {
+            if (_logicFieldsByName.ContainsKey(field.Field.Name))
+            {
+                _requiredSetupFields.Add(field.Field);
+                return ToLowerCamelCase(field.Field.Name);
+            }
+
             throw new NotSupportedException(
-                $"RazorVue render currently does not support component field '{field.Field.Name}' in template expressions.");
+                $"RazorVue render currently does not support component field '{field.Field.Name}' in component '{_snapshot.Descriptor.FullName}'.");
+        }
+
+        return EmitMemberTarget(field.Instance) + "." + field.Field.Name;
+    }
+
+    private string EmitSetupFieldReference(IFieldReferenceOperation field)
+    {
+        if (IsCurrentComponentMember(field.Field, field.Instance))
+        {
+            if (_logicFieldsByName.ContainsKey(field.Field.Name))
+            {
+                _requiredSetupFields.Add(field.Field);
+                return ToLowerCamelCase(field.Field.Name);
+            }
+
+            throw CreateUnsupportedSetupLogicException(
+                field.Field,
+                $"RazorVue setup-side logic does not support component field '{field.Field.Name}'.");
         }
 
         return EmitMemberTarget(field.Instance) + "." + field.Field.Name;
@@ -469,8 +554,11 @@ internal sealed class RazorVueExpressionEmitter
 
         if (IsCurrentComponentMember(invocation.TargetMethod, invocation.Instance))
         {
-            throw new NotSupportedException(
-                $"RazorVue render currently does not support calling component method '{invocation.TargetMethod.Name}' from template expressions.");
+            if (invocation.Arguments.Length != 0)
+                throw CreateUnsupportedSetupLogicException(invocation.TargetMethod);
+
+            _requiredSetupMethods.Add(invocation.TargetMethod);
+            return ToLowerCamelCase(invocation.TargetMethod.Name) + "()";
         }
 
         var target = invocation.Instance is not null
@@ -478,6 +566,50 @@ internal sealed class RazorVueExpressionEmitter
             : invocation.TargetMethod.Name;
 
         return target + "(" + string.Join(", ", invocation.Arguments.Select(argument => EmitExpression(argument.Value))) + ")";
+    }
+
+    private string EmitSetupInvocation(IInvocationOperation invocation)
+    {
+        if (invocation.Instance is not null && invocation.TargetMethod.Name == "Invoke")
+        {
+            return EmitSetupExpression(invocation.Instance) + "(" +
+                   string.Join(", ", invocation.Arguments.Select(argument => EmitSetupExpression(argument.Value))) + ")";
+        }
+
+        if (IsCurrentComponentMember(invocation.TargetMethod, invocation.Instance))
+        {
+            if (invocation.Arguments.Length != 0)
+                throw CreateUnsupportedSetupLogicException(invocation.TargetMethod);
+
+            _requiredSetupMethods.Add(invocation.TargetMethod);
+            return ToLowerCamelCase(invocation.TargetMethod.Name) + "()";
+        }
+
+        var target = invocation.Instance is not null
+            ? EmitSetupExpression(invocation.Instance) + "." + invocation.TargetMethod.Name
+            : invocation.TargetMethod.Name;
+
+        return target + "(" + string.Join(", ", invocation.Arguments.Select(argument => EmitSetupExpression(argument.Value))) + ")";
+    }
+
+    private RazorVueCompilationIssueException CreateUnsupportedSetupLogicException(IMethodSymbol method)
+        => CreateUnsupportedSetupLogicException(
+            method,
+            $"RazorVue setup lowering does not support method '{method.Name}' in component '{method.ContainingType.ToDisplayString()}'.");
+
+    private RazorVueCompilationIssueException CreateUnsupportedSetupLogicException(ISymbol symbol, string message)
+    {
+        var originLocation = symbol.Locations.FirstOrDefault(static location => location.IsInSource);
+        var origin = originLocation is null
+            ? null
+            : RazorVueSourceOrigin.FromLocation(originLocation, RazorVueOriginKind.Logic);
+        var ownerComponent = symbol.ContainingType?.ToDisplayString() ?? _snapshot.Descriptor.FullName;
+        var issue = new RazorVueCompilationIssue(
+            RazorVueIssueCode.UnsupportedSetupLogicLowering,
+            RazorVueIssueSeverity.Error,
+            message,
+            ImmutableArray<string>.Empty);
+        return new RazorVueCompilationIssueException(issue, ownerComponent, origin);
     }
 
     private string EmitInterpolatedString(IInterpolatedStringOperation interpolated)
@@ -500,6 +632,44 @@ internal sealed class RazorVueExpressionEmitter
         builder.Append('`');
         return builder.ToString();
     }
+
+    private string EmitSetupInterpolatedString(IInterpolatedStringOperation interpolated)
+    {
+        var builder = new StringBuilder();
+        builder.Append('`');
+        foreach (var part in interpolated.Parts)
+        {
+            switch (part)
+            {
+                case IInterpolatedStringTextOperation text:
+                    builder.Append(EscapeTemplateText(text.Text.ConstantValue.HasValue && text.Text.ConstantValue.Value is string value ? value : string.Empty));
+                    break;
+                case IInterpolationOperation interpolation:
+                    builder.Append("${").Append(EmitSetupExpression(interpolation.Expression)).Append('}');
+                    break;
+            }
+        }
+
+        builder.Append('`');
+        return builder.ToString();
+    }
+
+    internal ImmutableArray<VueLogicFieldDescriptor> GetRequiredSetupFields()
+        => _requiredSetupFields
+            .SelectMany(field => _logicFieldsByName.TryGetValue(field.Name, out var candidate) &&
+                                 SymbolEqualityComparer.Default.Equals(candidate.FieldSymbol, field)
+                ? [candidate]
+                : ImmutableArray<VueLogicFieldDescriptor>.Empty)
+            .Distinct()
+            .ToImmutableArray();
+
+    internal ImmutableArray<VueLogicMethodDescriptor> GetRequiredSetupMethods()
+        => _requiredSetupMethods
+            .SelectMany(method => _logicMethodsByName.TryGetValue(method.Name, out var candidates)
+                ? candidates.Where(candidate => SymbolEqualityComparer.Default.Equals(candidate.MethodSymbol, method))
+                : ImmutableArray<VueLogicMethodDescriptor>.Empty)
+            .Distinct()
+            .ToImmutableArray();
 
     private void AppendFragmentShape(StringBuilder builder, RazorVueRenderFragment fragment)
     {

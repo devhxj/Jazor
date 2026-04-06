@@ -757,7 +757,8 @@ public extern static Number _80b6c29cc0038969(bool instance);
 | `long`, `ulong`, `Int128`, `UInt128`, `BigInteger` | `BigInt` | `public static BigInt _hash(BigInt instance)` |
 | `char`, `string` | `string` | `public static string _hash(string instance)` |
 | `DateTime`, `DateTimeOffset`, `DateOnly`, `TimeOnly` | `Date` | `public static Date _hash(Date instance)` |
-| `List<T>`, `IList<T>`, `IEnumerable<T>`, `T[]` | `Array<T>` | `public static Array<T> _hash(Array<T> instance)` |
+| `List<T>`, `IList<T>`, `T[]` | `Array<T>` | `public static Array<T> _hash(Array<T> instance)` |
+| `IEnumerable<T>` | 抽象可枚举输入面 | `public static Array<T> _hash(IEnumerable<T> source)` 后按需 `Array.from(...)` / helper 物化 |
 | `Dictionary<K,V>`, `IDictionary<K,V>` | `Map<TKey, TValue>` | `public static Map<TKey, TValue> _hash(Map<TKey, TValue> instance)` |
 | `HashSet<T>`, `ISet<T>` | `Set<T>` | `public static Set<T> _hash(Set<T> instance)` |
 | `object` | `object` | `public static object _hash(object instance)` |
@@ -765,6 +766,10 @@ public extern static Number _80b6c29cc0038969(bool instance);
 | `IFormatProvider` | `Intl.NumberFormat?` | `public static string _hash(Number instance, Intl.NumberFormat? provider)` |
 | `ReadOnlySpan<char>`, `Span<char>` | `string` | 无需特殊处理 |
 | `System.Type` | `object` | JS 无类型系统 |
+
+> `IEnumerable<T>` 不是 `Array<T>` 的类型级别 alias。
+> 它表示“能被枚举”的输入契约；只有在目标 API 需要数组宿主语义时，才显式物化为 `Array<T>`。
+> `System.Linq.Enumerable` 的角色是提供这类边界 helper，例如 `Where`/`Select` 接收 `IEnumerable<T>` 并返回物化后的数组结果。
 
 **泛型类型参数**：
 

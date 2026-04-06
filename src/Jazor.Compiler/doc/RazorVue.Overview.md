@@ -1,5 +1,8 @@
 # RazorVue Overview
 
+> Status: active reference
+> Positioning: Main deep-doc entry point for the active RazorVue document set.
+
 ## 1. Document Position
 
 This document is the entry point for the RazorVue document set.
@@ -106,12 +109,15 @@ Use it when:
 - [RazorVue.ComponentDescriptorSpec.md](./RazorVue.ComponentDescriptorSpec.md)
 - [RazorVue.DenoHostContract.md](./RazorVue.DenoHostContract.md)
 - [RazorVue.ImplementationSkeleton.md](./RazorVue.ImplementationSkeleton.md)
+- [RazorVue.LibraryAuthoring.Design.md](./RazorVue.LibraryAuthoring.Design.md)
+- [RazorVue.Vuetify.FirstPackage.md](./RazorVue.Vuetify.FirstPackage.md)
 
 Use them when:
 
 - you are implementing contract extraction
 - you are implementing host-facing artifact/manifest flow
 - you need narrower, implementation-facing specs than the main design doc
+- you are defining the first library-authoring package shape
 
 ### 4.4 Stage assessment
 
@@ -160,7 +166,7 @@ Use it when:
 
 - [RazorVue.ImplementationChecklist.md](./RazorVue.ImplementationChecklist.md)
 - [RazorVue.ImplementationSkeleton.md](./RazorVue.ImplementationSkeleton.md)
-- [RazorVue.FirstPrPlan.md](./RazorVue.FirstPrPlan.md)
+- [RazorVue.FirstPrPlan.md](./RazorVue.FirstPrPlan.md) (historical context)
 
 Use it when:
 
@@ -175,6 +181,19 @@ Use it when:
 
 - you want to avoid architecture drift
 - you are reviewing changes and want to catch familiar wrong turns early
+
+### 4.10 Authoring product direction
+
+- [RazorVue.Authoring.ProductDefinition.md](./RazorVue.Authoring.ProductDefinition.md)
+- [2026-04-06-razorvue-v1-authoring-roadmap.md](../../../docs/superpowers/plans/2026-04-06-razorvue-v1-authoring-roadmap.md)
+- [2026-04-06-razorvue-v1-authoring-pr-breakdown.md](../../../docs/superpowers/plans/2026-04-06-razorvue-v1-authoring-pr-breakdown.md)
+
+Use them when:
+
+- you are defining the C# authoring experience for RazorVue
+- you are planning library-wrapper work such as Vuetify
+- you need the staged execution plan for the authoring lane
+- you need execution-sized PR scopes for the authoring lane
 
 ## 5. Recommended Reading Order
 
@@ -197,10 +216,12 @@ Read in this order:
 6. [RazorVue.Hmr.Design.md](./RazorVue.Hmr.Design.md)
 7. [RazorVue.Hmr.HardRules.md](./RazorVue.Hmr.HardRules.md)
 8. [RazorVue.ImplementationSkeleton.md](./RazorVue.ImplementationSkeleton.md)
-9. [RazorVue.FirstPrPlan.md](./RazorVue.FirstPrPlan.md)
+9. [RazorVue.FirstPrPlan.md](./RazorVue.FirstPrPlan.md) (historical context)
 10. [RazorVue.HardRules.md](./RazorVue.HardRules.md)
 11. [RazorVue.Pitfalls.md](./RazorVue.Pitfalls.md)
 12. [RazorVue.ImplementationChecklist.md](./RazorVue.ImplementationChecklist.md)
+13. [2026-04-06-razorvue-v1-authoring-roadmap.md](../../../docs/superpowers/plans/2026-04-06-razorvue-v1-authoring-roadmap.md)
+14. [2026-04-06-razorvue-v1-authoring-pr-breakdown.md](../../../docs/superpowers/plans/2026-04-06-razorvue-v1-authoring-pr-breakdown.md)
 
 ### 5.3 If you are reviewing code/design
 

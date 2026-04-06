@@ -1,5 +1,8 @@
 # Jazor 当前阶段评审（2026-04-04）
 
+> Status: current status snapshot
+> Positioning: Broad stage baseline for the whole repository before entering workstream-specific snapshots.
+
 ## 总结
 
 Jazor 当前处于“核心编译器主线较成熟、外围集成线持续推进、文档体系进入正式治理期”的阶段。

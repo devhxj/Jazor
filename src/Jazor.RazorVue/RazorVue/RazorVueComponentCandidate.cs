@@ -20,6 +20,7 @@ public sealed record RazorVueComponentCandidate
         IMethodSymbol? disposeMethod,
         IMethodSymbol? disposeAsyncMethod,
         ImmutableArray<IMethodSymbol> logicMethods,
+        ImmutableArray<IFieldSymbol> logicFields,
         RazorVueEntryKind entryKind)
     {
         ComponentSymbol = componentSymbol ?? throw new ArgumentNullException(nameof(componentSymbol));
@@ -35,6 +36,7 @@ public sealed record RazorVueComponentCandidate
         DisposeMethod = disposeMethod;
         DisposeAsyncMethod = disposeAsyncMethod;
         LogicMethods = logicMethods.IsDefault ? ImmutableArray<IMethodSymbol>.Empty : logicMethods;
+        LogicFields = logicFields.IsDefault ? ImmutableArray<IFieldSymbol>.Empty : logicFields;
         EntryKind = entryKind;
     }
 
@@ -63,6 +65,8 @@ public sealed record RazorVueComponentCandidate
     public IMethodSymbol? DisposeAsyncMethod { get; }
 
     public ImmutableArray<IMethodSymbol> LogicMethods { get; }
+
+    public ImmutableArray<IFieldSymbol> LogicFields { get; }
 
     public RazorVueEntryKind EntryKind { get; }
 }

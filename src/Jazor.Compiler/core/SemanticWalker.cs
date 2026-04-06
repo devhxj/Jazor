@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace Jazor.Compiler;
 
@@ -268,11 +269,90 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
                 if (mappings.TryGetValue(lookupKey, out value))
                     return true;
             }
+
+            if (candidate is IMethodSymbol method &&
+                (method.IsExtensionMethod || method.ReducedFrom is not null))
+            {
+                var extensionSource = method.ReducedFrom?.OriginalDefinition ?? method.OriginalDefinition;
+                var staticDisplayString = extensionSource.ToDisplayString(Format.StaticExtensionNameFormat);
+                foreach (var lookupKey in EnumerateWhiteListLookupKeys(staticDisplayString))
+                {
+                    displayString = lookupKey;
+                    if (mappings.TryGetValue(lookupKey, out value))
+                        return true;
+                }
+            }
+
+            if (candidate is IMethodSymbol supplementalMethod)
+            {
+                var synthesizedStaticKey = TryBuildMethodWhiteListKey(supplementalMethod);
+                if (!string.IsNullOrEmpty(synthesizedStaticKey))
+                {
+                    foreach (var lookupKey in EnumerateWhiteListLookupKeys(synthesizedStaticKey!))
+                    {
+                        displayString = lookupKey;
+                        if (mappings.TryGetValue(lookupKey, out value))
+                            return true;
+                    }
+                }
+            }
         }
 
         displayString = symbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
         value = default!;
         return false;
+    }
+
+    private static string? TryBuildMethodWhiteListKey(IMethodSymbol method)
+    {
+        var source = method.ReducedFrom?.OriginalDefinition ?? method.OriginalDefinition;
+        if (source.ContainingType is null)
+            return null;
+
+        var builder = new StringBuilder();
+        if (source.IsStatic)
+            builder.Append("static ");
+
+        builder.Append(source.ContainingType.OriginalDefinition.ToDisplayString(Format.NameFormat));
+        builder.Append('.');
+        builder.Append(source.Name);
+
+        if (source.TypeParameters.Length > 0)
+        {
+            builder.Append('<');
+            for (var i = 0; i < source.TypeParameters.Length; i++)
+            {
+                if (i > 0)
+                    builder.Append(", ");
+
+                builder.Append(source.TypeParameters[i].Name);
+            }
+
+            builder.Append('>');
+        }
+
+        builder.Append('(');
+        for (var i = 0; i < source.Parameters.Length; i++)
+        {
+            if (i > 0)
+                builder.Append(", ");
+
+            var parameter = source.Parameters[i];
+            if (parameter.RefKind == RefKind.Ref)
+                builder.Append("ref ");
+            else if (parameter.RefKind == RefKind.Out)
+                builder.Append("out ");
+            else if (parameter.RefKind == RefKind.In)
+                builder.Append("in ");
+
+            if (parameter.IsParams)
+                builder.Append("params ");
+
+            builder.Append(parameter.Type.OriginalDefinition.ToDisplayString(Format.NameFormat));
+        }
+
+        builder.Append(')');
+        return builder.ToString();
     }
 
     private static IEnumerable<ISymbol> EnumerateWhiteListLookupSymbols(ISymbol symbol)
@@ -377,6 +457,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
     private static ISymbol? GetWhiteListFallbackSymbol(ISymbol symbol)
         => symbol switch
         {
+            IMethodSymbol { ReducedFrom: not null } method => method.ReducedFrom.OriginalDefinition,
             IMethodSymbol { OverriddenMethod: not null } method => method.OverriddenMethod.OriginalDefinition,
             IPropertySymbol { OverriddenProperty: not null } property => property.OverriddenProperty.OriginalDefinition,
             IEventSymbol { OverriddenEvent: not null } @event => @event.OverriddenEvent.OriginalDefinition,
@@ -386,6 +467,11 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
     private static IEnumerable<string> EnumerateWhiteListLookupKeys(string displayString)
     {
         yield return displayString;
+
+        var normalizedExtensionDisplay = NormalizeExtensionThisParameterDisplay(displayString);
+        if (normalizedExtensionDisplay is { Length: > 0 } &&
+            !string.Equals(normalizedExtensionDisplay, displayString, StringComparison.Ordinal))
+            yield return normalizedExtensionDisplay;
 
         var normalizedStaticDisplay = NormalizeStaticAbstractLikeDisplay(displayString);
         if (normalizedStaticDisplay is { Length: > 0 } &&
@@ -419,6 +505,15 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         yield return virtualPrefix + displayString;
         yield return overridePrefix + displayString;
         yield return abstractPrefix + displayString;
+
+        static string? NormalizeExtensionThisParameterDisplay(string text)
+        {
+            var normalized = text
+                .Replace("(this ", "(")
+                .Replace(", this ", ", ");
+
+            return string.Equals(normalized, text, StringComparison.Ordinal) ? null : normalized;
+        }
 
         static string? NormalizeStaticAbstractLikeDisplay(string text)
         {
