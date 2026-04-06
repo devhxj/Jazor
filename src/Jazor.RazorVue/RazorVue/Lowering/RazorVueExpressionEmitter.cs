@@ -13,6 +13,9 @@ namespace Jazor.RazorVue.Lowering;
 
 internal sealed class RazorVueExpressionEmitter
 {
+    internal readonly record struct LifecyclePayloadEmission(string Expression, bool UsesFirstRender);
+    internal const string LifecycleFirstRenderPlaceholder = "__jazorVueLifecycleFirstRender__";
+
     private readonly RazorVueSemanticSnapshot _snapshot;
     private readonly Dictionary<string, VuePropDescriptor> _propsByPublicName;
     private readonly Dictionary<string, VueSlotDescriptor> _slotsByPublicName;
@@ -47,6 +50,16 @@ internal sealed class RazorVueExpressionEmitter
         _componentPropsByPublicName = BuildComponentPropsByPublicName(resolvedComponents);
         _componentSlotsByPublicName = BuildComponentSlotsByPublicName(resolvedComponents);
         _componentEmitsByRazorAlias = componentEmitsByRazorAlias ?? ImmutableDictionary<string, ImmutableDictionary<string, string>>.Empty;
+    }
+
+    internal static LifecyclePayloadEmission EmitLifecyclePayload(IMethodSymbol method, IOperation operation, bool allowFirstRenderPayload)
+    {
+        if (method is null)
+            throw new ArgumentNullException(nameof(method));
+        if (operation is null)
+            throw new ArgumentNullException(nameof(operation));
+
+        return EmitLifecyclePayloadCore(method, operation, allowFirstRenderPayload);
     }
 
     public string EmitFragment(RazorVueRenderFragment fragment)
@@ -248,6 +261,107 @@ internal sealed class RazorVueExpressionEmitter
         };
     }
 
+    private static LifecyclePayloadEmission EmitLifecyclePayloadCore(
+        IMethodSymbol method,
+        IOperation? operation,
+        bool allowFirstRenderPayload)
+    {
+        var current = Unwrap(operation);
+        if (current is null)
+            throw new NotSupportedException($"RazorVue lifecycle payload is missing an operation in component '{method.ContainingType.ToDisplayString()}'.");
+
+        return current switch
+        {
+            ILiteralOperation literal => new LifecyclePayloadEmission(EmitLiteral(literal), false),
+            IDefaultValueOperation defaultValue when IsNullDefaultValue(defaultValue) => new LifecyclePayloadEmission("null", false),
+            IParameterReferenceOperation parameter when IsFirstRenderPayloadParameter(method, parameter, allowFirstRenderPayload) =>
+                new LifecyclePayloadEmission(LifecycleFirstRenderPlaceholder, true),
+            IPropertyReferenceOperation property => EmitLifecyclePayloadPropertyReference(method, property),
+            IUnaryOperation unary => EmitLifecyclePayloadUnary(method, unary, allowFirstRenderPayload),
+            IBinaryOperation binary => EmitLifecyclePayloadBinary(method, binary, allowFirstRenderPayload),
+            IConditionalOperation conditional when conditional.WhenTrue is not null && conditional.WhenFalse is not null =>
+                EmitLifecyclePayloadConditional(method, conditional, allowFirstRenderPayload),
+            IInterpolatedStringOperation interpolated => EmitLifecyclePayloadInterpolatedString(method, interpolated, allowFirstRenderPayload),
+            _ => throw new NotSupportedException(
+                $"RazorVue lifecycle payload does not support expression '{current.Kind}' in component '{method.ContainingType.ToDisplayString()}'.")
+        };
+    }
+
+    private static LifecyclePayloadEmission EmitLifecyclePayloadPropertyReference(
+        IMethodSymbol method,
+        IPropertyReferenceOperation property)
+    {
+        if (IsCurrentComponentMember(method.ContainingType, property.Property, property.Instance) &&
+            IsComponentParameterProperty(property.Property))
+        {
+            return new LifecyclePayloadEmission("props." + ToLifecyclePropName(property.Property.Name), false);
+        }
+
+        throw new NotSupportedException(
+            $"RazorVue lifecycle payload only supports component [Parameter] properties. Unsupported member: '{property.Property.Name}'.");
+    }
+
+    private static LifecyclePayloadEmission EmitLifecyclePayloadUnary(
+        IMethodSymbol method,
+        IUnaryOperation unary,
+        bool allowFirstRenderPayload)
+    {
+        var operand = EmitLifecyclePayloadCore(method, unary.Operand, allowFirstRenderPayload);
+        return new LifecyclePayloadEmission(GetUnaryOperator(unary.OperatorKind) + operand.Expression, operand.UsesFirstRender);
+    }
+
+    private static LifecyclePayloadEmission EmitLifecyclePayloadBinary(
+        IMethodSymbol method,
+        IBinaryOperation binary,
+        bool allowFirstRenderPayload)
+    {
+        var left = EmitLifecyclePayloadCore(method, binary.LeftOperand, allowFirstRenderPayload);
+        var right = EmitLifecyclePayloadCore(method, binary.RightOperand, allowFirstRenderPayload);
+        return new LifecyclePayloadEmission(
+            "(" + left.Expression + " " + GetBinaryOperator(binary.OperatorKind) + " " + right.Expression + ")",
+            left.UsesFirstRender || right.UsesFirstRender);
+    }
+
+    private static LifecyclePayloadEmission EmitLifecyclePayloadConditional(
+        IMethodSymbol method,
+        IConditionalOperation conditional,
+        bool allowFirstRenderPayload)
+    {
+        var condition = EmitLifecyclePayloadCore(method, conditional.Condition, allowFirstRenderPayload);
+        var whenTrue = EmitLifecyclePayloadCore(method, conditional.WhenTrue, allowFirstRenderPayload);
+        var whenFalse = EmitLifecyclePayloadCore(method, conditional.WhenFalse, allowFirstRenderPayload);
+        return new LifecyclePayloadEmission(
+            "(" + condition.Expression + " ? " + whenTrue.Expression + " : " + whenFalse.Expression + ")",
+            condition.UsesFirstRender || whenTrue.UsesFirstRender || whenFalse.UsesFirstRender);
+    }
+
+    private static LifecyclePayloadEmission EmitLifecyclePayloadInterpolatedString(
+        IMethodSymbol method,
+        IInterpolatedStringOperation interpolated,
+        bool allowFirstRenderPayload)
+    {
+        var builder = new StringBuilder();
+        var usesFirstRender = false;
+        builder.Append('`');
+        foreach (var part in interpolated.Parts)
+        {
+            switch (part)
+            {
+                case IInterpolatedStringTextOperation text:
+                    builder.Append(EscapeTemplateText(text.Text.ConstantValue.HasValue && text.Text.ConstantValue.Value is string value ? value : string.Empty));
+                    break;
+                case IInterpolationOperation interpolation:
+                    var expression = EmitLifecyclePayloadCore(method, interpolation.Expression, allowFirstRenderPayload);
+                    builder.Append("${").Append(expression.Expression).Append('}');
+                    usesFirstRender |= expression.UsesFirstRender;
+                    break;
+            }
+        }
+
+        builder.Append('`');
+        return new LifecyclePayloadEmission(builder.ToString(), usesFirstRender);
+    }
+
     private string EmitPropertyReference(IPropertyReferenceOperation property)
     {
         if (IsCurrentComponentMember(property.Property, property.Instance))
@@ -282,6 +396,67 @@ internal sealed class RazorVueExpressionEmitter
         }
 
         return EmitMemberTarget(field.Instance) + "." + field.Field.Name;
+    }
+
+    private static bool IsNullDefaultValue(IDefaultValueOperation defaultValue)
+    {
+        var type = defaultValue.Type;
+        if (type is null)
+            return false;
+
+        if (type.IsReferenceType)
+            return true;
+
+        return type is INamedTypeSymbol namedType &&
+               namedType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T;
+    }
+
+    private static bool IsFirstRenderPayloadParameter(
+        IMethodSymbol method,
+        IParameterReferenceOperation parameter,
+        bool allowFirstRenderPayload)
+    {
+        if (!allowFirstRenderPayload)
+            return false;
+
+        return method.Parameters.Any(candidate =>
+            candidate.Name == "firstRender" &&
+            SymbolEqualityComparer.Default.Equals(candidate, parameter.Parameter));
+    }
+
+    private static bool IsCurrentComponentMember(
+        INamedTypeSymbol componentSymbol,
+        ISymbol symbol,
+        IOperation? instance)
+    {
+        for (var current = componentSymbol; current is not null; current = current.BaseType)
+        {
+            if (SymbolEqualityComparer.Default.Equals(symbol.ContainingType, current))
+                return instance is null || Unwrap(instance) is IInstanceReferenceOperation;
+        }
+
+        return false;
+    }
+
+    private static bool IsComponentParameterProperty(IPropertySymbol property)
+        => property.GetAttributes().Any(static attribute =>
+            string.Equals(
+                attribute.AttributeClass?.ToDisplayString(),
+                "Microsoft.AspNetCore.Components.ParameterAttribute",
+                StringComparison.Ordinal));
+
+    private static string ToLifecyclePropName(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return value;
+
+        if (value.Length == 1)
+            return char.ToLowerInvariant(value[0]).ToString();
+
+        if (char.IsUpper(value[0]) && char.IsUpper(value[1]))
+            return value;
+
+        return char.ToLowerInvariant(value[0]) + value.Substring(1);
     }
 
     private string EmitInvocation(IInvocationOperation invocation)

@@ -35,7 +35,7 @@ The design is technically coherent in the following areas:
 - entry remains unified through `[ECMAScriptModule]`
 - lowering splits cleanly between static modules and RazorVue components
 - base hierarchy is fixed as `ComponentBase -> JazorComponent -> VueComponent`
-- phase one does not depend on manual `.razor` parsing
+- the phase-one lane does not depend on manual `.razor` parsing
 - analyzer plus generated code analysis is used for semantic discovery, not host transport
 - `DenoHost` remains the final build owner
 
@@ -62,7 +62,7 @@ The main technical risks still worth tracking are:
 
 ### 2.4 Developer verdict
 
-From a developer perspective, the architecture is now clear enough to begin PR1.
+From a developer perspective, the architecture was clear enough at that review point to begin the first implementation milestone (PR1).
 
 The next work should not reopen design.
 It should start proving the analyzer split and base-type skeleton.
@@ -79,8 +79,8 @@ The current document set avoids a common failure mode:
 
 Instead, the work is broken into:
 
-- phase-one minimal RazorVue pipeline
-- reserved HMR and sourcemap metadata
+- the core main-path milestone for phase one
+- reserved HMR and sourcemap metadata for later milestones
 - explicit first PR series
 
 ### 3.2 Scope control
@@ -109,14 +109,14 @@ From a project-owner perspective, the plan is now investable.
 
 It has:
 
-- a clear first milestone
+- a clear first milestone boundary
 - explicit non-goals
 - bounded risk
-- a visible path from documentation into implementation
+- a visible path from documentation into the first implementation milestone
 
 ## 4. Final Review Outcome
 
-The current RazorVue document set is ready to move from architecture design into PR1 implementation.
+The reviewed RazorVue document set defined a viable path from architecture design into the first implementation milestone.
 
 The right next step is:
 
@@ -126,4 +126,4 @@ The right next step is:
 
 ## 5. One-line Conclusion
 
-RazorVue is now documented well enough to stop designing in circles and start proving the first implementation slice.
+At that review point, RazorVue was documented well enough to stop designing in circles and start proving the first implementation milestone.

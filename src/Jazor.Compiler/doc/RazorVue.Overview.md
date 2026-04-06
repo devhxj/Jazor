@@ -15,15 +15,15 @@ It answers three questions:
 
 The current state of RazorVue is:
 
-- main direction is designed
-- implementation is partially landed
-- phase one scope is intentionally limited
-- HMR and sourcemap are architecturally reserved but not fully implemented
+- the core main-path milestone is already landed
+- the current stage is phase-one closure work around the minimal path
+- phase-one scope remains intentionally limited
+- HMR and sourcemap remain metadata-first, reserved for later milestones
 
 As of the current implementation lane, the repository already has:
 
 - `[ECMAScriptModule]` entry split between static modules and RazorVue components
-- `Jazor.Razor` / `Jazor.RazorVue` base hierarchy
+- `Jazor.Razor` / `Jazor.RazorVue` / `Jazor.RazorVue.Analysis` split, with `Jazor.RazorVue` now owning the RazorVue core semantic lane and `Jazor.RazorVue.Analysis` remaining a thin Roslyn host
 - Roslyn analyzers for the current RazorVue entry/misuse set:
   - `JAZORVUE001` invalid entry inheritance
   - `JAZORVUE002` direct `ComponentBase` entry
@@ -31,28 +31,32 @@ As of the current implementation lane, the repository already has:
   - `JAZORVUE005` `ShouldRender`
   - `JAZORVUE006` `SetParametersAsync`
 - component descriptor extraction for props / emits / slots
-- `Jazor.RazorVue` core descriptor/extraction/lowering pipeline plus the thin `Jazor.RazorVue.Analysis` generator host entry
-- a minimal `BuildRenderTree` extraction lane that can emit real Vue `defineComponent + setup + render`
-
-The current proven render-function subset is still narrow.
-It is intentionally focused on the first usable loop:
-
-- HTML element nodes
-- component happy path with component-node lowering
-- prop forwarding and event/listener wiring
-- text content
-- simple template expressions backed by parameter properties
-- default slot fallback plus named/scoped slot wiring
+- `RazorVueCompilationContext` -> `RazorVueSemanticSnapshot` -> `RazorVuePipeline` -> `RazorVueArtifactFactory` -> `RazorVueCatalog` main path
+- a real `BuildRenderTree` extraction/lowering lane that can emit Vue `defineComponent + setup + render`
+- proven component-node lowering for props, emit/listener wiring, and default / named / scoped slot flow
+- minimal structural lowering for `if` and `foreach`
+- lifecycle safe-subset lowering for `OnInitialized*`, `OnParametersSet*`, and `OnAfterRender*`, including `watch(..., { immediate: true })` and `firstRender` bridging
+- artifact identity/hash shaping and basic HMR boundary classification
 
 The following are still not complete phase-one coverage:
 
-- full logic extraction
-- lifecycle sugar lowering beyond the current minimal safe subset (`OnInitialized*`, `OnParametersSet*`, `OnAfterRender*`)
+- broader logic extraction beyond the current lifecycle/event-callback safe subset
+- full component-instance semantics
 - comprehensive Razor syntax coverage
-- broader lowering diagnostics beyond the currently structured lifecycle/component-resolution cases
-- runtime HMR and final sourcemap output
+- `Dispose*`, `ShouldRender`, and `SetParametersAsync` runtime-equivalent handling
+- final `DenoHost` end-to-end integration
+- final HMR runtime and sourcemap emission
 
-When analysis/lowering hits unsupported shapes, the route still uses `JAZORVGA001` (`RazorVue catalog generation failed`) as the general fallback surface. On the current thin `Jazor.RazorVue.Analysis` host path, known component-resolution `NotFound` failures already project to `JAZORVGA002`, and unsupported lifecycle-lowering shapes now project to `JAZORVGA005`. `JAZORVGA003` / `JAZORVGA004` remain defined-but-unreachable until short-name / intrinsic-name resolution is wired into this path.
+When analysis/lowering hits unsupported shapes, `JAZORVGA001` (`RazorVue catalog generation failed`) remains the general fallback surface. The current thin `Jazor.RazorVue.Analysis` host path also has structured compiler-facing issue projection for:
+
+- `JAZORVGA002` component not found
+- `JAZORVGA003` ambiguous short component name
+- `JAZORVGA004` reserved intrinsic-name collision
+- `JAZORVGA005` unsupported lifecycle lowering
+
+Current stage memo:
+
+- [RazorVue 阶段评估（2026-04-06）](../../../docs/status/2026-04-06-razorvue-stage-assessment.md)
 
 Current consensus is:
 
@@ -73,7 +77,7 @@ The main fixed conclusions are:
 6. RazorVue does not build its main path on source-generator ordering.
 7. Razor components do not reuse plain static-module lowering.
 8. The compiler emits Vue ESM artifacts and `DenoHost` owns the unified build.
-9. HMR and sourcemap are reserved in architecture through metadata, not fully implemented in phase one.
+9. HMR and sourcemap are reserved in architecture through metadata, not fully implemented as phase-one runtime features.
 
 ## 4. Document Roles
 
@@ -109,7 +113,17 @@ Use them when:
 - you are implementing host-facing artifact/manifest flow
 - you need narrower, implementation-facing specs than the main design doc
 
-### 4.4 Review memo
+### 4.4 Stage assessment
+
+- [RazorVue 阶段评估（2026-04-06）](../../../docs/status/2026-04-06-razorvue-stage-assessment.md)
+
+Use it when:
+
+- you need a dated checkpoint of the current design/implementation state
+- you want completed / partial / open work in one place
+- you need a resume memo before the next implementation slice
+
+### 4.5 Review memo
 
 - [RazorVue.Review.md](./RazorVue.Review.md)
 
@@ -118,7 +132,7 @@ Use it when:
 - you want the double-pass review result
 - you want the remaining risks and immediate next step in one place
 
-### 4.5 HMR package
+### 4.6 HMR package
 
 - [RazorVue.Hmr.Overview.md](./RazorVue.Hmr.Overview.md)
 - [RazorVue.Hmr.DecisionSummary.md](./RazorVue.Hmr.DecisionSummary.md)
@@ -133,7 +147,7 @@ Use them when:
 - you need the reserved identity/change model
 - you need the compiler/`DenoHost` HMR boundary
 
-### 4.6 Hard constraints
+### 4.7 Hard constraints
 
 - [RazorVue.HardRules.md](./RazorVue.HardRules.md)
 
@@ -142,7 +156,7 @@ Use it when:
 - you need review rules
 - you need to know what cannot be decided ad hoc during implementation
 
-### 4.7 Implementation sequencing
+### 4.8 Implementation sequencing
 
 - [RazorVue.ImplementationChecklist.md](./RazorVue.ImplementationChecklist.md)
 - [RazorVue.ImplementationSkeleton.md](./RazorVue.ImplementationSkeleton.md)
@@ -153,7 +167,7 @@ Use it when:
 - implementation is actually starting
 - you need phased execution and acceptance gates
 
-### 4.8 Common failure modes
+### 4.9 Common failure modes
 
 - [RazorVue.Pitfalls.md](./RazorVue.Pitfalls.md)
 

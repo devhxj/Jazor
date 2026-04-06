@@ -5,18 +5,21 @@ This document defines the RazorVue design across the Jazor compiler, Razor subst
 It is primarily an architecture document.
 It does not attempt to mirror every current implementation detail line by line.
 
-The current repository now contains a partial RazorVue pipeline, including:
+The current repository has already crossed the core main-path milestone for RazorVue, including:
 
 - entry discovery and analyzer split
 - Roslyn entry/misuse diagnostics for `JAZORVUE001`, `JAZORVUE002`, `JAZORVUE004`, `JAZORVUE005`, and `JAZORVUE006`
 - descriptor extraction
 - `RazorVueCatalog` generation
 - emit/manifest materialization
-- a minimal real Vue render-function emission lane for a limited `BuildRenderTree` subset
-- a proven component happy path covering component nodes, props, event/listener wiring, and default/named/scoped slot flow
+- a real Vue render-function emission lane built on `RazorVueCompilationContext -> RazorVueSemanticSnapshot -> RazorVuePipeline -> RazorVueArtifactFactory`
+- proven component-node lowering covering component nodes, props, event/listener wiring, and default/named/scoped slot flow
+- minimal structural lowering for `if` / `foreach`
+- lifecycle safe-subset lowering for `OnInitialized*`, `OnParametersSet*`, and `OnAfterRender*`
+- artifact identity/hash shaping and basic HMR boundary classification
 
-The repository still does not contain a complete phase-one RazorVue pipeline.
-Unsupported extraction/lowering shapes still fall back to the general `JAZORVGA001` diagnostic surface. On the current thin `Jazor.RazorVue.Analysis` host path, known component-resolution `NotFound` failures now project to `JAZORVGA002`, and unsupported lifecycle-lowering shapes now project to `JAZORVGA005`. `JAZORVGA003` / `JAZORVGA004` are defined but are not yet reachable because short-name / intrinsic-name resolution is not wired into this path.
+The repository has not yet crossed the phase-one closure milestone.
+Unsupported extraction/lowering shapes still fall back to the general `JAZORVGA001` diagnostic surface in the broad case, but the thin `Jazor.RazorVue.Analysis` host path now also projects structured compiler issues for `JAZORVGA002` (component not found), `JAZORVGA003` (ambiguous short component name), `JAZORVGA004` (reserved intrinsic-name collision), and `JAZORVGA005` (unsupported lifecycle lowering).
 
 This document exists to:
 
@@ -208,7 +211,7 @@ Therefore the main inputs are:
 
 RazorVue must not depend on source generator ordering.
 
-Specifically, phase one does not rely on:
+Specifically, the phase-one lane does not rely on:
 
 - Razor source generator producing C# first
 - another source generator then consuming those outputs
@@ -306,7 +309,7 @@ Recommended rule:
 - add a parallel RazorVue host-facing catalog or a versioned superset carrier
 - let downstream host/emission code consume both during transition
 
-Do not require phase one RazorVue to replace the entire existing module catalog flow before the first Vue path is proven.
+Do not require the phase-one RazorVue lane to replace the entire existing module catalog flow before the first Vue path is proven.
 
 ## 8. Why Razor Components Need Their Own Lowering
 
@@ -432,23 +435,42 @@ This is not a Blazor render-tree compatibility target.
 Vue is the real lifecycle model.
 
 Blazor lifecycle members are preserved as compile-time sugar only.
+The current implementation does not attempt to recreate a full component-instance runtime inside Vue `setup()`.
+Instead, it accepts only the lifecycle shapes that can be projected into Vue hooks or watchers with stable closure semantics.
 
-### 14.1 Supported sugar
+### 14.1 Current supported safe subset
 
-- `OnInitialized*`
-- `OnParametersSet*`
-- `OnAfterRender*`
-- `Dispose*`
+The currently implemented lifecycle safe subset is:
 
-### 14.2 Lowering targets
+- `OnInitialized` / `OnInitializedAsync` -> `onMounted(...)`
+- `OnParametersSet` / `OnParametersSetAsync` -> `watch(() => [props...], ..., { immediate: true })`
+- `OnAfterRender` / `OnAfterRenderAsync` -> `onMounted(...)` + `onUpdated(...)`
 
-Those members lower to Vue concepts such as:
+`OnAfterRender*` also carries explicit `firstRender` bridging.
+The generated Vue code snapshots the current flag before emit payload use and then resets the shared flag so later updates cannot observe a stale first-render state.
 
-- `setup`
-- `watch(props, ...)`
-- `onMounted`
-- `onUpdated`
-- `onUnmounted`
+### 14.2 Current lowering boundary
+
+The safe subset only accepts lifecycle bodies that lower as EventCallback-driven emit bridges or equivalent no-op shapes.
+The important rule is not "lifecycle exists", but "lifecycle can be lowered without pretending a full Blazor component instance exists inside Vue setup".
+
+That means the current lane intentionally rejects lifecycle bodies that depend on:
+
+- arbitrary instance fields or general instance-state mutation
+- helper methods outside the supported payload-emission subset
+- unsupported payload expressions that cannot be mapped into Vue emit/watch/hook timing
+- runtime-equivalent handling for `Dispose*`, `ShouldRender`, or `SetParametersAsync`
+
+Those shapes should fail explicitly through structured diagnostics rather than silently producing incorrect hooks.
+
+### 14.3 Deferred lifecycle surface
+
+The following lifecycle-related areas remain outside the current main path:
+
+- `Dispose*` runtime lowering
+- `ShouldRender` runtime equivalence
+- `SetParametersAsync` runtime equivalence
+- general component-instance lifecycle logic beyond the EventCallback payload bridge subset
 
 The goal is stable, explainable behavior, not full Blazor runtime equivalence.
 
@@ -505,7 +527,7 @@ A structured artifact must exist and should include at least:
 
 The manifest consumed by `DenoHost` should be derived from those artifacts, not rebuilt independently.
 
-In phase one, "artifact emission" means two distinct responsibilities:
+In the phase-one lane, "artifact emission" means two distinct responsibilities:
 
 1. semantic/lowering stages produce a structured artifact model
 2. a later build-facing emission stage materializes those artifacts for `DenoHost`
@@ -578,7 +600,7 @@ Recommended order:
 2. otherwise use generated C# syntax/operation locations tied to Razor-generated files
 3. otherwise fall back to generated-only origin records
 
-This means phase one does not promise exact `.razor` mapping for every node.
+This means the phase-one lane does not promise exact `.razor` mapping for every node.
 It does promise that every node records which provenance tier produced its origin data.
 
 ### 18.2 HMR reservation
@@ -638,7 +660,7 @@ The architectural requirement is that source-origin data remains compiler-owned 
 
 ## 20. Phase-one Scope
 
-Phase one closes only the minimal loop:
+Phase-one closure only requires the minimal loop:
 
 - RazorVue component discovery
 - `JazorComponent` / `VueComponent` constraints
@@ -651,34 +673,38 @@ Phase one closes only the minimal loop:
 - artifact + manifest generation
 - `DenoHost` consumption path
 
-### 20.1 Current implementation checkpoint
+### 20.1 Current implementation milestone checkpoint
 
-The current implementation has already closed these parts of the loop:
+The current implementation has already crossed the core main-path milestone in these areas:
 
 - RazorVue component discovery
 - `JazorComponent` / `VueComponent` constraints
 - props / emits / slots extraction
+- component resolution with structured not-found / ambiguous / reserved-name issue surfaces
 - real Vue ESM artifact emission
 - artifact + manifest generation
 - emit-side host handoff shape for `DenoHost`
+- component-node lowering with props, listeners, and default / named / scoped slot flow
+- minimal control-flow lowering for `if` / `foreach`
+- lifecycle safe-subset lowering for `OnInitialized*`, `OnParametersSet*`, and `OnAfterRender*`
 
-The current implementation has only a minimal render extraction/lowering subset proven in tests:
+The current implementation remains intentionally narrow in semantics.
+It only claims the subset that is proven by code and tests:
 
-- `OpenElement`
-- `CloseElement`
-- `AddAttribute`
-- `AddContent`
-- `AddMarkupContent`
-- simple parameter-backed template expressions
+- element and component nodes reconstructed from `BuildRenderTree`
+- parameter-backed template expressions
+- props / emits / slots / bind-adjacent wiring
+- lifecycle EventCallback payload bridging, including `watch(..., { immediate: true })` and explicit `firstRender` handling
 
-The current implementation does not yet claim complete support for:
+The current implementation has not yet crossed the phase-one closure milestone for:
 
-- component-node lowering
-- broad control-flow coverage
-- lifecycle sugar lowering
-- general component-member logic inside template expressions
+- broader logic extraction outside the lifecycle/EventCallback safe subset
+- full component-instance semantics inside `setup`
+- `Dispose*`, `ShouldRender`, or `SetParametersAsync` runtime-equivalent lowering
+- comprehensive Razor syntax coverage
 - final sourcemap output
 - runtime HMR behavior
+- final `DenoHost` end-to-end validation
 
 Deferred work includes:
 

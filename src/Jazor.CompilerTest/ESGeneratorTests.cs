@@ -1842,6 +1842,87 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateCatalog_WithSyncAndAsyncOnAfterRenderLifecycleLowering_UsesIndependentFirstRenderFlags()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.SyncAndAsyncOnAfterRenderLifecycle.Generated",
+            """
+            using System;
+            using System.Threading.Tasks;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/dual-ready-card")]
+                public class DualReadyCard : VueComponent
+                {
+                    [Parameter]
+                    public EventCallback<bool> OnReady { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> OnReadyAsync { get; set; }
+
+                    protected override void OnAfterRender(bool firstRender)
+                    {
+                        OnReady.InvokeAsync(firstRender);
+                    }
+
+                    protected override Task OnAfterRenderAsync(bool firstRender)
+                    {
+                        return OnReadyAsync.InvokeAsync(firstRender);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var lifecycleDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(0, fallbackDiagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, lifecycleDiagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        Assert.AreEqual(2, generatedSource.Split("let firstRender = true;", StringSplitOptions.None).Length - 1, generatedSource);
+        StringAssert.Contains(generatedSource, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(generatedSource, "emit(\\\"ready\\\", currentFirstRender);");
+        StringAssert.Contains(generatedSource, "firstRender = false;");
+        StringAssert.Contains(generatedSource, "await emit(\\\"readyAsync\\\", currentFirstRender);");
+    }
+
+    [TestMethod]
     public void GenerateCatalog_WithNoOpAsyncLifecycle_DoesNotEmitLifecycleHooks()
     {
         var compilation = CreateCompilation(
@@ -3056,7 +3137,7 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithThisQualifiedExpressionFirstRenderPayloadOnAfterRenderAsyncLifecycle_ReportsJAZORVGA005()
+    public void GenerateCatalog_WithNegatedFirstRenderPayloadOnAfterRenderAsyncLifecycle_SnapshotsBeforeAwait()
     {
         var compilation = CreateCompilation(
             "RazorVue.ThisQualifiedExpressionFirstRenderPayloadOnAfterRenderAsyncLifecycle.Generated",
@@ -3104,27 +3185,114 @@ public sealed class ESGeneratorTests
             MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
-        var diagnostics = runResult.Results
-            .SelectMany(static result => result.Diagnostics)
-            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
-            .ToArray();
         var fallbackDiagnostics = runResult.Results
             .SelectMany(static result => result.Diagnostics)
             .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var lifecycleDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
             .ToArray();
         var hints = runResult.Results
             .SelectMany(static result => result.GeneratedSources)
             .Select(static source => source.HintName)
             .ToArray();
 
-        Assert.AreEqual(
-            1,
-            diagnostics.Length,
-            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
-        Assert.AreEqual(0, fallbackDiagnostics.Length);
-        StringAssert.Contains(diagnostics[0].GetMessage(), "OnAfterRenderAsync");
-        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Components.LifecycleCard");
-        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        Assert.AreEqual(0, fallbackDiagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, lifecycleDiagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "onMounted(async () => {");
+        StringAssert.Contains(generatedSource, "onUpdated(async () => {");
+        StringAssert.Contains(generatedSource, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(generatedSource, "firstRender = false;");
+        StringAssert.Contains(generatedSource, "await emit(\\\"readyChanged\\\", !currentFirstRender);");
+        var resetIndex = generatedSource.IndexOf("firstRender = false;", StringComparison.Ordinal);
+        var emitIndex = generatedSource.IndexOf("await emit(\\\"readyChanged\\\", !currentFirstRender);", StringComparison.Ordinal);
+        Assert.IsTrue(resetIndex >= 0, generatedSource);
+        Assert.IsTrue(emitIndex >= 0, generatedSource);
+        Assert.IsTrue(resetIndex < emitIndex, generatedSource);
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithSyncAndAsyncAfterRenderHooks_UseIndependentFirstRenderState()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.SyncAndAsyncAfterRenderHooksUseIndependentFirstRenderState.Generated",
+            """
+            using System;
+            using System.Threading.Tasks;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : VueComponent
+                {
+                    [Parameter]
+                    public EventCallback<bool> SyncChanged { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> AsyncChanged { get; set; }
+
+                    protected override void OnAfterRender(bool firstRender)
+                    {
+                        SyncChanged.InvokeAsync(firstRender);
+                    }
+
+                    protected override Task OnAfterRenderAsync(bool firstRender)
+                    {
+                        return AsyncChanged.InvokeAsync(firstRender);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var lifecycleDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(0, fallbackDiagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, lifecycleDiagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        Assert.AreEqual(2, generatedSource.Split("let firstRender = true;", StringSplitOptions.None).Length - 1, generatedSource);
+        StringAssert.Contains(generatedSource, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(generatedSource, "firstRender = false;");
+        StringAssert.Contains(generatedSource, "emit(\\\"syncChanged\\\", currentFirstRender);");
+        StringAssert.Contains(generatedSource, "await emit(\\\"asyncChanged\\\", currentFirstRender);");
     }
 
     [TestMethod]
@@ -3200,7 +3368,7 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithConditionalFirstRenderPayloadOnAfterRenderAsyncLifecycle_ReportsJAZORVGA005()
+    public void GenerateCatalog_WithConditionalFirstRenderPayloadOnAfterRenderAsyncLifecycle_LowersWithoutJAZORVGA005()
     {
         var compilation = CreateCompilation(
             "RazorVue.ConditionalFirstRenderPayloadOnAfterRenderAsyncLifecycle.Generated",
@@ -3261,18 +3429,19 @@ public sealed class ESGeneratorTests
             .Select(static source => source.HintName)
             .ToArray();
 
-        Assert.AreEqual(
-            1,
-            diagnostics.Length,
-            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
         Assert.AreEqual(0, fallbackDiagnostics.Length);
-        StringAssert.Contains(diagnostics[0].GetMessage(), "OnAfterRenderAsync");
-        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Components.LifecycleCard");
-        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "onMounted(async () => {");
+        StringAssert.Contains(generatedSource, "onUpdated(async () => {");
+        StringAssert.Contains(generatedSource, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(generatedSource, "firstRender = false;");
+        StringAssert.Contains(generatedSource, "await emit(\\\"readyChanged\\\", (currentFirstRender ? true : false));");
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithNestedConditionalFirstRenderPayloadOnAfterRenderAsyncLifecycle_ReportsJAZORVGA005()
+    public void GenerateCatalog_WithNestedConditionalFirstRenderPayloadOnAfterRenderAsyncLifecycle_LowersWithoutJAZORVGA005()
     {
         var compilation = CreateCompilation(
             "RazorVue.NestedConditionalFirstRenderPayloadOnAfterRenderAsyncLifecycle.Generated",
@@ -3333,14 +3502,15 @@ public sealed class ESGeneratorTests
             .Select(static source => source.HintName)
             .ToArray();
 
-        Assert.AreEqual(
-            1,
-            diagnostics.Length,
-            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
         Assert.AreEqual(0, fallbackDiagnostics.Length);
-        StringAssert.Contains(diagnostics[0].GetMessage(), "OnAfterRenderAsync");
-        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Components.LifecycleCard");
-        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "onMounted(async () => {");
+        StringAssert.Contains(generatedSource, "onUpdated(async () => {");
+        StringAssert.Contains(generatedSource, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(generatedSource, "firstRender = false;");
+        StringAssert.Contains(generatedSource, "await emit(\\\"readyChanged\\\", (currentFirstRender ? (currentFirstRender ? true : false) : false));");
     }
 
     [TestMethod]
@@ -3416,7 +3586,7 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithComparisonFirstRenderPayloadOnAfterRenderAsyncLifecycle_ReportsJAZORVGA005()
+    public void GenerateCatalog_WithComparisonFirstRenderPayloadOnAfterRenderAsyncLifecycle_LowersWithoutJAZORVGA005()
     {
         var compilation = CreateCompilation(
             "RazorVue.ComparisonFirstRenderPayloadOnAfterRenderAsyncLifecycle.Generated",
@@ -3477,14 +3647,15 @@ public sealed class ESGeneratorTests
             .Select(static source => source.HintName)
             .ToArray();
 
-        Assert.AreEqual(
-            1,
-            diagnostics.Length,
-            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
         Assert.AreEqual(0, fallbackDiagnostics.Length);
-        StringAssert.Contains(diagnostics[0].GetMessage(), "OnAfterRenderAsync");
-        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Components.LifecycleCard");
-        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "onMounted(async () => {");
+        StringAssert.Contains(generatedSource, "onUpdated(async () => {");
+        StringAssert.Contains(generatedSource, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(generatedSource, "firstRender = false;");
+        StringAssert.Contains(generatedSource, "await emit(\\\"readyChanged\\\", (currentFirstRender === true));");
     }
 
     [TestMethod]
@@ -4799,6 +4970,438 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateCatalog_WithIsPatternFalseFirstRenderPayloadOnAfterRenderAsyncLifecycle_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.IsPatternFalseFirstRenderPayloadOnAfterRenderAsyncLifecycle.Generated",
+            """
+            using System;
+            using System.Threading.Tasks;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : VueComponent
+                {
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    protected override Task OnAfterRenderAsync(bool firstRender)
+                    {
+                        return ReadyChanged.InvokeAsync(firstRender is false);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnAfterRenderAsync");
+        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Components.LifecycleCard");
+        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithIsPatternNotFalseFirstRenderPayloadOnAfterRenderAsyncLifecycle_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.IsPatternNotFalseFirstRenderPayloadOnAfterRenderAsyncLifecycle.Generated",
+            """
+            using System;
+            using System.Threading.Tasks;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : VueComponent
+                {
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    protected override Task OnAfterRenderAsync(bool firstRender)
+                    {
+                        return ReadyChanged.InvokeAsync(firstRender is not false);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnAfterRenderAsync");
+        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Components.LifecycleCard");
+        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithIsPatternNotTrueFirstRenderPayloadOnAfterRenderAsyncLifecycle_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.IsPatternNotTrueFirstRenderPayloadOnAfterRenderAsyncLifecycle.Generated",
+            """
+            using System;
+            using System.Threading.Tasks;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : VueComponent
+                {
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    protected override Task OnAfterRenderAsync(bool firstRender)
+                    {
+                        return ReadyChanged.InvokeAsync(firstRender is not true);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnAfterRenderAsync");
+        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Components.LifecycleCard");
+        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithIsPatternOrFirstRenderPayloadOnAfterRenderAsyncLifecycle_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.IsPatternOrFirstRenderPayloadOnAfterRenderAsyncLifecycle.Generated",
+            """
+            using System;
+            using System.Threading.Tasks;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : VueComponent
+                {
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    protected override Task OnAfterRenderAsync(bool firstRender)
+                    {
+                        return ReadyChanged.InvokeAsync(firstRender is true or false);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnAfterRenderAsync");
+        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Components.LifecycleCard");
+        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithTypePatternFirstRenderPayloadOnAfterRenderAsyncLifecycle_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.TypePatternFirstRenderPayloadOnAfterRenderAsyncLifecycle.Generated",
+            """
+            using System;
+            using System.Threading.Tasks;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : VueComponent
+                {
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    protected override Task OnAfterRenderAsync(bool firstRender)
+                    {
+                        return ReadyChanged.InvokeAsync(firstRender is bool);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnAfterRenderAsync");
+        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Components.LifecycleCard");
+        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithObjectTypePatternFirstRenderPayloadOnAfterRenderAsyncLifecycle_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.ObjectTypePatternFirstRenderPayloadOnAfterRenderAsyncLifecycle.Generated",
+            """
+            using System;
+            using System.Threading.Tasks;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : VueComponent
+                {
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    protected override Task OnAfterRenderAsync(bool firstRender)
+                    {
+                        return ReadyChanged.InvokeAsync(firstRender is object);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnAfterRenderAsync");
+        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Components.LifecycleCard");
+        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
     public void GenerateCatalog_WithPatternCombinatorFirstRenderPayloadOnAfterRenderAsyncLifecycle_ReportsJAZORVGA005()
     {
         var compilation = CreateCompilation(
@@ -5115,7 +5718,7 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithThisQualifiedParenthesizedFirstRenderPayloadOnAfterRenderAsyncLifecycle_ReportsJAZORVGA005()
+    public void GenerateCatalog_WithThisQualifiedParenthesizedFirstRenderPayloadOnAfterRenderAsyncLifecycle_LowersWithoutJAZORVGA005()
     {
         var compilation = CreateCompilation(
             "RazorVue.ThisQualifiedParenthesizedFirstRenderPayloadOnAfterRenderAsyncLifecycle.Generated",
@@ -5176,14 +5779,15 @@ public sealed class ESGeneratorTests
             .Select(static source => source.HintName)
             .ToArray();
 
-        Assert.AreEqual(
-            1,
-            diagnostics.Length,
-            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
         Assert.AreEqual(0, fallbackDiagnostics.Length);
-        StringAssert.Contains(diagnostics[0].GetMessage(), "OnAfterRenderAsync");
-        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Components.LifecycleCard");
-        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "onMounted(async () => {");
+        StringAssert.Contains(generatedSource, "onUpdated(async () => {");
+        StringAssert.Contains(generatedSource, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(generatedSource, "firstRender = false;");
+        StringAssert.Contains(generatedSource, "await emit(\\\"readyChanged\\\", currentFirstRender);");
     }
 
     [TestMethod]
@@ -6425,7 +7029,7 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithExpressionFirstRenderPayloadOnAfterRenderLifecycle_ReportsJAZORVGA005()
+    public void GenerateCatalog_WithExpressionFirstRenderPayloadOnAfterRenderLifecycle_LowersWithoutJAZORVGA005()
     {
         var compilation = CreateCompilation(
             "RazorVue.ExpressionFirstRenderOnAfterRenderLifecyclePayload.Generated",
@@ -6485,18 +7089,19 @@ public sealed class ESGeneratorTests
             .Select(static source => source.HintName)
             .ToArray();
 
-        Assert.AreEqual(
-            1,
-            diagnostics.Length,
-            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
         Assert.AreEqual(0, fallbackDiagnostics.Length);
-        StringAssert.Contains(diagnostics[0].GetMessage(), "OnAfterRender");
-        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Components.LifecycleCard");
-        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "onMounted(() => {");
+        StringAssert.Contains(generatedSource, "onUpdated(() => {");
+        StringAssert.Contains(generatedSource, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(generatedSource, "emit(\\\"readyChanged\\\", !currentFirstRender);");
+        StringAssert.Contains(generatedSource, "firstRender = false;");
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithExpressionFirstRenderPayloadOnAfterRenderAsyncLifecycle_ReportsJAZORVGA005()
+    public void GenerateCatalog_WithExpressionFirstRenderPayloadOnAfterRenderAsyncLifecycle_LowersWithoutJAZORVGA005()
     {
         var compilation = CreateCompilation(
             "RazorVue.ExpressionFirstRenderOnAfterRenderAsyncLifecyclePayload.Generated",
@@ -6557,18 +7162,19 @@ public sealed class ESGeneratorTests
             .Select(static source => source.HintName)
             .ToArray();
 
-        Assert.AreEqual(
-            1,
-            diagnostics.Length,
-            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
         Assert.AreEqual(0, fallbackDiagnostics.Length);
-        StringAssert.Contains(diagnostics[0].GetMessage(), "OnAfterRenderAsync");
-        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Components.LifecycleCard");
-        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "onMounted(async () => {");
+        StringAssert.Contains(generatedSource, "onUpdated(async () => {");
+        StringAssert.Contains(generatedSource, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(generatedSource, "firstRender = false;");
+        StringAssert.Contains(generatedSource, "await emit(\\\"readyChanged\\\", !currentFirstRender);");
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithParenthesizedFirstRenderPayloadOnAfterRenderLifecycle_ReportsJAZORVGA005()
+    public void GenerateCatalog_WithParenthesizedFirstRenderPayloadOnAfterRenderLifecycle_LowersWithoutJAZORVGA005()
     {
         var compilation = CreateCompilation(
             "RazorVue.ParenthesizedFirstRenderOnAfterRenderLifecyclePayload.Generated",
@@ -6628,18 +7234,19 @@ public sealed class ESGeneratorTests
             .Select(static source => source.HintName)
             .ToArray();
 
-        Assert.AreEqual(
-            1,
-            diagnostics.Length,
-            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
         Assert.AreEqual(0, fallbackDiagnostics.Length);
-        StringAssert.Contains(diagnostics[0].GetMessage(), "OnAfterRender");
-        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Components.LifecycleCard");
-        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "onMounted(() => {");
+        StringAssert.Contains(generatedSource, "onUpdated(() => {");
+        StringAssert.Contains(generatedSource, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(generatedSource, "firstRender = false;");
+        StringAssert.Contains(generatedSource, "emit(\\\"readyChanged\\\", currentFirstRender);");
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithParenthesizedFirstRenderPayloadOnAfterRenderAsyncLifecycle_ReportsJAZORVGA005()
+    public void GenerateCatalog_WithParenthesizedFirstRenderPayloadOnAfterRenderAsyncLifecycle_LowersWithoutJAZORVGA005()
     {
         var compilation = CreateCompilation(
             "RazorVue.ParenthesizedFirstRenderOnAfterRenderAsyncLifecyclePayload.Generated",
@@ -6700,18 +7307,19 @@ public sealed class ESGeneratorTests
             .Select(static source => source.HintName)
             .ToArray();
 
-        Assert.AreEqual(
-            1,
-            diagnostics.Length,
-            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
         Assert.AreEqual(0, fallbackDiagnostics.Length);
-        StringAssert.Contains(diagnostics[0].GetMessage(), "OnAfterRenderAsync");
-        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Components.LifecycleCard");
-        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "onMounted(async () => {");
+        StringAssert.Contains(generatedSource, "onUpdated(async () => {");
+        StringAssert.Contains(generatedSource, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(generatedSource, "firstRender = false;");
+        StringAssert.Contains(generatedSource, "await emit(\\\"readyChanged\\\", currentFirstRender);");
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithAwaitedExpressionFirstRenderPayloadOnAfterRenderAsyncLifecycle_ReportsJAZORVGA005()
+    public void GenerateCatalog_WithAwaitedExpressionFirstRenderPayloadOnAfterRenderAsyncLifecycle_LowersWithoutJAZORVGA005()
     {
         var compilation = CreateCompilation(
             "RazorVue.AwaitedExpressionFirstRenderOnAfterRenderAsyncLifecyclePayload.Generated",
@@ -6772,18 +7380,19 @@ public sealed class ESGeneratorTests
             .Select(static source => source.HintName)
             .ToArray();
 
-        Assert.AreEqual(
-            1,
-            diagnostics.Length,
-            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
         Assert.AreEqual(0, fallbackDiagnostics.Length);
-        StringAssert.Contains(diagnostics[0].GetMessage(), "OnAfterRenderAsync");
-        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Components.LifecycleCard");
-        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "onMounted(async () => {");
+        StringAssert.Contains(generatedSource, "onUpdated(async () => {");
+        StringAssert.Contains(generatedSource, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(generatedSource, "firstRender = false;");
+        StringAssert.Contains(generatedSource, "await emit(\\\"readyChanged\\\", !currentFirstRender);");
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithAwaitedParenthesizedFirstRenderPayloadOnAfterRenderAsyncLifecycle_ReportsJAZORVGA005()
+    public void GenerateCatalog_WithAwaitedParenthesizedFirstRenderPayloadOnAfterRenderAsyncLifecycle_LowersWithoutJAZORVGA005()
     {
         var compilation = CreateCompilation(
             "RazorVue.AwaitedParenthesizedFirstRenderOnAfterRenderAsyncLifecyclePayload.Generated",
@@ -6844,18 +7453,19 @@ public sealed class ESGeneratorTests
             .Select(static source => source.HintName)
             .ToArray();
 
-        Assert.AreEqual(
-            1,
-            diagnostics.Length,
-            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
         Assert.AreEqual(0, fallbackDiagnostics.Length);
-        StringAssert.Contains(diagnostics[0].GetMessage(), "OnAfterRenderAsync");
-        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Components.LifecycleCard");
-        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "onMounted(async () => {");
+        StringAssert.Contains(generatedSource, "onUpdated(async () => {");
+        StringAssert.Contains(generatedSource, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(generatedSource, "firstRender = false;");
+        StringAssert.Contains(generatedSource, "await emit(\\\"readyChanged\\\", currentFirstRender);");
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithAwaitReturnThisQualifiedParenthesizedFirstRenderPayloadOnAfterRenderAsyncLifecycle_ReportsJAZORVGA005()
+    public void GenerateCatalog_WithAwaitReturnThisQualifiedParenthesizedFirstRenderPayloadOnAfterRenderAsyncLifecycle_LowersWithoutJAZORVGA005()
     {
         var compilation = CreateCompilation(
             "RazorVue.AwaitReturnThisQualifiedParenthesizedFirstRenderOnAfterRenderAsyncLifecyclePayload.Generated",
@@ -6917,18 +7527,19 @@ public sealed class ESGeneratorTests
             .Select(static source => source.HintName)
             .ToArray();
 
-        Assert.AreEqual(
-            1,
-            diagnostics.Length,
-            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
         Assert.AreEqual(0, fallbackDiagnostics.Length);
-        StringAssert.Contains(diagnostics[0].GetMessage(), "OnAfterRenderAsync");
-        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Components.LifecycleCard");
-        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "onMounted(async () => {");
+        StringAssert.Contains(generatedSource, "onUpdated(async () => {");
+        StringAssert.Contains(generatedSource, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(generatedSource, "firstRender = false;");
+        StringAssert.Contains(generatedSource, "await emit(\\\"readyChanged\\\", currentFirstRender);");
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithReturnParenthesizedInvocationOnAfterRenderAsyncLifecycle_ReportsJAZORVGA005()
+    public void GenerateCatalog_WithReturnParenthesizedInvocationOnAfterRenderAsyncLifecycle_LowersWithoutJAZORVGA005()
     {
         var compilation = CreateCompilation(
             "RazorVue.ReturnParenthesizedInvocationOnAfterRenderAsyncLifecyclePayload.Generated",
@@ -6989,18 +7600,19 @@ public sealed class ESGeneratorTests
             .Select(static source => source.HintName)
             .ToArray();
 
-        Assert.AreEqual(
-            1,
-            diagnostics.Length,
-            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
         Assert.AreEqual(0, fallbackDiagnostics.Length);
-        StringAssert.Contains(diagnostics[0].GetMessage(), "OnAfterRenderAsync");
-        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Components.LifecycleCard");
-        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "onMounted(async () => {");
+        StringAssert.Contains(generatedSource, "onUpdated(async () => {");
+        StringAssert.Contains(generatedSource, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(generatedSource, "firstRender = false;");
+        StringAssert.Contains(generatedSource, "await emit(\\\"readyChanged\\\", currentFirstRender);");
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithExpressionBodiedParenthesizedInvocationOnAfterRenderAsyncLifecycle_ReportsJAZORVGA005()
+    public void GenerateCatalog_WithExpressionBodiedParenthesizedInvocationOnAfterRenderAsyncLifecycle_LowersWithoutJAZORVGA005()
     {
         var compilation = CreateCompilation(
             "RazorVue.ExpressionBodiedParenthesizedInvocationOnAfterRenderAsyncLifecyclePayload.Generated",
@@ -7059,18 +7671,19 @@ public sealed class ESGeneratorTests
             .Select(static source => source.HintName)
             .ToArray();
 
-        Assert.AreEqual(
-            1,
-            diagnostics.Length,
-            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
         Assert.AreEqual(0, fallbackDiagnostics.Length);
-        StringAssert.Contains(diagnostics[0].GetMessage(), "OnAfterRenderAsync");
-        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Components.LifecycleCard");
-        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "onMounted(async () => {");
+        StringAssert.Contains(generatedSource, "onUpdated(async () => {");
+        StringAssert.Contains(generatedSource, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(generatedSource, "firstRender = false;");
+        StringAssert.Contains(generatedSource, "await emit(\\\"readyChanged\\\", currentFirstRender);");
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithAwaitedParenthesizedInvocationOnAfterRenderAsyncLifecycle_ReportsJAZORVGA005()
+    public void GenerateCatalog_WithAwaitedParenthesizedInvocationOnAfterRenderAsyncLifecycle_LowersWithoutJAZORVGA005()
     {
         var compilation = CreateCompilation(
             "RazorVue.AwaitedParenthesizedInvocationOnAfterRenderAsyncLifecyclePayload.Generated",
@@ -7131,14 +7744,15 @@ public sealed class ESGeneratorTests
             .Select(static source => source.HintName)
             .ToArray();
 
-        Assert.AreEqual(
-            1,
-            diagnostics.Length,
-            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
         Assert.AreEqual(0, fallbackDiagnostics.Length);
-        StringAssert.Contains(diagnostics[0].GetMessage(), "OnAfterRenderAsync");
-        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Components.LifecycleCard");
-        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "onMounted(async () => {");
+        StringAssert.Contains(generatedSource, "onUpdated(async () => {");
+        StringAssert.Contains(generatedSource, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(generatedSource, "firstRender = false;");
+        StringAssert.Contains(generatedSource, "await emit(\\\"readyChanged\\\", currentFirstRender);");
     }
 
     [TestMethod]

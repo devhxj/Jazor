@@ -109,6 +109,7 @@ public sealed class RazorVueCompilationContext
             .ToImmutableArray();
 
         return new RazorVueSemanticSnapshot(
+            Compilation,
             candidate.ComponentSymbol,
             candidate.BuildRenderTreeMethod,
             lifecycle,

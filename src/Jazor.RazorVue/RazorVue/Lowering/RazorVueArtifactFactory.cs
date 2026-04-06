@@ -2,7 +2,9 @@ using System.Collections.Immutable;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Operations;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
 using Jazor.RazorVue.Extensibility;
@@ -129,12 +131,12 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
 
         var descriptor = snapshot.Descriptor;
         var logicShape = new StringBuilder();
-        var onInitializedShape = DescribeLifecycleLoweringShape(snapshot.OnInitializedMethod, allowFirstRenderPayload: false);
-        var onInitializedAsyncShape = DescribeLifecycleLoweringShape(snapshot.OnInitializedAsyncMethod, allowFirstRenderPayload: false);
-        var onParametersSetShape = DescribeLifecycleLoweringShape(snapshot.OnParametersSetMethod, allowFirstRenderPayload: false);
-        var onParametersSetAsyncShape = DescribeLifecycleLoweringShape(snapshot.OnParametersSetAsyncMethod, allowFirstRenderPayload: false);
-        var onAfterRenderShape = DescribeLifecycleLoweringShape(snapshot.OnAfterRenderMethod, allowFirstRenderPayload: true);
-        var onAfterRenderAsyncShape = DescribeLifecycleLoweringShape(snapshot.OnAfterRenderAsyncMethod, allowFirstRenderPayload: true);
+        var onInitializedShape = DescribeLifecycleLoweringShape(snapshot, snapshot.OnInitializedMethod, false);
+        var onInitializedAsyncShape = DescribeLifecycleLoweringShape(snapshot, snapshot.OnInitializedAsyncMethod, false);
+        var onParametersSetShape = DescribeLifecycleLoweringShape(snapshot, snapshot.OnParametersSetMethod, false);
+        var onParametersSetAsyncShape = DescribeLifecycleLoweringShape(snapshot, snapshot.OnParametersSetAsyncMethod, false);
+        var onAfterRenderShape = DescribeLifecycleLoweringShape(snapshot, snapshot.OnAfterRenderMethod, true);
+        var onAfterRenderAsyncShape = DescribeLifecycleLoweringShape(snapshot, snapshot.OnAfterRenderAsyncMethod, true);
         logicShape.AppendLine("component:" + descriptor.FullName);
         logicShape.AppendLine("module:" + descriptor.ImportSpecifier);
         // LogicHash should reflect emitted runtime behavior. No-op lifecycle methods
@@ -175,12 +177,12 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             snapshot.Lifecycle.HasShouldRender || snapshot.Lifecycle.HasSetParametersAsync)
             return HmrBoundaryKind.FullReloadRequired;
 
-        var hasSupportedLifecycleLowering = HasSupportedLifecycleLowering(snapshot.OnInitializedMethod, allowFirstRenderPayload: false) ||
-                                           HasSupportedLifecycleLowering(snapshot.OnInitializedAsyncMethod, allowFirstRenderPayload: false) ||
-                                           HasSupportedLifecycleLowering(snapshot.OnParametersSetMethod, allowFirstRenderPayload: false) ||
-                                           HasSupportedLifecycleLowering(snapshot.OnParametersSetAsyncMethod, allowFirstRenderPayload: false) ||
-                                           HasSupportedLifecycleLowering(snapshot.OnAfterRenderMethod, allowFirstRenderPayload: true) ||
-                                           HasSupportedLifecycleLowering(snapshot.OnAfterRenderAsyncMethod, allowFirstRenderPayload: true);
+        var hasSupportedLifecycleLowering = HasSupportedLifecycleLowering(snapshot, snapshot.OnInitializedMethod, false) ||
+                                           HasSupportedLifecycleLowering(snapshot, snapshot.OnInitializedAsyncMethod, false) ||
+                                           HasSupportedLifecycleLowering(snapshot, snapshot.OnParametersSetMethod, false) ||
+                                           HasSupportedLifecycleLowering(snapshot, snapshot.OnParametersSetAsyncMethod, false) ||
+                                           HasSupportedLifecycleLowering(snapshot, snapshot.OnAfterRenderMethod, true) ||
+                                           HasSupportedLifecycleLowering(snapshot, snapshot.OnAfterRenderAsyncMethod, true);
         // HMR should only escalate to LogicSafe when lifecycle methods actually lower
         // into runtime hooks; no-op methods should behave like pure template changes.
         if (hasSupportedLifecycleLowering || snapshot.Logic.Methods.Length > 0)
@@ -284,18 +286,18 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         var vueImports = new List<string> { "defineComponent", "h" };
         // Vue imports must track actual lowering, otherwise no-op lifecycle methods
         // would leave behind imports for hooks that never materialize in setup().
-        var hasInitializedLowering = HasSupportedLifecycleLowering(snapshot.OnInitializedMethod, allowFirstRenderPayload: false) ||
-                                     HasSupportedLifecycleLowering(snapshot.OnInitializedAsyncMethod, allowFirstRenderPayload: false);
+        var hasInitializedLowering = HasSupportedLifecycleLowering(snapshot, snapshot.OnInitializedMethod, false) ||
+                                     HasSupportedLifecycleLowering(snapshot, snapshot.OnInitializedAsyncMethod, false);
         if (hasInitializedLowering)
             vueImports.Add("onMounted");
 
-        var hasParametersSetLowering = HasSupportedLifecycleLowering(snapshot.OnParametersSetMethod, allowFirstRenderPayload: false) ||
-                                       HasSupportedLifecycleLowering(snapshot.OnParametersSetAsyncMethod, allowFirstRenderPayload: false);
+        var hasParametersSetLowering = HasSupportedLifecycleLowering(snapshot, snapshot.OnParametersSetMethod, false) ||
+                                       HasSupportedLifecycleLowering(snapshot, snapshot.OnParametersSetAsyncMethod, false);
         if (hasParametersSetLowering)
             vueImports.Add("watch");
 
-        var hasAfterRenderLowering = HasSupportedLifecycleLowering(snapshot.OnAfterRenderMethod, allowFirstRenderPayload: true) ||
-                                     HasSupportedLifecycleLowering(snapshot.OnAfterRenderAsyncMethod, allowFirstRenderPayload: true);
+        var hasAfterRenderLowering = HasSupportedLifecycleLowering(snapshot, snapshot.OnAfterRenderMethod, true) ||
+                                     HasSupportedLifecycleLowering(snapshot, snapshot.OnAfterRenderAsyncMethod, true);
         if (hasAfterRenderLowering)
         {
             vueImports.Add("onMounted");
@@ -312,36 +314,55 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         StringBuilder builder,
         RazorVueSemanticSnapshot snapshot)
     {
-        AppendLifecycleHook(builder, "onMounted", snapshot.OnInitializedMethod, awaitResult: false);
-        AppendLifecycleHook(builder, "onMounted", snapshot.OnInitializedAsyncMethod, awaitResult: true);
+        AppendLifecycleHook(builder, snapshot, "onMounted", snapshot.OnInitializedMethod, awaitResult: false);
+        AppendLifecycleHook(builder, snapshot, "onMounted", snapshot.OnInitializedAsyncMethod, awaitResult: true);
         AppendParametersSetHook(builder, snapshot, snapshot.OnParametersSetMethod, awaitResult: false);
         AppendParametersSetHook(builder, snapshot, snapshot.OnParametersSetAsyncMethod, awaitResult: true);
 
-        var hasAfterRenderLowering = (snapshot.OnAfterRenderMethod is not null &&
-                                      ExtractSupportedEmitCall(snapshot.OnAfterRenderMethod, allowFirstRenderPayload: true) is not null) ||
-                                     (snapshot.OnAfterRenderAsyncMethod is not null &&
-                                      ExtractSupportedEmitCall(snapshot.OnAfterRenderAsyncMethod, allowFirstRenderPayload: true) is not null);
-        if (hasAfterRenderLowering)
-            builder.AppendLine("    let firstRender = true;");
+        var onAfterRenderEmitCall = snapshot.OnAfterRenderMethod is null
+            ? null
+            : ExtractSupportedEmitCall(snapshot, snapshot.OnAfterRenderMethod, allowFirstRenderPayload: true);
+        var onAfterRenderAsyncEmitCall = snapshot.OnAfterRenderAsyncMethod is null
+            ? null
+            : ExtractSupportedEmitCall(snapshot, snapshot.OnAfterRenderAsyncMethod, allowFirstRenderPayload: true);
 
-        AppendAfterRenderHook(builder, snapshot.OnAfterRenderMethod, awaitResult: false);
-        AppendAfterRenderHook(builder, snapshot.OnAfterRenderAsyncMethod, awaitResult: true);
+        if (onAfterRenderEmitCall is not null)
+        {
+            if (onAfterRenderEmitCall.UsesFirstRender)
+                builder.AppendLine("    {");
+            if (onAfterRenderEmitCall.UsesFirstRender)
+                builder.AppendLine("      let firstRender = true;");
+            AppendAfterRenderHook(builder, onAfterRenderEmitCall, awaitResult: false);
+            if (onAfterRenderEmitCall.UsesFirstRender)
+                builder.AppendLine("    }");
+        }
+
+        if (onAfterRenderAsyncEmitCall is not null)
+        {
+            if (onAfterRenderAsyncEmitCall.UsesFirstRender)
+                builder.AppendLine("    {");
+            if (onAfterRenderAsyncEmitCall.UsesFirstRender)
+                builder.AppendLine("      let firstRender = true;");
+            AppendAfterRenderHook(builder, onAfterRenderAsyncEmitCall, awaitResult: true);
+            if (onAfterRenderAsyncEmitCall.UsesFirstRender)
+                builder.AppendLine("    }");
+        }
     }
 
-    private static bool HasSupportedLifecycleLowering(IMethodSymbol? method, bool allowFirstRenderPayload)
+    private static bool HasSupportedLifecycleLowering(RazorVueSemanticSnapshot snapshot, IMethodSymbol? method, bool allowFirstRenderPayload)
     {
         if (method is null)
             return false;
 
-        return ExtractSupportedEmitCall(method, allowFirstRenderPayload) is not null;
+        return ExtractSupportedEmitCall(snapshot, method, allowFirstRenderPayload) is not null;
     }
 
-    private static string DescribeLifecycleLoweringShape(IMethodSymbol? method, bool allowFirstRenderPayload)
+    private static string DescribeLifecycleLoweringShape(RazorVueSemanticSnapshot snapshot, IMethodSymbol? method, bool allowFirstRenderPayload)
     {
         if (method is null)
             return "none";
 
-        var emitCall = ExtractSupportedEmitCall(method, allowFirstRenderPayload);
+        var emitCall = ExtractSupportedEmitCall(snapshot, method, allowFirstRenderPayload);
         if (emitCall is null)
             return "none";
 
@@ -350,6 +371,7 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
 
     private static void AppendLifecycleHook(
         StringBuilder builder,
+        RazorVueSemanticSnapshot snapshot,
         string hookName,
         IMethodSymbol? method,
         bool awaitResult)
@@ -357,7 +379,7 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         if (method is null)
             return;
 
-        var emitCall = ExtractSupportedEmitCall(method, allowFirstRenderPayload: false);
+        var emitCall = ExtractSupportedEmitCall(snapshot, method, allowFirstRenderPayload: false);
         // No-op lifecycle methods should not materialize empty Vue hooks.
         if (emitCall is null)
             return;
@@ -379,7 +401,7 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         if (method is null)
             return;
 
-        var emitCall = ExtractSupportedEmitCall(method, allowFirstRenderPayload: false);
+        var emitCall = ExtractSupportedEmitCall(snapshot, method, allowFirstRenderPayload: false);
         // No-op lifecycle methods should not materialize empty Vue hooks.
         if (emitCall is null)
             return;
@@ -396,31 +418,26 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
 
     private static void AppendAfterRenderHook(
         StringBuilder builder,
-        IMethodSymbol? method,
+        SupportedEmitCall? emitCall,
         bool awaitResult)
     {
-        if (method is null)
-            return;
-
-        var emitCall = ExtractSupportedEmitCall(method, allowFirstRenderPayload: true);
-        // No-op lifecycle methods should not materialize empty Vue hooks.
         if (emitCall is null)
             return;
 
-        var snapshotsFirstRender = string.Equals(emitCall.PayloadExpression, "firstRender", StringComparison.Ordinal);
+        var snapshotsFirstRender = emitCall.UsesFirstRender;
+        var payloadOverride = snapshotsFirstRender
+            ? emitCall.PayloadExpression?.Replace(RazorVueExpressionEmitter.LifecycleFirstRenderPlaceholder, "currentFirstRender")
+            : null;
         builder.Append("    onMounted(");
         if (awaitResult)
             builder.Append("async ");
         builder.AppendLine("() => {");
-        // OnAfterRender(bool firstRender) must preserve the current flag value for the
-        // emitted payload. Async lowering also needs to reset the shared flag before
-        // awaiting emit(), so later updates cannot observe a stale true value.
         if (snapshotsFirstRender)
             builder.AppendLine("      const currentFirstRender = firstRender;");
-        if (awaitResult)
+        if (awaitResult && snapshotsFirstRender)
             builder.AppendLine("      firstRender = false;");
-        AppendEmitStatement(builder, emitCall, awaitResult, snapshotsFirstRender ? "currentFirstRender" : null);
-        if (!awaitResult)
+        AppendEmitStatement(builder, emitCall, awaitResult, payloadOverride);
+        if (!awaitResult && snapshotsFirstRender)
             builder.AppendLine("      firstRender = false;");
         builder.AppendLine("    });");
         builder.Append("    onUpdated(");
@@ -429,10 +446,10 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         builder.AppendLine("() => {");
         if (snapshotsFirstRender)
             builder.AppendLine("      const currentFirstRender = firstRender;");
-        if (awaitResult)
+        if (awaitResult && snapshotsFirstRender)
             builder.AppendLine("      firstRender = false;");
-        AppendEmitStatement(builder, emitCall, awaitResult, snapshotsFirstRender ? "currentFirstRender" : null);
-        if (!awaitResult)
+        AppendEmitStatement(builder, emitCall, awaitResult, payloadOverride);
+        if (!awaitResult && snapshotsFirstRender)
             builder.AppendLine("      firstRender = false;");
         builder.AppendLine("    });");
     }
@@ -459,7 +476,7 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         builder.AppendLine(");");
     }
 
-    private static SupportedEmitCall? ExtractSupportedEmitCall(IMethodSymbol method, bool allowFirstRenderPayload)
+    private static SupportedEmitCall? ExtractSupportedEmitCall(RazorVueSemanticSnapshot snapshot, IMethodSymbol method, bool allowFirstRenderPayload)
     {
         if (method.DeclaringSyntaxReferences.Length == 0)
             throw CreateUnsupportedLifecycleLoweringException(method);
@@ -469,7 +486,7 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             throw CreateUnsupportedLifecycleLoweringException(method);
 
         if (methodSyntax.ExpressionBody is not null)
-            return ExtractSupportedEmitCall(method, methodSyntax.ExpressionBody.Expression, allowFirstRenderPayload);
+            return ExtractSupportedEmitCall(snapshot, method, methodSyntax.ExpressionBody.Expression, allowFirstRenderPayload);
 
         if (methodSyntax.Body is null)
             throw CreateUnsupportedLifecycleLoweringException(method);
@@ -482,9 +499,7 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             methodSyntax.Body.Statements[1] is ReturnStatementSyntax trailingReturn &&
             (trailingReturn.Expression is null || IsNoOpLifecycleExpression(trailingReturn.Expression)))
         {
-            // async Task lifecycle methods commonly use `await callback.InvokeAsync(...); return;`.
-            // Treat the trailing return as a no-op so the awaited callback can still lower to emit().
-            return ExtractSupportedEmitCall(method, leadingExpression.Expression, allowFirstRenderPayload);
+            return ExtractSupportedEmitCall(snapshot, method, leadingExpression.Expression, allowFirstRenderPayload);
         }
 
         if (methodSyntax.Body.Statements.Count != 1)
@@ -492,20 +507,22 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
 
         return methodSyntax.Body.Statements[0] switch
         {
-            ExpressionStatementSyntax expressionStatement => ExtractSupportedEmitCall(method, expressionStatement.Expression, allowFirstRenderPayload),
+            ExpressionStatementSyntax expressionStatement => ExtractSupportedEmitCall(snapshot, method, expressionStatement.Expression, allowFirstRenderPayload),
             ReturnStatementSyntax returnStatement when returnStatement.Expression is null || IsNoOpLifecycleExpression(returnStatement.Expression) => null,
-            ReturnStatementSyntax returnStatement when returnStatement.Expression is not null => ExtractSupportedEmitCall(method, returnStatement.Expression, allowFirstRenderPayload),
+            ReturnStatementSyntax returnStatement when returnStatement.Expression is not null => ExtractSupportedEmitCall(snapshot, method, returnStatement.Expression, allowFirstRenderPayload),
             _ => throw CreateUnsupportedLifecycleLoweringException(method)
         };
     }
 
     private static SupportedEmitCall? ExtractSupportedEmitCall(
+        RazorVueSemanticSnapshot snapshot,
         IMethodSymbol method,
         ExpressionSyntax expression,
         bool allowFirstRenderPayload)
     {
+        expression = UnwrapLifecycleExpression(expression);
         if (expression is AwaitExpressionSyntax awaitExpression)
-            expression = awaitExpression.Expression;
+            expression = UnwrapLifecycleExpression(awaitExpression.Expression);
 
         if (IsNoOpLifecycleExpression(expression))
             return null;
@@ -520,19 +537,33 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
 
         var emitName = ToLifecycleEmitName(method, callbackName);
         if (invocation.ArgumentList.Arguments.Count == 0)
-            return new SupportedEmitCall(emitName, null);
+            return new SupportedEmitCall(emitName, null, false);
 
         if (invocation.ArgumentList.Arguments.Count != 1)
             throw CreateUnsupportedLifecycleLoweringException(method);
 
-        var payloadExpression = TranslateLifecyclePayload(method, invocation.ArgumentList.Arguments[0].Expression, allowFirstRenderPayload);
-        return new SupportedEmitCall(emitName, payloadExpression);
+        var payloadSyntax = UnwrapLifecycleExpression(invocation.ArgumentList.Arguments[0].Expression);
+        var semanticModel = snapshot.Compilation.GetSemanticModel(payloadSyntax.SyntaxTree);
+        var payloadOperation = semanticModel.GetOperation(payloadSyntax);
+        if (payloadOperation is null)
+            throw CreateUnsupportedLifecycleLoweringException(method);
+
+        try
+        {
+            var payload = RazorVueExpressionEmitter.EmitLifecyclePayload(method, payloadOperation, allowFirstRenderPayload);
+            return new SupportedEmitCall(emitName, payload.Expression, payload.UsesFirstRender);
+        }
+        catch (NotSupportedException)
+        {
+            throw CreateUnsupportedLifecycleLoweringException(method);
+        }
     }
 
     private static bool IsNoOpLifecycleExpression(ExpressionSyntax syntax)
     {
+        syntax = UnwrapLifecycleExpression(syntax);
         if (syntax is AwaitExpressionSyntax awaitExpression)
-            syntax = awaitExpression.Expression;
+            syntax = UnwrapLifecycleExpression(awaitExpression.Expression);
 
         var expressionText = syntax.ToString().Trim();
         return string.Equals(expressionText, "Task.CompletedTask", StringComparison.Ordinal) ||
@@ -540,6 +571,14 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
                string.Equals(expressionText, "default", StringComparison.Ordinal) ||
                string.Equals(expressionText, "default(ValueTask)", StringComparison.Ordinal) ||
                string.Equals(expressionText, "default(System.Threading.Tasks.ValueTask)", StringComparison.Ordinal);
+    }
+
+    private static ExpressionSyntax UnwrapLifecycleExpression(ExpressionSyntax expression)
+    {
+        while (expression is ParenthesizedExpressionSyntax parenthesized)
+            expression = parenthesized.Expression;
+
+        return expression;
     }
 
     private static string TranslateLifecyclePayload(
@@ -631,7 +670,7 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         return new RazorVueCompilationIssueException(issue, method.ContainingType.ToDisplayString(), origin);
     }
 
-    private sealed record SupportedEmitCall(string EmitName, string? PayloadExpression);
+    private sealed record SupportedEmitCall(string EmitName, string? PayloadExpression, bool UsesFirstRender);
 
     private static string FormatStringArray(IEnumerable<string> values)
         => "[" + string.Join(", ", values.Select(ToJavaScriptString)) + "]";

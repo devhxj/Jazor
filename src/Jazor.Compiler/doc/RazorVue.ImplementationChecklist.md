@@ -43,11 +43,13 @@ Phase one is considered complete only when the project can:
 
 ## 2.1 Current Progress Snapshot
 
-The repository has already completed the following implementation slices:
+The repository has already crossed the following milestone boundary:
 
 - P0 foundation and migration boundary
 - P1 discovery and first Roslyn diagnostics (`JAZORVUE001`, `JAZORVUE002`, `JAZORVUE004`, `JAZORVUE005`, `JAZORVUE006`)
 - P2 component contract extraction
+- the layering refactor that moved RazorVue core semantic ownership into `Jazor.RazorVue` and kept `Jazor.RazorVue.Analysis` as a thin Roslyn host
+- the main semantic carrier/orchestration path: `RazorVueCompilationContext` -> `RazorVueSemanticSnapshot` -> `RazorVuePipeline` -> `RazorVueArtifactFactory` -> `RazorVueCatalog`
 - P6 artifact emission
 - emit-side materialization and manifest transition for `RazorVueCatalog`
 
@@ -55,6 +57,7 @@ The repository has partially completed:
 
 - P4 minimal `BuildRenderTree` extraction
 - P5 Razor -> Vue lowering
+- structured generator diagnostics beyond the fallback surface
 
 The currently proven lowering subset is:
 
@@ -67,17 +70,22 @@ The currently proven lowering subset is:
 - default slot fallback
 - named slot wiring
 - scoped slot wiring
+- minimal `if` / `foreach` structural lowering
+- lifecycle safe-subset lowering for `OnInitialized*`, `OnParametersSet*`, and `OnAfterRender*`
+- `OnParametersSet*` immediate watch bridging
+- `OnAfterRender*` explicit `firstRender` bridging
 
 The following checklist items remain effectively open even if some scaffolding exists:
 
-- broader logic extraction
-- lifecycle sugar lowering beyond the current minimal safe subset (`OnInitialized*`, `OnParametersSet*`, `OnAfterRender*`)
+- broader logic extraction outside the current lifecycle/EventCallback safe subset
+- full component-instance semantics
+- `Dispose*`, `ShouldRender`, and `SetParametersAsync` runtime-equivalent lowering
 - broader control-flow coverage validation
-- broader lowering diagnostics beyond the currently structured lifecycle/component-resolution cases
+- comprehensive Razor syntax coverage validation
 - final `DenoHost` end-to-end integration
 - final HMR/sourcemap outputs
 
-The current fallback for unsupported analysis/lowering shapes is still `JAZORVGA001` from `RazorVueGenerator` in the general case. On the current thin `Jazor.RazorVue.Analysis` host path, known component-resolution `NotFound` failures now project to `JAZORVGA002`, unsupported lifecycle-lowering shapes now project to `JAZORVGA005`, and `JAZORVGA003` / `JAZORVGA004` descriptors exist but are not yet reachable until short-name / intrinsic-name resolution is wired into this path.
+The current fallback for unsupported analysis/lowering shapes is still `JAZORVGA001` from `RazorVueGenerator` in the general case. The current thin `Jazor.RazorVue.Analysis` host path also projects structured issue diagnostics for `JAZORVGA002` (component not found), `JAZORVGA003` (ambiguous short component name), `JAZORVGA004` (reserved intrinsic-name collision), and `JAZORVGA005` (unsupported lifecycle lowering).
 
 ## 3. P0. Foundation and Constraints
 
@@ -684,7 +692,7 @@ Acceptance:
 
 ## 11. P8. Deferred Work
 
-The following stay out of phase one:
+The following stay out of the phase-one milestone:
 
 - deep Vuetify integration
 - router/pinia integration
