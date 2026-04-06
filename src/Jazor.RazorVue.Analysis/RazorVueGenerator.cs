@@ -240,11 +240,14 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         builder.AppendLine("        [global::System.Runtime.CompilerServices.CompilerGenerated]");
         builder.AppendLine("        private sealed class GeneratedOrigin");
         builder.AppendLine("        {");
-        builder.AppendLine("            public GeneratedOrigin(string sourceFilePath, int sourceSpanStart, int sourceSpanLength, int startLine, int startColumn, GeneratedMappingQuality mappingQuality, GeneratedOriginProvenance provenance)");
+        builder.AppendLine("            public GeneratedOrigin(string sourceFilePath, int sourceSpanStart, int sourceSpanLength, string? generatedFilePath, int? generatedSpanStart, int? generatedSpanLength, int startLine, int startColumn, GeneratedMappingQuality mappingQuality, GeneratedOriginProvenance provenance)");
         builder.AppendLine("            {");
         builder.AppendLine("                SourceFilePath = sourceFilePath;");
         builder.AppendLine("                SourceSpanStart = sourceSpanStart;");
         builder.AppendLine("                SourceSpanLength = sourceSpanLength;");
+        builder.AppendLine("                GeneratedFilePath = generatedFilePath;");
+        builder.AppendLine("                GeneratedSpanStart = generatedSpanStart;");
+        builder.AppendLine("                GeneratedSpanLength = generatedSpanLength;");
         builder.AppendLine("                StartLine = startLine;");
         builder.AppendLine("                StartColumn = startColumn;");
         builder.AppendLine("                MappingQuality = mappingQuality;");
@@ -253,6 +256,9 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         builder.AppendLine("            public string SourceFilePath { get; }");
         builder.AppendLine("            public int SourceSpanStart { get; }");
         builder.AppendLine("            public int SourceSpanLength { get; }");
+        builder.AppendLine("            public string? GeneratedFilePath { get; }");
+        builder.AppendLine("            public int? GeneratedSpanStart { get; }");
+        builder.AppendLine("            public int? GeneratedSpanLength { get; }");
         builder.AppendLine("            public int StartLine { get; }");
         builder.AppendLine("            public int StartColumn { get; }");
         builder.AppendLine("            public GeneratedMappingQuality MappingQuality { get; }");
@@ -329,6 +335,9 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
             builder.Append("                        sourceFilePath: ").Append(EscapeCSharpString(origin.SourceFilePath)).AppendLine(",");
             builder.Append("                        sourceSpanStart: ").Append(origin.SourceSpanStart).AppendLine(",");
             builder.Append("                        sourceSpanLength: ").Append(origin.SourceSpanLength).AppendLine(",");
+            builder.Append("                        generatedFilePath: ").Append(origin.GeneratedFilePath is null ? "null" : EscapeCSharpString(origin.GeneratedFilePath)).AppendLine(",");
+            builder.Append("                        generatedSpanStart: ").Append(origin.GeneratedSpanStart?.ToString() ?? "null").AppendLine(",");
+            builder.Append("                        generatedSpanLength: ").Append(origin.GeneratedSpanLength?.ToString() ?? "null").AppendLine(",");
             builder.Append("                        startLine: ").Append(origin.StartLine).AppendLine(",");
             builder.Append("                        startColumn: ").Append(origin.StartColumn).AppendLine(",");
             builder.Append("                        mappingQuality: GeneratedMappingQuality.").Append(origin.MappingQuality).AppendLine(",");

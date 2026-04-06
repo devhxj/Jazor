@@ -106,6 +106,9 @@ namespace Jazor.Generated
                         sourceFilePath: "Counter.razor",
                         sourceSpanStart: 12,
                         sourceSpanLength: 8,
+                        generatedFilePath: "components/counter-card.mjs",
+                        generatedSpanStart: 0,
+                        generatedSpanLength: 38,
                         startLine: 2,
                         startColumn: 4,
                         mappingQuality: GeneratedMappingQuality.MappedFromGenerated,
@@ -169,6 +172,9 @@ namespace Jazor.Generated
             string sourceFilePath,
             int sourceSpanStart,
             int sourceSpanLength,
+            string? generatedFilePath,
+            int? generatedSpanStart,
+            int? generatedSpanLength,
             int startLine,
             int startColumn,
             GeneratedMappingQuality mappingQuality,
@@ -177,6 +183,9 @@ namespace Jazor.Generated
             public string SourceFilePath { get; } = sourceFilePath;
             public int SourceSpanStart { get; } = sourceSpanStart;
             public int SourceSpanLength { get; } = sourceSpanLength;
+            public string? GeneratedFilePath { get; } = generatedFilePath;
+            public int? GeneratedSpanStart { get; } = generatedSpanStart;
+            public int? GeneratedSpanLength { get; } = generatedSpanLength;
             public int StartLine { get; } = startLine;
             public int StartColumn { get; } = startColumn;
             public GeneratedMappingQuality MappingQuality { get; } = mappingQuality;
