@@ -30,9 +30,9 @@ The repository should converge on this public project split:
 - `Jazor.Razor`
   owns the Razor-facing base component substrate (`JazorComponent`)
 - `Jazor.RazorVue`
-  owns the Vue-facing authoring substrate (`VueComponent`) and future Vue-first helper APIs
+  owns the Vue-facing authoring substrate (`VueComponent`) plus the RazorVue core semantic lane: frontend discovery, generated Razor analysis, descriptor extraction, source provenance, render-tree extraction, and Vue artifact lowering
 - `Jazor.RazorVue.Analysis`
-  owns the RazorVue generator/analyzer-facing entry, Razor-specific frontend discovery, and the Razor-to-Vue analysis lane
+  owns the thin RazorVue generator/analyzer host entry: Roslyn wiring and diagnostic projection only
 - `Jazor.Emit`
   owns catalog/materialized artifact reading and manifest persistence
 
@@ -46,16 +46,16 @@ The important clarification is:
 
 | Capability | Jazor.Compiler | Jazor.Razor | Jazor.RazorVue | Jazor.RazorVue.Analysis | Jazor.Emit |
 |---|---|---|---|---|---|
-| Incremental generator orchestration | Owns | No | No | Owns route entry | No |
-| Extension-point interfaces | Owns | No | No | Consumes/implements | No |
+| Incremental generator orchestration | Owns | No | No | Owns thin host entry | No |
+| Extension-point interfaces | Owns | No | No | Consumes | No |
 | Shared artifact/catalog contracts | Owns | Uses | Uses | Uses | Consumes |
-| HMR/source-origin core contracts | Owns | Uses | Uses | Produces data | Persists/consumes |
-| Razor entry detection | No | No | No | Owns | No |
-| Generated Razor code analysis | No | No | No | Owns | No |
-| `BuildRenderTree` extraction | Owns shared primitives | No | No | Owns route-specific entry | No |
-| Razor source provenance | Owns contracts | No | No | Owns extraction/mapping | No |
-| Vue descriptor shaping | Shared boundary | No | Supplies author semantics | Owns route-specific extraction | No |
-| Vue render-function lowering | Owns target pipeline coordination | No | Supplies author API assumptions | Owns generator entry | No |
+| HMR/source-origin core contracts | Owns | Uses | Produces/uses | Projects to diagnostics | Persists/consumes |
+| Razor entry detection | No | No | Owns | No | No |
+| Generated Razor code analysis | No | No | Owns | No | No |
+| `BuildRenderTree` extraction | Owns shared primitives | No | Owns | No | No |
+| Razor source provenance | Owns contracts | No | Owns extraction/mapping | Projects to diagnostics | No |
+| Vue descriptor shaping | Shared boundary | No | Owns | No | No |
+| Vue render-function lowering | Owns target pipeline coordination | No | Owns | No | No |
 | `JazorComponent` | No | Owns | No | No | No |
 | `VueComponent` and Vue author sugar | No | No | Owns | No | No |
 | Catalog manifest reading/writing | No | No | No | No | Owns |
@@ -66,8 +66,8 @@ The following rules should stay fixed during the next stages:
 
 1. `Jazor.Compiler` must not accumulate more Razor-specific extraction logic than necessary to preserve the current build.
 2. `Jazor.Razor` must stay a thin runtime/base library, not a Roslyn analysis home.
-3. `Jazor.RazorVue` must not own Roslyn extraction or `BuildRenderTree` parsing.
-4. `Jazor.RazorVue.Analysis` must not absorb generic compiler-core logic that belongs in `Jazor.Compiler`.
+3. `Jazor.RazorVue` owns the RazorVue core semantic lane, including generated Razor analysis and `BuildRenderTree` parsing/lowering.
+4. `Jazor.RazorVue.Analysis` must stay a thin host entry and must not absorb generic compiler-core logic or duplicate RazorVue core semantics.
 5. Vue target semantics may depend on Razor frontend outputs, but Razor frontend outputs must not depend on Vue author APIs.
 6. Any extension seam added now must be narrow enough that a later physical move does not require another public redesign.
 
@@ -105,7 +105,8 @@ Why this stays intentionally narrow:
 
 - it does not invent a fake multi-framework compiler model
 - it allows `Jazor.Compiler` to own orchestration without owning all Razor extraction forever
-- it allows `Jazor.RazorVue.Analysis` to become the Razor frontend home incrementally
+- it keeps `Jazor.RazorVue` as the single RazorVue core semantic home
+- it keeps `Jazor.RazorVue.Analysis` thin and replaceable as a host entry
 - it keeps the Vue target lane explicit
 
 ## 5. Staged Code Move Plan
@@ -123,19 +124,19 @@ The practical staged move is:
 
 - add the extension interfaces in `Jazor.Compiler`
 - make `RazorVuePipeline` consume the interfaces
-- keep a default in-assembly frontend implementation so the current generator path stays stable
-- expose the public analysis entry through `Jazor.RazorVue.Analysis`
+- keep the RazorVue core semantic implementation in `Jazor.RazorVue`
+- expose the thin Roslyn host entry through `Jazor.RazorVue.Analysis`
 - keep runtime/base libraries free of Roslyn analysis code
 
 ### Stage 2
 
-- move more frontend extraction logic behind the interface
-- validate a safe loading/registration path from compiler core to `Jazor.RazorVue.Analysis`
+- migrate any remaining RazorVue semantic logic out of `Jazor.Compiler` into `Jazor.RazorVue`
+- keep `Jazor.RazorVue.Analysis` limited to Roslyn wiring and diagnostic projection
 - stop growing Razor extraction directly inside `Jazor.Compiler`
 
 ### Stage 3
 
-- physically retire the duplicate/default frontend implementation once the registration/loading path is proven
+- retire transitional default implementations once `Jazor.Compiler` is orchestration-only for the RazorVue route
 
 ## 6. Review Round One
 
@@ -150,7 +151,7 @@ Findings:
 Decision:
 
 - accept the interface-first staged move
-- reject a big-bang project move in the current iteration
+- reject a big-bang project move and keep `Jazor.RazorVue` as the single RazorVue core semantic home in the current iteration
 
 ### 6.2 Project Manager Review
 
@@ -194,8 +195,8 @@ Resolution:
 
 - require real code movement in this stage:
   - pipeline consumes interfaces
-  - new public projects exist for runtime/base and analysis entry
-  - tests prove the new runtime names and the injected path
+  - new public projects exist for runtime/base and thin analysis host entry
+  - tests prove the new runtime names and the core-owned RazorVue path
 
 Decision:
 

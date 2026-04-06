@@ -1,9 +1,8 @@
 using Basic.Reference.Assemblies;
-using Jazor.RazorVue.Analysis;
-using Jazor.RazorVue.Analysis.Artifacts;
-using Jazor.RazorVue.Analysis.Descriptor;
-using Jazor.Razor;
 using Jazor.RazorVue;
+using Jazor.RazorVue.Artifacts;
+using Jazor.RazorVue.Descriptor;
+using Jazor.Razor;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 

@@ -24,27 +24,35 @@ As of the current implementation lane, the repository already has:
 
 - `[ECMAScriptModule]` entry split between static modules and RazorVue components
 - `Jazor.Razor` / `Jazor.RazorVue` base hierarchy
-- analyzer diagnostics for RazorVue entry and misuse rules
+- Roslyn analyzers for the current RazorVue entry/misuse set:
+  - `JAZORVUE001` invalid entry inheritance
+  - `JAZORVUE002` direct `ComponentBase` entry
+  - `JAZORVUE004` `StateHasChanged`
+  - `JAZORVUE005` `ShouldRender`
+  - `JAZORVUE006` `SetParametersAsync`
 - component descriptor extraction for props / emits / slots
-- `Jazor.RazorVue.Analysis` generator entry plus compiler-owned `RazorVueCatalog` / emit materialization
+- `Jazor.RazorVue` core descriptor/extraction/lowering pipeline plus the thin `Jazor.RazorVue.Analysis` generator host entry
 - a minimal `BuildRenderTree` extraction lane that can emit real Vue `defineComponent + setup + render`
 
 The current proven render-function subset is still narrow.
 It is intentionally focused on the first usable loop:
 
 - HTML element nodes
-- attributes
+- component happy path with component-node lowering
+- prop forwarding and event/listener wiring
 - text content
-- simple template expressions
-- default slot outlet fallback
+- simple template expressions backed by parameter properties
+- default slot fallback plus named/scoped slot wiring
 
 The following are still not complete phase-one coverage:
 
-- full component-node lowering
 - full logic extraction
-- lifecycle sugar lowering
+- lifecycle sugar lowering beyond the current minimal safe subset (`OnInitialized*`, `OnParametersSet*`, `OnAfterRender*`)
 - comprehensive Razor syntax coverage
+- broader lowering diagnostics beyond the currently structured lifecycle/component-resolution cases
 - runtime HMR and final sourcemap output
+
+When analysis/lowering hits unsupported shapes, the route still uses `JAZORVGA001` (`RazorVue catalog generation failed`) as the general fallback surface. On the current thin `Jazor.RazorVue.Analysis` host path, known component-resolution `NotFound` failures already project to `JAZORVGA002`, and unsupported lifecycle-lowering shapes now project to `JAZORVGA005`. `JAZORVGA003` / `JAZORVGA004` remain defined-but-unreachable until short-name / intrinsic-name resolution is wired into this path.
 
 Current consensus is:
 

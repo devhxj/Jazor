@@ -1,5 +1,5 @@
 using System.Collections.Immutable;
-using Jazor.RazorVue.Analysis.Descriptor;
+using Jazor.RazorVue.Descriptor;
 
 namespace Jazor.ComplierTest;
 

@@ -1,4 +1,4 @@
-using Jazor.RazorVue.Analysis;
+using Jazor.RazorVue;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System.Collections.Immutable;

@@ -2,12 +2,16 @@ using System;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
-using Jazor.RazorVue.Analysis.Artifacts;
+using Jazor.RazorVue;
+using Jazor.RazorVue.Artifacts;
+using Jazor.RazorVue.Descriptor;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Jazor.RazorVue.Analysis;
 
+// Thin host rule: this generator owns Roslyn wiring and diagnostics only; RazorVue semantics live in Jazor.RazorVue.
 [Generator]
 public sealed class RazorVueGenerator : IIncrementalGenerator
 {
@@ -15,6 +19,38 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         id: "JAZORVGA001",
         title: "RazorVue catalog generation failed",
         messageFormat: "Failed to generate RazorVue catalog for '{0}': {1}",
+        category: "Jazor.RazorVue.Analysis",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor RazorVueComponentNotFound = new(
+        id: "JAZORVGA002",
+        title: "RazorVue component not found",
+        messageFormat: "{0}",
+        category: "Jazor.RazorVue.Analysis",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor RazorVueAmbiguousComponentName = new(
+        id: "JAZORVGA003",
+        title: "RazorVue component name is ambiguous",
+        messageFormat: "{0}",
+        category: "Jazor.RazorVue.Analysis",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor RazorVueReservedIntrinsicNameCollision = new(
+        id: "JAZORVGA004",
+        title: "RazorVue component name collides with intrinsic",
+        messageFormat: "{0}",
+        category: "Jazor.RazorVue.Analysis",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor RazorVueUnsupportedLifecycleLowering = new(
+        id: "JAZORVGA005",
+        title: "RazorVue lifecycle lowering is unsupported",
+        messageFormat: "{0}",
         category: "Jazor.RazorVue.Analysis",
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
@@ -58,6 +94,8 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         if (!candidates.Any(static candidate => candidate is not null))
             return;
 
+        var candidate = candidates.FirstOrDefault(static candidate => candidate is not null);
+
         try
         {
             var catalog = new RazorVuePipeline().Execute(compilation);
@@ -66,9 +104,12 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
 
             context.AddSource("Jazor.Generated.RazorVueCatalog.g.cs", BuildRazorVueCatalogSource(catalog));
         }
+        catch (RazorVueCompilationIssueException issueException)
+        {
+            context.ReportDiagnostic(CreateCompilationIssueDiagnostic(issueException, candidate));
+        }
         catch (global::System.Exception ex)
         {
-            var candidate = candidates.FirstOrDefault(static candidate => candidate is not null);
             var location = candidate?.Location ?? Location.None;
             var typeName = candidate?.ClassSymbol.ToDisplayString() ?? (compilation.AssemblyName ?? "Jazor.Assembly");
             context.ReportDiagnostic(Diagnostic.Create(
@@ -77,6 +118,37 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
                 typeName,
                 ex.Message));
         }
+    }
+
+    private static Diagnostic CreateCompilationIssueDiagnostic(
+        RazorVueCompilationIssueException issueException,
+        ModuleCandidate? candidate)
+    {
+        var descriptor = issueException.Issue.Code switch
+        {
+            RazorVueIssueCode.ComponentNotFound => RazorVueComponentNotFound,
+            RazorVueIssueCode.AmbiguousComponentName => RazorVueAmbiguousComponentName,
+            RazorVueIssueCode.ReservedIntrinsicNameCollision => RazorVueReservedIntrinsicNameCollision,
+            RazorVueIssueCode.UnsupportedLifecycleLowering => RazorVueUnsupportedLifecycleLowering,
+            _ => RazorVueGenerationFailed
+        };
+        var location = TryCreateLocation(issueException.Origin) ?? candidate?.Location ?? Location.None;
+        return Diagnostic.Create(descriptor, location, issueException.Issue.Message);
+    }
+
+    private static Location? TryCreateLocation(RazorVueSourceOrigin? origin)
+    {
+        if (origin is null || string.IsNullOrWhiteSpace(origin.SourceFilePath))
+            return null;
+
+        var startLine = Math.Max(origin.StartLine - 1, 0);
+        var startColumn = Math.Max(origin.StartColumn - 1, 0);
+        var start = new LinePosition(startLine, startColumn);
+        var end = new LinePosition(startLine, startColumn + Math.Max(origin.SourceSpanLength, 1));
+        return Location.Create(
+            origin.SourceFilePath,
+            new TextSpan(Math.Max(origin.SourceSpanStart, 0), Math.Max(origin.SourceSpanLength, 0)),
+            new LinePositionSpan(start, end));
     }
 
     private static string BuildRazorVueCatalogSource(RazorVueCatalog catalog)

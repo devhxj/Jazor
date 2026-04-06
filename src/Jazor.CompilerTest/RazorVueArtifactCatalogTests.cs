@@ -1,5 +1,5 @@
 using System.Collections.Immutable;
-using Jazor.RazorVue.Analysis.Artifacts;
+using Jazor.RazorVue.Artifacts;
 
 namespace Jazor.ComplierTest;
 

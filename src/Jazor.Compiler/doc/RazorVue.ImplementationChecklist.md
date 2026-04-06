@@ -46,7 +46,7 @@ Phase one is considered complete only when the project can:
 The repository has already completed the following implementation slices:
 
 - P0 foundation and migration boundary
-- P1 discovery and diagnostics
+- P1 discovery and first Roslyn diagnostics (`JAZORVUE001`, `JAZORVUE002`, `JAZORVUE004`, `JAZORVUE005`, `JAZORVUE006`)
 - P2 component contract extraction
 - P6 artifact emission
 - emit-side materialization and manifest transition for `RazorVueCatalog`
@@ -59,19 +59,25 @@ The repository has partially completed:
 The currently proven lowering subset is:
 
 - HTML elements
-- attributes
+- component happy path with component-node lowering
+- props
+- emit/listener wiring
 - text nodes
 - simple expressions backed by parameter properties
-- fallback/default slot rendering when no render tree exists
+- default slot fallback
+- named slot wiring
+- scoped slot wiring
 
 The following checklist items remain effectively open even if some scaffolding exists:
 
-- general component-node lowering
-- full logic extraction
-- lifecycle sugar lowering
+- broader logic extraction
+- lifecycle sugar lowering beyond the current minimal safe subset (`OnInitialized*`, `OnParametersSet*`, `OnAfterRender*`)
 - broader control-flow coverage validation
+- broader lowering diagnostics beyond the currently structured lifecycle/component-resolution cases
 - final `DenoHost` end-to-end integration
 - final HMR/sourcemap outputs
+
+The current fallback for unsupported analysis/lowering shapes is still `JAZORVGA001` from `RazorVueGenerator` in the general case. On the current thin `Jazor.RazorVue.Analysis` host path, known component-resolution `NotFound` failures now project to `JAZORVGA002`, unsupported lifecycle-lowering shapes now project to `JAZORVGA005`, and `JAZORVGA003` / `JAZORVGA004` descriptors exist but are not yet reachable until short-name / intrinsic-name resolution is wired into this path.
 
 ## 3. P0. Foundation and Constraints
 

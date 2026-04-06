@@ -1,5 +1,5 @@
-using Jazor.RazorVue.Analysis;
-using Jazor.RazorVue.Analysis.Discovery;
+using Jazor.RazorVue;
+using Jazor.RazorVue.Discovery;
 using Microsoft.CodeAnalysis;
 
 namespace Jazor.Analyzer;

@@ -8,12 +8,15 @@ It does not attempt to mirror every current implementation detail line by line.
 The current repository now contains a partial RazorVue pipeline, including:
 
 - entry discovery and analyzer split
+- Roslyn entry/misuse diagnostics for `JAZORVUE001`, `JAZORVUE002`, `JAZORVUE004`, `JAZORVUE005`, and `JAZORVUE006`
 - descriptor extraction
 - `RazorVueCatalog` generation
 - emit/manifest materialization
 - a minimal real Vue render-function emission lane for a limited `BuildRenderTree` subset
+- a proven component happy path covering component nodes, props, event/listener wiring, and default/named/scoped slot flow
 
 The repository still does not contain a complete phase-one RazorVue pipeline.
+Unsupported extraction/lowering shapes still fall back to the general `JAZORVGA001` diagnostic surface. On the current thin `Jazor.RazorVue.Analysis` host path, known component-resolution `NotFound` failures now project to `JAZORVGA002`, and unsupported lifecycle-lowering shapes now project to `JAZORVGA005`. `JAZORVGA003` / `JAZORVGA004` are defined but are not yet reachable because short-name / intrinsic-name resolution is not wired into this path.
 
 This document exists to:
 
@@ -34,13 +37,13 @@ Related documents:
 The public project split is:
 
 - `Jazor.Compiler`
-  owns compiler core orchestration, shared contracts, static-module generation, and RazorVue core lowering primitives
+  owns compiler core orchestration, shared contracts, and static-module generation
 - `Jazor.Razor`
   owns the Razor-facing base component substrate (`JazorComponent`)
 - `Jazor.RazorVue`
-  owns the Vue-facing authoring substrate (`VueComponent`) and future Vue-first helper APIs
+  owns the Vue-facing authoring substrate (`VueComponent`) plus the RazorVue core semantic lane: descriptor extraction, `BuildRenderTree` extraction, component resolution, render-function lowering, and artifact shaping
 - `Jazor.RazorVue.Analysis`
-  owns the RazorVue generator/analyzer-facing entry that turns `[ECMAScriptModule]` Razor components into compiler artifacts
+  owns the thin RazorVue generator/analyzer-facing host entry: Roslyn wiring and diagnostic projection into the compiler pipeline
 
 This split is intentional:
 

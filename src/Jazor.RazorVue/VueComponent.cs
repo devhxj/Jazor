@@ -1,9 +1,13 @@
-using Jazor.Razor;
-
 namespace Jazor.RazorVue;
 
-public abstract class VueComponent : JazorComponent
+/// <summary>
+/// RazorVue 的基础组件类型，同时所在程序集也是 RazorVue 核心语义的归属层。
+/// 为什么这样分层：Vue authoring surface 与 RazorVue descriptor/lowering/pipeline 属于同一个产品核心，
+/// 而 Roslyn generator 入口只是在 Analysis 层做薄接线，不再承载核心实现。
+/// </summary>
+public abstract class VueComponent
+#if NET10_0_OR_GREATER
+    : Jazor.Razor.JazorComponent
+#endif
 {
-    // Vue-first authoring APIs live here. Compiler analysis belongs in the
-    // dedicated analysis project, not in this core authoring library.
 }

@@ -5,7 +5,7 @@ using System;
 using System.Collections.Immutable;
 using System.Linq;
 using Jazor.Compiler;
-using Jazor.RazorVue.Analysis;
+using Jazor.RazorVue;
 using Jazor.Name;
 
 namespace Jazor.Analyzer;
