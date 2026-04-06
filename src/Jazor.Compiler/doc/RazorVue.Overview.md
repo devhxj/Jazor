@@ -22,6 +22,7 @@ The current state of RazorVue is:
 - the current stage is phase-one closure work around the minimal path
 - phase-one scope remains intentionally limited
 - HMR and sourcemap remain metadata-first, reserved for later milestones
+- the current logic lane is still a conservative subset, but it now includes lifecycle safe-subset lowering plus a minimal setup-side logic closure for simple fields and zero-arg helpers
 
 As of the current implementation lane, the repository already has:
 
@@ -39,11 +40,12 @@ As of the current implementation lane, the repository already has:
 - proven component-node lowering for props, emit/listener wiring, and default / named / scoped slot flow
 - minimal structural lowering for `if` and `foreach`
 - lifecycle safe-subset lowering for `OnInitialized*`, `OnParametersSet*`, and `OnAfterRender*`, including `watch(..., { immediate: true })` and `firstRender` bridging
+- minimal setup-side logic lowering for simple instance fields and zero-arg helper methods that can be projected safely into `setup()`
 - artifact identity/hash shaping and basic HMR boundary classification
 
 The following are still not complete phase-one coverage:
 
-- broader logic extraction beyond the current lifecycle/event-callback safe subset
+- broader logic extraction beyond the current lifecycle/event-callback/setup-field/helper safe subset
 - full component-instance semantics
 - comprehensive Razor syntax coverage
 - `Dispose*`, `ShouldRender`, and `SetParametersAsync` runtime-equivalent handling
@@ -56,6 +58,7 @@ When analysis/lowering hits unsupported shapes, `JAZORVGA001` (`RazorVue catalog
 - `JAZORVGA003` ambiguous short component name
 - `JAZORVGA004` reserved intrinsic-name collision
 - `JAZORVGA005` unsupported lifecycle lowering
+- `JAZORVGA006` unsupported setup-side logic lowering
 
 Current stage memo:
 
