@@ -30,6 +30,7 @@ public sealed class SdkIntegrationTests
                 "/m:1",
                 "/p:BuildInParallel=false",
                 $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
                 $"-p:RestorePackagesPath={restorePackagesPath}",
                 "-p:RestoreNoCache=true",
                 $"-p:JazorPackageVersion={package.PackageVersion}",
@@ -155,6 +156,7 @@ public sealed class SdkIntegrationTests
                 "/m:1",
                 "/p:BuildInParallel=false",
                 $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
                 $"-p:RestorePackagesPath={restorePackagesPath}",
                 "-p:RestoreNoCache=true",
                 $"-p:JazorPackageVersion={package.PackageVersion}"

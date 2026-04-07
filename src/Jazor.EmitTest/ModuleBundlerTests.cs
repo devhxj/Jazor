@@ -109,6 +109,75 @@ public sealed class ModuleBundlerTests
     }
 
     [TestMethod]
+    public async Task BundleAsync_WithRazorVueHostRequirements_ReExportsHostContract()
+    {
+        using var workspace = new TestWorkspace();
+        WriteModule(workspace.InputDirectory, "host/app.mjs",
+            """
+            export function Boot() {
+              return "ready";
+            }
+            """);
+
+        var manifest = new ManifestModel(
+            RootAssemblyPath: Path.Combine(workspace.RootPath, "Sample.Host.dll"),
+            GeneratedAtUtc: DateTime.UtcNow,
+            Modules:
+            [
+                new ManifestModuleEntry("Sample.Host", "Sample.Host.AppModule", "Sample.Host.AppModule", "host/app.mjs", "hash-1")
+            ]);
+        manifest.Save(workspace.ManifestPath);
+
+        var razorVueManifest = new RazorVueManifestModel(
+            "Sample.Host",
+            DateTime.UtcNow,
+            [
+                new RazorVueManifestEntry(
+                    "Sample.Host",
+                    "CounterCard",
+                    "components/counter-card.mjs",
+                    ["vue", "vuetify/components"],
+                    ["vuetify/styles"],
+                    ["feature-flags", "vuetify"],
+                    "descriptor-hash",
+                    "template-hash",
+                    "logic-hash",
+                    "content-hash",
+                    RazorVueHmrBoundaryKind.LogicSafe,
+                    false,
+                    true)
+            ],
+            ["vuetify/styles"],
+            ["feature-flags", "vuetify"]);
+        razorVueManifest.Save(RazorVueModuleWriter.GetManifestPath(workspace.ManifestPath));
+        WriteModule(
+            workspace.InputDirectory,
+            "__jazor/razorvue-host.mjs",
+            """
+            export const razorVueStyles = Object.freeze(["vuetify/styles"]);
+            export const razorVuePluginRequirements = Object.freeze(["feature-flags", "vuetify"]);
+            export const razorVueHostRequirements = Object.freeze({
+              styles: razorVueStyles,
+              pluginRequirements: razorVuePluginRequirements
+            });
+            """);
+
+        var bundler = new ModuleBundler();
+        var result = await bundler.BundleAsync(new BundleOptions(
+            workspace.InputDirectory,
+            workspace.ManifestPath,
+            workspace.OutputPath));
+
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+
+        var script = await File.ReadAllTextAsync(workspace.OutputPath, TestContext.CancellationTokenSource.Token);
+        Assert.Contains("function Boot()", script);
+        Assert.Contains("razorVueHostRequirements", script);
+        Assert.Contains("feature-flags", script);
+        Assert.Contains("vuetify/styles", script);
+    }
+
+    [TestMethod]
     public async Task BundleAsync_WritesExternalSourceMapAndSourceMappingUrl()
     {
         using var workspace = new TestWorkspace();
@@ -213,6 +282,74 @@ public sealed class ModuleBundlerTests
         CollectionAssert.Contains(sourcesContent, "<div>@Value</div>");
     }
 
+    [TestMethod]
+    public async Task BundleAsync_WithRazorVueManifest_WritesHostSidecars()
+    {
+        using var workspace = new TestWorkspace();
+        WriteModule(workspace.InputDirectory, "host/app.mjs",
+            """
+            export function Boot() {
+              return "ready";
+            }
+            """);
+
+        var manifest = new ManifestModel(
+            RootAssemblyPath: Path.Combine(workspace.RootPath, "Sample.Host.dll"),
+            GeneratedAtUtc: DateTime.UtcNow,
+            Modules:
+            [
+                new ManifestModuleEntry("Sample.Host", "Sample.Host.AppModule", "Sample.Host.AppModule", "host/app.mjs", "hash-1")
+            ]);
+        manifest.Save(workspace.ManifestPath);
+
+        var razorVueManifest = new RazorVueManifestModel(
+            "Sample.Host",
+            DateTime.UtcNow,
+            [
+                new RazorVueManifestEntry(
+                    "Sample.Host",
+                    "ProfileForm",
+                    "components/profile-form.mjs",
+                    ["vue", "vuetify/components"],
+                    ["feature/flags.css", "vuetify/styles"],
+                    ["feature-flags", "vuetify"],
+                    "descriptor-hash",
+                    "template-hash",
+                    "logic-hash",
+                    "content-hash",
+                    RazorVueHmrBoundaryKind.LogicSafe,
+                    RequiresHydration: false,
+                    SupportsSsr: true)
+            ],
+            ["feature/flags.css", "vuetify/styles"],
+            ["feature-flags", "vuetify"]);
+        razorVueManifest.Save(RazorVueModuleWriter.GetManifestPath(workspace.ManifestPath));
+
+        var bundler = new ModuleBundler();
+        var result = await bundler.BundleAsync(new BundleOptions(
+            workspace.InputDirectory,
+            workspace.ManifestPath,
+            workspace.OutputPath));
+
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+        Assert.IsTrue(File.Exists(workspace.RazorVueCssPath));
+        Assert.IsTrue(File.Exists(workspace.RazorVueHostContractPath));
+
+        var css = await File.ReadAllTextAsync(workspace.RazorVueCssPath, CancellationToken.None);
+        Assert.AreEqual(
+            "@import \"feature/flags.css\";\n@import \"vuetify/styles\";\n",
+            css.ReplaceLineEndings("\n"));
+
+        using var contract = await ReadJsonAsync(workspace.RazorVueHostContractPath);
+        CollectionAssert.AreEqual(
+            new[] { "feature/flags.css", "vuetify/styles" },
+            contract.RootElement.GetProperty("Styles").EnumerateArray().Select(static item => item.GetString()).OfType<string>().ToArray());
+        CollectionAssert.AreEqual(
+            new[] { "feature-flags", "vuetify" },
+            contract.RootElement.GetProperty("PluginRequirements").EnumerateArray().Select(static item => item.GetString()).OfType<string>().ToArray());
+        Assert.AreEqual("components/profile-form.mjs", contract.RootElement.GetProperty("Modules")[0].GetProperty("RelativeModulePath").GetString());
+    }
+
     private static void WriteModule(string rootDirectory, string relativePath, string content)
     {
         var fullPath = Path.Combine(rootDirectory, relativePath.Replace('/', Path.DirectorySeparatorChar));
@@ -245,6 +382,8 @@ public sealed class ModuleBundlerTests
             ManifestPath = Path.Combine(InputDirectory, "jazor-manifest.json");
             OutputPath = Path.Combine(RootPath, "bundle.js");
             OutputMapPath = Path.Combine(RootPath, "bundle.js.map");
+            RazorVueCssPath = Path.Combine(RootPath, "bundle.razorvue.css");
+            RazorVueHostContractPath = Path.Combine(RootPath, "bundle.razorvue.host.json");
             Directory.CreateDirectory(InputDirectory);
         }
 
@@ -257,6 +396,10 @@ public sealed class ModuleBundlerTests
         public string OutputPath { get; }
 
         public string OutputMapPath { get; }
+
+        public string RazorVueCssPath { get; }
+
+        public string RazorVueHostContractPath { get; }
 
         public void Dispose()
         {

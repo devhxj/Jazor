@@ -19,12 +19,16 @@ internal sealed class ModuleBundler
     private static readonly UTF8Encoding Utf8WithoutBom = new(encoderShouldEmitUTF8Identifier: false);
     private static readonly SourceMapChainBuilder ChainBuilder = new();
     private static readonly SourceMapWriter SourceMapWriter = new();
+    private static readonly RazorVueHostAssetWriter RazorVueHostAssetWriter = new();
 
     public async Task<BundleResult> BundleAsync(BundleOptions options)
     {
         var manifest = ManifestModel.TryLoad(options.ManifestPath);
         if (manifest is null)
             return BundleResult.Fail(6, $"Manifest was not found: '{options.ManifestPath}'.");
+
+        var razorVueManifestPath = RazorVueModuleWriter.GetManifestPath(options.ManifestPath);
+        var razorVueManifest = RazorVueManifestModel.TryLoad(razorVueManifestPath);
 
         var relativePaths = manifest.Modules
             .Select(static module => module.RelativePath.Replace('\\', '/'))
@@ -84,8 +88,17 @@ internal sealed class ModuleBundler
             await File.WriteAllTextAsync(targetPath + ".map", await File.ReadAllTextAsync(sourceMapPath), Utf8WithoutBom);
         }
 
+        var razorVueHostRequirementsRelativePath = await TryCopyRazorVueHostRequirementsAsync(
+            options.InputDirectory,
+            options.ManifestPath,
+            bundleWorkspace);
+
         var tempEntryPath = Path.Combine(bundleWorkspace, "__jazor_bundle_entry__.mjs");
-        await WriteBundleEntryAsync(tempEntryPath, bundleWorkspace, entryRelativePaths);
+        await WriteBundleEntryAsync(
+            tempEntryPath,
+            bundleWorkspace,
+            entryRelativePaths,
+            razorVueHostRequirementsRelativePath);
 
         try
         {
@@ -109,6 +122,7 @@ internal sealed class ModuleBundler
 
             await TryRewriteBundleSourceMapAsync(options.OutputPath, bundleWorkspace, relativePaths, tempEntryPath);
             await EnsureBundleSourceMappingUrlAsync(options.OutputPath);
+            RazorVueHostAssetWriter.Sync(options.OutputPath, razorVueManifest);
             return BundleResult.Success(options.OutputPath, relativePaths.Length);
         }
         catch (Exception ex)
@@ -128,14 +142,29 @@ internal sealed class ModuleBundler
         }
     }
 
-    private static async Task WriteBundleEntryAsync(string tempEntryPath, string bundleWorkspace, IReadOnlyList<string> entryRelativePaths)
+    private static async Task WriteBundleEntryAsync(
+        string tempEntryPath,
+        string bundleWorkspace,
+        IReadOnlyList<string> entryRelativePaths,
+        string? razorVueHostRequirementsRelativePath)
     {
         var entryLines = entryRelativePaths
             .Select(static relativePath => $"export * from \"./{relativePath}\";")
-            .ToArray();
+            .ToList();
+        if (!string.IsNullOrWhiteSpace(razorVueHostRequirementsRelativePath))
+        {
+            // Keep bundled hosts on the same compiler-owned metadata contract as unbundled output.
+            entryLines.Add(
+                $"export {{ razorVueHostRequirements, razorVuePluginRequirements, razorVueStyles }} from \"./{razorVueHostRequirementsRelativePath}\";");
+        }
+
         var entrySource = string.Join(Environment.NewLine, entryLines);
         var entryMapPath = tempEntryPath + ".map";
-        var entryMap = await BuildEntrySourceMapAsync(bundleWorkspace, Path.GetFileName(tempEntryPath), entryRelativePaths);
+        var entrySourcePaths = entryRelativePaths.ToList();
+        if (!string.IsNullOrWhiteSpace(razorVueHostRequirementsRelativePath))
+            entrySourcePaths.Add(razorVueHostRequirementsRelativePath);
+
+        var entryMap = await BuildEntrySourceMapAsync(bundleWorkspace, Path.GetFileName(tempEntryPath), entrySourcePaths);
         var entryCode = SourceMapWriter.AppendSourceMappingUrl(entrySource, Path.GetFileName(entryMapPath));
 
         await File.WriteAllTextAsync(tempEntryPath, entryCode, Utf8WithoutBom);
@@ -160,6 +189,31 @@ internal sealed class ModuleBundler
         }
 
         return new SourceMapDocument(entryFileName, sources, segments);
+    }
+
+    private static async Task<string?> TryCopyRazorVueHostRequirementsAsync(
+        string inputDirectory,
+        string manifestPath,
+        string bundleWorkspace)
+    {
+        var razorVueManifestPath = RazorVueModuleWriter.GetManifestPath(manifestPath);
+        var razorVueManifest = RazorVueManifestModel.TryLoad(razorVueManifestPath);
+        if (razorVueManifest is null || razorVueManifest.Modules.Count == 0)
+            return null;
+
+        var sourcePath = RazorVueModuleWriter.GetHostRequirementsModulePath(inputDirectory);
+        if (!File.Exists(sourcePath))
+            return null;
+
+        var normalizedInputDirectory = EnsureDirectorySeparator(Path.GetFullPath(inputDirectory));
+        var relativePath = Path.GetRelativePath(normalizedInputDirectory, Path.GetFullPath(sourcePath)).Replace('\\', '/');
+        var targetPath = Path.Combine(bundleWorkspace, relativePath.Replace('/', Path.DirectorySeparatorChar));
+        var targetDirectory = Path.GetDirectoryName(targetPath);
+        if (!string.IsNullOrWhiteSpace(targetDirectory))
+            Directory.CreateDirectory(targetDirectory);
+
+        await File.WriteAllTextAsync(targetPath, await File.ReadAllTextAsync(sourcePath), Utf8WithoutBom);
+        return relativePath;
     }
 
     private static async Task TryRewriteBundleSourceMapAsync(string outputPath, string bundleWorkspace, IReadOnlyList<string> relativePaths, string tempEntryPath)
@@ -357,6 +411,9 @@ internal sealed class ModuleBundler
 
     private static string GetBundleMapPath(string outputPath)
         => outputPath + ".map";
+
+    private static string EnsureDirectorySeparator(string path)
+        => path.EndsWith(Path.DirectorySeparatorChar) ? path : path + Path.DirectorySeparatorChar;
 
     private static string GetRootAssemblyName(ManifestModel manifest)
     {

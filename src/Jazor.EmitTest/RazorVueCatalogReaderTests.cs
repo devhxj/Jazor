@@ -377,6 +377,67 @@ namespace Jazor.EmitTest
                 manifest.PluginRequirements);
         }
 
+        [TestMethod]
+        public void RazorVueManifestModel_TryLoad_BackfillsTopLevelRequirements_FromLegacyManifestJson()
+        {
+            var manifestPath = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"), "legacy-razorvue-manifest.json");
+
+            try
+            {
+                var directory = Path.GetDirectoryName(manifestPath);
+                if (!string.IsNullOrWhiteSpace(directory))
+                    Directory.CreateDirectory(directory);
+
+                File.WriteAllText(
+                    manifestPath,
+                    """
+                    {
+                      "AssemblyName": "Demo.Host",
+                      "GeneratedAtUtc": "2026-04-07T00:00:00Z",
+                      "Modules": [
+                        {
+                          "AssemblyName": "Demo.Components",
+                          "ComponentName": "CounterCard",
+                          "RelativeModulePath": "components/counter-card.mjs",
+                          "Imports": [ "vue" ],
+                          "Styles": [ "vuetify/styles", " feature/flags.css ", "vuetify/styles" ],
+                          "PluginRequirements": [ "vuetify", " feature-flags ", "vuetify" ],
+                          "DescriptorHash": "descriptor-hash",
+                          "TemplateHash": "template-hash",
+                          "LogicHash": "logic-hash",
+                          "ContentHash": "content-hash",
+                          "HmrBoundaryKind": 2,
+                          "RequiresHydration": false,
+                          "SupportsSsr": true
+                        }
+                      ]
+                    }
+                    """.ReplaceLineEndings("\n"));
+
+                var manifest = RazorVueManifestModel.TryLoad(manifestPath);
+
+                Assert.IsNotNull(manifest);
+                CollectionAssert.AreEqual(
+                    new[] { "feature/flags.css", "vuetify/styles" },
+                    manifest.Styles);
+                CollectionAssert.AreEqual(
+                    new[] { "feature-flags", "vuetify" },
+                    manifest.PluginRequirements);
+                CollectionAssert.AreEqual(
+                    new[] { "feature/flags.css", "vuetify/styles" },
+                    manifest.Modules[0].Styles);
+                CollectionAssert.AreEqual(
+                    new[] { "feature-flags", "vuetify" },
+                    manifest.Modules[0].PluginRequirements);
+            }
+            finally
+            {
+                var directory = Path.GetDirectoryName(manifestPath);
+                if (!string.IsNullOrWhiteSpace(directory) && Directory.Exists(directory))
+                    Directory.Delete(directory, recursive: true);
+            }
+        }
+
         private const string DefaultGeneratedArtifactMembers =
             """
             public string ComponentName => "CounterCard";

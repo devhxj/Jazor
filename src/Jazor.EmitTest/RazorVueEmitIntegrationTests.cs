@@ -34,6 +34,7 @@ public sealed class RazorVueEmitIntegrationTests
         var outputDirectory = Path.Combine(root, "wwwroot", "jazor");
         var manifestPath = RazorVueModuleWriter.GetManifestPath(Path.Combine(outputDirectory, "jazor-manifest.json"));
         var sourceFilePath = Path.Combine(root, "Counter.razor");
+        var hostRequirementsModulePath = RazorVueModuleWriter.GetHostRequirementsModulePath(outputDirectory);
         var modulePath = Path.Combine(outputDirectory, "components", "counter-card.mjs");
         var mapPath = modulePath + ".map";
 
@@ -83,19 +84,31 @@ public sealed class RazorVueEmitIntegrationTests
                 clean: true);
 
             Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
-            Assert.AreEqual(1, result.Written);
+            Assert.AreEqual(2, result.Written);
             Assert.IsTrue(File.Exists(modulePath));
             Assert.IsTrue(File.Exists(mapPath));
             Assert.IsTrue(File.Exists(manifestPath));
+            Assert.IsTrue(File.Exists(hostRequirementsModulePath));
 
             var moduleCode = File.ReadAllText(modulePath);
             StringAssert.Contains(moduleCode, "//# sourceMappingURL=counter-card.mjs.map");
+            var hostRequirementsCode = File.ReadAllText(hostRequirementsModulePath);
+            StringAssert.Contains(hostRequirementsCode, "export const razorVueStyles = Object.freeze([\"vuetify/styles\"]);");
+            StringAssert.Contains(hostRequirementsCode, "export const razorVuePluginRequirements = Object.freeze([\"vuetify\"]);");
 
             using var map = JsonDocument.Parse(File.ReadAllText(mapPath));
             Assert.AreEqual("components/counter-card.mjs", map.RootElement.GetProperty("file").GetString());
             Assert.AreEqual(sourceFilePath, map.RootElement.GetProperty("sources")[0].GetString());
             Assert.AreEqual("Counter component source", map.RootElement.GetProperty("sourcesContent")[0].GetString());
             Assert.AreNotEqual(string.Empty, map.RootElement.GetProperty("mappings").GetString());
+
+            using var manifestJson = JsonDocument.Parse(File.ReadAllText(manifestPath));
+            CollectionAssert.AreEqual(
+                new[] { "vuetify/styles" },
+                manifestJson.RootElement.GetProperty("Styles").EnumerateArray().Select(static item => item.GetString()).OfType<string>().ToArray());
+            CollectionAssert.AreEqual(
+                new[] { "vuetify" },
+                manifestJson.RootElement.GetProperty("PluginRequirements").EnumerateArray().Select(static item => item.GetString()).OfType<string>().ToArray());
 
             var manifest = RazorVueManifestModel.TryLoad(manifestPath);
             Assert.IsNotNull(manifest);
@@ -183,6 +196,14 @@ public sealed class RazorVueEmitIntegrationTests
                 manifest.Modules.Select(static module => module.AssemblyName).ToArray());
             CollectionAssert.AreEqual(new[] { "feature-flags", "vuetify" }, manifest.PluginRequirements);
             CollectionAssert.AreEqual(new[] { "feature/flags.css", "vuetify/styles" }, manifest.Styles);
+
+            using var manifestJson = JsonDocument.Parse(File.ReadAllText(manifestPath));
+            CollectionAssert.AreEqual(
+                new[] { "feature/flags.css", "vuetify/styles" },
+                manifestJson.RootElement.GetProperty("Styles").EnumerateArray().Select(static item => item.GetString()).OfType<string>().ToArray());
+            CollectionAssert.AreEqual(
+                new[] { "feature-flags", "vuetify" },
+                manifestJson.RootElement.GetProperty("PluginRequirements").EnumerateArray().Select(static item => item.GetString()).OfType<string>().ToArray());
         }
         finally
         {
@@ -198,6 +219,7 @@ public sealed class RazorVueEmitIntegrationTests
         var outputDirectory = Path.Combine(root, "wwwroot", "jazor");
         var manifestPath = Path.Combine(outputDirectory, "jazor-manifest.json");
         var razorVueManifestPath = RazorVueModuleWriter.GetManifestPath(manifestPath);
+        var hostRequirementsModulePath = RazorVueModuleWriter.GetHostRequirementsModulePath(outputDirectory);
         var emitAssemblyPath = typeof(EmitOptions).Assembly.Location;
         var razorVueSourceAssemblyPath = typeof(RazorVueEmitIntegrationTests).Assembly.Location;
         var plainSourceAssemblyPath = emitAssemblyPath;
@@ -224,6 +246,7 @@ public sealed class RazorVueEmitIntegrationTests
 
             Assert.AreEqual(0, firstRun.ExitCode, firstRun.ToString());
             Assert.IsTrue(File.Exists(razorVueManifestPath));
+            Assert.IsTrue(File.Exists(hostRequirementsModulePath));
             Assert.IsTrue(File.Exists(Path.Combine(outputDirectory, "components", "counter-card.mjs")));
             Assert.IsTrue(File.Exists(Path.Combine(outputDirectory, "components", "counter-card.mjs.map")));
 
@@ -246,6 +269,7 @@ public sealed class RazorVueEmitIntegrationTests
             Assert.AreEqual(0, secondRun.ExitCode, secondRun.ToString());
             Assert.IsFalse(File.Exists(Path.Combine(outputDirectory, "components", "counter-card.mjs")));
             Assert.IsFalse(File.Exists(Path.Combine(outputDirectory, "components", "counter-card.mjs.map")));
+            Assert.IsFalse(File.Exists(hostRequirementsModulePath));
             Assert.IsTrue(File.Exists(razorVueManifestPath));
 
             using var manifest = JsonDocument.Parse(await File.ReadAllTextAsync(razorVueManifestPath));

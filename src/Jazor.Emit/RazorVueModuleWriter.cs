@@ -5,6 +5,7 @@ namespace Jazor.Emit;
 
 internal sealed class RazorVueModuleWriter
 {
+    private const string HostRequirementsModuleRelativePath = "__jazor/razorvue-host.mjs";
     private static readonly UTF8Encoding Utf8WithoutBom = new(encoderShouldEmitUTF8Identifier: false);
     private static readonly SourceMapBuilder ModuleMapBuilder = new();
     private static readonly SourceMapWriter ModuleMapWriter = new();
@@ -31,6 +32,7 @@ internal sealed class RazorVueModuleWriter
         var deleted = 0;
 
         var nextManifest = RazorVueManifestModel.Create(rootAssemblyPath, catalogs);
+        var hostRequirementsModulePath = GetHostRequirementsModulePath(normalizedOutputDirectory);
 
         foreach (var artifact in artifacts)
         {
@@ -64,6 +66,27 @@ internal sealed class RazorVueModuleWriter
                 skipped++;
         }
 
+        if (nextManifest.Modules.Count > 0)
+        {
+            var hostRequirementsDirectory = Path.GetDirectoryName(hostRequirementsModulePath);
+            if (!string.IsNullOrWhiteSpace(hostRequirementsDirectory))
+                Directory.CreateDirectory(hostRequirementsDirectory);
+
+            var hostRequirementsCode = BuildHostRequirementsModule(nextManifest);
+            var hostRequirementsChanged = !File.Exists(hostRequirementsModulePath)
+                || !string.Equals(File.ReadAllText(hostRequirementsModulePath), hostRequirementsCode, StringComparison.Ordinal);
+
+            if (hostRequirementsChanged)
+            {
+                File.WriteAllText(hostRequirementsModulePath, hostRequirementsCode, Utf8WithoutBom);
+                written++;
+            }
+            else
+            {
+                skipped++;
+            }
+        }
+
         if (clean && existingManifest is not null)
         {
             var currentPaths = nextManifest.Modules
@@ -80,6 +103,9 @@ internal sealed class RazorVueModuleWriter
             }
         }
 
+        if (clean && nextManifest.Modules.Count == 0)
+            DeleteIfExists(hostRequirementsModulePath, ref deleted);
+
         nextManifest.Save(manifestPath);
         return WriteResult.Success(written, skipped, deleted);
     }
@@ -91,6 +117,9 @@ internal sealed class RazorVueModuleWriter
         var extension = Path.GetExtension(baseManifestPath);
         return Path.Combine(directory, fileName + "-razorvue" + extension);
     }
+
+    public static string GetHostRequirementsModulePath(string outputDirectory)
+        => GetTargetPath(EnsureDirectorySeparator(Path.GetFullPath(outputDirectory)), HostRequirementsModuleRelativePath);
 
     private static string? TryReadSourceContent(string sourcePath)
     {
@@ -143,4 +172,23 @@ internal sealed class RazorVueModuleWriter
 
     private static string EnsureDirectorySeparator(string path)
         => path.EndsWith(Path.DirectorySeparatorChar) ? path : path + Path.DirectorySeparatorChar;
+
+    private static string BuildHostRequirementsModule(RazorVueManifestModel manifest)
+    {
+        var stylesLiteral = BuildStringArrayLiteral(manifest.Styles ?? []);
+        var pluginRequirementsLiteral = BuildStringArrayLiteral(manifest.PluginRequirements ?? []);
+
+        // Keep the host contract importable in both unbundled and bundled flows.
+        return $$"""
+        export const razorVueStyles = Object.freeze({{stylesLiteral}});
+        export const razorVuePluginRequirements = Object.freeze({{pluginRequirementsLiteral}});
+        export const razorVueHostRequirements = Object.freeze({
+          styles: razorVueStyles,
+          pluginRequirements: razorVuePluginRequirements
+        });
+        """.ReplaceLineEndings("\n");
+    }
+
+    private static string BuildStringArrayLiteral(IReadOnlyList<string> values)
+        => "[" + string.Join(", ", values.Select(static value => System.Text.Json.JsonSerializer.Serialize(value))) + "]";
 }

@@ -54,16 +54,25 @@ internal sealed record RazorVueManifestModel(
         if (manifest is null)
             return null;
 
+        var normalizedModules = manifest.Modules
+            .Select(static module => module with
+            {
+                Styles = NormalizeHostRequirementList(module.Styles),
+                PluginRequirements = NormalizeHostRequirementList(module.PluginRequirements)
+            })
+            .ToList();
+
         return manifest with
         {
+            Modules = normalizedModules,
             Styles = NormalizeHostRequirementList(
                 manifest.Styles is not null
                     ? manifest.Styles
-                    : manifest.Modules.SelectMany(static module => module.Styles).ToList()),
+                    : normalizedModules.SelectMany(static module => module.Styles).ToList()),
             PluginRequirements = NormalizeHostRequirementList(
                 manifest.PluginRequirements is not null
                     ? manifest.PluginRequirements
-                    : manifest.Modules.SelectMany(static module => module.PluginRequirements).ToList())
+                    : normalizedModules.SelectMany(static module => module.PluginRequirements).ToList())
         };
     }
 
@@ -108,7 +117,9 @@ internal sealed record RazorVueManifestModel(
         // Keep host-facing dependency metadata deterministic so manifest diffs only
         // reflect real contract changes rather than descriptor discovery order.
         return values
+            .Select(static value => value?.Trim())
             .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Select(static value => value!)
             .Distinct(StringComparer.Ordinal)
             .OrderBy(static value => value, StringComparer.Ordinal)
             .ToList();

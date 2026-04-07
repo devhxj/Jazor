@@ -630,6 +630,207 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersVuetifyFormAndStatusComposition()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.UI.Vue.Vuetify;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/profile-form")]
+                public class ProfileForm : VueComponent
+                {
+                    [Parameter]
+                    public string? Role { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> RoleChanged { get; set; }
+
+                    [Parameter]
+                    public bool MenuOpen { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> MenuOpenChanged { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VForm>(0);
+                        builder.AddAttribute(1, nameof(VForm.FastFail), true);
+                        builder.OpenComponent<VSelect>(2);
+                        builder.AddAttribute(3, nameof(VSelect.Label), "Role");
+                        builder.AddAttribute(4, nameof(VSelect.ModelValue), Role);
+                        builder.AddAttribute(5, nameof(VSelect.ModelValueChanged), RoleChanged);
+                        builder.AddAttribute(6, nameof(VSelect.Multiple), false);
+                        builder.CloseComponent();
+                        builder.OpenComponent<VMenu>(7);
+                        builder.AddAttribute(8, nameof(VMenu.ModelValue), MenuOpen);
+                        builder.AddAttribute(9, nameof(VMenu.ModelValueChanged), MenuOpenChanged);
+                        builder.AddAttribute(10, nameof(VMenu.CloseOnContentClick), false);
+                        builder.OpenComponent<VBadge>(11);
+                        builder.AddAttribute(12, nameof(VBadge.Content), "3");
+                        builder.AddAttribute(13, nameof(VBadge.Color), "error");
+                        builder.OpenComponent<VAvatar>(14);
+                        builder.AddAttribute(15, nameof(VAvatar.Color), "primary");
+                        builder.AddAttribute(16, nameof(VAvatar.Size), "large");
+                        builder.CloseComponent();
+                        builder.CloseComponent();
+                        builder.CloseComponent();
+                        builder.OpenComponent<VProgressLinear>(17);
+                        builder.AddAttribute(18, nameof(VProgressLinear.Color), "success");
+                        builder.AddAttribute(19, nameof(VProgressLinear.ModelValue), 64d);
+                        builder.CloseComponent();
+                        builder.OpenComponent<VProgressCircular>(20);
+                        builder.AddAttribute(21, nameof(VProgressCircular.Color), "primary");
+                        builder.AddAttribute(22, nameof(VProgressCircular.Indeterminate), true);
+                        builder.CloseComponent();
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "import { VAvatar as VAvatarComponent, VBadge as VBadgeComponent, VForm as VFormComponent, VMenu as VMenuComponent, VProgressCircular as VProgressCircularComponent, VProgressLinear as VProgressLinearComponent, VSelect as VSelectComponent } from \"vuetify/components\";");
+        StringAssert.Contains(artifact.ModuleCode, "\"fastFail\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.role");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": props.roleChanged");
+        StringAssert.Contains(artifact.ModuleCode, "\"closeOnContentClick\": false");
+        StringAssert.Contains(artifact.ModuleCode, "\"content\": \"3\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"size\": \"large\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": 64");
+        StringAssert.Contains(artifact.ModuleCode, "\"indeterminate\": true");
+        CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersVuetifyNavigationAndFeedbackComposition()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.UI.Vue.Vuetify;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/navigation-shell")]
+                public class NavigationShell : VueComponent
+                {
+                    [Parameter]
+                    public string? Query { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> QueryChanged { get; set; }
+
+                    [Parameter]
+                    public string? Preference { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> PreferenceChanged { get; set; }
+
+                    [Parameter]
+                    public string? ActiveTab { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> ActiveTabChanged { get; set; }
+
+                    [Parameter]
+                    public bool SnackbarOpen { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> SnackbarOpenChanged { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VTabs>(0);
+                        builder.AddAttribute(1, nameof(VTabs.Color), "primary");
+                        builder.AddAttribute(2, nameof(VTabs.Grow), true);
+                        builder.AddAttribute(3, nameof(VTabs.ModelValue), ActiveTab);
+                        builder.AddAttribute(4, nameof(VTabs.ModelValueChanged), ActiveTabChanged);
+                        builder.OpenComponent<VTab>(5);
+                        builder.AddAttribute(6, nameof(VTab.Text), "Overview");
+                        builder.AddAttribute(7, nameof(VTab.Value), "overview");
+                        builder.CloseComponent();
+                        builder.OpenComponent<VTab>(8);
+                        builder.AddAttribute(9, nameof(VTab.Text), "History");
+                        builder.AddAttribute(10, nameof(VTab.Value), "history");
+                        builder.CloseComponent();
+                        builder.CloseComponent();
+
+                        builder.OpenComponent<VRadioGroup>(11);
+                        builder.AddAttribute(12, nameof(VRadioGroup.Label), "Preference");
+                        builder.AddAttribute(13, nameof(VRadioGroup.Inline), true);
+                        builder.AddAttribute(14, nameof(VRadioGroup.ModelValue), Preference);
+                        builder.AddAttribute(15, nameof(VRadioGroup.ModelValueChanged), PreferenceChanged);
+                        builder.CloseComponent();
+
+                        builder.OpenComponent<VAutocomplete>(16);
+                        builder.AddAttribute(17, nameof(VAutocomplete.Label), "Search");
+                        builder.AddAttribute(18, nameof(VAutocomplete.ModelValue), Query);
+                        builder.AddAttribute(19, nameof(VAutocomplete.ModelValueChanged), QueryChanged);
+                        builder.AddAttribute(20, nameof(VAutocomplete.Chips), true);
+                        builder.CloseComponent();
+
+                        builder.OpenComponent<VSnackbar>(21);
+                        builder.AddAttribute(22, nameof(VSnackbar.ModelValue), SnackbarOpen);
+                        builder.AddAttribute(23, nameof(VSnackbar.ModelValueChanged), SnackbarOpenChanged);
+                        builder.AddAttribute(24, nameof(VSnackbar.Color), "success");
+                        builder.AddAttribute(25, nameof(VSnackbar.Timeout), 2000);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "import { VAutocomplete as VAutocompleteComponent, VRadioGroup as VRadioGroupComponent, VSnackbar as VSnackbarComponent, VTab as VTabComponent, VTabs as VTabsComponent } from \"vuetify/components\";");
+        StringAssert.Contains(artifact.ModuleCode, "\"grow\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.activeTab");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": props.activeTabChanged");
+        StringAssert.Contains(artifact.ModuleCode, "\"text\": \"Overview\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"value\": \"history\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"inline\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.preference");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": props.preferenceChanged");
+        StringAssert.Contains(artifact.ModuleCode, "\"chips\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.query");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": props.queryChanged");
+        StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.snackbarOpen");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": props.snackbarOpenChanged");
+        StringAssert.Contains(artifact.ModuleCode, "\"timeout\": 2000");
+        CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_WithNonCallableVuetifyDialogActivator_ReportsSlotContextMisuse()
     {
         var context = CreateContext(
