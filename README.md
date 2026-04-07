@@ -13,137 +13,62 @@
 
 Jazor is an experimental Roslyn-based C# to JavaScript compiler project. It focuses on semantic-preserving lowering into JavaScript AST and currently treats the compiler mainline as the repository's most stable reference area, while RazorVue, emit/materialization, and source-map-related work continue as active execution lanes.
 
-## Documentation map
+## 文档入口
 
-### Start here
+- **新访客**：查看 [文档中心](docs/README.md) 了解项目全貌
+- **维护者**：查看 [工作流总览](docs/workstream-dashboard.md) 快速恢复工作
+- **架构设计**：查看 [架构文档](docs/architecture/README.md) 深入了解设计
 
-- [Repository documentation hub](docs/README.md)
-- [Current workstream dashboard](docs/status/2026-04-06-project-workstream-dashboard.md)
-- [Current project stage assessment](docs/status/2026-04-04-project-stage-assessment.md)
+## 项目状态
 
-### Current status and execution
+Jazor 当前以编译器主线为核心，RazorVue、Emit、SourceMap 等工作流持续演进中。详见 [工作流总览](docs/workstream-dashboard.md)。
 
-- [Compiler mainline status](docs/status/2026-04-06-compiler-mainline-status.md)
-- [Emit and host materialization status](docs/status/2026-04-06-emit-host-materialization-status.md)
-- [Project execution index](docs/plans/project-execution-index.md)
-- [Project program roadmap](docs/plans/project-program-roadmap.md)
+- ✅ **Compiler 主线**：接近稳定，是仓库最成熟的部分
+- 🔄 **RazorVue**：活跃执行中，Vue 导向的 Razor 编译路径
+- 🔄 **Emit / Materialisation**：持续承接，产物输出和打包管道
+- 🔄 **SourceMap**：局部活跃，支持当前的 RazorVue 需求
 
-### Architecture
-
-- [Repository architecture bridge](docs/architecture/README.md)
-- [Compiler architecture bridge](docs/architecture/compiler/README.md)
-- [Module-level bridge](docs/architecture/modules/README.md)
-
-### Subsystem deep dives
-
-- [Compiler deep-dive index](src/Jazor.Compiler/doc/README.md)
-- [Jazor.Compiler module README](src/Jazor.Compiler/README.md)
-- [Emit local docs](src/Jazor.Emit/doc/README.md)
-
-### Planning and documentation governance
-
-- [Documentation governance rules](docs/guides/documentation-governance.md)
-- [Repository plans index](docs/plans/README.md)
-
-If you are new to the repository, read in this order:
-
-1. `docs/README.md`
-2. `docs/status/2026-04-06-project-workstream-dashboard.md`
-3. `docs/status/2026-04-06-compiler-mainline-status.md`
-4. `docs/plans/project-execution-index.md`
-5. `docs/architecture/README.md`
-
-If you are resuming a specific workstream, start from the current status page for that lane and then drill into the linked subsystem documentation.
-
-## What Jazor focuses on today
-
-- Translating supported C# constructs into JavaScript through AST-based lowering instead of string templating.
-- Preserving semantic intent across the compiler pipeline, analyzer checks, and runtime/module surfaces.
-- Keeping the compiler mainline usable as a stable reference while adjacent workstreams keep evolving.
-- Documenting active execution status explicitly so repository-level docs stay aligned with current work.
-
-## Project status
-
-### Stable reference areas
-
-- **Compiler mainline**: the most mature part of the repository and the primary long-term reference surface.
-- **Compiler architecture and deep-dive docs**: the best entry point when you need to understand the existing lowering pipeline.
-
-### Active workstreams
-
-- **RazorVue**: active implementation lane for Vue-oriented Razor lowering and authoring flow.
-- **Emit / host materialization**: active dependency lane for shaping emitted assets and host-facing outputs.
-- **SourceMap / bundle chaining**: active partial rollout, especially where it already intersects with current RazorVue execution work.
-
-### Evolving / future-facing areas
-
-- Broader authoring ergonomics beyond the currently closed safe subsets.
-- Additional host integrations and packaging flows that are still being refined.
-- Deeper capability expansion that should follow, not destabilize, the compiler mainline.
-
-## Project Structure
+## 项目结构
 
 ```
 Jazor/
 ├── src/
-│   ├── ECMAScript/                  # Core ECMAScript runtime surface
 │   ├── Jazor.Compiler/              # C# to JavaScript compiler
-│   ├── Jazor.Compiler.Generator/    # Source generation pipeline
 │   ├── Jazor.Analyzer/              # Static analyzer and whitelist validation
 │   ├── Jazor.CLR/                   # CLR runtime support modules
 │   ├── Jazor.Emit/                  # Emit and packaging pipeline
-│   ├── Jazor.Razor/                 # Razor syntax support
 │   ├── Jazor.RazorVue/              # RazorVue integration surface
 │   ├── Jazor.RazorVue.Analysis/     # RazorVue analysis and lowering
-│   ├── Jazor.CompilerTest/          # Compiler tests (MSTest)
-│   ├── Jazor.EmitTest/              # Emit and bundle tests (MSTest)
-│   ├── ECMAScript.WebIDL/           # WebIDL collection worker (TypeScript/Deno)
-│   └── ECMAScript.WebIDL.Generator/ # C# host for the WebIDL pipeline
+│   └── Jazor.CompilerTest/          # Compiler tests (MSTest)
 ├── docs/                            # Repository-level documentation hub
-├── README.md                        # This file
-└── README_CN.md                     # Chinese version
+└── README.md                        # This file
 ```
 
-## Core Components
+## 核心组件
 
-### 1. Jazor.Compiler
+- **Jazor.Compiler** - C# 到 JavaScript 的编译器核心 [→ 详细文档](src/Jazor.Compiler/README.md)
+- **Jazor.Analyzer** - 静态分析和白名单验证，确保编译时类型安全
+- **Jazor.CLR** - .NET 类型的运行时模块支持，提供 JavaScript 运行时实现
+- **Jazor.Emit** - 产物输出和打包管道，处理 host-facing 输出
+- **Jazor.RazorVue** - Vue 导向的 Razor 编译路径，支持 Blazor 风格的组件编写
 
-The compiler core lowers Roslyn symbols and operations into JavaScript AST. It is currently the repository's most mature reference surface and the best starting point if you want to understand the project's long-lived architecture.
+详见 [模块索引](docs/architecture/modules/README.md) 了解所有模块。
 
-See [Jazor.Compiler README](src/Jazor.Compiler/README.md) for module-level details and [compiler deep-dive docs](src/Jazor.Compiler/doc/README.md) for the broader pipeline.
+## 核心能力
 
-### 2. Jazor.Analyzer
+Jazor 支持将 C# 代码转换为 JavaScript，包括：
 
-The analyzer validates ECMAScript-tagged code against the project's supported surface and whitelist rules. Its role is to keep unsupported shapes visible at compile time instead of leaving them as silent runtime mismatches.
+- 变量声明和基础类型转换
+- 模式匹配和条件表达式
+- 可空类型处理
+- 异步编程（async/await）
+- 字符串插值
+- 对象和集合初始化
 
-### 3. Jazor.CLR
+详见 [编译器文档](src/Jazor.Compiler/doc/README.md) 了解支持的完整特性。
 
-Jazor.CLR provides runtime-oriented module surfaces for supported .NET types and bridges compiler output to JavaScript-facing behavior. The root README should describe its responsibility, not freeze module completion statistics that change over time.
+### 转换示例
 
-### 4. ECMAScript.WebIDL
-
-The WebIDL pipeline collects and materializes Web API metadata for future binding generation. It remains an important supporting lane rather than the primary repository entry point.
-
-### 5. Jazor.Emit
-
-Jazor.Emit shapes generated modules into host-facing outputs and bundle-oriented assets. It sits in an active dependency lane shared by multiple current workstreams.
-
-## Current capability snapshot
-
-Jazor currently emphasizes the compiler mainline and the repository infrastructure around it rather than claiming a frozen end-user feature surface.
-
-The repository already contains substantial work in these areas:
-
-- Roslyn-driven AST lowering through `AstConverter` and `SemanticWalker`
-- Analyzer-backed validation for supported ECMAScript-tagged code
-- Runtime/module surfaces for supported .NET types
-- Ongoing work around RazorVue, emit/materialization, and source-map-adjacent output flows
-
-The exact supported shape is still evolving. For detailed capability boundaries, prefer the subsystem documentation and current status pages over this top-level README.
-
-## Conversion Examples
-
-### Basic Code Conversion
 ```csharp
 // C# code
 int x = 42;
@@ -158,56 +83,9 @@ let message = `Value is ${x}`;
 let isPositive = x > 0;
 ```
 
-### Pattern Matching Conversion
-```csharp
-// C# code
-string DescribeValue(int value) => value switch
-{
-    < 0 => "Negative",
-    > 0 and < 100 => "Small Positive",
-    >= 100 => "Large Positive",
-    _ => "Zero"
-};
-```
+## 使用方法
 
-```javascript
-// Converted JavaScript code
-function describeValue(value) {
-    return (() => {
-        if (value < 0) return "Negative";
-        if (value > 0 && value < 100) return "Small Positive";
-        if (value >= 100) return "Large Positive";
-        return "Zero";
-    })();
-}
-```
-
-### Nullable Type Handling
-```csharp
-// C# code
-void Process(string? input)
-{
-    if (input is string actual)
-    {
-        Console.WriteLine(actual.Length);
-    }
-}
-```
-
-```javascript
-// Converted JavaScript code
-function process(input) {
-    if (typeof input === "string" || input === null) {
-        if (input !== null) {
-            console.log(input.length);
-        }
-    }
-}
-```
-
-## Usage
-
-### Using ECMAScriptModule Attribute
+### 使用 ECMAScriptModule 特性
 
 ```csharp
 using ECMAScript;
@@ -216,106 +94,99 @@ using ECMAScript;
 public static class MyMathModule
 {
     public static int Add(int a, int b) => a + b;
-
     public static string Greet(string name) => $"Hello, {name}!";
 }
 ```
 
-### Basic Compilation
+### 基本编译流程
 
 ```csharp
 using ECMAScript.Compiler;
 using Microsoft.CodeAnalysis;
 
-// Get semantic model
+// 获取语义模型
 var semanticModel = compilation.GetSemanticModel(syntaxTree);
 
-// Convert to JavaScript AST - Class level
+// 转换为 JavaScript AST - 类级别
 var converter = new AstConverter(classSymbol, semanticModel);
 var module = converter.Convert();
 
-// Convert to JavaScript AST - Operation level
+// 转换为 JavaScript AST - 操作级别
 var walker = new SemanticWalker();
 var jsAst = walker.Visit(operation, new());
 ```
 
-## Development and Build
+## 开发和构建
 
-### Prerequisites
+### 环境要求
 - .NET 10 SDK
-- PowerShell 7+ for the repository test helper scripts
-- Windows, Linux, or macOS
+- PowerShell 7+（用于测试脚本）
+- Windows、Linux 或 macOS
 
-### Build Steps
+### 构建步骤
 
 ```bash
-# Clone repository
+# 克隆仓库
 git clone https://github.com/devhxj/Jazor.git
 cd Jazor
 
-# Restore dependencies
+# 恢复依赖
 dotnet restore
 
-# Build solution
+# 构建解决方案
 dotnet build
 
-# Run core .NET tests
+# 运行所有测试
 pwsh ./scripts/test-dotnet.ps1
 
-# Run compiler tests only
+# 运行编译器测试
 pwsh ./scripts/test-dotnet.ps1 -Project compiler
 
-# Run emit/bundle tests only
-pwsh ./scripts/test-dotnet.ps1 -Project emit
-
-# Run specific test project directly
-dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj
-
-# Run single test class
+# 运行单个测试类
 dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticWalkerPatternTest"
 
-# Run single test method
+# 运行单个测试方法
 dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticWalkerPatternTest.Visit_IsPattern_Constant"
 ```
 
-## Contributing
+## 贡献
 
-We welcome community contributions. Please review the repository documentation and follow the conventions described in the codebase before opening a Pull Request.
+欢迎社区贡献。请在提交 Pull Request 前查阅仓库文档并遵循代码库中描述的约定。
 
-### Development Workflow
-1. Fork the project repository
-2. Create a feature branch
-3. Implement functionality and add tests
-4. Ensure all tests pass
-5. Submit a Pull Request
+### 开发流程
+1. Fork 项目仓库
+2. 创建功能分支
+3. 实现功能并添加测试
+4. 确保所有测试通过
+5. 提交 Pull Request
 
-### Code Standards
-- Follow C# coding conventions
-- Add appropriate comments and documentation where clarification is needed
-- Ensure new features have corresponding unit tests
-- Adhere to semantic-preserving design principles
+### 代码规范
+- 遵循 C# 编码约定
+- 在需要澄清的地方添加适当的注释和文档
+- 确保新功能有相应的单元测试
+- 遵循语义保持的设计原则
 
-## License
+## 许可证
 
-This project is licensed under the MIT License. See the [LICENSE.txt](LICENSE.txt) file for details.
+本项目采用 MIT 许可证。详见 [LICENSE.txt](LICENSE.txt) 文件。
 
-## Contact
+## 联系方式
 
-- Project homepage: https://github.com/devhxj/Jazor
-- Issue tracker: https://github.com/devhxj/Jazor/issues
-- Email: developerhan@msn.cn
+- 项目主页：https://github.com/devhxj/Jazor
+- 问题追踪：https://github.com/devhxj/Jazor/issues
+- 邮箱：developerhan@msn.cn
 
-## Acknowledgments
+## 致谢
 
-Thanks to all developers and community members who have contributed to the Jazor project.
+感谢所有为 Jazor 项目做出贡献的开发者和社区成员。
 
-Special thanks to the following open-source projects:
-- [Roslyn](https://github.com/dotnet/roslyn) - C# compiler platform
-- [Acornima](https://github.com/adams85/acornima) - JavaScript parser and AST library
-- [WebRef](https://github.com/w3c/webref) - Web specification references
-- [WootzJs](https://github.com/kswoll/WootzJs) - C# to JavaScript compiler
-- [h5](https://github.com/curiosity-ai/h5) - C# to JavaScript compiler
-- [SharpKit](https://github.com/SharpKit/SharpKit) - C# to JavaScript converter
-- [SharpPromise](https://github.com/legacybass/SharpPromise) - Promise implementation for C#
-- [DenoHost](https://github.com/thomas3577/DenoHost) - Deno runtime host for .NET
-- [CSharpToJavaScript](https://github.com/TiLied/CSharpToJavaScript) - C# to JavaScript transpiler
+特别感谢以下开源项目：
+- [Roslyn](https://github.com/dotnet/roslyn) - C# 编译器平台
+- [Acornima](https://github.com/adams85/acornima) - JavaScript 解析器和 AST 库
+- [WebRef](https://github.com/w3c/webref) - Web 规范引用
+- [WootzJs](https://github.com/kswoll/WootzJs) - C# 到 JavaScript 编译器
+- [h5](https://github.com/curiosity-ai/h5) - C# 到 JavaScript 编译器
+- [SharpKit](https://github.com/SharpKit/SharpKit) - C# 到 JavaScript 转换器
+- [SharpPromise](https://github.com/legacybass/SharpPromise) - C# 的 Promise 实现
+- [DenoHost](https://github.com/thomas3577/DenoHost) - .NET 的 Deno 运行时宿主
+- [CSharpToJavaScript](https://github.com/TiLied/CSharpToJavaScript) - C# 到 JavaScript 转译器
