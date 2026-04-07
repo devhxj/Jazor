@@ -391,6 +391,145 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersVuetifyLayoutComposition()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.UI.Vue.Vuetify;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/dashboard-card")]
+                public class DashboardCard : VueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VContainer>(0);
+                        builder.AddAttribute(1, nameof(VContainer.Fluid), true);
+                        builder.OpenComponent<VRow>(2);
+                        builder.AddAttribute(3, nameof(VRow.Align), "center");
+                        builder.OpenComponent<VCol>(4);
+                        builder.AddAttribute(5, nameof(VCol.Cols), 12);
+                        builder.AddAttribute(6, nameof(VCol.Md), 6);
+                        builder.OpenComponent<VCard>(7);
+                        builder.OpenComponent<VCardTitle>(8);
+                        builder.AddAttribute(9, nameof(VCardTitle.Text), "Dashboard");
+                        builder.CloseComponent();
+                        builder.OpenComponent<VCardText>(10);
+                        builder.AddContent(11, "Ready");
+                        builder.CloseComponent();
+                        builder.CloseComponent();
+                        builder.CloseComponent();
+                        builder.CloseComponent();
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "import { VCard as VCardComponent, VCardText as VCardTextComponent, VCardTitle as VCardTitleComponent, VCol as VColComponent, VContainer as VContainerComponent, VRow as VRowComponent } from \"vuetify/components\";");
+        StringAssert.Contains(artifact.ModuleCode, "\"fluid\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"align\": \"center\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"cols\": 12");
+        StringAssert.Contains(artifact.ModuleCode, "\"md\": 6");
+        StringAssert.Contains(artifact.ModuleCode, "\"text\": \"Dashboard\"");
+        CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersVuetifyToolbarAndCheckboxComposition()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.UI.Vue.Vuetify;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/preferences-card")]
+                public class PreferencesCard : VueComponent
+                {
+                    [Parameter]
+                    public bool Enabled { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> EnabledChanged { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VSheet>(0);
+                        builder.AddAttribute(1, nameof(VSheet.Color), "surface");
+                        builder.AddAttribute(2, nameof(VSheet.Rounded), true);
+                        builder.AddAttribute(3, nameof(VSheet.Elevation), 2);
+                        builder.OpenComponent<VToolbar>(4);
+                        builder.AddAttribute(5, nameof(VToolbar.Color), "primary");
+                        builder.AddAttribute(6, nameof(VToolbar.Flat), true);
+                        builder.OpenComponent<VToolbarTitle>(7);
+                        builder.AddAttribute(8, nameof(VToolbarTitle.Text), "Preferences");
+                        builder.CloseComponent();
+                        builder.OpenComponent<VSpacer>(9);
+                        builder.CloseComponent();
+                        builder.OpenComponent<VDivider>(10);
+                        builder.AddAttribute(11, nameof(VDivider.Vertical), true);
+                        builder.AddAttribute(12, nameof(VDivider.Inset), true);
+                        builder.CloseComponent();
+                        builder.OpenComponent<VCheckbox>(13);
+                        builder.AddAttribute(14, nameof(VCheckbox.Label), "Enabled");
+                        builder.AddAttribute(15, nameof(VCheckbox.ModelValue), Enabled);
+                        builder.AddAttribute(16, nameof(VCheckbox.ModelValueChanged), EnabledChanged);
+                        builder.CloseComponent();
+                        builder.CloseComponent();
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "import { VCheckbox as VCheckboxComponent, VDivider as VDividerComponent, VSheet as VSheetComponent, VSpacer as VSpacerComponent, VToolbar as VToolbarComponent, VToolbarTitle as VToolbarTitleComponent } from \"vuetify/components\";");
+        StringAssert.Contains(artifact.ModuleCode, "\"color\": \"surface\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"rounded\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"elevation\": 2");
+        StringAssert.Contains(artifact.ModuleCode, "\"flat\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"text\": \"Preferences\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"vertical\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"inset\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.enabled");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": props.enabledChanged");
+        CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_WithNonCallableVuetifyDialogActivator_ReportsSlotContextMisuse()
     {
         var context = CreateContext(
@@ -1295,6 +1434,68 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersPassThroughOnParametersSetAsyncLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                public abstract class LifecycleCardBase : VueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<int> ValueChanged { get; set; }
+
+                    protected override Task OnParametersSetAsync()
+                    {
+                        return ValueChanged.InvokeAsync(Value);
+                    }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : LifecycleCardBase
+                {
+                    protected override Task OnParametersSetAsync()
+                    {
+                        return base.OnParametersSetAsync();
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+        StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.value], async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"update:value\", props.value);");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersInheritedOnInitializedLifecycle()
     {
         var context = CreateContext(
@@ -1527,6 +1728,217 @@ public sealed class RazorVuePipelineTests
         Assert.IsTrue(resetIndex >= 0, artifact.ModuleCode);
         Assert.IsTrue(emitIndex >= 0, artifact.ModuleCode);
         Assert.IsTrue(resetIndex < emitIndex, artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersPassThroughOnAfterRenderAsyncLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                public abstract class LifecycleCardBase : VueComponent
+                {
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    protected override Task OnAfterRenderAsync(bool firstRender)
+                    {
+                        return ReadyChanged.InvokeAsync(firstRender);
+                    }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : LifecycleCardBase
+                {
+                    protected override Task OnAfterRenderAsync(bool firstRender)
+                    {
+                        return base.OnAfterRenderAsync(firstRender);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+        StringAssert.Contains(artifact.ModuleCode, "onMounted(async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "onUpdated(async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", currentFirstRender);");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForComponentBaseOnInitializedAsyncPassThrough()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/init-card")]
+                public class InitCard : VueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override Task OnInitializedAsync()
+                    {
+                        return base.OnInitializedAsync();
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(async () => {", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForComponentBaseOnParametersSetAsyncPassThrough()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/params-card")]
+                public class ParamsCard : VueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override Task OnParametersSetAsync()
+                    {
+                        return base.OnParametersSetAsync();
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("watch(() => [props.value], async () => {", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForComponentBaseOnAfterRenderAsyncPassThrough()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/render-card")]
+                public class RenderCard : VueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override Task OnAfterRenderAsync(bool firstRender)
+                    {
+                        return base.OnAfterRenderAsync(firstRender);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(async () => {", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("onUpdated(async () => {", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("let firstRender = true;", StringComparison.Ordinal), artifact.ModuleCode);
     }
 
     [TestMethod]
@@ -7566,6 +7978,123 @@ public sealed class RazorVuePipelineTests
             """);
 
         var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersPassThroughOnInitializedToSupportedBaseLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                public abstract class ReadyCardBase : VueComponent
+                {
+                    [Parameter]
+                    public EventCallback OnReady { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        OnReady.InvokeAsync();
+                    }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/ready-card-pass-through")]
+                public class ReadyCard : ReadyCardBase
+                {
+                    protected override void OnInitialized()
+                    {
+                        base.OnInitialized();
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "onMounted(() => {");
+        StringAssert.Contains(artifact.ModuleCode, "emit(\"ready\");");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersPassThroughOnAfterRenderAsyncToSupportedBaseLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                public abstract class AsyncReadyCardBase : VueComponent
+                {
+                    [Parameter]
+                    public EventCallback<bool> OnReady { get; set; }
+
+                    protected override Task OnAfterRenderAsync(bool firstRender)
+                    {
+                        return OnReady.InvokeAsync(firstRender);
+                    }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/async-ready-card-pass-through")]
+                public class AsyncReadyCard : AsyncReadyCardBase
+                {
+                    protected override Task OnAfterRenderAsync(bool firstRender)
+                    {
+                        return base.OnAfterRenderAsync(firstRender);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "onMounted(async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "onUpdated(async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"ready\", currentFirstRender);");
         Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
     }
 

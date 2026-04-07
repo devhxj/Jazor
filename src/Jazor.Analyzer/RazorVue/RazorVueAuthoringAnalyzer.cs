@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Jazor.RazorVue;
@@ -22,7 +23,9 @@ public sealed class RazorVueAuthoringAnalyzer : DiagnosticAnalyzer
         RazorVueDiagnosticDescriptors.UnknownSlot,
         RazorVueDiagnosticDescriptors.SlotContextMisuse,
         RazorVueDiagnosticDescriptors.DuplicateSlotValue,
-        RazorVueDiagnosticDescriptors.InvalidLibraryComponentDeclaration
+        RazorVueDiagnosticDescriptors.InvalidLibraryComponentDeclaration,
+        RazorVueDiagnosticDescriptors.InvalidLibraryStyleDependencyDeclaration,
+        RazorVueDiagnosticDescriptors.InvalidLibraryPluginRequirementDeclaration
     ];
 
     public override void Initialize(AnalysisContext context)
@@ -84,13 +87,56 @@ public sealed class RazorVueAuthoringAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        if (HasValidLibraryComponentAttribute(symbol, symbols))
+        if (!TryGetLibraryMetadataDiagnostic(symbol, symbols, out var descriptor, out var message))
             return;
 
         context.ReportDiagnostic(Diagnostic.Create(
-            RazorVueDiagnosticDescriptors.InvalidLibraryComponentDeclaration,
+            descriptor,
             symbol.Locations.FirstOrDefault(static location => location.IsInSource) ?? Location.None,
-            $"Library component '{symbol.ToDisplayString()}' must declare [VueLibraryComponent(importSpecifier, exportName)]."));
+            message));
+    }
+
+    private static bool TryGetLibraryMetadataDiagnostic(
+        INamedTypeSymbol symbol,
+        RazorVueCompilationSymbols symbols,
+        out DiagnosticDescriptor descriptor,
+        out string message)
+    {
+        descriptor = null!;
+        message = string.Empty;
+
+        if (!HasValidLibraryComponentAttribute(symbol, symbols))
+        {
+            descriptor = RazorVueDiagnosticDescriptors.InvalidLibraryComponentDeclaration;
+            message = $"Library component '{symbol.ToDisplayString()}' must declare [VueLibraryComponent(importSpecifier, exportName)].";
+            return true;
+        }
+
+        if (TryGetInvalidMetadataValue(
+                symbol,
+                symbols.VueLibraryStyleAttribute,
+                "[VueLibraryStyle(styleSpecifier)]",
+                "style dependency",
+                out var styleMessage))
+        {
+            descriptor = RazorVueDiagnosticDescriptors.InvalidLibraryStyleDependencyDeclaration;
+            message = styleMessage;
+            return true;
+        }
+
+        if (TryGetInvalidMetadataValue(
+                symbol,
+                symbols.VueLibraryPluginRequirementAttribute,
+                "[VueLibraryPluginRequirement(requirementId)]",
+                "plugin requirement",
+                out var pluginMessage))
+        {
+            descriptor = RazorVueDiagnosticDescriptors.InvalidLibraryPluginRequirementDeclaration;
+            message = pluginMessage;
+            return true;
+        }
+
+        return false;
     }
 
     private static bool HasValidLibraryComponentAttribute(
@@ -118,6 +164,42 @@ public sealed class RazorVueAuthoringAnalyzer : DiagnosticAnalyzer
         return false;
     }
 
+    private static bool TryGetInvalidMetadataValue(
+        INamedTypeSymbol symbol,
+        INamedTypeSymbol? attributeSymbol,
+        string attributeDisplayName,
+        string valueKind,
+        out string message)
+    {
+        message = string.Empty;
+        if (attributeSymbol is null)
+            return false;
+
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var attribute in symbol.GetAttributes())
+        {
+            if (!SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, attributeSymbol))
+                continue;
+
+            if (attribute.ConstructorArguments.Length != 1 ||
+                attribute.ConstructorArguments[0].Value is not string rawValue ||
+                string.IsNullOrWhiteSpace(rawValue))
+            {
+                message = $"Library component '{symbol.ToDisplayString()}' has an invalid {attributeDisplayName} declaration.";
+                return true;
+            }
+
+            var normalizedValue = rawValue.Trim();
+            if (!seen.Add(normalizedValue))
+            {
+                message = $"Library component '{symbol.ToDisplayString()}' declares duplicate {valueKind} '{normalizedValue}'.";
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private static bool TryGetDescriptor(RazorVueIssueCode issueCode, out DiagnosticDescriptor descriptor)
     {
         switch (issueCode)
@@ -139,6 +221,12 @@ public sealed class RazorVueAuthoringAnalyzer : DiagnosticAnalyzer
                 return true;
             case RazorVueIssueCode.InvalidLibraryComponentDeclaration:
                 descriptor = RazorVueDiagnosticDescriptors.InvalidLibraryComponentDeclaration;
+                return true;
+            case RazorVueIssueCode.InvalidLibraryStyleDependencyDeclaration:
+                descriptor = RazorVueDiagnosticDescriptors.InvalidLibraryStyleDependencyDeclaration;
+                return true;
+            case RazorVueIssueCode.InvalidLibraryPluginRequirementDeclaration:
+                descriptor = RazorVueDiagnosticDescriptors.InvalidLibraryPluginRequirementDeclaration;
                 return true;
             default:
                 descriptor = null!;

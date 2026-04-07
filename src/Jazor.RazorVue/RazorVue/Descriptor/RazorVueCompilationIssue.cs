@@ -16,6 +16,8 @@ public enum RazorVueIssueCode
     UnsupportedLifecycleLowering,
     UnsupportedSetupLogicLowering,
     InvalidLibraryComponentDeclaration,
+    InvalidLibraryStyleDependencyDeclaration,
+    InvalidLibraryPluginRequirementDeclaration,
     UnknownParameter,
     InvalidBindTarget,
     UnknownSlot,

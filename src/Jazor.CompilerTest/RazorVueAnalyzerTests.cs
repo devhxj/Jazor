@@ -39,7 +39,7 @@ public sealed class RazorVueAnalyzerTests
             }
             """);
 
-        AssertNoDiagnostic(diagnostics, "JAZORVUE001", "JAZORVUE002", "JAZORVUE004", "JAZORVUE005", "JAZORVUE006", "JAZORVUE007", "JAZORVUE008", "JAZORVUE009", "JAZORVUE010", "JAZORVUE011", "JAZORVUE012", "JAZOR001");
+        AssertNoDiagnostic(diagnostics, "JAZORVUE001", "JAZORVUE002", "JAZORVUE004", "JAZORVUE005", "JAZORVUE006", "JAZORVUE007", "JAZORVUE008", "JAZORVUE009", "JAZORVUE010", "JAZORVUE011", "JAZORVUE012", "JAZORVUE013", "JAZORVUE014", "JAZOR001");
     }
 
     [TestMethod]
@@ -95,7 +95,7 @@ public sealed class RazorVueAnalyzerTests
             """);
 
         AssertHasDiagnostic(diagnostics, "JAZOR001");
-        AssertNoDiagnostic(diagnostics, "JAZORVUE001", "JAZORVUE002", "JAZORVUE004", "JAZORVUE005", "JAZORVUE006", "JAZORVUE007", "JAZORVUE008", "JAZORVUE009", "JAZORVUE010", "JAZORVUE011", "JAZORVUE012");
+        AssertNoDiagnostic(diagnostics, "JAZORVUE001", "JAZORVUE002", "JAZORVUE004", "JAZORVUE005", "JAZORVUE006", "JAZORVUE007", "JAZORVUE008", "JAZORVUE009", "JAZORVUE010", "JAZORVUE011", "JAZORVUE012", "JAZORVUE013", "JAZORVUE014");
     }
 
     [TestMethod]
@@ -815,6 +815,93 @@ public sealed class RazorVueAnalyzerTests
             """);
 
         AssertHasDiagnostic(diagnostics, "JAZORVUE012");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_Misuse_InvalidLibraryStyleDependencyDeclaration_ReportsJAZORVUE013()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using Jazor.RazorVue;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [VueLibraryComponent("demo/components", "DemoPanel")]
+            [VueLibraryStyle("demo/styles")]
+            [VueLibraryStyle(" demo/styles ")]
+            public sealed class InvalidLibraryComponent : VueLibraryComponent
+            {
+            }
+            """);
+
+        AssertHasDiagnostic(diagnostics, "JAZORVUE013");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_Misuse_InvalidLibraryPluginRequirementDeclaration_ReportsJAZORVUE014()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using Jazor.RazorVue;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [VueLibraryComponent("demo/components", "DemoPanel")]
+            [VueLibraryPluginRequirement("demo-host")]
+            [VueLibraryPluginRequirement(" demo-host ")]
+            public sealed class InvalidLibraryComponent : VueLibraryComponent
+            {
+            }
+            """);
+
+        AssertHasDiagnostic(diagnostics, "JAZORVUE014");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_Misuse_ValidLibraryMetadata_IsAccepted()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using Jazor.RazorVue;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [VueLibraryComponent("demo/components", "DemoPanel")]
+            [VueLibraryStyle("demo/styles")]
+            [VueLibraryPluginRequirement("demo-host")]
+            public sealed class ValidLibraryComponent : VueLibraryComponent
+            {
+            }
+            """);
+
+        AssertNoDiagnostic(diagnostics, "JAZORVUE012", "JAZORVUE013", "JAZORVUE014");
     }
 
     private static async Task<ImmutableArray<Diagnostic>> GetAnalyzerDiagnosticsAsync(string source)

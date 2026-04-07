@@ -238,7 +238,7 @@ public sealed class RazorVueDescriptorExtractionTests
             .ToArray();
 
         CollectionAssert.AreEquivalent(
-            new[] { "VBtn", "VCard", "VDialog", "VIcon", "VTextField" },
+            new[] { "VBtn", "VCard", "VCardText", "VCardTitle", "VCheckbox", "VCol", "VContainer", "VDialog", "VDivider", "VIcon", "VRow", "VSheet", "VSpacer", "VTextField", "VToolbar", "VToolbarTitle" },
             vuetifyDescriptors
                 .Select(static descriptor => descriptor.Name)
                 .OrderBy(static name => name, StringComparer.Ordinal)
@@ -252,11 +252,105 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("modelValue", textField.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
         Assert.AreEqual("update:modelValue", textField.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
 
+        var checkbox = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.UI.Vue.Vuetify.VCheckbox");
+        Assert.AreEqual("vuetify/components", checkbox.ImportSpecifier);
+        Assert.AreEqual("VCheckbox", checkbox.ExportName);
+        CollectionAssert.AreEqual(new[] { "vuetify/styles" }, checkbox.StyleDependencies.ToArray());
+        CollectionAssert.AreEqual(new[] { "vuetify" }, checkbox.PluginRequirements.ToArray());
+        Assert.AreEqual("modelValue", checkbox.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", checkbox.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+
         var dialog = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.UI.Vue.Vuetify.VDialog");
         var activator = dialog.Slots.Single(static slot => slot.Name == "activator");
         Assert.HasCount(1, activator.Parameters);
         Assert.AreEqual("context", activator.Parameters[0].Name);
         Assert.AreEqual("ECMAScript.UI.Vue.Vuetify.VDialogActivatorContext", activator.Parameters[0].TypeName);
+
+        var column = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.UI.Vue.Vuetify.VCol");
+        CollectionAssert.AreEqual(new[] { "vuetify" }, column.PluginRequirements.ToArray());
+        CollectionAssert.AreEqual(new[] { "vuetify/styles" }, column.StyleDependencies.ToArray());
+        Assert.AreEqual("cols", column.Props.Single(static prop => prop.PublicName == "Cols").Name);
+        Assert.AreEqual("md", column.Props.Single(static prop => prop.PublicName == "Md").Name);
+
+        var toolbar = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.UI.Vue.Vuetify.VToolbar");
+        CollectionAssert.AreEqual(new[] { "vuetify" }, toolbar.PluginRequirements.ToArray());
+        CollectionAssert.AreEqual(new[] { "vuetify/styles" }, toolbar.StyleDependencies.ToArray());
+        Assert.AreEqual("color", toolbar.Props.Single(static prop => prop.PublicName == "Color").Name);
+        Assert.AreEqual("density", toolbar.Props.Single(static prop => prop.PublicName == "Density").Name);
+        Assert.IsTrue(toolbar.Slots.Single(static slot => slot.IsDefault).IsDefault);
+
+        var spacer = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.UI.Vue.Vuetify.VSpacer");
+        Assert.AreEqual(0, spacer.Props.Length);
+        Assert.AreEqual(0, spacer.Emits.Length);
+        Assert.AreEqual(0, spacer.Slots.Length);
+    }
+
+    [TestMethod]
+    public void RazorVue_Context_InvalidLibraryStyleDependencyDeclaration_ThrowsStructuredIssue()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Ui.Custom
+            {
+                [VueLibraryComponent("demo/components", "DemoButton")]
+                [VueLibraryStyle("demo/styles")]
+                [VueLibraryStyle(" demo/styles ")]
+                public sealed class DemoButton : VueLibraryComponent
+                {
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => context.DiscoverLibraryComponents());
+        Assert.AreEqual(RazorVueIssueCode.InvalidLibraryStyleDependencyDeclaration, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "duplicate style dependency");
+    }
+
+    [TestMethod]
+    public void RazorVue_Context_InvalidLibraryPluginRequirementDeclaration_ThrowsStructuredIssue()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Ui.Custom
+            {
+                [VueLibraryComponent("demo/components", "DemoButton")]
+                [VueLibraryPluginRequirement("demo-host")]
+                [VueLibraryPluginRequirement(" demo-host ")]
+                public sealed class DemoButton : VueLibraryComponent
+                {
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => context.DiscoverLibraryComponents());
+        Assert.AreEqual(RazorVueIssueCode.InvalidLibraryPluginRequirementDeclaration, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "duplicate plugin requirement");
     }
 
     [TestMethod]

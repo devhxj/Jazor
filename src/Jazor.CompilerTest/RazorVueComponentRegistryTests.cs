@@ -217,7 +217,7 @@ public sealed class RazorVueComponentRegistryTests
             """);
 
         var registry = context.CreateComponentRegistry();
-        foreach (var componentName in new[] { "VBtn", "VCard", "VDialog", "VIcon", "VTextField" })
+        foreach (var componentName in new[] { "VBtn", "VCard", "VCardText", "VCardTitle", "VCheckbox", "VCol", "VContainer", "VDialog", "VDivider", "VIcon", "VRow", "VSheet", "VSpacer", "VTextField", "VToolbar", "VToolbarTitle" })
         {
             var result = registry.Resolve(
                 componentName,

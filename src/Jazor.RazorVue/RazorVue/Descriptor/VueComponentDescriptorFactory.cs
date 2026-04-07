@@ -285,17 +285,32 @@ internal static class VueComponentDescriptorFactory
             return [];
 
         var builder = ImmutableArray.CreateBuilder<string>();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
         foreach (var attribute in componentSymbol.GetAttributes())
         {
-            if (!Comparer.Equals(attribute.AttributeClass, symbols.VueLibraryStyleAttribute) ||
-                attribute.ConstructorArguments.Length != 1 ||
-                attribute.ConstructorArguments[0].Value is not string styleSpecifier ||
-                string.IsNullOrWhiteSpace(styleSpecifier))
+            if (!Comparer.Equals(attribute.AttributeClass, symbols.VueLibraryStyleAttribute))
             {
                 continue;
             }
 
-            builder.Add(styleSpecifier.Trim());
+            if (attribute.ConstructorArguments.Length != 1 ||
+                attribute.ConstructorArguments[0].Value is not string styleSpecifier ||
+                string.IsNullOrWhiteSpace(styleSpecifier))
+            {
+                throw CreateInvalidLibraryStyleDependencyDeclarationException(
+                    componentSymbol,
+                    $"Library component '{FormatFullName(componentSymbol)}' has an invalid [VueLibraryStyle(styleSpecifier)] declaration.");
+            }
+
+            var normalizedStyleSpecifier = styleSpecifier.Trim();
+            if (!seen.Add(normalizedStyleSpecifier))
+            {
+                throw CreateInvalidLibraryStyleDependencyDeclarationException(
+                    componentSymbol,
+                    $"Library component '{FormatFullName(componentSymbol)}' declares duplicate style dependency '{normalizedStyleSpecifier}'.");
+            }
+
+            builder.Add(normalizedStyleSpecifier);
         }
 
         return builder.ToImmutable();
@@ -307,17 +322,32 @@ internal static class VueComponentDescriptorFactory
             return [];
 
         var builder = ImmutableArray.CreateBuilder<string>();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
         foreach (var attribute in componentSymbol.GetAttributes())
         {
-            if (!Comparer.Equals(attribute.AttributeClass, symbols.VueLibraryPluginRequirementAttribute) ||
-                attribute.ConstructorArguments.Length != 1 ||
-                attribute.ConstructorArguments[0].Value is not string requirementId ||
-                string.IsNullOrWhiteSpace(requirementId))
+            if (!Comparer.Equals(attribute.AttributeClass, symbols.VueLibraryPluginRequirementAttribute))
             {
                 continue;
             }
 
-            builder.Add(requirementId.Trim());
+            if (attribute.ConstructorArguments.Length != 1 ||
+                attribute.ConstructorArguments[0].Value is not string requirementId ||
+                string.IsNullOrWhiteSpace(requirementId))
+            {
+                throw CreateInvalidLibraryPluginRequirementDeclarationException(
+                    componentSymbol,
+                    $"Library component '{FormatFullName(componentSymbol)}' has an invalid [VueLibraryPluginRequirement(requirementId)] declaration.");
+            }
+
+            var normalizedRequirementId = requirementId.Trim();
+            if (!seen.Add(normalizedRequirementId))
+            {
+                throw CreateInvalidLibraryPluginRequirementDeclarationException(
+                    componentSymbol,
+                    $"Library component '{FormatFullName(componentSymbol)}' declares duplicate plugin requirement '{normalizedRequirementId}'.");
+            }
+
+            builder.Add(normalizedRequirementId);
         }
 
         return builder.ToImmutable();
@@ -343,9 +373,25 @@ internal static class VueComponentDescriptorFactory
     private static RazorVueCompilationIssueException CreateInvalidLibraryComponentDeclarationException(
         INamedTypeSymbol componentSymbol,
         string message)
+        => CreateLibraryMetadataIssueException(componentSymbol, RazorVueIssueCode.InvalidLibraryComponentDeclaration, message);
+
+    private static RazorVueCompilationIssueException CreateInvalidLibraryStyleDependencyDeclarationException(
+        INamedTypeSymbol componentSymbol,
+        string message)
+        => CreateLibraryMetadataIssueException(componentSymbol, RazorVueIssueCode.InvalidLibraryStyleDependencyDeclaration, message);
+
+    private static RazorVueCompilationIssueException CreateInvalidLibraryPluginRequirementDeclarationException(
+        INamedTypeSymbol componentSymbol,
+        string message)
+        => CreateLibraryMetadataIssueException(componentSymbol, RazorVueIssueCode.InvalidLibraryPluginRequirementDeclaration, message);
+
+    private static RazorVueCompilationIssueException CreateLibraryMetadataIssueException(
+        INamedTypeSymbol componentSymbol,
+        RazorVueIssueCode issueCode,
+        string message)
     {
         var issue = new RazorVueCompilationIssue(
-            RazorVueIssueCode.InvalidLibraryComponentDeclaration,
+            issueCode,
             RazorVueIssueSeverity.Error,
             message,
             ImmutableArray<string>.Empty);

@@ -334,6 +334,40 @@ namespace Jazor.EmitTest
             }
         }
 
+        [TestMethod]
+        public void RazorVueManifestModel_Create_NormalizesHostRequirementOrdering()
+        {
+            var catalog = new RazorVueCatalogRecord(
+                "Demo.Components",
+                [
+                    new RazorVueEmitArtifactRecord(
+                        "DashboardCard",
+                        "components/dashboard-card.mjs",
+                        "export default { name: \"DashboardCard\" };",
+                        ["vue", "vuetify/components"],
+                        ["vuetify/styles", "vuetify/base", "vuetify/styles"],
+                        ["vuetify", "alpha-host", "vuetify"],
+                        new RazorVueEmitArtifactIdentity(
+                            "Demo.Components.DashboardCard",
+                            "components/dashboard-card.mjs",
+                            "descriptor-hash",
+                            "template-hash",
+                            "logic-hash",
+                            RazorVueHmrBoundaryKind.LogicSafe),
+                        new RazorVueEmitRuntimeHints(true, false, true, false, false, false),
+                        []),
+                ]);
+
+            var manifest = RazorVueManifestModel.Create(catalog);
+
+            CollectionAssert.AreEqual(
+                new[] { "vuetify/base", "vuetify/styles" },
+                manifest.Modules[0].Styles);
+            CollectionAssert.AreEqual(
+                new[] { "alpha-host", "vuetify" },
+                manifest.Modules[0].PluginRequirements);
+        }
+
         private const string DefaultGeneratedArtifactMembers =
             """
             public string ComponentName => "CounterCard";

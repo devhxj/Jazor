@@ -65,8 +65,8 @@ internal sealed record RazorVueManifestModel(
             artifact.ComponentName,
             artifact.RelativeModulePath,
             artifact.Imports.ToList(),
-            artifact.Styles.ToList(),
-            artifact.PluginRequirements.ToList(),
+            NormalizeHostRequirementList(artifact.Styles),
+            NormalizeHostRequirementList(artifact.PluginRequirements),
             artifact.Identity.DescriptorHash,
             artifact.Identity.TemplateHash,
             artifact.Identity.LogicHash,
@@ -83,6 +83,17 @@ internal sealed record RazorVueManifestModel(
 
         var fileName = Path.GetFileNameWithoutExtension(rootAssemblyPath);
         return string.IsNullOrWhiteSpace(fileName) ? "Jazor.Emit" : fileName;
+    }
+
+    private static List<string> NormalizeHostRequirementList(IReadOnlyList<string> values)
+    {
+        // Keep host-facing dependency metadata deterministic so manifest diffs only
+        // reflect real contract changes rather than descriptor discovery order.
+        return values
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(static value => value, StringComparer.Ordinal)
+            .ToList();
     }
 
     private static string ComputeSha256Hex(string content)

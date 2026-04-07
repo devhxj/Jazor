@@ -91,4 +91,20 @@ internal static class RazorVueDiagnosticDescriptors
         category: "RazorVue",
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor InvalidLibraryStyleDependencyDeclaration = new(
+        id: "JAZORVUE013",
+        title: "RazorVue library style dependency declaration is invalid",
+        messageFormat: "{0}",
+        category: "RazorVue",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor InvalidLibraryPluginRequirementDeclaration = new(
+        id: "JAZORVUE014",
+        title: "RazorVue library plugin requirement declaration is invalid",
+        messageFormat: "{0}",
+        category: "RazorVue",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }

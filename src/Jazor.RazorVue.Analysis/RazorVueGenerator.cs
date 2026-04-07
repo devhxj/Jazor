@@ -111,6 +111,22 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
+    private static readonly DiagnosticDescriptor RazorVueInvalidLibraryStyleDependencyDeclaration = new(
+        id: "JAZORVGA013",
+        title: "RazorVue library style dependency declaration is invalid",
+        messageFormat: "{0}",
+        category: "Jazor.RazorVue.Analysis",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor RazorVueInvalidLibraryPluginRequirementDeclaration = new(
+        id: "JAZORVGA014",
+        title: "RazorVue library plugin requirement declaration is invalid",
+        messageFormat: "{0}",
+        category: "Jazor.RazorVue.Analysis",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var componentCandidates = context.SyntaxProvider.ForAttributeWithMetadataName(
@@ -195,6 +211,8 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
             RazorVueIssueCode.UnsupportedLifecycleLowering => RazorVueUnsupportedLifecycleLowering,
             RazorVueIssueCode.UnsupportedSetupLogicLowering => RazorVueUnsupportedSetupLogicLowering,
             RazorVueIssueCode.InvalidLibraryComponentDeclaration => RazorVueInvalidLibraryComponentDeclaration,
+            RazorVueIssueCode.InvalidLibraryStyleDependencyDeclaration => RazorVueInvalidLibraryStyleDependencyDeclaration,
+            RazorVueIssueCode.InvalidLibraryPluginRequirementDeclaration => RazorVueInvalidLibraryPluginRequirementDeclaration,
             RazorVueIssueCode.UnknownParameter => RazorVueUnknownParameter,
             RazorVueIssueCode.InvalidBindTarget => RazorVueInvalidBindTarget,
             RazorVueIssueCode.UnknownSlot => RazorVueUnknownSlot,

@@ -17,3 +17,5 @@ JAZORVUE009 | RazorVue | Error | RazorVue child content parameter is unknown
 JAZORVUE010 | RazorVue | Error | RazorVue child content parameter context is invalid
 JAZORVUE011 | RazorVue | Error | RazorVue child content parameter is assigned multiple times
 JAZORVUE012 | RazorVue | Error | RazorVue library component declaration is invalid
+JAZORVUE013 | RazorVue | Error | RazorVue library style dependency declaration is invalid
+JAZORVUE014 | RazorVue | Error | RazorVue library plugin requirement declaration is invalid

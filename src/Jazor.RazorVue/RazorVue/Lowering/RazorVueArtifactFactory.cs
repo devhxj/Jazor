@@ -694,7 +694,14 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             throw CreateUnsupportedLifecycleLoweringException(method);
 
         if (method.DeclaringSyntaxReferences.Length == 0)
+        {
+            // ComponentBase default lifecycle implementations are no-op compatibility
+            // shims, so a pure `return base.*(...);` override should not force a reload.
+            if (IsDefaultComponentBaseLifecycleMethod(snapshot.Compilation, method))
+                return null;
+
             throw CreateUnsupportedLifecycleLoweringException(method);
+        }
 
         var reference = method.DeclaringSyntaxReferences[0];
         if (reference.GetSyntax() is not MethodDeclarationSyntax methodSyntax)
@@ -832,6 +839,17 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         var baseMethod = FindBaseLifecycleMethod(method);
         if (baseMethod is null)
             throw CreateUnsupportedLifecycleLoweringException(method);
+
+        if (baseMethod.DeclaringSyntaxReferences.Length == 0)
+        {
+            if (IsComponentBaseNoOpLifecycle(snapshot.Compilation, baseMethod))
+            {
+                emitCall = null;
+                return true;
+            }
+
+            throw CreateUnsupportedLifecycleLoweringException(method);
+        }
 
         // A pure base pass-through should keep the base lifecycle lowering shape
         // instead of forcing derived components back to full-reload semantics.
@@ -1053,6 +1071,14 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         return null;
     }
 
+    private static bool IsDefaultComponentBaseLifecycleMethod(Compilation compilation, IMethodSymbol method)
+    {
+        var componentBase = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.ComponentBase");
+        return componentBase is not null &&
+               SafeLifecycleMethods.Contains(method.Name) &&
+               SymbolEqualityComparer.Default.Equals(method.ContainingType.OriginalDefinition, componentBase);
+    }
+
     private static IMethodSymbol? FindBaseSetParametersAsyncMethod(IMethodSymbol method)
     {
         for (var current = method.ContainingType.BaseType; current is not null; current = current.BaseType)
@@ -1195,6 +1221,14 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         var semanticModel = compilation.GetSemanticModel(invocationExpression.SyntaxTree);
         return semanticModel.GetOperation(invocationExpression) is IInvocationOperation invocation &&
                SymbolEqualityComparer.Default.Equals(invocation.TargetMethod.ContainingType.OriginalDefinition, componentBase);
+    }
+
+    private static bool IsComponentBaseNoOpLifecycle(Compilation compilation, IMethodSymbol method)
+    {
+        var componentBase = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.ComponentBase");
+        return componentBase is not null &&
+               SymbolEqualityComparer.Default.Equals(method.ContainingType.OriginalDefinition, componentBase) &&
+               method.Name is "OnInitialized" or "OnInitializedAsync" or "OnParametersSet" or "OnParametersSetAsync" or "OnAfterRender" or "OnAfterRenderAsync";
     }
 
     private static string TranslateLifecyclePayload(
