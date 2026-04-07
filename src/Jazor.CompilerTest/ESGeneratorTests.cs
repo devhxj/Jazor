@@ -7756,6 +7756,131 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateCatalog_WithThreeLevelHelperComposition_ReportsStructuredDiagnostic()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.ThreeLevelHelper.Generated",
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/three-level-card")]
+                public class ThreeLevelCard : VueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    private string FormatOuter(int value)
+                        => "Value: " + FormatMiddle(value);
+
+                    private string FormatMiddle(int value)
+                        => "Middle: " + FormatInner(value);
+
+                    private string FormatInner(int value)
+                        => (value * 3).ToString();
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, FormatOuter(Value));
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA006")
+            .ToArray();
+
+        Assert.AreEqual(1, diagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "FormatInner");
+        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Components.ThreeLevelCard");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithAsyncInnerHelper_ReportsStructuredDiagnostic()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.AsyncInnerHelper.Generated",
+            """
+            using System;
+            using System.Threading.Tasks;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/async-helper-card")]
+                public class AsyncHelperCard : VueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    private string FormatOuter(int value)
+                        => "Value: " + FormatInnerAsync(value).Result;
+
+                    private async Task<string> FormatInnerAsync(int value)
+                    {
+                        await Task.Delay(1);
+                        return (value * 2).ToString();
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, FormatOuter(Value));
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA006")
+            .ToArray();
+
+        Assert.AreEqual(1, diagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "FormatInnerAsync");
+        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Components.AsyncHelperCard");
+    }
+
+    [TestMethod]
     public void GenerateCatalog_WithUnsupportedSetupLogicLowering_ReportsStructuredDiagnostic()
     {
         var compilation = CreateCompilation(

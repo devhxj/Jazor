@@ -74,7 +74,7 @@ The currently proven lowering subset is:
 - lifecycle safe-subset lowering for `OnInitialized*`, `OnParametersSet*`, and `OnAfterRender*`
 - `OnParametersSet*` immediate watch bridging
 - `OnAfterRender*` explicit `firstRender` bridging
-- minimal setup-side logic lowering for simple instance fields and helper methods whose arguments can be lowered safely
+- minimal setup-side logic lowering for simple instance fields and helper methods whose arguments can be lowered safely, including fixed-depth two-level helper composition
 
 The following checklist items remain effectively open even if some scaffolding exists:
 

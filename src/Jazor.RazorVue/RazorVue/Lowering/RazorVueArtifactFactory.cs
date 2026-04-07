@@ -366,6 +366,7 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         var emittedMethods = new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default);
         var fieldBlocks = new List<string>();
         var methodBlocks = new List<string>();
+        var helperDepth = 1;
 
         while (true)
         {
@@ -382,6 +383,9 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             if (nextFields.Length == 0 && nextMethods.Length == 0)
                 break;
 
+            if (helperDepth > 2 && nextMethods.Length > 0)
+                throw CreateUnsupportedSetupLoweringException(nextMethods[0].MethodSymbol);
+
             foreach (var field in nextFields)
             {
                 emittedFields.Add(field.FieldSymbol);
@@ -393,6 +397,8 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
                 emittedMethods.Add(method.MethodSymbol);
                 methodBlocks.Add(BuildSetupMethodLowering(snapshot, expressionEmitter, method));
             }
+
+            helperDepth++;
         }
 
         foreach (var fieldBlock in fieldBlocks)

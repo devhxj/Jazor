@@ -565,9 +565,10 @@ internal sealed class RazorVueExpressionEmitter
                    string.Join(", ", invocation.Arguments.Select(argument => EmitExpression(argument.Value))) + ")";
         }
 
+        var targetMethodName = GetEmittedMethodName(invocation.TargetMethod);
         var target = invocation.Instance is not null
-            ? EmitExpression(invocation.Instance) + "." + invocation.TargetMethod.Name
-            : invocation.TargetMethod.Name;
+            ? EmitMemberInvocationTarget(invocation.Instance, targetMethodName, useSetupEmitter: false)
+            : targetMethodName;
 
         return target + "(" + string.Join(", ", invocation.Arguments.Select(argument => EmitExpression(argument.Value))) + ")";
     }
@@ -590,12 +591,33 @@ internal sealed class RazorVueExpressionEmitter
                    string.Join(", ", invocation.Arguments.Select(argument => EmitSetupExpression(argument.Value))) + ")";
         }
 
+        var targetMethodName = GetEmittedMethodName(invocation.TargetMethod);
         var target = invocation.Instance is not null
-            ? EmitSetupExpression(invocation.Instance) + "." + invocation.TargetMethod.Name
-            : invocation.TargetMethod.Name;
+            ? EmitMemberInvocationTarget(invocation.Instance, targetMethodName, useSetupEmitter: true)
+            : targetMethodName;
 
         return target + "(" + string.Join(", ", invocation.Arguments.Select(argument => EmitSetupExpression(argument.Value))) + ")";
     }
+
+    private string EmitMemberInvocationTarget(IOperation instance, string targetMethodName, bool useSetupEmitter)
+    {
+        var target = useSetupEmitter
+            ? EmitSetupExpression(instance)
+            : EmitExpression(instance);
+
+        if (targetMethodName == "toString" && RequiresParenthesizedMemberTarget(instance))
+            target = "(" + target + ")";
+
+        return target + "." + targetMethodName;
+    }
+
+    private static bool RequiresParenthesizedMemberTarget(IOperation instance)
+        => Unwrap(instance) is IBinaryOperation or IConditionalOperation;
+
+    private static string GetEmittedMethodName(IMethodSymbol method)
+        => method.Name == "ToString" && method.Parameters.Length == 0 && method.MethodKind == MethodKind.Ordinary
+            ? "toString"
+            : method.Name;
 
     private RazorVueCompilationIssueException CreateUnsupportedSetupLogicException(IMethodSymbol method)
         => CreateUnsupportedSetupLogicException(

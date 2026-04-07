@@ -6297,6 +6297,276 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersTwoLevelHelperCompositionIntoSetupScope()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/helper-composition-card")]
+                public class HelperCompositionCard : VueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    private string FormatOuter(int value)
+                        => "Value: " + FormatInner(value);
+
+                    private string FormatInner(int value)
+                        => (value * 2).ToString();
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, FormatOuter(Value));
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "function formatOuter(value)");
+        StringAssert.Contains(artifact.ModuleCode, "function formatInner(value)");
+        StringAssert.Contains(artifact.ModuleCode, "return (\"Value: \" + formatInner(value));");
+        StringAssert.Contains(artifact.ModuleCode, "return ((value * 2)).toString();");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", null, formatOuter(props.value));");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersTwoLevelHelperCompositionWithFieldAndPropsIntoSetupScope()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/helper-field-card")]
+                public class HelperFieldCard : VueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    private readonly string Prefix = "Count: ";
+
+                    private string FormatLeaf(int value)
+                        => Prefix + value;
+
+                    private string FormatOuter()
+                        => FormatLeaf(Value);
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, FormatOuter());
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "const prefix = \"Count: \";");
+        StringAssert.Contains(artifact.ModuleCode, "function formatLeaf(value)");
+        StringAssert.Contains(artifact.ModuleCode, "function formatOuter()");
+        StringAssert.Contains(artifact.ModuleCode, "return (prefix + value);");
+        StringAssert.Contains(artifact.ModuleCode, "return formatLeaf(props.value);");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersSharedInnerHelperOnlyOnceIntoSetupScope()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/shared-helper-card")]
+                public class SharedHelperCard : VueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    private string FormatLeaf(int value)
+                        => (value + 1).ToString();
+
+                    private string FormatA(int value)
+                        => "A:" + FormatLeaf(value);
+
+                    private string FormatB(int value)
+                        => "B:" + FormatLeaf(value);
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, FormatA(Value));
+                        builder.AddContent(2, FormatB(Value));
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+
+        Assert.AreEqual(1, artifact.ModuleCode.Split("function formatLeaf(value)", StringSplitOptions.None).Length - 1, artifact.ModuleCode);
+        StringAssert.Contains(artifact.ModuleCode, "formatA(props.value)");
+        StringAssert.Contains(artifact.ModuleCode, "formatB(props.value)");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForThreeLevelHelperComposition()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/three-level-card")]
+                public class ThreeLevelCard : VueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    private string FormatOuter(int value)
+                        => "Value: " + FormatMiddle(value);
+
+                    private string FormatMiddle(int value)
+                        => "Middle: " + FormatInner(value);
+
+                    private string FormatInner(int value)
+                        => (value * 3).ToString();
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, FormatOuter(Value));
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedSetupLogicLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "FormatInner");
+        Assert.AreEqual("Demo.Components.ThreeLevelCard", exception.OwnerComponentFullName);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForAsyncInnerHelperMethod()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/async-helper-card")]
+                public class AsyncHelperCard : VueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    private string FormatOuter(int value)
+                        => "Value: " + FormatInnerAsync(value).Result;
+
+                    private async Task<string> FormatInnerAsync(int value)
+                    {
+                        await Task.Delay(1);
+                        return (value * 2).ToString();
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, FormatOuter(Value));
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedSetupLogicLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "FormatInnerAsync");
+        Assert.AreEqual("Demo.Components.AsyncHelperCard", exception.OwnerComponentFullName);
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_ClassifiesLogicSafeBoundaryForComponentWithOnlyLogicMethods()
     {
         // A component with props and user-defined logic methods (but no lifecycle hooks)
