@@ -72,7 +72,7 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
 
         if (knownSymbols.IsSetParametersAsync(method))
         {
-            if (IsSupportedNoOpSetParametersAsync(method))
+            if (IsSupportedSetParametersAsync(method))
                 return;
 
             context.ReportDiagnostic(Diagnostic.Create(
@@ -81,7 +81,7 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
         }
     }
 
-    private static bool IsSupportedNoOpSetParametersAsync(IMethodSymbol method)
+    private static bool IsSupportedSetParametersAsync(IMethodSymbol method)
     {
         if (method.DeclaringSyntaxReferences.Length == 0)
             return false;
@@ -98,25 +98,29 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
         if (methodSyntax.Body.Statements.Count == 0)
             return true;
 
-        if (methodSyntax.Body.Statements.Count == 1)
+        var statements = methodSyntax.Body.Statements;
+        var index = 0;
+        var sawBaseCall = false;
+        if (IsBaseSetParametersAsyncStatement(method, statements[0]))
         {
-            return methodSyntax.Body.Statements[0] switch
-            {
-                ExpressionStatementSyntax expressionStatement => IsBaseSetParametersAsyncCall(method, expressionStatement.Expression),
-                ReturnStatementSyntax returnStatement when returnStatement.Expression is null => true,
-                ReturnStatementSyntax returnStatement when returnStatement.Expression is not null =>
-                    IsNoOpTaskExpression(returnStatement.Expression) ||
-                    IsBaseSetParametersAsyncCall(method, returnStatement.Expression),
-                _ => false
-            };
+            sawBaseCall = true;
+            index++;
         }
 
-        if (methodSyntax.Body.Statements.Count == 2 &&
-            methodSyntax.Body.Statements[0] is ExpressionStatementSyntax leadingExpression &&
-            methodSyntax.Body.Statements[1] is ReturnStatementSyntax trailingReturn)
+        if (index >= statements.Count)
+            return true;
+
+        if (TryGetSetParametersAsyncNoOpOrEmit(statements[index], out var hasEmit))
         {
-            return IsBaseSetParametersAsyncCall(method, leadingExpression.Expression) &&
-                   (trailingReturn.Expression is null || IsNoOpTaskExpression(trailingReturn.Expression));
+            index++;
+            if (index == statements.Count)
+                return !hasEmit || sawBaseCall;
+
+            if (index == statements.Count - 1 &&
+                IsNoOpSetParametersAsyncStatement(statements[index]))
+            {
+                return !hasEmit || sawBaseCall;
+            }
         }
 
         return false;
@@ -127,6 +131,8 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
         expression = UnwrapExpression(expression);
         if (expression is AwaitExpressionSyntax awaitExpression)
             expression = UnwrapExpression(awaitExpression.Expression);
+        if (TryUnwrapValueTaskCreation(expression, out var wrappedExpression))
+            expression = wrappedExpression;
 
         if (expression is not InvocationExpressionSyntax invocation ||
             invocation.Expression is not MemberAccessExpressionSyntax memberAccess ||
@@ -142,11 +148,22 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
                identifier.Identifier.ValueText == method.Parameters[0].Name;
     }
 
+    private static bool IsBaseSetParametersAsyncStatement(IMethodSymbol method, StatementSyntax statement)
+        => statement switch
+        {
+            ExpressionStatementSyntax expressionStatement => IsBaseSetParametersAsyncCall(method, expressionStatement.Expression),
+            ReturnStatementSyntax returnStatement when returnStatement.Expression is not null =>
+                IsBaseSetParametersAsyncCall(method, returnStatement.Expression),
+            _ => false
+        };
+
     private static bool IsNoOpTaskExpression(ExpressionSyntax expression)
     {
         expression = UnwrapExpression(expression);
         if (expression is AwaitExpressionSyntax awaitExpression)
             expression = UnwrapExpression(awaitExpression.Expression);
+        if (TryUnwrapValueTaskCreation(expression, out var wrappedExpression))
+            expression = wrappedExpression;
 
         var text = expression.ToString().Trim();
         return text == "Task.CompletedTask" ||
@@ -154,6 +171,75 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
                text == "default" ||
                text == "default(ValueTask)" ||
                text == "default(System.Threading.Tasks.ValueTask)";
+    }
+
+    private static bool IsNoOpSetParametersAsyncStatement(StatementSyntax statement)
+        => statement switch
+        {
+            ReturnStatementSyntax returnStatement when returnStatement.Expression is null => true,
+            ReturnStatementSyntax returnStatement when returnStatement.Expression is not null =>
+                IsNoOpTaskExpression(returnStatement.Expression),
+            ExpressionStatementSyntax expressionStatement => IsNoOpTaskExpression(expressionStatement.Expression),
+            _ => false
+        };
+
+    private static bool TryGetSetParametersAsyncNoOpOrEmit(StatementSyntax statement, out bool hasEmit)
+    {
+        hasEmit = false;
+        switch (statement)
+        {
+            case ReturnStatementSyntax returnStatement when returnStatement.Expression is null:
+                return true;
+            case ReturnStatementSyntax returnStatement when returnStatement.Expression is not null:
+                if (IsNoOpTaskExpression(returnStatement.Expression))
+                    return true;
+
+                hasEmit = IsSupportedInvokeAsyncExpression(returnStatement.Expression);
+                return hasEmit;
+            case ExpressionStatementSyntax expressionStatement:
+                if (IsNoOpTaskExpression(expressionStatement.Expression))
+                    return true;
+
+                hasEmit = IsSupportedInvokeAsyncExpression(expressionStatement.Expression);
+                return hasEmit;
+            default:
+                return false;
+        }
+    }
+
+    private static bool IsSupportedInvokeAsyncExpression(ExpressionSyntax expression)
+    {
+        expression = UnwrapExpression(expression);
+        if (expression is AwaitExpressionSyntax awaitExpression)
+            expression = UnwrapExpression(awaitExpression.Expression);
+        if (TryUnwrapValueTaskCreation(expression, out var wrappedExpression))
+            expression = wrappedExpression;
+
+        return expression is InvocationExpressionSyntax invocation &&
+               invocation.Expression is MemberAccessExpressionSyntax memberAccess &&
+               memberAccess.Name.Identifier.ValueText == "InvokeAsync" &&
+               invocation.ArgumentList.Arguments.Count <= 1;
+    }
+
+    private static bool TryUnwrapValueTaskCreation(ExpressionSyntax expression, out ExpressionSyntax innerExpression)
+    {
+        innerExpression = null!;
+        expression = UnwrapExpression(expression);
+        if (expression is not ObjectCreationExpressionSyntax creation ||
+            creation.ArgumentList?.Arguments.Count != 1)
+        {
+            return false;
+        }
+
+        var typeName = creation.Type.ToString();
+        if (typeName != "ValueTask" &&
+            typeName != "System.Threading.Tasks.ValueTask")
+        {
+            return false;
+        }
+
+        innerExpression = UnwrapExpression(creation.ArgumentList.Arguments[0].Expression);
+        return true;
     }
 
     private static ExpressionSyntax UnwrapExpression(ExpressionSyntax expression)
