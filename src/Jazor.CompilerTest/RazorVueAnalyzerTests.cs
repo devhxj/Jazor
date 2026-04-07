@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using Basic.Reference.Assemblies;
+using ECMAScript.UI.Vue.Vuetify;
 using Jazor.Analyzer;
 using Jazor.Razor;
 using Jazor.RazorVue;
@@ -38,7 +39,7 @@ public sealed class RazorVueAnalyzerTests
             }
             """);
 
-        AssertNoDiagnostic(diagnostics, "JAZORVUE001", "JAZORVUE002", "JAZORVUE004", "JAZORVUE005", "JAZORVUE006", "JAZOR001");
+        AssertNoDiagnostic(diagnostics, "JAZORVUE001", "JAZORVUE002", "JAZORVUE004", "JAZORVUE005", "JAZORVUE006", "JAZORVUE007", "JAZORVUE008", "JAZORVUE009", "JAZORVUE010", "JAZORVUE011", "JAZOR001");
     }
 
     [TestMethod]
@@ -94,7 +95,7 @@ public sealed class RazorVueAnalyzerTests
             """);
 
         AssertHasDiagnostic(diagnostics, "JAZOR001");
-        AssertNoDiagnostic(diagnostics, "JAZORVUE001", "JAZORVUE002", "JAZORVUE004", "JAZORVUE005", "JAZORVUE006");
+        AssertNoDiagnostic(diagnostics, "JAZORVUE001", "JAZORVUE002", "JAZORVUE004", "JAZORVUE005", "JAZORVUE006", "JAZORVUE007", "JAZORVUE008", "JAZORVUE009", "JAZORVUE010", "JAZORVUE011");
     }
 
     [TestMethod]
@@ -345,13 +346,331 @@ public sealed class RazorVueAnalyzerTests
         AssertNoDiagnostic(diagnostics, "JAZORVUE006");
     }
 
+    [TestMethod]
+    public async Task RazorVue_Misuse_UnknownLibraryParameter_ReportsJAZORVUE007()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using ECMAScript.UI.Vue.Vuetify;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class InvalidComponent : VueComponent
+            {
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.OpenComponent<VBtn>(0);
+                    builder.AddAttribute(1, "Href", "#");
+                    builder.CloseComponent();
+                }
+            }
+            """);
+
+        AssertHasDiagnostic(diagnostics, "JAZORVUE007");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_Misuse_InvalidLibraryBindTarget_ReportsJAZORVUE008()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using ECMAScript.UI.Vue.Vuetify;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class InvalidComponent : VueComponent
+            {
+                public string? Text { get; set; }
+
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.OpenComponent<VBtn>(0);
+                    builder.AddAttribute(1, nameof(VBtn.Text), Text);
+                    builder.AddAttribute(2, "TextChanged", EventCallback.Factory.Create<string?>(this, HandleTextChanged));
+                    builder.CloseComponent();
+                }
+
+                private void HandleTextChanged(string? value)
+                {
+                    Text = value;
+                }
+            }
+            """);
+
+        AssertHasDiagnostic(diagnostics, "JAZORVUE008");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_Misuse_ValidLibraryParameter_IsAccepted()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using ECMAScript.UI.Vue.Vuetify;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class ValidComponent : VueComponent
+            {
+                [Parameter]
+                public string? Label { get; set; }
+
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.OpenComponent<VTextField>(0);
+                    builder.AddAttribute(1, nameof(VTextField.Label), Label);
+                    builder.CloseComponent();
+                }
+            }
+            """);
+
+        AssertNoDiagnostic(diagnostics, "JAZORVUE007", "JAZORVUE008");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_Misuse_ValidLibraryBindTarget_IsAccepted()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using ECMAScript.UI.Vue.Vuetify;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class ValidComponent : VueComponent
+            {
+                [Parameter]
+                public string? Value { get; set; }
+
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.OpenComponent<VTextField>(0);
+                    builder.AddAttribute(1, nameof(VTextField.ModelValue), Value);
+                    builder.AddAttribute(2, nameof(VTextField.ModelValueChanged), EventCallback.Factory.Create<string?>(this, HandleModelValueChanged));
+                    builder.CloseComponent();
+                }
+
+                private void HandleModelValueChanged(string? value)
+                {
+                    Value = value;
+                }
+            }
+            """);
+
+        AssertNoDiagnostic(diagnostics, "JAZORVUE007", "JAZORVUE008");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_Misuse_UnknownLibrarySlot_ReportsJAZORVUE009()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using ECMAScript.UI.Vue.Vuetify;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class InvalidComponent : VueComponent
+            {
+                [Parameter]
+                public RenderFragment? ChildContent { get; set; }
+
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.OpenComponent<VIcon>(0);
+                    builder.AddContent(1, ChildContent);
+                    builder.CloseComponent();
+                }
+            }
+            """);
+
+        AssertHasDiagnostic(diagnostics, "JAZORVUE009");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_Misuse_TypedLibrarySlotContextMisuse_ReportsJAZORVUE010()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using ECMAScript.UI.Vue.Vuetify;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class InvalidComponent : VueComponent
+            {
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.OpenComponent<VDialog>(0);
+                    builder.AddAttribute(1, nameof(VDialog.Activator), "not-callable");
+                    builder.CloseComponent();
+                }
+            }
+            """);
+
+        AssertHasDiagnostic(diagnostics, "JAZORVUE010");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_Misuse_DuplicateLibrarySlotAssignment_ReportsJAZORVUE011()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using ECMAScript.UI.Vue.Vuetify;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class InvalidComponent : VueComponent
+            {
+                [Parameter]
+                public RenderFragment<VDialogActivatorContext>? Activator { get; set; }
+
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.OpenComponent<VDialog>(0);
+                    builder.AddAttribute(1, nameof(VDialog.Activator), Activator);
+                    builder.AddAttribute(2, nameof(VDialog.Activator), Activator);
+                    builder.CloseComponent();
+                }
+            }
+            """);
+
+        AssertHasDiagnostic(diagnostics, "JAZORVUE011");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_Misuse_ValidTypedLibrarySlot_IsAccepted()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using ECMAScript.UI.Vue.Vuetify;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class ValidComponent : VueComponent
+            {
+                [Parameter]
+                public RenderFragment<VDialogActivatorContext>? Activator { get; set; }
+
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.OpenComponent<VDialog>(0);
+                    builder.AddAttribute(1, nameof(VDialog.Activator), Activator);
+                    builder.CloseComponent();
+                }
+            }
+            """);
+
+        AssertNoDiagnostic(diagnostics, "JAZORVUE009", "JAZORVUE010", "JAZORVUE011");
+    }
+
     private static async Task<ImmutableArray<Diagnostic>> GetAnalyzerDiagnosticsAsync(string source)
     {
         var compilation = CreateCompilation(source);
         var analyzers = ImmutableArray.Create<DiagnosticAnalyzer>(
             new Jazor.Analyzer.Analyzer(),
             new RazorVueEntryAnalyzer(),
-            new RazorVueMisuseAnalyzer());
+            new RazorVueMisuseAnalyzer(),
+            new RazorVueAuthoringAnalyzer());
 
         var compileErrors = compilation.GetDiagnostics()
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
@@ -371,6 +690,7 @@ public sealed class RazorVueAnalyzerTests
         // project references along automatically.
         references.Add(MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location));
         references.Add(MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location));
+        references.Add(MetadataReference.CreateFromFile(typeof(VBtn).Assembly.Location));
         references.Add(MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
 
         return CSharpCompilation.Create(
