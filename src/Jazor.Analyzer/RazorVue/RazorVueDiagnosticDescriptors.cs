@@ -43,4 +43,44 @@ internal static class RazorVueDiagnosticDescriptors
         category: "RazorVue",
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor UnknownParameter = new(
+        id: "JAZORVUE007",
+        title: "RazorVue parameter is unknown",
+        messageFormat: "{0}",
+        category: "RazorVue",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor InvalidBindTarget = new(
+        id: "JAZORVUE008",
+        title: "RazorVue bind target is invalid",
+        messageFormat: "{0}",
+        category: "RazorVue",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor UnknownSlot = new(
+        id: "JAZORVUE009",
+        title: "RazorVue child content parameter is unknown",
+        messageFormat: "{0}",
+        category: "RazorVue",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor SlotContextMisuse = new(
+        id: "JAZORVUE010",
+        title: "RazorVue child content parameter context is invalid",
+        messageFormat: "{0}",
+        category: "RazorVue",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor DuplicateSlotValue = new(
+        id: "JAZORVUE011",
+        title: "RazorVue child content parameter is assigned multiple times",
+        messageFormat: "{0}",
+        category: "RazorVue",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }
