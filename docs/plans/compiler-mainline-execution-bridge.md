@@ -5,7 +5,7 @@
 
 ## 目标
 
-把 compiler 主线从“深度文档很多”桥接成“当前维护者知道先看什么、先补什么”。
+把 compiler 主线从“深度文档很多”桥接成“当前维护者晓得先看啥、先补啥”。
 
 ## 当前执行重点
 
@@ -19,7 +19,7 @@
 当前目标：
 
 - 压实 `ESGenerator -> catalog -> output` 闭环
-- 避免测试链路与真实输出链路继续分裂
+- 避免测试链路和真实输出链路继续分裂
 
 ### 2. Import closure
 
@@ -29,8 +29,8 @@
 
 当前目标：
 
-- 让 import 从收集阶段进入稳定落盘阶段
-- 保持 import 命名、去重、顺序稳定
+- 让 import 从收集阶段进到稳定落盘阶段
+- 保持 import 命名、去重和顺序稳定
 
 ### 3. Host semantics seam
 
@@ -43,7 +43,7 @@
 当前目标：
 
 - 稳定 `Inline` / `Compile` 分工
-- 不让宿主语义扩张重新破坏 compiler 主线边界
+- 莫让宿主语义扩张又跑回来破坏 compiler 主线边界
 
 ## 建议阅读顺序
 
@@ -55,7 +55,7 @@
 ## 当前非目标
 
 - 不把所有 cross-cutting work 都重新收回 compiler 视角
-- 不用 repo-level bridge 替代 `src/Jazor.Compiler/doc/` 深度文档集
+- 不用 repo-level bridge 取代 `src/Jazor.Compiler/doc/` 这套深度文档集
 
 ## 下一步维护要求
 

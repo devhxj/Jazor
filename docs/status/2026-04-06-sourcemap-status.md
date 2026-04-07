@@ -1,15 +1,15 @@
 # SourceMap 状态（2026-04-06）
 
 > Status: current status snapshot
-> Positioning: Repository-level status bridge for the SourceMap program.
+> Positioning: Repository-level status bridge for the SourceMap programme.
 
 ## 总结
 
-SourceMap 当前不能再用一句“deferred”概括。
+SourceMap 当前不能再用一句"deferred"概括了。
 
 更准确地说：
 
-- broad SourceMap program 仍然偏保守
+- broad SourceMap programme 仍然偏保守
 - 但 RazorVue 相关 bundle chaining 已进入 narrower active lane
 - repo-level 文档需要同时表达这两层现实，不能二选一
 
@@ -21,11 +21,11 @@ SourceMap 当前不能再用一句“deferred”概括。
 
 ## 当前状态判断
 
-### 1. broad program remains conservative
+### 1. broad programme remains conservative
 
-当前仍不应把 SourceMap 描述成“全线开工”。
+当前仍不应该把 SourceMap 描述成"全线开工"。
 
-Broad program 依然强调：
+Broad programme 依然强调：
 
 - compiler main path stability first
 - module-level map first
@@ -39,18 +39,18 @@ Broad program 依然强调：
 - writer / manifest evolution
 - bundle chaining continuation
 
-因此更准确的状态是：
+所以更准确的状态是：
 
-- broad program: conservative
+- broad programme: conservative
 - narrow lane: active
 
 ### 3. SourceMap is now a coordination lane, not only a future note
 
 SourceMap 当前已经和以下工作流直接耦合：
 
-- compiler artifact/source-origin shape
+- compiler artifact / source-origin shape
 - emit writer / manifest / bundler evolution
-- RazorVue host-facing materialization
+- RazorVue host-facing materialisation
 
 这意味着 repo-level 文档必须显式桥接它，而不能只把它留在局部专题入口里。
 
@@ -67,11 +67,11 @@ SourceMap 当前已经和以下工作流直接耦合：
 
 当前 SourceMap 更适合按两层理解：
 
-1. broad program guidance
+1. broad programme guidance
 2. narrower active rollout for current consumers
 
 ## 当前缺口
 
-- repo-level SourceMap 状态入口刚建立，还没有形成长期稳定阅读习惯
-- broad program 与 narrow lane 的边界需要持续维护
-- SourceMap 仍容易被误写成“全 deferred”或“全 active”
+- repo-level SourceMap 状态入口刚建立，还没形成长期稳定阅读习惯
+- broad programme 和 narrow lane 的边界需要持续维护
+- SourceMap 仍然容易被误写成"全 deferred"或"全 active"

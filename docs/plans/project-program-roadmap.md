@@ -1,7 +1,7 @@
 # Jazor Project Program Roadmap
 
 > Status: active plan
-> Positioning: Repository-level program bridge across current Jazor workstreams.
+> Positioning: Repository-level programme bridge across current Jazor workstreams.
 
 ## 1. Scope
 
@@ -32,22 +32,22 @@ Current repo-level state should be read through these snapshots first:
 Current high-level picture:
 
 - compiler mainline is the strongest foundation
-- emit/materialization is an active dependency lane
+- emit / materialisation is an active dependency lane
 - RazorVue is in active execution
 - RazorVue authoring is a controlled expansion lane
-- broad SourceMap remains conservative, while a narrower active lane exists
+- broad SourceMap remains conservative, whilst a narrower active lane exists
 - documentation governance runs continuously across all of the above
 
 ## 3. Dependency Order
 
-The practical dependency order for the current program is:
+The practical dependency order for the current programme is:
 
-1. compiler mainline stabilization
-2. emit / host materialization consolidation
+1. compiler mainline stabilisation
+2. emit / host materialisation consolidation
 3. RazorVue phase-one closure
 4. RazorVue authoring lane execution
 5. SourceMap partial rollout for active consumers
-6. broader SourceMap program
+6. broader SourceMap programme
 7. ongoing documentation governance and bridge maintenance
 
 This is not a pure serial model.
@@ -65,7 +65,7 @@ It means:
 - Execution bridge: [compiler-mainline-execution-bridge.md](./compiler-mainline-execution-bridge.md)
 - Deep docs: [Compiler Architecture Bridge](../architecture/compiler/README.md)
 
-### 4.2 Emit / materialization
+### 4.2 Emit / materialisation
 
 - Status: [2026-04-06-emit-host-materialization-status.md](../status/2026-04-06-emit-host-materialization-status.md)
 - Execution bridge: [emit-materialization-execution-bridge.md](./emit-materialization-execution-bridge.md)
@@ -108,13 +108,13 @@ What must remain true:
 - compiler local docs remain authoritative
 - core conversion boundaries remain stable enough for downstream assumptions
 
-### Gate B. Emit/materialization bridge before downstream closure claims
+### Gate B. Emit / materialisation bridge before downstream closure claims
 
-Do not describe downstream lanes as closed if host-facing handoff is still unclear.
+Do not describe downstream lanes as closed if host-facing hand-off is still unclear.
 
 This gate matters for:
 
-- RazorVue artifact/manifest flow
+- RazorVue artifact / manifest flow
 - SourceMap writer and bundle chaining flow
 
 ### Gate C. RazorVue minimal path before authoring breadth
@@ -133,13 +133,13 @@ Before moving beyond the mid-authoring review gate, confirm:
 
 A narrow SourceMap slice can advance earlier only if:
 
-- artifact/source-origin shape is already available
+- artifact / source-origin shape is already available
 - emit-side evolution is explicit
-- the slice stays narrower than the broad SourceMap program
+- the slice stays narrower than the broad SourceMap programme
 
-### Gate F. Broad SourceMap program remains conservative
+### Gate F. Broad SourceMap programme remains conservative
 
-The broad SourceMap program should not be treated as fully active just because one narrower lane is active.
+The broad SourceMap programme should not be treated as fully active just because one narrower lane is active.
 
 ### Gate G. Documentation updates are mandatory on phase change
 
@@ -151,17 +151,17 @@ When any workstream changes phase, update at least:
 
 ## 6. Allowed Parallelism
 
-The current program explicitly allows some parallel movement.
+The current programme explicitly allows some parallel movement.
 
 Examples:
 
 - documentation governance can run continuously
-- narrow SourceMap work can advance with active RazorVue/emit integration
-- emit can continue as an active dependency lane while compiler remains the upstream foundation
+- narrow SourceMap work can advance with active RazorVue / emit integration
+- emit can continue as an active dependency lane whilst compiler remains the upstream foundation
 
 What is not allowed:
 
-- broad SourceMap expansion that outruns compiler/emit stability
+- broad SourceMap expansion that outruns compiler / emit stability
 - authoring breadth that outruns RazorVue phase-one closure
 
 ## 7. Stop Conditions
@@ -170,7 +170,7 @@ Pause expansion when any of the following becomes true:
 
 - downstream work starts forcing upstream redesign
 - repo-level status and plan docs drift from actual execution
-- local active lanes contradict broad-program docs
+- local active lanes contradict broad-programme docs
 - a repo-level bridge starts duplicating subsystem-local authority
 
 ## 8. Canonical Entry Points

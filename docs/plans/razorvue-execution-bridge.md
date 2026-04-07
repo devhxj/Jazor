@@ -5,7 +5,7 @@
 
 ## 目标
 
-把 RazorVue 从“repo-level 有状态页、局部有大文档集、执行计划分散在多个文件”桥接成一个更清晰的进入点。
+把 RazorVue 从"repo-level 有状态页、局部有大文档集、执行计划分散在多个文件"桥接成一个更清晰的进入点。
 
 本文档不解释 RazorVue 内部设计，只回答：
 
@@ -21,7 +21,7 @@
 
 - layering 收口
 - lifecycle safe subset 收口
-- 保持主链路 generic lowering 与 host-facing carrier continuity
+- 保持主链路 generic lowering 和 host-facing carrier continuity
 
 主要入口：
 
@@ -48,7 +48,7 @@
 与 RazorVue 强相关，但不应直接写成 RazorVue 子专题：
 
 - [SourceMap 执行桥接](./sourcemap-execution-bridge.md)
-- [Emit / Materialization 执行桥接](./emit-materialization-execution-bridge.md)
+- [Emit / Materialisation 执行桥接](./emit-materialization-execution-bridge.md)
 
 这些是相邻依赖 lane，不是 RazorVue 内部执行分支。
 
@@ -84,7 +84,7 @@
 - 不重复 RazorVue 架构、descriptor、HMR、DenoHost 契约等深度内容
 - 不替代 `RazorVue.Overview.md`
 - 不替代 authoring PR breakdown
-- 不把 broad SourceMap program 吞进 RazorVue lane
+- 不把 broad SourceMap programme 吞进 RazorVue lane
 
 ## 下一步维护要求
 

@@ -1,17 +1,17 @@
-# Emit / Host Materialization 状态（2026-04-06）
+# Emit / Host Materialisation 状态（2026-04-06）
 
 > Status: current status snapshot
-> Positioning: Repository-level status bridge for emit, manifest, bundle, and host-facing materialization work.
+> Positioning: Repository-level status bridge for emit, manifest, bundle, and host-facing materialisation work.
 
 ## 总结
 
-`Emit` 不是当前仓库里最显眼的专题，但它已经是多个活跃工作流的共同承接层。
+`Emit` 不是当前仓库里最显眼的专题，但它已经是多个活跃工作流共同的承接层。
 
-更准确地说：
+说得更直白点：
 
 - compiler 负责生成 catalog / artifact / manifest-ready data
-- emit 负责读取、物化、写出与 bundle 承接
-- host-facing materialization 已经是当前架构边界的一部分，不应再被误读成只存在于测试侧
+- emit 负责读取、物化、写出和 bundle 承接
+- host-facing materialisation 已经是当前架构边界的一部分，不应该再被误读成只存在于测试侧
 
 ## 当前依据
 
@@ -30,10 +30,10 @@
 - catalog reading
 - manifest persistence
 - module / artifact writing
-- bundler and host-facing output assembly
-- RazorVue and SourceMap handoff continuation
+- bundler 和 host-facing output assembly
+- RazorVue 和 SourceMap handoff continuation
 
-### 2. 当前 repo-level 入口已补齐第一层，但仍需要持续维护
+### 2. 当前 repo-level 入口已经补齐第一层，但仍需要持续维护
 
 当前仓库级导航里，emit 已经可以通过以下入口直接进入：
 
@@ -50,14 +50,14 @@
 
 目前 emit 最直接的活跃执行关联是：
 
-- RazorVue catalog / manifest materialization
+- RazorVue catalog / manifest materialisation
 - SourceMap module map 和 bundle chaining 承接
 
-因此 emit 当前应被描述成“被多个 lane 依赖的活跃承接层”。
+所以 emit 当前应该被描述成"被多个 lane 依赖的活跃承接层"。
 
 ## 当前推荐入口
 
-如果你准备处理 emit 或 host-facing materialization 问题，建议按这个顺序：
+如果你准备处理 emit 或 host-facing materialisation 问题，建议按这个顺序：
 
 1. [工作流状态面板](./2026-04-06-project-workstream-dashboard.md)
 2. 本文档
@@ -77,11 +77,11 @@
 
 1. catalog reading
 2. manifest persistence
-3. writer / materialization
+3. writer / materialisation
 4. bundler / host-facing output assembly
 5. RazorVue / SourceMap handoff continuation
 
 ## 当前缺口
 
-- emit 职责仍与 RazorVue / SourceMap 紧密耦合，后续需要继续保持 bridge 与相邻 lane 同步
-- 若 SourceMap 或 host bundling 明显扩张，可能需要进一步细化 emit 内部文档分层
+- emit 职责仍然和 RazorVue / SourceMap 紧密耦合，后续需要继续保持 bridge 和相邻 lane 同步
+- 如果 SourceMap 或 host bundling 明显扩张，可能需要进一步细化 emit 内部文档分层

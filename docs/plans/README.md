@@ -1,6 +1,6 @@
 # Plans
 
-本目录用于记录当前仍在生效的行动方案与执行清单。
+本目录用于记录当前还在生效的行动方案和执行清单。要继续推进哪条工作流，先从这边进，不容易走岔。
 
 ## 仓库级执行导航
 
@@ -22,11 +22,11 @@
 ### 1. 仓库级桥接
 
 - `docs/plans/` 只保留仓库级执行导航
-- 每条 lane 优先通过 bridge 接入，不在这里重复子系统细节
+- 每条 lane 优先通过 bridge 接入，不在这儿重复展开子系统细节
 
 ### 2. 执行级细化计划
 
-当前执行级细化计划主要保留在 `docs/superpowers/plans/`：
+当前执行级细化计划主要放在 `docs/superpowers/plans/`：
 
 - [2026-04-05-razorvue-layering-implementation.md](../superpowers/plans/2026-04-05-razorvue-layering-implementation.md)
 - [2026-04-05-razorvue-lifecycle-safe-subset-implementation.md](../superpowers/plans/2026-04-05-razorvue-lifecycle-safe-subset-implementation.md)
@@ -36,15 +36,15 @@
 
 说明：
 
-- `docs/plans/` 负责仓库级导航
+- `docs/plans/` 负责仓库级导航和收口
 - `docs/superpowers/plans/` 负责更细的执行拆分
-- 子系统内已有成熟总览时，通过桥接进入，不盲目复制
+- 子系统内部如果已经有成熟总览，就通过桥接进去，莫在这边重复抄一遍
 
 ## 使用方式
 
-如果你准备继续推进某条工作流，建议：
+如果你准备继续推进某条工作流，建议这样走：
 
 1. 先读 [docs/status/README.md](../status/README.md)
 2. 再读 [项目执行导航](./project-execution-index.md)
 3. 再读 [Project Program Roadmap](./project-program-roadmap.md)
-4. 再进入具体执行计划
+4. 最后再进入具体执行计划

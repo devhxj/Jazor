@@ -5,9 +5,9 @@
 
 **Goal:** Deliver RazorVue v1 as a C#-first authoring product with a Vue-first runtime target and a first validated ecosystem package through Vuetify.
 
-**Architecture:** Keep the existing RazorVue main path intact. Add library component authoring as a thin layer on top of the current descriptor/registry/lowering flow. Use C# stubs as the authoring truth source, derive descriptors from the stubs, and keep host-facing plugin requirements explicit.
+**Architecture:** Keep the existing RazorVue main path intact. Add library component authoring as a thin layer on top of the current descriptor / registry / lowering flow. Use C# stubs as the authoring truth source, derive descriptors from the stubs, and keep host-facing plugin requirements explicit.
 
-**Tech Stack:** C# 14, .NET 10, Razor, Roslyn, MSTest, Vue ESM artifacts
+**Tech Stack:** C# 14, .NET 10, Razor, Roslyn, MSTest, Vue ESM artefacts
 
 Related documents:
 
@@ -77,7 +77,7 @@ Deliver:
 
 Acceptance:
 - Razor authors can import the package and use the first-wave components
-- generated artifacts lower to `vuetify/components` and `vuetify/styles`
+- generated artefacts lower to `vuetify/components` and `vuetify/styles`
 
 ### PR4. Event and binding closure
 
@@ -130,7 +130,7 @@ Deliver:
 - slot context misuse diagnostics
 
 Acceptance:
-- the most common authoring errors are caught early with Razor/C#-oriented messages
+- the most common authoring errors are caught early with Razor / C#-oriented messages
 
 ## 3. Review Gate
 

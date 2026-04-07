@@ -20,4 +20,4 @@
 - [RazorVue.Hmr.Overview.md](../../../src/Jazor.Compiler/doc/RazorVue.Hmr.Overview.md)
 
 ## 说明
-`src/Jazor.Compiler/doc/` 已经具备较强的局部索引能力，因此这里做仓库级桥接，不复制正文、不强制搬迁全部专题文档。
+`src/Jazor.Compiler/doc/` 这套文档本身已经有比较强的局部索引能力，所以这里主要做仓库级桥接和收口，不复制正文，也不强行把全部专题文档搬家。

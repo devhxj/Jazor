@@ -5,13 +5,13 @@
 
 ## 目标
 
-本文档负责回答三个问题：
+本文档主要回答三个问题：
 
 1. 当前项目有哪些活跃工作流
-2. 应该先看哪份状态文档，再看哪份计划文档
-3. 仓库级执行导航如何桥接到子系统局部文档集
+2. 该先看哪份状态文档，再看哪份计划文档
+3. 仓库级执行导航该咋个桥接到子系统局部文档集
 
-如需看跨工作流依赖顺序和 gate，而不是单纯入口导航，请继续看：
+如果你要看的是跨工作流的依赖顺序和 gate，而不是单纯找入口，请继续看：
 
 - [project-program-roadmap.md](./project-program-roadmap.md)
 
@@ -19,7 +19,7 @@
 
 ### 1. Compiler 主线稳定化
 
-- 当前状态：主干接近稳定，更多是主线闭环与边界收敛
+- 当前状态：主干接近稳定，当前重点更多在主线闭环和边界收敛
 - 状态文档：
   - [2026-04-06-compiler-mainline-status.md](../status/2026-04-06-compiler-mainline-status.md)
 - 执行桥接：
@@ -30,7 +30,7 @@
 
 ### 2. RazorVue 主线收口
 
-- 当前状态：主链路已进入主干，正在做 phase-one closure 与 authoring lane 收口
+- 当前状态：主链路已经进主干，正在做 phase-one closure 和 authoring lane 收口
 - 状态文档：
   - [2026-04-06-razorvue-stage-assessment.md](../status/2026-04-06-razorvue-stage-assessment.md)
 - 执行桥接：
@@ -45,7 +45,7 @@
 
 ### 3. SourceMap / bundle chaining lane
 
-- 当前状态：通用 sourcemap 大计划仍偏保守，但 RazorVue 相关 bundle chaining 已进入活跃执行
+- 当前状态：通用 sourcemap 大计划仍然偏保守，但 RazorVue 相关 bundle chaining 已经进了活跃执行
 - 状态文档：
   - [2026-04-06-sourcemap-status.md](../status/2026-04-06-sourcemap-status.md)
 - 执行桥接：
@@ -55,9 +55,9 @@
 - 深度文档：
   - [SourceMap.Overview.md](../../src/Jazor.Compiler/doc/SourceMap.Overview.md)
 
-### 4. Emit / host-facing materialization
+### 4. Emit / host-facing materialisation
 
-- 当前状态：承担 catalog、manifest、materialization 以及 sourcemap/output 承接职责，仓库级入口已补齐第一层桥接
+- 当前状态：承担 catalog、manifest、materialisation 以及 sourcemap/output 承接职责，仓库级入口已经补齐第一层桥接
 - 状态文档：
   - [2026-04-06-emit-host-materialization-status.md](../status/2026-04-06-emit-host-materialization-status.md)
 - 执行桥接：
@@ -71,7 +71,7 @@
 
 ## 建议阅读顺序
 
-如果你是在恢复项目工作，建议按以下顺序：
+如果你是在恢复项目工作，建议按这条路走：
 
 1. [docs/README.md](../README.md)
 2. [2026-04-06-project-workstream-dashboard.md](../status/2026-04-06-project-workstream-dashboard.md)
@@ -84,20 +84,20 @@
 
 - `docs/status/` 负责当前状态快照
 - `docs/plans/` 负责仓库级执行导航
-- `docs/superpowers/plans/` 保留更细的执行计划与工作流拆分
-- `src/Jazor.Compiler/doc/` 保留 compiler / RazorVue / SourceMap 深度设计与专题总览
+- `docs/superpowers/plans/` 保留更细的执行计划和工作流拆分
+- `src/Jazor.Compiler/doc/` 保留 compiler / RazorVue / SourceMap 深度设计和专题总览
 
 规则：
 
 - 仓库级文档负责“告诉你先去哪里”
 - 子系统文档负责“把该领域讲清楚”
-- 不把成熟局部文档集强行搬回 `docs/`
+- 莫把成熟的局部文档集硬搬回 `docs/`
 
 ## 当前主要风险
 
-- repo-level `plans` 入口需要持续跟随更细的执行计划演进
+- repo-level `plans` 入口需要持续跟着更细的执行计划演进
 - 状态文档和执行计划需要继续保持同步更新
-- SourceMap 相关文档存在“总体 deferred”与“局部 active lane”并存的理解成本
+- SourceMap 相关文档存在“总体 deferred”和“局部 active lane”并存的理解成本
 
 ## 后续维护要求
 
@@ -107,4 +107,4 @@
 2. `docs/plans/README.md`
 3. 本文档
 
-这样仓库级阅读路径才不会再次失真。
+这样仓库级阅读路径才不至于又走偏。

@@ -40,7 +40,7 @@ Constructor-like global functions that collide with C# type names use a trailing
 - `BigInt_` -> JavaScript `BigInt`
 - `Symbol_` -> JavaScript `Symbol`
 
-This keeps the runtime shape recognizable while avoiding Roslyn ambiguity after `global using static ECMAScript.Global`.
+This keeps the runtime shape recognisable whilst avoiding Roslyn ambiguity after `global using static ECMAScript.Global`.
 
 When a JavaScript global constructor/function accepts arbitrary runtime values, the C# projection should not narrow it to a CLR-specific primitive shape unless the runtime really requires that narrower shape.
 For example, `Symbol_` should accept `object?` because JavaScript stringifies any non-`undefined` description value at runtime.
@@ -97,7 +97,7 @@ Weak-reference-related APIs follow JavaScript runtime rules, not CLR reference-t
 
 - `WeakRef`, `WeakMap`, `WeakSet`, and `FinalizationRegistry` ultimately rely on the JavaScript `CanBeHeldWeakly` rule.
 - C# constraints such as `where T : class` are only an approximation to block obvious non-JavaScript shapes such as value types.
-- Final validity still belongs to the JavaScript runtime, including cases such as non-global symbols being allowed while ordinary CLR reference types like `string` are still invalid.
+- Final validity still belongs to the JavaScript runtime, including cases such as non-global symbols being allowed whilst ordinary CLR reference types like `string` are still invalid.
 
 ## Nullish Policy
 
@@ -106,7 +106,7 @@ The public C# layer exposes only `null` as the no-value surface.
 - Public APIs do not model `undefined` as a second visible state.
 - When JavaScript would return `undefined`, the public projection generally uses nullable C# types and maps that absence to `null`.
 - Internal compiler/runtime layers may still use real JavaScript `undefined` where semantic fidelity requires it.
-- For callback parameters such as `thisArg`, comments should describe the JavaScript runtime defaulting behavior without implying that public C# code can observe a separate `undefined` value.
+- For callback parameters such as `thisArg`, comments should describe the JavaScript runtime defaulting behaviour without implying that public C# code can observe a separate `undefined` value.
 
 ## Constructor Host `prototype`
 
@@ -126,3 +126,4 @@ Some JavaScript members are intentionally not projected when C# cannot represent
   - JavaScript may return boxed wrapper objects whose public shape does not map cleanly to the current C# host model.
 
 In these cases, omission is preferred over exposing a misleading CLR-shaped API.
+
