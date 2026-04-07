@@ -682,7 +682,17 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
     }
 
     private static SupportedEmitCall? ExtractSupportedEmitCall(RazorVueSemanticSnapshot snapshot, IMethodSymbol method, bool allowFirstRenderPayload)
+        => ExtractSupportedEmitCall(snapshot, method, allowFirstRenderPayload, new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default));
+
+    private static SupportedEmitCall? ExtractSupportedEmitCall(
+        RazorVueSemanticSnapshot snapshot,
+        IMethodSymbol method,
+        bool allowFirstRenderPayload,
+        HashSet<IMethodSymbol> visitedMethods)
     {
+        if (!visitedMethods.Add(method))
+            throw CreateUnsupportedLifecycleLoweringException(method);
+
         if (method.DeclaringSyntaxReferences.Length == 0)
             throw CreateUnsupportedLifecycleLoweringException(method);
 
@@ -691,13 +701,24 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             throw CreateUnsupportedLifecycleLoweringException(method);
 
         if (methodSyntax.ExpressionBody is not null)
+        {
+            if (TryExtractBaseLifecycleEmitCall(snapshot, method, methodSyntax.ExpressionBody.Expression, allowFirstRenderPayload, visitedMethods, out var baseEmitCall))
+                return baseEmitCall;
+
             return ExtractSupportedEmitCall(snapshot, method, methodSyntax.ExpressionBody.Expression, allowFirstRenderPayload);
+        }
 
         if (methodSyntax.Body is null)
             throw CreateUnsupportedLifecycleLoweringException(method);
 
         if (methodSyntax.Body.Statements.Count == 0)
             return null;
+
+        if (methodSyntax.Body.Statements.Count == 1 &&
+            TryExtractBaseLifecycleEmitCall(snapshot, method, methodSyntax.Body.Statements[0], allowFirstRenderPayload, visitedMethods, out var passThroughEmitCall))
+        {
+            return passThroughEmitCall;
+        }
 
         if (methodSyntax.Body.Statements.Count == 2 &&
             methodSyntax.Body.Statements[0] is ExpressionStatementSyntax leadingExpression &&
@@ -778,6 +799,74 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
                string.Equals(expressionText, "default", StringComparison.Ordinal) ||
                string.Equals(expressionText, "default(ValueTask)", StringComparison.Ordinal) ||
                string.Equals(expressionText, "default(System.Threading.Tasks.ValueTask)", StringComparison.Ordinal);
+    }
+
+    private static bool TryExtractBaseLifecycleEmitCall(
+        RazorVueSemanticSnapshot snapshot,
+        IMethodSymbol method,
+        StatementSyntax statement,
+        bool allowFirstRenderPayload,
+        HashSet<IMethodSymbol> visitedMethods,
+        out SupportedEmitCall? emitCall)
+        => statement switch
+        {
+            ExpressionStatementSyntax expressionStatement =>
+                TryExtractBaseLifecycleEmitCall(snapshot, method, expressionStatement.Expression, allowFirstRenderPayload, visitedMethods, out emitCall),
+            ReturnStatementSyntax returnStatement when returnStatement.Expression is not null =>
+                TryExtractBaseLifecycleEmitCall(snapshot, method, returnStatement.Expression, allowFirstRenderPayload, visitedMethods, out emitCall),
+            _ => ReturnNoBaseLifecycleEmitCall(out emitCall)
+        };
+
+    private static bool TryExtractBaseLifecycleEmitCall(
+        RazorVueSemanticSnapshot snapshot,
+        IMethodSymbol method,
+        ExpressionSyntax expression,
+        bool allowFirstRenderPayload,
+        HashSet<IMethodSymbol> visitedMethods,
+        out SupportedEmitCall? emitCall)
+    {
+        emitCall = null;
+        if (!IsBaseLifecyclePassThroughCall(method, expression))
+            return false;
+
+        var baseMethod = FindBaseLifecycleMethod(method);
+        if (baseMethod is null)
+            throw CreateUnsupportedLifecycleLoweringException(method);
+
+        // A pure base pass-through should keep the base lifecycle lowering shape
+        // instead of forcing derived components back to full-reload semantics.
+        emitCall = ExtractSupportedEmitCall(snapshot, baseMethod, allowFirstRenderPayload, visitedMethods);
+        return true;
+    }
+
+    private static bool IsBaseLifecyclePassThroughCall(IMethodSymbol method, ExpressionSyntax expression)
+    {
+        expression = UnwrapLifecycleExpression(expression);
+        if (expression is AwaitExpressionSyntax awaitExpression)
+            expression = UnwrapLifecycleExpression(awaitExpression.Expression);
+        if (TryUnwrapValueTaskCreation(expression, out var wrappedExpression))
+            expression = wrappedExpression;
+
+        if (expression is not InvocationExpressionSyntax invocation ||
+            invocation.Expression is not MemberAccessExpressionSyntax memberAccess ||
+            memberAccess.Expression is not BaseExpressionSyntax ||
+            !string.Equals(memberAccess.Name.Identifier.ValueText, method.Name, StringComparison.Ordinal) ||
+            invocation.ArgumentList.Arguments.Count != method.Parameters.Length)
+        {
+            return false;
+        }
+
+        for (var index = 0; index < method.Parameters.Length; index++)
+        {
+            var argument = UnwrapLifecycleExpression(invocation.ArgumentList.Arguments[index].Expression);
+            if (argument is not IdentifierNameSyntax identifier ||
+                !string.Equals(identifier.Identifier.ValueText, method.Parameters[index].Name, StringComparison.Ordinal))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static SetParametersAsyncAnalysis AnalyzeSetParametersAsync(
@@ -947,6 +1036,23 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             _ => false
         };
 
+    private static IMethodSymbol? FindBaseLifecycleMethod(IMethodSymbol method)
+    {
+        for (var current = method.ContainingType.BaseType; current is not null; current = current.BaseType)
+        {
+            var candidate = current.GetMembers(method.Name)
+                .OfType<IMethodSymbol>()
+                .FirstOrDefault(member =>
+                    !member.IsStatic &&
+                    member.Parameters.Length == method.Parameters.Length &&
+                    ParametersMatch(member, method));
+            if (candidate is not null)
+                return candidate;
+        }
+
+        return null;
+    }
+
     private static IMethodSymbol? FindBaseSetParametersAsyncMethod(IMethodSymbol method)
     {
         for (var current = method.ContainingType.BaseType; current is not null; current = current.BaseType)
@@ -964,6 +1070,21 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         }
 
         return null;
+    }
+
+    private static bool ParametersMatch(IMethodSymbol candidate, IMethodSymbol method)
+    {
+        for (var index = 0; index < method.Parameters.Length; index++)
+        {
+            if (!SymbolEqualityComparer.Default.Equals(
+                    candidate.Parameters[index].Type.OriginalDefinition,
+                    method.Parameters[index].Type.OriginalDefinition))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static bool IsNoOpSetParametersAsyncStatement(StatementSyntax statement)
@@ -1036,6 +1157,12 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
 
         innerExpression = UnwrapLifecycleExpression(creation.ArgumentList.Arguments[0].Expression);
         return true;
+    }
+
+    private static bool ReturnNoBaseLifecycleEmitCall(out SupportedEmitCall? emitCall)
+    {
+        emitCall = null;
+        return false;
     }
 
     private static bool IsConstantTrueShouldRenderExpression(ExpressionSyntax expression)
