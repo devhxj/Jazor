@@ -3,59 +3,83 @@
 ![Today's Verse](https://v2.jinrishici.com/one.svg?font-size=20&spacing=2&color=Chocolate)
 </div>
 
-# Jazor - C# to JavaScript Compiler with Module System
+# Jazor - C# to JavaScript Compiler with Module-Oriented Tooling
 
 [![.NET](https://img.shields.io/badge/.NET-10.0-blue.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE.txt)
 
 > ⚠️ **EXPERIMENTAL DEMO** ⚠️\
-> This library is a pilot project, and its API and features are subject to change during development, and may ultimately not be completed.
----
+> Jazor is still evolving. Public APIs, generated output shapes, and adjacent toolchains may change as the repository continues to stabilize.
 
-Jazor is a high-performance C# to JavaScript compiler that aims to achieve semantically equivalent conversion from C# code to JavaScript code. Based on the Roslyn compiler platform, this project utilizes AST (Abstract Syntax Tree) transformation technology to precisely convert C# code into JavaScript code that can run in browsers or Node.js environments.
+Jazor is an experimental Roslyn-based C# to JavaScript compiler project. It focuses on semantic-preserving lowering into JavaScript AST and currently treats the compiler mainline as the repository's most stable reference area, while RazorVue, emit/materialization, and source-map-related work continue as active execution lanes.
 
-## Documentation Map
+## Documentation map
+
+### Start here
 
 - [Repository documentation hub](docs/README.md)
 - [Current workstream dashboard](docs/status/2026-04-06-project-workstream-dashboard.md)
-- [Project execution index](docs/plans/project-execution-index.md)
-- [Project program roadmap](docs/plans/project-program-roadmap.md)
 - [Current project stage assessment](docs/status/2026-04-04-project-stage-assessment.md)
+
+### Current status and execution
+
 - [Compiler mainline status](docs/status/2026-04-06-compiler-mainline-status.md)
 - [Emit and host materialization status](docs/status/2026-04-06-emit-host-materialization-status.md)
-- [Architecture and subsystem bridge](docs/architecture/README.md)
+- [Project execution index](docs/plans/project-execution-index.md)
+- [Project program roadmap](docs/plans/project-program-roadmap.md)
+
+### Architecture
+
+- [Repository architecture bridge](docs/architecture/README.md)
+- [Compiler architecture bridge](docs/architecture/compiler/README.md)
 - [Module-level bridge](docs/architecture/modules/README.md)
-- [Emit local docs](src/Jazor.Emit/doc/README.md)
-- [Documentation governance rules](docs/guides/documentation-governance.md)
+
+### Subsystem deep dives
+
 - [Compiler deep-dive index](src/Jazor.Compiler/doc/README.md)
+- [Jazor.Compiler module README](src/Jazor.Compiler/README.md)
+- [Emit local docs](src/Jazor.Emit/doc/README.md)
 
-If you are resuming project work, read in this order:
+### Planning and documentation governance
 
-1. `docs/status/2026-04-04-project-stage-assessment.md`
+- [Documentation governance rules](docs/guides/documentation-governance.md)
+- [Repository plans index](docs/plans/README.md)
+
+If you are new to the repository, read in this order:
+
+1. `docs/README.md`
 2. `docs/status/2026-04-06-project-workstream-dashboard.md`
-3. `docs/plans/project-execution-index.md`
-4. `docs/plans/project-program-roadmap.md`
+3. `docs/status/2026-04-06-compiler-mainline-status.md`
+4. `docs/plans/project-execution-index.md`
 5. `docs/architecture/README.md`
-6. Then enter the relevant subsystem docs
 
-## Key Features
+If you are resuming a specific workstream, start from the current status page for that lane and then drill into the linked subsystem documentation.
 
-- **Semantic Equivalence**: Ensures complete semantic equivalence between C# and JavaScript, avoiding any form of simplification
-- **Complete Syntax Support**: Supports modern C# syntax including variable declarations, control flow, functions, classes, pattern matching, and more
-- **Advanced Pattern Matching**: Full support for C# 8.0+ pattern matching features, including recursive patterns, relational patterns, list patterns, etc.
-- **Async Programming Support**: Complete support for async/await asynchronous programming model
+## What Jazor focuses on today
 
-## Planned Features
+- Translating supported C# constructs into JavaScript through AST-based lowering instead of string templating.
+- Preserving semantic intent across the compiler pipeline, analyzer checks, and runtime/module surfaces.
+- Keeping the compiler mainline usable as a stable reference while adjacent workstreams keep evolving.
+- Documenting active execution status explicitly so repository-level docs stay aligned with current work.
 
-- **ECMAScript Module System**: Support for `[ECMAScriptModule]` and `[ECMAScript]` attributes to mark classes for JavaScript conversion
-- **Static Analysis**: Roslyn analyzer automatically performs syntax validation for tagged classes
-- **Source Generator**: Automatically generates `ECMAScript.g.cs` files containing converted ES6+ module JavaScript content
-- **Web Project Integration**: Configure output targets to extract JavaScript code from `ECMAScript.g.cs` and generate JS files
-- **Bun/Deno Host Integration**: Bundle and compile JS files with other npm packages through bun/denohost
-- **CLI Proxy Generation**: Generate proxy classes for TypeScript-written npm packages (with `[ECMAScript]` attribute, no conversion but callable)
-- **Razor JSX Support**: Implement JSX-like capabilities based on `.razor` files
-- **Complete Type Mapping**: Comprehensive support for C# types with automatic JavaScript type conversion
-- **Source Map & Debugging**: Source map generation and debugging support
+## Project status
+
+### Stable reference areas
+
+- **Compiler mainline**: the most mature part of the repository and the primary long-term reference surface.
+- **Compiler architecture and deep-dive docs**: the best entry point when you need to understand the existing lowering pipeline.
+
+### Active workstreams
+
+- **RazorVue**: active implementation lane for Vue-oriented Razor lowering and authoring flow.
+- **Emit / host materialization**: active dependency lane for shaping emitted assets and host-facing outputs.
+- **SourceMap / bundle chaining**: active partial rollout, especially where it already intersects with current RazorVue execution work.
+
+### Evolving / future-facing areas
+
+- Broader authoring ergonomics beyond the currently closed safe subsets.
+- Additional host integrations and packaging flows that are still being refined.
+- Deeper capability expansion that should follow, not destabilize, the compiler mainline.
 
 ## Project Structure
 
@@ -84,122 +108,38 @@ Jazor/
 
 ### 1. Jazor.Compiler
 
-The core compiler component with a two-layer conversion architecture:
+The compiler core lowers Roslyn symbols and operations into JavaScript AST. It is currently the repository's most mature reference surface and the best starting point if you want to understand the project's long-lived architecture.
 
-**AstConverter (Class-Level Conversion)**:
-- Converts entire C# classes to ES6 modules
-- Handles static fields, properties, methods, nested classes, and enums
-- Manages export declarations based on accessibility
-
-**SemanticWalker (Operation-Level Conversion)**:
-- Converts C# Roslyn operation trees to JavaScript Acornima AST
-- Direct AST construction, avoiding string parsing overhead
-- Semantic equivalence guarantee, ensuring consistent behavior before and after conversion
-- Supports fallback to SyntaxNode conversion for optimized code via `IInvalidOperation`
-- **ESGenerator**: Source generator that automatically creates `ECMAScript.g.cs` files
-
-See [Jazor.Compiler README](src/Jazor.Compiler/README.md) for the latest module-specific status and detailed documentation.
+See [Jazor.Compiler README](src/Jazor.Compiler/README.md) for module-level details and [compiler deep-dive docs](src/Jazor.Compiler/doc/README.md) for the broader pipeline.
 
 ### 2. Jazor.Analyzer
 
-Static code analyzer that provides syntax validation for classes marked with `[ECMAScriptModule]` or `[ECMAScript]` attributes:
-- Validates type usage according to supported type mappings
-- Ensures only compatible members are used in ECMAScript-tagged classes via white list
-- Provides compile-time error reporting for unsupported operations
+The analyzer validates ECMAScript-tagged code against the project's supported surface and whitelist rules. Its role is to keep unsupported shapes visible at compile time instead of leaving them as silent runtime mismatches.
 
 ### 3. Jazor.CLR
 
-CLR runtime support providing ES6+ module implementations for all supported native C# types:
-- Written in C# (syntax-compatible with JavaScript) but compiled to ES6 modules
-- Type-safe conversion between C# and JavaScript
-- Complete method and property implementations
-- Tree shaking support for optimized bundles via `[WhiteList]` attribute mapping
-
-**Module Status** (39 modules total):
-- ✅ Complete (9/10): 27 modules (69%)
-- ⚠️ Partial (7-8/10): 12 modules (31%)
-- 🔴 Needs work (< 7/10): 0 modules
-
-See [Jazor.CLR README](src/Jazor.CLR/readme.md) for the latest module-specific status and detailed documentation.
+Jazor.CLR provides runtime-oriented module surfaces for supported .NET types and bridges compiler output to JavaScript-facing behavior. The root README should describe its responsibility, not freeze module completion statistics that change over time.
 
 ### 4. ECMAScript.WebIDL
 
-Web API binding generator that automatically generates C# type bindings from Web IDL specifications. Supports:
-- DOM API bindings
-- CSS API bindings
-- WebGL API bindings
-- Modern Web standard API bindings
-
-The pipeline is being migrated to a split architecture:
-- `src/ECMAScript.WebIDL` keeps the `webref` / `webidl2` collection layer
-- `src/ECMAScript.WebIDL.Generator` hosts Deno through `DenoHost` and persists a stable JSON inventory for the future C# emitter
+The WebIDL pipeline collects and materializes Web API metadata for future binding generation. It remains an important supporting lane rather than the primary repository entry point.
 
 ### 5. Jazor.Emit
 
-Emit and packaging pipeline for turning generated modules into host-facing outputs:
-- shapes emitted runtime/module assets
-- supports bundle-oriented output flows
-- is covered by dedicated emit and bundle tests
+Jazor.Emit shapes generated modules into host-facing outputs and bundle-oriented assets. It sits in an active dependency lane shared by multiple current workstreams.
 
-## Supported C# Types and Type Mapping
+## Current capability snapshot
 
-### Primitive Types
-| C# Type | JavaScript Type |
-|---------|-----------------|
-| `object` | `object` |
-| `string` | `string` |
-| `byte`, `sbyte`, `short`, `ushort`, `int`, `uint`, `decimal`, `double`, `float` | `Number` |
-| `long`, `ulong`, `Int128`, `UInt128`, `TimeSpan`, `BigInteger` | `BigInt` |
-| `DateOnly`, `TimeOnly`, `DateTime`, `DateTimeOffset` | `Date` |
-| `bool` | `boolean` |
-| `char` | `string` |
+Jazor currently emphasizes the compiler mainline and the repository infrastructure around it rather than claiming a frozen end-user feature surface.
 
-### Collection Types
-| C# Type | JavaScript Type |
-|---------|-----------------|
-| `Array<>`, `List<>`, `IList<>`, `IEnumerable<>` | `Array` |
-| `Dictionary<,>`, `IDictionary<,>` | `Map` |
-| `HashSet<>`, `ISet<>` | `Set` |
+The repository already contains substantial work in these areas:
 
-### Special Types
-| C# Type | JavaScript Type |
-|---------|-----------------|
-| `Exception` | `Error` |
-| `StringBuilder` | StringBuilder implementation |
-| `Nullable<T>` | Nullable type handling |
-| `ValueTuple` | Array or Object |
-| `WeakReference<T>` | `WeakRef` |
-| `ConditionalWeakTable<,>` | `WeakMap` |
-| `GregorianCalendar`, `CultureInfo` | Internationalization API |
+- Roslyn-driven AST lowering through `AstConverter` and `SemanticWalker`
+- Analyzer-backed validation for supported ECMAScript-tagged code
+- Runtime/module surfaces for supported .NET types
+- Ongoing work around RazorVue, emit/materialization, and source-map-adjacent output flows
 
-### Custom Types
-- Classes marked with `[ECMAScript]` or `[ECMAScriptModule]` attributes
-- Classes converted to JavaScript classes with preserved semantics
-
-## Supported C# Syntax
-
-### Basic Syntax
-- Variable declarations and initialization
-- Operators (arithmetic, logical, bitwise, compound assignment)
-- Control flow (if/else, switch, for, foreach, while, do-while)
-- Exception handling (try/catch/finally)
-
-### Advanced Syntax
-- Lambda expressions and local functions
-- Asynchronous programming (async/await)
-- Pattern matching (is expressions, switch expressions, recursive patterns, list patterns, etc.)
-- Tuples and deconstruction
-- Interpolated strings (template strings)
-- Null-coalescing operators (`??`, `??=`)
-- Conditional access operators (`?.`, `?[]`, `?..`)
-- Index ranges (`array[1..^4]`, `array[..]`)
-
-### Object-Oriented Programming
-- Classes and structs
-- Properties and fields
-- Methods and constructors
-- Inheritance and polymorphism
-- Interface implementations
+The exact supported shape is still evolving. For detailed capability boundaries, prefer the subsystem documentation and current status pages over this top-level README.
 
 ## Conversion Examples
 
@@ -302,15 +242,15 @@ var jsAst = walker.Visit(operation, new());
 ## Development and Build
 
 ### Prerequisites
-- .NET 10.0 SDK or higher
-- Visual Studio 2022 or Visual Studio Code
+- .NET 10 SDK
+- PowerShell 7+ for the repository test helper scripts
 - Windows, Linux, or macOS
 
 ### Build Steps
 
 ```bash
 # Clone repository
-git clone https://github.com/your-repo/Jazor.git
+git clone https://github.com/devhxj/Jazor.git
 cd Jazor
 
 # Restore dependencies
@@ -340,7 +280,7 @@ dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticW
 
 ## Contributing
 
-We welcome community contributions! Please review the repository documentation and follow the conventions described in the codebase before opening a Pull Request.
+We welcome community contributions. Please review the repository documentation and follow the conventions described in the codebase before opening a Pull Request.
 
 ### Development Workflow
 1. Fork the project repository
@@ -351,9 +291,9 @@ We welcome community contributions! Please review the repository documentation a
 
 ### Code Standards
 - Follow C# coding conventions
-- Add appropriate comments and documentation
+- Add appropriate comments and documentation where clarification is needed
 - Ensure new features have corresponding unit tests
-- Adhere to semantic equivalence principles
+- Adhere to semantic-preserving design principles
 
 ## License
 
@@ -367,7 +307,7 @@ This project is licensed under the MIT License. See the [LICENSE.txt](LICENSE.tx
 
 ## Acknowledgments
 
-Thanks to all developers and community members who have contributed to the Jazor project!
+Thanks to all developers and community members who have contributed to the Jazor project.
 
 Special thanks to the following open-source projects:
 - [Roslyn](https://github.com/dotnet/roslyn) - C# compiler platform

@@ -937,8 +937,8 @@ public partial class SemanticWalker
 				expression = method.Name switch
 				{
 					// string.Split 的“多字符分隔符数组”不能直接翻成 JS split(array)。
-					// 这里只保留显然是一元字符串分隔符的直译；其余情况回退到白名单/helper。
-					"Split" when arguments.Count >= 1 && arguments[0] is StringLiteral =>
+					// 这里只保留真正的一元字符串/字符分隔符直译；带 count/options 的重载回退到白名单/helper。
+					"Split" when arguments.Count == 1 && arguments[0] is StringLiteral =>
 						BuildInstanceMethodCall(instance, "split", arguments[0]),
 					"PadLeft" when arguments.Count == 1 =>
 						BuildInstanceMethodCall(instance, "padStart", arguments[0]),

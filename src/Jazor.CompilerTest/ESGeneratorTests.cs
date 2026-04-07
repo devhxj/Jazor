@@ -7756,7 +7756,7 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithUnsupportedSetupLogicLowering_ReportsStructuredDiagnostic()
+    public void GenerateCatalog_WithSupportedSetupHelperLowering_GeneratesCatalogSource()
     {
         var compilation = CreateCompilation(
             "RazorVue.SetupLogic.Generated",
@@ -7801,14 +7801,21 @@ public sealed class ESGeneratorTests
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
             .SelectMany(static result => result.Diagnostics)
-            .Where(static diagnostic => diagnostic.Id == "JAZORVGA006")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
             .ToArray();
 
         Assert.AreEqual(
-            1,
+            0,
             diagnostics.Length,
-            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
-        StringAssert.Contains(diagnostics[0].GetMessage(), "FormatTitle");
+            string.Join("\n", diagnostics.Select(static x => x.ToString())));
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "function formatTitle(step)");
+        StringAssert.Contains(generatedSource, "props.value");
+        StringAssert.Contains(generatedSource, "formatTitle(1)");
     }
 
     [TestMethod]
@@ -7872,7 +7879,7 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithUnsupportedFieldExpression_FallsBackToJAZORVGA001()
+    public void GenerateCatalog_WithFieldExpression_LowersIntoSetupScope()
     {
         var compilation = CreateCompilation(
             "RazorVue.UnsupportedField.Generated",
@@ -7914,11 +7921,6 @@ public sealed class ESGeneratorTests
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
             .SelectMany(static result => result.Diagnostics)
-            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
-            .ToArray();
-        var specificDiagnostics = runResult.Results
-            .SelectMany(static result => result.Diagnostics)
-            .Where(static diagnostic => diagnostic.Id is "JAZORVGA002" or "JAZORVGA003" or "JAZORVGA004")
             .ToArray();
         var hints = runResult.Results
             .SelectMany(static result => result.GeneratedSources)
@@ -7926,12 +7928,13 @@ public sealed class ESGeneratorTests
             .ToArray();
 
         Assert.AreEqual(
-            1,
+            0,
             diagnostics.Length,
-            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
-        StringAssert.Contains(diagnostics[0].GetMessage(), "does not support component field '_count'");
-        Assert.AreEqual(0, specificDiagnostics.Length);
-        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+            string.Join("\n", diagnostics.Select(static x => x.ToString())));
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "let _count = 1;");
+        StringAssert.Contains(generatedSource, "h(\\\"span\\\", null, _count)");
     }
 
     private static Compilation CreateCompilation(string assemblyName, string source, params MetadataReference[] extraReferences)
