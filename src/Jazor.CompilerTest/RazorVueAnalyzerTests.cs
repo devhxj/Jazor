@@ -19,6 +19,8 @@ public sealed class RazorVueAnalyzerTests
             """
             using System;
             using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
             {
@@ -102,6 +104,7 @@ public sealed class RazorVueAnalyzerTests
             """
             using System;
             using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
             {
@@ -133,6 +136,7 @@ public sealed class RazorVueAnalyzerTests
             """
             using System;
             using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
             {
@@ -147,6 +151,40 @@ public sealed class RazorVueAnalyzerTests
             [ECMAScript.ECMAScriptModule]
             public class InvalidComponent : VueComponent
             {
+                [Parameter]
+                public int Value { get; set; }
+
+                protected override bool ShouldRender()
+                {
+                    return Value > 0;
+                }
+            }
+            """);
+
+        AssertHasDiagnostic(diagnostics, "JAZORVUE005");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_Misuse_ConstantTrueShouldRender_IsAccepted()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using Jazor.RazorVue;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class ValidComponent : VueComponent
+            {
                 protected override bool ShouldRender()
                 {
                     return true;
@@ -154,7 +192,7 @@ public sealed class RazorVueAnalyzerTests
             }
             """);
 
-        AssertHasDiagnostic(diagnostics, "JAZORVUE005");
+        AssertNoDiagnostic(diagnostics, "JAZORVUE005");
     }
 
     [TestMethod]

@@ -154,7 +154,7 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         logicShape.AppendLine("lifecycle:setParametersAsync=" + setParametersAsyncShape);
         logicShape.AppendLine("lifecycle:onAfterRender=" + onAfterRenderShape);
         logicShape.AppendLine("lifecycle:onAfterRenderAsync=" + onAfterRenderAsyncShape);
-        logicShape.AppendLine("lifecycle:shouldRender=" + snapshot.Lifecycle.HasShouldRender);
+        logicShape.AppendLine("lifecycle:shouldRender=" + DescribeShouldRenderShape(snapshot.ShouldRenderMethod));
         logicShape.AppendLine("lifecycle:dispose=" + disposeShape);
         logicShape.AppendLine("lifecycle:disposeAsync=" + disposeAsyncShape);
 
@@ -185,8 +185,11 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         if (HasUnsupportedTemplateNode(renderTree))
             return HmrBoundaryKind.FullReloadRequired;
 
-        if (snapshot.Lifecycle.HasShouldRender)
+        if (snapshot.Lifecycle.HasShouldRender &&
+            !AnalyzeShouldRender(snapshot.ShouldRenderMethod).IsSupported)
+        {
             return HmrBoundaryKind.FullReloadRequired;
+        }
 
         if (snapshot.Lifecycle.HasSetParametersAsync &&
             !AnalyzeSetParametersAsync(snapshot, snapshot.SetParametersAsyncMethod).IsSupported)
@@ -548,6 +551,16 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             : analysis.EmitCall.EmitName + "|" + (analysis.EmitCall.PayloadExpression ?? string.Empty);
     }
 
+    private static string DescribeShouldRenderShape(IMethodSymbol? method)
+    {
+        if (method is null)
+            return "none";
+
+        return AnalyzeShouldRender(method).IsSupported
+            ? "true"
+            : "unsupported";
+    }
+
     private static void AppendLifecycleHook(
         StringBuilder builder,
         RazorVueSemanticSnapshot snapshot,
@@ -833,6 +846,28 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         return new SetParametersAsyncAnalysis(false, null);
     }
 
+    private static ShouldRenderAnalysis AnalyzeShouldRender(IMethodSymbol? method)
+    {
+        if (method is null || method.DeclaringSyntaxReferences.Length == 0)
+            return new ShouldRenderAnalysis(false);
+
+        if (method.DeclaringSyntaxReferences[0].GetSyntax() is not MethodDeclarationSyntax methodSyntax)
+            return new ShouldRenderAnalysis(false);
+
+        if (methodSyntax.ExpressionBody is not null)
+            return new ShouldRenderAnalysis(IsConstantTrueShouldRenderExpression(methodSyntax.ExpressionBody.Expression));
+
+        if (methodSyntax.Body?.Statements.Count != 1 ||
+            methodSyntax.Body.Statements[0] is not ReturnStatementSyntax { Expression: not null } returnStatement)
+        {
+            return new ShouldRenderAnalysis(false);
+        }
+
+        // A constant `true` override is just an explicit spelling of the default
+        // reactive render path, so RazorVue can safely treat it as a no-op.
+        return new ShouldRenderAnalysis(IsConstantTrueShouldRenderExpression(returnStatement.Expression));
+    }
+
     private static ExpressionSyntax UnwrapLifecycleExpression(ExpressionSyntax expression)
     {
         while (expression is ParenthesizedExpressionSyntax parenthesized)
@@ -940,6 +975,12 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
 
         innerExpression = UnwrapLifecycleExpression(creation.ArgumentList.Arguments[0].Expression);
         return true;
+    }
+
+    private static bool IsConstantTrueShouldRenderExpression(ExpressionSyntax expression)
+    {
+        expression = UnwrapLifecycleExpression(expression);
+        return expression.IsKind(SyntaxKind.TrueLiteralExpression);
     }
 
     private static string TranslateLifecyclePayload(
@@ -1081,6 +1122,7 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
 
     private sealed record SupportedEmitCall(string EmitName, string? PayloadExpression, bool UsesFirstRender);
     private sealed record SetParametersAsyncAnalysis(bool IsSupported, SupportedEmitCall? EmitCall);
+    private sealed record ShouldRenderAnalysis(bool IsSupported);
 
     private static string FormatStringArray(IEnumerable<string> values)
         => "[" + string.Join(", ", values.Select(ToJavaScriptString)) + "]";

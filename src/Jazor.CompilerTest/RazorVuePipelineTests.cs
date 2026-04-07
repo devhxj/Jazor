@@ -8853,7 +8853,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForShouldRenderLifecycle()
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForConstantTrueShouldRenderLifecycle()
     {
         var context = CreateContext(
             """
@@ -8896,11 +8896,12 @@ public sealed class RazorVuePipelineTests
             """);
 
         var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
-        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("watch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForInheritedShouldRenderLifecycle()
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForInheritedConstantTrueShouldRenderLifecycle()
     {
         var context = CreateContext(
             """
@@ -8947,7 +8948,8 @@ public sealed class RazorVuePipelineTests
             """);
 
         var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
-        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("watch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
     }
 
     [TestMethod]
@@ -9106,10 +9108,8 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryWhenShouldRenderCoexistsWithSafeLifecycle()
+    public void RazorVue_Pipeline_ClassifiesLogicSafeBoundaryWhenConstantTrueShouldRenderCoexistsWithSafeLifecycle()
     {
-        // ShouldRender is a risky lifecycle override. Even when safe lifecycle hooks
-        // (OnInitialized) are also present, risky should dominate and force FullReloadRequired.
         var context = CreateContext(
             """
             using System;
@@ -9133,21 +9133,22 @@ public sealed class RazorVuePipelineTests
                 public class ShouldRenderWithSafeCard : VueComponent
                 {
                     [Parameter]
-                    public int Value { get; set; }
+                    public EventCallback OnReady { get; set; }
 
                     protected override void OnInitialized()
                     {
+                        OnReady.InvokeAsync();
                     }
 
                     protected override bool ShouldRender()
                     {
-                        return Value > 0;
+                        return true;
                     }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
                         builder.OpenElement(0, "section");
-                        builder.AddContent(1, Value);
+                        builder.AddContent(1, "ready");
                         builder.CloseElement();
                     }
                 }
@@ -9155,11 +9156,12 @@ public sealed class RazorVuePipelineTests
             """);
 
         var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
-        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        StringAssert.Contains(artifact.ModuleCode, "onMounted(() => {");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryWhenInheritedShouldRenderCoexistsWithSafeLifecycle()
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryWhenUnsupportedShouldRenderCoexistsWithSafeLifecycle()
     {
         var context = CreateContext(
             """
@@ -9316,7 +9318,7 @@ public sealed class RazorVuePipelineTests
 
         var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
         StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.value], async () => {");
-        StringAssert.Contains(artifact.ModuleCode, "await emit(\"valueChanged\", props.value);");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"update:value\", props.value);");
         Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
     }
 
@@ -9361,6 +9363,157 @@ public sealed class RazorVuePipelineTests
                         builder.AddContent(1, Value);
                         builder.CloseElement();
                     }
+                }
+            }
+            """);
+
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForUnsupportedShouldRenderLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render")]
+                public class ShouldRenderCard : VueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        return Value > 0;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesLogicSafeBoundaryWhenInheritedConstantTrueShouldRenderCoexistsWithSafeLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                public abstract class ShouldRenderWithSafeCardBase : VueComponent
+                {
+                    protected override bool ShouldRender() => true;
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/should-render-with-safe")]
+                public class ShouldRenderWithSafeCard : ShouldRenderWithSafeCardBase
+                {
+                    [Parameter]
+                    public EventCallback OnReady { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        OnReady.InvokeAsync();
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "onMounted(() => {");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForInheritedUnsupportedShouldRenderLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                public abstract class ShouldRenderCardBase : VueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        return Value > 0;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/should-render")]
+                public class ShouldRenderCard : ShouldRenderCardBase
+                {
                 }
             }
             """);

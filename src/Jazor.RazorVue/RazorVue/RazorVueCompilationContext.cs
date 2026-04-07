@@ -126,6 +126,7 @@ public sealed class RazorVueCompilationContext
             candidate.OnInitializedAsyncMethod,
             candidate.OnParametersSetMethod,
             candidate.OnParametersSetAsyncMethod,
+            candidate.ShouldRenderMethod,
             candidate.SetParametersAsyncMethod,
             candidate.OnAfterRenderMethod,
             candidate.OnAfterRenderAsyncMethod,

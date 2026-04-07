@@ -1,4 +1,5 @@
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -64,6 +65,9 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
         var location = method.Locations.FirstOrDefault(static x => x.IsInSource) ?? Location.None;
         if (knownSymbols.IsShouldRender(method))
         {
+            if (IsSupportedShouldRender(method))
+                return;
+
             context.ReportDiagnostic(Diagnostic.Create(
                 RazorVueDiagnosticDescriptors.ShouldRenderNotSupported,
                 location));
@@ -79,6 +83,28 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
                 RazorVueDiagnosticDescriptors.SetParametersAsyncNotSupported,
                 location));
         }
+    }
+
+    private static bool IsSupportedShouldRender(IMethodSymbol method)
+    {
+        if (method.DeclaringSyntaxReferences.Length == 0)
+            return false;
+
+        if (method.DeclaringSyntaxReferences[0].GetSyntax() is not MethodDeclarationSyntax methodSyntax)
+            return false;
+
+        if (methodSyntax.ExpressionBody is not null)
+            return IsConstantTrueShouldRenderExpression(methodSyntax.ExpressionBody.Expression);
+
+        if (methodSyntax.Body?.Statements.Count != 1 ||
+            methodSyntax.Body.Statements[0] is not ReturnStatementSyntax { Expression: not null } returnStatement)
+        {
+            return false;
+        }
+
+        // Only a literal `true` override is equivalent to RazorVue's default
+        // render behavior. Any conditional gate still carries Blazor-only semantics.
+        return IsConstantTrueShouldRenderExpression(returnStatement.Expression);
     }
 
     private static bool IsSupportedSetParametersAsync(IMethodSymbol method)
@@ -219,6 +245,12 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
                invocation.Expression is MemberAccessExpressionSyntax memberAccess &&
                memberAccess.Name.Identifier.ValueText == "InvokeAsync" &&
                invocation.ArgumentList.Arguments.Count <= 1;
+    }
+
+    private static bool IsConstantTrueShouldRenderExpression(ExpressionSyntax expression)
+    {
+        expression = UnwrapExpression(expression);
+        return expression.IsKind(SyntaxKind.TrueLiteralExpression);
     }
 
     private static bool TryUnwrapValueTaskCreation(ExpressionSyntax expression, out ExpressionSyntax innerExpression)

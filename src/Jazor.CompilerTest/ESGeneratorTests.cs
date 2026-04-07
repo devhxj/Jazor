@@ -2276,6 +2276,123 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateCatalog_WithConstantTrueShouldRender_DoesNotReportJAZORVGA005_AndKeepsTemplateOnlyBoundary()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.ConstantTrueShouldRender.Generated",
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render")]
+                public class ShouldRenderCard : VueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        return true;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        Assert.IsFalse(generatedSource.Contains("watch(", StringComparison.Ordinal), generatedSource);
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.TemplateOnly");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithUnsupportedShouldRender_DoesNotReportJAZORVGA005_AndKeepsFullReloadBoundary()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.UnsupportedShouldRender.Generated",
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render")]
+                public class ShouldRenderCard : VueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        return Value > 0;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+
+        Assert.AreEqual(0, diagnostics.Length);
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.FullReloadRequired");
+    }
+
+    [TestMethod]
     public void GenerateCatalog_WithBaseOnlySetParametersAsync_DoesNotReportJAZORVGA005_AndKeepsTemplateOnlyBoundary()
     {
         var compilation = CreateCompilation(
@@ -2401,7 +2518,7 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithUnsupportedSetParametersAsyncLifecycle_ReportsJAZORVGA005()
+    public void GenerateCatalog_WithUnsupportedSetParametersAsyncLifecycle_DoesNotReportJAZORVGA005_AndKeepsFullReloadBoundary()
     {
         var compilation = CreateCompilation(
             "RazorVue.UnsupportedSetParametersAsync.Generated",
@@ -2455,9 +2572,9 @@ public sealed class ESGeneratorTests
             .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
             .ToArray();
 
-        Assert.AreEqual(1, diagnostics.Length);
-        StringAssert.Contains(diagnostics[0].GetMessage(), "SetParametersAsync");
-        StringAssert.Contains(diagnostics[0].GetMessage(), "SetParametersAsyncUnsupportedCard");
+        Assert.AreEqual(0, diagnostics.Length);
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.FullReloadRequired");
     }
 
     [TestMethod]
@@ -2522,7 +2639,7 @@ public sealed class ESGeneratorTests
         var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
         StringAssert.Contains(generatedSource, "import { defineComponent, h, watch } from \\\"vue\\\";");
         StringAssert.Contains(generatedSource, "watch(() => [props.value], async () => {");
-        StringAssert.Contains(generatedSource, "await emit(\\\"valueChanged\\\", props.value);");
+        StringAssert.Contains(generatedSource, "await emit(\\\"update:value\\\", props.value);");
         StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.LogicSafe");
     }
 
