@@ -18,7 +18,8 @@ public enum RazorVueIssueCode
     UnknownParameter,
     InvalidBindTarget,
     UnknownSlot,
-    SlotContextMisuse
+    SlotContextMisuse,
+    DuplicateSlotValue
 }
 
 public enum RazorVueIssueSeverity

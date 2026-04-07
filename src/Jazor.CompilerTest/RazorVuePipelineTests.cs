@@ -475,6 +475,152 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_WithImplicitTypedLibraryDefaultSlot_ReportsSlotContextMisuse()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Library
+            {
+                [VueLibraryComponent("demo/components", "TypedContentPanel")]
+                public sealed class TypedContentPanel : VueLibraryComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? ChildContent { get; set; }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/typed-content-host")]
+                public class TypedContentHost : VueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<Demo.Library.TypedContentPanel>(0);
+                        builder.AddContent(1, "warn");
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        Assert.IsNotNull(exception);
+        Assert.AreEqual(RazorVueIssueCode.SlotContextMisuse, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "ChildContent");
+        StringAssert.Contains(exception.Issue.Message, "TypedContentPanel");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithDuplicateLibraryDefaultSlotAssignment_ReportsDuplicateSlotValue()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using ECMAScript.UI.Vue.Vuetify;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/dialog-host")]
+                public class DialogHost : VueComponent
+                {
+                    [Parameter]
+                    public RenderFragment? ChildContent { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VDialog>(0);
+                        builder.AddAttribute(1, nameof(VDialog.ChildContent), ChildContent);
+                        builder.AddContent(2, ChildContent);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        Assert.IsNotNull(exception);
+        Assert.AreEqual(RazorVueIssueCode.DuplicateSlotValue, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "ChildContent");
+        StringAssert.Contains(exception.Issue.Message, "VDialog");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithDuplicateLibraryNamedSlotAssignment_ReportsDuplicateSlotValue()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using ECMAScript.UI.Vue.Vuetify;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/dialog-host")]
+                public class DialogHost : VueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<VDialogActivatorContext>? Activator { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VDialog>(0);
+                        builder.AddAttribute(1, nameof(VDialog.Activator), Activator);
+                        builder.AddAttribute(2, nameof(VDialog.Activator), Activator);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        Assert.IsNotNull(exception);
+        Assert.AreEqual(RazorVueIssueCode.DuplicateSlotValue, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "Activator");
+        StringAssert.Contains(exception.Issue.Message, "VDialog");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersNestedComponentWithPropsAndDefaultSlot()
     {
         var context = CreateContext(
@@ -1434,7 +1580,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForRiskyLifecycleMethods()
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForNoOpDisposeLifecycle()
     {
         var context = CreateContext(
             """
@@ -1476,11 +1622,11 @@ public sealed class RazorVuePipelineTests
             """);
 
         var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
-        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForInheritedDisposeLifecycle()
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForInheritedNoOpDisposeLifecycle()
     {
         var context = CreateContext(
             """
@@ -1526,7 +1672,7 @@ public sealed class RazorVuePipelineTests
             """);
 
         var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
-        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
     }
 
     [TestMethod]
@@ -6441,10 +6587,10 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForComponentWithDisposeAsyncLifecycle()
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForNoOpDisposeAsyncLifecycle()
     {
-        // DisposeAsync is a risky lifecycle method (resource cleanup), so even with a valid
-        // render tree and props the boundary must be FullReloadRequired.
+        // A no-op DisposeAsync should not force a full reload because it does not
+        // materialize runtime teardown logic.
         var context = CreateContext(
             """
             using System;
@@ -6487,11 +6633,11 @@ public sealed class RazorVuePipelineTests
             """);
 
         var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
-        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForInheritedDisposeAsyncLifecycle()
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForInheritedNoOpDisposeAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -6539,7 +6685,7 @@ public sealed class RazorVuePipelineTests
             """);
 
         var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
-        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
     }
 
     [TestMethod]
@@ -7424,10 +7570,10 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryWhenDisposeCoexistsWithSafeLifecycle()
+    public void RazorVue_Pipeline_ClassifiesLogicSafeBoundaryWhenNoOpDisposeCoexistsWithSafeLifecycle()
     {
-        // Even when a safe lifecycle hook (OnParametersSet) is present, the presence of
-        // Dispose should dominate and force FullReloadRequired.
+        // A no-op Dispose should not erase safe lifecycle lowering that already
+        // keeps the component inside the logic-safe boundary.
         var context = CreateContext(
             """
             using System;
@@ -7472,11 +7618,11 @@ public sealed class RazorVuePipelineTests
             """);
 
         var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
-        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryWhenInheritedDisposeCoexistsWithSafeLifecycle()
+    public void RazorVue_Pipeline_ClassifiesLogicSafeBoundaryWhenInheritedNoOpDisposeCoexistsWithSafeLifecycle()
     {
         var context = CreateContext(
             """
@@ -7525,11 +7671,11 @@ public sealed class RazorVuePipelineTests
             """);
 
         var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
-        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryWhenInheritedDisposeAsyncCoexistsWithSafeLifecycle()
+    public void RazorVue_Pipeline_ClassifiesLogicSafeBoundaryWhenInheritedNoOpDisposeAsyncCoexistsWithSafeLifecycle()
     {
         var context = CreateContext(
             """
@@ -7580,7 +7726,164 @@ public sealed class RazorVuePipelineTests
             """);
 
         var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
-        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersDisposeLifecycle_ToOnUnmountedEmit()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/dispose-card")]
+                public class DisposeCard : VueComponent, IDisposable
+                {
+                    [Parameter]
+                    public EventCallback<int> ValueDisposed { get; set; }
+
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    public void Dispose()
+                    {
+                        ValueDisposed.InvokeAsync(Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "import { defineComponent, h, onUnmounted } from \"vue\";");
+        StringAssert.Contains(artifact.ModuleCode, "onUnmounted(() => {");
+        StringAssert.Contains(artifact.ModuleCode, "emit(\"valueDisposed\", props.value);");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersDisposeAsyncLifecycle_ToAsyncOnUnmountedEmit()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/dispose-async-card")]
+                public class DisposeAsyncCard : VueComponent, IAsyncDisposable
+                {
+                    [Parameter]
+                    public EventCallback OnDisposed { get; set; }
+
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    public ValueTask DisposeAsync()
+                    {
+                        return new ValueTask(OnDisposed.InvokeAsync());
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "import { defineComponent, h, onUnmounted } from \"vue\";");
+        StringAssert.Contains(artifact.ModuleCode, "onUnmounted(async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"disposed\");");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithUnsupportedDisposeLifecycle_ReportsUnsupportedLifecycleLowering()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/dispose-card")]
+                public class DisposeCard : VueComponent, IDisposable
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    public void Dispose()
+                    {
+                        Value++;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        Assert.IsNotNull(exception);
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "Dispose");
+        StringAssert.Contains(exception.Issue.Message, "DisposeCard");
     }
 
     [TestMethod]
@@ -7679,7 +7982,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryWhenInheritedSetParametersAsyncCoexistsWithSafeLifecycle()
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryWhenInheritedBaseOnlySetParametersAsyncCoexistsWithNoOpSafeLifecycle()
     {
         var context = CreateContext(
             """
@@ -7730,7 +8033,7 @@ public sealed class RazorVuePipelineTests
             """);
 
         var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
-        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
     }
 
     [TestMethod]
@@ -8648,7 +8951,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForSetParametersAsyncLifecycle()
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForBaseOnlySetParametersAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -8692,11 +8995,11 @@ public sealed class RazorVuePipelineTests
             """);
 
         var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
-        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForInheritedSetParametersAsyncLifecycle()
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForInheritedBaseOnlySetParametersAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -8744,7 +9047,7 @@ public sealed class RazorVuePipelineTests
             """);
 
         var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
-        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
     }
 
     [TestMethod]
@@ -8855,10 +9158,10 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryWhenSetParametersAsyncCoexistsWithSafeLifecycle()
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryWhenBaseOnlySetParametersAsyncCoexistsWithNoOpSafeLifecycle()
     {
-        // SetParametersAsync is a risky lifecycle override. Even when safe lifecycle hooks
-        // (OnParametersSet) are also present, risky should dominate and force FullReloadRequired.
+        // Base-only SetParametersAsync does not add runtime behavior. Combined with
+        // a no-op OnParametersSet, the component should remain TemplateOnly.
         var context = CreateContext(
             """
             using System;
@@ -8905,7 +9208,7 @@ public sealed class RazorVuePipelineTests
             """);
 
         var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
-        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
     }
 
     [TestMethod]

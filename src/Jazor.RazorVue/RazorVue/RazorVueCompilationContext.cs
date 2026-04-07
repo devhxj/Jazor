@@ -126,8 +126,11 @@ public sealed class RazorVueCompilationContext
             candidate.OnInitializedAsyncMethod,
             candidate.OnParametersSetMethod,
             candidate.OnParametersSetAsyncMethod,
+            candidate.SetParametersAsyncMethod,
             candidate.OnAfterRenderMethod,
-            candidate.OnAfterRenderAsyncMethod);
+            candidate.OnAfterRenderAsyncMethod,
+            candidate.DisposeMethod,
+            candidate.DisposeAsyncMethod);
     }
 
     public ImmutableArray<RazorVueSemanticSnapshot> CreateSemanticSnapshots()

@@ -182,6 +182,7 @@ internal sealed class RazorVueExpressionEmitter
         // Library components only accept default child content when the stub
         // explicitly exposes ChildContent as part of the authoring contract.
         ValidateDefaultLibrarySlotUsage(component, descriptor, slotsByPublicName);
+        ValidateDuplicateLibrarySlotUsage(component, descriptor, slotsByPublicName);
 
         var slotEntries = new List<string>();
         if (!component.Children.Children.IsDefaultOrEmpty)
@@ -200,20 +201,71 @@ internal sealed class RazorVueExpressionEmitter
         VueComponentDescriptor? descriptor,
         ImmutableDictionary<string, VueSlotDescriptor>? slotsByPublicName)
     {
+        var hasDefaultChildren = !component.Children.Children.IsDefaultOrEmpty;
         if (descriptor is null ||
             descriptor.SourceKind != VueComponentSourceKind.LibraryComponent ||
-            component.Children.Children.IsDefaultOrEmpty ||
-            (slotsByPublicName is not null && slotsByPublicName.ContainsKey("ChildContent")))
+            !hasDefaultChildren)
         {
             return;
         }
 
         var origin = CollectOrigins(component.Children).FirstOrDefault() ??
                      component.Origins.FirstOrDefault();
+
+        if (slotsByPublicName is not null &&
+            slotsByPublicName.TryGetValue("ChildContent", out var defaultSlotDescriptor))
+        {
+            if (defaultSlotDescriptor.Parameters.IsDefaultOrEmpty)
+                return;
+
+            // Implicit child content cannot satisfy a typed slot contract because
+            // the template has no callable surface to receive the slot context.
+            throw CreateAuthoringIssue(
+                RazorVueIssueCode.SlotContextMisuse,
+                $"Child content parameter 'ChildContent' on component '{descriptor.Name}' expects a callable template that accepts '{DescribeSlotContext(defaultSlotDescriptor)}'.",
+                origin);
+        }
+
         throw CreateAuthoringIssue(
             RazorVueIssueCode.UnknownSlot,
             $"Component '{descriptor.Name}' does not declare a child content parameter named 'ChildContent'.",
             origin);
+    }
+
+    private void ValidateDuplicateLibrarySlotUsage(
+        RazorVueComponentNode component,
+        VueComponentDescriptor? descriptor,
+        ImmutableDictionary<string, VueSlotDescriptor>? slotsByPublicName)
+    {
+        if (descriptor is null ||
+            descriptor.SourceKind != VueComponentSourceKind.LibraryComponent ||
+            slotsByPublicName is null)
+        {
+            return;
+        }
+
+        // Library slots are single-assignment authoring contracts. A duplicate
+        // slot input would otherwise collapse into duplicate Vue slot keys.
+        var assignedSlots = new HashSet<string>(StringComparer.Ordinal);
+        if (!component.Children.Children.IsDefaultOrEmpty &&
+            slotsByPublicName.ContainsKey("ChildContent"))
+        {
+            assignedSlots.Add("ChildContent");
+        }
+
+        foreach (var attribute in component.Attributes)
+        {
+            if (!slotsByPublicName.ContainsKey(attribute.Name))
+                continue;
+
+            if (assignedSlots.Add(attribute.Name))
+                continue;
+
+            throw CreateAuthoringIssue(
+                RazorVueIssueCode.DuplicateSlotValue,
+                $"Component '{descriptor.Name}' receives child content parameter '{attribute.Name}' more than once.",
+                attribute);
+        }
     }
 
     private string EmitSlotOutlet(RazorVueSlotOutletNode slot)

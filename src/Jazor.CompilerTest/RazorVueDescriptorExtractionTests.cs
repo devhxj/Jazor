@@ -386,6 +386,8 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.IsTrue(snapshot.Lifecycle.HasDispose);
         Assert.IsTrue(snapshot.Lifecycle.HasDisposeAsync);
         Assert.IsTrue(snapshot.Lifecycle.HasAnyHook);
+        Assert.IsNotNull(snapshot.DisposeMethod);
+        Assert.IsNotNull(snapshot.DisposeAsyncMethod);
 
         var calculate = snapshot.Logic.Methods.Single(method => method.Name == "Calculate");
         Assert.AreEqual(1, calculate.Arity);

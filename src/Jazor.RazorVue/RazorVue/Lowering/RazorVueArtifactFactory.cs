@@ -138,8 +138,11 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         var onInitializedAsyncShape = DescribeLifecycleLoweringShape(snapshot, snapshot.OnInitializedAsyncMethod, false);
         var onParametersSetShape = DescribeLifecycleLoweringShape(snapshot, snapshot.OnParametersSetMethod, false);
         var onParametersSetAsyncShape = DescribeLifecycleLoweringShape(snapshot, snapshot.OnParametersSetAsyncMethod, false);
+        var setParametersAsyncShape = DescribeSetParametersAsyncShape(snapshot.SetParametersAsyncMethod);
         var onAfterRenderShape = DescribeLifecycleLoweringShape(snapshot, snapshot.OnAfterRenderMethod, true);
         var onAfterRenderAsyncShape = DescribeLifecycleLoweringShape(snapshot, snapshot.OnAfterRenderAsyncMethod, true);
+        var disposeShape = DescribeLifecycleLoweringShape(snapshot, snapshot.DisposeMethod, false);
+        var disposeAsyncShape = DescribeLifecycleLoweringShape(snapshot, snapshot.DisposeAsyncMethod, false);
         logicShape.AppendLine("component:" + descriptor.FullName);
         logicShape.AppendLine("module:" + descriptor.ImportSpecifier);
         // LogicHash should reflect emitted runtime behavior. No-op lifecycle methods
@@ -148,12 +151,12 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         logicShape.AppendLine("lifecycle:onInitializedAsync=" + onInitializedAsyncShape);
         logicShape.AppendLine("lifecycle:onParametersSet=" + onParametersSetShape);
         logicShape.AppendLine("lifecycle:onParametersSetAsync=" + onParametersSetAsyncShape);
+        logicShape.AppendLine("lifecycle:setParametersAsync=" + setParametersAsyncShape);
         logicShape.AppendLine("lifecycle:onAfterRender=" + onAfterRenderShape);
         logicShape.AppendLine("lifecycle:onAfterRenderAsync=" + onAfterRenderAsyncShape);
         logicShape.AppendLine("lifecycle:shouldRender=" + snapshot.Lifecycle.HasShouldRender);
-        logicShape.AppendLine("lifecycle:setParametersAsync=" + snapshot.Lifecycle.HasSetParametersAsync);
-        logicShape.AppendLine("lifecycle:dispose=" + snapshot.Lifecycle.HasDispose);
-        logicShape.AppendLine("lifecycle:disposeAsync=" + snapshot.Lifecycle.HasDisposeAsync);
+        logicShape.AppendLine("lifecycle:dispose=" + disposeShape);
+        logicShape.AppendLine("lifecycle:disposeAsync=" + disposeAsyncShape);
 
         foreach (var field in snapshot.Logic.Fields
                      .OrderBy(static field => field.Name, StringComparer.Ordinal))
@@ -182,16 +185,23 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         if (HasUnsupportedTemplateNode(renderTree))
             return HmrBoundaryKind.FullReloadRequired;
 
-        if (snapshot.Lifecycle.HasDispose || snapshot.Lifecycle.HasDisposeAsync ||
-            snapshot.Lifecycle.HasShouldRender || snapshot.Lifecycle.HasSetParametersAsync)
+        if (snapshot.Lifecycle.HasShouldRender)
             return HmrBoundaryKind.FullReloadRequired;
+
+        if (snapshot.Lifecycle.HasSetParametersAsync &&
+            !IsSupportedNoOpSetParametersAsync(snapshot.SetParametersAsyncMethod))
+        {
+            return HmrBoundaryKind.FullReloadRequired;
+        }
 
         var hasSupportedLifecycleLowering = HasSupportedLifecycleLowering(snapshot, snapshot.OnInitializedMethod, false) ||
                                            HasSupportedLifecycleLowering(snapshot, snapshot.OnInitializedAsyncMethod, false) ||
                                            HasSupportedLifecycleLowering(snapshot, snapshot.OnParametersSetMethod, false) ||
                                            HasSupportedLifecycleLowering(snapshot, snapshot.OnParametersSetAsyncMethod, false) ||
                                            HasSupportedLifecycleLowering(snapshot, snapshot.OnAfterRenderMethod, true) ||
-                                           HasSupportedLifecycleLowering(snapshot, snapshot.OnAfterRenderAsyncMethod, true);
+                                           HasSupportedLifecycleLowering(snapshot, snapshot.OnAfterRenderAsyncMethod, true) ||
+                                           HasSupportedLifecycleLowering(snapshot, snapshot.DisposeMethod, false) ||
+                                           HasSupportedLifecycleLowering(snapshot, snapshot.DisposeAsyncMethod, false);
         // HMR should only escalate to LogicSafe when lifecycle methods actually lower
         // into runtime hooks; no-op methods should behave like pure template changes.
         if (hasSupportedLifecycleLowering || snapshot.Logic.Fields.Length > 0 || snapshot.Logic.Methods.Length > 0)
@@ -315,6 +325,11 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             vueImports.Add("onUpdated");
         }
 
+        var hasDisposeLowering = HasSupportedLifecycleLowering(snapshot, snapshot.DisposeMethod, false) ||
+                                 HasSupportedLifecycleLowering(snapshot, snapshot.DisposeAsyncMethod, false);
+        if (hasDisposeLowering)
+            vueImports.Add("onUnmounted");
+
         builder.Append("import { ")
             .Append(string.Join(", ", vueImports.Distinct(StringComparer.Ordinal)))
             .AppendLine(" } from \"vue\";");
@@ -329,6 +344,10 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         AppendLifecycleHook(builder, snapshot, "onMounted", snapshot.OnInitializedAsyncMethod, awaitResult: true);
         AppendParametersSetHook(builder, snapshot, snapshot.OnParametersSetMethod, awaitResult: false);
         AppendParametersSetHook(builder, snapshot, snapshot.OnParametersSetAsyncMethod, awaitResult: true);
+        // Dispose bridges to Vue teardown so safe callback-shaped cleanup can
+        // participate in the same lifecycle lowering path as other hooks.
+        AppendLifecycleHook(builder, snapshot, "onUnmounted", snapshot.DisposeMethod, awaitResult: false);
+        AppendLifecycleHook(builder, snapshot, "onUnmounted", snapshot.DisposeAsyncMethod, awaitResult: true);
 
         var onAfterRenderEmitCall = snapshot.OnAfterRenderMethod is null
             ? null
@@ -509,6 +528,16 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         return emitCall.EmitName + "|" + (emitCall.PayloadExpression ?? string.Empty);
     }
 
+    private static string DescribeSetParametersAsyncShape(IMethodSymbol? method)
+    {
+        if (method is null)
+            return "none";
+
+        return IsSupportedNoOpSetParametersAsync(method)
+            ? "none"
+            : "unsupported";
+    }
+
     private static void AppendLifecycleHook(
         StringBuilder builder,
         RazorVueSemanticSnapshot snapshot,
@@ -663,6 +692,8 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         expression = UnwrapLifecycleExpression(expression);
         if (expression is AwaitExpressionSyntax awaitExpression)
             expression = UnwrapLifecycleExpression(awaitExpression.Expression);
+        if (TryUnwrapValueTaskCreation(expression, out var wrappedExpression))
+            expression = wrappedExpression;
 
         if (IsNoOpLifecycleExpression(expression))
             return null;
@@ -713,12 +744,93 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
                string.Equals(expressionText, "default(System.Threading.Tasks.ValueTask)", StringComparison.Ordinal);
     }
 
+    private static bool IsSupportedNoOpSetParametersAsync(IMethodSymbol? method)
+    {
+        if (method is null || method.DeclaringSyntaxReferences.Length == 0)
+            return false;
+
+        if (method.DeclaringSyntaxReferences[0].GetSyntax() is not MethodDeclarationSyntax methodSyntax)
+            return false;
+
+        if (methodSyntax.ExpressionBody is not null)
+            return IsBaseSetParametersAsyncCall(method, methodSyntax.ExpressionBody.Expression);
+
+        if (methodSyntax.Body is null)
+            return false;
+
+        if (methodSyntax.Body.Statements.Count == 0)
+            return true;
+
+        if (methodSyntax.Body.Statements.Count == 1)
+        {
+            return methodSyntax.Body.Statements[0] switch
+            {
+                ExpressionStatementSyntax expressionStatement => IsBaseSetParametersAsyncCall(method, expressionStatement.Expression),
+                ReturnStatementSyntax returnStatement when returnStatement.Expression is null => true,
+                ReturnStatementSyntax returnStatement when returnStatement.Expression is not null =>
+                    IsNoOpLifecycleExpression(returnStatement.Expression) ||
+                    IsBaseSetParametersAsyncCall(method, returnStatement.Expression),
+                _ => false
+            };
+        }
+
+        if (methodSyntax.Body.Statements.Count == 2 &&
+            methodSyntax.Body.Statements[0] is ExpressionStatementSyntax leadingExpression &&
+            methodSyntax.Body.Statements[1] is ReturnStatementSyntax trailingReturn)
+        {
+            return IsBaseSetParametersAsyncCall(method, leadingExpression.Expression) &&
+                   (trailingReturn.Expression is null || IsNoOpLifecycleExpression(trailingReturn.Expression));
+        }
+
+        return false;
+    }
+
     private static ExpressionSyntax UnwrapLifecycleExpression(ExpressionSyntax expression)
     {
         while (expression is ParenthesizedExpressionSyntax parenthesized)
             expression = parenthesized.Expression;
 
         return expression;
+    }
+
+    private static bool IsBaseSetParametersAsyncCall(IMethodSymbol method, ExpressionSyntax expression)
+    {
+        expression = UnwrapLifecycleExpression(expression);
+        if (expression is AwaitExpressionSyntax awaitExpression)
+            expression = UnwrapLifecycleExpression(awaitExpression.Expression);
+
+        if (expression is not InvocationExpressionSyntax invocation ||
+            invocation.Expression is not MemberAccessExpressionSyntax memberAccess ||
+            memberAccess.Expression is not BaseExpressionSyntax ||
+            !string.Equals(memberAccess.Name.Identifier.ValueText, "SetParametersAsync", StringComparison.Ordinal) ||
+            invocation.ArgumentList.Arguments.Count != 1)
+        {
+            return false;
+        }
+
+        var argument = UnwrapLifecycleExpression(invocation.ArgumentList.Arguments[0].Expression);
+        return argument is IdentifierNameSyntax identifier &&
+               string.Equals(identifier.Identifier.ValueText, method.Parameters[0].Name, StringComparison.Ordinal);
+    }
+
+    private static bool TryUnwrapValueTaskCreation(ExpressionSyntax expression, out ExpressionSyntax innerExpression)
+    {
+        innerExpression = null!;
+        if (expression is not ObjectCreationExpressionSyntax creation ||
+            creation.ArgumentList?.Arguments.Count != 1)
+        {
+            return false;
+        }
+
+        var typeName = creation.Type.ToString();
+        if (!string.Equals(typeName, "ValueTask", StringComparison.Ordinal) &&
+            !string.Equals(typeName, "System.Threading.Tasks.ValueTask", StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        innerExpression = UnwrapLifecycleExpression(creation.ArgumentList.Arguments[0].Expression);
+        return true;
     }
 
     private static string TranslateLifecyclePayload(

@@ -2094,6 +2094,248 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateCatalog_WithDisposeLifecycleLowering_EmitsOnUnmountedWithoutJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.DisposeLifecycle.Generated",
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/dispose-card")]
+                public class DisposeCard : VueComponent, IDisposable
+                {
+                    [Parameter]
+                    public EventCallback OnDisposed { get; set; }
+
+                    public void Dispose()
+                    {
+                        OnDisposed.InvokeAsync();
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "dispose");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var lifecycleDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+
+        Assert.AreEqual(0, lifecycleDiagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "import { defineComponent, h, onUnmounted } from \\\"vue\\\";");
+        StringAssert.Contains(generatedSource, "onUnmounted(() => {");
+        StringAssert.Contains(generatedSource, "emit(\\\"disposed\\\");");
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.LogicSafe");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithDisposeAsyncLifecycleLowering_EmitsAsyncOnUnmountedWithoutJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.DisposeAsyncLifecycle.Generated",
+            """
+            using System;
+            using System.Threading.Tasks;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/dispose-async-card")]
+                public class DisposeAsyncCard : VueComponent, IAsyncDisposable
+                {
+                    [Parameter]
+                    public EventCallback OnDisposed { get; set; }
+
+                    public ValueTask DisposeAsync()
+                    {
+                        return new ValueTask(OnDisposed.InvokeAsync());
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "dispose");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var lifecycleDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+
+        Assert.AreEqual(0, lifecycleDiagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "import { defineComponent, h, onUnmounted } from \\\"vue\\\";");
+        StringAssert.Contains(generatedSource, "onUnmounted(async () => {");
+        StringAssert.Contains(generatedSource, "await emit(\\\"disposed\\\");");
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.LogicSafe");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithUnsupportedDisposeLifecycle_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.UnsupportedDisposeLifecycle.Generated",
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/dispose-card")]
+                public class DisposeCard : VueComponent, IDisposable
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    public void Dispose()
+                    {
+                        Value++;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+
+        Assert.AreEqual(1, diagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "Dispose");
+        StringAssert.Contains(diagnostics[0].GetMessage(), "DisposeCard");
+        Assert.AreEqual(18, diagnostics[0].Location.GetLineSpan().StartLinePosition.Line + 1);
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithBaseOnlySetParametersAsync_DoesNotReportJAZORVGA005_AndKeepsTemplateOnlyBoundary()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.BaseOnlySetParametersAsync.Generated",
+            """
+            using System;
+            using System.Threading.Tasks;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async")]
+                public class SetParametersAsyncCard : VueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    public override Task SetParametersAsync(ParameterView parameters)
+                    {
+                        return base.SetParametersAsync(parameters);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var lifecycleDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+
+        Assert.AreEqual(0, lifecycleDiagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        Assert.IsFalse(generatedSource.Contains("watch(", StringComparison.Ordinal), generatedSource);
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.TemplateOnly");
+    }
+
+    [TestMethod]
     public void GenerateCatalog_WithInheritedParameterLifecyclePayload_LowersWithoutJAZORVGA005()
     {
         var compilation = CreateCompilation(
@@ -8165,6 +8407,67 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateCatalog_WithImplicitTypedLibraryDefaultSlot_ReportsJAZORVGA010()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.TypedLibraryDefaultSlotContext.Generated",
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Library
+            {
+                [VueLibraryComponent("demo/components", "TypedContentPanel")]
+                public sealed class TypedContentPanel : VueLibraryComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? ChildContent { get; set; }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/typed-content-host")]
+                public class TypedContentHost : VueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<Demo.Library.TypedContentPanel>(0);
+                        builder.AddContent(1, "warn");
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA010")
+            .ToArray();
+
+        Assert.AreEqual(1, diagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "TypedContentPanel");
+        StringAssert.Contains(diagnostics[0].GetMessage(), "ChildContent");
+        Assert.AreEqual(28, diagnostics[0].Location.GetLineSpan().StartLinePosition.Line + 1);
+    }
+
+    [TestMethod]
     public void GenerateCatalog_WithNonCallableTypedLibrarySlot_ReportsJAZORVGA010()
     {
         var compilation = CreateCompilation(
@@ -8214,6 +8517,120 @@ public sealed class ESGeneratorTests
         StringAssert.Contains(diagnostics[0].GetMessage(), "VDialog");
         StringAssert.Contains(diagnostics[0].GetMessage(), "Activator");
         Assert.AreEqual(18, diagnostics[0].Location.GetLineSpan().StartLinePosition.Line + 1);
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithDuplicateLibraryDefaultSlotAssignment_ReportsJAZORVGA011()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.DuplicateLibraryDefaultSlot.Generated",
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using ECMAScript.UI.Vue.Vuetify;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/dialog-host")]
+                public class DialogHost : VueComponent
+                {
+                    [Parameter]
+                    public RenderFragment? ChildContent { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VDialog>(0);
+                        builder.AddAttribute(1, nameof(VDialog.ChildContent), ChildContent);
+                        builder.AddContent(2, ChildContent);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VDialog).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA011")
+            .ToArray();
+
+        Assert.AreEqual(1, diagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "VDialog");
+        StringAssert.Contains(diagnostics[0].GetMessage(), "ChildContent");
+        Assert.AreEqual(19, diagnostics[0].Location.GetLineSpan().StartLinePosition.Line + 1);
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithDuplicateLibraryNamedSlotAssignment_ReportsJAZORVGA011()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.DuplicateLibraryNamedSlot.Generated",
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using ECMAScript.UI.Vue.Vuetify;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/dialog-host")]
+                public class DialogHost : VueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<VDialogActivatorContext>? Activator { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VDialog>(0);
+                        builder.AddAttribute(1, nameof(VDialog.Activator), Activator);
+                        builder.AddAttribute(2, nameof(VDialog.Activator), Activator);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VDialog).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA011")
+            .ToArray();
+
+        Assert.AreEqual(1, diagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "VDialog");
+        StringAssert.Contains(diagnostics[0].GetMessage(), "Activator");
+        Assert.AreEqual(19, diagnostics[0].Location.GetLineSpan().StartLinePosition.Line + 1);
     }
 
     [TestMethod]

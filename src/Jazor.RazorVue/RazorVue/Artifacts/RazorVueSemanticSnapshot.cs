@@ -28,5 +28,8 @@ public sealed record RazorVueSemanticSnapshot(
     IMethodSymbol? OnInitializedAsyncMethod = null,
     IMethodSymbol? OnParametersSetMethod = null,
     IMethodSymbol? OnParametersSetAsyncMethod = null,
+    IMethodSymbol? SetParametersAsyncMethod = null,
     IMethodSymbol? OnAfterRenderMethod = null,
-    IMethodSymbol? OnAfterRenderAsyncMethod = null);
+    IMethodSymbol? OnAfterRenderAsyncMethod = null,
+    IMethodSymbol? DisposeMethod = null,
+    IMethodSymbol? DisposeAsyncMethod = null);
