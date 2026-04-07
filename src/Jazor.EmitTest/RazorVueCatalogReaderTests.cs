@@ -310,6 +310,7 @@ namespace Jazor.EmitTest
             Assert.AreEqual(RazorVueHmrBoundaryKind.LogicSafe, manifest.Modules[0].HmrBoundaryKind);
             Assert.IsTrue(manifest.Modules[0].SupportsSsr);
             CollectionAssert.AreEquivalent(new[] { "vuetify" }, manifest.Modules[0].PluginRequirements);
+            CollectionAssert.AreEquivalent(new[] { "vuetify" }, manifest.PluginRequirements);
             Assert.IsFalse(string.IsNullOrWhiteSpace(manifest.Modules[0].ContentHash));
 
             var manifestPath = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"), "razorvue-manifest.json");
@@ -325,6 +326,8 @@ namespace Jazor.EmitTest
                 CollectionAssert.AreEquivalent(manifest.Modules[0].Imports, loaded.Modules[0].Imports);
                 CollectionAssert.AreEquivalent(manifest.Modules[0].Styles, loaded.Modules[0].Styles);
                 CollectionAssert.AreEquivalent(manifest.Modules[0].PluginRequirements, loaded.Modules[0].PluginRequirements);
+                CollectionAssert.AreEquivalent(manifest.Styles, loaded.Styles);
+                CollectionAssert.AreEquivalent(manifest.PluginRequirements, loaded.PluginRequirements);
             }
             finally
             {
@@ -366,6 +369,12 @@ namespace Jazor.EmitTest
             CollectionAssert.AreEqual(
                 new[] { "alpha-host", "vuetify" },
                 manifest.Modules[0].PluginRequirements);
+            CollectionAssert.AreEqual(
+                new[] { "vuetify/base", "vuetify/styles" },
+                manifest.Styles);
+            CollectionAssert.AreEqual(
+                new[] { "alpha-host", "vuetify" },
+                manifest.PluginRequirements);
         }
 
         private const string DefaultGeneratedArtifactMembers =

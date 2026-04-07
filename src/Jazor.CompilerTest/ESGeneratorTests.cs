@@ -2680,6 +2680,146 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateCatalog_WithPassThroughDisposeLifecycle_LowersWithoutJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.DisposePassThroughLifecycle.Generated",
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                public abstract class DisposeCardBase : VueComponent, IDisposable
+                {
+                    [Parameter]
+                    public EventCallback<int> ValueDisposed { get; set; }
+
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    public void Dispose()
+                    {
+                        ValueDisposed.InvokeAsync(Value);
+                    }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/dispose-card-pass-through")]
+                public class DisposeCard : DisposeCardBase
+                {
+                    public new void Dispose()
+                    {
+                        base.Dispose();
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var lifecycleDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+
+        Assert.AreEqual(0, lifecycleDiagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "import { defineComponent, h, onUnmounted } from \\\"vue\\\";");
+        StringAssert.Contains(generatedSource, "onUnmounted(() => {");
+        StringAssert.Contains(generatedSource, "emit(\\\"valueDisposed\\\", props.value);");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithPassThroughDisposeAsyncLifecycle_LowersWithoutJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.DisposeAsyncPassThroughLifecycle.Generated",
+            """
+            using System;
+            using System.Threading.Tasks;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                public abstract class DisposeAsyncCardBase : VueComponent, IAsyncDisposable
+                {
+                    [Parameter]
+                    public EventCallback<bool> DisposedChanged { get; set; }
+
+                    public ValueTask DisposeAsync()
+                    {
+                        return new ValueTask(DisposedChanged.InvokeAsync(true));
+                    }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/dispose-async-card-pass-through")]
+                public class DisposeAsyncCard : DisposeAsyncCardBase
+                {
+                    public new ValueTask DisposeAsync()
+                    {
+                        return base.DisposeAsync();
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "dispose");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var lifecycleDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+
+        Assert.AreEqual(0, lifecycleDiagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "import { defineComponent, h, onUnmounted } from \\\"vue\\\";");
+        StringAssert.Contains(generatedSource, "onUnmounted(async () => {");
+        StringAssert.Contains(generatedSource, "await emit(\\\"disposedChanged\\\", true);");
+    }
+
+    [TestMethod]
     public void GenerateCatalog_WithUnsupportedDisposeLifecycle_ReportsJAZORVGA005()
     {
         var compilation = CreateCompilation(

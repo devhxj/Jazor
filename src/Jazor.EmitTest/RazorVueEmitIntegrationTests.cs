@@ -103,7 +103,9 @@ public sealed class RazorVueEmitIntegrationTests
             Assert.AreEqual("Demo.Components", manifest.Modules[0].AssemblyName);
             Assert.AreEqual("CounterCard", manifest.Modules[0].ComponentName);
             Assert.AreEqual("components/counter-card.mjs", manifest.Modules[0].RelativeModulePath);
+            CollectionAssert.AreEqual(new[] { "vuetify/styles" }, manifest.Styles);
             CollectionAssert.AreEqual(new[] { "vuetify" }, manifest.Modules[0].PluginRequirements);
+            CollectionAssert.AreEqual(new[] { "vuetify" }, manifest.PluginRequirements);
         }
         finally
         {
@@ -135,8 +137,8 @@ public sealed class RazorVueEmitIntegrationTests
                                 "components/counter-card.mjs",
                                 "export default { name: \"CounterCard\" };",
                                 ["vue"],
-                                [],
-                                [],
+                                ["vuetify/styles"],
+                                ["vuetify"],
                                 new RazorVueEmitArtifactIdentity(
                                     "Demo.Components.CounterCard",
                                     "components/counter-card.mjs",
@@ -155,8 +157,8 @@ public sealed class RazorVueEmitIntegrationTests
                                 "widgets/status-badge.mjs",
                                 "export default { name: \"StatusBadge\" };",
                                 ["vue"],
-                                [],
-                                [],
+                                ["feature/flags.css"],
+                                ["feature-flags"],
                                 new RazorVueEmitArtifactIdentity(
                                     "Demo.Widgets.StatusBadge",
                                     "widgets/status-badge.mjs",
@@ -179,6 +181,8 @@ public sealed class RazorVueEmitIntegrationTests
             CollectionAssert.AreEquivalent(
                 new[] { "Demo.Components", "Demo.Widgets" },
                 manifest.Modules.Select(static module => module.AssemblyName).ToArray());
+            CollectionAssert.AreEqual(new[] { "feature-flags", "vuetify" }, manifest.PluginRequirements);
+            CollectionAssert.AreEqual(new[] { "feature/flags.css", "vuetify/styles" }, manifest.Styles);
         }
         finally
         {

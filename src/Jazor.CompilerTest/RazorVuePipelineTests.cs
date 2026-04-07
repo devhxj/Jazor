@@ -530,6 +530,106 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersVuetifyFeedbackAndListComposition()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.UI.Vue.Vuetify;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/notification-panel")]
+                public class NotificationPanel : VueComponent
+                {
+                    [Parameter]
+                    public bool Enabled { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> EnabledChanged { get; set; }
+
+                    [Parameter]
+                    public string? Notes { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> NotesChanged { get; set; }
+
+                    [Parameter]
+                    public EventCallback OnPin { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VAlert>(0);
+                        builder.AddAttribute(1, nameof(VAlert.Type), "info");
+                        builder.AddAttribute(2, nameof(VAlert.Variant), "tonal");
+                        builder.AddAttribute(3, nameof(VAlert.Closable), true);
+                        builder.AddAttribute(4, nameof(VAlert.Text), "Saved");
+                        builder.CloseComponent();
+
+                        builder.OpenComponent<VList>(5);
+                        builder.AddAttribute(6, nameof(VList.Density), "compact");
+                        builder.AddAttribute(7, nameof(VList.Nav), true);
+                        builder.OpenComponent<VListItem>(8);
+                        builder.AddAttribute(9, nameof(VListItem.Title), "General");
+                        builder.AddAttribute(10, nameof(VListItem.Subtitle), "Workspace defaults");
+                        builder.OpenComponent<VChip>(11);
+                        builder.AddAttribute(12, nameof(VChip.Color), "success");
+                        builder.AddAttribute(13, nameof(VChip.Text), "Pinned");
+                        builder.AddAttribute(14, nameof(VChip.OnClick), OnPin);
+                        builder.CloseComponent();
+                        builder.CloseComponent();
+                        builder.CloseComponent();
+
+                        builder.OpenComponent<VSwitch>(15);
+                        builder.AddAttribute(16, nameof(VSwitch.Label), "Notifications");
+                        builder.AddAttribute(17, nameof(VSwitch.ModelValue), Enabled);
+                        builder.AddAttribute(18, nameof(VSwitch.ModelValueChanged), EnabledChanged);
+                        builder.CloseComponent();
+
+                        builder.OpenComponent<VTextarea>(19);
+                        builder.AddAttribute(20, nameof(VTextarea.Label), "Notes");
+                        builder.AddAttribute(21, nameof(VTextarea.Rows), 4);
+                        builder.AddAttribute(22, nameof(VTextarea.ModelValue), Notes);
+                        builder.AddAttribute(23, nameof(VTextarea.ModelValueChanged), NotesChanged);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "import { VAlert as VAlertComponent, VChip as VChipComponent, VList as VListComponent, VListItem as VListItemComponent, VSwitch as VSwitchComponent, VTextarea as VTextareaComponent } from \"vuetify/components\";");
+        StringAssert.Contains(artifact.ModuleCode, "\"type\": \"info\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"variant\": \"tonal\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"closable\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"density\": \"compact\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"nav\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"title\": \"General\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"subtitle\": \"Workspace defaults\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"onClick\": props.onPin");
+        StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.enabled");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": props.enabledChanged");
+        StringAssert.Contains(artifact.ModuleCode, "\"rows\": 4");
+        StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.notes");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": props.notesChanged");
+        CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_WithNonCallableVuetifyDialogActivator_ReportsSlotContextMisuse()
     {
         var context = CreateContext(
@@ -8362,6 +8462,124 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "import { defineComponent, h, onUnmounted } from \"vue\";");
         StringAssert.Contains(artifact.ModuleCode, "onUnmounted(async () => {");
         StringAssert.Contains(artifact.ModuleCode, "await emit(\"disposed\");");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersPassThroughDisposeToSupportedBaseLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                public abstract class DisposeCardBase : VueComponent, IDisposable
+                {
+                    [Parameter]
+                    public EventCallback<int> ValueDisposed { get; set; }
+
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    public void Dispose()
+                    {
+                        ValueDisposed.InvokeAsync(Value);
+                    }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/dispose-card-pass-through")]
+                public class DisposeCard : DisposeCardBase
+                {
+                    public new void Dispose()
+                    {
+                        base.Dispose();
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "onUnmounted(() => {");
+        StringAssert.Contains(artifact.ModuleCode, "emit(\"valueDisposed\", props.value);");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersPassThroughDisposeAsyncToSupportedBaseLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                public abstract class DisposeAsyncCardBase : VueComponent, IAsyncDisposable
+                {
+                    [Parameter]
+                    public EventCallback<bool> DisposedChanged { get; set; }
+
+                    public ValueTask DisposeAsync()
+                    {
+                        return new ValueTask(DisposedChanged.InvokeAsync(true));
+                    }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/dispose-async-card-pass-through")]
+                public class DisposeAsyncCard : DisposeAsyncCardBase
+                {
+                    public new ValueTask DisposeAsync()
+                    {
+                        return base.DisposeAsync();
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "dispose");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "onUnmounted(async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"disposedChanged\", true);");
         Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
     }
 

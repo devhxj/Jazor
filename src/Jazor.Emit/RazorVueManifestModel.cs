@@ -6,7 +6,9 @@ namespace Jazor.Emit;
 internal sealed record RazorVueManifestModel(
     string AssemblyName,
     DateTime GeneratedAtUtc,
-    List<RazorVueManifestEntry> Modules)
+    List<RazorVueManifestEntry> Modules,
+    List<string>? Styles = null,
+    List<string>? PluginRequirements = null)
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -37,7 +39,9 @@ internal sealed record RazorVueManifestModel(
                 .SelectMany(static catalog => catalog.Artifacts.Select(artifact => CreateEntry(catalog.AssemblyName, artifact)))
                 .OrderBy(static artifact => artifact.RelativeModulePath, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(static artifact => artifact.ComponentName, StringComparer.Ordinal)
-                .ToList());
+                .ToList(),
+            AggregateHostRequirementList(catalogs, static artifact => artifact.Styles),
+            AggregateHostRequirementList(catalogs, static artifact => artifact.PluginRequirements));
     }
 
     public static RazorVueManifestModel? TryLoad(string manifestPath)
@@ -46,7 +50,21 @@ internal sealed record RazorVueManifestModel(
             return null;
 
         var json = File.ReadAllText(manifestPath);
-        return JsonSerializer.Deserialize<RazorVueManifestModel>(json, JsonOptions);
+        var manifest = JsonSerializer.Deserialize<RazorVueManifestModel>(json, JsonOptions);
+        if (manifest is null)
+            return null;
+
+        return manifest with
+        {
+            Styles = NormalizeHostRequirementList(
+                manifest.Styles is not null
+                    ? manifest.Styles
+                    : manifest.Modules.SelectMany(static module => module.Styles).ToList()),
+            PluginRequirements = NormalizeHostRequirementList(
+                manifest.PluginRequirements is not null
+                    ? manifest.PluginRequirements
+                    : manifest.Modules.SelectMany(static module => module.PluginRequirements).ToList())
+        };
     }
 
     public void Save(string manifestPath)
@@ -95,6 +113,11 @@ internal sealed record RazorVueManifestModel(
             .OrderBy(static value => value, StringComparer.Ordinal)
             .ToList();
     }
+
+    private static List<string> AggregateHostRequirementList(
+        IReadOnlyList<RazorVueCatalogRecord> catalogs,
+        Func<RazorVueEmitArtifactRecord, IReadOnlyList<string>> selector)
+        => NormalizeHostRequirementList(catalogs.SelectMany(static catalog => catalog.Artifacts).SelectMany(selector).ToArray());
 
     private static string ComputeSha256Hex(string content)
     {

@@ -238,7 +238,7 @@ public sealed class RazorVueDescriptorExtractionTests
             .ToArray();
 
         CollectionAssert.AreEquivalent(
-            new[] { "VBtn", "VCard", "VCardText", "VCardTitle", "VCheckbox", "VCol", "VContainer", "VDialog", "VDivider", "VIcon", "VRow", "VSheet", "VSpacer", "VTextField", "VToolbar", "VToolbarTitle" },
+            new[] { "VAlert", "VBtn", "VCard", "VCardText", "VCardTitle", "VCheckbox", "VChip", "VCol", "VContainer", "VDialog", "VDivider", "VIcon", "VList", "VListItem", "VRow", "VSheet", "VSpacer", "VSwitch", "VTextField", "VTextarea", "VToolbar", "VToolbarTitle" },
             vuetifyDescriptors
                 .Select(static descriptor => descriptor.Name)
                 .OrderBy(static name => name, StringComparer.Ordinal)
@@ -278,6 +278,33 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("color", toolbar.Props.Single(static prop => prop.PublicName == "Color").Name);
         Assert.AreEqual("density", toolbar.Props.Single(static prop => prop.PublicName == "Density").Name);
         Assert.IsTrue(toolbar.Slots.Single(static slot => slot.IsDefault).IsDefault);
+
+        var textarea = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.UI.Vue.Vuetify.VTextarea");
+        Assert.AreEqual("rows", textarea.Props.Single(static prop => prop.PublicName == "Rows").Name);
+        Assert.AreEqual("modelValue", textarea.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", textarea.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+
+        var toggle = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.UI.Vue.Vuetify.VSwitch");
+        Assert.AreEqual("modelValue", toggle.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", toggle.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+
+        var list = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.UI.Vue.Vuetify.VList");
+        Assert.AreEqual("density", list.Props.Single(static prop => prop.PublicName == "Density").Name);
+        Assert.IsTrue(list.Slots.Single(static slot => slot.IsDefault).IsDefault);
+
+        var listItem = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.UI.Vue.Vuetify.VListItem");
+        Assert.AreEqual("title", listItem.Props.Single(static prop => prop.PublicName == "Title").Name);
+        Assert.AreEqual("subtitle", listItem.Props.Single(static prop => prop.PublicName == "Subtitle").Name);
+        Assert.IsTrue(listItem.Slots.Single(static slot => slot.IsDefault).IsDefault);
+
+        var alert = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.UI.Vue.Vuetify.VAlert");
+        Assert.AreEqual("type", alert.Props.Single(static prop => prop.PublicName == "Type").Name);
+        Assert.AreEqual("variant", alert.Props.Single(static prop => prop.PublicName == "Variant").Name);
+        Assert.IsTrue(alert.Slots.Single(static slot => slot.IsDefault).IsDefault);
+
+        var chip = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.UI.Vue.Vuetify.VChip");
+        Assert.AreEqual("click", chip.Emits.Single(static emit => emit.RazorAlias == "OnClick").Name);
+        Assert.IsTrue(chip.Slots.Single(static slot => slot.IsDefault).IsDefault);
 
         var spacer = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.UI.Vue.Vuetify.VSpacer");
         Assert.AreEqual(0, spacer.Props.Length);
