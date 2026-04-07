@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using Basic.Reference.Assemblies;
+using ECMAScript.UI.Vue.Vuetify;
 using Jazor.RazorVue;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
@@ -172,9 +173,305 @@ public sealed class RazorVuePipelineTests
         var artifact = catalog.Artifacts.Single(static artifact => artifact.ComponentName == "ParentCard");
 
         CollectionAssert.Contains(artifact.Imports.ToArray(), "vue");
-        CollectionAssert.Contains(artifact.Imports.ToArray(), "ChildCardComponent");
+        CollectionAssert.Contains(artifact.Imports.ToArray(), "./components/child-card.mjs");
         StringAssert.Contains(artifact.ModuleCode, "import ChildCardComponent from \"./components/child-card.mjs\";");
         StringAssert.Contains(artifact.ModuleCode, "return () => h(ChildCardComponent, null, null);");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersLibraryComponentToNamedImport()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using ECMAScript.UI.Vue.Vuetify;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/toolbar-card")]
+                public class ToolbarCard : VueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VBtn>(0);
+                        builder.AddAttribute(1, nameof(VBtn.Text), "Save");
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var pipeline = new RazorVuePipeline();
+        var catalog = pipeline.Execute(context);
+        var artifact = catalog.Artifacts.Single(static artifact => artifact.ComponentName == "ToolbarCard");
+
+        CollectionAssert.Contains(artifact.Imports.ToArray(), "vuetify/components");
+        CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
+        CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
+        StringAssert.Contains(artifact.ModuleCode, "import { VBtn as VBtnComponent } from \"vuetify/components\";");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(VBtnComponent, { \"text\": \"Save\" }, null);");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_AggregatesLibraryImportsFromSameSpecifier()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using ECMAScript.UI.Vue.Vuetify;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/toolbar-card")]
+                public class ToolbarCard : VueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.OpenComponent<VBtn>(1);
+                        builder.CloseComponent();
+                        builder.OpenComponent<VCard>(2);
+                        builder.CloseComponent();
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var pipeline = new RazorVuePipeline();
+        var catalog = pipeline.Execute(context);
+        var artifact = catalog.Artifacts.Single(static artifact => artifact.ComponentName == "ToolbarCard");
+
+        CollectionAssert.AreEquivalent(new[] { "vue", "vuetify/components" }, artifact.Imports.ToArray());
+        CollectionAssert.AreEqual(new[] { "vuetify/styles" }, artifact.Styles.ToArray());
+        CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
+        StringAssert.Contains(artifact.ModuleCode, "import { VBtn as VBtnComponent, VCard as VCardComponent } from \"vuetify/components\";");
+        Assert.AreEqual(1, artifact.ModuleCode.Split("from \"vuetify/components\";", StringSplitOptions.None).Length - 1, artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersVuetifyPackageEventAndModelBindings()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using ECMAScript.UI.Vue.Vuetify;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/editor-card")]
+                public class EditorCard : VueComponent
+                {
+                    [Parameter]
+                    public EventCallback OnClick { get; set; }
+
+                    [Parameter]
+                    public string? ModelValue { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> ModelValueChanged { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.OpenComponent<VBtn>(1);
+                        builder.AddAttribute(2, nameof(VBtn.OnClick), OnClick);
+                        builder.AddAttribute(3, nameof(VBtn.Text), "Save");
+                        builder.CloseComponent();
+                        builder.OpenComponent<VTextField>(4);
+                        builder.AddAttribute(5, nameof(VTextField.Label), "Name");
+                        builder.AddAttribute(6, nameof(VTextField.ModelValue), ModelValue);
+                        builder.AddAttribute(7, nameof(VTextField.ModelValueChanged), ModelValueChanged);
+                        builder.CloseComponent();
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "import { VBtn as VBtnComponent, VTextField as VTextFieldComponent } from \"vuetify/components\";");
+        StringAssert.Contains(artifact.ModuleCode, "\"onClick\": props.onClick");
+        StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.modelValue");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": props.modelValueChanged");
+        CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
+        CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersVuetifyDialogActivatorScopedSlot()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using ECMAScript.UI.Vue.Vuetify;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/dialog-host")]
+                public class DialogHost : VueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<VDialogActivatorContext>? Activator { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? ChildContent { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VDialog>(0);
+                        builder.AddAttribute(1, nameof(VDialog.Activator), Activator);
+                        builder.AddContent(2, ChildContent);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "import { VDialog as VDialogComponent } from \"vuetify/components\";");
+        StringAssert.Contains(artifact.ModuleCode, "activator: (context) => props.activator(context)");
+        StringAssert.Contains(artifact.ModuleCode, "default: () => slots.default ? slots.default() : null");
+        CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
+        CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithNonCallableVuetifyDialogActivator_ReportsSlotContextMisuse()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using ECMAScript.UI.Vue.Vuetify;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/dialog-host")]
+                public class DialogHost : VueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VDialog>(0);
+                        builder.AddAttribute(1, nameof(VDialog.Activator), "not-callable");
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        Assert.IsNotNull(exception);
+        Assert.AreEqual(RazorVueIssueCode.SlotContextMisuse, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "Activator");
+        StringAssert.Contains(exception.Issue.Message, "VDialog");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithImplicitLibraryDefaultSlotOnComponentWithoutChildContent_ReportsUnknownSlot()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using ECMAScript.UI.Vue.Vuetify;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/icon-host")]
+                public class IconHost : VueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VIcon>(0);
+                        builder.AddContent(1, "warn");
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        Assert.IsNotNull(exception);
+        Assert.AreEqual(RazorVueIssueCode.UnknownSlot, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "ChildContent");
+        StringAssert.Contains(exception.Issue.Message, "VIcon");
     }
 
     [TestMethod]
@@ -8704,6 +9001,7 @@ public sealed class RazorVuePipelineTests
         var references = Net100.References.All.Cast<MetadataReference>().ToList();
         references.Add(MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location));
         references.Add(MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location));
+        references.Add(MetadataReference.CreateFromFile(typeof(VBtn).Assembly.Location));
         references.Add(MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
         return references;
     }

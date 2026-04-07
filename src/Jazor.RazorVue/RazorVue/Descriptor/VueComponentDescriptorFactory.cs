@@ -19,8 +19,44 @@ internal static class VueComponentDescriptorFactory
 
     public static VueComponentDescriptor Create(RazorVueComponentCandidate candidate, RazorVueCompilationContext context)
     {
-        var componentSymbol = candidate.ComponentSymbol;
+        return CreateDescriptor(
+            candidate.ComponentSymbol,
+            context.Symbols,
+            VueComponentSourceKind.UserComponent,
+            GetUserImportSpecifier(candidate.ComponentSymbol, context.Symbols),
+            "default",
+            [],
+            []);
+    }
+
+    public static VueComponentDescriptor CreateLibraryComponent(INamedTypeSymbol componentSymbol, RazorVueCompilationContext context)
+    {
+        if (componentSymbol is null)
+            throw new ArgumentNullException(nameof(componentSymbol));
+        if (context is null)
+            throw new ArgumentNullException(nameof(context));
+
         var symbols = context.Symbols;
+        var metadata = GetLibraryMetadata(componentSymbol, symbols);
+        return CreateDescriptor(
+            componentSymbol,
+            symbols,
+            VueComponentSourceKind.LibraryComponent,
+            metadata.ImportSpecifier,
+            metadata.ExportName,
+            metadata.StyleDependencies,
+            metadata.PluginRequirements);
+    }
+
+    private static VueComponentDescriptor CreateDescriptor(
+        INamedTypeSymbol componentSymbol,
+        RazorVueCompilationSymbols symbols,
+        VueComponentSourceKind sourceKind,
+        string importSpecifier,
+        string exportName,
+        ImmutableArray<string> styleDependencies,
+        ImmutableArray<string> pluginRequirements)
+    {
         var parameterProperties = GetParameterProperties(componentSymbol, symbols);
         var bindPairs = GetBindableParameterNames(parameterProperties, symbols);
 
@@ -57,14 +93,15 @@ internal static class VueComponentDescriptorFactory
         return new VueComponentDescriptor(
             Name: componentSymbol.Name,
             FullName: FormatFullName(componentSymbol),
-            SourceKind: VueComponentSourceKind.UserComponent,
+            SourceKind: sourceKind,
             ResolutionNamespace: GetResolutionNamespace(componentSymbol),
-            ImportSpecifier: GetImportSpecifier(componentSymbol, symbols),
-            ExportName: "default",
+            ImportSpecifier: importSpecifier,
+            ExportName: exportName,
             Props: props.ToImmutable(),
             Emits: emits.ToImmutable(),
             Slots: slots.ToImmutable(),
-            StyleDependencies: [],
+            StyleDependencies: styleDependencies,
+            PluginRequirements: pluginRequirements,
             Flags: VueComponentFlags.None);
     }
 
@@ -189,7 +226,7 @@ internal static class VueComponentDescriptorFactory
             ? componentSymbol.ContainingNamespace.ToDisplayString()
             : string.Empty;
 
-    private static string GetImportSpecifier(INamedTypeSymbol componentSymbol, RazorVueCompilationSymbols symbols)
+    private static string GetUserImportSpecifier(INamedTypeSymbol componentSymbol, RazorVueCompilationSymbols symbols)
     {
         foreach (var attribute in componentSymbol.GetAttributes())
         {
@@ -211,6 +248,76 @@ internal static class VueComponentDescriptorFactory
         return string.IsNullOrEmpty(namespaceName)
             ? $"{assemblyName}/{fileName}"
             : $"{assemblyName}/{namespaceName}/{fileName}";
+    }
+
+    private static LibraryComponentMetadata GetLibraryMetadata(INamedTypeSymbol componentSymbol, RazorVueCompilationSymbols symbols)
+    {
+        if (symbols.VueLibraryComponentAttribute is null)
+            throw new InvalidOperationException("VueLibraryComponentAttribute could not be resolved from the compilation.");
+
+        var componentAttribute = componentSymbol.GetAttributes()
+            .FirstOrDefault(attribute => Comparer.Equals(attribute.AttributeClass, symbols.VueLibraryComponentAttribute));
+
+        if (componentAttribute is null ||
+            componentAttribute.ConstructorArguments.Length < 2 ||
+            componentAttribute.ConstructorArguments[0].Value is not string importSpecifier ||
+            string.IsNullOrWhiteSpace(importSpecifier) ||
+            componentAttribute.ConstructorArguments[1].Value is not string exportName ||
+            string.IsNullOrWhiteSpace(exportName))
+        {
+            throw new InvalidOperationException($"Library component '{FormatFullName(componentSymbol)}' must declare [VueLibraryComponent(importSpecifier, exportName)].");
+        }
+
+        // Library imports are external package contracts, not generated module paths.
+        // Library authoring metadata feeds both compile-time lowering and the
+        // host-facing catalog/manifest contract.
+        var styleDependencies = GetLibraryStyleDependencies(componentSymbol, symbols);
+        var pluginRequirements = GetLibraryPluginRequirements(componentSymbol, symbols);
+        return new LibraryComponentMetadata(importSpecifier.Trim(), exportName.Trim(), styleDependencies, pluginRequirements);
+    }
+
+    private static ImmutableArray<string> GetLibraryStyleDependencies(INamedTypeSymbol componentSymbol, RazorVueCompilationSymbols symbols)
+    {
+        if (symbols.VueLibraryStyleAttribute is null)
+            return [];
+
+        var builder = ImmutableArray.CreateBuilder<string>();
+        foreach (var attribute in componentSymbol.GetAttributes())
+        {
+            if (!Comparer.Equals(attribute.AttributeClass, symbols.VueLibraryStyleAttribute) ||
+                attribute.ConstructorArguments.Length != 1 ||
+                attribute.ConstructorArguments[0].Value is not string styleSpecifier ||
+                string.IsNullOrWhiteSpace(styleSpecifier))
+            {
+                continue;
+            }
+
+            builder.Add(styleSpecifier.Trim());
+        }
+
+        return builder.ToImmutable();
+    }
+
+    private static ImmutableArray<string> GetLibraryPluginRequirements(INamedTypeSymbol componentSymbol, RazorVueCompilationSymbols symbols)
+    {
+        if (symbols.VueLibraryPluginRequirementAttribute is null)
+            return [];
+
+        var builder = ImmutableArray.CreateBuilder<string>();
+        foreach (var attribute in componentSymbol.GetAttributes())
+        {
+            if (!Comparer.Equals(attribute.AttributeClass, symbols.VueLibraryPluginRequirementAttribute) ||
+                attribute.ConstructorArguments.Length != 1 ||
+                attribute.ConstructorArguments[0].Value is not string requirementId ||
+                string.IsNullOrWhiteSpace(requirementId))
+            {
+                continue;
+            }
+
+            builder.Add(requirementId.Trim());
+        }
+
+        return builder.ToImmutable();
     }
 
     private static string NormalizeImportPath(string importPath)
@@ -255,5 +362,11 @@ internal static class VueComponentDescriptorFactory
 
         return char.ToLowerInvariant(value[0]) + value.Substring(1);
     }
+
+    private sealed record LibraryComponentMetadata(
+        string ImportSpecifier,
+        string ExportName,
+        ImmutableArray<string> StyleDependencies,
+        ImmutableArray<string> PluginRequirements);
 }
 

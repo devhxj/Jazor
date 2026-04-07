@@ -139,8 +139,57 @@ public sealed class RazorVueCompilationContext
         return builder.ToImmutable();
     }
 
+    public ImmutableArray<VueComponentDescriptor> DiscoverLibraryComponents()
+    {
+        var builder = ImmutableArray.CreateBuilder<VueComponentDescriptor>();
+        foreach (var symbol in EnumerateNamedTypes(Compilation.GlobalNamespace))
+        {
+            if (!RazorVueEntryClassifier.IsLibraryComponent(symbol, Symbols))
+                continue;
+
+            // Library stubs are descriptor-only authoring surfaces discovered
+            // from the compilation, not [ECMAScriptModule] runtime entries.
+            builder.Add(VueComponentDescriptorFactory.CreateLibraryComponent(symbol, this));
+        }
+
+        return builder.ToImmutable();
+    }
+
     public VueComponentRegistry CreateComponentRegistry(ImmutableArray<VueComponentDescriptor> libraryComponents = default(ImmutableArray<VueComponentDescriptor>))
-        => VueComponentRegistry.Create(CreateSemanticSnapshots(), libraryComponents);
+    {
+        var discoveredLibraryComponents = DiscoverLibraryComponents();
+        if (!libraryComponents.IsDefaultOrEmpty)
+            discoveredLibraryComponents = MergeLibraryComponents(discoveredLibraryComponents, libraryComponents);
+
+        return VueComponentRegistry.Create(CreateSemanticSnapshots(), discoveredLibraryComponents);
+    }
+
+    private static ImmutableArray<VueComponentDescriptor> MergeLibraryComponents(
+        ImmutableArray<VueComponentDescriptor> discoveredLibraryComponents,
+        ImmutableArray<VueComponentDescriptor> additionalLibraryComponents)
+    {
+        if (discoveredLibraryComponents.IsDefaultOrEmpty)
+            return additionalLibraryComponents;
+        if (additionalLibraryComponents.IsDefaultOrEmpty)
+            return discoveredLibraryComponents;
+
+        var builder = ImmutableArray.CreateBuilder<VueComponentDescriptor>();
+        var seenFullNames = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var component in discoveredLibraryComponents)
+        {
+            if (seenFullNames.Add(component.FullName))
+                builder.Add(component);
+        }
+
+        foreach (var component in additionalLibraryComponents)
+        {
+            if (seenFullNames.Add(component.FullName))
+                builder.Add(component);
+        }
+
+        return builder.ToImmutable();
+    }
 
     private static IEnumerable<INamedTypeSymbol> EnumerateNamedTypes(INamespaceSymbol namespaceSymbol)
     {

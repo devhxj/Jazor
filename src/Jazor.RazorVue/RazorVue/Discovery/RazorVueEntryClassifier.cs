@@ -45,6 +45,15 @@ internal static class RazorVueEntryClassifier
         return false;
     }
 
+    public static bool IsLibraryComponent(INamedTypeSymbol symbol, RazorVueCompilationSymbols symbols)
+    {
+        if (symbols.VueLibraryComponent is null || symbol.IsStatic || symbol.IsAbstract)
+            return false;
+
+        return !Comparer.Equals(symbol.OriginalDefinition, symbols.VueLibraryComponent) &&
+               DerivesFrom(symbol, symbols.VueLibraryComponent);
+    }
+
     public static IMethodSymbol? FindBuildRenderTreeMethod(INamedTypeSymbol symbol)
         => FindHierarchyMethod(symbol, "BuildRenderTree", static method =>
             method.Parameters.Length == 1 &&

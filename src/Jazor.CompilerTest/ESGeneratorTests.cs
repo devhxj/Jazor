@@ -3,6 +3,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using Basic.Reference.Assemblies;
+using ECMAScript.UI.Vue.Vuetify;
 using Jazor.Compiler;
 using Jazor.Razor;
 using Jazor.RazorVue;
@@ -7941,6 +7942,278 @@ public sealed class ESGeneratorTests
         Assert.AreEqual(1, diagnostics.Length);
         StringAssert.Contains(diagnostics[0].GetMessage(), "FormatInnerAsync");
         StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Components.AsyncHelperCard");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithUnknownLibraryParameter_ReportsJAZORVGA007()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.UnknownLibraryParameter.Generated",
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using ECMAScript.UI.Vue.Vuetify;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/button-host")]
+                public class ButtonHost : VueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VBtn>(0);
+                        builder.AddAttribute(1, "Variant", "flat");
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VBtn).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA007")
+            .ToArray();
+
+        Assert.AreEqual(1, diagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "VBtn");
+        StringAssert.Contains(diagnostics[0].GetMessage(), "Variant");
+        Assert.AreEqual(18, diagnostics[0].Location.GetLineSpan().StartLinePosition.Line + 1);
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithInvalidLibraryBindTarget_ReportsJAZORVGA008()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.InvalidLibraryBindTarget.Generated",
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using ECMAScript.UI.Vue.Vuetify;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/button-host")]
+                public class ButtonHost : VueComponent
+                {
+                    private bool Disabled { get; set; }
+
+                    private void OnDisabledChanged()
+                    {
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VBtn>(0);
+                        builder.AddAttribute(1, nameof(VBtn.Disabled), Disabled);
+                        builder.AddAttribute(2, "DisabledChanged", EventCallback.Factory.Create(this, OnDisabledChanged));
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VBtn).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA008")
+            .ToArray();
+
+        Assert.AreEqual(1, diagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "VBtn");
+        StringAssert.Contains(diagnostics[0].GetMessage(), "Disabled");
+        Assert.AreEqual(19, diagnostics[0].Location.GetLineSpan().StartLinePosition.Line + 1);
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithUnknownLibrarySlot_ReportsJAZORVGA009()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.UnknownLibrarySlot.Generated",
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using ECMAScript.UI.Vue.Vuetify;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/card-host")]
+                public class CardHost : VueComponent
+                {
+                    [Parameter]
+                    public RenderFragment? Header { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VBtn>(0);
+                        builder.AddAttribute(1, "Header", Header);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VBtn).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA009")
+            .ToArray();
+
+        Assert.AreEqual(1, diagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "VBtn");
+        StringAssert.Contains(diagnostics[0].GetMessage(), "Header");
+        Assert.AreEqual(19, diagnostics[0].Location.GetLineSpan().StartLinePosition.Line + 1);
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithImplicitLibraryDefaultSlotOnComponentWithoutChildContent_ReportsJAZORVGA009()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.UnknownLibraryDefaultSlot.Generated",
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using ECMAScript.UI.Vue.Vuetify;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/icon-host")]
+                public class IconHost : VueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VIcon>(0);
+                        builder.AddContent(1, "warn");
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VIcon).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA009")
+            .ToArray();
+
+        Assert.AreEqual(1, diagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "VIcon");
+        StringAssert.Contains(diagnostics[0].GetMessage(), "ChildContent");
+        Assert.AreEqual(18, diagnostics[0].Location.GetLineSpan().StartLinePosition.Line + 1);
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithNonCallableTypedLibrarySlot_ReportsJAZORVGA010()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.TypedLibrarySlotContext.Generated",
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using ECMAScript.UI.Vue.Vuetify;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/dialog-host")]
+                public class DialogHost : VueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VDialog>(0);
+                        builder.AddAttribute(1, nameof(VDialog.Activator), "not-callable");
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VBtn).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA010")
+            .ToArray();
+
+        Assert.AreEqual(1, diagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "VDialog");
+        StringAssert.Contains(diagnostics[0].GetMessage(), "Activator");
+        Assert.AreEqual(18, diagnostics[0].Location.GetLineSpan().StartLinePosition.Line + 1);
     }
 
     [TestMethod]

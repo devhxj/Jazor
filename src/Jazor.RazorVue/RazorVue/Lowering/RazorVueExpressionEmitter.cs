@@ -20,8 +20,10 @@ internal sealed class RazorVueExpressionEmitter
     private readonly Dictionary<string, VuePropDescriptor> _propsByPublicName;
     private readonly Dictionary<string, VueSlotDescriptor> _slotsByPublicName;
     private readonly Dictionary<string, VueEmitDescriptor> _emitsByRazorAlias;
+    private readonly ImmutableDictionary<string, VueComponentDescriptor> _resolvedComponents;
     private readonly ImmutableDictionary<string, ImmutableDictionary<string, VuePropDescriptor>> _componentPropsByPublicName;
     private readonly ImmutableDictionary<string, ImmutableDictionary<string, VueSlotDescriptor>> _componentSlotsByPublicName;
+    private readonly ImmutableDictionary<string, ImmutableDictionary<string, VueEmitDescriptor>> _componentEmitDescriptorsByRazorAlias;
     private readonly ImmutableDictionary<string, string> _componentReferences;
     private readonly ImmutableDictionary<string, ImmutableDictionary<string, string>> _componentEmitsByRazorAlias;
 
@@ -51,9 +53,11 @@ internal sealed class RazorVueExpressionEmitter
                 static emit => emit.RazorAlias!,
                 static emit => emit,
                 StringComparer.Ordinal);
+        _resolvedComponents = resolvedComponents ?? ImmutableDictionary<string, VueComponentDescriptor>.Empty;
         _componentReferences = componentReferences ?? ImmutableDictionary<string, string>.Empty;
-        _componentPropsByPublicName = BuildComponentPropsByPublicName(resolvedComponents);
-        _componentSlotsByPublicName = BuildComponentSlotsByPublicName(resolvedComponents);
+        _componentPropsByPublicName = BuildComponentPropsByPublicName(_resolvedComponents);
+        _componentSlotsByPublicName = BuildComponentSlotsByPublicName(_resolvedComponents);
+        _componentEmitDescriptorsByRazorAlias = BuildComponentEmitDescriptorsByRazorAlias(_resolvedComponents);
         _componentEmitsByRazorAlias = componentEmitsByRazorAlias ?? ImmutableDictionary<string, ImmutableDictionary<string, string>>.Empty;
         _logicFieldsByName = snapshot.Logic.Fields.ToImmutableDictionary(
             static field => field.Name,
@@ -172,6 +176,13 @@ internal sealed class RazorVueExpressionEmitter
 
     private string EmitComponentNode(RazorVueComponentNode component)
     {
+        _resolvedComponents.TryGetValue(component.ComponentName, out var descriptor);
+        _componentSlotsByPublicName.TryGetValue(component.ComponentName, out var slotsByPublicName);
+
+        // Library components only accept default child content when the stub
+        // explicitly exposes ChildContent as part of the authoring contract.
+        ValidateDefaultLibrarySlotUsage(component, descriptor, slotsByPublicName);
+
         var slotEntries = new List<string>();
         if (!component.Children.Children.IsDefaultOrEmpty)
             slotEntries.Add("default: () => " + EmitFragment(component.Children));
@@ -182,6 +193,27 @@ internal sealed class RazorVueExpressionEmitter
             : "{ " + string.Join(", ", slotEntries) + " }";
 
         return "h(" + ResolveComponentReference(component) + ", " + attributes + ", " + slots + ")";
+    }
+
+    private void ValidateDefaultLibrarySlotUsage(
+        RazorVueComponentNode component,
+        VueComponentDescriptor? descriptor,
+        ImmutableDictionary<string, VueSlotDescriptor>? slotsByPublicName)
+    {
+        if (descriptor is null ||
+            descriptor.SourceKind != VueComponentSourceKind.LibraryComponent ||
+            component.Children.Children.IsDefaultOrEmpty ||
+            (slotsByPublicName is not null && slotsByPublicName.ContainsKey("ChildContent")))
+        {
+            return;
+        }
+
+        var origin = CollectOrigins(component.Children).FirstOrDefault() ??
+                     component.Origins.FirstOrDefault();
+        throw CreateAuthoringIssue(
+            RazorVueIssueCode.UnknownSlot,
+            $"Component '{descriptor.Name}' does not declare a child content parameter named 'ChildContent'.",
+            origin);
     }
 
     private string EmitSlotOutlet(RazorVueSlotOutletNode slot)
@@ -214,8 +246,13 @@ internal sealed class RazorVueExpressionEmitter
             return "null";
 
         _componentEmitsByRazorAlias.TryGetValue(component.ComponentName, out var emitsByAlias);
+        _componentEmitDescriptorsByRazorAlias.TryGetValue(component.ComponentName, out var emitDescriptorsByAlias);
         _componentPropsByPublicName.TryGetValue(component.ComponentName, out var propsByPublicName);
         _componentSlotsByPublicName.TryGetValue(component.ComponentName, out var slotsByPublicName);
+
+        // Library stubs are explicit authoring contracts, so invalid parameters
+        // should fail at compile-time instead of silently falling through to attrs.
+        ValidateComponentAuthoringAttributes(component, propsByPublicName, slotsByPublicName, emitDescriptorsByAlias);
 
         var entries = new List<string>();
         foreach (var attribute in attributes)
@@ -246,6 +283,146 @@ internal sealed class RazorVueExpressionEmitter
         return entries.Count == 0
             ? "null"
             : "{ " + string.Join(", ", entries) + " }";
+    }
+
+    private void ValidateComponentAuthoringAttributes(
+        RazorVueComponentNode component,
+        ImmutableDictionary<string, VuePropDescriptor>? propsByPublicName,
+        ImmutableDictionary<string, VueSlotDescriptor>? slotsByPublicName,
+        ImmutableDictionary<string, VueEmitDescriptor>? emitsByAlias)
+    {
+        if (!_resolvedComponents.TryGetValue(component.ComponentName, out var descriptor) ||
+            descriptor.SourceKind != VueComponentSourceKind.LibraryComponent ||
+            component.Attributes.IsDefaultOrEmpty)
+        {
+            return;
+        }
+
+        var attributeNames = component.Attributes
+            .Select(static attribute => attribute.Name)
+            .ToImmutableHashSet(StringComparer.Ordinal);
+
+        ValidateInvalidBindTargets(component, descriptor, propsByPublicName, emitsByAlias, attributeNames);
+
+        foreach (var attribute in component.Attributes)
+        {
+            if (slotsByPublicName is not null &&
+                slotsByPublicName.TryGetValue(attribute.Name, out var slotDescriptor))
+            {
+                if (!slotDescriptor.Parameters.IsDefaultOrEmpty &&
+                    attribute.Value is not null &&
+                    !IsCallableSlotExpression(attribute.Value))
+                {
+                    throw CreateAuthoringIssue(
+                        RazorVueIssueCode.SlotContextMisuse,
+                        $"Child content parameter '{attribute.Name}' on component '{descriptor.Name}' expects a callable template that accepts '{DescribeSlotContext(slotDescriptor)}'.",
+                        attribute);
+                }
+
+                continue;
+            }
+
+            if (propsByPublicName is not null && propsByPublicName.ContainsKey(attribute.Name))
+                continue;
+
+            if (emitsByAlias is not null && emitsByAlias.ContainsKey(attribute.Name))
+                continue;
+
+            if (attribute.Value is not null && IsRenderFragmentLike(attribute.Value))
+            {
+                throw CreateAuthoringIssue(
+                    RazorVueIssueCode.UnknownSlot,
+                    $"Component '{descriptor.Name}' does not declare a child content parameter named '{attribute.Name}'.",
+                    attribute);
+            }
+
+            throw CreateAuthoringIssue(
+                RazorVueIssueCode.UnknownParameter,
+                $"Component '{descriptor.Name}' does not declare a parameter named '{attribute.Name}'.",
+                attribute);
+        }
+    }
+
+    private void ValidateInvalidBindTargets(
+        RazorVueComponentNode component,
+        VueComponentDescriptor descriptor,
+        ImmutableDictionary<string, VuePropDescriptor>? propsByPublicName,
+        ImmutableDictionary<string, VueEmitDescriptor>? emitsByAlias,
+        ImmutableHashSet<string> attributeNames)
+    {
+        foreach (var attribute in component.Attributes)
+        {
+            if (!TryGetBindTargetName(attribute.Name, out var parameterName) ||
+                !attributeNames.Contains(parameterName))
+            {
+                continue;
+            }
+
+            var hasBindableProp = propsByPublicName is not null &&
+                                  propsByPublicName.TryGetValue(parameterName, out var propDescriptor) &&
+                                  propDescriptor.AcceptsBinding;
+            var hasModelUpdateEmit = emitsByAlias is not null &&
+                                     emitsByAlias.TryGetValue(attribute.Name, out var emitDescriptor) &&
+                                     emitDescriptor.Kind == VueEmitKind.ModelUpdate;
+
+            if (hasBindableProp && hasModelUpdateEmit)
+                continue;
+
+            throw CreateAuthoringIssue(
+                RazorVueIssueCode.InvalidBindTarget,
+                $"Component '{descriptor.Name}' does not support two-way binding for parameter '{parameterName}'.",
+                attribute);
+        }
+    }
+
+    private RazorVueCompilationIssueException CreateAuthoringIssue(
+        RazorVueIssueCode code,
+        string message,
+        RazorVueAttributeNode attribute)
+        => CreateAuthoringIssue(
+            code,
+            message,
+            attribute.Origins.IsDefaultOrEmpty ? null : attribute.Origins[0]);
+
+    private RazorVueCompilationIssueException CreateAuthoringIssue(
+        RazorVueIssueCode code,
+        string message,
+        RazorVueSourceOrigin? origin)
+    {
+        var issue = new RazorVueCompilationIssue(
+            code,
+            RazorVueIssueSeverity.Error,
+            message,
+            ImmutableArray<string>.Empty);
+        return new RazorVueCompilationIssueException(issue, _snapshot.Descriptor.FullName, origin);
+    }
+
+    private static bool TryGetBindTargetName(string attributeName, out string parameterName)
+    {
+        parameterName = string.Empty;
+        if (string.IsNullOrWhiteSpace(attributeName) ||
+            !attributeName.EndsWith("Changed", StringComparison.Ordinal) ||
+            attributeName.Length <= "Changed".Length)
+        {
+            return false;
+        }
+
+        parameterName = attributeName.Substring(0, attributeName.Length - "Changed".Length);
+        return !string.IsNullOrWhiteSpace(parameterName);
+    }
+
+    private static string DescribeSlotContext(VueSlotDescriptor slotDescriptor)
+        => string.Join(", ", slotDescriptor.Parameters.Select(static parameter => parameter.TypeName));
+
+    private static bool IsRenderFragmentLike(IOperation operation)
+    {
+        if (Unwrap(operation)?.Type is not INamedTypeSymbol namedType)
+            return false;
+
+        var definition = namedType.OriginalDefinition;
+        var metadataName = definition.ToDisplayString();
+        return string.Equals(metadataName, "Microsoft.AspNetCore.Components.RenderFragment", StringComparison.Ordinal) ||
+               string.Equals(metadataName, "Microsoft.AspNetCore.Components.RenderFragment<T>", StringComparison.Ordinal);
     }
 
     private string EmitExpression(IOperation operation)
@@ -802,6 +979,28 @@ internal sealed class RazorVueExpressionEmitter
                 static slot => slot,
                 StringComparer.Ordinal);
             builder[item.Key] = slots;
+        }
+
+        return builder.ToImmutable();
+    }
+
+    private static ImmutableDictionary<string, ImmutableDictionary<string, VueEmitDescriptor>> BuildComponentEmitDescriptorsByRazorAlias(
+        ImmutableDictionary<string, VueComponentDescriptor>? resolvedComponents)
+    {
+        if (resolvedComponents is null || resolvedComponents.IsEmpty)
+            return ImmutableDictionary<string, ImmutableDictionary<string, VueEmitDescriptor>>.Empty;
+
+        var builder = ImmutableDictionary.CreateBuilder<string, ImmutableDictionary<string, VueEmitDescriptor>>(StringComparer.Ordinal);
+        foreach (var item in resolvedComponents)
+        {
+            var emitsBuilder = ImmutableDictionary.CreateBuilder<string, VueEmitDescriptor>(StringComparer.Ordinal);
+            foreach (var emit in item.Value.Emits)
+            {
+                if (!string.IsNullOrWhiteSpace(emit.RazorAlias))
+                    emitsBuilder[emit.RazorAlias!] = emit;
+            }
+
+            builder[item.Key] = emitsBuilder.ToImmutable();
         }
 
         return builder.ToImmutable();

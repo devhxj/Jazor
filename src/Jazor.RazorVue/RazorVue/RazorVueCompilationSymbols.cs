@@ -12,7 +12,11 @@ public sealed record RazorVueCompilationSymbols(
     INamedTypeSymbol? EventCallback,
     INamedTypeSymbol? EventCallbackOfT,
     INamedTypeSymbol? RenderFragment,
-    INamedTypeSymbol? RenderFragmentOfT)
+    INamedTypeSymbol? RenderFragmentOfT,
+    INamedTypeSymbol? VueLibraryComponent,
+    INamedTypeSymbol? VueLibraryComponentAttribute,
+    INamedTypeSymbol? VueLibraryStyleAttribute,
+    INamedTypeSymbol? VueLibraryPluginRequirementAttribute)
 {
     public static RazorVueCompilationSymbols? TryCreate(Compilation compilation)
     {
@@ -43,6 +47,10 @@ public sealed record RazorVueCompilationSymbols(
         var eventCallbackOfT = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.EventCallback`1");
         var renderFragment = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.RenderFragment");
         var renderFragmentOfT = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.RenderFragment`1");
+        var vueLibraryComponent = compilation.GetTypeByMetadataName("Jazor.RazorVue.VueLibraryComponent");
+        var vueLibraryComponentAttribute = compilation.GetTypeByMetadataName("Jazor.RazorVue.VueLibraryComponentAttribute");
+        var vueLibraryStyleAttribute = compilation.GetTypeByMetadataName("Jazor.RazorVue.VueLibraryStyleAttribute");
+        var vueLibraryPluginRequirementAttribute = compilation.GetTypeByMetadataName("Jazor.RazorVue.VueLibraryPluginRequirementAttribute");
 
         return new RazorVueCompilationSymbols(
             ecmaScriptModuleAttribute,
@@ -54,7 +62,11 @@ public sealed record RazorVueCompilationSymbols(
             eventCallback,
             eventCallbackOfT,
             renderFragment,
-            renderFragmentOfT);
+            renderFragmentOfT,
+            vueLibraryComponent,
+            vueLibraryComponentAttribute,
+            vueLibraryStyleAttribute,
+            vueLibraryPluginRequirementAttribute);
     }
 
     private static INamedTypeSymbol? GetTypeByMetadataName(Compilation compilation, params string[] metadataNames)

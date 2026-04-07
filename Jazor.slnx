@@ -23,6 +23,7 @@
   <Project Path="src/Jazor.Name/Jazor.Name.csproj" />
   <Project Path="src/Jazor.Razor/Jazor.Razor.csproj" />
   <Project Path="src/Jazor.RazorVue/Jazor.RazorVue.csproj" />
+  <Project Path="src/Jazor.RazorVue.Vuetify/Jazor.RazorVue.Vuetify.csproj" />
   <Project Path="src/Jazor.RazorVue.Analysis/Jazor.RazorVue.Analysis.csproj" />
   <Project Path="src/Jazor/Jazor.csproj" />
   <Project Path="src/Jazor.Test/Jazor.Test.csproj" />

@@ -30,6 +30,7 @@ namespace Jazor.EmitTest
             Assert.AreEqual("components/counter-card.mjs", artifact.RelativeModulePath);
             CollectionAssert.AreEquivalent(new[] { "vue", "./button.mjs" }, artifact.Imports.ToArray());
             CollectionAssert.AreEquivalent(new[] { "vuetify/styles" }, artifact.Styles.ToArray());
+            CollectionAssert.AreEquivalent(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
             Assert.AreEqual(RazorVueHmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
             Assert.IsTrue(artifact.Hints.RequiresVueRuntime);
             Assert.IsTrue(artifact.Hints.SupportsSsr);
@@ -99,6 +100,7 @@ namespace Jazor.EmitTest
                 public string ModuleCode => "export default {};";
                 public string[] Imports => new[] { "vue" };
                 public string[] Styles => Array.Empty<string>();
+                public string[] PluginRequirements => Array.Empty<string>();
                 public GeneratedIdentity Identity => new();
                 public GeneratedHints Hints => new();
                 public GeneratedOrigin[]? SourceOrigins => null;
@@ -119,6 +121,7 @@ namespace Jazor.EmitTest
                 public string ModuleCode => "export default {};";
                 public string[] Imports => new[] { "vue" };
                 public string[] Styles => Array.Empty<string>();
+                public string[] PluginRequirements => Array.Empty<string>();
                 public GeneratedIdentity Identity => new();
                 public GeneratedHints Hints => new();
                 public GeneratedOrigin[] SourceOrigins => new GeneratedOrigin?[] { null };
@@ -209,6 +212,48 @@ namespace Jazor.EmitTest
         }
 
         [TestMethod]
+        public void RazorVueCatalogReader_ThrowsWhenPluginRequirementsIsNull()
+        {
+            var assembly = CompileCatalogAssembly(
+                "RazorVue.Reader.NullPluginRequirements",
+                """
+                public string ComponentName => "CounterCard";
+                public string RelativeModulePath => "components/counter-card.mjs";
+                public string ModuleCode => "export default {};";
+                public string[] Imports => new[] { "vue" };
+                public string[] Styles => Array.Empty<string>();
+                public string[]? PluginRequirements => null;
+                public GeneratedIdentity Identity => new();
+                public GeneratedHints Hints => new();
+                public GeneratedOrigin[] SourceOrigins => new[] { new GeneratedOrigin() };
+                """);
+
+            var exception = Assert.ThrowsExactly<InvalidOperationException>(() => RazorVueCatalogReader.TryRead(assembly));
+            StringAssert.Contains(exception.Message, "PluginRequirements");
+        }
+
+        [TestMethod]
+        public void RazorVueCatalogReader_ThrowsWhenPluginRequirementsContainsNullEntry()
+        {
+            var assembly = CompileCatalogAssembly(
+                "RazorVue.Reader.NullPluginRequirementEntry",
+                """
+                public string ComponentName => "CounterCard";
+                public string RelativeModulePath => "components/counter-card.mjs";
+                public string ModuleCode => "export default {};";
+                public string[] Imports => new[] { "vue" };
+                public string[] Styles => Array.Empty<string>();
+                public string[] PluginRequirements => new string?[] { null };
+                public GeneratedIdentity Identity => new();
+                public GeneratedHints Hints => new();
+                public GeneratedOrigin[] SourceOrigins => new[] { new GeneratedOrigin() };
+                """);
+
+            var exception = Assert.ThrowsExactly<InvalidOperationException>(() => RazorVueCatalogReader.TryRead(assembly));
+            StringAssert.Contains(exception.Message, "PluginRequirements");
+        }
+
+        [TestMethod]
         public void RazorVueCatalogReader_ThrowsWhenGetArtifactsContainsNullEntry()
         {
             var assembly = CompileCatalogAssembly(
@@ -264,6 +309,7 @@ namespace Jazor.EmitTest
             Assert.AreEqual("logic-hash", manifest.Modules[0].LogicHash);
             Assert.AreEqual(RazorVueHmrBoundaryKind.LogicSafe, manifest.Modules[0].HmrBoundaryKind);
             Assert.IsTrue(manifest.Modules[0].SupportsSsr);
+            CollectionAssert.AreEquivalent(new[] { "vuetify" }, manifest.Modules[0].PluginRequirements);
             Assert.IsFalse(string.IsNullOrWhiteSpace(manifest.Modules[0].ContentHash));
 
             var manifestPath = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"), "razorvue-manifest.json");
@@ -278,6 +324,7 @@ namespace Jazor.EmitTest
                 Assert.AreEqual(manifest.Modules[0].ContentHash, loaded.Modules[0].ContentHash);
                 CollectionAssert.AreEquivalent(manifest.Modules[0].Imports, loaded.Modules[0].Imports);
                 CollectionAssert.AreEquivalent(manifest.Modules[0].Styles, loaded.Modules[0].Styles);
+                CollectionAssert.AreEquivalent(manifest.Modules[0].PluginRequirements, loaded.Modules[0].PluginRequirements);
             }
             finally
             {
@@ -294,6 +341,7 @@ namespace Jazor.EmitTest
             public string ModuleCode => "export default {};";
             public string[] Imports => new[] { "vue" };
             public string[] Styles => Array.Empty<string>();
+            public string[] PluginRequirements => new[] { "vuetify" };
             public GeneratedIdentity Identity => new();
             public GeneratedHints Hints => new();
             public GeneratedOrigin[] SourceOrigins => new[] { new GeneratedOrigin() };
@@ -446,6 +494,7 @@ namespace Jazor.Generated
                 moduleCode: "export default { name: \"CounterCard\" };",
                 imports: ["vue", "./button.mjs"],
                 styles: ["vuetify/styles"],
+                pluginRequirements: ["vuetify"],
                 identity: new GeneratedIdentity(
                     componentId: "CounterCard",
                     moduleId: "components/counter-card.mjs",
@@ -482,6 +531,7 @@ namespace Jazor.Generated
             string moduleCode,
             string[] imports,
             string[] styles,
+            string[] pluginRequirements,
             GeneratedIdentity identity,
             GeneratedHints hints,
             GeneratedOrigin[] sourceOrigins)
@@ -491,6 +541,7 @@ namespace Jazor.Generated
             public string ModuleCode { get; } = moduleCode;
             public string[] Imports { get; } = imports;
             public string[] Styles { get; } = styles;
+            public string[] PluginRequirements { get; } = pluginRequirements;
             public GeneratedIdentity Identity { get; } = identity;
             public GeneratedHints Hints { get; } = hints;
             public GeneratedOrigin[] SourceOrigins { get; } = sourceOrigins;

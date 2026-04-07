@@ -56,6 +56,7 @@ public sealed class RazorVueEmitIntegrationTests
                                 "export default { name: \"CounterCard\" };",
                                 ["vue"],
                                 ["vuetify/styles"],
+                                ["vuetify"],
                                 new RazorVueEmitArtifactIdentity(
                                     "Demo.Components.CounterCard",
                                     "components/counter-card.mjs",
@@ -102,6 +103,7 @@ public sealed class RazorVueEmitIntegrationTests
             Assert.AreEqual("Demo.Components", manifest.Modules[0].AssemblyName);
             Assert.AreEqual("CounterCard", manifest.Modules[0].ComponentName);
             Assert.AreEqual("components/counter-card.mjs", manifest.Modules[0].RelativeModulePath);
+            CollectionAssert.AreEqual(new[] { "vuetify" }, manifest.Modules[0].PluginRequirements);
         }
         finally
         {
@@ -134,6 +136,7 @@ public sealed class RazorVueEmitIntegrationTests
                                 "export default { name: \"CounterCard\" };",
                                 ["vue"],
                                 [],
+                                [],
                                 new RazorVueEmitArtifactIdentity(
                                     "Demo.Components.CounterCard",
                                     "components/counter-card.mjs",
@@ -152,6 +155,7 @@ public sealed class RazorVueEmitIntegrationTests
                                 "widgets/status-badge.mjs",
                                 "export default { name: \"StatusBadge\" };",
                                 ["vue"],
+                                [],
                                 [],
                                 new RazorVueEmitArtifactIdentity(
                                     "Demo.Widgets.StatusBadge",

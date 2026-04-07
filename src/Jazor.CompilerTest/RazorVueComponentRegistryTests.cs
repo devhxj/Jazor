@@ -1,5 +1,11 @@
 using System.Collections.Immutable;
+using Basic.Reference.Assemblies;
+using ECMAScript.UI.Vue.Vuetify;
 using Jazor.RazorVue.Descriptor;
+using Jazor.RazorVue;
+using Jazor.Razor;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Jazor.ComplierTest;
 
@@ -138,6 +144,93 @@ public sealed class RazorVueComponentRegistryTests
         Assert.AreEqual("Component 'MissingCard' is not visible in the current RazorVue resolution scope.", result.Issues[0].Message);
     }
 
+    [TestMethod]
+    public void RazorVue_Registry_CreateFromCompilationContext_ResolvesDiscoveredLibraryComponent()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Ui.Custom
+            {
+                [VueLibraryComponent("demo/components", "DemoButton")]
+                [VueLibraryStyle("demo/styles")]
+                [VueLibraryPluginRequirement("demo-host")]
+                public sealed class DemoButton : VueLibraryComponent
+                {
+                    [Parameter]
+                    public string? Text { get; set; }
+                }
+            }
+            """);
+
+        var registry = context.CreateComponentRegistry();
+        var result = registry.Resolve(
+            "DemoButton",
+            VueComponentResolutionContext.Create("Demo.Pages", "Demo.Ui.Custom"));
+
+        Assert.AreEqual(VueComponentResolutionStatus.Resolved, result.Status);
+        Assert.IsNotNull(result.Descriptor);
+        Assert.AreEqual(VueComponentSourceKind.LibraryComponent, result.Descriptor.SourceKind);
+        Assert.AreEqual("demo/components", result.Descriptor.ImportSpecifier);
+        CollectionAssert.AreEqual(new[] { "demo/styles" }, result.Descriptor.StyleDependencies.ToArray());
+        CollectionAssert.AreEqual(new[] { "demo-host" }, result.Descriptor.PluginRequirements.ToArray());
+    }
+
+    [TestMethod]
+    public void RazorVue_Registry_CreateFromCompilationContext_ResolvesVuetifyPackageComponents()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host-card")]
+                public class HostCard : VueComponent
+                {
+                }
+            }
+            """);
+
+        var registry = context.CreateComponentRegistry();
+        foreach (var componentName in new[] { "VBtn", "VCard", "VDialog", "VIcon", "VTextField" })
+        {
+            var result = registry.Resolve(
+                componentName,
+                VueComponentResolutionContext.Create("Demo.Pages", "ECMAScript.UI.Vue.Vuetify"));
+
+            Assert.AreEqual(VueComponentResolutionStatus.Resolved, result.Status, componentName);
+            Assert.IsNotNull(result.Descriptor, componentName);
+            Assert.AreEqual(VueComponentSourceKind.LibraryComponent, result.Descriptor.SourceKind, componentName);
+            Assert.AreEqual("vuetify/components", result.Descriptor.ImportSpecifier, componentName);
+            CollectionAssert.AreEqual(new[] { "vuetify" }, result.Descriptor.PluginRequirements.ToArray(), componentName);
+        }
+    }
+
     private static VueComponentRegistry CreateRegistry(
         ImmutableArray<VueComponentDescriptor> userComponents,
         ImmutableArray<VueComponentDescriptor> libraryComponents = default(ImmutableArray<VueComponentDescriptor>))
@@ -155,6 +248,7 @@ public sealed class RazorVueComponentRegistryTests
             Emits: [],
             Slots: [],
             StyleDependencies: [],
+            PluginRequirements: [],
             Flags: VueComponentFlags.None);
 
     private static VueComponentDescriptor CreateLibraryComponent(string name, string resolutionNamespace)
@@ -169,6 +263,33 @@ public sealed class RazorVueComponentRegistryTests
             Emits: [],
             Slots: [],
             StyleDependencies: [],
+            PluginRequirements: ["vuetify"],
             Flags: VueComponentFlags.None);
+
+    private static RazorVueCompilationContext CreateContext(string source)
+    {
+        var references = Net100.References.All
+            .Cast<MetadataReference>()
+            .ToList();
+        references.Add(MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location));
+        references.Add(MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location));
+        references.Add(MetadataReference.CreateFromFile(typeof(VBtn).Assembly.Location));
+        references.Add(MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+
+        var compilation = CSharpCompilation.Create(
+            assemblyName: "RazorVue.Registry.Tests",
+            syntaxTrees: [CSharpSyntaxTree.ParseText(source)],
+            references: references,
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var errors = compilation.GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+        Assert.AreEqual(0, errors.Length, string.Join(Environment.NewLine, errors.Select(static diagnostic => diagnostic.ToString())));
+
+        var context = RazorVueCompilationContext.TryCreate(compilation);
+        Assert.IsNotNull(context);
+        return context;
+    }
 }
 

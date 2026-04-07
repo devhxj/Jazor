@@ -46,6 +46,7 @@ internal static class RazorVueCatalogReader
             ReadString(itemType, item, "ModuleCode"),
             ReadStringArray(itemType, item, "Imports"),
             ReadStringArray(itemType, item, "Styles"),
+            ReadStringArray(itemType, item, "PluginRequirements"),
             ReadIdentity(itemType, item),
             ReadHints(itemType, item),
             ReadOrigins(itemType, item));
@@ -269,6 +270,7 @@ internal sealed record RazorVueEmitArtifactRecord(
     string ModuleCode,
     IReadOnlyList<string> Imports,
     IReadOnlyList<string> Styles,
+    IReadOnlyList<string> PluginRequirements,
     RazorVueEmitArtifactIdentity Identity,
     RazorVueEmitRuntimeHints Hints,
     IReadOnlyList<RazorVueEmitSourceOriginRecord> SourceOrigins);

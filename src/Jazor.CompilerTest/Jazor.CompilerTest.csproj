@@ -10,6 +10,7 @@
     <ProjectReference Include="..\Jazor.Compiler\Jazor.Compiler.csproj" />
     <ProjectReference Include="..\Jazor.Razor\Jazor.Razor.csproj" />
     <ProjectReference Include="..\Jazor.RazorVue\Jazor.RazorVue.csproj" />
+    <ProjectReference Include="..\Jazor.RazorVue.Vuetify\Jazor.RazorVue.Vuetify.csproj" />
     <ProjectReference Include="..\Jazor.RazorVue.Analysis\Jazor.RazorVue.Analysis.csproj" />
     <ProjectReference Include="..\Jazor.Analyzer\Jazor.Analyzer.csproj" />
     <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />

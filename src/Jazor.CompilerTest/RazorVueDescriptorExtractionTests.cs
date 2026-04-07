@@ -1,4 +1,5 @@
 using Basic.Reference.Assemblies;
+using ECMAScript.UI.Vue.Vuetify;
 using Jazor.RazorVue;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
@@ -142,6 +143,120 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual(RazorVueOriginKind.Component, snapshot.Origins[0].OriginKind);
         Assert.AreEqual(RazorVueMappingQuality.MappedFromGenerated, snapshot.Origins[0].MappingQuality);
         Assert.AreEqual(RazorVueOriginProvenance.GeneratedSyntaxLocation, snapshot.Origins[0].Provenance);
+    }
+
+    [TestMethod]
+    public void RazorVue_Context_DiscoversLibraryComponentDescriptors_FromStubMetadata()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Ui.Custom
+            {
+                [VueLibraryComponent("demo/components", "DemoButton")]
+                [VueLibraryStyle("demo/styles")]
+                [VueLibraryPluginRequirement("demo-host")]
+                public sealed class DemoButton : VueLibraryComponent
+                {
+                    [Parameter]
+                    public string? Text { get; set; }
+
+                    [Parameter]
+                    public EventCallback OnClick { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? ChildContent { get; set; }
+                }
+            }
+            """);
+
+        var descriptors = context.DiscoverLibraryComponents();
+        var descriptor = descriptors.Single(static descriptor => descriptor.FullName == "Demo.Ui.Custom.DemoButton");
+        Assert.AreEqual("DemoButton", descriptor.Name);
+        Assert.AreEqual("Demo.Ui.Custom.DemoButton", descriptor.FullName);
+        Assert.AreEqual(VueComponentSourceKind.LibraryComponent, descriptor.SourceKind);
+        Assert.AreEqual("Demo.Ui.Custom", descriptor.ResolutionNamespace);
+        Assert.AreEqual("demo/components", descriptor.ImportSpecifier);
+        Assert.AreEqual("DemoButton", descriptor.ExportName);
+        CollectionAssert.AreEqual(new[] { "demo/styles" }, descriptor.StyleDependencies.ToArray());
+        CollectionAssert.AreEqual(new[] { "demo-host" }, descriptor.PluginRequirements.ToArray());
+
+        var textProp = descriptor.Props.Single(prop => prop.PublicName == "Text");
+        Assert.AreEqual("text", textProp.Name);
+
+        var onClickEmit = descriptor.Emits.Single(emit => emit.RazorAlias == "OnClick");
+        Assert.AreEqual("click", onClickEmit.Name);
+
+        var defaultSlot = descriptor.Slots.Single(slot => slot.IsDefault);
+        Assert.AreEqual("default", defaultSlot.Name);
+    }
+
+    [TestMethod]
+    public void RazorVue_Context_DiscoversVuetifyPackageLibraryDescriptors_FromReferencedAssembly()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host-card")]
+                public class HostCard : VueComponent
+                {
+                }
+            }
+            """);
+
+        var descriptors = context.DiscoverLibraryComponents();
+
+        var vuetifyDescriptors = descriptors
+            .Where(static descriptor => descriptor.ResolutionNamespace == "ECMAScript.UI.Vue.Vuetify")
+            .ToArray();
+
+        CollectionAssert.AreEquivalent(
+            new[] { "VBtn", "VCard", "VDialog", "VIcon", "VTextField" },
+            vuetifyDescriptors
+                .Select(static descriptor => descriptor.Name)
+                .OrderBy(static name => name, StringComparer.Ordinal)
+                .ToArray());
+
+        var textField = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.UI.Vue.Vuetify.VTextField");
+        Assert.AreEqual("vuetify/components", textField.ImportSpecifier);
+        Assert.AreEqual("VTextField", textField.ExportName);
+        CollectionAssert.AreEqual(new[] { "vuetify/styles" }, textField.StyleDependencies.ToArray());
+        CollectionAssert.AreEqual(new[] { "vuetify" }, textField.PluginRequirements.ToArray());
+        Assert.AreEqual("modelValue", textField.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", textField.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+
+        var dialog = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.UI.Vue.Vuetify.VDialog");
+        var activator = dialog.Slots.Single(static slot => slot.Name == "activator");
+        Assert.HasCount(1, activator.Parameters);
+        Assert.AreEqual("context", activator.Parameters[0].Name);
+        Assert.AreEqual("ECMAScript.UI.Vue.Vuetify.VDialogActivatorContext", activator.Parameters[0].TypeName);
     }
 
     [TestMethod]
@@ -349,6 +464,7 @@ public sealed class RazorVueDescriptorExtractionTests
             .ToList();
         references.Add(MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location));
         references.Add(MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location));
+        references.Add(MetadataReference.CreateFromFile(typeof(VBtn).Assembly.Location));
         references.Add(MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
 
         return CSharpCompilation.Create(

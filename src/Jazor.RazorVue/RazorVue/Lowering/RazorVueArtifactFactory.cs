@@ -75,8 +75,9 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             ComponentName: descriptor.Name,
             RelativeModulePath: relativeModulePath,
             ModuleCode: moduleCode,
-            Imports: BuildImports(componentReferences),
-            Styles: descriptor.StyleDependencies,
+            Imports: BuildImports(resolvedComponents),
+            Styles: BuildStyles(descriptor, resolvedComponents),
+            PluginRequirements: BuildPluginRequirements(descriptor, resolvedComponents),
             Identity: BuildIdentity(context, snapshot, renderTree, expressionEmitter, relativeModulePath),
             Hints: BuildHints(moduleCode),
             SourceOrigins: sourceOrigins);
@@ -115,6 +116,8 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             descriptorShape.AppendLine(emit.RazorAlias + "|" + emit.Name + "|" + emit.PayloadTypeName + "|" + emit.Kind);
         foreach (var slot in descriptor.Slots.OrderBy(static item => item.Name, StringComparer.Ordinal))
             descriptorShape.AppendLine(slot.Name + "|" + slot.IsDefault + "|" + slot.Required);
+        foreach (var pluginRequirement in descriptor.PluginRequirements.OrderBy(static item => item, StringComparer.Ordinal))
+            descriptorShape.AppendLine("plugin:" + pluginRequirement);
 
         return descriptorShape.ToString();
     }
@@ -976,27 +979,129 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         return "on" + char.ToUpperInvariant(eventName[0]) + eventName.Substring(1);
     }
 
-    private static ImmutableArray<string> BuildImports(ImmutableDictionary<string, string> componentReferences)
+    private static ImmutableArray<string> BuildImports(ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents)
     {
-        if (componentReferences.IsEmpty)
+        if (resolvedComponents.IsEmpty)
             return ImmutableArray.Create("vue");
 
-        return ImmutableArray.Create("vue").AddRange(componentReferences.Values.Where(static value => value.EndsWith("Component", StringComparison.Ordinal)));
+        // Host-facing artifacts should carry declared dependency specifiers rather
+        // than local alias names generated during lowering.
+        return ImmutableArray.Create("vue").AddRange(
+            resolvedComponents.Values
+                .Select(static descriptor => descriptor.ImportSpecifier)
+                .Where(static importSpecifier => !string.Equals(importSpecifier, "vue", StringComparison.Ordinal))
+                .Distinct(StringComparer.Ordinal));
+    }
+
+    private static ImmutableArray<string> BuildStyles(
+        VueComponentDescriptor descriptor,
+        ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents)
+    {
+        var builder = ImmutableArray.CreateBuilder<string>();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var style in descriptor.StyleDependencies)
+        {
+            if (!string.IsNullOrWhiteSpace(style) && seen.Add(style))
+                builder.Add(style);
+        }
+
+        foreach (var component in resolvedComponents.Values)
+        {
+            foreach (var style in component.StyleDependencies)
+            {
+                if (!string.IsNullOrWhiteSpace(style) && seen.Add(style))
+                    builder.Add(style);
+            }
+        }
+
+        return builder.ToImmutable();
+    }
+
+    private static ImmutableArray<string> BuildPluginRequirements(
+        VueComponentDescriptor descriptor,
+        ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents)
+    {
+        var builder = ImmutableArray.CreateBuilder<string>();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var requirement in descriptor.PluginRequirements)
+        {
+            if (!string.IsNullOrWhiteSpace(requirement) && seen.Add(requirement))
+                builder.Add(requirement);
+        }
+
+        foreach (var component in resolvedComponents.Values)
+        {
+            foreach (var requirement in component.PluginRequirements)
+            {
+                if (!string.IsNullOrWhiteSpace(requirement) && seen.Add(requirement))
+                    builder.Add(requirement);
+            }
+        }
+
+        return builder.ToImmutable();
     }
 
     private static void AppendComponentImports(StringBuilder builder, ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents)
     {
-        foreach (var item in resolvedComponents.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
-        {
-            if (string.Equals(item.Value.ImportSpecifier, "vue", StringComparison.Ordinal))
-                continue;
+        var groups = resolvedComponents
+            .Where(static pair => !string.Equals(pair.Value.ImportSpecifier, "vue", StringComparison.Ordinal))
+            .OrderBy(static pair => pair.Key, StringComparer.Ordinal)
+            .GroupBy(static pair => pair.Value.ImportSpecifier, StringComparer.Ordinal);
 
-            builder.Append("import ");
-            builder.Append(CreateComponentAlias(item.Key));
-            builder.Append(" from ");
-            builder.Append(ToJavaScriptString(item.Value.ImportSpecifier));
+        foreach (var group in groups)
+        {
+            AppendGroupedComponentImports(builder, group.Key, group.ToImmutableArray());
+        }
+    }
+
+    private static void AppendGroupedComponentImports(
+        StringBuilder builder,
+        string importSpecifier,
+        ImmutableArray<KeyValuePair<string, VueComponentDescriptor>> components)
+    {
+        var namedImports = components
+            .Where(static item => item.Value.SourceKind == VueComponentSourceKind.LibraryComponent &&
+                                  !string.Equals(item.Value.ExportName, "default", StringComparison.Ordinal))
+            .Select(static item => item.Value.ExportName + " as " + CreateComponentAlias(item.Key))
+            .ToImmutableArray();
+
+        foreach (var item in components)
+        {
+            if (item.Value.SourceKind == VueComponentSourceKind.LibraryComponent &&
+                !string.Equals(item.Value.ExportName, "default", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            AppendDefaultComponentImport(builder, item.Key, importSpecifier);
+        }
+
+        if (!namedImports.IsDefaultOrEmpty)
+        {
+            // Aggregate named library exports from the same package into one import
+            // so generated modules stay compact while preserving local aliases.
+            builder.Append("import { ");
+            builder.Append(string.Join(", ", namedImports));
+            builder.Append(" } from ");
+            builder.Append(ToJavaScriptString(importSpecifier));
             builder.AppendLine(";");
         }
+    }
+
+    private static void AppendDefaultComponentImport(
+        StringBuilder builder,
+        string componentName,
+        string importSpecifier)
+    {
+        var alias = CreateComponentAlias(componentName);
+
+        builder.Append("import ");
+        builder.Append(alias);
+        builder.Append(" from ");
+        builder.Append(ToJavaScriptString(importSpecifier));
+        builder.AppendLine(";");
     }
 
     private static HashSet<RazorVueComponentNode> CollectComponents(RazorVueRenderFragment fragment)

@@ -24,6 +24,7 @@ internal static class VueIntrinsicComponentDescriptors
             Emits: [],
             Slots: [],
             StyleDependencies: [],
+            PluginRequirements: [],
             Flags: VueComponentFlags.None);
 }
 

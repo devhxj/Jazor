@@ -15,6 +15,7 @@ public sealed record VueComponentDescriptor(
     ImmutableArray<VueEmitDescriptor> Emits,
     ImmutableArray<VueSlotDescriptor> Slots,
     ImmutableArray<string> StyleDependencies,
+    ImmutableArray<string> PluginRequirements,
     VueComponentFlags Flags);
 
 public sealed record VueLifecycleDescriptor(

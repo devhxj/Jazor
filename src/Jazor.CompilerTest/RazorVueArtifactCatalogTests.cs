@@ -54,6 +54,7 @@ public sealed class RazorVueArtifactCatalogTests
             ModuleCode: $"export default {{ name: \"{componentName}\" }};",
             Imports: ImmutableArray.Create("vue"),
             Styles: ImmutableArray<string>.Empty,
+            PluginRequirements: ImmutableArray<string>.Empty,
             Identity: new VueArtifactIdentity(
                 ComponentId: componentName,
                 ModuleId: relativeModulePath,

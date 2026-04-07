@@ -8,6 +8,7 @@ public sealed record VueCompiledArtifact(
     string ModuleCode,
     ImmutableArray<string> Imports,
     ImmutableArray<string> Styles,
+    ImmutableArray<string> PluginRequirements,
     VueArtifactIdentity Identity,
     VueRuntimeHints Hints,
     ImmutableArray<RazorVueSourceOrigin> SourceOrigins);

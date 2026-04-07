@@ -63,6 +63,38 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
+    private static readonly DiagnosticDescriptor RazorVueUnknownParameter = new(
+        id: "JAZORVGA007",
+        title: "RazorVue parameter is unknown",
+        messageFormat: "{0}",
+        category: "Jazor.RazorVue.Analysis",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor RazorVueInvalidBindTarget = new(
+        id: "JAZORVGA008",
+        title: "RazorVue bind target is invalid",
+        messageFormat: "{0}",
+        category: "Jazor.RazorVue.Analysis",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor RazorVueUnknownSlot = new(
+        id: "JAZORVGA009",
+        title: "RazorVue child content parameter is unknown",
+        messageFormat: "{0}",
+        category: "Jazor.RazorVue.Analysis",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor RazorVueSlotContextMisuse = new(
+        id: "JAZORVGA010",
+        title: "RazorVue child content parameter context is invalid",
+        messageFormat: "{0}",
+        category: "Jazor.RazorVue.Analysis",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var componentCandidates = context.SyntaxProvider.ForAttributeWithMetadataName(
@@ -143,6 +175,10 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
             RazorVueIssueCode.ReservedIntrinsicNameCollision => RazorVueReservedIntrinsicNameCollision,
             RazorVueIssueCode.UnsupportedLifecycleLowering => RazorVueUnsupportedLifecycleLowering,
             RazorVueIssueCode.UnsupportedSetupLogicLowering => RazorVueUnsupportedSetupLogicLowering,
+            RazorVueIssueCode.UnknownParameter => RazorVueUnknownParameter,
+            RazorVueIssueCode.InvalidBindTarget => RazorVueInvalidBindTarget,
+            RazorVueIssueCode.UnknownSlot => RazorVueUnknownSlot,
+            RazorVueIssueCode.SlotContextMisuse => RazorVueSlotContextMisuse,
             _ => RazorVueGenerationFailed
         };
         var location = TryCreateLocation(issueException.Origin) ?? candidate?.Location ?? Location.None;
@@ -235,13 +271,14 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         builder.AppendLine("        [global::System.Runtime.CompilerServices.CompilerGenerated]");
         builder.AppendLine("        private sealed class GeneratedArtifact");
         builder.AppendLine("        {");
-        builder.AppendLine("            public GeneratedArtifact(string componentName, string relativeModulePath, string moduleCode, string[] imports, string[] styles, GeneratedIdentity identity, GeneratedHints hints, GeneratedOrigin[] sourceOrigins)");
+        builder.AppendLine("            public GeneratedArtifact(string componentName, string relativeModulePath, string moduleCode, string[] imports, string[] styles, string[] pluginRequirements, GeneratedIdentity identity, GeneratedHints hints, GeneratedOrigin[] sourceOrigins)");
         builder.AppendLine("            {");
         builder.AppendLine("                ComponentName = componentName;");
         builder.AppendLine("                RelativeModulePath = relativeModulePath;");
         builder.AppendLine("                ModuleCode = moduleCode;");
         builder.AppendLine("                Imports = imports;");
         builder.AppendLine("                Styles = styles;");
+        builder.AppendLine("                PluginRequirements = pluginRequirements;");
         builder.AppendLine("                Identity = identity;");
         builder.AppendLine("                Hints = hints;");
         builder.AppendLine("                SourceOrigins = sourceOrigins;");
@@ -252,6 +289,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         builder.AppendLine("            public string ModuleCode { get; }");
         builder.AppendLine("            public string[] Imports { get; }");
         builder.AppendLine("            public string[] Styles { get; }");
+        builder.AppendLine("            public string[] PluginRequirements { get; }");
         builder.AppendLine("            public GeneratedIdentity Identity { get; }");
         builder.AppendLine("            public GeneratedHints Hints { get; }");
         builder.AppendLine("            public GeneratedOrigin[] SourceOrigins { get; }");
@@ -360,6 +398,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
             builder.Append("                moduleCode: ").Append(EscapeCSharpString(artifact.ModuleCode)).AppendLine(",");
             builder.Append("                imports: ").Append(BuildStringArrayLiteral(artifact.Imports)).AppendLine(",");
             builder.Append("                styles: ").Append(BuildStringArrayLiteral(artifact.Styles)).AppendLine(",");
+            builder.Append("                pluginRequirements: ").Append(BuildStringArrayLiteral(artifact.PluginRequirements)).AppendLine(",");
             builder.AppendLine("                identity: new GeneratedIdentity(");
             builder.Append("                    componentId: ").Append(EscapeCSharpString(artifact.Identity.ComponentId)).AppendLine(",");
             builder.Append("                    moduleId: ").Append(EscapeCSharpString(artifact.Identity.ModuleId)).AppendLine(",");

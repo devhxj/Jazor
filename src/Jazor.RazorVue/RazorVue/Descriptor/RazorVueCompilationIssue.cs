@@ -14,7 +14,11 @@ public enum RazorVueIssueCode
     AmbiguousComponentName,
     ReservedIntrinsicNameCollision,
     UnsupportedLifecycleLowering,
-    UnsupportedSetupLogicLowering
+    UnsupportedSetupLogicLowering,
+    UnknownParameter,
+    InvalidBindTarget,
+    UnknownSlot,
+    SlotContextMisuse
 }
 
 public enum RazorVueIssueSeverity

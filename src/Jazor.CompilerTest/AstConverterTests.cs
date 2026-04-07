@@ -3074,6 +3074,62 @@ export function Project(source) {
     }
 
     [TestMethod]
+    public async Task Convert_ClassWithLinqWhereAndToListOnIList_UsesArrayMethodsWithoutImport()
+    {
+        var code = """
+            using System.Collections.Generic;
+            using System.Linq;
+
+            public static class TestClass
+            {
+                public static List<int> Filter(IList<int> source) => source.Where(x => x > 1).ToList();
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"export function Filter(source) {
+  return source.filter(x => {
+    return x > 1;
+  });
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithLinqSelectAndToArrayOnICollection_UsesArrayMethodsWithoutImport()
+    {
+        var code = """
+            using System.Collections.Generic;
+            using System.Linq;
+
+            public static class TestClass
+            {
+                public static int[] Project(ICollection<int> source) => source.Select(x => x * 2).ToArray();
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"export function Project(source) {
+  return source.map(x => {
+    return x * 2;
+  });
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
     public async Task Convert_ClassWithDateOnlyParseAndDefaultToString_ImportsOnlyParseHelper()
     {
         var code = """

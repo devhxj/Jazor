@@ -314,12 +314,10 @@ internal sealed class RazorVueRenderTreeExtractor
 
         private static string? TryGetConstantString(IOperation? operation)
         {
-            if (Unwrap(operation) is ILiteralOperation literal &&
-                literal.ConstantValue.HasValue &&
-                literal.ConstantValue.Value is string text)
-            {
+            var current = Unwrap(operation);
+            if (current?.ConstantValue.HasValue == true &&
+                current.ConstantValue.Value is string text)
                 return text;
-            }
 
             return null;
         }
