@@ -86,8 +86,7 @@
 
 ### 1. 先分清自己现在看的是哪一层
 
-- 看当前推进阶段：回到 [docs/status/README.md](../../status/README.md)
-- 看当前执行入口：回到 [docs/plans/README.md](../../plans/README.md)
+- 看当前推进阶段：回到 [docs/workstream-dashboard.md](../../workstream-dashboard.md)
 - 看长期设计：回到 [docs/architecture/README.md](../README.md)
 - 看模块内部操作说明：从本文跳进对应 README
 

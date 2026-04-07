@@ -157,8 +157,8 @@ README 首页不再仅使用“Key Features / Planned Features”二分法，而
 
 本轮 README 修订需要优先对齐以下来源：
 
-- `docs/status/2026-04-06-project-workstream-dashboard.md`
-- `docs/status/2026-04-06-compiler-mainline-status.md`
+- `docs/workstream-dashboard.md`
+- `docs/status/compiler-mainline-status.md`
 - 仓库当前目录结构与现有脚本路径
 - 主仓库 remote：`https://github.com/devhxj/Jazor.git`
 

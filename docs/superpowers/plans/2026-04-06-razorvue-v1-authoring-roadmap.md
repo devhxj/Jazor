@@ -17,7 +17,7 @@ Related documents:
 - [RazorVue.DenoHostContract.md](../../../src/Jazor.Compiler/doc/RazorVue.DenoHostContract.md)
 - [RazorVue.ImplementationChecklist.md](../../../src/Jazor.Compiler/doc/RazorVue.ImplementationChecklist.md)
 - [2026-04-06-razorvue-v1-authoring-pr-breakdown.md](./2026-04-06-razorvue-v1-authoring-pr-breakdown.md)
-- [RazorVue 阶段评估（2026-04-06）](../../status/2026-04-06-razorvue-stage-assessment.md)
+- [RazorVue 阶段评估（2026-04-06）](../../status/razorvue-stage-assessment.md)
 
 Historical context:
 

@@ -17,15 +17,15 @@
   - Rebuild the documentation map into reader-oriented groups.
   - Trim component and capability sections so they describe boundaries instead of frozen snapshots.
   - Fix the clone URL and build/test guidance.
-- **Reference only:** `docs/status/2026-04-06-project-workstream-dashboard.md`
+- **Reference only:** `docs/workstream-dashboard.md`
   - Source of truth for repo-level workstream wording.
-- **Reference only:** `docs/status/2026-04-06-compiler-mainline-status.md`
+- **Reference only:** `docs/status/compiler-mainline-status.md`
   - Source of truth for compiler-mainline maturity wording.
 - **Reference only:** `docs/README.md`
   - Top-level documentation hub linked from README.
 - **Reference only:** `docs/architecture/README.md`
   - Architecture bridge linked from README.
-- **Reference only:** `docs/plans/project-execution-index.md`
+- **Reference only:** `docs/workstream-dashboard.md`
   - Execution index linked from README.
 - **Reference only:** `src/Jazor.Compiler/README.md`
   - Module-level compiler link target.
@@ -36,8 +36,8 @@
 
 **Files:**
 - Modify: `README.md:5-58`
-- Reference: `docs/status/2026-04-06-project-workstream-dashboard.md`
-- Reference: `docs/status/2026-04-06-compiler-mainline-status.md`
+- Reference: `docs/workstream-dashboard.md`
+- Reference: `docs/status/compiler-mainline-status.md`
 
 - [ ] **Step 1: Replace the opening summary and status framing**
 
@@ -108,8 +108,8 @@ Expected: five matches
 **Files:**
 - Modify: `README.md:16-38`
 - Reference: `docs/README.md`
-- Reference: `docs/status/2026-04-06-project-workstream-dashboard.md`
-- Reference: `docs/plans/project-execution-index.md`
+- Reference: `docs/workstream-dashboard.md`
+- Reference: `docs/workstream-dashboard.md`
 - Reference: `docs/architecture/README.md`
 
 - [ ] **Step 1: Replace the flat documentation list with grouped navigation**
@@ -122,15 +122,15 @@ Replace the existing `Documentation Map` section with this grouped structure:
 ### Start here
 
 - [Repository documentation hub](docs/README.md)
-- [Current workstream dashboard](docs/status/2026-04-06-project-workstream-dashboard.md)
-- [Current project stage assessment](docs/status/2026-04-04-project-stage-assessment.md)
+- [Current workstream dashboard](docs/workstream-dashboard.md)
+- [Current project stage assessment](docs/workstream-dashboard.md)
 
 ### Current status and execution
 
-- [Compiler mainline status](docs/status/2026-04-06-compiler-mainline-status.md)
-- [Emit and host materialization status](docs/status/2026-04-06-emit-host-materialization-status.md)
-- [Project execution index](docs/plans/project-execution-index.md)
-- [Project program roadmap](docs/plans/project-program-roadmap.md)
+- [Compiler mainline status](docs/status/compiler-mainline-status.md)
+- [Emit and host materialization status](docs/status/emit-host-materialization-status.md)
+- [Project execution index](docs/workstream-dashboard.md)
+- [Project program roadmap](docs/workstream-dashboard.md)
 
 ### Architecture
 
@@ -147,7 +147,7 @@ Replace the existing `Documentation Map` section with this grouped structure:
 ### Planning and documentation governance
 
 - [Documentation governance rules](docs/guides/documentation-governance.md)
-- [Repository plans index](docs/plans/README.md)
+- [Repository plans index](docs/workstream-dashboard.md)
 ```
 
 - [ ] **Step 2: Replace the resume-order paragraph with a reader-friendly entry guide**
@@ -158,9 +158,9 @@ Replace the current `If you are resuming project work, read in this order:` bloc
 If you are new to the repository, read in this order:
 
 1. `docs/README.md`
-2. `docs/status/2026-04-06-project-workstream-dashboard.md`
-3. `docs/status/2026-04-06-compiler-mainline-status.md`
-4. `docs/plans/project-execution-index.md`
+2. `docs/workstream-dashboard.md`
+3. `docs/status/compiler-mainline-status.md`
+4. `docs/workstream-dashboard.md`
 5. `docs/architecture/README.md`
 
 If you are resuming a specific workstream, start from the current status page for that lane and then drill into the linked subsystem documentation.
@@ -173,13 +173,13 @@ Run:
 ```bash
 for path in \
   docs/README.md \
-  docs/status/2026-04-06-project-workstream-dashboard.md \
-  docs/status/2026-04-06-compiler-mainline-status.md \
-  docs/status/2026-04-04-project-stage-assessment.md \
-  docs/status/2026-04-06-emit-host-materialization-status.md \
-  docs/plans/project-execution-index.md \
-  docs/plans/project-program-roadmap.md \
-  docs/plans/README.md \
+  docs/workstream-dashboard.md \
+  docs/status/compiler-mainline-status.md \
+  docs/workstream-dashboard.md \
+  docs/status/emit-host-materialization-status.md \
+  docs/workstream-dashboard.md \
+  docs/workstream-dashboard.md \
+  docs/workstream-dashboard.md \
   docs/architecture/README.md \
   docs/architecture/compiler/README.md \
   docs/architecture/modules/README.md \
@@ -357,8 +357,8 @@ Ensure the contact block remains:
 
 **Files:**
 - Modify: `README.md`
-- Reference: `docs/status/2026-04-06-project-workstream-dashboard.md`
-- Reference: `docs/status/2026-04-06-compiler-mainline-status.md`
+- Reference: `docs/workstream-dashboard.md`
+- Reference: `docs/status/compiler-mainline-status.md`
 
 - [ ] **Step 1: Read the final README top-to-bottom and check for internal contradictions**
 

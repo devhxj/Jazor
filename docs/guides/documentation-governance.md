@@ -6,13 +6,14 @@ Jazor 的文档组织优先服务维护者：要能快点判断当前状态、�
 
 ## 放置规则
 
+- `docs/workstream-dashboard.md`：唯一的工作流总览，当前状态和下一步行动的入口
 - `docs/guides/`：维护规则、阅读路径、治理原则
 - `docs/architecture/`：长期有效的架构、规范、专题入口
-- `docs/status/`：当前阶段评审、成熟度判断、当前推进重点
-- `docs/plans/`：当前仍生效的行动计划
+- `docs/status/`：每个工作流的详细状态快照
 - `docs/archive/`：历史报告、旧计划、一次性 review、被合并后的原文
 - `docs/generated/`：生成产物说明
 - `docs/external/`：第三方依赖、缓存、工作副本文档说明
+- `docs/superpowers/plans/`：执行级的详细计划文档
 
 ## 状态标签
 
@@ -37,15 +38,16 @@ Jazor 的文档组织优先服务维护者：要能快点判断当前状态、�
 
 1. 新增长期设计，优先放进 `docs/architecture/` 或已有专题索引
 2. 新增当前评审，放进 `docs/status/`
-3. 新增近期行动方案，放进 `docs/plans/`
+3. 新增执行级行动方案，放进 `docs/superpowers/plans/`
 4. 计划或报告结束后，迁进 `docs/archive/`
 5. 子系统如果已经有强局部索引，优先保留原位，再在仓库级索引桥接，莫盲目搬家
+6. 工作流状态和下一步行动的变更，优先更新 `docs/workstream-dashboard.md`
 
 ## 生命周期规则
 
 ### 1. 什么情况下仍应保留为 active
 
-满足以下任一条件时，可以继续留在 `status/` 或 `plans/`：
+满足以下任一条件时，可以继续留在 `status/` 或 `superpowers/plans/`：
 
 - 它仍然是当前工作流的主入口
 - 它仍然描述的是当前真实阶段，不是旧阶段
@@ -72,7 +74,7 @@ Jazor 的文档组织优先服务维护者：要能快点判断当前状态、�
 当一个 active plan 或 current status snapshot 结束生命周期时，至少做下面两项中的任意两项：
 
 1. 更新它的 `Status`
-2. 从 repo-level 主入口移除或降级
+2. 从 `docs/workstream-dashboard.md` 移除或降级
 3. 在新入口里保留一条 historical link
 4. 需要时迁进 `docs/archive/`
 
