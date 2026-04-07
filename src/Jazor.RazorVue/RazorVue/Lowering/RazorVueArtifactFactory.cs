@@ -154,7 +154,7 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         logicShape.AppendLine("lifecycle:setParametersAsync=" + setParametersAsyncShape);
         logicShape.AppendLine("lifecycle:onAfterRender=" + onAfterRenderShape);
         logicShape.AppendLine("lifecycle:onAfterRenderAsync=" + onAfterRenderAsyncShape);
-        logicShape.AppendLine("lifecycle:shouldRender=" + DescribeShouldRenderShape(snapshot.ShouldRenderMethod));
+        logicShape.AppendLine("lifecycle:shouldRender=" + DescribeShouldRenderShape(snapshot.Compilation, snapshot.ShouldRenderMethod));
         logicShape.AppendLine("lifecycle:dispose=" + disposeShape);
         logicShape.AppendLine("lifecycle:disposeAsync=" + disposeAsyncShape);
 
@@ -186,7 +186,7 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             return HmrBoundaryKind.FullReloadRequired;
 
         if (snapshot.Lifecycle.HasShouldRender &&
-            !AnalyzeShouldRender(snapshot.ShouldRenderMethod).IsSupported)
+            !AnalyzeShouldRender(snapshot.Compilation, snapshot.ShouldRenderMethod).IsSupported)
         {
             return HmrBoundaryKind.FullReloadRequired;
         }
@@ -551,12 +551,12 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             : analysis.EmitCall.EmitName + "|" + (analysis.EmitCall.PayloadExpression ?? string.Empty);
     }
 
-    private static string DescribeShouldRenderShape(IMethodSymbol? method)
+    private static string DescribeShouldRenderShape(Compilation compilation, IMethodSymbol? method)
     {
         if (method is null)
             return "none";
 
-        return AnalyzeShouldRender(method).IsSupported
+        return AnalyzeShouldRender(compilation, method).IsSupported
             ? "true"
             : "unsupported";
     }
@@ -783,8 +783,14 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
     private static SetParametersAsyncAnalysis AnalyzeSetParametersAsync(
         RazorVueSemanticSnapshot snapshot,
         IMethodSymbol? method)
+        => AnalyzeSetParametersAsync(snapshot, method, new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default));
+
+    private static SetParametersAsyncAnalysis AnalyzeSetParametersAsync(
+        RazorVueSemanticSnapshot snapshot,
+        IMethodSymbol? method,
+        HashSet<IMethodSymbol> visitedMethods)
     {
-        if (method is null)
+        if (method is null || !visitedMethods.Add(method))
             return new SetParametersAsyncAnalysis(false, null);
 
         if (method.DeclaringSyntaxReferences.Length == 0)
@@ -796,7 +802,7 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         if (methodSyntax.ExpressionBody is not null)
         {
             return IsBaseSetParametersAsyncCall(method, methodSyntax.ExpressionBody.Expression)
-                ? new SetParametersAsyncAnalysis(true, null)
+                ? AnalyzeBaseSetParametersAsync(snapshot, method, visitedMethods)
                 : new SetParametersAsyncAnalysis(false, null);
         }
 
@@ -809,14 +815,21 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         var statements = methodSyntax.Body.Statements;
         var index = 0;
         var sawBaseCall = false;
+        SetParametersAsyncAnalysis? baseAnalysis = null;
         if (IsBaseSetParametersAsyncStatement(method, statements[0]))
         {
             sawBaseCall = true;
+            baseAnalysis = AnalyzeBaseSetParametersAsync(snapshot, method, visitedMethods);
+            if (!baseAnalysis.IsSupported)
+                return new SetParametersAsyncAnalysis(false, null);
+
             index++;
         }
 
         if (index >= statements.Count)
-            return new SetParametersAsyncAnalysis(true, null);
+            return sawBaseCall
+                ? baseAnalysis!
+                : new SetParametersAsyncAnalysis(true, null);
 
         if (TryGetSetParametersAsyncNoOpOrEmit(snapshot, method, statements[index], out var emitCall))
         {
@@ -824,10 +837,18 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             if (index == statements.Count)
             {
                 if (emitCall is null)
-                    return new SetParametersAsyncAnalysis(true, null);
+                {
+                    return sawBaseCall
+                        ? baseAnalysis!
+                        : new SetParametersAsyncAnalysis(true, null);
+                }
 
+                // RazorVue only has one watch-to-emit lowering shape, so a derived
+                // override cannot stack a second emit on top of a base emit contract.
                 return sawBaseCall
-                    ? new SetParametersAsyncAnalysis(true, emitCall)
+                    ? baseAnalysis!.EmitCall is null
+                        ? new SetParametersAsyncAnalysis(true, emitCall)
+                        : new SetParametersAsyncAnalysis(false, null)
                     : new SetParametersAsyncAnalysis(false, null);
             }
 
@@ -835,10 +856,18 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
                 IsNoOpSetParametersAsyncStatement(statements[index]))
             {
                 if (emitCall is null)
-                    return new SetParametersAsyncAnalysis(true, null);
+                {
+                    return sawBaseCall
+                        ? baseAnalysis!
+                        : new SetParametersAsyncAnalysis(true, null);
+                }
 
+                // RazorVue only has one watch-to-emit lowering shape, so a derived
+                // override cannot stack a second emit on top of a base emit contract.
                 return sawBaseCall
-                    ? new SetParametersAsyncAnalysis(true, emitCall)
+                    ? baseAnalysis!.EmitCall is null
+                        ? new SetParametersAsyncAnalysis(true, emitCall)
+                        : new SetParametersAsyncAnalysis(false, null)
                     : new SetParametersAsyncAnalysis(false, null);
             }
         }
@@ -846,7 +875,19 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         return new SetParametersAsyncAnalysis(false, null);
     }
 
-    private static ShouldRenderAnalysis AnalyzeShouldRender(IMethodSymbol? method)
+    private static SetParametersAsyncAnalysis AnalyzeBaseSetParametersAsync(
+        RazorVueSemanticSnapshot snapshot,
+        IMethodSymbol method,
+        HashSet<IMethodSymbol> visitedMethods)
+    {
+        var baseMethod = FindBaseSetParametersAsyncMethod(method);
+        if (baseMethod is null || baseMethod.DeclaringSyntaxReferences.Length == 0)
+            return new SetParametersAsyncAnalysis(true, null);
+
+        return AnalyzeSetParametersAsync(snapshot, baseMethod, visitedMethods);
+    }
+
+    private static ShouldRenderAnalysis AnalyzeShouldRender(Compilation compilation, IMethodSymbol? method)
     {
         if (method is null || method.DeclaringSyntaxReferences.Length == 0)
             return new ShouldRenderAnalysis(false);
@@ -855,7 +896,7 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             return new ShouldRenderAnalysis(false);
 
         if (methodSyntax.ExpressionBody is not null)
-            return new ShouldRenderAnalysis(IsConstantTrueShouldRenderExpression(methodSyntax.ExpressionBody.Expression));
+            return new ShouldRenderAnalysis(IsSupportedShouldRenderExpression(compilation, methodSyntax.ExpressionBody.Expression));
 
         if (methodSyntax.Body?.Statements.Count != 1 ||
             methodSyntax.Body.Statements[0] is not ReturnStatementSyntax { Expression: not null } returnStatement)
@@ -863,9 +904,10 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             return new ShouldRenderAnalysis(false);
         }
 
-        // A constant `true` override is just an explicit spelling of the default
-        // reactive render path, so RazorVue can safely treat it as a no-op.
-        return new ShouldRenderAnalysis(IsConstantTrueShouldRenderExpression(returnStatement.Expression));
+        // Constant `true` and direct ComponentBase `base.ShouldRender()` are both
+        // explicit spellings of the default reactive render path, so RazorVue can
+        // safely treat them as no-op compatibility shims.
+        return new ShouldRenderAnalysis(IsSupportedShouldRenderExpression(compilation, returnStatement.Expression));
     }
 
     private static ExpressionSyntax UnwrapLifecycleExpression(ExpressionSyntax expression)
@@ -904,6 +946,25 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
                 IsBaseSetParametersAsyncCall(method, returnStatement.Expression),
             _ => false
         };
+
+    private static IMethodSymbol? FindBaseSetParametersAsyncMethod(IMethodSymbol method)
+    {
+        for (var current = method.ContainingType.BaseType; current is not null; current = current.BaseType)
+        {
+            var candidate = current.GetMembers("SetParametersAsync")
+                .OfType<IMethodSymbol>()
+                .FirstOrDefault(member =>
+                    !member.IsStatic &&
+                    member.Parameters.Length == 1 &&
+                    SymbolEqualityComparer.Default.Equals(
+                        member.Parameters[0].Type.OriginalDefinition,
+                        method.Parameters[0].Type.OriginalDefinition));
+            if (candidate is not null)
+                return candidate;
+        }
+
+        return null;
+    }
 
     private static bool IsNoOpSetParametersAsyncStatement(StatementSyntax statement)
         => statement switch
@@ -981,6 +1042,32 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
     {
         expression = UnwrapLifecycleExpression(expression);
         return expression.IsKind(SyntaxKind.TrueLiteralExpression);
+    }
+
+    private static bool IsSupportedShouldRenderExpression(Compilation compilation, ExpressionSyntax expression)
+    {
+        expression = UnwrapLifecycleExpression(expression);
+        if (IsConstantTrueShouldRenderExpression(expression))
+            return true;
+
+        if (expression is not InvocationExpressionSyntax invocationExpression ||
+            invocationExpression.Expression is not MemberAccessExpressionSyntax
+            {
+                Expression: BaseExpressionSyntax,
+                Name.Identifier.ValueText: "ShouldRender"
+            } ||
+            invocationExpression.ArgumentList.Arguments.Count != 0)
+        {
+            return false;
+        }
+
+        var componentBase = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.ComponentBase");
+        if (componentBase is null)
+            return false;
+
+        var semanticModel = compilation.GetSemanticModel(invocationExpression.SyntaxTree);
+        return semanticModel.GetOperation(invocationExpression) is IInvocationOperation invocation &&
+               SymbolEqualityComparer.Default.Equals(invocation.TargetMethod.ContainingType.OriginalDefinition, componentBase);
     }
 
     private static string TranslateLifecyclePayload(

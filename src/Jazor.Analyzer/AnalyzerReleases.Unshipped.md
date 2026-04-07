@@ -16,3 +16,4 @@ JAZORVUE008 | RazorVue | Error | RazorVue bind target is invalid
 JAZORVUE009 | RazorVue | Error | RazorVue child content parameter is unknown
 JAZORVUE010 | RazorVue | Error | RazorVue child content parameter context is invalid
 JAZORVUE011 | RazorVue | Error | RazorVue child content parameter is assigned multiple times
+JAZORVUE012 | RazorVue | Error | RazorVue library component declaration is invalid

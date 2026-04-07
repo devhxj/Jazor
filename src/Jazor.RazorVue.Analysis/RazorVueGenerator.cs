@@ -103,6 +103,14 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
+    private static readonly DiagnosticDescriptor RazorVueInvalidLibraryComponentDeclaration = new(
+        id: "JAZORVGA012",
+        title: "RazorVue library component declaration is invalid",
+        messageFormat: "{0}",
+        category: "Jazor.RazorVue.Analysis",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var componentCandidates = context.SyntaxProvider.ForAttributeWithMetadataName(
@@ -146,6 +154,9 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
 
         try
         {
+            // Keep generator diagnostics aligned with the analyzer by validating
+            // descriptor-only library stubs before any consuming component resolves them.
+            _ = razorVueContext.DiscoverLibraryComponents();
             var catalog = new RazorVuePipeline().Execute(compilation);
             if (catalog.Artifacts.IsDefaultOrEmpty)
                 return;
@@ -183,6 +194,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
             RazorVueIssueCode.ReservedIntrinsicNameCollision => RazorVueReservedIntrinsicNameCollision,
             RazorVueIssueCode.UnsupportedLifecycleLowering => RazorVueUnsupportedLifecycleLowering,
             RazorVueIssueCode.UnsupportedSetupLogicLowering => RazorVueUnsupportedSetupLogicLowering,
+            RazorVueIssueCode.InvalidLibraryComponentDeclaration => RazorVueInvalidLibraryComponentDeclaration,
             RazorVueIssueCode.UnknownParameter => RazorVueUnknownParameter,
             RazorVueIssueCode.InvalidBindTarget => RazorVueInvalidBindTarget,
             RazorVueIssueCode.UnknownSlot => RazorVueUnknownSlot,

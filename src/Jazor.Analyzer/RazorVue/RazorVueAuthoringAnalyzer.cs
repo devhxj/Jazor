@@ -4,6 +4,7 @@ using System.Linq;
 using Jazor.RazorVue;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
+using Jazor.RazorVue.Discovery;
 using Jazor.RazorVue.Lowering;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -20,13 +21,24 @@ public sealed class RazorVueAuthoringAnalyzer : DiagnosticAnalyzer
         RazorVueDiagnosticDescriptors.InvalidBindTarget,
         RazorVueDiagnosticDescriptors.UnknownSlot,
         RazorVueDiagnosticDescriptors.SlotContextMisuse,
-        RazorVueDiagnosticDescriptors.DuplicateSlotValue
+        RazorVueDiagnosticDescriptors.DuplicateSlotValue,
+        RazorVueDiagnosticDescriptors.InvalidLibraryComponentDeclaration
     ];
 
     public override void Initialize(AnalysisContext context)
     {
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
         context.EnableConcurrentExecution();
+        context.RegisterCompilationStartAction(static startContext =>
+        {
+            var compilationContext = RazorVueCompilationContext.TryCreate(startContext.Compilation);
+            if (compilationContext is null)
+                return;
+
+            startContext.RegisterSymbolAction(
+                symbolContext => AnalyzeLibraryComponentDeclaration(symbolContext, compilationContext.Symbols),
+                SymbolKind.NamedType);
+        });
         context.RegisterCompilationAction(AnalyzeCompilation);
     }
 
@@ -44,8 +56,13 @@ public sealed class RazorVueAuthoringAnalyzer : DiagnosticAnalyzer
                 lowerer.Lower(compilationContext, snapshot);
             }
             catch (RazorVueCompilationIssueException exception)
-                when (TryGetDescriptor(exception.Issue.Code, out var descriptor))
             {
+                if (exception.Issue.Code == RazorVueIssueCode.InvalidLibraryComponentDeclaration)
+                    continue;
+
+                if (!TryGetDescriptor(exception.Issue.Code, out var descriptor))
+                    continue;
+
                 // Reuse the lowering pipeline as the single source of truth for
                 // library authoring contracts so analyzer and generator diagnostics
                 // stay aligned on the same slot/parameter rules.
@@ -55,6 +72,50 @@ public sealed class RazorVueAuthoringAnalyzer : DiagnosticAnalyzer
                     exception.Issue.Message));
             }
         }
+    }
+
+    private static void AnalyzeLibraryComponentDeclaration(
+        SymbolAnalysisContext context,
+        RazorVueCompilationSymbols symbols)
+    {
+        if (context.Symbol is not INamedTypeSymbol symbol ||
+            !RazorVueEntryClassifier.IsLibraryComponent(symbol, symbols))
+        {
+            return;
+        }
+
+        if (HasValidLibraryComponentAttribute(symbol, symbols))
+            return;
+
+        context.ReportDiagnostic(Diagnostic.Create(
+            RazorVueDiagnosticDescriptors.InvalidLibraryComponentDeclaration,
+            symbol.Locations.FirstOrDefault(static location => location.IsInSource) ?? Location.None,
+            $"Library component '{symbol.ToDisplayString()}' must declare [VueLibraryComponent(importSpecifier, exportName)]."));
+    }
+
+    private static bool HasValidLibraryComponentAttribute(
+        INamedTypeSymbol symbol,
+        RazorVueCompilationSymbols symbols)
+    {
+        if (symbols.VueLibraryComponentAttribute is null)
+            return false;
+
+        foreach (var attribute in symbol.GetAttributes())
+        {
+            if (!SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, symbols.VueLibraryComponentAttribute) ||
+                attribute.ConstructorArguments.Length < 2 ||
+                attribute.ConstructorArguments[0].Value is not string importSpecifier ||
+                string.IsNullOrWhiteSpace(importSpecifier) ||
+                attribute.ConstructorArguments[1].Value is not string exportName ||
+                string.IsNullOrWhiteSpace(exportName))
+            {
+                continue;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     private static bool TryGetDescriptor(RazorVueIssueCode issueCode, out DiagnosticDescriptor descriptor)
@@ -75,6 +136,9 @@ public sealed class RazorVueAuthoringAnalyzer : DiagnosticAnalyzer
                 return true;
             case RazorVueIssueCode.DuplicateSlotValue:
                 descriptor = RazorVueDiagnosticDescriptors.DuplicateSlotValue;
+                return true;
+            case RazorVueIssueCode.InvalidLibraryComponentDeclaration:
+                descriptor = RazorVueDiagnosticDescriptors.InvalidLibraryComponentDeclaration;
                 return true;
             default:
                 descriptor = null!;

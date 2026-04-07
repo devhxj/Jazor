@@ -15,6 +15,7 @@ public enum RazorVueIssueCode
     ReservedIntrinsicNameCollision,
     UnsupportedLifecycleLowering,
     UnsupportedSetupLogicLowering,
+    InvalidLibraryComponentDeclaration,
     UnknownParameter,
     InvalidBindTarget,
     UnknownSlot,

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System;
+using Jazor.RazorVue.Artifacts;
 using Microsoft.CodeAnalysis;
 
 namespace Jazor.RazorVue.Descriptor;
@@ -265,7 +266,9 @@ internal static class VueComponentDescriptorFactory
             componentAttribute.ConstructorArguments[1].Value is not string exportName ||
             string.IsNullOrWhiteSpace(exportName))
         {
-            throw new InvalidOperationException($"Library component '{FormatFullName(componentSymbol)}' must declare [VueLibraryComponent(importSpecifier, exportName)].");
+            throw CreateInvalidLibraryComponentDeclarationException(
+                componentSymbol,
+                $"Library component '{FormatFullName(componentSymbol)}' must declare [VueLibraryComponent(importSpecifier, exportName)].");
         }
 
         // Library imports are external package contracts, not generated module paths.
@@ -336,6 +339,22 @@ internal static class VueComponentDescriptorFactory
 
     private static string FormatFullName(INamedTypeSymbol componentSymbol)
         => componentSymbol.ToDisplayString(TypeDisplayFormat);
+
+    private static RazorVueCompilationIssueException CreateInvalidLibraryComponentDeclarationException(
+        INamedTypeSymbol componentSymbol,
+        string message)
+    {
+        var issue = new RazorVueCompilationIssue(
+            RazorVueIssueCode.InvalidLibraryComponentDeclaration,
+            RazorVueIssueSeverity.Error,
+            message,
+            ImmutableArray<string>.Empty);
+        var location = componentSymbol.Locations.FirstOrDefault(static item => item.IsInSource) ?? Location.None;
+        var origin = location == Location.None
+            ? null
+            : RazorVueSourceOrigin.FromLocation(location, RazorVueOriginKind.Descriptor);
+        return new RazorVueCompilationIssueException(issue, FormatFullName(componentSymbol), origin);
+    }
 
     private static string ToEmitName(string propertyName)
     {

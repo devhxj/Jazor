@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
@@ -65,7 +66,7 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
         var location = method.Locations.FirstOrDefault(static x => x.IsInSource) ?? Location.None;
         if (knownSymbols.IsShouldRender(method))
         {
-            if (IsSupportedShouldRender(method))
+            if (IsSupportedShouldRender(knownSymbols, method))
                 return;
 
             context.ReportDiagnostic(Diagnostic.Create(
@@ -85,7 +86,7 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
         }
     }
 
-    private static bool IsSupportedShouldRender(IMethodSymbol method)
+    private static bool IsSupportedShouldRender(RazorVueKnownSymbols knownSymbols, IMethodSymbol method)
     {
         if (method.DeclaringSyntaxReferences.Length == 0)
             return false;
@@ -94,7 +95,7 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
             return false;
 
         if (methodSyntax.ExpressionBody is not null)
-            return IsConstantTrueShouldRenderExpression(methodSyntax.ExpressionBody.Expression);
+            return IsSupportedShouldRenderExpression(knownSymbols, method, methodSyntax.ExpressionBody.Expression);
 
         if (methodSyntax.Body?.Statements.Count != 1 ||
             methodSyntax.Body.Statements[0] is not ReturnStatementSyntax { Expression: not null } returnStatement)
@@ -102,54 +103,108 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
             return false;
         }
 
-        // Only a literal `true` override is equivalent to RazorVue's default
-        // render behavior. Any conditional gate still carries Blazor-only semantics.
-        return IsConstantTrueShouldRenderExpression(returnStatement.Expression);
+        return IsSupportedShouldRenderExpression(knownSymbols, method, returnStatement.Expression);
     }
 
     private static bool IsSupportedSetParametersAsync(IMethodSymbol method)
+        => AnalyzeSetParametersAsync(method, new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default)).IsSupported;
+
+    private static SetParametersAsyncAnalysis AnalyzeSetParametersAsync(
+        IMethodSymbol method,
+        HashSet<IMethodSymbol> visitedMethods)
     {
+        if (!visitedMethods.Add(method))
+            return new SetParametersAsyncAnalysis(false, false);
+
         if (method.DeclaringSyntaxReferences.Length == 0)
-            return false;
+            return new SetParametersAsyncAnalysis(false, false);
 
         if (method.DeclaringSyntaxReferences[0].GetSyntax() is not MethodDeclarationSyntax methodSyntax)
-            return false;
+            return new SetParametersAsyncAnalysis(false, false);
 
         if (methodSyntax.ExpressionBody is not null)
-            return IsBaseSetParametersAsyncCall(method, methodSyntax.ExpressionBody.Expression);
+        {
+            return IsBaseSetParametersAsyncCall(method, methodSyntax.ExpressionBody.Expression)
+                ? AnalyzeBaseSetParametersAsync(method, visitedMethods)
+                : new SetParametersAsyncAnalysis(false, false);
+        }
 
         if (methodSyntax.Body is null)
-            return false;
+            return new SetParametersAsyncAnalysis(false, false);
 
         if (methodSyntax.Body.Statements.Count == 0)
-            return true;
+            return new SetParametersAsyncAnalysis(true, false);
 
         var statements = methodSyntax.Body.Statements;
         var index = 0;
         var sawBaseCall = false;
+        SetParametersAsyncAnalysis? baseAnalysis = null;
         if (IsBaseSetParametersAsyncStatement(method, statements[0]))
         {
             sawBaseCall = true;
+            baseAnalysis = AnalyzeBaseSetParametersAsync(method, visitedMethods);
+            if (!baseAnalysis.Value.IsSupported)
+                return new SetParametersAsyncAnalysis(false, false);
+
             index++;
         }
 
         if (index >= statements.Count)
-            return true;
+            return sawBaseCall
+                ? baseAnalysis!.Value
+                : new SetParametersAsyncAnalysis(true, false);
 
         if (TryGetSetParametersAsyncNoOpOrEmit(statements[index], out var hasEmit))
         {
             index++;
             if (index == statements.Count)
-                return !hasEmit || sawBaseCall;
+            {
+                if (!hasEmit)
+                    return sawBaseCall
+                        ? baseAnalysis!.Value
+                        : new SetParametersAsyncAnalysis(true, false);
+
+                if (!sawBaseCall)
+                    return new SetParametersAsyncAnalysis(false, false);
+
+                // The lowering path only supports one synthesized watch/emit pair.
+                if (baseAnalysis!.Value.HasEmit)
+                    return new SetParametersAsyncAnalysis(false, false);
+
+                return new SetParametersAsyncAnalysis(true, true);
+            }
 
             if (index == statements.Count - 1 &&
                 IsNoOpSetParametersAsyncStatement(statements[index]))
             {
-                return !hasEmit || sawBaseCall;
+                if (!hasEmit)
+                    return sawBaseCall
+                        ? baseAnalysis!.Value
+                        : new SetParametersAsyncAnalysis(true, false);
+
+                if (!sawBaseCall)
+                    return new SetParametersAsyncAnalysis(false, false);
+
+                // The lowering path only supports one synthesized watch/emit pair.
+                if (baseAnalysis!.Value.HasEmit)
+                    return new SetParametersAsyncAnalysis(false, false);
+
+                return new SetParametersAsyncAnalysis(true, true);
             }
         }
 
-        return false;
+        return new SetParametersAsyncAnalysis(false, false);
+    }
+
+    private static SetParametersAsyncAnalysis AnalyzeBaseSetParametersAsync(
+        IMethodSymbol method,
+        HashSet<IMethodSymbol> visitedMethods)
+    {
+        var baseMethod = FindBaseSetParametersAsyncMethod(method);
+        if (baseMethod is null || baseMethod.DeclaringSyntaxReferences.Length == 0)
+            return new SetParametersAsyncAnalysis(true, false);
+
+        return AnalyzeSetParametersAsync(baseMethod, visitedMethods);
     }
 
     private static bool IsBaseSetParametersAsyncCall(IMethodSymbol method, ExpressionSyntax expression)
@@ -247,10 +302,68 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
                invocation.ArgumentList.Arguments.Count <= 1;
     }
 
+    private static IMethodSymbol? FindBaseSetParametersAsyncMethod(IMethodSymbol method)
+    {
+        for (var current = method.ContainingType.BaseType; current is not null; current = current.BaseType)
+        {
+            var candidate = current.GetMembers("SetParametersAsync")
+                .OfType<IMethodSymbol>()
+                .FirstOrDefault(member =>
+                    !member.IsStatic &&
+                    member.Parameters.Length == 1 &&
+                    SymbolEqualityComparer.Default.Equals(
+                        member.Parameters[0].Type.OriginalDefinition,
+                        method.Parameters[0].Type.OriginalDefinition));
+            if (candidate is not null)
+                return candidate;
+        }
+
+        return null;
+    }
+
     private static bool IsConstantTrueShouldRenderExpression(ExpressionSyntax expression)
     {
         expression = UnwrapExpression(expression);
         return expression.IsKind(SyntaxKind.TrueLiteralExpression);
+    }
+
+    private static bool IsSupportedShouldRenderExpression(
+        RazorVueKnownSymbols knownSymbols,
+        IMethodSymbol method,
+        ExpressionSyntax expression)
+    {
+        expression = UnwrapExpression(expression);
+        if (IsConstantTrueShouldRenderExpression(expression))
+            return true;
+
+        if (expression is not InvocationExpressionSyntax invocationExpression)
+            return false;
+
+        if (invocationExpression.Expression is not MemberAccessExpressionSyntax
+            {
+                Expression: BaseExpressionSyntax,
+                Name.Identifier.ValueText: "ShouldRender"
+            } ||
+            invocationExpression.ArgumentList.Arguments.Count != 0)
+        {
+            return false;
+        }
+
+        for (var current = method.ContainingType.BaseType; current is not null; current = current.BaseType)
+        {
+            var candidate = current.GetMembers("ShouldRender")
+                .OfType<IMethodSymbol>()
+                .FirstOrDefault(static member =>
+                    !member.IsStatic &&
+                    member.Parameters.Length == 0 &&
+                    member.ReturnType.SpecialType == SpecialType.System_Boolean);
+            if (candidate is null)
+                continue;
+
+            return SymbolEqualityComparer.Default.Equals(candidate.ContainingType.OriginalDefinition, knownSymbols.Symbols.ComponentBase);
+        }
+
+        return false;
     }
 
     private static bool TryUnwrapValueTaskCreation(ExpressionSyntax expression, out ExpressionSyntax innerExpression)
@@ -280,5 +393,18 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
             expression = parenthesized.Expression;
 
         return expression;
+    }
+
+    private readonly struct SetParametersAsyncAnalysis
+    {
+        public SetParametersAsyncAnalysis(bool isSupported, bool hasEmit)
+        {
+            IsSupported = isSupported;
+            HasEmit = hasEmit;
+        }
+
+        public bool IsSupported { get; }
+
+        public bool HasEmit { get; }
     }
 }

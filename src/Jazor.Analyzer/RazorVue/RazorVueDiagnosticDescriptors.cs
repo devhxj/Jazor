@@ -83,4 +83,12 @@ internal static class RazorVueDiagnosticDescriptors
         category: "RazorVue",
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor InvalidLibraryComponentDeclaration = new(
+        id: "JAZORVUE012",
+        title: "RazorVue library component declaration is invalid",
+        messageFormat: "{0}",
+        category: "RazorVue",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }
