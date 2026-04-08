@@ -23,4 +23,12 @@ public interface IVueHostRpcService
     Task<AnalyzeJazorResponse> AnalyzeJazorAsync(
         AnalyzeJazorRequest request,
         CancellationToken cancellationToken);
+
+    Task<GetVirtualArtifactResponse> GetVirtualArtifactAsync(
+        GetVirtualArtifactRequest request,
+        CancellationToken cancellationToken);
+
+    Task<GetHotUpdatePlanResponse> GetHotUpdatePlanAsync(
+        GetHotUpdatePlanRequest request,
+        CancellationToken cancellationToken);
 }

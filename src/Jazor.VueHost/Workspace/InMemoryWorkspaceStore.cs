@@ -15,7 +15,7 @@ public sealed class InMemoryWorkspaceStore : IVueHostWorkspaceStore
         ArgumentNullException.ThrowIfNull(documentPath);
         cancellationToken.ThrowIfCancellationRequested();
 
-        _documents.TryGetValue(documentPath, out var snapshot);
+        _documents.TryGetValue(NormalizeDocumentPath(documentPath), out var snapshot);
         return ValueTask.FromResult(snapshot);
     }
 
@@ -30,7 +30,7 @@ public sealed class InMemoryWorkspaceStore : IVueHostWorkspaceStore
         foreach (var documentPath in documentPaths)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (_documents.TryGetValue(documentPath, out var snapshot))
+            if (_documents.TryGetValue(NormalizeDocumentPath(documentPath), out var snapshot))
                 documents.Add(snapshot);
         }
 
@@ -56,7 +56,15 @@ public sealed class InMemoryWorkspaceStore : IVueHostWorkspaceStore
         ArgumentNullException.ThrowIfNull(documentSnapshot);
         cancellationToken.ThrowIfCancellationRequested();
 
-        _documents[documentSnapshot.DocumentPath] = documentSnapshot;
+        var normalizedPath = NormalizeDocumentPath(documentSnapshot.DocumentPath);
+        var normalizedSnapshot = string.Equals(normalizedPath, documentSnapshot.DocumentPath, StringComparison.Ordinal)
+            ? documentSnapshot
+            : new DocumentSnapshot(
+                normalizedPath,
+                documentSnapshot.DocumentKind,
+                documentSnapshot.Text,
+                documentSnapshot.Version);
+        _documents[normalizedPath] = normalizedSnapshot;
         return ValueTask.CompletedTask;
     }
 
@@ -67,7 +75,14 @@ public sealed class InMemoryWorkspaceStore : IVueHostWorkspaceStore
         ArgumentNullException.ThrowIfNull(documentPath);
         cancellationToken.ThrowIfCancellationRequested();
 
-        _documents.TryRemove(documentPath, out _);
+        _documents.TryRemove(NormalizeDocumentPath(documentPath), out _);
         return ValueTask.CompletedTask;
+    }
+
+    private static string NormalizeDocumentPath(string documentPath)
+    {
+        return Path.IsPathRooted(documentPath)
+            ? Path.GetFullPath(documentPath).Replace('\\', '/')
+            : documentPath.Replace('\\', '/');
     }
 }

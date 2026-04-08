@@ -19,7 +19,7 @@ if (options.Mode == JazorViteMode.ProbeHost)
     if (!options.HasVueHostProcess)
         throw new InvalidOperationException("Host probing requires --vuehost-command.");
 
-    var client = new ProcessVueHostRpcClient(options.VueHostCommand!, options.VueHostArguments);
+    using var client = new ProcessVueHostRpcClient(options.VueHostCommand!, options.VueHostArguments);
     var hostInfo = await client.GetHostInfoAsync(cancellationToken);
     Console.WriteLine(ProtocolJsonSerializer.Serialize(hostInfo));
     return;
@@ -27,7 +27,7 @@ if (options.Mode == JazorViteMode.ProbeHost)
 
 if (options.HasVueHostProcess)
 {
-    var client = new ProcessVueHostRpcClient(options.VueHostCommand!, options.VueHostArguments);
+    using var client = new ProcessVueHostRpcClient(options.VueHostCommand!, options.VueHostArguments);
     var ping = await client.PingAsync(cancellationToken);
     Console.WriteLine($"VueHost {ping.Message} ({ping.ProtocolVersion})");
 }

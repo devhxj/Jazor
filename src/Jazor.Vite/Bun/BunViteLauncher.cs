@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.Json;
 
 namespace Jazor.Vite.Bun;
 
@@ -36,6 +37,8 @@ public sealed class BunViteLauncher
         {
             process.StartInfo.Environment["JAZOR_VUEHOST_COMMAND"] = _options.VueHostCommand!;
             process.StartInfo.Environment["JAZOR_VUEHOST_ARGS"] = _options.VueHostArguments ?? string.Empty;
+            process.StartInfo.Environment["JAZOR_VUEHOST_ARGS_JSON"] = JsonSerializer.Serialize(
+                CommandLineArgumentSplitter.Split(_options.VueHostArguments));
             process.StartInfo.Environment["JAZOR_VUEHOST_RPC_MODE"] = "process-stdio";
         }
 

@@ -29,6 +29,8 @@ public sealed class VueHostRpcDispatcher : IVueHostRpcDispatcher
             SharedVueHostRpcMethodNames.GetOpenDocuments => await _rpcService.GetOpenDocumentsAsync(cancellationToken),
             SharedVueHostRpcMethodNames.GetFrontendContext => await DispatchGetFrontendContextAsync(payload, cancellationToken),
             SharedVueHostRpcMethodNames.AnalyzeJazor => await DispatchAnalyzeJazorAsync(payload, cancellationToken),
+            SharedVueHostRpcMethodNames.GetVirtualArtifact => await DispatchGetVirtualArtifactAsync(payload, cancellationToken),
+            SharedVueHostRpcMethodNames.GetHotUpdatePlan => await DispatchGetHotUpdatePlanAsync(payload, cancellationToken),
             _ => throw new VueHostRpcException("unknown_method", $"Unknown Jazor.VueHost RPC method '{methodName}'.")
         };
     }
@@ -63,6 +65,20 @@ public sealed class VueHostRpcDispatcher : IVueHostRpcDispatcher
         CancellationToken cancellationToken)
         => _rpcService.AnalyzeJazorAsync(
             RequirePayload<AnalyzeJazorRequest>(payload),
+            cancellationToken);
+
+    private Task<GetVirtualArtifactResponse> DispatchGetVirtualArtifactAsync(
+        object? payload,
+        CancellationToken cancellationToken)
+        => _rpcService.GetVirtualArtifactAsync(
+            RequirePayload<GetVirtualArtifactRequest>(payload),
+            cancellationToken);
+
+    private Task<GetHotUpdatePlanResponse> DispatchGetHotUpdatePlanAsync(
+        object? payload,
+        CancellationToken cancellationToken)
+        => _rpcService.GetHotUpdatePlanAsync(
+            RequirePayload<GetHotUpdatePlanRequest>(payload),
             cancellationToken);
 
     private static T RequirePayload<T>(object? payload)

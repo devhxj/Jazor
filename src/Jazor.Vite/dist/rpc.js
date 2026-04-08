@@ -1,61 +1,44 @@
+import { createPersistentVueHostSession } from "./vue-host-session";
 export class BunVueHostTransport {
-    options;
-    constructor(options) {
-        this.options = options;
-    }
-    async analyzeJazor(request) {
-        return this.invoke("vuehost/analyzeJazor", request);
-    }
-    async invoke(method, payload) {
-        const bunApi = getBun();
-        const request = {
-            id: `vite-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
-            method,
-            payloadJson: JSON.stringify(payload)
-        };
-        const command = [this.options.command, ...(this.options.arguments ?? [])];
-        const subprocess = bunApi.spawn(command, {
-            stdin: "pipe",
-            stdout: "pipe",
-            stderr: "pipe"
+    session;
+    constructor(options, sessionFactory = createPersistentVueHostSession) {
+        this.session = sessionFactory({
+            command: options.command,
+            args: (options.arguments ?? []).join(" "),
+            argsList: options.arguments ?? [],
+            rpcMode: options.rpcMode ?? "process-stdio"
         });
-        await writeLine(subprocess.stdin, JSON.stringify(request));
-        const responseLine = await readFirstLine(subprocess.stdout);
-        const errorText = await new Response(subprocess.stderr).text();
-        await subprocess.exited;
-        if (!responseLine) {
-            throw new Error(errorText.trim() || `VueHost did not return a response for '${method}'.`);
-        }
-        const response = JSON.parse(responseLine);
-        if (!response.success) {
-            const code = response.error?.code ?? "rpc_error";
-            const message = response.error?.message ?? "Unknown RPC failure.";
-            throw new Error(`${code}: ${message}`);
-        }
-        if (response.payloadJson === null) {
-            throw new Error(`VueHost returned an empty payload for '${method}'.`);
-        }
-        return JSON.parse(response.payloadJson);
+    }
+    async getVirtualArtifact(documentPath, text) {
+        await this.upsertDocument(documentPath, text);
+        return await this.session.getVirtualArtifact({
+            documentPath,
+            artifactKind: "vue-sfc",
+            text: null,
+            version: null
+        });
+    }
+    async upsertDocument(documentPath, text) {
+        const version = createVersion(text);
+        await this.session.openDocument({
+            documentPath,
+            documentKind: "Jazor",
+            text,
+            version
+        });
+    }
+    async closeDocument(documentPath) {
+        await this.session.closeDocument(documentPath);
+    }
+    async dispose() {
+        await this.session.dispose();
     }
 }
-function getBun() {
-    if (typeof Bun === "undefined") {
-        throw new Error("Jazor.Vite currently requires Bun runtime for stdio host transport.");
+function createVersion(content) {
+    let hash = 2166136261;
+    for (let index = 0; index < content.length; index += 1) {
+        hash ^= content.charCodeAt(index);
+        hash = Math.imul(hash, 16777619);
     }
-    return Bun;
-}
-async function writeLine(stream, line) {
-    const writer = stream.getWriter();
-    try {
-        await writer.write(new TextEncoder().encode(`${line}\n`));
-        await writer.close();
-    }
-    finally {
-        writer.releaseLock();
-    }
-}
-async function readFirstLine(stream) {
-    const text = await new Response(stream).text();
-    const firstLine = text.split(/\r?\n/, 1)[0];
-    return firstLine.length === 0 ? null : firstLine;
+    return `v${hash >>> 0}`;
 }

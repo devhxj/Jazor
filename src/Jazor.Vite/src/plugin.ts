@@ -1,9 +1,6 @@
-import { dirname, relative, resolve } from "node:path";
-import {
-  type AnalyzeJazorRequest,
-  type ArtifactRecord,
-  type DocumentSnapshot
-} from "./contracts";
+import { readFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
+import type { ModuleNode } from "vite";
 import { type VueHostProcessOptions, type VueHostTransport, BunVueHostTransport } from "./rpc";
 
 const virtualPrefix = "\0jazor:";
@@ -19,7 +16,17 @@ export interface VitePluginLike {
   enforce?: "pre" | "post";
   resolveId?(source: string, importer?: string): string | null | Promise<string | null>;
   load?(id: string): string | null | Promise<string | null>;
-  handleHotUpdate?(context: { file: string }): { type: "full-reload" } | null | Promise<{ type: "full-reload" } | null>;
+  handleHotUpdate?(context: {
+    file: string;
+    modules: ModuleNode[];
+    server: {
+      moduleGraph: {
+        getModuleById(id: string): ModuleNode | null;
+        invalidateModule(module: ModuleNode): void;
+      };
+    };
+  }): ModuleNode[] | null | Promise<ModuleNode[] | null>;
+  buildEnd?(): void | Promise<void>;
 }
 
 export function createJazorVuePlugin(options: JazorVuePluginOptions): VitePluginLike {
@@ -38,9 +45,9 @@ export function createJazorVuePlugin(options: JazorVuePluginOptions): VitePlugin
         ? importer.slice(virtualPrefix.length)
         : importer;
 
-      return `${virtualPrefix}${!importer
+      return `${virtualPrefix}${!importerPath
         ? resolve(root, source)
-        : resolve(dirname(importerPath!), source)}`;
+        : resolve(dirname(importerPath), source)}`;
     },
     async load(id) {
       if (!id.startsWith(virtualPrefix)) {
@@ -48,51 +55,42 @@ export function createJazorVuePlugin(options: JazorVuePluginOptions): VitePlugin
       }
 
       const filePath = id.slice(virtualPrefix.length);
-      const document = await readJazorDocument(root, filePath);
-      const request: AnalyzeJazorRequest = {
-        jazorDocument: document,
-        relatedDocuments: [],
-        frontendContext: null
-      };
-      const response = await transport.analyzeJazor(request);
-      const artifact = findArtifact(response.artifacts, "vue-sfc", document.documentPath);
-      return artifact?.content ?? null;
+      const normalizedPath = normalizeDocumentPath(root, filePath);
+      const text = await readFile(filePath, "utf8");
+      const response = await transport.getVirtualArtifact(normalizedPath, text);
+      return response.artifact.content;
     },
-    handleHotUpdate(context) {
+    async handleHotUpdate(context) {
       if (!context.file.endsWith(".jazor")) {
         return null;
       }
 
-      return { type: "full-reload" };
+      const normalizedPath = normalizeDocumentPath(root, context.file);
+      const text = await readFile(context.file, "utf8");
+      await transport.upsertDocument(normalizedPath, text);
+
+      const moduleId = `${virtualPrefix}${context.file}`;
+      const moduleNode = context.server.moduleGraph.getModuleById(moduleId);
+      if (moduleNode) {
+        context.server.moduleGraph.invalidateModule(moduleNode);
+        return [moduleNode];
+      }
+
+      return context.modules;
+    },
+    async buildEnd() {
+      await transport.dispose();
     }
   };
 }
 
-async function readJazorDocument(root: string, filePath: string): Promise<DocumentSnapshot> {
-  if (typeof Bun !== "undefined") {
-    const text = await Bun.file(filePath).text();
-    return {
-      documentPath: normalizeDocumentPath(root, filePath),
-      documentKind: "Jazor",
-      text,
-      version: "vite"
-    };
+function normalizeDocumentPath(root: string, filePath: string): string {
+  const normalizedRoot = root.replace(/\\/g, "/");
+  const normalizedFilePath = filePath.replace(/\\/g, "/");
+
+  if (normalizedFilePath.startsWith(`${normalizedRoot}/`)) {
+    return normalizedFilePath.slice(normalizedRoot.length + 1);
   }
 
-  throw new Error("Jazor.Vite currently requires Bun runtime to load .jazor files.");
-}
-
-function findArtifact(
-  artifacts: ArtifactRecord[],
-  artifactKind: string,
-  documentPath: string
-): ArtifactRecord | undefined {
-  return artifacts.find((artifact) =>
-    artifact.artifactKind === artifactKind &&
-    artifact.artifactName.includes(documentPath));
-}
-
-function normalizeDocumentPath(root: string, filePath: string): string {
-  const relativePath = relative(root, filePath);
-  return relativePath.length === 0 ? filePath : relativePath.replace(/\\/g, "/");
+  return normalizedFilePath;
 }

@@ -36,7 +36,9 @@ public sealed class JazorVueAnalysisRuntimeTests
         Assert.AreEqual("debounce", response.Imports[0].LocalName);
         Assert.AreEqual("./UserCard.vue", response.Imports[1].Source);
         Assert.AreEqual(2, response.Artifacts.Count);
+        Assert.AreEqual(2, response.SourceMaps.Count);
         Assert.AreEqual("vue-sfc", response.Artifacts[0].ArtifactKind);
+        Assert.AreEqual(response.Artifacts[0].ArtifactName, response.SourceMaps[0].GeneratedPath);
         StringAssert.Contains(response.Artifacts[0].Content, "<template>");
         StringAssert.Contains(response.Artifacts[1].Content, "__VueComponentSymbol");
     }

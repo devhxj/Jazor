@@ -62,6 +62,8 @@ public sealed class VueHostRpcProcessor : IVueHostRpcProcessor
             SharedVueHostRpcMethodNames.GetOpenDocuments => null,
             SharedVueHostRpcMethodNames.GetFrontendContext => DeserializeRequired<GetFrontendContextRequest>(payloadJson),
             SharedVueHostRpcMethodNames.AnalyzeJazor => DeserializeRequired<AnalyzeJazorRequest>(payloadJson),
+            SharedVueHostRpcMethodNames.GetVirtualArtifact => DeserializeRequired<GetVirtualArtifactRequest>(payloadJson),
+            SharedVueHostRpcMethodNames.GetHotUpdatePlan => DeserializeRequired<GetHotUpdatePlanRequest>(payloadJson),
             _ => throw new VueHostRpcException("unknown_method", $"Unknown Jazor.VueHost RPC method '{methodName}'.")
         };
     }

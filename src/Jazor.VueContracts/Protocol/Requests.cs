@@ -71,3 +71,83 @@ public sealed class GetFrontendContextResponse
 
     public IReadOnlyList<ArtifactRecord> Artifacts { get; }
 }
+
+public sealed class GetVirtualArtifactRequest
+{
+    public GetVirtualArtifactRequest(
+        string documentPath,
+        string artifactKind,
+        string? text,
+        string? version)
+    {
+        DocumentPath = documentPath ?? throw new ArgumentNullException(nameof(documentPath));
+        ArtifactKind = artifactKind ?? throw new ArgumentNullException(nameof(artifactKind));
+        Text = text;
+        Version = version;
+    }
+
+    public string DocumentPath { get; }
+
+    public string ArtifactKind { get; }
+
+    public string? Text { get; }
+
+    public string? Version { get; }
+}
+
+public sealed class GetVirtualArtifactResponse
+{
+    public GetVirtualArtifactResponse(
+        ArtifactRecord artifact,
+        IReadOnlyList<DiagnosticRecord> diagnostics,
+        IReadOnlyList<SourceMapDescriptor> sourceMaps)
+    {
+        Artifact = artifact ?? throw new ArgumentNullException(nameof(artifact));
+        Diagnostics = diagnostics ?? throw new ArgumentNullException(nameof(diagnostics));
+        SourceMaps = sourceMaps ?? throw new ArgumentNullException(nameof(sourceMaps));
+    }
+
+    public ArtifactRecord Artifact { get; }
+
+    public IReadOnlyList<DiagnosticRecord> Diagnostics { get; }
+
+    public IReadOnlyList<SourceMapDescriptor> SourceMaps { get; }
+}
+
+public sealed class GetHotUpdatePlanRequest
+{
+    public GetHotUpdatePlanRequest(
+        string documentPath,
+        DocumentKind documentKind,
+        string? version)
+    {
+        DocumentPath = documentPath ?? throw new ArgumentNullException(nameof(documentPath));
+        DocumentKind = documentKind;
+        Version = version;
+    }
+
+    public string DocumentPath { get; }
+
+    public DocumentKind DocumentKind { get; }
+
+    public string? Version { get; }
+}
+
+public sealed class GetHotUpdatePlanResponse
+{
+    public GetHotUpdatePlanResponse(
+        bool requiresFullReload,
+        IReadOnlyList<string> affectedDocumentPaths,
+        string reason)
+    {
+        RequiresFullReload = requiresFullReload;
+        AffectedDocumentPaths = affectedDocumentPaths ?? throw new ArgumentNullException(nameof(affectedDocumentPaths));
+        Reason = reason ?? throw new ArgumentNullException(nameof(reason));
+    }
+
+    public bool RequiresFullReload { get; }
+
+    public IReadOnlyList<string> AffectedDocumentPaths { get; }
+
+    public string Reason { get; }
+}

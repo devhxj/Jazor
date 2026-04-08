@@ -1,24 +1,26 @@
 # Jazor.VueHost
 
-> Status: project skeleton
-> Positioning: standalone .NET host boundary for RPC transport, workspace state, and analysis coordination.
+> Status: working baseline
+> Positioning: standalone .NET RPC host for workspace state, analysis coordination, and `.jazor` virtual artifacts.
 
 `Jazor.VueHost` is the development-time service boundary for the new Jazor Vue architecture.
 
 Current scope in this skeleton:
 
 - executable host project targeting `net10.0`
-- host lifecycle abstraction for a future stdio / socket / named-pipe RPC transport
+- host lifecycle abstraction with current line-based stdio RPC transport
+- minimal LSP surface over stdio for `.jazor` authoring
 - workspace store abstraction for `.jazor` / `.vue` / `.js` / `.ts` document snapshots
 - analysis client abstraction that depends only on `Jazor.VueContracts`
-- pluggable analysis-client path with local null fallback and future RPC transport slot
+- pluggable analysis-client path with transport support plus local runtime fallback for virtual artifact generation
 - minimal RPC-facing host service that coordinates workspace state and analysis calls
 - line-oriented stdio RPC loop for the current request/response envelope
 - bootstrap RPC methods for host discovery and liveness checks
+- virtual artifact RPC for `.jazor -> vue-sfc` loading
+- open/update/close/get-open-documents RPC for persistent frontend sessions
 
 Out of scope for this skeleton:
 
-- concrete RPC transport
 - Bun / Vite process orchestration
 - frontend indexing implementation
 - Roslyn semantics or `.jazor` compilation logic
@@ -26,7 +28,8 @@ Out of scope for this skeleton:
 Compile-time boundary:
 
 - reference `Jazor.VueContracts`
-- do not reference `Jazor.VueAnalysis` directly
+- reference `Jazor.Vue.Analysis.Runtime` only for local virtual-artifact fallback
+- do not reference `Jazor.Vue.Analysis` directly
 
 Minimal layout:
 
@@ -39,6 +42,10 @@ Minimal layout:
 - `Analysis/VueAnalysisClientMode.cs`
 - `Analysis/VueAnalysisClientOptions.cs`
 - `Frontend/IFrontendContextProvider.cs`
+- `Lsp/JazorLspDocumentService.cs`
+- `Lsp/LspModels.cs`
+- `Lsp/LspSession.cs`
+- `Lsp/StdioLspServer.cs`
 - `Workspace/IVueHostWorkspaceStore.cs`
 - `Workspace/InMemoryWorkspaceStore.cs`
 - `Hosting/IVueHostService.cs`
@@ -73,6 +80,23 @@ Bootstrap RPC methods:
 
 - `vuehost/ping`
 - `vuehost/getHostInfo`
+
+Artifact RPC methods:
+
+- `vuehost/getVirtualArtifact`
+
+Workspace RPC methods:
+
+- `vuehost/openDocument`
+- `vuehost/updateDocument`
+- `vuehost/closeDocument`
+- `vuehost/getOpenDocuments`
+
+LSP mode:
+
+- start with `dotnet run --project src/Jazor.VueHost/Jazor.VueHost.csproj -- --lsp`
+- current LSP surface: `initialize`, `textDocument/didOpen`, `textDocument/didChange`, `textDocument/didClose`, `textDocument/hover`, `textDocument/completion`, `textDocument/definition`, `textDocument/references`, `textDocument/rename`, `textDocument/codeAction`, `shutdown`, `exit`
+- current focus: `.jazor` diagnostics plus import/component-oriented hover, completion, definition, references, rename, and code actions
 
 Analysis client bootstrap:
 

@@ -1,89 +1,74 @@
+import type { GetVirtualArtifactResponse } from "./contracts";
 import {
-  type AnalyzeJazorRequest,
-  type AnalyzeJazorResponse,
-  type RpcRequestEnvelope,
-  type RpcResponseEnvelope
-} from "./contracts";
+  createPersistentVueHostSession,
+  type PersistentVueHostSession,
+  type VueHostBootstrapOptions
+} from "./vue-host-session";
 
 export interface VueHostProcessOptions {
   command: string;
   arguments?: string[];
+  rpcMode?: string;
 }
 
 export interface VueHostTransport {
-  analyzeJazor(request: AnalyzeJazorRequest): Promise<AnalyzeJazorResponse>;
+  getVirtualArtifact(documentPath: string, text: string): Promise<GetVirtualArtifactResponse>;
+  upsertDocument(documentPath: string, text: string): Promise<void>;
+  closeDocument(documentPath: string): Promise<void>;
+  dispose(): Promise<void>;
 }
 
 export class BunVueHostTransport implements VueHostTransport {
-  private readonly options: VueHostProcessOptions;
+  private readonly session: PersistentVueHostSession;
 
-  public constructor(options: VueHostProcessOptions) {
-    this.options = options;
-  }
-
-  public async analyzeJazor(request: AnalyzeJazorRequest): Promise<AnalyzeJazorResponse> {
-    return this.invoke<AnalyzeJazorResponse>("vuehost/analyzeJazor", request);
-  }
-
-  private async invoke<TResponse>(method: string, payload: unknown): Promise<TResponse> {
-    const bunApi = getBun();
-    const request: RpcRequestEnvelope = {
-      id: `vite-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
-      method,
-      payloadJson: JSON.stringify(payload)
-    };
-    const command = [this.options.command, ...(this.options.arguments ?? [])];
-    const subprocess = bunApi.spawn(command, {
-      stdin: "pipe",
-      stdout: "pipe",
-      stderr: "pipe"
+  public constructor(
+    options: VueHostProcessOptions,
+    sessionFactory: (bootstrap: Required<VueHostBootstrapOptions>) => PersistentVueHostSession = createPersistentVueHostSession
+  ) {
+    this.session = sessionFactory({
+      command: options.command,
+      args: (options.arguments ?? []).join(" "),
+      argsList: options.arguments ?? [],
+      rpcMode: options.rpcMode ?? "process-stdio"
     });
+  }
 
-    await writeLine(subprocess.stdin, JSON.stringify(request));
+  public async getVirtualArtifact(documentPath: string, text: string): Promise<GetVirtualArtifactResponse> {
+    await this.upsertDocument(documentPath, text);
+    return await this.session.getVirtualArtifact({
+      documentPath,
+      artifactKind: "vue-sfc",
+      text: null,
+      version: null
+    });
+  }
 
-    const responseLine = await readFirstLine(subprocess.stdout);
-    const errorText = await new Response(subprocess.stderr).text();
-    await subprocess.exited;
+  public async upsertDocument(documentPath: string, text: string): Promise<void> {
+    const version = createVersion(text);
+    await this.session.openDocument({
+      documentPath,
+      documentKind: "Jazor",
+      text,
+      version
+    });
+  }
 
-    if (!responseLine) {
-      throw new Error(errorText.trim() || `VueHost did not return a response for '${method}'.`);
-    }
+  public async closeDocument(documentPath: string): Promise<void> {
+    await this.session.closeDocument(documentPath);
+  }
 
-    const response = JSON.parse(responseLine) as RpcResponseEnvelope;
-    if (!response.success) {
-      const code = response.error?.code ?? "rpc_error";
-      const message = response.error?.message ?? "Unknown RPC failure.";
-      throw new Error(`${code}: ${message}`);
-    }
-
-    if (response.payloadJson === null) {
-      throw new Error(`VueHost returned an empty payload for '${method}'.`);
-    }
-
-    return JSON.parse(response.payloadJson) as TResponse;
+  public async dispose(): Promise<void> {
+    await this.session.dispose();
   }
 }
 
-function getBun(): NonNullable<typeof Bun> {
-  if (typeof Bun === "undefined") {
-    throw new Error("Jazor.Vite currently requires Bun runtime for stdio host transport.");
+function createVersion(content: string): string {
+  let hash = 2166136261;
+
+  for (let index = 0; index < content.length; index += 1) {
+    hash ^= content.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
   }
 
-  return Bun;
-}
-
-async function writeLine(stream: WritableStream<Uint8Array>, line: string): Promise<void> {
-  const writer = stream.getWriter();
-  try {
-    await writer.write(new TextEncoder().encode(`${line}\n`));
-    await writer.close();
-  } finally {
-    writer.releaseLock();
-  }
-}
-
-async function readFirstLine(stream: ReadableStream<Uint8Array>): Promise<string | null> {
-  const text = await new Response(stream).text();
-  const firstLine = text.split(/\r?\n/, 1)[0];
-  return firstLine.length === 0 ? null : firstLine;
+  return `v${hash >>> 0}`;
 }

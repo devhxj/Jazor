@@ -46,7 +46,7 @@ public sealed class ProcessAnalysisRpcTransport : IAnalysisRpcTransport
         await process.StandardInput.FlushAsync();
         process.StandardInput.Close();
 
-        var responseJson = await process.StandardOutput.ReadLineAsync(cancellationToken);
+        var responseJson = await ReadResponseJsonAsync(process, cancellationToken);
         await process.WaitForExitAsync(cancellationToken);
 
         if (string.IsNullOrWhiteSpace(responseJson))
@@ -60,5 +60,21 @@ public sealed class ProcessAnalysisRpcTransport : IAnalysisRpcTransport
 
         return VueHostRpcSerializer.Deserialize<RpcResponseEnvelope>(responseJson)
             ?? throw new InvalidOperationException("Analysis process returned an invalid RPC response envelope.");
+    }
+
+    private static async Task<string?> ReadResponseJsonAsync(
+        Process process,
+        CancellationToken cancellationToken)
+    {
+        while (true)
+        {
+            var line = await process.StandardOutput.ReadLineAsync(cancellationToken);
+            if (line is null)
+                return null;
+
+            var trimmed = line.Trim();
+            if (trimmed.StartsWith("{", StringComparison.Ordinal))
+                return trimmed;
+        }
     }
 }

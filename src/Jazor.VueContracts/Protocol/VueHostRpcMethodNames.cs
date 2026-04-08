@@ -10,4 +10,6 @@ public static class VueHostRpcMethodNames
     public const string GetOpenDocuments = "vuehost/getOpenDocuments";
     public const string GetFrontendContext = "vuehost/getFrontendContext";
     public const string AnalyzeJazor = "vuehost/analyzeJazor";
+    public const string GetVirtualArtifact = "vuehost/getVirtualArtifact";
+    public const string GetHotUpdatePlan = "vuehost/getHotUpdatePlan";
 }

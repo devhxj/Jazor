@@ -41,6 +41,101 @@ public sealed class JazorVueHostTests
         Assert.AreEqual(2, response.SemanticContext.RelatedDocuments.Count);
         Assert.AreEqual("Components/UserCard.vue", response.SemanticContext.RelatedDocuments[0].DocumentPath);
         Assert.AreEqual("2", response.SemanticContext.Properties["relatedDocumentCount"]);
+        Assert.IsTrue(response.Artifacts.Any(static artifact => artifact.ArtifactKind == "frontend-summary"));
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_GetFrontendContext_DerivesTrackedDocumentsFromJazorImports()
+    {
+        var host = new VueHostService(new InMemoryWorkspaceStore(), new NullVueAnalysisClient());
+        await host.StartAsync(CancellationToken.None);
+
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                "Features/Pages/Counter.jazor",
+                DocumentKind.Jazor,
+                """
+                @vueimport UserCard from "../Components/UserCard.vue"
+                @jsimport * as userCard from "../Scripts/user-card"
+
+                <template>
+                  <UserCard />
+                </template>
+                """,
+                "1"),
+            CancellationToken.None);
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                "Features/Components/UserCard.vue",
+                DocumentKind.Vue,
+                "<template><div>UserCard</div></template>",
+                "1"),
+            CancellationToken.None);
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                "Features/Scripts/user-card.ts",
+                DocumentKind.TypeScript,
+                "export const userCard = 1;",
+                "1"),
+            CancellationToken.None);
+
+        var response = await host.GetFrontendContextAsync(
+            new GetFrontendContextRequest(
+                "Features/Pages/Counter.jazor",
+                Array.Empty<string>()),
+            CancellationToken.None);
+
+        Assert.AreEqual(2, response.SemanticContext.RelatedDocuments.Count);
+        Assert.IsTrue(response.SemanticContext.RelatedDocuments.Any(static document => document.DocumentPath == "Features/Components/UserCard.vue"));
+        Assert.IsTrue(response.SemanticContext.RelatedDocuments.Any(static document => document.DocumentPath == "Features/Scripts/user-card.ts"));
+        Assert.AreEqual("0", response.SemanticContext.Properties["explicitDocumentCount"]);
+        Assert.AreEqual("2", response.SemanticContext.Properties["derivedDocumentCount"]);
+        Assert.AreEqual(3, response.Artifacts.Count);
+        Assert.AreEqual("frontend-context", response.Artifacts[0].ArtifactKind);
+        Assert.IsTrue(response.Artifacts.Any(static artifact => artifact.ArtifactKind == "frontend-summary"));
+        StringAssert.Contains(response.Artifacts[1].Content, "documentKind");
+        StringAssert.Contains(response.Artifacts[2].Content, "userCard");
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_GetHotUpdatePlan_ReturnsDependentJazorDocumentsForFrontendChange()
+    {
+        var host = new VueHostService(new InMemoryWorkspaceStore(), new NullVueAnalysisClient());
+        await host.StartAsync(CancellationToken.None);
+
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                "Features/Pages/Counter.jazor",
+                DocumentKind.Jazor,
+                """
+                @vueimport UserCard from "../Components/UserCard.vue"
+
+                <template>
+                  <UserCard />
+                </template>
+                """,
+                "1"),
+            CancellationToken.None);
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                "Features/Components/UserCard.vue",
+                DocumentKind.Vue,
+                "<template><UserAvatar /></template><script setup>import UserAvatar from './UserAvatar.vue'</script>",
+                "2"),
+            CancellationToken.None);
+
+        var response = await host.GetHotUpdatePlanAsync(
+            new GetHotUpdatePlanRequest(
+                "Features/Components/UserCard.vue",
+                DocumentKind.Vue,
+                "3"),
+            CancellationToken.None);
+
+        Assert.IsFalse(response.RequiresFullReload);
+        CollectionAssert.AreEqual(
+            new[] { "Features/Pages/Counter.jazor" },
+            response.AffectedDocumentPaths.ToArray());
+        Assert.AreEqual("frontend-change", response.Reason);
     }
 
     [TestMethod]
@@ -64,6 +159,60 @@ public sealed class JazorVueHostTests
         Assert.AreEqual(0, response.Imports.Count);
         Assert.AreEqual(0, response.Artifacts.Count);
         Assert.AreEqual(0, response.SourceMaps.Count);
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_AnalyzeJazor_PopulatesFrontendContextFromTrackedImports()
+    {
+        var expectedResponse = new AnalyzeJazorResponse(
+            diagnostics: Array.Empty<DiagnosticRecord>(),
+            imports: Array.Empty<ImportDescriptor>(),
+            artifacts: Array.Empty<ArtifactRecord>(),
+            sourceMaps: Array.Empty<SourceMapDescriptor>());
+        var analysisClient = new RecordingVueAnalysisClient(expectedResponse);
+        var host = new VueHostService(new InMemoryWorkspaceStore(), analysisClient);
+        await host.StartAsync(CancellationToken.None);
+
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                "Features/Components/UserCard.vue",
+                DocumentKind.Vue,
+                "<template><div>UserCard</div></template>",
+                "1"),
+            CancellationToken.None);
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                "Features/Scripts/user-card.ts",
+                DocumentKind.TypeScript,
+                "export const userCard = 1;",
+                "1"),
+            CancellationToken.None);
+
+        await host.AnalyzeJazorAsync(
+            new AnalyzeJazorRequest(
+                new DocumentSnapshot(
+                    "Features/Pages/Counter.jazor",
+                    DocumentKind.Jazor,
+                    """
+                    @vueimport UserCard from "../Components/UserCard.vue"
+                    @jsimport * as userCard from "../Scripts/user-card"
+
+                    <template>
+                      <UserCard />
+                    </template>
+                    """,
+                    "5"),
+                relatedDocuments: Array.Empty<DocumentSnapshot>(),
+                frontendContext: null),
+            CancellationToken.None);
+
+        Assert.IsNotNull(analysisClient.LastRequest);
+        Assert.AreEqual(2, analysisClient.LastRequest.RelatedDocuments.Count);
+        Assert.IsNotNull(analysisClient.LastRequest.FrontendContext);
+        Assert.AreEqual("frontend", analysisClient.LastRequest.FrontendContext.ContextKind);
+        Assert.AreEqual("2", analysisClient.LastRequest.FrontendContext.Properties["derivedDocumentCount"]);
+        Assert.IsTrue(analysisClient.LastRequest.RelatedDocuments.Any(static document => document.DocumentKind == DocumentKind.Vue));
+        Assert.IsTrue(analysisClient.LastRequest.RelatedDocuments.Any(static document => document.DocumentKind == DocumentKind.TypeScript));
     }
 
     [TestMethod]
@@ -97,8 +246,336 @@ public sealed class JazorVueHostTests
 
         var response = await host.AnalyzeJazorAsync(request, CancellationToken.None);
 
-        Assert.AreSame(request, analysisClient.LastRequest);
+        Assert.IsNotNull(analysisClient.LastRequest);
+        Assert.AreEqual(request.JazorDocument.DocumentPath, analysisClient.LastRequest.JazorDocument.DocumentPath);
         Assert.AreEqual(expectedResponse.Diagnostics[0].Id, response.Diagnostics[0].Id);
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_AnalyzeJazor_DerivesFrontendContextFromImportedTrackedDocuments()
+    {
+        var expectedResponse = new AnalyzeJazorResponse(
+            diagnostics: Array.Empty<DiagnosticRecord>(),
+            imports: Array.Empty<ImportDescriptor>(),
+            artifacts: Array.Empty<ArtifactRecord>(),
+            sourceMaps: Array.Empty<SourceMapDescriptor>());
+        var analysisClient = new RecordingVueAnalysisClient(expectedResponse);
+        var host = new VueHostService(new InMemoryWorkspaceStore(), analysisClient);
+        await host.StartAsync(CancellationToken.None);
+
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                "Features/Components/UserCard.vue",
+                DocumentKind.Vue,
+                "<template><div>UserCard</div></template>",
+                "2"),
+            CancellationToken.None);
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                "Features/scripts/counter.ts",
+                DocumentKind.TypeScript,
+                "export const count = 1;",
+                "3"),
+            CancellationToken.None);
+
+        await host.AnalyzeJazorAsync(
+            new AnalyzeJazorRequest(
+                new DocumentSnapshot(
+                    "Features/Counter.jazor",
+                    DocumentKind.Jazor,
+                    """
+                    @vueimport UserCard from "./Components/UserCard.vue"
+                    @jsimport { count } from "./scripts/counter.ts"
+
+                    <template>
+                      <UserCard />
+                      <div>{{ count }}</div>
+                    </template>
+                    """,
+                    "1"),
+                relatedDocuments: Array.Empty<DocumentSnapshot>(),
+                frontendContext: null),
+            CancellationToken.None);
+
+        Assert.IsNotNull(analysisClient.LastRequest);
+        Assert.AreEqual(2, analysisClient.LastRequest.RelatedDocuments.Count);
+        Assert.IsNotNull(analysisClient.LastRequest.FrontendContext);
+        Assert.AreEqual("frontend", analysisClient.LastRequest.FrontendContext.ContextKind);
+        Assert.IsTrue(analysisClient.LastRequest.RelatedDocuments.Any(static document => document.DocumentPath == "Features/Components/UserCard.vue"));
+        Assert.IsTrue(analysisClient.LastRequest.RelatedDocuments.Any(static document => document.DocumentPath == "Features/scripts/counter.ts"));
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_GetFrontendContext_DerivesRelatedDocumentsFromJazorImports()
+    {
+        var host = new VueHostService(new InMemoryWorkspaceStore(), new NullVueAnalysisClient());
+        await host.StartAsync(CancellationToken.None);
+
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                "Features/Counter.jazor",
+                DocumentKind.Jazor,
+                """
+                @vueimport UserCard from "./Components/UserCard.vue"
+
+                <template>
+                  <UserCard />
+                </template>
+                """,
+                "1"),
+            CancellationToken.None);
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                "Features/Components/UserCard.vue",
+                DocumentKind.Vue,
+                "<template><div>UserCard</div></template>",
+                "2"),
+            CancellationToken.None);
+
+        var response = await host.GetFrontendContextAsync(
+            new GetFrontendContextRequest(
+                "Features/Counter.jazor",
+                relatedDocumentPaths: Array.Empty<string>()),
+            CancellationToken.None);
+
+        Assert.AreEqual(1, response.SemanticContext.RelatedDocuments.Count);
+        Assert.AreEqual("Features/Components/UserCard.vue", response.SemanticContext.RelatedDocuments[0].DocumentPath);
+        Assert.AreEqual(2, response.Artifacts.Count);
+        Assert.AreEqual("frontend-context", response.Artifacts[0].ArtifactKind);
+        Assert.IsTrue(response.Artifacts.Any(static artifact => artifact.ArtifactKind == "frontend-summary"));
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_GetFrontendContext_EmitsFrontendSummaryArtifacts()
+    {
+        var host = new VueHostService(new InMemoryWorkspaceStore(), new NullVueAnalysisClient());
+        await host.StartAsync(CancellationToken.None);
+
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                "Features/Counter.jazor",
+                DocumentKind.Jazor,
+                """
+                @vueimport UserCard from "./Components/UserCard.vue"
+                @jsimport { counterStore } from "./scripts/counter-store.ts"
+
+                <template>
+                  <UserCard />
+                </template>
+                """,
+                "1"),
+            CancellationToken.None);
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                "Features/Components/UserCard.vue",
+                DocumentKind.Vue,
+                """
+                <template>
+                  <CardShell />
+                </template>
+                <script setup>
+                export const userCard = true;
+                </script>
+                """,
+                "2"),
+            CancellationToken.None);
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                "Features/scripts/counter-store.ts",
+                DocumentKind.TypeScript,
+                """
+                import { ref } from "vue";
+                export const counterStore = ref(0);
+                """,
+                "3"),
+            CancellationToken.None);
+
+        var response = await host.GetFrontendContextAsync(
+            new GetFrontendContextRequest(
+                "Features/Counter.jazor",
+                Array.Empty<string>()),
+            CancellationToken.None);
+
+        var summaries = response.Artifacts
+            .Where(static artifact => artifact.ArtifactKind == "frontend-summary")
+            .ToArray();
+
+        Assert.AreEqual(2, summaries.Length);
+        Assert.IsTrue(summaries.Any(static artifact => artifact.Content.Contains("counterStore", StringComparison.Ordinal)));
+        Assert.IsTrue(summaries.Any(static artifact => artifact.Content.Contains("CardShell", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_GetHotUpdatePlan_ReturnsAffectedJazorDocumentsForFrontendChange()
+    {
+        var host = new VueHostService(new InMemoryWorkspaceStore(), new NullVueAnalysisClient());
+        await host.StartAsync(CancellationToken.None);
+
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                "Features/Pages/Counter.jazor",
+                DocumentKind.Jazor,
+                """
+                @vueimport UserCard from "../Components/UserCard.vue"
+
+                <template>
+                  <UserCard />
+                </template>
+                """,
+                "1"),
+            CancellationToken.None);
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                "Features/Components/UserCard.vue",
+                DocumentKind.Vue,
+                "<template><div>UserCard</div></template>",
+                "2"),
+            CancellationToken.None);
+
+        var response = await host.GetHotUpdatePlanAsync(
+            new GetHotUpdatePlanRequest(
+                "Features/Components/UserCard.vue",
+                DocumentKind.Vue,
+                "3"),
+            CancellationToken.None);
+
+        Assert.IsFalse(response.RequiresFullReload);
+        Assert.AreEqual("frontend-change", response.Reason);
+        CollectionAssert.AreEquivalent(
+            new[] { "Features/Pages/Counter.jazor" },
+            response.AffectedDocumentPaths.ToArray());
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_GetVirtualArtifact_UsesTrackedWorkspaceDocument()
+    {
+        var host = new VueHostService(new InMemoryWorkspaceStore(), new NullVueAnalysisClient());
+        await host.StartAsync(CancellationToken.None);
+
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                "Features/Counter.jazor",
+                DocumentKind.Jazor,
+                """
+                @jsimport dayjs from "dayjs"
+
+                <template>
+                  <div>{{ dayjs }}</div>
+                </template>
+                """,
+                "12"),
+            CancellationToken.None);
+
+        var response = await host.GetVirtualArtifactAsync(
+            new GetVirtualArtifactRequest(
+                documentPath: "Features/Counter.jazor",
+                artifactKind: "vue-sfc",
+                text: null,
+                version: null),
+            CancellationToken.None);
+
+        Assert.AreEqual("vue-sfc", response.Artifact.ArtifactKind);
+        StringAssert.Contains(response.Artifact.Content, "<script setup>");
+        StringAssert.Contains(response.Artifact.Content, "import dayjs from \"dayjs\";");
+        Assert.AreEqual(2, response.SourceMaps.Count);
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_GetVirtualArtifact_DelegatesResolvedFrontendDocumentsToAnalysisClient()
+    {
+        var expectedResponse = new AnalyzeJazorResponse(
+            diagnostics: Array.Empty<DiagnosticRecord>(),
+            imports: Array.Empty<ImportDescriptor>(),
+            artifacts:
+            [
+                new ArtifactRecord(
+                    artifactName: "virtual:Features/Pages/Counter.jazor.vue",
+                    artifactKind: "vue-sfc",
+                    content: "<template><UserCard /></template>",
+                    contentHash: null)
+            ],
+            sourceMaps: Array.Empty<SourceMapDescriptor>());
+        var analysisClient = new RecordingVueAnalysisClient(expectedResponse);
+        var host = new VueHostService(new InMemoryWorkspaceStore(), analysisClient);
+        await host.StartAsync(CancellationToken.None);
+
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                "Features/Pages/Counter.jazor",
+                DocumentKind.Jazor,
+                """
+                @vueimport UserCard from "../Components/UserCard.vue"
+
+                <template>
+                  <UserCard />
+                </template>
+                """,
+                "12"),
+            CancellationToken.None);
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                "Features/Components/UserCard.vue",
+                DocumentKind.Vue,
+                "<template><div>UserCard</div></template>",
+                "1"),
+            CancellationToken.None);
+
+        var response = await host.GetVirtualArtifactAsync(
+            new GetVirtualArtifactRequest(
+                documentPath: "Features/Pages/Counter.jazor",
+                artifactKind: "vue-sfc",
+                text: null,
+                version: null),
+            CancellationToken.None);
+
+        Assert.AreEqual("vue-sfc", response.Artifact.ArtifactKind);
+        Assert.IsNotNull(analysisClient.LastRequest);
+        Assert.AreEqual(1, analysisClient.LastRequest.RelatedDocuments.Count);
+        Assert.AreEqual("Features/Components/UserCard.vue", analysisClient.LastRequest.RelatedDocuments[0].DocumentPath);
+        Assert.IsNotNull(analysisClient.LastRequest.FrontendContext);
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_GetVirtualArtifact_PassesDerivedFrontendContextToAnalysisClient()
+    {
+        var analysisClient = new RecordingVueAnalysisClient(
+            new AnalyzeJazorResponse(
+                diagnostics: Array.Empty<DiagnosticRecord>(),
+                imports: Array.Empty<ImportDescriptor>(),
+                artifacts: Array.Empty<ArtifactRecord>(),
+                sourceMaps: Array.Empty<SourceMapDescriptor>()));
+        var host = new VueHostService(new InMemoryWorkspaceStore(), analysisClient);
+        await host.StartAsync(CancellationToken.None);
+
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                "Features/Components/UserCard.vue",
+                DocumentKind.Vue,
+                "<template><div>UserCard</div></template>",
+                "4"),
+            CancellationToken.None);
+
+        var response = await host.GetVirtualArtifactAsync(
+            new GetVirtualArtifactRequest(
+                documentPath: "Features/Counter.jazor",
+                artifactKind: "vue-sfc",
+                text:
+                """
+                @vueimport UserCard from "./Components/UserCard.vue"
+
+                <template>
+                  <UserCard />
+                </template>
+                """,
+                version: "5"),
+            CancellationToken.None);
+
+        Assert.IsNotNull(analysisClient.LastRequest);
+        Assert.AreEqual(1, analysisClient.LastRequest.RelatedDocuments.Count);
+        Assert.IsNotNull(analysisClient.LastRequest.FrontendContext);
+        Assert.AreEqual("Features/Components/UserCard.vue", analysisClient.LastRequest.RelatedDocuments[0].DocumentPath);
+        Assert.AreEqual("vue-sfc", response.Artifact.ArtifactKind);
+        StringAssert.Contains(response.Artifact.Content, "<template>");
     }
 
     [TestMethod]
@@ -305,14 +782,10 @@ public sealed class JazorVueHostTests
     [TestMethod]
     public async Task JazorVueHost_ProcessAnalysisRpcTransport_InteropsWithAnalysisHostProcess()
     {
-        var analysisHostProject = Path.Combine(
-            GetRepositoryRoot(),
-            "src",
-            "Jazor.Vue.Analysis.Host",
-            "Jazor.Vue.Analysis.Host.csproj");
+        var analysisHostAssemblyPath = GetBuiltAssemblyPath("Jazor.Vue.Analysis.Host", "Jazor.Vue.Analysis.Host.dll");
         var transport = new ProcessAnalysisRpcTransport(
             "dotnet",
-            $"run --project \"{analysisHostProject}\" -- --stdio");
+            $"\"{analysisHostAssemblyPath}\" --stdio");
         var client = VueAnalysisClientFactory.CreateFromTransport(transport);
         var host = new VueHostService(new InMemoryWorkspaceStore(), client);
         await host.StartAsync(CancellationToken.None);
@@ -342,17 +815,11 @@ public sealed class JazorVueHostTests
     [TestMethod]
     public async Task JazorVueHost_ProcessAnalysisRpcTransport_InteropsWithVueAnalysisHostProcess()
     {
-        var repositoryRoot = GetRepositoryRoot();
-        var projectPath = Path.Combine(
-            repositoryRoot,
-            "src",
-            "Jazor.Vue.Analysis.Host",
-            "Jazor.Vue.Analysis.Host.csproj");
-        Assert.IsTrue(File.Exists(projectPath), "Expected Jazor.Vue.Analysis.Host project to exist.");
+        var analysisHostAssemblyPath = GetBuiltAssemblyPath("Jazor.Vue.Analysis.Host", "Jazor.Vue.Analysis.Host.dll");
 
         var transport = new ProcessAnalysisRpcTransport(
             command: "dotnet",
-            arguments: $"run --project \"{projectPath}\" -- --stdio");
+            arguments: $"\"{analysisHostAssemblyPath}\" --stdio");
         var client = VueAnalysisClientFactory.CreateFromTransport(transport);
         var host = new VueHostService(new InMemoryWorkspaceStore(), client);
         await host.StartAsync(CancellationToken.None);
@@ -417,6 +884,48 @@ public sealed class JazorVueHostTests
         Assert.IsNotNull(documents);
         Assert.AreEqual(1, documents.Length);
         Assert.AreEqual("Components/UserCard.vue", documents[0].DocumentPath);
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_RpcProcessor_GetVirtualArtifact_ReturnsArtifactPayload()
+    {
+        var host = new VueHostService(new InMemoryWorkspaceStore(), new NullVueAnalysisClient());
+        await host.StartAsync(CancellationToken.None);
+
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                "Features/Counter.jazor",
+                DocumentKind.Jazor,
+                """
+                <template>
+                  <div />
+                </template>
+                """,
+                "13"),
+            CancellationToken.None);
+
+        var dispatcher = new VueHostRpcDispatcher(host);
+        var processor = new VueHostRpcProcessor(dispatcher);
+        var requestJson = VueHostRpcSerializer.Serialize(new RpcRequestEnvelope(
+            id: "req-artifact",
+            method: SharedVueHostRpcMethodNames.GetVirtualArtifact,
+            payloadJson: VueHostRpcSerializer.Serialize(new GetVirtualArtifactRequest(
+                documentPath: "Features/Counter.jazor",
+                artifactKind: "vue-sfc",
+                text: null,
+                version: null))));
+
+        var responseJson = await processor.ProcessAsync(requestJson, CancellationToken.None);
+        var response = VueHostRpcSerializer.Deserialize<RpcResponseEnvelope>(responseJson);
+        var payload = response?.PayloadJson is null
+            ? null
+            : VueHostRpcSerializer.Deserialize<GetVirtualArtifactResponse>(response.PayloadJson);
+
+        Assert.IsNotNull(response);
+        Assert.IsTrue(response.Success);
+        Assert.IsNotNull(payload);
+        Assert.AreEqual("vue-sfc", payload.Artifact.ArtifactKind);
+        StringAssert.Contains(payload.Artifact.Content, "<template>");
     }
 
     [TestMethod]
@@ -549,4 +1058,18 @@ public sealed class JazorVueHostTests
             "..",
             "..",
             ".."));
+
+    private static string GetBuiltAssemblyPath(string projectDirectoryName, string assemblyFileName)
+    {
+        var assemblyPath = Path.Combine(
+            GetRepositoryRoot(),
+            "src",
+            projectDirectoryName,
+            "bin",
+            "Debug",
+            "net10.0",
+            assemblyFileName);
+        Assert.IsTrue(File.Exists(assemblyPath), $"Expected built assembly '{assemblyPath}' to exist.");
+        return assemblyPath;
+    }
 }

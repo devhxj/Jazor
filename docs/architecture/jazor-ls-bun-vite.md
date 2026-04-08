@@ -2,7 +2,7 @@
 
 ## Status
 
-- Status: active execution baseline
+- Status: working baseline with focused tests green
 - Scope: `.jazor` authoring, diagnostics, dev-server orchestration, and IDE integration
 - Non-goal: re-create a second standalone frontend language ecosystem inside C#
 
@@ -23,6 +23,17 @@ This means:
 - IDEs and frontend tooling talk to one C# RPC server.
 - `Jazor.VueAnalysis` stays the semantic center for `.jazor`.
 - `Jazor.VueHost`, `Jazor.Vite`, and `Jazor.VueAnalysis.Runtime` share only DTO/protocol definitions at compile time.
+
+Current landed baseline:
+
+- `Jazor.VueContracts` holds shared DTOs and RPC method names
+- `Jazor.Vue.Analysis.Runtime` serves runtime `AnalyzeJazor`
+- `Jazor.Vue.Analysis.Host` wraps runtime analysis over stdio
+- `Jazor.VueHost` exposes stdio RPC, workspace document tracking, derived frontend context, and `getVirtualArtifact`
+- `Jazor.VueHost` now also exposes a minimal stdio LSP surface for `.jazor` diagnostics, hover, completion, and definition
+- `Jazor.VueHost` falls back to local runtime analysis when no external analysis transport is configured
+- `Jazor.Vite` keeps a persistent stdio session to `Jazor.VueHost` for load/HMR loops and returns a minimal consumable sourcemap from host descriptors
+- the C# `ProcessVueHostRpcClient` now reuses one host process per client instance
 
 ## Goals
 
@@ -125,8 +136,8 @@ Responsibilities:
 - produce and cache virtual documents
 - provide `.vue/.js/.ts` semantic context to `Jazor.VueAnalysis`
 - aggregate diagnostics and semantic results from `Jazor.VueAnalysis` and frontend semantic services
-- manage Bun and Vite child processes
 - expose a local RPC surface for IDEs and toolchain clients
+- coordinate with `Jazor.Vite` rather than embedding frontend process ownership in the host baseline
 
 `Jazor.VueHost` is not only an LSP adapter. It is the development-time control plane and standalone RPC server.
 
@@ -144,6 +155,15 @@ Responsibilities:
 - pass `Jazor.VueHost` bootstrap settings into the frontend runtime
 - keep the TS plugin layer limited to `resolveId` / `load` / HMR glue
 - remain thin enough that a future Vite plugin layer can stay dumb
+
+Current baseline behavior:
+
+- `src/index.ts` owns the Vite plugin entry
+- `.jazor` is resolved as a virtual module prefix and loaded through `vuehost/getVirtualArtifact`
+- `src/vue-host-session.ts` maintains a persistent `process-stdio` host session
+- `.jazor` documents are tracked across `buildStart`, `load`, HMR updates, and teardown
+- `load` returns `code + map` using host `SourceMapDescriptor[]`
+- watched `.vue/.ts/.js` documents are synchronized into `Jazor.VueHost` workspace state
 
 Non-responsibilities:
 
@@ -201,26 +221,22 @@ Recommended RPC groups:
 - `openDocument`
 - `updateDocument`
 - `closeDocument`
-- `getVirtualDocuments`
+- `getOpenDocuments`
 
 ### Compilation RPC
 
-- `compileJazor`
-- `getVueArtifact`
-- `getAnalysisArtifact`
-- `getImportInfos`
-- `getSourceMap`
+- `analyzeJazor`
+- `getVirtualArtifact`
 
 ### Diagnostics RPC
 
-- `getDiagnostics`
-- `getSemanticSummary`
+- `getFrontendContext`
 
 ### Dev-Server RPC
 
-- `ensureFrontendRuntime`
-- `notifyFileChanged`
-- `getHmrPlan`
+- future: `ensureFrontendRuntime`
+- future: `notifyFileChanged`
+- future: `getHmrPlan`
 
 Contract rule:
 
@@ -287,6 +303,13 @@ Required IDE behaviors:
 - code actions
 - source mapping from generated artifacts back to `.jazor`
 
+Current landed IDE baseline:
+
+- stdio LSP entry in `Jazor.VueHost` via `--lsp`
+- `textDocument/didOpen`, `didChange`, and `didClose` keep `.jazor` workspace state synchronized
+- `textDocument/publishDiagnostics` is emitted from the same `.jazor` analysis lane used by host/runtime tests
+- `hover`, `completion`, and `definition` currently focus on import directives and imported component tags inside `.jazor`
+
 ## Project Boundary Recommendation
 
 Recommended medium-term project split:
@@ -310,7 +333,7 @@ Recommended medium-term project split:
   - LSP surface
   - workspace/session/cache orchestration
   - communication boundary to `Jazor.VueAnalysis`
-  - Bun/Vite process management
+  - frontend coordination without owning Bun/Vite processes in the current baseline
 - `Jazor.Vite`
   - thin .NET Bun/Vite launcher
   - VueHost bootstrap client
@@ -339,26 +362,26 @@ Current recommendation:
 - add virtual document manager
 - add local RPC transport
 - add DTO contracts for compile/diagnostic/source-map requests
-- status: initial skeleton landed, including stdio RPC, bootstrap methods, shallow analysis delegation, and process-level verification
+- status: landed baseline includes stdio RPC, workspace document tracking, bootstrap methods, `getVirtualArtifact`, local runtime fallback, shallow analysis delegation, and process-level verification
 
 ### Phase 3. Move Frontend Process Ownership To `Jazor.VueHost`
 
-- `Jazor.VueHost` starts Bun
-- `Jazor.VueHost` starts or supervises `Jazor.Vite`
-- `Jazor.VueHost` exposes compile/load/HMR RPC for `Jazor.Vite`
+- optional future direction only if a single-process C# control plane becomes necessary
+- current baseline keeps frontend process ownership in `Jazor.Vite`
+- if revisited later, `Jazor.VueHost` would expose compile/load/HMR RPC for `Jazor.Vite`
 
 ### Phase 4. Deepen `Jazor.Vite`
 
 - extend the C# launcher into a Bun/Vite supervisor
 - add frontend-side plugin hooks that fetch artifacts from `Jazor.VueHost`
 - keep `.jazor` semantics remote instead of re-implemented in JS/TS
-- status: initial C# launcher/bootstrap client and Bun-first TS plugin shell landed
+- status: initial C# launcher/bootstrap client and TS plugin baseline landed, including persistent VueHost sessions, real `.jazor -> vue-sfc` loading, and HMR document refresh through `vuehost/getVirtualArtifact`
 
 ### Phase 5. Deepen IDE Experience
 
-- template-aware navigation
-- cross `.jazor` / `.vue` references
-- source-mapped rename and diagnostics
+- status: initial LSP baseline landed in `Jazor.VueHost --lsp`
+- current: template/import-oriented diagnostics, hover, completion, definition, references, rename, and code actions are available for `.jazor`
+- next: deepen source-mapped edits and cross `.jazor` / `.vue` symbol navigation beyond the current shallow import/component model
 
 ## Acceptance Criteria
 
@@ -381,7 +404,7 @@ This architecture is considered landed when all of the following are true:
 
 ## Immediate Next Work
 
-1. Expand `Jazor.VueHost` RPC from bootstrap/analyze calls toward artifact and HMR-oriented endpoints.
-2. Start the real frontend semantic ingestion path for `.vue/.js/.ts` and feed it back into `GetFrontendContext`.
-3. Replace per-request process spawning in `Jazor.Vite` / `Jazor.VueHost` clients with a persistent transport.
-4. Keep new semantic rules in `Jazor.VueAnalysis` shallow and deterministic while runtime execution stays in `Jazor.Vue.Analysis.Runtime`.
+1. Deepen the `Jazor.VueHost --lsp` surface with richer source-mapped edits and deeper cross `.jazor` / `.vue` navigation.
+2. Expand `Jazor.VueHost` RPC beyond bootstrap and `getVirtualArtifact` toward richer source-map and HMR-oriented endpoints.
+3. Deepen frontend semantic ingestion beyond shallow tracked-document context and feed richer results back into `GetFrontendContext`.
+4. Keep extending the persistent C# helper/client path where broader launcher/runtime reuse is needed, while the Vite-side session model stays the default path.

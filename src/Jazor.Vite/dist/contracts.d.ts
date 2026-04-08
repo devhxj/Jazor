@@ -33,9 +33,12 @@ export interface ArtifactRecord {
     contentHash: string | null;
 }
 export interface SourceMapDescriptor {
-    generatedArtifactName: string;
-    sourceDocumentPath: string;
-    mappings: unknown[];
+    sourcePath: string;
+    generatedPath: string;
+    sourceStart: number;
+    sourceLength: number;
+    generatedStart: number;
+    generatedLength: number;
 }
 export interface AnalyzeJazorRequest {
     jazorDocument: DocumentSnapshot;
@@ -47,6 +50,27 @@ export interface AnalyzeJazorResponse {
     imports: ImportDescriptor[];
     artifacts: ArtifactRecord[];
     sourceMaps: SourceMapDescriptor[];
+}
+export interface GetVirtualArtifactRequest {
+    documentPath: string;
+    artifactKind: string;
+    text: string | null;
+    version: string | null;
+}
+export interface GetVirtualArtifactResponse {
+    artifact: ArtifactRecord;
+    diagnostics: DiagnosticRecord[];
+    sourceMaps: SourceMapDescriptor[];
+}
+export interface GetHotUpdatePlanRequest {
+    documentPath: string;
+    documentKind: DocumentKind;
+    version: string | null;
+}
+export interface GetHotUpdatePlanResponse {
+    requiresFullReload: boolean;
+    affectedDocumentPaths: string[];
+    reason: string;
 }
 export interface RpcRequestEnvelope {
     id: string;

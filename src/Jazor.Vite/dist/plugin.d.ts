@@ -1,3 +1,4 @@
+import type { ModuleNode } from "vite";
 import { type VueHostProcessOptions, type VueHostTransport } from "./rpc";
 export interface JazorVuePluginOptions {
     root?: string;
@@ -11,10 +12,14 @@ export interface VitePluginLike {
     load?(id: string): string | null | Promise<string | null>;
     handleHotUpdate?(context: {
         file: string;
-    }): {
-        type: "full-reload";
-    } | null | Promise<{
-        type: "full-reload";
-    } | null>;
+        modules: ModuleNode[];
+        server: {
+            moduleGraph: {
+                getModuleById(id: string): ModuleNode | null;
+                invalidateModule(module: ModuleNode): void;
+            };
+        };
+    }): ModuleNode[] | null | Promise<ModuleNode[] | null>;
+    buildEnd?(): void | Promise<void>;
 }
 export declare function createJazorVuePlugin(options: JazorVuePluginOptions): VitePluginLike;

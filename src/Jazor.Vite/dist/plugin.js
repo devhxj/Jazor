@@ -1,4 +1,5 @@
-import { dirname, relative, resolve } from "node:path";
+import { readFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
 import { BunVueHostTransport } from "./rpc";
 const virtualPrefix = "\0jazor:";
 export function createJazorVuePlugin(options) {
@@ -14,7 +15,7 @@ export function createJazorVuePlugin(options) {
             const importerPath = importer?.startsWith(virtualPrefix)
                 ? importer.slice(virtualPrefix.length)
                 : importer;
-            return `${virtualPrefix}${!importer
+            return `${virtualPrefix}${!importerPath
                 ? resolve(root, source)
                 : resolve(dirname(importerPath), source)}`;
         },
@@ -23,41 +24,36 @@ export function createJazorVuePlugin(options) {
                 return null;
             }
             const filePath = id.slice(virtualPrefix.length);
-            const document = await readJazorDocument(root, filePath);
-            const request = {
-                jazorDocument: document,
-                relatedDocuments: [],
-                frontendContext: null
-            };
-            const response = await transport.analyzeJazor(request);
-            const artifact = findArtifact(response.artifacts, "vue-sfc", document.documentPath);
-            return artifact?.content ?? null;
+            const normalizedPath = normalizeDocumentPath(root, filePath);
+            const text = await readFile(filePath, "utf8");
+            const response = await transport.getVirtualArtifact(normalizedPath, text);
+            return response.artifact.content;
         },
-        handleHotUpdate(context) {
+        async handleHotUpdate(context) {
             if (!context.file.endsWith(".jazor")) {
                 return null;
             }
-            return { type: "full-reload" };
+            const normalizedPath = normalizeDocumentPath(root, context.file);
+            const text = await readFile(context.file, "utf8");
+            await transport.upsertDocument(normalizedPath, text);
+            const moduleId = `${virtualPrefix}${context.file}`;
+            const moduleNode = context.server.moduleGraph.getModuleById(moduleId);
+            if (moduleNode) {
+                context.server.moduleGraph.invalidateModule(moduleNode);
+                return [moduleNode];
+            }
+            return context.modules;
+        },
+        async buildEnd() {
+            await transport.dispose();
         }
     };
 }
-async function readJazorDocument(root, filePath) {
-    if (typeof Bun !== "undefined") {
-        const text = await Bun.file(filePath).text();
-        return {
-            documentPath: normalizeDocumentPath(root, filePath),
-            documentKind: "Jazor",
-            text,
-            version: "vite"
-        };
-    }
-    throw new Error("Jazor.Vite currently requires Bun runtime to load .jazor files.");
-}
-function findArtifact(artifacts, artifactKind, documentPath) {
-    return artifacts.find((artifact) => artifact.artifactKind === artifactKind &&
-        artifact.artifactName.includes(documentPath));
-}
 function normalizeDocumentPath(root, filePath) {
-    const relativePath = relative(root, filePath);
-    return relativePath.length === 0 ? filePath : relativePath.replace(/\\/g, "/");
+    const normalizedRoot = root.replace(/\\/g, "/");
+    const normalizedFilePath = filePath.replace(/\\/g, "/");
+    if (normalizedFilePath.startsWith(`${normalizedRoot}/`)) {
+        return normalizedFilePath.slice(normalizedRoot.length + 1);
+    }
+    return normalizedFilePath;
 }

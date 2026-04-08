@@ -54,12 +54,29 @@ public sealed class JazorVueAnalysisService : IVueAnalysisRpcService
                 content: compilation.GeneratedExternalDeclarationsText,
                 contentHash: null)
         };
+        var sourceMaps = new[]
+        {
+            new SourceMapDescriptor(
+                sourcePath: request.JazorDocument.DocumentPath,
+                generatedPath: artifacts[0].ArtifactName,
+                sourceStart: 0,
+                sourceLength: request.JazorDocument.Text.Length,
+                generatedStart: 0,
+                generatedLength: artifacts[0].Content.Length),
+            new SourceMapDescriptor(
+                sourcePath: request.JazorDocument.DocumentPath,
+                generatedPath: artifacts[1].ArtifactName,
+                sourceStart: 0,
+                sourceLength: request.JazorDocument.Text.Length,
+                generatedStart: 0,
+                generatedLength: artifacts[1].Content.Length)
+        };
 
         var response = new AnalyzeJazorResponse(
             diagnostics: diagnostics,
             imports: imports,
             artifacts: artifacts,
-            sourceMaps: Array.Empty<SourceMapDescriptor>());
+            sourceMaps: sourceMaps);
         return new ValueTask<AnalyzeJazorResponse>(response);
     }
 

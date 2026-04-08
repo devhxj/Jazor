@@ -1,14 +1,21 @@
-import { type AnalyzeJazorRequest, type AnalyzeJazorResponse } from "./contracts";
+import type { GetVirtualArtifactResponse } from "./contracts";
+import { type PersistentVueHostSession, type VueHostBootstrapOptions } from "./vue-host-session";
 export interface VueHostProcessOptions {
     command: string;
     arguments?: string[];
+    rpcMode?: string;
 }
 export interface VueHostTransport {
-    analyzeJazor(request: AnalyzeJazorRequest): Promise<AnalyzeJazorResponse>;
+    getVirtualArtifact(documentPath: string, text: string): Promise<GetVirtualArtifactResponse>;
+    upsertDocument(documentPath: string, text: string): Promise<void>;
+    closeDocument(documentPath: string): Promise<void>;
+    dispose(): Promise<void>;
 }
 export declare class BunVueHostTransport implements VueHostTransport {
-    private readonly options;
-    constructor(options: VueHostProcessOptions);
-    analyzeJazor(request: AnalyzeJazorRequest): Promise<AnalyzeJazorResponse>;
-    private invoke;
+    private readonly session;
+    constructor(options: VueHostProcessOptions, sessionFactory?: (bootstrap: Required<VueHostBootstrapOptions>) => PersistentVueHostSession);
+    getVirtualArtifact(documentPath: string, text: string): Promise<GetVirtualArtifactResponse>;
+    upsertDocument(documentPath: string, text: string): Promise<void>;
+    closeDocument(documentPath: string): Promise<void>;
+    dispose(): Promise<void>;
 }
