@@ -8,7 +8,7 @@
 
 ## Decision
 
-`Jazor.VueAnalysis` is the Roslyn-backed semantic analysis service for `.jazor`. It resolves C#-side semantics and consumes `.vue/.js/.ts` context from `Jazor.VueHost` to support cross-file references, diagnostics, and other advanced composition features.
+`Jazor.VueAnalysis` is the Roslyn-backed semantic analysis service for `.jazor`. It resolves C#-side semantics and consumes `.vue/.js/.ts/.css` context from `Jazor.VueHost` to support cross-file references, diagnostics, and other advanced composition features.
 
 `Jazor.Vue.Analysis.Runtime` is the transport-neutral executable runtime for `AnalyzeJazor`. It stays separate from the analyzer/generator assembly so runtime host concerns do not leak back into Roslyn packaging.
 
@@ -37,8 +37,8 @@ Current landed baseline:
 
 ## Goals
 
-- Preserve C# as the only authoritative component logic language in `.jazor`.
-- Deliver near-native Vue SFC authoring for template, imports, diagnostics, and navigation.
+- Preserve Razor syntax as the `.jazor` authoring surface and keep C# as the authoritative component logic language.
+- Deliver near-native frontend intelligence for Razor markup, diagnostics, and navigation while still targeting Vue at runtime.
 - Remove Node as a required runtime dependency for Jazor development flow.
 - Keep semantic rules single-sourced and testable outside IDE sessions.
 - Keep Vite integration thin and replaceable.
@@ -60,8 +60,8 @@ Target projects:
 
 Responsibilities:
 
-- parse `.jazor`
-- split imports, template, and `@code`
+- parse `.jazor` as a Razor-authored document
+- identify markup, directives, and `@code`
 - build the virtual external symbol model
 - emit virtual `.vue` bridge text
 - emit virtual `g.cs` analysis text
@@ -282,7 +282,7 @@ The IDE should connect only to `Jazor.VueHost`.
 `Jazor.VueHost` then fans out internally:
 
 - Roslyn lane for `@code`
-- frontend semantic lane for template/SFC behavior
+- frontend semantic lane for Razor-markup-backed component and asset behavior
 - `Jazor.VueAnalysis` for `.jazor`-specific projection, Roslyn semantics, and deterministic rules
 
 Virtual document model:
@@ -380,8 +380,8 @@ Current recommendation:
 ### Phase 5. Deepen IDE Experience
 
 - status: initial LSP baseline landed in `Jazor.VueHost --lsp`
-- current: template/import-oriented diagnostics, hover, completion, definition, references, rename, and code actions are available for `.jazor`
-- next: deepen source-mapped edits and cross `.jazor` / `.vue` symbol navigation beyond the current shallow import/component model
+- current: shallow Razor-markup/component diagnostics, hover, completion, definition, references, rename, and code actions are available for `.jazor`
+- next: deepen source-mapped edits and cross `.jazor` / `.vue` symbol navigation beyond the current shallow nearby-component model
 
 ## Acceptance Criteria
 

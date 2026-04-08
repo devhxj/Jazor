@@ -11,6 +11,10 @@ internal interface IDenoFrontendHost : IAsyncDisposable
 
     ValueTask StopAsync(CancellationToken cancellationToken);
 
+    ValueTask<IReadOnlyList<LspDiagnostic>> GetTemplateDiagnosticsAsync(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken);
+
     ValueTask<IReadOnlyList<LspCompletionItem>> GetTemplateCompletionItemsAsync(
         DocumentSnapshot document,
         LspPosition position,

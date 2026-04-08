@@ -5,7 +5,7 @@ using Jazor.VueHost.Frontend.Deno.Protocol;
 
 namespace Jazor.VueHost.Frontend.Deno.Hosting;
 
-internal sealed class DenoWorkerProcess
+internal sealed class DenoWorkerProcess : IDenoWorkerProcess
 {
     private readonly DenoFrontendHostOptions _options;
     private readonly SemaphoreSlim _requestGate = new(1, 1);

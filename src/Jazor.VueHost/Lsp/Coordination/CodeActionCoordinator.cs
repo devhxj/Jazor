@@ -29,7 +29,8 @@ internal sealed class CodeActionCoordinator
         CancellationToken cancellationToken)
     {
         var actions = new List<LspCodeAction>();
-        foreach (var laneKind in _laneRouter.GetOrderedLanes(projectionTarget))
+        var laneKinds = GetOrderedLanes(projectionTarget, diagnostics);
+        foreach (var laneKind in laneKinds)
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (!_lanes.TryGetValue(laneKind, out var lane))
@@ -51,4 +52,23 @@ internal sealed class CodeActionCoordinator
 
         return _resultAggregator.AggregateCodeActions(actions);
     }
+
+    private IReadOnlyList<LaneKind> GetOrderedLanes(
+        ProjectionTarget projectionTarget,
+        IReadOnlyList<LspDiagnostic> diagnostics)
+    {
+        var laneKinds = _laneRouter.GetOrderedLanes(projectionTarget);
+        if (!ContainsFrontendDiagnostic(diagnostics) || laneKinds.Contains(LaneKind.Frontend))
+        {
+            return laneKinds;
+        }
+
+        return laneKinds.Concat([LaneKind.Frontend]).ToArray();
+    }
+
+    private static bool ContainsFrontendDiagnostic(IReadOnlyList<LspDiagnostic> diagnostics)
+        => diagnostics.Any(diagnostic =>
+            string.Equals(diagnostic.Source, "Jazor.VueHost.Frontend", StringComparison.Ordinal)
+            || string.Equals(diagnostic.Code, "JAZORVUEFRONTEND001", StringComparison.Ordinal)
+            || string.Equals(diagnostic.Code, "JAZORVUEFRONTEND002", StringComparison.Ordinal));
 }

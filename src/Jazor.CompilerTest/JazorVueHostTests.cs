@@ -481,6 +481,238 @@ public sealed class JazorVueHostTests
     }
 
     [TestMethod]
+    public async Task JazorVueHost_GetVirtualArtifact_FallbackCompilerLowersSimpleComputedAndMethodBodies()
+    {
+        var host = new VueHostService(new InMemoryWorkspaceStore(), new NullVueAnalysisClient());
+        await host.StartAsync(CancellationToken.None);
+
+        var response = await host.GetVirtualArtifactAsync(
+            new GetVirtualArtifactRequest(
+                documentPath: "Features/Counter.jazor",
+                artifactKind: "vue-sfc",
+                text:
+                """
+                <template>
+                  <button @click="increment(step)">{{ label }}</button>
+                </template>
+
+                @code {
+                    [Prop] public int Step { get; set; } = 2;
+                    [State] private int count = 1;
+                    [Computed] public string Label => $"Count: {count + Step}";
+
+                    public string Increment(int delta)
+                    {
+                        var next = count + delta + Step;
+                        count = next;
+                        return Label;
+                    }
+                }
+                """,
+                version: "13"),
+            CancellationToken.None);
+
+        StringAssert.Contains(response.Artifact.Content, "import { computed, ref, toRef } from \"vue\";");
+        StringAssert.Contains(response.Artifact.Content, "const step = toRef(props, \"step\");");
+        StringAssert.Contains(response.Artifact.Content, "const count = ref(1);");
+        StringAssert.Contains(response.Artifact.Content, "const label = computed(() => `Count: ${count.value + step.value}`);");
+        StringAssert.Contains(response.Artifact.Content, "function increment(delta) {");
+        StringAssert.Contains(response.Artifact.Content, "let next = count.value + delta + step.value;");
+        StringAssert.Contains(response.Artifact.Content, "count.value = next;");
+        StringAssert.Contains(response.Artifact.Content, "return label.value;");
+        Assert.IsFalse(response.Artifact.Content.Contains("Fallback compiler could not lower", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_GetVirtualArtifact_FallbackCompilerLowersCommonControlFlowSubset()
+    {
+        var host = new VueHostService(new InMemoryWorkspaceStore(), new NullVueAnalysisClient());
+        await host.StartAsync(CancellationToken.None);
+
+        var response = await host.GetVirtualArtifactAsync(
+            new GetVirtualArtifactRequest(
+                documentPath: "Features/Counter.jazor",
+                artifactKind: "vue-sfc",
+                text:
+                """
+                <template>
+                  <button @click="refreshAsync(card)">{{ title }}</button>
+                </template>
+
+                @code {
+                    [Prop] public int Step { get; set; } = 3;
+                    [Prop] public string? Title { get; set; }
+                    [State] private int count = 0;
+
+                    public async Task LogAsync(string value)
+                    {
+                        await Task.CompletedTask;
+                    }
+
+                    public async Task RefreshAsync(CardModel card)
+                    {
+                        for (int i = 0; i < Step; i++)
+                        {
+                            if (i == 1)
+                            {
+                                continue;
+                            }
+
+                            count += i;
+                        }
+
+                        while (count < Step)
+                        {
+                            count++;
+                            if (count > 10)
+                            {
+                                break;
+                            }
+                        }
+
+                        if (card.Title != null)
+                        {
+                            await LogAsync(card.Title);
+                        }
+                        else if (Title != null)
+                        {
+                            await LogAsync(Title);
+                            return;
+                        }
+                    }
+                }
+                """,
+                version: "14"),
+            CancellationToken.None);
+
+        StringAssert.Contains(response.Artifact.Content, "async function refreshAsync(card) {");
+        StringAssert.Contains(response.Artifact.Content, "for (let i = 0; i < step.value; i++)");
+        StringAssert.Contains(response.Artifact.Content, "continue;");
+        StringAssert.Contains(response.Artifact.Content, "while (count.value < step.value)");
+        StringAssert.Contains(response.Artifact.Content, "break;");
+        StringAssert.Contains(response.Artifact.Content, "if (card.Title != null)");
+        StringAssert.Contains(response.Artifact.Content, "await logAsync(card.Title);");
+        StringAssert.Contains(response.Artifact.Content, "else if (title.value != null)");
+        StringAssert.Contains(response.Artifact.Content, "await logAsync(title.value);");
+        StringAssert.Contains(response.Artifact.Content, "return;");
+        Assert.IsFalse(response.Artifact.Content.Contains("card.title.value", StringComparison.Ordinal));
+        Assert.IsFalse(response.Artifact.Content.Contains("Fallback compiler could not lower", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_GetVirtualArtifact_FallbackCompilerLowersForeachCatchAndErrorThrowing()
+    {
+        var host = new VueHostService(new InMemoryWorkspaceStore(), new NullVueAnalysisClient());
+        await host.StartAsync(CancellationToken.None);
+
+        var response = await host.GetVirtualArtifactAsync(
+            new GetVirtualArtifactRequest(
+                documentPath: "Features/Counter.jazor",
+                artifactKind: "vue-sfc",
+                text:
+                """
+                <template>
+                  <button @click="refreshAsync()">{{ title }}</button>
+                </template>
+
+                @code {
+                    [Prop] public IEnumerable<int> Numbers { get; set; } = Array.Empty<int>();
+                    [Prop] public string? Title { get; set; }
+                    [State] private int count = 0;
+
+                    public async Task LogAsync(string value)
+                    {
+                        await Task.CompletedTask;
+                    }
+
+                    public void ThrowBoom()
+                    {
+                        throw new InvalidOperationException(Title ?? "boom");
+                    }
+
+                    public async Task RefreshAsync()
+                    {
+                        foreach (var number in Numbers)
+                        {
+                            count += number;
+                        }
+
+                        try
+                        {
+                            ThrowBoom();
+                        }
+                        catch (InvalidOperationException ex)
+                        {
+                            await LogAsync(ex.Message);
+                        }
+                        finally
+                        {
+                            count++;
+                        }
+                    }
+                }
+                """,
+                version: "15"),
+            CancellationToken.None);
+
+        StringAssert.Contains(response.Artifact.Content, "const numbers = toRef(props, \"numbers\");");
+        StringAssert.Contains(response.Artifact.Content, "function throwBoom() {");
+        StringAssert.Contains(response.Artifact.Content, "throw new Error(title.value ?? \"boom\");");
+        StringAssert.Contains(response.Artifact.Content, "async function refreshAsync() {");
+        StringAssert.Contains(response.Artifact.Content, "for (const number of numbers.value)");
+        StringAssert.Contains(response.Artifact.Content, "catch (ex)");
+        StringAssert.Contains(response.Artifact.Content, "await logAsync(ex.Message);");
+        StringAssert.Contains(response.Artifact.Content, "finally");
+        Assert.IsFalse(response.Artifact.Content.Contains("Fallback compiler could not lower", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_GetVirtualArtifact_FallbackCompilerRestoresMemberRewritesAfterNestedScope()
+    {
+        var host = new VueHostService(new InMemoryWorkspaceStore(), new NullVueAnalysisClient());
+        await host.StartAsync(CancellationToken.None);
+
+        var response = await host.GetVirtualArtifactAsync(
+            new GetVirtualArtifactRequest(
+                documentPath: "Features/Counter.jazor",
+                artifactKind: "vue-sfc",
+                text:
+                """
+                <template>
+                  <button @click="refreshAsync()">{{ title }}</button>
+                </template>
+
+                @code {
+                    [Prop] public string? Title { get; set; }
+
+                    public async Task LogAsync(string value)
+                    {
+                        await Task.CompletedTask;
+                    }
+
+                    public async Task RefreshAsync()
+                    {
+                        if (Title != null)
+                        {
+                            string Title = "local";
+                            await LogAsync(Title);
+                        }
+
+                        await LogAsync(Title ?? "fallback");
+                    }
+                }
+                """,
+                version: "16"),
+            CancellationToken.None);
+
+        StringAssert.Contains(response.Artifact.Content, "let Title = \"local\";");
+        StringAssert.Contains(response.Artifact.Content, "await logAsync(Title);");
+        StringAssert.Contains(response.Artifact.Content, "await logAsync(title.value ?? \"fallback\");");
+        Assert.IsFalse(response.Artifact.Content.Contains("await logAsync(Title ?? \"fallback\")", StringComparison.Ordinal));
+        Assert.IsFalse(response.Artifact.Content.Contains("Fallback compiler could not lower", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
     public async Task JazorVueHost_GetVirtualArtifact_DelegatesResolvedFrontendDocumentsToAnalysisClient()
     {
         var expectedResponse = new AnalyzeJazorResponse(

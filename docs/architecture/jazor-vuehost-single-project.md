@@ -132,7 +132,7 @@ Owns `.jazor` host-native logic:
 
 - parsing
 - syntax tree
-- directives like `@vueimport` and `@jsimport`
+- Razor directives and markup classification
 - top-level structure checks
 - projection inputs
 - host-native diagnostics
@@ -168,7 +168,7 @@ Owns Vue/TS/JS/CSS/HTML semantics through Deno-hosted workers.
 - Deno worker hosting
 - Volar integration
 - TypeScript integration
-- Vue template semantics
+- Vue component, CSS/HTML, and script semantics projected from Razor markup
 - CSS/HTML semantics
 - projected frontend edits and diagnostics
 

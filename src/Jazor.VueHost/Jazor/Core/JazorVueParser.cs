@@ -22,8 +22,8 @@ public sealed partial class JazorVueParser
             throw new ArgumentNullException(nameof(sourceText));
 
         var imports = ParseImports(sourceText);
-        var template = ParseTemplate(sourceText);
         var codeParseResult = ParseCode(sourceText);
+        var template = ParseTemplate(sourceText, codeParseResult);
 
         return new JazorVueDocument(filePath, sourceText, imports, template, codeParseResult.Code, codeParseResult.StartIndex);
     }
@@ -124,17 +124,25 @@ public sealed partial class JazorVueParser
         return parts;
     }
 
-    private static string ParseTemplate(string sourceText)
+    private static string ParseTemplate(string sourceText, CodeParseResult codeParseResult)
     {
         var match = TemplatePattern.Match(sourceText);
-        return match.Success ? match.Groups["content"].Value.Trim() : string.Empty;
+        if (match.Success)
+            return match.Groups["content"].Value.Trim();
+
+        var markupEnd = codeParseResult.DirectiveIndex >= 0
+            ? codeParseResult.DirectiveIndex
+            : sourceText.Length;
+        var markup = sourceText[..markupEnd];
+        markup = ImportDirectivePattern.Replace(markup, string.Empty);
+        return markup.Trim();
     }
 
     private static CodeParseResult ParseCode(string sourceText)
     {
         var codeStart = CodeStartPattern.Match(sourceText);
         if (!codeStart.Success)
-            return new CodeParseResult(string.Empty, -1);
+            return new CodeParseResult(string.Empty, -1, -1);
 
         var startIndex = codeStart.Index + codeStart.Length;
         var depth = 1;
@@ -152,10 +160,10 @@ public sealed partial class JazorVueParser
                         var codeText = sourceText.Substring(startIndex, i - startIndex);
                         var trimmedCodeText = codeText.Trim();
                         if (trimmedCodeText.Length == 0)
-                            return new CodeParseResult(string.Empty, startIndex);
+                            return new CodeParseResult(string.Empty, startIndex, codeStart.Index);
 
                         var relativeStart = codeText.IndexOf(trimmedCodeText, StringComparison.Ordinal);
-                        return new CodeParseResult(trimmedCodeText, startIndex + relativeStart);
+                        return new CodeParseResult(trimmedCodeText, startIndex + relativeStart, codeStart.Index);
                     }
                     break;
             }
@@ -166,14 +174,17 @@ public sealed partial class JazorVueParser
 
     private sealed class CodeParseResult
     {
-        public CodeParseResult(string code, int startIndex)
+        public CodeParseResult(string code, int startIndex, int directiveIndex)
         {
             Code = code;
             StartIndex = startIndex;
+            DirectiveIndex = directiveIndex;
         }
 
         public string Code { get; }
 
         public int StartIndex { get; }
+
+        public int DirectiveIndex { get; }
     }
 }

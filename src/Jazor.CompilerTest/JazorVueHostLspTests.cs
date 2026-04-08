@@ -243,6 +243,213 @@ public sealed class JazorVueHostLspTests
     }
 
     [TestMethod]
+    public async Task JazorVueHost_Lsp_RazorMarkupComponent_RemainsCompletionHoverAndDefinitionCapable()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            var vuePath = Path.Combine(tempDirectory, "UserCard.vue");
+            await File.WriteAllTextAsync(vuePath, "<template><div>UserCard</div></template>");
+            var text =
+                """
+                @page "/counter"
+
+                <
+                <UserCard />
+
+                @code {
+                    private int count;
+                }
+                """;
+            await client.OpenDocumentAsync(documentUri, text, version: 1);
+
+            var completionLabels = await client.RequestCompletionLabelsAsync(
+                requestId: 150,
+                documentUri,
+                line: 2,
+                character: 1);
+            CollectionAssert.Contains(completionLabels, "UserCard");
+
+            var hover = await client.RequestHoverAsync(
+                requestId: 151,
+                documentUri,
+                line: 3,
+                character: 5);
+            Assert.IsNotNull(hover);
+            StringAssert.Contains(
+                hover.Value.GetProperty("contents").GetProperty("value").GetString() ?? string.Empty,
+                "./UserCard.vue");
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 152,
+                method = "textDocument/definition",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri
+                    },
+                    position = new
+                    {
+                        line = 3,
+                        character = 5
+                    }
+                }
+            });
+            using var definitionResponse = await client.ReadMessageAsync();
+            var definitions = definitionResponse.RootElement.GetProperty("result");
+            Assert.AreEqual(1, definitions.GetArrayLength());
+            Assert.AreEqual(new Uri(vuePath).AbsoluteUri, definitions[0].GetProperty("uri").GetString());
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_RazorMarkupComponentWithoutTemplateOrVueImport_RemainsFeatureCapable()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            var vuePath = Path.Combine(tempDirectory, "UserCard.vue");
+            await File.WriteAllTextAsync(vuePath, "<template><div>UserCard</div></template>");
+            var text =
+                """
+                <
+                <UserCard />
+                <UserCard />
+
+                @code {
+                    private void Hidden()
+                    {
+                    }
+                }
+                """;
+            await client.OpenDocumentAsync(documentUri, text, version: 1);
+
+            var completionLabels = await client.RequestCompletionLabelsAsync(
+                requestId: 110,
+                documentUri,
+                line: 0,
+                character: 1);
+            CollectionAssert.Contains(completionLabels, "UserCard");
+
+            var hover = await client.RequestHoverAsync(
+                requestId: 111,
+                documentUri,
+                line: 1,
+                character: 5);
+            Assert.IsNotNull(hover);
+            StringAssert.Contains(
+                hover.Value.GetProperty("contents").GetProperty("value").GetString() ?? string.Empty,
+                "./UserCard.vue");
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 112,
+                method = "textDocument/definition",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri
+                    },
+                    position = new
+                    {
+                        line = 1,
+                        character = 5
+                    }
+                }
+            });
+            using var definitionResponse = await client.ReadMessageAsync();
+            var definitions = definitionResponse.RootElement.GetProperty("result");
+            Assert.AreEqual(1, definitions.GetArrayLength());
+            Assert.AreEqual(new Uri(vuePath).AbsoluteUri, definitions[0].GetProperty("uri").GetString());
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 113,
+                method = "textDocument/references",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri
+                    },
+                    position = new
+                    {
+                        line = 1,
+                        character = 5
+                    },
+                    context = new
+                    {
+                        includeDeclaration = true
+                    }
+                }
+            });
+            using var referencesResponse = await client.ReadMessageAsync();
+            var references = referencesResponse.RootElement.GetProperty("result");
+            Assert.IsTrue(references.GetArrayLength() >= 2);
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 114,
+                method = "textDocument/rename",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri
+                    },
+                    position = new
+                    {
+                        line = 1,
+                        character = 5
+                    },
+                    newName = "ProfileCard"
+                }
+            });
+            using var renameResponse = await client.ReadMessageAsync();
+            var changes = renameResponse.RootElement
+                .GetProperty("result")
+                .GetProperty("changes")
+                .GetProperty(documentUri);
+            Assert.IsTrue(changes.GetArrayLength() >= 2);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
     public async Task JazorVueHost_Lsp_Hover_ReturnsImportDetailsForComponentTag()
     {
         await using var client = await LspTestClient.StartAsync();
@@ -354,8 +561,9 @@ public sealed class JazorVueHostLspTests
                 .EnumerateArray()
                 .Select(static item => item.GetProperty("label").GetString() ?? string.Empty)
                 .ToArray();
-            CollectionAssert.Contains(directiveLabels, "@vueimport");
-            CollectionAssert.Contains(directiveLabels, "@jsimport");
+            CollectionAssert.Contains(directiveLabels, "@code");
+            CollectionAssert.DoesNotContain(directiveLabels, "@vueimport");
+            CollectionAssert.DoesNotContain(directiveLabels, "@jsimport");
 
             await client.SendAsync(new
             {
@@ -382,6 +590,55 @@ public sealed class JazorVueHostLspTests
                 .Select(static item => item.GetProperty("label").GetString() ?? string.Empty)
                 .ToArray();
             CollectionAssert.Contains(templateLabels, "UserCard");
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_Completion_FiltersTemplateItemsByTypedPrefix()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDirectory, "UserCard.vue"),
+                "<template><div>UserCard</div></template>");
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDirectory, "ProfileCard.vue"),
+                "<template><div>ProfileCard</div></template>");
+            var text =
+                """
+                @vueimport UserCard from "./UserCard.vue"
+                @vueimport ProfileCard from "./ProfileCard.vue"
+
+                <template>
+                  <Use
+                </template>
+                """;
+            await File.WriteAllTextAsync(documentPath, text);
+            await client.OpenDocumentAsync(documentUri, text, version: 1);
+
+            var templateLabels = await client.RequestCompletionLabelsAsync(
+                requestId: 34,
+                documentUri,
+                line: 4,
+                character: 6);
+
+            CollectionAssert.Contains(templateLabels, "UserCard");
+            CollectionAssert.DoesNotContain(templateLabels, "ProfileCard");
         }
         finally
         {
@@ -659,7 +916,7 @@ public sealed class JazorVueHostLspTests
                 documentUri,
                 line: 0,
                 character: 1);
-            CollectionAssert.Contains(directiveLabels, "@vueimport");
+            CollectionAssert.Contains(directiveLabels, "@code");
             CollectionAssert.DoesNotContain(directiveLabels, "UserCard");
 
             var templateLabels = await client.RequestCompletionLabelsAsync(
@@ -996,6 +1253,159 @@ public sealed class JazorVueHostLspTests
                 .GetProperty(documentUri)[0]
                 .GetProperty("newText")
                 .GetString());
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_CodeAction_DoesNotOfferLegacyVueImportQuickFix()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var componentsDirectory = Path.Combine(tempDirectory, "Components");
+            Directory.CreateDirectory(componentsDirectory);
+            var componentPath = Path.Combine(componentsDirectory, "MissingCard.vue");
+            await File.WriteAllTextAsync(componentPath, "<template><div>MissingCard</div></template>");
+
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            var text =
+                """
+                <template>
+                  <UnknownCard />
+                </template>
+                """;
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                method = "textDocument/didOpen",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri,
+                        languageId = "jazor",
+                        version = 1,
+                        text
+                    }
+                }
+            });
+            using var openDiagnostics = await client.ReadMessageAsync();
+            Assert.AreEqual("textDocument/publishDiagnostics", openDiagnostics.RootElement.GetProperty("method").GetString());
+
+            var diagnostic = new
+            {
+                range = new
+                {
+                    start = new { line = 1, character = 3 },
+                    end = new { line = 1, character = 14 }
+                },
+                severity = 2,
+                code = "JAZORVUEFRONTEND001",
+                source = "Jazor.VueHost.Frontend",
+                message = "Razor component 'UnknownCard' could not be resolved to a nearby Vue file."
+            };
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 108,
+                method = "textDocument/codeAction",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri
+                    },
+                    range = diagnostic.range,
+                    context = new
+                    {
+                        diagnostics = new[] { diagnostic }
+                    }
+                }
+            });
+            using var response = await client.ReadMessageAsync();
+            var actions = response.RootElement.GetProperty("result");
+            Assert.AreEqual(0, actions.GetArrayLength());
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_LegacyVueImportText_DoesNotProduceImportRewriteDiagnostics()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var componentsDirectory = Path.Combine(tempDirectory, "Components");
+            Directory.CreateDirectory(componentsDirectory);
+            await File.WriteAllTextAsync(
+                Path.Combine(componentsDirectory, "MissingCard.vue"),
+                "<template><div>MissingCard</div></template>");
+
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            var text =
+                """
+                @vueimport MissingCard from "./MissingCard.vue"
+
+                <template>
+                  <MissingCard />
+                </template>
+                """;
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                method = "textDocument/didOpen",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri,
+                        languageId = "jazor",
+                        version = 1,
+                        text
+                    }
+                }
+            });
+            using var openDiagnostics = await client.ReadMessageAsync();
+            var diagnostics = openDiagnostics.RootElement
+                .GetProperty("params")
+                .GetProperty("diagnostics");
+            Assert.AreEqual(0, diagnostics.GetArrayLength());
+
+            var hover = await client.RequestHoverAsync(
+                requestId: 109,
+                documentUri,
+                line: 3,
+                character: 5);
+            Assert.IsNotNull(hover);
+            StringAssert.Contains(
+                hover.Value.GetProperty("contents").GetProperty("value").GetString() ?? string.Empty,
+                "./Components/MissingCard.vue");
         }
         finally
         {

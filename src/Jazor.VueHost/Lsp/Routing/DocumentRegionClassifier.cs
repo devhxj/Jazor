@@ -2,6 +2,24 @@ namespace Jazor.VueHost.Lsp.Routing;
 
 internal sealed class DocumentRegionClassifier
 {
+    private static readonly string[] TopLevelDirectives =
+    [
+        "@attribute",
+        "@functions",
+        "@implements",
+        "@inherits",
+        "@inject",
+        "@layout",
+        "@model",
+        "@namespace",
+        "@page",
+        "@preservewhitespace",
+        "@rendermode",
+        "@typeparam",
+        "@using",
+        "@code"
+    ];
+
     public DocumentRegionKind Classify(string text, int offset)
     {
         var clampedOffset = Math.Max(0, Math.Min(offset, text.Length));
@@ -17,9 +35,9 @@ internal sealed class DocumentRegionClassifier
             return DocumentRegionKind.Code;
         }
 
-        return clampedOffset <= GetDirectiveBoundary(text)
+        return clampedOffset < GetMarkupBoundary(text)
             ? DocumentRegionKind.Directive
-            : DocumentRegionKind.Unknown;
+            : DocumentRegionKind.Template;
     }
 
     private static (int Start, int End) FindTagBlock(string text, string openTag, string closeTag)
@@ -75,17 +93,39 @@ internal sealed class DocumentRegionClassifier
         return (codeIndex, text.Length);
     }
 
-    private static int GetDirectiveBoundary(string text)
+    private static int GetMarkupBoundary(string text)
     {
-        var templateIndex = text.IndexOf("<template", StringComparison.OrdinalIgnoreCase);
-        var codeIndex = text.IndexOf("@code", StringComparison.OrdinalIgnoreCase);
-        var boundaryCandidates = new[] { templateIndex, codeIndex }
-            .Where(index => index >= 0)
-            .ToArray();
+        var offset = 0;
+        var normalized = text.Replace("\r\n", "\n", StringComparison.Ordinal);
+        foreach (var line in normalized.Split('\n'))
+        {
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                offset += line.Length + 1;
+                continue;
+            }
 
-        return boundaryCandidates.Length == 0
-            ? text.Length
-            : boundaryCandidates.Min();
+            if (IsTopLevelDirective(line))
+            {
+                offset += line.Length + 1;
+                continue;
+            }
+
+            return Math.Min(offset, text.Length);
+        }
+
+        return text.Length;
+    }
+
+    private static bool IsTopLevelDirective(string line)
+    {
+        var trimmed = line.TrimStart();
+        if (!trimmed.StartsWith("@", StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        return TopLevelDirectives.Any(trimmed.StartsWith);
     }
 
     private static bool InRange((int Start, int End) range, int offset)

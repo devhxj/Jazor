@@ -7,13 +7,18 @@ namespace Jazor.VueHost.Frontend.Deno.Hosting;
 internal sealed class DenoFrontendHost : IDenoFrontendHost
 {
     private readonly DenoFrontendHostOptions _options;
-    private readonly DenoWorkerProcess _workerProcess;
+    private readonly IDenoWorkerProcess _workerProcess;
     private int _startupAttempted;
 
     public DenoFrontendHost(DenoFrontendHostOptions options)
+        : this(options, workerProcess: null)
+    {
+    }
+
+    internal DenoFrontendHost(DenoFrontendHostOptions options, IDenoWorkerProcess? workerProcess)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
-        _workerProcess = new DenoWorkerProcess(_options);
+        _workerProcess = workerProcess ?? new DenoWorkerProcess(_options);
     }
 
     public bool IsRunning => _workerProcess.IsRunning;
@@ -48,6 +53,19 @@ internal sealed class DenoFrontendHost : IDenoFrontendHost
     public async ValueTask DisposeAsync()
     {
         await StopAsync(CancellationToken.None);
+    }
+
+    public async ValueTask<IReadOnlyList<LspDiagnostic>> GetTemplateDiagnosticsAsync(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken)
+    {
+        var request = new DenoTemplateDiagnosticRequest
+        {
+            DocumentPath = document.DocumentPath,
+            Text = document.Text
+        };
+        var diagnostics = await SendAsync<LspDiagnostic[]>("template/diagnostics", request, cancellationToken);
+        return diagnostics ?? Array.Empty<LspDiagnostic>();
     }
 
     public async ValueTask<IReadOnlyList<LspCompletionItem>> GetTemplateCompletionItemsAsync(

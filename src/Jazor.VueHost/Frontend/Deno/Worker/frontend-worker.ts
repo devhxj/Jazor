@@ -9,7 +9,7 @@ type RequestEnvelope = {
   payload: {
     documentPath: string;
     text: string;
-    position: Position;
+    position?: Position;
     includeDeclaration?: boolean;
     newName?: string;
   };
@@ -20,13 +20,6 @@ type ResponseEnvelope = {
   success: boolean;
   result?: unknown;
   error?: string;
-};
-
-type ImportRecord = {
-  localName: string;
-  source: string;
-  declarationStart: number;
-  declarationLength: number;
 };
 
 const encoder = new TextEncoder();
@@ -71,34 +64,69 @@ function handleLine(line: string): ResponseEnvelope {
 
 function dispatch(method: string, payload: RequestEnvelope["payload"]): unknown {
   switch (method) {
+    case "template/diagnostics":
+      return getDiagnostics(payload.documentPath, payload.text);
     case "template/completion":
-      return getCompletionItems(payload.text, payload.position);
+      assertPosition(method, payload.position);
+      return getCompletionItems(payload.documentPath, payload.text, payload.position);
     case "template/hover":
+      assertPosition(method, payload.position);
       return getHover(payload.documentPath, payload.text, payload.position);
     case "template/definition":
+      assertPosition(method, payload.position);
       return getDefinition(payload.documentPath, payload.text, payload.position);
     case "template/references":
+      assertPosition(method, payload.position);
       return getReferences(payload.documentPath, payload.text, payload.position, payload.includeDeclaration !== false);
     case "template/rename":
+      assertPosition(method, payload.position);
       return getRename(payload.documentPath, payload.text, payload.position, payload.newName ?? "");
     default:
       throw new Error(`Unsupported method '${method}'.`);
   }
 }
 
-function getCompletionItems(text: string, position: Position): unknown[] {
-  const offset = toOffset(text, position);
-  const prefix = text.slice(0, Math.min(offset, text.length));
-  if (!prefix.endsWith("<") && !prefix.endsWith("</")) {
+function getDiagnostics(documentPath: string, text: string): unknown[] {
+  const diagnostics: unknown[] = [];
+
+  for (const symbol of findTemplateSymbols(text)) {
+    if (resolveComponent(documentPath, symbol.name) !== null) {
+      continue;
+    }
+
+    diagnostics.push({
+      range: symbol.range,
+      severity: 2,
+      code: "JAZORVUEFRONTEND001",
+      source: "Jazor.VueHost.Frontend",
+      message: `Razor component '${symbol.name}' could not be resolved to a nearby Vue file.`,
+    });
+  }
+
+  return diagnostics;
+}
+
+function getCompletionItems(documentPath: string, text: string, position: Position): unknown[] {
+  const tagPrefix = getTagCompletionPrefix(text, position);
+  if (tagPrefix === null) {
     return [];
   }
 
-  return parseImports(text).map((item) => ({
-    label: item.localName,
-    kind: 7,
-    detail: item.source,
-    documentation: `Vue component imported from \`${item.source}\`.`,
-  }));
+  return enumerateNearbyVueComponents(documentPath)
+    .filter((item) => item.componentName.toLowerCase().startsWith(tagPrefix.toLowerCase()))
+    .map((item) => ({
+      label: item.componentName,
+      kind: 7,
+      detail: item.importPath,
+      documentation: `Vue component discovered on disk at \`${item.importPath}\`.`,
+    }));
+}
+
+function getTagCompletionPrefix(text: string, position: Position): string | null {
+  const offset = toOffset(text, position);
+  const prefix = text.slice(0, Math.min(offset, text.length));
+  const match = prefix.match(/<\/?([A-Za-z0-9_]*)$/);
+  return match === null ? null : match[1];
 }
 
 function getHover(documentPath: string, text: string, position: Position): unknown | null {
@@ -107,15 +135,15 @@ function getHover(documentPath: string, text: string, position: Position): unkno
     return null;
   }
 
-  const importRecord = parseImports(text).find((item) => item.localName === symbol.name);
-  if (importRecord === undefined) {
+  const component = resolveComponent(documentPath, symbol.name);
+  if (component === null) {
     return null;
   }
 
   return {
     contents: {
       kind: "markdown",
-      value: `\`${importRecord.localName}\` from \`${importRecord.source}\`\n\nkind: \`VueImport\``,
+      value: `\`${symbol.name}\` resolved from Razor markup to \`${component.importPath}\`\n\nkind: \`VueComponent\``,
     },
     range: symbol.range,
   };
@@ -127,13 +155,13 @@ function getDefinition(documentPath: string, text: string, position: Position): 
     return [];
   }
 
-  const importRecord = parseImports(text).find((item) => item.localName === symbol.name);
-  if (importRecord === undefined) {
+  const component = resolveComponent(documentPath, symbol.name);
+  if (component === null) {
     return [];
   }
 
   return [{
-    uri: toDocumentUri(resolveImportPath(documentPath, importRecord.source)),
+    uri: toDocumentUri(component.absolutePath),
     range: {
       start: { line: 0, character: 0 },
       end: { line: 0, character: 0 },
@@ -147,32 +175,23 @@ function getReferences(documentPath: string, text: string, position: Position, i
     return [];
   }
 
-  const importRecord = parseImports(text).find((item) => item.localName === symbol.name);
-  if (importRecord === undefined) {
+  const component = resolveComponent(documentPath, symbol.name);
+  if (component === null) {
     return [];
   }
 
-  const declarationRange = toRange(text, importRecord.declarationStart, importRecord.declarationLength);
   const results: unknown[] = [];
   if (includeDeclaration) {
     results.push({
-      uri: toDocumentUri(documentPath),
-      range: declarationRange,
+      uri: toDocumentUri(component.absolutePath),
+      range: {
+        start: { line: 0, character: 0 },
+        end: { line: 0, character: 0 },
+      },
     });
   }
 
-  const pattern = new RegExp(`\\b${escapeRegex(symbol.name)}\\b`, "g");
-  for (const match of text.matchAll(pattern)) {
-    const start = match.index ?? -1;
-    if (start < 0) {
-      continue;
-    }
-
-    const range = toRange(text, start, symbol.name.length);
-    if (!includeDeclaration && sameRange(range, declarationRange)) {
-      continue;
-    }
-
+  for (const range of findTemplateSymbolRanges(text, symbol.name)) {
     results.push({
       uri: toDocumentUri(documentPath),
       range,
@@ -214,30 +233,72 @@ function getRename(documentPath: string, text: string, position: Position, newNa
   };
 }
 
-function parseImports(text: string): ImportRecord[] {
-  const results: ImportRecord[] = [];
-  const pattern = /^\s*@vueimport\s+(?<name>[A-Za-z_][A-Za-z0-9_]*)\s+from\s+["'](?<source>[^"']+)["']\s*$/gm;
-  for (const match of text.matchAll(pattern)) {
-    const groups = match.groups;
-    if (groups === undefined) {
+function resolveComponent(
+  documentPath: string,
+  componentName: string,
+): { absolutePath: string; importPath: string } | null {
+  for (const component of enumerateNearbyVueComponents(documentPath)) {
+    if (component.componentName === componentName) {
+      return {
+        absolutePath: component.absolutePath,
+        importPath: component.importPath,
+      };
+    }
+  }
+
+  return null;
+}
+
+function enumerateNearbyVueComponents(documentPath: string): Array<{ componentName: string; absolutePath: string; importPath: string }> {
+  const normalizedDocumentPath = normalizePath(documentPath);
+  const lastSlash = normalizedDocumentPath.lastIndexOf("/");
+  const documentDirectory = lastSlash >= 0 ? normalizedDocumentPath.slice(0, lastSlash) : "";
+  if (documentDirectory.length === 0) {
+    return [];
+  }
+
+  const searchDirectories = new Set<string>();
+  searchDirectories.add(documentDirectory);
+  searchDirectories.add(`${documentDirectory}/Components`);
+  searchDirectories.add(`${documentDirectory}/components`);
+
+  const parentSlash = documentDirectory.lastIndexOf("/");
+  if (parentSlash >= 0) {
+    const parentDirectory = documentDirectory.slice(0, parentSlash);
+    searchDirectories.add(parentDirectory);
+    searchDirectories.add(`${parentDirectory}/Components`);
+    searchDirectories.add(`${parentDirectory}/components`);
+  }
+
+  const results: Array<{ componentName: string; absolutePath: string; importPath: string }> = [];
+  const seen = new Set<string>();
+  for (const directory of searchDirectories) {
+    try {
+      for (const entry of Deno.readDirSync(directory)) {
+        if (!entry.isFile || !entry.name.endsWith(".vue")) {
+          continue;
+        }
+
+        const absolutePath = normalizePath(`${directory}/${entry.name}`);
+        if (seen.has(absolutePath)) {
+          continue;
+        }
+
+        seen.add(absolutePath);
+        const componentName = entry.name.slice(0, -".vue".length);
+        if (componentName.length === 0 || componentName[0] !== componentName[0].toUpperCase()) {
+          continue;
+        }
+
+        results.push({
+          componentName,
+          absolutePath,
+          importPath: toImportPath(documentDirectory, absolutePath),
+        });
+      }
+    } catch {
       continue;
     }
-
-    const localName = groups["name"];
-    const source = groups["source"];
-    const fullText = match[0];
-    const fullIndex = match.index ?? -1;
-    const localNameOffset = fullText.indexOf(localName);
-    if (fullIndex < 0 || localNameOffset < 0) {
-      continue;
-    }
-
-    results.push({
-      localName,
-      source,
-      declarationStart: fullIndex + localNameOffset,
-      declarationLength: localName.length,
-    });
   }
 
   return results;
@@ -245,6 +306,19 @@ function parseImports(text: string): ImportRecord[] {
 
 function findTemplateSymbol(text: string, position: Position): { name: string; range: unknown } | null {
   const offset = toOffset(text, position);
+  for (const symbol of findTemplateSymbols(text)) {
+    const start = toOffset(text, symbol.range.start);
+    const end = toOffset(text, symbol.range.end);
+    if (offset >= start && offset <= end) {
+      return symbol;
+    }
+  }
+
+  return null;
+}
+
+function findTemplateSymbols(text: string): Array<{ name: string; range: { start: Position; end: Position } }> {
+  const results: Array<{ name: string; range: { start: Position; end: Position } }> = [];
   const pattern = /<(?<name>[A-Z][A-Za-z0-9_]*)\b/g;
   for (const match of text.matchAll(pattern)) {
     const group = match.groups?.["name"];
@@ -254,27 +328,30 @@ function findTemplateSymbol(text: string, position: Position): { name: string; r
     }
 
     const start = index + match[0].indexOf(group);
-    const end = start + group.length;
-    if (offset >= start && offset <= end) {
-      return {
-        name: group,
-        range: toRange(text, start, group.length),
-      };
-    }
+    results.push({
+      name: group,
+      range: toRange(text, start, group.length) as { start: Position; end: Position },
+    });
   }
 
-  return null;
+  return results;
 }
 
-function resolveImportPath(documentPath: string, source: string): string {
-  if (/^[A-Za-z]:[\\/]/.test(source) || source.startsWith("/")) {
-    return normalizePath(source);
+function findTemplateSymbolRanges(text: string, componentName: string): Array<{ start: Position; end: Position }> {
+  return findTemplateSymbols(text)
+    .filter((symbol) => symbol.name === componentName)
+    .map((symbol) => symbol.range);
+}
+
+function toImportPath(documentDirectory: string, absolutePath: string): string {
+  const normalizedDirectory = normalizePath(documentDirectory);
+  const normalizedAbsolutePath = normalizePath(absolutePath);
+  if (!normalizedAbsolutePath.startsWith(normalizedDirectory)) {
+    return normalizedAbsolutePath;
   }
 
-  const lastSlash = Math.max(documentPath.lastIndexOf("/"), documentPath.lastIndexOf("\\"));
-  const baseDirectory = lastSlash >= 0 ? documentPath.slice(0, lastSlash) : "";
-  const separator = baseDirectory.includes("\\") ? "\\" : "/";
-  return normalizePath(baseDirectory.length === 0 ? source : `${baseDirectory}${separator}${source}`);
+  const relativePath = normalizedAbsolutePath.slice(normalizedDirectory.length).replace(/^\/+/, "");
+  return relativePath.startsWith(".") ? relativePath : `./${relativePath}`;
 }
 
 function normalizePath(value: string): string {
@@ -333,13 +410,6 @@ function toPosition(text: string, targetOffset: number): Position {
   return { line, character };
 }
 
-function sameRange(left: { start: Position; end: Position }, right: { start: Position; end: Position }): boolean {
-  return left.start.line === right.start.line
-    && left.start.character === right.start.character
-    && left.end.line === right.end.line
-    && left.end.character === right.end.character;
-}
-
 function dedupeLocations(items: unknown[]): unknown[] {
   const seen = new Set<string>();
   const results: unknown[] = [];
@@ -356,8 +426,10 @@ function dedupeLocations(items: unknown[]): unknown[] {
   return results;
 }
 
-function escapeRegex(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+function assertPosition(method: string, position: Position | undefined): asserts position is Position {
+  if (position === undefined) {
+    throw new Error(`Method '${method}' requires a position.`);
+  }
 }
 
 await main();

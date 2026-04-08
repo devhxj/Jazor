@@ -49,118 +49,90 @@ internal sealed class JazorLspDocumentService
             .ToArray();
     }
 
-    public async ValueTask<LspHoverResult?> GetHoverAsync(
+    public ValueTask<LspHoverResult?> GetHoverAsync(
         DocumentSnapshot document,
         LspPosition position,
         CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var symbol = TryFindSymbol(document.Text, position);
         if (symbol is null)
         {
-            return null;
+            return ValueTask.FromResult<LspHoverResult?>(null);
         }
 
-        var response = await AnalyzeAsync(document, cancellationToken);
-        var importMatch = response.Imports.FirstOrDefault(import =>
-            string.Equals(import.LocalName, symbol.SymbolName, StringComparison.Ordinal));
-        if (importMatch is null)
+        if (!TryResolveNearbyVueComponent(document.DocumentPath, symbol.SymbolName, out _, out var resolvedImportPath))
         {
-            return null;
+            return ValueTask.FromResult<LspHoverResult?>(null);
         }
 
-        return new LspHoverResult
+        return ValueTask.FromResult<LspHoverResult?>(new LspHoverResult
         {
             Contents = new LspMarkupContent
             {
                 Kind = "markdown",
-                Value = $"`{importMatch.LocalName}` from `{importMatch.Source}`\n\nkind: `{importMatch.ImportKind}`"
+                Value = $"`{symbol.SymbolName}` resolved from Razor markup to `{resolvedImportPath}`\n\nkind: `VueComponent`"
             },
             Range = symbol.Range
-        };
+        });
     }
 
-    public async ValueTask<IReadOnlyList<LspCompletionItem>> GetCompletionItemsAsync(
+    public ValueTask<IReadOnlyList<LspCompletionItem>> GetCompletionItemsAsync(
         DocumentSnapshot document,
         LspPosition position,
         CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var offset = LspProtocolHelpers.GetOffset(document.Text, position);
         var prefix = document.Text[..Math.Min(offset, document.Text.Length)];
-        var response = await AnalyzeAsync(document, cancellationToken);
         var items = new List<LspCompletionItem>();
 
         if (EndsWithDirectivePrefix(prefix))
         {
             items.Add(new LspCompletionItem
             {
-                Label = "@vueimport",
-                Kind = 14,
-                Detail = "Jazor Vue import directive",
-                Documentation = "Import a Vue component into the .jazor document."
-            });
-            items.Add(new LspCompletionItem
-            {
-                Label = "@jsimport",
-                Kind = 14,
-                Detail = "Jazor JavaScript import directive",
-                Documentation = "Import a JavaScript or TypeScript symbol into the .jazor document."
-            });
-            items.Add(new LspCompletionItem
-            {
                 Label = "@code",
                 Kind = 14,
-                Detail = "Jazor code block",
+                Detail = "Razor code block",
                 Documentation = "Start the C# code block for the current .jazor component."
             });
         }
 
-        if (EndsWithTagPrefix(prefix))
-        {
-            items.AddRange(response.Imports
-                .Where(static import => import.TemplateVisible)
-                .Select(import => new LspCompletionItem
-                {
-                    Label = import.LocalName,
-                    Kind = 7,
-                    Detail = import.Source,
-                    Documentation = $"Vue component imported from `{import.Source}`."
-                }));
-        }
-
-        return items;
+        return ValueTask.FromResult<IReadOnlyList<LspCompletionItem>>(items);
     }
 
-    public async ValueTask<IReadOnlyList<LspLocation>> GetDefinitionAsync(
+    public ValueTask<IReadOnlyList<LspLocation>> GetDefinitionAsync(
         DocumentSnapshot document,
         LspPosition position,
         CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var symbol = TryFindSymbol(document.Text, position);
         if (symbol is null)
         {
-            return Array.Empty<LspLocation>();
+            return ValueTask.FromResult<IReadOnlyList<LspLocation>>(Array.Empty<LspLocation>());
         }
 
-        var response = await AnalyzeAsync(document, cancellationToken);
-        var importMatch = response.Imports.FirstOrDefault(import =>
-            string.Equals(import.LocalName, symbol.SymbolName, StringComparison.Ordinal));
-        if (importMatch is null)
+        if (!TryResolveNearbyVueComponent(document.DocumentPath, symbol.SymbolName, out var targetPath, out _))
         {
-            return Array.Empty<LspLocation>();
+            return ValueTask.FromResult<IReadOnlyList<LspLocation>>(Array.Empty<LspLocation>());
         }
 
-        return
+        return ValueTask.FromResult<IReadOnlyList<LspLocation>>(
         [
             new LspLocation
             {
-                Uri = LspProtocolHelpers.ToDocumentUri(ResolveImportPath(document.DocumentPath, importMatch.Source)),
+                Uri = LspProtocolHelpers.ToDocumentUri(targetPath),
                 Range = new LspRange
                 {
                     Start = new LspPosition { Line = 0, Character = 0 },
                     End = new LspPosition { Line = 0, Character = 0 }
                 }
             }
-        ];
+        ]);
     }
 
     public async ValueTask<IReadOnlyList<LspLocation>> GetReferencesAsync(
@@ -291,36 +263,20 @@ internal sealed class JazorLspDocumentService
         foreach (var import in parsed.Imports)
         {
             var importPath = ResolveImportPath(document.DocumentPath, import.Source);
-            var openDocument = openDocuments.FirstOrDefault(candidate =>
-                string.Equals(
-                    NormalizeDocumentPath(candidate.DocumentPath),
-                    NormalizeDocumentPath(importPath),
-                    StringComparison.OrdinalIgnoreCase));
-            if (openDocument is not null)
-            {
-                if (seen.Add(NormalizeDocumentPath(openDocument.DocumentPath)))
-                {
-                    relatedDocuments.Add(openDocument);
-                }
+            await AddRelatedDocumentAsync(importPath, openDocuments, relatedDocuments, seen, cancellationToken);
+        }
 
-                continue;
-            }
-
-            if (!File.Exists(importPath))
+        var referencedComponentNames = TagPattern.Matches(document.Text)
+            .Select(static match => match.Groups["name"].Value)
+            .Distinct(StringComparer.Ordinal);
+        foreach (var componentName in referencedComponentNames)
+        {
+            if (!TryResolveNearbyVueComponent(document.DocumentPath, componentName, out var componentPath, out _))
             {
                 continue;
             }
 
-            if (!seen.Add(NormalizeDocumentPath(importPath)))
-            {
-                continue;
-            }
-
-            relatedDocuments.Add(new DocumentSnapshot(
-                importPath,
-                MapDocumentKind(importPath),
-                await File.ReadAllTextAsync(importPath, cancellationToken),
-                version: null));
+            await AddRelatedDocumentAsync(componentPath, openDocuments, relatedDocuments, seen, cancellationToken);
         }
 
         return relatedDocuments;
@@ -329,15 +285,20 @@ internal sealed class JazorLspDocumentService
     private static bool EndsWithDirectivePrefix(string prefix)
     {
         return prefix.EndsWith("@", StringComparison.Ordinal)
-            || prefix.EndsWith("@v", StringComparison.Ordinal)
-            || prefix.EndsWith("@j", StringComparison.Ordinal)
             || prefix.EndsWith("@c", StringComparison.Ordinal);
     }
 
-    private static bool EndsWithTagPrefix(string prefix)
+    private static bool TryGetTagCompletionPrefix(string prefix, out string tagPrefix)
     {
-        return prefix.EndsWith("<", StringComparison.Ordinal)
-            || prefix.EndsWith("</", StringComparison.Ordinal);
+        var match = TagCompletionPrefixPattern.Match(prefix);
+        if (!match.Success)
+        {
+            tagPrefix = string.Empty;
+            return false;
+        }
+
+        tagPrefix = match.Groups["name"].Value;
+        return true;
     }
 
     private async ValueTask<ResolvedImportSymbol?> ResolveImportSymbolAsync(
@@ -351,15 +312,21 @@ internal sealed class JazorLspDocumentService
             return null;
         }
 
-        var response = await AnalyzeAsync(document, cancellationToken);
-        var importMatch = response.Imports.FirstOrDefault(import =>
-            string.Equals(import.LocalName, symbol.SymbolName, StringComparison.Ordinal));
-        if (importMatch is null)
+        if (TryResolveNearbyVueComponent(document.DocumentPath, symbol.SymbolName, out _, out var nearbyImportPath))
         {
-            return null;
+            return new ResolvedImportSymbol(
+                symbol.SymbolName,
+                symbol.Range,
+                new ImportDescriptor(
+                    symbol.SymbolName,
+                    nearbyImportPath,
+                    ImportKind.VueImport,
+                    ImportBindingKind.Default,
+                    importedName: null,
+                    templateVisible: true));
         }
 
-        return new ResolvedImportSymbol(symbol.SymbolName, symbol.Range, importMatch);
+        return null;
     }
 
     private IReadOnlyList<LspLocation> FindSymbolLocations(
@@ -495,6 +462,112 @@ internal sealed class JazorLspDocumentService
         return Path.IsPathRooted(documentPath)
             ? Path.GetFullPath(documentPath).Replace('\\', '/')
             : documentPath.Replace('\\', '/');
+    }
+
+    private async ValueTask AddRelatedDocumentAsync(
+        string documentPath,
+        IReadOnlyList<DocumentSnapshot> openDocuments,
+        List<DocumentSnapshot> relatedDocuments,
+        HashSet<string> seen,
+        CancellationToken cancellationToken)
+    {
+        var normalizedPath = NormalizeDocumentPath(documentPath);
+        if (!seen.Add(normalizedPath))
+        {
+            return;
+        }
+
+        var openDocument = openDocuments.FirstOrDefault(candidate =>
+            string.Equals(
+                NormalizeDocumentPath(candidate.DocumentPath),
+                normalizedPath,
+                StringComparison.OrdinalIgnoreCase));
+        if (openDocument is not null)
+        {
+            relatedDocuments.Add(openDocument);
+            return;
+        }
+
+        if (!File.Exists(documentPath))
+        {
+            return;
+        }
+
+        relatedDocuments.Add(new DocumentSnapshot(
+            documentPath,
+            MapDocumentKind(documentPath),
+            await File.ReadAllTextAsync(documentPath, cancellationToken),
+            version: null));
+    }
+
+    private static bool TryResolveNearbyVueComponent(
+        string documentPath,
+        string componentName,
+        out string componentPath,
+        out string importPath)
+    {
+        componentPath = string.Empty;
+        importPath = string.Empty;
+
+        var documentDirectory = Path.GetDirectoryName(documentPath);
+        if (string.IsNullOrWhiteSpace(documentDirectory))
+        {
+            return false;
+        }
+
+        foreach (var directory in GetSearchDirectories(documentDirectory))
+        {
+            var candidate = Path.Combine(directory, componentName + ".vue");
+            if (!File.Exists(candidate))
+            {
+                continue;
+            }
+
+            componentPath = NormalizeDocumentPath(candidate);
+            importPath = ToImportPath(documentDirectory, candidate);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static IEnumerable<string> GetSearchDirectories(string documentDirectory)
+    {
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var parentDirectory = Directory.GetParent(documentDirectory)?.FullName;
+        foreach (var directory in new[]
+                 {
+                     documentDirectory,
+                     Path.Combine(documentDirectory, "Components"),
+                     Path.Combine(documentDirectory, "components"),
+                     parentDirectory,
+                     parentDirectory is null ? null : Path.Combine(parentDirectory, "Components"),
+                     parentDirectory is null ? null : Path.Combine(parentDirectory, "components")
+                 })
+        {
+            if (string.IsNullOrWhiteSpace(directory))
+            {
+                continue;
+            }
+
+            var fullPath = Path.GetFullPath(directory);
+            if (seen.Add(fullPath))
+            {
+                yield return fullPath;
+            }
+        }
+    }
+
+    private static string ToImportPath(string documentDirectory, string absolutePath)
+    {
+        var relativePath = Path.GetRelativePath(documentDirectory, absolutePath)
+            .Replace('\\', '/');
+        if (relativePath.StartsWith(".", StringComparison.Ordinal))
+        {
+            return relativePath;
+        }
+
+        return "./" + relativePath;
     }
 
     private sealed record FoundSymbol(string SymbolName, LspRange Range);

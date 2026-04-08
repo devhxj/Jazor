@@ -1,9 +1,15 @@
 # Jazor.VueHost
 
 > Status: working baseline
-> Positioning: standalone .NET RPC host for workspace state, analysis coordination, and `.jazor` virtual artifacts.
+> Positioning: standalone .NET RPC host for workspace state, analysis coordination, and `.jazor` frontend-intelligence brokering.
 
 `Jazor.VueHost` is the development-time service boundary for the new Jazor Vue architecture.
+
+Authoring model:
+
+- `.jazor` is intended to follow Razor syntax rather than a custom `<template>`-first dialect.
+- `Jazor.VueHost` extends Razor authoring with cross-file awareness for nearby `.vue`, `.css`, `.js`, and `.ts` assets.
+- runtime/build-time virtual artifacts still exist, but editor intelligence should treat them as implementation details rather than the source authoring surface.
 
 Current scope in this skeleton:
 
@@ -96,7 +102,7 @@ LSP mode:
 
 - start with `dotnet run --project src/Jazor.VueHost/Jazor.VueHost.csproj -- --lsp`
 - current LSP surface: `initialize`, `textDocument/didOpen`, `textDocument/didChange`, `textDocument/didClose`, `textDocument/hover`, `textDocument/completion`, `textDocument/definition`, `textDocument/references`, `textDocument/rename`, `textDocument/codeAction`, `shutdown`, `exit`
-- current focus: `.jazor` diagnostics plus import/component-oriented hover, completion, definition, references, rename, and code actions
+- current focus: `.jazor` diagnostics plus Razor-markup/component-oriented hover, completion, definition, references, rename, and code actions
 
 Analysis client bootstrap:
 

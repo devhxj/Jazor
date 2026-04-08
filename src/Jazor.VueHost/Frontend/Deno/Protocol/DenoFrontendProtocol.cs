@@ -23,13 +23,20 @@ internal sealed class DenoFrontendResponseEnvelope
     public string? Error { get; set; }
 }
 
-internal class DenoTemplateRequest
+internal class DenoTemplateDocumentRequest
 {
     public required string DocumentPath { get; init; }
 
     public required string Text { get; init; }
+}
 
+internal class DenoTemplateRequest : DenoTemplateDocumentRequest
+{
     public required LspPosition Position { get; init; }
+}
+
+internal sealed class DenoTemplateDiagnosticRequest : DenoTemplateDocumentRequest
+{
 }
 
 internal sealed class DenoTemplateReferenceRequest : DenoTemplateRequest
