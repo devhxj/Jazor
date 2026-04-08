@@ -119,6 +119,7 @@ public sealed class RazorVueManifestDifferTests
             ComponentName: componentName,
             RelativeModulePath: relativeModulePath,
             SourceMapPath: string.IsNullOrWhiteSpace(sourceMapPath) ? relativeModulePath + ".map" : sourceMapPath,
+            OriginMapPath: relativeModulePath + ".origins.json",
             Imports: ["vue"],
             Styles: ["vuetify/styles"],
             PluginRequirements: ["vuetify"],

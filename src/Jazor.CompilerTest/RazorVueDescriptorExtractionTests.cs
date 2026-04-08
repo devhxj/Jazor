@@ -434,6 +434,74 @@ public sealed class RazorVueDescriptorExtractionTests
     }
 
     [TestMethod]
+    public void RazorVue_Context_AppliesExplicitLibraryAuthoringOverrides()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Jazor.RazorVue.Descriptor;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Ui.Custom
+            {
+                [VueLibraryComponent("demo/components", "DemoButton")]
+                [VueLibraryProp(nameof(Label), VuePropKind.HtmlLike, Name = "buttonLabel", Required = true, DefaultExpression = "'Save'", AcceptsBinding = true)]
+                [VueLibraryEmit(nameof(OnSubmit), VueEmitKind.LibrarySpecific, Name = "onSaveNow", PayloadTypeName = "Demo.Payload")]
+                [VueLibrarySlot(nameof(Footer), Name = "actions", Required = true, ContextTypeName = "Demo.FooterContext", ContextParameterName = "item")]
+                [VueLibraryComponentFlags(VueComponentFlags.RequiresExplicitChildren | VueComponentFlags.IsFormControl)]
+                public sealed class DemoButton : VueLibraryComponent
+                {
+                    [Parameter]
+                    public string? Label { get; set; }
+
+                    [Parameter]
+                    public EventCallback OnSubmit { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<string>? Footer { get; set; }
+                }
+            }
+            """);
+
+        var descriptor = context.DiscoverLibraryComponents().Single();
+        var prop = descriptor.Props.Single(static item => item.PublicName == "Label");
+        var emit = descriptor.Emits.Single(static item => item.RazorAlias == "OnSubmit");
+        var slot = descriptor.Slots.Single(static item => item.PublicName == "Footer");
+
+        Assert.AreEqual("buttonLabel", prop.Name);
+        Assert.AreEqual(VuePropKind.HtmlLike, prop.Kind);
+        Assert.IsTrue(prop.Required);
+        Assert.IsTrue(prop.AcceptsBinding);
+        Assert.AreEqual("'Save'", prop.DefaultExpression);
+
+        Assert.AreEqual("onSaveNow", emit.Name);
+        Assert.AreEqual("Demo.Payload", emit.PayloadTypeName);
+        Assert.AreEqual(VueEmitKind.LibrarySpecific, emit.Kind);
+
+        Assert.AreEqual("actions", slot.Name);
+        Assert.AreEqual("Footer", slot.PublicName);
+        Assert.IsFalse(slot.IsDefault);
+        Assert.IsTrue(slot.Required);
+        Assert.AreEqual("item", slot.Parameters[0].Name);
+        Assert.AreEqual("Demo.FooterContext", slot.Parameters[0].TypeName);
+
+        Assert.AreEqual(
+            VueComponentFlags.RequiresExplicitChildren | VueComponentFlags.IsFormControl,
+            descriptor.Flags);
+    }
+
+    [TestMethod]
     public void RazorVue_Candidate_ExtractsLifecycleAndLogicMethods()
     {
         var context = CreateContext(

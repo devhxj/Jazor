@@ -307,6 +307,7 @@ namespace Jazor.EmitTest
             Assert.AreEqual("CounterCard", manifest.Modules[0].ComponentName);
             Assert.AreEqual("components/counter-card.mjs", manifest.Modules[0].RelativeModulePath);
             Assert.AreEqual("components/counter-card.mjs.map", manifest.Modules[0].SourceMapPath);
+            Assert.AreEqual("components/counter-card.mjs.origins.json", manifest.Modules[0].OriginMapPath);
             Assert.AreEqual("descriptor-hash", manifest.Modules[0].DescriptorHash);
             Assert.AreEqual("template-hash", manifest.Modules[0].TemplateHash);
             Assert.AreEqual("logic-hash", manifest.Modules[0].LogicHash);
@@ -328,6 +329,7 @@ namespace Jazor.EmitTest
                 Assert.AreEqual(manifest.Modules[0].ComponentId, loaded.Modules[0].ComponentId);
                 Assert.AreEqual(manifest.Modules[0].ModuleId, loaded.Modules[0].ModuleId);
                 Assert.AreEqual(manifest.Modules[0].SourceMapPath, loaded.Modules[0].SourceMapPath);
+                Assert.AreEqual(manifest.Modules[0].OriginMapPath, loaded.Modules[0].OriginMapPath);
                 Assert.AreEqual(manifest.Modules[0].ContentHash, loaded.Modules[0].ContentHash);
                 CollectionAssert.AreEquivalent(manifest.Modules[0].Imports, loaded.Modules[0].Imports);
                 CollectionAssert.AreEquivalent(manifest.Modules[0].Styles, loaded.Modules[0].Styles);
@@ -408,6 +410,7 @@ namespace Jazor.EmitTest
                           "ComponentName": "CounterCard",
                           "RelativeModulePath": "components/counter-card.mjs",
                           "SourceMapPath": null,
+                          "OriginMapPath": null,
                           "Imports": [ "vue" ],
                           "Styles": [ "vuetify/styles", " feature/flags.css ", "vuetify/styles" ],
                           "PluginRequirements": [ "vuetify", " feature-flags ", "vuetify" ],
@@ -441,6 +444,7 @@ namespace Jazor.EmitTest
                 Assert.AreEqual("Demo.Components::CounterCard", manifest.Modules[0].ComponentId);
                 Assert.AreEqual("components/counter-card.mjs", manifest.Modules[0].ModuleId);
                 Assert.AreEqual("components/counter-card.mjs.map", manifest.Modules[0].SourceMapPath);
+                Assert.AreEqual("components/counter-card.mjs.origins.json", manifest.Modules[0].OriginMapPath);
             }
             finally
             {

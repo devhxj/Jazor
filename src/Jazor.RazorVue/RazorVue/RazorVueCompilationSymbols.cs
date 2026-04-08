@@ -16,7 +16,11 @@ public sealed record RazorVueCompilationSymbols(
     INamedTypeSymbol? VueLibraryComponent,
     INamedTypeSymbol? VueLibraryComponentAttribute,
     INamedTypeSymbol? VueLibraryStyleAttribute,
-    INamedTypeSymbol? VueLibraryPluginRequirementAttribute)
+    INamedTypeSymbol? VueLibraryPluginRequirementAttribute,
+    INamedTypeSymbol? VueLibraryPropAttribute,
+    INamedTypeSymbol? VueLibraryEmitAttribute,
+    INamedTypeSymbol? VueLibrarySlotAttribute,
+    INamedTypeSymbol? VueLibraryComponentFlagsAttribute)
 {
     public static RazorVueCompilationSymbols? TryCreate(Compilation compilation)
     {
@@ -51,6 +55,10 @@ public sealed record RazorVueCompilationSymbols(
         var vueLibraryComponentAttribute = compilation.GetTypeByMetadataName("Jazor.RazorVue.VueLibraryComponentAttribute");
         var vueLibraryStyleAttribute = compilation.GetTypeByMetadataName("Jazor.RazorVue.VueLibraryStyleAttribute");
         var vueLibraryPluginRequirementAttribute = compilation.GetTypeByMetadataName("Jazor.RazorVue.VueLibraryPluginRequirementAttribute");
+        var vueLibraryPropAttribute = compilation.GetTypeByMetadataName("Jazor.RazorVue.VueLibraryPropAttribute");
+        var vueLibraryEmitAttribute = compilation.GetTypeByMetadataName("Jazor.RazorVue.VueLibraryEmitAttribute");
+        var vueLibrarySlotAttribute = compilation.GetTypeByMetadataName("Jazor.RazorVue.VueLibrarySlotAttribute");
+        var vueLibraryComponentFlagsAttribute = compilation.GetTypeByMetadataName("Jazor.RazorVue.VueLibraryComponentFlagsAttribute");
 
         return new RazorVueCompilationSymbols(
             ecmaScriptModuleAttribute,
@@ -66,7 +74,11 @@ public sealed record RazorVueCompilationSymbols(
             vueLibraryComponent,
             vueLibraryComponentAttribute,
             vueLibraryStyleAttribute,
-            vueLibraryPluginRequirementAttribute);
+            vueLibraryPluginRequirementAttribute,
+            vueLibraryPropAttribute,
+            vueLibraryEmitAttribute,
+            vueLibrarySlotAttribute,
+            vueLibraryComponentFlagsAttribute);
     }
 
     private static INamedTypeSymbol? GetTypeByMetadataName(Compilation compilation, params string[] metadataNames)

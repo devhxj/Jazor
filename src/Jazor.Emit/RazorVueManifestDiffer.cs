@@ -140,6 +140,7 @@ internal static class RazorVueManifestDiffer
            !StringComparer.Ordinal.Equals(previous.ModuleId, current.ModuleId) ||
            !StringComparer.Ordinal.Equals(previous.RelativeModulePath, current.RelativeModulePath) ||
            !StringComparer.Ordinal.Equals(previous.SourceMapPath, current.SourceMapPath) ||
+           !StringComparer.Ordinal.Equals(previous.OriginMapPath, current.OriginMapPath) ||
            previous.RequiresHydration != current.RequiresHydration ||
            previous.SupportsSsr != current.SupportsSsr ||
            !(previous.Imports ?? []).SequenceEqual(current.Imports ?? [], StringComparer.Ordinal) ||

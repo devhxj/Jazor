@@ -7,6 +7,7 @@ using System.Xml.Linq;
 namespace Jazor.EmitTest;
 
 [TestClass]
+[DoNotParallelize]
 public sealed class SdkIntegrationTests
 {
     private static readonly Lazy<Task<LocalPackageFixture>> LocalPackage = new(CreateLocalPackageAsync);
@@ -319,6 +320,7 @@ public sealed class SdkIntegrationTests
         var bundlePath = Path.Combine(outputRoot, "app.bundle.js");
         var cssPath = Path.Combine(outputRoot, "app.bundle.razorvue.css");
         var hostContractPath = Path.Combine(outputRoot, "app.bundle.razorvue.host.json");
+        var updatePlanPath = Path.Combine(outputRoot, "app.bundle.razorvue.update-plan.json");
 
         Assert.IsTrue(File.Exists(manifestPath), $"Manifest was not generated: {manifestPath}");
         Assert.IsTrue(File.Exists(razorVueManifestPath), $"RazorVue manifest was not generated: {razorVueManifestPath}");
@@ -327,6 +329,7 @@ public sealed class SdkIntegrationTests
         Assert.IsTrue(File.Exists(bundlePath), $"Bundle was not generated: {bundlePath}");
         Assert.IsTrue(File.Exists(cssPath), $"RazorVue CSS sidecar was not generated: {cssPath}");
         Assert.IsTrue(File.Exists(hostContractPath), $"RazorVue host contract sidecar was not generated: {hostContractPath}");
+        Assert.IsTrue(File.Exists(updatePlanPath), $"RazorVue update plan sidecar was not generated: {updatePlanPath}");
 
         var componentModule = (await File.ReadAllTextAsync(componentModulePath)).ReplaceLineEndings("\n");
         var hostRequirementsModule = (await File.ReadAllTextAsync(hostRequirementsModulePath)).ReplaceLineEndings("\n");
@@ -342,6 +345,7 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(hostRequirementsModule, "\"moduleId\":\"components/profile-form.mjs\"");
         StringAssert.Contains(hostRequirementsModule, "\"relativeModulePath\":\"components/profile-form.mjs\"");
         StringAssert.Contains(hostRequirementsModule, "\"sourceMapPath\":\"components/profile-form.mjs.map\"");
+        StringAssert.Contains(hostRequirementsModule, "\"originMapPath\":\"components/profile-form.mjs.origins.json\"");
         StringAssert.Contains(hostRequirementsModule, "\"descriptorHash\":");
         StringAssert.Contains(hostRequirementsModule, "\"hmrBoundaryKind\":");
         StringAssert.Contains(hostRequirementsModule, "\"vuetify/styles\"");
@@ -386,11 +390,108 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(
             "components/profile-form.mjs.map",
             hostContract.RootElement.GetProperty("Modules")[0].GetProperty("SourceMapPath").GetString());
+        Assert.AreEqual(
+            "components/profile-form.mjs.origins.json",
+            hostContract.RootElement.GetProperty("Modules")[0].GetProperty("OriginMapPath").GetString());
         Assert.IsTrue(hostContract.RootElement.GetProperty("Modules")[0].TryGetProperty("DescriptorHash", out var sourceDescriptorHash));
         Assert.AreNotEqual(string.Empty, sourceDescriptorHash.GetString());
         Assert.AreEqual(expectedSourceHmrBoundary, hostContract.RootElement.GetProperty("Modules")[0].GetProperty("HmrBoundaryKind").GetInt32());
         Assert.AreEqual(expectedSourceRequiresHydration, hostContract.RootElement.GetProperty("Modules")[0].GetProperty("RequiresHydration").GetBoolean());
         Assert.AreEqual(expectedSourceSupportsSsr, hostContract.RootElement.GetProperty("Modules")[0].GetProperty("SupportsSsr").GetBoolean());
+
+        using var updatePlan = JsonDocument.Parse(await File.ReadAllTextAsync(updatePlanPath));
+        Assert.AreEqual("FullReload", updatePlan.RootElement.GetProperty("Action").GetString());
+        Assert.AreEqual("Previous RazorVue manifest is missing.", updatePlan.RootElement.GetProperty("Reason").GetString());
+        Assert.AreEqual(0, updatePlan.RootElement.GetProperty("Modules").GetArrayLength());
+
+    }
+
+    [TestMethod]
+    public async Task Build_LocalJazorPackage_WithSourceReferencedRazorVueSample_SecondBuildWritesUpdatePlan()
+    {
+        var package = await LocalPackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        var hostRoot = Path.Combine(workspace.RootPath, "RazorVueSample.Host");
+        var projectPath = CreateRazorVueSampleProject(hostRoot, package);
+        var profileFormPath = Path.Combine(hostRoot, "ProfileForm.cs");
+        var updatePlanPath = Path.Combine(hostRoot, "wwwroot", "app.bundle.razorvue.update-plan.json");
+
+        var firstBuild = await RunDotNetAsync(
+            package.RepoRoot,
+            [
+                "build",
+                projectPath,
+                "-t:Rebuild",
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={restorePackagesPath}",
+                "-p:RestoreNoCache=true",
+                $"-p:JazorPackageVersion={package.PackageVersion}",
+                "-p:JazorBundle=true"
+            ]);
+
+        Assert.AreEqual(0, firstBuild.ExitCode, firstBuild.ToString());
+        Assert.IsTrue(File.Exists(updatePlanPath), $"Initial build should emit a bootstrap update plan: {updatePlanPath}");
+
+        WriteFile(
+            profileFormPath,
+            """
+            using ECMAScript;
+            using ECMAScript.UI.Vue.Vuetify;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace RazorVueSample.Host;
+
+            [ECMAScriptModule("./components/profile-form")]
+            public sealed class ProfileForm : VueComponent
+            {
+                [Parameter]
+                public string? Name { get; set; }
+
+                [Parameter]
+                public EventCallback<string?> NameChanged { get; set; }
+
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.OpenComponent<VTextField>(0);
+                    builder.AddAttribute(1, nameof(VTextField.Label), "Display Name");
+                    builder.AddAttribute(2, nameof(VTextField.ModelValue), Name);
+                    builder.AddAttribute(3, nameof(VTextField.ModelValueChanged), NameChanged);
+                    builder.CloseComponent();
+                }
+            }
+            """);
+
+        var secondBuild = await RunDotNetAsync(
+            package.RepoRoot,
+            [
+                "build",
+                projectPath,
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={restorePackagesPath}",
+                "-p:RestoreNoCache=true",
+                $"-p:JazorPackageVersion={package.PackageVersion}",
+                "-p:JazorBundle=true"
+            ]);
+
+        Assert.AreEqual(0, secondBuild.ExitCode, secondBuild.ToString());
+        Assert.IsTrue(File.Exists(updatePlanPath), $"Update plan was not generated: {updatePlanPath}");
+
+        using var updatePlan = JsonDocument.Parse(await File.ReadAllTextAsync(updatePlanPath));
+        Assert.AreEqual("TemplatePatch", updatePlan.RootElement.GetProperty("Action").GetString());
+        Assert.AreEqual(
+            "RazorVueSample.Host.ProfileForm",
+            updatePlan.RootElement.GetProperty("Modules")[0].GetProperty("ComponentId").GetString());
+        Assert.AreEqual("TemplatePatch", updatePlan.RootElement.GetProperty("Modules")[0].GetProperty("Action").GetString());
     }
 
     [TestMethod]
@@ -518,6 +619,7 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(hostRequirements, "\"moduleId\":\"components/counter-card.mjs\"");
         StringAssert.Contains(hostRequirements, "\"relativeModulePath\":\"components/counter-card.mjs\"");
         StringAssert.Contains(hostRequirements, "\"sourceMapPath\":\"components/counter-card.mjs.map\"");
+        StringAssert.Contains(hostRequirements, "\"originMapPath\":\"components/counter-card.mjs.origins.json\"");
         StringAssert.Contains(hostRequirements, "\"descriptorHash\":");
         StringAssert.Contains(hostRequirements, "\"hmrBoundaryKind\":");
 
@@ -529,6 +631,138 @@ public sealed class SdkIntegrationTests
             new[] { "demo-host" },
             manifest.RootElement.GetProperty("PluginRequirements").EnumerateArray().Select(static item => item.GetString()).OfType<string>().ToArray());
         Assert.AreEqual("CounterCard", manifest.RootElement.GetProperty("Modules")[0].GetProperty("ComponentName").GetString());
+    }
+
+    [TestMethod]
+    public async Task Build_LocalPackages_WithPackagedCustomRazorVueLibrary_EmitsRazorVueBundleAndSidecars()
+    {
+        var package = await LocalPackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var projectRoot = Path.Combine(workspace.RootPath, "PackagedCustomRazorVueSample");
+        var authoringRoot = Path.Combine(workspace.RootPath, "Demo.Authoring");
+        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        const string authoringPackageVersion = "1.0.0";
+
+        var authoringProjectPath = CreatePackagedCustomAuthoringLibraryProject(authoringRoot, package.PackageVersion, authoringPackageVersion);
+        var authoringPack = await RunDotNetAsync(
+            package.RepoRoot,
+            [
+                "pack",
+                authoringProjectPath,
+                "-c",
+                "Debug",
+                "/m:1",
+                "/p:BuildInParallel=false",
+                "-p:RestoreNoCache=true",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={restorePackagesPath}",
+                "-o",
+                package.PackageOutputDirectory
+            ]);
+
+        Assert.AreEqual(0, authoringPack.ExitCode, authoringPack.ToString());
+
+        var projectPath = CreatePackagedCustomRazorVueHostProject(projectRoot, package.PackageVersion, authoringPackageVersion);
+        var build = await RunDotNetAsync(
+            package.RepoRoot,
+            [
+                "build",
+                projectPath,
+                "-t:Rebuild",
+                "/m:1",
+                "/p:BuildInParallel=false",
+                "-p:RestoreNoCache=true",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={restorePackagesPath}"
+            ]);
+
+        Assert.AreEqual(0, build.ExitCode, build.ToString());
+
+        var outputRoot = Path.Combine(projectRoot, "wwwroot");
+        var moduleRoot = Path.Combine(outputRoot, "jazor");
+        var componentModulePath = Path.Combine(moduleRoot, "components", "counter-card.mjs");
+        var razorVueManifestPath = Path.Combine(moduleRoot, "jazor-manifest-razorvue.json");
+        var hostRequirementsModulePath = Path.Combine(moduleRoot, "__jazor", "razorvue-host.mjs");
+        var bundlePath = Path.Combine(outputRoot, "app.bundle.js");
+        var cssPath = Path.Combine(outputRoot, "app.bundle.razorvue.css");
+        var hostContractPath = Path.Combine(outputRoot, "app.bundle.razorvue.host.json");
+
+        Assert.IsTrue(File.Exists(componentModulePath), $"RazorVue module was not generated: {componentModulePath}");
+        Assert.IsTrue(File.Exists(razorVueManifestPath), $"RazorVue manifest was not generated: {razorVueManifestPath}");
+        Assert.IsTrue(File.Exists(hostRequirementsModulePath), $"RazorVue host requirements module was not generated: {hostRequirementsModulePath}");
+        Assert.IsTrue(File.Exists(bundlePath), $"Bundle was not generated: {bundlePath}");
+        Assert.IsTrue(File.Exists(cssPath), $"RazorVue CSS sidecar was not generated: {cssPath}");
+        Assert.IsTrue(File.Exists(hostContractPath), $"RazorVue host contract sidecar was not generated: {hostContractPath}");
+
+        var componentModule = (await File.ReadAllTextAsync(componentModulePath)).ReplaceLineEndings("\n");
+        var hostRequirementsModule = (await File.ReadAllTextAsync(hostRequirementsModulePath)).ReplaceLineEndings("\n");
+        var bundle = (await File.ReadAllTextAsync(bundlePath)).ReplaceLineEndings("\n");
+        var css = (await File.ReadAllTextAsync(cssPath)).ReplaceLineEndings("\n");
+
+        StringAssert.Contains(componentModule, "import { DemoButton as DemoButtonComponent } from \"demo/components\";");
+        StringAssert.Contains(componentModule, "\"text\": props.label");
+        StringAssert.Contains(componentModule, "\"disabled\": props.disabled");
+        StringAssert.Contains(componentModule, "\"modelValue\": props.value");
+        StringAssert.Contains(componentModule, "\"onUpdate:modelValue\": props.valueChanged");
+        StringAssert.Contains(componentModule, "header: (slotProps) => props.header(slotProps)");
+        StringAssert.Contains(hostRequirementsModule, "export const razorVueStyles = Object.freeze([\"demo/button.css\"]);");
+        StringAssert.Contains(hostRequirementsModule, "export const razorVuePluginRequirements = Object.freeze([\"demo-host\"]);");
+        StringAssert.Contains(hostRequirementsModule, "\"componentName\":\"CounterCard\"");
+        StringAssert.Contains(hostRequirementsModule, "\"componentId\":\"PackagedCustomRazorVueSample.CounterCard\"");
+        StringAssert.Contains(hostRequirementsModule, "\"moduleId\":\"components/counter-card.mjs\"");
+        StringAssert.Contains(hostRequirementsModule, "\"relativeModulePath\":\"components/counter-card.mjs\"");
+        StringAssert.Contains(hostRequirementsModule, "\"sourceMapPath\":\"components/counter-card.mjs.map\"");
+        StringAssert.Contains(hostRequirementsModule, "\"originMapPath\":\"components/counter-card.mjs.origins.json\"");
+        StringAssert.Contains(hostRequirementsModule, "\"descriptorHash\":");
+        StringAssert.Contains(hostRequirementsModule, "\"hmrBoundaryKind\":");
+        StringAssert.Contains(bundle, "razorVueHostRequirements");
+        Assert.AreEqual("@import \"demo/button.css\";\n", css);
+
+        using var manifest = JsonDocument.Parse(await File.ReadAllTextAsync(razorVueManifestPath));
+        CollectionAssert.AreEqual(
+            new[] { "demo/button.css" },
+            GetStringArrayProperty(manifest.RootElement, "Styles"));
+        CollectionAssert.AreEqual(
+            new[] { "demo-host" },
+            GetStringArrayProperty(manifest.RootElement, "PluginRequirements"));
+        var expectedHmrBoundary = manifest.RootElement.GetProperty("Modules")[0].GetProperty("HmrBoundaryKind").GetInt32();
+        var expectedRequiresHydration = manifest.RootElement.GetProperty("Modules")[0].GetProperty("RequiresHydration").GetBoolean();
+        var expectedSupportsSsr = manifest.RootElement.GetProperty("Modules")[0].GetProperty("SupportsSsr").GetBoolean();
+
+        using var hostContract = JsonDocument.Parse(await File.ReadAllTextAsync(hostContractPath));
+        CollectionAssert.AreEqual(
+            new[] { "demo/button.css" },
+            GetStringArrayProperty(hostContract.RootElement, "Styles"));
+        CollectionAssert.AreEqual(
+            new[] { "demo-host" },
+            GetStringArrayProperty(hostContract.RootElement, "PluginRequirements"));
+        Assert.AreEqual("app.bundle.js.map", hostContract.RootElement.GetProperty("BundleSourceMapFile").GetString());
+        Assert.AreEqual(
+            "PackagedCustomRazorVueSample.CounterCard",
+            hostContract.RootElement.GetProperty("Modules")[0].GetProperty("ComponentId").GetString());
+        Assert.AreEqual(
+            "components/counter-card.mjs",
+            hostContract.RootElement.GetProperty("Modules")[0].GetProperty("ModuleId").GetString());
+        Assert.AreEqual(
+            "CounterCard",
+            hostContract.RootElement.GetProperty("Modules")[0].GetProperty("ComponentName").GetString());
+        Assert.AreEqual(
+            "components/counter-card.mjs",
+            hostContract.RootElement.GetProperty("Modules")[0].GetProperty("RelativeModulePath").GetString());
+        Assert.AreEqual(
+            "components/counter-card.mjs.map",
+            hostContract.RootElement.GetProperty("Modules")[0].GetProperty("SourceMapPath").GetString());
+        Assert.AreEqual(
+            "components/counter-card.mjs.origins.json",
+            hostContract.RootElement.GetProperty("Modules")[0].GetProperty("OriginMapPath").GetString());
+        Assert.IsTrue(hostContract.RootElement.GetProperty("Modules")[0].TryGetProperty("DescriptorHash", out var descriptorHash));
+        Assert.AreNotEqual(string.Empty, descriptorHash.GetString());
+        Assert.AreEqual(expectedHmrBoundary, hostContract.RootElement.GetProperty("Modules")[0].GetProperty("HmrBoundaryKind").GetInt32());
+        Assert.AreEqual(expectedRequiresHydration, hostContract.RootElement.GetProperty("Modules")[0].GetProperty("RequiresHydration").GetBoolean());
+        Assert.AreEqual(expectedSupportsSsr, hostContract.RootElement.GetProperty("Modules")[0].GetProperty("SupportsSsr").GetBoolean());
     }
 
     [TestMethod]
@@ -699,6 +933,9 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(
             "components/profile-form.mjs.map",
             hostContract.RootElement.GetProperty("Modules")[0].GetProperty("SourceMapPath").GetString());
+        Assert.AreEqual(
+            "components/profile-form.mjs.origins.json",
+            hostContract.RootElement.GetProperty("Modules")[0].GetProperty("OriginMapPath").GetString());
         Assert.IsTrue(hostContract.RootElement.GetProperty("Modules")[0].TryGetProperty("DescriptorHash", out var packagedDescriptorHash));
         Assert.AreNotEqual(string.Empty, packagedDescriptorHash.GetString());
         Assert.AreEqual(expectedPackagedHmrBoundary, hostContract.RootElement.GetProperty("Modules")[0].GetProperty("HmrBoundaryKind").GetInt32());
@@ -816,6 +1053,22 @@ public sealed class SdkIntegrationTests
 
     private static async Task<ProcessResult> RunDotNetAsync(string workingDirectory, IReadOnlyList<string> arguments)
     {
+        ProcessResult? result = null;
+
+        for (var attempt = 0; attempt < 3; attempt++)
+        {
+            result = await RunDotNetOnceAsync(workingDirectory, arguments);
+            if (result.ExitCode == 0 || !IsTransientBuildRetryCandidate(result) || attempt == 2)
+                return result;
+
+            await Task.Delay(250);
+        }
+
+        return result ?? throw new InvalidOperationException("dotnet process did not produce a result.");
+    }
+
+    private static async Task<ProcessResult> RunDotNetOnceAsync(string workingDirectory, IReadOnlyList<string> arguments)
+    {
         var startInfo = new ProcessStartInfo("dotnet")
         {
             WorkingDirectory = workingDirectory,
@@ -830,6 +1083,9 @@ public sealed class SdkIntegrationTests
         startInfo.Environment["DOTNET_CLI_HOME"] = Path.Combine(FindRepoRoot(), ".dotnet");
         startInfo.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
         startInfo.Environment["MSBUILDDISABLENODEREUSE"] = "1";
+        // SDK integration tests build and pack the same projects repeatedly; disabling
+        // the compiler server avoids transient file locks in cross-targeted RazorVue builds.
+        startInfo.Environment["UseSharedCompilation"] = "false";
 
         using var process = new Process { StartInfo = startInfo };
         process.Start();
@@ -932,6 +1188,191 @@ public sealed class SdkIntegrationTests
 
         Assert.IsFalse(string.IsNullOrWhiteSpace(line), $"Import line not found for module '{modulePath}'.");
         return line!;
+    }
+
+    private static bool IsTransientBuildRetryCandidate(ProcessResult result)
+    {
+        var output = result.ToString();
+        return output.Contains("CS0006", StringComparison.Ordinal) ||
+               output.Contains("MSB3030", StringComparison.Ordinal) ||
+               output.Contains("being used by another process", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string CreatePackagedCustomAuthoringLibraryProject(
+        string projectRoot,
+        string jazorPackageVersion,
+        string authoringPackageVersion)
+    {
+        Directory.CreateDirectory(projectRoot);
+        var projectPath = Path.Combine(projectRoot, "Demo.Authoring.csproj");
+
+        // This simulates a third-party authoring package that ships independently from the host app.
+        WriteFile(
+            projectPath,
+            $$"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>net10.0</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <PackageId>Demo.Authoring</PackageId>
+                <Version>{{authoringPackageVersion}}</Version>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="Jazor" Version="{{jazorPackageVersion}}" />
+              </ItemGroup>
+
+              <ItemGroup>
+                <FrameworkReference Include="Microsoft.AspNetCore.App" />
+              </ItemGroup>
+            </Project>
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "DemoButton.cs"),
+            """
+            using Jazor.RazorVue;
+            using Jazor.RazorVue.Descriptor;
+            using Microsoft.AspNetCore.Components;
+
+            namespace Demo.Authoring;
+
+            [VueLibraryComponent("demo/components", "DemoButton")]
+            [VueLibraryStyle("demo/button.css")]
+            [VueLibraryPluginRequirement("demo-host")]
+            [VueLibraryComponentFlags(VueComponentFlags.SupportsModelValue | VueComponentFlags.RequiresExplicitChildren)]
+            [VueLibraryProp(nameof(Label), Name = "text")]
+            [VueLibraryProp(nameof(Value), Name = "modelValue", AcceptsBinding = true, Required = true)]
+            [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
+            [VueLibrarySlot(nameof(Header), Name = "header", ContextTypeName = "string", ContextParameterName = "slotProps")]
+            public sealed class DemoButton : VueLibraryComponent
+            {
+                [Parameter]
+                public string? Label { get; set; }
+
+                [Parameter]
+                public bool Disabled { get; set; }
+
+                [Parameter]
+                public int Value { get; set; }
+
+                [Parameter]
+                public EventCallback<int> ValueChanged { get; set; }
+
+                [Parameter]
+                public RenderFragment<string>? Header { get; set; }
+            }
+            """);
+
+        return projectPath;
+    }
+
+    private static string CreatePackagedCustomRazorVueHostProject(
+        string hostRoot,
+        string jazorPackageVersion,
+        string authoringPackageVersion)
+    {
+        Directory.CreateDirectory(hostRoot);
+        var projectPath = Path.Combine(hostRoot, "PackagedCustomRazorVueSample.csproj");
+
+        // The host consumes only packaged assets here so RazorVue discovery crosses pack/restore boundaries.
+        WriteFile(
+            projectPath,
+            $$"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <TargetFramework>net10.0</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <JazorEmit>true</JazorEmit>
+                <JazorBundle>true</JazorBundle>
+                <JazorOutDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorOutDir>
+                <JazorBundleOut>$(MSBuildProjectDirectory)\wwwroot\app.bundle.js</JazorBundleOut>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="Jazor" Version="{{jazorPackageVersion}}" />
+                <PackageReference Include="Demo.Authoring" Version="{{authoringPackageVersion}}" />
+              </ItemGroup>
+
+              <ItemGroup>
+                <FrameworkReference Include="Microsoft.AspNetCore.App" />
+              </ItemGroup>
+            </Project>
+            """);
+
+        WriteFile(
+            Path.Combine(hostRoot, "Program.cs"),
+            """
+            namespace PackagedCustomRazorVueSample;
+
+            internal static class Program
+            {
+                private static void Main()
+                {
+                }
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(hostRoot, "AppModule.cs"),
+            """
+            using ECMAScript;
+
+            namespace PackagedCustomRazorVueSample;
+
+            [ECMAScriptModule("host/app.mjs")]
+            public static class AppModule
+            {
+                public static string Boot() => "ready";
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(hostRoot, "CounterCard.cs"),
+            """
+            using Demo.Authoring;
+            using ECMAScript;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace PackagedCustomRazorVueSample;
+
+            [ECMAScriptModule("./components/counter-card")]
+            public sealed class CounterCard : VueComponent
+            {
+                [Parameter]
+                public string? Label { get; set; }
+
+                [Parameter]
+                public bool Disabled { get; set; }
+
+                [Parameter]
+                public int Value { get; set; }
+
+                [Parameter]
+                public EventCallback<int> ValueChanged { get; set; }
+
+                [Parameter]
+                public RenderFragment<string>? Header { get; set; }
+
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.OpenComponent<DemoButton>(0);
+                    builder.AddAttribute(1, nameof(DemoButton.Label), Label);
+                    builder.AddAttribute(2, nameof(DemoButton.Disabled), Disabled);
+                    builder.AddAttribute(3, nameof(DemoButton.Value), Value);
+                    builder.AddAttribute(4, nameof(DemoButton.ValueChanged), ValueChanged);
+                    builder.AddAttribute(5, nameof(DemoButton.Header), Header);
+                    builder.CloseComponent();
+                }
+            }
+            """);
+
+        return projectPath;
     }
 
     private static string CreateRazorVueSampleProject(string hostRoot, LocalPackageFixture package)

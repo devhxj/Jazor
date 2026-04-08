@@ -20,6 +20,7 @@ internal sealed class ModuleBundler
     private static readonly SourceMapChainBuilder ChainBuilder = new();
     private static readonly SourceMapWriter SourceMapWriter = new();
     private static readonly RazorVueHostAssetWriter RazorVueHostAssetWriter = new();
+    private static readonly RazorVueUpdatePlanWriter RazorVueUpdatePlanWriter = new();
 
     public async Task<BundleResult> BundleAsync(BundleOptions options)
     {
@@ -29,6 +30,7 @@ internal sealed class ModuleBundler
 
         var razorVueManifestPath = RazorVueModuleWriter.GetManifestPath(options.ManifestPath);
         var razorVueManifest = RazorVueManifestModel.TryLoad(razorVueManifestPath);
+        var previousRazorVueManifest = TryLoadPreviousRazorVueManifest(options);
 
         var relativePaths = manifest.Modules
             .Select(static module => module.RelativePath.Replace('\\', '/'))
@@ -123,6 +125,7 @@ internal sealed class ModuleBundler
             await TryRewriteBundleSourceMapAsync(options.OutputPath, bundleWorkspace, relativePaths, tempEntryPath);
             await EnsureBundleSourceMappingUrlAsync(options.OutputPath);
             RazorVueHostAssetWriter.Sync(options.OutputPath, razorVueManifest);
+            WriteRazorVueUpdatePlanIfRequested(options, previousRazorVueManifest, razorVueManifest);
             return BundleResult.Success(options.OutputPath, relativePaths.Length);
         }
         catch (Exception ex)
@@ -189,6 +192,34 @@ internal sealed class ModuleBundler
         }
 
         return new SourceMapDocument(entryFileName, sources, segments);
+    }
+
+    private static RazorVueManifestModel? TryLoadPreviousRazorVueManifest(BundleOptions options)
+    {
+        if (string.IsNullOrWhiteSpace(options.PreviousRazorVueManifestPath))
+            return null;
+
+        return RazorVueManifestModel.TryLoad(options.PreviousRazorVueManifestPath);
+    }
+
+    private static void WriteRazorVueUpdatePlanIfRequested(
+        BundleOptions options,
+        RazorVueManifestModel? previousManifest,
+        RazorVueManifestModel? currentManifest)
+    {
+        if (string.IsNullOrWhiteSpace(options.RazorVueUpdatePlanPath))
+            return;
+
+        if (currentManifest is null)
+        {
+            DeleteIfExists(options.RazorVueUpdatePlanPath);
+            return;
+        }
+
+        // The previous manifest is snapshotted before emit because emit may rewrite
+        // or delete the live manifest before bundling starts.
+        var diff = RazorVueManifestDiffer.Diff(previousManifest, currentManifest);
+        RazorVueUpdatePlanWriter.Write(options.RazorVueUpdatePlanPath, previousManifest, currentManifest, diff);
     }
 
     private static async Task<string?> TryCopyRazorVueHostRequirementsAsync(
@@ -407,6 +438,12 @@ internal sealed class ModuleBundler
 
         var updated = SourceMapWriter.AppendSourceMappingUrl(code, Path.GetFileName(GetBundleMapPath(outputPath)));
         await File.WriteAllTextAsync(outputPath, updated, Utf8WithoutBom);
+    }
+
+    private static void DeleteIfExists(string path)
+    {
+        if (File.Exists(path))
+            File.Delete(path);
     }
 
     private static string GetBundleMapPath(string outputPath)

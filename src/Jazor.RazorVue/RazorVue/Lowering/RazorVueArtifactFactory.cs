@@ -109,13 +109,30 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
     {
         var descriptorShape = new StringBuilder();
         descriptorShape.AppendLine(descriptor.FullName);
+        descriptorShape.AppendLine(descriptor.SourceKind.ToString());
         descriptorShape.AppendLine(descriptor.ImportSpecifier);
+        descriptorShape.AppendLine(descriptor.ExportName);
+        // Keep authoring-contract hash inputs aligned with emitted library metadata so
+        // override-only descriptor changes still trigger deterministic update planning.
+        descriptorShape.AppendLine("flags:" + descriptor.Flags);
         foreach (var prop in descriptor.Props.OrderBy(static item => item.PublicName, StringComparer.Ordinal))
-            descriptorShape.AppendLine(prop.PublicName + "|" + prop.Name + "|" + prop.TypeName + "|" + prop.Kind);
+            descriptorShape.AppendLine(
+                prop.PublicName + "|" +
+                prop.Name + "|" +
+                prop.TypeName + "|" +
+                prop.Required + "|" +
+                prop.AcceptsBinding + "|" +
+                (prop.DefaultExpression ?? string.Empty) + "|" +
+                prop.Kind);
         foreach (var emit in descriptor.Emits.OrderBy(static item => item.RazorAlias, StringComparer.Ordinal))
             descriptorShape.AppendLine(emit.RazorAlias + "|" + emit.Name + "|" + emit.PayloadTypeName + "|" + emit.Kind);
         foreach (var slot in descriptor.Slots.OrderBy(static item => item.Name, StringComparer.Ordinal))
-            descriptorShape.AppendLine(slot.Name + "|" + slot.IsDefault + "|" + slot.Required);
+            descriptorShape.AppendLine(
+                slot.PublicName + "|" +
+                slot.Name + "|" +
+                slot.IsDefault + "|" +
+                slot.Required + "|" +
+                string.Join(",", slot.Parameters.Select(static parameter => parameter.Name + ":" + parameter.TypeName)));
         foreach (var pluginRequirement in descriptor.PluginRequirements.OrderBy(static item => item, StringComparer.Ordinal))
             descriptorShape.AppendLine("plugin:" + pluginRequirement);
 

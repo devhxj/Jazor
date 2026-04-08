@@ -4,6 +4,7 @@ namespace Jazor.RazorVue.Descriptor;
 
 public sealed record VueSlotDescriptor(
     string Name,
+    string PublicName,
     bool IsDefault,
     ImmutableArray<VueSlotParameterDescriptor> Parameters,
     bool Required);

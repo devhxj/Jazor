@@ -1,4 +1,4 @@
-# Jazor: Shallow Analysis + LS + Bun/Vite
+# Jazor: VueAnalysis + VueHost + Jazor.Vite
 
 ## Status
 
@@ -8,18 +8,19 @@
 
 ## Decision
 
-Jazor vNext should converge on a three-layer design:
+`Jazor.VueAnalysis` is the Roslyn-backed semantic analysis service for `.jazor`. It resolves C#-side semantics and consumes `.vue/.js/.ts` context from `Jazor.VueHost` to support cross-file references, diagnostics, and other advanced composition features.
 
-1. `Jazor.Vue` and `Jazor.Vue.Analysis` remain shallow semantic libraries.
-2. `Jazor.LanguageServer` becomes the single development-time orchestrator.
-3. `Bun + Vite` remain the frontend execution layer and are controlled by the language server, not by IDE plugins directly.
+`Jazor.VueHost` is the independent RPC service. It owns workspace state, frontend coordination, and communication with `Jazor.Vite`.
+
+`Jazor.Vite` is a thin frontend client. It talks only to `Jazor.VueHost`.
 
 This means:
 
 - `.jazor` stays the single authoring source.
 - `.jazor.vue` remains a logical bridge artifact, but defaults to a virtual artifact rather than a required on-disk file.
-- IDEs talk to one C# server.
-- Vite/Bun obtain compiled artifacts and metadata through RPC rather than re-implementing `.jazor` semantics.
+- IDEs and frontend tooling talk to one C# RPC server.
+- `Jazor.VueAnalysis` stays the semantic center for `.jazor`.
+- `Jazor.VueHost` and `Jazor.VueAnalysis` communicate at runtime but should share only DTO/protocol definitions at compile time.
 
 ## Goals
 
@@ -38,12 +39,11 @@ This means:
 
 ## Final Layering
 
-### 1. Shallow Analysis
+### 1. Jazor.Vue
 
 Target projects:
 
 - [src/Jazor.Vue/Jazor.Vue.csproj](D:/repository/own/jazor/Jazor/src/Jazor.Vue/Jazor.Vue.csproj)
-- [src/Jazor.Vue.Analysis/Jazor.Vue.Analysis.csproj](D:/repository/own/jazor/Jazor/src/Jazor.Vue.Analysis/Jazor.Vue.Analysis.csproj)
 
 Responsibilities:
 
@@ -53,42 +53,63 @@ Responsibilities:
 - emit virtual `.vue` bridge text
 - emit virtual `g.cs` analysis text
 - emit import metadata, source maps, and symbol maps
-- run deterministic Roslyn-backed rules that do not need IDE session state
 
 Non-responsibilities:
 
-- process hosting
+- Roslyn semantic policy
+- workspace state
 - Bun/Vite lifecycle management
-- project-wide file watching
-- HMR invalidation policy
-- editor session state
-- UX composition for completions or code actions
+- RPC hosting
 
-Design rule:
-
-- `Jazor.Vue.Analysis` must stay library-like.
-- If a feature needs long-lived process state, background workers, project coordination, or frontend process management, it belongs in the language server, not here.
-
-## Language Server As The Real Host
+### 2. Jazor.VueAnalysis
 
 Target project:
 
-- `src/Jazor.LanguageServer/Jazor.LanguageServer.csproj` in the next implementation slice
+- `src/Jazor.VueAnalysis/Jazor.VueAnalysis.csproj` as the target scheme name
+- Current implementation path during transition: [src/Jazor.Vue.Analysis/Jazor.Vue.Analysis.csproj](D:/repository/own/jazor/Jazor/src/Jazor.Vue.Analysis/Jazor.Vue.Analysis.csproj)
+
+Responsibilities:
+
+- parse `.jazor` through `Jazor.Vue`
+- build Roslyn semantic projections for `.jazor`
+- classify imports and external symbols
+- emit diagnostics, symbols, source maps, and semantic summaries
+- consume `.vue/.js/.ts` semantic context from `Jazor.VueHost`
+- support `.jazor` and `.vue` cross-file references and other advanced composition features
+
+Non-responsibilities:
+
+- workspace ownership
+- Bun/Vite process management
+- frontend dev-server policy
+- direct IDE transport ownership
+
+Design rule:
+
+- `Jazor.VueAnalysis` is a semantic analysis service, not a host.
+- `Jazor.VueAnalysis` may communicate with `Jazor.VueHost`, but the two projects must not directly reference each other.
+- Shared DTOs and service contracts belong in a separate contracts/protocol layer.
+
+## VueHost As The Real Host
+
+Target project:
+
+- `src/Jazor.VueHost/Jazor.VueHost.csproj` in the next implementation slice
 
 Responsibilities:
 
 - own workspace and document lifecycle
 - own project graph state for `.jazor`
+- own project graph state for `.vue/.js/.ts`
 - produce and cache virtual documents
-- route C# authoring to Roslyn
-- route Vue/template authoring to the frontend semantic lane
-- aggregate diagnostics from shallow analysis, Roslyn, and frontend semantic services
+- provide `.vue/.js/.ts` semantic context to `Jazor.VueAnalysis`
+- aggregate diagnostics and semantic results from `Jazor.VueAnalysis` and frontend semantic services
 - manage Bun and Vite child processes
 - expose a local RPC surface for IDEs and toolchain clients
 
-This server is not only an LSP adapter. It is the development-time control plane.
+`Jazor.VueHost` is not only an LSP adapter. It is the development-time control plane and standalone RPC server.
 
-## Bun/Vite Execution Layer
+## Bun/Jazor.Vite Execution Layer
 
 Target project:
 
@@ -111,8 +132,8 @@ Non-responsibilities:
 
 Design rule:
 
-- the Vite plugin should remain thin glue.
-- if a feature needs understanding of `.jazor` semantics, it should call the language server RPC instead of duplicating logic in TS.
+- `Jazor.Vite` should remain thin glue.
+- if a feature needs understanding of `.jazor` semantics, it should call `Jazor.VueHost` RPC instead of duplicating logic in TS.
 
 ## Artifact Contract
 
@@ -145,7 +166,7 @@ Recommended cache location:
 
 ## RPC Contract
 
-The language server should expose one local RPC surface used by:
+`Jazor.VueHost` should expose one local RPC surface used by:
 
 - IDE clients
 - Bun/Vite plugin
@@ -184,15 +205,47 @@ Contract rule:
 - RPC returns structured DTOs only.
 - Never leak Roslyn objects, TS objects, or in-process symbol instances over RPC.
 
+## VueAnalysis <-> VueHost Contract
+
+`Jazor.VueAnalysis` needs frontend semantic context that it does not own. `Jazor.VueHost` needs Roslyn-backed `.jazor` semantic results that it does not own.
+
+That cooperation should happen through protocol contracts, not direct project references.
+
+Minimal RPC groups:
+
+### VueHost -> VueAnalysis
+
+- `AnalyzeJazor`
+- `GetDiagnostics`
+- `GetSymbols`
+- `GetSourceMap`
+- `GetImportInfo`
+
+### VueAnalysis -> VueHost
+
+- `GetFrontendContext`
+- `GetVueDocument`
+- `GetScriptContext`
+- `GetComponentMetadata`
+
+### Shared DTOs
+
+- `DocumentSnapshot`
+- `SemanticContext`
+- `ImportDescriptor`
+- `SourceMapDescriptor`
+- `DiagnosticRecord`
+- `ArtifactRecord`
+
 ## IDE Integration Model
 
-The IDE should connect only to `Jazor.LanguageServer`.
+The IDE should connect only to `Jazor.VueHost`.
 
-The language server then fans out internally:
+`Jazor.VueHost` then fans out internally:
 
 - Roslyn lane for `@code`
 - frontend semantic lane for template/SFC behavior
-- shallow analysis for `.jazor`-specific projection and rules
+- `Jazor.VueAnalysis` for `.jazor`-specific projection, Roslyn semantics, and deterministic rules
 
 Virtual document model:
 
@@ -221,14 +274,16 @@ Recommended medium-term project split:
   - bridge compiler
   - source map model
   - import symbol model
-- `Jazor.Vue.Analysis`
+- `Jazor.VueAnalysis`
+  - Roslyn semantic engine
   - Roslyn generator/analyzer glue
   - deterministic `.jazor` diagnostics
   - no hosting
-- `Jazor.LanguageServer`
+- `Jazor.VueHost`
   - RPC server
   - LSP surface
   - workspace/session/cache orchestration
+  - communication boundary to `Jazor.VueAnalysis`
   - Bun/Vite process management
 - `Jazor.Vite`
   - thin Bun-first TS plugin shell
@@ -237,33 +292,33 @@ Recommended medium-term project split:
 Optional later split:
 
 - `Jazor.DevHost`
-  - only if CLI/dev-server orchestration needs to run without an IDE-attached language server
+  - only if CLI/dev-server orchestration needs to run without an IDE-attached `Jazor.VueHost`
 
 Current recommendation:
 
 - do not create `Jazor.DevHost` yet
-- let `Jazor.LanguageServer` own the host role first
+- let `Jazor.VueHost` own the host role first
 
 ## Migration Plan
 
 ### Phase 1. Lock The Shallow Boundary
 
 - Keep extending [src/Jazor.Vue/Jazor.Vue.csproj](D:/repository/own/jazor/Jazor/src/Jazor.Vue/Jazor.Vue.csproj) only for syntax, projection, and bridge outputs.
-- Keep extending [src/Jazor.Vue.Analysis/Jazor.Vue.Analysis.csproj](D:/repository/own/jazor/Jazor/src/Jazor.Vue.Analysis/Jazor.Vue.Analysis.csproj) only for deterministic Roslyn-facing diagnostics and generated artifacts.
-- Reject host/session/process logic in `Jazor.Vue.Analysis`.
+- Keep extending the `Jazor.VueAnalysis` lane only for deterministic Roslyn-facing diagnostics and generated artifacts.
+- Reject host/session/process logic in `Jazor.VueAnalysis`.
 
-### Phase 2. Introduce `Jazor.LanguageServer`
+### Phase 2. Introduce `Jazor.VueHost`
 
 - add workspace model
 - add virtual document manager
 - add local RPC transport
 - add DTO contracts for compile/diagnostic/source-map requests
 
-### Phase 3. Move Frontend Process Ownership To LS
+### Phase 3. Move Frontend Process Ownership To `Jazor.VueHost`
 
-- LS starts Bun
-- LS starts or supervises Vite
-- LS exposes compile/load/HMR RPC for the Vite plugin
+- `Jazor.VueHost` starts Bun
+- `Jazor.VueHost` starts or supervises `Jazor.Vite`
+- `Jazor.VueHost` exposes compile/load/HMR RPC for `Jazor.Vite`
 
 ### Phase 4. Introduce Thin `Jazor.Vite`
 
@@ -286,20 +341,20 @@ This architecture is considered landed when all of the following are true:
 - no Node runtime is required for dev-server execution
 - Bun runs the frontend toolchain
 - Vite plugin does not duplicate `.jazor` semantics
-- IDE talks only to one C# language server
+- IDE and frontend tooling talk only to one C# RPC host
 - shallow analysis remains free of host/session logic
 - `.jazor` diagnostics match between tests, CLI, and IDE
 
 ## Risks
 
-- If `Jazor.Vue.Analysis` keeps absorbing host concerns, the layering will collapse again.
+- If `Jazor.VueAnalysis` keeps absorbing host concerns, the layering will collapse again.
 - If the Vite plugin starts owning semantic fallbacks, rules will drift from IDE/CI behavior.
-- If the LS becomes a thin pass-through instead of the real host, Bun/Vite orchestration will fragment.
+- If `Jazor.VueHost` becomes a thin pass-through instead of the real host, Bun/Vite orchestration will fragment.
 - If physical `.jazor.vue` emission becomes mandatory too early, incremental workflow and mapping complexity will increase.
 
 ## Immediate Next Work
 
-1. Add `Jazor.LanguageServer` with RPC skeleton and virtual document store.
+1. Add `Jazor.VueHost` as a standalone RPC service with RPC skeleton and virtual document store.
 2. Define the first transport DTOs for `compileJazor`, `getDiagnostics`, and `getSourceMap`.
 3. Add a Bun-first `Jazor.Vite` thin plugin that calls those RPC endpoints.
-4. Keep new semantic rules in `Jazor.Vue.Analysis` shallow and deterministic.
+4. Keep new semantic rules in `Jazor.VueAnalysis` shallow and deterministic.

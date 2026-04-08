@@ -5,6 +5,11 @@ if (args.Length > 0 && string.Equals(args[0], "bundle", StringComparison.Ordinal
     return await RunBundleAsync(args[1..]);
 }
 
+if (args.Length > 0 && string.Equals(args[0], "razorvue-diff", StringComparison.OrdinalIgnoreCase))
+{
+    return RunRazorVueDiff(args[1..]);
+}
+
 return await RunEmitAsync(args);
 
 static async Task<int> RunEmitAsync(string[] args)
@@ -101,5 +106,43 @@ static async Task<int> RunBundleAsync(string[] args)
     {
         Console.Error.WriteLine(ex);
         return 5;
+    }
+}
+
+static int RunRazorVueDiff(string[] args)
+{
+    if (!RazorVueDiffOptions.TryParse(args, out var options, out var error) || options is null)
+    {
+        Console.Error.WriteLine(error);
+        return 1;
+    }
+
+    try
+    {
+        var previous = RazorVueManifestModel.TryLoad(options.PreviousManifestPath);
+        if (previous is null)
+        {
+            Console.Error.WriteLine($"Previous RazorVue manifest was not found: '{options.PreviousManifestPath}'.");
+            return 6;
+        }
+
+        var current = RazorVueManifestModel.TryLoad(options.CurrentManifestPath);
+        if (current is null)
+        {
+            Console.Error.WriteLine($"Current RazorVue manifest was not found: '{options.CurrentManifestPath}'.");
+            return 7;
+        }
+
+        var diff = RazorVueManifestDiffer.Diff(previous, current);
+        var writer = new RazorVueUpdatePlanWriter();
+        writer.Write(options.OutputPath, previous, current, diff);
+
+        Console.WriteLine($"action={diff.Action} modules={diff.Modules.Count} out={options.OutputPath}");
+        return 0;
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine(ex);
+        return 8;
     }
 }

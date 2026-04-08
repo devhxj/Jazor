@@ -1,5 +1,6 @@
 using Jazor.Emit.SourceMaps;
 using System.Text;
+using System.Text.Json;
 
 namespace Jazor.Emit;
 
@@ -9,6 +10,7 @@ internal sealed class RazorVueModuleWriter
     private static readonly UTF8Encoding Utf8WithoutBom = new(encoderShouldEmitUTF8Identifier: false);
     private static readonly SourceMapBuilder ModuleMapBuilder = new();
     private static readonly SourceMapWriter ModuleMapWriter = new();
+    private static readonly JsonSerializerOptions OriginJsonOptions = new() { WriteIndented = true };
 
     public WriteResult Write(
         string rootAssemblyPath,
@@ -38,6 +40,7 @@ internal sealed class RazorVueModuleWriter
         {
             var targetPath = GetTargetPath(normalizedOutputDirectory, artifact.RelativeModulePath);
             var mapPath = GetSourceMapPath(targetPath);
+            var originMapPath = GetOriginMapPath(targetPath);
             var targetDirectory = Path.GetDirectoryName(targetPath);
             if (!string.IsNullOrEmpty(targetDirectory))
                 Directory.CreateDirectory(targetDirectory);
@@ -49,6 +52,7 @@ internal sealed class RazorVueModuleWriter
                 TryReadSourceContent);
             var moduleCode = ModuleMapWriter.AppendSourceMappingUrl(artifact.ModuleCode, Path.GetFileName(mapPath));
             var mapJson = ModuleMapWriter.Write(sourceMap);
+            var originJson = BuildOriginMapJson(artifact);
 
             var moduleChanged = !File.Exists(targetPath)
                 || !string.Equals(File.ReadAllText(targetPath), moduleCode, StringComparison.Ordinal);
@@ -60,7 +64,12 @@ internal sealed class RazorVueModuleWriter
             if (mapChanged)
                 File.WriteAllText(mapPath, mapJson, Utf8WithoutBom);
 
-            if (moduleChanged || mapChanged)
+            var originChanged = !File.Exists(originMapPath)
+                || !string.Equals(File.ReadAllText(originMapPath), originJson, StringComparison.Ordinal);
+            if (originChanged)
+                File.WriteAllText(originMapPath, originJson, Utf8WithoutBom);
+
+            if (moduleChanged || mapChanged || originChanged)
                 written++;
             else
                 skipped++;
@@ -100,6 +109,7 @@ internal sealed class RazorVueModuleWriter
 
                 DeleteIfExists(GetTargetPath(normalizedOutputDirectory, oldModule.RelativeModulePath), ref deleted);
                 DeleteIfExists(GetTargetPath(normalizedOutputDirectory, oldModule.RelativeModulePath) + ".map", ref deleted);
+                DeleteIfExists(GetTargetPath(normalizedOutputDirectory, oldModule.RelativeModulePath) + ".origins.json", ref deleted);
             }
         }
 
@@ -150,6 +160,9 @@ internal sealed class RazorVueModuleWriter
 
     private static string GetSourceMapPath(string modulePath)
         => modulePath + ".map";
+
+    private static string GetOriginMapPath(string modulePath)
+        => modulePath + ".origins.json";
 
     private static void DeleteIfExists(string path, ref int deleted)
     {
@@ -209,6 +222,7 @@ internal sealed class RazorVueModuleWriter
                 componentName = module.ComponentName,
                 relativeModulePath = module.RelativeModulePath,
                 sourceMapPath = module.SourceMapPath,
+                originMapPath = module.OriginMapPath,
                 styles = module.Styles,
                 pluginRequirements = module.PluginRequirements,
                 descriptorHash = module.DescriptorHash,
@@ -222,4 +236,28 @@ internal sealed class RazorVueModuleWriter
 
     private static string BuildStringArrayLiteral(IReadOnlyList<string> values)
         => "[" + string.Join(", ", values.Select(static value => System.Text.Json.JsonSerializer.Serialize(value))) + "]";
+
+    private static string BuildOriginMapJson(RazorVueEmitArtifactRecord artifact)
+        => JsonSerializer.Serialize(
+            new
+            {
+                componentId = artifact.Identity.ComponentId,
+                moduleId = artifact.Identity.ModuleId,
+                componentName = artifact.ComponentName,
+                relativeModulePath = artifact.RelativeModulePath,
+                origins = artifact.SourceOrigins.Select(static origin => new
+                {
+                    sourceFilePath = origin.SourceFilePath,
+                    sourceSpanStart = origin.SourceSpanStart,
+                    sourceSpanLength = origin.SourceSpanLength,
+                    generatedFilePath = origin.GeneratedFilePath,
+                    generatedSpanStart = origin.GeneratedSpanStart,
+                    generatedSpanLength = origin.GeneratedSpanLength,
+                    startLine = origin.StartLine,
+                    startColumn = origin.StartColumn,
+                    mappingQuality = origin.MappingQuality,
+                    provenance = origin.Provenance
+                })
+            },
+            OriginJsonOptions);
 }

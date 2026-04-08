@@ -44,7 +44,7 @@ internal sealed class RazorVueExpressionEmitter
             static prop => prop,
             StringComparer.Ordinal);
         _slotsByPublicName = snapshot.Descriptor.Slots.ToDictionary(
-            static slot => slot.IsDefault ? "ChildContent" : ToUpperCamelCase(slot.Name),
+            static slot => slot.PublicName,
             static slot => slot,
             StringComparer.Ordinal);
         _emitsByRazorAlias = snapshot.Descriptor.Emits
@@ -316,9 +316,16 @@ internal sealed class RazorVueExpressionEmitter
                 var slotName = slotDescriptor.Name;
                 var slotExpression = EmitExpression(attribute.Value!);
                 if (slotDescriptor.Parameters.IsDefaultOrEmpty || !IsCallableSlotExpression(attribute.Value!))
+                {
                     slotEntries.Add(slotName + ": () => " + slotExpression);
+                }
                 else
-                    slotEntries.Add(slotName + ": (context) => " + slotExpression + "(context)");
+                {
+                    // Preserve the declared slot context name so generated authoring
+                    // code matches the library contract instead of hard-coding "context".
+                    var slotParameterName = slotDescriptor.Parameters[0].Name;
+                    slotEntries.Add(slotName + ": (" + slotParameterName + ") => " + slotExpression + "(" + slotParameterName + ")");
+                }
 
                 continue;
             }
@@ -1027,7 +1034,7 @@ internal sealed class RazorVueExpressionEmitter
         foreach (var item in resolvedComponents)
         {
             var slots = item.Value.Slots.ToImmutableDictionary(
-                slot => slot.IsDefault ? "ChildContent" : ToUpperCamelCase(slot.Name),
+                static slot => slot.PublicName,
                 static slot => slot,
                 StringComparer.Ordinal);
             builder[item.Key] = slots;

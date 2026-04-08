@@ -37,6 +37,7 @@ public sealed class RazorVueEmitIntegrationTests
         var hostRequirementsModulePath = RazorVueModuleWriter.GetHostRequirementsModulePath(outputDirectory);
         var modulePath = Path.Combine(outputDirectory, "components", "counter-card.mjs");
         var mapPath = modulePath + ".map";
+        var originMapPath = modulePath + ".origins.json";
 
         try
         {
@@ -87,6 +88,7 @@ public sealed class RazorVueEmitIntegrationTests
             Assert.AreEqual(2, result.Written);
             Assert.IsTrue(File.Exists(modulePath));
             Assert.IsTrue(File.Exists(mapPath));
+            Assert.IsTrue(File.Exists(originMapPath));
             Assert.IsTrue(File.Exists(manifestPath));
             Assert.IsTrue(File.Exists(hostRequirementsModulePath));
 
@@ -103,8 +105,14 @@ public sealed class RazorVueEmitIntegrationTests
             StringAssert.Contains(hostRequirementsCode, "\"componentName\":\"CounterCard\"");
             StringAssert.Contains(hostRequirementsCode, "\"relativeModulePath\":\"components/counter-card.mjs\"");
             StringAssert.Contains(hostRequirementsCode, "\"sourceMapPath\":\"components/counter-card.mjs.map\"");
+            StringAssert.Contains(hostRequirementsCode, "\"originMapPath\":\"components/counter-card.mjs.origins.json\"");
             StringAssert.Contains(hostRequirementsCode, "\"descriptorHash\":\"descriptor-hash\"");
             StringAssert.Contains(hostRequirementsCode, "\"hmrBoundaryKind\":2");
+
+            using var originMap = JsonDocument.Parse(File.ReadAllText(originMapPath));
+            Assert.AreEqual("Demo.Components.CounterCard", originMap.RootElement.GetProperty("componentId").GetString());
+            Assert.AreEqual("components/counter-card.mjs", originMap.RootElement.GetProperty("moduleId").GetString());
+            Assert.AreEqual(sourceFilePath, originMap.RootElement.GetProperty("origins")[0].GetProperty("sourceFilePath").GetString());
 
             using var map = JsonDocument.Parse(File.ReadAllText(mapPath));
             Assert.AreEqual("components/counter-card.mjs", map.RootElement.GetProperty("file").GetString());
@@ -129,6 +137,7 @@ public sealed class RazorVueEmitIntegrationTests
             Assert.AreEqual("CounterCard", manifest.Modules[0].ComponentName);
             Assert.AreEqual("components/counter-card.mjs", manifest.Modules[0].RelativeModulePath);
             Assert.AreEqual("components/counter-card.mjs.map", manifest.Modules[0].SourceMapPath);
+            Assert.AreEqual("components/counter-card.mjs.origins.json", manifest.Modules[0].OriginMapPath);
             CollectionAssert.AreEqual(new[] { "vuetify/styles" }, manifest.Styles);
             CollectionAssert.AreEqual(new[] { "vuetify" }, manifest.Modules[0].PluginRequirements);
             CollectionAssert.AreEqual(new[] { "vuetify" }, manifest.PluginRequirements);
@@ -223,6 +232,7 @@ public sealed class RazorVueEmitIntegrationTests
             StringAssert.Contains(hostRequirementsCode, "\"componentName\":\"CounterCard\"");
             StringAssert.Contains(hostRequirementsCode, "\"componentName\":\"StatusBadge\"");
             StringAssert.Contains(hostRequirementsCode, "\"sourceMapPath\":\"widgets/status-badge.mjs.map\"");
+            StringAssert.Contains(hostRequirementsCode, "\"originMapPath\":\"widgets/status-badge.mjs.origins.json\"");
             StringAssert.Contains(hostRequirementsCode, "\"templateHash\":\"template-b\"");
         }
         finally
@@ -269,6 +279,7 @@ public sealed class RazorVueEmitIntegrationTests
             Assert.IsTrue(File.Exists(hostRequirementsModulePath));
             Assert.IsTrue(File.Exists(Path.Combine(outputDirectory, "components", "counter-card.mjs")));
             Assert.IsTrue(File.Exists(Path.Combine(outputDirectory, "components", "counter-card.mjs.map")));
+            Assert.IsTrue(File.Exists(Path.Combine(outputDirectory, "components", "counter-card.mjs.origins.json")));
 
             var secondRun = await RunDotNetAsync(root,
                 [
@@ -289,6 +300,7 @@ public sealed class RazorVueEmitIntegrationTests
             Assert.AreEqual(0, secondRun.ExitCode, secondRun.ToString());
             Assert.IsFalse(File.Exists(Path.Combine(outputDirectory, "components", "counter-card.mjs")));
             Assert.IsFalse(File.Exists(Path.Combine(outputDirectory, "components", "counter-card.mjs.map")));
+            Assert.IsFalse(File.Exists(Path.Combine(outputDirectory, "components", "counter-card.mjs.origins.json")));
             Assert.IsFalse(File.Exists(hostRequirementsModulePath));
             Assert.IsTrue(File.Exists(razorVueManifestPath));
 
@@ -301,6 +313,77 @@ public sealed class RazorVueEmitIntegrationTests
                 Directory.Delete(root, recursive: true);
         }
     }
+
+    [TestMethod]
+    public async Task EmitCli_RazorVueDiff_WritesUpdatePlan()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
+        var emitAssemblyPath = typeof(EmitOptions).Assembly.Location;
+        var previousManifestPath = Path.Combine(root, "previous-razorvue.json");
+        var currentManifestPath = Path.Combine(root, "current-razorvue.json");
+        var planPath = Path.Combine(root, "razorvue-update-plan.json");
+
+        try
+        {
+            Directory.CreateDirectory(root);
+
+            CreateManifest("template-a", "logic-a", "content-a", RazorVueHmrBoundaryKind.TemplateOnly).Save(previousManifestPath);
+            CreateManifest("template-b", "logic-a", "content-b", RazorVueHmrBoundaryKind.TemplateOnly).Save(currentManifestPath);
+
+            var result = await RunDotNetAsync(root,
+                [
+                    "exec",
+                    emitAssemblyPath,
+                    "razorvue-diff",
+                    "--previous",
+                    previousManifestPath,
+                    "--current",
+                    currentManifestPath,
+                    "--write-plan",
+                    planPath
+                ]);
+
+            Assert.AreEqual(0, result.ExitCode, result.ToString());
+            Assert.IsTrue(File.Exists(planPath));
+
+            using var plan = JsonDocument.Parse(await File.ReadAllTextAsync(planPath));
+            Assert.AreEqual("TemplatePatch", plan.RootElement.GetProperty("Action").GetString());
+            Assert.AreEqual("Demo.Host.ProfileForm", plan.RootElement.GetProperty("Modules")[0].GetProperty("ComponentId").GetString());
+            Assert.AreEqual("TemplatePatch", plan.RootElement.GetProperty("Modules")[0].GetProperty("Action").GetString());
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    private static RazorVueManifestModel CreateManifest(string templateHash, string logicHash, string contentHash, RazorVueHmrBoundaryKind boundaryKind)
+        => new(
+            "Demo.Host",
+            new DateTime(2026, 4, 8, 0, 0, 0, DateTimeKind.Utc),
+            [
+                new RazorVueManifestEntry(
+                    "Demo.Host",
+                    "Demo.Host.ProfileForm",
+                    "components/profile-form.mjs",
+                    "ProfileForm",
+                    "components/profile-form.mjs",
+                    "components/profile-form.mjs.map",
+                    "components/profile-form.mjs.origins.json",
+                    ["vue"],
+                    ["vuetify/styles"],
+                    ["vuetify"],
+                    "descriptor-hash",
+                    templateHash,
+                    logicHash,
+                    contentHash,
+                    boundaryKind,
+                    false,
+                    true)
+            ],
+            ["vuetify/styles"],
+            ["vuetify"]);
 
     private static async Task<ProcessResult> RunDotNetAsync(string workingDirectory, IReadOnlyList<string> arguments)
     {

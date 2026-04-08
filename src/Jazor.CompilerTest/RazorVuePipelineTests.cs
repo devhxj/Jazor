@@ -276,6 +276,199 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersCustomLibraryComponent_WithStylesAndPluginRequirements()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Authoring
+            {
+                [VueLibraryComponent("demo/components", "DemoButton")]
+                [VueLibraryStyle("demo/button.css")]
+                [VueLibraryPluginRequirement("demo-host")]
+                public sealed class DemoButton : VueLibraryComponent
+                {
+                    [Parameter]
+                    public string? Text { get; set; }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/library-host")]
+                public class LibraryHost : VueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<Demo.Authoring.DemoButton>(0);
+                        builder.AddAttribute(1, nameof(Demo.Authoring.DemoButton.Text), "Save");
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+
+        CollectionAssert.Contains(artifact.Imports.ToArray(), "demo/components");
+        StringAssert.Contains(artifact.ModuleCode, "import { DemoButton as DemoButtonComponent } from \"demo/components\";");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(DemoButtonComponent, { \"text\": \"Save\" }, null);");
+        CollectionAssert.AreEqual(new[] { "demo/button.css" }, artifact.Styles.ToArray());
+        CollectionAssert.AreEqual(new[] { "demo-host" }, artifact.PluginRequirements.ToArray());
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_AggregatesNamedImports_AndNormalizesDuplicateCustomLibraryRequirements()
+    {
+        // Cross-component library requirements should be trimmed and deduplicated in the emitted host artifact.
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Authoring
+            {
+                [VueLibraryComponent("demo/components", "DemoButton")]
+                [VueLibraryStyle("demo/button.css")]
+                [VueLibraryPluginRequirement("demo-host")]
+                public sealed class DemoButton : VueLibraryComponent
+                {
+                }
+
+                [VueLibraryComponent("demo/components", "DemoCard")]
+                [VueLibraryStyle(" demo/button.css ")]
+                [VueLibraryStyle("demo/card.css")]
+                [VueLibraryPluginRequirement(" demo-host ")]
+                [VueLibraryPluginRequirement("feature-flags")]
+                public sealed class DemoCard : VueLibraryComponent
+                {
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/library-host")]
+                public class LibraryHost : VueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.OpenComponent<Demo.Authoring.DemoButton>(1);
+                        builder.CloseComponent();
+                        builder.OpenComponent<Demo.Authoring.DemoCard>(2);
+                        builder.CloseComponent();
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+
+        CollectionAssert.AreEquivalent(new[] { "vue", "demo/components" }, artifact.Imports.ToArray());
+        StringAssert.Contains(artifact.ModuleCode, "import { DemoButton as DemoButtonComponent, DemoCard as DemoCardComponent } from \"demo/components\";");
+        Assert.AreEqual(1, artifact.ModuleCode.Split("from \"demo/components\";", StringSplitOptions.None).Length - 1, artifact.ModuleCode);
+        CollectionAssert.AreEqual(new[] { "demo/button.css", "demo/card.css" }, artifact.Styles.ToArray());
+        CollectionAssert.AreEqual(new[] { "demo-host", "feature-flags" }, artifact.PluginRequirements.ToArray());
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersCustomLibraryComponent_UsingExplicitAuthoringOverrides()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Jazor.RazorVue.Descriptor;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Authoring
+            {
+                [VueLibraryComponent("demo/components", "DemoButton")]
+                [VueLibraryProp(nameof(Label), VuePropKind.LibrarySpecific, Name = "buttonLabel", Required = true)]
+                [VueLibraryEmit(nameof(OnSubmit), VueEmitKind.LibrarySpecific, Name = "onSaveNow")]
+                [VueLibrarySlot(nameof(Footer), Name = "actions")]
+                public sealed class DemoButton : VueLibraryComponent
+                {
+                    [Parameter]
+                    public string? Label { get; set; }
+
+                    [Parameter]
+                    public EventCallback OnSubmit { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? Footer { get; set; }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/library-host")]
+                public class LibraryHost : VueComponent
+                {
+                    [Parameter]
+                    public EventCallback OnSave { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? ChildContent { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<Demo.Authoring.DemoButton>(0);
+                        builder.AddAttribute(1, nameof(Demo.Authoring.DemoButton.Label), "Save");
+                        builder.AddAttribute(2, nameof(Demo.Authoring.DemoButton.OnSubmit), OnSave);
+                        builder.AddAttribute(3, nameof(Demo.Authoring.DemoButton.Footer), ChildContent);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "\"buttonLabel\": \"Save\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"onSaveNow\": props.onSave");
+        StringAssert.Contains(artifact.ModuleCode, "actions: () => slots.default ? slots.default() : null");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersVuetifyPackageEventAndModelBindings()
     {
         var context = CreateContext(

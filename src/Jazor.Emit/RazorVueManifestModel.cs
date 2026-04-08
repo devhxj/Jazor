@@ -66,6 +66,9 @@ internal sealed record RazorVueManifestModel(
                 SourceMapPath = NormalizeSourceMapPath(
                     module.SourceMapPath,
                     module.RelativeModulePath),
+                OriginMapPath = NormalizeOriginMapPath(
+                    module.OriginMapPath,
+                    module.RelativeModulePath),
                 Styles = NormalizeHostRequirementList(module.Styles),
                 PluginRequirements = NormalizeHostRequirementList(module.PluginRequirements)
             })
@@ -103,6 +106,7 @@ internal sealed record RazorVueManifestModel(
             artifact.ComponentName,
             artifact.RelativeModulePath,
             BuildSourceMapPath(artifact.RelativeModulePath),
+            BuildOriginMapPath(artifact.RelativeModulePath),
             artifact.Imports.ToList(),
             NormalizeHostRequirementList(artifact.Styles),
             NormalizeHostRequirementList(artifact.PluginRequirements),
@@ -151,6 +155,12 @@ internal sealed record RazorVueManifestModel(
     private static string BuildSourceMapPath(string relativeModulePath)
         => relativeModulePath + ".map";
 
+    private static string NormalizeOriginMapPath(string? currentValue, string relativeModulePath)
+        => string.IsNullOrWhiteSpace(currentValue) ? BuildOriginMapPath(relativeModulePath) : currentValue;
+
+    private static string BuildOriginMapPath(string relativeModulePath)
+        => relativeModulePath + ".origins.json";
+
     private static string ComputeSha256Hex(string content)
     {
         using var sha = System.Security.Cryptography.SHA256.Create();
@@ -166,6 +176,7 @@ internal sealed record RazorVueManifestEntry(
     string ComponentName,
     string RelativeModulePath,
     string SourceMapPath,
+    string OriginMapPath,
     List<string> Imports,
     List<string> Styles,
     List<string> PluginRequirements,

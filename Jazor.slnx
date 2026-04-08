@@ -22,8 +22,11 @@
   <Project Path="src/Jazor.EmitTest/Jazor.EmitTest.csproj" />
   <Project Path="src/Jazor.Name/Jazor.Name.csproj" />
   <Project Path="src/Jazor.Razor/Jazor.Razor.csproj" />
+  <Project Path="src/Jazor.VueContracts/Jazor.VueContracts.csproj" />
   <Project Path="src/Jazor.Vue/Jazor.Vue.csproj" />
   <Project Path="src/Jazor.Vue.Analysis/Jazor.Vue.Analysis.csproj" />
+  <Project Path="src/Jazor.Vue.Analysis.Host/Jazor.Vue.Analysis.Host.csproj" />
+  <Project Path="src/Jazor.VueHost/Jazor.VueHost.csproj" />
   <Project Path="src/Jazor.RazorVue/Jazor.RazorVue.csproj" />
   <Project Path="src/Jazor.RazorVue.Vuetify/Jazor.RazorVue.Vuetify.csproj" />
   <Project Path="src/Jazor.RazorVue.Analysis/Jazor.RazorVue.Analysis.csproj" />

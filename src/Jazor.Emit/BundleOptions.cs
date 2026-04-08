@@ -3,7 +3,9 @@ namespace Jazor.Emit;
 internal sealed record BundleOptions(
     string InputDirectory,
     string ManifestPath,
-    string OutputPath)
+    string OutputPath,
+    string? PreviousRazorVueManifestPath = null,
+    string? RazorVueUpdatePlanPath = null)
 {
     public static bool TryParse(string[] args, out BundleOptions? options, out string? error)
     {
@@ -13,6 +15,8 @@ internal sealed record BundleOptions(
         var inputDirectory = string.Empty;
         var manifestPath = string.Empty;
         var outputPath = string.Empty;
+        string? previousRazorVueManifestPath = null;
+        string? razorVueUpdatePlanPath = null;
 
         for (var i = 0; i < args.Length; i++)
         {
@@ -34,6 +38,12 @@ internal sealed record BundleOptions(
                     break;
                 case "--out":
                     outputPath = value;
+                    break;
+                case "--previous-razorvue-manifest":
+                    previousRazorVueManifestPath = value;
+                    break;
+                case "--write-razorvue-update-plan":
+                    razorVueUpdatePlanPath = value;
                     break;
                 default:
                     error = $"Unknown argument '{arg}'.";
@@ -62,7 +72,9 @@ internal sealed record BundleOptions(
         options = new BundleOptions(
             Path.GetFullPath(inputDirectory),
             Path.GetFullPath(manifestPath),
-            Path.GetFullPath(outputPath));
+            Path.GetFullPath(outputPath),
+            string.IsNullOrWhiteSpace(previousRazorVueManifestPath) ? null : Path.GetFullPath(previousRazorVueManifestPath),
+            string.IsNullOrWhiteSpace(razorVueUpdatePlanPath) ? null : Path.GetFullPath(razorVueUpdatePlanPath));
         return true;
     }
 }

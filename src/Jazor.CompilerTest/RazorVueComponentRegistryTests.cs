@@ -190,6 +190,96 @@ public sealed class RazorVueComponentRegistryTests
     }
 
     [TestMethod]
+    public void RazorVue_Registry_CreateFromCompilationContext_OrdersDistinctLibraryRequirements()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Ui.Custom
+            {
+                [VueLibraryComponent("demo/components", "DemoButton")]
+                [VueLibraryStyle("demo/base.css")]
+                [VueLibraryStyle("demo/button.css")]
+                [VueLibraryPluginRequirement("demo-host")]
+                [VueLibraryPluginRequirement("feature-flags")]
+                public sealed class DemoButton : VueLibraryComponent
+                {
+                    [Parameter]
+                    public string? Text { get; set; }
+                }
+            }
+            """);
+
+        var registry = context.CreateComponentRegistry();
+        var result = registry.Resolve(
+            "DemoButton",
+            VueComponentResolutionContext.Create("Demo.Pages", "Demo.Ui.Custom"));
+
+        Assert.AreEqual(VueComponentResolutionStatus.Resolved, result.Status);
+        Assert.IsNotNull(result.Descriptor);
+        CollectionAssert.AreEqual(
+            new[] { "demo/base.css", "demo/button.css" },
+            result.Descriptor.StyleDependencies.ToArray());
+        CollectionAssert.AreEqual(
+            new[] { "demo-host", "feature-flags" },
+            result.Descriptor.PluginRequirements.ToArray());
+    }
+
+    [TestMethod]
+    public void RazorVue_Registry_CreateFromCompilationContext_ResolvesLibraryComponent_ByFullyQualifiedNameWithoutUsing()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Ui.Custom
+            {
+                [VueLibraryComponent("demo/components", "DemoButton")]
+                public sealed class DemoButton : VueLibraryComponent
+                {
+                    [Parameter]
+                    public string? Text { get; set; }
+                }
+            }
+            """);
+
+        var registry = context.CreateComponentRegistry();
+        var result = registry.Resolve(
+            "Demo.Ui.Custom.DemoButton",
+            VueComponentResolutionContext.Create("Demo.Pages"));
+
+        Assert.AreEqual(VueComponentResolutionStatus.Resolved, result.Status);
+        Assert.IsNotNull(result.Descriptor);
+        Assert.IsEmpty(result.Issues);
+        Assert.AreEqual("Demo.Ui.Custom.DemoButton", result.Descriptor.FullName);
+    }
+
+    [TestMethod]
     public void RazorVue_Registry_CreateFromCompilationContext_ResolvesVuetifyPackageComponents()
     {
         var context = CreateContext(
