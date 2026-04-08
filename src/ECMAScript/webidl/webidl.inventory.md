@@ -1,6 +1,6 @@
 # WebIDL Inventory
 
-- Generated: `2026-04-03T09:37:14.1530000+00:00`
+- Generated: `2026-04-08T04:10:47.3490000+00:00`
 - Files: `369`
 - Declarations: `3298`
 - Event targets: `147`
@@ -27,4 +27,4 @@
 ## Next Step
 
 This inventory is the stable interchange format between the Deno collection layer and the future C# binding emitter.
-A preview emitter currently writes typedef, enum, callback, callback interface, dictionary, interface, and namespace bindings under `csharp-preview/`.
+A preview emitter currently writes typedef, enum, callback, callback interface, dictionary, interface, and namespace bindings under `webidl/`.

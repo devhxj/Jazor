@@ -24,7 +24,7 @@ public static class EnumerableModule<TSource>
 		if (predicate == null)
 			throw new Error("ArgumentNullException: predicate is null");
 
-		return Materialize(source).Filter(predicate);
+		return Materialize(source).Filter(item => predicate(item));
 	}
 
 	[Jazor(Op.Import, "static System.Linq.Enumerable.Where<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, int, bool>)")]
@@ -35,7 +35,7 @@ public static class EnumerableModule<TSource>
 		if (predicate == null)
 			throw new Error("ArgumentNullException: predicate is null");
 
-		return Materialize(source).Filter(predicate);
+		return Materialize(source).Filter((item, index) => predicate(item, index));
 	}
 
 	[Jazor(Op.Import, "static System.Linq.Enumerable.Select<TSource, TResult>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TResult>)")]

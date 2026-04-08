@@ -4,12 +4,23 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
+  <Folder Name="/razor/">
+    <Project Path="src/Jazor.Razor/Jazor.Razor.csproj" />
+    <Project Path="src/Jazor.RazorVue.Analysis/Jazor.RazorVue.Analysis.csproj" />
+    <Project Path="src/Jazor.RazorVue.Vuetify/Jazor.RazorVue.Vuetify.csproj" />
+    <Project Path="src/Jazor.RazorVue/Jazor.RazorVue.csproj" />
+  </Folder>
+  <Folder Name="/vue/">
+    <Project Path="src/Jazor.Vite/Jazor.Vite.csproj" />
+    <Project Path="src/Jazor.Vue.Analysis.Host/Jazor.Vue.Analysis.Host.csproj" />
+    <Project Path="src/Jazor.Vue.Analysis.Runtime/Jazor.Vue.Analysis.Runtime.csproj" />
+    <Project Path="src/Jazor.Vue.Analysis/Jazor.Vue.Analysis.csproj" />
+    <Project Path="src/Jazor.Vue/Jazor.Vue.csproj" />
+    <Project Path="src/Jazor.VueContracts/Jazor.VueContracts.csproj" />
+    <Project Path="src/Jazor.VueHost/Jazor.VueHost.csproj" />
+  </Folder>
   <Project Path="src/ECMAScript.WebIDL.Generator/ECMAScript.WebIDL.Generator.csproj" />
   <Project Path="src/ECMAScript.WebIDL.GeneratorTest/ECMAScript.WebIDL.GeneratorTest.csproj" />
-  <Project Path="src/ECMAScript.WebIDL/ECMAScript.WebIDL.esproj">
-    <Build Solution="*|Any CPU" />
-    <Deploy Solution="*|Any CPU" />
-  </Project>
   <Project Path="src/ECMAScript/ECMAScript.csproj" />
   <Project Path="src/Jazor.Analyzer/Jazor.Analyzer.csproj" />
   <Project Path="src/Jazor.CLR.Generator/Jazor.CLR.Generator.csproj" />
@@ -21,15 +32,6 @@
   <Project Path="src/Jazor.Emit/Jazor.Emit.csproj" />
   <Project Path="src/Jazor.EmitTest/Jazor.EmitTest.csproj" />
   <Project Path="src/Jazor.Name/Jazor.Name.csproj" />
-  <Project Path="src/Jazor.Razor/Jazor.Razor.csproj" />
-  <Project Path="src/Jazor.VueContracts/Jazor.VueContracts.csproj" />
-  <Project Path="src/Jazor.Vue/Jazor.Vue.csproj" />
-  <Project Path="src/Jazor.Vue.Analysis/Jazor.Vue.Analysis.csproj" />
-  <Project Path="src/Jazor.Vue.Analysis.Host/Jazor.Vue.Analysis.Host.csproj" />
-  <Project Path="src/Jazor.VueHost/Jazor.VueHost.csproj" />
-  <Project Path="src/Jazor.RazorVue/Jazor.RazorVue.csproj" />
-  <Project Path="src/Jazor.RazorVue.Vuetify/Jazor.RazorVue.Vuetify.csproj" />
-  <Project Path="src/Jazor.RazorVue.Analysis/Jazor.RazorVue.Analysis.csproj" />
-  <Project Path="src/Jazor/Jazor.csproj" />
   <Project Path="src/Jazor.Test/Jazor.Test.csproj" />
+  <Project Path="src/Jazor/Jazor.csproj" />
 </Solution>

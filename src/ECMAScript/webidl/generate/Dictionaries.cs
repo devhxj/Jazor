@@ -330,7 +330,7 @@ public record AuctionAdConfig(
     [property: Description("@#requiredSellerCapabilities")]string[]? RequiredSellerCapabilities = default,
     [property: Description("@#requestedSize")]Dictionary<string, string>? RequestedSize = default,
     [property: Description("@#allSlotsRequestedSizes")]Dictionary<string, string>[]? AllSlotsRequestedSizes = default,
-    [property: Description("@#additionalBids")]PromiseResult<object>? AdditionalBids = default,
+    [property: Description("@#additionalBids")]PromiseResult? AdditionalBids = default,
     [property: Description("@#auctionNonce")]string? AuctionNonce = default,
     [property: Description("@#componentAuctions")]AuctionAdConfig[]? ComponentAuctions = default,
     [property: Description("@#signal")]AbortSignal? Signal = default,
@@ -2186,7 +2186,7 @@ public record FetchEventInit(
     [property: Description("@#clientId")]string? ClientId = default,
     [property: Description("@#resultingClientId")]string? ResultingClientId = default,
     [property: Description("@#replacesClientId")]string? ReplacesClientId = default,
-    [property: Description("@#handled")]PromiseResult<object>? Handled = default) : ExtendableEventInit;
+    [property: Description("@#handled")]PromiseResult? Handled = default) : ExtendableEventInit;
 
 /// <summary>
 /// FilePickerAcceptType
@@ -7266,7 +7266,7 @@ public record ULongRange(
 [Description("@#URLPatternComponentResult")]
 public record URLPatternComponentResult(
     [property: Description("@#input")]string? Input = default,
-    [property: Description("@#groups")]Dictionary<string, Either<string, object>>? Groups = default);
+    [property: Description("@#groups")]Dictionary<string, string?>? Groups = default);
 
 /// <summary>
 /// URLPatternInit

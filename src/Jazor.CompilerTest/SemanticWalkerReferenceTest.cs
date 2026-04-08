@@ -2020,6 +2020,52 @@ public sealed class SemanticWalkerReferenceTest
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
+	[TestMethod]
+	public void Visit_Reference_WebIdlNamespaceHostGlobalQualified_UsesRuntimeHost()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var supported = global::ECMAScript.CSS.CSS.Supports(""display"", ""grid"");
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let supported = CSS.supports(""display"", ""grid"");
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_WebIdlNamespaceHostAlias_UsesRuntimeHost()
+	{
+		var block = GetBlockOperation(@"
+            global using CssHost = global::ECMAScript.CSS.CSS;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var supported = CssHost.Supports(""display"", ""grid"");
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let supported = CSS.supports(""display"", ""grid"");
+}", script);
+	}
+
 	/// <summary>
 	/// 测试 VisitMethodReference - 实例方法引用
 	/// C# 示例：Action<string> write = Console.WriteLine;

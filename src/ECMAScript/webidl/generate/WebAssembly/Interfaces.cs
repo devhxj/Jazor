@@ -8,9 +8,9 @@ namespace ECMAScript.WebAssembly;
 public class Global
 {
     /// <summary>
-/// Constructor 
-/// </summary>
-/// <param name="descriptor">descriptor</param>
+    /// Constructor 
+    /// </summary>
+    /// <param name="descriptor">descriptor</param>
     /// <param name="v">v</param>
     public extern Global(GlobalDescriptor descriptor, object v);
 
@@ -21,10 +21,10 @@ public class Global
     public extern object ValueOf();
 
     /// <summary>
-/// value
-/// </summary>
-[Description("@#value")]
-public extern object Value { get; set; }
+    /// value
+    /// </summary>
+    [Description("@#value")]
+    public extern object Value { get; set; }
 }
 
 /// <summary>
@@ -35,17 +35,17 @@ public extern object Value { get; set; }
 public class Instance
 {
     /// <summary>
-/// Constructor 
-/// </summary>
-/// <param name="module">module</param>
+    /// Constructor 
+    /// </summary>
+    /// <param name="module">module</param>
     /// <param name="importObject">importObject</param>
     public extern Instance(Module module, object importObject);
 
     /// <summary>
-/// exports
-/// </summary>
-[Description("@#exports")]
-public extern object Exports { get; }
+    /// exports
+    /// </summary>
+    [Description("@#exports")]
+    public extern object Exports { get; }
 }
 
 /// <summary>
@@ -56,9 +56,9 @@ public extern object Exports { get; }
 public class Memory
 {
     /// <summary>
-/// Constructor 
-/// </summary>
-/// <param name="descriptor">descriptor</param>
+    /// Constructor 
+    /// </summary>
+    /// <param name="descriptor">descriptor</param>
     public extern Memory(MemoryDescriptor descriptor);
 
     /// <summary>
@@ -81,10 +81,10 @@ public class Memory
     public extern ArrayBuffer ToResizableBuffer();
 
     /// <summary>
-/// buffer
-/// </summary>
-[Description("@#buffer")]
-public extern ArrayBuffer Buffer { get; }
+    /// buffer
+    /// </summary>
+    [Description("@#buffer")]
+    public extern ArrayBuffer Buffer { get; }
 }
 
 /// <summary>
@@ -95,9 +95,9 @@ public extern ArrayBuffer Buffer { get; }
 public class Module
 {
     /// <summary>
-/// Constructor 
-/// </summary>
-/// <param name="bytes">bytes</param>
+    /// Constructor 
+    /// </summary>
+    /// <param name="bytes">bytes</param>
     public extern Module(IBufferSource bytes);
 
     /// <summary>
@@ -131,9 +131,9 @@ public class Module
 public class Table
 {
     /// <summary>
-/// Constructor 
-/// </summary>
-/// <param name="descriptor">descriptor</param>
+    /// Constructor 
+    /// </summary>
+    /// <param name="descriptor">descriptor</param>
     /// <param name="value">value</param>
     public extern Table(TableDescriptor descriptor, object value);
 
@@ -161,8 +161,8 @@ public class Table
     public extern void Set(uint index, object? value = default);
 
     /// <summary>
-/// length
-/// </summary>
-[Description("@#length")]
-public extern uint Length { get; }
+    /// length
+    /// </summary>
+    [Description("@#length")]
+    public extern uint Length { get; }
 }

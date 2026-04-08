@@ -254,7 +254,7 @@ public delegate void MutationCallback(MutationRecord[] mutations, MutationObserv
 [ECMAScript]
 [Description("@#")]
 [Category("literal")]
-public delegate PromiseResult<void> NavigationInterceptHandler();
+public delegate PromiseResult NavigationInterceptHandler();
 
 /// <summary>
 /// NodeFilter
@@ -273,100 +273,100 @@ public delegate ushort AcceptNodeCallback(Node node);
 public sealed class NodeFilterLiteral
 {
     /// <summary>
-/// FILTER_ACCEPT
-/// </summary>
-[Description("@#FILTER_ACCEPT")]
-public const ushort FILTER_ACCEPT = 1;
+    /// FILTER_ACCEPT
+    /// </summary>
+    [Description("@#FILTER_ACCEPT")]
+    public const ushort FILTER_ACCEPT = 1;
 
     /// <summary>
-/// FILTER_REJECT
-/// </summary>
-[Description("@#FILTER_REJECT")]
-public const ushort FILTER_REJECT = 2;
+    /// FILTER_REJECT
+    /// </summary>
+    [Description("@#FILTER_REJECT")]
+    public const ushort FILTER_REJECT = 2;
 
     /// <summary>
-/// FILTER_SKIP
-/// </summary>
-[Description("@#FILTER_SKIP")]
-public const ushort FILTER_SKIP = 3;
+    /// FILTER_SKIP
+    /// </summary>
+    [Description("@#FILTER_SKIP")]
+    public const ushort FILTER_SKIP = 3;
 
     /// <summary>
-/// SHOW_ALL
-/// </summary>
-[Description("@#SHOW_ALL")]
-public const uint SHOW_ALL = 0xFFFFFFFF;
+    /// SHOW_ALL
+    /// </summary>
+    [Description("@#SHOW_ALL")]
+    public const uint SHOW_ALL = 0xFFFFFFFF;
 
     /// <summary>
-/// SHOW_ELEMENT
-/// </summary>
-[Description("@#SHOW_ELEMENT")]
-public const uint SHOW_ELEMENT = 0x1;
+    /// SHOW_ELEMENT
+    /// </summary>
+    [Description("@#SHOW_ELEMENT")]
+    public const uint SHOW_ELEMENT = 0x1;
 
     /// <summary>
-/// SHOW_ATTRIBUTE
-/// </summary>
-[Description("@#SHOW_ATTRIBUTE")]
-public const uint SHOW_ATTRIBUTE = 0x2;
+    /// SHOW_ATTRIBUTE
+    /// </summary>
+    [Description("@#SHOW_ATTRIBUTE")]
+    public const uint SHOW_ATTRIBUTE = 0x2;
 
     /// <summary>
-/// SHOW_TEXT
-/// </summary>
-[Description("@#SHOW_TEXT")]
-public const uint SHOW_TEXT = 0x4;
+    /// SHOW_TEXT
+    /// </summary>
+    [Description("@#SHOW_TEXT")]
+    public const uint SHOW_TEXT = 0x4;
 
     /// <summary>
-/// SHOW_CDATA_SECTION
-/// </summary>
-[Description("@#SHOW_CDATA_SECTION")]
-public const uint SHOW_CDATA_SECTION = 0x8;
+    /// SHOW_CDATA_SECTION
+    /// </summary>
+    [Description("@#SHOW_CDATA_SECTION")]
+    public const uint SHOW_CDATA_SECTION = 0x8;
 
     /// <summary>
-/// SHOW_ENTITY_REFERENCE
-/// </summary>
-[Description("@#SHOW_ENTITY_REFERENCE")]
-public const uint SHOW_ENTITY_REFERENCE = 0x10;
+    /// SHOW_ENTITY_REFERENCE
+    /// </summary>
+    [Description("@#SHOW_ENTITY_REFERENCE")]
+    public const uint SHOW_ENTITY_REFERENCE = 0x10;
 
     /// <summary>
-/// SHOW_ENTITY
-/// </summary>
-[Description("@#SHOW_ENTITY")]
-public const uint SHOW_ENTITY = 0x20;
+    /// SHOW_ENTITY
+    /// </summary>
+    [Description("@#SHOW_ENTITY")]
+    public const uint SHOW_ENTITY = 0x20;
 
     /// <summary>
-/// SHOW_PROCESSING_INSTRUCTION
-/// </summary>
-[Description("@#SHOW_PROCESSING_INSTRUCTION")]
-public const uint SHOW_PROCESSING_INSTRUCTION = 0x40;
+    /// SHOW_PROCESSING_INSTRUCTION
+    /// </summary>
+    [Description("@#SHOW_PROCESSING_INSTRUCTION")]
+    public const uint SHOW_PROCESSING_INSTRUCTION = 0x40;
 
     /// <summary>
-/// SHOW_COMMENT
-/// </summary>
-[Description("@#SHOW_COMMENT")]
-public const uint SHOW_COMMENT = 0x80;
+    /// SHOW_COMMENT
+    /// </summary>
+    [Description("@#SHOW_COMMENT")]
+    public const uint SHOW_COMMENT = 0x80;
 
     /// <summary>
-/// SHOW_DOCUMENT
-/// </summary>
-[Description("@#SHOW_DOCUMENT")]
-public const uint SHOW_DOCUMENT = 0x100;
+    /// SHOW_DOCUMENT
+    /// </summary>
+    [Description("@#SHOW_DOCUMENT")]
+    public const uint SHOW_DOCUMENT = 0x100;
 
     /// <summary>
-/// SHOW_DOCUMENT_TYPE
-/// </summary>
-[Description("@#SHOW_DOCUMENT_TYPE")]
-public const uint SHOW_DOCUMENT_TYPE = 0x200;
+    /// SHOW_DOCUMENT_TYPE
+    /// </summary>
+    [Description("@#SHOW_DOCUMENT_TYPE")]
+    public const uint SHOW_DOCUMENT_TYPE = 0x200;
 
     /// <summary>
-/// SHOW_DOCUMENT_FRAGMENT
-/// </summary>
-[Description("@#SHOW_DOCUMENT_FRAGMENT")]
-public const uint SHOW_DOCUMENT_FRAGMENT = 0x400;
+    /// SHOW_DOCUMENT_FRAGMENT
+    /// </summary>
+    [Description("@#SHOW_DOCUMENT_FRAGMENT")]
+    public const uint SHOW_DOCUMENT_FRAGMENT = 0x400;
 
     /// <summary>
-/// SHOW_NOTATION
-/// </summary>
-[Description("@#SHOW_NOTATION")]
-public const uint SHOW_NOTATION = 0x800;
+    /// SHOW_NOTATION
+    /// </summary>
+    [Description("@#SHOW_NOTATION")]
+    public const uint SHOW_NOTATION = 0x800;
 
     /// <summary>
     /// acceptNode
@@ -502,7 +502,7 @@ public delegate SharedStorageOperation SharedStorageOperationConstructor(SharedS
 [ECMAScript]
 [Description("@#")]
 [Category("literal")]
-public delegate PromiseResult<void> TransformerCancelCallback(object reason);
+public delegate PromiseResult TransformerCancelCallback(object reason);
 
 /// <summary>
 /// TransformerFlushCallback
@@ -510,7 +510,7 @@ public delegate PromiseResult<void> TransformerCancelCallback(object reason);
 [ECMAScript]
 [Description("@#")]
 [Category("literal")]
-public delegate PromiseResult<void> TransformerFlushCallback(TransformStreamDefaultController controller);
+public delegate PromiseResult TransformerFlushCallback(TransformStreamDefaultController controller);
 
 /// <summary>
 /// TransformerStartCallback
@@ -526,7 +526,7 @@ public delegate object TransformerStartCallback(TransformStreamDefaultController
 [ECMAScript]
 [Description("@#")]
 [Category("literal")]
-public delegate PromiseResult<void> TransformerTransformCallback(object chunk, TransformStreamDefaultController controller);
+public delegate PromiseResult TransformerTransformCallback(object chunk, TransformStreamDefaultController controller);
 
 /// <summary>
 /// UnderlyingSinkAbortCallback
@@ -534,7 +534,7 @@ public delegate PromiseResult<void> TransformerTransformCallback(object chunk, T
 [ECMAScript]
 [Description("@#")]
 [Category("literal")]
-public delegate PromiseResult<void> UnderlyingSinkAbortCallback(object reason);
+public delegate PromiseResult UnderlyingSinkAbortCallback(object reason);
 
 /// <summary>
 /// UnderlyingSinkCloseCallback
@@ -542,7 +542,7 @@ public delegate PromiseResult<void> UnderlyingSinkAbortCallback(object reason);
 [ECMAScript]
 [Description("@#")]
 [Category("literal")]
-public delegate PromiseResult<void> UnderlyingSinkCloseCallback();
+public delegate PromiseResult UnderlyingSinkCloseCallback();
 
 /// <summary>
 /// UnderlyingSinkStartCallback
@@ -558,7 +558,7 @@ public delegate object UnderlyingSinkStartCallback(WritableStreamDefaultControll
 [ECMAScript]
 [Description("@#")]
 [Category("literal")]
-public delegate PromiseResult<void> UnderlyingSinkWriteCallback(object chunk, WritableStreamDefaultController controller);
+public delegate PromiseResult UnderlyingSinkWriteCallback(object chunk, WritableStreamDefaultController controller);
 
 /// <summary>
 /// UnderlyingSourceCancelCallback
@@ -566,7 +566,7 @@ public delegate PromiseResult<void> UnderlyingSinkWriteCallback(object chunk, Wr
 [ECMAScript]
 [Description("@#")]
 [Category("literal")]
-public delegate PromiseResult<void> UnderlyingSourceCancelCallback(object reason);
+public delegate PromiseResult UnderlyingSourceCancelCallback(object reason);
 
 /// <summary>
 /// UnderlyingSourcePullCallback
@@ -574,7 +574,7 @@ public delegate PromiseResult<void> UnderlyingSourceCancelCallback(object reason
 [ECMAScript]
 [Description("@#")]
 [Category("literal")]
-public delegate PromiseResult<void> UnderlyingSourcePullCallback(ReadableStreamController controller);
+public delegate PromiseResult UnderlyingSourcePullCallback(ReadableStreamController controller);
 
 /// <summary>
 /// UnderlyingSourceStartCallback

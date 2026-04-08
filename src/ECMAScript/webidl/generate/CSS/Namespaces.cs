@@ -8,10 +8,10 @@ namespace ECMAScript.CSS;
 public static partial class CSS
 {
     /// <summary>
-/// animationWorklet
-/// </summary>
-[Description("@#animationWorklet")]
-public static extern Worklet AnimationWorklet { get; }
+    /// animationWorklet
+    /// </summary>
+    [Description("@#animationWorklet")]
+    public static extern Worklet AnimationWorklet { get; }
 
     /// <summary>
     /// supports
@@ -29,28 +29,28 @@ public static extern Worklet AnimationWorklet { get; }
     public static extern bool Supports(string conditionText);
 
     /// <summary>
-/// highlights
-/// </summary>
-[Description("@#highlights")]
-public static extern HighlightRegistry Highlights { get; }
+    /// highlights
+    /// </summary>
+    [Description("@#highlights")]
+    public static extern HighlightRegistry Highlights { get; }
 
     /// <summary>
-/// elementSources
-/// </summary>
-[Description("@#elementSources")]
-public static extern object ElementSources { get; }
+    /// elementSources
+    /// </summary>
+    [Description("@#elementSources")]
+    public static extern object ElementSources { get; }
 
     /// <summary>
-/// layoutWorklet
-/// </summary>
-[Description("@#layoutWorklet")]
-public static extern Worklet LayoutWorklet { get; }
+    /// layoutWorklet
+    /// </summary>
+    [Description("@#layoutWorklet")]
+    public static extern Worklet LayoutWorklet { get; }
 
     /// <summary>
-/// paintWorklet
-/// </summary>
-[Description("@#paintWorklet")]
-public static extern Worklet PaintWorklet { get; }
+    /// paintWorklet
+    /// </summary>
+    [Description("@#paintWorklet")]
+    public static extern Worklet PaintWorklet { get; }
 
     /// <summary>
     /// parseStylesheet
@@ -58,7 +58,7 @@ public static extern Worklet PaintWorklet { get; }
     /// <param name="css">css</param>
     /// <param name="options">options</param>
     [Description("@#parseStylesheet")]
-    public static extern PromiseResult<CSSParserRule[]> ParseStylesheet(CSSStringSource css, CSSParserOptions options = new());
+    public static extern PromiseResult<CSSParserRule[]> ParseStylesheet(CSSStringSource css, CSSParserOptions? options = default);
 
     /// <summary>
     /// parseRuleList
@@ -66,7 +66,7 @@ public static extern Worklet PaintWorklet { get; }
     /// <param name="css">css</param>
     /// <param name="options">options</param>
     [Description("@#parseRuleList")]
-    public static extern PromiseResult<CSSParserRule[]> ParseRuleList(CSSStringSource css, CSSParserOptions options = new());
+    public static extern PromiseResult<CSSParserRule[]> ParseRuleList(CSSStringSource css, CSSParserOptions? options = default);
 
     /// <summary>
     /// parseRule
@@ -74,7 +74,7 @@ public static extern Worklet PaintWorklet { get; }
     /// <param name="css">css</param>
     /// <param name="options">options</param>
     [Description("@#parseRule")]
-    public static extern PromiseResult<CSSParserRule> ParseRule(CSSStringSource css, CSSParserOptions options = new());
+    public static extern PromiseResult<CSSParserRule> ParseRule(CSSStringSource css, CSSParserOptions? options = default);
 
     /// <summary>
     /// parseDeclarationList
@@ -82,7 +82,7 @@ public static extern Worklet PaintWorklet { get; }
     /// <param name="css">css</param>
     /// <param name="options">options</param>
     [Description("@#parseDeclarationList")]
-    public static extern PromiseResult<CSSParserRule[]> ParseDeclarationList(CSSStringSource css, CSSParserOptions options = new());
+    public static extern PromiseResult<CSSParserRule[]> ParseDeclarationList(CSSStringSource css, CSSParserOptions? options = default);
 
     /// <summary>
     /// parseDeclaration
@@ -90,7 +90,7 @@ public static extern Worklet PaintWorklet { get; }
     /// <param name="css">css</param>
     /// <param name="options">options</param>
     [Description("@#parseDeclaration")]
-    public static extern CSSParserDeclaration ParseDeclaration(string css, CSSParserOptions options = new());
+    public static extern CSSParserDeclaration ParseDeclaration(string css, CSSParserOptions? options = default);
 
     /// <summary>
     /// parseValue

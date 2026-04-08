@@ -34,7 +34,7 @@ public sealed class RepositoryLayoutTests
                     Path.Combine(repositoryRoot.FullName, "src", "ECMAScript.WebIDL.Generator", "deno.json"),
                     layout.DefaultDenoConfigPath);
                 Assert.AreEqual(
-                    Path.Combine(repositoryRoot.FullName, "src", "ECMAScript", "generate", ".webidl"),
+                    Path.Combine(repositoryRoot.FullName, "src", "ECMAScript", "webidl"),
                     layout.DefaultOutputDirectory);
             }
             finally

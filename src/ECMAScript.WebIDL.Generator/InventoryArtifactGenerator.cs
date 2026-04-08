@@ -23,11 +23,11 @@ internal sealed class InventoryArtifactGenerator
             : Path.Combine(_options.OutputDirectory, _options.InventoryFileName);
         await File.WriteAllTextAsync(
             inventoryPath,
-            JsonSerializer.Serialize(inventory, _jsonOptions) + Environment.NewLine,
+            NormalizeLineEndings(JsonSerializer.Serialize(inventory, _jsonOptions) + Environment.NewLine),
             cancellationToken);
 
         var reportPath = Path.Combine(_options.OutputDirectory, "webidl.inventory.md");
-        await File.WriteAllTextAsync(reportPath, BuildReport(inventory), cancellationToken);
+        await File.WriteAllTextAsync(reportPath, NormalizeLineEndings(BuildReport(inventory)), cancellationToken);
     }
 
     private static string BuildReport(WebIdlInventory inventory)
@@ -59,7 +59,15 @@ internal sealed class InventoryArtifactGenerator
         builder.AppendLine("## Next Step");
         builder.AppendLine();
         builder.AppendLine("This inventory is the stable interchange format between the Deno collection layer and the future C# binding emitter.");
-        builder.AppendLine("A preview emitter currently writes typedef, enum, callback, callback interface, dictionary, interface, and namespace bindings under `csharp-preview/`.");
+        builder.AppendLine("A preview emitter currently writes typedef, enum, callback, callback interface, dictionary, interface, and namespace bindings under `webidl/`.");
         return builder.ToString();
+    }
+
+    private static string NormalizeLineEndings(string text)
+    {
+        return text
+            .Replace("\r\n", "\n", StringComparison.Ordinal)
+            .Replace('\r', '\n')
+            .Replace("\n", "\r\n", StringComparison.Ordinal);
     }
 }

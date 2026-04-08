@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
@@ -87,8 +87,9 @@ Console.WriteLine(z);
 //}
 var result = (1,(3,5)) == (2,(4,6));
 var tuple = (outer: (inner: 1, 2), 3);
-var  b = (2,4);
-var  c = (2,"a");
+_ = result;
+_ = (2,4);
+_ = (2,"a");
 ((int bbb, int ccc),int aaa) = tuple;
 var script = @"
 const Status = Object.freeze({

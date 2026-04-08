@@ -23,6 +23,11 @@ internal sealed class PreviewBindingEmitter
         "global using ECMAScript.WebAssembly;"
     ];
 
+    private static readonly HashSet<string> ExcludedDeclarationNames = new(StringComparer.Ordinal)
+    {
+        "Console",
+    };
+
     private readonly GeneratorOptions _options;
     private readonly WebIdlTypeMapper _typeMapper = new();
     private readonly Dictionary<string, IReadOnlyList<JsonElement>> _mixinMembersByKey = new(StringComparer.Ordinal);
@@ -36,7 +41,7 @@ internal sealed class PreviewBindingEmitter
 
     public async Task EmitAsync(WebIdlInventory inventory, CancellationToken cancellationToken)
     {
-        var previewRoot = Path.Combine(_options.OutputDirectory, "csharp-preview");
+        var previewRoot = Path.Combine(_options.OutputDirectory, "generate");
         if (Directory.Exists(previewRoot))
         {
             Directory.Delete(previewRoot, recursive: true);
@@ -67,6 +72,11 @@ internal sealed class PreviewBindingEmitter
         {
             foreach (var declaration in file.Declarations)
             {
+                if (IsExcludedDeclarationName(declaration.Name))
+                {
+                    continue;
+                }
+
                 switch (declaration.Kind)
                 {
                     case "typedef":
@@ -91,7 +101,7 @@ internal sealed class PreviewBindingEmitter
 
         foreach (var dictionaryGroup in inventory.Files
                      .SelectMany(file => file.Declarations
-                         .Where(static declaration => declaration.Kind == "dictionary")
+                         .Where(static declaration => declaration.Kind == "dictionary" && !IsExcludedDeclarationName(declaration.Name))
                          .Select(declaration => new { file.Namespace, Declaration = declaration }))
                      .GroupBy(item => new
                      {
@@ -146,7 +156,7 @@ internal sealed class PreviewBindingEmitter
 
         foreach (var interfaceGroup in inventory.Files
                      .SelectMany(file => file.Declarations
-                         .Where(static declaration => declaration.Kind == "interface")
+                         .Where(static declaration => declaration.Kind == "interface" && !IsExcludedDeclarationName(declaration.Name))
                          .Select(declaration => new { file.Namespace, Declaration = declaration }))
                      .GroupBy(item => new
                      {
@@ -168,7 +178,7 @@ internal sealed class PreviewBindingEmitter
 
         foreach (var namespaceGroup in inventory.Files
                      .SelectMany(file => file.Declarations
-                         .Where(static declaration => declaration.Kind == "namespace")
+                         .Where(static declaration => declaration.Kind == "namespace" && !IsExcludedDeclarationName(declaration.Name))
                          .Select(declaration => new { file.Namespace, Declaration = declaration }))
                      .GroupBy(item => new
                      {
@@ -187,7 +197,7 @@ internal sealed class PreviewBindingEmitter
 
         await File.WriteAllTextAsync(
             Path.Combine(previewRoot, "GlobalUsings.cs"),
-            string.Join(Environment.NewLine, globalUsings.Distinct(StringComparer.Ordinal)) + Environment.NewLine,
+            NormalizeLineEndings(string.Join(Environment.NewLine, globalUsings.Distinct(StringComparer.Ordinal)) + Environment.NewLine),
             cancellationToken);
 
         await WriteGroupedFilesAsync(previewRoot, "Enums.cs", enumsByNamespace, cancellationToken);
@@ -395,7 +405,7 @@ internal sealed class PreviewBindingEmitter
                 + Environment.NewLine
                 + string.Join(Environment.NewLine + Environment.NewLine, pair.Value.OrderBy(static item => item, StringComparer.Ordinal))
                 + Environment.NewLine;
-            await File.WriteAllTextAsync(Path.Combine(directory, fileName), content, cancellationToken);
+            await File.WriteAllTextAsync(Path.Combine(directory, fileName), NormalizeLineEndings(content), cancellationToken);
         }
     }
 
@@ -406,10 +416,27 @@ internal sealed class PreviewBindingEmitter
             : $"ECMAScript.{WebIdlNaming.ToPascalCase(namespaceName)}.{typeName}";
     }
 
+    private static bool IsExcludedDeclarationName(string? declarationName)
+    {
+        return !string.IsNullOrWhiteSpace(declarationName)
+            && ExcludedDeclarationNames.Contains(WebIdlNaming.ToPascalCase(declarationName));
+    }
+
+    private static string NormalizeLineEndings(string text)
+    {
+        return text
+            .Replace("\r\n", "\n", StringComparison.Ordinal)
+            .Replace('\r', '\n')
+            .Replace("\n", "\r\n", StringComparison.Ordinal);
+    }
+
     private static string Indent(string text, int level)
     {
         var prefix = new string(' ', level * 4);
-        return string.Join(Environment.NewLine, text.Split(Environment.NewLine).Select(line => prefix + line));
+        var normalized = text
+            .Replace("\r\n", "\n", StringComparison.Ordinal)
+            .Replace('\r', '\n');
+        return string.Join(Environment.NewLine, normalized.Split('\n').Select(line => prefix + line));
     }
 
     private string BuildParameterList(IReadOnlyList<JsonElement> arguments, string? namespaceName)
@@ -556,6 +583,31 @@ internal sealed class PreviewBindingEmitter
             "double" => $"{value}d",
             "float" => $"{value}f",
             _ => value,
+        };
+    }
+
+    private static bool CanUseLiteralOptionalParameterDefault(string typeKey, bool isEnumType)
+    {
+        if (isEnumType)
+        {
+            return true;
+        }
+
+        return typeKey switch
+        {
+            "string" or
+            "bool" or
+            "sbyte" or
+            "byte" or
+            "short" or
+            "ushort" or
+            "int" or
+            "uint" or
+            "long" or
+            "ulong" or
+            "float" or
+            "double" => true,
+            _ => false,
         };
     }
 
@@ -846,12 +898,13 @@ internal sealed class PreviewBindingEmitter
             }
 
             var unnamedInheritanceModifier = unnamedDisposition == InheritanceDisposition.New ? "new " : string.Empty;
+            var unnamedParameters = BuildMethodParameters(arguments, context.NamespaceName);
             return special switch
             {
                 "stringifier" => null,
                 "getter" => EmitIndexerGetter(arguments, returnType, accessorInfo, context.NamespaceName, unnamedInheritanceModifier),
                 "setter" => EmitIndexerSetter(arguments, context.OwnerName, accessorInfo, context.NamespaceName, unnamedInheritanceModifier),
-                "deleter" => $"[Description(\"@#\")]{Environment.NewLine}[Category(\"deleter\")]{Environment.NewLine}public extern {unnamedInheritanceModifier}void Delete({string.Join(", ", BuildMethodParameters(arguments, context.NamespaceName).Select(static parameter => parameter.Signature))});",
+                "deleter" => $"[Description(\"@#\")]{Environment.NewLine}[Jazor(\"{BuildDeleterInlineTemplate(unnamedParameters)}\")]{Environment.NewLine}public extern {unnamedInheritanceModifier}void Delete({string.Join(", ", unnamedParameters.Select(static parameter => parameter.Signature))});",
                 _ => null,
             };
         }
@@ -994,6 +1047,15 @@ internal sealed class PreviewBindingEmitter
             + "#endregion";
     }
 
+    private static string BuildDeleterInlineTemplate(IReadOnlyList<MethodParameterEmission> parameters)
+    {
+        return parameters.Count switch
+        {
+            1 => "delete (__arg1)[__arg2]",
+            _ => throw new InvalidOperationException($"Deleter operation must have exactly one key argument, but found {parameters.Count}."),
+        };
+    }
+
     private string GetIterableInterface(JsonElement member, string? namespaceName)
     {
         var types = member.GetArray("idlType");
@@ -1054,6 +1116,11 @@ internal sealed class PreviewBindingEmitter
                 }
 
                 if (value == "null")
+                {
+                    type = MakeOptionalParameterType(type);
+                    defaultValue = "default";
+                }
+                else if (!CanUseLiteralOptionalParameterDefault(typeKey, isEnumType))
                 {
                     type = MakeOptionalParameterType(type);
                     defaultValue = "default";

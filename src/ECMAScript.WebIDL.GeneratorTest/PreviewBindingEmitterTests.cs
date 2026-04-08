@@ -104,6 +104,40 @@ public sealed class PreviewBindingEmitterTests
     }
 
     [TestMethod]
+    public async Task EmitAsync_InterfaceMemberDocumentation_IsIndentedConsistently()
+    {
+        var output = await EmitInterfacesAsync(
+            Interface("AbortController", """
+                [
+                  {
+                    "type": "constructor",
+                    "arguments": []
+                  },
+                  {
+                    "type": "attribute",
+                    "name": "signal",
+                    "idlType": { "idlType": "AbortSignal" },
+                    "readonly": true,
+                    "special": ""
+                  },
+                  {
+                    "type": "operation",
+                    "name": "abort",
+                    "idlType": { "idlType": "undefined" },
+                    "arguments": [
+                      { "name": "reason", "idlType": { "idlType": "object" }, "default": null, "optional": true, "variadic": false }
+                    ],
+                    "special": ""
+                  }
+                ]
+                """));
+
+        StringAssert.Contains(output, $"    /// <summary>{Environment.NewLine}    /// Constructor {Environment.NewLine}    /// </summary>{Environment.NewLine}    public extern AbortController();");
+        StringAssert.Contains(output, $"    /// <summary>{Environment.NewLine}    /// signal{Environment.NewLine}    /// </summary>{Environment.NewLine}    [Description(\"@#signal\")]");
+        StringAssert.Contains(output, $"    /// <summary>{Environment.NewLine}    /// abort{Environment.NewLine}    /// </summary>{Environment.NewLine}    /// <param name=\"reason\">reason</param>{Environment.NewLine}    [Description(\"@#abort\")]");
+    }
+
+    [TestMethod]
     public async Task EmitAsync_NamespaceMergesPartialsIntoStaticContainer()
     {
         var output = await EmitNamespacesAsync(
@@ -135,7 +169,7 @@ public sealed class PreviewBindingEmitterTests
     public async Task EmitAsync_NamespaceVariadicAndExplicitDefaults_ArePreserved()
     {
         var output = await EmitNamespacesAsync(
-            Namespace("console", """
+            Namespace("testUtils", """
                 [
                   {
                     "type": "operation",
@@ -167,7 +201,7 @@ public sealed class PreviewBindingEmitterTests
                     "special": ""
                   }
                 ]
-                """, namespaceName: "console"));
+                """, namespaceName: "TestUtils"));
 
         StringAssert.Contains(output, "public static extern void Assert(bool condition = false, params object[] data);");
         StringAssert.Contains(output, "public static extern void Count(string label = \"default\");");
@@ -197,7 +231,145 @@ public sealed class PreviewBindingEmitterTests
     }
 
     [TestMethod]
-    public async Task EmitAsync_NamespaceAddsGlobalAliasForDirectUsage()
+    public async Task EmitAsync_NonConstantExplicitDefaults_DegradeToOptionalDefaultLiteral()
+    {
+        var output = await EmitNamespacesAsync(
+            Namespace("testUtils", """
+                [
+                  {
+                    "type": "operation",
+                    "name": "fromRect",
+                    "idlType": { "idlType": "DOMRectReadOnly" },
+                    "arguments": [
+                      {
+                        "name": "other",
+                        "idlType": { "idlType": "DOMRectInit" },
+                        "default": { "type": "dictionary" },
+                        "optional": true,
+                        "variadic": false
+                      }
+                    ],
+                    "special": ""
+                  },
+                  {
+                    "type": "operation",
+                    "name": "initMessageEvent",
+                    "idlType": { "idlType": "undefined" },
+                    "arguments": [
+                      {
+                        "name": "ports",
+                        "idlType": { "generic": "sequence", "idlType": [ { "idlType": "MessagePort" } ] },
+                        "default": { "type": "sequence" },
+                        "optional": true,
+                        "variadic": false
+                      }
+                    ],
+                    "special": ""
+                  },
+                  {
+                    "type": "operation",
+                    "name": "setPoint",
+                    "idlType": { "idlType": "undefined" },
+                    "arguments": [
+                      {
+                        "name": "point",
+                        "idlType": {
+                          "union": true,
+                          "idlType": [
+                            { "idlType": "double" },
+                            { "idlType": "DOMPointInit" },
+                            { "generic": "sequence", "idlType": [ { "idlType": "DOMPointInit" } ] }
+                          ]
+                        },
+                        "default": { "type": "number", "value": "0" },
+                        "optional": true,
+                        "variadic": false
+                      }
+                    ],
+                    "special": ""
+                  }
+                ]
+                """, namespaceName: "TestUtils"));
+
+        StringAssert.Contains(output, "public static extern DOMRectReadOnly FromRect(DOMRectInit? other = default);");
+        StringAssert.Contains(output, "public static extern void InitMessageEvent(MessagePort[]? ports = default);");
+        StringAssert.Contains(output, "point = default");
+        Assert.IsFalse(output.Contains("= new()", StringComparison.Ordinal));
+        Assert.IsFalse(output.Contains("= new MessagePort[]()", StringComparison.Ordinal));
+        Assert.IsFalse(output.Contains("= 0)", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task EmitAsync_PromiseVoidReturn_UsesNonGenericPromiseResult()
+    {
+        var output = await EmitNamespacesAsync(
+            Namespace("testUtils", """
+                [
+                  {
+                    "type": "operation",
+                    "name": "flush",
+                    "idlType": { "generic": "Promise", "idlType": [ { "idlType": "void" } ] },
+                    "arguments": [],
+                    "special": ""
+                  }
+                ]
+                """, namespaceName: "TestUtils"));
+
+        StringAssert.Contains(output, "public static extern PromiseResult Flush();");
+        Assert.IsFalse(output.Contains("PromiseResult<void>", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task EmitAsync_UnionVoidAndConcreteReturn_UsesNullableConcreteType()
+    {
+        var output = await EmitNamespacesAsync(
+            Namespace("testUtils", """
+                [
+                  {
+                    "type": "operation",
+                    "name": "parse",
+                    "idlType": {
+                      "union": true,
+                      "idlType": [
+                        { "idlType": "void" },
+                        { "idlType": "CSSStyleValue" }
+                      ]
+                    },
+                    "arguments": [],
+                    "special": ""
+                  }
+                ]
+                """, namespaceName: "TestUtils"));
+
+        StringAssert.Contains(output, "public static extern CSSStyleValue? Parse();");
+        Assert.IsFalse(output.Contains("Either<void, CSSStyleValue>", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task EmitAsync_AnonymousDeleter_UsesInlineDeleteTemplate()
+    {
+        var output = await EmitInterfacesAsync(
+            Interface("DOMStringMap", """
+                [
+                  {
+                    "type": "operation",
+                    "idlType": { "idlType": "undefined" },
+                    "arguments": [
+                      { "name": "name", "idlType": { "idlType": "DOMString" }, "optional": false, "variadic": false }
+                    ],
+                    "special": "deleter"
+                  }
+                ]
+                """));
+
+        StringAssert.Contains(output, "[Description(\"@#\")]");
+        StringAssert.Contains(output, "[Jazor(\"delete (__arg1)[__arg2]\")]");
+        StringAssert.Contains(output, "public extern void Delete(string name);");
+        Assert.IsFalse(output.Contains("[Category(\"deleter\")]", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task EmitAsync_ExcludedNamespaceDoesNotAddGlobalAliasOrPreviewFile()
     {
         var tempDirectory = Directory.CreateTempSubdirectory("webidl-preview-test-");
         try
@@ -224,8 +396,10 @@ public sealed class PreviewBindingEmitterTests
                     ]
                     """, namespaceName: "console")), CancellationToken.None);
 
-            var globalUsings = await File.ReadAllTextAsync(Path.Combine(tempDirectory.FullName, "csharp-preview", "GlobalUsings.cs"));
-			Assert.Contains("global using console = ECMAScript.Console.Console;", globalUsings);
+            var previewRoot = Path.Combine(tempDirectory.FullName, "generate");
+            var globalUsings = await File.ReadAllTextAsync(Path.Combine(previewRoot, "GlobalUsings.cs"));
+            Assert.IsFalse(globalUsings.Contains("global using console =", StringComparison.Ordinal));
+            Assert.IsFalse(File.Exists(Path.Combine(previewRoot, "Console", "Namespaces.cs")));
         }
         finally
         {
@@ -246,7 +420,7 @@ public sealed class PreviewBindingEmitterTests
                 InventoryFileName: "inventory.json");
             var emitter = new PreviewBindingEmitter(options);
             await emitter.EmitAsync(CreateInventory(declarations), CancellationToken.None);
-            return await File.ReadAllTextAsync(Path.Combine(tempDirectory.FullName, "csharp-preview", "Interfaces.cs"));
+            return await File.ReadAllTextAsync(Path.Combine(tempDirectory.FullName, "generate", "Interfaces.cs"));
         }
         finally
         {
@@ -269,8 +443,8 @@ public sealed class PreviewBindingEmitterTests
             await emitter.EmitAsync(CreateInventory(declarations), CancellationToken.None);
             var fileNamespace = declarations[0].Payload.GetStringOrNull("__fileNamespace");
             var filePath = string.IsNullOrWhiteSpace(fileNamespace)
-                ? Path.Combine(tempDirectory.FullName, "csharp-preview", "Namespaces.cs")
-                : Path.Combine(tempDirectory.FullName, "csharp-preview", fileNamespace, "Namespaces.cs");
+                ? Path.Combine(tempDirectory.FullName, "generate", "Namespaces.cs")
+                : Path.Combine(tempDirectory.FullName, "generate", fileNamespace, "Namespaces.cs");
             return await File.ReadAllTextAsync(filePath);
         }
         finally

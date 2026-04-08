@@ -24,7 +24,7 @@ internal sealed record RepositoryLayout(
             repositoryRoot,
             Path.Combine(repositoryRoot, "src", "ECMAScript.WebIDL.Generator", "deno", "collect.ts"),
             Path.Combine(repositoryRoot, "src", "ECMAScript.WebIDL.Generator", "deno.json"),
-            Path.Combine(repositoryRoot, "src", "ECMAScript", "generate", ".webidl"));
+            Path.Combine(repositoryRoot, "src", "ECMAScript","webidl"));
     }
 
     private static bool IsRepositoryRoot(string directory)

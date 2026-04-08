@@ -2,7 +2,7 @@
 
 ## Status
 
-- Status: proposed execution baseline
+- Status: active execution baseline
 - Scope: `.jazor` authoring, diagnostics, dev-server orchestration, and IDE integration
 - Non-goal: re-create a second standalone frontend language ecosystem inside C#
 
@@ -10,9 +10,11 @@
 
 `Jazor.VueAnalysis` is the Roslyn-backed semantic analysis service for `.jazor`. It resolves C#-side semantics and consumes `.vue/.js/.ts` context from `Jazor.VueHost` to support cross-file references, diagnostics, and other advanced composition features.
 
+`Jazor.Vue.Analysis.Runtime` is the transport-neutral executable runtime for `AnalyzeJazor`. It stays separate from the analyzer/generator assembly so runtime host concerns do not leak back into Roslyn packaging.
+
 `Jazor.VueHost` is the independent RPC service. It owns workspace state, frontend coordination, and communication with `Jazor.Vite`.
 
-`Jazor.Vite` is a thin frontend client. It talks only to `Jazor.VueHost`.
+`Jazor.Vite` is a thin C# orchestration shell. It probes `Jazor.VueHost`, launches Bun/Vite, and passes host bootstrap settings into the frontend runtime without owning `.jazor` semantics.
 
 This means:
 
@@ -20,7 +22,7 @@ This means:
 - `.jazor.vue` remains a logical bridge artifact, but defaults to a virtual artifact rather than a required on-disk file.
 - IDEs and frontend tooling talk to one C# RPC server.
 - `Jazor.VueAnalysis` stays the semantic center for `.jazor`.
-- `Jazor.VueHost` and `Jazor.VueAnalysis` communicate at runtime but should share only DTO/protocol definitions at compile time.
+- `Jazor.VueHost`, `Jazor.Vite`, and `Jazor.VueAnalysis.Runtime` share only DTO/protocol definitions at compile time.
 
 ## Goals
 
@@ -90,6 +92,25 @@ Design rule:
 - `Jazor.VueAnalysis` may communicate with `Jazor.VueHost`, but the two projects must not directly reference each other.
 - Shared DTOs and service contracts belong in a separate contracts/protocol layer.
 
+### 3. Jazor.Vue.Analysis.Runtime
+
+Target project:
+
+- [src/Jazor.Vue.Analysis.Runtime/Jazor.Vue.Analysis.Runtime.csproj](D:/repository/own/jazor/Jazor/src/Jazor.Vue.Analysis.Runtime/Jazor.Vue.Analysis.Runtime.csproj)
+
+Responsibilities:
+
+- host runtime `AnalyzeJazor` service logic
+- own transport-neutral RPC processing for analysis calls
+- expose stdio-friendly server primitives for thin executable wrappers
+
+Non-responsibilities:
+
+- Roslyn analyzer packaging
+- workspace/session ownership
+- Bun/Vite orchestration
+- IDE-facing control-plane logic
+
 ## VueHost As The Real Host
 
 Target project:
@@ -113,15 +134,16 @@ Responsibilities:
 
 Target project:
 
-- `src/Jazor.Vite/` or `tooling/Jazor.Vite/` in a Bun-first TS package
+- [src/Jazor.Vite/Jazor.Vite.csproj](D:/repository/own/jazor/Jazor/src/Jazor.Vite/Jazor.Vite.csproj)
+- [src/Jazor.Vite/src/index.ts](D:/repository/own/jazor/Jazor/src/Jazor.Vite/src/index.ts)
 
 Responsibilities:
 
-- run Vite dev/build lifecycle on Bun
-- resolve/load/transform `.jazor` through RPC
-- participate in module graph invalidation
-- apply HMR boundaries and module reload policy
-- return standard frontend artifacts to the browser toolchain
+- probe `Jazor.VueHost` over RPC
+- launch Bun/Vite dev or build processes
+- pass `Jazor.VueHost` bootstrap settings into the frontend runtime
+- keep the TS plugin layer limited to `resolveId` / `load` / HMR glue
+- remain thin enough that a future Vite plugin layer can stay dumb
 
 Non-responsibilities:
 
@@ -133,7 +155,7 @@ Non-responsibilities:
 Design rule:
 
 - `Jazor.Vite` should remain thin glue.
-- if a feature needs understanding of `.jazor` semantics, it should call `Jazor.VueHost` RPC instead of duplicating logic in TS.
+- if a feature needs understanding of `.jazor` semantics, it should call `Jazor.VueHost` RPC instead of duplicating logic in JS/TS.
 
 ## Artifact Contract
 
@@ -279,6 +301,10 @@ Recommended medium-term project split:
   - Roslyn generator/analyzer glue
   - deterministic `.jazor` diagnostics
   - no hosting
+- `Jazor.Vue.Analysis.Runtime`
+  - runtime `AnalyzeJazor` service
+  - RPC processor/server primitives
+  - no Roslyn analyzer packaging
 - `Jazor.VueHost`
   - RPC server
   - LSP surface
@@ -286,8 +312,8 @@ Recommended medium-term project split:
   - communication boundary to `Jazor.VueAnalysis`
   - Bun/Vite process management
 - `Jazor.Vite`
-  - thin Bun-first TS plugin shell
-  - Vite hooks only
+  - thin .NET Bun/Vite launcher
+  - VueHost bootstrap client
 
 Optional later split:
 
@@ -313,6 +339,7 @@ Current recommendation:
 - add virtual document manager
 - add local RPC transport
 - add DTO contracts for compile/diagnostic/source-map requests
+- status: initial skeleton landed, including stdio RPC, bootstrap methods, shallow analysis delegation, and process-level verification
 
 ### Phase 3. Move Frontend Process Ownership To `Jazor.VueHost`
 
@@ -320,12 +347,12 @@ Current recommendation:
 - `Jazor.VueHost` starts or supervises `Jazor.Vite`
 - `Jazor.VueHost` exposes compile/load/HMR RPC for `Jazor.Vite`
 
-### Phase 4. Introduce Thin `Jazor.Vite`
+### Phase 4. Deepen `Jazor.Vite`
 
-- implement `resolveId`
-- implement `load`
-- implement `handleHotUpdate`
-- fetch artifacts from LS RPC only
+- extend the C# launcher into a Bun/Vite supervisor
+- add frontend-side plugin hooks that fetch artifacts from `Jazor.VueHost`
+- keep `.jazor` semantics remote instead of re-implemented in JS/TS
+- status: initial C# launcher/bootstrap client and Bun-first TS plugin shell landed
 
 ### Phase 5. Deepen IDE Experience
 
@@ -354,7 +381,7 @@ This architecture is considered landed when all of the following are true:
 
 ## Immediate Next Work
 
-1. Add `Jazor.VueHost` as a standalone RPC service with RPC skeleton and virtual document store.
-2. Define the first transport DTOs for `compileJazor`, `getDiagnostics`, and `getSourceMap`.
-3. Add a Bun-first `Jazor.Vite` thin plugin that calls those RPC endpoints.
-4. Keep new semantic rules in `Jazor.VueAnalysis` shallow and deterministic.
+1. Expand `Jazor.VueHost` RPC from bootstrap/analyze calls toward artifact and HMR-oriented endpoints.
+2. Start the real frontend semantic ingestion path for `.vue/.js/.ts` and feed it back into `GetFrontendContext`.
+3. Replace per-request process spawning in `Jazor.Vite` / `Jazor.VueHost` clients with a persistent transport.
+4. Keep new semantic rules in `Jazor.VueAnalysis` shallow and deterministic while runtime execution stays in `Jazor.Vue.Analysis.Runtime`.

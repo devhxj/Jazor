@@ -143,14 +143,26 @@ internal sealed class WebIdlTypeMapper
                 if (idlType.GetBooleanOrNull("union") == true)
                 {
                     var parts = idlType.GetArray("idlType")
-                        .Select(part => ToSharpType(part, namespaceName, qualifyForAlias, defaultValue))
+                        .Select(part => new
+                        {
+                            Type = part,
+                            MappedType = ToSharpType(part, namespaceName, qualifyForAlias, defaultValue),
+                        })
                         .ToArray();
 
-                    var concreteParts = parts.Where(static part => part != "undefined").ToArray();
-                    var hasUndefined = parts.Length != concreteParts.Length;
-                    sharpType = concreteParts.Length == 1 && hasUndefined
-                        ? $"{concreteParts[0]}?"
-                        : $"{GetEitherTypePrefix(qualifyForAlias)}<{string.Join(", ", concreteParts)}>";
+                    var concreteParts = parts
+                        .Where(part => !IsVoidLikeType(part.Type, part.MappedType))
+                        .Select(static part => part.MappedType)
+                        .ToArray();
+                    var hasVoidLikePart = parts.Length != concreteParts.Length;
+                    sharpType = concreteParts.Length switch
+                    {
+                        0 => defaultValue,
+                        1 when hasVoidLikePart => concreteParts[0].EndsWith("?", StringComparison.Ordinal)
+                            ? concreteParts[0]
+                            : $"{concreteParts[0]}?",
+                        _ => $"{GetEitherTypePrefix(qualifyForAlias)}<{string.Join(", ", concreteParts)}>",
+                    };
                 }
                 else
                 {
@@ -198,9 +210,10 @@ internal sealed class WebIdlTypeMapper
             }
             case "Promise":
             {
-                var subType = ToSharpType(idlType.GetArray("idlType")[0], namespaceName, qualifyForAlias, defaultValue);
+                var promiseResultType = idlType.GetArray("idlType")[0];
+                var subType = ToSharpType(promiseResultType, namespaceName, qualifyForAlias, defaultValue);
                 var prefix = qualifyForAlias ? "ECMAScript.PromiseResult" : "PromiseResult";
-                sharpType = subType == "undefined" ? prefix : $"{prefix}<{subType}>";
+                sharpType = IsVoidLikeType(promiseResultType, subType) ? prefix : $"{prefix}<{subType}>";
                 break;
             }
             case "record":
@@ -240,6 +253,22 @@ internal sealed class WebIdlTypeMapper
     private static string GetEitherTypePrefix(bool qualifyForAlias)
     {
         return qualifyForAlias ? "ECMAScript.Either" : "Either";
+    }
+
+    private static bool IsVoidLikeType(JsonElement idlType, string mappedType)
+    {
+        if (mappedType is "void" or "undefined")
+        {
+            return true;
+        }
+
+        if ((idlType.GetStringOrNull("generic") ?? string.Empty) != string.Empty
+            || idlType.GetBooleanOrNull("union") == true)
+        {
+            return false;
+        }
+
+        return idlType.GetStringOrNull("idlType") is "void" or "undefined";
     }
 
     private static string GetNamespacePrefix(string? namespaceName)

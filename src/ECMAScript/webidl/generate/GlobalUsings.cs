@@ -155,7 +155,6 @@ global using CryptoKeyID = ECMAScript.Either<ulong/*SmallCryptoKeyID*/, ECMAScri
 global using LineAndPositionSetting = ECMAScript.Either<double, ECMAScript.AutoKeyword>;
 global using XRWebGLRenderingContext = ECMAScript.Either<ECMAScript.WebGLRenderingContext, ECMAScript.WebGL2RenderingContext>;
 global using FormDataEntryValue = ECMAScript.Either<ECMAScript.File, string>;
-global using console = ECMAScript.Console.Console;
 global using CSS = ECMAScript.CSS.CSS;
 global using TestUtils = ECMAScript.TestUtils.TestUtils;
 global using WebAssembly = ECMAScript.WebAssembly.WebAssembly;

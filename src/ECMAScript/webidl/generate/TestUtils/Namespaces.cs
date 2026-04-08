@@ -11,5 +11,5 @@ public static class TestUtils
     /// gc
     /// </summary>
     [Description("@#gc")]
-    public static extern PromiseResult<void> Gc();
+    public static extern PromiseResult Gc();
 }

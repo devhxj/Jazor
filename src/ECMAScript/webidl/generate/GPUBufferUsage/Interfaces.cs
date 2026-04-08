@@ -12,7 +12,7 @@ public class GPU
     /// </summary>
     /// <param name="options">options</param>
     [Description("@#requestAdapter")]
-    public extern PromiseResult<GPUAdapter?> RequestAdapter(GPURequestAdapterOptions options = new());
+    public extern PromiseResult<GPUAdapter?> RequestAdapter(GPURequestAdapterOptions? options = default);
 
     /// <summary>
     /// getPreferredCanvasFormat
@@ -21,10 +21,10 @@ public class GPU
     public extern GPUTextureFormat GetPreferredCanvasFormat();
 
     /// <summary>
-/// wgslLanguageFeatures
-/// </summary>
-[Description("@#wgslLanguageFeatures")]
-public extern WGSLLanguageFeatures WgslLanguageFeatures { get; }
+    /// wgslLanguageFeatures
+    /// </summary>
+    [Description("@#wgslLanguageFeatures")]
+    public extern WGSLLanguageFeatures WgslLanguageFeatures { get; }
 }
 
 /// <summary>
@@ -35,29 +35,29 @@ public extern WGSLLanguageFeatures WgslLanguageFeatures { get; }
 public class GPUAdapter
 {
     /// <summary>
-/// features
-/// </summary>
-[Description("@#features")]
-public extern GPUSupportedFeatures Features { get; }
+    /// features
+    /// </summary>
+    [Description("@#features")]
+    public extern GPUSupportedFeatures Features { get; }
 
     /// <summary>
-/// limits
-/// </summary>
-[Description("@#limits")]
-public extern GPUSupportedLimits Limits { get; }
+    /// limits
+    /// </summary>
+    [Description("@#limits")]
+    public extern GPUSupportedLimits Limits { get; }
 
     /// <summary>
-/// isFallbackAdapter
-/// </summary>
-[Description("@#isFallbackAdapter")]
-public extern bool IsFallbackAdapter { get; }
+    /// isFallbackAdapter
+    /// </summary>
+    [Description("@#isFallbackAdapter")]
+    public extern bool IsFallbackAdapter { get; }
 
     /// <summary>
     /// requestDevice
     /// </summary>
     /// <param name="descriptor">descriptor</param>
     [Description("@#requestDevice")]
-    public extern PromiseResult<GPUDevice> RequestDevice(GPUDeviceDescriptor descriptor = new());
+    public extern PromiseResult<GPUDevice> RequestDevice(GPUDeviceDescriptor? descriptor = default);
 
     /// <summary>
     /// requestAdapterInfo
@@ -74,28 +74,28 @@ public extern bool IsFallbackAdapter { get; }
 public class GPUAdapterInfo
 {
     /// <summary>
-/// vendor
-/// </summary>
-[Description("@#vendor")]
-public extern string Vendor { get; }
+    /// vendor
+    /// </summary>
+    [Description("@#vendor")]
+    public extern string Vendor { get; }
 
     /// <summary>
-/// architecture
-/// </summary>
-[Description("@#architecture")]
-public extern string Architecture { get; }
+    /// architecture
+    /// </summary>
+    [Description("@#architecture")]
+    public extern string Architecture { get; }
 
     /// <summary>
-/// device
-/// </summary>
-[Description("@#device")]
-public extern string Device { get; }
+    /// device
+    /// </summary>
+    [Description("@#device")]
+    public extern string Device { get; }
 
     /// <summary>
-/// description
-/// </summary>
-[Description("@#description")]
-public extern string Description { get; }
+    /// description
+    /// </summary>
+    [Description("@#description")]
+    public extern string Description { get; }
 }
 
 /// <summary>
@@ -107,10 +107,10 @@ public class GPUBindGroup
 {
     #region mixin GPUObjectBase
     /// <summary>
-/// label
-/// </summary>
-[Description("@#label")]
-public extern string Label { get; set; }
+    /// label
+    /// </summary>
+    [Description("@#label")]
+    public extern string Label { get; set; }
     #endregion
 }
 
@@ -123,10 +123,10 @@ public class GPUBindGroupLayout
 {
     #region mixin GPUObjectBase
     /// <summary>
-/// label
-/// </summary>
-[Description("@#label")]
-public extern string Label { get; set; }
+    /// label
+    /// </summary>
+    [Description("@#label")]
+    public extern string Label { get; set; }
     #endregion
 }
 
@@ -138,22 +138,22 @@ public extern string Label { get; set; }
 public class GPUBuffer
 {
     /// <summary>
-/// size
-/// </summary>
-[Description("@#size")]
-public extern GPUSize64Out Size { get; }
+    /// size
+    /// </summary>
+    [Description("@#size")]
+    public extern GPUSize64Out Size { get; }
 
     /// <summary>
-/// usage
-/// </summary>
-[Description("@#usage")]
-public extern GPUFlagsConstant Usage { get; }
+    /// usage
+    /// </summary>
+    [Description("@#usage")]
+    public extern GPUFlagsConstant Usage { get; }
 
     /// <summary>
-/// mapState
-/// </summary>
-[Description("@#mapState")]
-public extern GPUBufferMapState MapState { get; }
+    /// mapState
+    /// </summary>
+    [Description("@#mapState")]
+    public extern GPUBufferMapState MapState { get; }
 
     /// <summary>
     /// mapAsync
@@ -162,7 +162,7 @@ public extern GPUBufferMapState MapState { get; }
     /// <param name="offset">offset</param>
     /// <param name="size">size</param>
     [Description("@#mapAsync")]
-    public extern PromiseResult<void> MapAsync(GPUMapModeFlags mode, GPUSize64 offset = 0, GPUSize64? size = default);
+    public extern PromiseResult MapAsync(GPUMapModeFlags mode, GPUSize64? offset = default, GPUSize64? size = default);
 
     /// <summary>
     /// getMappedRange
@@ -170,7 +170,7 @@ public extern GPUBufferMapState MapState { get; }
     /// <param name="offset">offset</param>
     /// <param name="size">size</param>
     [Description("@#getMappedRange")]
-    public extern ArrayBuffer GetMappedRange(GPUSize64 offset = 0, GPUSize64? size = default);
+    public extern ArrayBuffer GetMappedRange(GPUSize64? offset = default, GPUSize64? size = default);
 
     /// <summary>
     /// unmap
@@ -186,10 +186,10 @@ public extern GPUBufferMapState MapState { get; }
 
     #region mixin GPUObjectBase
     /// <summary>
-/// label
-/// </summary>
-[Description("@#label")]
-public extern string Label { get; set; }
+    /// label
+    /// </summary>
+    [Description("@#label")]
+    public extern string Label { get; set; }
     #endregion
 }
 
@@ -201,10 +201,10 @@ public extern string Label { get; set; }
 public class GPUCanvasContext
 {
     /// <summary>
-/// canvas
-/// </summary>
-[Description("@#canvas")]
-public extern Either<HTMLCanvasElement, OffscreenCanvas> Canvas { get; }
+    /// canvas
+    /// </summary>
+    [Description("@#canvas")]
+    public extern Either<HTMLCanvasElement, OffscreenCanvas> Canvas { get; }
 
     /// <summary>
     /// configure
@@ -235,10 +235,10 @@ public class GPUCommandBuffer
 {
     #region mixin GPUObjectBase
     /// <summary>
-/// label
-/// </summary>
-[Description("@#label")]
-public extern string Label { get; set; }
+    /// label
+    /// </summary>
+    [Description("@#label")]
+    public extern string Label { get; set; }
     #endregion
 }
 
@@ -261,7 +261,7 @@ public class GPUCommandEncoder
     /// </summary>
     /// <param name="descriptor">descriptor</param>
     [Description("@#beginComputePass")]
-    public extern GPUComputePassEncoder BeginComputePass(GPUComputePassDescriptor descriptor = new());
+    public extern GPUComputePassEncoder BeginComputePass(GPUComputePassDescriptor? descriptor = default);
 
     /// <summary>
     /// copyBufferToBuffer
@@ -308,7 +308,7 @@ public class GPUCommandEncoder
     /// <param name="offset">offset</param>
     /// <param name="size">size</param>
     [Description("@#clearBuffer")]
-    public extern void ClearBuffer(GPUBuffer buffer, GPUSize64 offset = 0, GPUSize64? size = default);
+    public extern void ClearBuffer(GPUBuffer buffer, GPUSize64? offset = default, GPUSize64? size = default);
 
     /// <summary>
     /// resolveQuerySet
@@ -326,14 +326,14 @@ public class GPUCommandEncoder
     /// </summary>
     /// <param name="descriptor">descriptor</param>
     [Description("@#finish")]
-    public extern GPUCommandBuffer Finish(GPUCommandBufferDescriptor descriptor = new());
+    public extern GPUCommandBuffer Finish(GPUCommandBufferDescriptor? descriptor = default);
 
     #region mixin GPUObjectBase
     /// <summary>
-/// label
-/// </summary>
-[Description("@#label")]
-public extern string Label { get; set; }
+    /// label
+    /// </summary>
+    [Description("@#label")]
+    public extern string Label { get; set; }
     #endregion
 
     #region mixin GPUDebugCommandsMixin
@@ -367,10 +367,10 @@ public extern string Label { get; set; }
 public class GPUCompilationInfo
 {
     /// <summary>
-/// messages
-/// </summary>
-[Description("@#messages")]
-public extern FrozenSet<GPUCompilationMessage> Messages { get; }
+    /// messages
+    /// </summary>
+    [Description("@#messages")]
+    public extern FrozenSet<GPUCompilationMessage> Messages { get; }
 }
 
 /// <summary>
@@ -381,40 +381,40 @@ public extern FrozenSet<GPUCompilationMessage> Messages { get; }
 public class GPUCompilationMessage
 {
     /// <summary>
-/// message
-/// </summary>
-[Description("@#message")]
-public extern string Message { get; }
+    /// message
+    /// </summary>
+    [Description("@#message")]
+    public extern string Message { get; }
 
     /// <summary>
-/// type
-/// </summary>
-[Description("@#type")]
-public extern GPUCompilationMessageType Type { get; }
+    /// type
+    /// </summary>
+    [Description("@#type")]
+    public extern GPUCompilationMessageType Type { get; }
 
     /// <summary>
-/// lineNum
-/// </summary>
-[Description("@#lineNum")]
-public extern ulong LineNum { get; }
+    /// lineNum
+    /// </summary>
+    [Description("@#lineNum")]
+    public extern ulong LineNum { get; }
 
     /// <summary>
-/// linePos
-/// </summary>
-[Description("@#linePos")]
-public extern ulong LinePos { get; }
+    /// linePos
+    /// </summary>
+    [Description("@#linePos")]
+    public extern ulong LinePos { get; }
 
     /// <summary>
-/// offset
-/// </summary>
-[Description("@#offset")]
-public extern ulong Offset { get; }
+    /// offset
+    /// </summary>
+    [Description("@#offset")]
+    public extern ulong Offset { get; }
 
     /// <summary>
-/// length
-/// </summary>
-[Description("@#length")]
-public extern ulong Length { get; }
+    /// length
+    /// </summary>
+    [Description("@#length")]
+    public extern ulong Length { get; }
 }
 
 /// <summary>
@@ -438,7 +438,7 @@ public class GPUComputePassEncoder
     /// <param name="workgroupCountY">workgroupCountY</param>
     /// <param name="workgroupCountZ">workgroupCountZ</param>
     [Description("@#dispatchWorkgroups")]
-    public extern void DispatchWorkgroups(GPUSize32 workgroupCountX, GPUSize32 workgroupCountY = 1, GPUSize32 workgroupCountZ = 1);
+    public extern void DispatchWorkgroups(GPUSize32 workgroupCountX, GPUSize32? workgroupCountY = default, GPUSize32? workgroupCountZ = default);
 
     /// <summary>
     /// dispatchWorkgroupsIndirect
@@ -456,10 +456,10 @@ public class GPUComputePassEncoder
 
     #region mixin GPUObjectBase
     /// <summary>
-/// label
-/// </summary>
-[Description("@#label")]
-public extern string Label { get; set; }
+    /// label
+    /// </summary>
+    [Description("@#label")]
+    public extern string Label { get; set; }
     #endregion
 
     #region mixin GPUDebugCommandsMixin
@@ -492,7 +492,7 @@ public extern string Label { get; set; }
     /// <param name="bindGroup">bindGroup</param>
     /// <param name="dynamicOffsets">dynamicOffsets</param>
     [Description("@#setBindGroup")]
-    public extern void SetBindGroup(GPUIndex32 index, GPUBindGroup? bindGroup, GPUBufferDynamicOffset[] dynamicOffsets = new GPUBufferDynamicOffset[]());
+    public extern void SetBindGroup(GPUIndex32 index, GPUBindGroup? bindGroup, GPUBufferDynamicOffset[]? dynamicOffsets = default);
     
     /// <summary>
     /// setBindGroup
@@ -516,10 +516,10 @@ public class GPUComputePipeline
 {
     #region mixin GPUObjectBase
     /// <summary>
-/// label
-/// </summary>
-[Description("@#label")]
-public extern string Label { get; set; }
+    /// label
+    /// </summary>
+    [Description("@#label")]
+    public extern string Label { get; set; }
     #endregion
 
     #region mixin GPUPipelineBase
@@ -540,22 +540,22 @@ public extern string Label { get; set; }
 public partial class GPUDevice : EventTarget
 {
     /// <summary>
-/// features
-/// </summary>
-[Description("@#features")]
-public extern GPUSupportedFeatures Features { get; }
+    /// features
+    /// </summary>
+    [Description("@#features")]
+    public extern GPUSupportedFeatures Features { get; }
 
     /// <summary>
-/// limits
-/// </summary>
-[Description("@#limits")]
-public extern GPUSupportedLimits Limits { get; }
+    /// limits
+    /// </summary>
+    [Description("@#limits")]
+    public extern GPUSupportedLimits Limits { get; }
 
     /// <summary>
-/// queue
-/// </summary>
-[Description("@#queue")]
-public extern GPUQueue Queue { get; }
+    /// queue
+    /// </summary>
+    [Description("@#queue")]
+    public extern GPUQueue Queue { get; }
 
     /// <summary>
     /// destroy
@@ -582,7 +582,7 @@ public extern GPUQueue Queue { get; }
     /// </summary>
     /// <param name="descriptor">descriptor</param>
     [Description("@#createSampler")]
-    public extern GPUSampler CreateSampler(GPUSamplerDescriptor descriptor = new());
+    public extern GPUSampler CreateSampler(GPUSamplerDescriptor? descriptor = default);
 
     /// <summary>
     /// importExternalTexture
@@ -652,7 +652,7 @@ public extern GPUQueue Queue { get; }
     /// </summary>
     /// <param name="descriptor">descriptor</param>
     [Description("@#createCommandEncoder")]
-    public extern GPUCommandEncoder CreateCommandEncoder(GPUCommandEncoderDescriptor descriptor = new());
+    public extern GPUCommandEncoder CreateCommandEncoder(GPUCommandEncoderDescriptor? descriptor = default);
 
     /// <summary>
     /// createRenderBundleEncoder
@@ -669,10 +669,10 @@ public extern GPUQueue Queue { get; }
     public extern GPUQuerySet CreateQuerySet(GPUQuerySetDescriptor descriptor);
 
     /// <summary>
-/// lost
-/// </summary>
-[Description("@#lost")]
-public extern PromiseResult<GPUDeviceLostInfo> Lost { get; }
+    /// lost
+    /// </summary>
+    [Description("@#lost")]
+    public extern PromiseResult<GPUDeviceLostInfo> Lost { get; }
 
     /// <summary>
     /// pushErrorScope
@@ -688,17 +688,17 @@ public extern PromiseResult<GPUDeviceLostInfo> Lost { get; }
     public extern PromiseResult<GPUError?> PopErrorScope();
 
     /// <summary>
-/// onuncapturederror
-/// </summary>
-[Description("@#onuncapturederror")]
-public extern EventHandler Onuncapturederror { get; set; }
+    /// onuncapturederror
+    /// </summary>
+    [Description("@#onuncapturederror")]
+    public extern EventHandler Onuncapturederror { get; set; }
 
     #region mixin GPUObjectBase
     /// <summary>
-/// label
-/// </summary>
-[Description("@#label")]
-public extern string Label { get; set; }
+    /// label
+    /// </summary>
+    [Description("@#label")]
+    public extern string Label { get; set; }
     #endregion
 }
 
@@ -710,16 +710,16 @@ public extern string Label { get; set; }
 public class GPUDeviceLostInfo
 {
     /// <summary>
-/// reason
-/// </summary>
-[Description("@#reason")]
-public extern GPUDeviceLostReason Reason { get; }
+    /// reason
+    /// </summary>
+    [Description("@#reason")]
+    public extern GPUDeviceLostReason Reason { get; }
 
     /// <summary>
-/// message
-/// </summary>
-[Description("@#message")]
-public extern string Message { get; }
+    /// message
+    /// </summary>
+    [Description("@#message")]
+    public extern string Message { get; }
 }
 
 /// <summary>
@@ -730,10 +730,10 @@ public extern string Message { get; }
 public class GPUError
 {
     /// <summary>
-/// message
-/// </summary>
-[Description("@#message")]
-public extern string Message { get; }
+    /// message
+    /// </summary>
+    [Description("@#message")]
+    public extern string Message { get; }
 }
 
 /// <summary>
@@ -745,10 +745,10 @@ public class GPUExternalTexture
 {
     #region mixin GPUObjectBase
     /// <summary>
-/// label
-/// </summary>
-[Description("@#label")]
-public extern string Label { get; set; }
+    /// label
+    /// </summary>
+    [Description("@#label")]
+    public extern string Label { get; set; }
     #endregion
 }
 
@@ -760,9 +760,9 @@ public extern string Label { get; set; }
 public class GPUInternalError : GPUError
 {
     /// <summary>
-/// Constructor 
-/// </summary>
-/// <param name="message">message</param>
+    /// Constructor 
+    /// </summary>
+    /// <param name="message">message</param>
     public extern GPUInternalError(string message);
 }
 
@@ -774,9 +774,9 @@ public class GPUInternalError : GPUError
 public class GPUOutOfMemoryError : GPUError
 {
     /// <summary>
-/// Constructor 
-/// </summary>
-/// <param name="message">message</param>
+    /// Constructor 
+    /// </summary>
+    /// <param name="message">message</param>
     public extern GPUOutOfMemoryError(string message);
 }
 
@@ -788,17 +788,17 @@ public class GPUOutOfMemoryError : GPUError
 public class GPUPipelineError(string message, string name) : DOMException(message, name)
 {
     /// <summary>
-/// Constructor 
-/// </summary>
-/// <param name="message">message</param>
+    /// Constructor 
+    /// </summary>
+    /// <param name="message">message</param>
     /// <param name="options">options</param>
     public extern GPUPipelineError(string message, GPUPipelineErrorInit options);
 
     /// <summary>
-/// reason
-/// </summary>
-[Description("@#reason")]
-public extern GPUPipelineErrorReason Reason { get; }
+    /// reason
+    /// </summary>
+    [Description("@#reason")]
+    public extern GPUPipelineErrorReason Reason { get; }
 }
 
 /// <summary>
@@ -810,10 +810,10 @@ public class GPUPipelineLayout
 {
     #region mixin GPUObjectBase
     /// <summary>
-/// label
-/// </summary>
-[Description("@#label")]
-public extern string Label { get; set; }
+    /// label
+    /// </summary>
+    [Description("@#label")]
+    public extern string Label { get; set; }
     #endregion
 }
 
@@ -831,23 +831,23 @@ public class GPUQuerySet
     public extern void Destroy();
 
     /// <summary>
-/// type
-/// </summary>
-[Description("@#type")]
-public extern GPUQueryType Type { get; }
+    /// type
+    /// </summary>
+    [Description("@#type")]
+    public extern GPUQueryType Type { get; }
 
     /// <summary>
-/// count
-/// </summary>
-[Description("@#count")]
-public extern GPUSize32Out Count { get; }
+    /// count
+    /// </summary>
+    [Description("@#count")]
+    public extern GPUSize32Out Count { get; }
 
     #region mixin GPUObjectBase
     /// <summary>
-/// label
-/// </summary>
-[Description("@#label")]
-public extern string Label { get; set; }
+    /// label
+    /// </summary>
+    [Description("@#label")]
+    public extern string Label { get; set; }
     #endregion
 }
 
@@ -869,7 +869,7 @@ public class GPUQueue
     /// onSubmittedWorkDone
     /// </summary>
     [Description("@#onSubmittedWorkDone")]
-    public extern PromiseResult<void> OnSubmittedWorkDone();
+    public extern PromiseResult OnSubmittedWorkDone();
 
     /// <summary>
     /// writeBuffer
@@ -880,7 +880,7 @@ public class GPUQueue
     /// <param name="dataOffset">dataOffset</param>
     /// <param name="size">size</param>
     [Description("@#writeBuffer")]
-    public extern void WriteBuffer(GPUBuffer buffer, GPUSize64 bufferOffset, IAllowSharedBufferSource data, GPUSize64 dataOffset = 0, GPUSize64? size = default);
+    public extern void WriteBuffer(GPUBuffer buffer, GPUSize64 bufferOffset, IAllowSharedBufferSource data, GPUSize64? dataOffset = default, GPUSize64? size = default);
 
     /// <summary>
     /// writeTexture
@@ -903,10 +903,10 @@ public class GPUQueue
 
     #region mixin GPUObjectBase
     /// <summary>
-/// label
-/// </summary>
-[Description("@#label")]
-public extern string Label { get; set; }
+    /// label
+    /// </summary>
+    [Description("@#label")]
+    public extern string Label { get; set; }
     #endregion
 }
 
@@ -919,10 +919,10 @@ public class GPURenderBundle
 {
     #region mixin GPUObjectBase
     /// <summary>
-/// label
-/// </summary>
-[Description("@#label")]
-public extern string Label { get; set; }
+    /// label
+    /// </summary>
+    [Description("@#label")]
+    public extern string Label { get; set; }
     #endregion
 }
 
@@ -938,14 +938,14 @@ public class GPURenderBundleEncoder
     /// </summary>
     /// <param name="descriptor">descriptor</param>
     [Description("@#finish")]
-    public extern GPURenderBundle Finish(GPURenderBundleDescriptor descriptor = new());
+    public extern GPURenderBundle Finish(GPURenderBundleDescriptor? descriptor = default);
 
     #region mixin GPUObjectBase
     /// <summary>
-/// label
-/// </summary>
-[Description("@#label")]
-public extern string Label { get; set; }
+    /// label
+    /// </summary>
+    [Description("@#label")]
+    public extern string Label { get; set; }
     #endregion
 
     #region mixin GPUDebugCommandsMixin
@@ -978,7 +978,7 @@ public extern string Label { get; set; }
     /// <param name="bindGroup">bindGroup</param>
     /// <param name="dynamicOffsets">dynamicOffsets</param>
     [Description("@#setBindGroup")]
-    public extern void SetBindGroup(GPUIndex32 index, GPUBindGroup? bindGroup, GPUBufferDynamicOffset[] dynamicOffsets = new GPUBufferDynamicOffset[]());
+    public extern void SetBindGroup(GPUIndex32 index, GPUBindGroup? bindGroup, GPUBufferDynamicOffset[]? dynamicOffsets = default);
     
     /// <summary>
     /// setBindGroup
@@ -1008,7 +1008,7 @@ public extern string Label { get; set; }
     /// <param name="offset">offset</param>
     /// <param name="size">size</param>
     [Description("@#setIndexBuffer")]
-    public extern void SetIndexBuffer(GPUBuffer buffer, GPUIndexFormat indexFormat, GPUSize64 offset = 0, GPUSize64? size = default);
+    public extern void SetIndexBuffer(GPUBuffer buffer, GPUIndexFormat indexFormat, GPUSize64? offset = default, GPUSize64? size = default);
     
     /// <summary>
     /// setVertexBuffer
@@ -1018,7 +1018,7 @@ public extern string Label { get; set; }
     /// <param name="offset">offset</param>
     /// <param name="size">size</param>
     [Description("@#setVertexBuffer")]
-    public extern void SetVertexBuffer(GPUIndex32 slot, GPUBuffer? buffer, GPUSize64 offset = 0, GPUSize64? size = default);
+    public extern void SetVertexBuffer(GPUIndex32 slot, GPUBuffer? buffer, GPUSize64? offset = default, GPUSize64? size = default);
     
     /// <summary>
     /// draw
@@ -1028,7 +1028,7 @@ public extern string Label { get; set; }
     /// <param name="firstVertex">firstVertex</param>
     /// <param name="firstInstance">firstInstance</param>
     [Description("@#draw")]
-    public extern void Draw(GPUSize32 vertexCount, GPUSize32 instanceCount = 1, GPUSize32 firstVertex = 0, GPUSize32 firstInstance = 0);
+    public extern void Draw(GPUSize32 vertexCount, GPUSize32? instanceCount = default, GPUSize32? firstVertex = default, GPUSize32? firstInstance = default);
     
     /// <summary>
     /// drawIndexed
@@ -1039,7 +1039,7 @@ public extern string Label { get; set; }
     /// <param name="baseVertex">baseVertex</param>
     /// <param name="firstInstance">firstInstance</param>
     [Description("@#drawIndexed")]
-    public extern void DrawIndexed(GPUSize32 indexCount, GPUSize32 instanceCount = 1, GPUSize32 firstIndex = 0, GPUSignedOffset32 baseVertex = 0, GPUSize32 firstInstance = 0);
+    public extern void DrawIndexed(GPUSize32 indexCount, GPUSize32? instanceCount = default, GPUSize32? firstIndex = default, GPUSignedOffset32? baseVertex = default, GPUSize32? firstInstance = default);
     
     /// <summary>
     /// drawIndirect
@@ -1130,10 +1130,10 @@ public class GPURenderPassEncoder
 
     #region mixin GPUObjectBase
     /// <summary>
-/// label
-/// </summary>
-[Description("@#label")]
-public extern string Label { get; set; }
+    /// label
+    /// </summary>
+    [Description("@#label")]
+    public extern string Label { get; set; }
     #endregion
 
     #region mixin GPUDebugCommandsMixin
@@ -1166,7 +1166,7 @@ public extern string Label { get; set; }
     /// <param name="bindGroup">bindGroup</param>
     /// <param name="dynamicOffsets">dynamicOffsets</param>
     [Description("@#setBindGroup")]
-    public extern void SetBindGroup(GPUIndex32 index, GPUBindGroup? bindGroup, GPUBufferDynamicOffset[] dynamicOffsets = new GPUBufferDynamicOffset[]());
+    public extern void SetBindGroup(GPUIndex32 index, GPUBindGroup? bindGroup, GPUBufferDynamicOffset[]? dynamicOffsets = default);
     
     /// <summary>
     /// setBindGroup
@@ -1196,7 +1196,7 @@ public extern string Label { get; set; }
     /// <param name="offset">offset</param>
     /// <param name="size">size</param>
     [Description("@#setIndexBuffer")]
-    public extern void SetIndexBuffer(GPUBuffer buffer, GPUIndexFormat indexFormat, GPUSize64 offset = 0, GPUSize64? size = default);
+    public extern void SetIndexBuffer(GPUBuffer buffer, GPUIndexFormat indexFormat, GPUSize64? offset = default, GPUSize64? size = default);
     
     /// <summary>
     /// setVertexBuffer
@@ -1206,7 +1206,7 @@ public extern string Label { get; set; }
     /// <param name="offset">offset</param>
     /// <param name="size">size</param>
     [Description("@#setVertexBuffer")]
-    public extern void SetVertexBuffer(GPUIndex32 slot, GPUBuffer? buffer, GPUSize64 offset = 0, GPUSize64? size = default);
+    public extern void SetVertexBuffer(GPUIndex32 slot, GPUBuffer? buffer, GPUSize64? offset = default, GPUSize64? size = default);
     
     /// <summary>
     /// draw
@@ -1216,7 +1216,7 @@ public extern string Label { get; set; }
     /// <param name="firstVertex">firstVertex</param>
     /// <param name="firstInstance">firstInstance</param>
     [Description("@#draw")]
-    public extern void Draw(GPUSize32 vertexCount, GPUSize32 instanceCount = 1, GPUSize32 firstVertex = 0, GPUSize32 firstInstance = 0);
+    public extern void Draw(GPUSize32 vertexCount, GPUSize32? instanceCount = default, GPUSize32? firstVertex = default, GPUSize32? firstInstance = default);
     
     /// <summary>
     /// drawIndexed
@@ -1227,7 +1227,7 @@ public extern string Label { get; set; }
     /// <param name="baseVertex">baseVertex</param>
     /// <param name="firstInstance">firstInstance</param>
     [Description("@#drawIndexed")]
-    public extern void DrawIndexed(GPUSize32 indexCount, GPUSize32 instanceCount = 1, GPUSize32 firstIndex = 0, GPUSignedOffset32 baseVertex = 0, GPUSize32 firstInstance = 0);
+    public extern void DrawIndexed(GPUSize32 indexCount, GPUSize32? instanceCount = default, GPUSize32? firstIndex = default, GPUSignedOffset32? baseVertex = default, GPUSize32? firstInstance = default);
     
     /// <summary>
     /// drawIndirect
@@ -1256,10 +1256,10 @@ public class GPURenderPipeline
 {
     #region mixin GPUObjectBase
     /// <summary>
-/// label
-/// </summary>
-[Description("@#label")]
-public extern string Label { get; set; }
+    /// label
+    /// </summary>
+    [Description("@#label")]
+    public extern string Label { get; set; }
     #endregion
 
     #region mixin GPUPipelineBase
@@ -1281,10 +1281,10 @@ public class GPUSampler
 {
     #region mixin GPUObjectBase
     /// <summary>
-/// label
-/// </summary>
-[Description("@#label")]
-public extern string Label { get; set; }
+    /// label
+    /// </summary>
+    [Description("@#label")]
+    public extern string Label { get; set; }
     #endregion
 }
 
@@ -1303,10 +1303,10 @@ public class GPUShaderModule
 
     #region mixin GPUObjectBase
     /// <summary>
-/// label
-/// </summary>
-[Description("@#label")]
-public extern string Label { get; set; }
+    /// label
+    /// </summary>
+    [Description("@#label")]
+    public extern string Label { get; set; }
     #endregion
 }
 
@@ -1318,27 +1318,27 @@ public extern string Label { get; set; }
 public class GPUSupportedFeatures : ISet<string>
 {
     #region Set
-extern int ICollection<string>.Count { get; }
-extern bool ICollection<string>.IsReadOnly { get; }
-extern bool ISet<string>.Add(string item);
-extern void ICollection<string>.Clear();
-extern bool ICollection<string>.Contains(string item);
-extern void ICollection<string>.CopyTo(string[] array, int arrayIndex);
-extern void ISet<string>.ExceptWith(IEnumerable<string> other);
-extern IEnumerator<string> IEnumerable<string>.GetEnumerator();
-extern void ISet<string>.IntersectWith(IEnumerable<string> other);
-extern bool ISet<string>.IsProperSubsetOf(IEnumerable<string> other);
-extern bool ISet<string>.IsProperSupersetOf(IEnumerable<string> other);
-extern bool ISet<string>.IsSubsetOf(IEnumerable<string> other);
-extern bool ISet<string>.IsSupersetOf(IEnumerable<string> other);
-extern bool ISet<string>.Overlaps(IEnumerable<string> other);
-extern bool ICollection<string>.Remove(string item);
-extern bool ISet<string>.SetEquals(IEnumerable<string> other);
-extern void ISet<string>.SymmetricExceptWith(IEnumerable<string> other);
-extern void ISet<string>.UnionWith(IEnumerable<string> other);
-extern void ICollection<string>.Add(string item);
-extern IEnumerator IEnumerable.GetEnumerator();
-#endregion
+    extern int ICollection<string>.Count { get; }
+    extern bool ICollection<string>.IsReadOnly { get; }
+    extern bool ISet<string>.Add(string item);
+    extern void ICollection<string>.Clear();
+    extern bool ICollection<string>.Contains(string item);
+    extern void ICollection<string>.CopyTo(string[] array, int arrayIndex);
+    extern void ISet<string>.ExceptWith(IEnumerable<string> other);
+    extern IEnumerator<string> IEnumerable<string>.GetEnumerator();
+    extern void ISet<string>.IntersectWith(IEnumerable<string> other);
+    extern bool ISet<string>.IsProperSubsetOf(IEnumerable<string> other);
+    extern bool ISet<string>.IsProperSupersetOf(IEnumerable<string> other);
+    extern bool ISet<string>.IsSubsetOf(IEnumerable<string> other);
+    extern bool ISet<string>.IsSupersetOf(IEnumerable<string> other);
+    extern bool ISet<string>.Overlaps(IEnumerable<string> other);
+    extern bool ICollection<string>.Remove(string item);
+    extern bool ISet<string>.SetEquals(IEnumerable<string> other);
+    extern void ISet<string>.SymmetricExceptWith(IEnumerable<string> other);
+    extern void ISet<string>.UnionWith(IEnumerable<string> other);
+    extern void ICollection<string>.Add(string item);
+    extern IEnumerator IEnumerable.GetEnumerator();
+    #endregion
 }
 
 /// <summary>
@@ -1349,196 +1349,196 @@ extern IEnumerator IEnumerable.GetEnumerator();
 public class GPUSupportedLimits
 {
     /// <summary>
-/// maxTextureDimension1D
-/// </summary>
-[Description("@#maxTextureDimension1D")]
-public extern uint MaxTextureDimension1D { get; }
+    /// maxTextureDimension1D
+    /// </summary>
+    [Description("@#maxTextureDimension1D")]
+    public extern uint MaxTextureDimension1D { get; }
 
     /// <summary>
-/// maxTextureDimension2D
-/// </summary>
-[Description("@#maxTextureDimension2D")]
-public extern uint MaxTextureDimension2D { get; }
+    /// maxTextureDimension2D
+    /// </summary>
+    [Description("@#maxTextureDimension2D")]
+    public extern uint MaxTextureDimension2D { get; }
 
     /// <summary>
-/// maxTextureDimension3D
-/// </summary>
-[Description("@#maxTextureDimension3D")]
-public extern uint MaxTextureDimension3D { get; }
+    /// maxTextureDimension3D
+    /// </summary>
+    [Description("@#maxTextureDimension3D")]
+    public extern uint MaxTextureDimension3D { get; }
 
     /// <summary>
-/// maxTextureArrayLayers
-/// </summary>
-[Description("@#maxTextureArrayLayers")]
-public extern uint MaxTextureArrayLayers { get; }
+    /// maxTextureArrayLayers
+    /// </summary>
+    [Description("@#maxTextureArrayLayers")]
+    public extern uint MaxTextureArrayLayers { get; }
 
     /// <summary>
-/// maxBindGroups
-/// </summary>
-[Description("@#maxBindGroups")]
-public extern uint MaxBindGroups { get; }
+    /// maxBindGroups
+    /// </summary>
+    [Description("@#maxBindGroups")]
+    public extern uint MaxBindGroups { get; }
 
     /// <summary>
-/// maxBindGroupsPlusVertexBuffers
-/// </summary>
-[Description("@#maxBindGroupsPlusVertexBuffers")]
-public extern uint MaxBindGroupsPlusVertexBuffers { get; }
+    /// maxBindGroupsPlusVertexBuffers
+    /// </summary>
+    [Description("@#maxBindGroupsPlusVertexBuffers")]
+    public extern uint MaxBindGroupsPlusVertexBuffers { get; }
 
     /// <summary>
-/// maxBindingsPerBindGroup
-/// </summary>
-[Description("@#maxBindingsPerBindGroup")]
-public extern uint MaxBindingsPerBindGroup { get; }
+    /// maxBindingsPerBindGroup
+    /// </summary>
+    [Description("@#maxBindingsPerBindGroup")]
+    public extern uint MaxBindingsPerBindGroup { get; }
 
     /// <summary>
-/// maxDynamicUniformBuffersPerPipelineLayout
-/// </summary>
-[Description("@#maxDynamicUniformBuffersPerPipelineLayout")]
-public extern uint MaxDynamicUniformBuffersPerPipelineLayout { get; }
+    /// maxDynamicUniformBuffersPerPipelineLayout
+    /// </summary>
+    [Description("@#maxDynamicUniformBuffersPerPipelineLayout")]
+    public extern uint MaxDynamicUniformBuffersPerPipelineLayout { get; }
 
     /// <summary>
-/// maxDynamicStorageBuffersPerPipelineLayout
-/// </summary>
-[Description("@#maxDynamicStorageBuffersPerPipelineLayout")]
-public extern uint MaxDynamicStorageBuffersPerPipelineLayout { get; }
+    /// maxDynamicStorageBuffersPerPipelineLayout
+    /// </summary>
+    [Description("@#maxDynamicStorageBuffersPerPipelineLayout")]
+    public extern uint MaxDynamicStorageBuffersPerPipelineLayout { get; }
 
     /// <summary>
-/// maxSampledTexturesPerShaderStage
-/// </summary>
-[Description("@#maxSampledTexturesPerShaderStage")]
-public extern uint MaxSampledTexturesPerShaderStage { get; }
+    /// maxSampledTexturesPerShaderStage
+    /// </summary>
+    [Description("@#maxSampledTexturesPerShaderStage")]
+    public extern uint MaxSampledTexturesPerShaderStage { get; }
 
     /// <summary>
-/// maxSamplersPerShaderStage
-/// </summary>
-[Description("@#maxSamplersPerShaderStage")]
-public extern uint MaxSamplersPerShaderStage { get; }
+    /// maxSamplersPerShaderStage
+    /// </summary>
+    [Description("@#maxSamplersPerShaderStage")]
+    public extern uint MaxSamplersPerShaderStage { get; }
 
     /// <summary>
-/// maxStorageBuffersPerShaderStage
-/// </summary>
-[Description("@#maxStorageBuffersPerShaderStage")]
-public extern uint MaxStorageBuffersPerShaderStage { get; }
+    /// maxStorageBuffersPerShaderStage
+    /// </summary>
+    [Description("@#maxStorageBuffersPerShaderStage")]
+    public extern uint MaxStorageBuffersPerShaderStage { get; }
 
     /// <summary>
-/// maxStorageTexturesPerShaderStage
-/// </summary>
-[Description("@#maxStorageTexturesPerShaderStage")]
-public extern uint MaxStorageTexturesPerShaderStage { get; }
+    /// maxStorageTexturesPerShaderStage
+    /// </summary>
+    [Description("@#maxStorageTexturesPerShaderStage")]
+    public extern uint MaxStorageTexturesPerShaderStage { get; }
 
     /// <summary>
-/// maxUniformBuffersPerShaderStage
-/// </summary>
-[Description("@#maxUniformBuffersPerShaderStage")]
-public extern uint MaxUniformBuffersPerShaderStage { get; }
+    /// maxUniformBuffersPerShaderStage
+    /// </summary>
+    [Description("@#maxUniformBuffersPerShaderStage")]
+    public extern uint MaxUniformBuffersPerShaderStage { get; }
 
     /// <summary>
-/// maxUniformBufferBindingSize
-/// </summary>
-[Description("@#maxUniformBufferBindingSize")]
-public extern ulong MaxUniformBufferBindingSize { get; }
+    /// maxUniformBufferBindingSize
+    /// </summary>
+    [Description("@#maxUniformBufferBindingSize")]
+    public extern ulong MaxUniformBufferBindingSize { get; }
 
     /// <summary>
-/// maxStorageBufferBindingSize
-/// </summary>
-[Description("@#maxStorageBufferBindingSize")]
-public extern ulong MaxStorageBufferBindingSize { get; }
+    /// maxStorageBufferBindingSize
+    /// </summary>
+    [Description("@#maxStorageBufferBindingSize")]
+    public extern ulong MaxStorageBufferBindingSize { get; }
 
     /// <summary>
-/// minUniformBufferOffsetAlignment
-/// </summary>
-[Description("@#minUniformBufferOffsetAlignment")]
-public extern uint MinUniformBufferOffsetAlignment { get; }
+    /// minUniformBufferOffsetAlignment
+    /// </summary>
+    [Description("@#minUniformBufferOffsetAlignment")]
+    public extern uint MinUniformBufferOffsetAlignment { get; }
 
     /// <summary>
-/// minStorageBufferOffsetAlignment
-/// </summary>
-[Description("@#minStorageBufferOffsetAlignment")]
-public extern uint MinStorageBufferOffsetAlignment { get; }
+    /// minStorageBufferOffsetAlignment
+    /// </summary>
+    [Description("@#minStorageBufferOffsetAlignment")]
+    public extern uint MinStorageBufferOffsetAlignment { get; }
 
     /// <summary>
-/// maxVertexBuffers
-/// </summary>
-[Description("@#maxVertexBuffers")]
-public extern uint MaxVertexBuffers { get; }
+    /// maxVertexBuffers
+    /// </summary>
+    [Description("@#maxVertexBuffers")]
+    public extern uint MaxVertexBuffers { get; }
 
     /// <summary>
-/// maxBufferSize
-/// </summary>
-[Description("@#maxBufferSize")]
-public extern ulong MaxBufferSize { get; }
+    /// maxBufferSize
+    /// </summary>
+    [Description("@#maxBufferSize")]
+    public extern ulong MaxBufferSize { get; }
 
     /// <summary>
-/// maxVertexAttributes
-/// </summary>
-[Description("@#maxVertexAttributes")]
-public extern uint MaxVertexAttributes { get; }
+    /// maxVertexAttributes
+    /// </summary>
+    [Description("@#maxVertexAttributes")]
+    public extern uint MaxVertexAttributes { get; }
 
     /// <summary>
-/// maxVertexBufferArrayStride
-/// </summary>
-[Description("@#maxVertexBufferArrayStride")]
-public extern uint MaxVertexBufferArrayStride { get; }
+    /// maxVertexBufferArrayStride
+    /// </summary>
+    [Description("@#maxVertexBufferArrayStride")]
+    public extern uint MaxVertexBufferArrayStride { get; }
 
     /// <summary>
-/// maxInterStageShaderComponents
-/// </summary>
-[Description("@#maxInterStageShaderComponents")]
-public extern uint MaxInterStageShaderComponents { get; }
+    /// maxInterStageShaderComponents
+    /// </summary>
+    [Description("@#maxInterStageShaderComponents")]
+    public extern uint MaxInterStageShaderComponents { get; }
 
     /// <summary>
-/// maxInterStageShaderVariables
-/// </summary>
-[Description("@#maxInterStageShaderVariables")]
-public extern uint MaxInterStageShaderVariables { get; }
+    /// maxInterStageShaderVariables
+    /// </summary>
+    [Description("@#maxInterStageShaderVariables")]
+    public extern uint MaxInterStageShaderVariables { get; }
 
     /// <summary>
-/// maxColorAttachments
-/// </summary>
-[Description("@#maxColorAttachments")]
-public extern uint MaxColorAttachments { get; }
+    /// maxColorAttachments
+    /// </summary>
+    [Description("@#maxColorAttachments")]
+    public extern uint MaxColorAttachments { get; }
 
     /// <summary>
-/// maxColorAttachmentBytesPerSample
-/// </summary>
-[Description("@#maxColorAttachmentBytesPerSample")]
-public extern uint MaxColorAttachmentBytesPerSample { get; }
+    /// maxColorAttachmentBytesPerSample
+    /// </summary>
+    [Description("@#maxColorAttachmentBytesPerSample")]
+    public extern uint MaxColorAttachmentBytesPerSample { get; }
 
     /// <summary>
-/// maxComputeWorkgroupStorageSize
-/// </summary>
-[Description("@#maxComputeWorkgroupStorageSize")]
-public extern uint MaxComputeWorkgroupStorageSize { get; }
+    /// maxComputeWorkgroupStorageSize
+    /// </summary>
+    [Description("@#maxComputeWorkgroupStorageSize")]
+    public extern uint MaxComputeWorkgroupStorageSize { get; }
 
     /// <summary>
-/// maxComputeInvocationsPerWorkgroup
-/// </summary>
-[Description("@#maxComputeInvocationsPerWorkgroup")]
-public extern uint MaxComputeInvocationsPerWorkgroup { get; }
+    /// maxComputeInvocationsPerWorkgroup
+    /// </summary>
+    [Description("@#maxComputeInvocationsPerWorkgroup")]
+    public extern uint MaxComputeInvocationsPerWorkgroup { get; }
 
     /// <summary>
-/// maxComputeWorkgroupSizeX
-/// </summary>
-[Description("@#maxComputeWorkgroupSizeX")]
-public extern uint MaxComputeWorkgroupSizeX { get; }
+    /// maxComputeWorkgroupSizeX
+    /// </summary>
+    [Description("@#maxComputeWorkgroupSizeX")]
+    public extern uint MaxComputeWorkgroupSizeX { get; }
 
     /// <summary>
-/// maxComputeWorkgroupSizeY
-/// </summary>
-[Description("@#maxComputeWorkgroupSizeY")]
-public extern uint MaxComputeWorkgroupSizeY { get; }
+    /// maxComputeWorkgroupSizeY
+    /// </summary>
+    [Description("@#maxComputeWorkgroupSizeY")]
+    public extern uint MaxComputeWorkgroupSizeY { get; }
 
     /// <summary>
-/// maxComputeWorkgroupSizeZ
-/// </summary>
-[Description("@#maxComputeWorkgroupSizeZ")]
-public extern uint MaxComputeWorkgroupSizeZ { get; }
+    /// maxComputeWorkgroupSizeZ
+    /// </summary>
+    [Description("@#maxComputeWorkgroupSizeZ")]
+    public extern uint MaxComputeWorkgroupSizeZ { get; }
 
     /// <summary>
-/// maxComputeWorkgroupsPerDimension
-/// </summary>
-[Description("@#maxComputeWorkgroupsPerDimension")]
-public extern uint MaxComputeWorkgroupsPerDimension { get; }
+    /// maxComputeWorkgroupsPerDimension
+    /// </summary>
+    [Description("@#maxComputeWorkgroupsPerDimension")]
+    public extern uint MaxComputeWorkgroupsPerDimension { get; }
 }
 
 /// <summary>
@@ -1553,7 +1553,7 @@ public class GPUTexture
     /// </summary>
     /// <param name="descriptor">descriptor</param>
     [Description("@#createView")]
-    public extern GPUTextureView CreateView(GPUTextureViewDescriptor descriptor = new());
+    public extern GPUTextureView CreateView(GPUTextureViewDescriptor? descriptor = default);
 
     /// <summary>
     /// destroy
@@ -1562,59 +1562,59 @@ public class GPUTexture
     public extern void Destroy();
 
     /// <summary>
-/// width
-/// </summary>
-[Description("@#width")]
-public extern GPUIntegerCoordinateOut Width { get; }
+    /// width
+    /// </summary>
+    [Description("@#width")]
+    public extern GPUIntegerCoordinateOut Width { get; }
 
     /// <summary>
-/// height
-/// </summary>
-[Description("@#height")]
-public extern GPUIntegerCoordinateOut Height { get; }
+    /// height
+    /// </summary>
+    [Description("@#height")]
+    public extern GPUIntegerCoordinateOut Height { get; }
 
     /// <summary>
-/// depthOrArrayLayers
-/// </summary>
-[Description("@#depthOrArrayLayers")]
-public extern GPUIntegerCoordinateOut DepthOrArrayLayers { get; }
+    /// depthOrArrayLayers
+    /// </summary>
+    [Description("@#depthOrArrayLayers")]
+    public extern GPUIntegerCoordinateOut DepthOrArrayLayers { get; }
 
     /// <summary>
-/// mipLevelCount
-/// </summary>
-[Description("@#mipLevelCount")]
-public extern GPUIntegerCoordinateOut MipLevelCount { get; }
+    /// mipLevelCount
+    /// </summary>
+    [Description("@#mipLevelCount")]
+    public extern GPUIntegerCoordinateOut MipLevelCount { get; }
 
     /// <summary>
-/// sampleCount
-/// </summary>
-[Description("@#sampleCount")]
-public extern GPUSize32Out SampleCount { get; }
+    /// sampleCount
+    /// </summary>
+    [Description("@#sampleCount")]
+    public extern GPUSize32Out SampleCount { get; }
 
     /// <summary>
-/// dimension
-/// </summary>
-[Description("@#dimension")]
-public extern GPUTextureDimension Dimension { get; }
+    /// dimension
+    /// </summary>
+    [Description("@#dimension")]
+    public extern GPUTextureDimension Dimension { get; }
 
     /// <summary>
-/// format
-/// </summary>
-[Description("@#format")]
-public extern GPUTextureFormat Format { get; }
+    /// format
+    /// </summary>
+    [Description("@#format")]
+    public extern GPUTextureFormat Format { get; }
 
     /// <summary>
-/// usage
-/// </summary>
-[Description("@#usage")]
-public extern GPUFlagsConstant Usage { get; }
+    /// usage
+    /// </summary>
+    [Description("@#usage")]
+    public extern GPUFlagsConstant Usage { get; }
 
     #region mixin GPUObjectBase
     /// <summary>
-/// label
-/// </summary>
-[Description("@#label")]
-public extern string Label { get; set; }
+    /// label
+    /// </summary>
+    [Description("@#label")]
+    public extern string Label { get; set; }
     #endregion
 }
 
@@ -1627,10 +1627,10 @@ public class GPUTextureView
 {
     #region mixin GPUObjectBase
     /// <summary>
-/// label
-/// </summary>
-[Description("@#label")]
-public extern string Label { get; set; }
+    /// label
+    /// </summary>
+    [Description("@#label")]
+    public extern string Label { get; set; }
     #endregion
 }
 
@@ -1642,17 +1642,17 @@ public extern string Label { get; set; }
 public class GPUUncapturedErrorEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
 {
     /// <summary>
-/// Constructor 
-/// </summary>
-/// <param name="type">type</param>
+    /// Constructor 
+    /// </summary>
+    /// <param name="type">type</param>
     /// <param name="gpuUncapturedErrorEventInitDict">gpuUncapturedErrorEventInitDict</param>
     public extern GPUUncapturedErrorEvent(string type, GPUUncapturedErrorEventInit gpuUncapturedErrorEventInitDict);
 
     /// <summary>
-/// error
-/// </summary>
-[Description("@#error")]
-public extern GPUError Error { get; }
+    /// error
+    /// </summary>
+    [Description("@#error")]
+    public extern GPUError Error { get; }
 }
 
 /// <summary>
@@ -1663,9 +1663,9 @@ public extern GPUError Error { get; }
 public class GPUValidationError : GPUError
 {
     /// <summary>
-/// Constructor 
-/// </summary>
-/// <param name="message">message</param>
+    /// Constructor 
+    /// </summary>
+    /// <param name="message">message</param>
     public extern GPUValidationError(string message);
 }
 
@@ -1677,25 +1677,25 @@ public class GPUValidationError : GPUError
 public class WGSLLanguageFeatures : ISet<string>
 {
     #region Set
-extern int ICollection<string>.Count { get; }
-extern bool ICollection<string>.IsReadOnly { get; }
-extern bool ISet<string>.Add(string item);
-extern void ICollection<string>.Clear();
-extern bool ICollection<string>.Contains(string item);
-extern void ICollection<string>.CopyTo(string[] array, int arrayIndex);
-extern void ISet<string>.ExceptWith(IEnumerable<string> other);
-extern IEnumerator<string> IEnumerable<string>.GetEnumerator();
-extern void ISet<string>.IntersectWith(IEnumerable<string> other);
-extern bool ISet<string>.IsProperSubsetOf(IEnumerable<string> other);
-extern bool ISet<string>.IsProperSupersetOf(IEnumerable<string> other);
-extern bool ISet<string>.IsSubsetOf(IEnumerable<string> other);
-extern bool ISet<string>.IsSupersetOf(IEnumerable<string> other);
-extern bool ISet<string>.Overlaps(IEnumerable<string> other);
-extern bool ICollection<string>.Remove(string item);
-extern bool ISet<string>.SetEquals(IEnumerable<string> other);
-extern void ISet<string>.SymmetricExceptWith(IEnumerable<string> other);
-extern void ISet<string>.UnionWith(IEnumerable<string> other);
-extern void ICollection<string>.Add(string item);
-extern IEnumerator IEnumerable.GetEnumerator();
-#endregion
+    extern int ICollection<string>.Count { get; }
+    extern bool ICollection<string>.IsReadOnly { get; }
+    extern bool ISet<string>.Add(string item);
+    extern void ICollection<string>.Clear();
+    extern bool ICollection<string>.Contains(string item);
+    extern void ICollection<string>.CopyTo(string[] array, int arrayIndex);
+    extern void ISet<string>.ExceptWith(IEnumerable<string> other);
+    extern IEnumerator<string> IEnumerable<string>.GetEnumerator();
+    extern void ISet<string>.IntersectWith(IEnumerable<string> other);
+    extern bool ISet<string>.IsProperSubsetOf(IEnumerable<string> other);
+    extern bool ISet<string>.IsProperSupersetOf(IEnumerable<string> other);
+    extern bool ISet<string>.IsSubsetOf(IEnumerable<string> other);
+    extern bool ISet<string>.IsSupersetOf(IEnumerable<string> other);
+    extern bool ISet<string>.Overlaps(IEnumerable<string> other);
+    extern bool ICollection<string>.Remove(string item);
+    extern bool ISet<string>.SetEquals(IEnumerable<string> other);
+    extern void ISet<string>.SymmetricExceptWith(IEnumerable<string> other);
+    extern void ISet<string>.UnionWith(IEnumerable<string> other);
+    extern void ICollection<string>.Add(string item);
+    extern IEnumerator IEnumerable.GetEnumerator();
+    #endregion
 }

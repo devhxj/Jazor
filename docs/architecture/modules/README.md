@@ -72,6 +72,7 @@
 ### WebIDL generator
 
 - [ECMAScript.WebIDL.Generator README](../../../src/ECMAScript.WebIDL.Generator/README.md)
+- Legacy [ECMAScript.WebIDL README](../../../src/ECMAScript.WebIDL/README.md) is archived and kept only for historical reference
 
 ## 当前状态
 
