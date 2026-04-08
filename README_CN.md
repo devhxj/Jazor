@@ -41,19 +41,21 @@ Jazor 是一个高性能的 C# 到 JavaScript 编译器，旨在实现 C# 代码
 ```
 Jazor/
 ├── src/
-│   ├── ECMAScript/                  # 核心 ECMAScript 运行时表面
-│   ├── Jazor.Compiler/              # C# 到 JavaScript 编译器
-│   ├── Jazor.Compiler.Generator/    # 源生成与编译管线
+│   ├── Jazor.Compiler/              # C# 到 JavaScript 编译器核心
 │   ├── Jazor.Analyzer/              # 静态分析与白名单校验
 │   ├── Jazor.CLR/                   # CLR 运行时支持模块
 │   ├── Jazor.Emit/                  # Emit 与打包输出管线
-│   ├── Jazor.Razor/                 # Razor 语法支持
 │   ├── Jazor.RazorVue/              # RazorVue 集成层
 │   ├── Jazor.RazorVue.Analysis/     # RazorVue 分析与 lowering
+│   ├── Jazor.RazorVue.Vuetify/      # Vuetify 组件桩
+│   ├── Jazor.Vue/                   # Vue 桥接编译器（.jazor）
+│   ├── Jazor.Vue.Analysis/          # Vue 桥接分析与生成
+│   ├── Jazor.Razor/                 # Razor 模板支持
+│   ├── Jazor.Common/                # 共享工具和类型
+│   ├── ECMAScript/                  # ECMAScript 核心类型和特性
+│   ├── ECMAScript.WebIDL/           # WebIDL 绑定生成器
 │   ├── Jazor.CompilerTest/          # 编译器测试（MSTest）
-│   ├── Jazor.EmitTest/              # Emit 与 bundle 测试（MSTest）
-│   ├── ECMAScript.WebIDL/           # WebIDL 采集层（TypeScript/Deno）
-│   └── ECMAScript.WebIDL.Generator/ # WebIDL 管线的 C# 宿主
+│   └── Jazor.EmitTest/              # Emit 与 bundle 测试（MSTest）
 ├── docs/                            # 仓库级文档中心
 ├── README.md                        # 英文版本文档
 └── README_CN.md                     # 本文件
@@ -119,6 +121,14 @@ Emit 与打包输出管线，负责把生成结果整理为宿主可消费的输
 - 组织运行时与模块输出资产
 - 支持面向 bundle 的输出流程
 - 由独立的 emit / bundle 测试覆盖
+
+### 6. Jazor.Vue
+
+Vue 桥接编译器，负责 `.jazor` 文档模型和 Vue SFC 桥接：
+- `.jazor` 文档模型和解析器
+- Vue SFC 桥接编译器
+- 虚拟外部符号合约 (VESL)
+- 外部声明发射器
 
 ## 支持的 C# 类型和类型映射
 
@@ -263,7 +273,7 @@ public static class MyMathModule
 ### 基本编译
 
 ```csharp
-using ECMAScript.Compiler;
+using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
 
 // 获取语义模型
