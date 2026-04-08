@@ -4,6 +4,7 @@ using Jazor.VueHost.Analysis;
 using Jazor.VueHost.Rpc;
 using Jazor.VueHost.Services;
 using Jazor.VueHost.Workspace;
+using SharedVueHostRpcMethodNames = Jazor.VueContracts.Protocol.VueHostRpcMethodNames;
 
 namespace Jazor.CompilerTest;
 
@@ -400,7 +401,7 @@ public sealed class JazorVueHostTests
         var processor = new VueHostRpcProcessor(dispatcher);
         var requestJson = VueHostRpcSerializer.Serialize(new RpcRequestEnvelope(
             id: "req-1",
-            method: VueHostRpcMethodNames.GetOpenDocuments,
+            method: SharedVueHostRpcMethodNames.GetOpenDocuments,
             payloadJson: null));
 
         var responseJson = await processor.ProcessAsync(requestJson, CancellationToken.None);
@@ -452,7 +453,7 @@ public sealed class JazorVueHostTests
         var processor = new VueHostRpcProcessor(dispatcher);
         var requestJson = VueHostRpcSerializer.Serialize(new RpcRequestEnvelope(
             id: "req-host-info",
-            method: VueHostRpcMethodNames.GetHostInfo,
+            method: SharedVueHostRpcMethodNames.GetHostInfo,
             payloadJson: null));
 
         var responseJson = await processor.ProcessAsync(requestJson, CancellationToken.None);
@@ -466,7 +467,7 @@ public sealed class JazorVueHostTests
         Assert.IsNotNull(hostInfo);
         Assert.AreEqual("Jazor.VueHost", hostInfo.HostName);
         Assert.AreEqual("0.1", hostInfo.ProtocolVersion);
-        Assert.IsTrue(hostInfo.Capabilities.Any(static capability => capability.Name == VueHostRpcMethodNames.GetHostInfo));
+        Assert.IsTrue(hostInfo.Capabilities.Any(static capability => capability.Name == SharedVueHostRpcMethodNames.GetHostInfo));
     }
 
     [TestMethod]
@@ -479,7 +480,7 @@ public sealed class JazorVueHostTests
         var processor = new VueHostRpcProcessor(dispatcher);
         var requestJson = VueHostRpcSerializer.Serialize(new RpcRequestEnvelope(
             id: "req-ping",
-            method: VueHostRpcMethodNames.Ping,
+            method: SharedVueHostRpcMethodNames.Ping,
             payloadJson: null));
 
         using var input = new StringReader(requestJson + Environment.NewLine);
