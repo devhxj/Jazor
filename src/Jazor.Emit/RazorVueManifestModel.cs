@@ -57,6 +57,15 @@ internal sealed record RazorVueManifestModel(
         var normalizedModules = manifest.Modules
             .Select(static module => module with
             {
+                ComponentId = NormalizeIdentityValue(
+                    module.ComponentId,
+                    module.AssemblyName + "::" + module.ComponentName),
+                ModuleId = NormalizeIdentityValue(
+                    module.ModuleId,
+                    module.RelativeModulePath),
+                SourceMapPath = NormalizeSourceMapPath(
+                    module.SourceMapPath,
+                    module.RelativeModulePath),
                 Styles = NormalizeHostRequirementList(module.Styles),
                 PluginRequirements = NormalizeHostRequirementList(module.PluginRequirements)
             })
@@ -89,8 +98,11 @@ internal sealed record RazorVueManifestModel(
     {
         return new RazorVueManifestEntry(
             assemblyName,
+            artifact.Identity.ComponentId,
+            artifact.Identity.ModuleId,
             artifact.ComponentName,
             artifact.RelativeModulePath,
+            BuildSourceMapPath(artifact.RelativeModulePath),
             artifact.Imports.ToList(),
             NormalizeHostRequirementList(artifact.Styles),
             NormalizeHostRequirementList(artifact.PluginRequirements),
@@ -130,6 +142,15 @@ internal sealed record RazorVueManifestModel(
         Func<RazorVueEmitArtifactRecord, IReadOnlyList<string>> selector)
         => NormalizeHostRequirementList(catalogs.SelectMany(static catalog => catalog.Artifacts).SelectMany(selector).ToArray());
 
+    private static string NormalizeIdentityValue(string? currentValue, string fallbackValue)
+        => string.IsNullOrWhiteSpace(currentValue) ? fallbackValue : currentValue;
+
+    private static string NormalizeSourceMapPath(string? currentValue, string relativeModulePath)
+        => string.IsNullOrWhiteSpace(currentValue) ? BuildSourceMapPath(relativeModulePath) : currentValue;
+
+    private static string BuildSourceMapPath(string relativeModulePath)
+        => relativeModulePath + ".map";
+
     private static string ComputeSha256Hex(string content)
     {
         using var sha = System.Security.Cryptography.SHA256.Create();
@@ -140,8 +161,11 @@ internal sealed record RazorVueManifestModel(
 
 internal sealed record RazorVueManifestEntry(
     string AssemblyName,
+    string ComponentId,
+    string ModuleId,
     string ComponentName,
     string RelativeModulePath,
+    string SourceMapPath,
     List<string> Imports,
     List<string> Styles,
     List<string> PluginRequirements,

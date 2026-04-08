@@ -175,19 +175,50 @@ internal sealed class RazorVueModuleWriter
 
     private static string BuildHostRequirementsModule(RazorVueManifestModel manifest)
     {
+        var assemblyNameLiteral = System.Text.Json.JsonSerializer.Serialize(manifest.AssemblyName);
+        var generatedAtUtcLiteral = System.Text.Json.JsonSerializer.Serialize(manifest.GeneratedAtUtc.ToString("O"));
         var stylesLiteral = BuildStringArrayLiteral(manifest.Styles ?? []);
+        var modulesLiteral = BuildHostModulesLiteral(manifest.Modules);
         var pluginRequirementsLiteral = BuildStringArrayLiteral(manifest.PluginRequirements ?? []);
 
-        // Keep the host contract importable in both unbundled and bundled flows.
+        // Keep unbundled host metadata on the same explicit contract shape the bundle
+        // sidecars expose, so host consumers do not need separate parsing branches.
         return $$"""
+        export const razorVueHostAssemblyName = {{assemblyNameLiteral}};
+        export const razorVueHostGeneratedAtUtc = {{generatedAtUtcLiteral}};
         export const razorVueStyles = Object.freeze({{stylesLiteral}});
         export const razorVuePluginRequirements = Object.freeze({{pluginRequirementsLiteral}});
+        export const razorVueHostModules = Object.freeze({{modulesLiteral}});
         export const razorVueHostRequirements = Object.freeze({
+          assemblyName: razorVueHostAssemblyName,
+          generatedAtUtc: razorVueHostGeneratedAtUtc,
           styles: razorVueStyles,
-          pluginRequirements: razorVuePluginRequirements
+          pluginRequirements: razorVuePluginRequirements,
+          modules: razorVueHostModules
         });
         """.ReplaceLineEndings("\n");
     }
+
+    private static string BuildHostModulesLiteral(IReadOnlyList<RazorVueManifestEntry> modules)
+        => System.Text.Json.JsonSerializer.Serialize(
+            modules.Select(static module => new
+            {
+                assemblyName = module.AssemblyName,
+                componentId = module.ComponentId,
+                moduleId = module.ModuleId,
+                componentName = module.ComponentName,
+                relativeModulePath = module.RelativeModulePath,
+                sourceMapPath = module.SourceMapPath,
+                styles = module.Styles,
+                pluginRequirements = module.PluginRequirements,
+                descriptorHash = module.DescriptorHash,
+                templateHash = module.TemplateHash,
+                logicHash = module.LogicHash,
+                contentHash = module.ContentHash,
+                hmrBoundaryKind = module.HmrBoundaryKind,
+                requiresHydration = module.RequiresHydration,
+                supportsSsr = module.SupportsSsr
+            }));
 
     private static string BuildStringArrayLiteral(IReadOnlyList<string> values)
         => "[" + string.Join(", ", values.Select(static value => System.Text.Json.JsonSerializer.Serialize(value))) + "]";

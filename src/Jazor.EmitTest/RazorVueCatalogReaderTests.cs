@@ -302,8 +302,11 @@ namespace Jazor.EmitTest
             Assert.AreEqual("RazorVue.Reader.Tests", manifest.AssemblyName);
             Assert.HasCount(1, manifest.Modules);
             Assert.AreEqual("RazorVue.Reader.Tests", manifest.Modules[0].AssemblyName);
+            Assert.AreEqual("CounterCard", manifest.Modules[0].ComponentId);
+            Assert.AreEqual("components/counter-card.mjs", manifest.Modules[0].ModuleId);
             Assert.AreEqual("CounterCard", manifest.Modules[0].ComponentName);
             Assert.AreEqual("components/counter-card.mjs", manifest.Modules[0].RelativeModulePath);
+            Assert.AreEqual("components/counter-card.mjs.map", manifest.Modules[0].SourceMapPath);
             Assert.AreEqual("descriptor-hash", manifest.Modules[0].DescriptorHash);
             Assert.AreEqual("template-hash", manifest.Modules[0].TemplateHash);
             Assert.AreEqual("logic-hash", manifest.Modules[0].LogicHash);
@@ -322,6 +325,9 @@ namespace Jazor.EmitTest
                 Assert.IsNotNull(loaded);
                 Assert.AreEqual(manifest.AssemblyName, loaded.AssemblyName);
                 Assert.HasCount(1, loaded.Modules);
+                Assert.AreEqual(manifest.Modules[0].ComponentId, loaded.Modules[0].ComponentId);
+                Assert.AreEqual(manifest.Modules[0].ModuleId, loaded.Modules[0].ModuleId);
+                Assert.AreEqual(manifest.Modules[0].SourceMapPath, loaded.Modules[0].SourceMapPath);
                 Assert.AreEqual(manifest.Modules[0].ContentHash, loaded.Modules[0].ContentHash);
                 CollectionAssert.AreEquivalent(manifest.Modules[0].Imports, loaded.Modules[0].Imports);
                 CollectionAssert.AreEquivalent(manifest.Modules[0].Styles, loaded.Modules[0].Styles);
@@ -397,8 +403,11 @@ namespace Jazor.EmitTest
                       "Modules": [
                         {
                           "AssemblyName": "Demo.Components",
+                          "ComponentId": null,
+                          "ModuleId": null,
                           "ComponentName": "CounterCard",
                           "RelativeModulePath": "components/counter-card.mjs",
+                          "SourceMapPath": null,
                           "Imports": [ "vue" ],
                           "Styles": [ "vuetify/styles", " feature/flags.css ", "vuetify/styles" ],
                           "PluginRequirements": [ "vuetify", " feature-flags ", "vuetify" ],
@@ -429,6 +438,9 @@ namespace Jazor.EmitTest
                 CollectionAssert.AreEqual(
                     new[] { "feature-flags", "vuetify" },
                     manifest.Modules[0].PluginRequirements);
+                Assert.AreEqual("Demo.Components::CounterCard", manifest.Modules[0].ComponentId);
+                Assert.AreEqual("components/counter-card.mjs", manifest.Modules[0].ModuleId);
+                Assert.AreEqual("components/counter-card.mjs.map", manifest.Modules[0].SourceMapPath);
             }
             finally
             {

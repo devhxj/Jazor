@@ -134,8 +134,11 @@ public sealed class ModuleBundlerTests
             [
                 new RazorVueManifestEntry(
                     "Sample.Host",
+                    "Sample.Host.CounterCard",
+                    "components/counter-card.mjs",
                     "CounterCard",
                     "components/counter-card.mjs",
+                    "components/counter-card.mjs.map",
                     ["vue", "vuetify/components"],
                     ["vuetify/styles"],
                     ["feature-flags", "vuetify"],
@@ -154,11 +157,17 @@ public sealed class ModuleBundlerTests
             workspace.InputDirectory,
             "__jazor/razorvue-host.mjs",
             """
+            export const razorVueHostAssemblyName = "Sample.Host";
+            export const razorVueHostGeneratedAtUtc = "2026-04-08T00:00:00.0000000Z";
             export const razorVueStyles = Object.freeze(["vuetify/styles"]);
             export const razorVuePluginRequirements = Object.freeze(["feature-flags", "vuetify"]);
+            export const razorVueHostModules = Object.freeze([{"assemblyName":"Sample.Host","componentId":"Sample.Host.CounterCard","moduleId":"components/counter-card.mjs","componentName":"CounterCard","relativeModulePath":"components/counter-card.mjs","sourceMapPath":"components/counter-card.mjs.map","styles":["vuetify/styles"],"pluginRequirements":["feature-flags","vuetify"],"descriptorHash":"descriptor-hash","templateHash":"template-hash","logicHash":"logic-hash","contentHash":"content-hash","hmrBoundaryKind":2,"requiresHydration":false,"supportsSsr":true}]);
             export const razorVueHostRequirements = Object.freeze({
+              assemblyName: razorVueHostAssemblyName,
+              generatedAtUtc: razorVueHostGeneratedAtUtc,
               styles: razorVueStyles,
-              pluginRequirements: razorVuePluginRequirements
+              pluginRequirements: razorVuePluginRequirements,
+              modules: razorVueHostModules
             });
             """);
 
@@ -172,7 +181,12 @@ public sealed class ModuleBundlerTests
 
         var script = await File.ReadAllTextAsync(workspace.OutputPath, TestContext.CancellationTokenSource.Token);
         Assert.Contains("function Boot()", script);
+        Assert.Contains("razorVueHostAssemblyName", script);
+        Assert.Contains("razorVueHostModules", script);
         Assert.Contains("razorVueHostRequirements", script);
+        Assert.Contains("CounterCard", script);
+        Assert.Contains("descriptor-hash", script);
+        Assert.Contains("components/counter-card.mjs.map", script);
         Assert.Contains("feature-flags", script);
         Assert.Contains("vuetify/styles", script);
     }
@@ -308,8 +322,11 @@ public sealed class ModuleBundlerTests
             [
                 new RazorVueManifestEntry(
                     "Sample.Host",
+                    "Sample.Host.ProfileForm",
+                    "components/profile-form.mjs",
                     "ProfileForm",
                     "components/profile-form.mjs",
+                    "components/profile-form.mjs.map",
                     ["vue", "vuetify/components"],
                     ["feature/flags.css", "vuetify/styles"],
                     ["feature-flags", "vuetify"],
@@ -341,13 +358,26 @@ public sealed class ModuleBundlerTests
             css.ReplaceLineEndings("\n"));
 
         using var contract = await ReadJsonAsync(workspace.RazorVueHostContractPath);
+        Assert.AreEqual("bundle.js.map", contract.RootElement.GetProperty("BundleSourceMapFile").GetString());
         CollectionAssert.AreEqual(
             new[] { "feature/flags.css", "vuetify/styles" },
             contract.RootElement.GetProperty("Styles").EnumerateArray().Select(static item => item.GetString()).OfType<string>().ToArray());
         CollectionAssert.AreEqual(
             new[] { "feature-flags", "vuetify" },
             contract.RootElement.GetProperty("PluginRequirements").EnumerateArray().Select(static item => item.GetString()).OfType<string>().ToArray());
+        Assert.AreEqual("Sample.Host", contract.RootElement.GetProperty("Modules")[0].GetProperty("AssemblyName").GetString());
+        Assert.AreEqual("Sample.Host.ProfileForm", contract.RootElement.GetProperty("Modules")[0].GetProperty("ComponentId").GetString());
+        Assert.AreEqual("components/profile-form.mjs", contract.RootElement.GetProperty("Modules")[0].GetProperty("ModuleId").GetString());
+        Assert.AreEqual("ProfileForm", contract.RootElement.GetProperty("Modules")[0].GetProperty("ComponentName").GetString());
         Assert.AreEqual("components/profile-form.mjs", contract.RootElement.GetProperty("Modules")[0].GetProperty("RelativeModulePath").GetString());
+        Assert.AreEqual("components/profile-form.mjs.map", contract.RootElement.GetProperty("Modules")[0].GetProperty("SourceMapPath").GetString());
+        Assert.AreEqual("descriptor-hash", contract.RootElement.GetProperty("Modules")[0].GetProperty("DescriptorHash").GetString());
+        Assert.AreEqual("template-hash", contract.RootElement.GetProperty("Modules")[0].GetProperty("TemplateHash").GetString());
+        Assert.AreEqual("logic-hash", contract.RootElement.GetProperty("Modules")[0].GetProperty("LogicHash").GetString());
+        Assert.AreEqual("content-hash", contract.RootElement.GetProperty("Modules")[0].GetProperty("ContentHash").GetString());
+        Assert.AreEqual((int)RazorVueHmrBoundaryKind.LogicSafe, contract.RootElement.GetProperty("Modules")[0].GetProperty("HmrBoundaryKind").GetInt32());
+        Assert.IsFalse(contract.RootElement.GetProperty("Modules")[0].GetProperty("RequiresHydration").GetBoolean());
+        Assert.IsTrue(contract.RootElement.GetProperty("Modules")[0].GetProperty("SupportsSsr").GetBoolean());
     }
 
     private static void WriteModule(string rootDirectory, string relativePath, string content)

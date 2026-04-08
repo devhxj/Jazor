@@ -93,8 +93,18 @@ public sealed class RazorVueEmitIntegrationTests
             var moduleCode = File.ReadAllText(modulePath);
             StringAssert.Contains(moduleCode, "//# sourceMappingURL=counter-card.mjs.map");
             var hostRequirementsCode = File.ReadAllText(hostRequirementsModulePath);
+            StringAssert.Contains(hostRequirementsCode, "export const razorVueHostAssemblyName = \"Demo.Components\";");
+            StringAssert.Contains(hostRequirementsCode, "export const razorVueHostModules = Object.freeze([");
+            StringAssert.Contains(hostRequirementsCode, "\"assemblyName\":\"Demo.Components\"");
+            StringAssert.Contains(hostRequirementsCode, "\"componentId\":\"Demo.Components.CounterCard\"");
+            StringAssert.Contains(hostRequirementsCode, "\"moduleId\":\"components/counter-card.mjs\"");
             StringAssert.Contains(hostRequirementsCode, "export const razorVueStyles = Object.freeze([\"vuetify/styles\"]);");
             StringAssert.Contains(hostRequirementsCode, "export const razorVuePluginRequirements = Object.freeze([\"vuetify\"]);");
+            StringAssert.Contains(hostRequirementsCode, "\"componentName\":\"CounterCard\"");
+            StringAssert.Contains(hostRequirementsCode, "\"relativeModulePath\":\"components/counter-card.mjs\"");
+            StringAssert.Contains(hostRequirementsCode, "\"sourceMapPath\":\"components/counter-card.mjs.map\"");
+            StringAssert.Contains(hostRequirementsCode, "\"descriptorHash\":\"descriptor-hash\"");
+            StringAssert.Contains(hostRequirementsCode, "\"hmrBoundaryKind\":2");
 
             using var map = JsonDocument.Parse(File.ReadAllText(mapPath));
             Assert.AreEqual("components/counter-card.mjs", map.RootElement.GetProperty("file").GetString());
@@ -114,8 +124,11 @@ public sealed class RazorVueEmitIntegrationTests
             Assert.IsNotNull(manifest);
             Assert.HasCount(1, manifest.Modules);
             Assert.AreEqual("Demo.Components", manifest.Modules[0].AssemblyName);
+            Assert.AreEqual("Demo.Components.CounterCard", manifest.Modules[0].ComponentId);
+            Assert.AreEqual("components/counter-card.mjs", manifest.Modules[0].ModuleId);
             Assert.AreEqual("CounterCard", manifest.Modules[0].ComponentName);
             Assert.AreEqual("components/counter-card.mjs", manifest.Modules[0].RelativeModulePath);
+            Assert.AreEqual("components/counter-card.mjs.map", manifest.Modules[0].SourceMapPath);
             CollectionAssert.AreEqual(new[] { "vuetify/styles" }, manifest.Styles);
             CollectionAssert.AreEqual(new[] { "vuetify" }, manifest.Modules[0].PluginRequirements);
             CollectionAssert.AreEqual(new[] { "vuetify" }, manifest.PluginRequirements);
@@ -204,6 +217,13 @@ public sealed class RazorVueEmitIntegrationTests
             CollectionAssert.AreEqual(
                 new[] { "feature-flags", "vuetify" },
                 manifestJson.RootElement.GetProperty("PluginRequirements").EnumerateArray().Select(static item => item.GetString()).OfType<string>().ToArray());
+
+            var hostRequirementsModulePath = RazorVueModuleWriter.GetHostRequirementsModulePath(outputDirectory);
+            var hostRequirementsCode = File.ReadAllText(hostRequirementsModulePath);
+            StringAssert.Contains(hostRequirementsCode, "\"componentName\":\"CounterCard\"");
+            StringAssert.Contains(hostRequirementsCode, "\"componentName\":\"StatusBadge\"");
+            StringAssert.Contains(hostRequirementsCode, "\"sourceMapPath\":\"widgets/status-badge.mjs.map\"");
+            StringAssert.Contains(hostRequirementsCode, "\"templateHash\":\"template-b\"");
         }
         finally
         {

@@ -21,10 +21,42 @@ public sealed class SdkIntegrationTests
             .Select(static entry => entry.FullName.Replace('\\', '/'))
             .ToArray();
 
-        CollectionAssert.Contains(entryNames, "lib/net10.0/Jazor.Razor.dll");
-        CollectionAssert.Contains(entryNames, "lib/net10.0/Jazor.RazorVue.dll");
-        CollectionAssert.Contains(entryNames, "analyzers/dotnet/cs/Jazor.RazorVue.Analysis.dll");
-        CollectionAssert.Contains(entryNames, "analyzers/dotnet/cs/Jazor.RazorVue.dll");
+        CollectionAssert.AreEquivalent(
+            new[]
+            {
+                "lib/net10.0/ECMAScript.dll",
+                "lib/net10.0/ECMAScript.pdb",
+                "lib/net10.0/Jazor.Common.dll",
+                "lib/net10.0/Jazor.Common.pdb",
+                "lib/net10.0/Jazor.Compiler.dll",
+                "lib/net10.0/Jazor.Compiler.pdb",
+                "lib/net10.0/Jazor.Name.dll",
+                "lib/net10.0/Jazor.Name.pdb",
+                "lib/net10.0/Jazor.Razor.dll",
+                "lib/net10.0/Jazor.Razor.pdb",
+                "lib/net10.0/Jazor.RazorVue.dll",
+                "lib/net10.0/Jazor.RazorVue.pdb"
+            },
+            entryNames.Where(static entry => entry.StartsWith("lib/net10.0/", StringComparison.Ordinal)).ToArray());
+        CollectionAssert.AreEquivalent(
+            new[]
+            {
+                "analyzers/dotnet/cs/Acornima.Extras.dll",
+                "analyzers/dotnet/cs/Acornima.dll",
+                "analyzers/dotnet/cs/Jazor.Analyzer.dll",
+                "analyzers/dotnet/cs/Jazor.Analyzer.pdb",
+                "analyzers/dotnet/cs/Jazor.Common.dll",
+                "analyzers/dotnet/cs/Jazor.Common.pdb",
+                "analyzers/dotnet/cs/Jazor.Compiler.dll",
+                "analyzers/dotnet/cs/Jazor.Compiler.pdb",
+                "analyzers/dotnet/cs/Jazor.Name.dll",
+                "analyzers/dotnet/cs/Jazor.Name.pdb",
+                "analyzers/dotnet/cs/Jazor.RazorVue.Analysis.dll",
+                "analyzers/dotnet/cs/Jazor.RazorVue.Analysis.pdb",
+                "analyzers/dotnet/cs/Jazor.RazorVue.dll",
+                "analyzers/dotnet/cs/Jazor.RazorVue.pdb"
+            },
+            entryNames.Where(static entry => entry.StartsWith("analyzers/dotnet/cs/", StringComparison.Ordinal)).ToArray());
     }
 
     [TestMethod]
@@ -305,6 +337,13 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(componentModule, "\"modelValue\": props.name");
         StringAssert.Contains(componentModule, "\"onUpdate:modelValue\": props.nameChanged");
         StringAssert.Contains(hostRequirementsModule, "razorVueHostRequirements");
+        StringAssert.Contains(hostRequirementsModule, "\"componentName\":\"ProfileForm\"");
+        StringAssert.Contains(hostRequirementsModule, "\"componentId\":\"RazorVueSample.Host.ProfileForm\"");
+        StringAssert.Contains(hostRequirementsModule, "\"moduleId\":\"components/profile-form.mjs\"");
+        StringAssert.Contains(hostRequirementsModule, "\"relativeModulePath\":\"components/profile-form.mjs\"");
+        StringAssert.Contains(hostRequirementsModule, "\"sourceMapPath\":\"components/profile-form.mjs.map\"");
+        StringAssert.Contains(hostRequirementsModule, "\"descriptorHash\":");
+        StringAssert.Contains(hostRequirementsModule, "\"hmrBoundaryKind\":");
         StringAssert.Contains(hostRequirementsModule, "\"vuetify/styles\"");
         StringAssert.Contains(hostRequirementsModule, "\"vuetify\"");
         StringAssert.Contains(bundle, "razorVueHostRequirements");
@@ -320,6 +359,9 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(
             "components/profile-form.mjs",
             razorVueManifest.RootElement.GetProperty("Modules")[0].GetProperty("RelativeModulePath").GetString());
+        var expectedSourceHmrBoundary = razorVueManifest.RootElement.GetProperty("Modules")[0].GetProperty("HmrBoundaryKind").GetInt32();
+        var expectedSourceRequiresHydration = razorVueManifest.RootElement.GetProperty("Modules")[0].GetProperty("RequiresHydration").GetBoolean();
+        var expectedSourceSupportsSsr = razorVueManifest.RootElement.GetProperty("Modules")[0].GetProperty("SupportsSsr").GetBoolean();
 
         using var hostContract = JsonDocument.Parse(await File.ReadAllTextAsync(hostContractPath));
         CollectionAssert.AreEqual(
@@ -328,9 +370,27 @@ public sealed class SdkIntegrationTests
         CollectionAssert.AreEqual(
             new[] { "vuetify" },
             GetStringArrayProperty(hostContract.RootElement, "PluginRequirements"));
+        Assert.AreEqual("app.bundle.js.map", hostContract.RootElement.GetProperty("BundleSourceMapFile").GetString());
+        Assert.AreEqual(
+            "RazorVueSample.Host.ProfileForm",
+            hostContract.RootElement.GetProperty("Modules")[0].GetProperty("ComponentId").GetString());
+        Assert.AreEqual(
+            "components/profile-form.mjs",
+            hostContract.RootElement.GetProperty("Modules")[0].GetProperty("ModuleId").GetString());
+        Assert.AreEqual(
+            "ProfileForm",
+            hostContract.RootElement.GetProperty("Modules")[0].GetProperty("ComponentName").GetString());
         Assert.AreEqual(
             "components/profile-form.mjs",
             hostContract.RootElement.GetProperty("Modules")[0].GetProperty("RelativeModulePath").GetString());
+        Assert.AreEqual(
+            "components/profile-form.mjs.map",
+            hostContract.RootElement.GetProperty("Modules")[0].GetProperty("SourceMapPath").GetString());
+        Assert.IsTrue(hostContract.RootElement.GetProperty("Modules")[0].TryGetProperty("DescriptorHash", out var sourceDescriptorHash));
+        Assert.AreNotEqual(string.Empty, sourceDescriptorHash.GetString());
+        Assert.AreEqual(expectedSourceHmrBoundary, hostContract.RootElement.GetProperty("Modules")[0].GetProperty("HmrBoundaryKind").GetInt32());
+        Assert.AreEqual(expectedSourceRequiresHydration, hostContract.RootElement.GetProperty("Modules")[0].GetProperty("RequiresHydration").GetBoolean());
+        Assert.AreEqual(expectedSourceSupportsSsr, hostContract.RootElement.GetProperty("Modules")[0].GetProperty("SupportsSsr").GetBoolean());
     }
 
     [TestMethod]
@@ -453,6 +513,13 @@ public sealed class SdkIntegrationTests
         var hostRequirements = (await File.ReadAllTextAsync(hostRequirementsModulePath)).ReplaceLineEndings("\n");
         StringAssert.Contains(hostRequirements, "export const razorVueStyles = Object.freeze([\"demo/button.css\"]);");
         StringAssert.Contains(hostRequirements, "export const razorVuePluginRequirements = Object.freeze([\"demo-host\"]);");
+        StringAssert.Contains(hostRequirements, "\"componentName\":\"CounterCard\"");
+        StringAssert.Contains(hostRequirements, "\"componentId\":\"Demo.Sample.CounterCard\"");
+        StringAssert.Contains(hostRequirements, "\"moduleId\":\"components/counter-card.mjs\"");
+        StringAssert.Contains(hostRequirements, "\"relativeModulePath\":\"components/counter-card.mjs\"");
+        StringAssert.Contains(hostRequirements, "\"sourceMapPath\":\"components/counter-card.mjs.map\"");
+        StringAssert.Contains(hostRequirements, "\"descriptorHash\":");
+        StringAssert.Contains(hostRequirements, "\"hmrBoundaryKind\":");
 
         using var manifest = JsonDocument.Parse(await File.ReadAllTextAsync(razorVueManifestPath));
         CollectionAssert.AreEqual(
@@ -605,6 +672,9 @@ public sealed class SdkIntegrationTests
         CollectionAssert.AreEqual(
             new[] { "vuetify" },
             GetStringArrayProperty(manifest.RootElement, "PluginRequirements"));
+        var expectedPackagedHmrBoundary = manifest.RootElement.GetProperty("Modules")[0].GetProperty("HmrBoundaryKind").GetInt32();
+        var expectedPackagedRequiresHydration = manifest.RootElement.GetProperty("Modules")[0].GetProperty("RequiresHydration").GetBoolean();
+        var expectedPackagedSupportsSsr = manifest.RootElement.GetProperty("Modules")[0].GetProperty("SupportsSsr").GetBoolean();
 
         using var hostContract = JsonDocument.Parse(await File.ReadAllTextAsync(hostContractPath));
         CollectionAssert.AreEqual(
@@ -613,6 +683,27 @@ public sealed class SdkIntegrationTests
         CollectionAssert.AreEqual(
             new[] { "vuetify" },
             GetStringArrayProperty(hostContract.RootElement, "PluginRequirements"));
+        Assert.AreEqual("app.bundle.js.map", hostContract.RootElement.GetProperty("BundleSourceMapFile").GetString());
+        Assert.AreEqual(
+            "PackagedRazorVueVuetifySample.ProfileForm",
+            hostContract.RootElement.GetProperty("Modules")[0].GetProperty("ComponentId").GetString());
+        Assert.AreEqual(
+            "components/profile-form.mjs",
+            hostContract.RootElement.GetProperty("Modules")[0].GetProperty("ModuleId").GetString());
+        Assert.AreEqual(
+            "ProfileForm",
+            hostContract.RootElement.GetProperty("Modules")[0].GetProperty("ComponentName").GetString());
+        Assert.AreEqual(
+            "components/profile-form.mjs",
+            hostContract.RootElement.GetProperty("Modules")[0].GetProperty("RelativeModulePath").GetString());
+        Assert.AreEqual(
+            "components/profile-form.mjs.map",
+            hostContract.RootElement.GetProperty("Modules")[0].GetProperty("SourceMapPath").GetString());
+        Assert.IsTrue(hostContract.RootElement.GetProperty("Modules")[0].TryGetProperty("DescriptorHash", out var packagedDescriptorHash));
+        Assert.AreNotEqual(string.Empty, packagedDescriptorHash.GetString());
+        Assert.AreEqual(expectedPackagedHmrBoundary, hostContract.RootElement.GetProperty("Modules")[0].GetProperty("HmrBoundaryKind").GetInt32());
+        Assert.AreEqual(expectedPackagedRequiresHydration, hostContract.RootElement.GetProperty("Modules")[0].GetProperty("RequiresHydration").GetBoolean());
+        Assert.AreEqual(expectedPackagedSupportsSsr, hostContract.RootElement.GetProperty("Modules")[0].GetProperty("SupportsSsr").GetBoolean());
     }
 
     private static async Task<LocalPackageFixture> CreateLocalPackageAsync()
@@ -682,7 +773,7 @@ public sealed class SdkIntegrationTests
                 "/m:1",
                 "/p:BuildInParallel=false"
             ]);
-        await RunDotNetAndAssertAsync(
+        var jazorPack = await RunDotNetAsync(
             repoRoot,
             [
                 "pack",
@@ -693,6 +784,10 @@ public sealed class SdkIntegrationTests
                 "-o",
                 packageOutputDirectory
             ]);
+        Assert.AreEqual(0, jazorPack.ExitCode, jazorPack.ToString());
+        Assert.IsFalse(
+            jazorPack.ToString().Contains("NU5118", StringComparison.OrdinalIgnoreCase),
+            "Jazor package emitted duplicate pack warnings." + Environment.NewLine + jazorPack);
         await RunDotNetAndAssertAsync(
             repoRoot,
             [

@@ -5,6 +5,7 @@
 ## 仓库级长期参考
 - [Compiler 文档桥接入口](./compiler/README.md)
 - [Modules Bridge](./modules/README.md)
+- [Jazor: Shallow Analysis + LS + Bun/Vite](./jazor-ls-bun-vite.md)
 - [ECMAScript host alignment](../ECMAScript-host-alignment.md)
 - [ECMAScript nullish semantics](../ECMAScript-nullish-semantics.md)
 

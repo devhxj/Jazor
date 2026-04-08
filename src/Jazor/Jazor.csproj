@@ -24,10 +24,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\ECMAScript\bin\$(Configuration)\net10.0\*.dll" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="..\ECMAScript\bin\$(Configuration)\net10.0\*.pdb" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="..\Jazor.RazorVue\bin\$(Configuration)\net10.0\*.dll" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="..\Jazor.RazorVue\bin\$(Configuration)\net10.0\*.pdb" Pack="true" PackagePath="lib\net10.0\" />
+    <!-- Pack the exact runtime/authoring closure so copy-local duplicates do not collide in lib/net10.0. -->
+    <None Include="..\ECMAScript\bin\$(Configuration)\net10.0\ECMAScript.dll" Pack="true" PackagePath="lib\net10.0\" />
+    <None Include="..\ECMAScript\bin\$(Configuration)\net10.0\ECMAScript.pdb" Pack="true" PackagePath="lib\net10.0\" />
+    <None Include="..\Jazor.RazorVue\bin\$(Configuration)\net10.0\Jazor.Common.dll" Pack="true" PackagePath="lib\net10.0\" />
+    <None Include="..\Jazor.RazorVue\bin\$(Configuration)\net10.0\Jazor.Common.pdb" Pack="true" PackagePath="lib\net10.0\" />
+    <None Include="..\Jazor.RazorVue\bin\$(Configuration)\net10.0\Jazor.Compiler.dll" Pack="true" PackagePath="lib\net10.0\" />
+    <None Include="..\Jazor.RazorVue\bin\$(Configuration)\net10.0\Jazor.Compiler.pdb" Pack="true" PackagePath="lib\net10.0\" />
+    <None Include="..\Jazor.RazorVue\bin\$(Configuration)\net10.0\Jazor.Name.dll" Pack="true" PackagePath="lib\net10.0\" />
+    <None Include="..\Jazor.RazorVue\bin\$(Configuration)\net10.0\Jazor.Name.pdb" Pack="true" PackagePath="lib\net10.0\" />
+    <None Include="..\Jazor.RazorVue\bin\$(Configuration)\net10.0\Jazor.Razor.dll" Pack="true" PackagePath="lib\net10.0\" />
+    <None Include="..\Jazor.RazorVue\bin\$(Configuration)\net10.0\Jazor.Razor.pdb" Pack="true" PackagePath="lib\net10.0\" />
+    <None Include="..\Jazor.RazorVue\bin\$(Configuration)\net10.0\Jazor.RazorVue.dll" Pack="true" PackagePath="lib\net10.0\" />
+    <None Include="..\Jazor.RazorVue\bin\$(Configuration)\net10.0\Jazor.RazorVue.pdb" Pack="true" PackagePath="lib\net10.0\" />
   </ItemGroup>
 
   <ItemGroup>

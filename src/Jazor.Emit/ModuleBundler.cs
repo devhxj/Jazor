@@ -155,7 +155,7 @@ internal sealed class ModuleBundler
         {
             // Keep bundled hosts on the same compiler-owned metadata contract as unbundled output.
             entryLines.Add(
-                $"export {{ razorVueHostRequirements, razorVuePluginRequirements, razorVueStyles }} from \"./{razorVueHostRequirementsRelativePath}\";");
+                $"export {{ razorVueHostAssemblyName, razorVueHostGeneratedAtUtc, razorVueHostModules, razorVueHostRequirements, razorVuePluginRequirements, razorVueStyles }} from \"./{razorVueHostRequirementsRelativePath}\";");
         }
 
         var entrySource = string.Join(Environment.NewLine, entryLines);

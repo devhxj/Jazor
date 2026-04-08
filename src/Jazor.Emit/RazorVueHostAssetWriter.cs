@@ -42,14 +42,26 @@ internal sealed class RazorVueHostAssetWriter
             manifest.AssemblyName,
             manifest.GeneratedAtUtc,
             Path.GetFileName(bundlePath) ?? string.Empty,
+            Path.GetFileName(bundlePath) + ".map",
             styles,
             pluginRequirements,
             manifest.Modules
                 .Select(static module => new RazorVueHostContractModule(
+                    module.AssemblyName,
+                    module.ComponentId,
+                    module.ModuleId,
                     module.ComponentName,
                     module.RelativeModulePath,
+                    module.SourceMapPath,
                     module.Styles,
-                    module.PluginRequirements))
+                    module.PluginRequirements,
+                    module.DescriptorHash,
+                    module.TemplateHash,
+                    module.LogicHash,
+                    module.ContentHash,
+                    module.HmrBoundaryKind,
+                    module.RequiresHydration,
+                    module.SupportsSsr))
                 .ToList());
         File.WriteAllText(hostPath, JsonSerializer.Serialize(contract, JsonOptions), Utf8WithoutBom);
     }
@@ -84,12 +96,24 @@ internal sealed record RazorVueHostContractModel(
     string AssemblyName,
     DateTime GeneratedAtUtc,
     string BundleFile,
+    string BundleSourceMapFile,
     IReadOnlyList<string> Styles,
     IReadOnlyList<string> PluginRequirements,
     IReadOnlyList<RazorVueHostContractModule> Modules);
 
 internal sealed record RazorVueHostContractModule(
+    string AssemblyName,
+    string ComponentId,
+    string ModuleId,
     string ComponentName,
     string RelativeModulePath,
+    string SourceMapPath,
     IReadOnlyList<string> Styles,
-    IReadOnlyList<string> PluginRequirements);
+    IReadOnlyList<string> PluginRequirements,
+    string DescriptorHash,
+    string TemplateHash,
+    string LogicHash,
+    string ContentHash,
+    RazorVueHmrBoundaryKind HmrBoundaryKind,
+    bool RequiresHydration,
+    bool SupportsSsr);
