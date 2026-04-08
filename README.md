@@ -33,13 +33,21 @@ Jazor 当前以编译器主线为核心，RazorVue、Emit、SourceMap 等工作�
 ```
 Jazor/
 ├── src/
-│   ├── Jazor.Compiler/              # C# to JavaScript compiler
+│   ├── Jazor.Compiler/              # C# to JavaScript compiler core
 │   ├── Jazor.Analyzer/              # Static analyzer and whitelist validation
 │   ├── Jazor.CLR/                   # CLR runtime support modules
 │   ├── Jazor.Emit/                  # Emit and packaging pipeline
 │   ├── Jazor.RazorVue/              # RazorVue integration surface
 │   ├── Jazor.RazorVue.Analysis/     # RazorVue analysis and lowering
-│   └── Jazor.CompilerTest/          # Compiler tests (MSTest)
+│   ├── Jazor.RazorVue.Vuetify/      # Vuetify component stubs
+│   ├── Jazor.Vue/                   # Vue bridge compiler (.jazor)
+│   ├── Jazor.Vue.Analysis/          # Vue bridge analysis and generation
+│   ├── Jazor.Razor/                 # Razor template support
+│   ├── Jazor.Common/                # Shared utilities and types
+│   ├── ECMAScript/                  # ECMAScript core types and attributes
+│   ├── ECMAScript.WebIDL/           # WebIDL binding generator
+│   ├── Jazor.CompilerTest/          # Compiler tests (MSTest)
+│   └── Jazor.EmitTest/              # Emit pipeline tests (MSTest)
 ├── docs/                            # Repository-level documentation hub
 └── README.md                        # This file
 ```
@@ -51,6 +59,7 @@ Jazor/
 - **Jazor.CLR** - .NET 类型的运行时模块支持，提供 JavaScript 运行时实现
 - **Jazor.Emit** - 产物输出和打包管道，处理 host-facing 输出
 - **Jazor.RazorVue** - Vue 导向的 Razor 编译路径，支持 Blazor 风格的组件编写
+- **Jazor.Vue** - `.jazor` 文档模型和 Vue SFC 桥接编译器
 
 详见 [模块索引](docs/architecture/modules/README.md) 了解所有模块。
 
@@ -101,7 +110,7 @@ public static class MyMathModule
 ### 基本编译流程
 
 ```csharp
-using ECMAScript.Compiler;
+using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
 
 // 获取语义模型
