@@ -1,5 +1,5 @@
 using System.Text;
-using Jazor.Vue;
+using Jazor.Vue.Analysis.Internal;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 

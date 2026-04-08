@@ -7,8 +7,4 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
   </PropertyGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Jazor.Vue.Analysis.Runtime\Jazor.Vue.Analysis.Runtime.csproj" />
-    <ProjectReference Include="..\Jazor.VueContracts\Jazor.VueContracts.csproj" />
-  </ItemGroup>
 </Project>

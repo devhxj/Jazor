@@ -1,0 +1,170 @@
+using System.Text.Json;
+using Jazor.VueContracts.Protocol;
+using Jazor.VueHost.Frontend.Deno.Protocol;
+using Jazor.VueHost.Lsp;
+
+namespace Jazor.VueHost.Frontend.Deno.Hosting;
+
+public sealed class DenoFrontendHost : IDenoFrontendHost
+{
+    private readonly DenoFrontendHostOptions _options;
+    private readonly DenoWorkerProcess _workerProcess;
+    private int _startupAttempted;
+
+    public DenoFrontendHost(DenoFrontendHostOptions options)
+    {
+        _options = options ?? throw new ArgumentNullException(nameof(options));
+        _workerProcess = new DenoWorkerProcess(_options);
+    }
+
+    public bool IsRunning => _workerProcess.IsRunning;
+
+    public async ValueTask StartAsync(CancellationToken cancellationToken)
+    {
+        if (!_options.Enabled || Interlocked.Exchange(ref _startupAttempted, 1) != 0)
+        {
+            return;
+        }
+
+        try
+        {
+            await _workerProcess.StartAsync(cancellationToken);
+        }
+        catch when (_options.IgnoreStartupFailure)
+        {
+            // Keep the host process available even when the optional worker is unavailable.
+        }
+    }
+
+    public async ValueTask StopAsync(CancellationToken cancellationToken)
+    {
+        if (!_options.Enabled)
+        {
+            return;
+        }
+
+        await _workerProcess.StopAsync(cancellationToken);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await StopAsync(CancellationToken.None);
+    }
+
+    public async ValueTask<IReadOnlyList<object>> GetTemplateCompletionItemsAsync(
+        DocumentSnapshot document,
+        object position,
+        CancellationToken cancellationToken)
+    {
+        var request = CreateRequest(document, position);
+        var items = await SendAsync<LspCompletionItem[]>("template/completion", request, cancellationToken);
+        return items?.Cast<object>().ToArray() ?? Array.Empty<object>();
+    }
+
+    public async ValueTask<object?> GetTemplateHoverAsync(
+        DocumentSnapshot document,
+        object position,
+        CancellationToken cancellationToken)
+    {
+        var request = CreateRequest(document, position);
+        return await SendAsync<LspHoverResult>("template/hover", request, cancellationToken);
+    }
+
+    public async ValueTask<IReadOnlyList<object>> GetTemplateDefinitionAsync(
+        DocumentSnapshot document,
+        object position,
+        CancellationToken cancellationToken)
+    {
+        var request = CreateRequest(document, position);
+        var locations = await SendAsync<LspLocation[]>("template/definition", request, cancellationToken);
+        return locations?.Cast<object>().ToArray() ?? Array.Empty<object>();
+    }
+
+    public async ValueTask<IReadOnlyList<object>> GetTemplateReferencesAsync(
+        DocumentSnapshot document,
+        object position,
+        bool includeDeclaration,
+        CancellationToken cancellationToken)
+    {
+        var request = new DenoTemplateReferenceRequest
+        {
+            DocumentPath = document.DocumentPath,
+            Text = document.Text,
+            Position = ToPosition(position),
+            IncludeDeclaration = includeDeclaration
+        };
+        var locations = await SendAsync<LspLocation[]>("template/references", request, cancellationToken);
+        return locations?.Cast<object>().ToArray() ?? Array.Empty<object>();
+    }
+
+    public async ValueTask<object?> GetTemplateRenameAsync(
+        DocumentSnapshot document,
+        object position,
+        string newName,
+        CancellationToken cancellationToken)
+    {
+        var request = new DenoTemplateRenameRequest
+        {
+            DocumentPath = document.DocumentPath,
+            Text = document.Text,
+            Position = ToPosition(position),
+            NewName = newName
+        };
+        return await SendAsync<LspWorkspaceEdit>("template/rename", request, cancellationToken);
+    }
+
+    private async ValueTask<TResult?> SendAsync<TResult>(
+        string method,
+        object payload,
+        CancellationToken cancellationToken)
+    {
+        await EnsureStartedAsync(cancellationToken);
+        if (!IsRunning)
+        {
+            return default;
+        }
+
+        try
+        {
+            return await _workerProcess.SendRequestAsync<TResult>(method, payload, cancellationToken);
+        }
+        catch when (_options.IgnoreStartupFailure)
+        {
+            return default;
+        }
+    }
+
+    private async ValueTask EnsureStartedAsync(CancellationToken cancellationToken)
+    {
+        if (IsRunning || !_options.Enabled)
+        {
+            return;
+        }
+
+        await StartAsync(cancellationToken);
+    }
+
+    private static DenoTemplateRequest CreateRequest(DocumentSnapshot document, object position)
+        => new()
+        {
+            DocumentPath = document.DocumentPath,
+            Text = document.Text,
+            Position = ToPosition(position)
+        };
+
+    private static DenoTemplatePosition ToPosition(object position)
+    {
+        if (position is LspPosition typedPosition)
+        {
+            return new DenoTemplatePosition
+            {
+                Line = typedPosition.Line,
+                Character = typedPosition.Character
+            };
+        }
+
+        var json = JsonSerializer.Serialize(position);
+        return JsonSerializer.Deserialize<DenoTemplatePosition>(json)
+            ?? throw new InvalidOperationException("Unable to convert template position payload.");
+    }
+}

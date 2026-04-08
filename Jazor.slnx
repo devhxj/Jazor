@@ -15,8 +15,6 @@
     <Project Path="src/Jazor.Vue.Analysis.Host/Jazor.Vue.Analysis.Host.csproj" />
     <Project Path="src/Jazor.Vue.Analysis.Runtime/Jazor.Vue.Analysis.Runtime.csproj" />
     <Project Path="src/Jazor.Vue.Analysis/Jazor.Vue.Analysis.csproj" />
-    <Project Path="src/Jazor.Vue/Jazor.Vue.csproj" />
-    <Project Path="src/Jazor.VueContracts/Jazor.VueContracts.csproj" />
     <Project Path="src/Jazor.VueHost/Jazor.VueHost.csproj" />
   </Folder>
   <Project Path="src/ECMAScript.WebIDL.Generator/ECMAScript.WebIDL.Generator.csproj" />

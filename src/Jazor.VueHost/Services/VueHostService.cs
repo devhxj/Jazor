@@ -1,7 +1,7 @@
 using Jazor.VueContracts.Protocol;
-using Jazor.Vue.Analysis.Runtime;
 using Jazor.VueHost.Analysis;
 using Jazor.VueHost.Frontend;
+using Jazor.VueHost.Frontend.Deno.Hosting;
 using Jazor.VueHost.Hosting;
 using Jazor.VueHost.Rpc;
 using Jazor.VueHost.Workspace;
@@ -28,29 +28,32 @@ public sealed class VueHostService : IVueHostService, IVueHostRpcService, IFront
 
     private readonly IVueHostWorkspaceStore _workspaceStore;
     private readonly IVueAnalysisClient _analysisClient;
-    private readonly JazorVueAnalysisService _fallbackAnalysisService = new();
+    private readonly IDenoFrontendHost _denoFrontendHost;
+    private readonly FallbackJazorAnalysisService _fallbackAnalysisService = new();
     private int _started;
 
     public VueHostService(
         IVueHostWorkspaceStore workspaceStore,
-        IVueAnalysisClient analysisClient)
+        IVueAnalysisClient analysisClient,
+        IDenoFrontendHost? denoFrontendHost = null)
     {
         _workspaceStore = workspaceStore ?? throw new ArgumentNullException(nameof(workspaceStore));
         _analysisClient = analysisClient ?? throw new ArgumentNullException(nameof(analysisClient));
+        _denoFrontendHost = denoFrontendHost ?? new DenoFrontendHost(new DenoFrontendHostOptions());
     }
 
-    public ValueTask StartAsync(CancellationToken cancellationToken)
+    public async ValueTask StartAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        await _denoFrontendHost.StartAsync(cancellationToken);
         Interlocked.Exchange(ref _started, 1);
-        return ValueTask.CompletedTask;
     }
 
-    public ValueTask StopAsync(CancellationToken cancellationToken)
+    public async ValueTask StopAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         Interlocked.Exchange(ref _started, 0);
-        return ValueTask.CompletedTask;
+        await _denoFrontendHost.StopAsync(cancellationToken);
     }
 
     public Task<PingResponse> PingAsync(CancellationToken cancellationToken)

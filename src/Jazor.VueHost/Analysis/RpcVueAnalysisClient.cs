@@ -1,5 +1,6 @@
 using Jazor.VueContracts.Protocol;
 using Jazor.VueHost.Rpc;
+using SharedVueAnalysisRpcMethodNames = Jazor.VueContracts.Protocol.VueAnalysisRpcMethodNames;
 
 namespace Jazor.VueHost.Analysis;
 
@@ -21,7 +22,7 @@ public sealed class RpcVueAnalysisClient : IVueAnalysisClient
 
         var rpcRequest = new RpcRequestEnvelope(
             id: Guid.NewGuid().ToString("N"),
-            method: Jazor.VueContracts.Protocol.VueAnalysisRpcMethodNames.AnalyzeJazor,
+            method: SharedVueAnalysisRpcMethodNames.AnalyzeJazor,
             payloadJson: VueHostRpcSerializer.Serialize(request));
 
         var rpcResponse = await _transport.SendAsync(rpcRequest, cancellationToken);

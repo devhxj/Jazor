@@ -41,6 +41,33 @@ public sealed class JazorVueHostLspTests
     }
 
     [TestMethod]
+    public async Task JazorVueHost_Lsp_Initialize_SucceedsWhenDenoIsEnabledWithInvalidCommand()
+    {
+        var client = await LspTestClient.StartAsync(
+            "--deno-worker",
+            "--deno-command=missing-deno-command-for-tests");
+        try
+        {
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 101,
+                method = "initialize",
+                @params = new { }
+            });
+            using var response = await client.ReadMessageAsync();
+
+            Assert.AreEqual("2.0", response.RootElement.GetProperty("jsonrpc").GetString());
+            Assert.AreEqual(101, response.RootElement.GetProperty("id").GetInt32());
+            Assert.AreEqual("Jazor.VueHost", response.RootElement.GetProperty("result").GetProperty("serverInfo").GetProperty("name").GetString());
+        }
+        finally
+        {
+            await client.DisposeIgnoringExitCodeAsync();
+        }
+    }
+
+    [TestMethod]
     public async Task JazorVueHost_Lsp_DidOpenDidChangeAndDidClose_PublishDiagnostics()
     {
         await using var client = await LspTestClient.StartAsync();
@@ -128,6 +155,81 @@ public sealed class JazorVueHostLspTests
             });
             using var closeDiagnostics = await client.ReadMessageAsync();
             Assert.AreEqual(0, closeDiagnostics.RootElement.GetProperty("params").GetProperty("diagnostics").GetArrayLength());
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_TemplateImportedComponent_RemainsCompletionHoverAndDefinitionCapable()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            var vuePath = Path.Combine(tempDirectory, "UserCard.vue");
+            await File.WriteAllTextAsync(vuePath, "<template><div>UserCard</div></template>");
+            var text =
+                """
+                @vueimport UserCard from "./UserCard.vue"
+
+                <template>
+                  <
+                  <UserCard />
+                </template>
+                """;
+            await client.OpenDocumentAsync(documentUri, text, version: 1);
+
+            var completionLabels = await client.RequestCompletionLabelsAsync(
+                requestId: 102,
+                documentUri,
+                line: 3,
+                character: 3);
+            CollectionAssert.Contains(completionLabels, "UserCard");
+
+            var hover = await client.RequestHoverAsync(
+                requestId: 103,
+                documentUri,
+                line: 4,
+                character: 5);
+            Assert.IsNotNull(hover);
+            StringAssert.Contains(
+                hover.Value.GetProperty("contents").GetProperty("value").GetString() ?? string.Empty,
+                "./UserCard.vue");
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 104,
+                method = "textDocument/definition",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri
+                    },
+                    position = new
+                    {
+                        line = 4,
+                        character = 5
+                    }
+                }
+            });
+            using var definitionResponse = await client.ReadMessageAsync();
+            var definitions = definitionResponse.RootElement.GetProperty("result");
+            Assert.AreEqual(1, definitions.GetArrayLength());
+            Assert.AreEqual(new Uri(vuePath).AbsoluteUri, definitions[0].GetProperty("uri").GetString());
         }
         finally
         {
@@ -293,6 +395,82 @@ public sealed class JazorVueHostLspTests
     }
 
     [TestMethod]
+    public async Task JazorVueHost_Lsp_DidChangeAndDidClose_UpdateObservableProjectionBackedResults()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDirectory, "UserCard.vue"),
+                "<template><div>UserCard</div></template>");
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDirectory, "ProfileCard.vue"),
+                "<template><div>ProfileCard</div></template>");
+
+            var diskText =
+                """
+                @vueimport UserCard from "./UserCard.vue"
+
+                <template>
+                  <
+                </template>
+                """;
+            await File.WriteAllTextAsync(documentPath, diskText);
+            await client.OpenDocumentAsync(documentUri, diskText, version: 1);
+
+            var initialLabels = await client.RequestCompletionLabelsAsync(
+                requestId: 31,
+                documentUri,
+                line: 3,
+                character: 3);
+            CollectionAssert.Contains(initialLabels, "UserCard");
+            CollectionAssert.DoesNotContain(initialLabels, "ProfileCard");
+
+            var updatedText =
+                """
+                @vueimport ProfileCard from "./ProfileCard.vue"
+
+                <template>
+                  <
+                </template>
+                """;
+            await client.ChangeDocumentAsync(documentUri, updatedText, version: 2);
+
+            var updatedLabels = await client.RequestCompletionLabelsAsync(
+                requestId: 32,
+                documentUri,
+                line: 3,
+                character: 3);
+            CollectionAssert.Contains(updatedLabels, "ProfileCard");
+            CollectionAssert.DoesNotContain(updatedLabels, "UserCard");
+
+            await client.CloseDocumentAsync(documentUri);
+
+            var afterCloseLabels = await client.RequestCompletionLabelsAsync(
+                requestId: 33,
+                documentUri,
+                line: 3,
+                character: 3);
+            CollectionAssert.Contains(afterCloseLabels, "UserCard");
+            CollectionAssert.DoesNotContain(afterCloseLabels, "ProfileCard");
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
     public async Task JazorVueHost_Lsp_Definition_ReturnsResolvedImportTarget()
     {
         await using var client = await LspTestClient.StartAsync();
@@ -337,6 +515,300 @@ public sealed class JazorVueHostLspTests
             var locations = response.RootElement.GetProperty("result");
             Assert.AreEqual(1, locations.GetArrayLength());
             Assert.AreEqual(new Uri(vuePath).AbsoluteUri, locations[0].GetProperty("uri").GetString());
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_DefaultFallbackAnalysis_SupportsDiagnosticsHoverAndDefinition()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            var vuePath = Path.Combine(tempDirectory, "UserCard.vue");
+            await File.WriteAllTextAsync(vuePath, "<template><div>UserCard</div></template>");
+            var text =
+                """
+                @vueimport UserCard from "./UserCard.vue"
+
+                <template>
+                  <UserCard />
+                </template>
+
+                @code {
+                    private void Hidden()
+                    {
+                    }
+                }
+                """;
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                method = "textDocument/didOpen",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri,
+                        languageId = "jazor",
+                        version = 1,
+                        text
+                    }
+                }
+            });
+            using var diagnosticsMessage = await client.ReadMessageAsync();
+            var diagnostics = diagnosticsMessage.RootElement
+                .GetProperty("params")
+                .GetProperty("diagnostics");
+            Assert.AreEqual(1, diagnostics.GetArrayLength());
+            Assert.AreEqual("JAZORVUE001", diagnostics[0].GetProperty("code").GetString());
+
+            var hover = await client.RequestHoverAsync(
+                requestId: 34,
+                documentUri,
+                line: 3,
+                character: 5);
+            Assert.IsNotNull(hover);
+            StringAssert.Contains(
+                hover.Value.GetProperty("contents").GetProperty("value").GetString() ?? string.Empty,
+                "./UserCard.vue");
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 35,
+                method = "textDocument/definition",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri
+                    },
+                    position = new
+                    {
+                        line = 3,
+                        character = 5
+                    }
+                }
+            });
+            using var definitionResponse = await client.ReadMessageAsync();
+            var definitions = definitionResponse.RootElement.GetProperty("result");
+            Assert.AreEqual(1, definitions.GetArrayLength());
+            Assert.AreEqual(new Uri(vuePath).AbsoluteUri, definitions[0].GetProperty("uri").GetString());
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_RoutesDirectiveTemplateAndCodeRegionsThroughDistinctObservableBehaviors()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDirectory, "UserCard.vue"),
+                "<template><div>UserCard</div></template>");
+            var text =
+                """
+                @
+                @vueimport UserCard from "./UserCard.vue"
+
+                <template>
+                  <
+                  <UserCard />
+                </template>
+
+                @code {
+                    void Render()
+                    {
+                        UserCard();
+                    }
+                }
+                """;
+            await client.OpenDocumentAsync(documentUri, text, version: 1);
+
+            var directiveLabels = await client.RequestCompletionLabelsAsync(
+                requestId: 41,
+                documentUri,
+                line: 0,
+                character: 1);
+            CollectionAssert.Contains(directiveLabels, "@vueimport");
+            CollectionAssert.DoesNotContain(directiveLabels, "UserCard");
+
+            var templateLabels = await client.RequestCompletionLabelsAsync(
+                requestId: 42,
+                documentUri,
+                line: 4,
+                character: 3);
+            CollectionAssert.Contains(templateLabels, "UserCard");
+            CollectionAssert.DoesNotContain(templateLabels, "@vueimport");
+
+            var codeHover = await client.RequestHoverAsync(
+                requestId: 43,
+                documentUri,
+                line: 10,
+                character: 10);
+            Assert.IsNull(codeHover);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_TemplateAndCodePositions_RemainFeatureCapableAfterLaneDispatch()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDirectory, "UserCard.vue"),
+                "<template><div>UserCard</div></template>");
+            var text =
+                """
+                @vueimport UserCard from "./UserCard.vue"
+
+                <template>
+                  <UserCard />
+                </template>
+
+                @code {
+                    private void Hidden()
+                    {
+                    }
+                }
+                """;
+            await client.OpenDocumentAsync(documentUri, text, version: 1);
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 44,
+                method = "textDocument/references",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri
+                    },
+                    position = new
+                    {
+                        line = 3,
+                        character = 5
+                    },
+                    context = new
+                    {
+                        includeDeclaration = true
+                    }
+                }
+            });
+            using var referencesResponse = await client.ReadMessageAsync();
+            var references = referencesResponse.RootElement.GetProperty("result");
+            Assert.IsTrue(references.GetArrayLength() >= 2);
+            Assert.IsTrue(references.EnumerateArray().Any(reference =>
+                reference.GetProperty("range").GetProperty("start").GetProperty("line").GetInt32() == 3));
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 45,
+                method = "textDocument/rename",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri
+                    },
+                    position = new
+                    {
+                        line = 3,
+                        character = 5
+                    },
+                    newName = "ProfileCard"
+                }
+            });
+            using var renameResponse = await client.ReadMessageAsync();
+            var templateRenameEdits = renameResponse.RootElement
+                .GetProperty("result")
+                .GetProperty("changes")
+                .GetProperty(documentUri);
+            Assert.IsTrue(templateRenameEdits.GetArrayLength() >= 2);
+            Assert.IsTrue(templateRenameEdits.EnumerateArray().Any(edit =>
+                edit.GetProperty("range").GetProperty("start").GetProperty("line").GetInt32() == 3));
+
+            var diagnostic = await client.ChangeAndReadFirstDiagnosticAsync(documentUri, text, version: 2);
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 46,
+                method = "textDocument/codeAction",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri
+                    },
+                    range = new
+                    {
+                        start = new
+                        {
+                            line = 6,
+                            character = 4
+                        },
+                        end = new
+                        {
+                            line = 8,
+                            character = 5
+                        }
+                    },
+                    context = new
+                    {
+                        diagnostics = new[] { JsonSerializer.Deserialize<object>(diagnostic.GetRawText(), JsonOptions)! }
+                    }
+                }
+            });
+            using var codeActionResponse = await client.ReadMessageAsync();
+            var actions = codeActionResponse.RootElement.GetProperty("result");
+            Assert.AreEqual(1, actions.GetArrayLength());
+            Assert.AreEqual("Make method public for bridge lowering", actions[0].GetProperty("title").GetString());
         }
         finally
         {
@@ -425,6 +897,20 @@ public sealed class JazorVueHostLspTests
                 .GetProperty(documentUri);
             Assert.IsTrue(changes.GetArrayLength() >= 2);
             Assert.AreEqual("ProfileCard", changes[0].GetProperty("newText").GetString());
+            Assert.AreEqual(documentUri, renameResponse.RootElement
+                .GetProperty("result")
+                .GetProperty("changes")
+                .EnumerateObject()
+                .Single()
+                .Name);
+
+            var startOffsets = changes
+                .EnumerateArray()
+                .Select(change => ToOffset(text, change.GetProperty("range").GetProperty("start")))
+                .ToArray();
+            CollectionAssert.AreEqual(
+                startOffsets.OrderByDescending(static offset => offset).ToArray(),
+                startOffsets);
         }
         finally
         {
@@ -502,6 +988,14 @@ public sealed class JazorVueHostLspTests
             var actions = response.RootElement.GetProperty("result");
             Assert.AreEqual(1, actions.GetArrayLength());
             Assert.AreEqual("Make method public for bridge lowering", actions[0].GetProperty("title").GetString());
+            var editChanges = actions[0]
+                .GetProperty("edit")
+                .GetProperty("changes");
+            Assert.AreEqual(documentUri, editChanges.EnumerateObject().Single().Name);
+            Assert.AreEqual("public", editChanges
+                .GetProperty(documentUri)[0]
+                .GetProperty("newText")
+                .GetString());
         }
         finally
         {
@@ -544,6 +1038,39 @@ public sealed class JazorVueHostLspTests
             "..",
             ".."));
 
+    private static int ToOffset(string text, JsonElement position)
+    {
+        var line = position.GetProperty("line").GetInt32();
+        var character = position.GetProperty("character").GetInt32();
+        var currentLine = 0;
+        var currentCharacter = 0;
+
+        for (var index = 0; index < text.Length; index++)
+        {
+            if (currentLine == line && currentCharacter == character)
+            {
+                return index;
+            }
+
+            if (text[index] == '\n')
+            {
+                currentLine++;
+                currentCharacter = 0;
+                continue;
+            }
+
+            currentCharacter++;
+        }
+
+        if (currentLine == line && currentCharacter == character)
+        {
+            return text.Length;
+        }
+
+        Assert.Fail($"Position ({line}, {character}) did not map into the provided text.");
+        return -1;
+    }
+
     private sealed class LspTestClient : IAsyncDisposable
     {
         private readonly Process _process;
@@ -557,7 +1084,7 @@ public sealed class JazorVueHostLspTests
             _output = output;
         }
 
-        public static async Task<LspTestClient> StartAsync()
+        public static async Task<LspTestClient> StartAsync(params string[] additionalArguments)
         {
             var hostAssemblyPath = GetBuiltAssemblyPath("Jazor.VueHost", "Jazor.VueHost.dll");
             var process = new Process
@@ -574,6 +1101,10 @@ public sealed class JazorVueHostLspTests
             };
             process.StartInfo.ArgumentList.Add(hostAssemblyPath);
             process.StartInfo.ArgumentList.Add("--lsp");
+            foreach (var argument in additionalArguments)
+            {
+                process.StartInfo.ArgumentList.Add(argument);
+            }
 
             Assert.IsTrue(process.Start(), "Expected VueHost LSP process to start.");
             await Task.Yield();
@@ -613,6 +1144,130 @@ public sealed class JazorVueHostLspTests
                 }
             });
             using var _ = await ReadMessageAsync();
+        }
+
+        public async Task ChangeDocumentAsync(string uri, string text, int version)
+        {
+            await SendAsync(new
+            {
+                jsonrpc = "2.0",
+                method = "textDocument/didChange",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri,
+                        version
+                    },
+                    contentChanges = new[]
+                    {
+                        new
+                        {
+                            text
+                        }
+                    }
+                }
+            });
+            using var _ = await ReadMessageAsync();
+        }
+
+        public async Task CloseDocumentAsync(string uri)
+        {
+            await SendAsync(new
+            {
+                jsonrpc = "2.0",
+                method = "textDocument/didClose",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri
+                    }
+                }
+            });
+            using var _ = await ReadMessageAsync();
+        }
+
+        public async Task<JsonElement> ChangeAndReadFirstDiagnosticAsync(string uri, string text, int version)
+        {
+            await SendAsync(new
+            {
+                jsonrpc = "2.0",
+                method = "textDocument/didChange",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri,
+                        version
+                    },
+                    contentChanges = new[]
+                    {
+                        new
+                        {
+                            text
+                        }
+                    }
+                }
+            });
+            using var diagnosticsMessage = await ReadMessageAsync();
+            return diagnosticsMessage.RootElement
+                .GetProperty("params")
+                .GetProperty("diagnostics")[0]
+                .Clone();
+        }
+
+        public async Task<string[]> RequestCompletionLabelsAsync(int requestId, string uri, int line, int character)
+        {
+            await SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = requestId,
+                method = "textDocument/completion",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri
+                    },
+                    position = new
+                    {
+                        line,
+                        character
+                    }
+                }
+            });
+            using var response = await ReadMessageAsync();
+            return response.RootElement
+                .GetProperty("result")
+                .EnumerateArray()
+                .Select(static item => item.GetProperty("label").GetString() ?? string.Empty)
+                .ToArray();
+        }
+
+        public async Task<JsonElement?> RequestHoverAsync(int requestId, string uri, int line, int character)
+        {
+            await SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = requestId,
+                method = "textDocument/hover",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri
+                    },
+                    position = new
+                    {
+                        line,
+                        character
+                    }
+                }
+            });
+            using var response = await ReadMessageAsync();
+            var result = response.RootElement.GetProperty("result");
+            return result.ValueKind == JsonValueKind.Null ? null : result.Clone();
         }
 
         public async Task SendAsync(object payload)
@@ -677,6 +1332,22 @@ public sealed class JazorVueHostLspTests
         {
             await ShutdownAsync();
             _process.Dispose();
+        }
+
+        public async Task DisposeIgnoringExitCodeAsync()
+        {
+            try
+            {
+                if (!_process.HasExited)
+                {
+                    _process.Kill(entireProcessTree: true);
+                    await _process.WaitForExitAsync(CancellationToken.None);
+                }
+            }
+            finally
+            {
+                _process.Dispose();
+            }
         }
 
         private async Task<int> ReadContentLengthAsync()

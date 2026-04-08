@@ -1,23 +1,51 @@
 using System.Text.Json;
-using Jazor.VueHost.Workspace;
 using Jazor.VueContracts.Protocol;
+using Jazor.VueHost.Jazor.Projection;
+using Jazor.VueHost.Lsp.Aggregation;
+using Jazor.VueHost.Lsp.Coordination;
+using Jazor.VueHost.Lsp.Lanes;
+using Jazor.VueHost.Lsp.Routing;
+using Jazor.VueHost.VirtualDocuments.Registry;
+using Jazor.VueHost.Workspace;
 
 namespace Jazor.VueHost.Lsp;
 
 internal sealed class LspSession
 {
     private readonly IVueHostWorkspaceStore _workspaceStore;
-    private readonly JazorLspDocumentService _documentService;
+    private readonly IReadOnlyDictionary<LaneKind, ILspLane> _lanes;
+    private readonly ILspLaneRouter _laneRouter;
     private readonly LspMessageWriter _writer;
+    private readonly JazorProjectionService _projectionService;
+    private readonly IVirtualDocumentRegistry _virtualDocumentRegistry;
+    private readonly DocumentProjectionResolver _projectionResolver;
+    private readonly LspResultAggregator _resultAggregator;
+    private readonly RenameCoordinator _renameCoordinator;
+    private readonly CodeActionCoordinator _codeActionCoordinator;
 
     public LspSession(
         IVueHostWorkspaceStore workspaceStore,
-        JazorLspDocumentService documentService,
-        LspMessageWriter writer)
+        IEnumerable<ILspLane> lanes,
+        ILspLaneRouter laneRouter,
+        LspMessageWriter writer,
+        JazorProjectionService projectionService,
+        IVirtualDocumentRegistry virtualDocumentRegistry,
+        DocumentProjectionResolver projectionResolver,
+        LspResultAggregator resultAggregator,
+        RenameCoordinator renameCoordinator,
+        CodeActionCoordinator codeActionCoordinator)
     {
         _workspaceStore = workspaceStore ?? throw new ArgumentNullException(nameof(workspaceStore));
-        _documentService = documentService ?? throw new ArgumentNullException(nameof(documentService));
+        ArgumentNullException.ThrowIfNull(lanes);
+        _lanes = lanes.ToDictionary(static lane => lane.LaneKind);
+        _laneRouter = laneRouter ?? throw new ArgumentNullException(nameof(laneRouter));
         _writer = writer ?? throw new ArgumentNullException(nameof(writer));
+        _projectionService = projectionService ?? throw new ArgumentNullException(nameof(projectionService));
+        _virtualDocumentRegistry = virtualDocumentRegistry ?? throw new ArgumentNullException(nameof(virtualDocumentRegistry));
+        _projectionResolver = projectionResolver ?? throw new ArgumentNullException(nameof(projectionResolver));
+        _resultAggregator = resultAggregator ?? throw new ArgumentNullException(nameof(resultAggregator));
+        _renameCoordinator = renameCoordinator ?? throw new ArgumentNullException(nameof(renameCoordinator));
+        _codeActionCoordinator = codeActionCoordinator ?? throw new ArgumentNullException(nameof(codeActionCoordinator));
     }
 
     public async ValueTask<LspResponseMessage?> HandleRequestAsync(
@@ -117,9 +145,18 @@ internal sealed class LspSession
     {
         var parameters = DeserializeParams<LspHoverParams>(request.Params);
         var document = await GetRequiredDocumentAsync(parameters.TextDocument.Uri, cancellationToken);
-        return CreateSuccessResponse(
-            request.Id,
-            await _documentService.GetHoverAsync(document, parameters.Position, cancellationToken));
+        var projectionTarget = await _projectionResolver.ResolveAsync(document, parameters.Position, cancellationToken);
+
+        foreach (var lane in GetOrderedLanes(projectionTarget))
+        {
+            var hover = await lane.GetHoverAsync(document, parameters.Position, projectionTarget, cancellationToken);
+            if (hover is not null)
+            {
+                return CreateSuccessResponse(request.Id, hover);
+            }
+        }
+
+        return CreateSuccessResponse(request.Id, result: null);
     }
 
     private async ValueTask<LspResponseMessage> HandleCompletionAsync(
@@ -128,9 +165,19 @@ internal sealed class LspSession
     {
         var parameters = DeserializeParams<LspCompletionParams>(request.Params);
         var document = await GetRequiredDocumentAsync(parameters.TextDocument.Uri, cancellationToken);
-        return CreateSuccessResponse(
-            request.Id,
-            await _documentService.GetCompletionItemsAsync(document, parameters.Position, cancellationToken));
+        var projectionTarget = await _projectionResolver.ResolveAsync(document, parameters.Position, cancellationToken);
+        var items = new List<LspCompletionItem>();
+
+        foreach (var lane in GetOrderedLanes(projectionTarget))
+        {
+            var laneItems = await lane.GetCompletionItemsAsync(document, parameters.Position, projectionTarget, cancellationToken);
+            if (laneItems.Count > 0)
+            {
+                items.AddRange(laneItems);
+            }
+        }
+
+        return CreateSuccessResponse(request.Id, _resultAggregator.AggregateCompletionItems(items));
     }
 
     private async ValueTask<LspResponseMessage> HandleDefinitionAsync(
@@ -139,9 +186,19 @@ internal sealed class LspSession
     {
         var parameters = DeserializeParams<LspDefinitionParams>(request.Params);
         var document = await GetRequiredDocumentAsync(parameters.TextDocument.Uri, cancellationToken);
-        return CreateSuccessResponse(
-            request.Id,
-            await _documentService.GetDefinitionAsync(document, parameters.Position, cancellationToken));
+        var projectionTarget = await _projectionResolver.ResolveAsync(document, parameters.Position, cancellationToken);
+        var locations = new List<LspLocation>();
+
+        foreach (var lane in GetOrderedLanes(projectionTarget))
+        {
+            var laneLocations = await lane.GetDefinitionAsync(document, parameters.Position, projectionTarget, cancellationToken);
+            if (laneLocations.Count > 0)
+            {
+                locations.AddRange(laneLocations);
+            }
+        }
+
+        return CreateSuccessResponse(request.Id, _resultAggregator.AggregateLocations(locations));
     }
 
     private async ValueTask<LspResponseMessage> HandleReferencesAsync(
@@ -150,13 +207,24 @@ internal sealed class LspSession
     {
         var parameters = DeserializeParams<LspReferenceParams>(request.Params);
         var document = await GetRequiredDocumentAsync(parameters.TextDocument.Uri, cancellationToken);
-        return CreateSuccessResponse(
-            request.Id,
-            await _documentService.GetReferencesAsync(
+        var projectionTarget = await _projectionResolver.ResolveAsync(document, parameters.Position, cancellationToken);
+        var locations = new List<LspLocation>();
+
+        foreach (var lane in GetOrderedLanes(projectionTarget))
+        {
+            var laneLocations = await lane.GetReferencesAsync(
                 document,
                 parameters.Position,
                 parameters.Context?.IncludeDeclaration ?? true,
-                cancellationToken));
+                projectionTarget,
+                cancellationToken);
+            if (laneLocations.Count > 0)
+            {
+                locations.AddRange(laneLocations);
+            }
+        }
+
+        return CreateSuccessResponse(request.Id, _resultAggregator.AggregateLocations(locations));
     }
 
     private async ValueTask<LspResponseMessage> HandleRenameAsync(
@@ -165,9 +233,16 @@ internal sealed class LspSession
     {
         var parameters = DeserializeParams<LspRenameParams>(request.Params);
         var document = await GetRequiredDocumentAsync(parameters.TextDocument.Uri, cancellationToken);
+        var projectionTarget = await _projectionResolver.ResolveAsync(document, parameters.Position, cancellationToken);
+
         return CreateSuccessResponse(
             request.Id,
-            await _documentService.GetRenameAsync(document, parameters.Position, parameters.NewName, cancellationToken));
+            await _renameCoordinator.CoordinateAsync(
+                document,
+                parameters.Position,
+                parameters.NewName,
+                projectionTarget,
+                cancellationToken));
     }
 
     private async ValueTask<LspResponseMessage> HandleCodeActionAsync(
@@ -176,9 +251,16 @@ internal sealed class LspSession
     {
         var parameters = DeserializeParams<LspCodeActionParams>(request.Params);
         var document = await GetRequiredDocumentAsync(parameters.TextDocument.Uri, cancellationToken);
+        var projectionTarget = await _projectionResolver.ResolveAsync(document, parameters.Range.Start, cancellationToken);
+
         return CreateSuccessResponse(
             request.Id,
-            await _documentService.GetCodeActionsAsync(document, parameters.Context?.Diagnostics ?? [], cancellationToken));
+            await _codeActionCoordinator.CoordinateAsync(
+                document,
+                parameters.Range,
+                parameters.Context?.Diagnostics ?? [],
+                projectionTarget,
+                cancellationToken));
     }
 
     private async ValueTask HandleDidOpenAsync(
@@ -193,6 +275,7 @@ internal sealed class LspSession
             parameters.TextDocument.Text,
             parameters.TextDocument.Version?.ToString(System.Globalization.CultureInfo.InvariantCulture));
         await _workspaceStore.UpsertDocumentAsync(document, cancellationToken);
+        await UpdateProjectionStateAsync(document, cancellationToken);
         await PublishDiagnosticsAsync(document, cancellationToken);
     }
 
@@ -209,6 +292,7 @@ internal sealed class LspSession
             parameters.ContentChanges.LastOrDefault()?.Text ?? string.Empty,
             parameters.TextDocument.Version?.ToString(System.Globalization.CultureInfo.InvariantCulture));
         await _workspaceStore.UpsertDocumentAsync(document, cancellationToken);
+        await UpdateProjectionStateAsync(document, cancellationToken);
         await PublishDiagnosticsAsync(document, cancellationToken);
     }
 
@@ -219,6 +303,7 @@ internal sealed class LspSession
         var parameters = DeserializeParams<LspDidCloseTextDocumentParams>(notification.Params);
         var documentPath = LspProtocolHelpers.ToDocumentPath(parameters.TextDocument.Uri);
         await _workspaceStore.RemoveDocumentAsync(documentPath, cancellationToken);
+        await _virtualDocumentRegistry.RemoveBySourceDocumentAsync(documentPath, cancellationToken);
         await PublishDiagnosticsAsync(
             new DocumentSnapshot(documentPath, MapDocumentKind(languageId: null, documentPath), string.Empty, null),
             cancellationToken,
@@ -235,7 +320,8 @@ internal sealed class LspSession
             return;
         }
 
-        diagnostics ??= await _documentService.GetDiagnosticsAsync(document, cancellationToken);
+        diagnostics ??= await CollectDiagnosticsAsync(document, cancellationToken);
+        diagnostics = _resultAggregator.AggregateDiagnostics(diagnostics);
         await _writer.WriteMessageAsync(
             LspJsonSerializer.Serialize(new LspNotificationMessage
             {
@@ -247,6 +333,56 @@ internal sealed class LspSession
                 }
             }),
             cancellationToken);
+    }
+
+    private async ValueTask UpdateProjectionStateAsync(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken)
+    {
+        if (document.DocumentKind != DocumentKind.Jazor)
+        {
+            return;
+        }
+
+        var virtualDocuments = await _projectionService.ProjectAsync(document, cancellationToken);
+        await _virtualDocumentRegistry.UpsertAsync(virtualDocuments, cancellationToken);
+    }
+
+    private async ValueTask<IReadOnlyList<LspDiagnostic>> CollectDiagnosticsAsync(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken)
+    {
+        var diagnostics = new List<LspDiagnostic>();
+        foreach (var laneKind in _laneRouter.GetDiagnosticLanes(document))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!_lanes.TryGetValue(laneKind, out var lane))
+            {
+                continue;
+            }
+
+            var laneDiagnostics = await lane.GetDiagnosticsAsync(document, cancellationToken);
+            if (laneDiagnostics.Count > 0)
+            {
+                diagnostics.AddRange(laneDiagnostics);
+            }
+        }
+
+        return diagnostics;
+    }
+
+    private IReadOnlyList<ILspLane> GetOrderedLanes(ProjectionTarget projectionTarget)
+    {
+        var orderedLanes = new List<ILspLane>();
+        foreach (var laneKind in _laneRouter.GetOrderedLanes(projectionTarget))
+        {
+            if (_lanes.TryGetValue(laneKind, out var lane))
+            {
+                orderedLanes.Add(lane);
+            }
+        }
+
+        return orderedLanes;
     }
 
     private async ValueTask<DocumentSnapshot> GetRequiredDocumentAsync(

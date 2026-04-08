@@ -11,7 +11,7 @@ Current scope in this skeleton:
 - host lifecycle abstraction with current line-based stdio RPC transport
 - minimal LSP surface over stdio for `.jazor` authoring
 - workspace store abstraction for `.jazor` / `.vue` / `.js` / `.ts` document snapshots
-- analysis client abstraction that depends only on `Jazor.VueContracts`
+- analysis client abstraction with host-local protocol contracts
 - pluggable analysis-client path with transport support plus local runtime fallback for virtual artifact generation
 - minimal RPC-facing host service that coordinates workspace state and analysis calls
 - line-oriented stdio RPC loop for the current request/response envelope
@@ -27,8 +27,8 @@ Out of scope for this skeleton:
 
 Compile-time boundary:
 
-- reference `Jazor.VueContracts`
-- reference `Jazor.Vue.Analysis.Runtime` only for local virtual-artifact fallback
+- no direct dependency on `Jazor.Vue` or `Jazor.VueContracts`
+- host-local fallback analysis/compiler is used for virtual artifacts
 - do not reference `Jazor.Vue.Analysis` directly
 
 Minimal layout:
@@ -61,10 +61,10 @@ Minimal layout:
 - `Services/NullVueAnalysisClient.cs`
 - `Program.cs`
 
-Shared RPC envelope DTOs live in `Jazor.VueContracts/Protocol/RpcMessages.cs`.
-Bootstrap host info DTOs live in `Jazor.VueContracts/Protocol/HostInfo.cs`.
-Shared host RPC method names live in `Jazor.VueContracts/Protocol/VueHostRpcMethodNames.cs`.
-Shared protocol JSON serialization lives in `Jazor.VueContracts/Protocol/ProtocolJsonSerializer.cs`.
+Shared RPC envelope DTOs live in `Protocol/Contracts/RpcMessages.cs`.
+Bootstrap host info DTOs live in `Protocol/Contracts/HostInfo.cs`.
+Shared host RPC method names live in `Protocol/Contracts/VueHostRpcMethodNames.cs`.
+Shared protocol JSON serialization lives in `Protocol/Contracts/ProtocolJsonSerializer.cs`.
 
 Current stdio envelope:
 

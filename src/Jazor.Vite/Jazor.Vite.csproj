@@ -8,6 +8,6 @@
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Jazor.VueContracts\Jazor.VueContracts.csproj" />
+    <ProjectReference Include="..\Jazor.VueHost\Jazor.VueHost.csproj" />
   </ItemGroup>
 </Project>

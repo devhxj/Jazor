@@ -1,6 +1,5 @@
 using System.Text.RegularExpressions;
 using Jazor.Vue;
-using Jazor.Vue.Analysis.Runtime;
 using Jazor.VueHost.Analysis;
 using Jazor.VueHost.Workspace;
 using Jazor.VueContracts.Protocol;
@@ -13,7 +12,7 @@ internal sealed class JazorLspDocumentService
     private static readonly Regex PrivateMethodPattern = new(@"(?<modifier>\bprivate\b)\s+(?<signature>(?:async\s+)?[\w<>\.\?]+\s+\w+\s*\()", RegexOptions.Compiled);
     private readonly IVueHostWorkspaceStore _workspaceStore;
     private readonly IVueAnalysisClient _analysisClient;
-    private readonly JazorVueAnalysisService _fallbackAnalysisService = new();
+    private readonly FallbackJazorAnalysisService _fallbackAnalysisService = new();
     private readonly JazorVueParser _parser = new();
 
     public JazorLspDocumentService(
