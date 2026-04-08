@@ -50,13 +50,14 @@ Minimal layout:
 - `Rpc/VueHostRpcProcessor.cs`
 - `Rpc/VueHostRpcSerializer.cs`
 - `Rpc/StdioVueHostRpcServer.cs`
-- `Rpc/VueHostRpcMethodNames.cs`
 - `Services/VueHostService.cs`
 - `Services/NullVueAnalysisClient.cs`
 - `Program.cs`
 
 Shared RPC envelope DTOs live in `Jazor.VueContracts/Protocol/RpcMessages.cs`.
 Bootstrap host info DTOs live in `Jazor.VueContracts/Protocol/HostInfo.cs`.
+Shared host RPC method names live in `Jazor.VueContracts/Protocol/VueHostRpcMethodNames.cs`.
+Shared protocol JSON serialization lives in `Jazor.VueContracts/Protocol/ProtocolJsonSerializer.cs`.
 
 Current stdio envelope:
 

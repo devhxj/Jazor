@@ -9,10 +9,10 @@ It should:
 
 - host the existing `Jazor.Vue.Analysis.Runtime` processor/server
 - expose `vueanalysis/analyzeJazor` over line-based stdio
-- stay thin enough that semantic logic remains in `Jazor.Vue.Analysis`
+- stay thin enough that semantic logic remains in `Jazor.Vue.Analysis.Runtime`
 
 It should not:
 
 - own workspace/session state
-- duplicate parsing or semantic logic from `Jazor.Vue.Analysis`
+- duplicate parsing or semantic logic from `Jazor.Vue.Analysis.Runtime`
 - grow into a second host orchestration layer

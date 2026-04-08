@@ -4,6 +4,7 @@ using Jazor.VueHost.Frontend;
 using Jazor.VueHost.Hosting;
 using Jazor.VueHost.Rpc;
 using Jazor.VueHost.Workspace;
+using SharedVueHostRpcMethodNames = Jazor.VueContracts.Protocol.VueHostRpcMethodNames;
 
 namespace Jazor.VueHost.Services;
 
@@ -11,14 +12,14 @@ public sealed class VueHostService : IVueHostService, IVueHostRpcService, IFront
 {
     private static readonly IReadOnlyList<HostCapabilityDescriptor> HostCapabilities =
     [
-        new HostCapabilityDescriptor(VueHostRpcMethodNames.Ping, "Lightweight liveness probe."),
-        new HostCapabilityDescriptor(VueHostRpcMethodNames.GetHostInfo, "Returns protocol version and advertised capabilities."),
-        new HostCapabilityDescriptor(VueHostRpcMethodNames.OpenDocument, "Opens or tracks a document in the workspace."),
-        new HostCapabilityDescriptor(VueHostRpcMethodNames.UpdateDocument, "Updates an already tracked document."),
-        new HostCapabilityDescriptor(VueHostRpcMethodNames.CloseDocument, "Stops tracking a document in the workspace."),
-        new HostCapabilityDescriptor(VueHostRpcMethodNames.GetOpenDocuments, "Returns currently tracked workspace documents."),
-        new HostCapabilityDescriptor(VueHostRpcMethodNames.GetFrontendContext, "Returns frontend semantic context for a .jazor document."),
-        new HostCapabilityDescriptor(VueHostRpcMethodNames.AnalyzeJazor, "Delegates .jazor analysis to the analysis client.")
+        new HostCapabilityDescriptor(SharedVueHostRpcMethodNames.Ping, "Lightweight liveness probe."),
+        new HostCapabilityDescriptor(SharedVueHostRpcMethodNames.GetHostInfo, "Returns protocol version and advertised capabilities."),
+        new HostCapabilityDescriptor(SharedVueHostRpcMethodNames.OpenDocument, "Opens or tracks a document in the workspace."),
+        new HostCapabilityDescriptor(SharedVueHostRpcMethodNames.UpdateDocument, "Updates an already tracked document."),
+        new HostCapabilityDescriptor(SharedVueHostRpcMethodNames.CloseDocument, "Stops tracking a document in the workspace."),
+        new HostCapabilityDescriptor(SharedVueHostRpcMethodNames.GetOpenDocuments, "Returns currently tracked workspace documents."),
+        new HostCapabilityDescriptor(SharedVueHostRpcMethodNames.GetFrontendContext, "Returns frontend semantic context for a .jazor document."),
+        new HostCapabilityDescriptor(SharedVueHostRpcMethodNames.AnalyzeJazor, "Delegates .jazor analysis to the analysis client.")
     ];
 
     private readonly IVueHostWorkspaceStore _workspaceStore;

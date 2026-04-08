@@ -1,4 +1,4 @@
-namespace Jazor.VueHost.Rpc;
+namespace Jazor.VueContracts.Protocol;
 
 public static class VueHostRpcMethodNames
 {

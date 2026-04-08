@@ -4,6 +4,7 @@ using Jazor.VueHost.Hosting;
 using Jazor.VueHost.Rpc;
 using Jazor.VueHost.Workspace;
 using Jazor.VueHost.Services;
+using SharedVueHostRpcMethodNames = Jazor.VueContracts.Protocol.VueHostRpcMethodNames;
 
 var useStdio = Console.IsInputRedirected
     || args.Any(static arg => string.Equals(arg, "--stdio", StringComparison.OrdinalIgnoreCase));
@@ -29,7 +30,7 @@ try
     var responseJson = await rpcProcessor.ProcessAsync(
         VueHostRpcSerializer.Serialize(new RpcRequestEnvelope(
             id: "startup",
-            method: VueHostRpcMethodNames.GetHostInfo,
+            method: SharedVueHostRpcMethodNames.GetHostInfo,
             payloadJson: null)),
         cancellationToken);
 

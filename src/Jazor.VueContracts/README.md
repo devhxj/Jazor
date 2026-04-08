@@ -12,8 +12,10 @@ It exists to carry:
 - semantic and artifact descriptors
 - protocol-level records that may cross process boundaries
 - transport-neutral RPC envelopes for host/client messaging
+- shared protocol JSON serialization policy
 - host bootstrapping DTOs for capability and liveness discovery
 - host capability and server-info DTOs for IDE/Vite bootstrap
+- shared VueHost RPC method names for cross-process invocation
 - shared VueAnalysis RPC method names for cross-process invocation
 
 It should not become:

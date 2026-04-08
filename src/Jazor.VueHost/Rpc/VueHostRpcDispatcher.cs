@@ -1,4 +1,5 @@
 using Jazor.VueContracts.Protocol;
+using SharedVueHostRpcMethodNames = Jazor.VueContracts.Protocol.VueHostRpcMethodNames;
 
 namespace Jazor.VueHost.Rpc;
 
@@ -20,14 +21,14 @@ public sealed class VueHostRpcDispatcher : IVueHostRpcDispatcher
 
         return methodName switch
         {
-            VueHostRpcMethodNames.Ping => await _rpcService.PingAsync(cancellationToken),
-            VueHostRpcMethodNames.GetHostInfo => await _rpcService.GetHostInfoAsync(cancellationToken),
-            VueHostRpcMethodNames.OpenDocument => await DispatchOpenDocumentAsync(payload, cancellationToken),
-            VueHostRpcMethodNames.UpdateDocument => await DispatchUpdateDocumentAsync(payload, cancellationToken),
-            VueHostRpcMethodNames.CloseDocument => await DispatchCloseDocumentAsync(payload, cancellationToken),
-            VueHostRpcMethodNames.GetOpenDocuments => await _rpcService.GetOpenDocumentsAsync(cancellationToken),
-            VueHostRpcMethodNames.GetFrontendContext => await DispatchGetFrontendContextAsync(payload, cancellationToken),
-            VueHostRpcMethodNames.AnalyzeJazor => await DispatchAnalyzeJazorAsync(payload, cancellationToken),
+            SharedVueHostRpcMethodNames.Ping => await _rpcService.PingAsync(cancellationToken),
+            SharedVueHostRpcMethodNames.GetHostInfo => await _rpcService.GetHostInfoAsync(cancellationToken),
+            SharedVueHostRpcMethodNames.OpenDocument => await DispatchOpenDocumentAsync(payload, cancellationToken),
+            SharedVueHostRpcMethodNames.UpdateDocument => await DispatchUpdateDocumentAsync(payload, cancellationToken),
+            SharedVueHostRpcMethodNames.CloseDocument => await DispatchCloseDocumentAsync(payload, cancellationToken),
+            SharedVueHostRpcMethodNames.GetOpenDocuments => await _rpcService.GetOpenDocumentsAsync(cancellationToken),
+            SharedVueHostRpcMethodNames.GetFrontendContext => await DispatchGetFrontendContextAsync(payload, cancellationToken),
+            SharedVueHostRpcMethodNames.AnalyzeJazor => await DispatchAnalyzeJazorAsync(payload, cancellationToken),
             _ => throw new VueHostRpcException("unknown_method", $"Unknown Jazor.VueHost RPC method '{methodName}'.")
         };
     }

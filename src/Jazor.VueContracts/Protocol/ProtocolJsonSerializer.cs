@@ -1,9 +1,9 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Jazor.Vue.Analysis.Runtime;
+namespace Jazor.VueContracts.Protocol;
 
-public static class VueAnalysisRpcSerializer
+public static class ProtocolJsonSerializer
 {
     public static readonly JsonSerializerOptions DefaultOptions = CreateDefaultOptions();
 

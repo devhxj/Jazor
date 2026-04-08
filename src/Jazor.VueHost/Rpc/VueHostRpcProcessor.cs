@@ -1,4 +1,5 @@
 using Jazor.VueContracts.Protocol;
+using SharedVueHostRpcMethodNames = Jazor.VueContracts.Protocol.VueHostRpcMethodNames;
 
 namespace Jazor.VueHost.Rpc;
 
@@ -53,14 +54,14 @@ public sealed class VueHostRpcProcessor : IVueHostRpcProcessor
     {
         return methodName switch
         {
-            VueHostRpcMethodNames.Ping => null,
-            VueHostRpcMethodNames.GetHostInfo => null,
-            VueHostRpcMethodNames.OpenDocument => DeserializeRequired<DocumentSnapshot>(payloadJson),
-            VueHostRpcMethodNames.UpdateDocument => DeserializeRequired<DocumentSnapshot>(payloadJson),
-            VueHostRpcMethodNames.CloseDocument => DeserializeRequired<string>(payloadJson),
-            VueHostRpcMethodNames.GetOpenDocuments => null,
-            VueHostRpcMethodNames.GetFrontendContext => DeserializeRequired<GetFrontendContextRequest>(payloadJson),
-            VueHostRpcMethodNames.AnalyzeJazor => DeserializeRequired<AnalyzeJazorRequest>(payloadJson),
+            SharedVueHostRpcMethodNames.Ping => null,
+            SharedVueHostRpcMethodNames.GetHostInfo => null,
+            SharedVueHostRpcMethodNames.OpenDocument => DeserializeRequired<DocumentSnapshot>(payloadJson),
+            SharedVueHostRpcMethodNames.UpdateDocument => DeserializeRequired<DocumentSnapshot>(payloadJson),
+            SharedVueHostRpcMethodNames.CloseDocument => DeserializeRequired<string>(payloadJson),
+            SharedVueHostRpcMethodNames.GetOpenDocuments => null,
+            SharedVueHostRpcMethodNames.GetFrontendContext => DeserializeRequired<GetFrontendContextRequest>(payloadJson),
+            SharedVueHostRpcMethodNames.AnalyzeJazor => DeserializeRequired<AnalyzeJazorRequest>(payloadJson),
             _ => throw new VueHostRpcException("unknown_method", $"Unknown Jazor.VueHost RPC method '{methodName}'.")
         };
     }
