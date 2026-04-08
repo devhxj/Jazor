@@ -7,4 +7,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
   </PropertyGroup>
+  <ItemGroup>
+    <None Include="Frontend\Deno\Worker\frontend-worker.ts">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>Frontend\Deno\Worker\frontend-worker.ts</TargetPath>
+    </None>
+  </ItemGroup>
 </Project>

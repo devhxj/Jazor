@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Jazor.VueHost.Lsp;
 
 namespace Jazor.VueHost.Frontend.Deno.Protocol;
 
@@ -28,7 +29,7 @@ internal class DenoTemplateRequest
 
     public required string Text { get; init; }
 
-    public required DenoTemplatePosition Position { get; init; }
+    public required LspPosition Position { get; init; }
 }
 
 internal sealed class DenoTemplateReferenceRequest : DenoTemplateRequest
@@ -39,11 +40,4 @@ internal sealed class DenoTemplateReferenceRequest : DenoTemplateRequest
 internal sealed class DenoTemplateRenameRequest : DenoTemplateRequest
 {
     public required string NewName { get; init; }
-}
-
-internal sealed class DenoTemplatePosition
-{
-    public int Line { get; init; }
-
-    public int Character { get; init; }
 }

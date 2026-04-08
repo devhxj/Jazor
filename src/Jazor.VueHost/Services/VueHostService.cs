@@ -34,8 +34,15 @@ public sealed class VueHostService : IVueHostService, IVueHostRpcService, IFront
 
     public VueHostService(
         IVueHostWorkspaceStore workspaceStore,
+        IVueAnalysisClient analysisClient)
+        : this(workspaceStore, analysisClient, denoFrontendHost: null)
+    {
+    }
+
+    internal VueHostService(
+        IVueHostWorkspaceStore workspaceStore,
         IVueAnalysisClient analysisClient,
-        IDenoFrontendHost? denoFrontendHost = null)
+        IDenoFrontendHost? denoFrontendHost)
     {
         _workspaceStore = workspaceStore ?? throw new ArgumentNullException(nameof(workspaceStore));
         _analysisClient = analysisClient ?? throw new ArgumentNullException(nameof(analysisClient));

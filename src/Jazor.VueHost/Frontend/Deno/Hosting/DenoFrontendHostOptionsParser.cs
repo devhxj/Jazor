@@ -66,15 +66,7 @@ internal static class DenoFrontendHostOptionsParser
 
     private static IEnumerable<string> CreateDefaultArguments()
     {
-        var workerPath = Path.GetFullPath(Path.Combine(
-            AppContext.BaseDirectory,
-            "..",
-            "..",
-            "..",
-            "Frontend",
-            "Deno",
-            "Worker",
-            "frontend-worker.ts"));
+        var workerPath = ResolveDefaultWorkerPath();
 
         return
         [
@@ -82,6 +74,39 @@ internal static class DenoFrontendHostOptionsParser
             "--quiet",
             workerPath
         ];
+    }
+
+    private static string ResolveDefaultWorkerPath()
+    {
+        var outputWorkerPath = Path.GetFullPath(Path.Combine(
+            AppContext.BaseDirectory,
+            "Frontend",
+            "Deno",
+            "Worker",
+            "frontend-worker.ts"));
+        if (File.Exists(outputWorkerPath))
+        {
+            return outputWorkerPath;
+        }
+
+        var sourceWorkerPath = Path.GetFullPath(Path.Combine(
+            AppContext.BaseDirectory,
+            "..",
+            "..",
+            "..",
+            "..",
+            "src",
+            "Jazor.VueHost",
+            "Frontend",
+            "Deno",
+            "Worker",
+            "frontend-worker.ts"));
+        if (File.Exists(sourceWorkerPath))
+        {
+            return sourceWorkerPath;
+        }
+
+        return outputWorkerPath;
     }
 
     private static bool TryGetOptionValue(string arg, string optionName, out string value)

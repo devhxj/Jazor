@@ -1,8 +1,9 @@
 using Jazor.VueContracts.Protocol;
+using Jazor.VueHost.Lsp;
 
 namespace Jazor.VueHost.Frontend.Deno.Hosting;
 
-public interface IDenoFrontendHost : IAsyncDisposable
+internal interface IDenoFrontendHost : IAsyncDisposable
 {
     bool IsRunning { get; }
 
@@ -10,30 +11,30 @@ public interface IDenoFrontendHost : IAsyncDisposable
 
     ValueTask StopAsync(CancellationToken cancellationToken);
 
-    ValueTask<IReadOnlyList<object>> GetTemplateCompletionItemsAsync(
+    ValueTask<IReadOnlyList<LspCompletionItem>> GetTemplateCompletionItemsAsync(
         DocumentSnapshot document,
-        object position,
+        LspPosition position,
         CancellationToken cancellationToken);
 
-    ValueTask<object?> GetTemplateHoverAsync(
+    ValueTask<LspHoverResult?> GetTemplateHoverAsync(
         DocumentSnapshot document,
-        object position,
+        LspPosition position,
         CancellationToken cancellationToken);
 
-    ValueTask<IReadOnlyList<object>> GetTemplateDefinitionAsync(
+    ValueTask<IReadOnlyList<LspLocation>> GetTemplateDefinitionAsync(
         DocumentSnapshot document,
-        object position,
+        LspPosition position,
         CancellationToken cancellationToken);
 
-    ValueTask<IReadOnlyList<object>> GetTemplateReferencesAsync(
+    ValueTask<IReadOnlyList<LspLocation>> GetTemplateReferencesAsync(
         DocumentSnapshot document,
-        object position,
+        LspPosition position,
         bool includeDeclaration,
         CancellationToken cancellationToken);
 
-    ValueTask<object?> GetTemplateRenameAsync(
+    ValueTask<LspWorkspaceEdit?> GetTemplateRenameAsync(
         DocumentSnapshot document,
-        object position,
+        LspPosition position,
         string newName,
         CancellationToken cancellationToken);
 }

@@ -1,11 +1,10 @@
-using System.Text.Json;
 using Jazor.VueContracts.Protocol;
 using Jazor.VueHost.Frontend.Deno.Protocol;
 using Jazor.VueHost.Lsp;
 
 namespace Jazor.VueHost.Frontend.Deno.Hosting;
 
-public sealed class DenoFrontendHost : IDenoFrontendHost
+internal sealed class DenoFrontendHost : IDenoFrontendHost
 {
     private readonly DenoFrontendHostOptions _options;
     private readonly DenoWorkerProcess _workerProcess;
@@ -51,38 +50,38 @@ public sealed class DenoFrontendHost : IDenoFrontendHost
         await StopAsync(CancellationToken.None);
     }
 
-    public async ValueTask<IReadOnlyList<object>> GetTemplateCompletionItemsAsync(
+    public async ValueTask<IReadOnlyList<LspCompletionItem>> GetTemplateCompletionItemsAsync(
         DocumentSnapshot document,
-        object position,
+        LspPosition position,
         CancellationToken cancellationToken)
     {
         var request = CreateRequest(document, position);
         var items = await SendAsync<LspCompletionItem[]>("template/completion", request, cancellationToken);
-        return items?.Cast<object>().ToArray() ?? Array.Empty<object>();
+        return items ?? Array.Empty<LspCompletionItem>();
     }
 
-    public async ValueTask<object?> GetTemplateHoverAsync(
+    public async ValueTask<LspHoverResult?> GetTemplateHoverAsync(
         DocumentSnapshot document,
-        object position,
+        LspPosition position,
         CancellationToken cancellationToken)
     {
         var request = CreateRequest(document, position);
         return await SendAsync<LspHoverResult>("template/hover", request, cancellationToken);
     }
 
-    public async ValueTask<IReadOnlyList<object>> GetTemplateDefinitionAsync(
+    public async ValueTask<IReadOnlyList<LspLocation>> GetTemplateDefinitionAsync(
         DocumentSnapshot document,
-        object position,
+        LspPosition position,
         CancellationToken cancellationToken)
     {
         var request = CreateRequest(document, position);
         var locations = await SendAsync<LspLocation[]>("template/definition", request, cancellationToken);
-        return locations?.Cast<object>().ToArray() ?? Array.Empty<object>();
+        return locations ?? Array.Empty<LspLocation>();
     }
 
-    public async ValueTask<IReadOnlyList<object>> GetTemplateReferencesAsync(
+    public async ValueTask<IReadOnlyList<LspLocation>> GetTemplateReferencesAsync(
         DocumentSnapshot document,
-        object position,
+        LspPosition position,
         bool includeDeclaration,
         CancellationToken cancellationToken)
     {
@@ -90,16 +89,16 @@ public sealed class DenoFrontendHost : IDenoFrontendHost
         {
             DocumentPath = document.DocumentPath,
             Text = document.Text,
-            Position = ToPosition(position),
+            Position = position,
             IncludeDeclaration = includeDeclaration
         };
         var locations = await SendAsync<LspLocation[]>("template/references", request, cancellationToken);
-        return locations?.Cast<object>().ToArray() ?? Array.Empty<object>();
+        return locations ?? Array.Empty<LspLocation>();
     }
 
-    public async ValueTask<object?> GetTemplateRenameAsync(
+    public async ValueTask<LspWorkspaceEdit?> GetTemplateRenameAsync(
         DocumentSnapshot document,
-        object position,
+        LspPosition position,
         string newName,
         CancellationToken cancellationToken)
     {
@@ -107,7 +106,7 @@ public sealed class DenoFrontendHost : IDenoFrontendHost
         {
             DocumentPath = document.DocumentPath,
             Text = document.Text,
-            Position = ToPosition(position),
+            Position = position,
             NewName = newName
         };
         return await SendAsync<LspWorkspaceEdit>("template/rename", request, cancellationToken);
@@ -144,27 +143,11 @@ public sealed class DenoFrontendHost : IDenoFrontendHost
         await StartAsync(cancellationToken);
     }
 
-    private static DenoTemplateRequest CreateRequest(DocumentSnapshot document, object position)
+    private static DenoTemplateRequest CreateRequest(DocumentSnapshot document, LspPosition position)
         => new()
         {
             DocumentPath = document.DocumentPath,
             Text = document.Text,
-            Position = ToPosition(position)
+            Position = position
         };
-
-    private static DenoTemplatePosition ToPosition(object position)
-    {
-        if (position is LspPosition typedPosition)
-        {
-            return new DenoTemplatePosition
-            {
-                Line = typedPosition.Line,
-                Character = typedPosition.Character
-            };
-        }
-
-        var json = JsonSerializer.Serialize(position);
-        return JsonSerializer.Deserialize<DenoTemplatePosition>(json)
-            ?? throw new InvalidOperationException("Unable to convert template position payload.");
-    }
 }

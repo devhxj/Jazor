@@ -1,7 +1,6 @@
 using Jazor.VueContracts.Protocol;
 using Jazor.VueHost.Frontend.Deno.Hosting;
 using Jazor.VueHost.Lsp.Routing;
-using System.Reflection;
 
 namespace Jazor.VueHost.Lsp.Lanes;
 
@@ -36,12 +35,7 @@ internal sealed class FrontendLaneService : ILspLane
             return null;
         }
 
-        var denoResult = await TryInvokeDenoAsync<LspHoverResult?>(
-            ["GetHoverAsync", "GetTemplateHoverAsync"],
-            cancellationToken,
-            document,
-            position,
-            projectionTarget);
+        var denoResult = await TryGetDenoHoverAsync(document, position, cancellationToken);
         if (denoResult is not null)
         {
             return denoResult;
@@ -61,12 +55,7 @@ internal sealed class FrontendLaneService : ILspLane
             return Array.Empty<LspCompletionItem>();
         }
 
-        var denoResult = await TryInvokeDenoAsync<IReadOnlyList<LspCompletionItem>>(
-            ["GetCompletionItemsAsync", "GetTemplateCompletionItemsAsync"],
-            cancellationToken,
-            document,
-            position,
-            projectionTarget);
+        var denoResult = await TryGetDenoCompletionItemsAsync(document, position, cancellationToken);
         if (denoResult is { Count: > 0 })
         {
             return denoResult;
@@ -86,12 +75,7 @@ internal sealed class FrontendLaneService : ILspLane
             return Array.Empty<LspLocation>();
         }
 
-        var denoResult = await TryInvokeDenoAsync<IReadOnlyList<LspLocation>>(
-            ["GetDefinitionAsync", "GetTemplateDefinitionAsync"],
-            cancellationToken,
-            document,
-            position,
-            projectionTarget);
+        var denoResult = await TryGetDenoDefinitionsAsync(document, position, cancellationToken);
         if (denoResult is { Count: > 0 })
         {
             return denoResult;
@@ -112,13 +96,7 @@ internal sealed class FrontendLaneService : ILspLane
             return Array.Empty<LspLocation>();
         }
 
-        var denoResult = await TryInvokeDenoAsync<IReadOnlyList<LspLocation>>(
-            ["GetReferencesAsync", "GetTemplateReferencesAsync"],
-            cancellationToken,
-            document,
-            position,
-            includeDeclaration,
-            projectionTarget);
+        var denoResult = await TryGetDenoReferencesAsync(document, position, includeDeclaration, cancellationToken);
         if (denoResult is { Count: > 0 })
         {
             return denoResult;
@@ -139,13 +117,7 @@ internal sealed class FrontendLaneService : ILspLane
             return null;
         }
 
-        var denoResult = await TryInvokeDenoAsync<LspWorkspaceEdit?>(
-            ["GetRenameAsync", "GetTemplateRenameAsync"],
-            cancellationToken,
-            document,
-            position,
-            newName,
-            projectionTarget);
+        var denoResult = await TryGetDenoRenameAsync(document, position, newName, cancellationToken);
         if (denoResult is not null)
         {
             return denoResult;
@@ -168,153 +140,109 @@ internal sealed class FrontendLaneService : ILspLane
         => projectionTarget.LaneKind == LaneKind.Frontend
             || projectionTarget.RegionKind == DocumentRegionKind.Template;
 
-    private async ValueTask<TResult?> TryInvokeDenoAsync<TResult>(
-        string[] methodNames,
-        CancellationToken cancellationToken,
-        params object?[] arguments)
+    private async ValueTask<IReadOnlyList<LspCompletionItem>> TryGetDenoCompletionItemsAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        CancellationToken cancellationToken)
     {
         if (_denoFrontendHost is null || !_denoFrontendHost.IsRunning)
         {
-            return default;
+            return Array.Empty<LspCompletionItem>();
         }
 
-        var hostType = _denoFrontendHost.GetType();
-        foreach (var methodName in methodNames)
+        try
         {
-            var methods = hostType.GetMethods(BindingFlags.Instance | BindingFlags.Public)
-                .Where(candidate => string.Equals(candidate.Name, methodName, StringComparison.Ordinal))
-                .ToArray();
-            foreach (var method in methods)
-            {
-                if (!TryBuildInvocationArguments(method, cancellationToken, arguments, out var invocationArguments))
-                {
-                    continue;
-                }
-
-                try
-                {
-                    var invocationResult = method.Invoke(_denoFrontendHost, invocationArguments);
-                    return await ConvertResultAsync<TResult>(invocationResult);
-                }
-                catch
-                {
-                    return default;
-                }
-            }
+            return await _denoFrontendHost.GetTemplateCompletionItemsAsync(document, position, cancellationToken);
         }
-
-        return default;
+        catch
+        {
+            return Array.Empty<LspCompletionItem>();
+        }
     }
 
-    private static bool TryBuildInvocationArguments(
-        MethodInfo method,
-        CancellationToken cancellationToken,
-        object?[] providedArguments,
-        out object?[] invocationArguments)
+    private async ValueTask<LspHoverResult?> TryGetDenoHoverAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        CancellationToken cancellationToken)
     {
-        var parameters = method.GetParameters();
-        invocationArguments = new object?[parameters.Length];
-        var usedArguments = new bool[providedArguments.Length];
-
-        for (var parameterIndex = 0; parameterIndex < parameters.Length; parameterIndex++)
+        if (_denoFrontendHost is null || !_denoFrontendHost.IsRunning)
         {
-            var parameter = parameters[parameterIndex];
-            if (parameter.ParameterType == typeof(CancellationToken))
-            {
-                invocationArguments[parameterIndex] = cancellationToken;
-                continue;
-            }
-
-            var matched = false;
-            for (var argumentIndex = 0; argumentIndex < providedArguments.Length; argumentIndex++)
-            {
-                if (usedArguments[argumentIndex])
-                {
-                    continue;
-                }
-
-                var argument = providedArguments[argumentIndex];
-                if (argument is null)
-                {
-                    if (!parameter.ParameterType.IsValueType || Nullable.GetUnderlyingType(parameter.ParameterType) is not null)
-                    {
-                        invocationArguments[parameterIndex] = null;
-                        usedArguments[argumentIndex] = true;
-                        matched = true;
-                        break;
-                    }
-
-                    continue;
-                }
-
-                if (!parameter.ParameterType.IsInstanceOfType(argument))
-                {
-                    continue;
-                }
-
-                invocationArguments[parameterIndex] = argument;
-                usedArguments[argumentIndex] = true;
-                matched = true;
-                break;
-            }
-
-            if (!matched)
-            {
-                return false;
-            }
+            return null;
         }
 
-        return true;
+        try
+        {
+            return await _denoFrontendHost.GetTemplateHoverAsync(document, position, cancellationToken);
+        }
+        catch
+        {
+            return null;
+        }
     }
 
-    private static async ValueTask<TResult?> ConvertResultAsync<TResult>(object? invocationResult)
+    private async ValueTask<IReadOnlyList<LspLocation>> TryGetDenoDefinitionsAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        CancellationToken cancellationToken)
     {
-        if (invocationResult is null)
+        if (_denoFrontendHost is null || !_denoFrontendHost.IsRunning)
         {
-            return default;
+            return Array.Empty<LspLocation>();
         }
 
-        if (invocationResult is TResult typedResult)
+        try
         {
-            return typedResult;
+            return await _denoFrontendHost.GetTemplateDefinitionAsync(document, position, cancellationToken);
+        }
+        catch
+        {
+            return Array.Empty<LspLocation>();
+        }
+    }
+
+    private async ValueTask<IReadOnlyList<LspLocation>> TryGetDenoReferencesAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        bool includeDeclaration,
+        CancellationToken cancellationToken)
+    {
+        if (_denoFrontendHost is null || !_denoFrontendHost.IsRunning)
+        {
+            return Array.Empty<LspLocation>();
         }
 
-        if (invocationResult is ValueTask<TResult> valueTaskResult)
+        try
         {
-            return await valueTaskResult;
+            return await _denoFrontendHost.GetTemplateReferencesAsync(
+                document,
+                position,
+                includeDeclaration,
+                cancellationToken);
+        }
+        catch
+        {
+            return Array.Empty<LspLocation>();
+        }
+    }
+
+    private async ValueTask<LspWorkspaceEdit?> TryGetDenoRenameAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        string newName,
+        CancellationToken cancellationToken)
+    {
+        if (_denoFrontendHost is null || !_denoFrontendHost.IsRunning)
+        {
+            return null;
         }
 
-        if (invocationResult is Task<TResult> taskResult)
+        try
         {
-            return await taskResult;
+            return await _denoFrontendHost.GetTemplateRenameAsync(document, position, newName, cancellationToken);
         }
-
-        var invocationType = invocationResult.GetType();
-        if (invocationType.IsGenericType && invocationType.GetGenericTypeDefinition() == typeof(ValueTask<>))
+        catch
         {
-            var asTask = invocationType.GetMethod("AsTask", BindingFlags.Instance | BindingFlags.Public);
-            var task = asTask?.Invoke(invocationResult, null) as Task;
-            if (task is not null)
-            {
-                await task;
-                var resultProperty = task.GetType().GetProperty("Result", BindingFlags.Instance | BindingFlags.Public);
-                if (resultProperty?.GetValue(task) is TResult reflectedResult)
-                {
-                    return reflectedResult;
-                }
-            }
+            return null;
         }
-
-        if (invocationResult is Task nonGenericTask)
-        {
-            await nonGenericTask;
-            var resultProperty = nonGenericTask.GetType().GetProperty("Result", BindingFlags.Instance | BindingFlags.Public);
-            if (resultProperty?.GetValue(nonGenericTask) is TResult reflectedTaskResult)
-            {
-                return reflectedTaskResult;
-            }
-        }
-
-        return default;
     }
 }
