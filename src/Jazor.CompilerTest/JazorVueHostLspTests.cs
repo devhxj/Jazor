@@ -81,6 +81,90 @@ public sealed class JazorVueHostLspTests
     }
 
     [TestMethod]
+    public async Task JazorVueHost_Lsp_TemplateRequests_ReturnNullOrEmptyWhenFrontendLaneHasNoAnswer()
+    {
+        await using var client = await LspTestClient.StartAsync("--no-deno-worker");
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var componentPath = Path.Combine(tempDirectory, "UserCard.vue");
+            await File.WriteAllTextAsync(componentPath, "<template><div>UserCard</div></template>");
+
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            var text =
+                """
+                <template>
+                  <UserCard />
+                </template>
+                """;
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                method = "textDocument/didOpen",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri,
+                        languageId = "jazor",
+                        version = 1,
+                        text
+                    }
+                }
+            });
+            using var openDiagnostics = await client.ReadMessageAsync();
+            Assert.AreEqual("textDocument/publishDiagnostics", openDiagnostics.RootElement.GetProperty("method").GetString());
+
+            var completionLabels = await client.RequestCompletionLabelsAsync(
+                requestId: 901,
+                uri: documentUri,
+                line: 1,
+                character: 3);
+            Assert.AreEqual(0, completionLabels.Length);
+
+            var hover = await client.RequestHoverAsync(
+                requestId: 902,
+                uri: documentUri,
+                line: 1,
+                character: 3);
+            Assert.IsNull(hover);
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 903,
+                method = "textDocument/definition",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri
+                    },
+                    position = new
+                    {
+                        line = 1,
+                        character = 3
+                    }
+                }
+            });
+            using var definitionResponse = await client.ReadResponseAsync(expectedId: 903);
+            Assert.AreEqual(0, definitionResponse.RootElement.GetProperty("result").GetArrayLength());
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
     public async Task JazorVueHost_Lsp_DidOpenDidChangeAndDidClose_PublishDiagnostics()
     {
         await using var client = await LspTestClient.StartAsync();

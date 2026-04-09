@@ -52,6 +52,76 @@ public sealed class JazorVueHostFrontendLaneTests
     }
 
     [TestMethod]
+    public async Task JazorVueHost_DenoFrontendHost_GetTemplateDocumentSymbols_StartsWorkerAndReturnsTypedSymbols()
+    {
+        var workerProcess = new FakeDenoWorkerProcess();
+        workerProcess.SetResult(
+            "template/documentSymbols",
+            new[]
+            {
+                new LspDocumentSymbol
+                {
+                    Name = "Template",
+                    Kind = 2,
+                    Range = new LspRange
+                    {
+                        Start = new LspPosition { Line = 0, Character = 0 },
+                        End = new LspPosition { Line = 2, Character = 11 }
+                    },
+                    SelectionRange = new LspRange
+                    {
+                        Start = new LspPosition { Line = 0, Character = 0 },
+                        End = new LspPosition { Line = 0, Character = 10 }
+                    },
+                    Children =
+                    [
+                        new LspDocumentSymbol
+                        {
+                            Name = "UserCard",
+                            Kind = 5,
+                            Range = new LspRange
+                            {
+                                Start = new LspPosition { Line = 1, Character = 3 },
+                                End = new LspPosition { Line = 1, Character = 11 }
+                            },
+                            SelectionRange = new LspRange
+                            {
+                                Start = new LspPosition { Line = 1, Character = 3 },
+                                End = new LspPosition { Line = 1, Character = 11 }
+                            }
+                        }
+                    ]
+                }
+            });
+        var host = new DenoFrontendHost(
+            new DenoFrontendHostOptions
+            {
+                Enabled = true,
+                IgnoreStartupFailure = false
+            },
+            workerProcess);
+
+        var symbols = await host.GetTemplateDocumentSymbolsAsync(
+            new DocumentSnapshot(
+                @"D:\temp\Host.vue",
+                DocumentKind.Vue,
+                """
+                <template>
+                  <UserCard />
+                </template>
+                """,
+                "1"),
+            CancellationToken.None);
+
+        Assert.AreEqual(1, workerProcess.StartCallCount);
+        Assert.AreEqual(1, symbols.Count);
+        Assert.AreEqual("Template", symbols[0].Name);
+        Assert.IsNotNull(symbols[0].Children);
+        Assert.AreEqual("UserCard", symbols[0].Children![0].Name);
+        CollectionAssert.AreEqual(new[] { "template/documentSymbols" }, workerProcess.RequestMethods);
+    }
+
+    [TestMethod]
     public async Task JazorVueHost_FrontendLaneService_GetDiagnostics_DeduplicatesMatchingDenoDiagnostics()
     {
         var lane = CreateLane(new FakeDenoFrontendHost
@@ -116,84 +186,37 @@ public sealed class JazorVueHostFrontendLaneTests
     }
 
     [TestMethod]
-    public async Task JazorVueHost_FrontendLaneService_GetCompletionItems_FallsBackWhenDenoReturnsEmpty()
+    public async Task JazorVueHost_FrontendLaneService_GetCompletionItems_ReturnsEmptyWhenDenoReturnsEmpty()
     {
         var lane = CreateLane(new FakeDenoFrontendHost());
-        var tempDirectory = CreateTemporaryDirectory();
+        var document = CreateDocument("""
+            <
+            """);
 
-        try
-        {
-            var componentsDirectory = Path.Combine(tempDirectory, "Components");
-            Directory.CreateDirectory(componentsDirectory);
-            await File.WriteAllTextAsync(
-                Path.Combine(componentsDirectory, "UserCard.vue"),
-                "<template><div /></template>");
+        var items = await lane.GetCompletionItemsAsync(
+            document,
+            new LspPosition { Line = 0, Character = 1 },
+            CreateTemplateTarget(document),
+            CancellationToken.None);
 
-            var document = new DocumentSnapshot(
-                Path.Combine(tempDirectory, "Counter.jazor"),
-                DocumentKind.Jazor,
-                """
-                <
-                """,
-                "1");
-
-            var items = await lane.GetCompletionItemsAsync(
-                document,
-                new LspPosition { Line = 0, Character = 1 },
-                CreateTemplateTarget(document),
-                CancellationToken.None);
-
-            CollectionAssert.Contains(items.Select(static item => item.Label).ToArray(), "UserCard");
-        }
-        finally
-        {
-            if (Directory.Exists(tempDirectory))
-            {
-                Directory.Delete(tempDirectory, recursive: true);
-            }
-        }
+        Assert.AreEqual(0, items.Count);
     }
 
     [TestMethod]
-    public async Task JazorVueHost_FrontendLaneService_GetCompletionItems_FiltersNearbyVueComponentsByTypedPrefix()
+    public async Task JazorVueHost_FrontendLaneService_GetHover_ReturnsNullWhenDenoReturnsNull()
     {
         var lane = CreateLane(new FakeDenoFrontendHost());
-        var tempDirectory = CreateTemporaryDirectory();
+        var document = CreateDocument("""
+            <UserCard />
+            """);
 
-        try
-        {
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDirectory, "UserCard.vue"),
-                "<template><div /></template>");
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDirectory, "ProfileCard.vue"),
-                "<template><div /></template>");
+        var hover = await lane.GetHoverAsync(
+            document,
+            new LspPosition { Line = 0, Character = 2 },
+            CreateTemplateTarget(document),
+            CancellationToken.None);
 
-            var document = new DocumentSnapshot(
-                Path.Combine(tempDirectory, "Counter.jazor"),
-                DocumentKind.Jazor,
-                """
-                <Use
-                """,
-                "1");
-
-            var items = await lane.GetCompletionItemsAsync(
-                document,
-                new LspPosition { Line = 0, Character = 4 },
-                CreateTemplateTarget(document),
-                CancellationToken.None);
-
-            var labels = items.Select(static item => item.Label).ToArray();
-            CollectionAssert.Contains(labels, "UserCard");
-            CollectionAssert.DoesNotContain(labels, "ProfileCard");
-        }
-        finally
-        {
-            if (Directory.Exists(tempDirectory))
-            {
-                Directory.Delete(tempDirectory, recursive: true);
-            }
-        }
+        Assert.IsNull(hover);
     }
 
     [TestMethod]
@@ -227,133 +250,96 @@ public sealed class JazorVueHostFrontendLaneTests
     }
 
     [TestMethod]
-    public async Task JazorVueHost_FrontendLaneService_GetCompletionItems_SuggestsNearbyVueFilesWhenNotImported()
+    public async Task JazorVueHost_FrontendLaneService_GetDocumentSymbols_PrefersDenoResults()
     {
-        var lane = CreateLane(new FakeDenoFrontendHost());
-        var tempDirectory = CreateTemporaryDirectory();
-
-        try
+        var lane = CreateLane(new FakeDenoFrontendHost
         {
-            var componentsDirectory = Path.Combine(tempDirectory, "Components");
-            Directory.CreateDirectory(componentsDirectory);
-            await File.WriteAllTextAsync(
-                Path.Combine(componentsDirectory, "MissingCard.vue"),
-                "<template><div /></template>");
+            DocumentSymbols =
+            [
+                new LspDocumentSymbol
+                {
+                    Name = "Template",
+                    Kind = 2,
+                    Range = new LspRange
+                    {
+                        Start = new LspPosition { Line = 0, Character = 0 },
+                        End = new LspPosition { Line = 2, Character = 11 }
+                    },
+                    SelectionRange = new LspRange
+                    {
+                        Start = new LspPosition { Line = 0, Character = 0 },
+                        End = new LspPosition { Line = 0, Character = 10 }
+                    }
+                }
+            ]
+        });
+        var document = new DocumentSnapshot(
+            @"D:\temp\Host.vue",
+            DocumentKind.Vue,
+            """
+            <template>
+              <UserCard />
+            </template>
+            """,
+            "1");
 
-            var document = new DocumentSnapshot(
-                Path.Combine(tempDirectory, "Counter.jazor"),
-                DocumentKind.Jazor,
-                """
-                <template>
-                  <
-                </template>
-                """,
-                "1");
+        var symbols = await lane.GetDocumentSymbolsAsync(document, CancellationToken.None);
 
-            var items = await lane.GetCompletionItemsAsync(
-                document,
-                new LspPosition { Line = 1, Character = 3 },
-                CreateTemplateTarget(document),
-                CancellationToken.None);
-
-            var missingCard = items.SingleOrDefault(static item => item.Label == "MissingCard");
-            Assert.IsNotNull(missingCard);
-            Assert.AreEqual("./Components/MissingCard.vue", missingCard.Detail);
-        }
-        finally
-        {
-            if (Directory.Exists(tempDirectory))
-            {
-                Directory.Delete(tempDirectory, recursive: true);
-            }
-        }
+        Assert.AreEqual(1, symbols.Count);
+        Assert.AreEqual("Template", symbols[0].Name);
     }
 
     [TestMethod]
-    public async Task JazorVueHost_FrontendLaneService_GetCompletionItems_FiltersNearbyVueFilesByTypedPrefix()
+    public async Task JazorVueHost_FrontendLaneService_GetDefinition_ReturnsEmptyWhenDenoReturnsEmpty()
     {
         var lane = CreateLane(new FakeDenoFrontendHost());
-        var tempDirectory = CreateTemporaryDirectory();
+        var document = CreateDocument("""
+            <UserCard />
+            """);
 
-        try
-        {
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDirectory, "UserCard.vue"),
-                "<template><div /></template>");
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDirectory, "ProfileCard.vue"),
-                "<template><div /></template>");
+        var locations = await lane.GetDefinitionAsync(
+            document,
+            new LspPosition { Line = 0, Character = 2 },
+            CreateTemplateTarget(document),
+            CancellationToken.None);
 
-            var document = new DocumentSnapshot(
-                Path.Combine(tempDirectory, "Counter.jazor"),
-                DocumentKind.Jazor,
-                """
-                <template>
-                  <Pro
-                </template>
-                """,
-                "1");
-
-            var items = await lane.GetCompletionItemsAsync(
-                document,
-                new LspPosition { Line = 1, Character = 6 },
-                CreateTemplateTarget(document),
-                CancellationToken.None);
-
-            var labels = items.Select(static item => item.Label).ToArray();
-            CollectionAssert.Contains(labels, "ProfileCard");
-            CollectionAssert.DoesNotContain(labels, "UserCard");
-        }
-        finally
-        {
-            if (Directory.Exists(tempDirectory))
-            {
-                Directory.Delete(tempDirectory, recursive: true);
-            }
-        }
+        Assert.AreEqual(0, locations.Count);
     }
 
     [TestMethod]
-    public async Task JazorVueHost_FrontendLaneService_GetCompletionItems_DoesNotDuplicateNearbyVueSuggestionsWithSameComponentName()
+    public async Task JazorVueHost_FrontendLaneService_GetReferences_ReturnsEmptyWhenDenoReturnsEmpty()
     {
         var lane = CreateLane(new FakeDenoFrontendHost());
-        var tempDirectory = CreateTemporaryDirectory();
+        var document = CreateDocument("""
+            <UserCard />
+            """);
 
-        try
-        {
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDirectory, "UserCard.vue"),
-                "<template><div /></template>");
-            var componentsDirectory = Path.Combine(tempDirectory, "Components");
-            Directory.CreateDirectory(componentsDirectory);
-            await File.WriteAllTextAsync(
-                Path.Combine(componentsDirectory, "UserCard.vue"),
-                "<template><div /></template>");
+        var locations = await lane.GetReferencesAsync(
+            document,
+            new LspPosition { Line = 0, Character = 2 },
+            includeDeclaration: true,
+            CreateTemplateTarget(document),
+            CancellationToken.None);
 
-            var document = new DocumentSnapshot(
-                Path.Combine(tempDirectory, "Counter.jazor"),
-                DocumentKind.Jazor,
-                """
-                <
-                """,
-                "1");
+        Assert.AreEqual(0, locations.Count);
+    }
 
-            var items = await lane.GetCompletionItemsAsync(
-                document,
-                new LspPosition { Line = 0, Character = 1 },
-                CreateTemplateTarget(document),
-                CancellationToken.None);
+    [TestMethod]
+    public async Task JazorVueHost_FrontendLaneService_GetRename_ReturnsNullWhenDenoReturnsNull()
+    {
+        var lane = CreateLane(new FakeDenoFrontendHost());
+        var document = CreateDocument("""
+            <UserCard />
+            """);
 
-            var userCards = items.Where(static item => item.Label == "UserCard").ToArray();
-            Assert.AreEqual(1, userCards.Length);
-        }
-        finally
-        {
-            if (Directory.Exists(tempDirectory))
-            {
-                Directory.Delete(tempDirectory, recursive: true);
-            }
-        }
+        var edit = await lane.GetRenameAsync(
+            document,
+            new LspPosition { Line = 0, Character = 2 },
+            "AccountCard",
+            CreateTemplateTarget(document),
+            CancellationToken.None);
+
+        Assert.IsNull(edit);
     }
 
     [TestMethod]
@@ -542,9 +528,7 @@ public sealed class JazorVueHostFrontendLaneTests
 
     private static FrontendLaneService CreateLane(IDenoFrontendHost denoFrontendHost)
         => new(
-            new JazorLspDocumentService(
-                new InMemoryWorkspaceStore(),
-                new NullVueAnalysisClient()),
+            new InMemoryWorkspaceStore(),
             denoFrontendHost);
 
     private static string CreateTemporaryDirectory()
@@ -622,6 +606,8 @@ public sealed class JazorVueHostFrontendLaneTests
 
         public IReadOnlyList<LspCompletionItem> CompletionItems { get; init; } = [];
 
+        public IReadOnlyList<LspDocumentSymbol> DocumentSymbols { get; init; } = [];
+
         public ValueTask StartAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -652,6 +638,14 @@ public sealed class JazorVueHostFrontendLaneTests
         {
             cancellationToken.ThrowIfCancellationRequested();
             return ValueTask.FromResult(CompletionItems);
+        }
+
+        public ValueTask<IReadOnlyList<LspDocumentSymbol>> GetTemplateDocumentSymbolsAsync(
+            DocumentSnapshot document,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return ValueTask.FromResult(DocumentSymbols);
         }
 
         public ValueTask<LspHoverResult?> GetTemplateHoverAsync(
