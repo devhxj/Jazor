@@ -731,6 +731,13 @@ Implement first:
 Current progress note:
 
 - the host now advertises and serves `references`, `rename`, and `codeAction`, but these remain source-snapshot-first implementations rather than the fully projected Roslyn/Razor end state
+- `@code` regions now project into a segment-aware virtual C# document inside `Jazor.VueHost`, and the in-proc Roslyn path serves diagnostics/completion/hover/definition/references/rename before any external Roslyn fallback is considered
+- the in-proc Razor/Roslyn projection pipeline is now explicitly shared from `Program` into both `JazorProjectionService` and `RoslynLaneService`, so virtual-document projection and lane queries use one consistent Razor->C# mapping implementation
+- in-proc Razor projection now uses `UnsafeAccessor` only (`GetRequiredCSharpDocument`, then `GetCSharpDocument`) with no reflection fallback path
+- `textDocument/signatureHelp` is now advertised and served for `@code` regions through the in-proc Roslyn lane, and focused tests now lock active-parameter tracking for multi-argument invocations at both the Roslyn service layer and the end-to-end LSP layer
+- `textDocument/documentSymbol` is now advertised and served for `.jazor`, with Jazor structure symbols (`Template` / `Code` plus template component children) aggregated alongside in-proc Roslyn top-level `@code` members
+- Roslyn in-proc definition/references/rename now compile over all open `.jazor` projections from workspace state, so code-lane symbol queries can resolve and edit across documents when symbols are shared
+- code-region LSP routing no longer blocks on virtual C# document registration; VueHost still routes `@code` requests into Roslyn from the source snapshot when projection materialization is temporarily unavailable
 - the bottom bootstrap has started shifting to real language-service entrypoints: Roslyn is now wired as an external stdio host candidate, Razor is treated as a Roslyn-side extension/component rather than a fake standalone lane, and VueHost has dedicated catalog/probe hooks for Volar and tsserver discovery
 - the Deno frontend worker is being moved to the same self-contained runtime model used by the repo's `DenoHost`-backed tooling, so frontend intelligence does not depend on a globally installed `deno`
 - the Deno frontend host bootstrap is moving to the same self-contained runtime model already used elsewhere in the repository: VueHost now resolves its worker entrypoint and bundled `DenoHost` runtime from its own output layout by default, while still allowing explicit `--deno-command` / `--deno-arg` overrides for diagnostics and local experiments
