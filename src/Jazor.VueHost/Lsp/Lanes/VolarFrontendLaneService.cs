@@ -4,25 +4,25 @@ using Jazor.VueHost.Lsp.Routing;
 
 namespace Jazor.VueHost.Lsp.Lanes;
 
-internal sealed class RoslynLaneService : ILspLane
+internal sealed class VolarFrontendLaneService : ILspLane
 {
-    private readonly JazorLspDocumentService _documentService;
     private readonly ProjectedLanguageServerLaneHost? _host;
+    private readonly FrontendLaneService _fallbackLane;
 
-    public RoslynLaneService(
-        JazorLspDocumentService documentService,
-        ProjectedLanguageServerLaneHost? host = null)
+    public VolarFrontendLaneService(
+        ProjectedLanguageServerLaneHost? host,
+        FrontendLaneService fallbackLane)
     {
-        _documentService = documentService ?? throw new ArgumentNullException(nameof(documentService));
         _host = host;
+        _fallbackLane = fallbackLane ?? throw new ArgumentNullException(nameof(fallbackLane));
     }
 
-    public LaneKind LaneKind => LaneKind.Roslyn;
+    public LaneKind LaneKind => LaneKind.Frontend;
 
     public ValueTask<IReadOnlyList<LspDiagnostic>> GetDiagnosticsAsync(
         DocumentSnapshot document,
         CancellationToken cancellationToken)
-        => ValueTask.FromResult<IReadOnlyList<LspDiagnostic>>(Array.Empty<LspDiagnostic>());
+        => _fallbackLane.GetDiagnosticsAsync(document, cancellationToken);
 
     public async ValueTask<LspHoverResult?> GetHoverAsync(
         DocumentSnapshot document,
@@ -30,12 +30,7 @@ internal sealed class RoslynLaneService : ILspLane
         ProjectionTarget projectionTarget,
         CancellationToken cancellationToken)
     {
-        if (!IsCodeTarget(projectionTarget))
-        {
-            return null;
-        }
-
-        if (_host is not null)
+        if (_host is not null && IsTemplateTarget(projectionTarget))
         {
             var result = await _host.GetHoverAsync(document, position, projectionTarget, cancellationToken);
             if (result is not null)
@@ -44,7 +39,7 @@ internal sealed class RoslynLaneService : ILspLane
             }
         }
 
-        return await _documentService.GetHoverAsync(document, position, cancellationToken);
+        return await _fallbackLane.GetHoverAsync(document, position, projectionTarget, cancellationToken);
     }
 
     public async ValueTask<IReadOnlyList<LspCompletionItem>> GetCompletionItemsAsync(
@@ -53,12 +48,7 @@ internal sealed class RoslynLaneService : ILspLane
         ProjectionTarget projectionTarget,
         CancellationToken cancellationToken)
     {
-        if (!IsCodeTarget(projectionTarget))
-        {
-            return Array.Empty<LspCompletionItem>();
-        }
-
-        if (_host is not null)
+        if (_host is not null && IsTemplateTarget(projectionTarget))
         {
             var result = await _host.GetCompletionItemsAsync(document, position, projectionTarget, cancellationToken);
             if (result.Count > 0)
@@ -67,7 +57,7 @@ internal sealed class RoslynLaneService : ILspLane
             }
         }
 
-        return await _documentService.GetCompletionItemsAsync(document, position, cancellationToken);
+        return await _fallbackLane.GetCompletionItemsAsync(document, position, projectionTarget, cancellationToken);
     }
 
     public async ValueTask<IReadOnlyList<LspLocation>> GetDefinitionAsync(
@@ -76,12 +66,7 @@ internal sealed class RoslynLaneService : ILspLane
         ProjectionTarget projectionTarget,
         CancellationToken cancellationToken)
     {
-        if (!IsCodeTarget(projectionTarget))
-        {
-            return Array.Empty<LspLocation>();
-        }
-
-        if (_host is not null)
+        if (_host is not null && IsTemplateTarget(projectionTarget))
         {
             var result = await _host.GetDefinitionAsync(document, position, projectionTarget, cancellationToken);
             if (result.Count > 0)
@@ -90,7 +75,7 @@ internal sealed class RoslynLaneService : ILspLane
             }
         }
 
-        return await _documentService.GetDefinitionAsync(document, position, cancellationToken);
+        return await _fallbackLane.GetDefinitionAsync(document, position, projectionTarget, cancellationToken);
     }
 
     public async ValueTask<IReadOnlyList<LspLocation>> GetReferencesAsync(
@@ -100,12 +85,7 @@ internal sealed class RoslynLaneService : ILspLane
         ProjectionTarget projectionTarget,
         CancellationToken cancellationToken)
     {
-        if (!IsCodeTarget(projectionTarget))
-        {
-            return Array.Empty<LspLocation>();
-        }
-
-        if (_host is not null)
+        if (_host is not null && IsTemplateTarget(projectionTarget))
         {
             var result = await _host.GetReferencesAsync(
                 document,
@@ -119,7 +99,12 @@ internal sealed class RoslynLaneService : ILspLane
             }
         }
 
-        return await _documentService.GetReferencesAsync(document, position, includeDeclaration, cancellationToken);
+        return await _fallbackLane.GetReferencesAsync(
+            document,
+            position,
+            includeDeclaration,
+            projectionTarget,
+            cancellationToken);
     }
 
     public async ValueTask<LspWorkspaceEdit?> GetRenameAsync(
@@ -129,21 +114,26 @@ internal sealed class RoslynLaneService : ILspLane
         ProjectionTarget projectionTarget,
         CancellationToken cancellationToken)
     {
-        if (!IsCodeTarget(projectionTarget))
+        if (_host is not null && IsTemplateTarget(projectionTarget))
         {
-            return null;
-        }
-
-        if (_host is not null)
-        {
-            var result = await _host.GetRenameAsync(document, position, newName, projectionTarget, cancellationToken);
+            var result = await _host.GetRenameAsync(
+                document,
+                position,
+                newName,
+                projectionTarget,
+                cancellationToken);
             if (result is not null)
             {
                 return result;
             }
         }
 
-        return await _documentService.GetRenameAsync(document, position, newName, cancellationToken);
+        return await _fallbackLane.GetRenameAsync(
+            document,
+            position,
+            newName,
+            projectionTarget,
+            cancellationToken);
     }
 
     public async ValueTask<IReadOnlyList<LspCodeAction>> GetCodeActionsAsync(
@@ -153,12 +143,7 @@ internal sealed class RoslynLaneService : ILspLane
         ProjectionTarget projectionTarget,
         CancellationToken cancellationToken)
     {
-        if (!IsCodeTarget(projectionTarget))
-        {
-            return Array.Empty<LspCodeAction>();
-        }
-
-        if (_host is not null)
+        if (_host is not null && IsTemplateTarget(projectionTarget))
         {
             var result = await _host.GetCodeActionsAsync(
                 document,
@@ -172,10 +157,15 @@ internal sealed class RoslynLaneService : ILspLane
             }
         }
 
-        return await _documentService.GetCodeActionsAsync(document, diagnostics, cancellationToken);
+        return await _fallbackLane.GetCodeActionsAsync(
+            document,
+            range,
+            diagnostics,
+            projectionTarget,
+            cancellationToken);
     }
 
-    private static bool IsCodeTarget(ProjectionTarget projectionTarget)
-        => projectionTarget.LaneKind == LaneKind.Roslyn
-            || projectionTarget.RegionKind == DocumentRegionKind.Code;
+    private static bool IsTemplateTarget(ProjectionTarget projectionTarget)
+        => projectionTarget.LaneKind == LaneKind.Frontend
+            || projectionTarget.RegionKind == DocumentRegionKind.Template;
 }
