@@ -1,3 +1,4 @@
+using Jazor.Vue;
 using Jazor.VueContracts.Protocol;
 using Jazor.VueHost.Analysis;
 using Jazor.VueHost.Frontend;
@@ -30,6 +31,7 @@ public sealed class VueHostService : IVueHostService, IVueHostRpcService, IFront
     private readonly IVueAnalysisClient _analysisClient;
     private readonly IDenoFrontendHost _denoFrontendHost;
     private readonly FallbackJazorAnalysisService _fallbackAnalysisService = new();
+    private readonly JazorVueParser _parser = new();
     private int _started;
 
     public VueHostService(
@@ -86,6 +88,7 @@ public sealed class VueHostService : IVueHostService, IVueHostRpcService, IFront
     {
         EnsureStarted();
         await _workspaceStore.UpsertDocumentAsync(documentSnapshot, cancellationToken);
+        VueHostWorkspaceResolver.InvalidatePath(documentSnapshot.DocumentPath);
     }
 
     public Task UpdateDocumentAsync(DocumentSnapshot documentSnapshot, CancellationToken cancellationToken)
@@ -95,6 +98,7 @@ public sealed class VueHostService : IVueHostService, IVueHostRpcService, IFront
     {
         EnsureStarted();
         await _workspaceStore.RemoveDocumentAsync(documentPath, cancellationToken);
+        VueHostWorkspaceResolver.InvalidatePath(documentPath);
     }
 
     public async Task<GetFrontendContextResponse> GetFrontendContextAsync(
@@ -388,6 +392,8 @@ public sealed class VueHostService : IVueHostService, IVueHostRpcService, IFront
         IReadOnlyList<string> explicitPaths,
         CancellationToken cancellationToken)
     {
+        var parsed = _parser.Parse(jazorDocument.DocumentPath, jazorDocument.Text);
+        var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
         var candidatePaths = new LinkedHashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var explicitPath in explicitPaths)
         {
@@ -395,36 +401,39 @@ public sealed class VueHostService : IVueHostService, IVueHostRpcService, IFront
                 candidatePaths.Add(explicitPath);
         }
 
-        var importAnalysis = await _fallbackAnalysisService.AnalyzeJazorAsync(
-            new AnalyzeJazorRequest(
-                jazorDocument,
-                relatedDocuments: Array.Empty<DocumentSnapshot>(),
-                frontendContext: null),
-            cancellationToken);
-
-        foreach (var importDescriptor in importAnalysis.Imports)
+        foreach (var importDescriptor in parsed.Imports)
         {
-            foreach (var candidate in GetImportPathCandidates(jazorDocument.DocumentPath, importDescriptor.Source))
+            foreach (var candidate in VueHostWorkspaceResolver.GetImportPathCandidates(jazorDocument.DocumentPath, importDescriptor.Source))
                 candidatePaths.Add(candidate);
         }
 
         foreach (var componentName in GetReferencedVueComponents(jazorDocument.Text))
         {
-            foreach (var candidate in GetNearbyVueComponentPathCandidates(jazorDocument.DocumentPath, componentName))
+            if (VueHostWorkspaceResolver.TryResolveTrackedNearbyVueComponent(jazorDocument.DocumentPath, componentName, openDocuments, out var trackedNearby))
             {
-                candidatePaths.Add(candidate);
+                candidatePaths.Add(trackedNearby.AbsolutePath);
+                continue;
             }
 
-            foreach (var candidate in await GetNearbyTrackedVueComponentPathCandidatesAsync(
-                         jazorDocument.DocumentPath,
-                         componentName,
-                         cancellationToken))
+            if (VueHostWorkspaceResolver.TryResolveNearbyVueComponent(jazorDocument.DocumentPath, componentName, out var nearbyComponentPath, out _))
             {
-                candidatePaths.Add(candidate);
+                candidatePaths.Add(nearbyComponentPath);
+                continue;
+            }
+
+            if (VueHostWorkspaceResolver.TryResolveTrackedVueComponent(jazorDocument.DocumentPath, componentName, openDocuments, out var tracked))
+            {
+                candidatePaths.Add(tracked.AbsolutePath);
+                continue;
+            }
+
+            if (VueHostWorkspaceResolver.ResolveWorkspaceVueComponent(jazorDocument.DocumentPath, componentName, openDocuments, cancellationToken) is { } workspaceResolved)
+            {
+                candidatePaths.Add(workspaceResolved.AbsolutePath);
             }
         }
 
-        foreach (var candidate in GetCoLocatedAssetPathCandidates(jazorDocument.DocumentPath))
+        foreach (var candidate in VueHostWorkspaceResolver.GetCoLocatedAssetPaths(jazorDocument.DocumentPath))
         {
             candidatePaths.Add(candidate);
         }
@@ -449,36 +458,10 @@ public sealed class VueHostService : IVueHostService, IVueHostRpcService, IFront
         CancellationToken cancellationToken)
     {
         var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
-        foreach (var probePath in ExpandPathCandidates(candidatePath))
-        {
-            var normalizedProbePath = NormalizeComparablePath(probePath);
-            var trackedDocument = openDocuments.FirstOrDefault(document =>
-                string.Equals(
-                    NormalizeComparablePath(document.DocumentPath),
-                    normalizedProbePath,
-                    StringComparison.OrdinalIgnoreCase));
-            if (trackedDocument is not null)
-                return trackedDocument;
-        }
-
-        foreach (var probePath in ExpandPathCandidates(candidatePath))
-        {
-            if (!File.Exists(probePath))
-                continue;
-
-            var documentKind = GetFrontendDocumentKind(probePath);
-            if (documentKind is null)
-                return null;
-
-            var text = await File.ReadAllTextAsync(probePath, cancellationToken);
-            return new DocumentSnapshot(
-                probePath,
-                documentKind.Value,
-                text,
-                version: null);
-        }
-
-        return null;
+        var document = await VueHostWorkspaceResolver.ResolveDocumentAsync(candidatePath, openDocuments, cancellationToken);
+        return document is { DocumentKind: DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript }
+            ? document
+            : null;
     }
 
     private static IReadOnlyList<DocumentSnapshot> MergeRelatedDocuments(
@@ -696,66 +679,10 @@ public sealed class VueHostService : IVueHostService, IVueHostRpcService, IFront
             || importSource.StartsWith("..\\", StringComparison.Ordinal);
 
     private static DocumentKind? GetFrontendDocumentKind(string documentPath)
-        => Path.GetExtension(documentPath).ToLowerInvariant() switch
-        {
-            ".vue" => DocumentKind.Vue,
-            ".js" => DocumentKind.JavaScript,
-            ".ts" => DocumentKind.TypeScript,
-            _ => null
-        };
+        => VueHostWorkspaceResolver.GetFrontendDocumentKind(documentPath);
 
     private static string NormalizeComparablePath(string documentPath)
-    {
-        var slashNormalized = documentPath.Replace('\\', '/');
-        var prefix = string.Empty;
-        var workingPath = slashNormalized;
-
-        if (workingPath.Length >= 2 && workingPath[1] == ':')
-        {
-            prefix = workingPath[..2];
-            workingPath = workingPath[2..];
-        }
-        else if (workingPath.StartsWith("/", StringComparison.Ordinal))
-        {
-            prefix = "/";
-            workingPath = workingPath.TrimStart('/');
-        }
-
-        var segments = new Stack<string>();
-        foreach (var segment in workingPath.Split('/', StringSplitOptions.RemoveEmptyEntries))
-        {
-            if (segment == ".")
-                continue;
-
-            if (segment == "..")
-            {
-                if (segments.Count > 0 && !string.Equals(segments.Peek(), "..", StringComparison.Ordinal))
-                {
-                    segments.Pop();
-                }
-                else if (prefix.Length == 0)
-                {
-                    segments.Push(segment);
-                }
-
-                continue;
-            }
-
-            segments.Push(segment);
-        }
-
-        var normalized = string.Join("/", segments.Reverse());
-        if (prefix.Length == 0)
-            return normalized;
-
-        if (normalized.Length == 0)
-            return prefix;
-
-        if (prefix == "/")
-            return prefix + normalized;
-
-        return prefix + "/" + normalized;
-    }
+        => VueHostWorkspaceResolver.NormalizePath(documentPath);
 
     private static string[] GetImportedSources(string text)
         => Regex.Matches(text, "(?:from\\s+[\"'](?<source>[^\"']+)[\"']|import\\s+[\"'](?<sourceOnly>[^\"']+)[\"'])", RegexOptions.Multiline)

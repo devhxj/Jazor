@@ -1,6 +1,7 @@
 using Jazor.VueContracts.Protocol;
 using Jazor.VueHost.Frontend.Deno.Hosting;
 using Jazor.VueHost.Lsp.Routing;
+using Jazor.VueHost.Workspace;
 using System.Text.RegularExpressions;
 
 namespace Jazor.VueHost.Lsp.Lanes;
@@ -64,8 +65,7 @@ internal sealed class FrontendLaneService : ILspLane
             return denoResult;
         }
 
-        var hover = await _documentService.GetHoverAsync(document, position, cancellationToken);
-        return hover ?? CreateFilesystemBackedHover(document, position);
+        return await _documentService.GetHoverAsync(document, position, cancellationToken);
     }
 
     public async ValueTask<IReadOnlyList<LspCompletionItem>> GetCompletionItemsAsync(
@@ -85,8 +85,7 @@ internal sealed class FrontendLaneService : ILspLane
             return denoResult;
         }
 
-        var fallbackItems = await _documentService.GetCompletionItemsAsync(document, position, cancellationToken);
-        return CreateFilesystemBackedCompletionItems(document, position, fallbackItems);
+        return await _documentService.GetCompletionItemsAsync(document, position, cancellationToken);
     }
 
     public async ValueTask<IReadOnlyList<LspLocation>> GetDefinitionAsync(
@@ -106,10 +105,7 @@ internal sealed class FrontendLaneService : ILspLane
             return denoResult;
         }
 
-        var locations = await _documentService.GetDefinitionAsync(document, position, cancellationToken);
-        return locations.Count > 0
-            ? locations
-            : CreateFilesystemBackedDefinitions(document, position);
+        return await _documentService.GetDefinitionAsync(document, position, cancellationToken);
     }
 
     public async ValueTask<IReadOnlyList<LspLocation>> GetReferencesAsync(
@@ -130,10 +126,7 @@ internal sealed class FrontendLaneService : ILspLane
             return denoResult;
         }
 
-        var locations = await _documentService.GetReferencesAsync(document, position, includeDeclaration, cancellationToken);
-        return locations.Count > 0
-            ? locations
-            : CreateFilesystemBackedReferences(document, position, includeDeclaration);
+        return await _documentService.GetReferencesAsync(document, position, includeDeclaration, cancellationToken);
     }
 
     public async ValueTask<LspWorkspaceEdit?> GetRenameAsync(
@@ -177,14 +170,7 @@ internal sealed class FrontendLaneService : ILspLane
             return Array.Empty<LspCodeAction>();
         }
 
-        var actions = new List<LspCodeAction>();
-        var fallbackActions = await _documentService.GetCodeActionsAsync(document, diagnostics, cancellationToken);
-        if (fallbackActions.Count > 0)
-        {
-            actions.AddRange(fallbackActions);
-        }
-
-        return actions;
+        return await _documentService.GetCodeActionsAsync(document, diagnostics, cancellationToken);
     }
 
     private static bool ContainsFrontendTemplateDiagnostic(IReadOnlyList<LspDiagnostic> diagnostics)
@@ -194,120 +180,6 @@ internal sealed class FrontendLaneService : ILspLane
     private static bool IsTemplateTarget(ProjectionTarget projectionTarget)
         => projectionTarget.LaneKind == LaneKind.Frontend
             || projectionTarget.RegionKind == DocumentRegionKind.Template;
-
-    private static IReadOnlyList<LspCompletionItem> CreateFilesystemBackedCompletionItems(
-        DocumentSnapshot document,
-        LspPosition position,
-        IReadOnlyList<LspCompletionItem> fallbackItems)
-    {
-        if (fallbackItems.Count > 0
-            || !TryGetTagCompletionPrefix(document.Text, position, out var tagPrefix))
-        {
-            return fallbackItems;
-        }
-
-        var items = new List<LspCompletionItem>(fallbackItems);
-        var seenLabels = new HashSet<string>(
-            fallbackItems.Select(static item => item.Label),
-            StringComparer.Ordinal);
-
-        foreach (var suggestion in EnumerateNearbyVueComponentSuggestions(document.DocumentPath))
-        {
-            if (!seenLabels.Add(suggestion.ComponentName))
-            {
-                continue;
-            }
-
-            if (!suggestion.ComponentName.StartsWith(tagPrefix, StringComparison.OrdinalIgnoreCase))
-            {
-                continue;
-            }
-
-            items.Add(new LspCompletionItem
-            {
-                Label = suggestion.ComponentName,
-                Kind = 7,
-                Detail = suggestion.ImportPath,
-                Documentation = $"Vue component discovered on disk at `{suggestion.ImportPath}`."
-            });
-        }
-
-        return items;
-    }
-
-    private static LspHoverResult? CreateFilesystemBackedHover(
-        DocumentSnapshot document,
-        LspPosition position)
-    {
-        if (!TryFindComponentTagSymbol(document.Text, position, out var symbol)
-            || !TryResolveNearbyVueComponent(document.DocumentPath, symbol.ComponentName, out var resolvedComponent))
-        {
-            return null;
-        }
-
-        return new LspHoverResult
-        {
-            Contents = new LspMarkupContent
-            {
-                Kind = "markdown",
-                Value = $"`{symbol.ComponentName}` resolved to nearby Vue component `{resolvedComponent.ImportPath}`."
-            },
-            Range = symbol.Range
-        };
-    }
-
-    private static IReadOnlyList<LspLocation> CreateFilesystemBackedDefinitions(
-        DocumentSnapshot document,
-        LspPosition position)
-    {
-        if (!TryFindComponentTagSymbol(document.Text, position, out var symbol)
-            || !TryResolveNearbyVueComponent(document.DocumentPath, symbol.ComponentName, out var resolvedComponent))
-        {
-            return Array.Empty<LspLocation>();
-        }
-
-        return
-        [
-            new LspLocation
-            {
-                Uri = LspProtocolHelpers.ToDocumentUri(resolvedComponent.AbsolutePath),
-                Range = new LspRange
-                {
-                    Start = new LspPosition { Line = 0, Character = 0 },
-                    End = new LspPosition { Line = 0, Character = 0 }
-                }
-            }
-        ];
-    }
-
-    private static IReadOnlyList<LspLocation> CreateFilesystemBackedReferences(
-        DocumentSnapshot document,
-        LspPosition position,
-        bool includeDeclaration)
-    {
-        if (!TryFindComponentTagSymbol(document.Text, position, out var symbol))
-        {
-            return Array.Empty<LspLocation>();
-        }
-
-        var references = new List<LspLocation>();
-        if (includeDeclaration
-            && TryResolveNearbyVueComponent(document.DocumentPath, symbol.ComponentName, out var resolvedComponent))
-        {
-            references.Add(new LspLocation
-            {
-                Uri = LspProtocolHelpers.ToDocumentUri(resolvedComponent.AbsolutePath),
-                Range = new LspRange
-                {
-                    Start = new LspPosition { Line = 0, Character = 0 },
-                    End = new LspPosition { Line = 0, Character = 0 }
-                }
-            });
-        }
-
-        references.AddRange(FindComponentTagLocations(document, symbol.ComponentName));
-        return references;
-    }
 
     private static bool TryGetTagCompletionPrefix(string text, LspPosition position, out string tagPrefix)
     {
@@ -484,8 +356,15 @@ internal sealed class FrontendLaneService : ILspLane
             cancellationToken.ThrowIfCancellationRequested();
 
             var group = match.Groups["name"];
-            if (!group.Success
-                || await _documentService.IsVueComponentResolvableAsync(document, group.Value, cancellationToken))
+            if (!group.Success)
+            {
+                continue;
+            }
+
+            var isResolvable = document.DocumentKind == DocumentKind.Jazor
+                ? await _documentService.IsVueComponentResolvableAsync(document, group.Value, cancellationToken)
+                : TryResolveNearbyVueComponent(document.DocumentPath, group.Value, out _);
+            if (isResolvable)
             {
                 continue;
             }
@@ -512,134 +391,17 @@ internal sealed class FrontendLaneService : ILspLane
         string componentName,
         out ResolvedVueComponent resolvedComponent)
     {
-        var documentDirectory = Path.GetDirectoryName(documentPath);
-        if (!string.IsNullOrWhiteSpace(documentDirectory))
+        if (VueHostWorkspaceResolver.TryResolveNearbyVueComponent(documentPath, componentName, out var componentPath, out var importPath))
         {
-            foreach (var candidate in GetImportPathCandidates(documentDirectory, componentName))
-            {
-                if (!File.Exists(candidate.AbsolutePath))
-                {
-                    continue;
-                }
-
-                resolvedComponent = new ResolvedVueComponent(candidate.AbsolutePath, candidate.ImportPath);
-                return true;
-            }
+            resolvedComponent = new ResolvedVueComponent(componentPath, importPath);
+            return true;
         }
 
         resolvedComponent = default;
         return false;
     }
 
-    private static IEnumerable<(string ComponentName, string ImportPath)> EnumerateNearbyVueComponentSuggestions(
-        string documentPath)
-    {
-        var documentDirectory = Path.GetDirectoryName(documentPath);
-        if (string.IsNullOrWhiteSpace(documentDirectory))
-        {
-            yield break;
-        }
-
-        var seenPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var directory in GetSearchDirectories(documentDirectory))
-        {
-            if (!Directory.Exists(directory))
-            {
-                continue;
-            }
-
-            foreach (var filePath in Directory.EnumerateFiles(directory, "*.vue", SearchOption.TopDirectoryOnly))
-            {
-                var absolutePath = Path.GetFullPath(filePath);
-                if (!seenPaths.Add(absolutePath))
-                {
-                    continue;
-                }
-
-                var componentName = Path.GetFileNameWithoutExtension(absolutePath);
-                if (string.IsNullOrWhiteSpace(componentName)
-                    || !char.IsUpper(componentName[0]))
-                {
-                    continue;
-                }
-
-                yield return (componentName, ToImportPath(documentDirectory, absolutePath));
-            }
-        }
-    }
-
-    private static IEnumerable<string> GetSearchDirectories(string documentDirectory)
-    {
-        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var parentDirectory = Directory.GetParent(documentDirectory)?.FullName;
-        foreach (var directory in new[]
-                 {
-                     documentDirectory,
-                     Path.Combine(documentDirectory, "Components"),
-                     Path.Combine(documentDirectory, "components"),
-                     parentDirectory,
-                     parentDirectory is null ? null : Path.Combine(parentDirectory, "Components"),
-                     parentDirectory is null ? null : Path.Combine(parentDirectory, "components")
-                 })
-        {
-            if (string.IsNullOrWhiteSpace(directory))
-            {
-                continue;
-            }
-
-            var fullPath = Path.GetFullPath(directory);
-            if (seen.Add(fullPath))
-            {
-                yield return fullPath;
-            }
-        }
-    }
-
-    private static IEnumerable<(string AbsolutePath, string ImportPath)> GetImportPathCandidates(
-        string documentDirectory,
-        string componentName)
-    {
-        var directFileName = componentName + ".vue";
-        var parentDirectory = Directory.GetParent(documentDirectory)?.FullName;
-        var rawCandidates = new List<string>
-        {
-            Path.Combine(documentDirectory, directFileName),
-            Path.Combine(documentDirectory, "Components", directFileName),
-            Path.Combine(documentDirectory, "components", directFileName)
-        };
-
-        if (!string.IsNullOrWhiteSpace(parentDirectory))
-        {
-            rawCandidates.Add(Path.Combine(parentDirectory, directFileName));
-            rawCandidates.Add(Path.Combine(parentDirectory, "Components", directFileName));
-            rawCandidates.Add(Path.Combine(parentDirectory, "components", directFileName));
-        }
-
-        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var absolutePath in rawCandidates)
-        {
-            var normalizedAbsolutePath = Path.GetFullPath(absolutePath);
-            if (!seen.Add(normalizedAbsolutePath))
-            {
-                continue;
-            }
-
-            yield return (normalizedAbsolutePath, ToImportPath(documentDirectory, normalizedAbsolutePath));
-        }
-    }
-
-    private static string ToImportPath(string documentDirectory, string absolutePath)
-    {
-        var relativePath = Path.GetRelativePath(documentDirectory, absolutePath)
-            .Replace('\\', '/');
-        if (relativePath.StartsWith(".", StringComparison.Ordinal))
-        {
-            return relativePath;
-        }
-
-        return "./" + relativePath;
-    }
-
+    
     private static IReadOnlyList<LspLocation> FindComponentTagLocations(
         DocumentSnapshot document,
         string componentName)

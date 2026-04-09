@@ -149,6 +149,10 @@ internal sealed class LspSession
 
         foreach (var lane in GetOrderedLanes(projectionTarget))
         {
+            // Projection metadata is available on the target, but the current lane
+            // implementations still operate on the source snapshot rather than the
+            // virtual projected documents. Keep source coordinates on the request
+            // path until a lane consumes projected text end-to-end.
             var hover = await lane.GetHoverAsync(document, parameters.Position, projectionTarget, cancellationToken);
             if (hover is not null)
             {
@@ -275,6 +279,7 @@ internal sealed class LspSession
             parameters.TextDocument.Text,
             parameters.TextDocument.Version?.ToString(System.Globalization.CultureInfo.InvariantCulture));
         await _workspaceStore.UpsertDocumentAsync(document, cancellationToken);
+        VueHostWorkspaceResolver.InvalidatePath(documentPath);
         await UpdateProjectionStateAsync(document, cancellationToken);
         await PublishDiagnosticsAsync(document, cancellationToken);
         await RefreshOpenJazorDiagnosticsAsync(document, cancellationToken);
@@ -293,6 +298,7 @@ internal sealed class LspSession
             parameters.ContentChanges.LastOrDefault()?.Text ?? string.Empty,
             parameters.TextDocument.Version?.ToString(System.Globalization.CultureInfo.InvariantCulture));
         await _workspaceStore.UpsertDocumentAsync(document, cancellationToken);
+        VueHostWorkspaceResolver.InvalidatePath(documentPath);
         await UpdateProjectionStateAsync(document, cancellationToken);
         await PublishDiagnosticsAsync(document, cancellationToken);
         await RefreshOpenJazorDiagnosticsAsync(document, cancellationToken);
@@ -305,6 +311,7 @@ internal sealed class LspSession
         var parameters = DeserializeParams<LspDidCloseTextDocumentParams>(notification.Params);
         var documentPath = LspProtocolHelpers.ToDocumentPath(parameters.TextDocument.Uri);
         await _workspaceStore.RemoveDocumentAsync(documentPath, cancellationToken);
+        VueHostWorkspaceResolver.InvalidatePath(documentPath);
         await _virtualDocumentRegistry.RemoveBySourceDocumentAsync(documentPath, cancellationToken);
         await PublishDiagnosticsAsync(
             new DocumentSnapshot(documentPath, MapDocumentKind(languageId: null, documentPath), string.Empty, null),

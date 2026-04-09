@@ -302,8 +302,10 @@ internal sealed class JazorLspDocumentService
 
         foreach (var import in parsed.Imports)
         {
-            var importPath = ResolveImportPath(document.DocumentPath, import.Source);
-            await AddRelatedDocumentAsync(importPath, openDocuments, relatedDocuments, seen, cancellationToken);
+            foreach (var importPath in VueHostWorkspaceResolver.GetImportPathCandidates(document.DocumentPath, import.Source))
+            {
+                await AddRelatedDocumentAsync(importPath, openDocuments, relatedDocuments, seen, cancellationToken);
+            }
         }
 
         var referencedComponentNames = TagPattern.Matches(document.Text)
@@ -311,15 +313,33 @@ internal sealed class JazorLspDocumentService
             .Distinct(StringComparer.Ordinal);
         foreach (var componentName in referencedComponentNames)
         {
-            if (!TryResolveNearbyVueComponent(document.DocumentPath, componentName, out var componentPath, out _))
+            if (VueHostWorkspaceResolver.TryResolveTrackedNearbyVueComponent(document.DocumentPath, componentName, openDocuments, out var trackedNearby))
+            {
+                await AddRelatedDocumentAsync(trackedNearby.AbsolutePath, openDocuments, relatedDocuments, seen, cancellationToken);
+                continue;
+            }
+
+            if (VueHostWorkspaceResolver.TryResolveNearbyVueComponent(document.DocumentPath, componentName, out var componentPath, out _))
+            {
+                await AddRelatedDocumentAsync(componentPath, openDocuments, relatedDocuments, seen, cancellationToken);
+                continue;
+            }
+
+            if (VueHostWorkspaceResolver.TryResolveTrackedVueComponent(document.DocumentPath, componentName, openDocuments, out var tracked))
+            {
+                await AddRelatedDocumentAsync(tracked.AbsolutePath, openDocuments, relatedDocuments, seen, cancellationToken);
+                continue;
+            }
+
+            if (VueHostWorkspaceResolver.ResolveWorkspaceVueComponent(document.DocumentPath, componentName, openDocuments, cancellationToken) is not { } workspaceResolved)
             {
                 continue;
             }
 
-            await AddRelatedDocumentAsync(componentPath, openDocuments, relatedDocuments, seen, cancellationToken);
+            await AddRelatedDocumentAsync(workspaceResolved.AbsolutePath, openDocuments, relatedDocuments, seen, cancellationToken);
         }
 
-        foreach (var assetPath in GetCoLocatedAssetPaths(document.DocumentPath))
+        foreach (var assetPath in VueHostWorkspaceResolver.GetCoLocatedAssetPaths(document.DocumentPath))
         {
             await AddRelatedDocumentAsync(assetPath, openDocuments, relatedDocuments, seen, cancellationToken);
         }
@@ -530,21 +550,10 @@ internal sealed class JazorLspDocumentService
     }
 
     private static DocumentKind MapDocumentKind(string documentPath)
-        => Path.GetExtension(documentPath).ToLowerInvariant() switch
-        {
-            ".jazor" => DocumentKind.Jazor,
-            ".vue" => DocumentKind.Vue,
-            ".js" => DocumentKind.JavaScript,
-            ".ts" => DocumentKind.TypeScript,
-            _ => DocumentKind.Unknown
-        };
+        => VueHostWorkspaceResolver.MapDocumentKind(documentPath);
 
     private static string NormalizeDocumentPath(string documentPath)
-    {
-        return Path.IsPathRooted(documentPath)
-            ? Path.GetFullPath(documentPath).Replace('\\', '/')
-            : documentPath.Replace('\\', '/');
-    }
+        => VueHostWorkspaceResolver.NormalizePath(documentPath);
 
     private async ValueTask AddRelatedDocumentAsync(
         string documentPath,
@@ -553,33 +562,19 @@ internal sealed class JazorLspDocumentService
         HashSet<string> seen,
         CancellationToken cancellationToken)
     {
-        var normalizedPath = NormalizeDocumentPath(documentPath);
+        var document = await VueHostWorkspaceResolver.ResolveDocumentAsync(documentPath, openDocuments, cancellationToken);
+        if (document is null)
+        {
+            return;
+        }
+
+        var normalizedPath = NormalizeDocumentPath(document.DocumentPath);
         if (!seen.Add(normalizedPath))
         {
             return;
         }
 
-        var openDocument = openDocuments.FirstOrDefault(candidate =>
-            string.Equals(
-                NormalizeDocumentPath(candidate.DocumentPath),
-                normalizedPath,
-                StringComparison.OrdinalIgnoreCase));
-        if (openDocument is not null)
-        {
-            relatedDocuments.Add(openDocument);
-            return;
-        }
-
-        if (!File.Exists(documentPath))
-        {
-            return;
-        }
-
-        relatedDocuments.Add(new DocumentSnapshot(
-            documentPath,
-            MapDocumentKind(documentPath),
-            await File.ReadAllTextAsync(documentPath, cancellationToken),
-            version: null));
+        relatedDocuments.Add(document);
     }
 
     private async ValueTask<ResolvedVueComponent?> ResolveVueComponentAsync(
@@ -588,19 +583,24 @@ internal sealed class JazorLspDocumentService
         CancellationToken cancellationToken)
     {
         var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
-        if (TryResolveTrackedNearbyVueComponent(documentPath, componentName, openDocuments, out var trackedNearby))
+        if (VueHostWorkspaceResolver.TryResolveTrackedNearbyVueComponent(documentPath, componentName, openDocuments, out var trackedNearby))
         {
-            return trackedNearby;
+            return new ResolvedVueComponent(trackedNearby.ComponentName, trackedNearby.AbsolutePath, trackedNearby.ImportPath);
         }
 
-        if (TryResolveNearbyVueComponent(documentPath, componentName, out var componentPath, out var importPath))
+        if (VueHostWorkspaceResolver.TryResolveNearbyVueComponent(documentPath, componentName, out var componentPath, out var importPath))
         {
             return new ResolvedVueComponent(componentName, componentPath, importPath);
         }
 
-        if (TryResolveTrackedVueComponent(documentPath, componentName, openDocuments, out var tracked))
+        if (VueHostWorkspaceResolver.TryResolveTrackedVueComponent(documentPath, componentName, openDocuments, out var tracked))
         {
-            return tracked;
+            return new ResolvedVueComponent(tracked.ComponentName, tracked.AbsolutePath, tracked.ImportPath);
+        }
+
+        if (VueHostWorkspaceResolver.ResolveWorkspaceVueComponent(documentPath, componentName, openDocuments, cancellationToken) is { } workspaceResolved)
+        {
+            return new ResolvedVueComponent(workspaceResolved.ComponentName, workspaceResolved.AbsolutePath, workspaceResolved.ImportPath);
         }
 
         return null;
@@ -614,19 +614,27 @@ internal sealed class JazorLspDocumentService
         var seenPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
 
-        foreach (var tracked in EnumerateTrackedVueComponents(documentPath, openDocuments))
+        foreach (var tracked in VueHostWorkspaceResolver.EnumerateTrackedVueComponents(documentPath, openDocuments))
         {
             if (seenPaths.Add(NormalizeDocumentPath(tracked.AbsolutePath)))
             {
-                suggestions.Add(tracked);
+                suggestions.Add(new ResolvedVueComponent(tracked.ComponentName, tracked.AbsolutePath, tracked.ImportPath));
             }
         }
 
-        foreach (var nearby in EnumerateNearbyVueComponents(documentPath))
+        foreach (var nearby in VueHostWorkspaceResolver.EnumerateNearbyVueComponents(documentPath))
         {
             if (seenPaths.Add(NormalizeDocumentPath(nearby.AbsolutePath)))
             {
-                suggestions.Add(nearby);
+                suggestions.Add(new ResolvedVueComponent(nearby.ComponentName, nearby.AbsolutePath, nearby.ImportPath));
+            }
+        }
+
+        foreach (var workspace in VueHostWorkspaceResolver.EnumerateWorkspaceVueComponents(documentPath, openDocuments, cancellationToken))
+        {
+            if (seenPaths.Add(NormalizeDocumentPath(workspace.AbsolutePath)))
+            {
+                suggestions.Add(new ResolvedVueComponent(workspace.ComponentName, workspace.AbsolutePath, workspace.ImportPath));
             }
         }
 
@@ -786,6 +794,68 @@ internal sealed class JazorLspDocumentService
         }
     }
 
+    private static ResolvedVueComponent? ResolveWorkspaceVueComponent(
+        string documentPath,
+        string componentName,
+        IReadOnlyList<DocumentSnapshot> openDocuments,
+        CancellationToken cancellationToken)
+    {
+        var documentDirectory = Path.GetDirectoryName(documentPath);
+        if (string.IsNullOrWhiteSpace(documentDirectory))
+        {
+            return null;
+        }
+
+        foreach (var filePath in EnumerateWorkspaceFiles(
+                     GetWorkspaceSearchRoots(documentPath, declarationDocumentPath: null, openDocuments),
+                     componentName + ".vue",
+                     cancellationToken))
+        {
+            return new ResolvedVueComponent(
+                componentName,
+                filePath,
+                ToImportPath(documentDirectory, filePath));
+        }
+
+        return null;
+    }
+
+    private static IEnumerable<ResolvedVueComponent> EnumerateWorkspaceVueComponents(
+        string documentPath,
+        IReadOnlyList<DocumentSnapshot> openDocuments,
+        CancellationToken cancellationToken)
+    {
+        var documentDirectory = Path.GetDirectoryName(documentPath);
+        if (string.IsNullOrWhiteSpace(documentDirectory))
+        {
+            yield break;
+        }
+
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var filePath in EnumerateWorkspaceFiles(
+                     GetWorkspaceSearchRoots(documentPath, declarationDocumentPath: null, openDocuments),
+                     "*.vue",
+                     cancellationToken))
+        {
+            var componentName = Path.GetFileNameWithoutExtension(filePath);
+            if (string.IsNullOrWhiteSpace(componentName) || !char.IsUpper(componentName[0]))
+            {
+                continue;
+            }
+
+            var normalizedPath = NormalizeDocumentPath(filePath);
+            if (!seen.Add(normalizedPath))
+            {
+                continue;
+            }
+
+            yield return new ResolvedVueComponent(
+                componentName,
+                normalizedPath,
+                ToImportPath(documentDirectory, normalizedPath));
+        }
+    }
+
     private static IEnumerable<string> GetSearchDirectories(string documentDirectory)
     {
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -811,6 +881,232 @@ internal sealed class JazorLspDocumentService
                 yield return fullPath;
             }
         }
+    }
+
+    private static IEnumerable<string> GetWorkspaceSearchRoots(
+        string documentPath,
+        string? declarationDocumentPath,
+        IReadOnlyList<DocumentSnapshot> openDocuments)
+    {
+        var directories = new List<string>();
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var path in new[] { documentPath, declarationDocumentPath }
+                     .Concat(openDocuments
+                         .Where(static document => document.DocumentKind is DocumentKind.Jazor or DocumentKind.Vue)
+                         .Select(static document => document.DocumentPath)))
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                continue;
+            }
+
+            var directory = Path.GetDirectoryName(path);
+            if (string.IsNullOrWhiteSpace(directory))
+            {
+                continue;
+            }
+
+            var normalizedDirectory = Path.GetFullPath(directory);
+            if (seen.Add(normalizedDirectory))
+            {
+                directories.Add(normalizedDirectory);
+            }
+        }
+
+        if (directories.Count == 0)
+        {
+            yield break;
+        }
+
+        if (directories.Count == 1)
+        {
+            foreach (var ancestor in EnumerateSearchAncestors(directories[0]))
+            {
+                yield return ancestor;
+            }
+
+            yield break;
+        }
+
+        if (TryGetCommonSearchAncestor(directories) is { } commonAncestor)
+        {
+            yield return commonAncestor;
+            yield break;
+        }
+
+        var emitted = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var directory in directories)
+        {
+            foreach (var ancestor in EnumerateSearchAncestors(directory))
+            {
+                if (emitted.Add(ancestor))
+                {
+                    yield return ancestor;
+                }
+            }
+        }
+    }
+
+    private static IEnumerable<string> EnumerateSearchAncestors(string directory)
+    {
+        var current = Path.GetFullPath(directory);
+        var depth = 0;
+        while (!string.IsNullOrWhiteSpace(current) && depth < 3)
+        {
+            if (string.Equals(current, Path.GetPathRoot(current), StringComparison.OrdinalIgnoreCase))
+            {
+                yield break;
+            }
+
+            yield return current;
+            depth++;
+
+            var parent = Directory.GetParent(current)?.FullName;
+            if (string.IsNullOrWhiteSpace(parent)
+                || string.Equals(parent, current, StringComparison.OrdinalIgnoreCase))
+            {
+                yield break;
+            }
+
+            current = parent;
+        }
+    }
+
+    private static string? TryGetCommonSearchAncestor(IReadOnlyList<string> directories)
+    {
+        if (directories.Count == 0)
+        {
+            return null;
+        }
+
+        var current = directories[0];
+        for (var index = 1; index < directories.Count; index++)
+        {
+            current = GetCommonAncestor(current, directories[index]);
+            if (string.IsNullOrWhiteSpace(current))
+            {
+                return null;
+            }
+        }
+
+        return string.Equals(current, Path.GetPathRoot(current), StringComparison.OrdinalIgnoreCase)
+            ? null
+            : current;
+    }
+
+    private static string? GetCommonAncestor(string left, string right)
+    {
+        var candidate = Path.GetFullPath(left);
+        var normalizedRight = NormalizeDocumentPath(right);
+        while (!string.IsNullOrWhiteSpace(candidate)
+               && !string.Equals(candidate, Path.GetPathRoot(candidate), StringComparison.OrdinalIgnoreCase))
+        {
+            var normalizedCandidate = NormalizeDocumentPath(candidate);
+            if (normalizedRight.StartsWith(normalizedCandidate + "/", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(normalizedRight, normalizedCandidate, StringComparison.OrdinalIgnoreCase))
+            {
+                return candidate;
+            }
+
+            candidate = Directory.GetParent(candidate)?.FullName;
+        }
+
+        return null;
+    }
+
+    private static IEnumerable<string> EnumerateWorkspaceFiles(
+        IEnumerable<string> searchRoots,
+        string searchPattern,
+        CancellationToken cancellationToken)
+    {
+        var visitedDirectories = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var visitedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var searchRoot in searchRoots)
+        {
+            if (!Directory.Exists(searchRoot))
+            {
+                continue;
+            }
+
+            var pendingDirectories = new Stack<string>();
+            pendingDirectories.Push(searchRoot);
+
+            while (pendingDirectories.Count > 0)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var currentDirectory = pendingDirectories.Pop();
+                var normalizedDirectory = NormalizeDocumentPath(currentDirectory);
+                if (!visitedDirectories.Add(normalizedDirectory) || ShouldSkipWorkspaceDirectory(currentDirectory))
+                {
+                    continue;
+                }
+
+                IEnumerable<string> files;
+                try
+                {
+                    files = Directory.EnumerateFiles(currentDirectory, searchPattern, SearchOption.TopDirectoryOnly);
+                }
+                catch (IOException)
+                {
+                    continue;
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    continue;
+                }
+
+                foreach (var filePath in files)
+                {
+                    var normalizedPath = NormalizeDocumentPath(filePath);
+                    if (visitedFiles.Add(normalizedPath))
+                    {
+                        yield return normalizedPath;
+                    }
+                }
+
+                IEnumerable<string> directories;
+                try
+                {
+                    directories = Directory.EnumerateDirectories(currentDirectory, "*", SearchOption.TopDirectoryOnly);
+                }
+                catch (IOException)
+                {
+                    continue;
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    continue;
+                }
+
+                foreach (var childDirectory in directories)
+                {
+                    if (!ShouldSkipWorkspaceDirectory(childDirectory))
+                    {
+                        pendingDirectories.Push(childDirectory);
+                    }
+                }
+            }
+        }
+    }
+
+    private static bool ShouldSkipWorkspaceDirectory(string directoryPath)
+    {
+        var directoryName = Path.GetFileName(directoryPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+        return directoryName switch
+        {
+            ".git" => true,
+            ".hg" => true,
+            ".svn" => true,
+            ".vs" => true,
+            ".idea" => true,
+            "bin" => true,
+            "obj" => true,
+            "node_modules" => true,
+            ".deno" => true,
+            _ => false
+        };
     }
 
     private static string ToImportPath(string documentDirectory, string absolutePath)
@@ -867,7 +1163,7 @@ internal sealed class JazorLspDocumentService
 
         AddDocumentCandidate(document, documents, seen);
 
-        foreach (var directory in GetJazorSearchDirectories(document.DocumentPath, declarationDocumentPath))
+        foreach (var directory in VueHostWorkspaceResolver.GetWorkspaceSearchRoots(document.DocumentPath, declarationDocumentPath, openDocuments))
         {
             await AddJazorDocumentsFromDirectoryAsync(directory, openDocuments, documents, seen, cancellationToken);
         }
@@ -887,10 +1183,8 @@ internal sealed class JazorLspDocumentService
             return;
         }
 
-        foreach (var filePath in Directory.EnumerateFiles(directory, "*.jazor", SearchOption.TopDirectoryOnly))
+        foreach (var filePath in VueHostWorkspaceResolver.EnumerateWorkspaceFiles(new[] { directory }, "*.jazor", cancellationToken))
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             var normalizedPath = NormalizeDocumentPath(filePath);
             var openDocument = openDocuments.FirstOrDefault(candidate =>
                 string.Equals(
@@ -908,41 +1202,40 @@ internal sealed class JazorLspDocumentService
                 continue;
             }
 
-            documents.Add(new DocumentSnapshot(
-                normalizedPath,
-                DocumentKind.Jazor,
-                await File.ReadAllTextAsync(filePath, cancellationToken),
-                version: null));
-            seen.Add(normalizedPath);
+            try
+            {
+                documents.Add(new DocumentSnapshot(
+                    normalizedPath,
+                    DocumentKind.Jazor,
+                    await File.ReadAllTextAsync(filePath, cancellationToken),
+                    version: null));
+                seen.Add(normalizedPath);
+            }
+            catch (FileNotFoundException)
+            {
+            }
+            catch (DirectoryNotFoundException)
+            {
+            }
+            catch (IOException)
+            {
+                // Workspace scans are a best-effort IntelliSense heuristic.
+                // If a file is transiently unavailable, skip it instead of
+                // failing the whole reference/rename request path.
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // The host should degrade gracefully when a scanned file is not readable.
+            }
         }
     }
 
     private static IEnumerable<string> GetJazorSearchDirectories(
         string documentPath,
-        string? declarationDocumentPath)
+        string? declarationDocumentPath,
+        IReadOnlyList<DocumentSnapshot> openDocuments)
     {
-        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var path in new[] { documentPath, declarationDocumentPath })
-        {
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                continue;
-            }
-
-            var directory = Path.GetDirectoryName(path);
-            if (string.IsNullOrWhiteSpace(directory))
-            {
-                continue;
-            }
-
-            foreach (var searchDirectory in GetSearchDirectories(directory))
-            {
-                if (seen.Add(searchDirectory))
-                {
-                    yield return searchDirectory;
-                }
-            }
-        }
+        return GetWorkspaceSearchRoots(documentPath, declarationDocumentPath, openDocuments);
     }
 
     private static void AddDocumentCandidate(
