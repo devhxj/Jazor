@@ -56,19 +56,18 @@ Runtime modes:
 - stdio RPC mode is also entered automatically when stdin is redirected
 - LSP mode: start with `dotnet run --project src/Jazor.VueHost/Jazor.VueHost.csproj -- --lsp`
 - analysis compatibility mode: start with `dotnet run --project src/Jazor.VueHost/Jazor.VueHost.csproj -- --analysis-stdio`
-- language-server catalog inspection: start with `dotnet run --project src/Jazor.VueHost/Jazor.VueHost.csproj -- --inspect-language-servers`
-- language-server probe: start with `dotnet run --project src/Jazor.VueHost/Jazor.VueHost.csproj -- --probe-language-servers`
 - Razor SDK toolset inspection: start with `dotnet run --project src/Jazor.VueHost/Jazor.VueHost.csproj -- --inspect-razor-toolset`
 - in-proc Razor projection probe: start with `dotnet run --project src/Jazor.VueHost/Jazor.VueHost.csproj -- --probe-inproc-razor=<absolute-or-relative-jazor-path>`
 
 LSP mode:
 
 - current LSP surface: `initialize`, `initialized`, `textDocument/didOpen`, `textDocument/didChange`, `textDocument/didClose`, `textDocument/hover`, `textDocument/completion`, `textDocument/documentSymbol`, `textDocument/definition`, `textDocument/references`, `textDocument/rename`, `textDocument/codeAction`, `shutdown`, `exit`
-- current focus: `.jazor` diagnostics plus workspace-aware `.jazor <-> .vue` hover, completion, definition, references, rename, and code actions
+- current focus: `.jazor` diagnostics plus workspace-aware `.jazor <-> .vue` hover, completion, definition, references, rename, code actions, and document symbols
 - current IntelliSense contract: nearby/open `.vue` can suppress unresolved component diagnostics for open `.jazor`, and `.vue -> .jazor` rename/reference stays markup-only
-- the host always wires the Jazor lane, an in-proc Roslyn-backed code lane, and a frontend lane
-- passing `--external-roslyn` lets the code lane use an external Roslyn language server when one is discovered from the catalog
-- Volar and TypeScript are discovered through the language-server catalog when available; otherwise frontend behavior falls back to the bundled Deno worker path
+- the host always wires the Jazor lane, an in-proc Roslyn-backed code lane, and the bundled Deno frontend lane
+- semantic request routing no longer appends Jazor fallback behind frontend/code lanes; if a lane cannot answer, VueHost returns no semantic result instead of synthesizing one from another lane
+- the self-contained Deno worker now serves template-side `documentSymbol` alongside diagnostics/completion/hover/definition/references/rename so frontend symbol discovery does not depend on an external language-server install
+- the bundled Deno worker is enabled by default, starts with `--allow-read`, and the frontend lane only supplements it with workspace-graph results while that worker is actually active
 
 Frontend runtime path:
 
@@ -88,7 +87,6 @@ Current layout:
 - `Hosting/` contains host lifecycle entry abstractions
 - `Jazor/Core/` contains parsing, markup/import extraction, and fallback artifact generation for `.jazor`
 - `Jazor/Projection/` contains projection generation used by LSP and tooling
-- `LanguageServers/` contains external language-server discovery and projected lane hosts for Volar, TypeScript, and optional external Roslyn
 - `Lsp/` contains document services, stdio LSP transport, result aggregation, lane coordination, and routing
 - `Protocol/Contracts/` contains shared DTOs, RPC method names, document snapshots, and JSON serialization
 - `Roslyn/InProc/` contains the current in-proc Roslyn code-service implementation
