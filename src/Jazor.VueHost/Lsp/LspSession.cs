@@ -82,6 +82,12 @@ internal sealed class LspSession
                         {
                             ResolveProvider = false,
                             TriggerCharacters = ["@", "<", "/"]
+                        },
+                        SemanticTokensProvider = new LspSemanticTokensOptions
+                        {
+                            Legend = LspSemanticTokenLegend.CreateDescriptor(),
+                            Full = true,
+                            Range = false
                         }
                     },
                     ServerInfo = new LspServerInfo
@@ -94,6 +100,7 @@ internal sealed class LspSession
             "textDocument/hover" => await HandleHoverAsync(request, cancellationToken),
             "textDocument/completion" => await HandleCompletionAsync(request, cancellationToken),
             "textDocument/documentSymbol" => await HandleDocumentSymbolsAsync(request, cancellationToken),
+            "textDocument/semanticTokens/full" => await HandleSemanticTokensAsync(request, cancellationToken),
             "textDocument/signatureHelp" => await HandleSignatureHelpAsync(request, cancellationToken),
             "textDocument/definition" => await HandleDefinitionAsync(request, cancellationToken),
             "textDocument/references" => await HandleReferencesAsync(request, cancellationToken),
@@ -210,6 +217,26 @@ internal sealed class LspSession
         }
 
         return CreateSuccessResponse(request.Id, _resultAggregator.AggregateDocumentSymbols(symbols));
+    }
+
+    private async ValueTask<LspResponseMessage> HandleSemanticTokensAsync(
+        LspRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        var parameters = DeserializeParams<LspSemanticTokensParams>(request.Params);
+        var document = await GetRequiredDocumentAsync(parameters.TextDocument.Uri, cancellationToken);
+        var tokens = new List<LspSemanticToken>();
+
+        foreach (var lane in GetSemanticTokenLanes(document))
+        {
+            var laneTokens = await lane.GetSemanticTokensAsync(document, cancellationToken);
+            if (laneTokens.Count > 0)
+            {
+                tokens.AddRange(laneTokens);
+            }
+        }
+
+        return CreateSuccessResponse(request.Id, _resultAggregator.AggregateSemanticTokens(tokens));
     }
 
     private async ValueTask<LspResponseMessage> HandleDefinitionAsync(
@@ -468,6 +495,20 @@ internal sealed class LspSession
 
         var orderedLanes = new List<ILspLane>();
         foreach (var laneKind in laneKinds)
+        {
+            if (_lanes.TryGetValue(laneKind, out var lane))
+            {
+                orderedLanes.Add(lane);
+            }
+        }
+
+        return orderedLanes;
+    }
+
+    private IReadOnlyList<ILspLane> GetSemanticTokenLanes(DocumentSnapshot document)
+    {
+        var orderedLanes = new List<ILspLane>();
+        foreach (var laneKind in _laneRouter.GetSemanticTokenLanes(document))
         {
             if (_lanes.TryGetValue(laneKind, out var lane))
             {

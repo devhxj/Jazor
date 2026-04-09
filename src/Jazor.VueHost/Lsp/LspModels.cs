@@ -99,6 +99,9 @@ internal sealed class LspServerCapabilities
 
     [JsonPropertyName("completionProvider")]
     public required LspCompletionOptions CompletionProvider { get; init; }
+
+    [JsonPropertyName("semanticTokensProvider")]
+    public LspSemanticTokensOptions? SemanticTokensProvider { get; init; }
 }
 
 internal sealed class LspTextDocumentSyncOptions
@@ -126,6 +129,27 @@ internal sealed class LspSignatureHelpOptions
 
     [JsonPropertyName("retriggerCharacters")]
     public string[]? RetriggerCharacters { get; init; }
+}
+
+internal sealed class LspSemanticTokensOptions
+{
+    [JsonPropertyName("legend")]
+    public required LspSemanticTokensLegendDescriptor Legend { get; init; }
+
+    [JsonPropertyName("full")]
+    public bool Full { get; init; }
+
+    [JsonPropertyName("range")]
+    public bool Range { get; init; }
+}
+
+internal sealed class LspSemanticTokensLegendDescriptor
+{
+    [JsonPropertyName("tokenTypes")]
+    public required string[] TokenTypes { get; init; }
+
+    [JsonPropertyName("tokenModifiers")]
+    public required string[] TokenModifiers { get; init; }
 }
 
 internal class LspTextDocumentIdentifier
@@ -261,6 +285,12 @@ internal sealed class LspCodeActionParams
 }
 
 internal sealed class LspDocumentSymbolParams
+{
+    [JsonPropertyName("textDocument")]
+    public required LspTextDocumentIdentifier TextDocument { get; init; }
+}
+
+internal sealed class LspSemanticTokensParams
 {
     [JsonPropertyName("textDocument")]
     public required LspTextDocumentIdentifier TextDocument { get; init; }
@@ -414,6 +444,30 @@ internal sealed class LspDocumentSymbol
 
     [JsonPropertyName("children")]
     public LspDocumentSymbol[]? Children { get; init; }
+}
+
+internal sealed class LspSemanticTokensResult
+{
+    [JsonPropertyName("data")]
+    public required int[] Data { get; init; }
+}
+
+internal sealed class LspSemanticToken
+{
+    [JsonPropertyName("line")]
+    public int Line { get; init; }
+
+    [JsonPropertyName("character")]
+    public int Character { get; init; }
+
+    [JsonPropertyName("length")]
+    public int Length { get; init; }
+
+    [JsonPropertyName("tokenType")]
+    public required string TokenType { get; init; }
+
+    [JsonPropertyName("tokenModifiers")]
+    public string[] TokenModifiers { get; init; } = [];
 }
 
 internal sealed class LspRange

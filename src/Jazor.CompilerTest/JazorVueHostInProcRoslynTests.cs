@@ -158,6 +158,55 @@ public sealed class JazorVueHostInProcRoslynTests
     }
 
     [TestMethod]
+    public async Task InProcRoslynCodeService_GetSemanticTokensAsync_MapsCodeTokensBackToOriginalDocument()
+    {
+        var document = CreateDocument(
+            """
+            @code {
+                private static readonly int count = 42;
+                private string label = "items";
+
+                private void Increment(int step)
+                {
+                    var next = count + step;
+                }
+            }
+            """);
+
+        var tokens = await _service.GetSemanticTokensAsync(document, CancellationToken.None);
+        AssertHasSemanticToken(
+            tokens,
+            GetPosition(document.Text, "count = 42"),
+            "count".Length,
+            "variable",
+            "declaration",
+            "static",
+            "readonly");
+        AssertHasSemanticToken(
+            tokens,
+            GetPosition(document.Text, "\"items\""),
+            "\"items\"".Length,
+            "string");
+        AssertHasSemanticToken(
+            tokens,
+            GetPosition(document.Text, "42"),
+            "42".Length,
+            "number");
+        AssertHasSemanticToken(
+            tokens,
+            GetPosition(document.Text, "Increment(int"),
+            "Increment".Length,
+            "method",
+            "declaration");
+        AssertHasSemanticToken(
+            tokens,
+            GetPosition(document.Text, "step)"),
+            "step".Length,
+            "parameter",
+            "declaration");
+    }
+
+    [TestMethod]
     public async Task InProcRoslynCodeService_GetDefinitionAsync_MapsToOriginalCodeRegion()
     {
         var document = CreateDocument(
@@ -390,6 +439,26 @@ public sealed class JazorVueHostInProcRoslynTests
         StringAssert.Contains(help.Signatures[0].Label, "int count");
         StringAssert.Contains(help.Signatures[0].Label, "string prefix");
         StringAssert.Contains(help.Signatures[0].Label, "bool includeUnits");
+    }
+
+    private static void AssertHasSemanticToken(
+        IReadOnlyList<LspSemanticToken> tokens,
+        LspPosition position,
+        int length,
+        string tokenType,
+        params string[] modifiers)
+    {
+        var token = tokens.FirstOrDefault(candidate =>
+            candidate.Line == position.Line
+            && candidate.Character == position.Character
+            && candidate.Length == length
+            && string.Equals(candidate.TokenType, tokenType, StringComparison.Ordinal));
+        Assert.IsNotNull(token, $"Expected semantic token '{tokenType}' at {position.Line}:{position.Character}.");
+
+        CollectionAssert.AreEquivalent(
+            modifiers,
+            token.TokenModifiers,
+            $"Expected modifiers '{string.Join(", ", modifiers)}' for semantic token '{tokenType}' at {position.Line}:{position.Character}.");
     }
 
     private static LspPosition GetPosition(string text, string marker, int advance = 0)

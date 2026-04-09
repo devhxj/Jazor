@@ -39,6 +39,17 @@ public sealed class JazorVueHostLspTests
         Assert.IsTrue(result.GetProperty("capabilities").GetProperty("renameProvider").GetBoolean());
         Assert.IsTrue(result.GetProperty("capabilities").GetProperty("codeActionProvider").GetBoolean());
         Assert.IsTrue(result.GetProperty("capabilities").GetProperty("documentSymbolProvider").GetBoolean());
+        var semanticTokensProvider = result.GetProperty("capabilities").GetProperty("semanticTokensProvider");
+        Assert.IsTrue(semanticTokensProvider.GetProperty("full").GetBoolean());
+        Assert.IsFalse(semanticTokensProvider.GetProperty("range").GetBoolean());
+        var semanticTokenTypes = semanticTokensProvider
+            .GetProperty("legend")
+            .GetProperty("tokenTypes")
+            .EnumerateArray()
+            .Select(static item => item.GetString() ?? string.Empty)
+            .ToArray();
+        CollectionAssert.Contains(semanticTokenTypes, "class");
+        CollectionAssert.Contains(semanticTokenTypes, "method");
         var signatureHelpProvider = result.GetProperty("capabilities").GetProperty("signatureHelpProvider");
         var triggerCharacters = signatureHelpProvider
             .GetProperty("triggerCharacters")
@@ -152,6 +163,120 @@ public sealed class JazorVueHostLspTests
             });
             using var definitionResponse = await client.ReadResponseAsync(expectedId: 903);
             Assert.AreEqual(0, definitionResponse.RootElement.GetProperty("result").GetArrayLength());
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_SemanticTokens_ReturnEmptyWhenFrontendLaneHasNoAnswer()
+    {
+        await using var client = await LspTestClient.StartAsync("--no-deno-worker");
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            var text =
+                """
+                <template>
+                  <UserCard />
+                </template>
+                """;
+
+            await client.OpenDocumentAsync(documentUri, text, version: 1);
+            var tokens = await client.RequestSemanticTokensAsync(requestId: 904, uri: documentUri);
+
+            Assert.AreEqual(0, tokens.Count);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_SemanticTokens_ReturnRoslynCodeTokensWithoutFrontendWorker()
+    {
+        await using var client = await LspTestClient.StartAsync("--no-deno-worker");
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            var text =
+                """
+                <UserCard />
+
+                @code {
+                    private static readonly int count = 42;
+
+                    private void Increment()
+                    {
+                        count++;
+                    }
+                }
+                """;
+
+            await client.OpenDocumentAsync(documentUri, text, version: 1);
+            var tokens = await client.RequestSemanticTokensAsync(requestId: 905, uri: documentUri);
+
+            AssertHasSemanticToken(tokens, GetPosition(text, "count = 42"), "count".Length, "variable", "declaration", "static", "readonly");
+            AssertHasSemanticToken(tokens, GetPosition(text, "Increment()"), "Increment".Length, "method", "declaration");
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_SemanticTokens_ReturnFrontendTokensFromBundledDenoWorker()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var componentsDirectory = Path.Combine(tempDirectory, "Components");
+            Directory.CreateDirectory(componentsDirectory);
+            await File.WriteAllTextAsync(
+                Path.Combine(componentsDirectory, "UserCard.vue"),
+                "<template><div>UserCard</div></template>");
+
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            var text =
+                """
+                <UserCard />
+                """;
+
+            await client.OpenDocumentAsync(documentUri, text, version: 1);
+            var tokens = await client.RequestSemanticTokensAsync(requestId: 906, uri: documentUri);
+
+            AssertHasSemanticToken(tokens, GetPosition(text, "UserCard"), "UserCard".Length, "class");
         }
         finally
         {
@@ -2927,6 +3052,22 @@ public sealed class JazorVueHostLspTests
         Assert.AreEqual("bool includeUnits", parameters[2].GetProperty("label").GetString());
     }
 
+    private static void AssertHasSemanticToken(
+        IReadOnlyList<LspSemanticToken> tokens,
+        LspPosition position,
+        int length,
+        string tokenType,
+        params string[] modifiers)
+    {
+        var token = tokens.FirstOrDefault(candidate =>
+            candidate.Line == position.Line
+            && candidate.Character == position.Character
+            && candidate.Length == length
+            && string.Equals(candidate.TokenType, tokenType, StringComparison.Ordinal));
+        Assert.IsNotNull(token, $"Expected semantic token '{tokenType}' at {position.Line}:{position.Character}.");
+        CollectionAssert.AreEquivalent(modifiers, token.TokenModifiers);
+    }
+
     private sealed class LspTestClient : IAsyncDisposable
     {
         private readonly Process _process;
@@ -3185,6 +3326,35 @@ public sealed class JazorVueHostLspTests
             }
 
             return result.Clone();
+        }
+
+        public async Task<IReadOnlyList<LspSemanticToken>> RequestSemanticTokensAsync(int requestId, string uri)
+        {
+            await SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = requestId,
+                method = "textDocument/semanticTokens/full",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri
+                    }
+                }
+            });
+            using var response = await ReadResponseAsync(expectedId: requestId);
+            if (!response.RootElement.TryGetProperty("result", out var result))
+            {
+                Assert.Fail("Expected LSP semanticTokens result. Raw response: " + response.RootElement.GetRawText());
+            }
+
+            var data = result
+                .GetProperty("data")
+                .EnumerateArray()
+                .Select(static item => item.GetInt32())
+                .ToArray();
+            return LspSemanticTokenLegend.Decode(data);
         }
 
         public async Task SendAsync(object payload)

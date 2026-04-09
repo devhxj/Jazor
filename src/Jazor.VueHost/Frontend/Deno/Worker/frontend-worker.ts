@@ -83,6 +83,8 @@ function dispatch(method: string, payload: RequestEnvelope["payload"]): unknown 
       return getRename(payload.documentPath, payload.text, payload.position, payload.newName ?? "");
     case "template/documentSymbols":
       return getDocumentSymbols(payload.text);
+    case "template/semanticTokens":
+      return getSemanticTokens(payload.text);
     default:
       throw new Error(`Unsupported method '${method}'.`);
   }
@@ -265,6 +267,25 @@ function getDocumentSymbols(text: string): unknown[] {
   }];
 }
 
+function getSemanticTokens(text: string): unknown[] {
+  const tokens: unknown[] = [];
+
+  for (const symbol of findTemplateSymbols(text)) {
+    tokens.push(createSemanticToken(symbol.range, "class"));
+  }
+
+  for (const range of findDirectiveAttributeRanges(text)) {
+    tokens.push(createSemanticToken(range, "keyword"));
+  }
+
+  const templateBlock = findTemplateBlock(text);
+  if (templateBlock !== null) {
+    tokens.push(createSemanticToken(templateBlock.selectionRange, "keyword"));
+  }
+
+  return dedupeSemanticTokens(tokens);
+}
+
 function resolveComponent(
   documentPath: string,
   componentName: string,
@@ -375,6 +396,22 @@ function findTemplateSymbolRanges(text: string, componentName: string): Array<{ 
     .map((symbol) => symbol.range);
 }
 
+function findDirectiveAttributeRanges(text: string): Array<{ start: Position; end: Position }> {
+  const results: Array<{ start: Position; end: Position }> = [];
+  const pattern = /(?<name>v-[A-Za-z0-9_-]+|[@:#][A-Za-z0-9_-]+)/g;
+  for (const match of text.matchAll(pattern)) {
+    const name = match.groups?.["name"];
+    const index = match.index ?? -1;
+    if (name === undefined || index < 0) {
+      continue;
+    }
+
+    results.push(toRange(text, index, name.length) as { start: Position; end: Position });
+  }
+
+  return results;
+}
+
 function findTemplateBlock(text: string): { range: { start: Position; end: Position }; selectionRange: { start: Position; end: Position } } | null {
   const startMatch = /<template\b[^>]*>/i.exec(text);
   if (startMatch === null || startMatch.index === undefined) {
@@ -475,6 +512,53 @@ function dedupeLocations(items: unknown[]): unknown[] {
   }
 
   return results;
+}
+
+function dedupeSemanticTokens(items: unknown[]): unknown[] {
+  const seen = new Set<string>();
+  const results: unknown[] = [];
+  for (const item of items as Array<{ line: number; character: number; length: number; tokenType: string }>) {
+    const key = `${item.line}:${item.character}:${item.length}:${item.tokenType}`;
+    if (seen.has(key)) {
+      continue;
+    }
+
+    seen.add(key);
+    results.push(item);
+  }
+
+  return results.sort((left, right) => {
+    const leftToken = left as { line: number; character: number };
+    const rightToken = right as { line: number; character: number };
+    if (leftToken.line !== rightToken.line) {
+      return leftToken.line - rightToken.line;
+    }
+
+    return leftToken.character - rightToken.character;
+  });
+}
+
+function createSemanticToken(
+  range: { start: Position; end: Position },
+  tokenType: string,
+): unknown {
+  if (range.start.line !== range.end.line) {
+    return {
+      line: range.start.line,
+      character: range.start.character,
+      length: 0,
+      tokenType,
+      tokenModifiers: [],
+    };
+  }
+
+  return {
+    line: range.start.line,
+    character: range.start.character,
+    length: range.end.character - range.start.character,
+    tokenType,
+    tokenModifiers: [],
+  };
 }
 
 function assertPosition(method: string, position: Position | undefined): asserts position is Position {

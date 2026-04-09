@@ -27,6 +27,10 @@ internal interface ILspLane
         DocumentSnapshot document,
         CancellationToken cancellationToken);
 
+    ValueTask<IReadOnlyList<LspSemanticToken>> GetSemanticTokensAsync(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken);
+
     ValueTask<LspSignatureHelp?> GetSignatureHelpAsync(
         DocumentSnapshot document,
         LspPosition position,

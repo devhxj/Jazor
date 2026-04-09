@@ -91,6 +91,19 @@ internal sealed class DenoFrontendHost : IDenoFrontendHost
         return symbols ?? Array.Empty<LspDocumentSymbol>();
     }
 
+    public async ValueTask<IReadOnlyList<LspSemanticToken>> GetTemplateSemanticTokensAsync(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken)
+    {
+        var request = new DenoTemplateSemanticTokensRequest
+        {
+            DocumentPath = document.DocumentPath,
+            Text = document.Text
+        };
+        var tokens = await SendAsync<LspSemanticToken[]>("template/semanticTokens", request, cancellationToken);
+        return tokens ?? Array.Empty<LspSemanticToken>();
+    }
+
     public async ValueTask<LspHoverResult?> GetTemplateHoverAsync(
         DocumentSnapshot document,
         LspPosition position,

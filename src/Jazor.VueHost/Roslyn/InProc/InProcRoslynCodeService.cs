@@ -99,6 +99,19 @@ internal sealed class InProcRoslynCodeService
         return ValueTask.FromResult<IReadOnlyList<LspDocumentSymbol>>(CreateDocumentSymbols(context, cancellationToken));
     }
 
+    public ValueTask<IReadOnlyList<LspSemanticToken>> GetSemanticTokensAsync(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (!TryCreateContext(document, originalPosition: null, openDocuments: null, out var context))
+        {
+            return ValueTask.FromResult<IReadOnlyList<LspSemanticToken>>(Array.Empty<LspSemanticToken>());
+        }
+
+        return ValueTask.FromResult<IReadOnlyList<LspSemanticToken>>(CreateSemanticTokens(context, cancellationToken));
+    }
+
     public ValueTask<LspSignatureHelp?> GetSignatureHelpAsync(
         DocumentSnapshot document,
         LspPosition position,
@@ -863,6 +876,148 @@ internal sealed class InProcRoslynCodeService
             SymbolKind.Event => 24,
             _ => fallbackKind
         };
+
+    private static IReadOnlyList<LspSemanticToken> CreateSemanticTokens(
+        RoslynCodeContext context,
+        CancellationToken cancellationToken)
+    {
+        var tokens = new List<LspSemanticToken>();
+        // Only projected tokens that map back into user source survive this pass,
+        // which keeps generated Razor scaffolding out of the final semantic stream.
+        foreach (var token in context.SyntaxTree.GetRoot(cancellationToken).DescendantTokens())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!TryCreateSemanticToken(context, token, cancellationToken, out var semanticToken))
+            {
+                continue;
+            }
+
+            tokens.Add(semanticToken);
+        }
+
+        return tokens;
+    }
+
+    private static bool TryCreateSemanticToken(
+        RoslynCodeContext context,
+        SyntaxToken token,
+        CancellationToken cancellationToken,
+        out LspSemanticToken semanticToken)
+    {
+        semanticToken = null!;
+        var range = TryMapSpanToOriginalRange(context, token.Span);
+        if (range is null
+            || range.Start.Line != range.End.Line
+            || range.End.Character <= range.Start.Character
+            || !TryGetSemanticTokenClassification(context, token, cancellationToken, out var tokenType, out var tokenModifiers))
+        {
+            return false;
+        }
+
+        semanticToken = new LspSemanticToken
+        {
+            Line = range.Start.Line,
+            Character = range.Start.Character,
+            Length = range.End.Character - range.Start.Character,
+            TokenType = tokenType,
+            TokenModifiers = tokenModifiers
+        };
+        return true;
+    }
+
+    private static bool TryGetSemanticTokenClassification(
+        RoslynCodeContext context,
+        SyntaxToken token,
+        CancellationToken cancellationToken,
+        out string tokenType,
+        out string[] tokenModifiers)
+    {
+        tokenModifiers = [];
+
+        if (token.IsKind(SyntaxKind.StringLiteralToken)
+            || token.IsKind(SyntaxKind.CharacterLiteralToken)
+            || token.IsKind(SyntaxKind.InterpolatedStringTextToken))
+        {
+            tokenType = "string";
+            return true;
+        }
+
+        if (token.IsKind(SyntaxKind.NumericLiteralToken))
+        {
+            tokenType = "number";
+            return true;
+        }
+
+        if (SyntaxFacts.IsKeywordKind(token.Kind()) || SyntaxFacts.IsContextualKeyword(token.Kind()))
+        {
+            tokenType = "keyword";
+            return true;
+        }
+
+        if (!token.IsKind(SyntaxKind.IdentifierToken))
+        {
+            tokenType = string.Empty;
+            return false;
+        }
+
+        var symbol = TryResolveTokenSymbol(
+            new ProjectedDocumentContext(
+                context.Document,
+                context.ProjectedText,
+                context.ProjectionMap,
+                context.SyntaxTree,
+                context.SemanticModel),
+            token,
+            cancellationToken);
+        if (symbol is null)
+        {
+            tokenType = string.Empty;
+            return false;
+        }
+
+        tokenType = symbol.Kind switch
+        {
+            SymbolKind.NamedType => "class",
+            SymbolKind.Method => "method",
+            SymbolKind.Property => "property",
+            SymbolKind.Parameter => "parameter",
+            SymbolKind.Field or SymbolKind.Local => "variable",
+            _ => string.Empty
+        };
+        if (string.IsNullOrEmpty(tokenType))
+        {
+            return false;
+        }
+
+        var modifiers = new List<string>(3);
+        if (IsDeclarationToken(context, symbol, token))
+        {
+            modifiers.Add("declaration");
+        }
+
+        if (symbol.IsStatic)
+        {
+            modifiers.Add("static");
+        }
+
+        if (symbol is IFieldSymbol { IsReadOnly: true }
+            || symbol is IPropertySymbol { SetMethod: null })
+        {
+            modifiers.Add("readonly");
+        }
+
+        tokenModifiers = modifiers.ToArray();
+        return true;
+    }
+
+    private static bool IsDeclarationToken(
+        RoslynCodeContext context,
+        ISymbol symbol,
+        SyntaxToken token)
+        => symbol.Locations.Any(location =>
+            location.IsInSource
+            && location.SourceTree == context.SyntaxTree
+            && location.SourceSpan.IntersectsWith(token.Span));
 
     private static bool TryCreateSignatureHelp(
         RoslynCodeContext context,

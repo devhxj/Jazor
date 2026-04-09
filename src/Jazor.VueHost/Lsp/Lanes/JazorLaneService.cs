@@ -38,6 +38,11 @@ internal sealed class JazorLaneService : ILspLane
         CancellationToken cancellationToken)
         => _documentService.GetDocumentSymbolsAsync(document, cancellationToken);
 
+    public ValueTask<IReadOnlyList<LspSemanticToken>> GetSemanticTokensAsync(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken)
+        => ValueTask.FromResult<IReadOnlyList<LspSemanticToken>>(Array.Empty<LspSemanticToken>());
+
     public ValueTask<LspSignatureHelp?> GetSignatureHelpAsync(
         DocumentSnapshot document,
         LspPosition position,

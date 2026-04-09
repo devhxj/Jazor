@@ -140,6 +140,18 @@ internal sealed class FrontendLaneService : ILspLane
         CancellationToken cancellationToken)
         => GetDocumentSymbolsCoreAsync(document, cancellationToken);
 
+    public async ValueTask<IReadOnlyList<LspSemanticToken>> GetSemanticTokensAsync(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken)
+    {
+        if (document.DocumentKind is not (DocumentKind.Jazor or DocumentKind.Vue))
+        {
+            return Array.Empty<LspSemanticToken>();
+        }
+
+        return await TryGetDenoSemanticTokensAsync(document, cancellationToken);
+    }
+
     private async ValueTask<IReadOnlyList<LspDocumentSymbol>> GetDocumentSymbolsCoreAsync(
         DocumentSnapshot document,
         CancellationToken cancellationToken)
@@ -498,6 +510,25 @@ internal sealed class FrontendLaneService : ILspLane
         catch
         {
             return Array.Empty<LspDiagnostic>();
+        }
+    }
+
+    private async ValueTask<IReadOnlyList<LspSemanticToken>> TryGetDenoSemanticTokensAsync(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken)
+    {
+        if (_denoFrontendHost is null)
+        {
+            return Array.Empty<LspSemanticToken>();
+        }
+
+        try
+        {
+            return await _denoFrontendHost.GetTemplateSemanticTokensAsync(document, cancellationToken);
+        }
+        catch
+        {
+            return Array.Empty<LspSemanticToken>();
         }
     }
 

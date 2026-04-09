@@ -61,12 +61,12 @@ Runtime modes:
 
 LSP mode:
 
-- current LSP surface: `initialize`, `initialized`, `textDocument/didOpen`, `textDocument/didChange`, `textDocument/didClose`, `textDocument/hover`, `textDocument/completion`, `textDocument/documentSymbol`, `textDocument/definition`, `textDocument/references`, `textDocument/rename`, `textDocument/codeAction`, `shutdown`, `exit`
-- current focus: `.jazor` diagnostics plus workspace-aware `.jazor <-> .vue` hover, completion, definition, references, rename, code actions, and document symbols
+- current LSP surface: `initialize`, `initialized`, `textDocument/didOpen`, `textDocument/didChange`, `textDocument/didClose`, `textDocument/hover`, `textDocument/completion`, `textDocument/documentSymbol`, `textDocument/semanticTokens/full`, `textDocument/definition`, `textDocument/references`, `textDocument/rename`, `textDocument/codeAction`, `shutdown`, `exit`
+- current focus: `.jazor` diagnostics plus workspace-aware `.jazor <-> .vue` hover, completion, definition, references, rename, code actions, document symbols, and semantic tokens
 - current IntelliSense contract: nearby/open `.vue` can suppress unresolved component diagnostics for open `.jazor`, and `.vue -> .jazor` rename/reference stays markup-only
 - the host always wires the Jazor lane, an in-proc Roslyn-backed code lane, and the bundled Deno frontend lane
 - semantic request routing no longer appends Jazor fallback behind frontend/code lanes; if a lane cannot answer, VueHost returns no semantic result instead of synthesizing one from another lane
-- the self-contained Deno worker now serves template-side `documentSymbol` alongside diagnostics/completion/hover/definition/references/rename so frontend symbol discovery does not depend on an external language-server install
+- the self-contained Deno worker now serves template-side `documentSymbol` and `semanticTokens` alongside diagnostics/completion/hover/definition/references/rename so frontend symbol discovery does not depend on an external language-server install
 - the bundled Deno worker is enabled by default, starts with `--allow-read`, and the frontend lane only supplements it with workspace-graph results while that worker is actually active
 
 Frontend runtime path:

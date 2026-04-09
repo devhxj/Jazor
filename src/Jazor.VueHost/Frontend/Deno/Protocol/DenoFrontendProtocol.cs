@@ -39,6 +39,10 @@ internal sealed class DenoTemplateDiagnosticRequest : DenoTemplateDocumentReques
 {
 }
 
+internal sealed class DenoTemplateSemanticTokensRequest : DenoTemplateDocumentRequest
+{
+}
+
 internal sealed class DenoTemplateReferenceRequest : DenoTemplateRequest
 {
     public bool IncludeDeclaration { get; init; }

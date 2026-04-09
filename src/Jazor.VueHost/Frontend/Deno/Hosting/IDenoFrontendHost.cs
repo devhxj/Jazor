@@ -24,6 +24,10 @@ internal interface IDenoFrontendHost : IAsyncDisposable
         DocumentSnapshot document,
         CancellationToken cancellationToken);
 
+    ValueTask<IReadOnlyList<LspSemanticToken>> GetTemplateSemanticTokensAsync(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken);
+
     ValueTask<LspHoverResult?> GetTemplateHoverAsync(
         DocumentSnapshot document,
         LspPosition position,

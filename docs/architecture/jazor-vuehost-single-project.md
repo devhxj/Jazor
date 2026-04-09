@@ -737,6 +737,7 @@ Current progress note:
 - `textDocument/signatureHelp` is now advertised and served for `@code` regions through the in-proc Roslyn lane, and focused tests now lock active-parameter tracking for multi-argument invocations at both the Roslyn service layer and the end-to-end LSP layer
 - `textDocument/documentSymbol` is now advertised and served for `.jazor`, with Jazor structure symbols (`Template` / `Code` plus template component children) aggregated alongside in-proc Roslyn top-level `@code` members
 - the self-contained Deno frontend worker now serves template-side `documentSymbol`, so frontend symbol discovery for `.vue` and other frontend-lane documents no longer depends on an externally installed Volar/tsserver path
+- `textDocument/semanticTokens/full` is now advertised and served through host-level aggregation: the bundled Deno worker classifies template/component tokens for frontend regions, and the in-proc Roslyn lane classifies `@code` symbols directly from the projected C# model before mapping them back to source `.jazor`
 - Roslyn in-proc definition/references/rename now compile over all open `.jazor` projections from workspace state, so code-lane symbol queries can resolve and edit across documents when symbols are shared
 - code-region LSP routing no longer blocks on virtual C# document registration; VueHost still routes `@code` requests into Roslyn from the source snapshot when projection materialization is temporarily unavailable
 - the old external language-server compatibility layer has been removed from the mainline bootstrap, so VueHost now composes one self-contained stack: in-proc Razor projection, in-proc Roslyn semantics, and the bundled Deno frontend worker
@@ -750,7 +751,6 @@ Original phase-two tail:
 - `references`
 - `rename`
 - `codeAction`
-- `semanticTokens`
 
 ## Summary
 

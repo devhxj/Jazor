@@ -122,6 +122,49 @@ public sealed class JazorVueHostFrontendLaneTests
     }
 
     [TestMethod]
+    public async Task JazorVueHost_DenoFrontendHost_GetTemplateSemanticTokens_StartsWorkerAndReturnsTypedTokens()
+    {
+        var workerProcess = new FakeDenoWorkerProcess();
+        workerProcess.SetResult(
+            "template/semanticTokens",
+            new[]
+            {
+                new LspSemanticToken
+                {
+                    Line = 1,
+                    Character = 3,
+                    Length = 8,
+                    TokenType = "class",
+                    TokenModifiers = []
+                }
+            });
+        var host = new DenoFrontendHost(
+            new DenoFrontendHostOptions
+            {
+                Enabled = true,
+                IgnoreStartupFailure = false
+            },
+            workerProcess);
+
+        var tokens = await host.GetTemplateSemanticTokensAsync(
+            new DocumentSnapshot(
+                @"D:\temp\Host.vue",
+                DocumentKind.Vue,
+                """
+                <template>
+                  <UserCard />
+                </template>
+                """,
+                "1"),
+            CancellationToken.None);
+
+        Assert.AreEqual(1, workerProcess.StartCallCount);
+        Assert.AreEqual(1, tokens.Count);
+        Assert.AreEqual("class", tokens[0].TokenType);
+        CollectionAssert.AreEqual(new[] { "template/semanticTokens" }, workerProcess.RequestMethods);
+    }
+
+    [TestMethod]
     public async Task JazorVueHost_FrontendLaneService_GetDiagnostics_DeduplicatesMatchingDenoDiagnostics()
     {
         var lane = CreateLane(new FakeDenoFrontendHost
@@ -287,6 +330,40 @@ public sealed class JazorVueHostFrontendLaneTests
 
         Assert.AreEqual(1, symbols.Count);
         Assert.AreEqual("Template", symbols[0].Name);
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_FrontendLaneService_GetSemanticTokens_PrefersDenoResults()
+    {
+        var lane = CreateLane(new FakeDenoFrontendHost
+        {
+            SemanticTokens =
+            [
+                new LspSemanticToken
+                {
+                    Line = 1,
+                    Character = 3,
+                    Length = 8,
+                    TokenType = "class",
+                    TokenModifiers = []
+                }
+            ]
+        });
+        var document = new DocumentSnapshot(
+            @"D:\temp\Host.vue",
+            DocumentKind.Vue,
+            """
+            <template>
+              <UserCard />
+            </template>
+            """,
+            "1");
+
+        var tokens = await lane.GetSemanticTokensAsync(document, CancellationToken.None);
+
+        Assert.AreEqual(1, tokens.Count);
+        Assert.AreEqual("class", tokens[0].TokenType);
+        Assert.AreEqual(8, tokens[0].Length);
     }
 
     [TestMethod]
@@ -608,6 +685,8 @@ public sealed class JazorVueHostFrontendLaneTests
 
         public IReadOnlyList<LspDocumentSymbol> DocumentSymbols { get; init; } = [];
 
+        public IReadOnlyList<LspSemanticToken> SemanticTokens { get; init; } = [];
+
         public ValueTask StartAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -646,6 +725,14 @@ public sealed class JazorVueHostFrontendLaneTests
         {
             cancellationToken.ThrowIfCancellationRequested();
             return ValueTask.FromResult(DocumentSymbols);
+        }
+
+        public ValueTask<IReadOnlyList<LspSemanticToken>> GetTemplateSemanticTokensAsync(
+            DocumentSnapshot document,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return ValueTask.FromResult(SemanticTokens);
         }
 
         public ValueTask<LspHoverResult?> GetTemplateHoverAsync(

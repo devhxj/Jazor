@@ -83,6 +83,31 @@ internal sealed class LspResultAggregator
             .ToArray();
     }
 
+    public LspSemanticTokensResult AggregateSemanticTokens(
+        IReadOnlyList<LspSemanticToken> tokens)
+    {
+        ArgumentNullException.ThrowIfNull(tokens);
+
+        var normalizedTokens = tokens
+            .Where(static token => token.Length > 0)
+            .GroupBy(static token => string.Join(
+                '|',
+                token.Line,
+                token.Character,
+                token.Length,
+                token.TokenType,
+                string.Join(",", token.TokenModifiers)),
+                StringComparer.Ordinal)
+            .Select(static group => group.First())
+            .OrderBy(static token => token.Line)
+            .ThenBy(static token => token.Character)
+            .ThenBy(static token => token.Length)
+            .ThenBy(static token => token.TokenType, StringComparer.Ordinal)
+            .ToArray();
+
+        return LspSemanticTokenLegend.Encode(normalizedTokens);
+    }
+
     public LspWorkspaceEdit? AggregateWorkspaceEdits(
         IReadOnlyList<LspWorkspaceEdit> edits)
     {
