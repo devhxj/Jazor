@@ -4,7 +4,11 @@ public sealed class DenoFrontendHostOptions
 {
     public bool Enabled { get; init; }
 
-    public string Command { get; init; } = "deno";
+    public string ExecutablePath { get; init; } = string.Empty;
+
+    public bool HasExplicitExecutableOverride { get; init; }
+
+    public string WorkerScriptPath { get; init; } = string.Empty;
 
     public string[] Arguments { get; init; } = [];
 

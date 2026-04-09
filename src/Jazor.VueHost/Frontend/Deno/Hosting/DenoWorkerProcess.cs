@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
@@ -33,14 +34,29 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
             return ValueTask.CompletedTask;
         }
 
+        if (string.IsNullOrWhiteSpace(_options.ExecutablePath))
+        {
+            throw new InvalidOperationException("No Deno runtime path was configured for the VueHost frontend worker.");
+        }
+
+        if (!_options.HasExplicitExecutableOverride &&
+            Path.IsPathRooted(_options.ExecutablePath) &&
+            !File.Exists(_options.ExecutablePath))
+        {
+            throw new InvalidOperationException(
+                DenoRuntimeAssetResolver.CreateMissingRuntimeMessage(_options.ExecutablePath));
+        }
+
         var startInfo = new ProcessStartInfo
         {
-            FileName = _options.Command,
+            FileName = _options.ExecutablePath,
             UseShellExecute = false,
             RedirectStandardInput = true,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
-            CreateNoWindow = true
+            CreateNoWindow = true,
+            StandardErrorEncoding = Encoding.UTF8,
+            StandardOutputEncoding = Encoding.UTF8
         };
 
         foreach (var argument in _options.Arguments)
@@ -58,9 +74,18 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
             StartInfo = startInfo
         };
 
-        if (!_process.Start())
+        try
         {
-            throw new InvalidOperationException($"Failed to start Deno frontend worker '{_options.Command}'.");
+            if (!_process.Start())
+            {
+                throw new InvalidOperationException($"Failed to start Deno frontend worker '{_options.ExecutablePath}'.");
+            }
+        }
+        catch (Win32Exception ex) when (!_options.HasExplicitExecutableOverride)
+        {
+            throw new InvalidOperationException(
+                DenoRuntimeAssetResolver.CreateMissingRuntimeMessage(_options.ExecutablePath),
+                ex);
         }
 
         _writer = new StreamWriter(_process.StandardInput.BaseStream, new UTF8Encoding(false))

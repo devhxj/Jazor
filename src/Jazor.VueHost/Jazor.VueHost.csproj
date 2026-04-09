@@ -6,8 +6,14 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <DenoHostVersion>2.7.7</DenoHostVersion>
+    <DenoHostRuntimePackageId Condition="'$(NETCoreSdkPortableRuntimeIdentifier)' != ''">DenoHost.Runtime.$(NETCoreSdkPortableRuntimeIdentifier)</DenoHostRuntimePackageId>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="DenoHost.Core" Version="$(DenoHostVersion)" />
+    <PackageReference Include="$(DenoHostRuntimePackageId)"
+                      Version="$(DenoHostVersion)"
+                      Condition="'$(DenoHostRuntimePackageId)' != ''" />
     <None Include="Frontend\Deno\Worker\frontend-worker.ts">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>Frontend\Deno\Worker\frontend-worker.ts</TargetPath>

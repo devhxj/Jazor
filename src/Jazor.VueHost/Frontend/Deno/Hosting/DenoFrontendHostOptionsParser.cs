@@ -8,13 +8,17 @@ internal static class DenoFrontendHostOptionsParser
     private const string ArgumentsEnvironmentVariable = "JAZOR_VUEHOST_DENO_ARGS";
 
     public static DenoFrontendHostOptions Parse(string[] args)
+        => Parse(args, baseDirectory: null);
+
+    internal static DenoFrontendHostOptions Parse(string[] args, string? baseDirectory)
     {
         ArgumentNullException.ThrowIfNull(args);
 
         var enabled = ReadBoolean(Environment.GetEnvironmentVariable(EnableEnvironmentVariable));
-        var command = Environment.GetEnvironmentVariable(CommandEnvironmentVariable);
+        var executableOverride = Environment.GetEnvironmentVariable(CommandEnvironmentVariable);
         var workingDirectory = Environment.GetEnvironmentVariable(WorkingDirectoryEnvironmentVariable);
         var arguments = ParseArgumentList(Environment.GetEnvironmentVariable(ArgumentsEnvironmentVariable)).ToList();
+        var workerPath = DenoRuntimeAssetResolver.ResolveWorkerPath(baseDirectory);
 
         foreach (var arg in args)
         {
@@ -32,7 +36,7 @@ internal static class DenoFrontendHostOptionsParser
 
             if (TryGetOptionValue(arg, "--deno-command", out var commandValue))
             {
-                command = commandValue;
+                executableOverride = commandValue;
                 continue;
             }
 
@@ -51,62 +55,31 @@ internal static class DenoFrontendHostOptionsParser
 
         if (arguments.Count == 0)
         {
-            arguments.AddRange(CreateDefaultArguments());
+            arguments.AddRange(CreateDefaultArguments(workerPath));
         }
 
         return new DenoFrontendHostOptions
         {
             Enabled = enabled,
-            Command = string.IsNullOrWhiteSpace(command) ? "deno" : command,
+            ExecutablePath = string.IsNullOrWhiteSpace(executableOverride)
+                ? DenoRuntimeAssetResolver.ResolveBundledExecutablePath(baseDirectory)
+                : executableOverride,
+            HasExplicitExecutableOverride = !string.IsNullOrWhiteSpace(executableOverride),
+            WorkerScriptPath = workerPath,
             Arguments = arguments.ToArray(),
-            WorkingDirectory = string.IsNullOrWhiteSpace(workingDirectory) ? null : workingDirectory,
+            WorkingDirectory = DenoRuntimeAssetResolver.ResolveWorkingDirectory(workingDirectory, workerPath),
             IgnoreStartupFailure = true
         };
     }
 
-    private static IEnumerable<string> CreateDefaultArguments()
+    private static IEnumerable<string> CreateDefaultArguments(string workerPath)
     {
-        var workerPath = ResolveDefaultWorkerPath();
-
         return
         [
             "run",
             "--quiet",
             workerPath
         ];
-    }
-
-    private static string ResolveDefaultWorkerPath()
-    {
-        var outputWorkerPath = Path.GetFullPath(Path.Combine(
-            AppContext.BaseDirectory,
-            "Frontend",
-            "Deno",
-            "Worker",
-            "frontend-worker.ts"));
-        if (File.Exists(outputWorkerPath))
-        {
-            return outputWorkerPath;
-        }
-
-        var sourceWorkerPath = Path.GetFullPath(Path.Combine(
-            AppContext.BaseDirectory,
-            "..",
-            "..",
-            "..",
-            "..",
-            "src",
-            "Jazor.VueHost",
-            "Frontend",
-            "Deno",
-            "Worker",
-            "frontend-worker.ts"));
-        if (File.Exists(sourceWorkerPath))
-        {
-            return sourceWorkerPath;
-        }
-
-        return outputWorkerPath;
     }
 
     private static bool TryGetOptionValue(string arg, string optionName, out string value)
