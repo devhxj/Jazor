@@ -155,8 +155,9 @@ public sealed class JazorVueHostProjectionMapTests
         Assert.IsTrue(vueDocument.ProjectionMap.TryMapToProjectedOffset(codeOffset, out var projectedCodeOffset));
         Assert.AreEqual("Title", vueDocument.Text.Substring(projectedCodeOffset, "Title".Length));
 
-        Assert.AreEqual(0, csharpDocument.ProjectionMap.Segments.Count);
-        Assert.IsFalse(csharpDocument.ProjectionMap.TryMapToProjectedOffset(codeOffset, out _));
+        Assert.IsTrue(csharpDocument.ProjectionMap.Segments.Count >= 1);
+        Assert.IsTrue(csharpDocument.ProjectionMap.TryMapToProjectedOffset(codeOffset, out var projectedCSharpOffset));
+        Assert.AreEqual("Title", csharpDocument.Text.Substring(projectedCSharpOffset, "Title".Length));
     }
 
     [TestMethod]
