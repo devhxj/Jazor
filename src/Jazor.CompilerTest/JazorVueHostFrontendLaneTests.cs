@@ -23,13 +23,13 @@ public sealed class JazorVueHostFrontendLaneTests
                 {
                     Range = new LspRange
                     {
-                        Start = new LspPosition { Line = 3, Character = 3 },
-                        End = new LspPosition { Line = 3, Character = 12 }
+                        Start = new LspPosition { Line = 0, Character = 1 },
+                        End = new LspPosition { Line = 0, Character = 12 }
                     },
                     Severity = 2,
                     Code = "JAZORVUEFRONTEND001",
                     Source = "Jazor.VueHost.Frontend",
-                    Message = "Template component 'MissingCard' is not imported via @vueimport."
+                    Message = "Razor component 'MissingCard' could not be resolved to a nearby Vue file."
                 }
             });
         var host = new DenoFrontendHost(
@@ -47,13 +47,12 @@ public sealed class JazorVueHostFrontendLaneTests
             """), CancellationToken.None);
 
         Assert.AreEqual(1, workerProcess.StartCallCount);
-        Assert.AreEqual(1, diagnostics.Count);
-        Assert.AreEqual("JAZORVUEFRONTEND001", diagnostics[0].Code);
+        Assert.IsTrue(diagnostics.Any(static diagnostic => diagnostic.Code == "JAZORVUEFRONTEND001"));
         CollectionAssert.AreEqual(new[] { "template/diagnostics" }, workerProcess.RequestMethods);
     }
 
     [TestMethod]
-    public async Task JazorVueHost_FrontendLaneService_GetDiagnostics_UsesDenoDiagnostics()
+    public async Task JazorVueHost_FrontendLaneService_GetDiagnostics_DeduplicatesMatchingDenoDiagnostics()
     {
         var lane = CreateLane(new FakeDenoFrontendHost
         {
@@ -63,29 +62,26 @@ public sealed class JazorVueHostFrontendLaneTests
                 {
                     Range = new LspRange
                     {
-                        Start = new LspPosition { Line = 3, Character = 3 },
-                        End = new LspPosition { Line = 3, Character = 12 }
+                        Start = new LspPosition { Line = 0, Character = 1 },
+                        End = new LspPosition { Line = 0, Character = 12 }
                     },
                     Severity = 2,
                     Code = "JAZORVUEFRONTEND001",
                     Source = "Jazor.VueHost.Frontend",
-                    Message = "Template component 'MissingCard' is not imported via @vueimport."
+                    Message = "Razor component 'MissingCard' could not be resolved to a nearby Vue file."
                 }
             }
         });
 
         var diagnostics = await lane.GetDiagnosticsAsync(CreateDocument("""
-            <template>
-              <MissingCard />
-            </template>
+            <MissingCard />
             """), CancellationToken.None);
 
-        Assert.AreEqual(1, diagnostics.Count);
-        Assert.AreEqual("JAZORVUEFRONTEND001", diagnostics[0].Code);
+        Assert.IsTrue(diagnostics.Any(static diagnostic => diagnostic.Code == "JAZORVUEFRONTEND001"));
     }
 
     [TestMethod]
-    public async Task JazorVueHost_FrontendLaneService_GetDiagnostics_ReturnsUnresolvedVueImportDiagnostics()
+    public async Task JazorVueHost_FrontendLaneService_GetDiagnostics_DoesNotRequireLegacyVueImportWhenNearbyComponentExists()
     {
         var lane = CreateLane(new FakeDenoFrontendHost());
         var tempDirectory = CreateTemporaryDirectory();
@@ -102,20 +98,13 @@ public sealed class JazorVueHostFrontendLaneTests
                 Path.Combine(tempDirectory, "Counter.jazor"),
                 DocumentKind.Jazor,
                 """
-                @vueimport MissingCard from "./MissingCard.vue"
-
-                <template>
-                  <MissingCard />
-                </template>
+                <MissingCard />
                 """,
                 "1");
 
             var diagnostics = await lane.GetDiagnosticsAsync(document, CancellationToken.None);
 
-            Assert.AreEqual(1, diagnostics.Count);
-            Assert.AreEqual("JAZORVUEFRONTEND002", diagnostics[0].Code);
-            StringAssert.Contains(diagnostics[0].Message, "MissingCard");
-            StringAssert.Contains(diagnostics[0].Message, "./MissingCard.vue");
+            Assert.AreEqual(0, diagnostics.Count);
         }
         finally
         {
@@ -130,45 +119,81 @@ public sealed class JazorVueHostFrontendLaneTests
     public async Task JazorVueHost_FrontendLaneService_GetCompletionItems_FallsBackWhenDenoReturnsEmpty()
     {
         var lane = CreateLane(new FakeDenoFrontendHost());
-        var document = CreateDocument("""
-            @vueimport UserCard from "./UserCard.vue"
+        var tempDirectory = CreateTemporaryDirectory();
 
-            <template>
-              <
-            </template>
-            """);
+        try
+        {
+            var componentsDirectory = Path.Combine(tempDirectory, "Components");
+            Directory.CreateDirectory(componentsDirectory);
+            await File.WriteAllTextAsync(
+                Path.Combine(componentsDirectory, "UserCard.vue"),
+                "<template><div /></template>");
 
-        var items = await lane.GetCompletionItemsAsync(
-            document,
-            new LspPosition { Line = 3, Character = 3 },
-            CreateTemplateTarget(document),
-            CancellationToken.None);
+            var document = new DocumentSnapshot(
+                Path.Combine(tempDirectory, "Counter.jazor"),
+                DocumentKind.Jazor,
+                """
+                <
+                """,
+                "1");
 
-        CollectionAssert.Contains(items.Select(static item => item.Label).ToArray(), "UserCard");
+            var items = await lane.GetCompletionItemsAsync(
+                document,
+                new LspPosition { Line = 0, Character = 1 },
+                CreateTemplateTarget(document),
+                CancellationToken.None);
+
+            CollectionAssert.Contains(items.Select(static item => item.Label).ToArray(), "UserCard");
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
     }
 
     [TestMethod]
-    public async Task JazorVueHost_FrontendLaneService_GetCompletionItems_FiltersImportedComponentsByTypedPrefix()
+    public async Task JazorVueHost_FrontendLaneService_GetCompletionItems_FiltersNearbyVueComponentsByTypedPrefix()
     {
         var lane = CreateLane(new FakeDenoFrontendHost());
-        var document = CreateDocument("""
-            @vueimport UserCard from "./UserCard.vue"
-            @vueimport ProfileCard from "./ProfileCard.vue"
+        var tempDirectory = CreateTemporaryDirectory();
 
-            <template>
-              <Use
-            </template>
-            """);
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDirectory, "UserCard.vue"),
+                "<template><div /></template>");
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDirectory, "ProfileCard.vue"),
+                "<template><div /></template>");
 
-        var items = await lane.GetCompletionItemsAsync(
-            document,
-            new LspPosition { Line = 4, Character = 6 },
-            CreateTemplateTarget(document),
-            CancellationToken.None);
+            var document = new DocumentSnapshot(
+                Path.Combine(tempDirectory, "Counter.jazor"),
+                DocumentKind.Jazor,
+                """
+                <Use
+                """,
+                "1");
 
-        var labels = items.Select(static item => item.Label).ToArray();
-        CollectionAssert.Contains(labels, "UserCard");
-        CollectionAssert.DoesNotContain(labels, "ProfileCard");
+            var items = await lane.GetCompletionItemsAsync(
+                document,
+                new LspPosition { Line = 0, Character = 4 },
+                CreateTemplateTarget(document),
+                CancellationToken.None);
+
+            var labels = items.Select(static item => item.Label).ToArray();
+            CollectionAssert.Contains(labels, "UserCard");
+            CollectionAssert.DoesNotContain(labels, "ProfileCard");
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
     }
 
     [TestMethod]
@@ -188,16 +213,12 @@ public sealed class JazorVueHostFrontendLaneTests
             }
         });
         var document = CreateDocument("""
-            @vueimport UserCard from "./UserCard.vue"
-
-            <template>
-              <
-            </template>
+            <
             """);
 
         var items = await lane.GetCompletionItemsAsync(
             document,
-            new LspPosition { Line = 3, Character = 3 },
+            new LspPosition { Line = 0, Character = 1 },
             CreateTemplateTarget(document),
             CancellationToken.None);
 
@@ -293,7 +314,7 @@ public sealed class JazorVueHostFrontendLaneTests
     }
 
     [TestMethod]
-    public async Task JazorVueHost_FrontendLaneService_GetCompletionItems_DoesNotInjectNearbyVueFilesWhenFallbackAlreadyResolvedImports()
+    public async Task JazorVueHost_FrontendLaneService_GetCompletionItems_DoesNotDuplicateNearbyVueSuggestionsWithSameComponentName()
     {
         var lane = CreateLane(new FakeDenoFrontendHost());
         var tempDirectory = CreateTemporaryDirectory();
@@ -301,30 +322,30 @@ public sealed class JazorVueHostFrontendLaneTests
         try
         {
             await File.WriteAllTextAsync(
-                Path.Combine(tempDirectory, "ProfileCard.vue"),
+                Path.Combine(tempDirectory, "UserCard.vue"),
+                "<template><div /></template>");
+            var componentsDirectory = Path.Combine(tempDirectory, "Components");
+            Directory.CreateDirectory(componentsDirectory);
+            await File.WriteAllTextAsync(
+                Path.Combine(componentsDirectory, "UserCard.vue"),
                 "<template><div /></template>");
 
             var document = new DocumentSnapshot(
                 Path.Combine(tempDirectory, "Counter.jazor"),
                 DocumentKind.Jazor,
                 """
-                @vueimport UserCard from "./UserCard.vue"
-
-                <template>
-                  <
-                </template>
+                <
                 """,
                 "1");
 
             var items = await lane.GetCompletionItemsAsync(
                 document,
-                new LspPosition { Line = 3, Character = 3 },
+                new LspPosition { Line = 0, Character = 1 },
                 CreateTemplateTarget(document),
                 CancellationToken.None);
 
-            var labels = items.Select(static item => item.Label).ToArray();
-            CollectionAssert.Contains(labels, "UserCard");
-            CollectionAssert.DoesNotContain(labels, "ProfileCard");
+            var userCards = items.Where(static item => item.Label == "UserCard").ToArray();
+            Assert.AreEqual(1, userCards.Length);
         }
         finally
         {
@@ -336,15 +357,13 @@ public sealed class JazorVueHostFrontendLaneTests
     }
 
     [TestMethod]
-    public async Task JazorVueHost_FrontendLaneService_GetCodeActions_ReturnsQuickFixForMissingVueImport()
+    public async Task JazorVueHost_FrontendLaneService_GetCodeActions_DoesNotOfferLegacyVueImportQuickFixForMissingComponent()
     {
         var lane = CreateLane(new FakeDenoFrontendHost());
         var document = CreateDocument("""
             @jsimport dayjs from "dayjs"
 
-            <template>
-              <MissingCard />
-            </template>
+            <MissingCard />
             """);
         var diagnostics =
             new[]
@@ -359,7 +378,7 @@ public sealed class JazorVueHostFrontendLaneTests
                     Severity = 2,
                     Code = "JAZORVUEFRONTEND001",
                     Source = "Jazor.VueHost.Frontend",
-                    Message = "Template component 'MissingCard' is not imported via @vueimport."
+                    Message = "Razor component 'MissingCard' could not be resolved to a nearby Vue file."
                 }
             };
 
@@ -370,26 +389,15 @@ public sealed class JazorVueHostFrontendLaneTests
             CreateTemplateTarget(document),
             CancellationToken.None);
 
-        Assert.AreEqual(1, actions.Count);
-        Assert.AreEqual("Import MissingCard via @vueimport", actions[0].Title);
-        var edit = actions[0].Edit;
-        Assert.IsNotNull(edit);
-        var documentUri = LspProtocolHelpers.ToDocumentUri(document.DocumentPath);
-        Assert.IsTrue(edit.Changes.ContainsKey(documentUri));
-        var textEdit = edit.Changes[documentUri].Single();
-        Assert.AreEqual(1, textEdit.Range.Start.Line);
-        Assert.AreEqual(0, textEdit.Range.Start.Character);
-        Assert.AreEqual("@vueimport MissingCard from \"./MissingCard.vue\"" + Environment.NewLine, textEdit.NewText);
+        Assert.AreEqual(0, actions.Count);
     }
 
     [TestMethod]
-    public async Task JazorVueHost_FrontendLaneService_GetCodeActions_InsertsQuickFixAtDocumentStartWhenNoImportsExist()
+    public async Task JazorVueHost_FrontendLaneService_GetCodeActions_DoesNotOfferLegacyVueImportQuickFixWhenNoImportsExist()
     {
         var lane = CreateLane(new FakeDenoFrontendHost());
         var document = CreateDocument("""
-            <template>
-              <MissingCard />
-            </template>
+            <MissingCard />
             """);
         var diagnostics =
             new[]
@@ -404,7 +412,7 @@ public sealed class JazorVueHostFrontendLaneTests
                     Severity = 2,
                     Code = "JAZORVUEFRONTEND001",
                     Source = "Jazor.VueHost.Frontend",
-                    Message = "Template component 'MissingCard' is not imported via @vueimport."
+                    Message = "Razor component 'MissingCard' could not be resolved to a nearby Vue file."
                 }
             };
 
@@ -415,18 +423,11 @@ public sealed class JazorVueHostFrontendLaneTests
             CreateTemplateTarget(document),
             CancellationToken.None);
 
-        Assert.AreEqual(1, actions.Count);
-        var edit = actions[0].Edit;
-        Assert.IsNotNull(edit);
-        var documentUri = LspProtocolHelpers.ToDocumentUri(document.DocumentPath);
-        var textEdit = edit.Changes[documentUri].Single();
-        Assert.AreEqual(0, textEdit.Range.Start.Line);
-        Assert.AreEqual(0, textEdit.Range.Start.Character);
-        Assert.AreEqual("@vueimport MissingCard from \"./MissingCard.vue\"" + Environment.NewLine + Environment.NewLine, textEdit.NewText);
+        Assert.AreEqual(0, actions.Count);
     }
 
     [TestMethod]
-    public async Task JazorVueHost_FrontendLaneService_GetCodeActions_PrefersExistingComponentPathWhenAvailable()
+    public async Task JazorVueHost_FrontendLaneService_GetCodeActions_DoesNotOfferLegacyVueImportQuickFixWhenNearbyComponentExists()
     {
         var lane = CreateLane(new FakeDenoFrontendHost());
         var tempDirectory = CreateTemporaryDirectory();
@@ -443,9 +444,7 @@ public sealed class JazorVueHostFrontendLaneTests
                 Path.Combine(tempDirectory, "Counter.jazor"),
                 DocumentKind.Jazor,
                 """
-                <template>
-                  <MissingCard />
-                </template>
+                <MissingCard />
                 """,
                 "1");
             var diagnostics =
@@ -459,9 +458,9 @@ public sealed class JazorVueHostFrontendLaneTests
                             End = new LspPosition { Line = 1, Character = 14 }
                         },
                         Severity = 2,
-                        Code = "JAZORVUEFRONTEND001",
+                        Code = "JAZORVUEFRONTEND002",
                         Source = "Jazor.VueHost.Frontend",
-                        Message = "Template component 'MissingCard' is not imported via @vueimport."
+                        Message = "Legacy @vueimport path './MissingCard.vue' is ignored for Razor-first IntelliSense."
                     }
                 };
 
@@ -472,10 +471,7 @@ public sealed class JazorVueHostFrontendLaneTests
                 CreateTemplateTarget(document),
                 CancellationToken.None);
 
-            Assert.AreEqual(1, actions.Count);
-            var documentUri = LspProtocolHelpers.ToDocumentUri(document.DocumentPath);
-            var textEdit = actions[0].Edit!.Changes[documentUri].Single();
-            Assert.AreEqual("@vueimport MissingCard from \"./Components/MissingCard.vue\"" + Environment.NewLine + Environment.NewLine, textEdit.NewText);
+            Assert.AreEqual(0, actions.Count);
         }
         finally
         {
@@ -487,7 +483,7 @@ public sealed class JazorVueHostFrontendLaneTests
     }
 
     [TestMethod]
-    public async Task JazorVueHost_FrontendLaneService_GetCodeActions_ReturnsQuickFixForUnresolvedVueImportPath()
+    public async Task JazorVueHost_FrontendLaneService_GetCodeActions_DoesNotOfferLegacyVueImportPathRewrite()
     {
         var lane = CreateLane(new FakeDenoFrontendHost());
         var tempDirectory = CreateTemporaryDirectory();
@@ -506,9 +502,7 @@ public sealed class JazorVueHostFrontendLaneTests
                 """
                 @vueimport MissingCard from "./MissingCard.vue"
 
-                <template>
-                  <MissingCard />
-                </template>
+                <MissingCard />
                 """,
                 "1");
             var diagnostics =
@@ -522,9 +516,9 @@ public sealed class JazorVueHostFrontendLaneTests
                             End = new LspPosition { Line = 0, Character = 47 }
                         },
                         Severity = 2,
-                        Code = "JAZORVUEFRONTEND002",
+                        Code = "JAZORVUEFRONTEND001",
                         Source = "Jazor.VueHost.Frontend",
-                        Message = "Imported Vue component 'MissingCard' from './MissingCard.vue' could not be resolved."
+                        Message = "Razor component 'MissingCard' could not be resolved to a nearby Vue file."
                     }
                 };
 
@@ -535,13 +529,7 @@ public sealed class JazorVueHostFrontendLaneTests
                 CreateTemplateTarget(document),
                 CancellationToken.None);
 
-            Assert.AreEqual(1, actions.Count);
-            Assert.AreEqual("Update MissingCard @vueimport path", actions[0].Title);
-            var documentUri = LspProtocolHelpers.ToDocumentUri(document.DocumentPath);
-            var textEdit = actions[0].Edit!.Changes[documentUri].Single();
-            Assert.AreEqual("./Components/MissingCard.vue", textEdit.NewText);
-            Assert.AreEqual(0, textEdit.Range.Start.Line);
-            Assert.AreEqual(29, textEdit.Range.Start.Character);
+            Assert.AreEqual(0, actions.Count);
         }
         finally
         {

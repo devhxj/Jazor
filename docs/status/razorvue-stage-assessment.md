@@ -1,7 +1,8 @@
 # RazorVue 阶段评估（2026-04-06）
 
 > Status: current status snapshot
-> Positioning: Workstream-specific status snapshot for the active RazorVue lane.
+> Positioning: Workstream-specific status snapshot for the historical RazorVue lane.
+> Note: this document is archived context; the current active development-time boundary is `Jazor.VueHost`, with Deno as the only runtime host path and `Jazor.VueHost --analysis-stdio` as the migration-time analysis process entrypoint.
 
 ## 1. 评估范围
 
@@ -31,7 +32,7 @@ RazorVue 当前不是"在编译器里顺手多加一点 Vue 支持"，而是一�
 - Vue 是实际运行时语义目标。
 - Roslyn / analyser 负责发现与提取语义输入。
 - RazorVue core 负责 descriptor、render tree、lowering、artifact shaping。
-- `DenoHost` 仍然保留后续宿主 / 构建所有权。
+- 当前方向里，这部分宿主 / 构建所有权已经收拢到 `Jazor.VueHost` 和其 Deno 运行时路径里。
 
 ### 2.2 当前真实分层
 
@@ -75,7 +76,7 @@ RazorVue 当前不是"在编译器里顺手多加一点 Vue 支持"，而是一�
 
 - `RazorVuePipelineTests.cs`
   - 覆盖完整 pipeline 流程。
-  - 验证从 Razor 输入到 Vue SFC 产出的端到端转换。
+  - 验证从 Razor-authored 输入到 bridge artifacts 产出的端到端转换。
 - `ESGeneratorTests.cs`
   - 覆盖 expression lowering。
   - 验证 C# → JavaScript expression 转换正确性。
@@ -93,7 +94,7 @@ RazorVue 当前不是"在编译器里顺手多加一点 Vue 支持"，而是一�
 - ✅ Prop / emit / slot handling。
 - ✅ Render tree construction。
 - ✅ Expression lowering core。
-- ✅ Vue SFC artifact assembly。
+- ✅ Vue bridge artifact assembly。
 - ✅ End-to-end pipeline test。
 
 ### 3.2 当前正在推进的块
@@ -190,7 +191,7 @@ RazorVue 当前不是"在编译器里顺手多加一点 Vue 支持"，而是一�
 
 风险信号：
 - Phase-one closure 还没完成，authoring 已经开始推进。
-- 文档如果写不清楚，容易误读成"所有 RazorVue 工作都是 active execution"。
+- 文档如果写不清楚，容易误读成"所有 RazorVue 工作都是那个阶段的 active execution"。
 
 缓解措施：
 - 明确区分 phase-one closure 和 authoring lane

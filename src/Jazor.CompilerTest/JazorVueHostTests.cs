@@ -1,5 +1,4 @@
 using Jazor.VueContracts.Protocol;
-using Jazor.Vue.Analysis.Runtime;
 using Jazor.VueHost.Analysis;
 using Jazor.VueHost.Rpc;
 using Jazor.VueHost.Services;
@@ -45,7 +44,7 @@ public sealed class JazorVueHostTests
     }
 
     [TestMethod]
-    public async Task JazorVueHost_GetFrontendContext_DerivesTrackedDocumentsFromJazorImports()
+    public async Task JazorVueHost_GetFrontendContext_DerivesTrackedDocumentsFromRazorMarkupAndJsImports()
     {
         var host = new VueHostService(new InMemoryWorkspaceStore(), new NullVueAnalysisClient());
         await host.StartAsync(CancellationToken.None);
@@ -55,7 +54,6 @@ public sealed class JazorVueHostTests
                 "Features/Pages/Counter.jazor",
                 DocumentKind.Jazor,
                 """
-                @vueimport UserCard from "../Components/UserCard.vue"
                 @jsimport * as userCard from "../Scripts/user-card"
 
                 <template>
@@ -93,8 +91,65 @@ public sealed class JazorVueHostTests
         Assert.AreEqual(3, response.Artifacts.Count);
         Assert.AreEqual("frontend-context", response.Artifacts[0].ArtifactKind);
         Assert.IsTrue(response.Artifacts.Any(static artifact => artifact.ArtifactKind == "frontend-summary"));
-        StringAssert.Contains(response.Artifacts[1].Content, "documentKind");
-        StringAssert.Contains(response.Artifacts[2].Content, "userCard");
+        Assert.IsTrue(response.Artifacts.Skip(1).Any(static artifact => artifact.Content.Contains("documentKind", StringComparison.Ordinal)));
+        Assert.IsTrue(response.Artifacts.Skip(1).Any(static artifact => artifact.Content.Contains("userCard", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_GetFrontendContext_DerivesTrackedDocumentsFromRazorMarkupAndCoLocatedAssets()
+    {
+        var host = new VueHostService(new InMemoryWorkspaceStore(), new NullVueAnalysisClient());
+        await host.StartAsync(CancellationToken.None);
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var componentPath = Path.Combine(tempDirectory, "Components", "UserCard.vue");
+            Directory.CreateDirectory(Path.GetDirectoryName(componentPath)!);
+
+            await host.OpenDocumentAsync(
+                new DocumentSnapshot(
+                    documentPath,
+                    DocumentKind.Jazor,
+                    """
+                    <UserCard />
+                    """,
+                    "1"),
+                CancellationToken.None);
+            await host.OpenDocumentAsync(
+                new DocumentSnapshot(
+                    componentPath,
+                    DocumentKind.Vue,
+                    "<template><div>UserCard</div></template>",
+                    "1"),
+                CancellationToken.None);
+            await host.OpenDocumentAsync(
+                new DocumentSnapshot(
+                    Path.Combine(tempDirectory, "Counter.ts"),
+                    DocumentKind.TypeScript,
+                    "export const counterStore = 1;",
+                    "1"),
+                CancellationToken.None);
+
+            var response = await host.GetFrontendContextAsync(
+                new GetFrontendContextRequest(
+                    documentPath,
+                    Array.Empty<string>()),
+                CancellationToken.None);
+
+            Assert.AreEqual(2, response.SemanticContext.RelatedDocuments.Count);
+            Assert.IsTrue(response.SemanticContext.RelatedDocuments.Any(document => document.DocumentPath.EndsWith("UserCard.vue", StringComparison.Ordinal)));
+            Assert.IsTrue(response.SemanticContext.RelatedDocuments.Any(document => document.DocumentPath.EndsWith("Counter.ts", StringComparison.Ordinal)));
+            Assert.AreEqual("2", response.SemanticContext.Properties["derivedDocumentCount"]);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
     }
 
     [TestMethod]
@@ -108,8 +163,6 @@ public sealed class JazorVueHostTests
                 "Features/Pages/Counter.jazor",
                 DocumentKind.Jazor,
                 """
-                @vueimport UserCard from "../Components/UserCard.vue"
-
                 <template>
                   <UserCard />
                 </template>
@@ -481,6 +534,50 @@ public sealed class JazorVueHostTests
     }
 
     [TestMethod]
+    public async Task JazorVueHost_GetVirtualArtifact_InfersNearbyVueImportsFromRazorMarkup()
+    {
+        var host = new VueHostService(new InMemoryWorkspaceStore(), new NullVueAnalysisClient());
+        await host.StartAsync(CancellationToken.None);
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var componentPath = Path.Combine(tempDirectory, "Components", "UserCard.vue");
+            Directory.CreateDirectory(Path.GetDirectoryName(componentPath)!);
+            await File.WriteAllTextAsync(
+                componentPath,
+                "<template><div>UserCard</div></template>");
+
+            var response = await host.GetVirtualArtifactAsync(
+                new GetVirtualArtifactRequest(
+                    documentPath: documentPath,
+                    artifactKind: "vue-sfc",
+                    text:
+                    """
+                    <UserCard />
+
+                    @code {
+                        [Prop] public string Title { get; set; } = "";
+                    }
+                    """,
+                    version: "1"),
+                CancellationToken.None);
+
+            Assert.AreEqual("vue-sfc", response.Artifact.ArtifactKind);
+            StringAssert.Contains(response.Artifact.Content, "import UserCard from \"./Components/UserCard.vue\";");
+            StringAssert.Contains(response.Artifact.Content, "<UserCard />");
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
     public async Task JazorVueHost_GetVirtualArtifact_FallbackCompilerLowersSimpleComputedAndMethodBodies()
     {
         var host = new VueHostService(new InMemoryWorkspaceStore(), new NullVueAnalysisClient());
@@ -825,12 +922,12 @@ public sealed class JazorVueHostTests
         [
             "--analysis-client=transport",
             "--analysis-command=dotnet",
-            "--analysis-args=run --project src/Jazor.Vue.Analysis"
+            "--analysis-args=run --project src/Jazor.VueHost -- --analysis-stdio"
         ]);
 
         Assert.AreEqual(VueAnalysisClientMode.Transport, options.Mode);
         Assert.AreEqual("dotnet", options.Command);
-        Assert.AreEqual("run --project src/Jazor.Vue.Analysis", options.Arguments);
+        Assert.AreEqual("run --project src/Jazor.VueHost -- --analysis-stdio", options.Arguments);
     }
 
     [TestMethod]
@@ -1012,12 +1109,12 @@ public sealed class JazorVueHostTests
     }
 
     [TestMethod]
-    public async Task JazorVueHost_ProcessAnalysisRpcTransport_InteropsWithAnalysisHostProcess()
+    public async Task JazorVueHost_ProcessAnalysisRpcTransport_InteropsWithVueHostAnalysisProcess()
     {
-        var analysisHostAssemblyPath = GetBuiltAssemblyPath("Jazor.Vue.Analysis.Host", "Jazor.Vue.Analysis.Host.dll");
+        var analysisHostAssemblyPath = GetBuiltAssemblyPath("Jazor.VueHost", "Jazor.VueHost.dll");
         var transport = new ProcessAnalysisRpcTransport(
             "dotnet",
-            $"\"{analysisHostAssemblyPath}\" --stdio");
+            $"\"{analysisHostAssemblyPath}\" --analysis-stdio");
         var client = VueAnalysisClientFactory.CreateFromTransport(transport);
         var host = new VueHostService(new InMemoryWorkspaceStore(), client);
         await host.StartAsync(CancellationToken.None);
@@ -1045,13 +1142,13 @@ public sealed class JazorVueHostTests
     }
 
     [TestMethod]
-    public async Task JazorVueHost_ProcessAnalysisRpcTransport_InteropsWithVueAnalysisHostProcess()
+    public async Task JazorVueHost_ProcessAnalysisRpcTransport_InteropsWithVueHostAnalysisProcessUsingExplicitCommand()
     {
-        var analysisHostAssemblyPath = GetBuiltAssemblyPath("Jazor.Vue.Analysis.Host", "Jazor.Vue.Analysis.Host.dll");
+        var analysisHostAssemblyPath = GetBuiltAssemblyPath("Jazor.VueHost", "Jazor.VueHost.dll");
 
         var transport = new ProcessAnalysisRpcTransport(
             command: "dotnet",
-            arguments: $"\"{analysisHostAssemblyPath}\" --stdio");
+            arguments: $"\"{analysisHostAssemblyPath}\" --analysis-stdio");
         var client = VueAnalysisClientFactory.CreateFromTransport(transport);
         var host = new VueHostService(new InMemoryWorkspaceStore(), client);
         await host.StartAsync(CancellationToken.None);
@@ -1290,6 +1387,13 @@ public sealed class JazorVueHostTests
             "..",
             "..",
             ".."));
+
+    private static string CreateTemporaryDirectory()
+    {
+        var path = Path.Combine(Path.GetTempPath(), "JazorVueHostTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(path);
+        return path;
+    }
 
     private static string GetBuiltAssemblyPath(string projectDirectoryName, string assemblyFileName)
     {

@@ -1,6 +1,7 @@
 using Jazor.VueContracts.Protocol;
+using SharedVueAnalysisRpcMethodNames = Jazor.VueContracts.Protocol.VueAnalysisRpcMethodNames;
 
-namespace Jazor.Vue.Analysis.Runtime;
+namespace Jazor.VueHost.Analysis;
 
 public sealed class VueAnalysisRpcProcessor : IVueAnalysisRpcProcessor
 {
@@ -27,10 +28,10 @@ public sealed class VueAnalysisRpcProcessor : IVueAnalysisRpcProcessor
 
             var result = request.Method switch
             {
-                VueAnalysisRpcMethodNames.AnalyzeJazor => await _service.AnalyzeJazorAsync(
+                SharedVueAnalysisRpcMethodNames.AnalyzeJazor => await _service.AnalyzeJazorAsync(
                     DeserializeRequired<AnalyzeJazorRequest>(request.PayloadJson),
                     cancellationToken),
-                _ => throw new VueAnalysisRpcException("unknown_method", $"Unknown Jazor.VueAnalysis RPC method '{request.Method}'.")
+                _ => throw new VueAnalysisRpcException("unknown_method", $"Unknown Vue analysis RPC method '{request.Method}'.")
             };
 
             response = new RpcResponseEnvelope(
@@ -58,9 +59,11 @@ public sealed class VueAnalysisRpcProcessor : IVueAnalysisRpcProcessor
     private static T DeserializeRequired<T>(string? payloadJson)
     {
         if (string.IsNullOrWhiteSpace(payloadJson))
+        {
             throw new VueAnalysisRpcException(
                 "invalid_payload",
                 $"Expected RPC payload for '{typeof(T).FullName}', but received <null>.");
+        }
 
         var value = VueAnalysisRpcSerializer.Deserialize<T>(payloadJson!);
         if (value is null)

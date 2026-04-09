@@ -1,4 +1,4 @@
-namespace Jazor.Vue.Analysis.Runtime;
+namespace Jazor.VueHost.Analysis;
 
 public interface IVueAnalysisRpcProcessor
 {

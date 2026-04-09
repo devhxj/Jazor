@@ -2,7 +2,7 @@
 
 ## Status
 
-- status: proposed replacement architecture
+- status: active target architecture
 - scope: `.jazor` authoring host, LSP, virtual documents, frontend language services, dev-time module loading
 - runtime choice: Deno
 - non-scope: RazorVue library route and its historical host/bundling assumptions
@@ -11,14 +11,11 @@
 
 `Jazor.VueHost` becomes the only project boundary and the only public entry point.
 
-The following existing project boundaries are treated as temporary migration sources, not long-term architecture:
+The old split-host / analysis-host project boundaries are migration leftovers and should stay deleted.
 
-- `Jazor.Vue`
-- `Jazor.Vue.Analysis`
-- `Jazor.Vue.Analysis.Runtime`
-- `Jazor.Vite`
+Remaining Vue-facing capability belongs inside `Jazor.VueHost` rather than reappearing as sibling projects.
 
-After migration, their capabilities are absorbed into `Jazor.VueHost` and organized by folders instead of separate projects.
+`Jazor.Vite` and Bun are obsolete and are not part of the target architecture.
 
 This design explicitly does **not** inherit RazorVue's host/bundling conclusions. RazorVue is a separate library technology path and is out of scope for this host design.
 
@@ -28,9 +25,56 @@ This design explicitly does **not** inherit RazorVue's host/bundling conclusions
 - `Jazor.VueHost` is the only IDE/dev-host boundary.
 - Roslyn and frontend semantics are internal lanes, not separate products.
 - Deno is the only frontend runtime for this host.
+- `Jazor.Vite`, Bun, and the old split-host route are migration leftovers, not design inputs.
 - LSP is projection-aware and lane-aware.
 - Virtual document mapping is a first-class subsystem, not a helper detail.
+- bridge/build projection should infer nearby `.vue` dependencies from Razor markup and derive co-located `.css/.js/.ts` sidecars from the `.jazor` path before consulting legacy import directives.
 - Capability migration happens before project deletion.
+
+## Implementation Contract
+
+### 1. `.jazor` is Razor
+
+- `.jazor` is a Razor-authored document, not a `.vue`-style SFC dialect.
+- do not introduce a new authoring model based on `template/script/style`.
+- the source-of-truth document is the Razor-first `.jazor` file.
+
+### 2. `Jazor.VueHost` is the only active host
+
+- all active dev-time Vue-facing capability belongs inside `Jazor.VueHost`.
+- do not reintroduce `Jazor.Vue.Analysis`, `Jazor.Vue.Analysis.Host`, or `Jazor.Vue.Analysis.Runtime`.
+- do not revive `Jazor.Vite`, Bun, or the old split-host route.
+- Deno is the only frontend/runtime host path.
+
+### 3. IntelliSense and build are separate stages
+
+- design-time intelligence must work from the `.jazor` source document directly.
+- IntelliSense must not depend on first materializing final `.vue` or `.cs` artifacts.
+- build/materialization may still project `.jazor` into internal `.vue`, bridge artifacts, and runtime outputs.
+- those projected artifacts are build-time implementation details, not authoring semantics.
+
+### 4. VueHost is a lane-based host
+
+- Razor/Roslyn lane owns C#, `@code`, navigation, rename, references, and source diagnostics.
+- frontend lane owns Vue/TS/CSS/HTML understanding for nearby `.vue`, `.css`, `.js`, and `.ts`.
+- VueHost owns the shared workspace graph and routes requests to the correct lane before aggregating the result.
+- `.vue` and `.jazor` navigation should meet in that shared workspace graph, so definition/references/rename do not stop at the current file boundary.
+- workspace-open `.vue` documents should also participate in live `.jazor` diagnostics, so opening/closing a component can immediately suppress or reintroduce unresolved-component diagnostics in related `.jazor`.
+- component rename/reference aggregation should stay markup-only for component tags and should not rewrite Roslyn-owned `@code` identifiers with the same text.
+- virtual documents and projection maps exist to bridge lanes, not to redefine the authoring model.
+
+### 5. Virtual artifacts are internal
+
+- virtual `.vue`, virtual `.cs`, and other bridge outputs are internal projections.
+- they are allowed for LSP routing, worker interop, materialization, and tooling.
+- they must remain implementation details rather than becoming user-facing language boundaries.
+
+### 6. Non-goals
+
+- do not make `.jazor` into another `.vue`.
+- do not make `@vueimport` / `@jsimport` the long-term authoring model.
+- do not make IntelliSense wait for generated `g.cs` or final materialized output.
+- do not split VueHost responsibilities back into sibling analysis/runtime products.
 
 ## Top-Level Structure
 
@@ -332,14 +376,14 @@ Input:
 Does not own:
 
 - `.jazor` directives
-- template semantics
+- Razor markup semantics projected to the frontend lane
 - frontend file semantics
 
 ### `FrontendLane`
 
 Responsibilities:
 
-- template semantics
+- Razor markup semantics projected to the frontend lane
 - Vue component and attribute resolution
 - `.vue/.ts/.js/.css/.html` diagnostics
 - frontend completion/hover/definition/references/rename
@@ -564,12 +608,12 @@ The Deno worker is **not** allowed to define `.jazor` semantics.
 
 ## Project-to-Folder Migration Map
 
-### `Jazor.Vue`
+### `Jazor.Vue` (legacy migration source)
 
 Current responsibilities:
 
 - `.jazor` parsing
-- import/template/code split
+- Razor document parsing and bridge projection inputs
 - virtual `.vue` generation
 - bridge models
 
@@ -580,53 +624,21 @@ Target folders:
 - `Jazor/Projection`
 - `VirtualDocuments/Builders`
 
-### `Jazor.Vue.Analysis`
+Legacy note:
 
-Current responsibilities:
+- `Jazor.Vue.Analysis`
+- `Jazor.Vue.Analysis.Host`
+- `Jazor.Vue.Analysis.Runtime`
 
-- Roslyn-facing shallow analysis
-- `.jazor` semantic projection
-- deterministic diagnostics
-
-Target folders:
-
-- `Roslyn/*`
-- `Jazor/Diagnostics`
-
-### `Jazor.Vue.Analysis.Runtime`
-
-Current responsibilities:
-
-- `AnalyzeJazor` runtime entry
-- RPC processor/server primitives
-
-Target folders:
-
-- `Roslyn/*`
-- `Protocol/Rpc`
-
-### `Jazor.Vite`
-
-Current responsibilities:
-
-- plugin-style virtual module loading
-- document sync
-- HMR adaptation
-- dev-time source map shaping
-
-Target folders:
-
-- `Frontend/*`
-- `DevServer/*`
-- `Workspace/*`
-- `Infrastructure/Processes`
+Those projects belonged to the old split route and should stay removed.
+If similar capability is needed again, it must be implemented inside `Jazor.VueHost` rather than revived as separate projects.
 
 ## Phase Plan
 
 ### Phase 1. Fix the Boundary
 
 - declare `Jazor.VueHost` as the only long-term project boundary
-- stop adding new capabilities to `Jazor.Vue*` and `Jazor.Vite`
+- stop adding new capabilities to `Jazor.Vue*`
 - update architecture docs to the single-project model
 
 ### Phase 2. Absorb Jazor Core

@@ -38,7 +38,7 @@ internal sealed class FrontendLaneService : ILspLane
             diagnostics.AddRange(denoDiagnostics);
         }
 
-        diagnostics.AddRange(CreateUnresolvedMarkupComponentDiagnostics(document));
+        diagnostics.AddRange(await CreateUnresolvedMarkupComponentDiagnosticsAsync(document, cancellationToken));
         return diagnostics
             .GroupBy(static diagnostic =>
                 $"{diagnostic.Code}:{diagnostic.Range.Start.Line}:{diagnostic.Range.Start.Character}:{diagnostic.Range.End.Line}:{diagnostic.Range.End.Character}",
@@ -474,14 +474,18 @@ internal sealed class FrontendLaneService : ILspLane
         }
     }
 
-    private static IReadOnlyList<LspDiagnostic> CreateUnresolvedMarkupComponentDiagnostics(DocumentSnapshot document)
+    private async ValueTask<IReadOnlyList<LspDiagnostic>> CreateUnresolvedMarkupComponentDiagnosticsAsync(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken)
     {
         var diagnostics = new List<LspDiagnostic>();
         foreach (Match match in ComponentTagPattern.Matches(document.Text))
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var group = match.Groups["name"];
             if (!group.Success
-                || TryResolveNearbyVueComponent(document.DocumentPath, group.Value, out _))
+                || await _documentService.IsVueComponentResolvableAsync(document, group.Value, cancellationToken))
             {
                 continue;
             }

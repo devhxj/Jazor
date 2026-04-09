@@ -142,7 +142,7 @@ setup(props, { emit, slots, expose, attrs }) {
 
 render lane 与 setup-side lane 共用同一套“支持表达式集合”，但错误消息需要区分：
 
-- template expression unsupported
+- projected Razor-markup expression unsupported
 - setup-side logic unsupported
 
 ### 6.4 诊断

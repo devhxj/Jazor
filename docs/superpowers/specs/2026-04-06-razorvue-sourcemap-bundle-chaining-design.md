@@ -86,7 +86,7 @@
 - `RelativeModulePath`
 - generated file name
 - source file path
-- descriptor/template/logic identity
+- descriptor/Razor-markup/logic identity
 
 这些键在 sourcemap 中的使用方式稳定，后续 HMR 可以直接复用它们做 diff/update payload 关联。
 

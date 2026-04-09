@@ -9,8 +9,8 @@
 |--------|---------|-----------|---------|
 | Compiler 主线 | 接近稳定 | 压实 output closure、import closure、host seam | [详情](./status/compiler-mainline-status.md) |
 | Emit / Materialisation | 持续承接 | 显式化 materialisation / sourcemap 承接职责 | [详情](./status/emit-host-materialization-status.md) |
-| RazorVue | 活跃执行中 | Phase-one closure 和 authoring lane 收口 | [详情](./status/razorvue-stage-assessment.md) |
-| SourceMap | 局部活跃 | RazorVue bundle chaining 实现 | [详情](./status/sourcemap-status.md) |
+| Jazor.VueHost | 活跃执行中 | Razor-first host closure、Deno runtime lane、VueHost-only consolidation | [详情](./status/razorvue-stage-assessment.md) |
+| SourceMap | 局部活跃 | VueHost / Deno bundle chaining 实现 | [详情](./status/sourcemap-status.md) |
 
 ## 依赖顺序与并行策略
 
@@ -18,20 +18,20 @@
 
 1. Compiler mainline stabilisation
 2. Emit / host materialisation consolidation
-3. RazorVue phase-one closure
-4. RazorVue authoring lane execution
+3. Jazor.VueHost phase-one closure
+4. Jazor.VueHost authoring lane execution
 5. SourceMap partial rollout for active consumers
 6. Broader SourceMap programme
 7. Ongoing documentation governance
 
 **允许的并行**：
 - Documentation governance 可以持续运行
-- Narrow SourceMap 工作可以和 RazorVue / emit 集成并行推进
+- Narrow SourceMap 工作可以和 Jazor.VueHost / emit 集成并行推进
 - Emit 可以作为活跃依赖层持续演进（compiler 作为上游基础）
 
 **不允许的并行**：
 - Broad SourceMap 扩张不能超过 compiler / emit 稳定性
-- Authoring 广度不能超过 RazorVue phase-one closure
+- Authoring 广度不能超过 Jazor.VueHost phase-one closure
 
 ## 详细工作流说明
 
@@ -67,7 +67,7 @@
 
 **当前状态**：承担 catalog、manifest、materialisation 以及 sourcemap/output 承接职责，仓库级入口已经补齐第一层桥接
 
-Emit 不是单独的大专题，但确实是多个工作流共同的承接层。它负责把上游 compiler / RazorVue 的产出落盘成 host-facing artefact。
+Emit 不是单独的大专题，但确实是多个工作流共同的承接层。它负责把上游 compiler / Jazor.VueHost 的产出落盘成 host-facing artefact。
 
 **下一步行动**：
 
@@ -85,11 +85,11 @@ Emit 不是单独的大专题，但确实是多个工作流共同的承接层。
 
 ---
 
-### RazorVue
+### Jazor.VueHost
 
 **当前状态**：主链路已进主干，正在做 phase-one closure 和 authoring lane 收口
 
-RazorVue 当前不是"在编译器里顺手多加一点 Vue 支持"，而是一条独立的 Vue-first 编译路径。主链路已经从早期的职责混杂，收敛为更清晰的结构。
+`Jazor.VueHost` 当前不是"在编译器里顺手多加一点 Vue 支持"，而是当前的 `.jazor` 开发时边界。主链路已经从早期的职责混杂，收敛为更清晰的结构。
 
 **下一步行动**：
 
@@ -110,14 +110,14 @@ RazorVue 当前不是"在编译器里顺手多加一点 Vue 支持"，而是一�
 
 ### SourceMap
 
-**当前状态**：通用 sourcemap 大计划偏保守，但 RazorVue 相关 bundle chaining 已进入活跃执行
+**当前状态**：通用 sourcemap 大计划偏保守，但 VueHost / Deno 相关 bundle chaining 已进入活跃执行
 
-SourceMap 当前不能再用一句"deferred"概括了。更准确地说：broad SourceMap programme 仍然偏保守，但 RazorVue 相关 bundle chaining 已进入 narrower active lane。
+SourceMap 当前不能再用一句"deferred"概括了。更准确地说：broad SourceMap programme 仍然偏保守，但 VueHost / Deno 相关 bundle chaining 已进入 narrower active lane。
 
 **下一步行动**：
 
 1. **Narrow active lane**
-   - 完成 RazorVue bundle chaining 实现
+   - 完成 VueHost / Deno bundle chaining 实现
    - 让 writer / manifest / bundler 演进就位
    - 参考：[2026-04-06-razorvue-sourcemap-bundle-chaining-implementation.md](./superpowers/plans/2026-04-06-razorvue-sourcemap-bundle-chaining-implementation.md)
 
@@ -140,13 +140,13 @@ SourceMap 当前不能再用一句"deferred"概括了。更准确地说：broad 
 
 ### Gate B. Emit / materialisation 桥接优先于下游闭环声明
 
-如果 host-facing 交接仍然不清楚，就不能声称下游工作流已经闭环。这个门槛对 RazorVue artifact / manifest 流程和 SourceMap writer / bundle chaining 流程都很重要。
+如果 host-facing 交接仍然不清楚，就不能声称下游工作流已经闭环。这个门槛对 VueHost artifact / manifest 流程和 SourceMap writer / bundle chaining 流程都很重要。
 
-### Gate C. RazorVue 最小路径优先于 authoring 广度
+### Gate C. Jazor.VueHost 最小路径优先于 authoring 广度
 
-Authoring 扩张应该建立在已闭环的最小 RazorVue 路径上，而不是绕过它。
+Authoring 扩张应该建立在已闭环的最小 Jazor.VueHost 路径上，而不是绕过它。
 
-### Gate D. RazorVue authoring 不能分叉核心语义
+### Gate D. Jazor.VueHost authoring 不能分叉核心语义
 
 在跨过 mid-authoring review gate 之前，必须确认：
 - stub-as-truth-source 仍然成立

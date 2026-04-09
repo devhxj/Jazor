@@ -5,6 +5,7 @@ namespace Jazor.VueHost.Lsp.Routing;
 internal sealed class LspLaneRouter : ILspLaneRouter
 {
     private static readonly IReadOnlyList<LaneKind> JazorOnly = [LaneKind.Jazor];
+    private static readonly IReadOnlyList<LaneKind> FrontendOnly = [LaneKind.Frontend];
     private static readonly IReadOnlyList<LaneKind> FrontendThenJazor = [LaneKind.Frontend, LaneKind.Jazor];
     private static readonly IReadOnlyList<LaneKind> RoslynThenJazor = [LaneKind.Roslyn, LaneKind.Jazor];
     private static readonly IReadOnlyList<LaneKind> DiagnosticLanes = [LaneKind.Jazor, LaneKind.Roslyn, LaneKind.Frontend];
@@ -18,7 +19,10 @@ internal sealed class LspLaneRouter : ILspLaneRouter
         };
 
     public IReadOnlyList<LaneKind> GetDiagnosticLanes(DocumentSnapshot document)
-        => document.DocumentKind == DocumentKind.Jazor
-            ? DiagnosticLanes
-            : JazorOnly;
+        => document.DocumentKind switch
+        {
+            DocumentKind.Jazor => DiagnosticLanes,
+            DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript => FrontendOnly,
+            _ => JazorOnly
+        };
 }

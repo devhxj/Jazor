@@ -277,6 +277,7 @@ internal sealed class LspSession
         await _workspaceStore.UpsertDocumentAsync(document, cancellationToken);
         await UpdateProjectionStateAsync(document, cancellationToken);
         await PublishDiagnosticsAsync(document, cancellationToken);
+        await RefreshOpenJazorDiagnosticsAsync(document, cancellationToken);
     }
 
     private async ValueTask HandleDidChangeAsync(
@@ -294,6 +295,7 @@ internal sealed class LspSession
         await _workspaceStore.UpsertDocumentAsync(document, cancellationToken);
         await UpdateProjectionStateAsync(document, cancellationToken);
         await PublishDiagnosticsAsync(document, cancellationToken);
+        await RefreshOpenJazorDiagnosticsAsync(document, cancellationToken);
     }
 
     private async ValueTask HandleDidCloseAsync(
@@ -308,6 +310,9 @@ internal sealed class LspSession
             new DocumentSnapshot(documentPath, MapDocumentKind(languageId: null, documentPath), string.Empty, null),
             cancellationToken,
             diagnostics: Array.Empty<LspDiagnostic>());
+        await RefreshOpenJazorDiagnosticsAsync(
+            new DocumentSnapshot(documentPath, MapDocumentKind(languageId: null, documentPath), string.Empty, null),
+            cancellationToken);
     }
 
     private async ValueTask PublishDiagnosticsAsync(
@@ -315,11 +320,6 @@ internal sealed class LspSession
         CancellationToken cancellationToken,
         IReadOnlyList<LspDiagnostic>? diagnostics = null)
     {
-        if (document.DocumentKind != DocumentKind.Jazor)
-        {
-            return;
-        }
-
         diagnostics ??= await CollectDiagnosticsAsync(document, cancellationToken);
         diagnostics = _resultAggregator.AggregateDiagnostics(diagnostics);
         await _writer.WriteMessageAsync(
@@ -369,6 +369,23 @@ internal sealed class LspSession
         }
 
         return diagnostics;
+    }
+
+    private async ValueTask RefreshOpenJazorDiagnosticsAsync(
+        DocumentSnapshot triggeringDocument,
+        CancellationToken cancellationToken)
+    {
+        if (triggeringDocument.DocumentKind == DocumentKind.Jazor)
+        {
+            return;
+        }
+
+        var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
+        foreach (var openDocument in openDocuments.Where(static candidate => candidate.DocumentKind == DocumentKind.Jazor))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            await PublishDiagnosticsAsync(openDocument, cancellationToken);
+        }
     }
 
     private IReadOnlyList<ILspLane> GetOrderedLanes(ProjectionTarget projectionTarget)

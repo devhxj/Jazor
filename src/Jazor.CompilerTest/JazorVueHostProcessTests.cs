@@ -9,7 +9,7 @@ namespace Jazor.CompilerTest;
 public sealed class JazorVueHostProcessTests
 {
     [TestMethod]
-    public async Task JazorVueHost_StdioProcess_AnalyzeJazor_DelegatesThroughAnalysisHost()
+    public async Task JazorVueHost_StdioProcess_AnalyzeJazor_DelegatesThroughVueHostAnalysisMode()
     {
         using var cancellationSource = new CancellationTokenSource(TimeSpan.FromSeconds(45));
         var repositoryRoot = GetRepositoryRoot();
@@ -18,16 +18,10 @@ public sealed class JazorVueHostProcessTests
             "src",
             "Jazor.VueHost",
             "Jazor.VueHost.csproj");
-        var analysisHostProjectPath = Path.Combine(
-            repositoryRoot,
-            "src",
-            "Jazor.Vue.Analysis.Host",
-            "Jazor.Vue.Analysis.Host.csproj");
 
         Assert.IsTrue(File.Exists(hostProjectPath), "Expected Jazor.VueHost project to exist.");
-        Assert.IsTrue(File.Exists(analysisHostProjectPath), "Expected Jazor.Vue.Analysis.Host project to exist.");
 
-        using var process = CreateVueHostProcess(hostProjectPath, analysisHostProjectPath);
+        using var process = CreateVueHostProcess(hostProjectPath);
         Assert.IsTrue(process.Start(), "Expected Jazor.VueHost process to start.");
 
         var request = new AnalyzeJazorRequest(
@@ -73,7 +67,7 @@ public sealed class JazorVueHostProcessTests
         Assert.AreEqual("vue-sfc", payload.Artifacts[0].ArtifactKind);
     }
 
-    private static Process CreateVueHostProcess(string hostProjectPath, string analysisHostProjectPath)
+    private static Process CreateVueHostProcess(string hostProjectPath)
     {
         var startInfo = new ProcessStartInfo
         {
@@ -94,7 +88,7 @@ public sealed class JazorVueHostProcessTests
         startInfo.ArgumentList.Add("--stdio");
         startInfo.ArgumentList.Add("--analysis-client=transport");
         startInfo.ArgumentList.Add("--analysis-command=dotnet");
-        startInfo.ArgumentList.Add($"--analysis-args=run --no-build --no-restore --project \"{analysisHostProjectPath}\" -- --stdio");
+        startInfo.ArgumentList.Add($"--analysis-args=run --no-build --no-restore --project \"{hostProjectPath}\" -- --analysis-stdio");
 
         return new Process
         {

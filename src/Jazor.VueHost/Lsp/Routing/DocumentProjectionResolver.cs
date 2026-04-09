@@ -27,6 +27,15 @@ internal sealed class DocumentProjectionResolver
 
         if (document.DocumentKind != DocumentKind.Jazor)
         {
+            if (document.DocumentKind is DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript)
+            {
+                return new ProjectionTarget(
+                    LaneKind.Frontend,
+                    DocumentRegionKind.Unknown,
+                    document.DocumentPath,
+                    document.DocumentPath);
+            }
+
             return new ProjectionTarget(
                 LaneKind.Jazor,
                 DocumentRegionKind.Unknown,

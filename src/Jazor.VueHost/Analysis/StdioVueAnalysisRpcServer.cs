@@ -1,4 +1,4 @@
-namespace Jazor.Vue.Analysis.Runtime;
+namespace Jazor.VueHost.Analysis;
 
 public sealed class StdioVueAnalysisRpcServer
 {
@@ -14,10 +14,8 @@ public sealed class StdioVueAnalysisRpcServer
         TextWriter output,
         CancellationToken cancellationToken)
     {
-        if (input is null)
-            throw new ArgumentNullException(nameof(input));
-        if (output is null)
-            throw new ArgumentNullException(nameof(output));
+        ArgumentNullException.ThrowIfNull(input);
+        ArgumentNullException.ThrowIfNull(output);
 
         while (!cancellationToken.IsCancellationRequested)
         {

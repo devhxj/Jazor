@@ -6,12 +6,11 @@ namespace Jazor.CompilerTest;
 public sealed class JazorVueCompilerTests
 {
     [TestMethod]
-    public void JazorVue_Parser_ParsesImportsTemplateAndCode()
+    public void JazorVue_Parser_ParsesJsImportsAndInfersVueComponentsFromRazorMarkup()
     {
         var source = """
             @jsimport { debounce } from "lodash-es"
             @jsimport dayjs from "dayjs"
-            @vueimport UserCard from "./UserCard.vue"
 
             <template>
               <UserCard :title="title" />
@@ -30,6 +29,8 @@ public sealed class JazorVueCompilerTests
         Assert.AreEqual(3, document.Imports.Count);
         Assert.AreEqual(JazorImportKind.JSImport, document.Imports[0].Kind);
         Assert.AreEqual("lodash-es", document.Imports[0].Source);
+        Assert.AreEqual(JazorImportKind.VueImport, document.Imports[2].Kind);
+        Assert.AreEqual("./UserCard.vue", document.Imports[2].Source);
         Assert.AreEqual("UserCard", document.Imports[2].Bindings[0].LocalName);
         StringAssert.Contains(document.Template, "<UserCard :title=\"title\" />");
         StringAssert.Contains(document.Code, "[Prop] public string Title");
@@ -59,7 +60,6 @@ public sealed class JazorVueCompilerTests
         var source = """
             @jsimport { debounce } from "lodash-es"
             @jsimport dayjs from "dayjs"
-            @vueimport UserCard from "./UserCard.vue"
 
             <template>
               <UserCard :title="title" />
@@ -510,6 +510,87 @@ public sealed class JazorVueCompilerTests
 
         StringAssert.Contains(result.GeneratedVueText, "import Vue, { ref as vueRef, computed } from \"vue\";");
         StringAssert.Contains(result.GeneratedVueText, "import React, * as ReactRuntime from \"react\";");
+    }
+
+    [TestMethod]
+    public void JazorVue_Parser_InfersNearbyVueImportsFromRazorMarkup()
+    {
+        var tempDirectory = CreateTemporaryDirectory();
+
+        try
+        {
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var componentsDirectory = Path.Combine(tempDirectory, "Components");
+            Directory.CreateDirectory(componentsDirectory);
+            File.WriteAllText(
+                Path.Combine(componentsDirectory, "UserCard.vue"),
+                "<template><div>UserCard</div></template>");
+
+            var parser = new JazorVueParser();
+            var document = parser.Parse(documentPath, """
+                <UserCard />
+
+                @code {
+                    [Prop] public string Title { get; set; } = "";
+                }
+                """);
+
+            Assert.AreEqual(1, document.Imports.Count);
+            Assert.AreEqual(JazorImportKind.VueImport, document.Imports[0].Kind);
+            Assert.AreEqual("./Components/UserCard.vue", document.Imports[0].Source);
+            Assert.AreEqual("UserCard", document.Imports[0].Bindings[0].LocalName);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
+    public void JazorVue_Compiler_EmitsInferredNearbyVueImportsFromRazorMarkup()
+    {
+        var tempDirectory = CreateTemporaryDirectory();
+
+        try
+        {
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var componentsDirectory = Path.Combine(tempDirectory, "Components");
+            Directory.CreateDirectory(componentsDirectory);
+            File.WriteAllText(
+                Path.Combine(componentsDirectory, "UserCard.vue"),
+                "<template><div>UserCard</div></template>");
+
+            var parser = new JazorVueParser();
+            var compiler = new JazorVueCompiler();
+            var document = parser.Parse(documentPath, """
+                <UserCard Title="@Title" />
+
+                @code {
+                    [Prop] public string Title { get; set; } = "";
+                }
+                """);
+            var result = compiler.Compile(document);
+
+            StringAssert.Contains(result.GeneratedVueText, "import UserCard from \"./Components/UserCard.vue\";");
+            StringAssert.Contains(result.GeneratedVueText, "<UserCard Title=\"@Title\" />");
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+    }
+
+    private static string CreateTemporaryDirectory()
+    {
+        var path = Path.Combine(Path.GetTempPath(), "JazorVueCompilerTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(path);
+        return path;
     }
 
     private static void AssertSymbol(

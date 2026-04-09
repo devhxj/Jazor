@@ -40,7 +40,7 @@ Phase one HMR is explicitly not trying to do the following:
 
 1. fully implement runtime hot-update behavior
 2. preserve all component local state across every update
-3. rebuild Vite-style internals inside Jazor.Compiler
+3. rebuild host-owned frontend/runtime internals inside Jazor.Compiler
 4. infer HMR behavior from final JS strings alone
 5. make every Vue ecosystem library hot-reload-aware on day one
 

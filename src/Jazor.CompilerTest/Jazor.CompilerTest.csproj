@@ -9,9 +9,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Jazor.Compiler\Jazor.Compiler.csproj" />
     <ProjectReference Include="..\Jazor.Razor\Jazor.Razor.csproj" />
-    <ProjectReference Include="..\Jazor.Vite\Jazor.Vite.csproj" />
-    <ProjectReference Include="..\Jazor.Vue.Analysis\Jazor.Vue.Analysis.csproj" />
-    <ProjectReference Include="..\Jazor.Vue.Analysis.Runtime\Jazor.Vue.Analysis.Runtime.csproj" />
     <ProjectReference Include="..\Jazor.VueHost\Jazor.VueHost.csproj" />
     <ProjectReference Include="..\Jazor.RazorVue\Jazor.RazorVue.csproj" />
     <ProjectReference Include="..\Jazor.RazorVue.Vuetify\Jazor.RazorVue.Vuetify.csproj" />

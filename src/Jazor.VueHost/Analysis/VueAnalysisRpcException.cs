@@ -1,4 +1,4 @@
-namespace Jazor.Vue.Analysis.Runtime;
+namespace Jazor.VueHost.Analysis;
 
 public sealed class VueAnalysisRpcException : Exception
 {

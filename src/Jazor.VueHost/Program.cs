@@ -15,9 +15,19 @@ using Jazor.VueHost.VirtualDocuments.Registry;
 using SharedVueHostRpcMethodNames = Jazor.VueContracts.Protocol.VueHostRpcMethodNames;
 
 var useLsp = args.Any(static arg => string.Equals(arg, "--lsp", StringComparison.OrdinalIgnoreCase));
+var useAnalysisStdio = args.Any(static arg => string.Equals(arg, "--analysis-stdio", StringComparison.OrdinalIgnoreCase));
 var useStdio = Console.IsInputRedirected
     || args.Any(static arg => string.Equals(arg, "--stdio", StringComparison.OrdinalIgnoreCase));
 var cancellationToken = CancellationToken.None;
+
+if (useAnalysisStdio)
+{
+    var analysisProcessor = new VueAnalysisRpcProcessor(new JazorVueAnalysisService());
+    var analysisServer = new StdioVueAnalysisRpcServer(analysisProcessor);
+    await analysisServer.RunAsync(Console.In, Console.Out, cancellationToken);
+    return;
+}
+
 var analysisClient = VueAnalysisClientFactory.Create(args);
 var workspaceStore = new InMemoryWorkspaceStore();
 var virtualDocumentRegistry = new InMemoryVirtualDocumentRegistry();

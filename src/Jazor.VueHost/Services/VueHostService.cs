@@ -408,6 +408,27 @@ public sealed class VueHostService : IVueHostService, IVueHostRpcService, IFront
                 candidatePaths.Add(candidate);
         }
 
+        foreach (var componentName in GetReferencedVueComponents(jazorDocument.Text))
+        {
+            foreach (var candidate in GetNearbyVueComponentPathCandidates(jazorDocument.DocumentPath, componentName))
+            {
+                candidatePaths.Add(candidate);
+            }
+
+            foreach (var candidate in await GetNearbyTrackedVueComponentPathCandidatesAsync(
+                         jazorDocument.DocumentPath,
+                         componentName,
+                         cancellationToken))
+            {
+                candidatePaths.Add(candidate);
+            }
+        }
+
+        foreach (var candidate in GetCoLocatedAssetPathCandidates(jazorDocument.DocumentPath))
+        {
+            candidatePaths.Add(candidate);
+        }
+
         var documents = new List<DocumentSnapshot>();
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -564,6 +585,107 @@ public sealed class VueHostService : IVueHostService, IVueHostRpcService, IFront
             if (!string.Equals(fullPath, fullSlashNormalized, StringComparison.Ordinal))
                 yield return fullSlashNormalized;
         }
+    }
+
+    private static IEnumerable<string> GetCoLocatedAssetPathCandidates(string jazorDocumentPath)
+    {
+        var documentDirectory = Path.GetDirectoryName(jazorDocumentPath);
+        var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(jazorDocumentPath);
+        if (string.IsNullOrWhiteSpace(documentDirectory) || string.IsNullOrWhiteSpace(fileNameWithoutExtension))
+        {
+            yield break;
+        }
+
+        foreach (var extension in new[] { ".css", ".js", ".ts" })
+        {
+            yield return Path.Combine(documentDirectory, fileNameWithoutExtension + extension);
+        }
+    }
+
+    private static IEnumerable<string> GetNearbyVueComponentPathCandidates(
+        string jazorDocumentPath,
+        string componentName)
+    {
+        var documentDirectory = Path.GetDirectoryName(jazorDocumentPath);
+        if (string.IsNullOrWhiteSpace(documentDirectory) || string.IsNullOrWhiteSpace(componentName))
+        {
+            yield break;
+        }
+
+        foreach (var directory in GetNearbyVueSearchDirectories(documentDirectory))
+        {
+            yield return Path.Combine(directory, componentName + ".vue");
+        }
+    }
+
+    private async Task<IReadOnlyList<string>> GetNearbyTrackedVueComponentPathCandidatesAsync(
+        string jazorDocumentPath,
+        string componentName,
+        CancellationToken cancellationToken)
+    {
+        var documentDirectory = Path.GetDirectoryName(jazorDocumentPath);
+        if (string.IsNullOrWhiteSpace(documentDirectory) || string.IsNullOrWhiteSpace(componentName))
+        {
+            return Array.Empty<string>();
+        }
+
+        var nearbyDirectories = GetNearbyVueSearchDirectories(documentDirectory)
+            .Select(NormalizeComparablePath)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
+        return openDocuments
+            .Where(static document => document.DocumentKind == DocumentKind.Vue)
+            .Where(document => string.Equals(
+                Path.GetFileNameWithoutExtension(document.DocumentPath),
+                componentName,
+                StringComparison.Ordinal))
+            .Where(document => nearbyDirectories.Contains(
+                NormalizeComparablePath(Path.GetDirectoryName(document.DocumentPath) ?? string.Empty)))
+            .Select(static document => document.DocumentPath)
+            .ToArray();
+    }
+
+    private static IEnumerable<string> GetNearbyVueSearchDirectories(string documentDirectory)
+    {
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var parentDirectory = GetParentDirectoryPath(documentDirectory);
+        foreach (var directory in new[]
+                 {
+                     documentDirectory,
+                     Path.Combine(documentDirectory, "Components"),
+                     Path.Combine(documentDirectory, "components"),
+                     parentDirectory,
+                     parentDirectory is null ? null : Path.Combine(parentDirectory, "Components"),
+                     parentDirectory is null ? null : Path.Combine(parentDirectory, "components")
+                 })
+        {
+            if (string.IsNullOrWhiteSpace(directory))
+            {
+                continue;
+            }
+
+            var comparablePath = NormalizeComparablePath(directory);
+            if (seen.Add(comparablePath))
+            {
+                yield return directory;
+            }
+        }
+    }
+
+    private static string? GetParentDirectoryPath(string documentDirectory)
+    {
+        if (Path.IsPathRooted(documentDirectory))
+        {
+            return Directory.GetParent(documentDirectory)?.FullName;
+        }
+
+        var normalized = documentDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        if (normalized.Length == 0)
+        {
+            return null;
+        }
+
+        return Path.GetDirectoryName(normalized);
     }
 
     private static bool IsFrontendImport(string importSource)

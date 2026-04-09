@@ -1,5 +1,5 @@
-using Jazor.Vue.Analysis.Runtime;
 using Jazor.VueContracts.Protocol;
+using Jazor.VueHost.Analysis;
 
 namespace Jazor.CompilerTest;
 
@@ -16,7 +16,6 @@ public sealed class JazorVueAnalysisRuntimeTests
                 DocumentKind.Jazor,
                 """
                 @jsimport { debounce } from "lodash-es"
-                @vueimport UserCard from "./UserCard.vue"
 
                 <template>
                   <UserCard />

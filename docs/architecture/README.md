@@ -5,12 +5,14 @@
 ## 仓库级长期参考
 - [Compiler 文档桥接入口](./compiler/README.md)
 - [Modules Bridge](./modules/README.md)
-- [Jazor: Shallow Analysis + LS + Bun/Vite](./jazor-ls-bun-vite.md)
+- [Jazor.VueHost Single-Project Host Design](./jazor-vuehost-single-project.md)
 - [ECMAScript host alignment](../ECMAScript-host-alignment.md)
 - [ECMAScript nullish semantics](../ECMAScript-nullish-semantics.md)
 
 ## 说明
 - 仓库级 `docs/architecture/` 负责统一导航和收口
 - 子系统如果已经有成熟的局部索引，优先通过桥接入口接入
+- `.jazor` 的当前有效架构入口是 `Jazor.VueHost Single-Project Host Design`
+- `Jazor.Vite`、Bun 和旧 split-host / analysis-host 路线只保留历史收口用途，不应再当作现役边界参考
 - `src/Jazor.Compiler/doc/` 继续作为 compiler 深度文档的原位入口
 - 本目录偏长期有效参考，不承担 active execution 导航；执行入口请看 [docs/workstream-dashboard.md](../workstream-dashboard.md)

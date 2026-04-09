@@ -4,9 +4,12 @@ namespace Jazor.Vue;
 
 public sealed partial class JazorVueParser
 {
-    private static readonly Regex ImportDirectivePattern = new Regex(
+    private static readonly Regex LegacyImportDirectivePattern = new Regex(
         @"^\s*@(?<kind>jsimport|vueimport)\s+(?<clause>.+?)\s+from\s+[""'](?<source>[^""']+)[""']\s*$",
         RegexOptions.Multiline | RegexOptions.Compiled);
+    private static readonly Regex ComponentTagPattern = new Regex(
+        @"<(?<name>[A-Z][A-Za-z0-9_]*)\b",
+        RegexOptions.Compiled);
     private static readonly Regex TemplatePattern = new Regex(
         @"<template>(?<content>[\s\S]*?)</template>",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
@@ -21,17 +24,42 @@ public sealed partial class JazorVueParser
         if (sourceText is null)
             throw new ArgumentNullException(nameof(sourceText));
 
-        var imports = ParseImports(sourceText);
         var codeParseResult = ParseCode(sourceText);
         var template = ParseTemplate(sourceText, codeParseResult);
+        var imports = BuildImports(filePath, sourceText, template);
 
         return new JazorVueDocument(filePath, sourceText, imports, template, codeParseResult.Code, codeParseResult.StartIndex);
     }
 
-    private static IReadOnlyList<JazorImportDirective> ParseImports(string sourceText)
+    private static IReadOnlyList<JazorImportDirective> BuildImports(
+        string filePath,
+        string sourceText,
+        string template)
+    {
+        var legacyImports = ParseLegacyImports(sourceText);
+        var inferredVueImports = InferVueImports(filePath, template);
+        if (inferredVueImports.Count == 0)
+        {
+            return legacyImports;
+        }
+
+        var inferredComponentNames = inferredVueImports
+            .SelectMany(static import => import.Bindings)
+            .Select(static binding => binding.LocalName)
+            .ToHashSet(StringComparer.Ordinal);
+        var compatibilityImports = legacyImports
+            .Where(import => import.Kind != JazorImportKind.VueImport
+                || import.Bindings.All(binding => !inferredComponentNames.Contains(binding.LocalName)));
+
+        return compatibilityImports
+            .Concat(inferredVueImports)
+            .ToArray();
+    }
+
+    private static IReadOnlyList<JazorImportDirective> ParseLegacyImports(string sourceText)
     {
         var imports = new List<JazorImportDirective>();
-        foreach (Match match in ImportDirectivePattern.Matches(sourceText))
+        foreach (Match match in LegacyImportDirectivePattern.Matches(sourceText))
         {
             var kind = string.Equals(match.Groups["kind"].Value, "vueimport", StringComparison.Ordinal)
                 ? JazorImportKind.VueImport
@@ -40,6 +68,32 @@ public sealed partial class JazorVueParser
             var source = match.Groups["source"].Value.Trim();
 
             imports.Add(new JazorImportDirective(kind, source, ParseBindings(clause), match.Value));
+        }
+
+        return imports;
+    }
+
+    private static IReadOnlyList<JazorImportDirective> InferVueImports(
+        string filePath,
+        string template)
+    {
+        if (string.IsNullOrWhiteSpace(template))
+        {
+            return Array.Empty<JazorImportDirective>();
+        }
+
+        var imports = new List<JazorImportDirective>();
+        foreach (var componentName in ComponentTagPattern.Matches(template)
+                     .Select(static match => match.Groups["name"].Value)
+                     .Distinct(StringComparer.Ordinal))
+        {
+            var importPath = ResolveVueComponentImportPath(filePath, componentName);
+
+            imports.Add(new JazorImportDirective(
+                JazorImportKind.VueImport,
+                importPath,
+                [new JazorImportBinding(componentName, null, JazorImportBindingKind.Default)],
+                $"/* inferred vue import {componentName} from \"{importPath}\" */"));
         }
 
         return imports;
@@ -134,8 +188,87 @@ public sealed partial class JazorVueParser
             ? codeParseResult.DirectiveIndex
             : sourceText.Length;
         var markup = sourceText[..markupEnd];
-        markup = ImportDirectivePattern.Replace(markup, string.Empty);
+        markup = LegacyImportDirectivePattern.Replace(markup, string.Empty);
         return markup.Trim();
+    }
+
+    private static string ResolveVueComponentImportPath(
+        string filePath,
+        string componentName)
+    {
+        var documentDirectory = Path.GetDirectoryName(filePath);
+        if (string.IsNullOrWhiteSpace(documentDirectory))
+        {
+            return "./" + componentName + ".vue";
+        }
+
+        foreach (var directory in GetSearchDirectories(documentDirectory))
+        {
+            var candidate = Path.Combine(directory, componentName + ".vue");
+            if (!File.Exists(candidate))
+            {
+                continue;
+            }
+
+            return ToImportPath(documentDirectory, candidate);
+        }
+
+        return "./" + componentName + ".vue";
+    }
+
+    private static IEnumerable<string> GetSearchDirectories(string documentDirectory)
+    {
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var parentDirectory = GetParentDirectoryPath(documentDirectory);
+        foreach (var directory in new[]
+                 {
+                     documentDirectory,
+                     Path.Combine(documentDirectory, "Components"),
+                     Path.Combine(documentDirectory, "components"),
+                     parentDirectory,
+                     parentDirectory is null ? null : Path.Combine(parentDirectory, "Components"),
+                     parentDirectory is null ? null : Path.Combine(parentDirectory, "components")
+                 })
+        {
+            if (string.IsNullOrWhiteSpace(directory))
+            {
+                continue;
+            }
+
+            var fullPath = Path.GetFullPath(directory);
+            if (seen.Add(fullPath))
+            {
+                yield return fullPath;
+            }
+        }
+    }
+
+    private static string? GetParentDirectoryPath(string documentDirectory)
+    {
+        if (Path.IsPathRooted(documentDirectory))
+        {
+            return Directory.GetParent(documentDirectory)?.FullName;
+        }
+
+        var normalized = documentDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        if (normalized.Length == 0)
+        {
+            return null;
+        }
+
+        return Path.GetDirectoryName(normalized);
+    }
+
+    private static string ToImportPath(string documentDirectory, string absolutePath)
+    {
+        var relativePath = Path.GetRelativePath(documentDirectory, absolutePath)
+            .Replace('\\', '/');
+        if (relativePath.StartsWith(".", StringComparison.Ordinal))
+        {
+            return relativePath;
+        }
+
+        return "./" + relativePath;
     }
 
     private static CodeParseResult ParseCode(string sourceText)
