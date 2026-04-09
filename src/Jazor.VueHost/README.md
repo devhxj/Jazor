@@ -21,6 +21,8 @@ Implementation model:
 - `.vue` and `.jazor` should participate in the same workspace navigation graph for definition, references, and rename.
 - workspace-open `.vue` documents should immediately affect `.jazor` diagnostics and navigation without waiting for file materialization.
 - component rename/reference should stay on Razor/Vue markup symbols and must not spill into `@code` C# identifiers.
+- cross-file navigation may expand from nearby lookup into bounded workspace disk scans, but this remains a host-internal heuristic rather than a generated-artifact dependency.
+- the current implementation uses a shared workspace resolver for LSP, frontend-context derivation, and hot-update impact so `.jazor <-> .vue` lookup rules stay aligned.
 - Deno is the only frontend/runtime host path.
 
 Current scope:
@@ -31,6 +33,8 @@ Current scope:
 - Deno frontend worker integration for Vue/TS/CSS/HTML semantics
 - host-local analysis fallback for virtual artifact generation
 - protocol and projection orchestration
+- shared workspace resolver for nearby lookup, bounded workspace scans, and cache invalidation
+- projection metadata plumbed through routing, while current lane handlers still consume source-document coordinates
 
 Out of scope:
 

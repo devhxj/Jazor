@@ -7,6 +7,11 @@
 - runtime choice: Deno
 - non-scope: RazorVue library route and its historical host/bundling assumptions
 
+Related architecture docs:
+
+- [vuehost-capabilities.md](./vuehost-capabilities.md) describes the long-range VueHost capability blueprint.
+- [vuehost-document-map.md](./vuehost-document-map.md) explains how this document differs from the capability blueprint and how to use both during implementation.
+
 ## Decision
 
 `Jazor.VueHost` becomes the only project boundary and the only public entry point.
@@ -61,11 +66,14 @@ This design explicitly does **not** inherit RazorVue's host/bundling conclusions
 - `.vue` and `.jazor` navigation should meet in that shared workspace graph, so definition/references/rename do not stop at the current file boundary.
 - workspace-open `.vue` documents should also participate in live `.jazor` diagnostics, so opening/closing a component can immediately suppress or reintroduce unresolved-component diagnostics in related `.jazor`.
 - component rename/reference aggregation should stay markup-only for component tags and should not rewrite Roslyn-owned `@code` identifiers with the same text.
+- until a full workspace index exists, a shared workspace resolver should be the single place that owns path normalization, nearby lookup, bounded workspace scans, and cache invalidation for `.jazor <-> .vue` design-time relations.
+- before a true workspace index exists, VueHost may use bounded ancestor-root disk scans to widen `.vue <-> .jazor` navigation beyond nearby directories; this is an IntelliSense heuristic, not a build contract.
 - virtual documents and projection maps exist to bridge lanes, not to redefine the authoring model.
 
 ### 5. Virtual artifacts are internal
 
-- virtual `.vue`, virtual `.cs`, and other bridge outputs are internal projections.
+- virtual `.vue` and other bridge outputs are internal projections.
+- virtual `.cs` generation is **optional**; whether RoslynLane needs a projected C# document depends on the Roslyn integration approach (direct fragment analysis vs. minimal context projection). This decision is deferred to implementation.
 - they are allowed for LSP routing, worker interop, materialization, and tooling.
 - they must remain implementation details rather than becoming user-facing language boundaries.
 
@@ -116,10 +124,7 @@ src/Jazor.VueHost
 │  │  ├─ Worker
 │  │  ├─ Protocol
 │  │  └─ Hosting
-│  ├─ Volar
-│  ├─ TypeScript
-│  ├─ Vue
-│  ├─ CssHtml
+│  ├─ VolarTs          ← Volar + TSServer unified lane service
 │  └─ Mapping
 ├─ Lsp
 │  ├─ Hosting
@@ -306,9 +311,7 @@ Shared operational support:
 - `FrontendRpcResponse`
 - `FrontendDiagnostic`
 - `FrontendEdit`
-- `VolarLaneService`
-- `TypeScriptLaneService`
-- `CssHtmlLaneService`
+- `VolarTsLaneService`   ← unified Volar + TSServer lane service
 
 ### LSP
 
@@ -347,8 +350,10 @@ Responsibilities:
 
 - `.jazor` custom syntax and directives
 - document structure
-- `.jazor -> virtual .vue / virtual .cs` projection
+- `.jazor -> virtual .vue` projection (virtual `.cs` is optional)
+- ProjectionMap generation (段级位置映射, distinct from Source Map — see Mapping Requirements)
 - symbol identity coordination across lanes
+- result aggregation: all Lane outputs mapped back to `.jazor` before publishing
 - host-native quick fixes
 - host-native structural diagnostics
 
@@ -370,8 +375,8 @@ Responsibilities:
 
 Input:
 
-- projected virtual C# documents
-- `.jazor <-> virtual .cs` mapping
+- projected virtual C# documents or direct `@code` fragments (approach TBD)
+- `.jazor <-> virtual .cs` mapping (if virtual documents are used)
 
 Does not own:
 
@@ -381,12 +386,15 @@ Does not own:
 
 ### `FrontendLane`
 
+Language services provided by **Volar + TSServer** running in Deno Worker. No independent CSS/HTML/JSON language services.
+
 Responsibilities:
 
 - Razor markup semantics projected to the frontend lane
 - Vue component and attribute resolution
-- `.vue/.ts/.js/.css/.html` diagnostics
+- `.vue/.ts/.js/.css/.html` diagnostics and intelligence
 - frontend completion/hover/definition/references/rename
+- silent degradation when Deno Worker is unavailable (RoslynLane continues independently)
 
 Input:
 
@@ -415,6 +423,11 @@ For a `.jazor` document position/range, the resolver returns:
 - `ProjectedDocumentUri`
 - `ProjectedRange`
 - `MappingId`
+
+Current progress note:
+
+- projection metadata may already be computed during routing, but the current lane implementations still execute against source-document coordinates until a lane consumes projected virtual text end-to-end
+- this keeps hover/completion/navigation stable while ProjectionMap and virtual-document consumption are still being tightened
 
 ### Region Classification
 
@@ -594,17 +607,26 @@ The host uses Deno only.
 
 Recommended process model:
 
-- main process: `Jazor.VueHost`
+- main process: `Jazor.VueHost` (.NET)
 - child process: long-lived Deno frontend worker
 - communication: host-controlled RPC over stdio or length-prefixed messages
 
-The Deno worker is responsible for:
+The Deno worker runs **Volar + TSServer** as the unified frontend language service:
 
-- Volar integration
-- TypeScript language services
-- Vue/TS/JS/CSS/HTML semantic responses
+- Volar: `.vue` SFC semantics, template/script/style blocks, CSS/HTML within Vue context
+- TSServer (embedded in Volar): TypeScript/JavaScript type checking, completion, navigation
+- no independent CSS, HTML, or JSON language services are needed
 
 The Deno worker is **not** allowed to define `.jazor` semantics.
+
+### Degradation
+
+If the Deno worker crashes or fails to start:
+
+- FrontendLane is marked unavailable
+- RoslynLane continues independently (C# intelligence for `@code` blocks still works)
+- automatic restart with exponential backoff (max 3 retries)
+- all failures are silent to the user (no error popups for non-startup failures)
 
 ## Project-to-Folder Migration Map
 
@@ -680,6 +702,12 @@ If similar capability is needed again, it must be implemented inside `Jazor.VueH
 - frontend worker lifecycle adds host complexity
 - deleting projects too early can break existing `getVirtualArtifact`, LSP, or HMR paths
 - docs can drift again if code and architecture updates are not done together
+- ProjectionMap precision is the single most critical technical prerequisite — without segment-level mapping, diagnostics drift, rename corrupts source, and definition jumps incorrectly
+- production bundling (esbuild/Rollup) introduces an external dependency that must be managed separately from the core compilation pipeline
+
+### Degradation Principle
+
+Each Lane must be independently available. A failure in one Lane must not cascade to another. See `vuehost-capabilities.md` Section 14 for the full degradation matrix.
 
 ## Safe Rollback Points
 
@@ -700,7 +728,14 @@ Implement first:
 - `definition`
 - diagnostics aggregation
 
-Delay to phase two:
+Current progress note:
+
+- the host now advertises and serves `references`, `rename`, and `codeAction`, but these remain source-snapshot-first implementations rather than the fully projected Roslyn/Razor end state
+- the bottom bootstrap has started shifting to real language-service entrypoints: Roslyn is now wired as an external stdio host candidate, Razor is treated as a Roslyn-side extension/component rather than a fake standalone lane, and VueHost has dedicated catalog/probe hooks for Volar and tsserver discovery
+- the Deno frontend worker is being moved to the same self-contained runtime model used by the repo's `DenoHost`-backed tooling, so frontend intelligence does not depend on a globally installed `deno`
+- the Deno frontend host bootstrap is moving to the same self-contained runtime model already used elsewhere in the repository: VueHost now resolves its worker entrypoint and bundled `DenoHost` runtime from its own output layout by default, while still allowing explicit `--deno-command` / `--deno-arg` overrides for diagnostics and local experiments
+
+Original phase-two tail:
 
 - `references`
 - `rename`
