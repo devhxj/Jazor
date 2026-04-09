@@ -2,6 +2,7 @@ using Jazor.Vue;
 using Jazor.VueContracts.Protocol;
 using Jazor.VueHost.VirtualDocuments.Mapping;
 using Jazor.VueHost.VirtualDocuments.Models;
+using Jazor.VueHost.Roslyn.InProc;
 
 namespace Jazor.VueHost.Jazor.Projection;
 
@@ -12,6 +13,12 @@ internal sealed class JazorProjectionService
     private const string CodeCommentMarker = "Original @code block retained for bridge diagnostics:";
     private readonly JazorVueParser _parser = new();
     private readonly JazorVueCompiler _compiler = new();
+    private readonly InProcRoslynCodeService _inProcRoslynCodeService;
+
+    public JazorProjectionService(InProcRoslynCodeService? inProcRoslynCodeService = null)
+    {
+        _inProcRoslynCodeService = inProcRoslynCodeService ?? new InProcRoslynCodeService();
+    }
 
     public ValueTask<IReadOnlyList<VirtualDocument>> ProjectAsync(
         DocumentSnapshot document,
@@ -29,7 +36,7 @@ internal sealed class JazorProjectionService
         var compilation = _compiler.Compile(parsedDocument);
 
         var vueProjectedPath = "virtual:" + document.DocumentPath + ".g.vue";
-        var csharpProjectedPath = "virtual:" + document.DocumentPath + ".g.cs";
+        var csharpProjection = _inProcRoslynCodeService.CreateProjection(document, parsedDocument);
 
         IReadOnlyList<VirtualDocument> virtualDocuments =
         [
@@ -44,13 +51,10 @@ internal sealed class JazorProjectionService
             new VirtualDocument(
                 new VirtualDocumentIdentity(
                     document.DocumentPath,
-                    csharpProjectedPath,
+                    csharpProjection.ProjectedDocumentPath,
                     VirtualDocumentKind.CSharp),
-                compilation.GeneratedExternalDeclarationsText,
-                new ProjectionMap(
-                    document.DocumentPath,
-                    csharpProjectedPath,
-                    Array.Empty<ProjectionSegment>()),
+                csharpProjection.SourceText,
+                csharpProjection.ProjectionMap,
                 document.Version)
         ];
 

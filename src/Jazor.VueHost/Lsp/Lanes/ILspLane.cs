@@ -23,6 +23,16 @@ internal interface ILspLane
         ProjectionTarget projectionTarget,
         CancellationToken cancellationToken);
 
+    ValueTask<IReadOnlyList<LspDocumentSymbol>> GetDocumentSymbolsAsync(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken);
+
+    ValueTask<LspSignatureHelp?> GetSignatureHelpAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        ProjectionTarget projectionTarget,
+        CancellationToken cancellationToken);
+
     ValueTask<IReadOnlyList<LspLocation>> GetDefinitionAsync(
         DocumentSnapshot document,
         LspPosition position,

@@ -72,6 +72,12 @@ internal sealed class LspSession
                         ReferencesProvider = true,
                         RenameProvider = true,
                         CodeActionProvider = true,
+                        DocumentSymbolProvider = true,
+                        SignatureHelpProvider = new LspSignatureHelpOptions
+                        {
+                            TriggerCharacters = ["(", ","],
+                            RetriggerCharacters = [")"]
+                        },
                         CompletionProvider = new LspCompletionOptions
                         {
                             ResolveProvider = false,
@@ -87,6 +93,8 @@ internal sealed class LspSession
             "shutdown" => CreateSuccessResponse(request.Id, result: null),
             "textDocument/hover" => await HandleHoverAsync(request, cancellationToken),
             "textDocument/completion" => await HandleCompletionAsync(request, cancellationToken),
+            "textDocument/documentSymbol" => await HandleDocumentSymbolsAsync(request, cancellationToken),
+            "textDocument/signatureHelp" => await HandleSignatureHelpAsync(request, cancellationToken),
             "textDocument/definition" => await HandleDefinitionAsync(request, cancellationToken),
             "textDocument/references" => await HandleReferencesAsync(request, cancellationToken),
             "textDocument/rename" => await HandleRenameAsync(request, cancellationToken),
@@ -184,6 +192,26 @@ internal sealed class LspSession
         return CreateSuccessResponse(request.Id, _resultAggregator.AggregateCompletionItems(items));
     }
 
+    private async ValueTask<LspResponseMessage> HandleDocumentSymbolsAsync(
+        LspRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        var parameters = DeserializeParams<LspDocumentSymbolParams>(request.Params);
+        var document = await GetRequiredDocumentAsync(parameters.TextDocument.Uri, cancellationToken);
+        var symbols = new List<LspDocumentSymbol>();
+
+        foreach (var lane in GetDocumentSymbolLanes(document))
+        {
+            var laneSymbols = await lane.GetDocumentSymbolsAsync(document, cancellationToken);
+            if (laneSymbols.Count > 0)
+            {
+                symbols.AddRange(laneSymbols);
+            }
+        }
+
+        return CreateSuccessResponse(request.Id, _resultAggregator.AggregateDocumentSymbols(symbols));
+    }
+
     private async ValueTask<LspResponseMessage> HandleDefinitionAsync(
         LspRequestMessage request,
         CancellationToken cancellationToken)
@@ -203,6 +231,26 @@ internal sealed class LspSession
         }
 
         return CreateSuccessResponse(request.Id, _resultAggregator.AggregateLocations(locations));
+    }
+
+    private async ValueTask<LspResponseMessage> HandleSignatureHelpAsync(
+        LspRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        var parameters = DeserializeParams<LspSignatureHelpParams>(request.Params);
+        var document = await GetRequiredDocumentAsync(parameters.TextDocument.Uri, cancellationToken);
+        var projectionTarget = await _projectionResolver.ResolveAsync(document, parameters.Position, cancellationToken);
+
+        foreach (var lane in GetOrderedLanes(projectionTarget))
+        {
+            var signatureHelp = await lane.GetSignatureHelpAsync(document, parameters.Position, projectionTarget, cancellationToken);
+            if (signatureHelp is not null)
+            {
+                return CreateSuccessResponse(request.Id, signatureHelp);
+            }
+        }
+
+        return CreateSuccessResponse(request.Id, result: null);
     }
 
     private async ValueTask<LspResponseMessage> HandleReferencesAsync(
@@ -399,6 +447,27 @@ internal sealed class LspSession
     {
         var orderedLanes = new List<ILspLane>();
         foreach (var laneKind in _laneRouter.GetOrderedLanes(projectionTarget))
+        {
+            if (_lanes.TryGetValue(laneKind, out var lane))
+            {
+                orderedLanes.Add(lane);
+            }
+        }
+
+        return orderedLanes;
+    }
+
+    private IReadOnlyList<ILspLane> GetDocumentSymbolLanes(DocumentSnapshot document)
+    {
+        LaneKind[] laneKinds = document.DocumentKind switch
+        {
+            DocumentKind.Jazor => [LaneKind.Jazor, LaneKind.Roslyn],
+            DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript => [LaneKind.Frontend],
+            _ => [LaneKind.Jazor]
+        };
+
+        var orderedLanes = new List<ILspLane>();
+        foreach (var laneKind in laneKinds)
         {
             if (_lanes.TryGetValue(laneKind, out var lane))
             {

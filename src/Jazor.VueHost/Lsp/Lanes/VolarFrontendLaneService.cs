@@ -60,6 +60,18 @@ internal sealed class VolarFrontendLaneService : ILspLane
         return await _fallbackLane.GetCompletionItemsAsync(document, position, projectionTarget, cancellationToken);
     }
 
+    public ValueTask<IReadOnlyList<LspDocumentSymbol>> GetDocumentSymbolsAsync(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken)
+        => _fallbackLane.GetDocumentSymbolsAsync(document, cancellationToken);
+
+    public ValueTask<LspSignatureHelp?> GetSignatureHelpAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        ProjectionTarget projectionTarget,
+        CancellationToken cancellationToken)
+        => _fallbackLane.GetSignatureHelpAsync(document, position, projectionTarget, cancellationToken);
+
     public async ValueTask<IReadOnlyList<LspLocation>> GetDefinitionAsync(
         DocumentSnapshot document,
         LspPosition position,

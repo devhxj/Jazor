@@ -141,6 +141,48 @@ internal sealed class JazorLspDocumentService
         return items;
     }
 
+    public ValueTask<IReadOnlyList<LspDocumentSymbol>> GetDocumentSymbolsAsync(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (document.DocumentKind != DocumentKind.Jazor)
+        {
+            return ValueTask.FromResult<IReadOnlyList<LspDocumentSymbol>>(Array.Empty<LspDocumentSymbol>());
+        }
+
+        var parsed = _parser.Parse(document.DocumentPath, document.Text);
+        var symbols = new List<LspDocumentSymbol>();
+
+        if (parsed.TemplateStartIndex >= 0 && parsed.TemplateLength > 0)
+        {
+            var templateRange = LspProtocolHelpers.ToRange(document.Text, parsed.TemplateStartIndex, parsed.TemplateLength);
+            var componentSymbols = CreateTemplateComponentSymbols(document, parsed);
+            symbols.Add(new LspDocumentSymbol
+            {
+                Name = "Template",
+                Kind = 2,
+                Range = templateRange,
+                SelectionRange = templateRange,
+                Children = componentSymbols.Length == 0 ? null : componentSymbols
+            });
+        }
+
+        if (parsed.CodeStartIndex >= 0 && parsed.CodeLength > 0)
+        {
+            var codeRange = LspProtocolHelpers.ToRange(document.Text, parsed.CodeStartIndex, parsed.CodeLength);
+            symbols.Add(new LspDocumentSymbol
+            {
+                Name = "Code",
+                Kind = 2,
+                Range = codeRange,
+                SelectionRange = codeRange
+            });
+        }
+
+        return ValueTask.FromResult<IReadOnlyList<LspDocumentSymbol>>(symbols);
+    }
+
     public ValueTask<IReadOnlyList<LspLocation>> GetDefinitionAsync(
         DocumentSnapshot document,
         LspPosition position,
@@ -1284,6 +1326,38 @@ internal sealed class JazorLspDocumentService
         }
 
         return locations;
+    }
+
+    private static LspDocumentSymbol[] CreateTemplateComponentSymbols(
+        DocumentSnapshot document,
+        JazorVueDocument parsed)
+    {
+        var symbols = new List<LspDocumentSymbol>();
+        foreach (Match match in TagPattern.Matches(parsed.Template))
+        {
+            var group = match.Groups["name"];
+            if (!group.Success)
+            {
+                continue;
+            }
+
+            var sourceIndex = parsed.TemplateStartIndex + group.Index;
+            var range = LspProtocolHelpers.ToRange(document.Text, sourceIndex, group.Length);
+            symbols.Add(new LspDocumentSymbol
+            {
+                Name = group.Value,
+                Kind = 5,
+                Range = range,
+                SelectionRange = range
+            });
+        }
+
+        return symbols
+            .GroupBy(
+                static symbol => $"{symbol.Name}:{symbol.Range.Start.Line}:{symbol.Range.Start.Character}:{symbol.Range.End.Line}:{symbol.Range.End.Character}",
+                StringComparer.Ordinal)
+            .Select(static group => group.First())
+            .ToArray();
     }
 
     private readonly record struct ResolvedVueComponent(string ComponentName, string AbsolutePath, string ImportPath);

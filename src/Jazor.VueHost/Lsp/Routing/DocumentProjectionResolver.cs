@@ -71,6 +71,20 @@ internal sealed class DocumentProjectionResolver
                     null,
                     IsProjected: projectedPosition is not null);
             }
+
+            if (regionKind == DocumentRegionKind.Code)
+            {
+                // Code-lane requests already execute against the source snapshot. Keep routing
+                // them into Roslyn even if the virtual C# document has not been materialized yet.
+                return new ProjectionTarget(
+                    LaneKind.Roslyn,
+                    regionKind,
+                    document.DocumentPath,
+                    document.DocumentPath,
+                    position,
+                    null,
+                    IsProjected: false);
+            }
         }
 
         return new ProjectionTarget(

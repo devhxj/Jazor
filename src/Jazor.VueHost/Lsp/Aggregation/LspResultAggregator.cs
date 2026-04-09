@@ -62,6 +62,27 @@ internal sealed class LspResultAggregator
             .ToArray();
     }
 
+    public IReadOnlyList<LspDocumentSymbol> AggregateDocumentSymbols(
+        IReadOnlyList<LspDocumentSymbol> symbols)
+    {
+        ArgumentNullException.ThrowIfNull(symbols);
+
+        return symbols
+            .GroupBy(static symbol => string.Join(
+                '|',
+                symbol.Name,
+                symbol.Kind,
+                symbol.Range.Start.Line,
+                symbol.Range.Start.Character,
+                symbol.Range.End.Line,
+                symbol.Range.End.Character),
+                StringComparer.Ordinal)
+            .Select(static group => group.First())
+            .OrderBy(static symbol => symbol.Range.Start.Line)
+            .ThenBy(static symbol => symbol.Range.Start.Character)
+            .ToArray();
+    }
+
     public LspWorkspaceEdit? AggregateWorkspaceEdits(
         IReadOnlyList<LspWorkspaceEdit> edits)
     {

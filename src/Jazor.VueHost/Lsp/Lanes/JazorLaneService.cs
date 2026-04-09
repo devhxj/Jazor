@@ -33,6 +33,18 @@ internal sealed class JazorLaneService : ILspLane
         CancellationToken cancellationToken)
         => _documentService.GetCompletionItemsAsync(document, position, cancellationToken);
 
+    public ValueTask<IReadOnlyList<LspDocumentSymbol>> GetDocumentSymbolsAsync(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken)
+        => _documentService.GetDocumentSymbolsAsync(document, cancellationToken);
+
+    public ValueTask<LspSignatureHelp?> GetSignatureHelpAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        ProjectionTarget projectionTarget,
+        CancellationToken cancellationToken)
+        => ValueTask.FromResult<LspSignatureHelp?>(null);
+
     public ValueTask<IReadOnlyList<LspLocation>> GetDefinitionAsync(
         DocumentSnapshot document,
         LspPosition position,

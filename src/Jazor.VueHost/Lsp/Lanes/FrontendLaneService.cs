@@ -88,6 +88,18 @@ internal sealed class FrontendLaneService : ILspLane
         return await _documentService.GetCompletionItemsAsync(document, position, cancellationToken);
     }
 
+    public ValueTask<IReadOnlyList<LspDocumentSymbol>> GetDocumentSymbolsAsync(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken)
+        => ValueTask.FromResult<IReadOnlyList<LspDocumentSymbol>>(Array.Empty<LspDocumentSymbol>());
+
+    public ValueTask<LspSignatureHelp?> GetSignatureHelpAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        ProjectionTarget projectionTarget,
+        CancellationToken cancellationToken)
+        => ValueTask.FromResult<LspSignatureHelp?>(null);
+
     public async ValueTask<IReadOnlyList<LspLocation>> GetDefinitionAsync(
         DocumentSnapshot document,
         LspPosition position,

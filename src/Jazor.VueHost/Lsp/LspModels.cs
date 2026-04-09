@@ -91,6 +91,12 @@ internal sealed class LspServerCapabilities
     [JsonPropertyName("codeActionProvider")]
     public bool CodeActionProvider { get; init; }
 
+    [JsonPropertyName("documentSymbolProvider")]
+    public bool DocumentSymbolProvider { get; init; }
+
+    [JsonPropertyName("signatureHelpProvider")]
+    public LspSignatureHelpOptions? SignatureHelpProvider { get; init; }
+
     [JsonPropertyName("completionProvider")]
     public required LspCompletionOptions CompletionProvider { get; init; }
 }
@@ -111,6 +117,15 @@ internal sealed class LspCompletionOptions
 
     [JsonPropertyName("triggerCharacters")]
     public required string[] TriggerCharacters { get; init; }
+}
+
+internal sealed class LspSignatureHelpOptions
+{
+    [JsonPropertyName("triggerCharacters")]
+    public required string[] TriggerCharacters { get; init; }
+
+    [JsonPropertyName("retriggerCharacters")]
+    public string[]? RetriggerCharacters { get; init; }
 }
 
 internal class LspTextDocumentIdentifier
@@ -179,6 +194,15 @@ internal sealed class LspCompletionParams
     public required LspPosition Position { get; init; }
 }
 
+internal sealed class LspSignatureHelpParams
+{
+    [JsonPropertyName("textDocument")]
+    public required LspTextDocumentIdentifier TextDocument { get; init; }
+
+    [JsonPropertyName("position")]
+    public required LspPosition Position { get; init; }
+}
+
 internal sealed class LspDefinitionParams
 {
     [JsonPropertyName("textDocument")]
@@ -234,6 +258,12 @@ internal sealed class LspCodeActionParams
 
     [JsonPropertyName("context")]
     public LspCodeActionContext? Context { get; init; }
+}
+
+internal sealed class LspDocumentSymbolParams
+{
+    [JsonPropertyName("textDocument")]
+    public required LspTextDocumentIdentifier TextDocument { get; init; }
 }
 
 internal sealed class LspPublishDiagnosticsParams
@@ -296,6 +326,39 @@ internal sealed class LspCompletionItem
     public string? Documentation { get; init; }
 }
 
+internal sealed class LspSignatureHelp
+{
+    [JsonPropertyName("signatures")]
+    public required LspSignatureInformation[] Signatures { get; init; }
+
+    [JsonPropertyName("activeSignature")]
+    public int ActiveSignature { get; init; }
+
+    [JsonPropertyName("activeParameter")]
+    public int ActiveParameter { get; init; }
+}
+
+internal sealed class LspSignatureInformation
+{
+    [JsonPropertyName("label")]
+    public required string Label { get; init; }
+
+    [JsonPropertyName("documentation")]
+    public string? Documentation { get; init; }
+
+    [JsonPropertyName("parameters")]
+    public LspParameterInformation[]? Parameters { get; init; }
+}
+
+internal sealed class LspParameterInformation
+{
+    [JsonPropertyName("label")]
+    public required string Label { get; init; }
+
+    [JsonPropertyName("documentation")]
+    public string? Documentation { get; init; }
+}
+
 internal sealed class LspLocation
 {
     [JsonPropertyName("uri")]
@@ -330,6 +393,27 @@ internal sealed class LspCodeAction
 
     [JsonPropertyName("edit")]
     public LspWorkspaceEdit? Edit { get; init; }
+}
+
+internal sealed class LspDocumentSymbol
+{
+    [JsonPropertyName("name")]
+    public required string Name { get; init; }
+
+    [JsonPropertyName("detail")]
+    public string? Detail { get; init; }
+
+    [JsonPropertyName("kind")]
+    public int Kind { get; init; }
+
+    [JsonPropertyName("range")]
+    public required LspRange Range { get; init; }
+
+    [JsonPropertyName("selectionRange")]
+    public required LspRange SelectionRange { get; init; }
+
+    [JsonPropertyName("children")]
+    public LspDocumentSymbol[]? Children { get; init; }
 }
 
 internal sealed class LspRange

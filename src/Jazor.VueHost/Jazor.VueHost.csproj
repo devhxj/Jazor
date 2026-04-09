@@ -6,17 +6,27 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <NoWarn>$(NoWarn);RS1035</NoWarn>
     <DenoHostVersion>2.7.7</DenoHostVersion>
     <DenoHostRuntimePackageId Condition="'$(NETCoreSdkPortableRuntimeIdentifier)' != ''">DenoHost.Runtime.$(NETCoreSdkPortableRuntimeIdentifier)</DenoHostRuntimePackageId>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="DenoHost.Core" Version="$(DenoHostVersion)" />
-    <PackageReference Include="$(DenoHostRuntimePackageId)"
-                      Version="$(DenoHostVersion)"
-                      Condition="'$(DenoHostRuntimePackageId)' != ''" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.3.0" />
+    <PackageReference Include="DenoHost.Core" Version="2.7.11" />
+    <PackageReference Include="$(DenoHostRuntimePackageId)" Version="$(DenoHostVersion)" Condition="'$(DenoHostRuntimePackageId)' != ''" />
+    <Reference Include="Microsoft.CodeAnalysis.Razor.Compiler">
+      <HintPath>$(MSBuildSDKsPath)\Microsoft.NET.Sdk.Razor\source-generators\Microsoft.CodeAnalysis.Razor.Compiler.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
     <None Include="Frontend\Deno\Worker\frontend-worker.ts">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>Frontend\Deno\Worker\frontend-worker.ts</TargetPath>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Update="DenoHost.Runtime.win-x64" Version="2.7.11" />
   </ItemGroup>
 </Project>
