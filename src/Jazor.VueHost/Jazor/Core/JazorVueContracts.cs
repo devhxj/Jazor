@@ -173,7 +173,10 @@ public sealed class JazorVueDocument
         IReadOnlyList<JazorImportDirective> imports,
         string template,
         string code,
-        int codeStartIndex)
+        int codeStartIndex,
+        int templateStartIndex,
+        int templateLength,
+        int codeLength)
     {
         FilePath = filePath ?? throw new ArgumentNullException(nameof(filePath));
         SourceText = sourceText ?? throw new ArgumentNullException(nameof(sourceText));
@@ -181,6 +184,9 @@ public sealed class JazorVueDocument
         Template = template ?? throw new ArgumentNullException(nameof(template));
         Code = code ?? throw new ArgumentNullException(nameof(code));
         CodeStartIndex = codeStartIndex;
+        TemplateStartIndex = templateStartIndex;
+        TemplateLength = templateLength;
+        CodeLength = codeLength;
     }
 
     public string FilePath { get; }
@@ -194,6 +200,12 @@ public sealed class JazorVueDocument
     public string Code { get; }
 
     public int CodeStartIndex { get; }
+
+    public int TemplateStartIndex { get; }
+
+    public int TemplateLength { get; }
+
+    public int CodeLength { get; }
 }
 
 public sealed class JazorVueCompilationResult

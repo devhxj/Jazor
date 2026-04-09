@@ -25,10 +25,19 @@ public sealed partial class JazorVueParser
             throw new ArgumentNullException(nameof(sourceText));
 
         var codeParseResult = ParseCode(sourceText);
-        var template = ParseTemplate(sourceText, codeParseResult);
-        var imports = BuildImports(filePath, sourceText, template);
+        var templateParseResult = ParseTemplate(sourceText, codeParseResult);
+        var imports = BuildImports(filePath, sourceText, templateParseResult.Template);
 
-        return new JazorVueDocument(filePath, sourceText, imports, template, codeParseResult.Code, codeParseResult.StartIndex);
+        return new JazorVueDocument(
+            filePath,
+            sourceText,
+            imports,
+            templateParseResult.Template,
+            codeParseResult.Code,
+            codeParseResult.StartIndex,
+            templateParseResult.StartIndex,
+            templateParseResult.Length,
+            codeParseResult.Code.Length);
     }
 
     private static IReadOnlyList<JazorImportDirective> BuildImports(
@@ -178,18 +187,45 @@ public sealed partial class JazorVueParser
         return parts;
     }
 
-    private static string ParseTemplate(string sourceText, CodeParseResult codeParseResult)
+    private static TemplateParseResult ParseTemplate(string sourceText, CodeParseResult codeParseResult)
     {
         var match = TemplatePattern.Match(sourceText);
         if (match.Success)
-            return match.Groups["content"].Value.Trim();
+        {
+            return CreateTrimmedTemplateResult(
+                match.Groups["content"].Value,
+                match.Groups["content"].Index);
+        }
 
         var markupEnd = codeParseResult.DirectiveIndex >= 0
             ? codeParseResult.DirectiveIndex
             : sourceText.Length;
         var markup = sourceText[..markupEnd];
-        markup = LegacyImportDirectivePattern.Replace(markup, string.Empty);
-        return markup.Trim();
+        var sanitizedMarkup = LegacyImportDirectivePattern.Replace(markup, string.Empty);
+        var trimmedMarkup = sanitizedMarkup.Trim();
+        if (trimmedMarkup.Length == 0)
+        {
+            return new TemplateParseResult(string.Empty, -1, 0);
+        }
+
+        var sourceStartIndex = markup.IndexOf(trimmedMarkup, StringComparison.Ordinal);
+        return sourceStartIndex < 0
+            ? new TemplateParseResult(trimmedMarkup, -1, trimmedMarkup.Length)
+            : new TemplateParseResult(trimmedMarkup, sourceStartIndex, trimmedMarkup.Length);
+    }
+
+    private static TemplateParseResult CreateTrimmedTemplateResult(string rawTemplate, int rawStartIndex)
+    {
+        var trimmedTemplate = rawTemplate.Trim();
+        if (trimmedTemplate.Length == 0)
+        {
+            return new TemplateParseResult(string.Empty, -1, 0);
+        }
+
+        var relativeStartIndex = rawTemplate.IndexOf(trimmedTemplate, StringComparison.Ordinal);
+        return relativeStartIndex < 0
+            ? new TemplateParseResult(trimmedTemplate, -1, trimmedTemplate.Length)
+            : new TemplateParseResult(trimmedTemplate, rawStartIndex + relativeStartIndex, trimmedTemplate.Length);
     }
 
     private static string ResolveVueComponentImportPath(
@@ -319,5 +355,21 @@ public sealed partial class JazorVueParser
         public int StartIndex { get; }
 
         public int DirectiveIndex { get; }
+    }
+
+    private sealed class TemplateParseResult
+    {
+        public TemplateParseResult(string template, int startIndex, int length)
+        {
+            Template = template;
+            StartIndex = startIndex;
+            Length = length;
+        }
+
+        public string Template { get; }
+
+        public int StartIndex { get; }
+
+        public int Length { get; }
     }
 }
