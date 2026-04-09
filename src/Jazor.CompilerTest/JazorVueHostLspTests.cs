@@ -1043,6 +1043,7 @@ public sealed class JazorVueHostLspTests
             Directory.CreateDirectory(pagesDirectory);
             Directory.CreateDirectory(sharedDirectory);
 
+            var componentName = "MissingBadge" + Guid.NewGuid().ToString("N")[..8];
             var documentPath = Path.Combine(pagesDirectory, "Counter.jazor");
             var documentUri = new Uri(documentPath).AbsoluteUri;
             await client.SendAsync(new
@@ -1056,7 +1057,7 @@ public sealed class JazorVueHostLspTests
                         uri = documentUri,
                         languageId = "jazor",
                         version = 1,
-                        text = "<UserBadge />"
+                        text = $"<{componentName} />"
                     }
                 }
             });
@@ -1068,7 +1069,7 @@ public sealed class JazorVueHostLspTests
                 .EnumerateArray()
                 .Any(diagnostic => diagnostic.GetProperty("code").GetString() == "JAZORVUEFRONTEND001"));
 
-            var vuePath = Path.Combine(sharedDirectory, "UserBadge.vue");
+            var vuePath = Path.Combine(sharedDirectory, componentName + ".vue");
             var vueUri = new Uri(vuePath).AbsoluteUri;
             await client.SendAsync(new
             {
@@ -1081,7 +1082,7 @@ public sealed class JazorVueHostLspTests
                         uri = vueUri,
                         languageId = "vue",
                         version = 1,
-                        text = "<template><div>UserBadge</div></template>"
+                        text = $"<template><div>{componentName}</div></template>"
                     }
                 }
             });
@@ -1125,6 +1126,89 @@ public sealed class JazorVueHostLspTests
         }
 
         await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_JazorDocument_ResolvesWorkspaceVueComponentOutsideNearbyDirectories()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var sharedDirectory = Path.Combine(tempDirectory, "Shared", "UI");
+            var pagesDirectory = Path.Combine(tempDirectory, "Pages", "Admin");
+            Directory.CreateDirectory(sharedDirectory);
+            Directory.CreateDirectory(pagesDirectory);
+
+            var vuePath = Path.Combine(sharedDirectory, "UserBadge.vue");
+            var vueUri = new Uri(vuePath).AbsoluteUri;
+            await File.WriteAllTextAsync(vuePath, "<template><div>UserBadge</div></template>");
+
+            var documentPath = Path.Combine(pagesDirectory, "Counter.jazor");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                method = "textDocument/didOpen",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri,
+                        languageId = "jazor",
+                        version = 1,
+                        text = "<UserBadge />"
+                    }
+                }
+            });
+            using var diagnosticsMessage = await client.ReadMessageAsync();
+            Assert.AreEqual(documentUri, diagnosticsMessage.RootElement.GetProperty("params").GetProperty("uri").GetString());
+            Assert.AreEqual(0, diagnosticsMessage.RootElement.GetProperty("params").GetProperty("diagnostics").GetArrayLength());
+
+            var hover = await client.RequestHoverAsync(
+                requestId: 179,
+                documentUri,
+                line: 0,
+                character: 5);
+            Assert.IsNotNull(hover);
+            StringAssert.Contains(
+                hover.Value.GetProperty("contents").GetProperty("value").GetString() ?? string.Empty,
+                "../../Shared/UI/UserBadge.vue");
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 180,
+                method = "textDocument/definition",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri
+                    },
+                    position = new
+                    {
+                        line = 0,
+                        character = 5
+                    }
+                }
+            });
+            using var definitionResponse = await client.ReadResponseAsync(expectedId: 180);
+            var definitions = definitionResponse.RootElement.GetProperty("result");
+            Assert.AreEqual(1, definitions.GetArrayLength());
+            Assert.AreEqual(vueUri, definitions[0].GetProperty("uri").GetString());
+
+            await client.ShutdownAsync();
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
     }
 
     [TestMethod]
@@ -1288,6 +1372,134 @@ public sealed class JazorVueHostLspTests
         }
 
         await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_VueDocument_ReferencesAndRename_IncludeWorkspaceDiskJazorDocumentsOutsideNearbyDirectories()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var sharedDirectory = Path.Combine(tempDirectory, "Shared", "UI");
+            var appDirectory = Path.Combine(tempDirectory, "App");
+            var pagesDirectory = Path.Combine(tempDirectory, "Pages", "Admin");
+            var reportsDirectory = Path.Combine(tempDirectory, "Features", "Reports");
+            Directory.CreateDirectory(sharedDirectory);
+            Directory.CreateDirectory(appDirectory);
+            Directory.CreateDirectory(pagesDirectory);
+            Directory.CreateDirectory(reportsDirectory);
+
+            var declarationPath = Path.Combine(sharedDirectory, "UserBadge.vue");
+            await File.WriteAllTextAsync(declarationPath, "<template><div>UserBadge</div></template>");
+
+            var counterPath = Path.Combine(pagesDirectory, "Counter.jazor");
+            var counterUri = new Uri(counterPath).AbsoluteUri;
+            await File.WriteAllTextAsync(counterPath, "<UserBadge />");
+
+            var dashboardPath = Path.Combine(reportsDirectory, "Dashboard.jazor");
+            var dashboardUri = new Uri(dashboardPath).AbsoluteUri;
+            await File.WriteAllTextAsync(
+                dashboardPath,
+                """
+                <section>
+                  <UserBadge />
+                </section>
+                """);
+
+            var hostPath = Path.Combine(appDirectory, "Host.vue");
+            var hostUri = new Uri(hostPath).AbsoluteUri;
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                method = "textDocument/didOpen",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = hostUri,
+                        languageId = "vue",
+                        version = 1,
+                        text =
+                        """
+                        <template>
+                          <UserBadge />
+                        </template>
+                        """
+                    }
+                }
+            });
+            using var diagnosticsMessage = await client.ReadMessageAsync();
+            Assert.AreEqual(hostUri, diagnosticsMessage.RootElement.GetProperty("params").GetProperty("uri").GetString());
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 181,
+                method = "textDocument/references",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = hostUri
+                    },
+                    position = new
+                    {
+                        line = 1,
+                        character = 5
+                    },
+                    context = new
+                    {
+                        includeDeclaration = true
+                    }
+                }
+            });
+            using var referencesResponse = await client.ReadResponseAsync(expectedId: 181);
+            var references = referencesResponse.RootElement.GetProperty("result");
+            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == hostUri));
+            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == counterUri));
+            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == dashboardUri));
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 182,
+                method = "textDocument/rename",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = hostUri
+                    },
+                    position = new
+                    {
+                        line = 1,
+                        character = 5
+                    },
+                    newName = "ProfileBadge"
+                }
+            });
+            using var renameResponse = await client.ReadResponseAsync(expectedId: 182);
+            var changes = renameResponse.RootElement
+                .GetProperty("result")
+                .GetProperty("changes");
+            Assert.IsTrue(changes.EnumerateObject().Any(change => change.Name == hostUri));
+            Assert.IsTrue(changes.EnumerateObject().Any(change => change.Name == counterUri));
+            Assert.IsTrue(changes.EnumerateObject().Any(change => change.Name == dashboardUri));
+            Assert.AreEqual("ProfileBadge", changes.GetProperty(counterUri)[0].GetProperty("newText").GetString());
+            Assert.AreEqual("ProfileBadge", changes.GetProperty(dashboardUri)[0].GetProperty("newText").GetString());
+
+            await client.ShutdownAsync();
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
     }
 
     [TestMethod]
@@ -1836,12 +2048,11 @@ public sealed class JazorVueHostLspTests
                 .GetProperty(documentUri);
             Assert.AreEqual(1, changes.GetArrayLength());
             Assert.AreEqual("ProfileCard", changes[0].GetProperty("newText").GetString());
-            Assert.AreEqual(documentUri, renameResponse.RootElement
+            Assert.IsTrue(renameResponse.RootElement
                 .GetProperty("result")
                 .GetProperty("changes")
                 .EnumerateObject()
-                .Single()
-                .Name);
+                .Any(change => change.Name == documentUri));
 
             var startOffsets = changes
                 .EnumerateArray()
@@ -2390,7 +2601,10 @@ public sealed class JazorVueHostLspTests
                 var read = await _output.ReadAsync(body.AsMemory(offset, body.Length - offset));
                 if (read == 0)
                 {
-                    throw new EndOfStreamException("Unexpected end of stream while reading LSP body.");
+                    var stderr = _process.HasExited
+                        ? await _process.StandardError.ReadToEndAsync()
+                        : string.Empty;
+                    throw new EndOfStreamException("Unexpected end of stream while reading LSP body. stderr: " + stderr);
                 }
 
                 offset += read;
@@ -2473,7 +2687,10 @@ public sealed class JazorVueHostLspTests
                 var read = await _output.ReadAsync(buffer.AsMemory(0, 1));
                 if (read == 0)
                 {
-                    throw new EndOfStreamException("Unexpected end of stream while reading LSP headers.");
+                    var stderr = _process.HasExited
+                        ? await _process.StandardError.ReadToEndAsync()
+                        : string.Empty;
+                    throw new EndOfStreamException("Unexpected end of stream while reading LSP headers. stderr: " + stderr);
                 }
 
                 headerBytes.Add(buffer[0]);

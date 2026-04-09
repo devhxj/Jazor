@@ -153,6 +153,85 @@ public sealed class JazorVueHostTests
     }
 
     [TestMethod]
+    public async Task JazorVueHost_GetFrontendContext_DerivesTrackedWorkspaceVueDocumentOutsideNearbyDirectories()
+    {
+        var host = new VueHostService(new InMemoryWorkspaceStore(), new NullVueAnalysisClient());
+        await host.StartAsync(CancellationToken.None);
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var jazorPath = Path.Combine(tempDirectory, "Pages", "Counter.jazor");
+            var sharedVuePath = Path.Combine(tempDirectory, "Shared", "UserBadge.vue");
+            Directory.CreateDirectory(Path.GetDirectoryName(jazorPath)!);
+            Directory.CreateDirectory(Path.GetDirectoryName(sharedVuePath)!);
+
+            await host.OpenDocumentAsync(
+                new DocumentSnapshot(
+                    jazorPath,
+                    DocumentKind.Jazor,
+                    "<UserBadge />",
+                    "1"),
+                CancellationToken.None);
+            await host.OpenDocumentAsync(
+                new DocumentSnapshot(
+                    sharedVuePath,
+                    DocumentKind.Vue,
+                    "<template><div>UserBadge</div></template>",
+                    "1"),
+                CancellationToken.None);
+
+            var response = await host.GetFrontendContextAsync(
+                new GetFrontendContextRequest(jazorPath, Array.Empty<string>()),
+                CancellationToken.None);
+
+            Assert.AreEqual(1, response.SemanticContext.RelatedDocuments.Count);
+            Assert.AreEqual(sharedVuePath.Replace('\\', '/'), response.SemanticContext.RelatedDocuments[0].DocumentPath.Replace('\\', '/'));
+            Assert.AreEqual("1", response.SemanticContext.Properties["derivedDocumentCount"]);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_GetFrontendContext_DerivesDiskBackedWorkspaceVueDocumentOutsideNearbyDirectories()
+    {
+        var host = new VueHostService(new InMemoryWorkspaceStore(), new NullVueAnalysisClient());
+        await host.StartAsync(CancellationToken.None);
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var jazorPath = Path.Combine(tempDirectory, "Pages", "Counter.jazor");
+            var sharedVuePath = Path.Combine(tempDirectory, "Shared", "UserBadge.vue");
+            Directory.CreateDirectory(Path.GetDirectoryName(jazorPath)!);
+            Directory.CreateDirectory(Path.GetDirectoryName(sharedVuePath)!);
+            await File.WriteAllTextAsync(jazorPath, "<UserBadge />");
+            await File.WriteAllTextAsync(sharedVuePath, "<template><div>UserBadge</div></template>");
+
+            var response = await host.GetFrontendContextAsync(
+                new GetFrontendContextRequest(jazorPath, Array.Empty<string>()),
+                CancellationToken.None);
+
+            Assert.AreEqual(1, response.SemanticContext.RelatedDocuments.Count);
+            Assert.AreEqual(sharedVuePath.Replace('\\', '/'), response.SemanticContext.RelatedDocuments[0].DocumentPath.Replace('\\', '/'));
+            Assert.AreEqual("1", response.SemanticContext.Properties["derivedDocumentCount"]);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
     public async Task JazorVueHost_GetHotUpdatePlan_ReturnsDependentJazorDocumentsForFrontendChange()
     {
         var host = new VueHostService(new InMemoryWorkspaceStore(), new NullVueAnalysisClient());
@@ -189,6 +268,67 @@ public sealed class JazorVueHostTests
             new[] { "Features/Pages/Counter.jazor" },
             response.AffectedDocumentPaths.ToArray());
         Assert.AreEqual("frontend-change", response.Reason);
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_GetHotUpdatePlan_ReturnsAffectedJazorDocumentsForTrackedWorkspaceVueOutsideNearbyDirectories()
+    {
+        var host = new VueHostService(new InMemoryWorkspaceStore(), new NullVueAnalysisClient());
+        await host.StartAsync(CancellationToken.None);
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var sharedVuePath = Path.Combine(tempDirectory, "Shared", "UserBadge.vue");
+            var counterPath = Path.Combine(tempDirectory, "Pages", "Counter.jazor");
+            var dashboardPath = Path.Combine(tempDirectory, "Dashboard", "Index.jazor");
+            Directory.CreateDirectory(Path.GetDirectoryName(sharedVuePath)!);
+            Directory.CreateDirectory(Path.GetDirectoryName(counterPath)!);
+            Directory.CreateDirectory(Path.GetDirectoryName(dashboardPath)!);
+
+            await host.OpenDocumentAsync(
+                new DocumentSnapshot(
+                    counterPath,
+                    DocumentKind.Jazor,
+                    "<UserBadge />",
+                    "1"),
+                CancellationToken.None);
+            await host.OpenDocumentAsync(
+                new DocumentSnapshot(
+                    dashboardPath,
+                    DocumentKind.Jazor,
+                    "<UserBadge />",
+                    "1"),
+                CancellationToken.None);
+            await host.OpenDocumentAsync(
+                new DocumentSnapshot(
+                    sharedVuePath,
+                    DocumentKind.Vue,
+                    "<template><div>UserBadge</div></template>",
+                    "1"),
+                CancellationToken.None);
+
+            var response = await host.GetHotUpdatePlanAsync(
+                new GetHotUpdatePlanRequest(sharedVuePath, DocumentKind.Vue, "2"),
+                CancellationToken.None);
+
+            Assert.IsFalse(response.RequiresFullReload);
+            Assert.AreEqual("frontend-change", response.Reason);
+            CollectionAssert.AreEquivalent(
+                new[]
+                {
+                    counterPath.Replace('\\', '/'),
+                    dashboardPath.Replace('\\', '/')
+                },
+                response.AffectedDocumentPaths.Select(static path => path.Replace('\\', '/')).ToArray());
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
     }
 
     [TestMethod]
