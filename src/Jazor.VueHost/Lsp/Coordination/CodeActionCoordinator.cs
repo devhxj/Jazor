@@ -57,13 +57,18 @@ internal sealed class CodeActionCoordinator
         ProjectionTarget projectionTarget,
         IReadOnlyList<LspDiagnostic> diagnostics)
     {
-        var laneKinds = _laneRouter.GetOrderedLanes(projectionTarget);
-        if (!ContainsFrontendDiagnostic(diagnostics) || laneKinds.Contains(LaneKind.Frontend))
+        var laneKinds = _laneRouter.GetOrderedLanes(projectionTarget).ToList();
+        if (ContainsFrontendDiagnostic(diagnostics) && !laneKinds.Contains(LaneKind.Frontend))
         {
-            return laneKinds;
+            laneKinds.Add(LaneKind.Frontend);
         }
 
-        return laneKinds.Concat([LaneKind.Frontend]).ToArray();
+        if (ContainsJazorDiagnostic(diagnostics) && !laneKinds.Contains(LaneKind.Jazor))
+        {
+            laneKinds.Add(LaneKind.Jazor);
+        }
+
+        return laneKinds;
     }
 
     private static bool ContainsFrontendDiagnostic(IReadOnlyList<LspDiagnostic> diagnostics)
@@ -71,4 +76,9 @@ internal sealed class CodeActionCoordinator
             string.Equals(diagnostic.Source, "Jazor.VueHost.Frontend", StringComparison.Ordinal)
             || string.Equals(diagnostic.Code, "JAZORVUEFRONTEND001", StringComparison.Ordinal)
             || string.Equals(diagnostic.Code, "JAZORVUEFRONTEND002", StringComparison.Ordinal));
+
+    private static bool ContainsJazorDiagnostic(IReadOnlyList<LspDiagnostic> diagnostics)
+        => diagnostics.Any(diagnostic =>
+            string.Equals(diagnostic.Source, "Jazor.VueHost", StringComparison.Ordinal)
+            || string.Equals(diagnostic.Code, "JAZORVUE001", StringComparison.Ordinal));
 }

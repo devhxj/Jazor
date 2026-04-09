@@ -14,7 +14,11 @@ internal static class DenoFrontendHostOptionsParser
     {
         ArgumentNullException.ThrowIfNull(args);
 
-        var enabled = ReadBoolean(Environment.GetEnvironmentVariable(EnableEnvironmentVariable));
+        var enabled = true;
+        if (ReadBoolean(Environment.GetEnvironmentVariable(EnableEnvironmentVariable)))
+        {
+            enabled = true;
+        }
         var executableOverride = Environment.GetEnvironmentVariable(CommandEnvironmentVariable);
         var workingDirectory = Environment.GetEnvironmentVariable(WorkingDirectoryEnvironmentVariable);
         var arguments = ParseArgumentList(Environment.GetEnvironmentVariable(ArgumentsEnvironmentVariable)).ToList();
@@ -78,6 +82,7 @@ internal static class DenoFrontendHostOptionsParser
         [
             "run",
             "--quiet",
+            "--allow-read",
             workerPath
         ];
     }

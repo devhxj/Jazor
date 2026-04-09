@@ -78,6 +78,19 @@ internal sealed class DenoFrontendHost : IDenoFrontendHost
         return items ?? Array.Empty<LspCompletionItem>();
     }
 
+    public async ValueTask<IReadOnlyList<LspDocumentSymbol>> GetTemplateDocumentSymbolsAsync(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken)
+    {
+        var request = new DenoTemplateDocumentRequest
+        {
+            DocumentPath = document.DocumentPath,
+            Text = document.Text
+        };
+        var symbols = await SendAsync<LspDocumentSymbol[]>("template/documentSymbols", request, cancellationToken);
+        return symbols ?? Array.Empty<LspDocumentSymbol>();
+    }
+
     public async ValueTask<LspHoverResult?> GetTemplateHoverAsync(
         DocumentSnapshot document,
         LspPosition position,

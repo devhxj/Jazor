@@ -81,6 +81,8 @@ function dispatch(method: string, payload: RequestEnvelope["payload"]): unknown 
     case "template/rename":
       assertPosition(method, payload.position);
       return getRename(payload.documentPath, payload.text, payload.position, payload.newName ?? "");
+    case "template/documentSymbols":
+      return getDocumentSymbols(payload.text);
     default:
       throw new Error(`Unsupported method '${method}'.`);
   }
@@ -233,6 +235,36 @@ function getRename(documentPath: string, text: string, position: Position, newNa
   };
 }
 
+function getDocumentSymbols(text: string): unknown[] {
+  const componentSymbols = findTemplateSymbols(text)
+    .map((symbol) => ({
+      name: symbol.name,
+      kind: 5,
+      range: symbol.range,
+      selectionRange: symbol.range,
+    }));
+  const templateBlock = findTemplateBlock(text);
+  if (templateBlock === null) {
+    return componentSymbols;
+  }
+
+  const templateStart = toOffset(text, templateBlock.range.start);
+  const templateEnd = toOffset(text, templateBlock.range.end);
+  const children = componentSymbols.filter((symbol) => {
+    const start = toOffset(text, symbol.selectionRange.start);
+    const end = toOffset(text, symbol.selectionRange.end);
+    return start >= templateStart && end <= templateEnd;
+  });
+
+  return [{
+    name: "Template",
+    kind: 2,
+    range: templateBlock.range,
+    selectionRange: templateBlock.selectionRange,
+    children: children.length === 0 ? undefined : children,
+  }];
+}
+
 function resolveComponent(
   documentPath: string,
   componentName: string,
@@ -341,6 +373,25 @@ function findTemplateSymbolRanges(text: string, componentName: string): Array<{ 
   return findTemplateSymbols(text)
     .filter((symbol) => symbol.name === componentName)
     .map((symbol) => symbol.range);
+}
+
+function findTemplateBlock(text: string): { range: { start: Position; end: Position }; selectionRange: { start: Position; end: Position } } | null {
+  const startMatch = /<template\b[^>]*>/i.exec(text);
+  if (startMatch === null || startMatch.index === undefined) {
+    return null;
+  }
+
+  const endPattern = /<\/template>/ig;
+  endPattern.lastIndex = startMatch.index + startMatch[0].length;
+  const endMatch = endPattern.exec(text);
+  if (endMatch === null || endMatch.index === undefined) {
+    return null;
+  }
+
+  return {
+    range: toRange(text, startMatch.index, (endMatch.index + endMatch[0].length) - startMatch.index) as { start: Position; end: Position },
+    selectionRange: toRange(text, startMatch.index, startMatch[0].length) as { start: Position; end: Position },
+  };
 }
 
 function toImportPath(documentDirectory: string, absolutePath: string): string {

@@ -1,5 +1,4 @@
 using Jazor.VueContracts.Protocol;
-using Jazor.VueHost.LanguageServers;
 using Jazor.VueHost.Lsp.Routing;
 using Jazor.VueHost.Roslyn.InProc;
 using Jazor.VueHost.Workspace;
@@ -8,21 +7,15 @@ namespace Jazor.VueHost.Lsp.Lanes;
 
 internal sealed class RoslynLaneService : ILspLane
 {
-    private readonly JazorLspDocumentService _documentService;
     private readonly IVueHostWorkspaceStore _workspaceStore;
     private readonly InProcRoslynCodeService _inProcCodeService;
-    private readonly ProjectedLanguageServerLaneHost? _host;
 
     public RoslynLaneService(
-        JazorLspDocumentService documentService,
         IVueHostWorkspaceStore workspaceStore,
-        InProcRoslynCodeService? inProcCodeService = null,
-        ProjectedLanguageServerLaneHost? host = null)
+        InProcRoslynCodeService? inProcCodeService = null)
     {
-        _documentService = documentService ?? throw new ArgumentNullException(nameof(documentService));
         _workspaceStore = workspaceStore ?? throw new ArgumentNullException(nameof(workspaceStore));
         _inProcCodeService = inProcCodeService ?? new InProcRoslynCodeService();
-        _host = host;
     }
 
     public LaneKind LaneKind => LaneKind.Roslyn;
@@ -49,16 +42,7 @@ internal sealed class RoslynLaneService : ILspLane
             return inProcResult;
         }
 
-        if (_host is not null)
-        {
-            var result = await _host.GetHoverAsync(document, position, projectionTarget, cancellationToken);
-            if (result is not null)
-            {
-                return result;
-            }
-        }
-
-        return await _documentService.GetHoverAsync(document, position, cancellationToken);
+        return null;
     }
 
     public async ValueTask<IReadOnlyList<LspCompletionItem>> GetCompletionItemsAsync(
@@ -78,16 +62,7 @@ internal sealed class RoslynLaneService : ILspLane
             return inProcResult;
         }
 
-        if (_host is not null)
-        {
-            var result = await _host.GetCompletionItemsAsync(document, position, projectionTarget, cancellationToken);
-            if (result.Count > 0)
-            {
-                return result;
-            }
-        }
-
-        return await _documentService.GetCompletionItemsAsync(document, position, cancellationToken);
+        return Array.Empty<LspCompletionItem>();
     }
 
     public ValueTask<IReadOnlyList<LspDocumentSymbol>> GetDocumentSymbolsAsync(
@@ -134,16 +109,7 @@ internal sealed class RoslynLaneService : ILspLane
             return inProcResult;
         }
 
-        if (_host is not null)
-        {
-            var result = await _host.GetDefinitionAsync(document, position, projectionTarget, cancellationToken);
-            if (result.Count > 0)
-            {
-                return result;
-            }
-        }
-
-        return await _documentService.GetDefinitionAsync(document, position, cancellationToken);
+        return Array.Empty<LspLocation>();
     }
 
     public async ValueTask<IReadOnlyList<LspLocation>> GetReferencesAsync(
@@ -179,21 +145,7 @@ internal sealed class RoslynLaneService : ILspLane
             return inProcResult;
         }
 
-        if (_host is not null)
-        {
-            var result = await _host.GetReferencesAsync(
-                document,
-                position,
-                includeDeclaration,
-                projectionTarget,
-                cancellationToken);
-            if (result.Count > 0)
-            {
-                return result;
-            }
-        }
-
-        return await _documentService.GetReferencesAsync(document, position, includeDeclaration, cancellationToken);
+        return Array.Empty<LspLocation>();
     }
 
     public async ValueTask<LspWorkspaceEdit?> GetRenameAsync(
@@ -229,16 +181,7 @@ internal sealed class RoslynLaneService : ILspLane
             return inProcResult;
         }
 
-        if (_host is not null)
-        {
-            var result = await _host.GetRenameAsync(document, position, newName, projectionTarget, cancellationToken);
-            if (result is not null)
-            {
-                return result;
-            }
-        }
-
-        return await _documentService.GetRenameAsync(document, position, newName, cancellationToken);
+        return null;
     }
 
     public async ValueTask<IReadOnlyList<LspCodeAction>> GetCodeActionsAsync(
@@ -253,21 +196,7 @@ internal sealed class RoslynLaneService : ILspLane
             return Array.Empty<LspCodeAction>();
         }
 
-        if (_host is not null)
-        {
-            var result = await _host.GetCodeActionsAsync(
-                document,
-                range,
-                diagnostics,
-                projectionTarget,
-                cancellationToken);
-            if (result.Count > 0)
-            {
-                return result;
-            }
-        }
-
-        return await _documentService.GetCodeActionsAsync(document, diagnostics, cancellationToken);
+        return Array.Empty<LspCodeAction>();
     }
 
     private static bool IsCodeTarget(ProjectionTarget projectionTarget)

@@ -125,7 +125,9 @@ internal sealed class DocumentRegionClassifier
             return false;
         }
 
-        return TopLevelDirectives.Any(trimmed.StartsWith);
+        return trimmed.Length == 1
+            || TopLevelDirectives.Any(trimmed.StartsWith)
+            || TopLevelDirectives.Any(directive => directive.StartsWith(trimmed, StringComparison.Ordinal));
     }
 
     private static bool InRange((int Start, int End) range, int offset)
