@@ -28,6 +28,18 @@ internal sealed class DocumentProjectionResolver
 
         if (document.DocumentKind != DocumentKind.Jazor)
         {
+            if (document.DocumentKind == DocumentKind.CSharp)
+            {
+                return new ProjectionTarget(
+                    LaneKind.Roslyn,
+                    DocumentRegionKind.Code,
+                    document.DocumentPath,
+                    document.DocumentPath,
+                    position,
+                    null,
+                    IsProjected: false);
+            }
+
             if (document.DocumentKind is DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript)
             {
                 return new ProjectionTarget(

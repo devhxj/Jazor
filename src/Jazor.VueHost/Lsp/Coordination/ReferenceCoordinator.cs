@@ -5,33 +5,30 @@ using Jazor.VueHost.Lsp.Routing;
 
 namespace Jazor.VueHost.Lsp.Coordination;
 
-internal sealed class RenameCoordinator
+internal sealed class ReferenceCoordinator
 {
     private readonly IReadOnlyDictionary<LaneKind, ILspLane> _lanes;
     private readonly ILspLaneRouter _laneRouter;
-    private readonly LspResultAggregator _resultAggregator;
     private readonly MarkupBridgeFanoutCoordinator _markupBridgeFanout;
 
-    public RenameCoordinator(
+    public ReferenceCoordinator(
         IReadOnlyDictionary<LaneKind, ILspLane> lanes,
         ILspLaneRouter laneRouter,
-        LspResultAggregator resultAggregator,
         MarkupBridgeFanoutCoordinator markupBridgeFanout)
     {
         _lanes = lanes ?? throw new ArgumentNullException(nameof(lanes));
         _laneRouter = laneRouter ?? throw new ArgumentNullException(nameof(laneRouter));
-        _resultAggregator = resultAggregator ?? throw new ArgumentNullException(nameof(resultAggregator));
         _markupBridgeFanout = markupBridgeFanout ?? throw new ArgumentNullException(nameof(markupBridgeFanout));
     }
 
-    public async ValueTask<LspWorkspaceEdit?> CoordinateAsync(
+    public async ValueTask<IReadOnlyList<LspLocation>> CoordinateAsync(
         DocumentSnapshot document,
         LspPosition position,
-        string newName,
+        bool includeDeclaration,
         ProjectionTarget projectionTarget,
         CancellationToken cancellationToken)
     {
-        var edits = new List<LspWorkspaceEdit>();
+        var locations = new List<LspLocation>();
         foreach (var laneKind in _laneRouter.GetOrderedLanes(projectionTarget))
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -40,20 +37,23 @@ internal sealed class RenameCoordinator
                 continue;
             }
 
-            var edit = await lane.GetRenameAsync(document, position, newName, projectionTarget, cancellationToken);
-            if (edit is not null)
+            var laneLocations = await lane.GetReferencesAsync(
+                document,
+                position,
+                includeDeclaration,
+                projectionTarget,
+                cancellationToken);
+            if (laneLocations.Count > 0)
             {
-                edits.Add(edit);
+                locations.AddRange(laneLocations);
             }
         }
 
-        return await _markupBridgeFanout.CoordinateRenameAsync(
+        return await _markupBridgeFanout.CoordinateReferencesAsync(
             document,
             position,
-            newName,
-            edits.Count == 0
-                ? null
-                : _resultAggregator.AggregateWorkspaceEdits(edits),
+            includeDeclaration,
+            locations,
             cancellationToken);
     }
 }

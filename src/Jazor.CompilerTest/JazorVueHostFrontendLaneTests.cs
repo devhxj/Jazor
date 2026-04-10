@@ -890,7 +890,7 @@ public sealed class JazorVueHostFrontendLaneTests
     }
 
     [TestMethod]
-    public async Task JazorVueHost_FrontendLaneService_GetReferences_BridgesTypeScriptVueImportIntoJazorMarkupOnly()
+    public async Task JazorVueHost_FrontendLaneService_GetReferences_ReturnsNativeScriptLocations_ForTypeScriptVueImport()
     {
         var tempDirectory = CreateTemporaryDirectory();
 
@@ -984,20 +984,8 @@ public sealed class JazorVueHostFrontendLaneTests
                 CancellationToken.None);
 
             var scriptUri = LspProtocolHelpers.ToDocumentUri(scriptDocument.DocumentPath);
-            var declarationUri = LspProtocolHelpers.ToDocumentUri(declarationPath);
-            var openJazorUri = LspProtocolHelpers.ToDocumentUri(openJazorDocument.DocumentPath);
-            var diskJazorUri = LspProtocolHelpers.ToDocumentUri(diskJazorPath);
-
-            Assert.IsTrue(locations.Any(location => location.Uri == scriptUri));
-            Assert.IsTrue(locations.Any(location => location.Uri == declarationUri));
-            Assert.IsTrue(locations.Any(location => location.Uri == openJazorUri));
-            Assert.IsTrue(locations.Any(location => location.Uri == diskJazorUri));
-            Assert.IsFalse(locations.Any(location =>
-                location.Uri == openJazorUri
-                && location.Range.Start.Line >= 3));
-            Assert.IsFalse(locations.Any(location =>
-                location.Uri == diskJazorUri
-                && location.Range.Start.Line >= 5));
+            Assert.AreEqual(2, locations.Count);
+            Assert.IsTrue(locations.All(location => location.Uri == scriptUri));
         }
         finally
         {
@@ -1009,7 +997,7 @@ public sealed class JazorVueHostFrontendLaneTests
     }
 
     [TestMethod]
-    public async Task JazorVueHost_FrontendLaneService_GetRename_BridgesTypeScriptVueImportIntoJazorMarkupOnly()
+    public async Task JazorVueHost_FrontendLaneService_GetRename_ReturnsNativeScriptEdits_ForTypeScriptVueImport()
     {
         var tempDirectory = CreateTemporaryDirectory();
 
@@ -1110,15 +1098,10 @@ public sealed class JazorVueHostFrontendLaneTests
                 CancellationToken.None);
 
             Assert.IsNotNull(edit);
-            var openJazorUri = LspProtocolHelpers.ToDocumentUri(openJazorDocument.DocumentPath);
-            var diskJazorUri = LspProtocolHelpers.ToDocumentUri(diskJazorPath);
             Assert.IsTrue(edit.Changes.ContainsKey(scriptUri));
-            Assert.IsTrue(edit.Changes.ContainsKey(openJazorUri));
-            Assert.IsTrue(edit.Changes.ContainsKey(diskJazorUri));
-            Assert.IsTrue(edit.Changes[openJazorUri].All(static change => change.NewText == "ProfileBadge"));
-            Assert.IsTrue(edit.Changes[diskJazorUri].All(static change => change.NewText == "ProfileBadge"));
-            Assert.IsFalse(edit.Changes[openJazorUri].Any(static change => change.Range.Start.Line >= 3));
-            Assert.IsFalse(edit.Changes[diskJazorUri].Any(static change => change.Range.Start.Line >= 5));
+            Assert.AreEqual(1, edit.Changes.Count);
+            Assert.AreEqual(2, edit.Changes[scriptUri].Length);
+            Assert.IsTrue(edit.Changes[scriptUri].All(static change => change.NewText == "ProfileBadge"));
         }
         finally
         {

@@ -167,25 +167,6 @@ internal sealed class JazorLspDocumentService
         return ValueTask.FromResult<IReadOnlyList<LspDocumentSymbol>>(symbols);
     }
 
-    public ValueTask<IReadOnlyList<LspLocation>> GetDefinitionAsync(
-        DocumentSnapshot document,
-        LspPosition position,
-        CancellationToken cancellationToken)
-        => GetDefinitionCoreAsync(document, position, cancellationToken);
-
-    private async ValueTask<IReadOnlyList<LspLocation>> GetDefinitionCoreAsync(
-        DocumentSnapshot document,
-        LspPosition position,
-        CancellationToken cancellationToken)
-        => await _markupComponentBridge.GetDefinitionAsync(document, position, allowWorkspaceScan: true, cancellationToken);
-
-    public async ValueTask<IReadOnlyList<LspLocation>> GetReferencesAsync(
-        DocumentSnapshot document,
-        LspPosition position,
-        bool includeDeclaration,
-        CancellationToken cancellationToken)
-        => await _markupComponentBridge.GetReferencesAsync(document, position, includeDeclaration, cancellationToken);
-
     public async ValueTask<bool> IsVueComponentResolvableAsync(
         DocumentSnapshot document,
         string componentName,
@@ -195,13 +176,6 @@ internal sealed class JazorLspDocumentService
             componentName,
             allowWorkspaceScan: true,
             cancellationToken) is not null;
-
-    public async ValueTask<LspWorkspaceEdit?> GetRenameAsync(
-        DocumentSnapshot document,
-        LspPosition position,
-        string newName,
-        CancellationToken cancellationToken)
-        => await _markupComponentBridge.GetRenameAsync(document, position, newName, cancellationToken);
 
     public ValueTask<IReadOnlyList<LspCodeAction>> GetCodeActionsAsync(
         DocumentSnapshot document,

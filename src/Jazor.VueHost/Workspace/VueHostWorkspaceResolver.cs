@@ -105,6 +105,7 @@ internal static class VueHostWorkspaceResolver
         => Path.GetExtension(documentPath).ToLowerInvariant() switch
         {
             ".jazor" => DocumentKind.Jazor,
+            ".cs" => DocumentKind.CSharp,
             ".vue" => DocumentKind.Vue,
             ".js" => DocumentKind.JavaScript,
             ".ts" => DocumentKind.TypeScript,
@@ -475,7 +476,7 @@ internal static class VueHostWorkspaceResolver
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var path in new[] { documentPath, secondaryDocumentPath }
                      .Concat(openDocuments
-                         .Where(static document => document.DocumentKind is DocumentKind.Jazor or DocumentKind.Vue)
+                         .Where(static document => document.DocumentKind is DocumentKind.Jazor or DocumentKind.CSharp or DocumentKind.Vue)
                          .Select(static document => document.DocumentPath)))
         {
             if (string.IsNullOrWhiteSpace(path) || !Path.IsPathRooted(path))

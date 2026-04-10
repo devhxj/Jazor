@@ -107,13 +107,18 @@ internal sealed class MarkupComponentBridgeService
                 cancellationToken);
         }
 
+        if (await TryResolveImportedBridgeSymbolAsync(document, position, cancellationToken) is { } importedSymbol)
+        {
+            return importedSymbol;
+        }
+
         if (locationHints is { Count: > 0 }
-            && TryResolveBridgeSymbolFromLocations(locationHints) is { } resolvedFromLocations)
+            && TryResolveBridgeSymbolFromLocations(locationHints, document.DocumentPath) is { } resolvedFromLocations)
         {
             return resolvedFromLocations;
         }
 
-        return await TryResolveImportedBridgeSymbolAsync(document, position, cancellationToken);
+        return null;
     }
 
     public async ValueTask<IReadOnlyList<MarkupComponentResolution>> GetComponentSuggestionsAsync(
@@ -169,27 +174,56 @@ internal sealed class MarkupComponentBridgeService
             .ToArray();
     }
 
-    public MarkupBridgeSymbol? TryResolveBridgeSymbolFromLocations(IReadOnlyList<LspLocation> locations)
+    public MarkupBridgeSymbol? TryResolveBridgeSymbolFromLocations(
+        IReadOnlyList<LspLocation> locations,
+        string? preferredDifferentFromDocumentPath = null)
     {
+        if (!string.IsNullOrWhiteSpace(preferredDifferentFromDocumentPath))
+        {
+            var preferredDocumentPath = VueHostWorkspaceResolver.NormalizePath(preferredDifferentFromDocumentPath);
+            foreach (var location in locations)
+            {
+                var documentPath = LspProtocolHelpers.ToDocumentPath(location.Uri);
+                var normalizedDocumentPath = VueHostWorkspaceResolver.NormalizePath(documentPath);
+                if (string.Equals(normalizedDocumentPath, preferredDocumentPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                if (TryCreateBridgeSymbolFromLocation(documentPath) is { } preferredSymbol)
+                {
+                    return preferredSymbol;
+                }
+            }
+        }
+
         foreach (var location in locations)
         {
             var documentPath = LspProtocolHelpers.ToDocumentPath(location.Uri);
-            if (VueHostWorkspaceResolver.MapDocumentKind(documentPath) != DocumentKind.Vue)
+            if (TryCreateBridgeSymbolFromLocation(documentPath) is { } symbol)
             {
-                continue;
+                return symbol;
             }
-
-            var componentName = Path.GetFileNameWithoutExtension(documentPath);
-            if (string.IsNullOrWhiteSpace(componentName) || !char.IsUpper(componentName[0]))
-            {
-                continue;
-            }
-
-            var normalizedPath = VueHostWorkspaceResolver.NormalizePath(documentPath);
-            return new MarkupBridgeSymbol(componentName, normalizedPath, normalizedPath);
         }
 
         return null;
+    }
+
+    private static MarkupBridgeSymbol? TryCreateBridgeSymbolFromLocation(string documentPath)
+    {
+        if (VueHostWorkspaceResolver.MapDocumentKind(documentPath) != DocumentKind.Vue)
+        {
+            return null;
+        }
+
+        var componentName = Path.GetFileNameWithoutExtension(documentPath);
+        if (string.IsNullOrWhiteSpace(componentName) || !char.IsUpper(componentName[0]))
+        {
+            return null;
+        }
+
+        var normalizedPath = VueHostWorkspaceResolver.NormalizePath(documentPath);
+        return new MarkupBridgeSymbol(componentName, normalizedPath, normalizedPath);
     }
 
     public async ValueTask<MarkupBridgeSymbol?> TryResolveImportedBridgeSymbolAsync(
@@ -263,136 +297,6 @@ internal sealed class MarkupComponentBridgeService
             },
             Range = symbol.Range
         };
-    }
-
-    public async ValueTask<IReadOnlyList<LspLocation>> GetDefinitionAsync(
-        DocumentSnapshot document,
-        LspPosition position,
-        bool allowWorkspaceScan,
-        CancellationToken cancellationToken)
-    {
-        if (!TryFindComponentTagSymbol(document.Text, position, out var symbol))
-        {
-            return Array.Empty<LspLocation>();
-        }
-
-        var resolvedComponent = await ResolveComponentAsync(document.DocumentPath, symbol.ComponentName, allowWorkspaceScan, cancellationToken);
-        if (resolvedComponent is null)
-        {
-            return Array.Empty<LspLocation>();
-        }
-
-        return
-        [
-            new LspLocation
-            {
-                Uri = LspProtocolHelpers.ToDocumentUri(resolvedComponent.Value.AbsolutePath),
-                Range = new LspRange
-                {
-                    Start = new LspPosition { Line = 0, Character = 0 },
-                    End = new LspPosition { Line = 0, Character = 0 }
-                }
-            }
-        ];
-    }
-
-    public async ValueTask<IReadOnlyList<LspLocation>> GetReferencesAsync(
-        DocumentSnapshot document,
-        LspPosition position,
-        bool includeDeclaration,
-        CancellationToken cancellationToken)
-    {
-        if (!TryFindComponentTagSymbol(document.Text, position, out var symbol))
-        {
-            return Array.Empty<LspLocation>();
-        }
-
-        var resolvedComponent = await ResolveComponentAsync(document.DocumentPath, symbol.ComponentName, allowWorkspaceScan: true, cancellationToken);
-        if (resolvedComponent is null)
-        {
-            return Array.Empty<LspLocation>();
-        }
-
-        var locations = new List<LspLocation>();
-        if (includeDeclaration)
-        {
-            locations.Add(new LspLocation
-            {
-                Uri = LspProtocolHelpers.ToDocumentUri(resolvedComponent.Value.AbsolutePath),
-                Range = new LspRange
-                {
-                    Start = new LspPosition { Line = 0, Character = 0 },
-                    End = new LspPosition { Line = 0, Character = 0 }
-                }
-            });
-        }
-
-        var candidateDocuments = await GetReferenceCandidateDocumentsAsync(document, resolvedComponent.Value.AbsolutePath, cancellationToken);
-        foreach (var candidateDocument in candidateDocuments)
-        {
-            foreach (var location in FindComponentTagLocations(candidateDocument, symbol.ComponentName))
-            {
-                if (!includeDeclaration
-                    && string.Equals(location.Uri, LspProtocolHelpers.ToDocumentUri(document.DocumentPath), StringComparison.Ordinal)
-                    && RangesEqual(location.Range, symbol.Range))
-                {
-                    continue;
-                }
-
-                locations.Add(location);
-            }
-        }
-
-        return locations
-            .GroupBy(static location =>
-                $"{location.Uri}:{location.Range.Start.Line}:{location.Range.Start.Character}:{location.Range.End.Line}:{location.Range.End.Character}",
-                StringComparer.Ordinal)
-            .Select(static group => group.First())
-            .ToArray();
-    }
-
-    public async ValueTask<LspWorkspaceEdit?> GetRenameAsync(
-        DocumentSnapshot document,
-        LspPosition position,
-        string newName,
-        CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrWhiteSpace(newName)
-            || !TryFindComponentTagSymbol(document.Text, position, out var symbol))
-        {
-            return null;
-        }
-
-        var resolvedComponent = await ResolveComponentAsync(document.DocumentPath, symbol.ComponentName, allowWorkspaceScan: true, cancellationToken);
-        if (resolvedComponent is null)
-        {
-            return null;
-        }
-
-        var candidateDocuments = await GetReferenceCandidateDocumentsAsync(document, resolvedComponent.Value.AbsolutePath, cancellationToken);
-        var changes = new Dictionary<string, LspTextEdit[]>(StringComparer.Ordinal);
-        foreach (var candidateDocument in candidateDocuments)
-        {
-            var edits = FindComponentTagLocations(candidateDocument, symbol.ComponentName)
-                .Select(location => new LspTextEdit
-                {
-                    Range = location.Range,
-                    NewText = newName
-                })
-                .OrderByDescending(edit => LspProtocolHelpers.GetOffset(candidateDocument.Text, edit.Range.Start))
-                .ToArray();
-            if (edits.Length > 0)
-            {
-                changes[LspProtocolHelpers.ToDocumentUri(candidateDocument.DocumentPath)] = edits;
-            }
-        }
-
-        return changes.Count == 0
-            ? null
-            : new LspWorkspaceEdit
-            {
-                Changes = changes
-            };
     }
 
     public async ValueTask<IReadOnlyList<LspLocation>> FindJazorReferencesAsync(
@@ -558,6 +462,7 @@ internal sealed class MarkupComponentBridgeService
         out ImportedComponentSymbol symbol)
     {
         var offset = LspProtocolHelpers.GetOffset(text, position);
+        var fallbackMatches = new List<ImportedComponentSymbol>();
         foreach (Match match in ScriptImportPattern.Matches(text))
         {
             var clauseGroup = match.Groups["clause"];
@@ -569,6 +474,7 @@ internal sealed class MarkupComponentBridgeService
 
             foreach (var candidate in EnumerateImportBindings(clauseGroup))
             {
+                fallbackMatches.Add(new ImportedComponentSymbol(candidate.Name, pathGroup.Value));
                 if (offset < candidate.StartOffset || offset > candidate.EndOffset)
                 {
                     continue;
@@ -579,9 +485,66 @@ internal sealed class MarkupComponentBridgeService
             }
         }
 
+        if (TryGetIdentifierAtOffset(text, offset, out var identifier)
+            && identifier.Length > 0
+            && char.IsUpper(identifier[0]))
+        {
+            var exactMatches = fallbackMatches
+                .Where(candidate => string.Equals(candidate.LocalName, identifier, StringComparison.Ordinal))
+                .Distinct()
+                .ToArray();
+            if (exactMatches.Length == 1)
+            {
+                symbol = exactMatches[0];
+                return true;
+            }
+        }
+
         symbol = default;
         return false;
     }
+
+    private static bool TryGetIdentifierAtOffset(
+        string text,
+        int offset,
+        out string identifier)
+    {
+        if (string.IsNullOrEmpty(text))
+        {
+            identifier = string.Empty;
+            return false;
+        }
+
+        var clampedOffset = Math.Clamp(offset, 0, text.Length - 1);
+        if (!IsIdentifierChar(text[clampedOffset]))
+        {
+            if (clampedOffset == 0 || !IsIdentifierChar(text[clampedOffset - 1]))
+            {
+                identifier = string.Empty;
+                return false;
+            }
+
+            clampedOffset--;
+        }
+
+        var start = clampedOffset;
+        while (start > 0 && IsIdentifierChar(text[start - 1]))
+        {
+            start--;
+        }
+
+        var end = clampedOffset;
+        while (end + 1 < text.Length && IsIdentifierChar(text[end + 1]))
+        {
+            end++;
+        }
+
+        identifier = text[start..(end + 1)];
+        return true;
+    }
+
+    private static bool IsIdentifierChar(char value)
+        => char.IsLetterOrDigit(value) || value == '_' || value == '$';
 
     private static IEnumerable<ImportBindingCandidate> EnumerateImportBindings(Group clauseGroup)
     {

@@ -49,6 +49,7 @@ var projectionResolver = new DocumentProjectionResolver(
 var laneRouter = new LspLaneRouter();
 var resultAggregator = new LspResultAggregator();
 var markupComponentBridge = new MarkupComponentBridgeService(workspaceStore);
+var markupBridgeFanoutCoordinator = new MarkupBridgeFanoutCoordinator(markupComponentBridge, resultAggregator);
 var hostService = new VueHostService(
     workspaceStore,
     analysisClient,
@@ -92,7 +93,9 @@ try
                 virtualDocumentRegistry,
                 projectionResolver,
                 resultAggregator,
-                new RenameCoordinator(laneMap, laneRouter, resultAggregator),
+                markupBridgeFanoutCoordinator,
+                new ReferenceCoordinator(laneMap, laneRouter, markupBridgeFanoutCoordinator),
+                new RenameCoordinator(laneMap, laneRouter, resultAggregator, markupBridgeFanoutCoordinator),
                 new CodeActionCoordinator(laneMap, laneRouter, resultAggregator)));
         await lspServer.RunAsync(
             Console.OpenStandardInput(),

@@ -20,6 +20,8 @@ internal sealed class LspSession
     private readonly IVirtualDocumentRegistry _virtualDocumentRegistry;
     private readonly DocumentProjectionResolver _projectionResolver;
     private readonly LspResultAggregator _resultAggregator;
+    private readonly MarkupBridgeFanoutCoordinator _markupBridgeFanoutCoordinator;
+    private readonly ReferenceCoordinator _referenceCoordinator;
     private readonly RenameCoordinator _renameCoordinator;
     private readonly CodeActionCoordinator _codeActionCoordinator;
 
@@ -32,6 +34,8 @@ internal sealed class LspSession
         IVirtualDocumentRegistry virtualDocumentRegistry,
         DocumentProjectionResolver projectionResolver,
         LspResultAggregator resultAggregator,
+        MarkupBridgeFanoutCoordinator markupBridgeFanoutCoordinator,
+        ReferenceCoordinator referenceCoordinator,
         RenameCoordinator renameCoordinator,
         CodeActionCoordinator codeActionCoordinator)
     {
@@ -44,6 +48,8 @@ internal sealed class LspSession
         _virtualDocumentRegistry = virtualDocumentRegistry ?? throw new ArgumentNullException(nameof(virtualDocumentRegistry));
         _projectionResolver = projectionResolver ?? throw new ArgumentNullException(nameof(projectionResolver));
         _resultAggregator = resultAggregator ?? throw new ArgumentNullException(nameof(resultAggregator));
+        _markupBridgeFanoutCoordinator = markupBridgeFanoutCoordinator ?? throw new ArgumentNullException(nameof(markupBridgeFanoutCoordinator));
+        _referenceCoordinator = referenceCoordinator ?? throw new ArgumentNullException(nameof(referenceCoordinator));
         _renameCoordinator = renameCoordinator ?? throw new ArgumentNullException(nameof(renameCoordinator));
         _codeActionCoordinator = codeActionCoordinator ?? throw new ArgumentNullException(nameof(codeActionCoordinator));
     }
@@ -257,7 +263,13 @@ internal sealed class LspSession
             }
         }
 
-        return CreateSuccessResponse(request.Id, _resultAggregator.AggregateLocations(locations));
+        return CreateSuccessResponse(
+            request.Id,
+            await _markupBridgeFanoutCoordinator.CoordinateDefinitionAsync(
+                document,
+                parameters.Position,
+                locations,
+                cancellationToken));
     }
 
     private async ValueTask<LspResponseMessage> HandleSignatureHelpAsync(
@@ -287,23 +299,14 @@ internal sealed class LspSession
         var parameters = DeserializeParams<LspReferenceParams>(request.Params);
         var document = await GetRequiredDocumentAsync(parameters.TextDocument.Uri, cancellationToken);
         var projectionTarget = await _projectionResolver.ResolveAsync(document, parameters.Position, cancellationToken);
-        var locations = new List<LspLocation>();
-
-        foreach (var lane in GetOrderedLanes(projectionTarget))
-        {
-            var laneLocations = await lane.GetReferencesAsync(
+        return CreateSuccessResponse(
+            request.Id,
+            await _referenceCoordinator.CoordinateAsync(
                 document,
                 parameters.Position,
                 parameters.Context?.IncludeDeclaration ?? true,
                 projectionTarget,
-                cancellationToken);
-            if (laneLocations.Count > 0)
-            {
-                locations.AddRange(laneLocations);
-            }
-        }
-
-        return CreateSuccessResponse(request.Id, _resultAggregator.AggregateLocations(locations));
+                cancellationToken));
     }
 
     private async ValueTask<LspResponseMessage> HandleRenameAsync(
@@ -489,6 +492,7 @@ internal sealed class LspSession
         LaneKind[] laneKinds = document.DocumentKind switch
         {
             DocumentKind.Jazor => [LaneKind.Jazor, LaneKind.Roslyn],
+            DocumentKind.CSharp => [LaneKind.Roslyn],
             DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript => [LaneKind.Volar],
             _ => [LaneKind.Jazor]
         };
@@ -564,12 +568,15 @@ internal sealed class LspSession
         => languageId?.ToLowerInvariant() switch
         {
             "jazor" => DocumentKind.Jazor,
+            "csharp" => DocumentKind.CSharp,
+            "cs" => DocumentKind.CSharp,
             "vue" => DocumentKind.Vue,
             "javascript" => DocumentKind.JavaScript,
             "typescript" => DocumentKind.TypeScript,
             _ => Path.GetExtension(documentPath).ToLowerInvariant() switch
             {
                 ".jazor" => DocumentKind.Jazor,
+                ".cs" => DocumentKind.CSharp,
                 ".vue" => DocumentKind.Vue,
                 ".js" => DocumentKind.JavaScript,
                 ".ts" => DocumentKind.TypeScript,

@@ -55,7 +55,7 @@ internal sealed class JazorLaneService : ILspLane
         LspPosition position,
         ProjectionTarget projectionTarget,
         CancellationToken cancellationToken)
-        => _documentService.GetDefinitionAsync(document, position, cancellationToken);
+        => ValueTask.FromResult<IReadOnlyList<LspLocation>>(Array.Empty<LspLocation>());
 
     public ValueTask<IReadOnlyList<LspLocation>> GetReferencesAsync(
         DocumentSnapshot document,
@@ -63,7 +63,7 @@ internal sealed class JazorLaneService : ILspLane
         bool includeDeclaration,
         ProjectionTarget projectionTarget,
         CancellationToken cancellationToken)
-        => _documentService.GetReferencesAsync(document, position, includeDeclaration, cancellationToken);
+        => ValueTask.FromResult<IReadOnlyList<LspLocation>>(Array.Empty<LspLocation>());
 
     public ValueTask<LspWorkspaceEdit?> GetRenameAsync(
         DocumentSnapshot document,
@@ -71,7 +71,7 @@ internal sealed class JazorLaneService : ILspLane
         string newName,
         ProjectionTarget projectionTarget,
         CancellationToken cancellationToken)
-        => _documentService.GetRenameAsync(document, position, newName, cancellationToken);
+        => ValueTask.FromResult<LspWorkspaceEdit?>(null);
 
     public ValueTask<IReadOnlyList<LspCodeAction>> GetCodeActionsAsync(
         DocumentSnapshot document,

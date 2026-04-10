@@ -3,6 +3,7 @@ namespace Jazor.VueContracts.Protocol;
 public enum DocumentKind
 {
     Jazor,
+    CSharp,
     Vue,
     JavaScript,
     TypeScript,

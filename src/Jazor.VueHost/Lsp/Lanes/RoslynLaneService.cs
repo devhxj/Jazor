@@ -68,14 +68,14 @@ internal sealed class RoslynLaneService : ILspLane
     public ValueTask<IReadOnlyList<LspDocumentSymbol>> GetDocumentSymbolsAsync(
         DocumentSnapshot document,
         CancellationToken cancellationToken)
-        => document.DocumentKind == DocumentKind.Jazor
+        => document.DocumentKind is DocumentKind.Jazor or DocumentKind.CSharp
             ? _inProcCodeService.GetDocumentSymbolsAsync(document, cancellationToken)
             : ValueTask.FromResult<IReadOnlyList<LspDocumentSymbol>>(Array.Empty<LspDocumentSymbol>());
 
     public ValueTask<IReadOnlyList<LspSemanticToken>> GetSemanticTokensAsync(
         DocumentSnapshot document,
         CancellationToken cancellationToken)
-        => document.DocumentKind == DocumentKind.Jazor
+        => document.DocumentKind is DocumentKind.Jazor or DocumentKind.CSharp
             ? _inProcCodeService.GetSemanticTokensAsync(document, cancellationToken)
             : ValueTask.FromResult<IReadOnlyList<LspSemanticToken>>(Array.Empty<LspSemanticToken>());
 

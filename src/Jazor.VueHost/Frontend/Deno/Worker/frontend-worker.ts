@@ -1969,6 +1969,11 @@ function resolveScriptSymbolAtPosition(context: ScriptContext, position: Positio
     return null;
   }
 
+  const exactMatches = context.symbols.filter((symbol) => areRangesEqual(symbol.range, identifier.range));
+  if (exactMatches.length === 1) {
+    return exactMatches[0];
+  }
+
   // Keep script answers conservative: only resolve when a local declaration is unambiguous.
   const matches = context.symbols.filter((symbol) => symbol.name === identifier.name);
   const uniqueMatches = matches.filter((symbol, index, candidates) =>

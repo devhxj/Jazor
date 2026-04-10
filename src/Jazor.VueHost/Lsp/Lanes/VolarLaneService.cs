@@ -211,12 +211,7 @@ internal sealed class VolarLaneService : ILspLane
             return MapLocations(document, frontendDocument, denoResult);
         }
 
-        if (frontendDocument.ProjectionMap is not null || !CanUseWorkspaceGraph())
-        {
-            return Array.Empty<LspLocation>();
-        }
-
-        return await _markupComponentBridge.GetDefinitionAsync(document, position, allowWorkspaceScan: true, cancellationToken);
+        return Array.Empty<LspLocation>();
     }
 
     public async ValueTask<IReadOnlyList<LspLocation>> GetReferencesAsync(
@@ -245,22 +240,6 @@ internal sealed class VolarLaneService : ILspLane
             document,
             frontendDocument,
             denoLocations));
-        if (frontendDocument.ProjectionMap is null
-            && await _markupComponentBridge.ResolveBridgeSymbolAsync(
-                    document,
-                    position,
-                    includeDeclaration ? denoLocations : null,
-                    allowWorkspaceScan: true,
-                    cancellationToken) is { } resolvedComponent)
-        {
-            locations.AddRange(await _markupComponentBridge.FindJazorReferencesAsync(
-                document,
-                resolvedComponent.ComponentName,
-                resolvedComponent.AbsolutePath,
-                includeDeclaration,
-                cancellationToken));
-        }
-
         return locations
             .GroupBy(static location => $"{location.Uri}:{location.Range.Start.Line}:{location.Range.Start.Character}:{location.Range.End.Line}:{location.Range.End.Character}", StringComparer.Ordinal)
             .Select(static group => group.First())
@@ -290,31 +269,6 @@ internal sealed class VolarLaneService : ILspLane
         if (denoResult is not null)
         {
             foreach (var change in denoResult.Changes)
-            {
-                if (!changes.TryGetValue(change.Key, out var edits))
-                {
-                    edits = [];
-                    changes.Add(change.Key, edits);
-                }
-
-                edits.AddRange(change.Value);
-            }
-        }
-
-        if (frontendDocument.ProjectionMap is null
-            && await _markupComponentBridge.ResolveBridgeSymbolAsync(
-                    document,
-                    position,
-                    locationHints: null,
-                    allowWorkspaceScan: true,
-                    cancellationToken) is { } resolvedComponent)
-        {
-            foreach (var change in await _markupComponentBridge.FindJazorRenameChangesAsync(
-                         document,
-                         resolvedComponent.ComponentName,
-                         resolvedComponent.AbsolutePath,
-                         newName,
-                         cancellationToken))
             {
                 if (!changes.TryGetValue(change.Key, out var edits))
                 {

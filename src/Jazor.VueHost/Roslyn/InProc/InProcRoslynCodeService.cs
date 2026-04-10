@@ -12,6 +12,7 @@ using Jazor.VueHost.Lsp;
 using Jazor.VueHost.Lsp.Routing;
 using Jazor.VueHost.Razor.InProc;
 using Jazor.VueHost.VirtualDocuments.Mapping;
+using Jazor.VueHost.Workspace;
 
 namespace Jazor.VueHost.Roslyn.InProc;
 
@@ -45,7 +46,7 @@ internal sealed class InProcRoslynCodeService
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (!TryCreateContext(document, position, openDocuments: null, out var context))
+        if (!TryCreateContext(document, position, openDocuments: null, cancellationToken, out var context))
             return ValueTask.FromResult<LspHoverResult?>(null);
 
         var symbol = TryResolveSymbol(context);
@@ -70,7 +71,7 @@ internal sealed class InProcRoslynCodeService
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (!TryCreateContext(document, position, openDocuments: null, out var context))
+        if (!TryCreateContext(document, position, openDocuments: null, cancellationToken, out var context))
             return ValueTask.FromResult<IReadOnlyList<LspCompletionItem>>(Array.Empty<LspCompletionItem>());
 
         var prefix = GetCompletionPrefix(context);
@@ -91,7 +92,7 @@ internal sealed class InProcRoslynCodeService
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (!TryCreateContext(document, originalPosition: null, openDocuments: null, out var context))
+        if (!TryCreateContext(document, originalPosition: null, openDocuments: null, cancellationToken, out var context))
         {
             return ValueTask.FromResult<IReadOnlyList<LspDocumentSymbol>>(Array.Empty<LspDocumentSymbol>());
         }
@@ -104,7 +105,7 @@ internal sealed class InProcRoslynCodeService
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (!TryCreateContext(document, originalPosition: null, openDocuments: null, out var context))
+        if (!TryCreateContext(document, originalPosition: null, openDocuments: null, cancellationToken, out var context))
         {
             return ValueTask.FromResult<IReadOnlyList<LspSemanticToken>>(Array.Empty<LspSemanticToken>());
         }
@@ -118,7 +119,7 @@ internal sealed class InProcRoslynCodeService
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (!TryCreateContext(document, position, openDocuments: null, out var context))
+        if (!TryCreateContext(document, position, openDocuments: null, cancellationToken, out var context))
             return ValueTask.FromResult<LspSignatureHelp?>(null);
 
         if (!TryCreateSignatureHelp(context, cancellationToken, out var signatureHelp))
@@ -144,7 +145,7 @@ internal sealed class InProcRoslynCodeService
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (!TryCreateContext(document, position, openDocuments, out var context))
+        if (!TryCreateContext(document, position, openDocuments, cancellationToken, out var context))
             return ValueTask.FromResult<IReadOnlyList<LspLocation>>(Array.Empty<LspLocation>());
 
         var symbol = TryResolveSymbol(context);
@@ -168,7 +169,7 @@ internal sealed class InProcRoslynCodeService
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (!TryCreateContext(document, originalPosition: null, openDocuments: null, out var context))
+        if (!TryCreateContext(document, originalPosition: null, openDocuments: null, cancellationToken, out var context))
             return ValueTask.FromResult<IReadOnlyList<LspDiagnostic>>(Array.Empty<LspDiagnostic>());
 
         IReadOnlyList<LspDiagnostic> diagnostics = context.Compilation.GetDiagnostics(cancellationToken)
@@ -218,7 +219,7 @@ internal sealed class InProcRoslynCodeService
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (!TryCreateContext(document, position, openDocuments, out var context))
+        if (!TryCreateContext(document, position, openDocuments, cancellationToken, out var context))
             return ValueTask.FromResult<IReadOnlyList<LspLocation>>(Array.Empty<LspLocation>());
 
         var symbol = TryResolveSymbol(context);
@@ -290,7 +291,7 @@ internal sealed class InProcRoslynCodeService
         if (locations.Count == 0)
             return null;
 
-        var sourceDocuments = BuildSourceDocumentLookup(document, openDocuments);
+        var sourceDocuments = await BuildSourceDocumentLookupAsync(document, openDocuments, cancellationToken);
         var changes = new Dictionary<string, LspTextEdit[]>(StringComparer.Ordinal);
         foreach (var locationGroup in locations.GroupBy(static location => location.Uri, StringComparer.Ordinal))
         {
@@ -324,9 +325,10 @@ internal sealed class InProcRoslynCodeService
         DocumentSnapshot document,
         LspPosition? originalPosition,
         IReadOnlyList<DocumentSnapshot>? openDocuments,
+        CancellationToken cancellationToken,
         out RoslynCodeContext context)
     {
-        var projectedDocuments = BuildProjectedDocuments(document, openDocuments, out var primaryDocument);
+        var projectedDocuments = BuildProjectedDocuments(document, openDocuments, cancellationToken, out var primaryDocument);
         if (projectedDocuments.Count == 0 || primaryDocument is null)
         {
             context = null!;
@@ -354,7 +356,7 @@ internal sealed class InProcRoslynCodeService
 
             for (var index = 0; index < projectedDocuments.Count; index++)
             {
-                if (PathComparer.Equals(projectedDocuments[index].Document.DocumentPath, document.DocumentPath))
+                if (PathsEqual(projectedDocuments[index].Document.DocumentPath, document.DocumentPath))
                 {
                     projectedDocuments[index] = fallbackDocument;
                     break;
@@ -379,7 +381,7 @@ internal sealed class InProcRoslynCodeService
             static projectedDocument => projectedDocument.SyntaxTree,
             static projectedDocument => projectedDocument);
         var primaryContext = projectedContexts.First(projectedDocument =>
-            PathComparer.Equals(projectedDocument.Document.DocumentPath, document.DocumentPath));
+            PathsEqual(projectedDocument.Document.DocumentPath, document.DocumentPath));
 
         context = new RoslynCodeContext(
             document,
@@ -399,23 +401,20 @@ internal sealed class InProcRoslynCodeService
     private List<ProjectedDocumentContext> BuildProjectedDocuments(
         DocumentSnapshot primaryDocument,
         IReadOnlyList<DocumentSnapshot>? openDocuments,
+        CancellationToken cancellationToken,
         out ProjectedDocumentContext? primaryProjectedDocument)
     {
         var projectedDocuments = new List<ProjectedDocumentContext>();
         var seenPaths = new HashSet<string>(PathComparer);
 
-        AddProjectedDocument(primaryDocument, projectedDocuments, seenPaths, out primaryProjectedDocument);
-        if (openDocuments is null)
+        primaryProjectedDocument = null;
+        foreach (var sourceDocument in EnumerateRoslynSourceDocuments(primaryDocument, openDocuments, cancellationToken))
         {
-            return projectedDocuments;
-        }
-
-        foreach (var openDocument in openDocuments)
-        {
-            if (openDocument.DocumentKind != DocumentKind.Jazor)
-                continue;
-
-            AddProjectedDocument(openDocument, projectedDocuments, seenPaths, out _);
+            AddProjectedDocument(sourceDocument, projectedDocuments, seenPaths, out var projectedDocument);
+            if (projectedDocument is not null && PathsEqual(sourceDocument.DocumentPath, primaryDocument.DocumentPath))
+            {
+                primaryProjectedDocument = projectedDocument;
+            }
         }
 
         return projectedDocuments;
@@ -428,8 +427,30 @@ internal sealed class InProcRoslynCodeService
         out ProjectedDocumentContext? projectedDocument)
     {
         projectedDocument = null;
-        if (!seenPaths.Add(document.DocumentPath))
+        if (!seenPaths.Add(GetComparablePath(document.DocumentPath)))
             return;
+
+        if (document.DocumentKind == DocumentKind.CSharp)
+        {
+            var projectionMap = ProjectionMap.CreateWholeDocument(
+                document.DocumentPath,
+                document.DocumentPath,
+                document.Text.Length,
+                document.Text.Length);
+            var csharpSyntaxTree = CSharpSyntaxTree.ParseText(
+                document.Text,
+                ParseOptions,
+                path: document.DocumentPath,
+                encoding: Encoding.UTF8);
+            projectedDocument = new ProjectedDocumentContext(
+                document,
+                document.Text,
+                projectionMap,
+                csharpSyntaxTree,
+                SemanticModel: null!);
+            projectedDocuments.Add(projectedDocument);
+            return;
+        }
 
         var parsed = _parser.Parse(document.DocumentPath, document.Text);
         if (string.IsNullOrWhiteSpace(parsed.Code) || parsed.CodeStartIndex < 0)
@@ -594,16 +615,38 @@ internal sealed class InProcRoslynCodeService
         if (memberAccess is null || memberAccess.OperatorToken.Span.End > context.ProjectedOffset)
             return ImmutableArray<ISymbol>.Empty;
 
-        var type = context.SemanticModel.GetTypeInfo(memberAccess.Expression).Type;
-        if (type is null)
+        var memberContainer = TryResolveMemberCompletionContainer(context, memberAccess.Expression);
+        if (memberContainer is null)
             return ImmutableArray<ISymbol>.Empty;
 
-        return type.GetMembers()
+        return memberContainer.GetMembers()
             .Where(symbol => !string.IsNullOrWhiteSpace(symbol.Name))
             .Where(symbol => string.IsNullOrEmpty(prefix) || symbol.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             .Where(IsCompletionSymbolSupported)
             .OrderBy(symbol => symbol.Name, StringComparer.OrdinalIgnoreCase)
             .ToImmutableArray();
+    }
+
+    private static INamespaceOrTypeSymbol? TryResolveMemberCompletionContainer(
+        RoslynCodeContext context,
+        ExpressionSyntax expression)
+    {
+        var type = context.SemanticModel.GetTypeInfo(expression).Type;
+        if (type is not null)
+        {
+            return type;
+        }
+
+        return context.SemanticModel.GetSymbolInfo(expression).Symbol switch
+        {
+            INamespaceOrTypeSymbol namespaceOrType => namespaceOrType,
+            ILocalSymbol local => local.Type,
+            IParameterSymbol parameter => parameter.Type,
+            IFieldSymbol field => field.Type,
+            IPropertySymbol property => property.Type,
+            IMethodSymbol method => method.ReturnType,
+            _ => null
+        };
     }
 
     private static bool IsCompletionSymbolSupported(ISymbol symbol)
@@ -633,18 +676,15 @@ internal sealed class InProcRoslynCodeService
     {
         var root = context.SyntaxTree.GetRoot();
         var token = root.FindToken(Math.Max(0, context.ProjectedOffset - 1));
-        var node = token.Parent?.AncestorsAndSelf().FirstOrDefault(candidate =>
-            candidate is IdentifierNameSyntax
-                or VariableDeclaratorSyntax
-                or MethodDeclarationSyntax
-                or PropertyDeclarationSyntax
-                or ParameterSyntax
-                or FieldDeclarationSyntax);
-        if (node is null)
-            return null;
-
-        return context.SemanticModel.GetDeclaredSymbol(node)
-            ?? context.SemanticModel.GetSymbolInfo(node).Symbol;
+        return TryResolveTokenSymbol(
+            new ProjectedDocumentContext(
+                context.Document,
+                context.ProjectedText,
+                context.ProjectionMap,
+                context.SyntaxTree,
+                context.SemanticModel),
+            token,
+            CancellationToken.None);
     }
 
     private static ISymbol? TryResolveTokenSymbol(
@@ -737,26 +777,161 @@ internal sealed class InProcRoslynCodeService
         return true;
     }
 
-    private static IReadOnlyDictionary<string, DocumentSnapshot> BuildSourceDocumentLookup(
+    private IEnumerable<DocumentSnapshot> EnumerateRoslynSourceDocuments(
+        DocumentSnapshot primaryDocument,
+        IReadOnlyList<DocumentSnapshot>? openDocuments,
+        CancellationToken cancellationToken)
+    {
+        var seenPaths = new HashSet<string>(PathComparer);
+
+        foreach (var sourceDocument in EnumerateTrackedRoslynDocuments(primaryDocument, openDocuments))
+        {
+            if (seenPaths.Add(GetComparablePath(sourceDocument.DocumentPath)))
+            {
+                yield return sourceDocument;
+            }
+        }
+
+        var trackedDocuments = openDocuments?
+            .Where(static document => document.DocumentKind is DocumentKind.Jazor or DocumentKind.CSharp)
+            .ToArray() ?? [];
+        foreach (var searchPattern in new[] { "*.cs", "*.jazor" })
+        {
+            foreach (var filePath in VueHostWorkspaceResolver.EnumerateWorkspaceFiles(
+                         EnumerateRoslynSearchRoots(primaryDocument, trackedDocuments),
+                         searchPattern,
+                         cancellationToken))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                if (!seenPaths.Add(GetComparablePath(filePath)))
+                {
+                    continue;
+                }
+
+                var resolvedDocument = ResolveWorkspaceRoslynDocument(filePath, trackedDocuments);
+                if (resolvedDocument is null
+                    || resolvedDocument.DocumentKind is not (DocumentKind.Jazor or DocumentKind.CSharp))
+                {
+                    continue;
+                }
+
+                yield return resolvedDocument;
+            }
+        }
+    }
+
+    private static IEnumerable<string> EnumerateRoslynSearchRoots(
+        DocumentSnapshot primaryDocument,
+        IReadOnlyList<DocumentSnapshot> trackedDocuments)
+    {
+        var searchRoots = new HashSet<string>(PathComparer);
+
+        foreach (var root in VueHostWorkspaceResolver.GetWorkspaceSearchRoots(
+                     primaryDocument.DocumentPath,
+                     secondaryDocumentPath: null,
+                     trackedDocuments))
+        {
+            searchRoots.Add(GetComparablePath(root));
+        }
+
+        foreach (var trackedDocument in trackedDocuments)
+        {
+            if (!Path.IsPathRooted(trackedDocument.DocumentPath))
+            {
+                continue;
+            }
+
+            foreach (var root in VueHostWorkspaceResolver.GetWorkspaceSearchRoots(
+                         primaryDocument.DocumentPath,
+                         trackedDocument.DocumentPath,
+                         trackedDocuments))
+            {
+                searchRoots.Add(GetComparablePath(root));
+            }
+        }
+
+        return searchRoots;
+    }
+
+    private static IEnumerable<DocumentSnapshot> EnumerateTrackedRoslynDocuments(
         DocumentSnapshot primaryDocument,
         IReadOnlyList<DocumentSnapshot>? openDocuments)
     {
-        var lookup = new Dictionary<string, DocumentSnapshot>(StringComparer.Ordinal);
-        lookup[LspProtocolHelpers.ToDocumentUri(primaryDocument.DocumentPath)] = primaryDocument;
-
+        yield return primaryDocument;
         if (openDocuments is null)
-            return lookup;
+        {
+            yield break;
+        }
 
         foreach (var openDocument in openDocuments)
         {
-            if (openDocument.DocumentKind != DocumentKind.Jazor)
-                continue;
+            if (openDocument.DocumentKind is DocumentKind.Jazor or DocumentKind.CSharp)
+            {
+                yield return openDocument;
+            }
+        }
+    }
 
-            lookup[LspProtocolHelpers.ToDocumentUri(openDocument.DocumentPath)] = openDocument;
+    private static DocumentSnapshot? ResolveWorkspaceRoslynDocument(
+        string filePath,
+        IReadOnlyList<DocumentSnapshot> trackedDocuments)
+    {
+        var comparablePath = GetComparablePath(filePath);
+        var trackedDocument = trackedDocuments.FirstOrDefault(document =>
+            PathsEqual(document.DocumentPath, comparablePath));
+        if (trackedDocument is not null)
+        {
+            return trackedDocument;
         }
 
-        return lookup;
+        var documentKind = VueHostWorkspaceResolver.MapDocumentKind(filePath);
+        if (documentKind is not (DocumentKind.Jazor or DocumentKind.CSharp) || !File.Exists(filePath))
+        {
+            return null;
+        }
+
+        try
+        {
+            return new DocumentSnapshot(
+                comparablePath,
+                documentKind,
+                File.ReadAllText(filePath),
+                version: null);
+        }
+        catch (IOException)
+        {
+            return null;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return null;
+        }
     }
+
+    private ValueTask<IReadOnlyDictionary<string, DocumentSnapshot>> BuildSourceDocumentLookupAsync(
+        DocumentSnapshot primaryDocument,
+        IReadOnlyList<DocumentSnapshot>? openDocuments,
+        CancellationToken cancellationToken)
+    {
+        var lookup = new Dictionary<string, DocumentSnapshot>(StringComparer.Ordinal);
+        foreach (var sourceDocument in EnumerateRoslynSourceDocuments(primaryDocument, openDocuments, cancellationToken))
+        {
+            lookup[LspProtocolHelpers.ToDocumentUri(sourceDocument.DocumentPath)] = sourceDocument;
+        }
+
+        return ValueTask.FromResult<IReadOnlyDictionary<string, DocumentSnapshot>>(lookup);
+    }
+
+    private static string GetComparablePath(string documentPath)
+    {
+        var normalizedPath = VueHostWorkspaceResolver.NormalizePath(documentPath);
+        return string.IsNullOrWhiteSpace(normalizedPath)
+            ? documentPath
+            : normalizedPath;
+    }
+
+    private static bool PathsEqual(string left, string right)
+        => PathComparer.Equals(GetComparablePath(left), GetComparablePath(right));
 
     private static string CreateHoverMarkdown(ISymbol symbol)
     {

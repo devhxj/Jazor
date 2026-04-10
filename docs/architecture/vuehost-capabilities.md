@@ -118,28 +118,33 @@ VueHost 是一个单一的 .NET 进程，内部承载所有子系统。VolarLane
 
 ### 2.2 Lane 模型
 
-VueHost 采用三 Lane 架构，**JazorLane** 作为协调中枢：
+VueHost 采用三 Lane 架构，但**真正的请求路由、bridge supplement、结果聚合发生在 LSP / coordinator 层**，不是某个单独 Lane：
 
 | Lane | 职责 | 不拥有 |
 |------|------|--------|
-| **JazorLane** | `.jazor` 解析、桥接元数据协调、符号身份协调、Lane 路由、结构诊断 | C# 语义、Vue/TS 语义 |
+| **JazorLane** | `.jazor` 解析、结构诊断、模板补全/悬停这类宿主本地能力 | C# 语义、Vue/TS 语义、全局请求聚合 |
 | **RoslynLane** | `@code` 块补全/悬停/签名、C# 诊断/导航/重命名/代码操作 | `.jazor` 指令、前端语义 |
 | **VolarLane** | 实际 `.vue/.ts/.js/.css/.html` 的 Volar/tsserver 原生语义、组件/属性解析、前端导航/重命名 | `.jazor` 规则、C# 语义 |
 
-**关键约束**：没有任何 Lane 直接向 IDE 发布结果。所有 Lane 输出经由 JazorLane 聚合、映射回 `.jazor` 源码位置后，由 LSP 层统一发送。
+**关键约束**：没有任何 Lane 直接向 IDE 发布结果。所有 Lane 输出都先进入 `LspSession`、`DocumentProjectionResolver`、`LspLaneRouter` 以及 shared coordinators（如 `MarkupBridgeFanoutCoordinator`、`ReferenceCoordinator`、`RenameCoordinator`），再由 LSP 层统一发送。
 
 **双向桥接约束**：
 
 - `.jazor/.cs -> VueHost bridge -> .vue/.ts/.js/.css/.html`
 - `.vue/.ts/.js/.css/.html -> VueHost bridge -> .jazor/.cs`
 - VueHost 负责维护跨 Lane 的共享符号身份、位置锚点和结果聚合，不能只做单向透传
+- `definition / references / rename` 的 bridge supplement 必须集中在 session/coordinator 层，而不是散落在 JazorLane / VolarLane 内部
 
 **当前实现状态**：
 
 - `.jazor` 模板位置会先走 VolarLane，再由 VueHost 把原生 Volar 结果映射回源文档
 - `.vue` / `.ts` / `.js` 位置上的原生 Volar / tsserver definition 结果保持原样，不由 VueHost 伪造替代结果
+- `.jazor` 和 `.vue/.ts/.js` 两侧的 `definition / references / rename` bridge supplement 已开始收口到 shared fan-out，而不是分散在各 Lane 内部
 - 当前已经打通 `script import -> native .vue declaration -> .jazor markup references/rename` 这条双向桥接链路
-- 当前 bridge identity 已收口到共享 `MarkupBridgeSymbol`，后续应继续围绕这个共享符号扩展，而不是继续在各 Lane 内各自推断
+- 当前 `.jazor` markup tag / `@vueimport` 与 `.vue/.ts/.js` import 的 bridge identity 已收口到共享 `MarkupBridgeSymbol`
+- 当前 `definition / references / rename` 的桥接补充路径已收口到共享 `MarkupBridgeFanoutCoordinator + MarkupBridgeSymbol`
+- 当前 RoslynLane 已通过 bounded workspace scan 把未打开的 `.cs` / `.jazor` 源文档纳入 `definition / references / rename` 的候选集合，`@code`/`.cs` 发起的源码级导航与重命名都可以覆盖项目内未打开文件
+- 当前 Roslyn 仍是 host 内的轻量 in-proc compilation，不等同于完整 MSBuild/Roslyn project system；项目级能力以源码发现和有界扫描为主
 
 ### 2.2.1 Razor / Roslyn 集成策略
 
@@ -240,7 +245,7 @@ VueHost 可感知的文件类型：
 | 文件类型 | 语义来源 | Lane 归属 |
 |---------|---------|----------|
 | `.jazor` | JazorLane（解析/桥接） + Razor/Roslyn + VolarLane（经桥接元数据协同） | 三 Lane 协作 |
-| `.cs` | Roslyn | RoslynLane |
+| `.cs` | Roslyn（原生 C# 文档） | RoslynLane |
 | `.vue` | Volar | VolarLane |
 | `.ts` | TSServer（Volar 内嵌） | VolarLane |
 | `.js` | TSServer（Volar 内嵌） | VolarLane |
@@ -306,10 +311,11 @@ VueHost 可感知的文件类型：
         └──── 双向符号/定位聚合 ────┘
                  ▼
 ┌─────────────────────────────────────┐
-│  JazorLane 聚合                     │
+│  LSP/coordinator 聚合               │
 │  - 通过 ProjectionMap / Volar 锚点映射回 .jazor     │
 │  - 去重/排序                        │
 │  - 跨 Lane 符号身份合并             │
+│  - shared bridge supplement         │
 └─────────────────┬───────────────────┘
                   ▼
          LSP 层 → IDE
@@ -451,6 +457,7 @@ class ProjectionMap {
 当前代码已经先落地了这条更窄的实现切片：
 
 - shared workspace resolver：统一 nearby lookup、tracked document lookup、bounded workspace scan、缓存失效
+- shared workspace resolver：workspace roots 现在同时接受 tracked `.jazor` / `.cs` / `.vue` 作为 bounded scan 种子
 - projection-aware routing metadata：LSP 路由阶段已经保留 projected document path 和 projected position
 - 双向 offset/position 映射 API：为后续 segment-level `ProjectionMap` 收口预留统一入口
 
@@ -891,7 +898,7 @@ IDE 只需连接 VueHost 一个进程，通过不同协议获取全部能力：
        └──── DAP (stdio/TCP) ──▶ 调试支持（断点/调用栈/变量）
 ```
 
-VueHost 内部由 JazorLane 负责路由：`.jazor` 请求分发到 RoslynLane + VolarLane 聚合；其他前端文件请求直接管道转发到 Deno Worker。
+VueHost 内部由 `LspSession`、`DocumentProjectionResolver`、`LspLaneRouter` 和 shared coordinators 负责路由与聚合：`.jazor` 请求按区域分发到 RoslynLane / VolarLane / JazorLane，`.vue/.ts/.js` 请求保持 native Volar / tsserver 结果，再由 host 做必要的 bridge supplement。
 
 **好处**：
 - IDE 只需配置一个进程入口

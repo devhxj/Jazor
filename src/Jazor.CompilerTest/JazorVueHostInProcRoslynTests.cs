@@ -91,6 +91,69 @@ public sealed class JazorVueHostInProcRoslynTests
     }
 
     [TestMethod]
+    public async Task InProcRoslynCodeService_GetCompletionAndHoverAsync_WithDiskBackedCSharpDeclaration_UsesWorkspaceSemantics()
+    {
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "jazor-vuehost-roslyn-tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDirectory);
+
+        try
+        {
+            var declarationPath = Path.Combine(tempDirectory, "SharedState.cs");
+            await File.WriteAllTextAsync(
+                declarationPath,
+                """
+                namespace Demo;
+
+                internal static class SharedState
+                {
+                    internal static int Count = 1;
+                }
+                """);
+
+            var consumer = new DocumentSnapshot(
+                Path.Combine(tempDirectory, "CounterConsumer.cs"),
+                DocumentKind.CSharp,
+                """
+                namespace Demo;
+
+                internal static class CounterConsumer
+                {
+                    internal static int Read()
+                    {
+                        return SharedState.Cou
+                    }
+                }
+                """,
+                "1");
+
+            var completionItems = await _service.GetCompletionItemsAsync(
+                consumer,
+                GetPosition(consumer.Text, "Cou", advance: "Cou".Length),
+                CancellationToken.None);
+            var hover = await _service.GetHoverAsync(
+                new DocumentSnapshot(
+                    consumer.DocumentPath,
+                    consumer.DocumentKind,
+                    consumer.Text.Replace("Cou", "Count"),
+                    consumer.Version),
+                GetPosition(consumer.Text.Replace("Cou", "Count"), "Count", advance: 1),
+                CancellationToken.None);
+
+            CollectionAssert.Contains(completionItems.Select(static item => item.Label).ToArray(), "Count");
+            Assert.IsNotNull(hover);
+            StringAssert.Contains(hover.Contents.Value, "Count");
+            StringAssert.Contains(hover.Contents.Value, "Field");
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
     public async Task InProcRoslynCodeService_GetSignatureHelpAsync_TracksActiveParameterAcrossInvocationArguments()
     {
         var document = CreateDocument(
@@ -122,6 +185,110 @@ public sealed class JazorVueHostInProcRoslynTests
         AssertSignatureHelp(firstArgumentHelp, expectedActiveParameter: 0);
         AssertSignatureHelp(secondArgumentHelp, expectedActiveParameter: 1);
         AssertSignatureHelp(thirdArgumentHelp, expectedActiveParameter: 2);
+    }
+
+    [TestMethod]
+    public async Task InProcRoslynCodeService_GetCompletionHoverAndSignatureHelpAsync_FromJazorCode_UseUnopenedDiskBackedCSharpDeclaration()
+    {
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "jazor-vuehost-roslyn-tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDirectory);
+
+        try
+        {
+            var declarationPath = Path.Combine(tempDirectory, "SharedState.cs");
+            await File.WriteAllTextAsync(
+                declarationPath,
+                """
+                namespace Demo;
+
+                internal static class SharedState
+                {
+                    internal static int Count = 1;
+
+                    internal static string FormatValue(int count, string prefix, bool includeUnits)
+                        => $"{prefix}:{count}:{includeUnits}";
+                }
+                """);
+
+            var completionDocument = CreateDocument(
+                Path.Combine(tempDirectory, "Counter.jazor"),
+                """
+                @using Demo
+
+                @code {
+                    private string Render()
+                    {
+                        return SharedState.Cou
+                    }
+                }
+                """);
+
+            var completionItems = await _service.GetCompletionItemsAsync(
+                completionDocument,
+                GetPosition(completionDocument.Text, "Cou", advance: "Cou".Length),
+                CancellationToken.None);
+
+            CollectionAssert.Contains(completionItems.Select(static item => item.Label).ToArray(), "Count");
+
+            var hoverDocument = CreateDocument(
+                Path.Combine(tempDirectory, "Counter.jazor"),
+                """
+                @using Demo
+
+                @code {
+                    private int Render()
+                    {
+                        return SharedState.Count;
+                    }
+                }
+                """);
+
+            var hover = await _service.GetHoverAsync(
+                hoverDocument,
+                GetPosition(hoverDocument.Text, "Count", advance: 1),
+                CancellationToken.None);
+
+            Assert.IsNotNull(hover);
+            StringAssert.Contains(hover.Contents.Value, "Count");
+            StringAssert.Contains(hover.Contents.Value, "Field");
+
+            var signatureDocument = CreateDocument(
+                Path.Combine(tempDirectory, "Counter.jazor"),
+                """
+                @using Demo
+
+                @code {
+                    private string Render()
+                    {
+                        return SharedState.FormatValue(1, "draft", true);
+                    }
+                }
+                """);
+
+            var firstArgumentHelp = await _service.GetSignatureHelpAsync(
+                signatureDocument,
+                GetPosition(signatureDocument.Text, "FormatValue(1", advance: "FormatValue(".Length),
+                CancellationToken.None);
+            var secondArgumentHelp = await _service.GetSignatureHelpAsync(
+                signatureDocument,
+                GetPosition(signatureDocument.Text, "\"draft\"", advance: 1),
+                CancellationToken.None);
+            var thirdArgumentHelp = await _service.GetSignatureHelpAsync(
+                signatureDocument,
+                GetPosition(signatureDocument.Text, "true", advance: 1),
+                CancellationToken.None);
+
+            AssertSignatureHelp(firstArgumentHelp, expectedActiveParameter: 0);
+            AssertSignatureHelp(secondArgumentHelp, expectedActiveParameter: 1);
+            AssertSignatureHelp(thirdArgumentHelp, expectedActiveParameter: 2);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
     }
 
     [TestMethod]
@@ -231,6 +398,105 @@ public sealed class JazorVueHostInProcRoslynTests
         Assert.AreEqual(1, locations.Count);
         Assert.AreEqual(LspProtocolHelpers.ToDocumentUri(document.DocumentPath), locations[0].Uri);
         Assert.AreEqual(1, locations[0].Range.Start.Line);
+    }
+
+    [TestMethod]
+    public async Task InProcRoslynCodeService_GetDefinitionAsync_WithCSharpDocument_ReturnsSameFileLocation()
+    {
+        var document = new DocumentSnapshot(
+            "D:/temp/CounterLogic.cs",
+            DocumentKind.CSharp,
+            """
+            internal static class CounterLogic
+            {
+                private static int count = 1;
+
+                public static int Increment()
+                {
+                    count++;
+                    return count;
+                }
+            }
+            """,
+            "1");
+
+        var locations = await _service.GetDefinitionAsync(
+            document,
+            GetPosition(document.Text, "count++;", advance: 1),
+            CancellationToken.None);
+
+        Assert.AreEqual(1, locations.Count);
+        Assert.AreEqual("file:///D:/temp/CounterLogic.cs", locations[0].Uri);
+        Assert.AreEqual(2, locations[0].Range.Start.Line);
+    }
+
+    [TestMethod]
+    public async Task InProcRoslynCodeService_GetDefinitionReferencesAndRenameAsync_WithDiskBackedCSharpDocument_IncludesUnopenedFile()
+    {
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "JazorVueHostRoslyn_" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDirectory);
+        try
+        {
+            var declarationPath = Path.Combine(tempDirectory, "CounterLogic.cs");
+            await File.WriteAllTextAsync(
+                declarationPath,
+                """
+                internal static class CounterLogic
+                {
+                    public static int Count = 1;
+                }
+                """);
+
+            var consumer = new DocumentSnapshot(
+                Path.Combine(tempDirectory, "CounterLogicConsumer.cs"),
+                DocumentKind.CSharp,
+                """
+                internal static class CounterLogicConsumer
+                {
+                    public static int Read()
+                    {
+                        return CounterLogic.Count;
+                    }
+                }
+                """,
+                "1");
+            var usagePosition = GetPosition(consumer.Text, "Count", advance: 1);
+
+            var definition = await _service.GetDefinitionAsync(
+                consumer,
+                usagePosition,
+                CancellationToken.None);
+            var references = await _service.GetReferencesAsync(
+                consumer,
+                usagePosition,
+                includeDeclaration: true,
+                CancellationToken.None);
+            var rename = await _service.GetRenameAsync(
+                consumer,
+                usagePosition,
+                "TotalCount",
+                CancellationToken.None);
+
+            Assert.AreEqual(1, definition.Count);
+            Assert.AreEqual(LspProtocolHelpers.ToDocumentUri(declarationPath), definition[0].Uri);
+            Assert.AreEqual(2, definition[0].Range.Start.Line);
+
+            Assert.AreEqual(2, references.Count);
+            Assert.IsTrue(references.Any(location => location.Uri == LspProtocolHelpers.ToDocumentUri(declarationPath)));
+            Assert.IsTrue(references.Any(location => location.Uri == LspProtocolHelpers.ToDocumentUri(consumer.DocumentPath)));
+
+            Assert.IsNotNull(rename);
+            Assert.IsTrue(rename.Changes.ContainsKey(LspProtocolHelpers.ToDocumentUri(declarationPath)));
+            Assert.IsTrue(rename.Changes.ContainsKey(LspProtocolHelpers.ToDocumentUri(consumer.DocumentPath)));
+            Assert.IsTrue(rename.Changes.SelectMany(static pair => pair.Value).All(static edit => edit.NewText == "TotalCount"));
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
     }
 
     [TestMethod]
@@ -379,6 +645,249 @@ public sealed class JazorVueHostInProcRoslynTests
         Assert.IsTrue(rename.Changes.ContainsKey(LspProtocolHelpers.ToDocumentUri(referenceDocument.DocumentPath)));
         Assert.IsTrue(rename.Changes.ContainsKey(LspProtocolHelpers.ToDocumentUri(secondReferenceDocument.DocumentPath)));
         Assert.IsTrue(rename.Changes.SelectMany(static pair => pair.Value).All(static edit => edit.NewText == "Total"));
+    }
+
+    [TestMethod]
+    public async Task InProcRoslynCodeService_GetDefinitionReferencesAndRenameAsync_IncludeUnopenedDiskBackedCSharpDocuments()
+    {
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "jazor-vuehost-roslyn-tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDirectory);
+
+        try
+        {
+            var featuresDirectory = Path.Combine(tempDirectory, "Features");
+            var sharedDirectory = Path.Combine(tempDirectory, "Shared");
+            var dashboardsDirectory = Path.Combine(tempDirectory, "Dashboards");
+            Directory.CreateDirectory(featuresDirectory);
+            Directory.CreateDirectory(sharedDirectory);
+            Directory.CreateDirectory(dashboardsDirectory);
+
+            var declarationPath = Path.Combine(sharedDirectory, "SharedState.cs");
+            var declarationText =
+                """
+                namespace Demo;
+
+                internal static class SharedState
+                {
+                    internal static int Count = 1;
+                }
+                """;
+            await File.WriteAllTextAsync(declarationPath, declarationText);
+
+            var primaryPath = Path.Combine(featuresDirectory, "CounterConsumer.cs");
+            var primaryText =
+                """
+                namespace Demo;
+
+                internal static class CounterConsumer
+                {
+                    internal static int Read()
+                    {
+                        return SharedState.Count;
+                    }
+                }
+                """;
+            await File.WriteAllTextAsync(primaryPath, primaryText);
+
+            var unopenedReferencePath = Path.Combine(dashboardsDirectory, "DashboardConsumer.cs");
+            var unopenedReferenceText =
+                """
+                namespace Demo;
+
+                internal static class DashboardConsumer
+                {
+                    internal static int Read()
+                    {
+                        return SharedState.Count + SharedState.Count;
+                    }
+                }
+                """;
+            await File.WriteAllTextAsync(unopenedReferencePath, unopenedReferenceText);
+
+            var primaryDocument = new DocumentSnapshot(
+                primaryPath,
+                DocumentKind.CSharp,
+                primaryText,
+                "1");
+            var usagePosition = GetPosition(primaryText, "SharedState.Count", advance: "SharedState.".Length + 1);
+
+            var definition = await _service.GetDefinitionAsync(
+                primaryDocument,
+                usagePosition,
+                CancellationToken.None);
+            var references = await _service.GetReferencesAsync(
+                primaryDocument,
+                usagePosition,
+                includeDeclaration: true,
+                CancellationToken.None);
+            var rename = await _service.GetRenameAsync(
+                primaryDocument,
+                usagePosition,
+                "TotalCount",
+                CancellationToken.None);
+
+            Assert.AreEqual(1, definition.Count);
+            Assert.AreEqual(
+                LspProtocolHelpers.ToDocumentUri(declarationPath),
+                definition[0].Uri);
+
+            Assert.IsTrue(references.Any(location => location.Uri == LspProtocolHelpers.ToDocumentUri(primaryPath)));
+            Assert.IsTrue(references.Any(location => location.Uri == LspProtocolHelpers.ToDocumentUri(declarationPath)));
+            Assert.IsTrue(references.Any(location => location.Uri == LspProtocolHelpers.ToDocumentUri(unopenedReferencePath)));
+
+            Assert.IsNotNull(rename);
+            Assert.IsTrue(rename.Changes.ContainsKey(LspProtocolHelpers.ToDocumentUri(primaryPath)));
+            Assert.IsTrue(rename.Changes.ContainsKey(LspProtocolHelpers.ToDocumentUri(declarationPath)));
+            Assert.IsTrue(rename.Changes.ContainsKey(LspProtocolHelpers.ToDocumentUri(unopenedReferencePath)));
+            Assert.IsTrue(rename.Changes.SelectMany(static pair => pair.Value).All(static edit => edit.NewText == "TotalCount"));
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task InProcRoslynCodeService_GetReferencesAndRenameAsync_FromJazorDeclaration_IncludeUnopenedDiskBackedCSharpAndJazorDocuments()
+    {
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "jazor-vuehost-roslyn-tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDirectory);
+
+        try
+        {
+            var sharedDirectory = Path.Combine(tempDirectory, "Shared");
+            var featuresDirectory = Path.Combine(tempDirectory, "Features");
+            var dashboardsDirectory = Path.Combine(tempDirectory, "Dashboards");
+            Directory.CreateDirectory(sharedDirectory);
+            Directory.CreateDirectory(featuresDirectory);
+            Directory.CreateDirectory(dashboardsDirectory);
+
+            var declarationDocument = CreateDocument(
+                Path.Combine(sharedDirectory, "SharedState.jazor"),
+                """
+                @code {
+                    public static int Count => 1;
+                }
+                """);
+            var referencedTypeName = GetProjectedComponentTypeName(declarationDocument);
+
+            var unopenedCSharpPath = Path.Combine(featuresDirectory, "CounterConsumer.cs");
+            await File.WriteAllTextAsync(
+                unopenedCSharpPath,
+                $$"""
+                internal static class CounterConsumer
+                {
+                    internal static int Read()
+                    {
+                        return {{referencedTypeName}}.Count;
+                    }
+                }
+                """);
+
+            var unopenedJazorPath = Path.Combine(dashboardsDirectory, "DashboardPanel.jazor");
+            await File.WriteAllTextAsync(
+                unopenedJazorPath,
+                $$"""
+                @code {
+                    private int Read()
+                    {
+                        return {{referencedTypeName}}.Count + {{referencedTypeName}}.Count;
+                    }
+                }
+                """);
+
+            var declarationPosition = GetPosition(declarationDocument.Text, "Count =>", advance: 1);
+
+            var references = await _service.GetReferencesAsync(
+                declarationDocument,
+                declarationPosition,
+                includeDeclaration: true,
+                [declarationDocument],
+                CancellationToken.None);
+            var rename = await _service.GetRenameAsync(
+                declarationDocument,
+                declarationPosition,
+                "TotalCount",
+                [declarationDocument],
+                CancellationToken.None);
+
+            Assert.IsTrue(references.Any(location => location.Uri == LspProtocolHelpers.ToDocumentUri(declarationDocument.DocumentPath)));
+            Assert.IsTrue(references.Any(location => location.Uri == LspProtocolHelpers.ToDocumentUri(unopenedCSharpPath)));
+            Assert.IsTrue(references.Any(location => location.Uri == LspProtocolHelpers.ToDocumentUri(unopenedJazorPath)));
+
+            Assert.IsNotNull(rename);
+            Assert.IsTrue(rename.Changes.ContainsKey(LspProtocolHelpers.ToDocumentUri(declarationDocument.DocumentPath)));
+            Assert.IsTrue(rename.Changes.ContainsKey(LspProtocolHelpers.ToDocumentUri(unopenedCSharpPath)));
+            Assert.IsTrue(rename.Changes.ContainsKey(LspProtocolHelpers.ToDocumentUri(unopenedJazorPath)));
+            Assert.IsTrue(rename.Changes.SelectMany(static pair => pair.Value).All(static edit => edit.NewText == "TotalCount"));
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task InProcRoslynCodeService_GetDefinitionAsync_FromJazorCodeUsage_ResolvesUnopenedDiskBackedCSharpDeclaration()
+    {
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "jazor-vuehost-roslyn-tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDirectory);
+
+        try
+        {
+            var sharedDirectory = Path.Combine(tempDirectory, "Shared");
+            var featuresDirectory = Path.Combine(tempDirectory, "Features");
+            Directory.CreateDirectory(sharedDirectory);
+            Directory.CreateDirectory(featuresDirectory);
+
+            var declarationPath = Path.Combine(sharedDirectory, "SharedState.cs");
+            await File.WriteAllTextAsync(
+                declarationPath,
+                """
+                namespace Demo;
+
+                internal static class SharedState
+                {
+                    internal static int Count = 1;
+                }
+                """);
+
+            var primaryDocument = CreateDocument(
+                Path.Combine(featuresDirectory, "DashboardPanel.jazor"),
+                """
+                @using Demo
+
+                @code {
+                    private int Read()
+                    {
+                        return SharedState.Count;
+                    }
+                }
+                """);
+            var usagePosition = GetPosition(primaryDocument.Text, "SharedState.Count", advance: "SharedState.".Length + 1);
+
+            var definition = await _service.GetDefinitionAsync(
+                primaryDocument,
+                usagePosition,
+                [primaryDocument],
+                CancellationToken.None);
+
+            Assert.AreEqual(1, definition.Count);
+            Assert.AreEqual(LspProtocolHelpers.ToDocumentUri(declarationPath), definition[0].Uri);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
     }
 
     private static string GetProjectedComponentTypeName(DocumentSnapshot document)

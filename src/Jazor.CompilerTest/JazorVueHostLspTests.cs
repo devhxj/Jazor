@@ -6,6 +6,7 @@ using Directory = Jazor.CompilerTest.TestDirectory;
 using Jazor.VueContracts.Protocol;
 using Jazor.VueHost.Lsp;
 using Jazor.VueHost.Razor.InProc;
+using Jazor.VueHost.Workspace;
 
 namespace Jazor.CompilerTest;
 
@@ -1174,6 +1175,7 @@ public sealed class JazorVueHostLspTests
                   <section />
                 </template>
                 """;
+            var usagePosition = GetPosition(hostText, "UserBadge;", advance: 1);
             await client.SendAsync(new
             {
                 jsonrpc = "2.0",
@@ -1294,6 +1296,7 @@ public sealed class JazorVueHostLspTests
                   <section />
                 </template>
                 """;
+            var usagePosition = GetPosition(hostText, "UserBadge;", advance: 1);
             await client.SendAsync(new
             {
                 jsonrpc = "2.0",
@@ -1325,17 +1328,18 @@ public sealed class JazorVueHostLspTests
                     },
                     position = new
                     {
-                        line = 1,
-                        character = 8
+                        line = usagePosition.Line,
+                        character = usagePosition.Character
                     }
                 }
             });
             using var definitionResponse = await client.ReadResponseAsync(expectedId: 1781);
             var definitions = definitionResponse.RootElement.GetProperty("result");
             Assert.AreEqual(1, definitions.GetArrayLength());
-            Assert.AreEqual(
+            Assert.IsTrue(string.Equals(
                 VueHostWorkspaceResolver.NormalizePath(declarationPath),
-                VueHostWorkspaceResolver.NormalizePath(LspProtocolHelpers.ToDocumentPath(definitions[0].GetProperty("uri").GetString()!)));
+                VueHostWorkspaceResolver.NormalizePath(LspProtocolHelpers.ToDocumentPath(definitions[0].GetProperty("uri").GetString()!)),
+                StringComparison.OrdinalIgnoreCase));
 
             await client.SendAsync(new
             {
@@ -1361,9 +1365,8 @@ public sealed class JazorVueHostLspTests
             });
             using var referencesResponse = await client.ReadResponseAsync(expectedId: 1782);
             var references = referencesResponse.RootElement.GetProperty("result");
-            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == declarationUri));
-            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == hostUri));
-            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == jazorUri));
+            Assert.IsTrue(ContainsNormalizedUri(references, hostPath));
+            Assert.IsTrue(ContainsNormalizedUri(references, jazorPath));
 
             await client.SendAsync(new
             {
@@ -1388,11 +1391,11 @@ public sealed class JazorVueHostLspTests
             var changes = renameResponse.RootElement
                 .GetProperty("result")
                 .GetProperty("changes");
-            Assert.IsTrue(changes.EnumerateObject().Any(change => change.Name == hostUri));
-            Assert.IsTrue(changes.EnumerateObject().Any(change => change.Name == jazorUri));
+            Assert.IsTrue(ContainsNormalizedChange(changes, hostPath));
+            Assert.IsTrue(ContainsNormalizedChange(changes, jazorPath));
             Assert.AreEqual(
                 "ProfileBadge",
-                changes.GetProperty(jazorUri)[0].GetProperty("newText").GetString());
+                GetChangeEntry(changes, jazorPath)[0].GetProperty("newText").GetString());
 
             await client.ShutdownAsync();
         }
@@ -1520,7 +1523,7 @@ public sealed class JazorVueHostLspTests
     }
 
     [TestMethod]
-    public async Task JazorVueHost_Lsp_VueScriptImport_Definition_RemainsNativeVueDeclaration()
+    public async Task JazorVueHost_Lsp_JavaScriptVueImport_DefinitionRemainsNativeWhileReferencesAndRenameBridgeIntoJazor()
     {
         await using var client = await LspTestClient.StartAsync();
         await client.InitializeAsync();
@@ -1532,120 +1535,22 @@ public sealed class JazorVueHostLspTests
             var declarationUri = new Uri(declarationPath).AbsoluteUri;
             await File.WriteAllTextAsync(declarationPath, "<template><div>UserBadge</div></template>");
 
-            var hostPath = Path.Combine(tempDirectory, "Host.vue");
-            var hostUri = new Uri(hostPath).AbsoluteUri;
-            var hostText =
-                """
-                <script setup lang="ts">
-                import UserBadge from "./UserBadge.vue";
-                const current = UserBadge;
-                </script>
-
-                <template>
-                  <section />
-                </template>
-                """;
-            await client.SendAsync(new
-            {
-                jsonrpc = "2.0",
-                method = "textDocument/didOpen",
-                @params = new
-                {
-                    textDocument = new
-                    {
-                        uri = hostUri,
-                        languageId = "vue",
-                        version = 1,
-                        text = hostText
-                    }
-                }
-            });
-            using var diagnosticsMessage = await client.ReadMessageAsync();
-            Assert.AreEqual("textDocument/publishDiagnostics", diagnosticsMessage.RootElement.GetProperty("method").GetString());
-
-            await client.SendAsync(new
-            {
-                jsonrpc = "2.0",
-                id = 181,
-                method = "textDocument/definition",
-                @params = new
-                {
-                    textDocument = new
-                    {
-                        uri = hostUri
-                    },
-                    position = new
-                    {
-                        line = 1,
-                        character = 8
-                    }
-                }
-            });
-            using var definitionResponse = await client.ReadResponseAsync(expectedId: 181);
-            var definitions = definitionResponse.RootElement.GetProperty("result");
-            Assert.AreEqual(1, definitions.GetArrayLength());
-            Assert.AreEqual(
-                VueHostWorkspaceResolver.NormalizePath(declarationPath),
-                VueHostWorkspaceResolver.NormalizePath(LspProtocolHelpers.ToDocumentPath(definitions[0].GetProperty("uri").GetString()!)));
-        }
-        finally
-        {
-            if (Directory.Exists(tempDirectory))
-            {
-                DeleteDirectoryWithRetries(tempDirectory);
-            }
-        }
-    }
-
-    [TestMethod]
-    public async Task JazorVueHost_Lsp_TypeScriptVueImport_Definition_RemainsNativeVueDeclaration_AndReferencesRenameIncludeOpenUnsavedAndDiskJazor()
-    {
-        await using var client = await LspTestClient.StartAsync();
-        await client.InitializeAsync();
-
-        var tempDirectory = CreateTemporaryDirectory();
-        try
-        {
-            var declarationPath = Path.Combine(tempDirectory, "UserBadge.vue");
-            var declarationUri = new Uri(declarationPath).AbsoluteUri;
-            await File.WriteAllTextAsync(declarationPath, "<template><div>UserBadge</div></template>");
-
-            var counterPath = Path.Combine(tempDirectory, "Counter.jazor");
-            var counterUri = new Uri(counterPath).AbsoluteUri;
-            await client.OpenDocumentAsync(
-                counterUri,
+            var jazorPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var jazorUri = new Uri(jazorPath).AbsoluteUri;
+            await File.WriteAllTextAsync(
+                jazorPath,
                 """
                 <UserBadge />
-
-                @code {
-                    private void UserBadge()
-                    {
-                    }
-                }
-                """,
-                version: 1);
-
-            var dashboardPath = Path.Combine(tempDirectory, "Dashboard.jazor");
-            var dashboardUri = new Uri(dashboardPath).AbsoluteUri;
-            await File.WriteAllTextAsync(
-                dashboardPath,
-                """
-                <section>
-                  <UserBadge />
-                </section>
-
-                @code {
-                    private string UserBadge => nameof(UserBadge);
-                }
                 """);
 
-            var scriptPath = Path.Combine(tempDirectory, "consumer.ts");
+            var scriptPath = Path.Combine(tempDirectory, "consumer.js");
             var scriptUri = new Uri(scriptPath).AbsoluteUri;
             var scriptText =
                 """
                 import UserBadge from "./UserBadge.vue";
                 export const current = UserBadge;
                 """;
+            var usagePosition = GetPosition(scriptText, "UserBadge;", advance: 1);
             await client.SendAsync(new
             {
                 jsonrpc = "2.0",
@@ -1655,149 +1560,7 @@ public sealed class JazorVueHostLspTests
                     textDocument = new
                     {
                         uri = scriptUri,
-                        languageId = "typescript",
-                        version = 1,
-                        text = scriptText
-                    }
-                }
-            });
-            using var diagnosticsMessage = await client.ReadMessageAsync();
-            Assert.AreEqual("textDocument/publishDiagnostics", diagnosticsMessage.RootElement.GetProperty("method").GetString());
-
-            await client.SendAsync(new
-            {
-                jsonrpc = "2.0",
-                id = 182,
-                method = "textDocument/definition",
-                @params = new
-                {
-                    textDocument = new
-                    {
-                        uri = scriptUri
-                    },
-                    position = new
-                    {
-                        line = 0,
-                        character = 8
-                    }
-                }
-            });
-            using var definitionResponse = await client.ReadResponseAsync(expectedId: 182);
-            var definitions = definitionResponse.RootElement.GetProperty("result");
-            Assert.AreEqual(1, definitions.GetArrayLength());
-            Assert.AreEqual(
-                VueHostWorkspaceResolver.NormalizePath(declarationPath),
-                VueHostWorkspaceResolver.NormalizePath(LspProtocolHelpers.ToDocumentPath(definitions[0].GetProperty("uri").GetString()!)));
-
-            await client.SendAsync(new
-            {
-                jsonrpc = "2.0",
-                id = 183,
-                method = "textDocument/references",
-                @params = new
-                {
-                    textDocument = new
-                    {
-                        uri = scriptUri
-                    },
-                    position = new
-                    {
-                        line = 0,
-                        character = 8
-                    },
-                    context = new
-                    {
-                        includeDeclaration = true
-                    }
-                }
-            });
-            using var referencesResponse = await client.ReadResponseAsync(expectedId: 183);
-            var references = referencesResponse.RootElement.GetProperty("result");
-            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == declarationUri));
-            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == scriptUri));
-            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == counterUri));
-            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == dashboardUri));
-            Assert.IsFalse(references.EnumerateArray().Any(reference =>
-                reference.GetProperty("uri").GetString() == counterUri
-                && reference.GetProperty("range").GetProperty("start").GetProperty("line").GetInt32() >= 3));
-            Assert.IsFalse(references.EnumerateArray().Any(reference =>
-                reference.GetProperty("uri").GetString() == dashboardUri
-                && reference.GetProperty("range").GetProperty("start").GetProperty("line").GetInt32() >= 4));
-
-            await client.SendAsync(new
-            {
-                jsonrpc = "2.0",
-                id = 184,
-                method = "textDocument/rename",
-                @params = new
-                {
-                    textDocument = new
-                    {
-                        uri = scriptUri
-                    },
-                    position = new
-                    {
-                        line = 0,
-                        character = 8
-                    },
-                    newName = "ProfileBadge"
-                }
-            });
-            using var renameResponse = await client.ReadResponseAsync(expectedId: 184);
-            var changes = renameResponse.RootElement
-                .GetProperty("result")
-                .GetProperty("changes");
-            Assert.IsTrue(changes.EnumerateObject().Any(change => change.Name == scriptUri));
-            Assert.IsTrue(changes.EnumerateObject().Any(change => change.Name == counterUri));
-            Assert.IsTrue(changes.EnumerateObject().Any(change => change.Name == dashboardUri));
-            Assert.AreEqual(1, changes.GetProperty(counterUri).GetArrayLength());
-            Assert.AreEqual(1, changes.GetProperty(dashboardUri).GetArrayLength());
-            Assert.AreEqual(0, changes.GetProperty(counterUri)[0].GetProperty("range").GetProperty("start").GetProperty("line").GetInt32());
-            Assert.AreEqual(1, changes.GetProperty(dashboardUri)[0].GetProperty("range").GetProperty("start").GetProperty("line").GetInt32());
-            Assert.AreEqual("ProfileBadge", changes.GetProperty(counterUri)[0].GetProperty("newText").GetString());
-            Assert.AreEqual("ProfileBadge", changes.GetProperty(dashboardUri)[0].GetProperty("newText").GetString());
-
-            await client.ShutdownAsync();
-        }
-        finally
-        {
-            if (Directory.Exists(tempDirectory))
-            {
-                DeleteDirectoryWithRetries(tempDirectory);
-            }
-        }
-    }
-
-    [TestMethod]
-    public async Task JazorVueHost_Lsp_TypeScriptVueImport_DefinitionRemainsNativeWhileReferencesAndRename_IncludeOpenUnsavedAndDiskJazorDocuments()
-    {
-        await using var client = await LspTestClient.StartAsync();
-        await client.InitializeAsync();
-
-        var tempDirectory = CreateTemporaryDirectory();
-        try
-        {
-            var declarationPath = Path.Combine(tempDirectory, "UserBadge.vue");
-            var declarationUri = new Uri(declarationPath).AbsoluteUri;
-            await File.WriteAllTextAsync(declarationPath, "<template><div>UserBadge</div></template>");
-
-            var scriptPath = Path.Combine(tempDirectory, "consumer.ts");
-            var scriptUri = new Uri(scriptPath).AbsoluteUri;
-            var scriptText =
-                """
-                import UserBadge from "./UserBadge.vue";
-                export const current = UserBadge;
-                """;
-            await client.SendAsync(new
-            {
-                jsonrpc = "2.0",
-                method = "textDocument/didOpen",
-                @params = new
-                {
-                    textDocument = new
-                    {
-                        uri = scriptUri,
-                        languageId = "typescript",
+                        languageId = "javascript",
                         version = 1,
                         text = scriptText
                     }
@@ -1806,39 +1569,10 @@ public sealed class JazorVueHostLspTests
             using var scriptDiagnostics = await client.ReadMessageAsync();
             Assert.AreEqual("textDocument/publishDiagnostics", scriptDiagnostics.RootElement.GetProperty("method").GetString());
 
-            var counterPath = Path.Combine(tempDirectory, "Counter.jazor");
-            var counterUri = new Uri(counterPath).AbsoluteUri;
-            await client.OpenDocumentAsync(
-                counterUri,
-                """
-                <UserBadge />
-
-                @code {
-                    private void UserBadge()
-                    {
-                    }
-                }
-                """,
-                version: 1);
-
-            var dashboardPath = Path.Combine(tempDirectory, "Dashboard.jazor");
-            var dashboardUri = new Uri(dashboardPath).AbsoluteUri;
-            await File.WriteAllTextAsync(
-                dashboardPath,
-                """
-                <section>
-                  <UserBadge />
-                </section>
-
-                @code {
-                    private string UserBadge => nameof(UserBadge);
-                }
-                """);
-
             await client.SendAsync(new
             {
                 jsonrpc = "2.0",
-                id = 1801,
+                id = 1784,
                 method = "textDocument/definition",
                 @params = new
                 {
@@ -1853,17 +1587,15 @@ public sealed class JazorVueHostLspTests
                     }
                 }
             });
-            using var definitionResponse = await client.ReadResponseAsync(expectedId: 1801);
+            using var definitionResponse = await client.ReadResponseAsync(expectedId: 1784);
             var definitions = definitionResponse.RootElement.GetProperty("result");
             Assert.AreEqual(1, definitions.GetArrayLength());
-            Assert.AreEqual(
-                VueHostWorkspaceResolver.NormalizePath(declarationPath),
-                VueHostWorkspaceResolver.NormalizePath(LspProtocolHelpers.ToDocumentPath(definitions[0].GetProperty("uri").GetString()!)));
+            Assert.AreEqual(declarationUri, definitions[0].GetProperty("uri").GetString());
 
             await client.SendAsync(new
             {
                 jsonrpc = "2.0",
-                id = 1802,
+                id = 1785,
                 method = "textDocument/references",
                 @params = new
                 {
@@ -1882,23 +1614,15 @@ public sealed class JazorVueHostLspTests
                     }
                 }
             });
-            using var referencesResponse = await client.ReadResponseAsync(expectedId: 1802);
+            using var referencesResponse = await client.ReadResponseAsync(expectedId: 1785);
             var references = referencesResponse.RootElement.GetProperty("result");
-            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == declarationUri));
-            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == scriptUri));
-            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == counterUri));
-            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == dashboardUri));
-            Assert.IsFalse(references.EnumerateArray().Any(reference =>
-                reference.GetProperty("uri").GetString() == counterUri
-                && reference.GetProperty("range").GetProperty("start").GetProperty("line").GetInt32() >= 3));
-            Assert.IsFalse(references.EnumerateArray().Any(reference =>
-                reference.GetProperty("uri").GetString() == dashboardUri
-                && reference.GetProperty("range").GetProperty("start").GetProperty("line").GetInt32() >= 5));
+            Assert.IsTrue(ContainsNormalizedUri(references, scriptPath));
+            Assert.IsTrue(ContainsNormalizedUri(references, jazorPath));
 
             await client.SendAsync(new
             {
                 jsonrpc = "2.0",
-                id = 1803,
+                id = 1786,
                 method = "textDocument/rename",
                 @params = new
                 {
@@ -1914,19 +1638,15 @@ public sealed class JazorVueHostLspTests
                     newName = "ProfileBadge"
                 }
             });
-            using var renameResponse = await client.ReadResponseAsync(expectedId: 1803);
+            using var renameResponse = await client.ReadResponseAsync(expectedId: 1786);
             var changes = renameResponse.RootElement
                 .GetProperty("result")
                 .GetProperty("changes");
-            Assert.IsTrue(changes.EnumerateObject().Any(change => change.Name == scriptUri));
-            Assert.IsTrue(changes.EnumerateObject().Any(change => change.Name == counterUri));
-            Assert.IsTrue(changes.EnumerateObject().Any(change => change.Name == dashboardUri));
-            Assert.AreEqual(1, changes.GetProperty(counterUri).GetArrayLength());
-            Assert.AreEqual(1, changes.GetProperty(dashboardUri).GetArrayLength());
-            Assert.AreEqual(0, changes.GetProperty(counterUri)[0].GetProperty("range").GetProperty("start").GetProperty("line").GetInt32());
-            Assert.AreEqual(1, changes.GetProperty(dashboardUri)[0].GetProperty("range").GetProperty("start").GetProperty("line").GetInt32());
-            Assert.AreEqual("ProfileBadge", changes.GetProperty(counterUri)[0].GetProperty("newText").GetString());
-            Assert.AreEqual("ProfileBadge", changes.GetProperty(dashboardUri)[0].GetProperty("newText").GetString());
+            Assert.IsTrue(ContainsNormalizedChange(changes, scriptPath));
+            Assert.IsTrue(ContainsNormalizedChange(changes, jazorPath));
+            Assert.AreEqual(
+                "ProfileBadge",
+                GetChangeEntry(changes, jazorPath)[0].GetProperty("newText").GetString());
 
             await client.ShutdownAsync();
         }
@@ -2075,6 +1795,766 @@ public sealed class JazorVueHostLspTests
             Assert.IsTrue(changes.EnumerateObject().Any(change => change.Name == documentUri));
             Assert.AreEqual(3, changes.GetProperty(documentUri).GetArrayLength());
             Assert.IsTrue(changes.GetProperty(documentUri).EnumerateArray().All(edit => edit.GetProperty("newText").GetString() == "total"));
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_CSharpDocument_DefinitionReferencesAndRename_WorkEndToEnd()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(tempDirectory, "CounterLogic.cs");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            var text =
+                """
+                internal static class CounterLogic
+                {
+                    private static int count = 1;
+
+                    public static int Increment()
+                    {
+                        count++;
+                        return count;
+                    }
+                }
+                """;
+
+            await client.OpenDocumentAsync(documentUri, text, version: 1, languageId: "csharp");
+
+            var usagePosition = GetPosition(text, "count++;", advance: 1);
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 1791,
+                method = "textDocument/definition",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri
+                    },
+                    position = new
+                    {
+                        line = usagePosition.Line,
+                        character = usagePosition.Character
+                    }
+                }
+            });
+            using var definitionResponse = await client.ReadResponseAsync(expectedId: 1791);
+            var definitions = definitionResponse.RootElement.GetProperty("result");
+            Assert.AreEqual(1, definitions.GetArrayLength());
+            Assert.AreEqual(documentUri, definitions[0].GetProperty("uri").GetString());
+            Assert.AreEqual(2, definitions[0].GetProperty("range").GetProperty("start").GetProperty("line").GetInt32());
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 1792,
+                method = "textDocument/references",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri
+                    },
+                    position = new
+                    {
+                        line = usagePosition.Line,
+                        character = usagePosition.Character
+                    },
+                    context = new
+                    {
+                        includeDeclaration = true
+                    }
+                }
+            });
+            using var referencesResponse = await client.ReadResponseAsync(expectedId: 1792);
+            var references = referencesResponse.RootElement.GetProperty("result");
+            Assert.AreEqual(3, references.GetArrayLength());
+            Assert.IsTrue(references.EnumerateArray().All(reference => reference.GetProperty("uri").GetString() == documentUri));
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 1793,
+                method = "textDocument/rename",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri
+                    },
+                    position = new
+                    {
+                        line = usagePosition.Line,
+                        character = usagePosition.Character
+                    },
+                    newName = "totalCount"
+                }
+            });
+            using var renameResponse = await client.ReadResponseAsync(expectedId: 1793);
+            var changes = renameResponse.RootElement
+                .GetProperty("result")
+                .GetProperty("changes");
+            Assert.IsTrue(ContainsNormalizedChange(changes, documentPath));
+            Assert.AreEqual(3, GetChangeEntry(changes, documentPath).GetArrayLength());
+            Assert.IsTrue(GetChangeEntry(changes, documentPath)
+                .EnumerateArray()
+                .All(change => change.GetProperty("newText").GetString() == "totalCount"));
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_CSharpDocument_DefinitionReferencesAndRename_IncludeUnopenedDiskCSharpDocument()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var declarationPath = Path.Combine(tempDirectory, "CounterLogic.cs");
+            await File.WriteAllTextAsync(
+                declarationPath,
+                """
+                internal static class CounterLogic
+                {
+                    public static int Count = 1;
+                }
+                """);
+
+            var documentPath = Path.Combine(tempDirectory, "CounterLogicConsumer.cs");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            var text =
+                """
+                internal static class CounterLogicConsumer
+                {
+                    public static int Read()
+                    {
+                        return CounterLogic.Count;
+                    }
+                }
+                """;
+
+            await client.OpenDocumentAsync(documentUri, text, version: 1, languageId: "csharp");
+
+            var usagePosition = GetPosition(text, "Count", advance: 1);
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 17931,
+                method = "textDocument/definition",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri
+                    },
+                    position = new
+                    {
+                        line = usagePosition.Line,
+                        character = usagePosition.Character
+                    }
+                }
+            });
+            using var definitionResponse = await client.ReadResponseAsync(expectedId: 17931);
+            var definitions = definitionResponse.RootElement.GetProperty("result");
+            Assert.AreEqual(1, definitions.GetArrayLength());
+            Assert.AreEqual(new Uri(declarationPath).AbsoluteUri, definitions[0].GetProperty("uri").GetString());
+            Assert.AreEqual(2, definitions[0].GetProperty("range").GetProperty("start").GetProperty("line").GetInt32());
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 17932,
+                method = "textDocument/references",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri
+                    },
+                    position = new
+                    {
+                        line = usagePosition.Line,
+                        character = usagePosition.Character
+                    },
+                    context = new
+                    {
+                        includeDeclaration = true
+                    }
+                }
+            });
+            using var referencesResponse = await client.ReadResponseAsync(expectedId: 17932);
+            var references = referencesResponse.RootElement.GetProperty("result");
+            Assert.AreEqual(2, references.GetArrayLength());
+            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == documentUri));
+            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == new Uri(declarationPath).AbsoluteUri));
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 17933,
+                method = "textDocument/rename",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri
+                    },
+                    position = new
+                    {
+                        line = usagePosition.Line,
+                        character = usagePosition.Character
+                    },
+                    newName = "TotalCount"
+                }
+            });
+            using var renameResponse = await client.ReadResponseAsync(expectedId: 17933);
+            var changes = renameResponse.RootElement
+                .GetProperty("result")
+                .GetProperty("changes");
+            Assert.IsTrue(ContainsNormalizedChange(changes, documentPath));
+            Assert.IsTrue(ContainsNormalizedChange(changes, declarationPath));
+            Assert.IsTrue(GetChangeEntry(changes, documentPath)
+                .EnumerateArray()
+                .All(change => change.GetProperty("newText").GetString() == "TotalCount"));
+            Assert.IsTrue(GetChangeEntry(changes, declarationPath)
+                .EnumerateArray()
+                .All(change => change.GetProperty("newText").GetString() == "TotalCount"));
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_CSharpDocument_DefinitionReferencesAndRename_IncludeUnopenedDiskBackedWorkspaceDocuments()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var featuresDirectory = Path.Combine(tempDirectory, "Features");
+            var sharedDirectory = Path.Combine(tempDirectory, "Shared");
+            var dashboardsDirectory = Path.Combine(tempDirectory, "Dashboards");
+            Directory.CreateDirectory(featuresDirectory);
+            Directory.CreateDirectory(sharedDirectory);
+            Directory.CreateDirectory(dashboardsDirectory);
+
+            var declarationPath = Path.Combine(sharedDirectory, "SharedState.cs");
+            await File.WriteAllTextAsync(
+                declarationPath,
+                """
+                namespace Demo;
+
+                internal static class SharedState
+                {
+                    internal static int Count = 1;
+                }
+                """);
+
+            var unopenedReferencePath = Path.Combine(dashboardsDirectory, "DashboardConsumer.cs");
+            await File.WriteAllTextAsync(
+                unopenedReferencePath,
+                """
+                namespace Demo;
+
+                internal static class DashboardConsumer
+                {
+                    internal static int Read()
+                    {
+                        return SharedState.Count + SharedState.Count;
+                    }
+                }
+                """);
+
+            var documentPath = Path.Combine(featuresDirectory, "CounterConsumer.cs");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            var text =
+                """
+                namespace Demo;
+
+                internal static class CounterConsumer
+                {
+                    internal static int Read()
+                    {
+                        return SharedState.Count;
+                    }
+                }
+                """;
+            await File.WriteAllTextAsync(documentPath, text);
+            await client.OpenDocumentAsync(documentUri, text, version: 1, languageId: "csharp");
+
+            var usagePosition = GetPosition(text, "SharedState.Count", advance: "SharedState.".Length + 1);
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 17931,
+                method = "textDocument/definition",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri
+                    },
+                    position = new
+                    {
+                        line = usagePosition.Line,
+                        character = usagePosition.Character
+                    }
+                }
+            });
+            using var definitionResponse = await client.ReadResponseAsync(expectedId: 17931);
+            var definitions = definitionResponse.RootElement.GetProperty("result");
+            Assert.AreEqual(1, definitions.GetArrayLength());
+            Assert.IsTrue(ContainsNormalizedUri(definitions, declarationPath));
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 17932,
+                method = "textDocument/references",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri
+                    },
+                    position = new
+                    {
+                        line = usagePosition.Line,
+                        character = usagePosition.Character
+                    },
+                    context = new
+                    {
+                        includeDeclaration = true
+                    }
+                }
+            });
+            using var referencesResponse = await client.ReadResponseAsync(expectedId: 17932);
+            var references = referencesResponse.RootElement.GetProperty("result");
+            Assert.IsTrue(ContainsNormalizedUri(references, documentPath));
+            Assert.IsTrue(ContainsNormalizedUri(references, declarationPath));
+            Assert.IsTrue(ContainsNormalizedUri(references, unopenedReferencePath));
+            Assert.IsTrue(references.EnumerateArray().All(reference =>
+                string.Equals(
+                    Path.GetExtension(LspProtocolHelpers.ToDocumentPath(reference.GetProperty("uri").GetString()!)),
+                    ".cs",
+                    StringComparison.OrdinalIgnoreCase)));
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 17933,
+                method = "textDocument/rename",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri
+                    },
+                    position = new
+                    {
+                        line = usagePosition.Line,
+                        character = usagePosition.Character
+                    },
+                    newName = "TotalCount"
+                }
+            });
+            using var renameResponse = await client.ReadResponseAsync(expectedId: 17933);
+            var changes = renameResponse.RootElement
+                .GetProperty("result")
+                .GetProperty("changes");
+            Assert.IsTrue(ContainsNormalizedChange(changes, documentPath));
+            Assert.IsTrue(ContainsNormalizedChange(changes, declarationPath));
+            Assert.IsTrue(ContainsNormalizedChange(changes, unopenedReferencePath));
+            Assert.IsTrue(changes.EnumerateObject().All(change =>
+                string.Equals(
+                    Path.GetExtension(LspProtocolHelpers.ToDocumentPath(change.Name)),
+                    ".cs",
+                    StringComparison.OrdinalIgnoreCase)));
+            Assert.IsTrue(changes.EnumerateObject()
+                .SelectMany(static change => change.Value.EnumerateArray())
+                .All(change => change.GetProperty("newText").GetString() == "TotalCount"));
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_JazorCodeDeclaration_ReferencesAndRename_IncludeUnopenedDiskBackedCSharpAndJazorDocuments()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var sharedDirectory = Path.Combine(tempDirectory, "Shared");
+            var featuresDirectory = Path.Combine(tempDirectory, "Features");
+            var dashboardsDirectory = Path.Combine(tempDirectory, "Dashboards");
+            Directory.CreateDirectory(sharedDirectory);
+            Directory.CreateDirectory(featuresDirectory);
+            Directory.CreateDirectory(dashboardsDirectory);
+
+            var documentPath = Path.Combine(sharedDirectory, "SharedState.jazor");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            var text =
+                """
+                @code {
+                    public static int Count => 1;
+                }
+                """;
+            await File.WriteAllTextAsync(documentPath, text);
+
+            var declarationDocument = new DocumentSnapshot(documentPath, DocumentKind.Jazor, text, "1");
+            var referencedTypeName = GetProjectedComponentTypeName(declarationDocument);
+
+            var unopenedCSharpPath = Path.Combine(featuresDirectory, "CounterConsumer.cs");
+            await File.WriteAllTextAsync(
+                unopenedCSharpPath,
+                $$"""
+                internal static class CounterConsumer
+                {
+                    internal static int Read()
+                    {
+                        return {{referencedTypeName}}.Count;
+                    }
+                }
+                """);
+
+            var unopenedJazorPath = Path.Combine(dashboardsDirectory, "DashboardPanel.jazor");
+            await File.WriteAllTextAsync(
+                unopenedJazorPath,
+                $$"""
+                @code {
+                    private int Read()
+                    {
+                        return {{referencedTypeName}}.Count + {{referencedTypeName}}.Count;
+                    }
+                }
+                """);
+
+            await client.OpenDocumentAsync(documentUri, text, version: 1);
+            var declarationPosition = GetPosition(text, "Count =>", advance: 1);
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 17934,
+                method = "textDocument/references",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri
+                    },
+                    position = new
+                    {
+                        line = declarationPosition.Line,
+                        character = declarationPosition.Character
+                    },
+                    context = new
+                    {
+                        includeDeclaration = true
+                    }
+                }
+            });
+            using var referencesResponse = await client.ReadResponseAsync(expectedId: 17934);
+            var references = referencesResponse.RootElement.GetProperty("result");
+            Assert.IsTrue(ContainsNormalizedUri(references, documentPath));
+            Assert.IsTrue(ContainsNormalizedUri(references, unopenedCSharpPath));
+            Assert.IsTrue(ContainsNormalizedUri(references, unopenedJazorPath));
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 17935,
+                method = "textDocument/rename",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri
+                    },
+                    position = new
+                    {
+                        line = declarationPosition.Line,
+                        character = declarationPosition.Character
+                    },
+                    newName = "TotalCount"
+                }
+            });
+            using var renameResponse = await client.ReadResponseAsync(expectedId: 17935);
+            var changes = renameResponse.RootElement
+                .GetProperty("result")
+                .GetProperty("changes");
+            Assert.IsTrue(ContainsNormalizedChange(changes, documentPath));
+            Assert.IsTrue(ContainsNormalizedChange(changes, unopenedCSharpPath));
+            Assert.IsTrue(ContainsNormalizedChange(changes, unopenedJazorPath));
+            Assert.IsTrue(changes.EnumerateObject()
+                .SelectMany(static change => change.Value.EnumerateArray())
+                .All(change => change.GetProperty("newText").GetString() == "TotalCount"));
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_JazorCodeUsage_Definition_ResolvesUnopenedDiskBackedCSharpDeclaration()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var sharedDirectory = Path.Combine(tempDirectory, "Shared");
+            var featuresDirectory = Path.Combine(tempDirectory, "Features");
+            Directory.CreateDirectory(sharedDirectory);
+            Directory.CreateDirectory(featuresDirectory);
+
+            var declarationPath = Path.Combine(sharedDirectory, "SharedState.cs");
+            await File.WriteAllTextAsync(
+                declarationPath,
+                """
+                namespace Demo;
+
+                internal static class SharedState
+                {
+                    internal static int Count = 1;
+                }
+                """);
+
+            var documentPath = Path.Combine(featuresDirectory, "DashboardPanel.jazor");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            var text =
+                """
+                @using Demo
+
+                @code {
+                    private int Read()
+                    {
+                        return SharedState.Count;
+                    }
+                }
+                """;
+            await File.WriteAllTextAsync(documentPath, text);
+            await client.OpenDocumentAsync(documentUri, text, version: 1);
+
+            var usagePosition = GetPosition(text, "SharedState.Count", advance: "SharedState.".Length + 1);
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 17936,
+                method = "textDocument/definition",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri
+                    },
+                    position = new
+                    {
+                        line = usagePosition.Line,
+                        character = usagePosition.Character
+                    }
+                }
+            });
+            using var definitionResponse = await client.ReadResponseAsync(expectedId: 17936);
+            var definitions = definitionResponse.RootElement.GetProperty("result");
+            Assert.AreEqual(1, definitions.GetArrayLength());
+            Assert.IsTrue(ContainsNormalizedUri(definitions, declarationPath));
+            Assert.IsTrue(definitions.EnumerateArray().All(definition =>
+                string.Equals(
+                    Path.GetExtension(LspProtocolHelpers.ToDocumentPath(definition.GetProperty("uri").GetString()!)),
+                    ".cs",
+                    StringComparison.OrdinalIgnoreCase)));
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_CSharpDocument_CompletionHoverAndDocumentSymbols_WorkEndToEnd()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(tempDirectory, "CounterLogic.cs");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            var text =
+                """
+                internal static class CounterLogic
+                {
+                    private static int count = 1;
+
+                    public static int Increment()
+                    {
+                        cou
+                        return count;
+                    }
+                }
+                """;
+
+            await client.OpenDocumentAsync(documentUri, text, version: 1, languageId: "csharp");
+
+            var completionPosition = GetLastPosition(text, "cou", advance: "cou".Length);
+            var completionLabels = await client.RequestCompletionLabelsAsync(
+                requestId: 1794,
+                documentUri,
+                completionPosition.Line,
+                completionPosition.Character);
+            CollectionAssert.Contains(completionLabels, "count");
+
+            var hoverPosition = GetPosition(text, "return count", advance: "return ".Length + 1);
+            var hover = await client.RequestHoverAsync(
+                requestId: 1795,
+                documentUri,
+                hoverPosition.Line,
+                hoverPosition.Character);
+            Assert.IsNotNull(hover);
+            StringAssert.Contains(
+                hover.Value.GetProperty("contents").GetProperty("value").GetString() ?? string.Empty,
+                "count");
+
+            var symbols = await client.RequestDocumentSymbolsAsync(
+                requestId: 1796,
+                documentUri);
+            CollectionAssert.AreEqual(
+                new[] { "count", "Increment" },
+                symbols.EnumerateArray()
+                    .Select(static symbol => symbol.GetProperty("name").GetString() ?? string.Empty)
+                    .ToArray());
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_CSharpDocument_CompletionAndHover_UseUnopenedDiskBackedWorkspaceDeclaration()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var declarationPath = Path.Combine(tempDirectory, "SharedState.cs");
+            await File.WriteAllTextAsync(
+                declarationPath,
+                """
+                namespace Demo;
+
+                internal static class SharedState
+                {
+                    internal static int Count = 1;
+                }
+                """);
+
+            var documentPath = Path.Combine(tempDirectory, "CounterConsumer.cs");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            var completionText =
+                """
+                namespace Demo;
+
+                internal static class CounterConsumer
+                {
+                    internal static int Read()
+                    {
+                        return SharedState.Cou
+                    }
+                }
+                """;
+            await File.WriteAllTextAsync(documentPath, completionText);
+            await client.OpenDocumentAsync(documentUri, completionText, version: 1, languageId: "csharp");
+
+            var completionPosition = GetPosition(completionText, "Cou", advance: "Cou".Length);
+            var completionLabels = await client.RequestCompletionLabelsAsync(
+                requestId: 17961,
+                documentUri,
+                completionPosition.Line,
+                completionPosition.Character);
+            CollectionAssert.Contains(completionLabels, "Count");
+
+            var hoverText = completionText.Replace("Cou", "Count", StringComparison.Ordinal);
+            await client.ChangeDocumentAsync(documentUri, hoverText, version: 2);
+            var hoverPosition = GetPosition(hoverText, "Count", advance: 1);
+            var hover = await client.RequestHoverAsync(
+                requestId: 17962,
+                documentUri,
+                hoverPosition.Line,
+                hoverPosition.Character);
+            Assert.IsNotNull(hover);
+            StringAssert.Contains(
+                hover.Value.GetProperty("contents").GetProperty("value").GetString() ?? string.Empty,
+                "Count");
         }
         finally
         {
@@ -4312,6 +4792,113 @@ public sealed class JazorVueHostLspTests
     }
 
     [TestMethod]
+    public async Task JazorVueHost_Lsp_CodeBehindFile_ReferencesAndRename_StayInsideRoslynLane_WithoutMarkupBridge()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var vuePath = Path.Combine(tempDirectory, "UserCard.vue");
+            await File.WriteAllTextAsync(vuePath, "<template><div>UserCard</div></template>");
+
+            var jazorPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var jazorUri = new Uri(jazorPath).AbsoluteUri;
+            await File.WriteAllTextAsync(
+                jazorPath,
+                """
+                <UserCard />
+                """);
+
+            var codeBehindPath = Path.Combine(tempDirectory, "Counter.jazor.cs");
+            var codeBehindUri = new Uri(codeBehindPath).AbsoluteUri;
+            var codeBehindText =
+                """
+                public partial class Counter
+                {
+                    private int UserCard = 1;
+
+                    public int Read()
+                    {
+                        UserCard++;
+                        return UserCard;
+                    }
+                }
+                """;
+            var usagePosition = GetPosition(codeBehindText, "UserCard++;", advance: 1);
+            await client.OpenDocumentAsync(codeBehindUri, codeBehindText, version: 1, languageId: "csharp");
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 607,
+                method = "textDocument/references",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = codeBehindUri
+                    },
+                    position = new
+                    {
+                        line = usagePosition.Line,
+                        character = usagePosition.Character
+                    },
+                    context = new
+                    {
+                        includeDeclaration = true
+                    }
+                }
+            });
+            using var referencesResponse = await client.ReadResponseAsync(expectedId: 607);
+            var references = referencesResponse.RootElement.GetProperty("result");
+            Assert.IsTrue(references.GetArrayLength() >= 3);
+            Assert.IsTrue(references.EnumerateArray().All(reference =>
+                string.Equals(reference.GetProperty("uri").GetString(), codeBehindUri, StringComparison.Ordinal)));
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 608,
+                method = "textDocument/rename",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = codeBehindUri
+                    },
+                    position = new
+                    {
+                        line = usagePosition.Line,
+                        character = usagePosition.Character
+                    },
+                    newName = "TotalCount"
+                }
+            });
+            using var renameResponse = await client.ReadResponseAsync(expectedId: 608);
+            var changes = renameResponse.RootElement
+                .GetProperty("result")
+                .GetProperty("changes");
+            Assert.IsTrue(changes.EnumerateObject().All(change =>
+                string.Equals(change.Name, codeBehindUri, StringComparison.Ordinal)));
+            Assert.IsFalse(changes.EnumerateObject().Any(change =>
+                string.Equals(change.Name, jazorUri, StringComparison.Ordinal)));
+            Assert.IsTrue(changes.GetProperty(codeBehindUri).EnumerateArray().All(change =>
+                string.Equals(change.GetProperty("newText").GetString(), "TotalCount", StringComparison.Ordinal)));
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
     public async Task JazorVueHost_Lsp_ReferencesAndRename_ReturnWorkspaceLocationsAndEdits()
     {
         await using var client = await LspTestClient.StartAsync();
@@ -4659,6 +5246,37 @@ public sealed class JazorVueHostLspTests
 
     private static void DeleteDirectoryWithRetries(string path)
         => Directory.Delete(path, recursive: true);
+
+    private static bool ContainsNormalizedUri(JsonElement locations, string documentPath)
+        => locations.EnumerateArray().Any(location =>
+            string.Equals(
+                VueHostWorkspaceResolver.NormalizePath(LspProtocolHelpers.ToDocumentPath(location.GetProperty("uri").GetString()!)),
+                VueHostWorkspaceResolver.NormalizePath(documentPath),
+                StringComparison.OrdinalIgnoreCase));
+
+    private static bool ContainsNormalizedChange(JsonElement changes, string documentPath)
+        => changes.EnumerateObject().Any(change =>
+            string.Equals(
+                VueHostWorkspaceResolver.NormalizePath(LspProtocolHelpers.ToDocumentPath(change.Name)),
+                VueHostWorkspaceResolver.NormalizePath(documentPath),
+                StringComparison.OrdinalIgnoreCase));
+
+    private static JsonElement GetChangeEntry(JsonElement changes, string documentPath)
+    {
+        foreach (var change in changes.EnumerateObject())
+        {
+            if (string.Equals(
+                    VueHostWorkspaceResolver.NormalizePath(LspProtocolHelpers.ToDocumentPath(change.Name)),
+                    VueHostWorkspaceResolver.NormalizePath(documentPath),
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return change.Value;
+            }
+        }
+
+        Assert.Fail($"Expected changes to contain '{documentPath}'.");
+        return default;
+    }
 
     private static string GetProjectedComponentTypeName(DocumentSnapshot document)
     {

@@ -17,6 +17,9 @@ Implementation model:
 - `.jazor` is the only authoring document and remains Razor-first.
 - IntelliSense and build/materialization are separate stages.
 - `.jazor` template IntelliSense runs on the source document plus VueHost-coordinated Razor/Roslyn bridge metadata; it does not materialize or depend on a projected `.g.vue` file.
+- standalone `.cs` documents now route directly into the Roslyn lane through an identity projection, so `.jazor` code regions and real `.cs` files share the same in-proc Roslyn semantic path.
+- Roslyn `definition` / `references` / `rename` now expand beyond open buffers through bounded workspace `.cs` / `.jazor` discovery, so unopened project files can participate in source-level navigation without introducing a separate project system.
+- the shared workspace resolver now treats tracked `.cs` files as workspace-root seeds alongside `.jazor` and `.vue`, which keeps bounded source discovery aligned across Roslyn and bridge paths.
 - Razor/Roslyn semantics and Volar semantics stay native to their own lanes; VueHost only routes, maps, and aggregates them.
 - nearby `.vue`, `.css`, `.js`, and `.ts` are part of the workspace graph, not separate host boundaries.
 - `.vue` and `.jazor` should participate in the same workspace navigation graph for definition, references, and rename.
@@ -30,7 +33,7 @@ Current scope:
 
 - executable host project targeting `net10.0`
 - stdio RPC and LSP serving for `.jazor`
-- workspace store abstraction for `.jazor` / `.vue` / `.js` / `.ts`
+- workspace store abstraction for `.jazor` / `.cs` / `.vue` / `.js` / `.ts`
 - Deno Volar worker integration for Vue/TS/CSS/HTML semantics
 - host-local analysis fallback for virtual artifact generation
 - protocol and projection orchestration
@@ -63,12 +66,14 @@ Runtime modes:
 LSP mode:
 
 - current LSP surface: `initialize`, `initialized`, `textDocument/didOpen`, `textDocument/didChange`, `textDocument/didClose`, `textDocument/hover`, `textDocument/completion`, `textDocument/documentSymbol`, `textDocument/semanticTokens/full`, `textDocument/definition`, `textDocument/references`, `textDocument/rename`, `textDocument/codeAction`, `shutdown`, `exit`
-- current focus: `.jazor` diagnostics plus source-document `.jazor <-> .vue` markup navigation coordinated through Volar bridge metadata, together with self-contained Volar-lane completion/hover/definition/references/rename/document symbols/semantic tokens for real `.vue`, `.ts`, `.js`, `.css`, and `.html`
-- current IntelliSense contract: nearby/open `.vue` can suppress unresolved component diagnostics for open `.jazor`; `.vue -> .jazor` rename/reference stays markup-only; script-side `.ts` / `.vue <script>` imports now preserve native Volar/tsserver definitions into `.vue`, then let VueHost bridge references/rename into nearby `.jazor` markup without touching `@code` identifiers; rename/document symbols/semantic tokens still stay conservative and unsafe named-import rename requests still return no result instead of fabricating edits
-- current bridge seam: `MarkupComponentBridgeService` owns the shared `MarkupBridgeSymbol` identity used to connect Volar locations and `.jazor` markup scans; the next cleanup step is to keep widening that shared symbol path rather than inventing a parallel LSP layer
+- current focus: `.jazor` diagnostics plus source-document `.jazor <-> .vue` markup navigation coordinated through Volar coordination metadata, direct `.cs` Roslyn semantics on the same host path, and self-contained Volar-lane completion/hover/definition/references/rename/document symbols/semantic tokens for real `.vue`, `.ts`, `.js`, `.css`, and `.html`
+- current Roslyn scope: bounded workspace source discovery for `definition` / `references` / `rename` now includes tracked documents plus unopened disk-backed `.cs/.jazor`; this improves project-level source navigation, but it is still lighter than a full MSBuild-backed Roslyn project graph
+- current IntelliSense contract: nearby/open `.vue` can suppress unresolved component diagnostics for open `.jazor`; `.vue -> .jazor` rename/reference stays markup-only; script-side `.ts` / `.vue <script>` imports preserve native Volar/tsserver definitions into `.vue`, then let VueHost bridge references/rename into nearby `.jazor` markup without touching `@code` identifiers; `.jazor`-origin definition/references/rename now also route through the same shared host bridge supplement instead of private lane-local fanout; rename/document symbols/semantic tokens still stay conservative and unsafe named-import rename requests still return no result instead of fabricating edits
+- current bridge seam: `MarkupComponentBridgeService` owns the shared `MarkupBridgeSymbol` identity used to connect `.jazor` markup and Volar locations, while `MarkupBridgeFanoutCoordinator` owns the shared definition/references/rename supplement path above the lanes
+- lane contract: `JazorLane` and `VolarLane` should return their own native/local results; cross-document `.jazor <-> .vue/.ts/.js` fan-out belongs in the shared coordinator path, not inside individual lanes
 - the host always wires the Jazor lane, an in-proc Roslyn-backed code lane, and the bundled Deno Volar lane
-- semantic request routing no longer appends Jazor fallback behind frontend/code lanes; if a lane cannot answer, VueHost returns no semantic result instead of synthesizing one from another lane
-- the self-contained Deno worker now serves real `.vue` / `.ts` / `.js` / `.css` / `.html` Volar/TypeScript semantics, while `.jazor` template requests stay on the source document and consume VueHost-coordinated frontend metadata instead of a projected `.g.vue`
+- semantic request routing no longer fabricates lane-local fallback behind frontend/code lanes; native lane answers stay native, and only the shared host bridge supplement adds cross-lane `definition/references/rename` results when bridge identity can be resolved
+- the self-contained Deno worker now serves real `.vue` / `.ts` / `.js` / `.css` / `.html` Volar/TypeScript semantics, while `.jazor` template requests stay on the source document and consume VueHost-coordinated Volar metadata instead of a projected `.g.vue`
 - the bundled Deno worker is enabled by default, primes its dependency cache into `Frontend/Deno/Cache` at build time, resolves worker-local npm dependencies through `Frontend/Deno/Worker/deno.json`, starts with `--cached-only --allow-env --allow-read`, sets `DENO_DIR` to that bundled cache, and the Volar lane only supplements it with workspace-graph results while that worker is actually active
 
 Volar/Deno runtime path:
