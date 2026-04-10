@@ -58,7 +58,7 @@ internal sealed class CodeActionCoordinator
         IReadOnlyList<LspDiagnostic> diagnostics)
     {
         var laneKinds = _laneRouter.GetOrderedLanes(projectionTarget).ToList();
-        if (ContainsFrontendDiagnostic(diagnostics) && !laneKinds.Contains(LaneKind.Volar))
+        if (ContainsVolarDiagnostic(diagnostics) && !laneKinds.Contains(LaneKind.Volar))
         {
             laneKinds.Add(LaneKind.Volar);
         }
@@ -71,7 +71,7 @@ internal sealed class CodeActionCoordinator
         return laneKinds;
     }
 
-    private static bool ContainsFrontendDiagnostic(IReadOnlyList<LspDiagnostic> diagnostics)
+    private static bool ContainsVolarDiagnostic(IReadOnlyList<LspDiagnostic> diagnostics)
         => diagnostics.Any(diagnostic =>
             string.Equals(diagnostic.Source, "Jazor.VueHost.Frontend", StringComparison.Ordinal)
             || string.Equals(diagnostic.Code, "JAZORVUEFRONTEND001", StringComparison.Ordinal)

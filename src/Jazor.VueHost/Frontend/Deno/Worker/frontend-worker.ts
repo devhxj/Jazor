@@ -1100,6 +1100,23 @@ function getScriptHover(context: ScriptContext, position: Position): unknown | n
 function getScriptDefinition(context: ScriptContext, position: Position): unknown[] {
   const typeScriptDefinitions = tryGetTypeScriptDefinition(context, position);
   if (typeScriptDefinitions !== undefined) {
+    const symbol = resolveScriptSymbolAtPosition(context, position);
+    if (symbol?.resolvedImportPath !== undefined
+      && normalizePath(symbol.resolvedImportPath).endsWith(".vue")) {
+      const currentDocumentUri = toDocumentUri(context.sourceDocumentPath).toLowerCase();
+      const hasExternalDefinition = typeScriptDefinitions.some((definition) => {
+        if (typeof definition !== "object" || definition === null || !("uri" in definition)) {
+          return false;
+        }
+
+        const uri = (definition as { uri?: string }).uri;
+        return typeof uri === "string" && uri.toLowerCase() !== currentDocumentUri;
+      });
+      if (!hasExternalDefinition) {
+        return [createImportDefinitionLocation(symbol)];
+      }
+    }
+
     return typeScriptDefinitions;
   }
 
@@ -1486,7 +1503,21 @@ function tryMapTypeScriptTextSpan(
 ): { uri: string; range: { start: Position; end: Position } } | null {
   const context = tryGetTypeScriptProjectContext(project, fileName);
   if (context === null || context === undefined) {
-    return null;
+    const normalizedFileName = normalizePath(fileName);
+    if (!normalizedFileName.endsWith(".vue")) {
+      return null;
+    }
+
+    // Template-only Vue components do not create a script context, but
+    // TypeScript still resolves default imports to the source .vue file.
+    // Preserve that native target so VueHost can bridge references/rename.
+    return {
+      uri: toDocumentUri(normalizedFileName),
+      range: {
+        start: { line: 0, character: 0 },
+        end: { line: 0, character: 0 },
+      },
+    };
   }
 
   const scriptRange = toRange(context.scriptText, textSpan.start, textSpan.length) as { start: Position; end: Position };

@@ -1,6 +1,7 @@
 using Jazor.VueContracts.Protocol;
 using Jazor.VueHost.Frontend;
 using Jazor.VueHost.Frontend.Deno.Hosting;
+using Jazor.VueHost.Lsp.Coordination;
 using Jazor.VueHost.Lsp.Routing;
 using Jazor.VueHost.VirtualDocuments.Mapping;
 using Jazor.VueHost.VirtualDocuments.Models;
@@ -19,21 +20,23 @@ internal sealed class VolarLaneService : ILspLane
     private static readonly Regex TagCompletionPrefixPattern = new(
         @"</?(?<name>[A-Za-z0-9_]*)$",
         RegexOptions.Compiled);
-    private readonly IVueHostWorkspaceStore _workspaceStore;
     private readonly IFrontendContextProvider? _frontendContextProvider;
     private readonly IVirtualDocumentRegistry? _virtualDocumentRegistry;
     private readonly IDenoVolarHost? _denoVolarHost;
+    private readonly MarkupComponentBridgeService _markupComponentBridge;
 
     public VolarLaneService(
         IVueHostWorkspaceStore workspaceStore,
         IFrontendContextProvider? frontendContextProvider = null,
         IVirtualDocumentRegistry? virtualDocumentRegistry = null,
-        IDenoVolarHost? denoVolarHost = null)
+        IDenoVolarHost? denoVolarHost = null,
+        MarkupComponentBridgeService? markupComponentBridge = null)
     {
-        _workspaceStore = workspaceStore ?? throw new ArgumentNullException(nameof(workspaceStore));
+        ArgumentNullException.ThrowIfNull(workspaceStore);
         _frontendContextProvider = frontendContextProvider;
         _virtualDocumentRegistry = virtualDocumentRegistry;
         _denoVolarHost = denoVolarHost;
+        _markupComponentBridge = markupComponentBridge ?? new MarkupComponentBridgeService(workspaceStore);
     }
 
     public LaneKind LaneKind => LaneKind.Volar;
@@ -44,7 +47,7 @@ internal sealed class VolarLaneService : ILspLane
     {
         var diagnostics = new List<LspDiagnostic>();
         var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget: null, cancellationToken);
-        var frontendContext = await GetFrontendIntelliSenseContextAsync(document, cancellationToken);
+        var frontendContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
         var denoDiagnostics = await TryGetDenoDiagnosticsAsync(frontendDocument.RequestDocument, frontendContext, cancellationToken);
         diagnostics.AddRange(await FilterDenoDiagnosticsAsync(document, MapDiagnostics(document, frontendDocument, denoDiagnostics), cancellationToken));
 
@@ -75,7 +78,7 @@ internal sealed class VolarLaneService : ILspLane
 
         var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget, cancellationToken);
         var requestPosition = frontendDocument.MapPosition(position, projectionTarget.ProjectedPosition);
-        var frontendContext = await GetFrontendIntelliSenseContextAsync(document, cancellationToken);
+        var frontendContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
         var denoResult = await TryGetDenoHoverAsync(frontendDocument.RequestDocument, requestPosition, frontendContext, cancellationToken);
         if (denoResult is not null)
         {
@@ -87,26 +90,7 @@ internal sealed class VolarLaneService : ILspLane
             return null;
         }
 
-        if (!TryFindComponentTagSymbol(document.Text, position, out var symbol))
-        {
-            return null;
-        }
-
-        var resolvedComponent = await ResolveVueComponentAsync(document.DocumentPath, symbol.ComponentName, cancellationToken, allowWorkspaceScan: true);
-        if (resolvedComponent is null)
-        {
-            return null;
-        }
-
-        return new LspHoverResult
-        {
-            Contents = new LspMarkupContent
-            {
-                Kind = "markdown",
-                Value = $"`{symbol.ComponentName}` resolved from Razor markup to `{resolvedComponent.Value.ImportPath}`\n\nkind: `VueComponent`"
-            },
-            Range = symbol.Range
-        };
+        return await _markupComponentBridge.GetHoverAsync(document, position, allowWorkspaceScan: true, cancellationToken);
     }
 
     public async ValueTask<IReadOnlyList<LspCompletionItem>> GetCompletionItemsAsync(
@@ -122,7 +106,7 @@ internal sealed class VolarLaneService : ILspLane
 
         var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget, cancellationToken);
         var requestPosition = frontendDocument.MapPosition(position, projectionTarget.ProjectedPosition);
-        var frontendContext = await GetFrontendIntelliSenseContextAsync(document, cancellationToken);
+        var frontendContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
         var items = new List<LspCompletionItem>();
         var seen = new HashSet<string>(StringComparer.Ordinal);
         foreach (var item in await TryGetDenoCompletionItemsAsync(frontendDocument.RequestDocument, requestPosition, frontendContext, cancellationToken))
@@ -137,7 +121,10 @@ internal sealed class VolarLaneService : ILspLane
             && CanUseWorkspaceGraph()
             && TryGetTagCompletionPrefix(document.Text, position, out var tagPrefix))
         {
-            foreach (var component in await GetVueComponentSuggestionsAsync(document.DocumentPath, cancellationToken))
+            foreach (var component in await _markupComponentBridge.GetComponentSuggestionsAsync(
+                         document.DocumentPath,
+                         allowWorkspaceScan: document.DocumentKind == DocumentKind.Jazor,
+                         cancellationToken))
             {
                 if (!component.ComponentName.StartsWith(tagPrefix, StringComparison.OrdinalIgnoreCase))
                 {
@@ -176,7 +163,7 @@ internal sealed class VolarLaneService : ILspLane
         }
 
         var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget: null, cancellationToken);
-        var frontendContext = await GetFrontendIntelliSenseContextAsync(document, cancellationToken);
+        var frontendContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
         var tokens = await TryGetDenoSemanticTokensAsync(frontendDocument.RequestDocument, frontendContext, cancellationToken);
         return MapSemanticTokens(document, frontendDocument, tokens);
     }
@@ -187,7 +174,7 @@ internal sealed class VolarLaneService : ILspLane
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var frontendContext = await GetFrontendIntelliSenseContextAsync(document, cancellationToken);
+        var frontendContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
         var denoResult = await TryGetDenoDocumentSymbolsAsync(document, frontendContext, cancellationToken);
         if (denoResult is { Count: > 0 })
         {
@@ -217,7 +204,7 @@ internal sealed class VolarLaneService : ILspLane
 
         var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget, cancellationToken);
         var requestPosition = frontendDocument.MapPosition(position, projectionTarget.ProjectedPosition);
-        var frontendContext = await GetFrontendIntelliSenseContextAsync(document, cancellationToken);
+        var frontendContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
         var denoResult = await TryGetDenoDefinitionsAsync(frontendDocument.RequestDocument, requestPosition, frontendContext, cancellationToken);
         if (denoResult is { Count: > 0 })
         {
@@ -229,29 +216,7 @@ internal sealed class VolarLaneService : ILspLane
             return Array.Empty<LspLocation>();
         }
 
-        if (!TryFindComponentTagSymbol(document.Text, position, out var symbol))
-        {
-            return Array.Empty<LspLocation>();
-        }
-
-        var resolvedComponent = await ResolveVueComponentAsync(document.DocumentPath, symbol.ComponentName, cancellationToken, allowWorkspaceScan: true);
-        if (resolvedComponent is null)
-        {
-            return Array.Empty<LspLocation>();
-        }
-
-        return
-        [
-            new LspLocation
-            {
-                Uri = LspProtocolHelpers.ToDocumentUri(resolvedComponent.Value.AbsolutePath),
-                Range = new LspRange
-                {
-                    Start = new LspPosition { Line = 0, Character = 0 },
-                    End = new LspPosition { Line = 0, Character = 0 }
-                }
-            }
-        ];
+        return await _markupComponentBridge.GetDefinitionAsync(document, position, allowWorkspaceScan: true, cancellationToken);
     }
 
     public async ValueTask<IReadOnlyList<LspLocation>> GetReferencesAsync(
@@ -268,17 +233,32 @@ internal sealed class VolarLaneService : ILspLane
 
         var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget, cancellationToken);
         var requestPosition = frontendDocument.MapPosition(position, projectionTarget.ProjectedPosition);
-        var frontendContext = await GetFrontendIntelliSenseContextAsync(document, cancellationToken);
+        var frontendContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
         var locations = new List<LspLocation>();
+        var denoLocations = await TryGetDenoReferencesAsync(
+            frontendDocument.RequestDocument,
+            requestPosition,
+            includeDeclaration,
+            frontendContext,
+            cancellationToken);
         locations.AddRange(MapLocations(
             document,
             frontendDocument,
-            await TryGetDenoReferencesAsync(frontendDocument.RequestDocument, requestPosition, includeDeclaration, frontendContext, cancellationToken)));
+            denoLocations));
         if (frontendDocument.ProjectionMap is null
-            && CanUseWorkspaceGraph()
-            && TryFindComponentTagSymbol(document.Text, position, out var symbol))
+            && await _markupComponentBridge.ResolveBridgeSymbolAsync(
+                    document,
+                    position,
+                    includeDeclaration ? denoLocations : null,
+                    allowWorkspaceScan: true,
+                    cancellationToken) is { } resolvedComponent)
         {
-            locations.AddRange(await FindWorkspaceReferencesAsync(document, symbol, includeDeclaration, cancellationToken));
+            locations.AddRange(await _markupComponentBridge.FindJazorReferencesAsync(
+                document,
+                resolvedComponent.ComponentName,
+                resolvedComponent.AbsolutePath,
+                includeDeclaration,
+                cancellationToken));
         }
 
         return locations
@@ -301,7 +281,7 @@ internal sealed class VolarLaneService : ILspLane
 
         var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget, cancellationToken);
         var requestPosition = frontendDocument.MapPosition(position, projectionTarget.ProjectedPosition);
-        var frontendContext = await GetFrontendIntelliSenseContextAsync(document, cancellationToken);
+        var frontendContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
         var changes = new Dictionary<string, List<LspTextEdit>>(StringComparer.Ordinal);
         var denoResult = MapWorkspaceEdit(
             document,
@@ -322,10 +302,19 @@ internal sealed class VolarLaneService : ILspLane
         }
 
         if (frontendDocument.ProjectionMap is null
-            && CanUseWorkspaceGraph()
-            && TryFindComponentTagSymbol(document.Text, position, out var symbol))
+            && await _markupComponentBridge.ResolveBridgeSymbolAsync(
+                    document,
+                    position,
+                    locationHints: null,
+                    allowWorkspaceScan: true,
+                    cancellationToken) is { } resolvedComponent)
         {
-            foreach (var change in await FindWorkspaceRenameChangesAsync(document, symbol, newName, cancellationToken))
+            foreach (var change in await _markupComponentBridge.FindJazorRenameChangesAsync(
+                         document,
+                         resolvedComponent.ComponentName,
+                         resolvedComponent.AbsolutePath,
+                         newName,
+                         cancellationToken))
             {
                 if (!changes.TryGetValue(change.Key, out var edits))
                 {
@@ -381,31 +370,6 @@ internal sealed class VolarLaneService : ILspLane
 
         tagPrefix = match.Groups["name"].Value;
         return true;
-    }
-
-    private static bool TryFindComponentTagSymbol(string text, LspPosition position, out ComponentTagSymbol symbol)
-    {
-        var offset = LspProtocolHelpers.GetOffset(text, position);
-        foreach (Match match in ComponentTagPattern.Matches(text))
-        {
-            var group = match.Groups["name"];
-            if (offset < group.Index || offset > group.Index + group.Length)
-            {
-                continue;
-            }
-
-            symbol = new ComponentTagSymbol(
-                group.Value,
-                new LspRange
-                {
-                    Start = LspProtocolHelpers.GetPosition(text, group.Index),
-                    End = LspProtocolHelpers.GetPosition(text, group.Index + group.Length)
-                });
-            return true;
-        }
-
-        symbol = default;
-        return false;
     }
 
     private async ValueTask<IReadOnlyList<LspCompletionItem>> TryGetDenoCompletionItemsAsync(
@@ -580,7 +544,7 @@ internal sealed class VolarLaneService : ILspLane
         }
     }
 
-    private async ValueTask<DenoVolarIntelliSenseContext?> GetFrontendIntelliSenseContextAsync(
+    private async ValueTask<DenoVolarIntelliSenseContext?> GetVolarIntelliSenseContextAsync(
         DocumentSnapshot document,
         CancellationToken cancellationToken)
     {
@@ -602,14 +566,14 @@ internal sealed class VolarLaneService : ILspLane
         }
     }
 
-    private async ValueTask<FrontendRequestDocument> ResolveFrontendDocumentAsync(
+    private async ValueTask<VolarRequestDocument> ResolveFrontendDocumentAsync(
         DocumentSnapshot sourceDocument,
         ProjectionTarget? projectionTarget,
         CancellationToken cancellationToken)
     {
         if (sourceDocument.DocumentKind == DocumentKind.Jazor)
         {
-            return new FrontendRequestDocument(sourceDocument, ProjectionMap: null);
+            return new VolarRequestDocument(sourceDocument, ProjectionMap: null);
         }
 
         if (_virtualDocumentRegistry is not null)
@@ -631,7 +595,7 @@ internal sealed class VolarLaneService : ILspLane
 
             if (projectedDocument is not null)
             {
-                return new FrontendRequestDocument(
+                return new VolarRequestDocument(
                     new DocumentSnapshot(
                         projectedDocument.Identity.ProjectedDocumentPath,
                         MapProjectedDocumentKind(projectedDocument.Identity.DocumentKind),
@@ -641,7 +605,7 @@ internal sealed class VolarLaneService : ILspLane
             }
         }
 
-        return new FrontendRequestDocument(sourceDocument, ProjectionMap: null);
+        return new VolarRequestDocument(sourceDocument, ProjectionMap: null);
     }
 
     private static DocumentKind MapProjectedDocumentKind(VirtualDocumentKind documentKind)
@@ -654,7 +618,7 @@ internal sealed class VolarLaneService : ILspLane
 
     private static IReadOnlyList<LspDiagnostic> MapDiagnostics(
         DocumentSnapshot sourceDocument,
-        FrontendRequestDocument requestDocument,
+        VolarRequestDocument requestDocument,
         IReadOnlyList<LspDiagnostic> diagnostics)
     {
         if (requestDocument.ProjectionMap is null)
@@ -690,7 +654,7 @@ internal sealed class VolarLaneService : ILspLane
 
     private static LspHoverResult? MapHover(
         DocumentSnapshot sourceDocument,
-        FrontendRequestDocument requestDocument,
+        VolarRequestDocument requestDocument,
         LspHoverResult? hover)
     {
         if (hover is null || requestDocument.ProjectionMap is null || hover.Range is null)
@@ -720,7 +684,7 @@ internal sealed class VolarLaneService : ILspLane
 
     private static IReadOnlyList<LspLocation> MapLocations(
         DocumentSnapshot sourceDocument,
-        FrontendRequestDocument requestDocument,
+        VolarRequestDocument requestDocument,
         IReadOnlyList<LspLocation> locations)
     {
         if (requestDocument.ProjectionMap is null)
@@ -759,7 +723,7 @@ internal sealed class VolarLaneService : ILspLane
 
     private static LspWorkspaceEdit? MapWorkspaceEdit(
         DocumentSnapshot sourceDocument,
-        FrontendRequestDocument requestDocument,
+        VolarRequestDocument requestDocument,
         LspWorkspaceEdit? workspaceEdit)
     {
         if (workspaceEdit is null || requestDocument.ProjectionMap is null)
@@ -816,7 +780,7 @@ internal sealed class VolarLaneService : ILspLane
 
     private static IReadOnlyList<LspSemanticToken> MapSemanticTokens(
         DocumentSnapshot sourceDocument,
-        FrontendRequestDocument requestDocument,
+        VolarRequestDocument requestDocument,
         IReadOnlyList<LspSemanticToken> tokens)
     {
         if (requestDocument.ProjectionMap is null)
@@ -883,11 +847,11 @@ internal sealed class VolarLaneService : ILspLane
                 continue;
             }
 
-            var isResolvable = await ResolveVueComponentAsync(
+            var isResolvable = await _markupComponentBridge.ResolveComponentAsync(
                     document.DocumentPath,
                     group.Value,
-                    cancellationToken,
-                    allowWorkspaceScan: document.DocumentKind == DocumentKind.Jazor)
+                    allowWorkspaceScan: document.DocumentKind == DocumentKind.Jazor,
+                    cancellationToken)
                 is not null;
             if (isResolvable)
             {
@@ -927,11 +891,11 @@ internal sealed class VolarLaneService : ILspLane
 
             var componentName = TryGetComponentName(document.Text, diagnostic.Range);
             if (componentName is not null
-                && await ResolveVueComponentAsync(
+                && await _markupComponentBridge.ResolveComponentAsync(
                         document.DocumentPath,
                         componentName,
-                        cancellationToken,
-                        allowWorkspaceScan: document.DocumentKind == DocumentKind.Jazor) is not null)
+                        allowWorkspaceScan: document.DocumentKind == DocumentKind.Jazor,
+                        cancellationToken) is not null)
             {
                 continue;
             }
@@ -940,33 +904,6 @@ internal sealed class VolarLaneService : ILspLane
         }
 
         return filtered;
-    }
-
-    private static IReadOnlyList<LspLocation> FindComponentTagLocations(
-        DocumentSnapshot document,
-        string componentName)
-    {
-        var locations = new List<LspLocation>();
-        foreach (Match match in ComponentTagPattern.Matches(document.Text))
-        {
-            var group = match.Groups["name"];
-            if (!string.Equals(group.Value, componentName, StringComparison.Ordinal))
-            {
-                continue;
-            }
-
-            locations.Add(new LspLocation
-            {
-                Uri = LspProtocolHelpers.ToDocumentUri(document.DocumentPath),
-                Range = new LspRange
-                {
-                    Start = LspProtocolHelpers.GetPosition(document.Text, group.Index),
-                    End = LspProtocolHelpers.GetPosition(document.Text, group.Index + group.Length)
-                }
-            });
-        }
-
-        return locations;
     }
 
     private static string? TryGetComponentName(string text, LspRange range)
@@ -981,264 +918,10 @@ internal sealed class VolarLaneService : ILspLane
         return text.Substring(start, Math.Min(length, text.Length - start));
     }
 
-    private async ValueTask<ResolvedVueComponent?> ResolveVueComponentAsync(
-        string documentPath,
-        string componentName,
-        CancellationToken cancellationToken,
-        bool allowWorkspaceScan)
-    {
-        var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
-        if (VueHostWorkspaceResolver.TryResolveTrackedNearbyVueComponent(documentPath, componentName, openDocuments, out var trackedNearby))
-        {
-            return new ResolvedVueComponent(trackedNearby.ComponentName, trackedNearby.AbsolutePath, trackedNearby.ImportPath);
-        }
-
-        if (VueHostWorkspaceResolver.TryResolveNearbyVueComponent(documentPath, componentName, out var componentPath, out var importPath))
-        {
-            return new ResolvedVueComponent(componentName, componentPath, importPath);
-        }
-
-        if (VueHostWorkspaceResolver.TryResolveTrackedVueComponent(documentPath, componentName, openDocuments, out var tracked))
-        {
-            return new ResolvedVueComponent(tracked.ComponentName, tracked.AbsolutePath, tracked.ImportPath);
-        }
-
-        if (allowWorkspaceScan
-            && VueHostWorkspaceResolver.ResolveWorkspaceVueComponent(documentPath, componentName, openDocuments, cancellationToken) is { } workspaceResolved)
-        {
-            return new ResolvedVueComponent(workspaceResolved.ComponentName, workspaceResolved.AbsolutePath, workspaceResolved.ImportPath);
-        }
-
-        return null;
-    }
-
-    private async ValueTask<IReadOnlyList<ResolvedVueComponent>> GetVueComponentSuggestionsAsync(
-        string documentPath,
-        CancellationToken cancellationToken)
-    {
-        var suggestions = new List<ResolvedVueComponent>();
-        var seenPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
-
-        foreach (var tracked in VueHostWorkspaceResolver.EnumerateTrackedVueComponents(documentPath, openDocuments))
-        {
-            if (seenPaths.Add(VueHostWorkspaceResolver.NormalizePath(tracked.AbsolutePath)))
-            {
-                suggestions.Add(new ResolvedVueComponent(tracked.ComponentName, tracked.AbsolutePath, tracked.ImportPath));
-            }
-        }
-
-        foreach (var nearby in VueHostWorkspaceResolver.EnumerateNearbyVueComponents(documentPath))
-        {
-            if (seenPaths.Add(VueHostWorkspaceResolver.NormalizePath(nearby.AbsolutePath)))
-            {
-                suggestions.Add(new ResolvedVueComponent(nearby.ComponentName, nearby.AbsolutePath, nearby.ImportPath));
-            }
-        }
-
-        if (VueHostWorkspaceResolver.MapDocumentKind(documentPath) == DocumentKind.Jazor)
-        {
-            foreach (var workspace in VueHostWorkspaceResolver.EnumerateWorkspaceVueComponents(documentPath, openDocuments, cancellationToken))
-            {
-                if (seenPaths.Add(VueHostWorkspaceResolver.NormalizePath(workspace.AbsolutePath)))
-                {
-                    suggestions.Add(new ResolvedVueComponent(workspace.ComponentName, workspace.AbsolutePath, workspace.ImportPath));
-                }
-            }
-        }
-
-        return suggestions;
-    }
-
     private bool CanUseWorkspaceGraph()
         => _denoVolarHost?.IsRunning == true;
 
-    private async ValueTask<IReadOnlyList<LspLocation>> FindWorkspaceReferencesAsync(
-        DocumentSnapshot document,
-        ComponentTagSymbol symbol,
-        bool includeDeclaration,
-        CancellationToken cancellationToken)
-    {
-        var resolvedComponent = await ResolveVueComponentAsync(document.DocumentPath, symbol.ComponentName, cancellationToken, allowWorkspaceScan: true);
-        if (resolvedComponent is null)
-        {
-            return Array.Empty<LspLocation>();
-        }
-
-        var locations = new List<LspLocation>();
-        if (includeDeclaration)
-        {
-            locations.Add(new LspLocation
-            {
-                Uri = LspProtocolHelpers.ToDocumentUri(resolvedComponent.Value.AbsolutePath),
-                Range = new LspRange
-                {
-                    Start = new LspPosition { Line = 0, Character = 0 },
-                    End = new LspPosition { Line = 0, Character = 0 }
-                }
-            });
-        }
-
-        var candidateDocuments = await GetReferenceCandidateDocumentsAsync(
-            document,
-            resolvedComponent.Value.AbsolutePath,
-            cancellationToken);
-        foreach (var candidateDocument in candidateDocuments)
-        {
-            locations.AddRange(FindComponentTagLocations(candidateDocument, symbol.ComponentName));
-        }
-
-        return locations;
-    }
-
-    private async ValueTask<Dictionary<string, LspTextEdit[]>> FindWorkspaceRenameChangesAsync(
-        DocumentSnapshot document,
-        ComponentTagSymbol symbol,
-        string newName,
-        CancellationToken cancellationToken)
-    {
-        var resolvedComponent = await ResolveVueComponentAsync(document.DocumentPath, symbol.ComponentName, cancellationToken, allowWorkspaceScan: true);
-        if (resolvedComponent is null)
-        {
-            return [];
-        }
-
-        var candidateDocuments = await GetReferenceCandidateDocumentsAsync(
-            document,
-            resolvedComponent.Value.AbsolutePath,
-            cancellationToken);
-        var changes = new Dictionary<string, LspTextEdit[]>(StringComparer.Ordinal);
-        foreach (var candidateDocument in candidateDocuments)
-        {
-            var edits = FindComponentTagLocations(candidateDocument, symbol.ComponentName)
-                .Select(location => new LspTextEdit
-                {
-                    Range = location.Range,
-                    NewText = newName
-                })
-                .OrderByDescending(edit => LspProtocolHelpers.GetOffset(candidateDocument.Text, edit.Range.Start))
-                .ToArray();
-            if (edits.Length > 0)
-            {
-                changes[LspProtocolHelpers.ToDocumentUri(candidateDocument.DocumentPath)] = edits;
-            }
-        }
-
-        return changes;
-    }
-
-    private async ValueTask<IReadOnlyList<DocumentSnapshot>> GetReferenceCandidateDocumentsAsync(
-        DocumentSnapshot document,
-        string? declarationDocumentPath,
-        CancellationToken cancellationToken)
-    {
-        var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
-        var documents = new List<DocumentSnapshot>();
-        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var openDocument in openDocuments)
-        {
-            if (openDocument.DocumentKind != DocumentKind.Jazor
-                && !string.Equals(
-                    VueHostWorkspaceResolver.NormalizePath(openDocument.DocumentPath),
-                    VueHostWorkspaceResolver.NormalizePath(document.DocumentPath),
-                    StringComparison.OrdinalIgnoreCase))
-            {
-                continue;
-            }
-
-            AddDocumentCandidate(openDocument, documents, seen);
-        }
-
-        AddDocumentCandidate(document, documents, seen);
-
-        foreach (var directory in VueHostWorkspaceResolver.GetWorkspaceSearchRoots(document.DocumentPath, declarationDocumentPath, openDocuments))
-        {
-            await AddJazorDocumentsFromDirectoryAsync(directory, openDocuments, documents, seen, cancellationToken);
-        }
-
-        return documents;
-    }
-
-    private async ValueTask AddJazorDocumentsFromDirectoryAsync(
-        string directory,
-        IReadOnlyList<DocumentSnapshot> openDocuments,
-        List<DocumentSnapshot> documents,
-        HashSet<string> seen,
-        CancellationToken cancellationToken)
-    {
-        if (!Directory.Exists(directory))
-        {
-            return;
-        }
-
-        foreach (var filePath in VueHostWorkspaceResolver.EnumerateWorkspaceFiles(new[] { directory }, "*.jazor", cancellationToken))
-        {
-            var normalizedPath = VueHostWorkspaceResolver.NormalizePath(filePath);
-            var openDocument = openDocuments.FirstOrDefault(candidate =>
-                string.Equals(
-                    VueHostWorkspaceResolver.NormalizePath(candidate.DocumentPath),
-                    normalizedPath,
-                    StringComparison.OrdinalIgnoreCase));
-            if (openDocument is not null)
-            {
-                AddDocumentCandidate(openDocument, documents, seen);
-                continue;
-            }
-
-            if (seen.Contains(normalizedPath))
-            {
-                continue;
-            }
-
-            try
-            {
-                documents.Add(new DocumentSnapshot(
-                    normalizedPath,
-                    DocumentKind.Jazor,
-                    await File.ReadAllTextAsync(filePath, cancellationToken),
-                    version: null));
-                seen.Add(normalizedPath);
-            }
-            catch (FileNotFoundException)
-            {
-            }
-            catch (DirectoryNotFoundException)
-            {
-            }
-            catch (IOException)
-            {
-            }
-            catch (UnauthorizedAccessException)
-            {
-            }
-        }
-    }
-
-    private static void AddDocumentCandidate(
-        DocumentSnapshot document,
-        List<DocumentSnapshot> documents,
-        HashSet<string> seen)
-    {
-        var normalizedPath = VueHostWorkspaceResolver.NormalizePath(document.DocumentPath);
-        if (!seen.Add(normalizedPath))
-        {
-            return;
-        }
-
-        documents.Add(document);
-    }
-
-    private readonly record struct ComponentTagSymbol(
-        string ComponentName,
-        LspRange Range);
-
-    private readonly record struct ResolvedVueComponent(
-        string ComponentName,
-        string AbsolutePath,
-        string ImportPath);
-
-    private readonly record struct FrontendRequestDocument(
+    private readonly record struct VolarRequestDocument(
         DocumentSnapshot RequestDocument,
         ProjectionMap? ProjectionMap)
     {

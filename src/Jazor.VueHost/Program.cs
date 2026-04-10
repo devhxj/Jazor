@@ -48,6 +48,7 @@ var projectionResolver = new DocumentProjectionResolver(
     virtualDocumentRegistry);
 var laneRouter = new LspLaneRouter();
 var resultAggregator = new LspResultAggregator();
+var markupComponentBridge = new MarkupComponentBridgeService(workspaceStore);
 var hostService = new VueHostService(
     workspaceStore,
     analysisClient,
@@ -73,12 +74,12 @@ try
 
     if (useLsp)
     {
-        var jazorDocumentService = new JazorLspDocumentService(workspaceStore, analysisClient);
+        var jazorDocumentService = new JazorLspDocumentService(workspaceStore, analysisClient, markupComponentBridge);
         ILspLane[] lanes =
         [
             new JazorLaneService(jazorDocumentService),
             new RoslynLaneService(workspaceStore, inProcRoslynCodeService),
-            new VolarLaneService(workspaceStore, hostService, virtualDocumentRegistry, denoVolarHost)
+            new VolarLaneService(workspaceStore, hostService, virtualDocumentRegistry, denoVolarHost, markupComponentBridge)
         ];
         var laneMap = lanes.ToDictionary(static lane => lane.LaneKind);
         var lspServer = new StdioLspServer(

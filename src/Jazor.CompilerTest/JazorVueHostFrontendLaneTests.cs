@@ -2,6 +2,7 @@ using Jazor.VueContracts.Protocol;
 using Jazor.VueHost.Frontend.Deno.Hosting;
 using Jazor.VueHost.Frontend;
 using Jazor.VueHost.Lsp;
+using Jazor.VueHost.Lsp.Coordination;
 using Jazor.VueHost.Lsp.Lanes;
 using Jazor.VueHost.Lsp.Routing;
 using Jazor.VueHost.Services;
@@ -889,6 +890,246 @@ public sealed class JazorVueHostFrontendLaneTests
     }
 
     [TestMethod]
+    public async Task JazorVueHost_FrontendLaneService_GetReferences_BridgesTypeScriptVueImportIntoJazorMarkupOnly()
+    {
+        var tempDirectory = CreateTemporaryDirectory();
+
+        try
+        {
+            var declarationPath = Path.Combine(tempDirectory, "UserBadge.vue");
+            await File.WriteAllTextAsync(declarationPath, "<template><div>UserBadge</div></template>");
+
+            var scriptDocument = new DocumentSnapshot(
+                Path.Combine(tempDirectory, "consumer.ts"),
+                DocumentKind.TypeScript,
+                """
+                import UserBadge from "./UserBadge.vue";
+                export const current = UserBadge;
+                """,
+                "1");
+            await File.WriteAllTextAsync(scriptDocument.DocumentPath, scriptDocument.Text);
+
+            var openJazorDocument = new DocumentSnapshot(
+                Path.Combine(tempDirectory, "Counter.jazor"),
+                DocumentKind.Jazor,
+                """
+                <UserBadge />
+
+                @code {
+                    private string UserBadge => nameof(UserBadge);
+                }
+                """,
+                "1");
+            var diskJazorPath = Path.Combine(tempDirectory, "Dashboard.jazor");
+            await File.WriteAllTextAsync(
+                diskJazorPath,
+                """
+                <section>
+                  <UserBadge />
+                </section>
+
+                @code {
+                    private string UserBadge => nameof(UserBadge);
+                }
+                """);
+
+            var workspaceStore = new InMemoryWorkspaceStore();
+            await workspaceStore.UpsertDocumentAsync(scriptDocument, CancellationToken.None);
+            await workspaceStore.UpsertDocumentAsync(openJazorDocument, CancellationToken.None);
+            var lane = new VolarLaneService(
+                workspaceStore,
+                denoVolarHost: new FakeDenoFrontendHost
+                {
+                    References =
+                    [
+                        new LspLocation
+                        {
+                            Uri = LspProtocolHelpers.ToDocumentUri(scriptDocument.DocumentPath),
+                            Range = new LspRange
+                            {
+                                Start = new LspPosition { Line = 0, Character = 7 },
+                                End = new LspPosition { Line = 0, Character = 16 }
+                            }
+                        },
+                        new LspLocation
+                        {
+                            Uri = LspProtocolHelpers.ToDocumentUri(scriptDocument.DocumentPath),
+                            Range = new LspRange
+                            {
+                                Start = new LspPosition { Line = 1, Character = 23 },
+                                End = new LspPosition { Line = 1, Character = 32 }
+                            }
+                        }
+                    ],
+                    Definitions =
+                    [
+                        new LspLocation
+                        {
+                            Uri = LspProtocolHelpers.ToDocumentUri(declarationPath),
+                            Range = new LspRange
+                            {
+                                Start = new LspPosition { Line = 0, Character = 0 },
+                                End = new LspPosition { Line = 0, Character = 0 }
+                            }
+                        }
+                    ]
+                },
+                markupComponentBridge: new MarkupComponentBridgeService(workspaceStore));
+
+            var locations = await lane.GetReferencesAsync(
+                scriptDocument,
+                new LspPosition { Line = 0, Character = 8 },
+                includeDeclaration: true,
+                CreateVolarTarget(scriptDocument),
+                CancellationToken.None);
+
+            var scriptUri = LspProtocolHelpers.ToDocumentUri(scriptDocument.DocumentPath);
+            var declarationUri = LspProtocolHelpers.ToDocumentUri(declarationPath);
+            var openJazorUri = LspProtocolHelpers.ToDocumentUri(openJazorDocument.DocumentPath);
+            var diskJazorUri = LspProtocolHelpers.ToDocumentUri(diskJazorPath);
+
+            Assert.IsTrue(locations.Any(location => location.Uri == scriptUri));
+            Assert.IsTrue(locations.Any(location => location.Uri == declarationUri));
+            Assert.IsTrue(locations.Any(location => location.Uri == openJazorUri));
+            Assert.IsTrue(locations.Any(location => location.Uri == diskJazorUri));
+            Assert.IsFalse(locations.Any(location =>
+                location.Uri == openJazorUri
+                && location.Range.Start.Line >= 3));
+            Assert.IsFalse(locations.Any(location =>
+                location.Uri == diskJazorUri
+                && location.Range.Start.Line >= 5));
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_FrontendLaneService_GetRename_BridgesTypeScriptVueImportIntoJazorMarkupOnly()
+    {
+        var tempDirectory = CreateTemporaryDirectory();
+
+        try
+        {
+            var declarationPath = Path.Combine(tempDirectory, "UserBadge.vue");
+            await File.WriteAllTextAsync(declarationPath, "<template><div>UserBadge</div></template>");
+
+            var scriptDocument = new DocumentSnapshot(
+                Path.Combine(tempDirectory, "consumer.ts"),
+                DocumentKind.TypeScript,
+                """
+                import UserBadge from "./UserBadge.vue";
+                export const current = UserBadge;
+                """,
+                "1");
+            await File.WriteAllTextAsync(scriptDocument.DocumentPath, scriptDocument.Text);
+
+            var openJazorDocument = new DocumentSnapshot(
+                Path.Combine(tempDirectory, "Counter.jazor"),
+                DocumentKind.Jazor,
+                """
+                <UserBadge />
+
+                @code {
+                    private string UserBadge => nameof(UserBadge);
+                }
+                """,
+                "1");
+            var diskJazorPath = Path.Combine(tempDirectory, "Dashboard.jazor");
+            await File.WriteAllTextAsync(
+                diskJazorPath,
+                """
+                <section>
+                  <UserBadge />
+                </section>
+
+                @code {
+                    private string UserBadge => nameof(UserBadge);
+                }
+                """);
+
+            var scriptUri = LspProtocolHelpers.ToDocumentUri(scriptDocument.DocumentPath);
+            var workspaceStore = new InMemoryWorkspaceStore();
+            await workspaceStore.UpsertDocumentAsync(scriptDocument, CancellationToken.None);
+            await workspaceStore.UpsertDocumentAsync(openJazorDocument, CancellationToken.None);
+            var lane = new VolarLaneService(
+                workspaceStore,
+                denoVolarHost: new FakeDenoFrontendHost
+                {
+                    Definitions =
+                    [
+                        new LspLocation
+                        {
+                            Uri = LspProtocolHelpers.ToDocumentUri(declarationPath),
+                            Range = new LspRange
+                            {
+                                Start = new LspPosition { Line = 0, Character = 0 },
+                                End = new LspPosition { Line = 0, Character = 0 }
+                            }
+                        }
+                    ],
+                    RenameResult = new LspWorkspaceEdit
+                    {
+                        Changes = new Dictionary<string, LspTextEdit[]>(StringComparer.Ordinal)
+                        {
+                            [scriptUri] =
+                            [
+                                new LspTextEdit
+                                {
+                                    Range = new LspRange
+                                    {
+                                        Start = new LspPosition { Line = 0, Character = 7 },
+                                        End = new LspPosition { Line = 0, Character = 16 }
+                                    },
+                                    NewText = "ProfileBadge"
+                                },
+                                new LspTextEdit
+                                {
+                                    Range = new LspRange
+                                    {
+                                        Start = new LspPosition { Line = 1, Character = 23 },
+                                        End = new LspPosition { Line = 1, Character = 32 }
+                                    },
+                                    NewText = "ProfileBadge"
+                                }
+                            ]
+                        }
+                    }
+                },
+                markupComponentBridge: new MarkupComponentBridgeService(workspaceStore));
+
+            var edit = await lane.GetRenameAsync(
+                scriptDocument,
+                new LspPosition { Line = 0, Character = 8 },
+                "ProfileBadge",
+                CreateVolarTarget(scriptDocument),
+                CancellationToken.None);
+
+            Assert.IsNotNull(edit);
+            var openJazorUri = LspProtocolHelpers.ToDocumentUri(openJazorDocument.DocumentPath);
+            var diskJazorUri = LspProtocolHelpers.ToDocumentUri(diskJazorPath);
+            Assert.IsTrue(edit.Changes.ContainsKey(scriptUri));
+            Assert.IsTrue(edit.Changes.ContainsKey(openJazorUri));
+            Assert.IsTrue(edit.Changes.ContainsKey(diskJazorUri));
+            Assert.IsTrue(edit.Changes[openJazorUri].All(static change => change.NewText == "ProfileBadge"));
+            Assert.IsTrue(edit.Changes[diskJazorUri].All(static change => change.NewText == "ProfileBadge"));
+            Assert.IsFalse(edit.Changes[openJazorUri].Any(static change => change.Range.Start.Line >= 3));
+            Assert.IsFalse(edit.Changes[diskJazorUri].Any(static change => change.Range.Start.Line >= 5));
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
     public async Task JazorVueHost_FrontendLaneService_GetCodeActions_DoesNotOfferLegacyVueImportQuickFixForMissingComponent()
     {
         var lane = CreateLane(new FakeDenoFrontendHost());
@@ -1158,6 +1399,13 @@ public sealed class JazorVueHostFrontendLaneTests
         => new(
             LaneKind.Volar,
             DocumentRegionKind.Template,
+            document.DocumentPath,
+            document.DocumentPath);
+
+    private static ProjectionTarget CreateVolarTarget(DocumentSnapshot document)
+        => new(
+            LaneKind.Volar,
+            DocumentRegionKind.Unknown,
             document.DocumentPath,
             document.DocumentPath);
 

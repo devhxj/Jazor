@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Directory = Jazor.CompilerTest.TestDirectory;
 using Jazor.VueContracts.Protocol;
 using Jazor.VueHost.Lsp;
 using Jazor.VueHost.Razor.InProc;
@@ -168,7 +169,7 @@ public sealed class JazorVueHostLspTests
         {
             if (Directory.Exists(tempDirectory))
             {
-                Directory.Delete(tempDirectory, recursive: true);
+                DeleteDirectoryWithRetries(tempDirectory);
             }
         }
 
@@ -1127,16 +1128,815 @@ public sealed class JazorVueHostLspTests
             Assert.AreEqual(
                 "ProfileBadge",
                 changes.GetProperty(jazorUri)[0].GetProperty("newText").GetString());
+
+            await client.ShutdownAsync();
         }
         finally
         {
             if (Directory.Exists(tempDirectory))
             {
-                Directory.Delete(tempDirectory, recursive: true);
+                DeleteDirectoryWithRetries(tempDirectory);
             }
         }
+    }
 
-        await client.ShutdownAsync();
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_VueScriptImport_ReferencesAndRename_IncludeNearbyJazorDocumentsOnDisk()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var declarationPath = Path.Combine(tempDirectory, "UserBadge.vue");
+            var declarationUri = new Uri(declarationPath).AbsoluteUri;
+            await File.WriteAllTextAsync(declarationPath, "<template><div>UserBadge</div></template>");
+
+            var jazorPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var jazorUri = new Uri(jazorPath).AbsoluteUri;
+            await File.WriteAllTextAsync(
+                jazorPath,
+                """
+                <UserBadge />
+                """);
+
+            var hostPath = Path.Combine(tempDirectory, "Host.vue");
+            var hostUri = new Uri(hostPath).AbsoluteUri;
+            var hostText =
+                """
+                <script setup lang="ts">
+                import UserBadge from "./UserBadge.vue";
+                const current = UserBadge;
+                </script>
+
+                <template>
+                  <section />
+                </template>
+                """;
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                method = "textDocument/didOpen",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = hostUri,
+                        languageId = "vue",
+                        version = 1,
+                        text = hostText
+                    }
+                }
+            });
+            using var diagnosticsMessage = await client.ReadMessageAsync();
+            Assert.AreEqual("textDocument/publishDiagnostics", diagnosticsMessage.RootElement.GetProperty("method").GetString());
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 177,
+                method = "textDocument/references",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = hostUri
+                    },
+                    position = new
+                    {
+                        line = 1,
+                        character = 8
+                    },
+                    context = new
+                    {
+                        includeDeclaration = true
+                    }
+                }
+            });
+            using var referencesResponse = await client.ReadResponseAsync(expectedId: 177);
+            var references = referencesResponse.RootElement.GetProperty("result");
+            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == declarationUri));
+            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == hostUri));
+            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == jazorUri));
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 178,
+                method = "textDocument/rename",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = hostUri
+                    },
+                    position = new
+                    {
+                        line = 1,
+                        character = 8
+                    },
+                    newName = "ProfileBadge"
+                }
+            });
+            using var renameResponse = await client.ReadResponseAsync(expectedId: 178);
+            var changes = renameResponse.RootElement
+                .GetProperty("result")
+                .GetProperty("changes");
+            Assert.IsTrue(changes.EnumerateObject().Any(change => change.Name == hostUri));
+            Assert.IsTrue(changes.EnumerateObject().Any(change => change.Name == jazorUri));
+            Assert.AreEqual(
+                "ProfileBadge",
+                changes.GetProperty(jazorUri)[0].GetProperty("newText").GetString());
+
+            await client.ShutdownAsync();
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                DeleteDirectoryWithRetries(tempDirectory);
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_VueScriptImport_DefinitionRemainsNativeWhileReferencesAndRenameBridgeIntoJazor()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var declarationPath = Path.Combine(tempDirectory, "UserBadge.vue");
+            var declarationUri = new Uri(declarationPath).AbsoluteUri;
+            await File.WriteAllTextAsync(declarationPath, "<template><div>UserBadge</div></template>");
+
+            var jazorPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var jazorUri = new Uri(jazorPath).AbsoluteUri;
+            await File.WriteAllTextAsync(
+                jazorPath,
+                """
+                <UserBadge />
+                """);
+
+            var hostPath = Path.Combine(tempDirectory, "Host.vue");
+            var hostUri = new Uri(hostPath).AbsoluteUri;
+            var hostText =
+                """
+                <script setup lang="ts">
+                import UserBadge from "./UserBadge.vue";
+                const current = UserBadge;
+                </script>
+
+                <template>
+                  <section />
+                </template>
+                """;
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                method = "textDocument/didOpen",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = hostUri,
+                        languageId = "vue",
+                        version = 1,
+                        text = hostText
+                    }
+                }
+            });
+            using var diagnosticsMessage = await client.ReadMessageAsync();
+            Assert.AreEqual("textDocument/publishDiagnostics", diagnosticsMessage.RootElement.GetProperty("method").GetString());
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 1781,
+                method = "textDocument/definition",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = hostUri
+                    },
+                    position = new
+                    {
+                        line = 1,
+                        character = 8
+                    }
+                }
+            });
+            using var definitionResponse = await client.ReadResponseAsync(expectedId: 1781);
+            var definitions = definitionResponse.RootElement.GetProperty("result");
+            Assert.AreEqual(1, definitions.GetArrayLength());
+            Assert.AreEqual(
+                VueHostWorkspaceResolver.NormalizePath(declarationPath),
+                VueHostWorkspaceResolver.NormalizePath(LspProtocolHelpers.ToDocumentPath(definitions[0].GetProperty("uri").GetString()!)));
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 1782,
+                method = "textDocument/references",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = hostUri
+                    },
+                    position = new
+                    {
+                        line = 1,
+                        character = 8
+                    },
+                    context = new
+                    {
+                        includeDeclaration = true
+                    }
+                }
+            });
+            using var referencesResponse = await client.ReadResponseAsync(expectedId: 1782);
+            var references = referencesResponse.RootElement.GetProperty("result");
+            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == declarationUri));
+            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == hostUri));
+            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == jazorUri));
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 1783,
+                method = "textDocument/rename",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = hostUri
+                    },
+                    position = new
+                    {
+                        line = 1,
+                        character = 8
+                    },
+                    newName = "ProfileBadge"
+                }
+            });
+            using var renameResponse = await client.ReadResponseAsync(expectedId: 1783);
+            var changes = renameResponse.RootElement
+                .GetProperty("result")
+                .GetProperty("changes");
+            Assert.IsTrue(changes.EnumerateObject().Any(change => change.Name == hostUri));
+            Assert.IsTrue(changes.EnumerateObject().Any(change => change.Name == jazorUri));
+            Assert.AreEqual(
+                "ProfileBadge",
+                changes.GetProperty(jazorUri)[0].GetProperty("newText").GetString());
+
+            await client.ShutdownAsync();
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                DeleteDirectoryWithRetries(tempDirectory);
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_TypeScriptVueImport_ReferencesAndRename_IncludeNearbyJazorDocumentsOnDisk()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var declarationPath = Path.Combine(tempDirectory, "UserBadge.vue");
+            var declarationUri = new Uri(declarationPath).AbsoluteUri;
+            await File.WriteAllTextAsync(declarationPath, "<template><div>UserBadge</div></template>");
+
+            var jazorPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var jazorUri = new Uri(jazorPath).AbsoluteUri;
+            await File.WriteAllTextAsync(
+                jazorPath,
+                """
+                <UserBadge />
+                """);
+
+            var scriptPath = Path.Combine(tempDirectory, "consumer.ts");
+            var scriptUri = new Uri(scriptPath).AbsoluteUri;
+            var scriptText =
+                """
+                import UserBadge from "./UserBadge.vue";
+                export const current = UserBadge;
+                """;
+            var usagePosition = GetPosition(scriptText, "UserBadge;", advance: 1);
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                method = "textDocument/didOpen",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = scriptUri,
+                        languageId = "typescript",
+                        version = 1,
+                        text = scriptText
+                    }
+                }
+            });
+            using var diagnosticsMessage = await client.ReadMessageAsync();
+            Assert.AreEqual("textDocument/publishDiagnostics", diagnosticsMessage.RootElement.GetProperty("method").GetString());
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 179,
+                method = "textDocument/references",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = scriptUri
+                    },
+                    position = new
+                    {
+                        line = 0,
+                        character = 8
+                    },
+                    context = new
+                    {
+                        includeDeclaration = true
+                    }
+                }
+            });
+            using var referencesResponse = await client.ReadResponseAsync(expectedId: 179);
+            var references = referencesResponse.RootElement.GetProperty("result");
+            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == scriptUri));
+            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == jazorUri));
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 180,
+                method = "textDocument/rename",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = scriptUri
+                    },
+                    position = new
+                    {
+                        line = 0,
+                        character = 8
+                    },
+                    newName = "ProfileBadge"
+                }
+            });
+            using var renameResponse = await client.ReadResponseAsync(expectedId: 180);
+            var changes = renameResponse.RootElement
+                .GetProperty("result")
+                .GetProperty("changes");
+            Assert.IsTrue(changes.EnumerateObject().Any(change => change.Name == scriptUri));
+            Assert.IsTrue(changes.EnumerateObject().Any(change => change.Name == jazorUri));
+            Assert.AreEqual(
+                "ProfileBadge",
+                changes.GetProperty(jazorUri)[0].GetProperty("newText").GetString());
+
+            await client.ShutdownAsync();
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                DeleteDirectoryWithRetries(tempDirectory);
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_VueScriptImport_Definition_RemainsNativeVueDeclaration()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var declarationPath = Path.Combine(tempDirectory, "UserBadge.vue");
+            var declarationUri = new Uri(declarationPath).AbsoluteUri;
+            await File.WriteAllTextAsync(declarationPath, "<template><div>UserBadge</div></template>");
+
+            var hostPath = Path.Combine(tempDirectory, "Host.vue");
+            var hostUri = new Uri(hostPath).AbsoluteUri;
+            var hostText =
+                """
+                <script setup lang="ts">
+                import UserBadge from "./UserBadge.vue";
+                const current = UserBadge;
+                </script>
+
+                <template>
+                  <section />
+                </template>
+                """;
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                method = "textDocument/didOpen",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = hostUri,
+                        languageId = "vue",
+                        version = 1,
+                        text = hostText
+                    }
+                }
+            });
+            using var diagnosticsMessage = await client.ReadMessageAsync();
+            Assert.AreEqual("textDocument/publishDiagnostics", diagnosticsMessage.RootElement.GetProperty("method").GetString());
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 181,
+                method = "textDocument/definition",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = hostUri
+                    },
+                    position = new
+                    {
+                        line = 1,
+                        character = 8
+                    }
+                }
+            });
+            using var definitionResponse = await client.ReadResponseAsync(expectedId: 181);
+            var definitions = definitionResponse.RootElement.GetProperty("result");
+            Assert.AreEqual(1, definitions.GetArrayLength());
+            Assert.AreEqual(
+                VueHostWorkspaceResolver.NormalizePath(declarationPath),
+                VueHostWorkspaceResolver.NormalizePath(LspProtocolHelpers.ToDocumentPath(definitions[0].GetProperty("uri").GetString()!)));
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                DeleteDirectoryWithRetries(tempDirectory);
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_TypeScriptVueImport_Definition_RemainsNativeVueDeclaration_AndReferencesRenameIncludeOpenUnsavedAndDiskJazor()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var declarationPath = Path.Combine(tempDirectory, "UserBadge.vue");
+            var declarationUri = new Uri(declarationPath).AbsoluteUri;
+            await File.WriteAllTextAsync(declarationPath, "<template><div>UserBadge</div></template>");
+
+            var counterPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var counterUri = new Uri(counterPath).AbsoluteUri;
+            await client.OpenDocumentAsync(
+                counterUri,
+                """
+                <UserBadge />
+
+                @code {
+                    private void UserBadge()
+                    {
+                    }
+                }
+                """,
+                version: 1);
+
+            var dashboardPath = Path.Combine(tempDirectory, "Dashboard.jazor");
+            var dashboardUri = new Uri(dashboardPath).AbsoluteUri;
+            await File.WriteAllTextAsync(
+                dashboardPath,
+                """
+                <section>
+                  <UserBadge />
+                </section>
+
+                @code {
+                    private string UserBadge => nameof(UserBadge);
+                }
+                """);
+
+            var scriptPath = Path.Combine(tempDirectory, "consumer.ts");
+            var scriptUri = new Uri(scriptPath).AbsoluteUri;
+            var scriptText =
+                """
+                import UserBadge from "./UserBadge.vue";
+                export const current = UserBadge;
+                """;
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                method = "textDocument/didOpen",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = scriptUri,
+                        languageId = "typescript",
+                        version = 1,
+                        text = scriptText
+                    }
+                }
+            });
+            using var diagnosticsMessage = await client.ReadMessageAsync();
+            Assert.AreEqual("textDocument/publishDiagnostics", diagnosticsMessage.RootElement.GetProperty("method").GetString());
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 182,
+                method = "textDocument/definition",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = scriptUri
+                    },
+                    position = new
+                    {
+                        line = 0,
+                        character = 8
+                    }
+                }
+            });
+            using var definitionResponse = await client.ReadResponseAsync(expectedId: 182);
+            var definitions = definitionResponse.RootElement.GetProperty("result");
+            Assert.AreEqual(1, definitions.GetArrayLength());
+            Assert.AreEqual(
+                VueHostWorkspaceResolver.NormalizePath(declarationPath),
+                VueHostWorkspaceResolver.NormalizePath(LspProtocolHelpers.ToDocumentPath(definitions[0].GetProperty("uri").GetString()!)));
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 183,
+                method = "textDocument/references",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = scriptUri
+                    },
+                    position = new
+                    {
+                        line = 0,
+                        character = 8
+                    },
+                    context = new
+                    {
+                        includeDeclaration = true
+                    }
+                }
+            });
+            using var referencesResponse = await client.ReadResponseAsync(expectedId: 183);
+            var references = referencesResponse.RootElement.GetProperty("result");
+            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == declarationUri));
+            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == scriptUri));
+            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == counterUri));
+            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == dashboardUri));
+            Assert.IsFalse(references.EnumerateArray().Any(reference =>
+                reference.GetProperty("uri").GetString() == counterUri
+                && reference.GetProperty("range").GetProperty("start").GetProperty("line").GetInt32() >= 3));
+            Assert.IsFalse(references.EnumerateArray().Any(reference =>
+                reference.GetProperty("uri").GetString() == dashboardUri
+                && reference.GetProperty("range").GetProperty("start").GetProperty("line").GetInt32() >= 4));
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 184,
+                method = "textDocument/rename",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = scriptUri
+                    },
+                    position = new
+                    {
+                        line = 0,
+                        character = 8
+                    },
+                    newName = "ProfileBadge"
+                }
+            });
+            using var renameResponse = await client.ReadResponseAsync(expectedId: 184);
+            var changes = renameResponse.RootElement
+                .GetProperty("result")
+                .GetProperty("changes");
+            Assert.IsTrue(changes.EnumerateObject().Any(change => change.Name == scriptUri));
+            Assert.IsTrue(changes.EnumerateObject().Any(change => change.Name == counterUri));
+            Assert.IsTrue(changes.EnumerateObject().Any(change => change.Name == dashboardUri));
+            Assert.AreEqual(1, changes.GetProperty(counterUri).GetArrayLength());
+            Assert.AreEqual(1, changes.GetProperty(dashboardUri).GetArrayLength());
+            Assert.AreEqual(0, changes.GetProperty(counterUri)[0].GetProperty("range").GetProperty("start").GetProperty("line").GetInt32());
+            Assert.AreEqual(1, changes.GetProperty(dashboardUri)[0].GetProperty("range").GetProperty("start").GetProperty("line").GetInt32());
+            Assert.AreEqual("ProfileBadge", changes.GetProperty(counterUri)[0].GetProperty("newText").GetString());
+            Assert.AreEqual("ProfileBadge", changes.GetProperty(dashboardUri)[0].GetProperty("newText").GetString());
+
+            await client.ShutdownAsync();
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                DeleteDirectoryWithRetries(tempDirectory);
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_TypeScriptVueImport_DefinitionRemainsNativeWhileReferencesAndRename_IncludeOpenUnsavedAndDiskJazorDocuments()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var declarationPath = Path.Combine(tempDirectory, "UserBadge.vue");
+            var declarationUri = new Uri(declarationPath).AbsoluteUri;
+            await File.WriteAllTextAsync(declarationPath, "<template><div>UserBadge</div></template>");
+
+            var scriptPath = Path.Combine(tempDirectory, "consumer.ts");
+            var scriptUri = new Uri(scriptPath).AbsoluteUri;
+            var scriptText =
+                """
+                import UserBadge from "./UserBadge.vue";
+                export const current = UserBadge;
+                """;
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                method = "textDocument/didOpen",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = scriptUri,
+                        languageId = "typescript",
+                        version = 1,
+                        text = scriptText
+                    }
+                }
+            });
+            using var scriptDiagnostics = await client.ReadMessageAsync();
+            Assert.AreEqual("textDocument/publishDiagnostics", scriptDiagnostics.RootElement.GetProperty("method").GetString());
+
+            var counterPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var counterUri = new Uri(counterPath).AbsoluteUri;
+            await client.OpenDocumentAsync(
+                counterUri,
+                """
+                <UserBadge />
+
+                @code {
+                    private void UserBadge()
+                    {
+                    }
+                }
+                """,
+                version: 1);
+
+            var dashboardPath = Path.Combine(tempDirectory, "Dashboard.jazor");
+            var dashboardUri = new Uri(dashboardPath).AbsoluteUri;
+            await File.WriteAllTextAsync(
+                dashboardPath,
+                """
+                <section>
+                  <UserBadge />
+                </section>
+
+                @code {
+                    private string UserBadge => nameof(UserBadge);
+                }
+                """);
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 1801,
+                method = "textDocument/definition",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = scriptUri
+                    },
+                    position = new
+                    {
+                        line = usagePosition.Line,
+                        character = usagePosition.Character
+                    }
+                }
+            });
+            using var definitionResponse = await client.ReadResponseAsync(expectedId: 1801);
+            var definitions = definitionResponse.RootElement.GetProperty("result");
+            Assert.AreEqual(1, definitions.GetArrayLength());
+            Assert.AreEqual(
+                VueHostWorkspaceResolver.NormalizePath(declarationPath),
+                VueHostWorkspaceResolver.NormalizePath(LspProtocolHelpers.ToDocumentPath(definitions[0].GetProperty("uri").GetString()!)));
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 1802,
+                method = "textDocument/references",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = scriptUri
+                    },
+                    position = new
+                    {
+                        line = usagePosition.Line,
+                        character = usagePosition.Character
+                    },
+                    context = new
+                    {
+                        includeDeclaration = true
+                    }
+                }
+            });
+            using var referencesResponse = await client.ReadResponseAsync(expectedId: 1802);
+            var references = referencesResponse.RootElement.GetProperty("result");
+            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == declarationUri));
+            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == scriptUri));
+            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == counterUri));
+            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == dashboardUri));
+            Assert.IsFalse(references.EnumerateArray().Any(reference =>
+                reference.GetProperty("uri").GetString() == counterUri
+                && reference.GetProperty("range").GetProperty("start").GetProperty("line").GetInt32() >= 3));
+            Assert.IsFalse(references.EnumerateArray().Any(reference =>
+                reference.GetProperty("uri").GetString() == dashboardUri
+                && reference.GetProperty("range").GetProperty("start").GetProperty("line").GetInt32() >= 5));
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 1803,
+                method = "textDocument/rename",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = scriptUri
+                    },
+                    position = new
+                    {
+                        line = usagePosition.Line,
+                        character = usagePosition.Character
+                    },
+                    newName = "ProfileBadge"
+                }
+            });
+            using var renameResponse = await client.ReadResponseAsync(expectedId: 1803);
+            var changes = renameResponse.RootElement
+                .GetProperty("result")
+                .GetProperty("changes");
+            Assert.IsTrue(changes.EnumerateObject().Any(change => change.Name == scriptUri));
+            Assert.IsTrue(changes.EnumerateObject().Any(change => change.Name == counterUri));
+            Assert.IsTrue(changes.EnumerateObject().Any(change => change.Name == dashboardUri));
+            Assert.AreEqual(1, changes.GetProperty(counterUri).GetArrayLength());
+            Assert.AreEqual(1, changes.GetProperty(dashboardUri).GetArrayLength());
+            Assert.AreEqual(0, changes.GetProperty(counterUri)[0].GetProperty("range").GetProperty("start").GetProperty("line").GetInt32());
+            Assert.AreEqual(1, changes.GetProperty(dashboardUri)[0].GetProperty("range").GetProperty("start").GetProperty("line").GetInt32());
+            Assert.AreEqual("ProfileBadge", changes.GetProperty(counterUri)[0].GetProperty("newText").GetString());
+            Assert.AreEqual("ProfileBadge", changes.GetProperty(dashboardUri)[0].GetProperty("newText").GetString());
+
+            await client.ShutdownAsync();
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                DeleteDirectoryWithRetries(tempDirectory);
+            }
+        }
     }
 
     [TestMethod]
@@ -3857,6 +4657,9 @@ public sealed class JazorVueHostLspTests
         return path;
     }
 
+    private static void DeleteDirectoryWithRetries(string path)
+        => Directory.Delete(path, recursive: true);
+
     private static string GetProjectedComponentTypeName(DocumentSnapshot document)
     {
         var projectionService = new RazorDesignTimeCodeProjectionService();
@@ -4434,6 +5237,50 @@ public sealed class JazorVueHostLspTests
 
             messageId = default;
             return false;
+        }
+    }
+}
+
+file static class TestDirectory
+{
+    public static bool Exists(string path)
+        => System.IO.Directory.Exists(path);
+
+    public static DirectoryInfo CreateDirectory(string path)
+        => System.IO.Directory.CreateDirectory(path);
+
+    public static void Delete(string path, bool recursive)
+    {
+        if (!recursive)
+        {
+            System.IO.Directory.Delete(path, recursive: false);
+            return;
+        }
+
+        const int maxAttempts = 5;
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
+        {
+            try
+            {
+                System.IO.Directory.Delete(path, recursive: true);
+                return;
+            }
+            catch (IOException) when (attempt < maxAttempts)
+            {
+                Thread.Sleep(100 * attempt);
+            }
+            catch (UnauthorizedAccessException) when (attempt < maxAttempts)
+            {
+                Thread.Sleep(100 * attempt);
+            }
+            catch (IOException)
+            {
+                return;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return;
+            }
         }
     }
 }

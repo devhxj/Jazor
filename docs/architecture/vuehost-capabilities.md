@@ -124,7 +124,7 @@ VueHost 采用三 Lane 架构，**JazorLane** 作为协调中枢：
 |------|------|--------|
 | **JazorLane** | `.jazor` 解析、桥接元数据协调、符号身份协调、Lane 路由、结构诊断 | C# 语义、Vue/TS 语义 |
 | **RoslynLane** | `@code` 块补全/悬停/签名、C# 诊断/导航/重命名/代码操作 | `.jazor` 指令、前端语义 |
-| **VolarLane** | 实际 `.vue/.ts/.js/.css/.html` 语义、组件/属性解析、前端导航/重命名 | `.jazor` 规则、C# 语义 |
+| **VolarLane** | 实际 `.vue/.ts/.js/.css/.html` 的 Volar/tsserver 原生语义、组件/属性解析、前端导航/重命名 | `.jazor` 规则、C# 语义 |
 
 **关键约束**：没有任何 Lane 直接向 IDE 发布结果。所有 Lane 输出经由 JazorLane 聚合、映射回 `.jazor` 源码位置后，由 LSP 层统一发送。
 
@@ -133,6 +133,13 @@ VueHost 采用三 Lane 架构，**JazorLane** 作为协调中枢：
 - `.jazor/.cs -> VueHost bridge -> .vue/.ts/.js/.css/.html`
 - `.vue/.ts/.js/.css/.html -> VueHost bridge -> .jazor/.cs`
 - VueHost 负责维护跨 Lane 的共享符号身份、位置锚点和结果聚合，不能只做单向透传
+
+**当前实现状态**：
+
+- `.jazor` 模板位置会先走 VolarLane，再由 VueHost 把原生 Volar 结果映射回源文档
+- `.vue` / `.ts` / `.js` 位置上的原生 Volar / tsserver definition 结果保持原样，不由 VueHost 伪造替代结果
+- 当前已经打通 `script import -> native .vue declaration -> .jazor markup references/rename` 这条双向桥接链路
+- 当前 bridge identity 已收口到共享 `MarkupBridgeSymbol`，后续应继续围绕这个共享符号扩展，而不是继续在各 Lane 内各自推断
 
 ### 2.2.1 Razor / Roslyn 集成策略
 
@@ -202,7 +209,7 @@ VueHost 应把诊断来源显式分层，但对 IDE 暴露单一结果集：
 
 ### 2.3 VolarLane 语言服务来源
 
-VolarLane 通过 **Volar + TSServer**（运行在 Deno Worker 中）提供所有前端语言能力。对 `.jazor` 而言，VolarLane 消费的是 VueHost 协调后的 Razor/Roslyn 元数据，而不是临时生成的 `.g.vue` 或虚拟 `.vue` IntelliSense 文本。
+VolarLane 通过 **Volar + TSServer**（运行在 Deno Worker 中）提供所有前端语言能力。对 `.jazor` 而言，VolarLane 消费的是 VueHost 协调后的 Razor/Roslyn bridge metadata，而不是临时生成的 `.g.vue` 或虚拟 `.vue` IntelliSense 文本。
 
 | 文件类型 | 语言服务 | 说明 |
 |---------|---------|------|
@@ -241,7 +248,7 @@ VueHost 可感知的文件类型：
 | `.html` | Volar template 模式 | VolarLane |
 | `.json` | 轻量 JSON 解析 | VueHost 基础能力 |
 
-> `.vue` / `.ts` / `.js` / `.css` / `.html` 的 LSP 请求通过 VolarLane 直接转发给 Deno Worker 中的 Volar + TSServer，属于轻量管道。VueHost 自身不重新实现这些语言的分析逻辑。
+> `.vue` / `.ts` / `.js` / `.css` / `.html` 的 LSP 请求通过 VolarLane 直接转发给 Deno Worker 中的 Volar + TSServer，属于轻量管道。VueHost 自身不重新实现这些语言的分析逻辑，只消费它们的原生结果并在跨 Lane 场景补桥接结果。
 
 ---
 
