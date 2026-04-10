@@ -15,9 +15,9 @@ public sealed class JazorVueHostDenoFrontendHostOptionsTests
             var expectedCommand = WriteBundledRuntime(baseDirectory);
             var expectedWorkerPath = WriteWorkerScript(baseDirectory);
 
-            var options = DenoFrontendHostOptionsParser.Parse([], baseDirectory);
+            var options = DenoVolarHostOptionsParser.Parse([], baseDirectory);
 
-            Assert.IsFalse(options.Enabled);
+            Assert.IsTrue(options.Enabled);
             Assert.AreEqual(expectedCommand, options.ExecutablePath);
             Assert.IsFalse(options.HasExplicitExecutableOverride);
             Assert.AreEqual(expectedWorkerPath, options.WorkerScriptPath);
@@ -26,6 +26,9 @@ public sealed class JazorVueHostDenoFrontendHostOptionsTests
                 {
                     "run",
                     "--quiet",
+                    "--cached-only",
+                    "--allow-env",
+                    "--allow-read",
                     expectedWorkerPath
                 },
                 options.Arguments);
@@ -45,7 +48,7 @@ public sealed class JazorVueHostDenoFrontendHostOptionsTests
 
         try
         {
-            var options = DenoFrontendHostOptionsParser.Parse(
+            var options = DenoVolarHostOptionsParser.Parse(
                 [
                     "--deno-worker",
                     "--deno-command=C:\\tools\\deno.exe",
@@ -85,13 +88,13 @@ public sealed class JazorVueHostDenoFrontendHostOptionsTests
             var workerPath = WriteWorkerScript(baseDirectory);
             var executablePath = DenoRuntimeAssetResolver.GetExpectedBundledExecutablePath(baseDirectory);
             var process = new DenoWorkerProcess(
-                new DenoFrontendHostOptions
+                new DenoVolarHostOptions
                 {
                     Enabled = true,
                     ExecutablePath = executablePath,
                     HasExplicitExecutableOverride = false,
                     WorkerScriptPath = workerPath,
-                    Arguments = ["run", "--quiet", workerPath],
+                    Arguments = ["run", "--quiet", "--cached-only", "--allow-env", "--allow-read", workerPath],
                     WorkingDirectory = Path.GetDirectoryName(workerPath),
                     IgnoreStartupFailure = false
                 });

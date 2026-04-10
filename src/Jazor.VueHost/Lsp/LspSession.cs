@@ -426,7 +426,7 @@ internal sealed class LspSession
             return;
         }
 
-        var virtualDocuments = await _projectionService.ProjectAsync(document, cancellationToken);
+        var virtualDocuments = await _projectionService.ProjectCodeAsync(document, cancellationToken);
         await _virtualDocumentRegistry.UpsertAsync(virtualDocuments, cancellationToken);
     }
 
@@ -489,7 +489,7 @@ internal sealed class LspSession
         LaneKind[] laneKinds = document.DocumentKind switch
         {
             DocumentKind.Jazor => [LaneKind.Jazor, LaneKind.Roslyn],
-            DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript => [LaneKind.Frontend],
+            DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript => [LaneKind.Volar],
             _ => [LaneKind.Jazor]
         };
 

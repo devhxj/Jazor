@@ -58,9 +58,9 @@ internal sealed class CodeActionCoordinator
         IReadOnlyList<LspDiagnostic> diagnostics)
     {
         var laneKinds = _laneRouter.GetOrderedLanes(projectionTarget).ToList();
-        if (ContainsFrontendDiagnostic(diagnostics) && !laneKinds.Contains(LaneKind.Frontend))
+        if (ContainsFrontendDiagnostic(diagnostics) && !laneKinds.Contains(LaneKind.Volar))
         {
-            laneKinds.Add(LaneKind.Frontend);
+            laneKinds.Add(LaneKind.Volar);
         }
 
         if (ContainsJazorDiagnostic(diagnostics) && !laneKinds.Contains(LaneKind.Jazor))

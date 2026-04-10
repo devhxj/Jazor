@@ -13,7 +13,7 @@ public sealed class JazorVueHostLaneRoutingTests
         var documentPath = @"D:\temp\Counter.jazor";
 
         var frontendLanes = router.GetOrderedLanes(new ProjectionTarget(
-            LaneKind.Frontend,
+            LaneKind.Volar,
             DocumentRegionKind.Template,
             documentPath,
             documentPath));
@@ -23,7 +23,7 @@ public sealed class JazorVueHostLaneRoutingTests
             documentPath,
             documentPath));
 
-        CollectionAssert.AreEqual(new[] { LaneKind.Frontend }, frontendLanes.ToArray());
+        CollectionAssert.AreEqual(new[] { LaneKind.Volar }, frontendLanes.ToArray());
         CollectionAssert.AreEqual(new[] { LaneKind.Roslyn }, roslynLanes.ToArray());
     }
 }

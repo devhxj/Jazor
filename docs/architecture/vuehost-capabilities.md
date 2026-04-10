@@ -10,7 +10,7 @@ Jazor.VueHost 是 Jazor 项目的统一前端开发宿主，提供完整的开�
 VueHost = 全前端 LSP + 开发服务器 + 编译管道 + Source Map + 调试支持
 ```
 
-类似 Vite，但以 `.jazor` 为核心扩展，并提供完整的前端智能感知。
+类似 Vite，在支持`.vue`/`.ts`/`.js`/`.css`/`.html`的同时扩展了对`.jazor`/`.cs`的支持，对`.vue`/`.ts`/`.js`/`.jazor`/`.cs`提供完整的智能感知。
 
 ---
 
@@ -19,15 +19,14 @@ VueHost = 全前端 LSP + 开发服务器 + 编译管道 + Source Map + 调试�
 ### 1.1 Razor-first
 
 - `.jazor` 就是 `.razor`，作者写的是标准 Razor 语法
-- 不引入 template/script/style 这类新 DSL
-- 不需要 `@vueimport`、`@jsimport` 等额外指令
+- `.jazor` 不引入 template 这类新 DSL
+- `.jazor` 根据需要会扩展一批专用指令
 - `.jazor` 的源码语义首先是 Razor，不是 Vue 模板语言
 
 ### 1.2 单一宿主边界
 
 - VueHost 是唯一宿主边界，不拆分项目
-- 不保留 `Jazor.Vue`、`Jazor.Vue.Analysis`、`Jazor.Vue.Analysis.Runtime` 这种拆分
-- 前端/运行时统一是 Deno，不要 Vite，不要 Bun
+- 前端/运行时统一是 Deno，不要 Vite
 
 ### 1.3 阶段分离
 
@@ -38,11 +37,12 @@ VueHost = 全前端 LSP + 开发服务器 + 编译管道 + Source Map + 调试�
 | **智能感知** | 不需要先生成 `.vue` 或 `.cs`，直接基于源码 |
 | **编译打包** | 才涉及投影/转译成内部需要的 `.vue`、桥接代码、产物 |
 
-### 1.4 复用优先
+### 1.4 复用LSP
 
-- `.jazor` 的 C#/Razor 语义优先复用 Roslyn、Razor LSP 的能力
-- VueHost 不重新发明 `.jazor` 语言服务，而是把 Razor 语义和前端语义拼起来
-- 智能感知不依赖最终生成的 `.g.cs`
+- `.jazor` / `.cs` 的设计时语义必须复用 Razor LSP、Roslyn 的原生能力
+- `.vue` / `.ts` / `.js` / `.css` / `.html` 的设计时语义必须复用 Volar、TSServer、Deno 的原生能力
+- VueHost 不重新发明这些语言服务，只负责桥接、路由、聚合、映射
+- 智能感知不依赖最终生成的 `.g.cs`，也不依赖 `.jazor -> .g.vue`
 
 ### 1.5 能提供就提供
 
@@ -53,15 +53,16 @@ VueHost = 全前端 LSP + 开发服务器 + 编译管道 + Source Map + 调试�
 **边界条件**：
 
 - **不能提供时静默降级**，不报错、不阻塞。例如 Deno 不可用时 `.ts/.vue` 补全消失，但 `.jazor` 的 C# 补全不受影响
-- **优先级排序**：`.jazor` > `.ts/.js` > `.vue` > `.css/.html` > `.json`。精力有限时先保证靠前的文件类型
+- **优先级排序**：`.jazor/.cs/.vue/.ts/.js` > `.css/.html` > `.json`。精力有限时先保证靠前的文件类型
 - **最低质量标准**：能力矩阵中标注的能力必须达到"结果正确且不误导用户"的阈值。不确定时宁可不给，不给虚假补全
 - **分阶段交付**：并非所有能力一次性到位，能力矩阵以 P1/P2/P3 标注交付阶段
 
 ### 1.6 内部投影
 
-- `.vue`、虚拟代码文档只是内部桥接产物
+- 构建期的 `.vue`、虚拟代码文档只是内部物化产物
 - 作者面对的是 `.jazor`，IDE 看到的也是 `.jazor`
-- 需要时才在内部投影出虚拟文档给 Frontend Lane 消费
+- `.jazor` 设计时智能感知只允许生成 Roslyn 所需的最小代码投影，以及喂给 Volar 的桥接元数据
+- `.jazor` 设计时智能感知不以虚拟 `.vue` 文本作为 Volar 的主输入
 
 ---
 
@@ -69,7 +70,7 @@ VueHost = 全前端 LSP + 开发服务器 + 编译管道 + Source Map + 调试�
 
 ### 2.1 进程模型
 
-VueHost 是一个单一的 .NET 进程，内部承载所有子系统。FrontendLane 通过子进程中的 Deno Worker（Volar + TSServer）提供前端语言能力。
+VueHost 是一个单一的 .NET 进程，内部承载所有子系统。VolarLane 通过子进程中的 Deno Worker（Volar + TSServer）提供前端语言能力。
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -80,10 +81,10 @@ VueHost 是一个单一的 .NET 进程，内部承载所有子系统。FrontendL
 │  │                      Lane 层                                │   │
 │  │                                                             │   │
 │  │  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐        │   │
-│  │  │  JazorLane   │ │ RoslynLane   │ │FrontendLane  │        │   │
+│  │  │  JazorLane   │ │ RoslynLane   │ │ VolarLane    │        │   │
 │  │  │              │ │              │ │              │        │   │
 │  │  │ .jazor 解析  │ │ C# 语义      │ │ Volar+TS     │        │   │
-│  │  │ 投影生成     │ │ @code 补全   │ │ Vue/TS/JS    │        │   │
+│  │  │ 元数据协调   │ │ @code 补全   │ │ Vue/TS/JS    │        │   │
 │  │  │ 符号协调     │ │ C# 诊断      │ │ CSS/HTML     │        │   │
 │  │  │ Lane 路由    │ │ 导航/重命名  │ │ 组件解析     │        │   │
 │  │  └──────┬───────┘ └──────┬───────┘ └──────┬───────┘        │   │
@@ -102,7 +103,7 @@ VueHost 是一个单一的 .NET 进程，内部承载所有子系统。FrontendL
 │  ┌───────────────────────────────────────────────────────────────┐  │
 │  │              映射系统（双层）                                  │  │
 │  │                                                               │  │
-│  │  ProjectionMap（设计时）: .jazor ↔ 虚拟文档  段级映射        │  │
+│  │  ProjectionMap（设计时）: .jazor ↔ 设计时目标 段级映射      │  │
 │  │  Source Map（构建时）:    源码 → 产物       标准链式映射      │  │
 │  └───────────────────────────────────────────────────────────────┘  │
 │                                                                     │
@@ -121,11 +122,17 @@ VueHost 采用三 Lane 架构，**JazorLane** 作为协调中枢：
 
 | Lane | 职责 | 不拥有 |
 |------|------|--------|
-| **JazorLane** | `.jazor` 解析、投影生成、符号身份协调、Lane 路由、结构诊断 | C# 语义、Vue/TS 语义 |
+| **JazorLane** | `.jazor` 解析、桥接元数据协调、符号身份协调、Lane 路由、结构诊断 | C# 语义、Vue/TS 语义 |
 | **RoslynLane** | `@code` 块补全/悬停/签名、C# 诊断/导航/重命名/代码操作 | `.jazor` 指令、前端语义 |
-| **FrontendLane** | Vue 组件/属性解析、TS/JS 分析、CSS/HTML 感知、前端导航/重命名 | `.jazor` 规则、C# 语义 |
+| **VolarLane** | 实际 `.vue/.ts/.js/.css/.html` 语义、组件/属性解析、前端导航/重命名 | `.jazor` 规则、C# 语义 |
 
 **关键约束**：没有任何 Lane 直接向 IDE 发布结果。所有 Lane 输出经由 JazorLane 聚合、映射回 `.jazor` 源码位置后，由 LSP 层统一发送。
+
+**双向桥接约束**：
+
+- `.jazor/.cs -> VueHost bridge -> .vue/.ts/.js/.css/.html`
+- `.vue/.ts/.js/.css/.html -> VueHost bridge -> .jazor/.cs`
+- VueHost 负责维护跨 Lane 的共享符号身份、位置锚点和结果聚合，不能只做单向透传
 
 ### 2.2.1 Razor / Roslyn 集成策略
 
@@ -142,11 +149,10 @@ VueHost 对 `.jazor` 的设计时语义不应自研一套新的 Razor/C# 语言�
 
 | 层 | 职责 | 是否在 VueHost 自研 |
 |----|------|-------------------|
-| **JazorLane** | `.jazor` 结构解析、区域分类、ProjectionMap、Lane 路由、结果聚合 | 是 |
-| **Razor 语义层** | Razor 文档理解、Razor/C# 混合文档的设计时语义 | 优先复用 |
-| **Roslyn 语义层** | C# 语义模型、诊断、补全、导航、重命名、CodeAction | 优先复用 |
-| **FrontendLane** | Vue/TS/JS/CSS/HTML 的语言能力 | 优先复用 |
-| **Custom Analysis Layer** | VueHost 特有规则、跨 Lane 规则、产品约束 | 是 |
+| **Razor 语义层** | Razor 文档理解、Razor/C# 混合文档的设计时语义 | 否 |
+| **Roslyn 语义层** | C# 语义模型、诊断、补全、导航、重命名、CodeAction | 否 |
+| **Volar/TSServer 语义层** | Vue/TS/JS/CSS/HTML 的语言能力 | 否 |
+| **Custom 语义层** | VueHost 特有规则、跨 Lane 规则、产品约束 | 是 |
 
 #### 为什么不能只靠 Roslyn
 
@@ -176,7 +182,7 @@ VueHost 应把诊断来源显式分层，但对 IDE 暴露单一结果集：
 
 1. JazorLane 产出结构级诊断
 2. Razor/Roslyn 产出 C#/Razor 语义诊断
-3. FrontendLane 产出 Vue/TS/CSS/HTML 诊断
+3. VolarLane 产出 Vue/TS/CSS/HTML 诊断
 4. Custom Analysis Layer 产出产品特有诊断
 5. 聚合阶段执行 source mapping、去重、排序、severity 归一、owner 标注
 
@@ -194,9 +200,9 @@ VueHost 应把诊断来源显式分层，但对 IDE 暴露单一结果集：
 - 自定义分析的主扩展面应在 VueHost 聚合层，不在上游 server fork 上做长期定制
 - 能沉到 Roslyn Analyzer 的规则优先下沉，只有依赖 Razor/Jazor 原始结构的规则才保留在 VueHost
 
-### 2.3 FrontendLane 语言服务来源
+### 2.3 VolarLane 语言服务来源
 
-FrontendLane 通过 **Volar + TSServer**（运行在 Deno Worker 中）提供所有前端语言能力。不引入独立的 CSS/HTML/JSON Language Service。
+VolarLane 通过 **Volar + TSServer**（运行在 Deno Worker 中）提供所有前端语言能力。对 `.jazor` 而言，VolarLane 消费的是 VueHost 协调后的 Razor/Roslyn 元数据，而不是临时生成的 `.g.vue` 或虚拟 `.vue` IntelliSense 文本。
 
 | 文件类型 | 语言服务 | 说明 |
 |---------|---------|------|
@@ -226,15 +232,16 @@ VueHost 可感知的文件类型：
 
 | 文件类型 | 语义来源 | Lane 归属 |
 |---------|---------|----------|
-| `.jazor` | JazorLane（解析/投影） + RoslynLane（C#） + FrontendLane（Vue） | 三 Lane 协作 |
-| `.vue` | Volar + TSServer | Frontend Lane |
-| `.ts` | TSServer（Volar 内嵌） | Frontend Lane |
-| `.js` | TSServer（Volar 内嵌） | Frontend Lane |
-| `.css` | Volar CSS 模式 | Frontend Lane |
-| `.html` | Volar template 模式 | Frontend Lane |
-| `.json` | 轻量 JSON 解析 | Frontend Lane |
+| `.jazor` | JazorLane（解析/桥接） + Razor/Roslyn + VolarLane（经桥接元数据协同） | 三 Lane 协作 |
+| `.cs` | Roslyn | RoslynLane |
+| `.vue` | Volar | VolarLane |
+| `.ts` | TSServer（Volar 内嵌） | VolarLane |
+| `.js` | TSServer（Volar 内嵌） | VolarLane |
+| `.css` | Volar CSS 模式 | VolarLane |
+| `.html` | Volar template 模式 | VolarLane |
+| `.json` | 轻量 JSON 解析 | VueHost 基础能力 |
 
-> `.vue` / `.ts` / `.js` / `.css` / `.html` 的 LSP 请求通过 FrontendLane 直接转发给 Deno Worker 中的 Volar + TSServer，属于轻量管道。VueHost 自身不重新实现这些语言的分析逻辑。
+> `.vue` / `.ts` / `.js` / `.css` / `.html` 的 LSP 请求通过 VolarLane 直接转发给 Deno Worker 中的 Volar + TSServer，属于轻量管道。VueHost 自身不重新实现这些语言的分析逻辑。
 
 ---
 
@@ -243,8 +250,8 @@ VueHost 可感知的文件类型：
 ### 4.1 能力矩阵
 
 > **阶段说明**：P1 = 最小可用体验，P2 = 增强导航与重构，P3 = 完整覆盖。
-> `.jazor` 的能力依赖投影 + 跨 Lane 聚合，是主要工程难点。
-> 其他文件类型的能力通过 FrontendLane 管道转发，工程量较轻。
+> `.jazor` 的能力依赖源文档 + 协调后元数据 + 跨 Lane 聚合，是主要工程难点。
+> 其他真实前端文件的能力通过 VolarLane 管道转发，工程量较轻。
 
 | 文件类型 | 诊断 | 补全 | 悬停 | 定义 | 引用 | 重命名 | 代码操作 |
 |---------|:----:|:----:|:----:|:----:|:----:|:------:|:--------:|
@@ -256,7 +263,7 @@ VueHost 可感知的文件类型：
 | `.html` | P2 | P2 | P2 | P3 | — | P3 | P3 |
 | `.json` | P3 | P3 | P3 | P3 | — | P3 | — |
 
-**P1 最小可用范围**：`.jazor` 的诊断/补全/悬停/定义（三 Lane 聚合）+ `.vue`/`.ts` 的诊断/补全/悬停（FrontendLane 管道转发）。
+**P1 最小可用范围**：`.jazor` 的诊断/补全/悬停/定义（三 Lane 聚合）+ `.vue`/`.ts` 的诊断/补全/悬停（VolarLane 管道转发）。
 
 ### 4.2 `.jazor` 智能感知流程
 
@@ -272,28 +279,28 @@ VueHost 可感知的文件类型：
 │     - 指令解析 (@code 等)           │
 │     - 区域分类 (C#区 / 标记区)      │
 │                                     │
-│  2. 生成虚拟文档 + ProjectionMap    │
-│     - @code 块 → 虚拟 C# 片段      │
-│     - 标记区  → 虚拟 .vue 文档     │
+│  2. 生成设计时桥接元数据            │
+│     - @code 块 → Roslyn 代码投影   │
+│     - 标记区  → Volar 协调元数据      │
 │                                     │
 │  3. 路由到对应 Lane                 │
 └──────────┬──────────────┬───────────┘
            │              │
            ▼              ▼
 ┌───────────────┐  ┌──────────────┐
-│  RoslynLane   │  │FrontendLane  │
+│  RoslynLane   │  │ VolarLane    │
 │               │  │              │
-│ 虚拟 C# 片段   │  │虚拟 .vue 文档 │──▶ Deno Worker
-│  → C# 类型检查 │  │  → Volar     │    (Volar+TSServer)
-│  → 补全/诊断   │  │  → TSServer  │
-│  → 导航/重命名  │  │  → 组件/属性  │
+│ C# 投影片段     │  │源 .jazor 标记区 +│──▶ Deno Worker
+│  → C# 类型检查 │  │Volar 协调元数据  │    (Volar+TSServer / Deno)
+│  → 补全/诊断   │  │  → 组件/属性     │
+│  → 导航/重命名  │  │  → 前端语义      │
 └───────┬───────┘  └──────┬───────┘
         │                 │
-        └────────┬────────┘
+        └──── 双向符号/定位聚合 ────┘
                  ▼
 ┌─────────────────────────────────────┐
 │  JazorLane 聚合                     │
-│  - 通过 ProjectionMap 映射回 .jazor │
+│  - 通过 ProjectionMap / Volar 锚点映射回 .jazor     │
 │  - 去重/排序                        │
 │  - 跨 Lane 符号身份合并             │
 └─────────────────┬───────────────────┘
@@ -305,20 +312,20 @@ VueHost 可感知的文件类型：
 
 | 事件 | 投影行为 | 说明 |
 |------|---------|------|
-| `textDocument/didOpen` | 全量投影 | 解析 `.jazor`，生成全部虚拟文档和 ProjectionMap |
-| `textDocument/didChange` | 增量投影 | 判断变更影响区域，仅重建受影响的虚拟文档片段 |
-| 组件注册表变更 | 受影响文档重投影 | 新增/删除 `.vue` 文件时，刷新引用该组件的 `.jazor` 的投影 |
+| `textDocument/didOpen` | 建立设计时上下文 | 解析 `.jazor`，建立 Roslyn 投影和 Volar 协调元数据；不生成 `.g.vue` IntelliSense 文档 |
+| `textDocument/didChange` | 增量刷新上下文 | 判断变更影响区域，仅重建受影响的 Roslyn 投影或 Volar 协调元数据 |
+| 组件注册表变更 | 刷新受影响上下文 | 新增/删除 `.vue` 文件时，刷新引用该组件的 `.jazor` Volar 协调元数据 |
 | 无 IDE 连接 | 不投影 | Dev Server 独立运行时不触发 LSP 投影 |
 
 **增量投影策略**：
-- 变更仅在 `@code` 块内 → 仅重建虚拟 C# 片段，虚拟 `.vue` 不变
-- 变更仅在标记区 → 仅重建虚拟 `.vue`，虚拟 C# 片段不变
+- 变更仅在 `@code` 块内 → 仅重建 Roslyn 投影片段，Volar 协调元数据不变
+- 变更仅在标记区 → 仅重建 Volar 协调元数据，Roslyn 投影片段不变
 - 变更跨区域或影响结构（如指令变更） → 全量重建
-- ProjectionMap 随虚拟文档一起重建，保证位置映射始终一致
+- ProjectionMap 与 Volar 锚点随设计时上下文一起重建，保证位置映射始终一致
 
 ### 4.3 组件发现机制
 
-组件通过磁盘扫描自动发现，不需要 `@vueimport` 指令。
+组件候选由 VueHost 统一协调的 Volar 上下文提供，不需要把 `.jazor` 模板先投影成 `.vue` 文本。磁盘扫描只允许作为 host 内部派生上下文的实现细节，不能成为 worker 直接编造语义的来源。
 
 #### 4.3.1 搜索范围
 
@@ -366,25 +373,25 @@ VueHost 可感知的文件类型：
 
 ### 4.4 ProjectionMap：段级位置映射
 
-ProjectionMap 是 VueHost **设计时**的核心映射基础设施，负责 `.jazor` 源码与虚拟文档之间的精确位置转换。
+ProjectionMap 是 VueHost **设计时**的核心映射基础设施，负责 `.jazor` 源码与设计时目标之间的精确位置转换。这里的目标可以是 Roslyn 代码投影片段，也可以是 Volar 协调元数据所锚定的前端语义位置。
 
 > **ProjectionMap ≠ Source Map**。ProjectionMap 服务于 LSP 路由和诊断定位；Source Map 服务于构建时调试和产物追溯。两者目标不同、格式不同、生命周期不同。
 
 #### 4.4.1 为什么需要 ProjectionMap
 
-`.jazor` 文件中的不同区域被投影到不同类型的虚拟文档：
+`.jazor` 文件中的不同区域会被映射到不同类型的设计时目标：
 
 ```
 .jazor 文件
-├── @code { ... }        → 虚拟 C# 片段（RoslynLane 消费）
-├── <Counter prop="x"/>  → 虚拟 .vue 模板（FrontendLane 消费）
-├── @functions { ... }   → 虚拟 C# 片段
-└── <div>静态 HTML</div> → 虚拟 .vue 模板
+├── @code { ... }        → Roslyn 代码投影片段（RoslynLane 消费）
+├── <Counter prop="x"/>  → Volar 锚点（关联真实组件/属性语义）
+├── @functions { ... }   → Roslyn 代码投影片段
+└── <div>静态 HTML</div> → Volar 锚点
 ```
 
 LSP 请求（如光标在 `.jazor:15:10`）需要知道：
-- 这个位置在哪个虚拟文档中？
-- 对应虚拟文档的哪个位置？
+- 这个位置应该路由到哪个设计时目标？
+- 对应目标中的哪个位置或哪个锚点？
 - 结果返回时如何映射回 `.jazor:15:10`？
 
 #### 4.4.2 映射精度
@@ -403,8 +410,8 @@ LSP 请求（如光标在 `.jazor:15:10`）需要知道：
 |------|--------------|------------|
 | **用途** | 设计时 LSP 路由和诊断定位 | 构建时调试和产物追溯 |
 | **格式** | 自定义（`ProjectionMapEntry[]`） | 标准 Source Map v3 |
-| **映射方向** | `.jazor` ↔ 虚拟文档 | 源码 → 编译产物 |
-| **生命周期** | 与虚拟文档同步，每次投影重建 | 编译时生成，部署后使用 |
+| **映射方向** | `.jazor` ↔ 设计时目标 | 源码 → 编译产物 |
+| **生命周期** | 与设计时上下文同步，每次刷新重建 | 编译时生成，部署后使用 |
 | **消费者** | JazorLane、LSP 层 | 浏览器 DevTools、调试器 |
 | **精度要求** | 段落级（最低），字符级（理想） | 行级/列级 |
 
@@ -415,19 +422,19 @@ LSP 请求（如光标在 `.jazor:15:10`）需要知道：
 record ProjectionMapEntry(
     string SourceUri,        // .jazor 文件路径
     TextSpan SourceSpan,     // .jazor 中的原始范围
-    string TargetUri,        // 虚拟文档路径
-    TextSpan TargetSpan,     // 虚拟文档中的投影范围
-    LaneKind TargetLane      // 目标 Lane: Roslyn / Frontend
+    string TargetUri,        // Roslyn 投影片段或相关前端文档路径
+    TextSpan TargetSpan,     // 目标中的关联范围
+    LaneKind TargetLane      // 目标 Lane: Roslyn / Volar
 );
 
 // 投影映射表
 class ProjectionMap {
     ProjectionMapEntry[] Entries;
 
-    // 正向映射：.jazor 位置 → 虚拟文档位置
-    ProjectionMapEntry? MapToVirtual(Position source);
+    // 正向映射：.jazor 位置 → 设计时目标
+    ProjectionMapEntry? MapToTarget(Position source);
 
-    // 逆向映射：虚拟文档位置 → .jazor 位置
+    // 逆向映射：设计时目标 → .jazor 位置
     ProjectionMapEntry? MapToSource(Position target, string targetUri);
 }
 ```
@@ -442,7 +449,7 @@ class ProjectionMap {
 
 当前仍未完全到位的部分：
 
-- 现有 lane handler 仍然主要基于源文档快照工作，而不是直接消费虚拟文档文本
+- 现有 lane handler 仍然主要基于源文档快照和桥接元数据工作，尚未完全收敛到统一的跨 Lane 符号身份模型
 - `ProjectionMap` 的真实精度目标仍然是段级/字符级，而不是 whole-document fallback
 
 这意味着当前阶段已经进入“投影感知基础设施”而不是“最终精度闭环”。
@@ -540,12 +547,11 @@ Dev Server 运行在 VueHost 的 .NET 进程中（不是 Deno），负责开发�
 │  - 区域分类                          │
 └─────────────────┬───────────────────┘
                   │
-                  ▼ 投影 + ProjectionMap 生成
+                  ▼ 构建期物化
 ┌─────────────────────────────────────┐
-│  虚拟文档生成                        │
-│  - 虚拟 .vue (模板 + 脚本投影)       │
+│  内部中间产物生成                    │
+│  - 内部 .vue / JS 桥接产物（可选）   │
 │  - 虚拟 C# 片段（可选）              │
-│  - ProjectionMap（段级位置映射）     │
 │  ┌───────────────────────────────┐  │
 │  │ 关于虚拟 C# 文档：             │  │
 │  │                               │  │
@@ -566,6 +572,9 @@ Dev Server 运行在 VueHost 的 .NET 进程中（不是 Deno），负责开发�
 │  │                               │  │
 │  │ 具体方案在实现阶段决定，       │  │
 │  │ 不在设计文档中固化。           │  │
+│  │                               │  │
+│  │ 设计时 ProjectionMap 不属于    │  │
+│  │ 此构建期物化步骤。             │  │
 │  └───────────────────────────────┘  │
 └─────────────────┬───────────────────┘
                   │
@@ -629,7 +638,7 @@ VueHost 的映射分为两个独立的层次，分别服务于不同场景：
 │                                                           │
 │  第一层：ProjectionMap（设计时）                           │
 │  ─────────────────────────────                            │
-│  .jazor 源码 ↔ 虚拟文档（虚拟 .vue / 虚拟 C# 片段）       │
+│  .jazor 源码 ↔ 设计时目标（Roslyn 投影 / Volar 锚点）    │
 │  用途: LSP 路由、诊断定位、跨 Lane 符号协调               │
 │  格式: 自定义 ProjectionMapEntry[]                        │
 │  消费者: JazorLane、LSP 层                                │
@@ -650,7 +659,7 @@ VueHost 的映射分为两个独立的层次，分别服务于不同场景：
 
 见 [4.4 ProjectionMap：段级位置映射](#44-projectionmap段级位置映射)。
 
-ProjectionMap 在每次 `.jazor` 投影时生成，与虚拟文档生命周期一致。它不需要持久化，也不使用 Source Map 格式。
+ProjectionMap 在每次 `.jazor` 设计时上下文刷新时生成，与 Roslyn 投影和 Volar 锚点生命周期一致。它不需要持久化，也不使用 Source Map 格式。
 
 ### 7.2 Source Map（构建时）
 
@@ -679,7 +688,7 @@ Source Map 仅在编译管道产出 JS/CSS 时生成，遵循标准 Source Map v
 | `.vue` SFC → 渲染函数 | Vue SFC 编译器输出 | 记录模板到渲染函数的映射 |
 | 打包合并 | `bundle.js` | 合并所有上游 Source Map |
 
-> **注意**：`.jazor` → 虚拟 `.vue` 这一步使用 ProjectionMap 而非 Source Map，因为虚拟 `.vue` 是内部投影产物，不直接用于调试。
+> **注意**：设计时桥接使用 ProjectionMap，而构建期 `.jazor` → 内部 `.vue` / JS 物化使用 Source Map。这两条链路必须严格分开。
 
 ### 7.3 位置映射能力
 
@@ -875,7 +884,7 @@ IDE 只需连接 VueHost 一个进程，通过不同协议获取全部能力：
        └──── DAP (stdio/TCP) ──▶ 调试支持（断点/调用栈/变量）
 ```
 
-VueHost 内部由 JazorLane 负责路由：`.jazor` 请求分发到 RoslynLane + FrontendLane 聚合；其他前端文件请求直接管道转发到 Deno Worker。
+VueHost 内部由 JazorLane 负责路由：`.jazor` 请求分发到 RoslynLane + VolarLane 聚合；其他前端文件请求直接管道转发到 Deno Worker。
 
 **好处**：
 - IDE 只需配置一个进程入口
@@ -901,8 +910,8 @@ VueHost 内部由 JazorLane 负责路由：`.jazor` 请求分发到 RoslynLane +
 
 | 能力域 | 具体能力 | 说明 |
 |--------|---------|------|
-| **三 Lane 架构** | JazorLane（解析/投影/路由）、RoslynLane（C#）、FrontendLane（Volar+TSServer） | 协调中枢 + 两个语义 Lane |
-| **ProjectionMap** | 段级双向映射（.jazor ↔ 虚拟文档） | 设计时 LSP 路由和诊断定位的基础设施 |
+| **三 Lane 架构** | JazorLane（解析/桥接/路由）、RoslynLane（C#）、VolarLane（Volar+TSServer） | 协调中枢 + 两个复用语义 Lane |
+| **ProjectionMap** | 段级双向映射（.jazor ↔ 设计时目标） | 设计时 LSP 路由、诊断定位、跨 Lane 聚合的基础设施 |
 | **全前端 LSP** | 诊断、补全、悬停、定义、引用、重命名、代码操作 | 覆盖 `.jazor` `.vue` `.ts` `.js` `.css` `.html` `.json`，分阶段交付 |
 | **开发服务器** | 文件服务、模块服务、虚拟模块 | 所有前端文件，.NET 进程内运行 |
 | **HMR** | 变更检测、增量编译、热更新 | 由 LSP `didChange` 或文件监听触发 |
@@ -921,7 +930,7 @@ VueHost 内部由 JazorLane 负责路由：`.jazor` 请求分发到 RoslynLane +
 **而是** "Razor-first 的 Vue 宿主"
 
 - Authoring 是 Razor-first
-- VueHost 负责统一这些能力
+- VueHost 负责把 Razor/Roslyn 与 Volar 双向桥接成单一宿主体验
 - 能提供就提供，不局限于 `.jazor`
 - 单一入口，简化 IDE 集成
 
@@ -935,9 +944,9 @@ VueHost 的各个子系统可能因外部依赖不可用而失败。每个失败
 
 | 故障场景 | 影响范围 | 降级行为 | 恢复方式 |
 |---------|---------|---------|---------|
-| **Deno Worker 崩溃** | FrontendLane 全部能力 | `.jazor` 的 C# 补全/诊断继续工作（RoslynLane 独立可用）；`.vue`/`.ts`/`.js`/`.css`/`.html` 智能感知全部不可用；自动重启 Deno Worker | 自动重启 + 重连 + 重推虚拟文档 |
-| **Deno Worker 启动失败** | FrontendLane 持续不可用 | 同上降级；启动重试（指数退避，最多 3 次）；重试全部失败后 FrontendLane 标记为 unavailable | 用户重启 VueHost |
-| **RoslynLane 异常** | `@code` 块的 C# 智能感知 | 标记区（Vue 模板部分）的补全/诊断继续工作（FrontendLane 独立可用）；`@code` 区域诊断消失 | 重置 Roslyn 工作区 |
+| **Deno Worker 崩溃** | VolarLane 全部能力 | `.jazor` 的 C# 补全/诊断继续工作（RoslynLane 独立可用）；`.vue`/`.ts`/`.js`/`.css`/`.html` 智能感知全部不可用；自动重启 Deno Worker | 自动重启 + 重连 + 重推工作区文档与桥接元数据 |
+| **Deno Worker 启动失败** | VolarLane 持续不可用 | 同上降级；启动重试（指数退避，最多 3 次）；重试全部失败后 VolarLane 标记为 unavailable | 用户重启 VueHost |
+| **RoslynLane 异常** | `@code` 块的 C# 智能感知 | 标记区（Vue 模板部分）的补全/诊断继续工作（VolarLane 独立可用）；`@code` 区域诊断消失 | 重置 Roslyn 工作区 |
 | **投影失败** | 双 Lane 都无法工作 | JazorLane 发布结构级诊断（"无法解析 .jazor 文件"）；退化为纯文本编辑体验 | 修复 `.jazor` 源码 |
 | **ProjectionMap 精度不足** | 诊断位置漂移、定义跳转偏差 | 诊断仍发布但降低精度；标注来源 Lane 和置信度 | 逐步改进映射精度 |
 | **Source Map 生成失败** | 调试体验降级 | Dev Server 正常运行（文件服务 + HMR 不受影响）；调试时无法映射回源码 | 编译管道修复 |
@@ -946,7 +955,7 @@ VueHost 的各个子系统可能因外部依赖不可用而失败。每个失败
 
 ### 14.2 降级原则
 
-1. **Lane 独立性**：RoslynLane 和 FrontendLane 应能独立工作。一个 Lane 失效不应拖垮另一个。
+1. **Lane 独立性**：RoslynLane 和 VolarLane 应能独立工作。一个 Lane 失效不应拖垮另一个。
 2. **静默降级**：能力消失时不在 IDE 中弹出错误通知（除非是启动级故障）。用户只应看到"补全少了"而非"出错了"。
 3. **自动恢复**：外部进程（Deno Worker）崩溃后自动重启，无需用户干预。
 4. **部分可用优于完全不可用**：即使只能提供纯文本编辑体验，也不应阻塞用户正常编辑 `.jazor` 文件。
@@ -957,6 +966,6 @@ VueHost 的各个子系统可能因外部依赖不可用而失败。每个失败
 
 | 故障 | 表现 |
 |------|------|
-| Deno 未安装 | 启动时检测，输出 "Deno is required for frontend language services. Install: https://deno.land" |
+| Deno 未安装 | 启动时检测，输出 "Deno is required for Volar/TSServer language services. Install: https://deno.land" |
 | 端口被占用 | Dev Server 端口冲突，输出具体端口号和占用进程信息 |
 | 工作区路径无效 | 无法解析 workspace root，输出路径错误信息 |

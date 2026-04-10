@@ -98,8 +98,15 @@ internal static class DenoRuntimeAssetResolver
             : Path.GetDirectoryName(workerPath);
     }
 
+    public static string ResolveCacheDirectory(string? baseDirectory = null)
+        => Path.GetFullPath(Path.Combine(
+            ResolveBaseDirectory(baseDirectory),
+            "Frontend",
+            "Deno",
+            "Cache"));
+
     public static string CreateMissingRuntimeMessage(string executablePath)
-        => $"Failed to locate the packaged Deno runtime for VueHost at '{executablePath}'. Ensure DenoHost runtime assets are available for the current RID and restore/build Jazor.VueHost before starting the frontend worker.";
+        => $"Failed to locate the packaged Deno runtime for VueHost at '{executablePath}'. Ensure DenoHost runtime assets are available for the current RID and restore/build Jazor.VueHost before starting the Volar worker.";
 
     private static string ResolveBaseDirectory(string? baseDirectory)
         => string.IsNullOrWhiteSpace(baseDirectory)

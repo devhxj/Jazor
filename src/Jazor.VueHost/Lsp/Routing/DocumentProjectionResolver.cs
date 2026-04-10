@@ -31,7 +31,7 @@ internal sealed class DocumentProjectionResolver
             if (document.DocumentKind is DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript)
             {
                 return new ProjectionTarget(
-                    LaneKind.Frontend,
+                    LaneKind.Volar,
                     DocumentRegionKind.Unknown,
                     document.DocumentPath,
                     document.DocumentPath,
@@ -51,19 +51,32 @@ internal sealed class DocumentProjectionResolver
 
         var offset = LspProtocolHelpers.GetOffset(document.Text, position);
         var regionKind = _classifier.Classify(document.Text, offset);
-        if (regionKind == DocumentRegionKind.Template || regionKind == DocumentRegionKind.Code)
+        if (regionKind == DocumentRegionKind.Template)
+        {
+            // `.jazor` template requests still flow into the frontend coordination lane,
+            // but they execute against the source document plus host-coordinated metadata
+            // rather than a projected virtual `.g.vue` file.
+            return new ProjectionTarget(
+                LaneKind.Volar,
+                regionKind,
+                document.DocumentPath,
+                document.DocumentPath,
+                position,
+                null,
+                IsProjected: false);
+        }
+
+        if (regionKind == DocumentRegionKind.Code)
         {
             var virtualDocuments = await _virtualDocumentRegistry.GetBySourceDocumentAsync(document.DocumentPath, cancellationToken);
             var projectedDocument = virtualDocuments.FirstOrDefault(candidate =>
-                candidate.Identity.DocumentKind == (regionKind == DocumentRegionKind.Template
-                    ? VirtualDocumentKind.Vue
-                    : VirtualDocumentKind.CSharp));
+                candidate.Identity.DocumentKind == VirtualDocumentKind.CSharp);
 
             if (projectedDocument is not null)
             {
                 var projectedPosition = TryMapPosition(projectedDocument.ProjectionMap, document.Text, position, projectedDocument.Text);
                 return new ProjectionTarget(
-                    regionKind == DocumentRegionKind.Template ? LaneKind.Frontend : LaneKind.Roslyn,
+                    LaneKind.Roslyn,
                     regionKind,
                     projectedDocument.Identity.ProjectedDocumentPath,
                     projectedDocument.Identity.SourceDocumentPath,
@@ -72,19 +85,16 @@ internal sealed class DocumentProjectionResolver
                     IsProjected: projectedPosition is not null);
             }
 
-            if (regionKind == DocumentRegionKind.Code)
-            {
-                // Code-lane requests already execute against the source snapshot. Keep routing
-                // them into Roslyn even if the virtual C# document has not been materialized yet.
-                return new ProjectionTarget(
-                    LaneKind.Roslyn,
-                    regionKind,
-                    document.DocumentPath,
-                    document.DocumentPath,
-                    position,
-                    null,
-                    IsProjected: false);
-            }
+            // Code-lane requests already execute against the source snapshot. Keep routing
+            // them into Roslyn even if the virtual C# document has not been materialized yet.
+            return new ProjectionTarget(
+                LaneKind.Roslyn,
+                regionKind,
+                document.DocumentPath,
+                document.DocumentPath,
+                position,
+                null,
+                IsProjected: false);
         }
 
         return new ProjectionTarget(

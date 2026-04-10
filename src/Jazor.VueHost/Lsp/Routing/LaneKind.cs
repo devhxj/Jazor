@@ -4,5 +4,5 @@ internal enum LaneKind
 {
     Jazor,
     Roslyn,
-    Frontend
+    Volar
 }

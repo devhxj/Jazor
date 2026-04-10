@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Jazor.VueContracts.Protocol;
 using Jazor.VueHost.Lsp;
 
 namespace Jazor.VueHost.Frontend.Deno.Protocol;
@@ -28,6 +29,10 @@ internal class DenoTemplateDocumentRequest
     public required string DocumentPath { get; init; }
 
     public required string Text { get; init; }
+
+    public SemanticContext? FrontendContext { get; init; }
+
+    public IReadOnlyList<ArtifactRecord>? FrontendArtifacts { get; init; }
 }
 
 internal class DenoTemplateRequest : DenoTemplateDocumentRequest

@@ -29,6 +29,7 @@ This design explicitly does **not** inherit RazorVue's host/bundling conclusions
 - `.jazor` is the primary authoring document.
 - `Jazor.VueHost` is the only IDE/dev-host boundary.
 - Roslyn and frontend semantics are internal lanes, not separate products.
+- `.jazor` template IntelliSense runs on the source document plus VueHost-coordinated Razor/Roslyn metadata; it must not depend on projected `.g.vue` text.
 - Deno is the only frontend runtime for this host.
 - `Jazor.Vite`, Bun, and the old split-host route are migration leftovers, not design inputs.
 - LSP is projection-aware and lane-aware.
@@ -55,13 +56,14 @@ This design explicitly does **not** inherit RazorVue's host/bundling conclusions
 
 - design-time intelligence must work from the `.jazor` source document directly.
 - IntelliSense must not depend on first materializing final `.vue` or `.cs` artifacts.
+- IntelliSense must not materialize `.jazor -> .g.vue` as an intermediate language-service document; only the metadata bridge and any Roslyn-specific code projection are allowed on that path.
 - build/materialization may still project `.jazor` into internal `.vue`, bridge artifacts, and runtime outputs.
 - those projected artifacts are build-time implementation details, not authoring semantics.
 
 ### 4. VueHost is a lane-based host
 
 - Razor/Roslyn lane owns C#, `@code`, navigation, rename, references, and source diagnostics.
-- frontend lane owns Vue/TS/CSS/HTML understanding for nearby `.vue`, `.css`, `.js`, and `.ts`.
+- Volar lane owns real `.vue` / `.ts` / `.js` / `.css` / `.html` language services and consumes VueHost-coordinated Razor/Roslyn metadata for `.jazor` template regions.
 - VueHost owns the shared workspace graph and routes requests to the correct lane before aggregating the result.
 - `.vue` and `.jazor` navigation should meet in that shared workspace graph, so definition/references/rename do not stop at the current file boundary.
 - workspace-open `.vue` documents should also participate in live `.jazor` diagnostics, so opening/closing a component can immediately suppress or reintroduce unresolved-component diagnostics in related `.jazor`.
@@ -72,7 +74,7 @@ This design explicitly does **not** inherit RazorVue's host/bundling conclusions
 
 ### 5. Virtual artifacts are internal
 
-- virtual `.vue` and other bridge outputs are internal projections.
+- virtual `.vue` and other bridge outputs are internal projections for build/materialization and tooling, not the `.jazor` IntelliSense path.
 - virtual `.cs` generation is **optional**; whether RoslynLane needs a projected C# document depends on the Roslyn integration approach (direct fragment analysis vs. minimal context projection). This decision is deferred to implementation.
 - they are allowed for LSP routing, worker interop, materialization, and tooling.
 - they must remain implementation details rather than becoming user-facing language boundaries.
@@ -124,7 +126,7 @@ src/Jazor.VueHost
 │  │  ├─ Worker
 │  │  ├─ Protocol
 │  │  └─ Hosting
-│  ├─ VolarTs          ← Volar + TSServer unified lane service
+│  ├─ BundledServices  ← self-contained Deno worker intelligence; any Volar/TSServer embedding is future work
 │  └─ Mapping
 ├─ Lsp
 │  ├─ Hosting
@@ -304,14 +306,15 @@ Shared operational support:
 
 ### Frontend
 
-- `IDenoFrontendHost`
-- `DenoFrontendHost`
+- `IDenoVolarHost`
+- `DenoVolarHost`
 - `DenoWorkerProcess`
 - `FrontendRpcRequest`
 - `FrontendRpcResponse`
 - `FrontendDiagnostic`
 - `FrontendEdit`
-- `VolarTsLaneService`   ← unified Volar + TSServer lane service
+- `DenoVolarHostOptions`
+- future in-bundle Volar/TSServer integration, if it lands, must stay self-contained inside the bundled Volar lane rather than reintroducing an external host boundary
 
 ### LSP
 
@@ -381,20 +384,20 @@ Input:
 Does not own:
 
 - `.jazor` directives
-- Razor markup semantics projected to the frontend lane
+- Razor markup semantics projected to the Volar lane
 - frontend file semantics
 
-### `FrontendLane`
+### `VolarLane`
 
-Language services provided by **Volar + TSServer** running in Deno Worker. No independent CSS/HTML/JSON language services.
+Language services are currently provided by the self-contained Deno worker shipped with VueHost. The shipping stack does not depend on an externally installed Volar/TSServer host; any future in-bundle integration must preserve that self-contained runtime model.
 
 Responsibilities:
 
-- Razor markup semantics projected to the frontend lane
+- Razor markup semantics projected to the Volar lane
 - Vue component and attribute resolution
-- `.vue/.ts/.js/.css/.html` diagnostics and intelligence
+- `.vue/.ts/.js/.css/.html` diagnostics and intelligence, with current script answers intentionally limited to conservative local/import-graph results
 - frontend completion/hover/definition/references/rename
-- silent degradation when Deno Worker is unavailable (RoslynLane continues independently)
+- no synthetic host-local semantic fallback when the Deno worker has no answer
 
 Input:
 
@@ -435,7 +438,7 @@ Suggested defaults:
 
 - directive/import/top-level structure -> `JazorLane`
 - `@code` block -> `RoslynLane`
-- `<template>` region -> `FrontendLane`
+- `<template>` region -> `VolarLane`
 - ambiguous region -> `JazorLane` first, optional fallback to other lanes
 
 ## LSP Request Routing Table
@@ -470,7 +473,7 @@ Suggested defaults:
 
 - `textDocument/signatureHelp`
   - `RoslynLane` primary
-  - `FrontendLane` only for valid frontend expression regions
+  - `VolarLane` only for valid frontend expression regions
 
 - `textDocument/definition`
   - primary lane resolves
@@ -506,7 +509,7 @@ Pipeline:
 
 1. `JazorLane` emits directive/structure/projection diagnostics
 2. `RoslynLane` emits projected C# diagnostics
-3. `FrontendLane` emits projected Vue/TS/CSS/HTML diagnostics
+3. `VolarLane` emits projected Vue/TS/CSS/HTML diagnostics
 4. `LspResultAggregator`:
    - maps projected spans back to `.jazor`
    - normalizes source labels
@@ -608,14 +611,16 @@ The host uses Deno only.
 Recommended process model:
 
 - main process: `Jazor.VueHost` (.NET)
-- child process: long-lived Deno frontend worker
+- child process: long-lived Deno Volar worker
 - communication: host-controlled RPC over stdio or length-prefixed messages
 
-The Deno worker runs **Volar + TSServer** as the unified frontend language service:
+The Deno worker currently runs a bundled, self-contained frontend intelligence stack owned by VueHost:
 
-- Volar: `.vue` SFC semantics, template/script/style blocks, CSS/HTML within Vue context
-- TSServer (embedded in Volar): TypeScript/JavaScript type checking, completion, navigation
-- no independent CSS, HTML, or JSON language services are needed
+- template-side component and directive analysis for `.jazor` / `.vue`
+- bundled TypeScript language-service completion/hover/definition/references for `.ts` / `.js` / `.vue <script>`, with conservative worker-local rename/document-symbol/semantic-token behavior still in place beside it
+- offline runtime dependencies prewarmed into the host output, with worker-local `nodeModulesDir:auto` config, so the worker can start with `--cached-only`
+
+If a future in-bundle Volar/TSServer bridge lands, it must remain inside this same self-contained Deno worker boundary rather than reintroducing an external host dependency.
 
 The Deno worker is **not** allowed to define `.jazor` semantics.
 
@@ -623,7 +628,7 @@ The Deno worker is **not** allowed to define `.jazor` semantics.
 
 If the Deno worker crashes or fails to start:
 
-- FrontendLane is marked unavailable
+- VolarLane is marked unavailable
 - RoslynLane continues independently (C# intelligence for `@code` blocks still works)
 - automatic restart with exponential backoff (max 3 retries)
 - all failures are silent to the user (no error popups for non-startup failures)
@@ -736,15 +741,16 @@ Current progress note:
 - in-proc Razor projection now uses `UnsafeAccessor` only (`GetRequiredCSharpDocument`, then `GetCSharpDocument`) with no reflection fallback path
 - `textDocument/signatureHelp` is now advertised and served for `@code` regions through the in-proc Roslyn lane, and focused tests now lock active-parameter tracking for multi-argument invocations at both the Roslyn service layer and the end-to-end LSP layer
 - `textDocument/documentSymbol` is now advertised and served for `.jazor`, with Jazor structure symbols (`Template` / `Code` plus template component children) aggregated alongside in-proc Roslyn top-level `@code` members
-- the self-contained Deno frontend worker now serves template-side `documentSymbol`, so frontend symbol discovery for `.vue` and other frontend-lane documents no longer depends on an externally installed Volar/tsserver path
+- the self-contained Deno Volar worker now serves template-side `documentSymbol`, and `.vue` documents now expose both `Template` and `Script` groups while `.ts` / `.js` documents surface top-level frontend symbols without any externally installed Volar/tsserver path
 - `textDocument/semanticTokens/full` is now advertised and served through host-level aggregation: the bundled Deno worker classifies template/component tokens for frontend regions, and the in-proc Roslyn lane classifies `@code` symbols directly from the projected C# model before mapping them back to source `.jazor`
+- the bundled Deno worker now serves real TypeScript language-service completion/hover/definition/references for `.ts`, `.js`, and `.vue <script>`, including imported member/type answers and alias/default-export chains, while rename/document symbols/semantic tokens remain conservative worker-local implementations
 - Roslyn in-proc definition/references/rename now compile over all open `.jazor` projections from workspace state, so code-lane symbol queries can resolve and edit across documents when symbols are shared
 - code-region LSP routing no longer blocks on virtual C# document registration; VueHost still routes `@code` requests into Roslyn from the source snapshot when projection materialization is temporarily unavailable
-- the old external language-server compatibility layer has been removed from the mainline bootstrap, so VueHost now composes one self-contained stack: in-proc Razor projection, in-proc Roslyn semantics, and the bundled Deno frontend worker
-- semantic lane routing no longer falls back from frontend/code requests into `JazorLspDocumentService`; VueHost now either returns the active lane result or no result, while frontend workspace-graph enrichment stays inside the frontend lane itself
-- the bundled Deno worker is now enabled by default and started with file-read permission so nearby/workspace component discovery flows through the self-contained frontend path instead of a host-local semantic fallback
-- the Deno frontend worker is being moved to the same self-contained runtime model used by the repo's `DenoHost`-backed tooling, so frontend intelligence does not depend on a globally installed `deno`
-- the Deno frontend host bootstrap is moving to the same self-contained runtime model already used elsewhere in the repository: VueHost now resolves its worker entrypoint and bundled `DenoHost` runtime from its own output layout by default, while still allowing explicit `--deno-command` / `--deno-arg` overrides for diagnostics and local experiments
+- the old external language-server compatibility layer has been removed from the mainline bootstrap, so VueHost now composes one self-contained stack: in-proc Razor projection, in-proc Roslyn semantics, and the bundled Deno Volar worker
+- semantic lane routing no longer falls back from frontend/code requests into `JazorLspDocumentService`; VueHost now either returns the active lane result or no result, while frontend workspace-graph enrichment stays inside the Volar lane itself
+- the bundled Deno worker is now enabled by default, started with `--cached-only --allow-env --allow-read`, and pointed at a bundled `DENO_DIR`, so nearby/workspace component discovery and bundled TypeScript-service script intelligence stay inside the self-contained frontend path
+- the Deno frontend host now resolves its worker entrypoint and bundled `DenoHost` runtime from its own output layout by default, primes worker dependencies into `Frontend/Deno/Cache` during build, and still allows explicit `--deno-command` / `--deno-arg` overrides for diagnostics and local experiments
+- frontend-lane `references` / `rename` now ask the active Deno worker first and only merge workspace-graph results for real template component tags, so script-lane answers no longer get short-circuited by markup-only heuristics
 
 Original phase-two tail:
 
@@ -758,7 +764,7 @@ Original phase-two tail:
 
 - `JazorLane` defines `.jazor` rules and projections
 - `RoslynLane` handles C#
-- `FrontendLane` handles Vue/TS ecosystem through Deno
+- `VolarLane` handles Vue/TS ecosystem through Deno
 - `Jazor.VueHost` itself owns routing, mapping, aggregation, and final protocol serving
 
 The architecture only works if virtual document mapping is treated as core infrastructure from the beginning.

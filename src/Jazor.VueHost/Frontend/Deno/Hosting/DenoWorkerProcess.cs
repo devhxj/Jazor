@@ -8,7 +8,7 @@ namespace Jazor.VueHost.Frontend.Deno.Hosting;
 
 internal sealed class DenoWorkerProcess : IDenoWorkerProcess
 {
-    private readonly DenoFrontendHostOptions _options;
+    private readonly DenoVolarHostOptions _options;
     private readonly SemaphoreSlim _requestGate = new(1, 1);
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
@@ -19,7 +19,7 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
     private StreamWriter? _writer;
     private StreamReader? _reader;
 
-    public DenoWorkerProcess(DenoFrontendHostOptions options)
+    public DenoWorkerProcess(DenoVolarHostOptions options)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
     }
@@ -36,7 +36,7 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
 
         if (string.IsNullOrWhiteSpace(_options.ExecutablePath))
         {
-            throw new InvalidOperationException("No Deno runtime path was configured for the VueHost frontend worker.");
+            throw new InvalidOperationException("No Deno runtime path was configured for the VueHost Volar worker.");
         }
 
         if (!_options.HasExplicitExecutableOverride &&
@@ -69,6 +69,12 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
             startInfo.WorkingDirectory = _options.WorkingDirectory;
         }
 
+        if (!string.IsNullOrWhiteSpace(_options.CacheDirectory))
+        {
+            Directory.CreateDirectory(_options.CacheDirectory);
+            startInfo.Environment["DENO_DIR"] = _options.CacheDirectory;
+        }
+
         _process = new Process
         {
             StartInfo = startInfo
@@ -78,7 +84,7 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
         {
             if (!_process.Start())
             {
-                throw new InvalidOperationException($"Failed to start Deno frontend worker '{_options.ExecutablePath}'.");
+                throw new InvalidOperationException($"Failed to start Deno Volar worker '{_options.ExecutablePath}'.");
             }
         }
         catch (Win32Exception ex) when (!_options.HasExplicitExecutableOverride)

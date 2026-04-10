@@ -161,7 +161,7 @@ public sealed class JazorVueHostProjectionMapTests
     }
 
     [TestMethod]
-    public async Task DocumentProjectionResolver_ResolveAsync_UsesSegmentAwareTemplateProjection()
+    public async Task DocumentProjectionResolver_ResolveAsync_RoutesTemplateRequestsToSourceFrontendDocument()
     {
         var document = new DocumentSnapshot(
             @"D:\temp\Counter.jazor",
@@ -174,7 +174,7 @@ public sealed class JazorVueHostProjectionMapTests
             "1");
         var service = new JazorProjectionService();
         var registry = new InMemoryVirtualDocumentRegistry();
-        await registry.UpsertAsync(await service.ProjectAsync(document, CancellationToken.None), CancellationToken.None);
+        await registry.UpsertAsync(await service.ProjectCodeAsync(document, CancellationToken.None), CancellationToken.None);
         var resolver = new DocumentProjectionResolver(new DocumentRegionClassifier(), registry);
 
         var target = await resolver.ResolveAsync(
@@ -182,8 +182,12 @@ public sealed class JazorVueHostProjectionMapTests
             new LspPosition { Line = 1, Character = 5 },
             CancellationToken.None);
 
-        Assert.AreEqual(LaneKind.Frontend, target.LaneKind);
-        Assert.IsTrue(target.IsProjected);
-        Assert.IsNotNull(target.ProjectedPosition);
+        Assert.AreEqual(LaneKind.Volar, target.LaneKind);
+        Assert.AreEqual(DocumentRegionKind.Template, target.RegionKind);
+        Assert.IsFalse(target.IsProjected);
+        Assert.AreEqual(document.DocumentPath, target.ProjectedDocumentPath);
+        Assert.AreEqual(document.DocumentPath, target.MappingId);
+        Assert.AreEqual(1, target.ProjectedPosition!.Line);
+        Assert.AreEqual(5, target.ProjectedPosition.Character);
     }
 }

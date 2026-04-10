@@ -1,12 +1,16 @@
 using Jazor.VueContracts.Protocol;
+using Jazor.VueHost.Frontend;
 using Jazor.VueHost.Frontend.Deno.Hosting;
 using Jazor.VueHost.Lsp.Routing;
+using Jazor.VueHost.VirtualDocuments.Mapping;
+using Jazor.VueHost.VirtualDocuments.Models;
+using Jazor.VueHost.VirtualDocuments.Registry;
 using Jazor.VueHost.Workspace;
 using System.Text.RegularExpressions;
 
 namespace Jazor.VueHost.Lsp.Lanes;
 
-internal sealed class FrontendLaneService : ILspLane
+internal sealed class VolarLaneService : ILspLane
 {
     private const string MissingTemplateImportDiagnosticCode = "JAZORVUEFRONTEND001";
     private static readonly Regex ComponentTagPattern = new(
@@ -16,26 +20,40 @@ internal sealed class FrontendLaneService : ILspLane
         @"</?(?<name>[A-Za-z0-9_]*)$",
         RegexOptions.Compiled);
     private readonly IVueHostWorkspaceStore _workspaceStore;
-    private readonly IDenoFrontendHost? _denoFrontendHost;
+    private readonly IFrontendContextProvider? _frontendContextProvider;
+    private readonly IVirtualDocumentRegistry? _virtualDocumentRegistry;
+    private readonly IDenoVolarHost? _denoVolarHost;
 
-    public FrontendLaneService(
+    public VolarLaneService(
         IVueHostWorkspaceStore workspaceStore,
-        IDenoFrontendHost? denoFrontendHost = null)
+        IFrontendContextProvider? frontendContextProvider = null,
+        IVirtualDocumentRegistry? virtualDocumentRegistry = null,
+        IDenoVolarHost? denoVolarHost = null)
     {
         _workspaceStore = workspaceStore ?? throw new ArgumentNullException(nameof(workspaceStore));
-        _denoFrontendHost = denoFrontendHost;
+        _frontendContextProvider = frontendContextProvider;
+        _virtualDocumentRegistry = virtualDocumentRegistry;
+        _denoVolarHost = denoVolarHost;
     }
 
-    public LaneKind LaneKind => LaneKind.Frontend;
+    public LaneKind LaneKind => LaneKind.Volar;
 
     public async ValueTask<IReadOnlyList<LspDiagnostic>> GetDiagnosticsAsync(
         DocumentSnapshot document,
         CancellationToken cancellationToken)
     {
         var diagnostics = new List<LspDiagnostic>();
-        diagnostics.AddRange(await FilterDenoDiagnosticsAsync(document, await TryGetDenoDiagnosticsAsync(document, cancellationToken), cancellationToken));
+        var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget: null, cancellationToken);
+        var frontendContext = await GetFrontendIntelliSenseContextAsync(document, cancellationToken);
+        var denoDiagnostics = await TryGetDenoDiagnosticsAsync(frontendDocument.RequestDocument, frontendContext, cancellationToken);
+        diagnostics.AddRange(await FilterDenoDiagnosticsAsync(document, MapDiagnostics(document, frontendDocument, denoDiagnostics), cancellationToken));
 
-        diagnostics.AddRange(await CreateUnresolvedMarkupComponentDiagnosticsAsync(document, cancellationToken));
+        if (document.DocumentKind is DocumentKind.Jazor or DocumentKind.Vue
+            && frontendDocument.ProjectionMap is null)
+        {
+            diagnostics.AddRange(await CreateUnresolvedMarkupComponentDiagnosticsAsync(document, cancellationToken));
+        }
+
         return diagnostics
             .GroupBy(static diagnostic =>
                 $"{diagnostic.Code}:{diagnostic.Range.Start.Line}:{diagnostic.Range.Start.Character}:{diagnostic.Range.End.Line}:{diagnostic.Range.End.Character}",
@@ -55,13 +73,16 @@ internal sealed class FrontendLaneService : ILspLane
             return null;
         }
 
-        var denoResult = await TryGetDenoHoverAsync(document, position, cancellationToken);
+        var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget, cancellationToken);
+        var requestPosition = frontendDocument.MapPosition(position, projectionTarget.ProjectedPosition);
+        var frontendContext = await GetFrontendIntelliSenseContextAsync(document, cancellationToken);
+        var denoResult = await TryGetDenoHoverAsync(frontendDocument.RequestDocument, requestPosition, frontendContext, cancellationToken);
         if (denoResult is not null)
         {
-            return denoResult;
+            return MapHover(document, frontendDocument, denoResult);
         }
 
-        if (!CanUseWorkspaceGraph())
+        if (frontendDocument.ProjectionMap is not null || !CanUseWorkspaceGraph())
         {
             return null;
         }
@@ -99,9 +120,12 @@ internal sealed class FrontendLaneService : ILspLane
             return Array.Empty<LspCompletionItem>();
         }
 
+        var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget, cancellationToken);
+        var requestPosition = frontendDocument.MapPosition(position, projectionTarget.ProjectedPosition);
+        var frontendContext = await GetFrontendIntelliSenseContextAsync(document, cancellationToken);
         var items = new List<LspCompletionItem>();
         var seen = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var item in await TryGetDenoCompletionItemsAsync(document, position, cancellationToken))
+        foreach (var item in await TryGetDenoCompletionItemsAsync(frontendDocument.RequestDocument, requestPosition, frontendContext, cancellationToken))
         {
             if (seen.Add($"{item.Label}|{item.Kind}|{item.Detail}"))
             {
@@ -109,7 +133,9 @@ internal sealed class FrontendLaneService : ILspLane
             }
         }
 
-        if (CanUseWorkspaceGraph() && TryGetTagCompletionPrefix(document.Text, position, out var tagPrefix))
+        if (frontendDocument.ProjectionMap is null
+            && CanUseWorkspaceGraph()
+            && TryGetTagCompletionPrefix(document.Text, position, out var tagPrefix))
         {
             foreach (var component in await GetVueComponentSuggestionsAsync(document.DocumentPath, cancellationToken))
             {
@@ -144,12 +170,15 @@ internal sealed class FrontendLaneService : ILspLane
         DocumentSnapshot document,
         CancellationToken cancellationToken)
     {
-        if (document.DocumentKind is not (DocumentKind.Jazor or DocumentKind.Vue))
+        if (document.DocumentKind is not (DocumentKind.Jazor or DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript))
         {
             return Array.Empty<LspSemanticToken>();
         }
 
-        return await TryGetDenoSemanticTokensAsync(document, cancellationToken);
+        var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget: null, cancellationToken);
+        var frontendContext = await GetFrontendIntelliSenseContextAsync(document, cancellationToken);
+        var tokens = await TryGetDenoSemanticTokensAsync(frontendDocument.RequestDocument, frontendContext, cancellationToken);
+        return MapSemanticTokens(document, frontendDocument, tokens);
     }
 
     private async ValueTask<IReadOnlyList<LspDocumentSymbol>> GetDocumentSymbolsCoreAsync(
@@ -158,7 +187,8 @@ internal sealed class FrontendLaneService : ILspLane
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var denoResult = await TryGetDenoDocumentSymbolsAsync(document, cancellationToken);
+        var frontendContext = await GetFrontendIntelliSenseContextAsync(document, cancellationToken);
+        var denoResult = await TryGetDenoDocumentSymbolsAsync(document, frontendContext, cancellationToken);
         if (denoResult is { Count: > 0 })
         {
             return denoResult;
@@ -185,13 +215,16 @@ internal sealed class FrontendLaneService : ILspLane
             return Array.Empty<LspLocation>();
         }
 
-        var denoResult = await TryGetDenoDefinitionsAsync(document, position, cancellationToken);
+        var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget, cancellationToken);
+        var requestPosition = frontendDocument.MapPosition(position, projectionTarget.ProjectedPosition);
+        var frontendContext = await GetFrontendIntelliSenseContextAsync(document, cancellationToken);
+        var denoResult = await TryGetDenoDefinitionsAsync(frontendDocument.RequestDocument, requestPosition, frontendContext, cancellationToken);
         if (denoResult is { Count: > 0 })
         {
-            return denoResult;
+            return MapLocations(document, frontendDocument, denoResult);
         }
 
-        if (!CanUseWorkspaceGraph())
+        if (frontendDocument.ProjectionMap is not null || !CanUseWorkspaceGraph())
         {
             return Array.Empty<LspLocation>();
         }
@@ -233,14 +266,17 @@ internal sealed class FrontendLaneService : ILspLane
             return Array.Empty<LspLocation>();
         }
 
-        if (!TryFindComponentTagSymbol(document.Text, position, out var symbol))
-        {
-            return Array.Empty<LspLocation>();
-        }
-
+        var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget, cancellationToken);
+        var requestPosition = frontendDocument.MapPosition(position, projectionTarget.ProjectedPosition);
+        var frontendContext = await GetFrontendIntelliSenseContextAsync(document, cancellationToken);
         var locations = new List<LspLocation>();
-        locations.AddRange(await TryGetDenoReferencesAsync(document, position, includeDeclaration, cancellationToken));
-        if (CanUseWorkspaceGraph())
+        locations.AddRange(MapLocations(
+            document,
+            frontendDocument,
+            await TryGetDenoReferencesAsync(frontendDocument.RequestDocument, requestPosition, includeDeclaration, frontendContext, cancellationToken)));
+        if (frontendDocument.ProjectionMap is null
+            && CanUseWorkspaceGraph()
+            && TryFindComponentTagSymbol(document.Text, position, out var symbol))
         {
             locations.AddRange(await FindWorkspaceReferencesAsync(document, symbol, includeDeclaration, cancellationToken));
         }
@@ -263,13 +299,14 @@ internal sealed class FrontendLaneService : ILspLane
             return null;
         }
 
-        if (!TryFindComponentTagSymbol(document.Text, position, out var symbol))
-        {
-            return null;
-        }
-
+        var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget, cancellationToken);
+        var requestPosition = frontendDocument.MapPosition(position, projectionTarget.ProjectedPosition);
+        var frontendContext = await GetFrontendIntelliSenseContextAsync(document, cancellationToken);
         var changes = new Dictionary<string, List<LspTextEdit>>(StringComparer.Ordinal);
-        var denoResult = await TryGetDenoRenameAsync(document, position, newName, cancellationToken);
+        var denoResult = MapWorkspaceEdit(
+            document,
+            frontendDocument,
+            await TryGetDenoRenameAsync(frontendDocument.RequestDocument, requestPosition, newName, frontendContext, cancellationToken));
         if (denoResult is not null)
         {
             foreach (var change in denoResult.Changes)
@@ -284,7 +321,9 @@ internal sealed class FrontendLaneService : ILspLane
             }
         }
 
-        if (CanUseWorkspaceGraph())
+        if (frontendDocument.ProjectionMap is null
+            && CanUseWorkspaceGraph()
+            && TryFindComponentTagSymbol(document.Text, position, out var symbol))
         {
             foreach (var change in await FindWorkspaceRenameChangesAsync(document, symbol, newName, cancellationToken))
             {
@@ -326,7 +365,7 @@ internal sealed class FrontendLaneService : ILspLane
         => ValueTask.FromResult<IReadOnlyList<LspCodeAction>>(Array.Empty<LspCodeAction>());
 
     private static bool IsTemplateTarget(ProjectionTarget projectionTarget)
-        => projectionTarget.LaneKind == LaneKind.Frontend
+        => projectionTarget.LaneKind == LaneKind.Volar
             || projectionTarget.RegionKind == DocumentRegionKind.Template;
 
     private static bool TryGetTagCompletionPrefix(string text, LspPosition position, out string tagPrefix)
@@ -372,16 +411,17 @@ internal sealed class FrontendLaneService : ILspLane
     private async ValueTask<IReadOnlyList<LspCompletionItem>> TryGetDenoCompletionItemsAsync(
         DocumentSnapshot document,
         LspPosition position,
+        DenoVolarIntelliSenseContext? context,
         CancellationToken cancellationToken)
     {
-        if (_denoFrontendHost is null)
+        if (_denoVolarHost is null)
         {
             return Array.Empty<LspCompletionItem>();
         }
 
         try
         {
-            return await _denoFrontendHost.GetTemplateCompletionItemsAsync(document, position, cancellationToken);
+            return await _denoVolarHost.GetTemplateCompletionItemsAsync(document, position, context, cancellationToken);
         }
         catch
         {
@@ -392,16 +432,17 @@ internal sealed class FrontendLaneService : ILspLane
     private async ValueTask<LspHoverResult?> TryGetDenoHoverAsync(
         DocumentSnapshot document,
         LspPosition position,
+        DenoVolarIntelliSenseContext? context,
         CancellationToken cancellationToken)
     {
-        if (_denoFrontendHost is null)
+        if (_denoVolarHost is null)
         {
             return null;
         }
 
         try
         {
-            return await _denoFrontendHost.GetTemplateHoverAsync(document, position, cancellationToken);
+            return await _denoVolarHost.GetTemplateHoverAsync(document, position, context, cancellationToken);
         }
         catch
         {
@@ -412,16 +453,17 @@ internal sealed class FrontendLaneService : ILspLane
     private async ValueTask<IReadOnlyList<LspLocation>> TryGetDenoDefinitionsAsync(
         DocumentSnapshot document,
         LspPosition position,
+        DenoVolarIntelliSenseContext? context,
         CancellationToken cancellationToken)
     {
-        if (_denoFrontendHost is null)
+        if (_denoVolarHost is null)
         {
             return Array.Empty<LspLocation>();
         }
 
         try
         {
-            return await _denoFrontendHost.GetTemplateDefinitionAsync(document, position, cancellationToken);
+            return await _denoVolarHost.GetTemplateDefinitionAsync(document, position, context, cancellationToken);
         }
         catch
         {
@@ -433,19 +475,21 @@ internal sealed class FrontendLaneService : ILspLane
         DocumentSnapshot document,
         LspPosition position,
         bool includeDeclaration,
+        DenoVolarIntelliSenseContext? context,
         CancellationToken cancellationToken)
     {
-        if (_denoFrontendHost is null)
+        if (_denoVolarHost is null)
         {
             return Array.Empty<LspLocation>();
         }
 
         try
         {
-            return await _denoFrontendHost.GetTemplateReferencesAsync(
+            return await _denoVolarHost.GetTemplateReferencesAsync(
                 document,
                 position,
                 includeDeclaration,
+                context,
                 cancellationToken);
         }
         catch
@@ -458,16 +502,17 @@ internal sealed class FrontendLaneService : ILspLane
         DocumentSnapshot document,
         LspPosition position,
         string newName,
+        DenoVolarIntelliSenseContext? context,
         CancellationToken cancellationToken)
     {
-        if (_denoFrontendHost is null)
+        if (_denoVolarHost is null)
         {
             return null;
         }
 
         try
         {
-            return await _denoFrontendHost.GetTemplateRenameAsync(document, position, newName, cancellationToken);
+            return await _denoVolarHost.GetTemplateRenameAsync(document, position, newName, context, cancellationToken);
         }
         catch
         {
@@ -477,16 +522,17 @@ internal sealed class FrontendLaneService : ILspLane
 
     private async ValueTask<IReadOnlyList<LspDocumentSymbol>> TryGetDenoDocumentSymbolsAsync(
         DocumentSnapshot document,
+        DenoVolarIntelliSenseContext? context,
         CancellationToken cancellationToken)
     {
-        if (_denoFrontendHost is null)
+        if (_denoVolarHost is null)
         {
             return Array.Empty<LspDocumentSymbol>();
         }
 
         try
         {
-            return await _denoFrontendHost.GetTemplateDocumentSymbolsAsync(document, cancellationToken);
+            return await _denoVolarHost.GetTemplateDocumentSymbolsAsync(document, context, cancellationToken);
         }
         catch
         {
@@ -496,16 +542,17 @@ internal sealed class FrontendLaneService : ILspLane
 
     private async ValueTask<IReadOnlyList<LspDiagnostic>> TryGetDenoDiagnosticsAsync(
         DocumentSnapshot document,
+        DenoVolarIntelliSenseContext? context,
         CancellationToken cancellationToken)
     {
-        if (_denoFrontendHost is null)
+        if (_denoVolarHost is null)
         {
             return Array.Empty<LspDiagnostic>();
         }
 
         try
         {
-            return await _denoFrontendHost.GetTemplateDiagnosticsAsync(document, cancellationToken);
+            return await _denoVolarHost.GetTemplateDiagnosticsAsync(document, context, cancellationToken);
         }
         catch
         {
@@ -515,21 +562,310 @@ internal sealed class FrontendLaneService : ILspLane
 
     private async ValueTask<IReadOnlyList<LspSemanticToken>> TryGetDenoSemanticTokensAsync(
         DocumentSnapshot document,
+        DenoVolarIntelliSenseContext? context,
         CancellationToken cancellationToken)
     {
-        if (_denoFrontendHost is null)
+        if (_denoVolarHost is null)
         {
             return Array.Empty<LspSemanticToken>();
         }
 
         try
         {
-            return await _denoFrontendHost.GetTemplateSemanticTokensAsync(document, cancellationToken);
+            return await _denoVolarHost.GetTemplateSemanticTokensAsync(document, context, cancellationToken);
         }
         catch
         {
             return Array.Empty<LspSemanticToken>();
         }
+    }
+
+    private async ValueTask<DenoVolarIntelliSenseContext?> GetFrontendIntelliSenseContextAsync(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken)
+    {
+        if (document.DocumentKind != DocumentKind.Jazor || _frontendContextProvider is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            var response = await _frontendContextProvider.GetFrontendContextAsync(
+                new GetFrontendContextRequest(document.DocumentPath, Array.Empty<string>()),
+                cancellationToken);
+            return new DenoVolarIntelliSenseContext(response.SemanticContext, response.Artifacts);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private async ValueTask<FrontendRequestDocument> ResolveFrontendDocumentAsync(
+        DocumentSnapshot sourceDocument,
+        ProjectionTarget? projectionTarget,
+        CancellationToken cancellationToken)
+    {
+        if (sourceDocument.DocumentKind == DocumentKind.Jazor)
+        {
+            return new FrontendRequestDocument(sourceDocument, ProjectionMap: null);
+        }
+
+        if (_virtualDocumentRegistry is not null)
+        {
+            VirtualDocument? projectedDocument = null;
+            if (projectionTarget is not null
+                && projectionTarget.IsProjected
+                && !string.IsNullOrWhiteSpace(projectionTarget.ProjectedDocumentPath))
+            {
+                projectedDocument = await _virtualDocumentRegistry.GetByProjectedDocumentAsync(
+                    projectionTarget.ProjectedDocumentPath,
+                    cancellationToken);
+            }
+
+            if (projectedDocument is null && sourceDocument.DocumentKind == DocumentKind.Jazor)
+            {
+                projectedDocument = null;
+            }
+
+            if (projectedDocument is not null)
+            {
+                return new FrontendRequestDocument(
+                    new DocumentSnapshot(
+                        projectedDocument.Identity.ProjectedDocumentPath,
+                        MapProjectedDocumentKind(projectedDocument.Identity.DocumentKind),
+                        projectedDocument.Text,
+                        projectedDocument.Version),
+                    projectedDocument.ProjectionMap);
+            }
+        }
+
+        return new FrontendRequestDocument(sourceDocument, ProjectionMap: null);
+    }
+
+    private static DocumentKind MapProjectedDocumentKind(VirtualDocumentKind documentKind)
+        => documentKind switch
+        {
+            VirtualDocumentKind.Vue => DocumentKind.Vue,
+            VirtualDocumentKind.CSharp => DocumentKind.Unknown,
+            _ => DocumentKind.Unknown
+        };
+
+    private static IReadOnlyList<LspDiagnostic> MapDiagnostics(
+        DocumentSnapshot sourceDocument,
+        FrontendRequestDocument requestDocument,
+        IReadOnlyList<LspDiagnostic> diagnostics)
+    {
+        if (requestDocument.ProjectionMap is null)
+        {
+            return diagnostics;
+        }
+
+        return diagnostics
+            .Select(diagnostic =>
+            {
+                if (!requestDocument.ProjectionMap.TryMapToOriginalRange(
+                        requestDocument.RequestDocument.Text,
+                        diagnostic.Range,
+                        sourceDocument.Text,
+                        out var sourceRange))
+                {
+                    return null;
+                }
+
+                return new LspDiagnostic
+                {
+                    Range = sourceRange,
+                    Severity = diagnostic.Severity,
+                    Code = diagnostic.Code,
+                    Source = diagnostic.Source,
+                    Message = diagnostic.Message
+                };
+            })
+            .Where(static diagnostic => diagnostic is not null)
+            .Cast<LspDiagnostic>()
+            .ToArray();
+    }
+
+    private static LspHoverResult? MapHover(
+        DocumentSnapshot sourceDocument,
+        FrontendRequestDocument requestDocument,
+        LspHoverResult? hover)
+    {
+        if (hover is null || requestDocument.ProjectionMap is null || hover.Range is null)
+        {
+            return hover;
+        }
+
+        if (!requestDocument.ProjectionMap.TryMapToOriginalRange(
+                requestDocument.RequestDocument.Text,
+                hover.Range,
+                sourceDocument.Text,
+                out var sourceRange))
+        {
+            return new LspHoverResult
+            {
+                Contents = hover.Contents,
+                Range = null
+            };
+        }
+
+        return new LspHoverResult
+        {
+            Contents = hover.Contents,
+            Range = sourceRange
+        };
+    }
+
+    private static IReadOnlyList<LspLocation> MapLocations(
+        DocumentSnapshot sourceDocument,
+        FrontendRequestDocument requestDocument,
+        IReadOnlyList<LspLocation> locations)
+    {
+        if (requestDocument.ProjectionMap is null)
+        {
+            return locations;
+        }
+
+        var projectedUri = LspProtocolHelpers.ToDocumentUri(requestDocument.RequestDocument.DocumentPath);
+        return locations
+            .Select(location =>
+            {
+                if (!string.Equals(location.Uri, projectedUri, StringComparison.Ordinal))
+                {
+                    return location;
+                }
+
+                if (!requestDocument.ProjectionMap.TryMapToOriginalRange(
+                        requestDocument.RequestDocument.Text,
+                        location.Range,
+                        sourceDocument.Text,
+                        out var sourceRange))
+                {
+                    return null;
+                }
+
+                return new LspLocation
+                {
+                    Uri = LspProtocolHelpers.ToDocumentUri(sourceDocument.DocumentPath),
+                    Range = sourceRange
+                };
+            })
+            .Where(static location => location is not null)
+            .Cast<LspLocation>()
+            .ToArray();
+    }
+
+    private static LspWorkspaceEdit? MapWorkspaceEdit(
+        DocumentSnapshot sourceDocument,
+        FrontendRequestDocument requestDocument,
+        LspWorkspaceEdit? workspaceEdit)
+    {
+        if (workspaceEdit is null || requestDocument.ProjectionMap is null)
+        {
+            return workspaceEdit;
+        }
+
+        var projectedUri = LspProtocolHelpers.ToDocumentUri(requestDocument.RequestDocument.DocumentPath);
+        var sourceUri = LspProtocolHelpers.ToDocumentUri(sourceDocument.DocumentPath);
+        var mappedChanges = new Dictionary<string, LspTextEdit[]>(StringComparer.Ordinal);
+        foreach (var change in workspaceEdit.Changes)
+        {
+            if (!string.Equals(change.Key, projectedUri, StringComparison.Ordinal))
+            {
+                mappedChanges[change.Key] = change.Value;
+                continue;
+            }
+
+            var edits = change.Value
+                .Select(edit =>
+                {
+                    if (!requestDocument.ProjectionMap.TryMapToOriginalRange(
+                            requestDocument.RequestDocument.Text,
+                            edit.Range,
+                            sourceDocument.Text,
+                            out var sourceRange))
+                    {
+                        return null;
+                    }
+
+                    return new LspTextEdit
+                    {
+                        Range = sourceRange,
+                        NewText = edit.NewText
+                    };
+                })
+                .Where(static edit => edit is not null)
+                .Cast<LspTextEdit>()
+                .ToArray();
+
+            if (edits.Length > 0)
+            {
+                mappedChanges[sourceUri] = edits;
+            }
+        }
+
+        return mappedChanges.Count == 0
+            ? null
+            : new LspWorkspaceEdit
+            {
+                Changes = mappedChanges
+            };
+    }
+
+    private static IReadOnlyList<LspSemanticToken> MapSemanticTokens(
+        DocumentSnapshot sourceDocument,
+        FrontendRequestDocument requestDocument,
+        IReadOnlyList<LspSemanticToken> tokens)
+    {
+        if (requestDocument.ProjectionMap is null)
+        {
+            return tokens;
+        }
+
+        var mappedTokens = new List<LspSemanticToken>(tokens.Count);
+        foreach (var token in tokens)
+        {
+            var projectedRange = new LspRange
+            {
+                Start = new LspPosition
+                {
+                    Line = token.Line,
+                    Character = token.Character
+                },
+                End = new LspPosition
+                {
+                    Line = token.Line,
+                    Character = token.Character + token.Length
+                }
+            };
+
+            if (!requestDocument.ProjectionMap.TryMapToOriginalRange(
+                    requestDocument.RequestDocument.Text,
+                    projectedRange,
+                    sourceDocument.Text,
+                    out var sourceRange))
+            {
+                continue;
+            }
+
+            if (sourceRange.Start.Line != sourceRange.End.Line)
+            {
+                continue;
+            }
+
+            mappedTokens.Add(new LspSemanticToken
+            {
+                Line = sourceRange.Start.Line,
+                Character = sourceRange.Start.Character,
+                Length = Math.Max(0, sourceRange.End.Character - sourceRange.Start.Character),
+                TokenType = token.TokenType,
+                TokenModifiers = token.TokenModifiers
+            });
+        }
+
+        return mappedTokens;
     }
 
     private async ValueTask<IReadOnlyList<LspDiagnostic>> CreateUnresolvedMarkupComponentDiagnosticsAsync(
@@ -715,7 +1051,7 @@ internal sealed class FrontendLaneService : ILspLane
     }
 
     private bool CanUseWorkspaceGraph()
-        => _denoFrontendHost?.IsRunning == true;
+        => _denoVolarHost?.IsRunning == true;
 
     private async ValueTask<IReadOnlyList<LspLocation>> FindWorkspaceReferencesAsync(
         DocumentSnapshot document,
@@ -901,4 +1237,14 @@ internal sealed class FrontendLaneService : ILspLane
         string ComponentName,
         string AbsolutePath,
         string ImportPath);
+
+    private readonly record struct FrontendRequestDocument(
+        DocumentSnapshot RequestDocument,
+        ProjectionMap? ProjectionMap)
+    {
+        public LspPosition MapPosition(LspPosition sourcePosition, LspPosition? projectedPosition)
+            => ProjectionMap is null
+                ? sourcePosition
+                : projectedPosition ?? sourcePosition;
+    }
 }

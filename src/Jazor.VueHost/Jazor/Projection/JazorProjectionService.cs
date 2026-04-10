@@ -34,31 +34,64 @@ internal sealed class JazorProjectionService
 
         var parsedDocument = _parser.Parse(document.DocumentPath, document.Text);
         var compilation = _compiler.Compile(parsedDocument);
+        var virtualDocuments = new List<VirtualDocument>
+        {
+            CreateVueProjectionDocument(document, parsedDocument, compilation.GeneratedVueText),
+            CreateCodeProjectionDocument(document, parsedDocument)
+        };
 
-        var vueProjectedPath = "virtual:" + document.DocumentPath + ".g.vue";
-        var csharpProjection = _inProcRoslynCodeService.CreateProjection(document, parsedDocument);
+        return ValueTask.FromResult<IReadOnlyList<VirtualDocument>>(virtualDocuments);
+    }
 
+    public ValueTask<IReadOnlyList<VirtualDocument>> ProjectCodeAsync(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (document.DocumentKind != DocumentKind.Jazor)
+        {
+            return ValueTask.FromResult<IReadOnlyList<VirtualDocument>>(Array.Empty<VirtualDocument>());
+        }
+
+        var parsedDocument = _parser.Parse(document.DocumentPath, document.Text);
         IReadOnlyList<VirtualDocument> virtualDocuments =
         [
-            new VirtualDocument(
-                new VirtualDocumentIdentity(
-                    document.DocumentPath,
-                    vueProjectedPath,
-                    VirtualDocumentKind.Vue),
-                compilation.GeneratedVueText,
-                CreateVueProjectionMap(document.DocumentPath, parsedDocument, compilation.GeneratedVueText),
-                document.Version),
-            new VirtualDocument(
-                new VirtualDocumentIdentity(
-                    document.DocumentPath,
-                    csharpProjection.ProjectedDocumentPath,
-                    VirtualDocumentKind.CSharp),
-                csharpProjection.SourceText,
-                csharpProjection.ProjectionMap,
-                document.Version)
+            CreateCodeProjectionDocument(document, parsedDocument)
         ];
+        return ValueTask.FromResult<IReadOnlyList<VirtualDocument>>(virtualDocuments);
+    }
 
-        return ValueTask.FromResult(virtualDocuments);
+    private VirtualDocument CreateVueProjectionDocument(
+        DocumentSnapshot document,
+        JazorVueDocument parsedDocument,
+        string generatedVueText)
+    {
+        var vueProjectedPath = "virtual:" + document.DocumentPath + ".g.vue";
+        return new VirtualDocument(
+            new VirtualDocumentIdentity(
+                document.DocumentPath,
+                vueProjectedPath,
+                VirtualDocumentKind.Vue),
+            generatedVueText,
+            CreateVueProjectionMap(document.DocumentPath, parsedDocument, generatedVueText),
+            document.Version);
+    }
+
+    private VirtualDocument CreateCodeProjectionDocument(
+        DocumentSnapshot document,
+        JazorVueDocument parsedDocument)
+    {
+        var csharpProjection = _inProcRoslynCodeService.CreateProjection(document, parsedDocument);
+        return new VirtualDocument(
+            new VirtualDocumentIdentity(
+                document.DocumentPath,
+                csharpProjection.ProjectedDocumentPath,
+                VirtualDocumentKind.CSharp),
+            csharpProjection.SourceText,
+            csharpProjection.ProjectionMap,
+            document.Version);
     }
 
     private static ProjectionMap CreateVueProjectionMap(

@@ -29,7 +29,7 @@ public sealed class VueHostService : IVueHostService, IVueHostRpcService, IFront
 
     private readonly IVueHostWorkspaceStore _workspaceStore;
     private readonly IVueAnalysisClient _analysisClient;
-    private readonly IDenoFrontendHost _denoFrontendHost;
+    private readonly IDenoVolarHost _denoVolarHost;
     private readonly FallbackJazorAnalysisService _fallbackAnalysisService = new();
     private readonly JazorVueParser _parser = new();
     private int _started;
@@ -37,24 +37,24 @@ public sealed class VueHostService : IVueHostService, IVueHostRpcService, IFront
     public VueHostService(
         IVueHostWorkspaceStore workspaceStore,
         IVueAnalysisClient analysisClient)
-        : this(workspaceStore, analysisClient, denoFrontendHost: null)
+        : this(workspaceStore, analysisClient, denoVolarHost: null)
     {
     }
 
     internal VueHostService(
         IVueHostWorkspaceStore workspaceStore,
         IVueAnalysisClient analysisClient,
-        IDenoFrontendHost? denoFrontendHost)
+        IDenoVolarHost? denoVolarHost)
     {
         _workspaceStore = workspaceStore ?? throw new ArgumentNullException(nameof(workspaceStore));
         _analysisClient = analysisClient ?? throw new ArgumentNullException(nameof(analysisClient));
-        _denoFrontendHost = denoFrontendHost ?? new DenoFrontendHost(new DenoFrontendHostOptions());
+        _denoVolarHost = denoVolarHost ?? new DenoVolarHost(new DenoVolarHostOptions());
     }
 
     public async ValueTask StartAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await _denoFrontendHost.StartAsync(cancellationToken);
+        await _denoVolarHost.StartAsync(cancellationToken);
         Interlocked.Exchange(ref _started, 1);
     }
 
@@ -62,7 +62,7 @@ public sealed class VueHostService : IVueHostService, IVueHostRpcService, IFront
     {
         cancellationToken.ThrowIfCancellationRequested();
         Interlocked.Exchange(ref _started, 0);
-        await _denoFrontendHost.StopAsync(cancellationToken);
+        await _denoVolarHost.StopAsync(cancellationToken);
     }
 
     public Task<PingResponse> PingAsync(CancellationToken cancellationToken)

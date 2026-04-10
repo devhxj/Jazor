@@ -42,7 +42,7 @@ var razorSdkToolsetHost = new RazorSdkToolsetHost();
 var razorProjectionService = new RazorDesignTimeCodeProjectionService(razorSdkToolsetHost);
 var inProcRoslynCodeService = new InProcRoslynCodeService(razorProjectionService);
 var projectionService = new JazorProjectionService(inProcRoslynCodeService);
-await using var denoFrontendHost = new DenoFrontendHost(DenoFrontendHostOptionsParser.Parse(args));
+await using var denoVolarHost = new DenoVolarHost(DenoVolarHostOptionsParser.Parse(args));
 var projectionResolver = new DocumentProjectionResolver(
     new DocumentRegionClassifier(),
     virtualDocumentRegistry);
@@ -51,7 +51,7 @@ var resultAggregator = new LspResultAggregator();
 var hostService = new VueHostService(
     workspaceStore,
     analysisClient,
-    denoFrontendHost);
+    denoVolarHost);
 var entry = new VueHostServiceEntry(hostService);
 var rpcDispatcher = new VueHostRpcDispatcher(hostService);
 var rpcProcessor = new VueHostRpcProcessor(rpcDispatcher);
@@ -78,7 +78,7 @@ try
         [
             new JazorLaneService(jazorDocumentService),
             new RoslynLaneService(workspaceStore, inProcRoslynCodeService),
-            new FrontendLaneService(workspaceStore, denoFrontendHost)
+            new VolarLaneService(workspaceStore, hostService, virtualDocumentRegistry, denoVolarHost)
         ];
         var laneMap = lanes.ToDictionary(static lane => lane.LaneKind);
         var lspServer = new StdioLspServer(

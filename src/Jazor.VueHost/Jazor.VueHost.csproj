@@ -9,6 +9,11 @@
     <NoWarn>$(NoWarn);RS1035</NoWarn>
     <DenoHostVersion>2.7.7</DenoHostVersion>
     <DenoHostRuntimePackageId Condition="'$(NETCoreSdkPortableRuntimeIdentifier)' != ''">DenoHost.Runtime.$(NETCoreSdkPortableRuntimeIdentifier)</DenoHostRuntimePackageId>
+    <DenoExecutableName Condition="$([MSBuild]::IsOsPlatform('Windows'))">deno.exe</DenoExecutableName>
+    <DenoExecutableName Condition="'$(DenoExecutableName)' == ''">deno</DenoExecutableName>
+    <VueHostBundledDenoPath>$(TargetDir)runtimes\$(NETCoreSdkPortableRuntimeIdentifier)\native\$(DenoExecutableName)</VueHostBundledDenoPath>
+    <VueHostWorkerOutputPath>$(TargetDir)Frontend\Deno\Worker\frontend-worker.ts</VueHostWorkerOutputPath>
+    <VueHostDenoCacheDir>$(TargetDir)Frontend\Deno\Cache</VueHostDenoCacheDir>
   </PropertyGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
@@ -25,8 +30,21 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>Frontend\Deno\Worker\frontend-worker.ts</TargetPath>
     </None>
+    <None Include="Frontend\Deno\Worker\deno.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>Frontend\Deno\Worker\deno.json</TargetPath>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Update="DenoHost.Runtime.win-x64" Version="2.7.11" />
   </ItemGroup>
+
+  <Target Name="CacheVueHostFrontendWorkerDependencies"
+          AfterTargets="Build"
+          Condition="'$(DesignTimeBuild)' != 'true' and Exists('$(VueHostBundledDenoPath)') and Exists('$(VueHostWorkerOutputPath)')">
+    <MakeDir Directories="$(VueHostDenoCacheDir)" />
+    <Exec Command="&quot;$(VueHostBundledDenoPath)&quot; cache --quiet &quot;$(VueHostWorkerOutputPath)&quot;"
+          WorkingDirectory="$(TargetDir)Frontend\Deno\Worker"
+          EnvironmentVariables="DENO_DIR=$(VueHostDenoCacheDir)" />
+  </Target>
 </Project>

@@ -5,15 +5,15 @@ namespace Jazor.VueHost.Lsp.Routing;
 internal sealed class LspLaneRouter : ILspLaneRouter
 {
     private static readonly IReadOnlyList<LaneKind> JazorOnly = [LaneKind.Jazor];
-    private static readonly IReadOnlyList<LaneKind> JazorSemanticTokenLanes = [LaneKind.Jazor, LaneKind.Frontend, LaneKind.Roslyn];
-    private static readonly IReadOnlyList<LaneKind> FrontendOnly = [LaneKind.Frontend];
+    private static readonly IReadOnlyList<LaneKind> JazorSemanticTokenLanes = [LaneKind.Jazor, LaneKind.Volar, LaneKind.Roslyn];
+    private static readonly IReadOnlyList<LaneKind> VolarOnly = [LaneKind.Volar];
     private static readonly IReadOnlyList<LaneKind> RoslynOnly = [LaneKind.Roslyn];
-    private static readonly IReadOnlyList<LaneKind> DiagnosticLanes = [LaneKind.Jazor, LaneKind.Roslyn, LaneKind.Frontend];
+    private static readonly IReadOnlyList<LaneKind> DiagnosticLanes = [LaneKind.Jazor, LaneKind.Roslyn, LaneKind.Volar];
 
     public IReadOnlyList<LaneKind> GetOrderedLanes(ProjectionTarget projectionTarget)
         => projectionTarget.LaneKind switch
         {
-            LaneKind.Frontend => FrontendOnly,
+            LaneKind.Volar => VolarOnly,
             LaneKind.Roslyn => RoslynOnly,
             _ => JazorOnly
         };
@@ -22,7 +22,7 @@ internal sealed class LspLaneRouter : ILspLaneRouter
         => document.DocumentKind switch
         {
             DocumentKind.Jazor => DiagnosticLanes,
-            DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript => FrontendOnly,
+            DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript => VolarOnly,
             _ => JazorOnly
         };
 
@@ -30,7 +30,7 @@ internal sealed class LspLaneRouter : ILspLaneRouter
         => document.DocumentKind switch
         {
             DocumentKind.Jazor => JazorSemanticTokenLanes,
-            DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript => FrontendOnly,
+            DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript => VolarOnly,
             _ => JazorOnly
         };
 }

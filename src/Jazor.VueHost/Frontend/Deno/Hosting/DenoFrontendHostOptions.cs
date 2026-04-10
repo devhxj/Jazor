@@ -1,6 +1,6 @@
 namespace Jazor.VueHost.Frontend.Deno.Hosting;
 
-public sealed class DenoFrontendHostOptions
+public sealed class DenoVolarHostOptions
 {
     public bool Enabled { get; init; }
 
@@ -9,6 +9,8 @@ public sealed class DenoFrontendHostOptions
     public bool HasExplicitExecutableOverride { get; init; }
 
     public string WorkerScriptPath { get; init; } = string.Empty;
+
+    public string CacheDirectory { get; init; } = string.Empty;
 
     public string[] Arguments { get; init; } = [];
 

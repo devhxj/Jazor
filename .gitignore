@@ -410,9 +410,7 @@ CLAUDE.md
 .omc/
 .omx/
 .claude/
-.dotnet/
-.dotnet-obj/
-.dotnet-out/
+.dotnet*/
 .artifacts/
 .tmp/
 .vs/

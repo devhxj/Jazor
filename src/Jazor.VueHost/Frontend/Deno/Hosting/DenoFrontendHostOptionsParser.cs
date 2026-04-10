@@ -1,16 +1,16 @@
 namespace Jazor.VueHost.Frontend.Deno.Hosting;
 
-internal static class DenoFrontendHostOptionsParser
+internal static class DenoVolarHostOptionsParser
 {
     private const string EnableEnvironmentVariable = "JAZOR_VUEHOST_DENO_ENABLE";
     private const string CommandEnvironmentVariable = "JAZOR_VUEHOST_DENO_COMMAND";
     private const string WorkingDirectoryEnvironmentVariable = "JAZOR_VUEHOST_DENO_WORKDIR";
     private const string ArgumentsEnvironmentVariable = "JAZOR_VUEHOST_DENO_ARGS";
 
-    public static DenoFrontendHostOptions Parse(string[] args)
+    public static DenoVolarHostOptions Parse(string[] args)
         => Parse(args, baseDirectory: null);
 
-    internal static DenoFrontendHostOptions Parse(string[] args, string? baseDirectory)
+    internal static DenoVolarHostOptions Parse(string[] args, string? baseDirectory)
     {
         ArgumentNullException.ThrowIfNull(args);
 
@@ -62,7 +62,7 @@ internal static class DenoFrontendHostOptionsParser
             arguments.AddRange(CreateDefaultArguments(workerPath));
         }
 
-        return new DenoFrontendHostOptions
+        return new DenoVolarHostOptions
         {
             Enabled = enabled,
             ExecutablePath = string.IsNullOrWhiteSpace(executableOverride)
@@ -70,6 +70,7 @@ internal static class DenoFrontendHostOptionsParser
                 : executableOverride,
             HasExplicitExecutableOverride = !string.IsNullOrWhiteSpace(executableOverride),
             WorkerScriptPath = workerPath,
+            CacheDirectory = DenoRuntimeAssetResolver.ResolveCacheDirectory(baseDirectory),
             Arguments = arguments.ToArray(),
             WorkingDirectory = DenoRuntimeAssetResolver.ResolveWorkingDirectory(workingDirectory, workerPath),
             IgnoreStartupFailure = true
@@ -82,6 +83,8 @@ internal static class DenoFrontendHostOptionsParser
         [
             "run",
             "--quiet",
+            "--cached-only",
+            "--allow-env",
             "--allow-read",
             workerPath
         ];

@@ -4,18 +4,18 @@ using Jazor.VueHost.Lsp;
 
 namespace Jazor.VueHost.Frontend.Deno.Hosting;
 
-internal sealed class DenoFrontendHost : IDenoFrontendHost
+internal sealed class DenoVolarHost : IDenoVolarHost
 {
-    private readonly DenoFrontendHostOptions _options;
+    private readonly DenoVolarHostOptions _options;
     private readonly IDenoWorkerProcess _workerProcess;
     private int _startupAttempted;
 
-    public DenoFrontendHost(DenoFrontendHostOptions options)
+    public DenoVolarHost(DenoVolarHostOptions options)
         : this(options, workerProcess: null)
     {
     }
 
-    internal DenoFrontendHost(DenoFrontendHostOptions options, IDenoWorkerProcess? workerProcess)
+    internal DenoVolarHost(DenoVolarHostOptions options, IDenoWorkerProcess? workerProcess)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _workerProcess = workerProcess ?? new DenoWorkerProcess(_options);
@@ -57,12 +57,15 @@ internal sealed class DenoFrontendHost : IDenoFrontendHost
 
     public async ValueTask<IReadOnlyList<LspDiagnostic>> GetTemplateDiagnosticsAsync(
         DocumentSnapshot document,
+        DenoVolarIntelliSenseContext? context,
         CancellationToken cancellationToken)
     {
         var request = new DenoTemplateDiagnosticRequest
         {
             DocumentPath = document.DocumentPath,
-            Text = document.Text
+            Text = document.Text,
+            FrontendContext = context?.SemanticContext,
+            FrontendArtifacts = context?.Artifacts
         };
         var diagnostics = await SendAsync<LspDiagnostic[]>("template/diagnostics", request, cancellationToken);
         return diagnostics ?? Array.Empty<LspDiagnostic>();
@@ -71,21 +74,25 @@ internal sealed class DenoFrontendHost : IDenoFrontendHost
     public async ValueTask<IReadOnlyList<LspCompletionItem>> GetTemplateCompletionItemsAsync(
         DocumentSnapshot document,
         LspPosition position,
+        DenoVolarIntelliSenseContext? context,
         CancellationToken cancellationToken)
     {
-        var request = CreateRequest(document, position);
+        var request = CreateRequest(document, position, context);
         var items = await SendAsync<LspCompletionItem[]>("template/completion", request, cancellationToken);
         return items ?? Array.Empty<LspCompletionItem>();
     }
 
     public async ValueTask<IReadOnlyList<LspDocumentSymbol>> GetTemplateDocumentSymbolsAsync(
         DocumentSnapshot document,
+        DenoVolarIntelliSenseContext? context,
         CancellationToken cancellationToken)
     {
         var request = new DenoTemplateDocumentRequest
         {
             DocumentPath = document.DocumentPath,
-            Text = document.Text
+            Text = document.Text,
+            FrontendContext = context?.SemanticContext,
+            FrontendArtifacts = context?.Artifacts
         };
         var symbols = await SendAsync<LspDocumentSymbol[]>("template/documentSymbols", request, cancellationToken);
         return symbols ?? Array.Empty<LspDocumentSymbol>();
@@ -93,12 +100,15 @@ internal sealed class DenoFrontendHost : IDenoFrontendHost
 
     public async ValueTask<IReadOnlyList<LspSemanticToken>> GetTemplateSemanticTokensAsync(
         DocumentSnapshot document,
+        DenoVolarIntelliSenseContext? context,
         CancellationToken cancellationToken)
     {
         var request = new DenoTemplateSemanticTokensRequest
         {
             DocumentPath = document.DocumentPath,
-            Text = document.Text
+            Text = document.Text,
+            FrontendContext = context?.SemanticContext,
+            FrontendArtifacts = context?.Artifacts
         };
         var tokens = await SendAsync<LspSemanticToken[]>("template/semanticTokens", request, cancellationToken);
         return tokens ?? Array.Empty<LspSemanticToken>();
@@ -107,18 +117,20 @@ internal sealed class DenoFrontendHost : IDenoFrontendHost
     public async ValueTask<LspHoverResult?> GetTemplateHoverAsync(
         DocumentSnapshot document,
         LspPosition position,
+        DenoVolarIntelliSenseContext? context,
         CancellationToken cancellationToken)
     {
-        var request = CreateRequest(document, position);
+        var request = CreateRequest(document, position, context);
         return await SendAsync<LspHoverResult>("template/hover", request, cancellationToken);
     }
 
     public async ValueTask<IReadOnlyList<LspLocation>> GetTemplateDefinitionAsync(
         DocumentSnapshot document,
         LspPosition position,
+        DenoVolarIntelliSenseContext? context,
         CancellationToken cancellationToken)
     {
-        var request = CreateRequest(document, position);
+        var request = CreateRequest(document, position, context);
         var locations = await SendAsync<LspLocation[]>("template/definition", request, cancellationToken);
         return locations ?? Array.Empty<LspLocation>();
     }
@@ -127,6 +139,7 @@ internal sealed class DenoFrontendHost : IDenoFrontendHost
         DocumentSnapshot document,
         LspPosition position,
         bool includeDeclaration,
+        DenoVolarIntelliSenseContext? context,
         CancellationToken cancellationToken)
     {
         var request = new DenoTemplateReferenceRequest
@@ -134,7 +147,9 @@ internal sealed class DenoFrontendHost : IDenoFrontendHost
             DocumentPath = document.DocumentPath,
             Text = document.Text,
             Position = position,
-            IncludeDeclaration = includeDeclaration
+            IncludeDeclaration = includeDeclaration,
+            FrontendContext = context?.SemanticContext,
+            FrontendArtifacts = context?.Artifacts
         };
         var locations = await SendAsync<LspLocation[]>("template/references", request, cancellationToken);
         return locations ?? Array.Empty<LspLocation>();
@@ -144,6 +159,7 @@ internal sealed class DenoFrontendHost : IDenoFrontendHost
         DocumentSnapshot document,
         LspPosition position,
         string newName,
+        DenoVolarIntelliSenseContext? context,
         CancellationToken cancellationToken)
     {
         var request = new DenoTemplateRenameRequest
@@ -151,7 +167,9 @@ internal sealed class DenoFrontendHost : IDenoFrontendHost
             DocumentPath = document.DocumentPath,
             Text = document.Text,
             Position = position,
-            NewName = newName
+            NewName = newName,
+            FrontendContext = context?.SemanticContext,
+            FrontendArtifacts = context?.Artifacts
         };
         return await SendAsync<LspWorkspaceEdit>("template/rename", request, cancellationToken);
     }
@@ -187,11 +205,16 @@ internal sealed class DenoFrontendHost : IDenoFrontendHost
         await StartAsync(cancellationToken);
     }
 
-    private static DenoTemplateRequest CreateRequest(DocumentSnapshot document, LspPosition position)
+    private static DenoTemplateRequest CreateRequest(
+        DocumentSnapshot document,
+        LspPosition position,
+        DenoVolarIntelliSenseContext? context)
         => new()
         {
             DocumentPath = document.DocumentPath,
             Text = document.Text,
-            Position = position
+            Position = position,
+            FrontendContext = context?.SemanticContext,
+            FrontendArtifacts = context?.Artifacts
         };
 }
