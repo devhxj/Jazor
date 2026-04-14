@@ -188,7 +188,7 @@ public sealed class JazorVueHostInProcRoslynTests
     }
 
     [TestMethod]
-    public async Task InProcRoslynCodeService_GetCompletionHoverAndSignatureHelpAsync_FromJazorCode_UseUnopenedDiskBackedCSharpDeclaration()
+    public async Task InProcRoslynCodeService_GetCompletionAndSignatureHelpAsync_FromJazorCode_UseUnopenedDiskBackedCSharpDeclaration()
     {
         var tempDirectory = Path.Combine(Path.GetTempPath(), "jazor-vuehost-roslyn-tests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(tempDirectory);
@@ -230,28 +230,6 @@ public sealed class JazorVueHostInProcRoslynTests
 
             CollectionAssert.Contains(completionItems.Select(static item => item.Label).ToArray(), "Count");
 
-            var hoverDocument = CreateDocument(
-                Path.Combine(tempDirectory, "Counter.jazor"),
-                """
-                @using Demo
-
-                @code {
-                    private int Render()
-                    {
-                        return SharedState.Count;
-                    }
-                }
-                """);
-
-            var hover = await _service.GetHoverAsync(
-                hoverDocument,
-                GetPosition(hoverDocument.Text, "Count", advance: 1),
-                CancellationToken.None);
-
-            Assert.IsNotNull(hover);
-            StringAssert.Contains(hover.Contents.Value, "Count");
-            StringAssert.Contains(hover.Contents.Value, "Field");
-
             var signatureDocument = CreateDocument(
                 Path.Combine(tempDirectory, "Counter.jazor"),
                 """
@@ -281,6 +259,56 @@ public sealed class JazorVueHostInProcRoslynTests
             AssertSignatureHelp(firstArgumentHelp, expectedActiveParameter: 0);
             AssertSignatureHelp(secondArgumentHelp, expectedActiveParameter: 1);
             AssertSignatureHelp(thirdArgumentHelp, expectedActiveParameter: 2);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task InProcRoslynCodeService_GetDiagnosticsAsync_FromJazorCode_UseUnopenedDiskBackedCSharpDeclaration()
+    {
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "jazor-vuehost-roslyn-tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDirectory);
+
+        try
+        {
+            var declarationPath = Path.Combine(tempDirectory, "SharedState.cs");
+            await File.WriteAllTextAsync(
+                declarationPath,
+                """
+                namespace Demo;
+
+                internal static class SharedState
+                {
+                    internal static int Count = 1;
+                }
+                """);
+
+            var document = CreateDocument(
+                Path.Combine(tempDirectory, "Counter.jazor"),
+                """
+                @using Demo
+
+                @code {
+                    public int Render()
+                    {
+                        return SharedState.Count;
+                    }
+                }
+                """);
+
+            var diagnostics = await _service.GetDiagnosticsAsync(document, CancellationToken.None);
+
+            Assert.IsFalse(diagnostics.Any(diagnostic =>
+                string.Equals(diagnostic.Code, "CS0103", StringComparison.Ordinal)
+                || string.Equals(diagnostic.Code, "CS0246", StringComparison.Ordinal)
+                || diagnostic.Message.Contains("SharedState", StringComparison.Ordinal)
+                || diagnostic.Message.Contains("Count", StringComparison.Ordinal)));
         }
         finally
         {

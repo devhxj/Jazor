@@ -143,7 +143,7 @@ VueHost 采用三 Lane 架构，但**真正的请求路由、bridge supplement�
 - 当前已经打通 `script import -> native .vue declaration -> .jazor markup references/rename` 这条双向桥接链路
 - 当前 `.jazor` markup tag / `@vueimport` 与 `.vue/.ts/.js` import 的 bridge identity 已收口到共享 `MarkupBridgeSymbol`
 - 当前 `definition / references / rename` 的桥接补充路径已收口到共享 `MarkupBridgeFanoutCoordinator + MarkupBridgeSymbol`
-- 当前 RoslynLane 已通过 bounded workspace scan 把未打开的 `.cs` / `.jazor` 源文档纳入 `definition / references / rename` 的候选集合，`@code`/`.cs` 发起的源码级导航与重命名都可以覆盖项目内未打开文件
+- 当前 RoslynLane 已通过 bounded workspace scan 把未打开的 `.cs` / `.jazor` 源文档纳入 code-region IntelliSense 候选集合，`@code`/`.cs` 发起的 completion / hover / signatureHelp / diagnostics / definition / references / rename 都可以覆盖项目内未打开文件
 - 当前 Roslyn 仍是 host 内的轻量 in-proc compilation，不等同于完整 MSBuild/Roslyn project system；项目级能力以源码发现和有界扫描为主
 
 ### 2.2.1 Razor / Roslyn 集成策略

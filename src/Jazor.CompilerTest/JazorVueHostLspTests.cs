@@ -5171,6 +5171,190 @@ public sealed class JazorVueHostLspTests
     }
 
     [TestMethod]
+    public async Task JazorVueHost_Lsp_JazorCode_CompletionHoverAndSignatureHelp_UseUnopenedDiskBackedCSharpDeclaration()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var declarationPath = Path.Combine(tempDirectory, "SharedState.cs");
+            await File.WriteAllTextAsync(
+                declarationPath,
+                """
+                namespace Demo;
+
+                internal static class SharedState
+                {
+                    internal static int Count = 1;
+
+                    internal static string FormatValue(int count, string prefix, bool includeUnits)
+                        => $"{prefix}:{count}:{includeUnits}";
+                }
+                """);
+
+            var completionPath = Path.Combine(tempDirectory, "CounterCompletion.jazor");
+            var completionUri = new Uri(completionPath).AbsoluteUri;
+            var completionText =
+                """
+                @using Demo
+
+                @code {
+                    private string Render()
+                    {
+                        return SharedState.Cou
+                    }
+                }
+                """;
+            await File.WriteAllTextAsync(completionPath, completionText);
+            await client.OpenDocumentAsync(completionUri, completionText, version: 1);
+
+            var completionPosition = GetPosition(completionText, "Cou", advance: "Cou".Length);
+            var completionLabels = await client.RequestCompletionLabelsAsync(
+                requestId: 17971,
+                completionUri,
+                completionPosition.Line,
+                completionPosition.Character);
+            CollectionAssert.Contains(completionLabels, "Count");
+
+            var hoverPath = Path.Combine(tempDirectory, "CounterHover.jazor");
+            var hoverUri = new Uri(hoverPath).AbsoluteUri;
+            var hoverText =
+                """
+                @using Demo
+
+                @code {
+                    private int Render()
+                    {
+                        return SharedState.Count;
+                    }
+                }
+                """;
+            await File.WriteAllTextAsync(hoverPath, hoverText);
+            await client.OpenDocumentAsync(hoverUri, hoverText, version: 1);
+            var hoverPosition = GetPosition(hoverText, "SharedState.Count", advance: "SharedState.".Length + 1);
+            var hover = await client.RequestHoverAsync(
+                requestId: 17972,
+                hoverUri,
+                hoverPosition.Line,
+                hoverPosition.Character);
+            Assert.IsNotNull(hover);
+            StringAssert.Contains(
+                hover.Value.GetProperty("contents").GetProperty("value").GetString() ?? string.Empty,
+                "Count");
+
+            var signaturePath = Path.Combine(tempDirectory, "CounterSignature.jazor");
+            var signatureUri = new Uri(signaturePath).AbsoluteUri;
+            var signatureText =
+                """
+                @using Demo
+
+                @code {
+                    private string Render()
+                    {
+                        return SharedState.FormatValue(1, "draft", true);
+                    }
+                }
+                """;
+            await File.WriteAllTextAsync(signaturePath, signatureText);
+            await client.OpenDocumentAsync(signatureUri, signatureText, version: 1);
+
+            var firstArgumentPosition = GetPosition(signatureText, "FormatValue(1", advance: "FormatValue(".Length);
+            var secondArgumentPosition = GetPosition(signatureText, "\"draft\"", advance: 1);
+            var thirdArgumentPosition = GetPosition(signatureText, "true", advance: 1);
+
+            var firstArgumentHelp = await client.RequestSignatureHelpAsync(
+                requestId: 17973,
+                signatureUri,
+                firstArgumentPosition.Line,
+                firstArgumentPosition.Character);
+            var secondArgumentHelp = await client.RequestSignatureHelpAsync(
+                requestId: 17974,
+                signatureUri,
+                secondArgumentPosition.Line,
+                secondArgumentPosition.Character);
+            var thirdArgumentHelp = await client.RequestSignatureHelpAsync(
+                requestId: 17975,
+                signatureUri,
+                thirdArgumentPosition.Line,
+                thirdArgumentPosition.Character);
+
+            AssertSignatureHelp(firstArgumentHelp, expectedActiveParameter: 0);
+            AssertSignatureHelp(secondArgumentHelp, expectedActiveParameter: 1);
+            AssertSignatureHelp(thirdArgumentHelp, expectedActiveParameter: 2);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_JazorCode_Diagnostics_UseUnopenedDiskBackedCSharpDeclaration()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var declarationPath = Path.Combine(tempDirectory, "SharedState.cs");
+            await File.WriteAllTextAsync(
+                declarationPath,
+                """
+                namespace Demo;
+
+                internal static class SharedState
+                {
+                    internal static int Count = 1;
+                }
+                """);
+
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            var text =
+                """
+                @using Demo
+
+                @code {
+                    public int Render()
+                    {
+                        return SharedState.Count;
+                    }
+                }
+                """;
+
+            await client.OpenDocumentAsync(documentUri, text, version: 1);
+            using var diagnosticsMessage = await client.ReadMessageAsync();
+            Assert.AreEqual(documentUri, diagnosticsMessage.RootElement.GetProperty("params").GetProperty("uri").GetString());
+            Assert.IsFalse(diagnosticsMessage.RootElement
+                .GetProperty("params")
+                .GetProperty("diagnostics")
+                .EnumerateArray()
+                .Any(diagnostic =>
+                    string.Equals(diagnostic.GetProperty("code").GetString(), "CS0103", StringComparison.Ordinal)
+                    || string.Equals(diagnostic.GetProperty("code").GetString(), "CS0246", StringComparison.Ordinal)
+                    || (diagnostic.GetProperty("message").GetString() ?? string.Empty).Contains("SharedState", StringComparison.Ordinal)
+                    || (diagnostic.GetProperty("message").GetString() ?? string.Empty).Contains("Count", StringComparison.Ordinal)));
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
     public async Task JazorVueHost_Lsp_LegacyVueImportText_DoesNotProduceImportRewriteDiagnostics()
     {
         await using var client = await LspTestClient.StartAsync();

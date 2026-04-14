@@ -18,7 +18,7 @@ Implementation model:
 - IntelliSense and build/materialization are separate stages.
 - `.jazor` template IntelliSense runs on the source document plus VueHost-coordinated Razor/Roslyn bridge metadata; it does not materialize or depend on a projected `.g.vue` file.
 - standalone `.cs` documents now route directly into the Roslyn lane through an identity projection, so `.jazor` code regions and real `.cs` files share the same in-proc Roslyn semantic path.
-- Roslyn `definition` / `references` / `rename` now expand beyond open buffers through bounded workspace `.cs` / `.jazor` discovery, so unopened project files can participate in source-level navigation without introducing a separate project system.
+- Roslyn code-region IntelliSense and diagnostics now expand beyond open buffers through bounded workspace `.cs` / `.jazor` discovery, so unopened project files can participate in completion, hover, signature help, diagnostics, and source-level navigation without introducing a separate project system.
 - the shared workspace resolver now treats tracked `.cs` files as workspace-root seeds alongside `.jazor` and `.vue`, which keeps bounded source discovery aligned across Roslyn and bridge paths.
 - Razor/Roslyn semantics and Volar semantics stay native to their own lanes; VueHost only routes, maps, and aggregates them.
 - nearby `.vue`, `.css`, `.js`, and `.ts` are part of the workspace graph, not separate host boundaries.

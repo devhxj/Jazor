@@ -674,17 +674,46 @@ internal sealed class InProcRoslynCodeService
 
     private static ISymbol? TryResolveSymbol(RoslynCodeContext context)
     {
-        var root = context.SyntaxTree.GetRoot();
-        var token = root.FindToken(Math.Max(0, context.ProjectedOffset - 1));
-        return TryResolveTokenSymbol(
+        return TryResolveSymbolAtPosition(
             new ProjectedDocumentContext(
                 context.Document,
                 context.ProjectedText,
                 context.ProjectionMap,
                 context.SyntaxTree,
                 context.SemanticModel),
-            token,
+            context.ProjectedOffset,
             CancellationToken.None);
+    }
+
+    private static ISymbol? TryResolveSymbolAtPosition(
+        ProjectedDocumentContext projectedDocument,
+        int projectedOffset,
+        CancellationToken cancellationToken)
+    {
+        var root = projectedDocument.SyntaxTree.GetRoot(cancellationToken);
+        var maxOffset = Math.Max(0, projectedDocument.ProjectedText.Length - 1);
+        var candidateOffsets = new[]
+        {
+            Math.Max(0, Math.Min(projectedOffset, maxOffset)),
+            Math.Max(0, Math.Min(projectedOffset - 1, maxOffset))
+        };
+        var seenTokens = new HashSet<TextSpan>();
+
+        foreach (var offset in candidateOffsets)
+        {
+            var token = root.FindToken(offset);
+            if (!seenTokens.Add(token.Span))
+            {
+                continue;
+            }
+
+            if (TryResolveTokenSymbolAtCursor(projectedDocument, token, cancellationToken, out var symbol))
+            {
+                return symbol;
+            }
+        }
+
+        return null;
     }
 
     private static ISymbol? TryResolveTokenSymbol(
@@ -701,6 +730,49 @@ internal sealed class InProcRoslynCodeService
         }
 
         return null;
+    }
+
+    private static bool TryResolveTokenSymbolAtCursor(
+        ProjectedDocumentContext projectedDocument,
+        SyntaxToken token,
+        CancellationToken cancellationToken,
+        out ISymbol symbol)
+    {
+        symbol = null!;
+        if (token.Parent is null)
+        {
+            return false;
+        }
+
+        foreach (var node in token.Parent.AncestorsAndSelf())
+        {
+            symbol = node switch
+            {
+                IdentifierNameSyntax identifierName when identifierName.Identifier.Span.IntersectsWith(token.Span)
+                    => projectedDocument.SemanticModel.GetSymbolInfo(identifierName, cancellationToken).Symbol,
+                GenericNameSyntax genericName when genericName.Identifier.Span.IntersectsWith(token.Span)
+                    => projectedDocument.SemanticModel.GetSymbolInfo(genericName, cancellationToken).Symbol,
+                MemberAccessExpressionSyntax memberAccess when memberAccess.Name.Span.IntersectsWith(token.Span)
+                    => projectedDocument.SemanticModel.GetSymbolInfo(memberAccess.Name, cancellationToken).Symbol
+                        ?? projectedDocument.SemanticModel.GetSymbolInfo(memberAccess, cancellationToken).Symbol,
+                VariableDeclaratorSyntax variableDeclarator when variableDeclarator.Identifier.Span.IntersectsWith(token.Span)
+                    => projectedDocument.SemanticModel.GetDeclaredSymbol(variableDeclarator, cancellationToken),
+                MethodDeclarationSyntax methodDeclaration when methodDeclaration.Identifier.Span.IntersectsWith(token.Span)
+                    => projectedDocument.SemanticModel.GetDeclaredSymbol(methodDeclaration, cancellationToken),
+                PropertyDeclarationSyntax propertyDeclaration when propertyDeclaration.Identifier.Span.IntersectsWith(token.Span)
+                    => projectedDocument.SemanticModel.GetDeclaredSymbol(propertyDeclaration, cancellationToken),
+                ParameterSyntax parameterSyntax when parameterSyntax.Identifier.Span.IntersectsWith(token.Span)
+                    => projectedDocument.SemanticModel.GetDeclaredSymbol(parameterSyntax, cancellationToken),
+                _ => null
+            };
+
+            if (symbol is not null)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static TextSpan GetPreferredSpan(RoslynCodeContext context, ISymbol symbol)
@@ -1235,7 +1307,8 @@ internal sealed class InProcRoslynCodeService
             .Prepend(symbolInfo.Symbol as IMethodSymbol)
             .Where(static method => method is not null)
             .Cast<IMethodSymbol>()
-            .Distinct(CreateMethodSymbolComparer())
+            .GroupBy(static method => method.ToDisplayString(SymbolDisplayFormat), StringComparer.Ordinal)
+            .Select(static group => group.First())
             .ToArray();
         if (methods.Length == 0)
         {
@@ -1262,7 +1335,8 @@ internal sealed class InProcRoslynCodeService
             .Prepend(symbolInfo.Symbol as IMethodSymbol)
             .Where(static method => method is not null)
             .Cast<IMethodSymbol>()
-            .Distinct(CreateMethodSymbolComparer())
+            .GroupBy(static method => method.ToDisplayString(SymbolDisplayFormat), StringComparer.Ordinal)
+            .Select(static group => group.First())
             .ToArray();
         if (methods.Length == 0 || objectCreation.ArgumentList is null)
         {
@@ -1341,9 +1415,6 @@ internal sealed class InProcRoslynCodeService
 
         return Math.Max(activeParameter, 0);
     }
-
-    private static IEqualityComparer<IMethodSymbol> CreateMethodSymbolComparer()
-        => SymbolEqualityComparer.Default;
 
     private static string GetCompletionPrefix(RoslynCodeContext context)
     {
