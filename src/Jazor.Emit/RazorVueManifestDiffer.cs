@@ -1,6 +1,6 @@
 namespace Jazor.Emit;
 
-internal static class RazorVueManifestDiffer
+public static class RazorVueManifestDiffer
 {
     public static RazorVueManifestDiffResult Diff(RazorVueManifestModel? previous, RazorVueManifestModel? current)
     {
@@ -200,13 +200,13 @@ internal static class RazorVueManifestDiffer
            ?? "No material change.";
 }
 
-internal sealed record RazorVueManifestDiffResult(
+public sealed record RazorVueManifestDiffResult(
     RazorVueHotUpdateAction Action,
     string Reason,
     IReadOnlyList<RazorVueManifestModuleDiff> Modules,
     bool TopLevelMetadataChanged);
 
-internal sealed record RazorVueManifestModuleDiff(
+public sealed record RazorVueManifestModuleDiff(
     string AssemblyName,
     string ComponentId,
     string ModuleId,
@@ -219,7 +219,7 @@ internal sealed record RazorVueManifestModuleDiff(
     bool LogicChanged,
     bool ContentChanged);
 
-internal enum RazorVueHotUpdateAction
+public enum RazorVueHotUpdateAction
 {
     None,
     TemplatePatch,

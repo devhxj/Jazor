@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DenoHost.Core" Version="2.7.11" />
-    <PackageReference Include="DenoHost.Runtime.win-x64" Version="2.7.11" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+    <PackageReference Include="DenoHost.Core" Version="2.7.12" />
+    <PackageReference Include="DenoHost.Runtime.win-x64" Version="2.7.12" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
   </ItemGroup>
 
 </Project>

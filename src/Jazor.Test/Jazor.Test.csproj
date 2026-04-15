@@ -9,7 +9,7 @@
     <Compile Remove="Class1.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Basic.Reference.Assemblies.Net100" Version="1.8.4" />
+    <PackageReference Include="Basic.Reference.Assemblies.Net100" Version="1.8.5" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="18.4.0" />
   </ItemGroup>
   <ItemGroup>

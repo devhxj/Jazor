@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Jazor.Emit;
 
-internal sealed record RazorVueManifestModel(
+public sealed record RazorVueManifestModel(
     string AssemblyName,
     DateTime GeneratedAtUtc,
     List<RazorVueManifestEntry> Modules,
@@ -16,7 +16,7 @@ internal sealed record RazorVueManifestModel(
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
-    public static RazorVueManifestModel Create(RazorVueCatalogRecord catalog)
+    internal static RazorVueManifestModel Create(RazorVueCatalogRecord catalog)
     {
         if (catalog is null)
             throw new ArgumentNullException(nameof(catalog));
@@ -24,7 +24,7 @@ internal sealed record RazorVueManifestModel(
         return Create(catalog.AssemblyName, [catalog]);
     }
 
-    public static RazorVueManifestModel Create(string rootAssemblyPath, IReadOnlyList<RazorVueCatalogRecord> catalogs)
+    internal static RazorVueManifestModel Create(string rootAssemblyPath, IReadOnlyList<RazorVueCatalogRecord> catalogs)
     {
         if (string.IsNullOrWhiteSpace(rootAssemblyPath))
             throw new ArgumentException("Root assembly path is required.", nameof(rootAssemblyPath));
@@ -169,7 +169,7 @@ internal sealed record RazorVueManifestModel(
     }
 }
 
-internal sealed record RazorVueManifestEntry(
+public sealed record RazorVueManifestEntry(
     string AssemblyName,
     string ComponentId,
     string ModuleId,

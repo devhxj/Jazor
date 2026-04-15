@@ -11,11 +11,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DenoHost.Core" Version="2.7.11" />
+    <PackageReference Include="DenoHost.Core" Version="2.7.12" />
     <PackageReference Include="$(DenoHostRuntimePackageId)" Version="$(DenoHostVersion)" Condition="'$(DenoHostRuntimePackageId)' != ''" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="DenoHost.Runtime.win-x64" Version="2.7.11" />
+    <PackageReference Update="DenoHost.Runtime.win-x64" Version="2.7.12" />
   </ItemGroup>
 </Project>

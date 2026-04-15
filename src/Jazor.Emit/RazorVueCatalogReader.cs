@@ -303,7 +303,7 @@ internal sealed record RazorVueEmitSourceOriginRecord(
     RazorVueMappingQualityRecord MappingQuality,
     RazorVueOriginProvenanceRecord Provenance);
 
-internal enum RazorVueHmrBoundaryKind
+public enum RazorVueHmrBoundaryKind
 {
     Unknown,
     TemplateOnly,
