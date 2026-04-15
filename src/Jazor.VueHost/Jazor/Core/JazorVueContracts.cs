@@ -1,3 +1,5 @@
+using Jazor.Emit;
+
 namespace Jazor.Vue;
 
 public enum JazorImportKind
@@ -220,7 +222,8 @@ public sealed class JazorVueCompilationResult
             externalSymbols,
             generatedVueText,
             CreateGeneratedExternalDeclarationsText(document, externalSymbols),
-            diagnostics)
+            diagnostics,
+            hotReload: null)
     {
     }
 
@@ -229,13 +232,15 @@ public sealed class JazorVueCompilationResult
         VirtualExternalSymbolTable externalSymbols,
         string generatedVueText,
         string generatedExternalDeclarationsText,
-        IReadOnlyList<string> diagnostics)
+        IReadOnlyList<string> diagnostics,
+        JazorVueHotReloadMetadata? hotReload)
     {
         Document = document ?? throw new ArgumentNullException(nameof(document));
         ExternalSymbols = externalSymbols ?? throw new ArgumentNullException(nameof(externalSymbols));
         GeneratedVueText = generatedVueText ?? throw new ArgumentNullException(nameof(generatedVueText));
         GeneratedExternalDeclarationsText = generatedExternalDeclarationsText ?? throw new ArgumentNullException(nameof(generatedExternalDeclarationsText));
         Diagnostics = diagnostics ?? throw new ArgumentNullException(nameof(diagnostics));
+        HotReload = hotReload;
     }
 
     public JazorVueDocument Document { get; }
@@ -247,6 +252,8 @@ public sealed class JazorVueCompilationResult
     public string GeneratedExternalDeclarationsText { get; }
 
     public IReadOnlyList<string> Diagnostics { get; }
+
+    public JazorVueHotReloadMetadata? HotReload { get; }
 
     private static string CreateGeneratedExternalDeclarationsText(
         JazorVueDocument document,
@@ -262,6 +269,29 @@ public sealed class JazorVueCompilationResult
             JazorVueExternalDeclarationEmitter.DefaultNamespace,
             JazorVueExternalDeclarationEmitter.CreateContainerName(document.FilePath));
     }
+}
+
+public sealed class JazorVueHotReloadMetadata
+{
+    public JazorVueHotReloadMetadata(
+        string descriptorSignature,
+        string templateSignature,
+        string logicSignature,
+        RazorVueHmrBoundaryKind hmrBoundaryKind)
+    {
+        DescriptorSignature = descriptorSignature ?? throw new ArgumentNullException(nameof(descriptorSignature));
+        TemplateSignature = templateSignature ?? throw new ArgumentNullException(nameof(templateSignature));
+        LogicSignature = logicSignature ?? throw new ArgumentNullException(nameof(logicSignature));
+        HmrBoundaryKind = hmrBoundaryKind;
+    }
+
+    public string DescriptorSignature { get; }
+
+    public string TemplateSignature { get; }
+
+    public string LogicSignature { get; }
+
+    public RazorVueHmrBoundaryKind HmrBoundaryKind { get; }
 }
 
 internal static class JazorVueNaming

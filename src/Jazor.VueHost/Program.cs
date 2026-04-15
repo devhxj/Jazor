@@ -1,4 +1,5 @@
 using Jazor.VueContracts.Protocol;
+using Jazor.VueHost.DevServer;
 using Jazor.VueHost.Analysis;
 using Jazor.VueHost.Frontend.Deno.Hosting;
 using Jazor.VueHost.Hosting;
@@ -18,6 +19,7 @@ using Jazor.VueHost.VirtualDocuments.Registry;
 using SharedVueHostRpcMethodNames = Jazor.VueContracts.Protocol.VueHostRpcMethodNames;
 
 var useLsp = args.Any(static arg => string.Equals(arg, "--lsp", StringComparison.OrdinalIgnoreCase));
+var useDev = args.Any(static arg => string.Equals(arg, "--dev", StringComparison.OrdinalIgnoreCase));
 var useAnalysisStdio = args.Any(static arg => string.Equals(arg, "--analysis-stdio", StringComparison.OrdinalIgnoreCase));
 var inspectRazorToolset = args.Any(static arg => string.Equals(arg, "--inspect-razor-toolset", StringComparison.OrdinalIgnoreCase));
 var probeInProcRazorPath = GetOptionValue(args, "--probe-inproc-razor");
@@ -30,6 +32,45 @@ if (useAnalysisStdio)
     var analysisProcessor = new VueAnalysisRpcProcessor(new JazorVueAnalysisService());
     var analysisServer = new StdioVueAnalysisRpcServer(analysisProcessor);
     await analysisServer.RunAsync(Console.In, Console.Out, cancellationToken);
+    return;
+}
+
+if (useDev)
+{
+    await using var denoFrontendHost = new DenoVolarHost(DenoVolarHostOptionsParser.Parse(args));
+    var devOptions = DevServerOptionsParser.Parse(args);
+    var moduleResolver = new ModuleResolver(devOptions.RootDirectory);
+    var compiler = new OnDemandCompiler(
+        new Jazor.Vue.JazorVueParser(),
+        new Jazor.Vue.JazorVueCompiler(),
+        new DenoFrontendModuleCompiler(denoFrontendHost),
+        new CompilationCache(),
+        new DependencyGraph(moduleResolver),
+        moduleResolver);
+    await using var devServer = new DevHttpServer(
+        devOptions,
+        compiler,
+        moduleResolver,
+        new HtmlTransformer(devOptions));
+    using var shutdownSource = new CancellationTokenSource();
+    Console.CancelKeyPress += (_, eventArgs) =>
+    {
+        eventArgs.Cancel = true;
+        shutdownSource.Cancel();
+    };
+
+    await devServer.StartAsync(shutdownSource.Token);
+    Console.WriteLine($"Jazor.VueHost dev server listening on {devServer.ListeningUri ?? new Uri($"http://{devOptions.Host}:{devOptions.Port}")}");
+
+    try
+    {
+        await Task.Delay(Timeout.InfiniteTimeSpan, shutdownSource.Token);
+    }
+    catch (OperationCanceledException)
+    {
+        // Ctrl+C shutdown.
+    }
+
     return;
 }
 

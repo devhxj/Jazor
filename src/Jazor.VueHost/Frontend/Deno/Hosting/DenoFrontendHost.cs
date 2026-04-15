@@ -55,6 +55,46 @@ internal sealed class DenoVolarHost : IDenoVolarHost
         await StopAsync(CancellationToken.None);
     }
 
+    public async ValueTask<DenoSfcCompileResult?> CompileSfcAsync(
+        string documentPath,
+        string sfcText,
+        string filename,
+        CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(documentPath);
+        ArgumentNullException.ThrowIfNull(sfcText);
+        ArgumentException.ThrowIfNullOrWhiteSpace(filename);
+
+        var request = new DenoSfcCompileRequest
+        {
+            DocumentPath = documentPath,
+            SfcText = sfcText,
+            Filename = filename
+        };
+
+        return await SendAsync<DenoSfcCompileResult>("compile/sfc", request, cancellationToken);
+    }
+
+    public async ValueTask<DenoTypeScriptCompileResult?> CompileTypeScriptAsync(
+        string documentPath,
+        string text,
+        string filename,
+        CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(documentPath);
+        ArgumentNullException.ThrowIfNull(text);
+        ArgumentException.ThrowIfNullOrWhiteSpace(filename);
+
+        var request = new DenoTypeScriptCompileRequest
+        {
+            DocumentPath = documentPath,
+            Text = text,
+            Filename = filename
+        };
+
+        return await SendAsync<DenoTypeScriptCompileResult>("compile/ts", request, cancellationToken);
+    }
+
     public async ValueTask<IReadOnlyList<LspDiagnostic>> GetTemplateDiagnosticsAsync(
         DocumentSnapshot document,
         DenoVolarIntelliSenseContext? context,

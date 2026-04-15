@@ -1,5 +1,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Security.Cryptography;
+using Jazor.Emit;
 
 namespace Jazor.Vue;
 
@@ -15,7 +17,7 @@ public sealed partial class JazorVueCompiler
         @"\[Computed\]\s*public\s+(?<type>[\w\.\?\<\>]+)\s+(?<name>\w+)\s*=>\s*(?<expression>[^;]+);",
         RegexOptions.Multiline | RegexOptions.Compiled);
     private static readonly Regex MethodPattern = new Regex(
-        @"public\s+(?<async>async\s+)?(?:[\w\.\?\<\>\[\]]+)\s+(?<name>\w+)\s*\((?<parameters>[^\)]*)\)\s*\{",
+        @"public\s+(?<async>async\s+)?(?<return>[\w\.\?\<\>\[\]]+)\s+(?<name>\w+)\s*\((?<parameters>[^\)]*)\)\s*\{",
         RegexOptions.Multiline | RegexOptions.Compiled);
     private const string LocalTypePattern = @"(?:var|[A-Za-z_][A-Za-z0-9_\.\?\<\>\[\],]*)";
     private static readonly Regex LocalDeclarationWithInitializerPattern = new(
@@ -187,7 +189,13 @@ public sealed partial class JazorVueCompiler
         if (methods.Count == 0 && document.Code.Length > 0)
             diagnostics.Add("No public methods were lowered. The current bridge compiler emits method stubs only for public instance methods.");
 
-        return new JazorVueCompilationResult(document, externalSymbols, builder.ToString(), generatedExternalDeclarationsText, diagnostics);
+        return new JazorVueCompilationResult(
+            document,
+            externalSymbols,
+            builder.ToString(),
+            generatedExternalDeclarationsText,
+            diagnostics,
+            BuildHotReloadMetadata(document, props, states, computeds, methods, diagnostics));
     }
 
     private static IReadOnlyList<string> GetVueHelpers(
@@ -277,11 +285,12 @@ public sealed partial class JazorVueCompiler
         var results = new List<StateDescriptor>();
         foreach (Match match in StatePattern.Matches(code))
         {
+            var typeName = match.Groups["type"].Value.Trim();
             var sourceName = match.Groups["name"].Value.Trim();
             var initializer = match.Groups["initializer"].Success
                 ? match.Groups["initializer"].Value.Trim()
                 : null;
-            results.Add(new StateDescriptor(sourceName, JazorVueNaming.ToCamelCase(sourceName), initializer));
+            results.Add(new StateDescriptor(sourceName, JazorVueNaming.ToCamelCase(sourceName), typeName, initializer));
         }
 
         return results;
@@ -292,9 +301,10 @@ public sealed partial class JazorVueCompiler
         var results = new List<ComputedDescriptor>();
         foreach (Match match in ComputedPattern.Matches(code))
         {
+            var typeName = match.Groups["type"].Value.Trim();
             var sourceName = match.Groups["name"].Value.Trim();
             var expression = match.Groups["expression"].Value.Trim();
-            results.Add(new ComputedDescriptor(sourceName, JazorVueNaming.ToCamelCase(sourceName), expression));
+            results.Add(new ComputedDescriptor(sourceName, JazorVueNaming.ToCamelCase(sourceName), typeName, expression));
         }
 
         return results;
@@ -305,6 +315,8 @@ public sealed partial class JazorVueCompiler
         var results = new List<MethodDescriptor>();
         foreach (Match match in MethodPattern.Matches(code))
         {
+            var isAsync = match.Groups["async"].Success;
+            var returnType = match.Groups["return"].Value.Trim();
             var sourceName = match.Groups["name"].Value.Trim();
             var parameterBlock = match.Groups["parameters"].Value.Trim();
             var bodyStart = match.Index + match.Length;
@@ -324,13 +336,27 @@ public sealed partial class JazorVueCompiler
             results.Add(new MethodDescriptor(
                 sourceName,
                 JazorVueNaming.ToCamelCase(sourceName),
+                CreateMethodSignature(isAsync, returnType, sourceName, parameterBlock),
                 parameters,
                 body,
-                match.Groups["async"].Success));
+                isAsync));
         }
 
         return results;
     }
+
+    private static string CreateMethodSignature(
+        bool isAsync,
+        string returnType,
+        string sourceName,
+        string parameterBlock)
+        => (isAsync ? "async " : string.Empty)
+            + returnType.Trim()
+            + " "
+            + sourceName.Trim()
+            + "("
+            + NormalizeWhitespace(parameterBlock)
+            + ")";
 
     private static string ExtractBlockBody(string code, int bodyStart, out int nextIndex)
     {
@@ -862,6 +888,64 @@ public sealed partial class JazorVueCompiler
         return count;
     }
 
+    private static JazorVueHotReloadMetadata BuildHotReloadMetadata(
+        JazorVueDocument document,
+        IReadOnlyList<PropDescriptor> props,
+        IReadOnlyList<StateDescriptor> states,
+        IReadOnlyList<ComputedDescriptor> computeds,
+        IReadOnlyList<MethodDescriptor> methods,
+        IReadOnlyList<string> diagnostics)
+    {
+        var descriptor = new StringBuilder();
+        descriptor.AppendLine("props:");
+        foreach (var prop in props.OrderBy(static item => item.SourceName, StringComparer.Ordinal))
+            descriptor.AppendLine(prop.SourceName + "|" + prop.RuntimeName + "|" + prop.VueTypeExpression);
+
+        return new JazorVueHotReloadMetadata(
+            ComputeSignature(descriptor.ToString()),
+            ComputeSignature(document.Template),
+            ComputeSignature(document.Code),
+            ClassifyHotReloadBoundary(document, props, states, computeds, methods, diagnostics));
+    }
+
+    private static RazorVueHmrBoundaryKind ClassifyHotReloadBoundary(
+        JazorVueDocument document,
+        IReadOnlyList<PropDescriptor> props,
+        IReadOnlyList<StateDescriptor> states,
+        IReadOnlyList<ComputedDescriptor> computeds,
+        IReadOnlyList<MethodDescriptor> methods,
+        IReadOnlyList<string> diagnostics)
+    {
+        if (diagnostics.Any(static diagnostic =>
+                diagnostic.Contains("could not be lowered", StringComparison.Ordinal)))
+        {
+            return RazorVueHmrBoundaryKind.FullReloadRequired;
+        }
+
+        if (props.Count == 0)
+        {
+            return RazorVueHmrBoundaryKind.FullReloadRequired;
+        }
+
+        if (states.Count > 0 || computeds.Count > 0 || methods.Count > 0)
+        {
+            return RazorVueHmrBoundaryKind.LogicSafe;
+        }
+
+        return string.IsNullOrWhiteSpace(document.Template)
+            ? RazorVueHmrBoundaryKind.Unknown
+            : RazorVueHmrBoundaryKind.TemplateOnly;
+    }
+
+    private static string ComputeSignature(string content)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(content ?? string.Empty));
+        return Convert.ToHexString(bytes);
+    }
+
+    private static string NormalizeWhitespace(string value)
+        => string.Join(" ", value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+
     private static string MapVueType(string typeName)
         => typeName switch
         {
@@ -889,10 +973,11 @@ public sealed partial class JazorVueCompiler
 
     private sealed class StateDescriptor
     {
-        public StateDescriptor(string sourceName, string runtimeName, string? initializer)
+        public StateDescriptor(string sourceName, string runtimeName, string typeName, string? initializer)
         {
             SourceName = sourceName;
             RuntimeName = runtimeName;
+            TypeName = typeName;
             Initializer = initializer;
         }
 
@@ -900,21 +985,26 @@ public sealed partial class JazorVueCompiler
 
         public string RuntimeName { get; }
 
+        public string TypeName { get; }
+
         public string? Initializer { get; }
     }
 
     private sealed class ComputedDescriptor
     {
-        public ComputedDescriptor(string sourceName, string runtimeName, string expression)
+        public ComputedDescriptor(string sourceName, string runtimeName, string typeName, string expression)
         {
             SourceName = sourceName;
             RuntimeName = runtimeName;
+            TypeName = typeName;
             Expression = expression;
         }
 
         public string SourceName { get; }
 
         public string RuntimeName { get; }
+
+        public string TypeName { get; }
 
         public string Expression { get; }
     }
@@ -924,12 +1014,14 @@ public sealed partial class JazorVueCompiler
         public MethodDescriptor(
             string sourceName,
             string runtimeName,
+            string signature,
             IReadOnlyList<string> parameters,
             string body,
             bool isAsync)
         {
             SourceName = sourceName;
             RuntimeName = runtimeName;
+            Signature = signature;
             Parameters = parameters;
             Body = body;
             IsAsync = isAsync;
@@ -938,6 +1030,8 @@ public sealed partial class JazorVueCompiler
         public string SourceName { get; }
 
         public string RuntimeName { get; }
+
+        public string Signature { get; }
 
         public IReadOnlyList<string> Parameters { get; }
 

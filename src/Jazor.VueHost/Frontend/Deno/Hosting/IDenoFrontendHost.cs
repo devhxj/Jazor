@@ -1,4 +1,5 @@
 using Jazor.VueContracts.Protocol;
+using Jazor.VueHost.Frontend.Deno.Protocol;
 using Jazor.VueHost.Lsp;
 
 namespace Jazor.VueHost.Frontend.Deno.Hosting;
@@ -14,6 +15,19 @@ internal interface IDenoVolarHost : IAsyncDisposable
     ValueTask StartAsync(CancellationToken cancellationToken);
 
     ValueTask StopAsync(CancellationToken cancellationToken);
+
+    ValueTask<DenoSfcCompileResult?> CompileSfcAsync(
+        string documentPath,
+        string sfcText,
+        string filename,
+        CancellationToken cancellationToken);
+
+    ValueTask<DenoTypeScriptCompileResult?> CompileTypeScriptAsync(
+        string documentPath,
+        string text,
+        string filename,
+        CancellationToken cancellationToken)
+        => ValueTask.FromResult<DenoTypeScriptCompileResult?>(default);
 
     ValueTask<IReadOnlyList<LspDiagnostic>> GetTemplateDiagnosticsAsync(
         DocumentSnapshot document,

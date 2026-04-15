@@ -1,5 +1,6 @@
 using Jazor.VueContracts.Protocol;
 using Jazor.VueHost.Frontend.Deno.Hosting;
+using Jazor.VueHost.Frontend.Deno.Protocol;
 using Jazor.VueHost.Frontend;
 using Jazor.VueHost.Lsp;
 using Jazor.VueHost.Lsp.Coordination;
@@ -14,6 +15,72 @@ namespace Jazor.CompilerTest;
 [TestClass]
 public sealed class JazorVueHostFrontendLaneTests
 {
+    [TestMethod]
+    public async Task JazorVueHost_DenoFrontendHost_CompileSfc_StartsWorkerAndReturnsTypedResult()
+    {
+        var workerProcess = new FakeDenoWorkerProcess();
+        workerProcess.SetResult(
+            "compile/sfc",
+            new DenoSfcCompileResult
+            {
+                JsContent = "export default {};",
+                CssContent = ".counter{color:red;}",
+                Diagnostics = [],
+                SupportsHmr = true
+            });
+        var host = new DenoVolarHost(
+            new DenoVolarHostOptions
+            {
+                Enabled = true,
+                IgnoreStartupFailure = false
+            },
+            workerProcess);
+
+        var result = await host.CompileSfcAsync(
+            @"D:\temp\Counter.jazor",
+            "<template><div /></template>",
+            "Counter.jazor",
+            CancellationToken.None);
+
+        Assert.AreEqual(1, workerProcess.StartCallCount);
+        Assert.IsNotNull(result);
+        Assert.AreEqual("export default {};", result.JsContent);
+        Assert.AreEqual(".counter{color:red;}", result.CssContent);
+        Assert.IsTrue(result.SupportsHmr);
+        CollectionAssert.AreEqual(new[] { "compile/sfc" }, workerProcess.RequestMethods);
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_DenoFrontendHost_CompileTypeScript_StartsWorkerAndReturnsTypedResult()
+    {
+        var workerProcess = new FakeDenoWorkerProcess();
+        workerProcess.SetResult(
+            "compile/ts",
+            new DenoTypeScriptCompileResult
+            {
+                JsContent = "export const count = 1;",
+                Diagnostics = []
+            });
+        var host = new DenoVolarHost(
+            new DenoVolarHostOptions
+            {
+                Enabled = true,
+                IgnoreStartupFailure = false
+            },
+            workerProcess);
+
+        var result = await host.CompileTypeScriptAsync(
+            @"D:\temp\counter.ts",
+            "export const count: number = 1;",
+            "counter.ts",
+            CancellationToken.None);
+
+        Assert.AreEqual(1, workerProcess.StartCallCount);
+        Assert.IsNotNull(result);
+        Assert.AreEqual("export const count = 1;", result.JsContent);
+        CollectionAssert.AreEqual(new[] { "compile/ts" }, workerProcess.RequestMethods);
+    }
+
     [TestMethod]
     public async Task JazorVueHost_DenoFrontendHost_GetTemplateDiagnostics_StartsWorkerAndReturnsTypedDiagnostics()
     {
@@ -1471,6 +1538,8 @@ public sealed class JazorVueHostFrontendLaneTests
     {
         public bool IsRunning => true;
 
+        public DenoSfcCompileResult? SfcCompileResult { get; init; }
+
         public IReadOnlyList<LspDiagnostic> Diagnostics { get; init; } = [];
 
         public IReadOnlyList<LspCompletionItem> CompletionItems { get; init; } = [];
@@ -1507,6 +1576,26 @@ public sealed class JazorVueHostFrontendLaneTests
 
         public ValueTask DisposeAsync()
             => ValueTask.CompletedTask;
+
+        public ValueTask<DenoSfcCompileResult?> CompileSfcAsync(
+            string documentPath,
+            string sfcText,
+            string filename,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return ValueTask.FromResult(SfcCompileResult);
+        }
+
+        public ValueTask<DenoTypeScriptCompileResult?> CompileTypeScriptAsync(
+            string documentPath,
+            string text,
+            string filename,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return ValueTask.FromResult<DenoTypeScriptCompileResult?>(default);
+        }
 
         public ValueTask<IReadOnlyList<LspDiagnostic>> GetTemplateDiagnosticsAsync(
             DocumentSnapshot document,

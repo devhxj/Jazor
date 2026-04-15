@@ -1,6 +1,7 @@
 import * as volarLanguageCore from "npm:@volar/language-core@2.4.28";
 import * as volarTypeScript from "npm:@volar/typescript@2.4.28";
 import ts from "npm:typescript@5.8.3";
+import * as vueCompilerSfc from "npm:@vue/compiler-sfc@3.5.13";
 import * as volarTypeScriptService from "npm:volar-service-typescript@0.0.70";
 import * as vueLanguageCore from "npm:@vue/language-core@3.2.6";
 import * as vueLanguageService from "npm:@vue/language-service@3.2.6";
@@ -17,6 +18,8 @@ type RequestEnvelope = {
   payload: {
     documentPath: string;
     text: string;
+    sfcText?: string;
+    filename?: string;
     position?: Position;
     includeDeclaration?: boolean;
     newName?: string;
@@ -162,6 +165,16 @@ async function handleLine(line: string): Promise<ResponseEnvelope> {
 
 async function dispatch(method: string, payload: RequestEnvelope["payload"]): Promise<unknown> {
   switch (method) {
+    case "compile/sfc":
+      assertString(method, "documentPath", payload.documentPath);
+      assertString(method, "sfcText", payload.sfcText);
+      assertString(method, "filename", payload.filename);
+      return compileVueSfc(payload.documentPath, payload.sfcText, payload.filename);
+    case "compile/ts":
+      assertString(method, "documentPath", payload.documentPath);
+      assertString(method, "text", payload.text);
+      assertString(method, "filename", payload.filename);
+      return compileTypeScript(payload.documentPath, payload.text, payload.filename);
     case "template/diagnostics":
       return await getDiagnostics(
         payload.documentPath,
@@ -585,6 +598,170 @@ async function getSemanticTokens(documentPath: string, text: string): Promise<un
   return dedupeSemanticTokens(tokens);
 }
 
+function compileVueSfc(
+  documentPath: string,
+  sfcText: string,
+  filename: string,
+): { jsContent: string; cssContent: string | null; diagnostics: string[]; supportsHmr: boolean } {
+  const diagnostics: string[] = [];
+  const { descriptor, errors } = vueCompilerSfc.parse(sfcText, { filename });
+  for (const error of errors) {
+    diagnostics.push(formatSfcCompilerMessage(error));
+  }
+
+  const scopeId = createVueScopeId(documentPath);
+  const hasScopedStyles = descriptor.styles.some((style) => style.scoped);
+  const jsParts: string[] = [];
+  let bindingMetadata: ReturnType<typeof vueCompilerSfc.compileScript>["bindings"] | undefined;
+
+  if (descriptor.scriptSetup !== null) {
+    try {
+      const compiledScript = vueCompilerSfc.compileScript(descriptor, {
+        id: scopeId,
+        genDefaultAs: "_sfc_main",
+      });
+      bindingMetadata = compiledScript.bindings;
+      if (compiledScript.content.trim().length > 0) {
+        jsParts.push(compiledScript.content.trim());
+      }
+    } catch (error) {
+      diagnostics.push(`Failed to compile <script setup>: ${formatSfcCompilerMessage(error)}`);
+      jsParts.push("const _sfc_main = {};");
+    }
+  } else if (descriptor.script !== null) {
+    const scriptContent = descriptor.script.content.trim();
+    if (scriptContent.length > 0) {
+      jsParts.push(rewriteDefaultExport(scriptContent, "_sfc_main"));
+    } else {
+      jsParts.push("const _sfc_main = {};");
+    }
+  } else {
+    jsParts.push("const _sfc_main = {};");
+  }
+
+  if (descriptor.template !== null) {
+    try {
+      const templateCompiled = vueCompilerSfc.compileTemplate({
+        source: descriptor.template.content,
+        filename,
+        id: scopeId,
+        scoped: hasScopedStyles,
+        isProd: false,
+        compilerOptions: bindingMetadata === undefined
+          ? undefined
+          : {
+            bindingMetadata,
+          },
+      });
+      for (const error of templateCompiled.errors) {
+        diagnostics.push(formatSfcCompilerMessage(error));
+      }
+
+      if (templateCompiled.code.trim().length > 0) {
+        jsParts.push(templateCompiled.code.trim());
+      }
+    } catch (error) {
+      diagnostics.push(`Failed to compile <template>: ${formatSfcCompilerMessage(error)}`);
+    }
+  }
+
+  const cssParts: string[] = [];
+  for (const styleBlock of descriptor.styles) {
+    try {
+      const styleCompiled = vueCompilerSfc.compileStyle({
+        source: styleBlock.content,
+        filename,
+        id: `data-v-${scopeId}`,
+        scoped: styleBlock.scoped,
+        isProd: false,
+      });
+      for (const error of styleCompiled.errors) {
+        diagnostics.push(formatSfcCompilerMessage(error));
+      }
+
+      if (styleCompiled.code.trim().length > 0) {
+        cssParts.push(styleCompiled.code.trim());
+      }
+    } catch (error) {
+      diagnostics.push(`Failed to compile <style>: ${formatSfcCompilerMessage(error)}`);
+    }
+  }
+
+  if (hasScopedStyles) {
+    jsParts.push(`_sfc_main.__scopeId = "data-v-${scopeId}";`);
+  }
+
+  if (descriptor.template !== null) {
+    jsParts.push("_sfc_main.render = render;");
+  }
+
+  const hmrId = `jazor-vue:${normalizePath(documentPath)}`;
+  const templateHash = createStableHash(descriptor.template?.content ?? "");
+  const scriptHash = createStableHash([
+    descriptor.script?.content ?? "",
+    descriptor.scriptSetup?.content ?? "",
+    descriptor.styles.map((style) => `${style.scoped}:${style.lang ?? ""}:${style.module ? "module" : "plain"}`).join("|"),
+  ].join("\n"));
+  jsParts.push(`const __jazorHmrId = ${JSON.stringify(hmrId)};`);
+  jsParts.push(`const __jazorHmrTemplateHash = ${JSON.stringify(templateHash)};`);
+  jsParts.push(`const __jazorHmrScriptHash = ${JSON.stringify(scriptHash)};`);
+  jsParts.push("_sfc_main.__hmrId = __jazorHmrId;");
+  jsParts.push(`
+const __jazorHotContext = import.meta.hot ?? globalThis.__JAZOR_HMR__?.createHotContext(import.meta.url);
+if (__jazorHotContext) {
+  import.meta.hot = __jazorHotContext;
+}
+`.trim());
+  jsParts.push(`
+if (import.meta.hot) {
+  const __jazorVueHmrRuntime = globalThis.__VUE_HMR_RUNTIME__;
+  if (__jazorVueHmrRuntime) {
+    __jazorVueHmrRuntime.createRecord(__jazorHmrId, _sfc_main);
+  }
+  import.meta.hot.accept((updatedModule) => {
+    const updatedComponent = updatedModule?.default;
+    if (!updatedComponent || !__jazorVueHmrRuntime) {
+      import.meta.hot.invalidate?.("Vue SFC HMR runtime was unavailable.");
+      return;
+    }
+    updatedComponent.__hmrId = __jazorHmrId;
+    if (updatedModule.__jazorHmrScriptHash === __jazorHmrScriptHash
+        && updatedModule.__jazorHmrTemplateHash !== __jazorHmrTemplateHash
+        && updatedComponent.render) {
+      __jazorVueHmrRuntime.rerender(__jazorHmrId, updatedComponent.render);
+      return;
+    }
+    __jazorVueHmrRuntime.reload(__jazorHmrId, updatedComponent);
+  });
+}
+`.trim());
+  jsParts.push("export { __jazorHmrId, __jazorHmrTemplateHash, __jazorHmrScriptHash };");
+  jsParts.push("export default _sfc_main;");
+
+  let jsContent = jsParts.filter((part) => part.length > 0).join("\n\n");
+  if (requiresTypeScriptTranspile(descriptor)) {
+    const transpiled = transpileTypeScriptModule(jsContent, filename);
+    diagnostics.push(...transpiled.diagnostics);
+    jsContent = transpiled.jsContent;
+  }
+
+  return {
+    jsContent,
+    cssContent: cssParts.length === 0 ? null : cssParts.join("\n\n"),
+    diagnostics,
+    supportsHmr: true,
+  };
+}
+
+function compileTypeScript(
+  documentPath: string,
+  text: string,
+  filename: string,
+): { jsContent: string; diagnostics: string[] } {
+  const sourceFileName = filename.trim().length === 0 ? documentPath : filename;
+  return transpileTypeScriptModule(text, sourceFileName);
+}
+
 async function tryGetVueDiagnostics(
   documentPath: string,
   text: string,
@@ -721,7 +898,7 @@ function createVueLanguageServiceContext(documentPath: string, text: string): Vo
   };
   const fsProvider = createVolarFileSystem();
   const workspaceFolders = [URI.file(workspaceDirectory.length === 0 ? serviceDocumentPath : workspaceDirectory)];
-  let language: ReturnType<typeof volarLanguageCore.createLanguage>;
+  let language: volarLanguageCore.Language<URI>;
   language = volarLanguageCore.createLanguage([
     vueLanguageCore.createVueLanguagePlugin(
       ts,
@@ -754,7 +931,12 @@ function createVueLanguageServiceContext(documentPath: string, text: string): Vo
     fs: fsProvider,
     console,
   };
-  const sys = volarTypeScript.createSys(ts.sys, environment, () => workspaceDirectory, uriConverter);
+  const sys = volarTypeScript.createSys(
+    ts.sys,
+    environment as Parameters<typeof volarTypeScript.createSys>[1],
+    () => workspaceDirectory,
+    uriConverter,
+  );
   const { languageServiceHost, getExtraServiceScript } = volarTypeScript.createLanguageServiceHost(
     ts,
     sys,
@@ -773,7 +955,7 @@ function createVueLanguageServiceContext(documentPath: string, text: string): Vo
       ...volarTypeScriptService.create(ts),
       ...vueLanguageService.createVueLanguageServicePlugins(ts),
     ],
-    environment,
+    environment as Parameters<typeof vueLanguageService.createLanguageService>[2],
     {
       typescript: {
         configFileName: undefined,
@@ -938,7 +1120,7 @@ function normalizeVolarWorkspaceEdit(
   }
 
   for (const change of workspaceEdit.documentChanges ?? []) {
-    if (!("textDocument" in change) || !Array.isArray(change.edits)) {
+    if (!isTextDocumentEditChange(change)) {
       continue;
     }
 
@@ -967,6 +1149,27 @@ function normalizeVolarResultUri(uri: string, context: VolarServiceContext): str
   }
 
   return uri;
+}
+
+function isTextDocumentEditChange(
+  value: unknown,
+): value is {
+  textDocument: { uri: string };
+  edits: Array<{ range: { start: Position; end: Position }; newText: string }>;
+} {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  if (!("textDocument" in value) || !("edits" in value)) {
+    return false;
+  }
+
+  const change = value as {
+    textDocument?: { uri?: unknown };
+    edits?: unknown;
+  };
+  return typeof change.textDocument?.uri === "string" && Array.isArray(change.edits);
 }
 
 function decodeVolarSemanticTokens(
@@ -1261,7 +1464,9 @@ function tryGetTypeScriptCompletionItems(context: ScriptContext, position: Posit
       .map((entry) => ({
         label: entry.name,
         kind: mapTypeScriptCompletionKind(entry.kind),
-        detail: entry.kindModifiers.length === 0 ? entry.kind : `${entry.kind} ${entry.kindModifiers}`.trim(),
+        detail: !entry.kindModifiers || entry.kindModifiers.length === 0
+          ? entry.kind
+          : `${entry.kind} ${entry.kindModifiers}`.trim(),
       }));
   });
 }
@@ -1344,18 +1549,25 @@ function tryGetTypeScriptReferences(
     }
 
     const references = project.languageService.getReferencesAtPosition(project.entryFilePath, offset) ?? [];
+    const definitionLocations = (project.languageService.getDefinitionAtPosition(project.entryFilePath, offset) ?? [])
+      .map((definition) => tryMapTypeScriptTextSpan(project, definition.fileName, definition.textSpan))
+      .filter((definition): definition is { uri: string; range: { start: Position; end: Position } } => definition !== null);
     const declarations = includeDeclaration
-      ? (project.languageService.getDefinitionAtPosition(project.entryFilePath, offset) ?? [])
-          .map((definition) => tryMapTypeScriptTextSpan(project, definition.fileName, definition.textSpan))
-          .filter((definition): definition is { uri: string; range: { start: Position; end: Position } } => definition !== null)
+      ? definitionLocations
       : [];
+    const declarationKeys = new Set(
+      definitionLocations.map((definition) =>
+        `${definition.uri}:${definition.range.start.line}:${definition.range.start.character}:${definition.range.end.line}:${definition.range.end.character}`),
+    );
     return dedupeLocations(
       declarations.concat(
         references
-          .filter((reference) => includeDeclaration || !reference.isDefinition)
           .map((reference) => tryMapTypeScriptTextSpan(project, reference.fileName, reference.textSpan))
           .filter((reference): reference is { uri: string; range: { start: Position; end: Position } } => reference !== null),
       )
+        .filter((reference) =>
+          includeDeclaration
+            || !declarationKeys.has(`${reference.uri}:${reference.range.start.line}:${reference.range.start.character}:${reference.range.end.line}:${reference.range.end.character}`))
         .filter((reference) => reference !== null)
     );
   });
@@ -2690,6 +2902,87 @@ function assertPosition(method: string, position: Position | undefined): asserts
   if (position === undefined) {
     throw new Error(`Method '${method}' requires a position.`);
   }
+}
+
+function assertString(method: string, fieldName: string, value: string | undefined): asserts value is string {
+  if (typeof value !== "string" || value.trim().length === 0) {
+    throw new Error(`Method '${method}' requires '${fieldName}'.`);
+  }
+}
+
+function requiresTypeScriptTranspile(descriptor: ReturnType<typeof vueCompilerSfc.parse>["descriptor"]): boolean {
+  return isTypeScriptLanguage(descriptor.script?.lang)
+    || isTypeScriptLanguage(descriptor.scriptSetup?.lang);
+}
+
+function isTypeScriptLanguage(value: string | undefined): boolean {
+  return value === "ts" || value === "tsx";
+}
+
+function rewriteDefaultExport(scriptContent: string, localName: string): string {
+  return /\bexport\s+default\b/.test(scriptContent)
+    ? scriptContent.replace(/\bexport\s+default\b/, `const ${localName} =`)
+    : `${scriptContent}\nconst ${localName} = {};`;
+}
+
+function createVueScopeId(documentPath: string): string {
+  return createStableHash(normalizePath(documentPath));
+}
+
+function createStableHash(value: string): string {
+  let hash = 2166136261;
+  for (const character of value) {
+    hash ^= character.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+
+  return Math.abs(hash >>> 0).toString(16);
+}
+
+function formatSfcCompilerMessage(error: unknown): string {
+  if (typeof error === "string") {
+    return error;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  if (typeof error === "object" && error !== null && "message" in error && typeof error.message === "string") {
+    return error.message;
+  }
+
+  return String(error);
+}
+
+function formatTypeScriptDiagnostic(diagnostic: ts.Diagnostic): string {
+  const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
+  if (diagnostic.file === undefined || diagnostic.start === undefined) {
+    return message;
+  }
+
+  const position = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
+  return `${diagnostic.file.fileName}(${position.line + 1},${position.character + 1}): ${message}`;
+}
+
+function transpileTypeScriptModule(
+  text: string,
+  filename: string,
+): { jsContent: string; diagnostics: string[] } {
+  const transpiled = ts.transpileModule(text, {
+    fileName: filename,
+    compilerOptions: {
+      module: ts.ModuleKind.ESNext,
+      target: ts.ScriptTarget.ES2022,
+      sourceMap: false,
+    },
+    reportDiagnostics: true,
+  });
+
+  return {
+    jsContent: transpiled.outputText.trim(),
+    diagnostics: (transpiled.diagnostics ?? []).map(formatTypeScriptDiagnostic),
+  };
 }
 
 await main();

@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Components;
 using Jazor.VueContracts.Protocol;
@@ -133,7 +134,7 @@ internal sealed class RazorDesignTimeCodeProjectionService
         {
             var csharpDocument = RazorCodeDocumentUnsafeAccessor.GetRequiredCSharpDocument(codeDocument);
             generatedCode = csharpDocument.Text.ToString();
-            sourceMappings = csharpDocument.SourceMappings;
+            sourceMappings = GetSourceMappings(csharpDocument);
             return true;
         }
         catch (Exception) when (TryGetGeneratedCodeDocumentByUnsafeFallback(
@@ -167,7 +168,7 @@ internal sealed class RazorDesignTimeCodeProjectionService
             }
 
             generatedCode = csharpDocument.Text.ToString();
-            sourceMappings = csharpDocument.SourceMappings;
+            sourceMappings = GetSourceMappings(csharpDocument);
             return !string.IsNullOrWhiteSpace(generatedCode);
         }
         catch
@@ -186,6 +187,19 @@ internal sealed class RazorDesignTimeCodeProjectionService
             mapping.GeneratedSpan.AbsoluteIndex,
             mapping.GeneratedSpan.Length,
             mapping.OriginalSpan.FilePath);
+    }
+
+    private static IReadOnlyList<SourceMapping> GetSourceMappings(RazorCSharpDocument csharpDocument)
+    {
+        var property = typeof(RazorCSharpDocument).GetProperty(
+            "SourceMappings",
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        if (property?.GetValue(csharpDocument) is IEnumerable<SourceMapping> sourceMappings)
+        {
+            return sourceMappings.ToArray();
+        }
+
+        return [];
     }
 
     private static StringComparer PathComparer
