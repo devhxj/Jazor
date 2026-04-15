@@ -1,3 +1,6 @@
+using System.Net.Http;
+using System.Net.Sockets;
+using System.Net.WebSockets;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
@@ -385,6 +388,314 @@ public sealed class JazorVueHostLspTests
             if (Directory.Exists(tempDirectory))
             {
                 Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_WithDevMode_StillServesHttpAndProcessesLspMessages()
+    {
+        var tempDirectory = CreateTemporaryDirectory();
+        var port = GetFreePort();
+        await using var client = await LspTestClient.StartAsync(
+            "--dev",
+            $"--dev-root={tempDirectory}",
+            $"--dev-port={port}",
+            "--dev-host=127.0.0.1",
+            "--dev-frontend=stub");
+        await client.InitializeAsync();
+
+        try
+        {
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            await File.WriteAllTextAsync(Path.Combine(tempDirectory, "index.html"), "<html><body>combined</body></html>");
+
+            var brokenText =
+                """
+                <template>
+                  <div>broken</div>
+                </template>
+
+                @code {
+                    private void Hidden()
+                    {
+                    }
+                }
+                """;
+            await client.OpenDocumentAsync(documentUri, brokenText, version: 1);
+
+            using var httpClient = new HttpClient
+            {
+                BaseAddress = new Uri($"http://127.0.0.1:{port}")
+            };
+            var response = await httpClient.GetStringAsync("/");
+
+            StringAssert.Contains(response, "combined");
+            StringAssert.Contains(response, "/@jazor/client");
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_WithDevMode_WhenUnsavedJazorCodeBehindDidChange_BroadcastsHmrJavaScriptUpdate()
+    {
+        var tempDirectory = CreateTemporaryDirectory();
+        var port = GetFreePort();
+        await using var client = await LspTestClient.StartAsync(
+            "--dev",
+            $"--dev-root={tempDirectory}",
+            $"--dev-port={port}",
+            "--dev-host=127.0.0.1",
+            "--dev-frontend=stub");
+        await client.InitializeAsync();
+
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(tempDirectory, "index.html"), "<html><body>combined</body></html>");
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var codeBehindPath = Path.Combine(tempDirectory, "Counter.jazor.cs");
+            var codeBehindUri = new Uri(codeBehindPath).AbsoluteUri;
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <button>@Increment(1)</button>
+                  <div>@count</div>
+                </template>
+                """);
+
+            var initialCodeBehindText =
+                """
+                public partial class Counter
+                {
+                    [State] private int count = 1;
+
+                    public int Increment(int delta)
+                    {
+                        return count + delta;
+                    }
+                }
+                """;
+            await File.WriteAllTextAsync(codeBehindPath, initialCodeBehindText);
+
+            using var httpClient = new HttpClient
+            {
+                BaseAddress = new Uri($"http://127.0.0.1:{port}")
+            };
+            _ = await httpClient.GetStringAsync("/Counter.jazor");
+
+            using var socket = new ClientWebSocket();
+            await socket.ConnectAsync(CreateWebSocketUri(port, "/@jazor/hmr"), CancellationToken.None);
+            var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
+
+            await client.OpenDocumentAsync(codeBehindUri, initialCodeBehindText, version: 1, languageId: "csharp");
+
+            var updatedCodeBehindText =
+                """
+                public partial class Counter
+                {
+                    [State] private int count = 2;
+
+                    public int Increment(int delta)
+                    {
+                        return count + delta;
+                    }
+                }
+                """;
+            await client.ChangeDocumentAsync(codeBehindUri, updatedCodeBehindText, version: 2);
+
+            var updateMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("update", updateMessage.GetProperty("type").GetString());
+            var updates = updateMessage.GetProperty("updates").EnumerateArray().ToArray();
+            Assert.AreEqual(1, updates.Length);
+            Assert.AreEqual("js-update", updates[0].GetProperty("type").GetString());
+            Assert.AreEqual("/Counter.jazor", updates[0].GetProperty("path").GetString());
+            Assert.AreEqual("/Counter.jazor", updates[0].GetProperty("acceptedPath").GetString());
+            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                DeleteDirectoryWithRetries(tempDirectory);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_WithDevMode_WhenUnsavedJazorCodeBehindSignatureDidChange_BroadcastsFullReload()
+    {
+        var tempDirectory = CreateTemporaryDirectory();
+        var port = GetFreePort();
+        await using var client = await LspTestClient.StartAsync(
+            "--dev",
+            $"--dev-root={tempDirectory}",
+            $"--dev-port={port}",
+            "--dev-host=127.0.0.1",
+            "--dev-frontend=stub");
+        await client.InitializeAsync();
+
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(tempDirectory, "index.html"), "<html><body>combined</body></html>");
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var codeBehindPath = Path.Combine(tempDirectory, "Counter.jazor.cs");
+            var codeBehindUri = new Uri(codeBehindPath).AbsoluteUri;
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <button>@Increment(1)</button>
+                </template>
+                """);
+
+            var initialCodeBehindText =
+                """
+                public partial class Counter
+                {
+                    public int Increment(int delta)
+                    {
+                        return delta + 1;
+                    }
+                }
+                """;
+            await File.WriteAllTextAsync(codeBehindPath, initialCodeBehindText);
+
+            using var httpClient = new HttpClient
+            {
+                BaseAddress = new Uri($"http://127.0.0.1:{port}")
+            };
+            _ = await httpClient.GetStringAsync("/Counter.jazor");
+
+            using var socket = new ClientWebSocket();
+            await socket.ConnectAsync(CreateWebSocketUri(port, "/@jazor/hmr"), CancellationToken.None);
+            var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
+
+            await client.OpenDocumentAsync(codeBehindUri, initialCodeBehindText, version: 1, languageId: "csharp");
+
+            var updatedCodeBehindText =
+                """
+                public partial class Counter
+                {
+                    public long Increment(long delta)
+                    {
+                        return delta + 1;
+                    }
+                }
+                """;
+            await client.ChangeDocumentAsync(codeBehindUri, updatedCodeBehindText, version: 2);
+
+            var reloadMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("full-reload", reloadMessage.GetProperty("type").GetString());
+            Assert.AreEqual("Public component descriptor changed.", reloadMessage.GetProperty("reason").GetString());
+            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                DeleteDirectoryWithRetries(tempDirectory);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_WithDevMode_WhenUnsavedJazorCodeBehindDidChangeIsLaterSaved_DoesNotBroadcastDuplicateHmrMessage()
+    {
+        var tempDirectory = CreateTemporaryDirectory();
+        var port = GetFreePort();
+        await using var client = await LspTestClient.StartAsync(
+            "--dev",
+            $"--dev-root={tempDirectory}",
+            $"--dev-port={port}",
+            "--dev-host=127.0.0.1",
+            "--dev-frontend=stub");
+        await client.InitializeAsync();
+
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(tempDirectory, "index.html"), "<html><body>combined</body></html>");
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var codeBehindPath = Path.Combine(tempDirectory, "Counter.jazor.cs");
+            var codeBehindUri = new Uri(codeBehindPath).AbsoluteUri;
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <button>@Increment(1)</button>
+                  <div>@count</div>
+                </template>
+                """);
+
+            var initialCodeBehindText =
+                """
+                public partial class Counter
+                {
+                    [State] private int count = 1;
+
+                    public int Increment(int delta)
+                    {
+                        return count + delta;
+                    }
+                }
+                """;
+            await File.WriteAllTextAsync(codeBehindPath, initialCodeBehindText);
+
+            using var httpClient = new HttpClient
+            {
+                BaseAddress = new Uri($"http://127.0.0.1:{port}")
+            };
+            _ = await httpClient.GetStringAsync("/Counter.jazor");
+
+            using var socket = new ClientWebSocket();
+            await socket.ConnectAsync(CreateWebSocketUri(port, "/@jazor/hmr"), CancellationToken.None);
+            var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
+
+            await client.OpenDocumentAsync(codeBehindUri, initialCodeBehindText, version: 1, languageId: "csharp");
+
+            var updatedCodeBehindText =
+                """
+                public partial class Counter
+                {
+                    [State] private int count = 2;
+
+                    public int Increment(int delta)
+                    {
+                        return count + delta;
+                    }
+                }
+                """;
+            await client.ChangeDocumentAsync(codeBehindUri, updatedCodeBehindText, version: 2);
+
+            var updateMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("update", updateMessage.GetProperty("type").GetString());
+
+            await File.WriteAllTextAsync(codeBehindPath, updatedCodeBehindText);
+            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                DeleteDirectoryWithRetries(tempDirectory);
             }
         }
 
@@ -5428,6 +5739,16 @@ public sealed class JazorVueHostLspTests
         return path;
     }
 
+    private static int GetFreePort()
+    {
+        using var listener = new TcpListener(System.Net.IPAddress.Loopback, 0);
+        listener.Start();
+        return ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
+    }
+
+    private static Uri CreateWebSocketUri(int port, string path)
+        => new UriBuilder(Uri.UriSchemeWs, "127.0.0.1", port, path).Uri;
+
     private static void DeleteDirectoryWithRetries(string path)
         => Directory.Delete(path, recursive: true);
 
@@ -5593,6 +5914,44 @@ public sealed class JazorVueHostLspTests
             && string.Equals(candidate.TokenType, tokenType, StringComparison.Ordinal));
         Assert.IsNotNull(token, $"Expected semantic token '{tokenType}' at {position.Line}:{position.Character}.");
         CollectionAssert.AreEquivalent(modifiers, token.TokenModifiers);
+    }
+
+    private static async Task<JsonElement> ReceiveWebSocketJsonAsync(WebSocket socket, TimeSpan timeout)
+    {
+        using var timeoutSource = new CancellationTokenSource(timeout);
+        var buffer = new byte[4096];
+        using var messageStream = new MemoryStream();
+
+        while (true)
+        {
+            var result = await socket.ReceiveAsync(buffer, timeoutSource.Token);
+            if (result.MessageType == WebSocketMessageType.Close)
+            {
+                throw new AssertFailedException("Expected a websocket payload before close.");
+            }
+
+            messageStream.Write(buffer, 0, result.Count);
+            if (result.EndOfMessage)
+            {
+                break;
+            }
+        }
+
+        var json = Encoding.UTF8.GetString(messageStream.ToArray());
+        using var document = JsonDocument.Parse(json);
+        return document.RootElement.Clone();
+    }
+
+    private static async Task AssertNoWebSocketJsonAsync(WebSocket socket, TimeSpan timeout)
+    {
+        try
+        {
+            var message = await ReceiveWebSocketJsonAsync(socket, timeout);
+            Assert.Fail("Expected no websocket payload, but received: " + message.GetRawText());
+        }
+        catch (OperationCanceledException)
+        {
+        }
     }
 
     private sealed class LspTestClient : IAsyncDisposable

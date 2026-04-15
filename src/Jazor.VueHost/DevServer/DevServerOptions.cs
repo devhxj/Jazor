@@ -12,6 +12,8 @@ internal sealed record DevServerOptions
 
     public bool HmrEnabled { get; init; } = true;
 
+    public string FrontendCompiler { get; init; } = "deno";
+
     public IReadOnlyDictionary<string, ProxyTarget> ProxyRules { get; init; }
         = new Dictionary<string, ProxyTarget>(StringComparer.OrdinalIgnoreCase);
 }

@@ -24,6 +24,7 @@ internal sealed class LspSession
     private readonly ReferenceCoordinator _referenceCoordinator;
     private readonly RenameCoordinator _renameCoordinator;
     private readonly CodeActionCoordinator _codeActionCoordinator;
+    private readonly IWorkspaceDocumentChangeSink _workspaceDocumentChangeSink;
 
     public LspSession(
         IVueHostWorkspaceStore workspaceStore,
@@ -37,7 +38,8 @@ internal sealed class LspSession
         MarkupBridgeFanoutCoordinator markupBridgeFanoutCoordinator,
         ReferenceCoordinator referenceCoordinator,
         RenameCoordinator renameCoordinator,
-        CodeActionCoordinator codeActionCoordinator)
+        CodeActionCoordinator codeActionCoordinator,
+        IWorkspaceDocumentChangeSink? workspaceDocumentChangeSink = null)
     {
         _workspaceStore = workspaceStore ?? throw new ArgumentNullException(nameof(workspaceStore));
         ArgumentNullException.ThrowIfNull(lanes);
@@ -52,6 +54,7 @@ internal sealed class LspSession
         _referenceCoordinator = referenceCoordinator ?? throw new ArgumentNullException(nameof(referenceCoordinator));
         _renameCoordinator = renameCoordinator ?? throw new ArgumentNullException(nameof(renameCoordinator));
         _codeActionCoordinator = codeActionCoordinator ?? throw new ArgumentNullException(nameof(codeActionCoordinator));
+        _workspaceDocumentChangeSink = workspaceDocumentChangeSink ?? NullWorkspaceDocumentChangeSink.Instance;
     }
 
     public async ValueTask<LspResponseMessage?> HandleRequestAsync(
@@ -380,6 +383,8 @@ internal sealed class LspSession
         await UpdateProjectionStateAsync(document, cancellationToken);
         await PublishDiagnosticsAsync(document, cancellationToken);
         await RefreshOpenJazorDiagnosticsAsync(document, cancellationToken);
+        var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
+        await NotifyWorkspaceDocumentChangedAsync(document, openDocuments, cancellationToken);
     }
 
     private async ValueTask HandleDidCloseAsync(
@@ -431,6 +436,25 @@ internal sealed class LspSession
 
         var virtualDocuments = await _projectionService.ProjectCodeAsync(document, cancellationToken);
         await _virtualDocumentRegistry.UpsertAsync(virtualDocuments, cancellationToken);
+    }
+
+    private async ValueTask NotifyWorkspaceDocumentChangedAsync(
+        DocumentSnapshot document,
+        IReadOnlyList<DocumentSnapshot> openDocuments,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _workspaceDocumentChangeSink.OnWorkspaceDocumentChangedAsync(document, openDocuments, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch
+        {
+            // LSP diagnostics/projection updates must keep working even if dev-server HMR coordination fails.
+        }
     }
 
     private async ValueTask<IReadOnlyList<LspDiagnostic>> CollectDiagnosticsAsync(

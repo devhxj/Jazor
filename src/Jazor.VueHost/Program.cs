@@ -35,23 +35,11 @@ if (useAnalysisStdio)
     return;
 }
 
-if (useDev)
+if (useDev && !useLsp)
 {
     await using var denoFrontendHost = new DenoVolarHost(DenoVolarHostOptionsParser.Parse(args));
     var devOptions = DevServerOptionsParser.Parse(args);
-    var moduleResolver = new ModuleResolver(devOptions.RootDirectory);
-    var compiler = new OnDemandCompiler(
-        new Jazor.Vue.JazorVueParser(),
-        new Jazor.Vue.JazorVueCompiler(),
-        new DenoFrontendModuleCompiler(denoFrontendHost),
-        new CompilationCache(),
-        new DependencyGraph(moduleResolver),
-        moduleResolver);
-    await using var devServer = new DevHttpServer(
-        devOptions,
-        compiler,
-        moduleResolver,
-        new HtmlTransformer(devOptions));
+    await using var devServer = CreateDevServer(devOptions, denoFrontendHost);
     using var shutdownSource = new CancellationTokenSource();
     Console.CancelKeyPress += (_, eventArgs) =>
     {
@@ -116,6 +104,15 @@ try
 
     if (useLsp)
     {
+        DevHttpServer? devServer = null;
+        if (useDev)
+        {
+            var devOptions = DevServerOptionsParser.Parse(args);
+            devServer = CreateDevServer(devOptions, denoVolarHost);
+            await devServer.StartAsync(cancellationToken);
+            Console.Error.WriteLine($"Jazor.VueHost dev server listening on {devServer.ListeningUri ?? new Uri($"http://{devOptions.Host}:{devOptions.Port}")}");
+        }
+
         var jazorDocumentService = new JazorLspDocumentService(workspaceStore, analysisClient, markupComponentBridge);
         ILspLane[] lanes =
         [
@@ -137,11 +134,23 @@ try
                 markupBridgeFanoutCoordinator,
                 new ReferenceCoordinator(laneMap, laneRouter, markupBridgeFanoutCoordinator),
                 new RenameCoordinator(laneMap, laneRouter, resultAggregator, markupBridgeFanoutCoordinator),
-                new CodeActionCoordinator(laneMap, laneRouter, resultAggregator)));
-        await lspServer.RunAsync(
-            Console.OpenStandardInput(),
-            Console.OpenStandardOutput(),
-            cancellationToken);
+                new CodeActionCoordinator(laneMap, laneRouter, resultAggregator),
+                devServer));
+        try
+        {
+            await lspServer.RunAsync(
+                Console.OpenStandardInput(),
+                Console.OpenStandardOutput(),
+                cancellationToken);
+        }
+        finally
+        {
+            if (devServer is not null)
+            {
+                await devServer.DisposeAsync();
+            }
+        }
+
         return;
     }
 
@@ -215,4 +224,29 @@ static string? GetOptionValue(string[] args, string optionName)
     }
 
     return null;
+}
+
+static DevHttpServer CreateDevServer(
+    DevServerOptions devOptions,
+    IDenoVolarHost denoFrontendHost)
+{
+    var moduleResolver = new ModuleResolver(devOptions.RootDirectory);
+    IFrontendModuleCompiler frontendCompiler = string.Equals(
+        devOptions.FrontendCompiler,
+        "stub",
+        StringComparison.OrdinalIgnoreCase)
+        ? new StubFrontendModuleCompiler()
+        : new DenoFrontendModuleCompiler(denoFrontendHost);
+    var compiler = new OnDemandCompiler(
+        new Jazor.Vue.JazorVueParser(),
+        new Jazor.Vue.JazorVueCompiler(),
+        frontendCompiler,
+        new CompilationCache(),
+        new DependencyGraph(moduleResolver),
+        moduleResolver);
+    return new DevHttpServer(
+        devOptions,
+        compiler,
+        moduleResolver,
+        new HtmlTransformer(devOptions));
 }

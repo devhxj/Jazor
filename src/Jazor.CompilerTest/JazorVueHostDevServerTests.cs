@@ -1,9 +1,16 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
+using System.Net.WebSockets;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Jazor.Emit;
+using Jazor.VueContracts.Protocol;
 using Jazor.VueHost.DevServer;
 
 namespace Jazor.CompilerTest;
@@ -135,6 +142,214 @@ public sealed class JazorVueHostDevServerTests
         Assert.AreEqual(2, options.ProxyRules.Count);
         Assert.AreEqual("http://localhost:5000", options.ProxyRules["/api"].Target);
         Assert.AreEqual("https://example.com/base", options.ProxyRules["/auth"].Target);
+    }
+
+    [TestMethod]
+    public void DevServerOptionsParser_Parse_LoadsServerAndProxyRulesFromJazorConfig()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            File.WriteAllText(
+                Path.Combine(rootDirectory, "jazor.config.json"),
+                """
+                {
+                  "server": {
+                    "port": 6123,
+                    "host": "127.0.0.1",
+                    "open": true,
+                    "hmr": false
+                  },
+                  "proxy": {
+                    "/api": {
+                      "target": "https://backend.example/base",
+                      "secure": true,
+                      "websocket": false,
+                      "rewritePath": "/gateway"
+                    }
+                  }
+                }
+                """);
+
+            var options = DevServerOptionsParser.Parse(
+            [
+                $"--dev-root={rootDirectory}"
+            ]);
+
+            Assert.AreEqual(Path.GetFullPath(rootDirectory), options.RootDirectory);
+            Assert.AreEqual(6123, options.Port);
+            Assert.AreEqual("127.0.0.1", options.Host);
+            Assert.IsTrue(options.OpenBrowser);
+            Assert.IsFalse(options.HmrEnabled);
+            Assert.AreEqual(1, options.ProxyRules.Count);
+            Assert.AreEqual("https://backend.example/base", options.ProxyRules["/api"].Target);
+            Assert.IsTrue(options.ProxyRules["/api"].Secure);
+            Assert.IsFalse(options.ProxyRules["/api"].WebSocket);
+            Assert.AreEqual("/gateway", options.ProxyRules["/api"].RewritePath);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void DevServerOptionsParser_Parse_CommandLineOverridesJazorConfig()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            File.WriteAllText(
+                Path.Combine(rootDirectory, "jazor.config.json"),
+                """
+                {
+                  "server": {
+                    "port": 6123,
+                    "host": "127.0.0.1",
+                    "open": false,
+                    "hmr": true
+                  },
+                  "proxy": {
+                    "/api": {
+                      "target": "https://backend.example/base",
+                      "websocket": false
+                    }
+                  }
+                }
+                """);
+
+            var options = DevServerOptionsParser.Parse(
+            [
+                $"--dev-root={rootDirectory}",
+                "--dev-port=7001",
+                "--dev-host=0.0.0.0",
+                "--open-browser",
+                "--no-hmr",
+                "--dev-frontend=stub",
+                "--dev-proxy=/api=http://localhost:5000"
+            ]);
+
+            Assert.AreEqual(7001, options.Port);
+            Assert.AreEqual("0.0.0.0", options.Host);
+            Assert.IsTrue(options.OpenBrowser);
+            Assert.IsFalse(options.HmrEnabled);
+            Assert.AreEqual("stub", options.FrontendCompiler);
+            Assert.AreEqual(1, options.ProxyRules.Count);
+            Assert.AreEqual("http://localhost:5000", options.ProxyRules["/api"].Target);
+            Assert.IsTrue(options.ProxyRules["/api"].WebSocket);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void DevServerFileWatchFilter_ShouldObserve_SupportedSourceFileUnderRoot()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var filePath = Path.Combine(rootDirectory, "Features", "Counter.jazor");
+
+            Assert.IsTrue(DevServerFileWatchFilter.ShouldObserve(rootDirectory, filePath));
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void DevServerFileWatchFilter_ShouldObserve_JsonFileUnderRoot()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var filePath = Path.Combine(rootDirectory, "jazor.config.json");
+
+            Assert.IsTrue(DevServerFileWatchFilter.ShouldObserve(rootDirectory, filePath));
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void DevServerFileWatchFilter_ShouldObserve_JazorCodeBehindFileUnderRoot()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(rootDirectory, "Features", "Counter.jazor");
+            Directory.CreateDirectory(Path.GetDirectoryName(documentPath)!);
+            File.WriteAllText(documentPath, "<div />");
+
+            var filePath = Path.Combine(rootDirectory, "Features", "Counter.jazor.cs");
+
+            Assert.IsTrue(DevServerFileWatchFilter.ShouldObserve(rootDirectory, filePath));
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void DevServerFileWatchFilter_ShouldIgnore_UnrelatedCSharpFileUnderRoot()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var filePath = Path.Combine(rootDirectory, "Features", "Helpers.cs");
+
+            Assert.IsFalse(DevServerFileWatchFilter.ShouldObserve(rootDirectory, filePath));
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void DevServerFileWatchFilter_ShouldIgnore_JazorCodeBehindUnderIgnoredDirectory()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(rootDirectory, "obj", "Generated", "Counter.jazor");
+            Directory.CreateDirectory(Path.GetDirectoryName(documentPath)!);
+            File.WriteAllText(documentPath, "<div />");
+
+            var filePath = Path.Combine(rootDirectory, "obj", "Generated", "Counter.jazor.cs");
+
+            Assert.IsFalse(DevServerFileWatchFilter.ShouldObserve(rootDirectory, filePath));
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void DevServerFileWatchFilter_ShouldIgnore_BuildAndPackageDirectoriesAndUnsupportedExtensions()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var objPath = Path.Combine(rootDirectory, "obj", "Debug", "generated.jazor");
+            var packagePath = Path.Combine(rootDirectory, "node_modules", "vue", "dist", "vue.js");
+            var binaryPath = Path.Combine(rootDirectory, "artifacts", "bundle.dll");
+
+            Assert.IsFalse(DevServerFileWatchFilter.ShouldObserve(rootDirectory, objPath));
+            Assert.IsFalse(DevServerFileWatchFilter.ShouldObserve(rootDirectory, packagePath));
+            Assert.IsFalse(DevServerFileWatchFilter.ShouldObserve(rootDirectory, binaryPath));
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
     }
 
     [TestMethod]
@@ -273,6 +488,16 @@ public sealed class JazorVueHostDevServerTests
         StringAssert.Contains(script, "createHotContext");
         StringAssert.Contains(script, "link[rel=\"stylesheet\"][href]");
         StringAssert.Contains(script, "inlineStyles");
+        StringAssert.Contains(script, "scheduleReconnect");
+        StringAssert.Contains(script, "setTimeout(() =>");
+        StringAssert.Contains(script, "connect();");
+        StringAssert.Contains(script, "type: \"ready\"");
+        StringAssert.Contains(script, "type: \"heartbeat\"");
+        StringAssert.Contains(script, "startHeartbeat()");
+        StringAssert.Contains(script, "stopHeartbeat();");
+        StringAssert.Contains(script, "showErrorOverlay");
+        StringAssert.Contains(script, "__jazor-error-overlay");
+        StringAssert.Contains(script, "payload?.type === \"error\"");
     }
 
     [TestMethod]
@@ -318,6 +543,21 @@ public sealed class JazorVueHostDevServerTests
 
         StringAssert.Contains(json, "\"type\":\"full-reload\"");
         StringAssert.Contains(json, "\"reason\":\"index-html-change\"");
+    }
+
+    [TestMethod]
+    public void DevServerNotificationEnvelope_Serialize_ErrorIncludesMessage()
+    {
+        var payload = new DevServerNotificationEnvelope
+        {
+            Type = "error",
+            Message = "Vue SFC compilation is not available because the frontend compiler is unavailable."
+        };
+
+        var json = JsonSerializer.Serialize(payload);
+
+        StringAssert.Contains(json, "\"type\":\"error\"");
+        StringAssert.Contains(json, "\"message\":\"Vue SFC compilation is not available because the frontend compiler is unavailable.\"");
     }
 
     [TestMethod]
@@ -448,6 +688,47 @@ public sealed class JazorVueHostDevServerTests
         CollectionAssert.AreEqual(
             new[] { Path.GetFullPath(firstPath), Path.GetFullPath(secondPath) },
             changes.ToArray());
+    }
+
+    [TestMethod]
+    public void DevServerFileSnapshotPoller_GetChangedPaths_DetectsCreateModifyDeleteAndIgnoresFilteredFiles()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var existingPath = Path.Combine(rootDirectory, "App.vue");
+            var deletedPath = Path.Combine(rootDirectory, "Old.ts");
+            var ignoredPath = Path.Combine(rootDirectory, "node_modules", "pkg", "index.js");
+            Directory.CreateDirectory(Path.GetDirectoryName(ignoredPath)!);
+            File.WriteAllText(existingPath, "<template><div>old</div></template>");
+            File.WriteAllText(deletedPath, "export const oldValue = 1;");
+            File.WriteAllText(ignoredPath, "export const ignored = true;");
+
+            var previousSnapshot = DevServerFileSnapshotPoller.CaptureSnapshot(rootDirectory);
+
+            File.WriteAllText(existingPath, "<template><div>new</div></template>");
+            var createdPath = Path.Combine(rootDirectory, "site.css");
+            File.WriteAllText(createdPath, "body { color: red; }");
+            File.Delete(deletedPath);
+            File.WriteAllText(ignoredPath, "export const ignored = false;");
+
+            var currentSnapshot = DevServerFileSnapshotPoller.CaptureSnapshot(rootDirectory);
+            var changedPaths = DevServerFileSnapshotPoller.GetChangedPaths(previousSnapshot, currentSnapshot);
+
+            CollectionAssert.AreEquivalent(
+                new[]
+                {
+                    Path.GetFullPath(existingPath),
+                    Path.GetFullPath(createdPath),
+                    Path.GetFullPath(deletedPath)
+                },
+                changedPaths.ToArray());
+            Assert.IsFalse(changedPaths.Contains(Path.GetFullPath(ignoredPath), StringComparer.OrdinalIgnoreCase));
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
     }
 
     [TestMethod]
@@ -617,6 +898,1523 @@ public sealed class JazorVueHostDevServerTests
     }
 
     [TestMethod]
+    public async Task DevHttpServer_HmrWebSocket_WhenCssChanges_BroadcastsStyleUpdate()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body></body></html>");
+            var stylePath = Path.Combine(rootDirectory, "site.css");
+            await File.WriteAllTextAsync(stylePath, "body { color: red; }");
+
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = true
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                new FakeFrontendModuleCompiler(),
+                new CompilationCache(),
+                new DependencyGraph(new ModuleResolver(rootDirectory)));
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                new ModuleResolver(rootDirectory),
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+            Assert.IsNotNull(server.ListeningUri);
+
+            using var socket = new ClientWebSocket();
+            await socket.ConnectAsync(ToWebSocketUri(server.ListeningUri!, "/@jazor/hmr"), CancellationToken.None);
+
+            var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
+
+            await File.WriteAllTextAsync(stylePath, "body { color: blue; }");
+
+            var updateMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("style-update", updateMessage.GetProperty("type").GetString());
+            CollectionAssert.AreEqual(
+                new[] { "/site.css" },
+                updateMessage.GetProperty("paths").EnumerateArray().Select(static item => item.GetString()).ToArray());
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_HmrWebSocket_WhenCssChanges_DoesNotBroadcastDuplicateUpdateFromPoller()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body></body></html>");
+            var stylePath = Path.Combine(rootDirectory, "site.css");
+            await File.WriteAllTextAsync(stylePath, "body { color: red; }");
+
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = true
+            };
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                new FakeFrontendModuleCompiler(),
+                new CompilationCache(),
+                new DependencyGraph(moduleResolver),
+                moduleResolver);
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                moduleResolver,
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+            Assert.IsNotNull(server.ListeningUri);
+
+            using var socket = new ClientWebSocket();
+            await socket.ConnectAsync(ToWebSocketUri(server.ListeningUri!, "/@jazor/hmr"), CancellationToken.None);
+
+            var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
+
+            await File.WriteAllTextAsync(stylePath, "body { color: blue; }");
+
+            var updateMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("style-update", updateMessage.GetProperty("type").GetString());
+            CollectionAssert.AreEqual(
+                new[] { "/site.css" },
+                updateMessage.GetProperty("paths").EnumerateArray().Select(static item => item.GetString()).ToArray());
+
+            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_HmrWebSocket_WhenClientSendsReadyAndHeartbeat_ReportsClientMetadataAndKeepsConnectionOpen()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body></body></html>");
+            var stylePath = Path.Combine(rootDirectory, "site.css");
+            await File.WriteAllTextAsync(stylePath, "body { color: red; }");
+
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = true
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                new FakeFrontendModuleCompiler(),
+                new CompilationCache(),
+                new DependencyGraph(new ModuleResolver(rootDirectory)));
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                new ModuleResolver(rootDirectory),
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+            Assert.IsNotNull(server.ListeningUri);
+
+            using var socket = new ClientWebSocket();
+            await socket.ConnectAsync(ToWebSocketUri(server.ListeningUri!, "/@jazor/hmr"), CancellationToken.None);
+
+            var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
+            Assert.AreEqual(1, connectedMessage.GetProperty("connectedClientCount").GetInt32());
+            var clientId = connectedMessage.GetProperty("clientId").GetString();
+            Assert.IsFalse(string.IsNullOrWhiteSpace(clientId));
+
+            await SendWebSocketJsonAsync(socket, """{"type":"ready"}""");
+            await SendWebSocketJsonAsync(socket, """{"type":"heartbeat"}""");
+            await File.WriteAllTextAsync(stylePath, "body { color: blue; }");
+
+            var updateMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("style-update", updateMessage.GetProperty("type").GetString());
+            CollectionAssert.AreEqual(
+                new[] { "/site.css" },
+                updateMessage.GetProperty("paths").EnumerateArray().Select(static item => item.GetString()).ToArray());
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_HmrWebSocket_WhenDiskSyncedWorkspaceChangePrecedesWatcher_BroadcastsOnce()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body></body></html>");
+            var documentPath = Path.Combine(rootDirectory, "Counter.vue");
+            await File.WriteAllTextAsync(documentPath, "<template><div>Counter</div></template>");
+
+            var frontendCompiler = new FakeFrontendModuleCompiler();
+            frontendCompiler.SetSfcResult(
+                documentPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter' };",
+                    SupportsHmr = true
+                });
+
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = true
+            };
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                new DependencyGraph(moduleResolver),
+                moduleResolver);
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                moduleResolver,
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+            Assert.IsNotNull(server.ListeningUri);
+
+            using (var httpClient = new HttpClient { BaseAddress = server.ListeningUri })
+            {
+                var initialModule = await httpClient.GetStringAsync("/Counter.vue");
+                Assert.AreEqual("export default { name: 'Counter' };", initialModule);
+            }
+
+            using var socket = new ClientWebSocket();
+            await socket.ConnectAsync(ToWebSocketUri(server.ListeningUri!, "/@jazor/hmr"), CancellationToken.None);
+
+            var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
+
+            var updatedText = "<template><div>Counter updated</div></template>";
+            frontendCompiler.SetSfcResult(
+                documentPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'CounterUpdated' };",
+                    SupportsHmr = true
+                });
+            await File.WriteAllTextAsync(documentPath, updatedText);
+            await server.OnWorkspaceDocumentChangedAsync(
+                new DocumentSnapshot(documentPath, DocumentKind.Vue, updatedText, version: "2"),
+                CancellationToken.None);
+
+            var updateMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("update", updateMessage.GetProperty("type").GetString());
+            var updates = updateMessage.GetProperty("updates").EnumerateArray().ToArray();
+            Assert.AreEqual(1, updates.Length);
+            Assert.AreEqual("js-update", updates[0].GetProperty("type").GetString());
+            Assert.AreEqual("/Counter.vue", updates[0].GetProperty("path").GetString());
+
+            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_HmrWebSocket_WhenUnsavedWorkspaceChangeOccurs_BroadcastsImmediatelyAndSuppressesMatchingWatcherSave()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body></body></html>");
+            var documentPath = Path.Combine(rootDirectory, "Counter.vue");
+            await File.WriteAllTextAsync(documentPath, "<template><div>Counter</div></template>");
+
+            var frontendCompiler = new FakeFrontendModuleCompiler();
+            frontendCompiler.SetSfcResult(
+                documentPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter' };",
+                    SupportsHmr = true
+                });
+
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = true
+            };
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                new DependencyGraph(moduleResolver),
+                moduleResolver);
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                moduleResolver,
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+            Assert.IsNotNull(server.ListeningUri);
+
+            using (var httpClient = new HttpClient { BaseAddress = server.ListeningUri })
+            {
+                _ = await httpClient.GetStringAsync("/Counter.vue");
+            }
+
+            using var socket = new ClientWebSocket();
+            await socket.ConnectAsync(ToWebSocketUri(server.ListeningUri!, "/@jazor/hmr"), CancellationToken.None);
+
+            var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
+
+            var unsavedText = "<template><div>Unsaved edit</div></template>";
+            frontendCompiler.SetSfcResult(
+                documentPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'CounterUnsaved' };",
+                    SupportsHmr = true
+                });
+            await server.OnWorkspaceDocumentChangedAsync(
+                new DocumentSnapshot(documentPath, DocumentKind.Vue, unsavedText, version: "2"),
+                CancellationToken.None);
+
+            var firstUpdateMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("update", firstUpdateMessage.GetProperty("type").GetString());
+            var firstUpdates = firstUpdateMessage.GetProperty("updates").EnumerateArray().ToArray();
+            Assert.AreEqual(1, firstUpdates.Length);
+            Assert.AreEqual("/Counter.vue", firstUpdates[0].GetProperty("path").GetString());
+            Assert.AreEqual(2, frontendCompiler.SfcCompileCount);
+            Assert.AreEqual(unsavedText, frontendCompiler.LastSfcText);
+
+            await File.WriteAllTextAsync(documentPath, unsavedText);
+            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_HmrWebSocket_WhenDiskSyncedJazorCodeBehindWorkspaceChangePrecedesWatcher_BroadcastsOnce()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body></body></html>");
+            var documentPath = Path.Combine(rootDirectory, "Counter.jazor");
+            var codeBehindPath = Path.Combine(rootDirectory, "Counter.jazor.cs");
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <button>@count</button>
+                </template>
+                """);
+            await File.WriteAllTextAsync(
+                codeBehindPath,
+                """
+                public partial class Counter
+                {
+                    [State] private int count = 1;
+                }
+                """);
+
+            var frontendCompiler = new FakeFrontendModuleCompiler();
+            frontendCompiler.SetSfcResult(
+                documentPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter', render() { return 1; } };",
+                    SupportsHmr = true
+                });
+
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = true
+            };
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                new DependencyGraph(moduleResolver),
+                moduleResolver);
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                moduleResolver,
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+            Assert.IsNotNull(server.ListeningUri);
+
+            using (var httpClient = new HttpClient { BaseAddress = server.ListeningUri })
+            {
+                var initialModule = await httpClient.GetStringAsync("/Counter.jazor");
+                Assert.AreEqual("export default { name: 'Counter', render() { return 1; } };", initialModule);
+            }
+
+            using var socket = new ClientWebSocket();
+            await socket.ConnectAsync(ToWebSocketUri(server.ListeningUri!, "/@jazor/hmr"), CancellationToken.None);
+
+            var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
+
+            var updatedCodeBehindText =
+                """
+                public partial class Counter
+                {
+                    [State] private int count = 2;
+                }
+                """;
+            frontendCompiler.SetSfcResult(
+                documentPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter', render() { return 2; } };",
+                    SupportsHmr = true
+                });
+            await File.WriteAllTextAsync(codeBehindPath, updatedCodeBehindText);
+            await server.OnWorkspaceDocumentChangedAsync(
+                new DocumentSnapshot(codeBehindPath, DocumentKind.CSharp, updatedCodeBehindText, version: "2"),
+                CancellationToken.None);
+
+            var updateMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("update", updateMessage.GetProperty("type").GetString());
+            var updates = updateMessage.GetProperty("updates").EnumerateArray().ToArray();
+            Assert.AreEqual(1, updates.Length);
+            Assert.AreEqual("js-update", updates[0].GetProperty("type").GetString());
+            Assert.AreEqual("/Counter.jazor", updates[0].GetProperty("path").GetString());
+
+            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_HmrWebSocket_WhenUnsavedJazorCodeBehindWorkspaceLogicChangeOccurs_BroadcastsJavaScriptUpdate()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body></body></html>");
+            var documentPath = Path.Combine(rootDirectory, "Counter.jazor");
+            var codeBehindPath = Path.Combine(rootDirectory, "Counter.jazor.cs");
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <button>@count</button>
+                </template>
+                """);
+            await File.WriteAllTextAsync(
+                codeBehindPath,
+                """
+                public partial class Counter
+                {
+                    [State] private int count = 1;
+                }
+                """);
+
+            var frontendCompiler = new FakeFrontendModuleCompiler();
+            frontendCompiler.SetSfcResult(
+                documentPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter', render() { return 1; } };",
+                    SupportsHmr = true
+                });
+
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = true
+            };
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                new DependencyGraph(moduleResolver),
+                moduleResolver);
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                moduleResolver,
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+            Assert.IsNotNull(server.ListeningUri);
+
+            using (var httpClient = new HttpClient { BaseAddress = server.ListeningUri })
+            {
+                _ = await httpClient.GetStringAsync("/Counter.jazor");
+            }
+
+            using var socket = new ClientWebSocket();
+            await socket.ConnectAsync(ToWebSocketUri(server.ListeningUri!, "/@jazor/hmr"), CancellationToken.None);
+            var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
+
+            var updatedCodeBehindText =
+                """
+                public partial class Counter
+                {
+                    [State] private int count = 2;
+                }
+                """;
+            frontendCompiler.SetSfcResult(
+                documentPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter', render() { return 2; } };",
+                    SupportsHmr = true
+                });
+            await server.OnWorkspaceDocumentChangedAsync(
+                new DocumentSnapshot(codeBehindPath, DocumentKind.CSharp, updatedCodeBehindText, version: "2"),
+                CancellationToken.None);
+
+            var updateMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("update", updateMessage.GetProperty("type").GetString());
+            var updates = updateMessage.GetProperty("updates").EnumerateArray().ToArray();
+            Assert.AreEqual(1, updates.Length);
+            Assert.AreEqual("js-update", updates[0].GetProperty("type").GetString());
+            Assert.AreEqual("/Counter.jazor", updates[0].GetProperty("path").GetString());
+            Assert.AreEqual("/Counter.jazor", updates[0].GetProperty("acceptedPath").GetString());
+            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_HmrWebSocket_WhenUnsavedJazorCodeBehindWorkspaceSignatureChangeOccurs_BroadcastsFullReload()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body></body></html>");
+            var documentPath = Path.Combine(rootDirectory, "Counter.jazor");
+            var codeBehindPath = Path.Combine(rootDirectory, "Counter.jazor.cs");
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <button>@Increment(1)</button>
+                </template>
+                """);
+            await File.WriteAllTextAsync(
+                codeBehindPath,
+                """
+                public partial class Counter
+                {
+                    public int Increment(int delta)
+                    {
+                        return delta + 1;
+                    }
+                }
+                """);
+
+            var frontendCompiler = new FakeFrontendModuleCompiler();
+            frontendCompiler.SetSfcResult(
+                documentPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter', methods: { increment(delta) { return delta + 1; } } };",
+                    SupportsHmr = true
+                });
+
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = true
+            };
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                new DependencyGraph(moduleResolver),
+                moduleResolver);
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                moduleResolver,
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+            Assert.IsNotNull(server.ListeningUri);
+
+            using (var httpClient = new HttpClient { BaseAddress = server.ListeningUri })
+            {
+                _ = await httpClient.GetStringAsync("/Counter.jazor");
+            }
+
+            using var socket = new ClientWebSocket();
+            await socket.ConnectAsync(ToWebSocketUri(server.ListeningUri!, "/@jazor/hmr"), CancellationToken.None);
+            var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
+
+            var updatedCodeBehindText =
+                """
+                public partial class Counter
+                {
+                    public long Increment(long delta)
+                    {
+                        return delta + 1;
+                    }
+                }
+                """;
+            frontendCompiler.SetSfcResult(
+                documentPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter', methods: { increment(delta) { return Number(delta) + 1; } } };",
+                    SupportsHmr = true
+                });
+            await server.OnWorkspaceDocumentChangedAsync(
+                new DocumentSnapshot(codeBehindPath, DocumentKind.CSharp, updatedCodeBehindText, version: "2"),
+                CancellationToken.None);
+
+            var reloadMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("full-reload", reloadMessage.GetProperty("type").GetString());
+            Assert.AreEqual("Public component descriptor changed.", reloadMessage.GetProperty("reason").GetString());
+            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_HmrWebSocket_WhenUnsavedJazorCodeBehindWorkspaceChangeIsLaterSavedWithSameText_DoesNotBroadcastDuplicateUpdate()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body></body></html>");
+            var documentPath = Path.Combine(rootDirectory, "Counter.jazor");
+            var codeBehindPath = Path.Combine(rootDirectory, "Counter.jazor.cs");
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <button>@count</button>
+                </template>
+                """);
+            await File.WriteAllTextAsync(
+                codeBehindPath,
+                """
+                public partial class Counter
+                {
+                    [State] private int count = 1;
+                }
+                """);
+
+            var frontendCompiler = new FakeFrontendModuleCompiler();
+            frontendCompiler.SetSfcResult(
+                documentPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter', render() { return 1; } };",
+                    SupportsHmr = true
+                });
+
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = true
+            };
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                new DependencyGraph(moduleResolver),
+                moduleResolver);
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                moduleResolver,
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+            Assert.IsNotNull(server.ListeningUri);
+
+            using (var httpClient = new HttpClient { BaseAddress = server.ListeningUri })
+            {
+                _ = await httpClient.GetStringAsync("/Counter.jazor");
+            }
+
+            using var socket = new ClientWebSocket();
+            await socket.ConnectAsync(ToWebSocketUri(server.ListeningUri!, "/@jazor/hmr"), CancellationToken.None);
+            var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
+
+            var updatedCodeBehindText =
+                """
+                public partial class Counter
+                {
+                    [State] private int count = 2;
+                }
+                """;
+            frontendCompiler.SetSfcResult(
+                documentPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter', render() { return 2; } };",
+                    SupportsHmr = true
+                });
+            await server.OnWorkspaceDocumentChangedAsync(
+                new DocumentSnapshot(codeBehindPath, DocumentKind.CSharp, updatedCodeBehindText, version: "2"),
+                CancellationToken.None);
+
+            var updateMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("update", updateMessage.GetProperty("type").GetString());
+
+            await File.WriteAllTextAsync(codeBehindPath, updatedCodeBehindText);
+            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_HmrWebSocket_WhenVueChanges_BroadcastsJavaScriptUpdate()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body></body></html>");
+            var documentPath = Path.Combine(rootDirectory, "Counter.vue");
+            await File.WriteAllTextAsync(documentPath, "<template><div>Counter</div></template>");
+
+            var frontendCompiler = new FakeFrontendModuleCompiler();
+            frontendCompiler.SetSfcResult(
+                documentPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter' };",
+                    SupportsHmr = true
+                });
+
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = true
+            };
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                new DependencyGraph(moduleResolver),
+                moduleResolver);
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                moduleResolver,
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+            Assert.IsNotNull(server.ListeningUri);
+
+            using (var httpClient = new HttpClient { BaseAddress = server.ListeningUri })
+            {
+                var initialModule = await httpClient.GetStringAsync("/Counter.vue");
+                Assert.AreEqual("export default { name: 'Counter' };", initialModule);
+            }
+
+            using var socket = new ClientWebSocket();
+            await socket.ConnectAsync(ToWebSocketUri(server.ListeningUri!, "/@jazor/hmr"), CancellationToken.None);
+
+            var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
+
+            frontendCompiler.SetSfcResult(
+                documentPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'CounterUpdated' };",
+                    SupportsHmr = true
+                });
+            await File.WriteAllTextAsync(documentPath, "<template><div>Counter updated</div></template>");
+
+            var updateMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("update", updateMessage.GetProperty("type").GetString());
+            var updates = updateMessage.GetProperty("updates").EnumerateArray().ToArray();
+            Assert.AreEqual(1, updates.Length);
+            Assert.AreEqual("js-update", updates[0].GetProperty("type").GetString());
+            Assert.AreEqual("/Counter.vue", updates[0].GetProperty("path").GetString());
+            Assert.AreEqual("/Counter.vue", updates[0].GetProperty("acceptedPath").GetString());
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_HmrWebSocket_WhenVueRecompileFails_BroadcastsErrorMessage()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body></body></html>");
+            var documentPath = Path.Combine(rootDirectory, "Counter.vue");
+            await File.WriteAllTextAsync(documentPath, "<template><div>Counter</div></template>");
+
+            var frontendCompiler = new FakeFrontendModuleCompiler
+            {
+                SfcResult = new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter' };",
+                    SupportsHmr = true
+                }
+            };
+
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = true
+            };
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                new DependencyGraph(moduleResolver),
+                moduleResolver);
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                moduleResolver,
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+            Assert.IsNotNull(server.ListeningUri);
+
+            using (var httpClient = new HttpClient { BaseAddress = server.ListeningUri })
+            {
+                var initialModule = await httpClient.GetStringAsync("/Counter.vue");
+                Assert.AreEqual("export default { name: 'Counter' };", initialModule);
+            }
+
+            using var socket = new ClientWebSocket();
+            await socket.ConnectAsync(ToWebSocketUri(server.ListeningUri!, "/@jazor/hmr"), CancellationToken.None);
+
+            var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
+
+            frontendCompiler.SfcResult = null;
+            await File.WriteAllTextAsync(documentPath, "<template><div>Counter broken</div></template>");
+
+            var errorMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("error", errorMessage.GetProperty("type").GetString());
+            StringAssert.Contains(
+                errorMessage.GetProperty("message").GetString()!,
+                "frontend compiler is unavailable");
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_HmrWebSocket_WhenIndexHtmlChanges_BroadcastsFullReload()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var indexHtmlPath = Path.Combine(rootDirectory, "index.html");
+            await File.WriteAllTextAsync(indexHtmlPath, "<html><body>before</body></html>");
+
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = true
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                new FakeFrontendModuleCompiler(),
+                new CompilationCache());
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                new ModuleResolver(rootDirectory),
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+            Assert.IsNotNull(server.ListeningUri);
+
+            using var socket = new ClientWebSocket();
+            await socket.ConnectAsync(ToWebSocketUri(server.ListeningUri!, "/@jazor/hmr"), CancellationToken.None);
+
+            var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
+
+            await File.WriteAllTextAsync(indexHtmlPath, "<html><body>after</body></html>");
+
+            var reloadMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("full-reload", reloadMessage.GetProperty("type").GetString());
+            Assert.AreEqual("index-html-change", reloadMessage.GetProperty("reason").GetString());
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_HmrWebSocket_WhenConfigChanges_BroadcastsFullReload()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body>before</body></html>");
+            var configPath = Path.Combine(rootDirectory, "jazor.config.json");
+            await File.WriteAllTextAsync(configPath, """{"server":{"hmr":true}}""");
+
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = true
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                new FakeFrontendModuleCompiler(),
+                new CompilationCache());
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                new ModuleResolver(rootDirectory),
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+            Assert.IsNotNull(server.ListeningUri);
+
+            using var socket = new ClientWebSocket();
+            await socket.ConnectAsync(ToWebSocketUri(server.ListeningUri!, "/@jazor/hmr"), CancellationToken.None);
+
+            var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
+
+            await File.WriteAllTextAsync(configPath, """{"server":{"hmr":false}}""");
+
+            var reloadMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("full-reload", reloadMessage.GetProperty("type").GetString());
+            Assert.AreEqual("config-change", reloadMessage.GetProperty("reason").GetString());
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_HmrWebSocket_WhenFrontendFileIsDeleted_BroadcastsFullReload()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body></body></html>");
+            var documentPath = Path.Combine(rootDirectory, "Counter.vue");
+            await File.WriteAllTextAsync(documentPath, "<template><div>Counter</div></template>");
+
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = true
+            };
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                new FakeFrontendModuleCompiler(),
+                new CompilationCache(),
+                new DependencyGraph(moduleResolver),
+                moduleResolver);
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                moduleResolver,
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+            Assert.IsNotNull(server.ListeningUri);
+
+            using var socket = new ClientWebSocket();
+            await socket.ConnectAsync(ToWebSocketUri(server.ListeningUri!, "/@jazor/hmr"), CancellationToken.None);
+
+            var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
+
+            File.Delete(documentPath);
+
+            var reloadMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("full-reload", reloadMessage.GetProperty("type").GetString());
+            Assert.AreEqual("missing-file-change", reloadMessage.GetProperty("reason").GetString());
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_HmrWebSocket_WhenFrontendFileIsRenamed_BroadcastsFullReload()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body></body></html>");
+            var documentPath = Path.Combine(rootDirectory, "Counter.vue");
+            var renamedDocumentPath = Path.Combine(rootDirectory, "CounterRenamed.vue");
+            await File.WriteAllTextAsync(documentPath, "<template><div>Counter</div></template>");
+
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = true
+            };
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                new FakeFrontendModuleCompiler(),
+                new CompilationCache(),
+                new DependencyGraph(moduleResolver),
+                moduleResolver);
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                moduleResolver,
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+            Assert.IsNotNull(server.ListeningUri);
+
+            using var socket = new ClientWebSocket();
+            await socket.ConnectAsync(ToWebSocketUri(server.ListeningUri!, "/@jazor/hmr"), CancellationToken.None);
+
+            var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
+
+            File.Move(documentPath, renamedDocumentPath);
+
+            var reloadMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("full-reload", reloadMessage.GetProperty("type").GetString());
+            Assert.AreEqual("missing-file-change", reloadMessage.GetProperty("reason").GetString());
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_HmrWebSocket_WhenCssFileIsCreated_BroadcastsStyleUpdate()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body></body></html>");
+            var stylePath = Path.Combine(rootDirectory, "created.css");
+
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = true
+            };
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                new FakeFrontendModuleCompiler(),
+                new CompilationCache(),
+                new DependencyGraph(moduleResolver),
+                moduleResolver);
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                moduleResolver,
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+            Assert.IsNotNull(server.ListeningUri);
+
+            using var socket = new ClientWebSocket();
+            await socket.ConnectAsync(ToWebSocketUri(server.ListeningUri!, "/@jazor/hmr"), CancellationToken.None);
+
+            var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
+
+            await File.WriteAllTextAsync(stylePath, "body { color: green; }");
+
+            var updateMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("style-update", updateMessage.GetProperty("type").GetString());
+            CollectionAssert.AreEqual(
+                new[] { "/created.css" },
+                updateMessage.GetProperty("paths").EnumerateArray().Select(static item => item.GetString()).ToArray());
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_HmrWebSocket_WhenJazorTemplateChanges_BroadcastsJavaScriptUpdate()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body></body></html>");
+            var documentPath = Path.Combine(rootDirectory, "Counter.jazor");
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <div>Hello</div>
+                </template>
+                """);
+
+            var frontendCompiler = new FakeFrontendModuleCompiler();
+            frontendCompiler.SetSfcResult(
+                documentPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter', render() { return null; } };",
+                    SupportsHmr = true
+                });
+
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = true
+            };
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                new DependencyGraph(moduleResolver),
+                moduleResolver);
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                moduleResolver,
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+            Assert.IsNotNull(server.ListeningUri);
+
+            using (var httpClient = new HttpClient { BaseAddress = server.ListeningUri })
+            {
+                var initialModule = await httpClient.GetStringAsync("/Counter.jazor");
+                Assert.AreEqual("export default { name: 'Counter', render() { return null; } };", initialModule);
+            }
+
+            using var socket = new ClientWebSocket();
+            await socket.ConnectAsync(ToWebSocketUri(server.ListeningUri!, "/@jazor/hmr"), CancellationToken.None);
+
+            var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
+
+            frontendCompiler.SetSfcResult(
+                documentPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter', render() { return 'updated'; } };",
+                    SupportsHmr = true
+                });
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <div>Hello updated</div>
+                </template>
+                """);
+
+            var updateMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("update", updateMessage.GetProperty("type").GetString());
+            var updates = updateMessage.GetProperty("updates").EnumerateArray().ToArray();
+            Assert.AreEqual(1, updates.Length);
+            Assert.AreEqual("js-update", updates[0].GetProperty("type").GetString());
+            Assert.AreEqual("/Counter.jazor", updates[0].GetProperty("path").GetString());
+            Assert.AreEqual("/Counter.jazor", updates[0].GetProperty("acceptedPath").GetString());
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_HmrWebSocket_WhenJazorCodeBehindChanges_BroadcastsJavaScriptUpdate()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body></body></html>");
+            var documentPath = Path.Combine(rootDirectory, "Counter.jazor");
+            var codeBehindPath = Path.Combine(rootDirectory, "Counter.jazor.cs");
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <button>@Count</button>
+                </template>
+
+                @code {
+                    [Prop] public int Count { get; set; }
+                }
+                """);
+            await File.WriteAllTextAsync(
+                codeBehindPath,
+                """
+                public partial class Counter
+                {
+                    [State] private int count = 1;
+                }
+                """);
+
+            var frontendCompiler = new FakeFrontendModuleCompiler();
+            frontendCompiler.SetSfcResult(
+                documentPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter', setup() { return { count: 1 }; } };",
+                    SupportsHmr = true
+                });
+
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = true
+            };
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                new DependencyGraph(moduleResolver),
+                moduleResolver);
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                moduleResolver,
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+            Assert.IsNotNull(server.ListeningUri);
+
+            using (var httpClient = new HttpClient { BaseAddress = server.ListeningUri })
+            {
+                var initialModule = await httpClient.GetStringAsync("/Counter.jazor");
+                Assert.AreEqual("export default { name: 'Counter', setup() { return { count: 1 }; } };", initialModule);
+            }
+
+            using var socket = new ClientWebSocket();
+            await socket.ConnectAsync(ToWebSocketUri(server.ListeningUri!, "/@jazor/hmr"), CancellationToken.None);
+
+            var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
+
+            frontendCompiler.SetSfcResult(
+                documentPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter', setup() { return { count: 2 }; } };",
+                    SupportsHmr = true
+                });
+            await File.WriteAllTextAsync(
+                codeBehindPath,
+                """
+                public partial class Counter
+                {
+                    [State] private int count = 2;
+                }
+                """);
+
+            var updateMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("update", updateMessage.GetProperty("type").GetString());
+            var updates = updateMessage.GetProperty("updates").EnumerateArray().ToArray();
+            Assert.AreEqual(1, updates.Length);
+            Assert.AreEqual("js-update", updates[0].GetProperty("type").GetString());
+            Assert.AreEqual("/Counter.jazor", updates[0].GetProperty("path").GetString());
+            Assert.AreEqual("/Counter.jazor", updates[0].GetProperty("acceptedPath").GetString());
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_HmrWebSocket_WhenJazorCodeBehindMethodSignatureChanges_BroadcastsFullReload()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body></body></html>");
+            var documentPath = Path.Combine(rootDirectory, "Counter.jazor");
+            var codeBehindPath = Path.Combine(rootDirectory, "Counter.jazor.cs");
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <button>@Increment(1)</button>
+                </template>
+
+                @code {
+                    [Prop] public int Count { get; set; }
+                }
+                """);
+            await File.WriteAllTextAsync(
+                codeBehindPath,
+                """
+                public partial class Counter
+                {
+                    public int Increment(int delta)
+                    {
+                        return Count + delta;
+                    }
+                }
+                """);
+
+            var frontendCompiler = new FakeFrontendModuleCompiler();
+            frontendCompiler.SetSfcResult(
+                documentPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter', methods: { increment(delta) { return delta; } } };",
+                    SupportsHmr = true
+                });
+
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = true
+            };
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                new DependencyGraph(moduleResolver),
+                moduleResolver);
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                moduleResolver,
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+            Assert.IsNotNull(server.ListeningUri);
+
+            using (var httpClient = new HttpClient { BaseAddress = server.ListeningUri })
+            {
+                _ = await httpClient.GetStringAsync("/Counter.jazor");
+            }
+
+            using var socket = new ClientWebSocket();
+            await socket.ConnectAsync(ToWebSocketUri(server.ListeningUri!, "/@jazor/hmr"), CancellationToken.None);
+
+            var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
+
+            frontendCompiler.SetSfcResult(
+                documentPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter', methods: { increment(delta) { return Number(delta); } } };",
+                    SupportsHmr = true
+                });
+            await File.WriteAllTextAsync(
+                codeBehindPath,
+                """
+                public partial class Counter
+                {
+                    public int Increment(long delta)
+                    {
+                        return (int)(Count + delta);
+                    }
+                }
+                """);
+
+            var reloadMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("full-reload", reloadMessage.GetProperty("type").GetString());
+            Assert.AreEqual("Public component descriptor changed.", reloadMessage.GetProperty("reason").GetString());
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_HmrWebSocket_WhenTypeScriptChanges_BroadcastsJavaScriptUpdate()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body></body></html>");
+            var documentPath = Path.Combine(rootDirectory, "main.ts");
+            await File.WriteAllTextAsync(documentPath, "export const count: number = 1;");
+
+            var frontendCompiler = new FakeFrontendModuleCompiler();
+            frontendCompiler.SetTypeScriptResult(
+                documentPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export const count = 1;",
+                    Dependencies = []
+                });
+
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = true
+            };
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                new DependencyGraph(moduleResolver),
+                moduleResolver);
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                moduleResolver,
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+            Assert.IsNotNull(server.ListeningUri);
+
+            using (var httpClient = new HttpClient { BaseAddress = server.ListeningUri })
+            {
+                var initialModule = await httpClient.GetStringAsync("/main.ts");
+                Assert.AreEqual("export const count = 1;", initialModule);
+            }
+
+            using var socket = new ClientWebSocket();
+            await socket.ConnectAsync(ToWebSocketUri(server.ListeningUri!, "/@jazor/hmr"), CancellationToken.None);
+
+            var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
+
+            frontendCompiler.SetTypeScriptResult(
+                documentPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export const count = 2;",
+                    Dependencies = []
+                });
+            await File.WriteAllTextAsync(documentPath, "export const count: number = 2;");
+
+            var updateMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("update", updateMessage.GetProperty("type").GetString());
+            var updates = updateMessage.GetProperty("updates").EnumerateArray().ToArray();
+            Assert.AreEqual(1, updates.Length);
+            Assert.AreEqual("js-update", updates[0].GetProperty("type").GetString());
+            Assert.AreEqual("/main.ts", updates[0].GetProperty("path").GetString());
+            Assert.AreEqual("/main.ts", updates[0].GetProperty("acceptedPath").GetString());
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public async Task DevHttpServer_WhenProxyConfigured_ForwardsPostRequestsToUpstream()
     {
         var rootDirectory = CreateTemporaryDirectory();
@@ -691,6 +2489,619 @@ public sealed class JazorVueHostDevServerTests
     }
 
     [TestMethod]
+    public async Task DevHttpServer_WhenProxyRewritePathConfigured_ForwardsRequestToRewrittenPath()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        var requestReceived = new TaskCompletionSource<UpstreamRequestSnapshot>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var upstream = await TestUpstreamServer.StartAsync(
+            async context =>
+            {
+                using var reader = new StreamReader(context.Request.InputStream, context.Request.ContentEncoding);
+                var body = await reader.ReadToEndAsync();
+                requestReceived.TrySetResult(
+                    new UpstreamRequestSnapshot(
+                        context.Request.HttpMethod,
+                        context.Request.Url!.AbsolutePath,
+                        context.Request.Url.Query,
+                        body));
+
+                context.Response.StatusCode = (int)HttpStatusCode.OK;
+                await using var writer = new StreamWriter(context.Response.OutputStream);
+                await writer.WriteAsync("rewritten");
+            });
+
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body>proxy</body></html>");
+
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = false,
+                ProxyRules = new Dictionary<string, ProxyTarget>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["/api"] = new()
+                    {
+                        Target = upstream.BaseAddress + "backend",
+                        RewritePath = "/gateway"
+                    }
+                }
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                new FakeFrontendModuleCompiler(),
+                new CompilationCache());
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                new ModuleResolver(rootDirectory),
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+
+            using var client = new HttpClient { BaseAddress = server.ListeningUri };
+            using var response = await client.GetAsync("/api/todos?page=3");
+            var responseText = await response.Content.ReadAsStringAsync();
+            var proxiedRequest = await requestReceived.Task.WaitAsync(TimeSpan.FromSeconds(2));
+
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            Assert.AreEqual("rewritten", responseText);
+            Assert.AreEqual("GET", proxiedRequest.Method);
+            Assert.AreEqual("/backend/gateway", proxiedRequest.AbsolutePath);
+            Assert.AreEqual("?page=3", proxiedRequest.Query);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_WhenHttpsProxySecureFalse_ForwardsRequestsToSelfSignedUpstream()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        var requestReceived = new TaskCompletionSource<UpstreamRequestSnapshot>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var upstream = await TestHttpsUpstreamServer.StartAsync(
+            async context =>
+            {
+                using var reader = new StreamReader(context.Request.Body);
+                var body = await reader.ReadToEndAsync();
+                requestReceived.TrySetResult(
+                    new UpstreamRequestSnapshot(
+                        context.Request.Method,
+                        context.Request.Path,
+                        context.Request.QueryString.Value ?? string.Empty,
+                        body));
+
+                context.Response.StatusCode = StatusCodes.Status200OK;
+                context.Response.ContentType = "text/plain";
+                await context.Response.WriteAsync("secure-ok");
+            });
+
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body>proxy</body></html>");
+
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = false,
+                ProxyRules = new Dictionary<string, ProxyTarget>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["/api"] = new()
+                    {
+                        Target = upstream.BaseAddress + "backend",
+                        Secure = false
+                    }
+                }
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                new FakeFrontendModuleCompiler(),
+                new CompilationCache());
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                new ModuleResolver(rootDirectory),
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+
+            using var client = new HttpClient { BaseAddress = server.ListeningUri };
+            using var response = await client.PostAsync(
+                "/api/todos?page=9",
+                new StringContent("""{"title":"Secure"}"""));
+            var responseText = await response.Content.ReadAsStringAsync();
+            var proxiedRequest = await requestReceived.Task.WaitAsync(TimeSpan.FromSeconds(2));
+
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            Assert.AreEqual("secure-ok", responseText);
+            Assert.AreEqual("POST", proxiedRequest.Method);
+            Assert.AreEqual("/backend/todos", proxiedRequest.AbsolutePath);
+            Assert.AreEqual("?page=9", proxiedRequest.Query);
+            Assert.AreEqual("""{"title":"Secure"}""", proxiedRequest.Body);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_WhenProxyRuleDoesNotMatch_DoesNotForwardToUpstream()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        var requestReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var upstream = await TestUpstreamServer.StartAsync(
+            context =>
+            {
+                requestReceived.TrySetResult(true);
+                context.Response.StatusCode = (int)HttpStatusCode.OK;
+                context.Response.Close();
+                return Task.CompletedTask;
+            });
+
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body>proxy</body></html>");
+
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = false,
+                ProxyRules = new Dictionary<string, ProxyTarget>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["/api"] = new()
+                    {
+                        Target = upstream.BaseAddress + "backend"
+                    }
+                }
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                new FakeFrontendModuleCompiler(),
+                new CompilationCache());
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                new ModuleResolver(rootDirectory),
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+
+            using var client = new HttpClient { BaseAddress = server.ListeningUri };
+            using var response = await client.GetAsync("/auth/health");
+            var completedTask = await Task.WhenAny(requestReceived.Task, Task.Delay(300));
+
+            Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.AreNotSame(requestReceived.Task, completedTask);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_WhenWebSocketProxyUsesSelfSignedUpstream_ForwardsSubprotocolsAndSelectedProtocol()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        var requestReceived = new TaskCompletionSource<UpstreamWebSocketSubProtocolSnapshot>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var upstream = await TestSecureWebSocketUpstreamServer.StartAsync(
+            async (context, socket) =>
+            {
+                requestReceived.TrySetResult(
+                    new UpstreamWebSocketSubProtocolSnapshot(
+                        context.Request.Method,
+                        context.Request.Path,
+                        context.Request.QueryString.Value ?? string.Empty,
+                        context.WebSockets.WebSocketRequestedProtocols.ToArray(),
+                        socket.SubProtocol));
+
+                var requestText = await ReceiveWebSocketTextAsync(socket, TimeSpan.FromSeconds(5));
+                await socket.SendAsync(
+                    Encoding.UTF8.GetBytes("secure-echo:" + requestText),
+                    WebSocketMessageType.Text,
+                    endOfMessage: true,
+                    CancellationToken.None);
+                await TryCloseWebSocketAsync(socket);
+            },
+            static context => context.WebSockets.WebSocketRequestedProtocols.Contains("chat.v2", StringComparer.Ordinal)
+                ? "chat.v2"
+                : null);
+
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body>proxy</body></html>");
+
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = false,
+                ProxyRules = new Dictionary<string, ProxyTarget>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["/ws"] = new()
+                    {
+                        Target = upstream.BaseAddress + "backend",
+                        WebSocket = true,
+                        Secure = false
+                    }
+                }
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                new FakeFrontendModuleCompiler(),
+                new CompilationCache());
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                new ModuleResolver(rootDirectory),
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+
+            using var socket = new ClientWebSocket();
+            socket.Options.AddSubProtocol("json.v1");
+            socket.Options.AddSubProtocol("chat.v2");
+            await socket.ConnectAsync(
+                ToWebSocketUri(server.ListeningUri!, "/ws/chat?room=42"),
+                CancellationToken.None);
+            await socket.SendAsync(
+                Encoding.UTF8.GetBytes("ping"),
+                WebSocketMessageType.Text,
+                endOfMessage: true,
+                CancellationToken.None);
+
+            var responseText = await ReceiveWebSocketTextAsync(socket, TimeSpan.FromSeconds(5));
+            var proxiedRequest = await requestReceived.Task.WaitAsync(TimeSpan.FromSeconds(2));
+
+            Assert.AreEqual("secure-echo:ping", responseText);
+            Assert.AreEqual("chat.v2", socket.SubProtocol);
+            Assert.AreEqual("GET", proxiedRequest.Method);
+            Assert.AreEqual("/backend/chat", proxiedRequest.AbsolutePath);
+            Assert.AreEqual("?room=42", proxiedRequest.Query);
+            CollectionAssert.AreEqual(
+                new[] { "json.v1", "chat.v2" },
+                proxiedRequest.RequestedProtocols.ToArray());
+            Assert.AreEqual("chat.v2", proxiedRequest.SelectedProtocol);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_WhenWebSocketProxyUsesSelfSignedUpstream_PropagatesUpstreamCloseToClient()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        var releaseUpstream = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var upstream = await TestSecureWebSocketUpstreamServer.StartAsync(
+            async (context, socket) =>
+            {
+                var requestText = await ReceiveWebSocketTextAsync(socket, TimeSpan.FromSeconds(5));
+                await socket.SendAsync(
+                    Encoding.UTF8.GetBytes("secure-echo:" + requestText),
+                    WebSocketMessageType.Text,
+                    endOfMessage: true,
+                    CancellationToken.None);
+                await socket.CloseOutputAsync(
+                    WebSocketCloseStatus.NormalClosure,
+                    "upstream-finished",
+                    CancellationToken.None);
+                await releaseUpstream.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            },
+            static context => context.WebSockets.WebSocketRequestedProtocols.Contains("chat.v2", StringComparer.Ordinal)
+                ? "chat.v2"
+                : null);
+
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body>proxy</body></html>");
+
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = false,
+                ProxyRules = new Dictionary<string, ProxyTarget>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["/ws"] = new()
+                    {
+                        Target = upstream.BaseAddress + "backend",
+                        WebSocket = true,
+                        Secure = false
+                    }
+                }
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                new FakeFrontendModuleCompiler(),
+                new CompilationCache());
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                new ModuleResolver(rootDirectory),
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+
+            using var socket = new ClientWebSocket();
+            socket.Options.AddSubProtocol("chat.v2");
+            await socket.ConnectAsync(
+                ToWebSocketUri(server.ListeningUri!, "/ws/chat?room=42"),
+                CancellationToken.None);
+            await socket.SendAsync(
+                Encoding.UTF8.GetBytes("ping"),
+                WebSocketMessageType.Text,
+                endOfMessage: true,
+                CancellationToken.None);
+
+            var responseText = await ReceiveWebSocketTextAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("secure-echo:ping", responseText);
+            Assert.AreEqual("chat.v2", socket.SubProtocol);
+
+            var closeStatus = await ReceiveWebSocketCloseAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual(WebSocketCloseStatus.NormalClosure, closeStatus);
+            releaseUpstream.TrySetResult();
+        }
+        finally
+        {
+            releaseUpstream.TrySetResult();
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_WhenWebSocketProxyRewritePathConfigured_ForwardsMessagesToRewrittenPath()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        var requestReceived = new TaskCompletionSource<UpstreamWebSocketRequestSnapshot>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var upstream = await TestWebSocketUpstreamServer.StartAsync(
+            async (context, socket) =>
+            {
+                requestReceived.TrySetResult(
+                    new UpstreamWebSocketRequestSnapshot(
+                        context.Request.HttpMethod,
+                        context.Request.Url!.AbsolutePath,
+                        context.Request.Url.Query));
+
+                var requestText = await ReceiveWebSocketTextAsync(socket, TimeSpan.FromSeconds(5));
+                await socket.SendAsync(
+                    Encoding.UTF8.GetBytes("echo:" + requestText),
+                    WebSocketMessageType.Text,
+                    endOfMessage: true,
+                    CancellationToken.None);
+                await TryCloseWebSocketAsync(socket);
+            });
+
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body>proxy</body></html>");
+
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = false,
+                ProxyRules = new Dictionary<string, ProxyTarget>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["/ws"] = new()
+                    {
+                        Target = upstream.BaseAddress + "backend",
+                        WebSocket = true,
+                        RewritePath = "/gateway"
+                    }
+                }
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                new FakeFrontendModuleCompiler(),
+                new CompilationCache());
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                new ModuleResolver(rootDirectory),
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+
+            using var socket = new ClientWebSocket();
+            await socket.ConnectAsync(
+                ToWebSocketUri(server.ListeningUri!, "/ws/chat?room=7"),
+                CancellationToken.None);
+            await socket.SendAsync(
+                Encoding.UTF8.GetBytes("ping"),
+                WebSocketMessageType.Text,
+                endOfMessage: true,
+                CancellationToken.None);
+
+            var responseText = await ReceiveWebSocketTextAsync(socket, TimeSpan.FromSeconds(5));
+            var proxiedRequest = await requestReceived.Task.WaitAsync(TimeSpan.FromSeconds(2));
+
+            Assert.AreEqual("echo:ping", responseText);
+            Assert.AreEqual("GET", proxiedRequest.Method);
+            Assert.AreEqual("/backend/gateway", proxiedRequest.AbsolutePath);
+            Assert.AreEqual("?room=7", proxiedRequest.Query);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_WhenWebSocketProxyClientInitiatesClose_PropagatesCloseToUpstream()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        var upstreamObservedClose = new TaskCompletionSource<WebSocketCloseStatus?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var upstream = await TestWebSocketUpstreamServer.StartAsync(
+            async (context, socket) =>
+            {
+                var requestText = await ReceiveWebSocketTextAsync(socket, TimeSpan.FromSeconds(5));
+                await socket.SendAsync(
+                    Encoding.UTF8.GetBytes("echo:" + requestText),
+                    WebSocketMessageType.Text,
+                    endOfMessage: true,
+                    CancellationToken.None);
+
+                var buffer = new byte[256];
+                var closeFrame = await socket.ReceiveAsync(buffer, CancellationToken.None);
+                if (closeFrame.MessageType == WebSocketMessageType.Close)
+                {
+                    upstreamObservedClose.TrySetResult(socket.CloseStatus);
+                    await socket.CloseOutputAsync(
+                        socket.CloseStatus ?? WebSocketCloseStatus.NormalClosure,
+                        socket.CloseStatusDescription ?? "ack",
+                        CancellationToken.None);
+                }
+            });
+
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body>proxy</body></html>");
+
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = false,
+                ProxyRules = new Dictionary<string, ProxyTarget>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["/ws"] = new()
+                    {
+                        Target = upstream.BaseAddress + "backend",
+                        WebSocket = true
+                    }
+                }
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                new FakeFrontendModuleCompiler(),
+                new CompilationCache());
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                new ModuleResolver(rootDirectory),
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+
+            using var socket = new ClientWebSocket();
+            await socket.ConnectAsync(
+                ToWebSocketUri(server.ListeningUri!, "/ws/chat?room=1"),
+                CancellationToken.None);
+            await socket.SendAsync(
+                Encoding.UTF8.GetBytes("ping"),
+                WebSocketMessageType.Text,
+                endOfMessage: true,
+                CancellationToken.None);
+
+            var responseText = await ReceiveWebSocketTextAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("echo:ping", responseText);
+
+            await socket.CloseOutputAsync(
+                WebSocketCloseStatus.NormalClosure,
+                "client-finished",
+                CancellationToken.None);
+
+            var closeStatus = await ReceiveWebSocketCloseAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual(WebSocketCloseStatus.NormalClosure, closeStatus);
+            Assert.AreEqual(
+                WebSocketCloseStatus.NormalClosure,
+                await upstreamObservedClose.Task.WaitAsync(TimeSpan.FromSeconds(2)));
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_WhenWebSocketProxyDisabled_DoesNotForwardUpgradeRequest()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        var requestReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var upstream = await TestWebSocketUpstreamServer.StartAsync(
+            (context, socket) =>
+            {
+                requestReceived.TrySetResult(true);
+                return Task.CompletedTask;
+            });
+
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body>proxy</body></html>");
+
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = false,
+                ProxyRules = new Dictionary<string, ProxyTarget>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["/ws"] = new()
+                    {
+                        Target = upstream.BaseAddress + "backend",
+                        WebSocket = false
+                    }
+                }
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                new FakeFrontendModuleCompiler(),
+                new CompilationCache());
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                new ModuleResolver(rootDirectory),
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+
+            using var socket = new ClientWebSocket();
+            try
+            {
+                await socket.ConnectAsync(
+                    ToWebSocketUri(server.ListeningUri!, "/ws/chat"),
+                    CancellationToken.None);
+                Assert.Fail("Expected websocket upgrade to fail when proxy websocket forwarding is disabled.");
+            }
+            catch (WebSocketException)
+            {
+            }
+
+            var completedTask = await Task.WhenAny(requestReceived.Task, Task.Delay(300));
+
+            Assert.AreNotSame(requestReceived.Task, completedTask);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public async Task DevHttpServer_PrefersBuiltInDevClientOverProxyRule()
     {
         var rootDirectory = CreateTemporaryDirectory();
@@ -749,6 +3160,85 @@ public sealed class JazorVueHostDevServerTests
     }
 
     [TestMethod]
+    public async Task DevHttpServer_WhenWebSocketProxyConfigured_ForwardsMessagesToUpstream()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        var requestReceived = new TaskCompletionSource<UpstreamWebSocketRequestSnapshot>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var upstream = await TestWebSocketUpstreamServer.StartAsync(
+            async (context, socket) =>
+            {
+                requestReceived.TrySetResult(
+                    new UpstreamWebSocketRequestSnapshot(
+                        context.Request.HttpMethod,
+                        context.Request.Url!.AbsolutePath,
+                        context.Request.Url.Query));
+
+                var requestText = await ReceiveWebSocketTextAsync(socket, TimeSpan.FromSeconds(5));
+                await socket.SendAsync(
+                    Encoding.UTF8.GetBytes("echo:" + requestText),
+                    WebSocketMessageType.Text,
+                    endOfMessage: true,
+                    CancellationToken.None);
+                await TryCloseWebSocketAsync(socket);
+            });
+
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body>proxy</body></html>");
+
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = false,
+                ProxyRules = new Dictionary<string, ProxyTarget>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["/ws"] = new()
+                    {
+                        Target = upstream.BaseAddress + "backend",
+                        WebSocket = true
+                    }
+                }
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                new FakeFrontendModuleCompiler(),
+                new CompilationCache());
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                new ModuleResolver(rootDirectory),
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+
+            using var socket = new ClientWebSocket();
+            await socket.ConnectAsync(
+                ToWebSocketUri(server.ListeningUri!, "/ws/chat?room=1"),
+                CancellationToken.None);
+            await socket.SendAsync(
+                Encoding.UTF8.GetBytes("ping"),
+                WebSocketMessageType.Text,
+                endOfMessage: true,
+                CancellationToken.None);
+
+            var responseText = await ReceiveWebSocketTextAsync(socket, TimeSpan.FromSeconds(5));
+            var proxiedRequest = await requestReceived.Task.WaitAsync(TimeSpan.FromSeconds(2));
+
+            Assert.AreEqual("echo:ping", responseText);
+            Assert.AreEqual("GET", proxiedRequest.Method);
+            Assert.AreEqual("/backend/chat", proxiedRequest.AbsolutePath);
+            Assert.AreEqual("?room=1", proxiedRequest.Query);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public async Task OnDemandCompiler_CompileAsync_JazorFile_UsesFrontendSfcCompiler()
     {
         var rootDirectory = CreateTemporaryDirectory();
@@ -789,12 +3279,519 @@ public sealed class JazorVueHostDevServerTests
             Assert.IsFalse(string.IsNullOrWhiteSpace(result.HotReloadManifestEntry.TemplateHash));
             Assert.IsFalse(string.IsNullOrWhiteSpace(result.HotReloadManifestEntry.LogicHash));
             Assert.IsFalse(string.IsNullOrWhiteSpace(result.HotReloadManifestEntry.ContentHash));
-            Assert.AreEqual(RazorVueHmrBoundaryKind.FullReloadRequired, result.HotReloadManifestEntry.HmrBoundaryKind);
+            Assert.AreEqual(RazorVueHmrBoundaryKind.TemplateOnly, result.HotReloadManifestEntry.HmrBoundaryKind);
             Assert.AreEqual("/Counter.jazor", result.HotReloadManifestEntry.ComponentId);
             Assert.AreEqual("/Counter.jazor", result.HotReloadManifestEntry.RelativeModulePath);
+            Assert.AreEqual(result.ModuleSignature, result.HotReloadManifestEntry.ContentHash);
             Assert.AreEqual(1, frontendCompiler.SfcCompileCount);
             Assert.AreEqual(documentPath, frontendCompiler.LastDocumentPath);
             StringAssert.Contains(frontendCompiler.LastSfcText!, "<template>");
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task OnDemandCompiler_CompileAsync_JazorFile_UsesSemanticMetadataForMultilineProps()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(rootDirectory, "Counter.jazor");
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <div>@Title</div>
+                </template>
+
+                @code {
+                    [Prop]
+                    public string? Title
+                    {
+                        get;
+                        set;
+                    } = string.Empty;
+
+                    [Prop] public IReadOnlyList<int> Items { get; set; } = [];
+                }
+                """);
+
+            var frontendCompiler = new FakeFrontendModuleCompiler
+            {
+                SfcResult = new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter' };",
+                    SupportsHmr = true
+                }
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                moduleResolver: new ModuleResolver(rootDirectory));
+
+            var first = await compiler.CompileAsync(documentPath, CancellationToken.None);
+
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <div>@Title</div>
+                </template>
+
+                @code {
+                    [Prop] public string? Title { get; set; } = "";
+
+                    [Prop]
+                    public IReadOnlyList<int> Items { get; set; } = Array.Empty<int>();
+                }
+                """);
+
+            var second = await compiler.RecompileAsync(documentPath, CancellationToken.None);
+
+            Assert.IsNotNull(first.HotReloadManifestEntry);
+            Assert.IsNotNull(second.HotReloadManifestEntry);
+            Assert.AreEqual(RazorVueHmrBoundaryKind.TemplateOnly, first.HotReloadManifestEntry.HmrBoundaryKind);
+            Assert.AreEqual(RazorVueHmrBoundaryKind.TemplateOnly, second.HotReloadManifestEntry.HmrBoundaryKind);
+            Assert.AreEqual(first.HotReloadManifestEntry.DescriptorHash, second.HotReloadManifestEntry.DescriptorHash);
+            Assert.AreEqual(first.HotReloadManifestEntry.TemplateHash, second.HotReloadManifestEntry.TemplateHash);
+            Assert.AreEqual(first.HotReloadManifestEntry.LogicHash, second.HotReloadManifestEntry.LogicHash);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task OnDemandCompiler_CompileAsync_JazorFile_StateInitializerChange_ChangesLogicHashOnly()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(rootDirectory, "Counter.jazor");
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <button>@count</button>
+                </template>
+
+                @code {
+                    [Prop] public int Count { get; set; }
+                    [State] private int count = 1;
+                }
+                """);
+
+            var frontendCompiler = new FakeFrontendModuleCompiler
+            {
+                SfcResult = new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter' };",
+                    SupportsHmr = true
+                }
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                moduleResolver: new ModuleResolver(rootDirectory));
+
+            var first = await compiler.CompileAsync(documentPath, CancellationToken.None);
+
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <button>@count</button>
+                </template>
+
+                @code {
+                    [Prop] public int Count { get; set; }
+                    [State] private int count = Count + 1;
+                }
+                """);
+
+            var second = await compiler.RecompileAsync(documentPath, CancellationToken.None);
+
+            Assert.IsNotNull(first.HotReloadManifestEntry);
+            Assert.IsNotNull(second.HotReloadManifestEntry);
+            Assert.AreEqual(first.HotReloadManifestEntry.DescriptorHash, second.HotReloadManifestEntry.DescriptorHash);
+            Assert.AreEqual(first.HotReloadManifestEntry.TemplateHash, second.HotReloadManifestEntry.TemplateHash);
+            Assert.AreNotEqual(first.HotReloadManifestEntry.LogicHash, second.HotReloadManifestEntry.LogicHash);
+            Assert.AreEqual(RazorVueHmrBoundaryKind.LogicSafe, second.HotReloadManifestEntry.HmrBoundaryKind);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task OnDemandCompiler_CompileAsync_JazorFile_BlockComputedBodyChange_ChangesLogicHashOnly()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(rootDirectory, "Counter.jazor");
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <p>@Label</p>
+                </template>
+
+                @code {
+                    [Prop] public int Count { get; set; }
+
+                    [Computed]
+                    public string Label
+                    {
+                        get
+                        {
+                            return $"Count: {Count}";
+                        }
+                    }
+                }
+                """);
+
+            var frontendCompiler = new FakeFrontendModuleCompiler
+            {
+                SfcResult = new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter' };",
+                    SupportsHmr = true
+                }
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                moduleResolver: new ModuleResolver(rootDirectory));
+
+            var first = await compiler.CompileAsync(documentPath, CancellationToken.None);
+
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <p>@Label</p>
+                </template>
+
+                @code {
+                    [Prop] public int Count { get; set; }
+
+                    [Computed]
+                    public string Label
+                    {
+                        get
+                        {
+                            return $"Total: {Count}";
+                        }
+                    }
+                }
+                """);
+
+            var second = await compiler.RecompileAsync(documentPath, CancellationToken.None);
+
+            Assert.IsNotNull(first.HotReloadManifestEntry);
+            Assert.IsNotNull(second.HotReloadManifestEntry);
+            Assert.AreEqual(first.HotReloadManifestEntry.DescriptorHash, second.HotReloadManifestEntry.DescriptorHash);
+            Assert.AreEqual(first.HotReloadManifestEntry.TemplateHash, second.HotReloadManifestEntry.TemplateHash);
+            Assert.AreNotEqual(first.HotReloadManifestEntry.LogicHash, second.HotReloadManifestEntry.LogicHash);
+            Assert.AreEqual(RazorVueHmrBoundaryKind.LogicSafe, second.HotReloadManifestEntry.HmrBoundaryKind);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task OnDemandCompiler_CompileAsync_JazorFile_MethodBodyChange_ChangesLogicHashOnly()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(rootDirectory, "Counter.jazor");
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <button>@Increment(1)</button>
+                </template>
+
+                @code {
+                    [Prop] public int Count { get; set; }
+
+                    public int Increment(int delta)
+                    {
+                        return Count + delta;
+                    }
+                }
+                """);
+
+            var frontendCompiler = new FakeFrontendModuleCompiler
+            {
+                SfcResult = new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter' };",
+                    SupportsHmr = true
+                }
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                moduleResolver: new ModuleResolver(rootDirectory));
+
+            var first = await compiler.CompileAsync(documentPath, CancellationToken.None);
+
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <button>@Increment(1)</button>
+                </template>
+
+                @code {
+                    [Prop] public int Count { get; set; }
+
+                    public int Increment(int delta)
+                    {
+                        return Count + delta + 1;
+                    }
+                }
+                """);
+
+            var second = await compiler.RecompileAsync(documentPath, CancellationToken.None);
+
+            Assert.IsNotNull(first.HotReloadManifestEntry);
+            Assert.IsNotNull(second.HotReloadManifestEntry);
+            Assert.AreEqual(first.HotReloadManifestEntry.DescriptorHash, second.HotReloadManifestEntry.DescriptorHash);
+            Assert.AreEqual(first.HotReloadManifestEntry.TemplateHash, second.HotReloadManifestEntry.TemplateHash);
+            Assert.AreNotEqual(first.HotReloadManifestEntry.LogicHash, second.HotReloadManifestEntry.LogicHash);
+            Assert.AreEqual(RazorVueHmrBoundaryKind.LogicSafe, second.HotReloadManifestEntry.HmrBoundaryKind);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task OnDemandCompiler_CompileAsync_JazorFile_MethodSignatureChange_ChangesDescriptorHash()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(rootDirectory, "Counter.jazor");
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <button>@Increment(1)</button>
+                </template>
+
+                @code {
+                    [Prop] public int Count { get; set; }
+
+                    public int Increment(int delta)
+                    {
+                        return Count + delta;
+                    }
+                }
+                """);
+
+            var frontendCompiler = new FakeFrontendModuleCompiler
+            {
+                SfcResult = new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter' };",
+                    SupportsHmr = true
+                }
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                moduleResolver: new ModuleResolver(rootDirectory));
+
+            var first = await compiler.CompileAsync(documentPath, CancellationToken.None);
+
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <button>@Increment(1)</button>
+                </template>
+
+                @code {
+                    [Prop] public int Count { get; set; }
+
+                    public int Increment(long delta)
+                    {
+                        return (int)(Count + delta);
+                    }
+                }
+                """);
+
+            var second = await compiler.RecompileAsync(documentPath, CancellationToken.None);
+
+            Assert.IsNotNull(first.HotReloadManifestEntry);
+            Assert.IsNotNull(second.HotReloadManifestEntry);
+            Assert.AreNotEqual(first.HotReloadManifestEntry.DescriptorHash, second.HotReloadManifestEntry.DescriptorHash);
+            Assert.AreEqual(first.HotReloadManifestEntry.TemplateHash, second.HotReloadManifestEntry.TemplateHash);
+            Assert.AreNotEqual(first.HotReloadManifestEntry.LogicHash, second.HotReloadManifestEntry.LogicHash);
+            Assert.AreEqual(RazorVueHmrBoundaryKind.LogicSafe, second.HotReloadManifestEntry.HmrBoundaryKind);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task OnDemandCompiler_CompileAsync_JazorFile_JazorCodeBehindChange_ChangesLogicHashOnly()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(rootDirectory, "Counter.jazor");
+            var codeBehindPath = Path.Combine(rootDirectory, "Counter.jazor.cs");
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <button>@Count</button>
+                </template>
+
+                @code {
+                    [Prop] public int Count { get; set; }
+                }
+                """);
+            await File.WriteAllTextAsync(
+                codeBehindPath,
+                """
+                public partial class Counter
+                {
+                    [State] private int count = 1;
+                }
+                """);
+
+            var frontendCompiler = new FakeFrontendModuleCompiler
+            {
+                SfcResult = new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter' };",
+                    SupportsHmr = true
+                }
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                moduleResolver: new ModuleResolver(rootDirectory));
+
+            var first = await compiler.CompileAsync(documentPath, CancellationToken.None);
+
+            await File.WriteAllTextAsync(
+                codeBehindPath,
+                """
+                public partial class Counter
+                {
+                    [State] private int count = 2;
+                }
+                """);
+
+            var second = await compiler.RecompileAsync(documentPath, CancellationToken.None);
+
+            Assert.IsNotNull(first.HotReloadManifestEntry);
+            Assert.IsNotNull(second.HotReloadManifestEntry);
+            Assert.AreEqual(first.HotReloadManifestEntry.DescriptorHash, second.HotReloadManifestEntry.DescriptorHash);
+            Assert.AreEqual(first.HotReloadManifestEntry.TemplateHash, second.HotReloadManifestEntry.TemplateHash);
+            Assert.AreNotEqual(first.HotReloadManifestEntry.LogicHash, second.HotReloadManifestEntry.LogicHash);
+            Assert.AreEqual(RazorVueHmrBoundaryKind.LogicSafe, second.HotReloadManifestEntry.HmrBoundaryKind);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task OnDemandCompiler_CompileAsync_JazorFile_CoLocatedCounterCsChange_ChangesLogicHashOnly()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(rootDirectory, "Counter.jazor");
+            var codeBehindPath = Path.Combine(rootDirectory, "Counter.cs");
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <button>@Count</button>
+                </template>
+
+                @code {
+                    [Prop] public int Count { get; set; }
+                }
+                """);
+            await File.WriteAllTextAsync(
+                codeBehindPath,
+                """
+                public partial class Counter
+                {
+                    [Computed]
+                    public int Total => 1;
+                }
+                """);
+
+            var frontendCompiler = new FakeFrontendModuleCompiler
+            {
+                SfcResult = new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter' };",
+                    SupportsHmr = true
+                }
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                moduleResolver: new ModuleResolver(rootDirectory));
+
+            var first = await compiler.CompileAsync(documentPath, CancellationToken.None);
+
+            await File.WriteAllTextAsync(
+                codeBehindPath,
+                """
+                public partial class Counter
+                {
+                    [Computed]
+                    public int Total => 2;
+                }
+                """);
+
+            var second = await compiler.RecompileAsync(documentPath, CancellationToken.None);
+
+            Assert.IsNotNull(first.HotReloadManifestEntry);
+            Assert.IsNotNull(second.HotReloadManifestEntry);
+            Assert.AreEqual(first.HotReloadManifestEntry.DescriptorHash, second.HotReloadManifestEntry.DescriptorHash);
+            Assert.AreEqual(first.HotReloadManifestEntry.TemplateHash, second.HotReloadManifestEntry.TemplateHash);
+            Assert.AreNotEqual(first.HotReloadManifestEntry.LogicHash, second.HotReloadManifestEntry.LogicHash);
+            Assert.AreEqual(RazorVueHmrBoundaryKind.LogicSafe, second.HotReloadManifestEntry.HmrBoundaryKind);
         }
         finally
         {
@@ -866,6 +3863,66 @@ public sealed class JazorVueHostDevServerTests
             _ = await compiler.CompileAsync(documentPath, CancellationToken.None);
 
             Assert.AreEqual(1, frontendCompiler.SfcCompileCount);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task OnDemandCompiler_CompileAsync_JazorStyleOnly_ChangesServedContentButPreservesJsHashes()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(rootDirectory, "Counter.jazor");
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <div>@Count</div>
+                </template>
+
+                @code {
+                    [Prop] public int Count { get; set; }
+                }
+                """);
+
+            var frontendCompiler = new FakeFrontendModuleCompiler();
+            frontendCompiler.SetSfcResult(
+                documentPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter' };",
+                    StyleContent = ".counter { color: red; }",
+                    SupportsHmr = true
+                });
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                moduleResolver: new ModuleResolver(rootDirectory));
+
+            var first = await compiler.CompileAsync(documentPath, CancellationToken.None);
+
+            frontendCompiler.SetSfcResult(
+                documentPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter' };",
+                    StyleContent = ".counter { color: blue; }",
+                    SupportsHmr = true
+                });
+            var second = await compiler.RecompileAsync(documentPath, CancellationToken.None);
+
+            Assert.AreNotEqual(first.Content, second.Content);
+            Assert.AreEqual(first.ModuleSignature, second.ModuleSignature);
+            Assert.IsNotNull(first.HotReloadManifestEntry);
+            Assert.IsNotNull(second.HotReloadManifestEntry);
+            Assert.AreEqual(first.HotReloadManifestEntry.ContentHash, second.HotReloadManifestEntry.ContentHash);
+            Assert.AreEqual(second.ModuleSignature, second.HotReloadManifestEntry.ContentHash);
         }
         finally
         {
@@ -995,6 +4052,79 @@ public sealed class JazorVueHostDevServerTests
 
             Assert.AreEqual(1, frontendCompiler.TypeScriptCompileCount);
             Assert.AreEqual(3, frontendCompiler.SfcCompileCount);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task ChangeProcessor_ProcessChanges_WhenTypeScriptChanges_ReturnsJavaScriptUpdate()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var mainPath = Path.Combine(rootDirectory, "main.ts");
+            var utilPath = Path.Combine(rootDirectory, "util.ts");
+            await File.WriteAllTextAsync(mainPath, "import { count } from './util'; export { count };");
+            await File.WriteAllTextAsync(utilPath, "export const count: number = 1;");
+
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var graph = new DependencyGraph(moduleResolver);
+            var frontendCompiler = new FakeFrontendModuleCompiler();
+            frontendCompiler.SetTypeScriptResult(
+                mainPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "import { count } from './util.ts'; export { count };",
+                    Dependencies = ["./util.ts"]
+                });
+            frontendCompiler.SetTypeScriptResult(
+                utilPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export const count = 1;",
+                    Dependencies = []
+                });
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                graph,
+                moduleResolver);
+
+            _ = await compiler.CompileAsync(mainPath, CancellationToken.None);
+            _ = await compiler.CompileAsync(utilPath, CancellationToken.None);
+
+            Assert.AreEqual(2, frontendCompiler.TypeScriptCompileCount);
+
+            frontendCompiler.SetTypeScriptResult(
+                utilPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export const count = 2;",
+                    Dependencies = []
+                });
+            await File.WriteAllTextAsync(utilPath, "export const count: number = 2;");
+
+            var processor = new ChangeProcessor(compiler, moduleResolver, graph);
+            var result = await processor.ProcessChangesAsync([utilPath], CancellationToken.None);
+
+            Assert.AreEqual(ChangeUpdateKind.JavaScriptUpdate, result.UpdateKind);
+            Assert.IsNull(result.FullReloadReason);
+            CollectionAssert.AreEquivalent(
+                new[] { utilPath, mainPath },
+                result.AffectedPaths.ToArray());
+            Assert.AreEqual(1, result.JavaScriptUpdates.Count);
+            Assert.AreEqual("/util.ts", result.JavaScriptUpdates[0].Path);
+            Assert.AreEqual("/util.ts", result.JavaScriptUpdates[0].AcceptedPath);
+
+            _ = await compiler.CompileAsync(mainPath, CancellationToken.None);
+            _ = await compiler.CompileAsync(utilPath, CancellationToken.None);
+
+            Assert.AreEqual(3, frontendCompiler.TypeScriptCompileCount);
         }
         finally
         {
@@ -1218,7 +4348,852 @@ public sealed class JazorVueHostDevServerTests
     }
 
     [TestMethod]
-    public async Task ChangeProcessor_ProcessChanges_WhenJazorTemplateChangesInsideFullReloadBoundary_ReturnsFullReload()
+    public async Task ChangeProcessor_ProcessChanges_WhenJazorMethodSignatureChanges_ReturnsFullReload()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(rootDirectory, "Counter.jazor");
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <button>@Increment(1)</button>
+                </template>
+
+                @code {
+                    [Prop] public int Count { get; set; }
+
+                    public int Increment(int delta)
+                    {
+                        return Count + delta;
+                    }
+                }
+                """);
+
+            var graph = new DependencyGraph(new ModuleResolver(rootDirectory));
+            var frontendCompiler = new FakeFrontendModuleCompiler
+            {
+                SfcResult = new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter', methods: { increment(delta) { return delta; } } };",
+                    SupportsHmr = true
+                }
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                graph,
+                new ModuleResolver(rootDirectory));
+
+            _ = await compiler.CompileAsync(documentPath, CancellationToken.None);
+
+            frontendCompiler.SfcResult = new FrontendModuleCompilation
+            {
+                JavaScript = "export default { name: 'Counter', methods: { increment(delta) { return Number(delta); } } };",
+                SupportsHmr = true
+            };
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <button>@Increment(1)</button>
+                </template>
+
+                @code {
+                    [Prop] public int Count { get; set; }
+
+                    public int Increment(long delta)
+                    {
+                        return (int)(Count + delta);
+                    }
+                }
+                """);
+
+            var processor = new ChangeProcessor(compiler, new ModuleResolver(rootDirectory), graph);
+            var result = await processor.ProcessChangesAsync([documentPath], CancellationToken.None);
+
+            Assert.AreEqual(ChangeUpdateKind.FullReload, result.UpdateKind);
+            Assert.AreEqual("Public component descriptor changed.", result.FullReloadReason);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task ChangeProcessor_ProcessWorkspaceDocumentChange_WhenJazorLogicChangesInsideLogicSafeBoundary_ReturnsJavaScriptUpdate()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(rootDirectory, "Counter.jazor");
+            var originalText =
+                """
+                <template>
+                  <button>@Count</button>
+                </template>
+
+                @code {
+                    [Prop] public int Count { get; set; }
+
+                    public int Increment()
+                    {
+                        return Count + 1;
+                    }
+                }
+                """;
+            await File.WriteAllTextAsync(documentPath, originalText);
+
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var graph = new DependencyGraph(moduleResolver);
+            var frontendCompiler = new FakeFrontendModuleCompiler
+            {
+                SfcResult = new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter', methods: { increment() { return 1; } } };",
+                    SupportsHmr = true
+                }
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                graph,
+                moduleResolver);
+
+            _ = await compiler.CompileAsync(documentPath, CancellationToken.None);
+
+            frontendCompiler.SfcResult = new FrontendModuleCompilation
+            {
+                JavaScript = "export default { name: 'Counter', methods: { increment() { return 2; } } };",
+                SupportsHmr = true
+            };
+            var updatedText =
+                """
+                <template>
+                  <button>@Count</button>
+                </template>
+
+                @code {
+                    [Prop] public int Count { get; set; }
+
+                    public int Increment()
+                    {
+                        return Count + 2;
+                    }
+                }
+                """;
+
+            var processor = new ChangeProcessor(compiler, moduleResolver, graph);
+            var result = await processor.ProcessWorkspaceDocumentChangeAsync(
+                new DocumentSnapshot(documentPath, DocumentKind.Jazor, updatedText, version: "2"),
+                CancellationToken.None);
+
+            Assert.AreEqual(ChangeUpdateKind.JavaScriptUpdate, result.UpdateKind);
+            Assert.IsNull(result.FullReloadReason);
+            Assert.AreEqual(1, result.JavaScriptUpdates.Count);
+            Assert.AreEqual("/Counter.jazor", result.JavaScriptUpdates[0].Path);
+            Assert.AreEqual(2, frontendCompiler.SfcCompileCount);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task ChangeProcessor_ProcessWorkspaceDocumentChange_WhenJazorDescriptorChanges_ReturnsFullReload()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(rootDirectory, "Counter.jazor");
+            var originalText =
+                """
+                <template>
+                  <div>Hello</div>
+                </template>
+
+                @code {
+                    [Prop] public int Count { get; set; }
+                }
+                """;
+            await File.WriteAllTextAsync(documentPath, originalText);
+
+            var graph = new DependencyGraph(new ModuleResolver(rootDirectory));
+            var frontendCompiler = new FakeFrontendModuleCompiler
+            {
+                SfcResult = new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter', render() { return null; } };",
+                    SupportsHmr = true
+                }
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                graph);
+
+            _ = await compiler.CompileAsync(documentPath, CancellationToken.None);
+
+            frontendCompiler.SfcResult = new FrontendModuleCompilation
+            {
+                JavaScript = "export default { name: 'Counter', render() { return 'updated'; } };",
+                SupportsHmr = true
+            };
+            var updatedText =
+                """
+                <template>
+                  <div>Hello updated</div>
+                </template>
+
+                @code {
+                    [Prop] public int Count { get; set; }
+                    [Prop] public string Title { get; set; } = string.Empty;
+                }
+                """;
+
+            var processor = new ChangeProcessor(compiler, new ModuleResolver(rootDirectory), graph);
+            var result = await processor.ProcessWorkspaceDocumentChangeAsync(
+                new DocumentSnapshot(documentPath, DocumentKind.Jazor, updatedText, version: "2"),
+                CancellationToken.None);
+
+            Assert.AreEqual(ChangeUpdateKind.FullReload, result.UpdateKind);
+            Assert.AreEqual("Public component descriptor changed.", result.FullReloadReason);
+            Assert.AreEqual(2, frontendCompiler.SfcCompileCount);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task ChangeProcessor_ProcessWorkspaceDocumentChange_WhenTypeScriptChanges_UsesWorkspaceTextAndReturnsJavaScriptUpdate()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var utilPath = Path.Combine(rootDirectory, "util.ts");
+            await File.WriteAllTextAsync(utilPath, "export const count: number = 1;");
+
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var graph = new DependencyGraph(moduleResolver);
+            var frontendCompiler = new FakeFrontendModuleCompiler();
+            frontendCompiler.SetTypeScriptResult(
+                utilPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export const count = 1;",
+                    Dependencies = []
+                });
+
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                graph,
+                moduleResolver);
+
+            _ = await compiler.CompileAsync(utilPath, CancellationToken.None);
+
+            var updatedSource = "export const count: number = 2;";
+            frontendCompiler.SetTypeScriptResult(
+                utilPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export const count = 2;",
+                    Dependencies = []
+                });
+
+            var processor = new ChangeProcessor(compiler, moduleResolver, graph);
+            var result = await processor.ProcessWorkspaceDocumentChangeAsync(
+                new DocumentSnapshot(utilPath, DocumentKind.TypeScript, updatedSource, version: "2"),
+                CancellationToken.None);
+
+            Assert.AreEqual(ChangeUpdateKind.JavaScriptUpdate, result.UpdateKind);
+            Assert.IsNull(result.FullReloadReason);
+            Assert.AreEqual(1, result.JavaScriptUpdates.Count);
+            Assert.AreEqual("/util.ts", result.JavaScriptUpdates[0].Path);
+            Assert.AreEqual(updatedSource, frontendCompiler.LastTypeScriptText);
+            Assert.AreEqual(2, frontendCompiler.TypeScriptCompileCount);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task ChangeProcessor_ProcessChanges_WhenJazorCodeBehindChanges_RoutesThroughOwningJazorHotUpdate()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(rootDirectory, "Counter.jazor");
+            var codeBehindPath = Path.Combine(rootDirectory, "Counter.jazor.cs");
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <button>@Count</button>
+                </template>
+
+                @code {
+                    [Prop] public int Count { get; set; }
+                }
+                """);
+            await File.WriteAllTextAsync(
+                codeBehindPath,
+                """
+                public partial class Counter
+                {
+                    [State] private int count = 1;
+                }
+                """);
+
+            var graph = new DependencyGraph(new ModuleResolver(rootDirectory));
+            var frontendCompiler = new FakeFrontendModuleCompiler
+            {
+                SfcResult = new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter', setup() { return { count: 1 }; } };",
+                    SupportsHmr = true
+                }
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                graph,
+                new ModuleResolver(rootDirectory));
+
+            _ = await compiler.CompileAsync(documentPath, CancellationToken.None);
+
+            frontendCompiler.SfcResult = new FrontendModuleCompilation
+            {
+                JavaScript = "export default { name: 'Counter', setup() { return { count: 2 }; } };",
+                SupportsHmr = true
+            };
+            await File.WriteAllTextAsync(
+                codeBehindPath,
+                """
+                public partial class Counter
+                {
+                    [State] private int count = 2;
+                }
+                """);
+
+            var processor = new ChangeProcessor(compiler, new ModuleResolver(rootDirectory), graph);
+            var result = await processor.ProcessChangesAsync([codeBehindPath], CancellationToken.None);
+
+            Assert.AreEqual(ChangeUpdateKind.JavaScriptUpdate, result.UpdateKind);
+            Assert.IsNull(result.FullReloadReason);
+            CollectionAssert.AreEquivalent(
+                new[] { codeBehindPath, documentPath },
+                result.AffectedPaths.ToArray());
+            Assert.AreEqual(1, result.JavaScriptUpdates.Count);
+            Assert.AreEqual("/Counter.jazor", result.JavaScriptUpdates[0].Path);
+            CollectionAssert.AreEqual(new[] { codeBehindPath }, result.ChangedPaths.ToArray());
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task ChangeProcessor_ProcessWorkspaceDocumentChange_WhenUnsavedJazorCodeBehindLogicChanges_RoutesThroughOwningJazorHotUpdate()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(rootDirectory, "Counter.jazor");
+            var codeBehindPath = Path.Combine(rootDirectory, "Counter.jazor.cs");
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <button>@Count</button>
+                </template>
+
+                @code {
+                    [Prop] public int Count { get; set; }
+                }
+                """);
+            await File.WriteAllTextAsync(
+                codeBehindPath,
+                """
+                public partial class Counter
+                {
+                    [State] private int count = 1;
+                }
+                """);
+
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var graph = new DependencyGraph(moduleResolver);
+            var frontendCompiler = new FakeFrontendModuleCompiler
+            {
+                SfcResult = new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter', setup() { return { count: 1 }; } };",
+                    SupportsHmr = true
+                }
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                graph,
+                moduleResolver);
+
+            _ = await compiler.CompileAsync(documentPath, CancellationToken.None);
+
+            frontendCompiler.SfcResult = new FrontendModuleCompilation
+            {
+                JavaScript = "export default { name: 'Counter', setup() { return { count: 2 }; } };",
+                SupportsHmr = true
+            };
+            var updatedCodeBehindText =
+                """
+                public partial class Counter
+                {
+                    [State] private int count = 2;
+                }
+                """;
+
+            var processor = new ChangeProcessor(compiler, moduleResolver, graph);
+            var result = await processor.ProcessWorkspaceDocumentChangeAsync(
+                new DocumentSnapshot(codeBehindPath, DocumentKind.CSharp, updatedCodeBehindText, version: "2"),
+                CancellationToken.None);
+
+            Assert.AreEqual(ChangeUpdateKind.JavaScriptUpdate, result.UpdateKind);
+            Assert.IsNull(result.FullReloadReason);
+            CollectionAssert.AreEquivalent(
+                new[] { codeBehindPath, documentPath },
+                result.AffectedPaths.ToArray());
+            Assert.AreEqual(1, result.JavaScriptUpdates.Count);
+            Assert.AreEqual("/Counter.jazor", result.JavaScriptUpdates[0].Path);
+            CollectionAssert.AreEqual(new[] { codeBehindPath }, result.ChangedPaths.ToArray());
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task ChangeProcessor_ProcessWorkspaceDocumentChange_WhenUnsavedJazorCodeBehindSignatureChanges_ReturnsFullReload()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(rootDirectory, "Counter.jazor");
+            var codeBehindPath = Path.Combine(rootDirectory, "Counter.jazor.cs");
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <button>@Increment(1)</button>
+                </template>
+                """);
+            await File.WriteAllTextAsync(
+                codeBehindPath,
+                """
+                public partial class Counter
+                {
+                    public int Increment(int delta)
+                    {
+                        return delta + 1;
+                    }
+                }
+                """);
+
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var graph = new DependencyGraph(moduleResolver);
+            var frontendCompiler = new FakeFrontendModuleCompiler
+            {
+                SfcResult = new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter', methods: { increment(delta) { return delta + 1; } } };",
+                    SupportsHmr = true
+                }
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                graph,
+                moduleResolver);
+
+            _ = await compiler.CompileAsync(documentPath, CancellationToken.None);
+
+            frontendCompiler.SfcResult = new FrontendModuleCompilation
+            {
+                JavaScript = "export default { name: 'Counter', methods: { increment(delta) { return Number(delta) + 1; } } };",
+                SupportsHmr = true
+            };
+            var updatedCodeBehindText =
+                """
+                public partial class Counter
+                {
+                    public long Increment(long delta)
+                    {
+                        return delta + 1;
+                    }
+                }
+                """;
+
+            var processor = new ChangeProcessor(compiler, moduleResolver, graph);
+            var result = await processor.ProcessWorkspaceDocumentChangeAsync(
+                new DocumentSnapshot(codeBehindPath, DocumentKind.CSharp, updatedCodeBehindText, version: "2"),
+                CancellationToken.None);
+
+            Assert.AreEqual(ChangeUpdateKind.FullReload, result.UpdateKind);
+            Assert.AreEqual("Public component descriptor changed.", result.FullReloadReason);
+            CollectionAssert.AreEquivalent(
+                new[] { codeBehindPath, documentPath },
+                result.AffectedPaths.ToArray());
+            CollectionAssert.AreEqual(new[] { codeBehindPath }, result.ChangedPaths.ToArray());
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task ChangeProcessor_ProcessWorkspaceDocumentChange_WhenJazorAndCodeBehindAreBothOpenUnsaved_UsesWorkspaceSnapshotsForClassification()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(rootDirectory, "Counter.jazor");
+            var codeBehindPath = Path.Combine(rootDirectory, "Counter.jazor.cs");
+            var diskJazorText =
+                """
+                <template>
+                  <button>@Increment(1)</button>
+                </template>
+                """;
+            await File.WriteAllTextAsync(documentPath, diskJazorText);
+            await File.WriteAllTextAsync(
+                codeBehindPath,
+                """
+                public partial class Counter
+                {
+                    public int Increment(int delta)
+                    {
+                        return delta + 1;
+                    }
+                }
+                """);
+
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var graph = new DependencyGraph(moduleResolver);
+            var frontendCompiler = new FakeFrontendModuleCompiler
+            {
+                SfcResult = new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter', methods: { increment(delta) { return delta + 1; } } };",
+                    SupportsHmr = true
+                }
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                graph,
+                moduleResolver);
+
+            _ = await compiler.CompileAsync(documentPath, CancellationToken.None);
+
+            frontendCompiler.SfcResult = new FrontendModuleCompilation
+            {
+                JavaScript = "export default { name: 'Counter', methods: { increment(delta) { return Number(delta) + 2; } } };",
+                SupportsHmr = true
+            };
+            var unsavedJazorText =
+                """
+                <template>
+                  <button>@Increment(1)</button>
+                </template>
+
+                @code {
+                    [Prop] public string Title { get; set; } = string.Empty;
+                }
+                """;
+            var unsavedCodeBehindText =
+                """
+                public partial class Counter
+                {
+                    public long Increment(long delta)
+                    {
+                        return delta + 2;
+                    }
+                }
+                """;
+
+            var processor = new ChangeProcessor(compiler, moduleResolver, graph);
+            var result = await processor.ProcessWorkspaceDocumentChangeAsync(
+                new DocumentSnapshot(codeBehindPath, DocumentKind.CSharp, unsavedCodeBehindText, version: "2"),
+                [
+                    new DocumentSnapshot(documentPath, DocumentKind.Jazor, unsavedJazorText, version: "3"),
+                    new DocumentSnapshot(codeBehindPath, DocumentKind.CSharp, unsavedCodeBehindText, version: "2")
+                ],
+                CancellationToken.None);
+
+            Assert.AreEqual(ChangeUpdateKind.FullReload, result.UpdateKind);
+            Assert.AreEqual("Public component descriptor changed.", result.FullReloadReason);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task ChangeProcessor_ProcessChanges_WhenJazorCodeBehindFileIsRenamed_ReturnsFullReload()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(rootDirectory, "Counter.jazor");
+            var originalCodeBehindPath = Path.Combine(rootDirectory, "Counter.jazor.cs");
+            var renamedCodeBehindPath = Path.Combine(rootDirectory, "CounterRenamed.jazor.cs");
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <button>@Count</button>
+                </template>
+
+                @code {
+                    [Prop] public int Count { get; set; }
+                }
+                """);
+            await File.WriteAllTextAsync(
+                originalCodeBehindPath,
+                """
+                public partial class Counter
+                {
+                    [State] private int count = 1;
+                }
+                """);
+
+            var graph = new DependencyGraph(new ModuleResolver(rootDirectory));
+            var frontendCompiler = new FakeFrontendModuleCompiler
+            {
+                SfcResult = new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter', setup() { return { count: 1 }; } };",
+                    SupportsHmr = true
+                }
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                graph,
+                new ModuleResolver(rootDirectory));
+
+            _ = await compiler.CompileAsync(documentPath, CancellationToken.None);
+
+            File.Move(originalCodeBehindPath, renamedCodeBehindPath);
+
+            var processor = new ChangeProcessor(compiler, new ModuleResolver(rootDirectory), graph);
+            var result = await processor.ProcessChangesAsync(
+                [originalCodeBehindPath, renamedCodeBehindPath],
+                CancellationToken.None);
+
+            Assert.AreEqual(ChangeUpdateKind.FullReload, result.UpdateKind);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(result.FullReloadReason));
+            CollectionAssert.AreEquivalent(
+                new[] { originalCodeBehindPath, renamedCodeBehindPath, documentPath },
+                result.AffectedPaths.Distinct(StringComparer.OrdinalIgnoreCase).ToArray());
+            CollectionAssert.AreEquivalent(
+                new[] { originalCodeBehindPath, renamedCodeBehindPath },
+                result.ChangedPaths.ToArray());
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task ChangeProcessor_ProcessChanges_WhenCoLocatedCounterCsChanges_RoutesThroughOwningJazorHotUpdate()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(rootDirectory, "Counter.jazor");
+            var codeBehindPath = Path.Combine(rootDirectory, "Counter.cs");
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <button>@Count</button>
+                </template>
+
+                @code {
+                    [Prop] public int Count { get; set; }
+                }
+                """);
+            await File.WriteAllTextAsync(
+                codeBehindPath,
+                """
+                public partial class Counter
+                {
+                    [Computed]
+                    public int Total => 1;
+                }
+                """);
+
+            var graph = new DependencyGraph(new ModuleResolver(rootDirectory));
+            var frontendCompiler = new FakeFrontendModuleCompiler
+            {
+                SfcResult = new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter', computed: { total() { return 1; } } };",
+                    SupportsHmr = true
+                }
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                graph,
+                new ModuleResolver(rootDirectory));
+
+            _ = await compiler.CompileAsync(documentPath, CancellationToken.None);
+
+            frontendCompiler.SfcResult = new FrontendModuleCompilation
+            {
+                JavaScript = "export default { name: 'Counter', computed: { total() { return 2; } } };",
+                SupportsHmr = true
+            };
+            await File.WriteAllTextAsync(
+                codeBehindPath,
+                """
+                public partial class Counter
+                {
+                    [Computed]
+                    public int Total => 2;
+                }
+                """);
+
+            var processor = new ChangeProcessor(compiler, new ModuleResolver(rootDirectory), graph);
+            var result = await processor.ProcessChangesAsync([codeBehindPath], CancellationToken.None);
+
+            Assert.AreEqual(ChangeUpdateKind.JavaScriptUpdate, result.UpdateKind);
+            Assert.IsNull(result.FullReloadReason);
+            CollectionAssert.AreEquivalent(
+                new[] { codeBehindPath, documentPath },
+                result.AffectedPaths.ToArray());
+            Assert.AreEqual(1, result.JavaScriptUpdates.Count);
+            Assert.AreEqual("/Counter.jazor", result.JavaScriptUpdates[0].Path);
+            CollectionAssert.AreEqual(new[] { codeBehindPath }, result.ChangedPaths.ToArray());
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task ChangeProcessor_ProcessChanges_WhenJazorModuleContentChangesOutsideSplitHashes_ReturnsFullReload()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(rootDirectory, "Counter.jazor");
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <button>@Count</button>
+                </template>
+
+                @code {
+                    [Prop] public int Count { get; set; }
+
+                    public int Increment()
+                    {
+                        return Count + 1;
+                    }
+                }
+                """);
+
+            var graph = new DependencyGraph(new ModuleResolver(rootDirectory));
+            var frontendCompiler = new FakeFrontendModuleCompiler
+            {
+                SfcResult = new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter', methods: { increment() { return 1; } } };",
+                    SupportsHmr = true
+                }
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                graph,
+                new ModuleResolver(rootDirectory));
+
+            _ = await compiler.CompileAsync(documentPath, CancellationToken.None);
+
+            frontendCompiler.SfcResult = new FrontendModuleCompilation
+            {
+                JavaScript = "export default { name: 'Counter', methods: { increment() { return 1; } }, __build: '2' };",
+                SupportsHmr = true
+            };
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <button>@Count</button>
+                </template>
+
+                @code {
+                    [Prop] public int Count { get; set; }
+
+                    public int Increment()
+                    {
+                        return Count + 1;
+                    }
+                }
+                """);
+
+            var processor = new ChangeProcessor(compiler, new ModuleResolver(rootDirectory), graph);
+            var result = await processor.ProcessChangesAsync([documentPath], CancellationToken.None);
+
+            Assert.AreEqual(ChangeUpdateKind.FullReload, result.UpdateKind);
+            Assert.AreEqual("Module content changed outside split hash classification.", result.FullReloadReason);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task ChangeProcessor_ProcessChanges_WhenJazorTemplateOnlyComponentChanges_ReturnsJavaScriptUpdate()
     {
         var rootDirectory = CreateTemporaryDirectory();
         try
@@ -1267,8 +5242,11 @@ public sealed class JazorVueHostDevServerTests
             var processor = new ChangeProcessor(compiler, new ModuleResolver(rootDirectory), graph);
             var result = await processor.ProcessChangesAsync([documentPath], CancellationToken.None);
 
-            Assert.AreEqual(ChangeUpdateKind.FullReload, result.UpdateKind);
-            Assert.AreEqual("HMR boundary does not prove a hot-safe update.", result.FullReloadReason);
+            Assert.AreEqual(ChangeUpdateKind.JavaScriptUpdate, result.UpdateKind);
+            Assert.IsNull(result.FullReloadReason);
+            Assert.AreEqual(1, result.JavaScriptUpdates.Count);
+            Assert.AreEqual("/Counter.jazor", result.JavaScriptUpdates[0].Path);
+            Assert.AreEqual("/Counter.jazor", result.JavaScriptUpdates[0].AcceptedPath);
         }
         finally
         {
@@ -1340,6 +5318,159 @@ public sealed class JazorVueHostDevServerTests
 
             Assert.AreEqual(ChangeUpdateKind.FullReload, result.UpdateKind);
             Assert.AreEqual("Component identity or host contract changed.", result.FullReloadReason);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task ChangeProcessor_ProcessChanges_WhenJazorStyleOnly_ReturnsInlineStyleUpdate()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(rootDirectory, "Counter.jazor");
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <div>@Count</div>
+                </template>
+
+                @code {
+                    [Prop] public int Count { get; set; }
+                }
+                """);
+
+            var graph = new DependencyGraph(new ModuleResolver(rootDirectory));
+            var frontendCompiler = new FakeFrontendModuleCompiler();
+            frontendCompiler.SetSfcResult(
+                documentPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter' };",
+                    StyleContent = ".counter { color: red; }",
+                    SupportsHmr = true
+                });
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                graph,
+                new ModuleResolver(rootDirectory));
+
+            _ = await compiler.CompileAsync(documentPath, CancellationToken.None);
+
+            frontendCompiler.SetSfcResult(
+                documentPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter' };",
+                    StyleContent = ".counter { color: blue; }",
+                    SupportsHmr = true
+                });
+
+            var processor = new ChangeProcessor(compiler, new ModuleResolver(rootDirectory), graph);
+            var result = await processor.ProcessChangesAsync([documentPath], CancellationToken.None);
+
+            Assert.AreEqual(ChangeUpdateKind.StyleUpdate, result.UpdateKind);
+            Assert.IsNull(result.FullReloadReason);
+            Assert.AreEqual(1, result.InlineStyleUpdates.Count);
+            Assert.AreEqual("/Counter.jazor", result.InlineStyleUpdates[0].TargetId);
+            Assert.AreEqual(".counter { color: blue; }", result.InlineStyleUpdates[0].Content);
+            Assert.AreEqual(0, result.JavaScriptUpdates.Count);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task ChangeProcessor_ProcessChanges_WhenJazorStyleOnlyWithDependents_StillReturnsInlineStyleUpdate()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var mainPath = Path.Combine(rootDirectory, "main.ts");
+            var appPath = Path.Combine(rootDirectory, "App.vue");
+            var counterPath = Path.Combine(rootDirectory, "Counter.jazor");
+            await File.WriteAllTextAsync(mainPath, "import App from './App.vue'; export { App };");
+            await File.WriteAllTextAsync(appPath, "<template><Counter /></template>");
+            await File.WriteAllTextAsync(
+                counterPath,
+                """
+                <template>
+                  <div>@Count</div>
+                </template>
+
+                @code {
+                    [Prop] public int Count { get; set; }
+                }
+                """);
+
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var graph = new DependencyGraph(moduleResolver);
+            var frontendCompiler = new FakeFrontendModuleCompiler
+            {
+                TypeScriptResult = new FrontendModuleCompilation
+                {
+                    JavaScript = "import App from './App.vue'; export { App };",
+                    Dependencies = ["./App.vue"]
+                }
+            };
+            frontendCompiler.SetSfcResult(
+                appPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "import Counter from './Counter.jazor'; export default { components: { Counter } };",
+                    Dependencies = ["./Counter.jazor"],
+                    SupportsHmr = true
+                });
+            frontendCompiler.SetSfcResult(
+                counterPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter' };",
+                    StyleContent = ".counter { color: red; }",
+                    SupportsHmr = true
+                });
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                graph,
+                moduleResolver);
+
+            _ = await compiler.CompileAsync(mainPath, CancellationToken.None);
+            _ = await compiler.CompileAsync(appPath, CancellationToken.None);
+            _ = await compiler.CompileAsync(counterPath, CancellationToken.None);
+
+            frontendCompiler.SetSfcResult(
+                counterPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter' };",
+                    StyleContent = ".counter { color: blue; }",
+                    SupportsHmr = true
+                });
+
+            var processor = new ChangeProcessor(compiler, moduleResolver, graph);
+            var result = await processor.ProcessChangesAsync([counterPath], CancellationToken.None);
+
+            Assert.AreEqual(ChangeUpdateKind.StyleUpdate, result.UpdateKind);
+            Assert.IsNull(result.FullReloadReason);
+            CollectionAssert.AreEquivalent(
+                new[] { counterPath, appPath, mainPath },
+                result.AffectedPaths.ToArray());
+            Assert.AreEqual(1, result.InlineStyleUpdates.Count);
+            Assert.AreEqual("/Counter.jazor", result.InlineStyleUpdates[0].TargetId);
+            Assert.AreEqual(".counter { color: blue; }", result.InlineStyleUpdates[0].Content);
+            Assert.AreEqual(0, result.JavaScriptUpdates.Count);
         }
         finally
         {
@@ -1478,7 +5609,7 @@ public sealed class JazorVueHostDevServerTests
     }
 
     [TestMethod]
-    public async Task ChangeProcessor_ProcessChanges_WhenCssHasDependents_ReturnsFullReload()
+    public async Task ChangeProcessor_ProcessChanges_WhenCssHasDependents_ReturnsStyleUpdate()
     {
         var rootDirectory = CreateTemporaryDirectory();
         try
@@ -1508,12 +5639,13 @@ public sealed class JazorVueHostDevServerTests
             var processor = new ChangeProcessor(compiler, new ModuleResolver(rootDirectory), graph);
             var result = await processor.ProcessChangesAsync([stylePath], CancellationToken.None);
 
-            Assert.AreEqual(ChangeUpdateKind.FullReload, result.UpdateKind);
-            Assert.AreEqual("frontend-change-with-dependents", result.FullReloadReason);
+            Assert.AreEqual(ChangeUpdateKind.StyleUpdate, result.UpdateKind);
+            Assert.IsNull(result.FullReloadReason);
             CollectionAssert.AreEquivalent(
                 new[] { stylePath, mainPath },
                 result.AffectedPaths.ToArray());
-            Assert.AreEqual(0, result.ChangedCssUrls.Count);
+            CollectionAssert.AreEqual(new[] { "/site.css" }, result.ChangedCssUrls.ToArray());
+            Assert.AreEqual(0, result.InlineStyleUpdates.Count);
         }
         finally
         {
@@ -1773,6 +5905,138 @@ public sealed class JazorVueHostDevServerTests
         return count;
     }
 
+    private static Uri ToWebSocketUri(Uri baseUri, string path)
+    {
+        var queryIndex = path.IndexOf('?', StringComparison.Ordinal);
+        var builder = new UriBuilder(baseUri)
+        {
+            Scheme = string.Equals(baseUri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
+                ? "wss"
+                : "ws",
+            Path = queryIndex >= 0 ? path[..queryIndex] : path,
+            Query = queryIndex >= 0 ? path[(queryIndex + 1)..] : string.Empty
+        };
+        return builder.Uri;
+    }
+
+    private static async Task<JsonElement> ReceiveWebSocketJsonAsync(
+        WebSocket socket,
+        TimeSpan timeout)
+    {
+        using var timeoutSource = new CancellationTokenSource(timeout);
+        var buffer = new byte[4096];
+        using var messageStream = new MemoryStream();
+
+        while (true)
+        {
+            var result = await socket.ReceiveAsync(buffer, timeoutSource.Token);
+            if (result.MessageType == WebSocketMessageType.Close)
+            {
+                throw new AssertFailedException("Expected a websocket payload before close.");
+            }
+
+            messageStream.Write(buffer, 0, result.Count);
+            if (result.EndOfMessage)
+            {
+                break;
+            }
+        }
+
+        var json = Encoding.UTF8.GetString(messageStream.ToArray());
+        using var document = JsonDocument.Parse(json);
+        return document.RootElement.Clone();
+    }
+
+    private static async Task AssertNoWebSocketJsonAsync(
+        WebSocket socket,
+        TimeSpan timeout)
+    {
+        try
+        {
+            var message = await ReceiveWebSocketJsonAsync(socket, timeout);
+            Assert.Fail("Expected no websocket payload, but received: " + message.GetRawText());
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    private static Task SendWebSocketJsonAsync(WebSocket socket, string json)
+        => socket.SendAsync(
+            Encoding.UTF8.GetBytes(json),
+            WebSocketMessageType.Text,
+            endOfMessage: true,
+            CancellationToken.None);
+
+    private static async Task<WebSocketCloseStatus?> ReceiveWebSocketCloseAsync(
+        WebSocket socket,
+        TimeSpan timeout)
+    {
+        using var timeoutSource = new CancellationTokenSource(timeout);
+        var buffer = new byte[256];
+        var result = await socket.ReceiveAsync(buffer, timeoutSource.Token);
+        if (result.MessageType != WebSocketMessageType.Close)
+        {
+            throw new AssertFailedException("Expected websocket close payload.");
+        }
+
+        if (socket.State == WebSocketState.CloseReceived)
+        {
+            await socket.CloseOutputAsync(
+                socket.CloseStatus ?? WebSocketCloseStatus.NormalClosure,
+                socket.CloseStatusDescription ?? "ack",
+                CancellationToken.None);
+        }
+
+        return socket.CloseStatus;
+    }
+
+    private static async Task<string> ReceiveWebSocketTextAsync(
+        WebSocket socket,
+        TimeSpan timeout)
+    {
+        using var timeoutSource = new CancellationTokenSource(timeout);
+        var buffer = new byte[4096];
+        using var messageStream = new MemoryStream();
+
+        while (true)
+        {
+            var result = await socket.ReceiveAsync(buffer, timeoutSource.Token);
+            if (result.MessageType == WebSocketMessageType.Close)
+            {
+                throw new AssertFailedException("Expected a websocket text payload before close.");
+            }
+
+            messageStream.Write(buffer, 0, result.Count);
+            if (result.EndOfMessage)
+            {
+                break;
+            }
+        }
+
+        return Encoding.UTF8.GetString(messageStream.ToArray());
+    }
+
+    private static async Task TryCloseWebSocketAsync(WebSocket socket)
+    {
+        try
+        {
+            if (socket.State is WebSocketState.Open or WebSocketState.CloseReceived)
+            {
+                await socket.CloseAsync(
+                    WebSocketCloseStatus.NormalClosure,
+                    "done",
+                    CancellationToken.None);
+            }
+        }
+        catch (WebSocketException)
+        {
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
     private sealed class FakeFrontendModuleCompiler : IFrontendModuleCompiler
     {
         private readonly Dictionary<string, FrontendModuleCompilation> _sfcResultsByPath = new(StringComparer.OrdinalIgnoreCase);
@@ -1863,6 +6127,18 @@ public sealed class JazorVueHostDevServerTests
         string Query,
         string Body);
 
+    private sealed record UpstreamWebSocketRequestSnapshot(
+        string Method,
+        string AbsolutePath,
+        string Query);
+
+    private sealed record UpstreamWebSocketSubProtocolSnapshot(
+        string Method,
+        string AbsolutePath,
+        string Query,
+        IReadOnlyList<string> RequestedProtocols,
+        string? SelectedProtocol);
+
     private sealed class TestUpstreamServer : IAsyncDisposable
     {
         private readonly HttpListener _listener;
@@ -1939,12 +6215,241 @@ public sealed class JazorVueHostDevServerTests
                 }
             }
         }
+    }
 
-        private static int GetFreePort()
+    private sealed class TestHttpsUpstreamServer : IAsyncDisposable
+    {
+        private readonly WebApplication _application;
+        private readonly X509Certificate2 _certificate;
+
+        private TestHttpsUpstreamServer(
+            WebApplication application,
+            X509Certificate2 certificate,
+            string baseAddress)
         {
-            using var listener = new TcpListener(IPAddress.Loopback, 0);
-            listener.Start();
-            return ((IPEndPoint)listener.LocalEndpoint).Port;
+            _application = application;
+            _certificate = certificate;
+            BaseAddress = baseAddress;
         }
+
+        public string BaseAddress { get; }
+
+        public static async Task<TestHttpsUpstreamServer> StartAsync(Func<HttpContext, Task> handler)
+        {
+            var port = GetFreePort();
+            var certificate = CreateSelfSignedCertificate();
+            var builder = WebApplication.CreateSlimBuilder();
+            builder.WebHost.ConfigureKestrel(options =>
+            {
+                options.Listen(IPAddress.Loopback, port, listenOptions => listenOptions.UseHttps(certificate));
+            });
+
+            var application = builder.Build();
+            application.Map("/{**path}", handler);
+            await application.StartAsync();
+
+            return new TestHttpsUpstreamServer(
+                application,
+                certificate,
+                $"https://127.0.0.1:{port}/");
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await _application.StopAsync();
+            await _application.DisposeAsync();
+            _certificate.Dispose();
+        }
+    }
+
+    private sealed class TestWebSocketUpstreamServer : IAsyncDisposable
+    {
+        private readonly HttpListener _listener;
+        private readonly Func<HttpListenerContext, WebSocket, Task> _handler;
+        private readonly CancellationTokenSource _shutdownSource = new();
+        private readonly Task _acceptLoop;
+
+        private TestWebSocketUpstreamServer(
+            HttpListener listener,
+            Func<HttpListenerContext, WebSocket, Task> handler,
+            string baseAddress)
+        {
+            _listener = listener;
+            _handler = handler;
+            BaseAddress = baseAddress;
+            _acceptLoop = Task.Run(AcceptLoopAsync);
+        }
+
+        public string BaseAddress { get; }
+
+        public static Task<TestWebSocketUpstreamServer> StartAsync(Func<HttpListenerContext, WebSocket, Task> handler)
+        {
+            var port = GetFreePort();
+            var baseAddress = $"http://127.0.0.1:{port}/";
+            var listener = new HttpListener();
+            listener.Prefixes.Add(baseAddress);
+            listener.Start();
+            return Task.FromResult(new TestWebSocketUpstreamServer(listener, handler, baseAddress));
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            _shutdownSource.Cancel();
+            if (_listener.IsListening)
+            {
+                _listener.Stop();
+            }
+
+            try
+            {
+                await _acceptLoop;
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            finally
+            {
+                _listener.Close();
+                _shutdownSource.Dispose();
+            }
+        }
+
+        private async Task AcceptLoopAsync()
+        {
+            while (!_shutdownSource.IsCancellationRequested)
+            {
+                HttpListenerContext? context = null;
+                WebSocket? socket = null;
+                try
+                {
+                    context = await _listener.GetContextAsync();
+                    if (!context.Request.IsWebSocketRequest)
+                    {
+                        context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                        context.Response.Close();
+                        continue;
+                    }
+
+                    var webSocketContext = await context.AcceptWebSocketAsync(null);
+                    socket = webSocketContext.WebSocket;
+                    await _handler(context, socket);
+                }
+                catch (HttpListenerException) when (_shutdownSource.IsCancellationRequested || !_listener.IsListening)
+                {
+                    break;
+                }
+                catch (ObjectDisposedException) when (_shutdownSource.IsCancellationRequested)
+                {
+                    break;
+                }
+                finally
+                {
+                    if (socket is not null)
+                    {
+                        socket.Dispose();
+                    }
+                    else
+                    {
+                        context?.Response.OutputStream.Dispose();
+                    }
+                }
+            }
+        }
+
+    }
+
+    private sealed class TestSecureWebSocketUpstreamServer : IAsyncDisposable
+    {
+        private readonly WebApplication _application;
+        private readonly X509Certificate2 _certificate;
+
+        private TestSecureWebSocketUpstreamServer(
+            WebApplication application,
+            X509Certificate2 certificate,
+            string baseAddress)
+        {
+            _application = application;
+            _certificate = certificate;
+            BaseAddress = baseAddress;
+        }
+
+        public string BaseAddress { get; }
+
+        public static async Task<TestSecureWebSocketUpstreamServer> StartAsync(
+            Func<HttpContext, WebSocket, Task> handler,
+            Func<HttpContext, string?>? subProtocolSelector = null)
+        {
+            var port = GetFreePort();
+            var certificate = CreateSelfSignedCertificate();
+            var builder = WebApplication.CreateSlimBuilder();
+            builder.WebHost.ConfigureKestrel(options =>
+            {
+                options.Listen(IPAddress.Loopback, port, listenOptions => listenOptions.UseHttps(certificate));
+            });
+
+            var application = builder.Build();
+            application.UseWebSockets();
+            application.Map(
+                "/{**path}",
+                async context =>
+                {
+                    if (!context.WebSockets.IsWebSocketRequest)
+                    {
+                        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                        return;
+                    }
+
+                    var selectedProtocol = subProtocolSelector?.Invoke(context);
+                    using var socket = await context.WebSockets.AcceptWebSocketAsync(selectedProtocol);
+                    await handler(context, socket);
+                });
+            await application.StartAsync();
+
+            return new TestSecureWebSocketUpstreamServer(
+                application,
+                certificate,
+                $"https://127.0.0.1:{port}/");
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await _application.StopAsync();
+            await _application.DisposeAsync();
+            _certificate.Dispose();
+        }
+    }
+
+    private static X509Certificate2 CreateSelfSignedCertificate()
+    {
+        using var rsa = RSA.Create(2048);
+        var request = new CertificateRequest(
+            "CN=127.0.0.1",
+            rsa,
+            HashAlgorithmName.SHA256,
+            RSASignaturePadding.Pkcs1);
+        request.CertificateExtensions.Add(new X509BasicConstraintsExtension(false, false, 0, false));
+        request.CertificateExtensions.Add(
+            new X509KeyUsageExtension(
+                X509KeyUsageFlags.DigitalSignature | X509KeyUsageFlags.KeyEncipherment,
+                critical: false));
+        request.CertificateExtensions.Add(new X509SubjectKeyIdentifierExtension(request.PublicKey, false));
+
+        var subjectAlternativeNames = new SubjectAlternativeNameBuilder();
+        subjectAlternativeNames.AddIpAddress(IPAddress.Loopback);
+        subjectAlternativeNames.AddIpAddress(IPAddress.Parse("127.0.0.1"));
+        subjectAlternativeNames.AddDnsName("localhost");
+        request.CertificateExtensions.Add(subjectAlternativeNames.Build());
+
+        using var certificate = request.CreateSelfSigned(
+            DateTimeOffset.UtcNow.AddDays(-1),
+            DateTimeOffset.UtcNow.AddDays(7));
+        return X509CertificateLoader.LoadPkcs12(certificate.Export(X509ContentType.Pfx), password: null);
+    }
+
+    private static int GetFreePort()
+    {
+        using var listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        return ((IPEndPoint)listener.LocalEndpoint).Port;
     }
 }

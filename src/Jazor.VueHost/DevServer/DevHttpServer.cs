@@ -1,13 +1,18 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Channels;
+using Jazor.VueContracts.Protocol;
+using Jazor.VueHost.Workspace;
 
 namespace Jazor.VueHost.DevServer;
 
-internal sealed class DevHttpServer : IAsyncDisposable
+internal sealed class DevHttpServer : IAsyncDisposable, IWorkspaceDocumentChangeSink
 {
     private static readonly TimeSpan FileChangeDebounceInterval = TimeSpan.FromMilliseconds(100);
+    private static readonly TimeSpan FileChangePollingInterval = TimeSpan.FromSeconds(1);
 
     private readonly DevServerOptions _options;
     private readonly OnDemandCompiler _compiler;
@@ -16,10 +21,14 @@ internal sealed class DevHttpServer : IAsyncDisposable
     private readonly DevServerProxy? _proxy;
     private readonly DevServerReloadHub _reloadHub = new();
     private readonly Channel<IReadOnlyList<string>> _fileChangeChannel = Channel.CreateUnbounded<IReadOnlyList<string>>();
+    private readonly Dictionary<string, DevServerObservedFileSnapshot?> _lastBroadcastSnapshots = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, string> _pendingWorkspaceBroadcastHashes = new(StringComparer.OrdinalIgnoreCase);
+    private readonly object _lastBroadcastSnapshotsLock = new();
     private readonly ChangeProcessor _changeProcessor;
     private WebApplication? _application;
     private FileSystemWatcher? _fileWatcher;
     private FileChangeDebouncer? _fileChangeDebouncer;
+    private DevServerFileSnapshotPoller? _fileSnapshotPoller;
     private Task? _fileChangePump;
     private CancellationTokenSource? _fileChangeCancellationSource;
 
@@ -53,9 +62,13 @@ internal sealed class DevHttpServer : IAsyncDisposable
         builder.WebHost.UseUrls($"http://{_options.Host}:{_options.Port}");
 
         var application = builder.Build();
-        if (_options.HmrEnabled)
+        if (_options.HmrEnabled || _options.ProxyRules.Values.Any(static target => target.WebSocket))
         {
             application.UseWebSockets();
+        }
+
+        if (_options.HmrEnabled)
+        {
             application.Map(
                 "/@jazor/hmr",
                 async context =>
@@ -110,6 +123,11 @@ internal sealed class DevHttpServer : IAsyncDisposable
         _fileWatcher = null;
         _fileChangeDebouncer?.Dispose();
         _fileChangeDebouncer = null;
+        if (_fileSnapshotPoller is not null)
+        {
+            await _fileSnapshotPoller.DisposeAsync();
+            _fileSnapshotPoller = null;
+        }
 
         if (_fileChangeCancellationSource is not null)
         {
@@ -196,6 +214,11 @@ internal sealed class DevHttpServer : IAsyncDisposable
         _fileWatcher.Deleted += OnFileChanged;
         _fileWatcher.Renamed += OnFileRenamed;
         _fileWatcher.EnableRaisingEvents = true;
+        _fileSnapshotPoller = new DevServerFileSnapshotPoller(
+            _options.RootDirectory,
+            FileChangePollingInterval,
+            OnDebouncedFileChanges);
+        _fileSnapshotPoller.Start();
     }
 
     private void OnFileChanged(object sender, FileSystemEventArgs eventArgs)
@@ -209,7 +232,7 @@ internal sealed class DevHttpServer : IAsyncDisposable
 
     private void QueueFileChange(string path)
     {
-        if (!string.IsNullOrWhiteSpace(path))
+        if (DevServerFileWatchFilter.ShouldObserve(_options.RootDirectory, path))
         {
             _fileChangeDebouncer?.Record(path);
         }
@@ -222,28 +245,252 @@ internal sealed class DevHttpServer : IAsyncDisposable
     {
         await foreach (var changedPaths in _fileChangeChannel.Reader.ReadAllAsync(cancellationToken))
         {
-            var result = await _changeProcessor.ProcessChangesAsync(changedPaths, cancellationToken);
-            if (result.UpdateKind == ChangeUpdateKind.StyleUpdate)
-            {
-                await _reloadHub.BroadcastStyleUpdateAsync(
-                    result.ChangedCssUrls,
-                    result.InlineStyleUpdates,
-                    DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
-                    cancellationToken);
-                continue;
-            }
-
-            if (result.UpdateKind == ChangeUpdateKind.JavaScriptUpdate)
-            {
-                await _reloadHub.BroadcastJavaScriptUpdateAsync(
-                    result.JavaScriptUpdates,
-                    DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
-                    cancellationToken);
-                continue;
-            }
-
-            await _reloadHub.BroadcastReloadAsync(result.FullReloadReason, cancellationToken);
+            await ProcessAndBroadcastChangesAsync(changedPaths, cancellationToken);
         }
+    }
+
+    public async ValueTask OnWorkspaceDocumentChangedAsync(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken)
+        => await OnWorkspaceDocumentChangedAsync(document, [document], cancellationToken);
+
+    public async ValueTask OnWorkspaceDocumentChangedAsync(
+        DocumentSnapshot document,
+        IReadOnlyList<DocumentSnapshot> openDocuments,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+        ArgumentNullException.ThrowIfNull(openDocuments);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (!_options.HmrEnabled || _application is null)
+        {
+            return;
+        }
+
+        if (document.DocumentKind is not (
+                DocumentKind.Jazor
+                or DocumentKind.Vue
+                or DocumentKind.JavaScript
+                or DocumentKind.TypeScript
+                or DocumentKind.CSharp))
+        {
+            return;
+        }
+
+        var fullPath = Path.GetFullPath(document.DocumentPath);
+        if (!DevServerFileWatchFilter.ShouldObserve(_options.RootDirectory, fullPath))
+        {
+            return;
+        }
+
+        if (document.DocumentKind is DocumentKind.Jazor
+            or DocumentKind.Vue
+            or DocumentKind.JavaScript
+            or DocumentKind.TypeScript)
+        {
+            var normalizedDocument = new DocumentSnapshot(fullPath, document.DocumentKind, document.Text, document.Version);
+            await ProcessAndBroadcastWorkspaceDocumentChangeAsync(normalizedDocument, openDocuments, cancellationToken);
+            return;
+        }
+
+        if (document.DocumentKind == DocumentKind.CSharp
+            && VueHostWorkspaceResolver.TryResolveOwningJazorPath(fullPath, out _))
+        {
+            var normalizedDocument = new DocumentSnapshot(fullPath, document.DocumentKind, document.Text, document.Version);
+            await ProcessAndBroadcastWorkspaceDocumentChangeAsync(normalizedDocument, openDocuments, cancellationToken);
+            return;
+        }
+
+        if (!File.Exists(fullPath))
+        {
+            return;
+        }
+
+        var diskText = await File.ReadAllTextAsync(fullPath, cancellationToken);
+        if (!string.Equals(diskText, document.Text, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        await ProcessAndBroadcastChangesAsync([fullPath], cancellationToken);
+    }
+
+    private async Task ProcessAndBroadcastChangesAsync(
+        IReadOnlyList<string> changedPaths,
+        CancellationToken cancellationToken)
+    {
+        var changedPathsToProcess = FilterAlreadyBroadcastChanges(changedPaths);
+        if (changedPathsToProcess.Count == 0)
+        {
+            return;
+        }
+
+        var result = await _changeProcessor.ProcessChangesAsync(changedPathsToProcess, cancellationToken);
+        RecordBroadcastSnapshots(result.ChangedPaths);
+        await BroadcastChangeResultAsync(result, cancellationToken);
+    }
+
+    private async Task ProcessAndBroadcastWorkspaceDocumentChangeAsync(
+        DocumentSnapshot document,
+        IReadOnlyList<DocumentSnapshot> openDocuments,
+        CancellationToken cancellationToken)
+    {
+        var result = await _changeProcessor.ProcessWorkspaceDocumentChangeAsync(document, openDocuments, cancellationToken);
+        RecordBroadcastSnapshots(result.ChangedPaths);
+        RecordPendingWorkspaceBroadcastHash(document.DocumentPath, document.Text);
+        await BroadcastChangeResultAsync(result, cancellationToken);
+    }
+
+    private async Task BroadcastChangeResultAsync(
+        ChangeProcessingResult result,
+        CancellationToken cancellationToken)
+    {
+        if (result.UpdateKind == ChangeUpdateKind.StyleUpdate)
+        {
+            await _reloadHub.BroadcastStyleUpdateAsync(
+                result.ChangedCssUrls,
+                result.InlineStyleUpdates,
+                DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+                cancellationToken);
+            return;
+        }
+
+        if (result.UpdateKind == ChangeUpdateKind.JavaScriptUpdate)
+        {
+            await _reloadHub.BroadcastJavaScriptUpdateAsync(
+                result.JavaScriptUpdates,
+                DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+                cancellationToken);
+            return;
+        }
+
+        if (result.UpdateKind == ChangeUpdateKind.Error)
+        {
+            await _reloadHub.BroadcastErrorAsync(result.ErrorMessage, cancellationToken);
+            return;
+        }
+
+        await _reloadHub.BroadcastReloadAsync(result.FullReloadReason, cancellationToken);
+    }
+
+    private IReadOnlyList<string> FilterAlreadyBroadcastChanges(IReadOnlyList<string> changedPaths)
+    {
+        if (changedPaths.Count == 0)
+        {
+            return changedPaths;
+        }
+
+        var pathsToProcess = new List<string>(changedPaths.Count);
+        lock (_lastBroadcastSnapshotsLock)
+        {
+            foreach (var path in changedPaths
+                         .Where(static path => !string.IsNullOrWhiteSpace(path))
+                         .Select(Path.GetFullPath)
+                         .Distinct(StringComparer.OrdinalIgnoreCase)
+                         .Order(StringComparer.OrdinalIgnoreCase))
+            {
+                var snapshot = CaptureObservedFileSnapshot(path);
+                if (_lastBroadcastSnapshots.TryGetValue(path, out var previousSnapshot)
+                    && Nullable.Equals(previousSnapshot, snapshot))
+                {
+                    continue;
+                }
+
+                if (_pendingWorkspaceBroadcastHashes.TryGetValue(path, out var pendingHash)
+                    && TryComputeFileContentHash(path, out var currentHash)
+                    && string.Equals(pendingHash, currentHash, StringComparison.Ordinal))
+                {
+                    _pendingWorkspaceBroadcastHashes.Remove(path);
+                    _lastBroadcastSnapshots[path] = snapshot;
+                    continue;
+                }
+
+                pathsToProcess.Add(path);
+            }
+        }
+
+        return pathsToProcess;
+    }
+
+    private void RecordBroadcastSnapshots(IReadOnlyList<string> changedPaths)
+    {
+        if (changedPaths.Count == 0)
+        {
+            return;
+        }
+
+        lock (_lastBroadcastSnapshotsLock)
+        {
+            foreach (var path in changedPaths
+                         .Where(static path => !string.IsNullOrWhiteSpace(path))
+                         .Select(Path.GetFullPath)
+                         .Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                _lastBroadcastSnapshots[path] = CaptureObservedFileSnapshot(path);
+            }
+        }
+    }
+
+    private void RecordPendingWorkspaceBroadcastHash(string path, string text)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return;
+        }
+
+        lock (_lastBroadcastSnapshotsLock)
+        {
+            _pendingWorkspaceBroadcastHashes[Path.GetFullPath(path)] = ComputeContentHash(text);
+        }
+    }
+
+    private static DevServerObservedFileSnapshot? CaptureObservedFileSnapshot(string path)
+    {
+        try
+        {
+            var fileInfo = new FileInfo(path);
+            return fileInfo.Exists
+                ? new DevServerObservedFileSnapshot(fileInfo.Length, fileInfo.LastWriteTimeUtc.Ticks)
+                : null;
+        }
+        catch (IOException)
+        {
+            return null;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return null;
+        }
+    }
+
+    private static bool TryComputeFileContentHash(string path, out string contentHash)
+    {
+        contentHash = string.Empty;
+        try
+        {
+            if (!File.Exists(path))
+            {
+                return false;
+            }
+
+            contentHash = ComputeContentHash(File.ReadAllText(path));
+            return true;
+        }
+        catch (IOException)
+        {
+            return false;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return false;
+        }
+    }
+
+    private static string ComputeContentHash(string text)
+    {
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(text));
+        return Convert.ToHexString(hash);
     }
 
     private static Uri? ResolveListeningUri(WebApplication application)
@@ -266,3 +513,7 @@ internal sealed class DevHttpServer : IAsyncDisposable
         response.Headers.Expires = "0";
     }
 }
+
+internal readonly record struct DevServerObservedFileSnapshot(
+    long Length,
+    long LastWriteTimeUtcTicks);

@@ -510,6 +510,16 @@ internal sealed class InProcRoslynCodeService
         return CreateFallbackProjection(document, parsed);
     }
 
+    internal ValueTask<IReadOnlyList<DocumentSnapshot>> GetSourceDocumentsAsync(
+        DocumentSnapshot primaryDocument,
+        IReadOnlyList<DocumentSnapshot>? openDocuments,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return ValueTask.FromResult<IReadOnlyList<DocumentSnapshot>>(
+            EnumerateRoslynSourceDocuments(primaryDocument, openDocuments, cancellationToken).ToArray());
+    }
+
     internal static (string ProjectedDocumentPath, string SourceText, ProjectionMap ProjectionMap) CreateFallbackProjection(DocumentSnapshot document, JazorVueDocument parsed)
     {
         var projectedPath = "virtual:" + document.DocumentPath + ".inproc.g.cs";
@@ -746,7 +756,7 @@ internal sealed class InProcRoslynCodeService
 
         foreach (var node in token.Parent.AncestorsAndSelf())
         {
-            symbol = node switch
+            var resolvedSymbol = node switch
             {
                 IdentifierNameSyntax identifierName when identifierName.Identifier.Span.IntersectsWith(token.Span)
                     => projectedDocument.SemanticModel.GetSymbolInfo(identifierName, cancellationToken).Symbol,
@@ -766,8 +776,9 @@ internal sealed class InProcRoslynCodeService
                 _ => null
             };
 
-            if (symbol is not null)
+            if (resolvedSymbol is not null)
             {
+                symbol = resolvedSymbol;
                 return true;
             }
         }

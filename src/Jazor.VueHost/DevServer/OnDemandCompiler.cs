@@ -2,6 +2,8 @@ using System.Security.Cryptography;
 using System.Text;
 using Jazor.Emit;
 using Jazor.Vue;
+using Jazor.VueContracts.Protocol;
+using Jazor.VueHost.Roslyn.InProc;
 
 namespace Jazor.VueHost.DevServer;
 
@@ -13,6 +15,7 @@ internal sealed class OnDemandCompiler
     private readonly CompilationCache _cache;
     private readonly DependencyGraph? _dependencyGraph;
     private readonly ModuleResolver? _moduleResolver;
+    private readonly JazorHotReloadMetadataProvider _hotReloadMetadataProvider;
 
     public DependencyGraph? DependencyGraph => _dependencyGraph;
 
@@ -22,7 +25,8 @@ internal sealed class OnDemandCompiler
         IFrontendModuleCompiler? frontendCompiler,
         CompilationCache cache,
         DependencyGraph? dependencyGraph = null,
-        ModuleResolver? moduleResolver = null)
+        ModuleResolver? moduleResolver = null,
+        JazorHotReloadMetadataProvider? hotReloadMetadataProvider = null)
     {
         _parser = parser ?? throw new ArgumentNullException(nameof(parser));
         _compiler = compiler ?? throw new ArgumentNullException(nameof(compiler));
@@ -30,6 +34,7 @@ internal sealed class OnDemandCompiler
         _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         _dependencyGraph = dependencyGraph;
         _moduleResolver = moduleResolver;
+        _hotReloadMetadataProvider = hotReloadMetadataProvider ?? new JazorHotReloadMetadataProvider();
     }
 
     public async ValueTask<CompilationResult> CompileAsync(
@@ -46,7 +51,35 @@ internal sealed class OnDemandCompiler
             return cached;
         }
 
-        var result = await CompileCoreAsync(absolutePath, text, cancellationToken);
+        var result = await CompileCoreAsync(absolutePath, text, companionDocuments: null, cancellationToken);
+        _dependencyGraph?.Record(absolutePath, result.Dependencies);
+        _cache.Set(absolutePath, contentHash, result);
+        return result;
+    }
+
+    public async ValueTask<CompilationResult> CompileAsync(
+        string absolutePath,
+        string text,
+        CancellationToken cancellationToken)
+        => await CompileAsync(absolutePath, text, companionDocuments: null, cancellationToken);
+
+    public async ValueTask<CompilationResult> CompileAsync(
+        string absolutePath,
+        string text,
+        IReadOnlyList<DocumentSnapshot>? companionDocuments,
+        CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(absolutePath);
+        ArgumentNullException.ThrowIfNull(text);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var contentHash = ComputeContentHash(text);
+        if (_cache.TryGet(absolutePath, contentHash, out var cached))
+        {
+            return cached;
+        }
+
+        var result = await CompileCoreAsync(absolutePath, text, companionDocuments, cancellationToken);
         _dependencyGraph?.Record(absolutePath, result.Dependencies);
         _cache.Set(absolutePath, contentHash, result);
         return result;
@@ -63,8 +96,39 @@ internal sealed class OnDemandCompiler
         cancellationToken.ThrowIfCancellationRequested();
 
         var text = await File.ReadAllTextAsync(absolutePath, cancellationToken);
+        return await RecompileAsync(absolutePath, text, companionDocuments: null, cancellationToken);
+    }
+
+    public async ValueTask<CompilationResult> RecompileAsync(
+        string absolutePath,
+        IReadOnlyList<DocumentSnapshot>? companionDocuments,
+        CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(absolutePath);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var text = await File.ReadAllTextAsync(absolutePath, cancellationToken);
+        return await RecompileAsync(absolutePath, text, companionDocuments, cancellationToken);
+    }
+
+    public async ValueTask<CompilationResult> RecompileAsync(
+        string absolutePath,
+        string text,
+        CancellationToken cancellationToken)
+        => await RecompileAsync(absolutePath, text, companionDocuments: null, cancellationToken);
+
+    public async ValueTask<CompilationResult> RecompileAsync(
+        string absolutePath,
+        string text,
+        IReadOnlyList<DocumentSnapshot>? companionDocuments,
+        CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(absolutePath);
+        ArgumentNullException.ThrowIfNull(text);
+        cancellationToken.ThrowIfCancellationRequested();
+
         var contentHash = ComputeContentHash(text);
-        var result = await CompileCoreAsync(absolutePath, text, cancellationToken);
+        var result = await CompileCoreAsync(absolutePath, text, companionDocuments, cancellationToken);
         _dependencyGraph?.Record(absolutePath, result.Dependencies);
         _cache.Set(absolutePath, contentHash, result);
         return result;
@@ -85,11 +149,12 @@ internal sealed class OnDemandCompiler
     private async ValueTask<CompilationResult> CompileCoreAsync(
         string absolutePath,
         string text,
+        IReadOnlyList<DocumentSnapshot>? companionDocuments,
         CancellationToken cancellationToken)
     {
         return Path.GetExtension(absolutePath).ToLowerInvariant() switch
         {
-            ".jazor" => await CompileJazorAsync(absolutePath, text, cancellationToken),
+            ".jazor" => await CompileJazorAsync(absolutePath, text, companionDocuments, cancellationToken),
             ".vue" => await CompileVueAsync(absolutePath, text, cancellationToken),
             ".ts" => await CompileTypeScriptAsync(absolutePath, text, cancellationToken),
             ".js" => CreatePassThrough("text/javascript", text),
@@ -109,6 +174,7 @@ internal sealed class OnDemandCompiler
     private async ValueTask<CompilationResult> CompileJazorAsync(
         string absolutePath,
         string text,
+        IReadOnlyList<DocumentSnapshot>? companionDocuments,
         CancellationToken cancellationToken)
     {
         var document = _parser.Parse(absolutePath, text);
@@ -121,12 +187,15 @@ internal sealed class OnDemandCompiler
                 sfc.Diagnostics);
         }
 
+        var hotReloadManifestEntry = CreateJazorHotReloadManifestEntry(absolutePath, document, compilation: sfc, module, companionDocuments);
+        var moduleSignature = ComputeJazorModuleSignature(module.JavaScript, hotReloadManifestEntry);
+
         return new CompilationResult
         {
             ContentType = "text/javascript",
             Content = CreateServedModule(absolutePath, module.JavaScript, module.StyleContent),
-            ModuleSignature = ComputeContentHash(module.JavaScript),
-            HotReloadManifestEntry = CreateJazorHotReloadManifestEntry(absolutePath, document, sfc, module),
+            ModuleSignature = moduleSignature,
+            HotReloadManifestEntry = hotReloadManifestEntry,
             SourceMap = module.SourceMap,
             StyleContent = module.StyleContent,
             Dependencies = module.Dependencies,
@@ -254,16 +323,46 @@ internal sealed class OnDemandCompiler
         return Convert.ToHexString(hash);
     }
 
+    private static string ComputeJazorModuleSignature(
+        string javaScript,
+        RazorVueManifestEntry? hotReloadManifestEntry)
+    {
+        if (hotReloadManifestEntry is null)
+        {
+            return ComputeContentHash(javaScript);
+        }
+
+        return ComputeContentHash(string.Create(
+            javaScript.Length
+            + hotReloadManifestEntry.DescriptorHash.Length
+            + hotReloadManifestEntry.TemplateHash.Length
+            + hotReloadManifestEntry.LogicHash.Length
+            + 3,
+            (javaScript, hotReloadManifestEntry),
+            static (buffer, state) =>
+            {
+                var offset = 0;
+                state.javaScript.AsSpan().CopyTo(buffer[offset..]);
+                offset += state.javaScript.Length;
+                buffer[offset++] = '\n';
+                state.hotReloadManifestEntry.DescriptorHash.AsSpan().CopyTo(buffer[offset..]);
+                offset += state.hotReloadManifestEntry.DescriptorHash.Length;
+                buffer[offset++] = '\n';
+                state.hotReloadManifestEntry.TemplateHash.AsSpan().CopyTo(buffer[offset..]);
+                offset += state.hotReloadManifestEntry.TemplateHash.Length;
+                buffer[offset++] = '\n';
+                state.hotReloadManifestEntry.LogicHash.AsSpan().CopyTo(buffer[offset..]);
+            }));
+    }
+
     private RazorVueManifestEntry? CreateJazorHotReloadManifestEntry(
         string documentPath,
         JazorVueDocument document,
         JazorVueCompilationResult compilation,
-        FrontendModuleCompilation module)
+        FrontendModuleCompilation module,
+        IReadOnlyList<DocumentSnapshot>? companionDocuments)
     {
-        if (compilation.HotReload is null)
-        {
-            return null;
-        }
+        var hotReloadMetadata = _hotReloadMetadataProvider.CreateMetadata(document, compilation.Diagnostics, companionDocuments);
 
         var resolvedModulePath = GetManifestModulePath(documentPath);
         var imports = document.Imports
@@ -271,6 +370,24 @@ internal sealed class OnDemandCompiler
             .Distinct(StringComparer.Ordinal)
             .OrderBy(static import => import, StringComparer.Ordinal)
             .ToList();
+        var contentHash = ComputeJazorModuleSignature(module.JavaScript, new RazorVueManifestEntry(
+            AssemblyName: "Jazor.VueHost",
+            ComponentId: resolvedModulePath,
+            ModuleId: resolvedModulePath,
+            ComponentName: Path.GetFileNameWithoutExtension(documentPath),
+            RelativeModulePath: resolvedModulePath,
+            SourceMapPath: resolvedModulePath + ".map",
+            OriginMapPath: resolvedModulePath + ".origins.json",
+            Imports: imports,
+            Styles: [],
+            PluginRequirements: [],
+            DescriptorHash: hotReloadMetadata.DescriptorSignature,
+            TemplateHash: hotReloadMetadata.TemplateSignature,
+            LogicHash: hotReloadMetadata.LogicSignature,
+            ContentHash: string.Empty,
+            HmrBoundaryKind: hotReloadMetadata.HmrBoundaryKind,
+            RequiresHydration: false,
+            SupportsSsr: true));
 
         return new RazorVueManifestEntry(
             AssemblyName: "Jazor.VueHost",
@@ -283,11 +400,11 @@ internal sealed class OnDemandCompiler
             Imports: imports,
             Styles: [],
             PluginRequirements: [],
-            DescriptorHash: compilation.HotReload.DescriptorSignature,
-            TemplateHash: compilation.HotReload.TemplateSignature,
-            LogicHash: compilation.HotReload.LogicSignature,
-            ContentHash: ComputeContentHash(module.JavaScript),
-            HmrBoundaryKind: compilation.HotReload.HmrBoundaryKind,
+            DescriptorHash: hotReloadMetadata.DescriptorSignature,
+            TemplateHash: hotReloadMetadata.TemplateSignature,
+            LogicHash: hotReloadMetadata.LogicSignature,
+            ContentHash: contentHash,
+            HmrBoundaryKind: hotReloadMetadata.HmrBoundaryKind,
             RequiresHydration: false,
             SupportsSsr: true);
     }

@@ -8,23 +8,39 @@ namespace Jazor.VueHost.DevServer;
 
 internal sealed class DevServerReloadHub : IAsyncDisposable
 {
-    private readonly ConcurrentDictionary<WebSocket, byte> _sockets = new();
+    private readonly ConcurrentDictionary<WebSocket, HmrClientState> _sockets = new();
+
+    public int ConnectedClientCount => _sockets.Count;
 
     public async Task AcceptAsync(WebSocket socket, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(socket);
-        _sockets.TryAdd(socket, 0);
+        var state = new HmrClientState(Guid.NewGuid().ToString("N")[..8]);
+        _sockets.TryAdd(socket, state);
         var buffer = new byte[256];
 
         try
         {
-            await SendAsync(socket, new DevServerNotificationEnvelope { Type = "connected" }, cancellationToken);
+            await SendAsync(
+                socket,
+                new DevServerNotificationEnvelope
+                {
+                    Type = "connected",
+                    ClientId = state.ClientId,
+                    ConnectedClientCount = ConnectedClientCount
+                },
+                cancellationToken);
             while (!cancellationToken.IsCancellationRequested && socket.State == WebSocketState.Open)
             {
-                var result = await socket.ReceiveAsync(buffer, cancellationToken);
+                var result = await ReceiveMessageAsync(socket, buffer, cancellationToken);
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
                     break;
+                }
+
+                if (result.Text is not null)
+                {
+                    ProcessClientMessage(state, result.Text);
                 }
             }
         }
@@ -77,6 +93,17 @@ internal sealed class DevServerReloadHub : IAsyncDisposable
             },
             cancellationToken);
 
+    public async Task BroadcastErrorAsync(
+        string? message,
+        CancellationToken cancellationToken)
+        => await BroadcastAsync(
+            new DevServerNotificationEnvelope
+            {
+                Type = "error",
+                Message = string.IsNullOrWhiteSpace(message) ? "Hot update failed." : message
+            },
+            cancellationToken);
+
     private async Task BroadcastAsync(object payload, CancellationToken cancellationToken)
     {
         foreach (var socket in _sockets.Keys)
@@ -109,6 +136,66 @@ internal sealed class DevServerReloadHub : IAsyncDisposable
             WebSocketMessageType.Text,
             endOfMessage: true,
             cancellationToken);
+    }
+
+    private static async Task<HmrReceivedMessage> ReceiveMessageAsync(
+        WebSocket socket,
+        byte[] buffer,
+        CancellationToken cancellationToken)
+    {
+        using var stream = new MemoryStream();
+        while (true)
+        {
+            var result = await socket.ReceiveAsync(buffer, cancellationToken);
+            if (result.MessageType == WebSocketMessageType.Close)
+            {
+                return new HmrReceivedMessage(result.MessageType, null);
+            }
+
+            if (result.MessageType == WebSocketMessageType.Text)
+            {
+                stream.Write(buffer, 0, result.Count);
+            }
+
+            if (result.EndOfMessage)
+            {
+                return new HmrReceivedMessage(
+                    result.MessageType,
+                    result.MessageType == WebSocketMessageType.Text
+                        ? Encoding.UTF8.GetString(stream.ToArray())
+                        : null);
+            }
+        }
+    }
+
+    private static void ProcessClientMessage(HmrClientState state, string text)
+    {
+        DevServerClientMessage? message;
+        try
+        {
+            message = JsonSerializer.Deserialize<DevServerClientMessage>(text);
+        }
+        catch (JsonException)
+        {
+            return;
+        }
+
+        if (message?.Type is null)
+        {
+            return;
+        }
+
+        if (string.Equals(message.Type, "ready", StringComparison.OrdinalIgnoreCase))
+        {
+            state.IsReady = true;
+            state.LastSeenUtc = DateTimeOffset.UtcNow;
+            return;
+        }
+
+        if (string.Equals(message.Type, "heartbeat", StringComparison.OrdinalIgnoreCase))
+        {
+            state.LastSeenUtc = DateTimeOffset.UtcNow;
+        }
     }
 
     public async ValueTask DisposeAsync()
@@ -147,6 +234,12 @@ internal sealed class DevServerNotificationEnvelope
     [JsonPropertyName("type")]
     public required string Type { get; init; }
 
+    [JsonPropertyName("clientId")]
+    public string? ClientId { get; init; }
+
+    [JsonPropertyName("connectedClientCount")]
+    public int? ConnectedClientCount { get; init; }
+
     [JsonPropertyName("paths")]
     public IReadOnlyList<string>? Paths { get; init; }
 
@@ -161,4 +254,26 @@ internal sealed class DevServerNotificationEnvelope
 
     [JsonPropertyName("reason")]
     public string? Reason { get; init; }
+
+    [JsonPropertyName("message")]
+    public string? Message { get; init; }
 }
+
+internal sealed class DevServerClientMessage
+{
+    [JsonPropertyName("type")]
+    public string? Type { get; init; }
+}
+
+internal sealed class HmrClientState(string clientId)
+{
+    public string ClientId { get; } = clientId;
+
+    public bool IsReady { get; set; }
+
+    public DateTimeOffset LastSeenUtc { get; set; } = DateTimeOffset.UtcNow;
+}
+
+internal readonly record struct HmrReceivedMessage(
+    WebSocketMessageType MessageType,
+    string? Text);

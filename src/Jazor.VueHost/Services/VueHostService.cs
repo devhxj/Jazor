@@ -4,7 +4,9 @@ using Jazor.VueHost.Analysis;
 using Jazor.VueHost.Frontend;
 using Jazor.VueHost.Frontend.Deno.Hosting;
 using Jazor.VueHost.Hosting;
+using Jazor.VueHost.Roslyn.InProc;
 using Jazor.VueHost.Rpc;
+using Jazor.VueHost.VirtualDocuments.Mapping;
 using Jazor.VueHost.Workspace;
 using System.Text.RegularExpressions;
 using SharedVueHostRpcMethodNames = Jazor.VueContracts.Protocol.VueHostRpcMethodNames;
@@ -30,6 +32,7 @@ public sealed class VueHostService : IVueHostService, IVueHostRpcService, IFront
     private readonly IVueHostWorkspaceStore _workspaceStore;
     private readonly IVueAnalysisClient _analysisClient;
     private readonly IDenoVolarHost _denoVolarHost;
+    private readonly InProcRoslynCodeService _roslynCodeService = new();
     private readonly FallbackJazorAnalysisService _fallbackAnalysisService = new();
     private readonly JazorVueParser _parser = new();
     private int _started;
@@ -113,6 +116,7 @@ public sealed class VueHostService : IVueHostService, IVueHostRpcService, IFront
             jazorDocument,
             request.RelatedDocumentPaths,
             cancellationToken);
+        var roslynProjection = await CreateRoslynProjectionContextAsync(jazorDocument, cancellationToken);
 
         var semanticContext = new SemanticContext(
             contextKind: "frontend",
@@ -120,6 +124,7 @@ public sealed class VueHostService : IVueHostService, IVueHostRpcService, IFront
             properties: CreateContextProperties(
                 request.DocumentPath,
                 relatedDocuments,
+                roslynProjection,
                 explicitDocumentCount: request.RelatedDocumentPaths.Count,
                 derivedDocumentCount: Math.Max(0, relatedDocuments.Count - request.RelatedDocumentPaths.Count)));
 
@@ -135,10 +140,21 @@ public sealed class VueHostService : IVueHostService, IVueHostRpcService, IFront
                     {
                         document.DocumentPath,
                         kind = document.DocumentKind.ToString()
-                    }).ToArray()
+                    }).ToArray(),
+                    roslynProjection = roslynProjection is null
+                        ? null
+                        : new
+                        {
+                            roslynProjection.ProjectionKind,
+                            roslynProjection.ProjectedDocumentPath,
+                            projectionSegmentCount = roslynProjection.ProjectionMap.Segments.Count,
+                            sourceDocumentCount = roslynProjection.SourceDocuments.Count,
+                            codeBehindDocumentCount = roslynProjection.CodeBehindDocumentCount
+                        }
                 }),
                 contentHash: null)
         };
+        artifacts.AddRange(CreateRoslynProjectionArtifacts(request.DocumentPath, roslynProjection));
         artifacts.AddRange(CreateFrontendSummaryArtifacts(relatedDocuments));
 
         return new GetFrontendContextResponse(
@@ -278,6 +294,7 @@ public sealed class VueHostService : IVueHostService, IVueHostRpcService, IFront
     private static IReadOnlyDictionary<string, string> CreateContextProperties(
         string documentPath,
         IReadOnlyList<DocumentSnapshot> relatedDocuments,
+        FrontendRoslynProjectionContext? roslynProjection = null,
         int explicitDocumentCount = 0,
         int derivedDocumentCount = 0)
     {
@@ -292,7 +309,13 @@ public sealed class VueHostService : IVueHostService, IVueHostRpcService, IFront
                 ",",
                 relatedDocuments
                     .Select(static document => document.DocumentKind.ToString())
-                    .Distinct(StringComparer.Ordinal))
+                    .Distinct(StringComparer.Ordinal)),
+            ["projectionKind"] = roslynProjection?.ProjectionKind ?? "none",
+            ["projectionDocumentPath"] = roslynProjection?.ProjectedDocumentPath ?? string.Empty,
+            ["projectionSegmentCount"] = (roslynProjection?.ProjectionMap.Segments.Count ?? 0).ToString(System.Globalization.CultureInfo.InvariantCulture),
+            ["roslynSourceDocumentCount"] = (roslynProjection?.SourceDocuments.Count ?? 0).ToString(System.Globalization.CultureInfo.InvariantCulture),
+            ["roslynWorkspaceSourceDocumentCount"] = (roslynProjection?.WorkspaceSourceDocumentCount ?? 0).ToString(System.Globalization.CultureInfo.InvariantCulture),
+            ["codeBehindDocumentCount"] = (roslynProjection?.CodeBehindDocumentCount ?? 0).ToString(System.Globalization.CultureInfo.InvariantCulture)
         };
     }
 
@@ -488,6 +511,50 @@ public sealed class VueHostService : IVueHostService, IVueHostRpcService, IFront
             .Select(CreateFrontendSummaryArtifact)
             .ToArray();
 
+    private static IReadOnlyList<ArtifactRecord> CreateRoslynProjectionArtifacts(
+        string documentPath,
+        FrontendRoslynProjectionContext? roslynProjection)
+    {
+        if (roslynProjection is null)
+        {
+            return Array.Empty<ArtifactRecord>();
+        }
+
+        return
+        [
+            new ArtifactRecord(
+                artifactName: "virtual:" + documentPath + ".razor-projection.json",
+                artifactKind: "razor-projection",
+                content: ProtocolJsonSerializer.Serialize(new
+                {
+                    documentPath,
+                    roslynProjection.ProjectionKind,
+                    roslynProjection.ProjectedDocumentPath,
+                    workspaceSourceDocumentCount = roslynProjection.WorkspaceSourceDocumentCount,
+                    projectionSegments = roslynProjection.ProjectionMap.Segments.Select(static segment => new
+                    {
+                        segment.OriginalStart,
+                        segment.OriginalLength,
+                        segment.ProjectedStart,
+                        segment.ProjectedLength,
+                        segment.IsBidirectional
+                    }).ToArray(),
+                    sourceDocuments = roslynProjection.SourceDocuments.Select(static document => new
+                    {
+                        document.DocumentPath,
+                        kind = document.DocumentKind.ToString(),
+                        document.Version
+                    }).ToArray()
+                }),
+                contentHash: null),
+            new ArtifactRecord(
+                artifactName: "virtual:" + documentPath + ".razor.g.cs",
+                artifactKind: "razor-projected-csharp",
+                content: roslynProjection.SourceText,
+                contentHash: null)
+        ];
+    }
+
     private static ArtifactRecord CreateFrontendSummaryArtifact(DocumentSnapshot document)
     {
         var importedSources = GetImportedSources(document.Text);
@@ -681,6 +748,62 @@ public sealed class VueHostService : IVueHostService, IVueHostRpcService, IFront
     private static DocumentKind? GetFrontendDocumentKind(string documentPath)
         => VueHostWorkspaceResolver.GetFrontendDocumentKind(documentPath);
 
+    private async Task<FrontendRoslynProjectionContext?> CreateRoslynProjectionContextAsync(
+        DocumentSnapshot jazorDocument,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (jazorDocument.DocumentKind != DocumentKind.Jazor
+            || string.IsNullOrWhiteSpace(jazorDocument.Text))
+        {
+            return null;
+        }
+
+        var parsed = _parser.Parse(jazorDocument.DocumentPath, jazorDocument.Text);
+        var projection = _roslynCodeService.CreateProjection(jazorDocument, parsed);
+        var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
+        var workspaceSourceDocuments = await _roslynCodeService.GetSourceDocumentsAsync(jazorDocument, openDocuments, cancellationToken);
+        var componentSourceDocumentPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            NormalizeComparablePath(jazorDocument.DocumentPath)
+        };
+        foreach (var codeBehindPath in VueHostWorkspaceResolver.GetCoLocatedCodeBehindPaths(jazorDocument.DocumentPath))
+        {
+            componentSourceDocumentPaths.Add(NormalizeComparablePath(codeBehindPath));
+        }
+
+        var sourceDocuments = workspaceSourceDocuments
+            .Where(document => componentSourceDocumentPaths.Contains(NormalizeComparablePath(document.DocumentPath)))
+            .OrderBy(static document => document.DocumentKind == DocumentKind.Jazor ? 0 : 1)
+            .ThenBy(static document => document.DocumentPath, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var codeBehindDocumentCount = sourceDocuments.Count(static document => document.DocumentKind == DocumentKind.CSharp);
+
+        return new FrontendRoslynProjectionContext(
+            ProjectionKind: GetProjectionKind(projection.ProjectedDocumentPath),
+            ProjectedDocumentPath: projection.ProjectedDocumentPath,
+            SourceText: projection.SourceText,
+            ProjectionMap: projection.ProjectionMap,
+            SourceDocuments: sourceDocuments,
+            WorkspaceSourceDocumentCount: workspaceSourceDocuments.Count,
+            CodeBehindDocumentCount: codeBehindDocumentCount);
+    }
+
+    private static string GetProjectionKind(string projectedDocumentPath)
+    {
+        if (projectedDocumentPath.EndsWith(".razor.g.cs", StringComparison.OrdinalIgnoreCase))
+        {
+            return "razor-design-time";
+        }
+
+        if (projectedDocumentPath.EndsWith(".inproc.g.cs", StringComparison.OrdinalIgnoreCase))
+        {
+            return "fallback";
+        }
+
+        return "unknown";
+    }
+
     private static string NormalizeComparablePath(string documentPath)
         => VueHostWorkspaceResolver.NormalizePath(documentPath);
 
@@ -729,4 +852,13 @@ public sealed class VueHostService : IVueHostService, IVueHostRpcService, IFront
         public IEnumerator<T> GetEnumerator()
             => _items.GetEnumerator();
     }
+
+    private sealed record FrontendRoslynProjectionContext(
+        string ProjectionKind,
+        string ProjectedDocumentPath,
+        string SourceText,
+        ProjectionMap ProjectionMap,
+        IReadOnlyList<DocumentSnapshot> SourceDocuments,
+        int WorkspaceSourceDocumentCount,
+        int CodeBehindDocumentCount);
 }

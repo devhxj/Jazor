@@ -194,37 +194,110 @@ internal sealed class HtmlTransformer
             style.textContent = styleUpdate.content ?? "";
           }
         }
-        try {
-          const socket = new WebSocket(socketUrl);
-          socket.addEventListener("message", (event) => {
-            let payload;
-            try {
-              payload = JSON.parse(event.data);
-            } catch {
-              payload = { type: event.data };
-            }
-            if (payload?.type === "reload" || payload?.type === "full-reload") {
-              location.reload();
-              return;
-            }
-            if (payload?.type === "connected") {
-              return;
-            }
-            if (payload?.type === "update") {
-              applyUpdates(payload.updates, payload.timestamp).catch((error) => {
-                console.error("[jazor] HMR update failed:", error);
-                location.reload();
-              });
-              return;
-            }
-            if (payload?.type === "style-update") {
-              refreshStyleSheets(payload.paths, payload.timestamp);
-              refreshInlineStyles(payload.inlineStyles);
-            }
-          });
-        } catch {
-          // Dev client is best-effort for now.
+        function clearErrorOverlay() {
+          document.getElementById("__jazor-error-overlay")?.remove();
         }
+        function showErrorOverlay(message) {
+          let overlay = document.getElementById("__jazor-error-overlay");
+          if (!overlay) {
+            overlay = document.createElement("div");
+            overlay.id = "__jazor-error-overlay";
+            overlay.style.cssText = "position:fixed;top:0;left:0;right:0;z-index:99999;padding:12px 16px;background:#c62828;color:#fff;font:14px/1.5 monospace;white-space:pre-wrap;box-shadow:0 2px 8px rgba(0,0,0,.3);";
+            document.body.appendChild(overlay);
+          }
+          overlay.textContent = `[jazor] ${message ?? "Hot update failed."}`;
+        }
+        let socket;
+        let reconnectTimer;
+        let heartbeatTimer;
+        function sendMessage(payload) {
+          if (!socket || socket.readyState !== WebSocket.OPEN) {
+            return;
+          }
+          socket.send(JSON.stringify(payload));
+        }
+        function stopHeartbeat() {
+          if (!heartbeatTimer) {
+            return;
+          }
+          clearInterval(heartbeatTimer);
+          heartbeatTimer = undefined;
+        }
+        function startHeartbeat() {
+          stopHeartbeat();
+          heartbeatTimer = setInterval(() => {
+            sendMessage({ type: "heartbeat" });
+          }, 15000);
+        }
+        function scheduleReconnect() {
+          if (reconnectTimer) {
+            return;
+          }
+          stopHeartbeat();
+          reconnectTimer = setTimeout(() => {
+            reconnectTimer = undefined;
+            connect();
+          }, 2000);
+        }
+        function handleSocketMessage(event) {
+          let payload;
+          try {
+            payload = JSON.parse(event.data);
+          } catch {
+            payload = { type: event.data };
+          }
+          if (payload?.type === "reload" || payload?.type === "full-reload") {
+            location.reload();
+            return;
+          }
+          if (payload?.type === "connected") {
+            clearErrorOverlay();
+            return;
+          }
+          if (payload?.type === "error") {
+            console.error("[jazor] HMR error:", payload.message);
+            showErrorOverlay(payload.message);
+            return;
+          }
+          if (payload?.type === "update") {
+            clearErrorOverlay();
+            applyUpdates(payload.updates, payload.timestamp).catch((error) => {
+              console.error("[jazor] HMR update failed:", error);
+              location.reload();
+            });
+            return;
+          }
+          if (payload?.type === "style-update") {
+            clearErrorOverlay();
+            refreshStyleSheets(payload.paths, payload.timestamp);
+            refreshInlineStyles(payload.inlineStyles);
+          }
+        }
+        function connect() {
+          try {
+            socket = new WebSocket(socketUrl);
+            socket.addEventListener("open", () => {
+              if (reconnectTimer) {
+                clearTimeout(reconnectTimer);
+                reconnectTimer = undefined;
+              }
+              sendMessage({ type: "ready" });
+              startHeartbeat();
+            });
+            socket.addEventListener("message", handleSocketMessage);
+            socket.addEventListener("close", () => {
+              stopHeartbeat();
+              scheduleReconnect();
+            });
+            socket.addEventListener("error", () => {
+              stopHeartbeat();
+              socket?.close();
+            });
+          } catch {
+            scheduleReconnect();
+          }
+        }
+        connect();
         export {};
         """;
 

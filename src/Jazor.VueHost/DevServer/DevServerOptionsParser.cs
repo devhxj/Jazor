@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace Jazor.VueHost.DevServer;
 
 internal static class DevServerOptionsParser
@@ -7,6 +9,22 @@ internal static class DevServerOptionsParser
         ArgumentNullException.ThrowIfNull(args);
 
         var options = new DevServerOptions();
+        foreach (var arg in args)
+        {
+            if (TryGetOptionValue(arg, "--dev-root", out var rootDirectory) &&
+                !string.IsNullOrWhiteSpace(rootDirectory))
+            {
+                options = options with { RootDirectory = Path.GetFullPath(rootDirectory) };
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(options.RootDirectory))
+        {
+            options = options with { RootDirectory = Directory.GetCurrentDirectory() };
+        }
+
+        options = ApplyConfigFile(options);
+
         foreach (var arg in args)
         {
             if (TryGetOptionValue(arg, "--dev-root", out var rootDirectory) &&
@@ -42,20 +60,92 @@ internal static class DevServerOptionsParser
                 continue;
             }
 
+            if (TryGetOptionValue(arg, "--dev-frontend", out var frontendCompiler)
+                && !string.IsNullOrWhiteSpace(frontendCompiler))
+            {
+                options = options with { FrontendCompiler = frontendCompiler.Trim().ToLowerInvariant() };
+                continue;
+            }
+
             if (TryGetOptionValue(arg, "--dev-proxy", out var proxyValue) &&
                 TryParseProxyRule(proxyValue, out var proxyPrefix, out var proxyTarget))
             {
-                var proxyRules = new Dictionary<string, ProxyTarget>(options.ProxyRules, StringComparer.OrdinalIgnoreCase)
-                {
-                    [proxyPrefix] = proxyTarget
-                };
-                options = options with { ProxyRules = proxyRules };
+                options = ApplyProxyRule(options, proxyPrefix, proxyTarget);
             }
         }
 
-        if (string.IsNullOrWhiteSpace(options.RootDirectory))
+        return options;
+    }
+
+    private static DevServerOptions ApplyConfigFile(DevServerOptions options)
+    {
+        var configPath = Path.Combine(options.RootDirectory, "jazor.config.json");
+        if (!File.Exists(configPath))
         {
-            options = options with { RootDirectory = Directory.GetCurrentDirectory() };
+            return options;
+        }
+
+        JazorConfig? config;
+        try
+        {
+            config = JsonSerializer.Deserialize<JazorConfig>(
+                File.ReadAllText(configPath),
+                new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+        }
+        catch (JsonException ex)
+        {
+            throw new InvalidOperationException($"Failed to parse dev-server config '{configPath}'.", ex);
+        }
+
+        if (config is null)
+        {
+            return options;
+        }
+
+        if (config.Server is not null)
+        {
+            if (config.Server.Port is { } port)
+            {
+                options = options with { Port = port };
+            }
+
+            if (!string.IsNullOrWhiteSpace(config.Server.Host))
+            {
+                options = options with { Host = config.Server.Host };
+            }
+
+            if (config.Server.Open is { } openBrowser)
+            {
+                options = options with { OpenBrowser = openBrowser };
+            }
+
+            if (config.Server.Hmr is { } hmrEnabled)
+            {
+                options = options with { HmrEnabled = hmrEnabled };
+            }
+        }
+
+        if (config.Proxy is null)
+        {
+            return options;
+        }
+
+        foreach (var (prefix, proxyConfig) in config.Proxy)
+        {
+            if (!TryCreateProxyTarget(proxyConfig, out var proxyTarget))
+            {
+                continue;
+            }
+
+            if (string.IsNullOrWhiteSpace(prefix) || !prefix.StartsWith("/", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            options = ApplyProxyRule(options, prefix, proxyTarget);
         }
 
         return options;
@@ -109,5 +199,39 @@ internal static class DevServerOptionsParser
             Target = targetValue
         };
         return true;
+    }
+
+    private static bool TryCreateProxyTarget(
+        JazorProxyConfig proxyConfig,
+        out ProxyTarget target)
+    {
+        target = default!;
+        if (proxyConfig is null
+            || string.IsNullOrWhiteSpace(proxyConfig.Target)
+            || !Uri.TryCreate(proxyConfig.Target, UriKind.Absolute, out _))
+        {
+            return false;
+        }
+
+        target = new ProxyTarget
+        {
+            Target = proxyConfig.Target,
+            Secure = proxyConfig.Secure ?? false,
+            WebSocket = proxyConfig.WebSocket ?? true,
+            RewritePath = proxyConfig.RewritePath
+        };
+        return true;
+    }
+
+    private static DevServerOptions ApplyProxyRule(
+        DevServerOptions options,
+        string proxyPrefix,
+        ProxyTarget proxyTarget)
+    {
+        var proxyRules = new Dictionary<string, ProxyTarget>(options.ProxyRules, StringComparer.OrdinalIgnoreCase)
+        {
+            [proxyPrefix] = proxyTarget
+        };
+        return options with { ProxyRules = proxyRules };
     }
 }

@@ -174,6 +174,63 @@ internal static class VueHostWorkspaceResolver
         }
     }
 
+    public static IEnumerable<string> GetCoLocatedCodeBehindPaths(string jazorDocumentPath)
+    {
+        var documentDirectory = Path.GetDirectoryName(jazorDocumentPath);
+        var fileName = Path.GetFileName(jazorDocumentPath);
+        var componentName = Path.GetFileNameWithoutExtension(jazorDocumentPath);
+        if (string.IsNullOrWhiteSpace(documentDirectory)
+            || string.IsNullOrWhiteSpace(fileName)
+            || string.IsNullOrWhiteSpace(componentName))
+        {
+            yield break;
+        }
+
+        yield return Path.Combine(documentDirectory, fileName + ".cs");
+        yield return Path.Combine(documentDirectory, componentName + ".cs");
+    }
+
+    public static bool TryResolveOwningJazorPath(string codeBehindPath, out string jazorDocumentPath)
+    {
+        jazorDocumentPath = string.Empty;
+        if (string.IsNullOrWhiteSpace(codeBehindPath)
+            || !codeBehindPath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var fullCodeBehindPath = Path.IsPathRooted(codeBehindPath)
+            ? Path.GetFullPath(codeBehindPath)
+            : codeBehindPath;
+        if (fullCodeBehindPath.EndsWith(".jazor.cs", StringComparison.OrdinalIgnoreCase))
+        {
+            var candidate = fullCodeBehindPath[..^3];
+            if (File.Exists(candidate))
+            {
+                jazorDocumentPath = Path.GetFullPath(candidate);
+                return true;
+            }
+
+            return false;
+        }
+
+        var documentDirectory = Path.GetDirectoryName(fullCodeBehindPath);
+        var componentName = Path.GetFileNameWithoutExtension(fullCodeBehindPath);
+        if (string.IsNullOrWhiteSpace(documentDirectory) || string.IsNullOrWhiteSpace(componentName))
+        {
+            return false;
+        }
+
+        var coLocatedJazorPath = Path.Combine(documentDirectory, componentName + ".jazor");
+        if (!File.Exists(coLocatedJazorPath))
+        {
+            return false;
+        }
+
+        jazorDocumentPath = Path.GetFullPath(coLocatedJazorPath);
+        return true;
+    }
+
     public static IEnumerable<string> GetImportPathCandidates(
         string jazorDocumentPath,
         string importSource)

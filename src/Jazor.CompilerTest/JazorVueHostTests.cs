@@ -88,8 +88,10 @@ public sealed class JazorVueHostTests
         Assert.IsTrue(response.SemanticContext.RelatedDocuments.Any(static document => document.DocumentPath == "Features/Scripts/user-card.ts"));
         Assert.AreEqual("0", response.SemanticContext.Properties["explicitDocumentCount"]);
         Assert.AreEqual("2", response.SemanticContext.Properties["derivedDocumentCount"]);
-        Assert.AreEqual(3, response.Artifacts.Count);
+        Assert.AreEqual(5, response.Artifacts.Count);
         Assert.AreEqual("frontend-context", response.Artifacts[0].ArtifactKind);
+        Assert.IsTrue(response.Artifacts.Any(static artifact => artifact.ArtifactKind == "razor-projection"));
+        Assert.IsTrue(response.Artifacts.Any(static artifact => artifact.ArtifactKind == "razor-projected-csharp"));
         Assert.IsTrue(response.Artifacts.Any(static artifact => artifact.ArtifactKind == "frontend-summary"));
         Assert.IsTrue(response.Artifacts.Skip(1).Any(static artifact => artifact.Content.Contains("documentKind", StringComparison.Ordinal)));
         Assert.IsTrue(response.Artifacts.Skip(1).Any(static artifact => artifact.Content.Contains("userCard", StringComparison.Ordinal)));
@@ -533,9 +535,78 @@ public sealed class JazorVueHostTests
 
         Assert.AreEqual(1, response.SemanticContext.RelatedDocuments.Count);
         Assert.AreEqual("Features/Components/UserCard.vue", response.SemanticContext.RelatedDocuments[0].DocumentPath);
-        Assert.AreEqual(2, response.Artifacts.Count);
+        Assert.AreEqual(4, response.Artifacts.Count);
         Assert.AreEqual("frontend-context", response.Artifacts[0].ArtifactKind);
+        Assert.IsTrue(response.Artifacts.Any(static artifact => artifact.ArtifactKind == "razor-projection"));
+        Assert.IsTrue(response.Artifacts.Any(static artifact => artifact.ArtifactKind == "razor-projected-csharp"));
         Assert.IsTrue(response.Artifacts.Any(static artifact => artifact.ArtifactKind == "frontend-summary"));
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_GetFrontendContext_EmitsRoslynProjectionArtifactsAndCodeBehindSummary()
+    {
+        var host = new VueHostService(new InMemoryWorkspaceStore(), new NullVueAnalysisClient());
+        await host.StartAsync(CancellationToken.None);
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var jazorPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var codeBehindPath = Path.Combine(tempDirectory, "Counter.jazor.cs");
+
+            await host.OpenDocumentAsync(
+                new DocumentSnapshot(
+                    jazorPath,
+                    DocumentKind.Jazor,
+                    """
+                    <template>
+                      <button>@Count</button>
+                    </template>
+
+                    @code {
+                        [Prop] public int Count { get; set; }
+                    }
+                    """,
+                    "1"),
+                CancellationToken.None);
+            await host.OpenDocumentAsync(
+                new DocumentSnapshot(
+                    codeBehindPath,
+                    DocumentKind.CSharp,
+                    """
+                    public partial class Counter
+                    {
+                        [State] private int count = 1;
+                    }
+                    """,
+                    "2"),
+                CancellationToken.None);
+
+            var response = await host.GetFrontendContextAsync(
+                new GetFrontendContextRequest(jazorPath, Array.Empty<string>()),
+                CancellationToken.None);
+
+            CollectionAssert.Contains(
+                new[] { "razor-design-time", "fallback" },
+                response.SemanticContext.Properties["projectionKind"]);
+            Assert.AreEqual("2", response.SemanticContext.Properties["roslynSourceDocumentCount"]);
+            Assert.AreEqual("1", response.SemanticContext.Properties["codeBehindDocumentCount"]);
+
+            var projectionArtifact = response.Artifacts.Single(static artifact => artifact.ArtifactKind == "razor-projection");
+            StringAssert.Contains(projectionArtifact.Content, "Counter.jazor.cs");
+            StringAssert.Contains(projectionArtifact.Content, "projectionKind");
+
+            var projectedCSharpArtifact = response.Artifacts.Single(static artifact => artifact.ArtifactKind == "razor-projected-csharp");
+            StringAssert.Contains(projectedCSharpArtifact.Content, "class");
+            StringAssert.Contains(projectedCSharpArtifact.Content, "Counter");
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
     }
 
     [TestMethod]

@@ -1,6 +1,5 @@
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Security.Cryptography;
 using Jazor.Emit;
 
 namespace Jazor.Vue;
@@ -195,7 +194,7 @@ public sealed partial class JazorVueCompiler
             builder.ToString(),
             generatedExternalDeclarationsText,
             diagnostics,
-            BuildHotReloadMetadata(document, props, states, computeds, methods, diagnostics));
+            hotReload: null);
     }
 
     private static IReadOnlyList<string> GetVueHelpers(
@@ -886,61 +885,6 @@ public sealed partial class JazorVueCompiler
         }
 
         return count;
-    }
-
-    private static JazorVueHotReloadMetadata BuildHotReloadMetadata(
-        JazorVueDocument document,
-        IReadOnlyList<PropDescriptor> props,
-        IReadOnlyList<StateDescriptor> states,
-        IReadOnlyList<ComputedDescriptor> computeds,
-        IReadOnlyList<MethodDescriptor> methods,
-        IReadOnlyList<string> diagnostics)
-    {
-        var descriptor = new StringBuilder();
-        descriptor.AppendLine("props:");
-        foreach (var prop in props.OrderBy(static item => item.SourceName, StringComparer.Ordinal))
-            descriptor.AppendLine(prop.SourceName + "|" + prop.RuntimeName + "|" + prop.VueTypeExpression);
-
-        return new JazorVueHotReloadMetadata(
-            ComputeSignature(descriptor.ToString()),
-            ComputeSignature(document.Template),
-            ComputeSignature(document.Code),
-            ClassifyHotReloadBoundary(document, props, states, computeds, methods, diagnostics));
-    }
-
-    private static RazorVueHmrBoundaryKind ClassifyHotReloadBoundary(
-        JazorVueDocument document,
-        IReadOnlyList<PropDescriptor> props,
-        IReadOnlyList<StateDescriptor> states,
-        IReadOnlyList<ComputedDescriptor> computeds,
-        IReadOnlyList<MethodDescriptor> methods,
-        IReadOnlyList<string> diagnostics)
-    {
-        if (diagnostics.Any(static diagnostic =>
-                diagnostic.Contains("could not be lowered", StringComparison.Ordinal)))
-        {
-            return RazorVueHmrBoundaryKind.FullReloadRequired;
-        }
-
-        if (props.Count == 0)
-        {
-            return RazorVueHmrBoundaryKind.FullReloadRequired;
-        }
-
-        if (states.Count > 0 || computeds.Count > 0 || methods.Count > 0)
-        {
-            return RazorVueHmrBoundaryKind.LogicSafe;
-        }
-
-        return string.IsNullOrWhiteSpace(document.Template)
-            ? RazorVueHmrBoundaryKind.Unknown
-            : RazorVueHmrBoundaryKind.TemplateOnly;
-    }
-
-    private static string ComputeSignature(string content)
-    {
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(content ?? string.Empty));
-        return Convert.ToHexString(bytes);
     }
 
     private static string NormalizeWhitespace(string value)
