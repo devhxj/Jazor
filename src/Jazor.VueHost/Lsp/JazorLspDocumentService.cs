@@ -125,6 +125,136 @@ internal sealed class JazorLspDocumentService
         return items;
     }
 
+    public ValueTask<IReadOnlyList<LspSemanticToken>> GetSemanticTokensAsync(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (document.DocumentKind != DocumentKind.Jazor)
+        {
+            return ValueTask.FromResult<IReadOnlyList<LspSemanticToken>>(Array.Empty<LspSemanticToken>());
+        }
+
+        var parsed = _parser.Parse(document.DocumentPath, document.Text);
+        var tokens = new List<LspSemanticToken>();
+
+        // Template wrapper tags: <template> and </template>
+        AddTemplateWrapperTokens(document.Text, tokens);
+
+        // @code directive keyword
+        AddCodeDirectiveToken(document.Text, tokens);
+
+        // Legacy import directives: @jsimport, @vueimport
+        AddImportDirectiveTokens(document.Text, tokens);
+
+        // Component tags (PascalCase) in template region
+        if (parsed.TemplateStartIndex >= 0 && parsed.TemplateLength > 0)
+        {
+            AddComponentTagTokens(document.Text, parsed, tokens);
+        }
+
+        return ValueTask.FromResult<IReadOnlyList<LspSemanticToken>>(tokens);
+    }
+
+    private static void AddTemplateWrapperTokens(string text, List<LspSemanticToken> tokens)
+    {
+        var openMatch = Regex.Match(text, @"<template\b", RegexOptions.IgnoreCase);
+        if (openMatch.Success)
+        {
+            var pos = LspProtocolHelpers.GetPosition(text, openMatch.Index);
+            tokens.Add(new LspSemanticToken
+            {
+                Line = pos.Line,
+                Character = pos.Character,
+                Length = "template".Length,
+                TokenType = "decorator"
+            });
+        }
+
+        var closeMatch = Regex.Match(text, @"</template\s*>", RegexOptions.IgnoreCase);
+        if (closeMatch.Success)
+        {
+            var pos = LspProtocolHelpers.GetPosition(text, closeMatch.Index + 2);
+            tokens.Add(new LspSemanticToken
+            {
+                Line = pos.Line,
+                Character = pos.Character,
+                Length = "template".Length,
+                TokenType = "decorator"
+            });
+        }
+    }
+
+    private static void AddCodeDirectiveToken(string text, List<LspSemanticToken> tokens)
+    {
+        var match = Regex.Match(text, @"@code\s*\{", RegexOptions.IgnoreCase);
+        if (!match.Success)
+        {
+            return;
+        }
+
+        var pos = LspProtocolHelpers.GetPosition(text, match.Index);
+        tokens.Add(new LspSemanticToken
+        {
+            Line = pos.Line,
+            Character = pos.Character,
+            Length = "@code".Length,
+            TokenType = "keyword"
+        });
+    }
+
+    private static readonly Regex ImportDirectivePattern = new(
+        @"^\s*@(?<kind>jsimport|vueimport)\b",
+        RegexOptions.Multiline | RegexOptions.Compiled);
+
+    private static void AddImportDirectiveTokens(string text, List<LspSemanticToken> tokens)
+    {
+        foreach (Match match in ImportDirectivePattern.Matches(text))
+        {
+            var kindGroup = match.Groups["kind"];
+            if (!kindGroup.Success)
+            {
+                continue;
+            }
+
+            var atPos = LspProtocolHelpers.GetPosition(text, match.Index);
+            tokens.Add(new LspSemanticToken
+            {
+                Line = atPos.Line,
+                Character = atPos.Character,
+                Length = 1 + kindGroup.Length,
+                TokenType = "keyword"
+            });
+        }
+    }
+
+    private static void AddComponentTagTokens(
+        string text,
+        JazorVueDocument parsed,
+        List<LspSemanticToken> tokens)
+    {
+        foreach (Match match in TagPattern.Matches(parsed.Template))
+        {
+            var group = match.Groups["name"];
+            if (!group.Success)
+            {
+                continue;
+            }
+
+            var sourceIndex = parsed.TemplateStartIndex + group.Index;
+            var pos = LspProtocolHelpers.GetPosition(text, sourceIndex);
+            tokens.Add(new LspSemanticToken
+            {
+                Line = pos.Line,
+                Character = pos.Character,
+                Length = group.Length,
+                TokenType = "class",
+                TokenModifiers = ["declaration"]
+            });
+        }
+    }
+
     public ValueTask<IReadOnlyList<LspDocumentSymbol>> GetDocumentSymbolsAsync(
         DocumentSnapshot document,
         CancellationToken cancellationToken)
@@ -165,6 +295,105 @@ internal sealed class JazorLspDocumentService
         }
 
         return ValueTask.FromResult<IReadOnlyList<LspDocumentSymbol>>(symbols);
+    }
+
+    public async ValueTask<IReadOnlyList<LspLocation>> GetDefinitionAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var symbol = await _markupComponentBridge.ResolveBridgeSymbolAsync(
+            document,
+            position,
+            locationHints: null,
+            allowWorkspaceScan: true,
+            cancellationToken);
+
+        if (symbol is null)
+        {
+            return Array.Empty<LspLocation>();
+        }
+
+        return
+        [
+            new LspLocation
+            {
+                Uri = LspProtocolHelpers.ToDocumentUri(symbol.Value.AbsolutePath),
+                Range = new LspRange
+                {
+                    Start = new LspPosition { Line = 0, Character = 0 },
+                    End = new LspPosition { Line = 0, Character = 0 }
+                }
+            }
+        ];
+    }
+
+    public async ValueTask<IReadOnlyList<LspLocation>> GetReferencesAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        bool includeDeclaration,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var symbol = await _markupComponentBridge.ResolveBridgeSymbolAsync(
+            document,
+            position,
+            locationHints: null,
+            allowWorkspaceScan: true,
+            cancellationToken);
+
+        if (symbol is null)
+        {
+            return Array.Empty<LspLocation>();
+        }
+
+        return await _markupComponentBridge.FindJazorReferencesAsync(
+            document,
+            symbol.Value.ComponentName,
+            symbol.Value.AbsolutePath,
+            includeDeclaration,
+            cancellationToken);
+    }
+
+    public async ValueTask<LspWorkspaceEdit?> GetRenameAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        string newName,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var symbol = await _markupComponentBridge.ResolveBridgeSymbolAsync(
+            document,
+            position,
+            locationHints: null,
+            allowWorkspaceScan: true,
+            cancellationToken);
+
+        if (symbol is null)
+        {
+            return null;
+        }
+
+        var changes = await _markupComponentBridge.FindJazorRenameChangesAsync(
+            document,
+            symbol.Value.ComponentName,
+            symbol.Value.AbsolutePath,
+            newName,
+            cancellationToken);
+
+        if (changes.Count == 0)
+        {
+            return null;
+        }
+
+        return new LspWorkspaceEdit
+        {
+            Changes = changes
+        };
     }
 
     public async ValueTask<bool> IsVueComponentResolvableAsync(

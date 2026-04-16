@@ -79,7 +79,10 @@ internal sealed class LspSession
                         HoverProvider = true,
                         DefinitionProvider = true,
                         ReferencesProvider = true,
-                        RenameProvider = true,
+                        RenameProvider = new LspRenameOptions
+                        {
+                            PrepareProvider = true
+                        },
                         CodeActionProvider = true,
                         DocumentSymbolProvider = true,
                         SignatureHelpProvider = new LspSignatureHelpOptions
@@ -114,6 +117,7 @@ internal sealed class LspSession
             "textDocument/definition" => await HandleDefinitionAsync(request, cancellationToken),
             "textDocument/references" => await HandleReferencesAsync(request, cancellationToken),
             "textDocument/rename" => await HandleRenameAsync(request, cancellationToken),
+            "textDocument/prepareRename" => await HandlePrepareRenameAsync(request, cancellationToken),
             "textDocument/codeAction" => await HandleCodeActionAsync(request, cancellationToken),
             _ => CreateErrorResponse(request.Id, -32601, $"Unsupported LSP method '{request.Method}'.")
         };
@@ -329,6 +333,77 @@ internal sealed class LspSession
                 projectionTarget,
                 cancellationToken));
     }
+
+    private async ValueTask<LspResponseMessage> HandlePrepareRenameAsync(
+        LspRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        var parameters = DeserializeParams<LspPrepareRenameParams>(request.Params);
+        var document = await GetRequiredDocumentAsync(parameters.TextDocument.Uri, cancellationToken);
+        var projectionTarget = await _projectionResolver.ResolveAsync(document, parameters.Position, cancellationToken);
+
+        // Try each lane to see if the position is renamable
+        foreach (var lane in GetOrderedLanes(projectionTarget))
+        {
+            var renameEdit = await lane.GetRenameAsync(
+                document,
+                parameters.Position,
+                "__prepare__",
+                projectionTarget,
+                cancellationToken);
+
+            if (renameEdit is not null)
+            {
+                // A lane confirmed the position is renamable — return the placeholder range
+                var offset = LspProtocolHelpers.GetOffset(document.Text, parameters.Position);
+                var wordRange = GetWordRangeAtPosition(document.Text, offset);
+                return CreateSuccessResponse(request.Id, new LspPrepareRenameResult
+                {
+                    Range = wordRange,
+                    Placeholder = ExtractWord(document.Text, offset)
+                });
+            }
+        }
+
+        return CreateSuccessResponse(request.Id, result: null);
+    }
+
+    private static LspRange GetWordRangeAtPosition(string text, int offset)
+    {
+        var (start, length) = GetWordBounds(text, offset);
+        return LspProtocolHelpers.ToRange(text, start, length);
+    }
+
+    private static string ExtractWord(string text, int offset)
+    {
+        var (start, length) = GetWordBounds(text, offset);
+        return text.Substring(start, length);
+    }
+
+    private static (int start, int length) GetWordBounds(string text, int offset)
+    {
+        if (offset < 0 || offset >= text.Length)
+        {
+            return (Math.Max(0, offset), 0);
+        }
+
+        var start = offset;
+        while (start > 0 && IsWordCharacter(text[start - 1]))
+        {
+            start--;
+        }
+
+        var end = offset;
+        while (end < text.Length && IsWordCharacter(text[end]))
+        {
+            end++;
+        }
+
+        return (start, end - start);
+    }
+
+    private static bool IsWordCharacter(char c)
+        => char.IsLetterOrDigit(c) || c == '_';
 
     private async ValueTask<LspResponseMessage> HandleCodeActionAsync(
         LspRequestMessage request,

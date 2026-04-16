@@ -11,14 +11,23 @@ internal static class LspSemanticTokenLegend
         "variable",
         "keyword",
         "string",
-        "number"
+        "number",
+        "decorator",
+        "type",
+        "function",
+        "enum",
+        "interface",
+        "namespace"
     ];
 
     public static readonly string[] TokenModifiers =
     [
         "declaration",
         "static",
-        "readonly"
+        "readonly",
+        "abstract",
+        "async",
+        "modification"
     ];
 
     public static LspSemanticTokensLegendDescriptor CreateDescriptor()

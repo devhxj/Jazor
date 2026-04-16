@@ -41,7 +41,8 @@ public sealed class JazorVueHostLspTests
         Assert.IsTrue(result.GetProperty("capabilities").GetProperty("hoverProvider").GetBoolean());
         Assert.IsTrue(result.GetProperty("capabilities").GetProperty("definitionProvider").GetBoolean());
         Assert.IsTrue(result.GetProperty("capabilities").GetProperty("referencesProvider").GetBoolean());
-        Assert.IsTrue(result.GetProperty("capabilities").GetProperty("renameProvider").GetBoolean());
+        var renameProvider = result.GetProperty("capabilities").GetProperty("renameProvider");
+        Assert.IsTrue(renameProvider.GetProperty("prepareProvider").GetBoolean());
         Assert.IsTrue(result.GetProperty("capabilities").GetProperty("codeActionProvider").GetBoolean());
         Assert.IsTrue(result.GetProperty("capabilities").GetProperty("documentSymbolProvider").GetBoolean());
         var semanticTokensProvider = result.GetProperty("capabilities").GetProperty("semanticTokensProvider");

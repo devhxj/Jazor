@@ -41,7 +41,7 @@ internal sealed class JazorLaneService : ILspLane
     public ValueTask<IReadOnlyList<LspSemanticToken>> GetSemanticTokensAsync(
         DocumentSnapshot document,
         CancellationToken cancellationToken)
-        => ValueTask.FromResult<IReadOnlyList<LspSemanticToken>>(Array.Empty<LspSemanticToken>());
+        => _documentService.GetSemanticTokensAsync(document, cancellationToken);
 
     public ValueTask<LspSignatureHelp?> GetSignatureHelpAsync(
         DocumentSnapshot document,
@@ -55,7 +55,7 @@ internal sealed class JazorLaneService : ILspLane
         LspPosition position,
         ProjectionTarget projectionTarget,
         CancellationToken cancellationToken)
-        => ValueTask.FromResult<IReadOnlyList<LspLocation>>(Array.Empty<LspLocation>());
+        => _documentService.GetDefinitionAsync(document, position, cancellationToken);
 
     public ValueTask<IReadOnlyList<LspLocation>> GetReferencesAsync(
         DocumentSnapshot document,
@@ -63,7 +63,7 @@ internal sealed class JazorLaneService : ILspLane
         bool includeDeclaration,
         ProjectionTarget projectionTarget,
         CancellationToken cancellationToken)
-        => ValueTask.FromResult<IReadOnlyList<LspLocation>>(Array.Empty<LspLocation>());
+        => _documentService.GetReferencesAsync(document, position, includeDeclaration, cancellationToken);
 
     public ValueTask<LspWorkspaceEdit?> GetRenameAsync(
         DocumentSnapshot document,
@@ -71,7 +71,7 @@ internal sealed class JazorLaneService : ILspLane
         string newName,
         ProjectionTarget projectionTarget,
         CancellationToken cancellationToken)
-        => ValueTask.FromResult<LspWorkspaceEdit?>(null);
+        => _documentService.GetRenameAsync(document, position, newName, cancellationToken);
 
     public ValueTask<IReadOnlyList<LspCodeAction>> GetCodeActionsAsync(
         DocumentSnapshot document,

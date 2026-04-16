@@ -86,7 +86,7 @@ internal sealed class LspServerCapabilities
     public bool ReferencesProvider { get; init; }
 
     [JsonPropertyName("renameProvider")]
-    public bool RenameProvider { get; init; }
+    public LspRenameOptions? RenameProvider { get; init; }
 
     [JsonPropertyName("codeActionProvider")]
     public bool CodeActionProvider { get; init; }
@@ -129,6 +129,12 @@ internal sealed class LspSignatureHelpOptions
 
     [JsonPropertyName("retriggerCharacters")]
     public string[]? RetriggerCharacters { get; init; }
+}
+
+internal sealed class LspRenameOptions
+{
+    [JsonPropertyName("prepareProvider")]
+    public bool PrepareProvider { get; init; }
 }
 
 internal sealed class LspSemanticTokensOptions
@@ -264,6 +270,24 @@ internal sealed class LspRenameParams
 
     [JsonPropertyName("newName")]
     public required string NewName { get; init; }
+}
+
+internal sealed class LspPrepareRenameParams
+{
+    [JsonPropertyName("textDocument")]
+    public required LspTextDocumentIdentifier TextDocument { get; init; }
+
+    [JsonPropertyName("position")]
+    public required LspPosition Position { get; init; }
+}
+
+internal sealed class LspPrepareRenameResult
+{
+    [JsonPropertyName("range")]
+    public required LspRange Range { get; init; }
+
+    [JsonPropertyName("placeholder")]
+    public required string Placeholder { get; init; }
 }
 
 internal sealed class LspCodeActionContext
