@@ -7,7 +7,7 @@ namespace Jazor.VueHost.DevServer;
 internal sealed class StubFrontendModuleCompiler : IFrontendModuleCompiler
 {
     private static readonly Regex StyleBlockPattern = new(
-        @"<style\b[^>]*>(?<content>[\s\S]*?)</style>",
+        @"(?<open><style\b[^>]*>)(?<content>[\s\S]*?)(?<close></style>)",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     public ValueTask<FrontendModuleCompilation?> CompileSfcAsync(
@@ -45,7 +45,8 @@ internal sealed class StubFrontendModuleCompiler : IFrontendModuleCompiler
 
     private static string CreateStubSfcModule(string documentPath, string text)
     {
-        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text)));
+        var styleInsensitiveText = StripStyleContent(text);
+        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(styleInsensitiveText)));
         var componentName = EscapeJavaScriptString(Path.GetFileNameWithoutExtension(documentPath));
 
         return
@@ -62,6 +63,13 @@ internal sealed class StubFrontendModuleCompiler : IFrontendModuleCompiler
             ? match.Groups["content"].Value.Trim()
             : null;
     }
+
+    private static string StripStyleContent(string text)
+        => StyleBlockPattern.Replace(
+            text,
+            static match => string.Concat(
+                match.Groups["open"].Value,
+                match.Groups["close"].Value));
 
     private static string EscapeJavaScriptString(string value)
         => value

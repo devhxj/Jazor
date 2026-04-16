@@ -39,6 +39,9 @@ type FrontendDocumentKind = "jazor" | "vue" | "typescript" | "javascript" | "css
 type ScriptLanguage = "ts" | "js";
 type ScriptSymbolKind = "const" | "let" | "var" | "function" | "class" | "import";
 type TemplateSymbol = { name: string; range: { start: Position; end: Position } };
+type SourceLineRange = { sourceStartLine: number; sourceLineCount: number };
+type SourceMappedPart = { content: string; sourceRange?: SourceLineRange };
+type SfcBlockLike = { loc: { start: { line: number }; end: { line: number } } };
 type FrontendDocumentSnapshot = {
   documentPath: string;
   documentKind: string;
@@ -602,7 +605,7 @@ function compileVueSfc(
   documentPath: string,
   sfcText: string,
   filename: string,
-): { jsContent: string; cssContent: string | null; diagnostics: string[]; supportsHmr: boolean } {
+): { jsContent: string; jsSourceMap: string | null; cssContent: string | null; diagnostics: string[]; supportsHmr: boolean } {
   const diagnostics: string[] = [];
   const { descriptor, errors } = vueCompilerSfc.parse(sfcText, { filename });
   for (const error of errors) {
@@ -611,7 +614,13 @@ function compileVueSfc(
 
   const scopeId = createVueScopeId(documentPath);
   const hasScopedStyles = descriptor.styles.some((style) => style.scoped);
-  const jsParts: string[] = [];
+  const scriptSourceRange = getCombinedSfcBlockSourceRange(descriptor.script, descriptor.scriptSetup);
+  const templateSourceRange = getSfcBlockSourceRange(descriptor.template);
+  const scopedStyleSourceRange = getCombinedSfcBlockSourceRange(
+    ...descriptor.styles.filter((style) => style.scoped),
+  );
+  const preferredSourceRange = scriptSourceRange ?? templateSourceRange ?? scopedStyleSourceRange;
+  const jsParts: SourceMappedPart[] = [];
   let bindingMetadata: ReturnType<typeof vueCompilerSfc.compileScript>["bindings"] | undefined;
 
   if (descriptor.scriptSetup !== null) {
@@ -621,22 +630,42 @@ function compileVueSfc(
         genDefaultAs: "_sfc_main",
       });
       bindingMetadata = compiledScript.bindings;
-      if (compiledScript.content.trim().length > 0) {
-        jsParts.push(compiledScript.content.trim());
+      let scriptContent = compiledScript.content.trim();
+      if (requiresTypeScriptTranspile(descriptor)) {
+        const transpiled = transpileTypeScriptModule(scriptContent, filename, false);
+        diagnostics.push(...transpiled.diagnostics);
+        scriptContent = transpiled.jsContent;
+      }
+
+      if (scriptContent.length > 0) {
+        jsParts.push({
+          content: scriptContent,
+          sourceRange: scriptSourceRange,
+        });
       }
     } catch (error) {
       diagnostics.push(`Failed to compile <script setup>: ${formatSfcCompilerMessage(error)}`);
-      jsParts.push("const _sfc_main = {};");
+      jsParts.push({ content: "const _sfc_main = {};" });
     }
   } else if (descriptor.script !== null) {
-    const scriptContent = descriptor.script.content.trim();
+    let scriptContent = descriptor.script.content.trim();
     if (scriptContent.length > 0) {
-      jsParts.push(rewriteDefaultExport(scriptContent, "_sfc_main"));
+      scriptContent = rewriteDefaultExport(scriptContent, "_sfc_main");
+      if (isTypeScriptLanguage(descriptor.script.lang)) {
+        const transpiled = transpileTypeScriptModule(scriptContent, filename, false);
+        diagnostics.push(...transpiled.diagnostics);
+        scriptContent = transpiled.jsContent;
+      }
+
+      jsParts.push({
+        content: scriptContent,
+        sourceRange: getSfcBlockSourceRange(descriptor.script),
+      });
     } else {
-      jsParts.push("const _sfc_main = {};");
+      jsParts.push({ content: "const _sfc_main = {};" });
     }
   } else {
-    jsParts.push("const _sfc_main = {};");
+    jsParts.push({ content: "const _sfc_main = {};" });
   }
 
   if (descriptor.template !== null) {
@@ -658,7 +687,10 @@ function compileVueSfc(
       }
 
       if (templateCompiled.code.trim().length > 0) {
-        jsParts.push(templateCompiled.code.trim());
+        jsParts.push({
+          content: templateCompiled.code.trim(),
+          sourceRange: templateSourceRange,
+        });
       }
     } catch (error) {
       diagnostics.push(`Failed to compile <template>: ${formatSfcCompilerMessage(error)}`);
@@ -688,11 +720,17 @@ function compileVueSfc(
   }
 
   if (hasScopedStyles) {
-    jsParts.push(`_sfc_main.__scopeId = "data-v-${scopeId}";`);
+    jsParts.push({
+      content: `_sfc_main.__scopeId = "data-v-${scopeId}";`,
+      sourceRange: scopedStyleSourceRange,
+    });
   }
 
   if (descriptor.template !== null) {
-    jsParts.push("_sfc_main.render = render;");
+    jsParts.push({
+      content: "_sfc_main.render = render;",
+      sourceRange: templateSourceRange,
+    });
   }
 
   const hmrId = `jazor-vue:${normalizePath(documentPath)}`;
@@ -702,17 +740,20 @@ function compileVueSfc(
     descriptor.scriptSetup?.content ?? "",
     descriptor.styles.map((style) => `${style.scoped}:${style.lang ?? ""}:${style.module ? "module" : "plain"}`).join("|"),
   ].join("\n"));
-  jsParts.push(`const __jazorHmrId = ${JSON.stringify(hmrId)};`);
-  jsParts.push(`const __jazorHmrTemplateHash = ${JSON.stringify(templateHash)};`);
-  jsParts.push(`const __jazorHmrScriptHash = ${JSON.stringify(scriptHash)};`);
-  jsParts.push("_sfc_main.__hmrId = __jazorHmrId;");
-  jsParts.push(`
+  jsParts.push({ content: `const __jazorHmrId = ${JSON.stringify(hmrId)};` });
+  jsParts.push({ content: `const __jazorHmrTemplateHash = ${JSON.stringify(templateHash)};` });
+  jsParts.push({ content: `const __jazorHmrScriptHash = ${JSON.stringify(scriptHash)};` });
+  jsParts.push({
+    content: "_sfc_main.__hmrId = __jazorHmrId;",
+    sourceRange: preferredSourceRange,
+  });
+  jsParts.push({ content: `
 const __jazorHotContext = import.meta.hot ?? globalThis.__JAZOR_HMR__?.createHotContext(import.meta.url);
 if (__jazorHotContext) {
   import.meta.hot = __jazorHotContext;
 }
-`.trim());
-  jsParts.push(`
+`.trim() });
+  jsParts.push({ content: `
 if (import.meta.hot) {
   const __jazorVueHmrRuntime = globalThis.__VUE_HMR_RUNTIME__;
   if (__jazorVueHmrRuntime) {
@@ -734,19 +775,21 @@ if (import.meta.hot) {
     __jazorVueHmrRuntime.reload(__jazorHmrId, updatedComponent);
   });
 }
-`.trim());
-  jsParts.push("export { __jazorHmrId, __jazorHmrTemplateHash, __jazorHmrScriptHash };");
-  jsParts.push("export default _sfc_main;");
+`.trim() });
+  jsParts.push({
+    content: "export { __jazorHmrId, __jazorHmrTemplateHash, __jazorHmrScriptHash };",
+    sourceRange: preferredSourceRange,
+  });
+  jsParts.push({
+    content: "export default _sfc_main;",
+    sourceRange: preferredSourceRange,
+  });
 
-  let jsContent = jsParts.filter((part) => part.length > 0).join("\n\n");
-  if (requiresTypeScriptTranspile(descriptor)) {
-    const transpiled = transpileTypeScriptModule(jsContent, filename);
-    diagnostics.push(...transpiled.diagnostics);
-    jsContent = transpiled.jsContent;
-  }
+  const sourceMappedModule = createSourceMappedModule(jsParts, filename, sfcText);
 
   return {
-    jsContent,
+    jsContent: sourceMappedModule.content,
+    jsSourceMap: sourceMappedModule.sourceMap,
     cssContent: cssParts.length === 0 ? null : cssParts.join("\n\n"),
     diagnostics,
     supportsHmr: true,
@@ -757,9 +800,9 @@ function compileTypeScript(
   documentPath: string,
   text: string,
   filename: string,
-): { jsContent: string; diagnostics: string[] } {
+): { jsContent: string; jsSourceMap: string | null; diagnostics: string[] } {
   const sourceFileName = filename.trim().length === 0 ? documentPath : filename;
-  return transpileTypeScriptModule(text, sourceFileName);
+  return transpileTypeScriptModule(text, sourceFileName, true);
 }
 
 async function tryGetVueDiagnostics(
@@ -2965,22 +3008,174 @@ function formatTypeScriptDiagnostic(diagnostic: ts.Diagnostic): string {
   return `${diagnostic.file.fileName}(${position.line + 1},${position.character + 1}): ${message}`;
 }
 
+function stripTrailingSourceMappingUrl(text: string): string {
+  return text.replace(/(?:\r?\n)?\/\/# sourceMappingURL=.*\s*$/u, "");
+}
+
+function createSourceMappedModule(
+  parts: readonly SourceMappedPart[],
+  sourceFilename: string,
+  sourceText: string,
+): { content: string; sourceMap: string | null } {
+  const normalizedParts = parts
+    .map((part) => ({
+      content: normalizeLineEndings(part.content),
+      sourceRange: part.sourceRange,
+    }))
+    .filter((part) => part.content.length > 0);
+  if (normalizedParts.length === 0) {
+    return {
+      content: "",
+      sourceMap: null,
+    };
+  }
+
+  const lineMappings: Array<number | null> = [];
+  let content = "";
+  for (const part of normalizedParts) {
+    if (content.length > 0) {
+      content += "\n\n";
+      lineMappings.push(null);
+    }
+
+    content += part.content;
+    appendLineMappings(lineMappings, part.content, part.sourceRange);
+  }
+
+  return {
+    content,
+    sourceMap: createSingleSourceLineMap(sourceFilename, sourceText, lineMappings),
+  };
+}
+
+function createSingleSourceLineMap(
+  sourceFilename: string,
+  sourceText: string,
+  lineMappings: ReadonlyArray<number | null>,
+): string | null {
+  if (lineMappings.length === 0) {
+    return null;
+  }
+
+  let previousSourceLine = 0;
+  const mappingLines = lineMappings.map((sourceLine) => {
+    if (sourceLine === null) {
+      return "";
+    }
+
+    const segment = [
+      encodeBase64Vlq(0),
+      encodeBase64Vlq(0),
+      encodeBase64Vlq(sourceLine - previousSourceLine),
+      encodeBase64Vlq(0),
+    ].join("");
+    previousSourceLine = sourceLine;
+    return segment;
+  });
+
+  return JSON.stringify({
+    version: 3,
+    file: sourceFilename,
+    sources: [sourceFilename],
+    sourcesContent: [sourceText],
+    names: [],
+    mappings: mappingLines.join(";"),
+  });
+}
+
+function appendLineMappings(
+  lineMappings: Array<number | null>,
+  content: string,
+  sourceRange?: SourceLineRange,
+): void {
+  const lines = normalizeLineEndings(content).split("\n");
+  if (sourceRange === undefined) {
+    for (let index = 0; index < lines.length; index += 1) {
+      lineMappings.push(null);
+    }
+
+    return;
+  }
+
+  const maxOffset = Math.max(0, sourceRange.sourceLineCount - 1);
+  for (let index = 0; index < lines.length; index += 1) {
+    lineMappings.push(sourceRange.sourceStartLine - 1 + Math.min(index, maxOffset));
+  }
+}
+
+function getSfcBlockSourceRange(block: SfcBlockLike | null | undefined): SourceLineRange | undefined {
+  if (block === null || block === undefined) {
+    return undefined;
+  }
+
+  return {
+    sourceStartLine: block.loc.start.line,
+    sourceLineCount: Math.max(1, block.loc.end.line - block.loc.start.line + 1),
+  };
+}
+
+function getCombinedSfcBlockSourceRange(
+  ...blocks: Array<SfcBlockLike | null | undefined>
+): SourceLineRange | undefined {
+  const ranges = blocks
+    .map((block) => getSfcBlockSourceRange(block))
+    .filter((range): range is SourceLineRange => range !== undefined);
+  if (ranges.length === 0) {
+    return undefined;
+  }
+
+  const sourceStartLine = Math.min(...ranges.map((range) => range.sourceStartLine));
+  const sourceEndLine = Math.max(...ranges.map((range) => range.sourceStartLine + range.sourceLineCount - 1));
+  return {
+    sourceStartLine,
+    sourceLineCount: Math.max(1, sourceEndLine - sourceStartLine + 1),
+  };
+}
+
+function normalizeLineEndings(text: string): string {
+  return text.replace(/\r\n/g, "\n");
+}
+
+function encodeBase64Vlq(value: number): string {
+  const base64Characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+  let vlq = value < 0
+    ? ((-value) << 1) + 1
+    : value << 1;
+  let encoded = "";
+
+  do {
+    let digit = vlq & 31;
+    vlq >>>= 5;
+    if (vlq > 0) {
+      digit |= 32;
+    }
+
+    encoded += base64Characters[digit];
+  } while (vlq > 0);
+
+  return encoded;
+}
+
 function transpileTypeScriptModule(
   text: string,
   filename: string,
-): { jsContent: string; diagnostics: string[] } {
+  emitSourceMap: boolean,
+): { jsContent: string; jsSourceMap: string | null; diagnostics: string[] } {
   const transpiled = ts.transpileModule(text, {
     fileName: filename,
     compilerOptions: {
       module: ts.ModuleKind.ESNext,
       target: ts.ScriptTarget.ES2022,
-      sourceMap: false,
+      sourceMap: emitSourceMap,
+      inlineSourceMap: false,
+      inlineSources: emitSourceMap,
     },
     reportDiagnostics: true,
   });
 
   return {
-    jsContent: transpiled.outputText.trim(),
+    jsContent: stripTrailingSourceMappingUrl(transpiled.outputText).trim(),
+    jsSourceMap: emitSourceMap ? transpiled.sourceMapText ?? null : null,
     diagnostics: (transpiled.diagnostics ?? []).map(formatTypeScriptDiagnostic),
   };
 }

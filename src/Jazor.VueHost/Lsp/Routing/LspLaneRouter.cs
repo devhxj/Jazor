@@ -23,7 +23,7 @@ internal sealed class LspLaneRouter : ILspLaneRouter
         {
             DocumentKind.Jazor => DiagnosticLanes,
             DocumentKind.CSharp => RoslynOnly,
-            DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript => VolarOnly,
+            DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript or DocumentKind.Css => VolarOnly,
             _ => JazorOnly
         };
 
@@ -32,7 +32,7 @@ internal sealed class LspLaneRouter : ILspLaneRouter
         {
             DocumentKind.Jazor => JazorSemanticTokenLanes,
             DocumentKind.CSharp => RoslynOnly,
-            DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript => VolarOnly,
+            DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript or DocumentKind.Css => VolarOnly,
             _ => JazorOnly
         };
 }

@@ -109,6 +109,7 @@ internal static class VueHostWorkspaceResolver
             ".vue" => DocumentKind.Vue,
             ".js" => DocumentKind.JavaScript,
             ".ts" => DocumentKind.TypeScript,
+            ".css" => DocumentKind.Css,
             _ => DocumentKind.Unknown
         };
 
@@ -118,6 +119,7 @@ internal static class VueHostWorkspaceResolver
             DocumentKind.Vue => DocumentKind.Vue,
             DocumentKind.JavaScript => DocumentKind.JavaScript,
             DocumentKind.TypeScript => DocumentKind.TypeScript,
+            DocumentKind.Css => DocumentKind.Css,
             _ => null
         };
 
@@ -135,6 +137,7 @@ internal static class VueHostWorkspaceResolver
             yield return documentPath + ".vue";
             yield return documentPath + ".ts";
             yield return documentPath + ".js";
+            yield return documentPath + ".css";
         }
 
         var slashNormalized = documentPath.Replace('\\', '/');

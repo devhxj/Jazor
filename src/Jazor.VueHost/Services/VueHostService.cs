@@ -255,7 +255,7 @@ public sealed class VueHostService : IVueHostService, IVueHostRpcService, IFront
                 reason: "jazor-change");
         }
 
-        if (request.DocumentKind is not (DocumentKind.Vue or DocumentKind.TypeScript or DocumentKind.JavaScript))
+        if (request.DocumentKind is not (DocumentKind.Vue or DocumentKind.TypeScript or DocumentKind.JavaScript or DocumentKind.Css))
         {
             return new GetHotUpdatePlanResponse(
                 requiresFullReload: true,
@@ -482,7 +482,7 @@ public sealed class VueHostService : IVueHostService, IVueHostRpcService, IFront
     {
         var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
         var document = await VueHostWorkspaceResolver.ResolveDocumentAsync(candidatePath, openDocuments, cancellationToken);
-        return document is { DocumentKind: DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript }
+        return document is { DocumentKind: DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript or DocumentKind.Css }
             ? document
             : null;
     }

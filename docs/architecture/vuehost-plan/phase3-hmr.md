@@ -6,6 +6,21 @@
 
 **验收标准**: 编辑 `.jazor` / `.vue` / `.ts` / `.css` 文件保存后，浏览器自动热更新，无需手动刷新，页面状态（如 Vue 组件 ref 状态）不丢失。
 
+## 当前实现状态（2026-04-16）
+
+### 已完成
+
+- Dev Server 已落地 WebSocket 热更新通道、文件监听/去抖、变更分类、增量重编译和 API 代理。
+- HTTPS/WSS 自签证书回归与 `Secure=false` 代理路径已覆盖，WebSocket subprotocol 转发已覆盖。
+- `--dev` 与 `--lsp` 可组合运行，LSP `didChange` 已接入 Dev Server 的 workspace 变更通道。
+- 未保存工作区变更的 HMR/full-reload/去重回归已覆盖 `.jazor`、`.jazor.cs`、`.vue`、`.ts`。
+- 未保存 `.vue` style-only 变更的 `style-update` 与相同内容落盘去重已覆盖。
+- 独立 `.css` 文档已补齐 `DocumentKind.Css`、combined `--dev --lsp` workspace 回源，以及未保存 `style-update`/落盘去重回归。
+
+### 仍需明确或继续推进
+
+- 本文下方很多 `HmrServer` / `WorkspaceFileWatcher` / `_lspHandledPaths` 段落属于原始设计蓝图；当前实际实现以 `DevServerReloadHub`、`DevHttpServer`、`ChangeProcessor` 和 workspace hash 去重为准。
+
 ---
 
 ## 一、HMR 整体架构

@@ -108,7 +108,7 @@ try
         if (useDev)
         {
             var devOptions = DevServerOptionsParser.Parse(args);
-            devServer = CreateDevServer(devOptions, denoVolarHost);
+            devServer = CreateDevServer(devOptions, denoVolarHost, workspaceStore);
             await devServer.StartAsync(cancellationToken);
             Console.Error.WriteLine($"Jazor.VueHost dev server listening on {devServer.ListeningUri ?? new Uri($"http://{devOptions.Host}:{devOptions.Port}")}");
         }
@@ -228,7 +228,8 @@ static string? GetOptionValue(string[] args, string optionName)
 
 static DevHttpServer CreateDevServer(
     DevServerOptions devOptions,
-    IDenoVolarHost denoFrontendHost)
+    IDenoVolarHost denoFrontendHost,
+    IVueHostWorkspaceStore? workspaceStore = null)
 {
     var moduleResolver = new ModuleResolver(devOptions.RootDirectory);
     IFrontendModuleCompiler frontendCompiler = string.Equals(
@@ -248,5 +249,6 @@ static DevHttpServer CreateDevServer(
         devOptions,
         compiler,
         moduleResolver,
-        new HtmlTransformer(devOptions));
+        new HtmlTransformer(devOptions),
+        workspaceStore);
 }

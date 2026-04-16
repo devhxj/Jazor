@@ -157,7 +157,7 @@ internal sealed class VolarLaneService : ILspLane
         DocumentSnapshot document,
         CancellationToken cancellationToken)
     {
-        if (document.DocumentKind is not (DocumentKind.Jazor or DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript))
+        if (document.DocumentKind is not (DocumentKind.Jazor or DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript or DocumentKind.Css))
         {
             return Array.Empty<LspSemanticToken>();
         }

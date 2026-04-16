@@ -334,6 +334,52 @@ public sealed class JazorVueHostTests
     }
 
     [TestMethod]
+    public async Task JazorVueHost_GetHotUpdatePlan_ReturnsAffectedJazorDocumentsForCssFrontendChange()
+    {
+        var host = new VueHostService(new InMemoryWorkspaceStore(), new NullVueAnalysisClient());
+        await host.StartAsync(CancellationToken.None);
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var jazorPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var cssPath = Path.Combine(tempDirectory, "Counter.css");
+
+            await host.OpenDocumentAsync(
+                new DocumentSnapshot(
+                    jazorPath,
+                    DocumentKind.Jazor,
+                    "<template><div>Counter</div></template>",
+                    "1"),
+                CancellationToken.None);
+            await host.OpenDocumentAsync(
+                new DocumentSnapshot(
+                    cssPath,
+                    DocumentKind.Css,
+                    "body { color: red; }",
+                    "1"),
+                CancellationToken.None);
+
+            var response = await host.GetHotUpdatePlanAsync(
+                new GetHotUpdatePlanRequest(cssPath, DocumentKind.Css, "2"),
+                CancellationToken.None);
+
+            Assert.IsFalse(response.RequiresFullReload);
+            Assert.AreEqual("frontend-change", response.Reason);
+            CollectionAssert.AreEquivalent(
+                new[] { jazorPath.Replace('\\', '/') },
+                response.AffectedDocumentPaths.Select(static path => path.Replace('\\', '/')).ToArray());
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
     public async Task JazorVueHost_AnalyzeJazor_DelegatesToAnalysisClient()
     {
         var host = new VueHostService(new InMemoryWorkspaceStore(), new NullVueAnalysisClient());

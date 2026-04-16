@@ -1,6 +1,9 @@
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using Jazor.Emit;
+using Jazor.Emit.SourceMaps;
 using Jazor.Vue;
 using Jazor.VueContracts.Protocol;
 using Jazor.VueHost.Roslyn.InProc;
@@ -9,6 +12,10 @@ namespace Jazor.VueHost.DevServer;
 
 internal sealed class OnDemandCompiler
 {
+    private static readonly Regex TrailingSourceMapCommentPattern = new(
+        @"(?:\r?\n)?//# sourceMappingURL=.*\s*$",
+        RegexOptions.Compiled);
+
     private readonly JazorVueParser _parser;
     private readonly JazorVueCompiler _compiler;
     private readonly IFrontendModuleCompiler _frontendCompiler;
@@ -189,14 +196,17 @@ internal sealed class OnDemandCompiler
 
         var hotReloadManifestEntry = CreateJazorHotReloadManifestEntry(absolutePath, document, compilation: sfc, module, companionDocuments);
         var moduleSignature = ComputeJazorModuleSignature(module.JavaScript, hotReloadManifestEntry);
+        var servedModule = CreateServedModule(absolutePath, module.JavaScript, module.StyleContent);
+        var chainedSourceMap = ChainJazorSourceMap(module.SourceMap, sfc);
+        var servedSourceMap = OffsetSourceMapGeneratedLines(chainedSourceMap, servedModule.JavaScriptLineOffset);
 
         return new CompilationResult
         {
             ContentType = "text/javascript",
-            Content = CreateServedModule(absolutePath, module.JavaScript, module.StyleContent),
+            Content = AttachInlineSourceMap(servedModule.Content, servedSourceMap),
             ModuleSignature = moduleSignature,
             HotReloadManifestEntry = hotReloadManifestEntry,
-            SourceMap = module.SourceMap,
+            SourceMap = servedSourceMap,
             StyleContent = module.StyleContent,
             Dependencies = module.Dependencies,
             Diagnostics = sfc.Diagnostics,
@@ -211,18 +221,23 @@ internal sealed class OnDemandCompiler
         CancellationToken cancellationToken)
     {
         var module = await _frontendCompiler.CompileSfcAsync(absolutePath, text, cancellationToken);
-        return module is null
-            ? CreateFrontendUnavailableResult("Vue SFC compilation is not available because the frontend compiler is unavailable.")
-            : new CompilationResult
-            {
-                ContentType = "text/javascript",
-                Content = CreateServedModule(absolutePath, module.JavaScript, module.StyleContent),
-                ModuleSignature = ComputeContentHash(module.JavaScript),
-                SourceMap = module.SourceMap,
-                StyleContent = module.StyleContent,
-                Dependencies = module.Dependencies,
-                SupportsHmr = module.SupportsHmr
-            };
+        if (module is null)
+        {
+            return CreateFrontendUnavailableResult("Vue SFC compilation is not available because the frontend compiler is unavailable.");
+        }
+
+        var servedModule = CreateServedModule(absolutePath, module.JavaScript, module.StyleContent);
+        var servedSourceMap = OffsetSourceMapGeneratedLines(module.SourceMap, servedModule.JavaScriptLineOffset);
+        return new CompilationResult
+        {
+            ContentType = "text/javascript",
+            Content = AttachInlineSourceMap(servedModule.Content, servedSourceMap),
+            ModuleSignature = ComputeContentHash(module.JavaScript),
+            SourceMap = servedSourceMap,
+            StyleContent = module.StyleContent,
+            Dependencies = module.Dependencies,
+            SupportsHmr = module.SupportsHmr
+        };
     }
 
     private async ValueTask<CompilationResult> CompileTypeScriptAsync(
@@ -236,7 +251,7 @@ internal sealed class OnDemandCompiler
             : new CompilationResult
             {
                 ContentType = "text/javascript",
-                Content = module.JavaScript,
+                Content = AttachInlineSourceMap(module.JavaScript, module.SourceMap),
                 ModuleSignature = ComputeContentHash(module.JavaScript),
                 SourceMap = module.SourceMap,
                 Dependencies = module.Dependencies
@@ -272,19 +287,18 @@ internal sealed class OnDemandCompiler
             ErrorMessage = message
         };
 
-    private string CreateServedModule(
+    private ServedModuleContent CreateServedModule(
         string documentPath,
         string javaScript,
         string? styleContent)
     {
         if (string.IsNullOrWhiteSpace(styleContent))
         {
-            return javaScript;
+            return new ServedModuleContent(javaScript, JavaScriptLineOffset: 0);
         }
 
         var styleTargetId = GetStyleTargetId(documentPath);
-
-        return $$"""
+        var prefix = $$"""
             const __jazorStyleId = {{System.Text.Json.JsonSerializer.Serialize(styleTargetId)}};
             const __jazorStyle = {{System.Text.Json.JsonSerializer.Serialize(styleContent)}};
             if (typeof document !== "undefined" && __jazorStyle) {
@@ -296,8 +310,11 @@ internal sealed class OnDemandCompiler
               }
               style.textContent = __jazorStyle;
             }
-            {{javaScript}}
             """;
+
+        return new ServedModuleContent(
+            string.Concat(prefix, "\n", javaScript),
+            CountLines(prefix));
     }
 
     private string GetStyleTargetId(string documentPath)
@@ -322,6 +339,194 @@ internal sealed class OnDemandCompiler
         var hash = SHA256.HashData(Encoding.UTF8.GetBytes(text));
         return Convert.ToHexString(hash);
     }
+
+    private static string? OffsetSourceMapGeneratedLines(string? sourceMap, int generatedLineOffset)
+    {
+        if (string.IsNullOrWhiteSpace(sourceMap) || generatedLineOffset <= 0)
+        {
+            return sourceMap;
+        }
+
+        try
+        {
+            if (JsonNode.Parse(sourceMap) is not JsonObject sourceMapObject)
+            {
+                return sourceMap;
+            }
+
+            var mappings = sourceMapObject["mappings"]?.GetValue<string>() ?? string.Empty;
+            sourceMapObject["mappings"] = string.Concat(new string(';', generatedLineOffset), mappings);
+            return sourceMapObject.ToJsonString();
+        }
+        catch
+        {
+            return sourceMap;
+        }
+    }
+
+    private static string? ChainJazorSourceMap(
+        string? javaScriptSourceMap,
+        JazorVueCompilationResult compilation)
+    {
+        if (string.IsNullOrWhiteSpace(javaScriptSourceMap))
+        {
+            return javaScriptSourceMap;
+        }
+
+        try
+        {
+            var generatedVueFileName = Path.GetFileName(compilation.Document.FilePath);
+            var generatedVueSourceMap = CreateGeneratedVueSourceMap(generatedVueFileName, compilation);
+            var chainedMap = new SourceMapChainBuilder().Chain(
+                javaScriptSourceMap,
+                new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    [generatedVueFileName] = generatedVueSourceMap
+                });
+            return new SourceMapWriter().Write(chainedMap);
+        }
+        catch
+        {
+            return javaScriptSourceMap;
+        }
+    }
+
+    private static string CreateGeneratedVueSourceMap(
+        string generatedVueFileName,
+        JazorVueCompilationResult compilation)
+    {
+        var document = compilation.Document;
+        var sourceFileName = Path.GetFileName(document.FilePath);
+        var sources = new[]
+        {
+            new SourceMapSource(sourceFileName, document.SourceText)
+        };
+        var segments = new List<SourceMapSegment>();
+        var codeRange = CreateSourceLineRange(document.SourceText, document.CodeStartIndex, document.CodeLength);
+        var templateRange = CreateSourceLineRange(document.SourceText, document.TemplateStartIndex, document.TemplateLength);
+        var generatedLines = NormalizeLineEndings(compilation.GeneratedVueText).Split('\n');
+        var isInScript = false;
+        var isInTemplate = false;
+        var scriptLineOffset = 0;
+        var templateLineOffset = 0;
+
+        for (var generatedLine = 0; generatedLine < generatedLines.Length; generatedLine++)
+        {
+            var trimmedLine = generatedLines[generatedLine].Trim();
+            if (string.Equals(trimmedLine, "<script setup>", StringComparison.OrdinalIgnoreCase))
+            {
+                isInScript = true;
+                continue;
+            }
+
+            if (string.Equals(trimmedLine, "</script>", StringComparison.OrdinalIgnoreCase))
+            {
+                isInScript = false;
+                continue;
+            }
+
+            if (string.Equals(trimmedLine, "<template>", StringComparison.OrdinalIgnoreCase))
+            {
+                isInTemplate = true;
+                continue;
+            }
+
+            if (string.Equals(trimmedLine, "</template>", StringComparison.OrdinalIgnoreCase))
+            {
+                isInTemplate = false;
+                continue;
+            }
+
+            if (isInTemplate && templateRange is { } templateSourceRange)
+            {
+                segments.Add(new SourceMapSegment(
+                    GeneratedLine: generatedLine,
+                    GeneratedColumn: 0,
+                    SourceIndex: 0,
+                    SourceLine: templateSourceRange.StartLine + Math.Min(templateLineOffset, templateSourceRange.LineCount - 1),
+                    SourceColumn: 0));
+                templateLineOffset++;
+                continue;
+            }
+
+            if (isInScript && codeRange is { } codeSourceRange)
+            {
+                segments.Add(new SourceMapSegment(
+                    GeneratedLine: generatedLine,
+                    GeneratedColumn: 0,
+                    SourceIndex: 0,
+                    SourceLine: codeSourceRange.StartLine + Math.Min(scriptLineOffset, codeSourceRange.LineCount - 1),
+                    SourceColumn: 0));
+                scriptLineOffset++;
+            }
+        }
+
+        return new SourceMapWriter().Write(new SourceMapDocument(generatedVueFileName, sources, segments));
+    }
+
+    private static string AttachInlineSourceMap(string content, string? sourceMap)
+    {
+        if (string.IsNullOrWhiteSpace(sourceMap))
+        {
+            return content;
+        }
+
+        var normalizedContent = TrailingSourceMapCommentPattern.Replace(content, string.Empty).TrimEnd();
+        var dataUri = "data:application/json;base64," + Convert.ToBase64String(Encoding.UTF8.GetBytes(sourceMap));
+        return string.Concat(normalizedContent, "\n//# sourceMappingURL=", dataUri);
+    }
+
+    private static int CountLines(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+        {
+            return 0;
+        }
+
+        var count = 1;
+        foreach (var character in text)
+        {
+            if (character == '\n')
+            {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    private static SourceLineRange? CreateSourceLineRange(
+        string sourceText,
+        int startIndex,
+        int length)
+    {
+        if (startIndex < 0 || length <= 0 || startIndex >= sourceText.Length)
+        {
+            return null;
+        }
+
+        return new SourceLineRange(
+            StartLine: CountNewLines(sourceText, 0, startIndex),
+            LineCount: Math.Max(1, CountNewLines(sourceText, startIndex, Math.Min(length, sourceText.Length - startIndex)) + 1));
+    }
+
+    private static int CountNewLines(string text, int startIndex, int length)
+    {
+        var count = 0;
+        var endIndex = Math.Min(text.Length, startIndex + length);
+        for (var index = Math.Max(0, startIndex); index < endIndex; index++)
+        {
+            if (text[index] == '\n')
+            {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    private static string NormalizeLineEndings(string text)
+        => text.Replace("\r\n", "\n", StringComparison.Ordinal);
 
     private static string ComputeJazorModuleSignature(
         string javaScript,
@@ -425,4 +630,12 @@ internal sealed class OnDemandCompiler
             return Path.GetFileName(documentPath);
         }
     }
+
+    private readonly record struct ServedModuleContent(
+        string Content,
+        int JavaScriptLineOffset);
+
+    private readonly record struct SourceLineRange(
+        int StartLine,
+        int LineCount);
 }

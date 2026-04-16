@@ -517,7 +517,7 @@ internal sealed class LspSession
         {
             DocumentKind.Jazor => [LaneKind.Jazor, LaneKind.Roslyn],
             DocumentKind.CSharp => [LaneKind.Roslyn],
-            DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript => [LaneKind.Volar],
+            DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript or DocumentKind.Css => [LaneKind.Volar],
             _ => [LaneKind.Jazor]
         };
 
@@ -597,6 +597,7 @@ internal sealed class LspSession
             "vue" => DocumentKind.Vue,
             "javascript" => DocumentKind.JavaScript,
             "typescript" => DocumentKind.TypeScript,
+            "css" => DocumentKind.Css,
             _ => Path.GetExtension(documentPath).ToLowerInvariant() switch
             {
                 ".jazor" => DocumentKind.Jazor,
@@ -604,6 +605,7 @@ internal sealed class LspSession
                 ".vue" => DocumentKind.Vue,
                 ".js" => DocumentKind.JavaScript,
                 ".ts" => DocumentKind.TypeScript,
+                ".css" => DocumentKind.Css,
                 _ => DocumentKind.Unknown
             }
         };

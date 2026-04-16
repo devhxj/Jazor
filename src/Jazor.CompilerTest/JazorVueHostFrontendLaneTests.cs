@@ -1,4 +1,5 @@
 using Jazor.VueContracts.Protocol;
+using Jazor.VueHost.DevServer;
 using Jazor.VueHost.Frontend.Deno.Hosting;
 using Jazor.VueHost.Frontend.Deno.Protocol;
 using Jazor.VueHost.Frontend;
@@ -24,6 +25,7 @@ public sealed class JazorVueHostFrontendLaneTests
             new DenoSfcCompileResult
             {
                 JsContent = "export default {};",
+                JsSourceMap = """{"version":3}""",
                 CssContent = ".counter{color:red;}",
                 Diagnostics = [],
                 SupportsHmr = true
@@ -45,9 +47,38 @@ public sealed class JazorVueHostFrontendLaneTests
         Assert.AreEqual(1, workerProcess.StartCallCount);
         Assert.IsNotNull(result);
         Assert.AreEqual("export default {};", result.JsContent);
+        Assert.AreEqual("""{"version":3}""", result.JsSourceMap);
         Assert.AreEqual(".counter{color:red;}", result.CssContent);
         Assert.IsTrue(result.SupportsHmr);
         CollectionAssert.AreEqual(new[] { "compile/sfc" }, workerProcess.RequestMethods);
+    }
+
+    [TestMethod]
+    public async Task DenoFrontendModuleCompiler_CompileSfcAsync_PropagatesWorkerSourceMap()
+    {
+        var compiler = new DenoFrontendModuleCompiler(
+            new FakeDenoFrontendHost
+            {
+                SfcCompileResult = new DenoSfcCompileResult
+                {
+                    JsContent = "export default {};",
+                    JsSourceMap = """{"version":3}""",
+                    CssContent = ".counter{color:red;}",
+                    Diagnostics = [],
+                    SupportsHmr = true
+                }
+            });
+
+        var result = await compiler.CompileSfcAsync(
+            @"D:\temp\Counter.vue",
+            "<template><div /></template>",
+            CancellationToken.None);
+
+        Assert.IsNotNull(result);
+        Assert.AreEqual("export default {};", result.JavaScript);
+        Assert.AreEqual("""{"version":3}""", result.SourceMap);
+        Assert.AreEqual(".counter{color:red;}", result.StyleContent);
+        Assert.IsTrue(result.SupportsHmr);
     }
 
     [TestMethod]
@@ -59,6 +90,7 @@ public sealed class JazorVueHostFrontendLaneTests
             new DenoTypeScriptCompileResult
             {
                 JsContent = "export const count = 1;",
+                JsSourceMap = """{"version":3}""",
                 Diagnostics = []
             });
         var host = new DenoVolarHost(
@@ -78,6 +110,7 @@ public sealed class JazorVueHostFrontendLaneTests
         Assert.AreEqual(1, workerProcess.StartCallCount);
         Assert.IsNotNull(result);
         Assert.AreEqual("export const count = 1;", result.JsContent);
+        Assert.AreEqual("""{"version":3}""", result.JsSourceMap);
         CollectionAssert.AreEqual(new[] { "compile/ts" }, workerProcess.RequestMethods);
     }
 

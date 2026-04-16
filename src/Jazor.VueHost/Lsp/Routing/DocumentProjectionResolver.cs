@@ -40,7 +40,7 @@ internal sealed class DocumentProjectionResolver
                     IsProjected: false);
             }
 
-            if (document.DocumentKind is DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript)
+            if (document.DocumentKind is DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript or DocumentKind.Css)
             {
                 return new ProjectionTarget(
                     LaneKind.Volar,

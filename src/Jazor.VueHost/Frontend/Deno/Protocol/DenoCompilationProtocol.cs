@@ -13,6 +13,8 @@ internal sealed class DenoSfcCompileResult
 {
     public required string JsContent { get; init; }
 
+    public string? JsSourceMap { get; init; }
+
     public string? CssContent { get; init; }
 
     public IReadOnlyList<string> Diagnostics { get; init; } = [];
@@ -32,6 +34,8 @@ internal sealed class DenoTypeScriptCompileRequest
 internal sealed class DenoTypeScriptCompileResult
 {
     public required string JsContent { get; init; }
+
+    public string? JsSourceMap { get; init; }
 
     public IReadOnlyList<string> Diagnostics { get; init; } = [];
 }

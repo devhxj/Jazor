@@ -18,6 +18,7 @@ internal sealed class DevHttpServer : IAsyncDisposable, IWorkspaceDocumentChange
     private readonly OnDemandCompiler _compiler;
     private readonly ModuleResolver _moduleResolver;
     private readonly HtmlTransformer _htmlTransformer;
+    private readonly IVueHostWorkspaceStore? _workspaceStore;
     private readonly DevServerProxy? _proxy;
     private readonly DevServerReloadHub _reloadHub = new();
     private readonly Channel<IReadOnlyList<string>> _fileChangeChannel = Channel.CreateUnbounded<IReadOnlyList<string>>();
@@ -38,12 +39,14 @@ internal sealed class DevHttpServer : IAsyncDisposable, IWorkspaceDocumentChange
         DevServerOptions options,
         OnDemandCompiler compiler,
         ModuleResolver moduleResolver,
-        HtmlTransformer htmlTransformer)
+        HtmlTransformer htmlTransformer,
+        IVueHostWorkspaceStore? workspaceStore = null)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _compiler = compiler ?? throw new ArgumentNullException(nameof(compiler));
         _moduleResolver = moduleResolver ?? throw new ArgumentNullException(nameof(moduleResolver));
         _htmlTransformer = htmlTransformer ?? throw new ArgumentNullException(nameof(htmlTransformer));
+        _workspaceStore = workspaceStore;
         _proxy = options.ProxyRules.Count == 0 ? null : new DevServerProxy(options.ProxyRules);
         _changeProcessor = new ChangeProcessor(
             _compiler,
@@ -167,6 +170,13 @@ internal sealed class DevHttpServer : IAsyncDisposable, IWorkspaceDocumentChange
         var requestPath = context.Request.Path.HasValue
             ? context.Request.Path.Value!
             : "/";
+
+        if (TryGetSourceMapRequestPath(requestPath, out var sourceRequestPath))
+        {
+            ApplyNoCacheHeaders(context.Response);
+            return await HandleSourceMapRequestAsync(sourceRequestPath, context.RequestAborted);
+        }
+
         var resolved = _moduleResolver.Resolve(requestPath);
         if (!resolved.Found)
         {
@@ -181,13 +191,93 @@ internal sealed class DevHttpServer : IAsyncDisposable, IWorkspaceDocumentChange
             return Results.Text(_htmlTransformer.Transform(html, resolved.AbsolutePath), "text/html");
         }
 
-        var result = await _compiler.CompileAsync(resolved.AbsolutePath, context.RequestAborted);
+        var result = await CompileResolvedRequestAsync(resolved.AbsolutePath, context.RequestAborted);
         if (result.IsError)
         {
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
         }
 
         return Results.Text(result.Content, result.ContentType);
+    }
+
+    private async Task<IResult> HandleSourceMapRequestAsync(
+        string sourceRequestPath,
+        CancellationToken cancellationToken)
+    {
+        var resolved = _moduleResolver.Resolve(sourceRequestPath);
+        if (!resolved.Found)
+        {
+            return Results.NotFound(resolved.Error);
+        }
+
+        var result = await CompileResolvedRequestAsync(resolved.AbsolutePath, cancellationToken);
+        if (string.IsNullOrWhiteSpace(result.SourceMap))
+        {
+            return Results.NotFound($"Source map for '{sourceRequestPath}' is not available.");
+        }
+
+        return Results.Text(result.SourceMap, "application/json");
+    }
+
+    private async Task<CompilationResult> CompileResolvedRequestAsync(
+        string absolutePath,
+        CancellationToken cancellationToken)
+    {
+        if (_workspaceStore is null)
+        {
+            return await _compiler.CompileAsync(absolutePath, cancellationToken);
+        }
+
+        var trackedDocument = await _workspaceStore.GetDocumentAsync(absolutePath, cancellationToken);
+        if (!absolutePath.EndsWith(".jazor", StringComparison.OrdinalIgnoreCase))
+        {
+            return trackedDocument is null
+                ? await _compiler.CompileAsync(absolutePath, cancellationToken)
+                : await _compiler.CompileAsync(absolutePath, trackedDocument.Text, cancellationToken);
+        }
+
+        var trackedCompanionDocuments = await GetTrackedCompanionDocumentsAsync(absolutePath, cancellationToken);
+        if (trackedDocument is not null)
+        {
+            return await _compiler.CompileAsync(absolutePath, trackedDocument.Text, trackedCompanionDocuments, cancellationToken);
+        }
+
+        if (trackedCompanionDocuments.Count > 0)
+        {
+            return await _compiler.CompileAsync(
+                absolutePath,
+                await File.ReadAllTextAsync(absolutePath, cancellationToken),
+                trackedCompanionDocuments,
+                cancellationToken);
+        }
+
+        return await _compiler.CompileAsync(absolutePath, cancellationToken);
+    }
+
+    private async Task<IReadOnlyList<DocumentSnapshot>> GetTrackedCompanionDocumentsAsync(
+        string documentPath,
+        CancellationToken cancellationToken)
+    {
+        if (_workspaceStore is null || !documentPath.EndsWith(".jazor", StringComparison.OrdinalIgnoreCase))
+        {
+            return Array.Empty<DocumentSnapshot>();
+        }
+
+        var trackedDocuments = await _workspaceStore.GetDocumentsAsync(
+            VueHostWorkspaceResolver.GetCoLocatedCodeBehindPaths(documentPath)
+                .Select(Path.GetFullPath)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray(),
+            cancellationToken);
+
+        return trackedDocuments
+            .Where(static document => document.DocumentKind == DocumentKind.CSharp)
+            .Select(static document => new DocumentSnapshot(
+                Path.GetFullPath(document.DocumentPath),
+                document.DocumentKind,
+                document.Text,
+                document.Version))
+            .ToArray();
     }
 
     private void StartFileWatcher()
@@ -273,6 +363,7 @@ internal sealed class DevHttpServer : IAsyncDisposable, IWorkspaceDocumentChange
                 or DocumentKind.Vue
                 or DocumentKind.JavaScript
                 or DocumentKind.TypeScript
+                or DocumentKind.Css
                 or DocumentKind.CSharp))
         {
             return;
@@ -287,7 +378,8 @@ internal sealed class DevHttpServer : IAsyncDisposable, IWorkspaceDocumentChange
         if (document.DocumentKind is DocumentKind.Jazor
             or DocumentKind.Vue
             or DocumentKind.JavaScript
-            or DocumentKind.TypeScript)
+            or DocumentKind.TypeScript
+            or DocumentKind.Css)
         {
             var normalizedDocument = new DocumentSnapshot(fullPath, document.DocumentKind, document.Text, document.Version);
             await ProcessAndBroadcastWorkspaceDocumentChangeAsync(normalizedDocument, openDocuments, cancellationToken);
@@ -504,6 +596,18 @@ internal sealed class DevHttpServer : IAsyncDisposable, IWorkspaceDocumentChange
         }
 
         return null;
+    }
+
+    private static bool TryGetSourceMapRequestPath(string requestPath, out string sourceRequestPath)
+    {
+        if (requestPath.EndsWith(".map", StringComparison.OrdinalIgnoreCase))
+        {
+            sourceRequestPath = requestPath[..^4];
+            return !string.IsNullOrWhiteSpace(sourceRequestPath);
+        }
+
+        sourceRequestPath = string.Empty;
+        return false;
     }
 
     private static void ApplyNoCacheHeaders(HttpResponse response)

@@ -7,6 +7,7 @@ public enum DocumentKind
     Vue,
     JavaScript,
     TypeScript,
+    Css,
     Unknown
 }
 

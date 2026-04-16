@@ -36,7 +36,7 @@ internal sealed class DenoFrontendModuleCompiler : IFrontendModuleCompiler
             JavaScript = result.JsContent,
             StyleContent = result.CssContent,
             Dependencies = ExtractJavaScriptDependencies(result.JsContent),
-            SourceMap = null,
+            SourceMap = result.JsSourceMap,
             SupportsHmr = result.SupportsHmr
         };
     }
@@ -67,7 +67,7 @@ internal sealed class DenoFrontendModuleCompiler : IFrontendModuleCompiler
             JavaScript = result.JsContent,
             StyleContent = null,
             Dependencies = ExtractJavaScriptDependencies(result.JsContent),
-            SourceMap = null
+            SourceMap = result.JsSourceMap
         };
     }
 
