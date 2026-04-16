@@ -22,7 +22,7 @@ internal static class BuildCommandOptionsResolver
                 SourceMap = sourcemapOverride.ToLowerInvariant() switch
                 {
                     "inline" => SourceMapOption.Inline,
-                    "external" => SourceMapOption.External,
+                    "true" or "external" or "linked" => SourceMapOption.External,
                     "false" or "none" => SourceMapOption.None,
                     _ => buildOptions.SourceMap
                 }
@@ -38,6 +38,35 @@ internal static class BuildCommandOptionsResolver
         if (TryGetOptionValue(args, "--out-dir", out var outDirOverride))
         {
             buildOptions = buildOptions with { OutDir = outDirOverride };
+        }
+
+        if (TryGetOptionValue(args, "--target", out var targetOverride)
+            && !string.IsNullOrWhiteSpace(targetOverride))
+        {
+            buildOptions = buildOptions with { Target = targetOverride };
+        }
+
+        if (TryGetOptionValue(args, "--code-splitting", out var codeSplittingOverride)
+            && bool.TryParse(codeSplittingOverride, out var codeSplitting))
+        {
+            buildOptions = buildOptions with { CodeSplitting = codeSplitting };
+        }
+
+        if (TryGetOptionValue(args, "--assets-dir", out var assetsDirOverride))
+        {
+            buildOptions = buildOptions with { AssetsDir = assetsDirOverride };
+        }
+
+        if (TryGetOptionValue(args, "--asset-hash-length", out var assetHashLengthOverride)
+            && int.TryParse(assetHashLengthOverride, out var assetHashLength))
+        {
+            buildOptions = buildOptions with { AssetHashLength = assetHashLength };
+        }
+
+        if (TryGetOptionValue(args, "--chunk-size-warning-limit", out var chunkSizeWarningLimitOverride)
+            && int.TryParse(chunkSizeWarningLimitOverride, out var chunkSizeWarningLimit))
+        {
+            buildOptions = buildOptions with { ChunkSizeWarningLimit = chunkSizeWarningLimit };
         }
 
         return buildOptions;

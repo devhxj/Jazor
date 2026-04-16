@@ -1,4 +1,11 @@
 using System.Diagnostics;
+using System.Net;
+using System.Net.Sockets;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using System.Text.RegularExpressions;
+using Jazor.Emit.SourceMaps;
 using Jazor.Vue;
 using Jazor.VueHost.DevServer;
 using Jazor.VueHost.Frontend.Deno.Hosting;
@@ -7,10 +14,51 @@ namespace Jazor.VueHost.Build;
 
 /// <summary>
 /// Orchestrates the production build pipeline.
-/// Coordinates compilation, esbuild bundling, and post-processing.
+/// Coordinates compilation, Deno bundling, and post-processing.
 /// </summary>
 internal sealed class BuildOrchestrator
 {
+    private const string ManifestFileName = "jazor-build-manifest.json";
+    private static readonly Regex CssSourceMapCommentPattern = new(
+        @"/\*#\s*sourceMappingURL=(?<value>[^*]+?)\s*\*/\s*$",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex DynamicImportPattern = new(
+        @"\bimport\s*\(\s*[""'](?<specifier>[^""']+)[""']\s*\)",
+        RegexOptions.Compiled | RegexOptions.Singleline);
+    private static readonly Regex BuiltChunkDynamicImportPattern = new(
+        @"\bimport\s*\(\s*(?<quote>[""'])(?<specifier>\.{1,2}/[^""']+?\.js)(?<query>\?[^""']*)?\k<quote>\s*\)",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly StringComparer FilePathComparer = OperatingSystem.IsWindows()
+        ? StringComparer.OrdinalIgnoreCase
+        : StringComparer.Ordinal;
+    private static readonly StringComparison FilePathComparison = OperatingSystem.IsWindows()
+        ? StringComparison.OrdinalIgnoreCase
+        : StringComparison.Ordinal;
+    private static readonly HashSet<string> BuildGraphCompilableExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".jazor",
+        ".vue",
+        ".ts",
+        ".js",
+        ".css"
+    };
+    private readonly record struct CssFragment(
+        string Content,
+        string SourcePublicPath,
+        string SourcePath,
+        int? SourceLineStart,
+        int? SourceLineCount,
+        IReadOnlyList<string> OwnerChunkFilePaths);
+    private readonly record struct EmittedCssFragment(
+        string Content,
+        string SourcePath,
+        int? SourceLineStart,
+        int? SourceLineCount,
+        IReadOnlyList<string> OwnerChunkFilePaths);
+    private sealed record SourceMapOwnershipContext(
+        IReadOnlyDictionary<string, IReadOnlySet<string>> ChunkFilePathsByModulePath,
+        IReadOnlyDictionary<string, IReadOnlySet<string>> ImporterModulePathsByCssPath);
+
     /// <summary>
     /// Executes a production build.
     /// </summary>
@@ -19,98 +67,156 @@ internal sealed class BuildOrchestrator
         CancellationToken cancellationToken = default)
     {
         var stopwatch = Stopwatch.StartNew();
-        var diagnostics = new List<BuildDiagnostic>();
 
         try
         {
-            // 1. Create build context
-            using var context = new BuildContext(options, cancellationToken);
+            using var context = new BuildContext(options);
+            PrepareOutputDirectory(context);
 
-            // 2. Ensure output directory exists and is clean
-            if (Directory.Exists(context.OutDirectory))
-            {
-                Directory.Delete(context.OutDirectory, recursive: true);
-            }
-
-            Directory.CreateDirectory(context.OutDirectory);
-
-            // 3. Start Deno frontend host for Vue SFC compilation
-            await using var denoHost = CreateDenoHost(options.RootDirectory);
+            await using var denoHost = CreateDenoHost();
             await denoHost.StartAsync(cancellationToken);
 
-            try
+            var moduleResolver = new ModuleResolver(options.RootDirectory);
+            var frontendCompiler = new DenoFrontendModuleCompiler(denoHost);
+            var compiler = new OnDemandCompiler(
+                new JazorVueParser(),
+                new JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                new DependencyGraph(moduleResolver),
+                moduleResolver,
+                buildMode: true);
+
+            var devOptions = new DevServerOptions
             {
-                // 4. Create the compilation pipeline
-                var moduleResolver = new ModuleResolver(options.RootDirectory);
-                var frontendCompiler = new DenoFrontendModuleCompiler(denoHost);
-                var compiler = new OnDemandCompiler(
-                    new JazorVueParser(),
-                    new JazorVueCompiler(),
-                    frontendCompiler,
-                    new CompilationCache(),
-                    new DependencyGraph(moduleResolver),
-                    moduleResolver);
+                RootDirectory = options.RootDirectory,
+                Host = IPAddress.Loopback.ToString(),
+                Port = GetAvailablePort(),
+                HmrEnabled = false,
+                FrontendCompiler = "deno"
+            };
 
-                // 5. Start build server
-                var buildServer = new BuildServer(context, compiler);
-                await buildServer.StartAsync(cancellationToken);
-                context.BuildServerPort = buildServer.Port;
+            await using var moduleServer = new DevHttpServer(
+                devOptions,
+                compiler,
+                moduleResolver,
+                new HtmlTransformer(devOptions));
+            await moduleServer.StartAsync(cancellationToken);
 
-                try
-                {
-                    // 6. Generate esbuild plugin
-                    var pluginGenerator = new EsbuildPluginGenerator(context);
-                    var pluginPath = await pluginGenerator.GenerateAsync();
+            var entryPointPath = BuildEntryPointResolver.ResolveEntryPoint(options.RootDirectory);
+            var entryRequestPath = "/" + Path.GetRelativePath(options.RootDirectory, entryPointPath).Replace('\\', '/');
+            var serverUri = moduleServer.ListeningUri ?? new Uri($"http://{devOptions.Host}:{devOptions.Port}/");
+            var entryUri = new Uri(serverUri, entryRequestPath);
 
-                    // 7. Run esbuild
-                    var esbuildRunner = new EsbuildRunner(context);
-                    var esbuildResult = await esbuildRunner.RunAsync(pluginPath, cancellationToken);
+            var bundleRunner = new DenoBundleRunner(context);
+            var bundleResult = await bundleRunner.RunAsync(entryUri, cancellationToken);
 
-                    if (!esbuildResult.Success)
-                    {
-                        stopwatch.Stop();
-                        return new BuildResult
-                        {
-                            Success = false,
-                            Diagnostics = esbuildResult.Errors,
-                            Duration = stopwatch.Elapsed
-                        };
-                    }
-
-                    // 8. Copy static assets from public/
-                    var staticAssetHandler = new StaticAssetHandler(context);
-                    var staticAssets = await staticAssetHandler.CopyPublicAssetsAsync(cancellationToken);
-
-                    // 9. Process esbuild output
-                    var assetProcessor = new AssetProcessor(context);
-                    var assets = await assetProcessor.ProcessAsync(esbuildResult, cancellationToken);
-
-                    // 10. Generate production index.html
-                    await GenerateHtmlAsync(context, assets, cancellationToken);
-
-                    stopwatch.Stop();
-
-                    return new BuildResult
-                    {
-                        Success = true,
-                        OutDirectory = context.OutDirectory,
-                        Chunks = assets.Chunks,
-                        CssAssets = assets.CssAssets,
-                        StaticAssets = staticAssets,
-                        Diagnostics = [.. diagnostics, .. context.Diagnostics],
-                        Duration = stopwatch.Elapsed,
-                        TotalSize = assets.TotalSize
-                    };
-                }
-                finally
-                {
-                    await buildServer.StopAsync();
-                }
-            }
-            finally
+            if (!bundleResult.Success)
             {
-                await denoHost.StopAsync(cancellationToken);
+                stopwatch.Stop();
+                return new BuildResult
+                {
+                    Success = false,
+                    Diagnostics = [.. bundleResult.Diagnostics, .. context.Diagnostics],
+                    Duration = stopwatch.Elapsed
+                };
             }
+
+            var staticAssetHandler = new StaticAssetHandler(context);
+            var staticAssets = await staticAssetHandler.CopyPublicAssetsAsync(cancellationToken);
+            await EnsureBuildGraphCompiledAsync(
+                compiler,
+                moduleResolver,
+                entryPointPath,
+                cancellationToken);
+            var cachedResults = compiler.GetCachedResults()
+                .ToDictionary(static entry => entry.Key, static entry => entry.Value, StringComparer.OrdinalIgnoreCase);
+            var sourceMapOwnershipContext = CreateSourceMapOwnershipContext(
+                context.RootDirectory,
+                bundleResult.Chunks,
+                cachedResults,
+                moduleResolver);
+            var cssFragments = await CollectExtractedCssFragmentsAsync(
+                context.RootDirectory,
+                cachedResults,
+                moduleResolver,
+                entryPointPath,
+                bundleResult.Chunks,
+                sourceMapOwnershipContext,
+                cancellationToken);
+            var sourceCssAssets = await CopyReferencedSourceAssetsAsync(
+                context,
+                staticAssetHandler,
+                cssFragments,
+                staticAssets,
+                cancellationToken);
+            staticAssets = [.. staticAssets, .. sourceCssAssets];
+            var extractedCssAssets = await EmitExtractedCssAssetsAsync(
+                context,
+                cssFragments,
+                staticAssets,
+                bundleResult.Chunks.FirstOrDefault(static chunk => chunk.IsEntry)?.FilePath,
+                cancellationToken);
+            var bundlerCssAssets = ResolveBundledCssAssetOwners(
+                context.RootDirectory,
+                bundleResult.Chunks,
+                bundleResult.CssAssets,
+                sourceMapOwnershipContext,
+                moduleResolver);
+            await RewriteCssAssetReferencesAsync(
+                context,
+                [.. bundlerCssAssets, .. staticAssets.Where(static asset => asset.FilePath.EndsWith(".css", StringComparison.OrdinalIgnoreCase))],
+                staticAssets,
+                cancellationToken);
+            var cssAssets = RefreshAssetSizes(context, [.. bundlerCssAssets, .. extractedCssAssets]);
+            staticAssets = RefreshAssetSizes(context, staticAssets);
+            var chunksWithCss = await AttachCssAssetsToChunksAsync(
+                context,
+                bundleResult.Chunks,
+                cssAssets,
+                cancellationToken);
+            await RewriteDynamicChunkCssImportsAsync(
+                context,
+                chunksWithCss,
+                cancellationToken);
+            var chunks = RefreshChunks(
+                context,
+                chunksWithCss);
+            var totalSize = chunks.Sum(static chunk => chunk.Size)
+                + chunks.Sum(chunk => GetOptionalFileSize(context, chunk.SourceMapPath))
+                + cssAssets.Sum(static asset => asset.Size)
+                + cssAssets.Sum(asset => GetOptionalFileSize(context, asset.SourceMapPath))
+                + staticAssets.Sum(static asset => asset.Size)
+                + staticAssets.Sum(asset => GetOptionalFileSize(context, asset.SourceMapPath));
+            await GenerateHtmlAsync(
+                context,
+                chunks,
+                cssAssets,
+                staticAssets,
+                entryRequestPath,
+                cancellationToken);
+            var manifestPath = await WriteManifestAsync(
+                context,
+                chunks,
+                cssAssets,
+                staticAssets,
+                totalSize,
+                cancellationToken);
+
+            stopwatch.Stop();
+
+            return new BuildResult
+            {
+                Success = true,
+                OutDirectory = context.OutDirectory,
+                ManifestPath = manifestPath,
+                Chunks = chunks,
+                CssAssets = cssAssets,
+                StaticAssets = staticAssets,
+                Diagnostics = [.. bundleResult.Diagnostics, .. context.Diagnostics],
+                Duration = stopwatch.Elapsed,
+                TotalSize = totalSize
+            };
         }
         catch (OperationCanceledException)
         {
@@ -147,7 +253,10 @@ internal sealed class BuildOrchestrator
     /// </summary>
     private static async Task GenerateHtmlAsync(
         BuildContext context,
-        ProcessedAssets assets,
+        IReadOnlyList<ChunkInfo> chunks,
+        IReadOnlyList<AssetInfo> cssAssets,
+        IReadOnlyList<AssetInfo> staticAssets,
+        string entryRequestPath,
         CancellationToken cancellationToken)
     {
         var htmlPath = Path.Combine(context.RootDirectory, "index.html");
@@ -165,27 +274,30 @@ internal sealed class BuildOrchestrator
 
         // Remove dev-mode script references
         html = HtmlTransformer.RemoveDevScriptRefs(html);
-
-        // Inject production CSS links
-        foreach (var css in assets.CssAssets)
-        {
-            html = HtmlTransformer.InjectCss(html, "/" + css.FilePath);
-        }
+        html = HtmlTransformer.RemoveScriptReference(html, entryRequestPath);
+        html = HtmlTransformer.RewriteAssetReferences(
+            html,
+            staticAssets.Select(asset => CreateHtmlAssetInfo(context, asset)).ToArray());
 
         // Inject production script (first entry chunk)
-        var entryChunk = assets.Chunks.FirstOrDefault(c => c.IsEntry)
-            ?? assets.Chunks.FirstOrDefault();
+        var entryChunk = chunks.FirstOrDefault(c => c.IsEntry)
+            ?? chunks.FirstOrDefault();
 
         if (entryChunk is not null)
         {
-            html = HtmlTransformer.InjectScript(html, "/" + entryChunk.FilePath);
+            foreach (var cssPath in entryChunk.Css)
+            {
+                html = HtmlTransformer.InjectCss(html, ToHtmlPath(context, cssPath));
+            }
+
+            html = HtmlTransformer.InjectScript(html, ToHtmlPath(context, entryChunk.FilePath));
         }
         else
         {
             context.Diagnostics.Add(new BuildDiagnostic
             {
                 Severity = DiagnosticSeverity.Warning,
-                Message = "No entry chunk found in esbuild output."
+                Message = "No entry chunk found in the bundled output."
             });
         }
 
@@ -194,23 +306,1997 @@ internal sealed class BuildOrchestrator
         await File.WriteAllTextAsync(outPath, html, cancellationToken);
     }
 
+    private static AssetInfo CreateHtmlAssetInfo(BuildContext context, AssetInfo asset)
+        => new()
+        {
+            FileName = asset.FileName,
+            FilePath = ToHtmlPath(context, asset.FilePath),
+            Size = asset.Size,
+            SourceMapPath = asset.SourceMapPath is null
+                ? null
+                : ToHtmlPath(context, asset.SourceMapPath),
+            OriginalPath = asset.OriginalPath,
+            SourceModulePaths = asset.SourceModulePaths,
+            OwnerChunkFilePaths = asset.OwnerChunkFilePaths,
+            OwnerChunkFilePath = asset.OwnerChunkFilePath
+        };
+
+    private static async Task RewriteCssAssetReferencesAsync(
+        BuildContext context,
+        IReadOnlyList<AssetInfo> cssAssets,
+        IReadOnlyList<AssetInfo> staticAssets,
+        CancellationToken cancellationToken)
+    {
+        if (cssAssets.Count == 0 || staticAssets.Count == 0)
+        {
+            return;
+        }
+
+        var htmlAssets = staticAssets
+            .Select(asset => CreateHtmlAssetInfo(context, asset))
+            .ToArray();
+
+        foreach (var cssAsset in cssAssets)
+        {
+            var cssPath = Path.Combine(
+                context.RootDirectory,
+                cssAsset.FilePath.Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(cssPath))
+            {
+                continue;
+            }
+
+            var cssPublicPath = ToHtmlPath(context, cssAsset.FilePath);
+            var originalCss = await File.ReadAllTextAsync(cssPath, cancellationToken);
+            var rewrittenCss = CssUrlRewriter.RewriteAssetReferences(originalCss, cssPublicPath, htmlAssets);
+            if (string.Equals(originalCss, rewrittenCss, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            await File.WriteAllTextAsync(cssPath, rewrittenCss, cancellationToken);
+        }
+    }
+
+    private static IReadOnlyList<AssetInfo> RefreshAssetSizes(
+        BuildContext context,
+        IReadOnlyList<AssetInfo> assets)
+        => assets.Select(asset => new AssetInfo
+            {
+                FileName = asset.FileName,
+                FilePath = asset.FilePath,
+                Size = GetAssetSize(context, asset.FilePath),
+                SourceMapPath = asset.SourceMapPath,
+                OriginalPath = asset.OriginalPath,
+                SourceModulePaths = asset.SourceModulePaths,
+                OwnerChunkFilePaths = asset.OwnerChunkFilePaths,
+                OwnerChunkFilePath = asset.OwnerChunkFilePath
+            })
+            .ToArray();
+
+    private static IReadOnlyList<AssetInfo> ResolveBundledCssAssetOwners(
+        string rootDirectory,
+        IReadOnlyList<ChunkInfo> chunks,
+        IReadOnlyList<AssetInfo> cssAssets,
+        SourceMapOwnershipContext? sourceMapOwnershipContext,
+        ModuleResolver moduleResolver)
+    {
+        if (cssAssets.Count == 0)
+        {
+            return cssAssets;
+        }
+
+        var entryChunk = chunks.FirstOrDefault(static chunk => chunk.IsEntry)
+            ?? chunks.FirstOrDefault();
+        return cssAssets.Select(asset =>
+        {
+            var sourceModulePaths = ReadNormalizedSourceMapSources(rootDirectory, asset.SourceMapPath, moduleResolver);
+            if (sourceMapOwnershipContext is null || entryChunk is null)
+            {
+                return new AssetInfo
+                {
+                    FileName = asset.FileName,
+                    FilePath = asset.FilePath,
+                    Size = asset.Size,
+                    SourceMapPath = asset.SourceMapPath,
+                    OriginalPath = asset.OriginalPath,
+                    SourceModulePaths = sourceModulePaths,
+                    OwnerChunkFilePaths = asset.OwnerChunkFilePaths,
+                    OwnerChunkFilePath = asset.OwnerChunkFilePath
+                };
+            }
+
+            var ownerChunkFilePaths = new HashSet<string>(FilePathComparer);
+            foreach (var sourceModulePath in sourceModulePaths)
+            {
+                if (sourceMapOwnershipContext.ImporterModulePathsByCssPath.TryGetValue(sourceModulePath, out var importerModulePaths))
+                {
+                    foreach (var importerModulePath in importerModulePaths)
+                    {
+                        if (sourceMapOwnershipContext.ChunkFilePathsByModulePath.TryGetValue(importerModulePath, out var importerChunkFilePaths))
+                        {
+                            ownerChunkFilePaths.UnionWith(importerChunkFilePaths);
+                        }
+                    }
+                }
+            }
+
+            var normalizedOwnerChunkFilePaths = NormalizeOwnerChunkFilePaths(ownerChunkFilePaths, entryChunk.FilePath);
+            return new AssetInfo
+            {
+                FileName = asset.FileName,
+                FilePath = asset.FilePath,
+                Size = asset.Size,
+                SourceMapPath = asset.SourceMapPath,
+                OriginalPath = asset.OriginalPath,
+                SourceModulePaths = sourceModulePaths,
+                OwnerChunkFilePaths = normalizedOwnerChunkFilePaths,
+                OwnerChunkFilePath = normalizedOwnerChunkFilePaths.Count == 1
+                    ? normalizedOwnerChunkFilePaths[0]
+                    : null
+            };
+        }).ToArray();
+    }
+
+    private static IReadOnlyList<ChunkInfo> RefreshChunks(
+        BuildContext context,
+        IReadOnlyList<ChunkInfo> chunks)
+        => chunks.Select(chunk => new ChunkInfo
+            {
+                FileName = chunk.FileName,
+                FilePath = chunk.FilePath,
+                Size = GetAssetSize(context, chunk.FilePath),
+                IsEntry = chunk.IsEntry,
+                IsDynamic = chunk.IsDynamic,
+                Imports = chunk.Imports,
+                Css = chunk.Css,
+                SourceMapPath = chunk.SourceMapPath
+            })
+            .ToArray();
+
+    private static async Task<IReadOnlyList<ChunkInfo>> AttachCssAssetsToChunksAsync(
+        BuildContext context,
+        IReadOnlyList<ChunkInfo> chunks,
+        IReadOnlyList<AssetInfo> cssAssets,
+        CancellationToken cancellationToken)
+    {
+        if (chunks.Count == 0)
+        {
+            return chunks;
+        }
+
+        var entryChunk = chunks.FirstOrDefault(static chunk => chunk.IsEntry)
+            ?? chunks.First();
+        var directCssByChunk = chunks.ToDictionary(
+            static chunk => chunk.FilePath,
+            static _ => new HashSet<string>(StringComparer.Ordinal),
+            FilePathComparer);
+
+        foreach (var cssAsset in cssAssets)
+        {
+            foreach (var ownerChunkFilePath in GetAssetOwnerChunkFilePaths(cssAsset, entryChunk.FilePath))
+            {
+                if (directCssByChunk.TryGetValue(ownerChunkFilePath, out var cssFilePaths))
+                {
+                    cssFilePaths.Add(cssAsset.FilePath);
+                }
+            }
+        }
+
+        var dynamicImportsByChunk = await ReadDynamicImportsByChunkAsync(context, chunks, cancellationToken);
+        var cssClosureByChunk = BuildCssClosureByChunk(
+            chunks,
+            directCssByChunk.ToDictionary(
+                static entry => entry.Key,
+                static entry => (IReadOnlySet<string>)entry.Value,
+                FilePathComparer),
+            dynamicImportsByChunk);
+
+        return chunks.Select(chunk => new ChunkInfo
+            {
+                FileName = chunk.FileName,
+                FilePath = chunk.FilePath,
+                Size = chunk.Size,
+                IsEntry = chunk.IsEntry,
+                IsDynamic = chunk.IsDynamic,
+                Imports = chunk.Imports,
+                Css = cssClosureByChunk.TryGetValue(chunk.FilePath, out var chunkCss)
+                    ? chunkCss
+                    : [],
+                SourceMapPath = chunk.SourceMapPath
+            })
+            .ToArray();
+    }
+
+    private static async Task RewriteDynamicChunkCssImportsAsync(
+        BuildContext context,
+        IReadOnlyList<ChunkInfo> chunks,
+        CancellationToken cancellationToken)
+    {
+        if (chunks.Count == 0)
+        {
+            return;
+        }
+
+        var chunkCssByFilePath = chunks.ToDictionary(
+            static chunk => chunk.FilePath,
+            chunk => chunk.Css
+                .Select(cssFilePath => ToHtmlPath(context, cssFilePath))
+                .Distinct(StringComparer.Ordinal)
+                .ToArray(),
+            FilePathComparer);
+
+        foreach (var chunk in chunks)
+        {
+            var chunkAbsolutePath = Path.Combine(
+                context.RootDirectory,
+                chunk.FilePath.Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(chunkAbsolutePath))
+            {
+                continue;
+            }
+
+            var originalContent = await File.ReadAllTextAsync(chunkAbsolutePath, cancellationToken);
+            var currentChunkDirectory = Path.GetDirectoryName(chunkAbsolutePath)!;
+            var rewrittenContent = BuiltChunkDynamicImportPattern.Replace(
+                originalContent,
+                match =>
+                {
+                    var specifier = match.Groups["specifier"].Value;
+                    var targetAbsolutePath = Path.GetFullPath(Path.Combine(
+                        currentChunkDirectory,
+                        specifier.Replace('/', Path.DirectorySeparatorChar)));
+                    var targetChunkFilePath = Path.GetRelativePath(context.RootDirectory, targetAbsolutePath).Replace('\\', '/');
+                    if (!chunkCssByFilePath.TryGetValue(targetChunkFilePath, out var targetCssPaths) || targetCssPaths.Length == 0)
+                    {
+                        return match.Value;
+                    }
+
+                    return CreateDynamicChunkCssImportExpression(match.Value, targetCssPaths);
+                });
+
+            if (string.Equals(originalContent, rewrittenContent, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            await File.WriteAllTextAsync(chunkAbsolutePath, rewrittenContent, cancellationToken);
+        }
+    }
+
+    private static IReadOnlyList<string> GetAssetOwnerChunkFilePaths(AssetInfo asset, string entryChunkFilePath)
+        => asset.OwnerChunkFilePaths.Count > 0
+            ? NormalizeOwnerChunkFilePaths(asset.OwnerChunkFilePaths, entryChunkFilePath)
+            : NormalizeOwnerChunkFilePaths(CreateOwnerChunkFilePaths(asset.OwnerChunkFilePath), entryChunkFilePath);
+
+    private static async Task<IReadOnlyDictionary<string, IReadOnlySet<string>>> ReadDynamicImportsByChunkAsync(
+        BuildContext context,
+        IReadOnlyList<ChunkInfo> chunks,
+        CancellationToken cancellationToken)
+    {
+        var dynamicImportsByChunk = new Dictionary<string, IReadOnlySet<string>>(FilePathComparer);
+
+        foreach (var chunk in chunks)
+        {
+            var chunkAbsolutePath = Path.Combine(
+                context.RootDirectory,
+                chunk.FilePath.Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(chunkAbsolutePath))
+            {
+                continue;
+            }
+
+            var chunkContent = await File.ReadAllTextAsync(chunkAbsolutePath, cancellationToken);
+            var currentChunkDirectory = Path.GetDirectoryName(chunkAbsolutePath)!;
+            var dynamicImports = new HashSet<string>(FilePathComparer);
+
+            foreach (Match match in BuiltChunkDynamicImportPattern.Matches(chunkContent))
+            {
+                var specifier = match.Groups["specifier"].Value;
+                if (string.IsNullOrWhiteSpace(specifier))
+                {
+                    continue;
+                }
+
+                var targetAbsolutePath = Path.GetFullPath(Path.Combine(
+                    currentChunkDirectory,
+                    specifier.Replace('/', Path.DirectorySeparatorChar)));
+                dynamicImports.Add(Path.GetRelativePath(context.RootDirectory, targetAbsolutePath).Replace('\\', '/'));
+            }
+
+            dynamicImportsByChunk[chunk.FilePath] = dynamicImports;
+        }
+
+        return dynamicImportsByChunk;
+    }
+
+    private static IReadOnlyDictionary<string, IReadOnlyList<string>> BuildCssClosureByChunk(
+        IReadOnlyList<ChunkInfo> chunks,
+        IReadOnlyDictionary<string, IReadOnlySet<string>> directCssByChunk,
+        IReadOnlyDictionary<string, IReadOnlySet<string>> dynamicImportsByChunk)
+    {
+        var chunkByFilePath = chunks.ToDictionary(static chunk => chunk.FilePath, static chunk => chunk, FilePathComparer);
+        var cssClosureByChunk = new Dictionary<string, IReadOnlyList<string>>(FilePathComparer);
+
+        IReadOnlyList<string> ResolveCssClosure(string chunkFilePath, HashSet<string> visitingChunkFilePaths)
+        {
+            if (cssClosureByChunk.TryGetValue(chunkFilePath, out var cachedCssClosure))
+            {
+                return cachedCssClosure;
+            }
+
+            if (!chunkByFilePath.TryGetValue(chunkFilePath, out var chunk))
+            {
+                return [];
+            }
+
+            if (!visitingChunkFilePaths.Add(chunkFilePath))
+            {
+                return directCssByChunk.TryGetValue(chunkFilePath, out var directCss)
+                    ? directCss.OrderBy(static cssPath => cssPath, StringComparer.Ordinal).ToArray()
+                    : [];
+            }
+
+            var cssClosure = new HashSet<string>(StringComparer.Ordinal);
+            if (directCssByChunk.TryGetValue(chunkFilePath, out var chunkDirectCss))
+            {
+                cssClosure.UnionWith(chunkDirectCss);
+            }
+
+            var dynamicImports = dynamicImportsByChunk.TryGetValue(chunkFilePath, out var chunkDynamicImports)
+                ? chunkDynamicImports
+                : new HashSet<string>(FilePathComparer);
+            foreach (var importedChunkFilePath in chunk.Imports)
+            {
+                if (dynamicImports.Contains(importedChunkFilePath))
+                {
+                    continue;
+                }
+
+                cssClosure.UnionWith(ResolveCssClosure(importedChunkFilePath, visitingChunkFilePaths));
+            }
+
+            visitingChunkFilePaths.Remove(chunkFilePath);
+            var resolvedCssClosure = cssClosure.OrderBy(static cssPath => cssPath, StringComparer.Ordinal).ToArray();
+            cssClosureByChunk[chunkFilePath] = resolvedCssClosure;
+            return resolvedCssClosure;
+        }
+
+        foreach (var chunk in chunks)
+        {
+            ResolveCssClosure(chunk.FilePath, []);
+        }
+
+        return cssClosureByChunk;
+    }
+
+    private static string CreateDynamicChunkCssImportExpression(
+        string originalImportExpression,
+        IReadOnlyList<string> cssPaths)
+    {
+        var cssArrayLiteral = JsonSerializer.Serialize(cssPaths);
+        return string.Concat(
+            "((globalThis.__jazorImportCss ??= async function(hrefs){if(typeof document===\"undefined\"||!Array.isArray(hrefs)||hrefs.length===0){return;}const registry=globalThis.__jazorLoadedCss ??= new Set();await Promise.all(hrefs.map(function(href){if(!href||registry.has(href)){return Promise.resolve();}const existing=document.querySelector('link[rel=\"stylesheet\"][href=\"'+href+'\"]');if(existing){registry.add(href);return Promise.resolve();}return new Promise(function(resolve,reject){const link=document.createElement(\"link\");link.rel=\"stylesheet\";link.href=href;link.onload=function(){registry.add(href);resolve();};link.onerror=function(){reject(new Error(\"Failed to load stylesheet \"+href));};document.head.appendChild(link);});}));}),globalThis.__jazorImportCss(",
+            cssArrayLiteral,
+            ").then(function(){return ",
+            originalImportExpression,
+            ";}))");
+    }
+
+    private static async Task<IReadOnlyList<AssetInfo>> EmitExtractedCssAssetsAsync(
+        BuildContext context,
+        IReadOnlyList<CssFragment> cssFragments,
+        IReadOnlyList<AssetInfo> staticAssets,
+        string? entryChunkFilePath,
+        CancellationToken cancellationToken)
+    {
+        if (cssFragments.Count == 0)
+        {
+            return [];
+        }
+
+        var htmlAssets = staticAssets
+            .Select(asset => CreateHtmlAssetInfo(context, asset))
+            .ToArray();
+        Directory.CreateDirectory(context.AssetsDirectory);
+        var assets = new List<AssetInfo>();
+        var groupedFragments = cssFragments
+            .GroupBy(
+                fragment => CreateOwnerChunkSetKey(fragment.OwnerChunkFilePaths, entryChunkFilePath),
+                StringComparer.Ordinal)
+            .OrderBy(group => IsEntryOnlyOwnerSet(group.First().OwnerChunkFilePaths, entryChunkFilePath) ? 0 : 1)
+            .ThenBy(static group => group.Key, StringComparer.Ordinal);
+
+        foreach (var group in groupedFragments)
+        {
+            var ownerChunkFilePaths = NormalizeOwnerChunkFilePaths(group.First().OwnerChunkFilePaths, entryChunkFilePath);
+            var baseName = CreateCssAssetBaseName(ownerChunkFilePaths, entryChunkFilePath);
+            var extractedCssPublicPath = Path.GetRelativePath(
+                context.OutDirectory,
+                Path.Combine(context.AssetsDirectory, baseName + ".css")).Replace('\\', '/');
+            var emittedFragments = group
+                .Select(fragment => new EmittedCssFragment(
+                    CssUrlRewriter.RewriteAssetReferences(
+                        fragment.Content,
+                        fragment.SourcePublicPath,
+                        extractedCssPublicPath,
+                        htmlAssets),
+                    fragment.SourcePath,
+                    fragment.SourceLineStart,
+                    fragment.SourceLineCount,
+                    ownerChunkFilePaths))
+                .Where(static fragment => !string.IsNullOrWhiteSpace(fragment.Content))
+                .ToArray();
+            if (emittedFragments.Length == 0)
+            {
+                continue;
+            }
+
+            var content = string.Join(
+                Environment.NewLine + Environment.NewLine,
+                emittedFragments.Select(static fragment => fragment.Content));
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                continue;
+            }
+
+            var fileName = CreateHashedAssetFileName(baseName, ".css", content, context.Options.AssetHashLength);
+            var outputPath = Path.Combine(context.AssetsDirectory, fileName);
+            string? sourceMapPath = null;
+            var finalContent = content;
+            if (context.Options.GenerateSourceMap)
+            {
+                var sourceMap = CreateExtractedCssSourceMap(context, emittedFragments, fileName);
+                if (!string.IsNullOrWhiteSpace(sourceMap))
+                {
+                    switch (context.Options.SourceMap)
+                    {
+                        case SourceMapOption.External:
+                            var sourceMapOutputPath = outputPath + ".map";
+                            await File.WriteAllTextAsync(sourceMapOutputPath, sourceMap, cancellationToken);
+                            sourceMapPath = Path.GetRelativePath(context.RootDirectory, sourceMapOutputPath).Replace('\\', '/');
+                            finalContent = AppendCssSourceMapComment(content, Path.GetFileName(sourceMapOutputPath));
+                            break;
+                        case SourceMapOption.Inline:
+                            finalContent = AppendInlineCssSourceMapComment(content, sourceMap);
+                            break;
+                    }
+                }
+            }
+
+            await File.WriteAllTextAsync(outputPath, finalContent, cancellationToken);
+
+            assets.Add(new AssetInfo
+            {
+                FileName = fileName,
+                FilePath = Path.GetRelativePath(context.RootDirectory, outputPath).Replace('\\', '/'),
+                Size = new FileInfo(outputPath).Length,
+                SourceMapPath = sourceMapPath,
+                SourceModulePaths = emittedFragments
+                    .Select(static fragment => fragment.SourcePath)
+                    .Where(static path => !string.IsNullOrWhiteSpace(path))
+                    .Distinct(FilePathComparer)
+                    .ToArray(),
+                OwnerChunkFilePaths = ownerChunkFilePaths,
+                OwnerChunkFilePath = ownerChunkFilePaths.Count == 1
+                    ? ownerChunkFilePaths[0]
+                    : null
+            });
+        }
+
+        return assets;
+    }
+
+    private static string? CreateExtractedCssSourceMap(
+        BuildContext context,
+        IReadOnlyList<EmittedCssFragment> cssFragments,
+        string outputFileName)
+    {
+        var sources = new List<SourceMapSource>();
+        var segments = new List<SourceMapSegment>();
+        var sourceContentCache = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var sourceIndices = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        var generatedLine = 0;
+
+        for (var fragmentIndex = 0; fragmentIndex < cssFragments.Count; fragmentIndex++)
+        {
+            var fragment = cssFragments[fragmentIndex];
+            var generatedLineCount = CountSourceMapLines(fragment.Content);
+            if (!string.IsNullOrWhiteSpace(fragment.SourcePath)
+                && fragment.SourceLineStart.HasValue
+                && fragment.SourceLineCount.HasValue
+                && TryReadSourceMapContent(fragment.SourcePath, sourceContentCache, out var sourceContent))
+            {
+                if (!sourceIndices.TryGetValue(fragment.SourcePath, out var sourceIndex))
+                {
+                    sourceIndex = sources.Count;
+                    sourceIndices[fragment.SourcePath] = sourceIndex;
+                    sources.Add(new SourceMapSource(
+                        CreateSourceMapRelativePath(context.AssetsDirectory, fragment.SourcePath),
+                        sourceContent));
+                }
+
+                var sourceStartLine = Math.Max(fragment.SourceLineStart.Value - 1, 0);
+                var maxSourceLineOffset = Math.Max(fragment.SourceLineCount.Value - 1, 0);
+                for (var lineIndex = 0; lineIndex < generatedLineCount; lineIndex++)
+                {
+                    segments.Add(new SourceMapSegment(
+                        generatedLine + lineIndex,
+                        0,
+                        sourceIndex,
+                        sourceStartLine + Math.Min(lineIndex, maxSourceLineOffset),
+                        0));
+                }
+            }
+
+            generatedLine += generatedLineCount;
+            if (fragmentIndex < cssFragments.Count - 1)
+            {
+                generatedLine++;
+            }
+        }
+
+        if (segments.Count == 0 || sources.Count == 0)
+        {
+            return null;
+        }
+
+        return new SourceMapWriter().Write(new SourceMapDocument(outputFileName, sources, segments));
+    }
+
+    private static bool TryReadSourceMapContent(
+        string sourcePath,
+        IDictionary<string, string> sourceContentCache,
+        out string sourceContent)
+    {
+        if (sourceContentCache.TryGetValue(sourcePath, out var cachedSourceContent))
+        {
+            sourceContent = cachedSourceContent;
+            return true;
+        }
+
+        if (!File.Exists(sourcePath))
+        {
+            sourceContent = string.Empty;
+            return false;
+        }
+
+        sourceContent = File.ReadAllText(sourcePath);
+        sourceContentCache[sourcePath] = sourceContent;
+        return true;
+    }
+
+    private static string CreateSourceMapRelativePath(string sourceMapDirectory, string sourcePath)
+    {
+        var relativePath = Path.GetRelativePath(sourceMapDirectory, sourcePath).Replace('\\', '/');
+        return relativePath.StartsWith("./", StringComparison.Ordinal)
+            ? relativePath[2..]
+            : relativePath;
+    }
+
+    private static string AppendInlineCssSourceMapComment(string content, string sourceMap)
+        => AppendCssSourceMapComment(
+            content,
+            "data:application/json;base64," + Convert.ToBase64String(Encoding.UTF8.GetBytes(sourceMap)));
+
+    private static string AppendCssSourceMapComment(string content, string sourceMapReference)
+    {
+        var normalizedContent = CssSourceMapCommentPattern.Replace(content, string.Empty).TrimEnd('\r', '\n');
+        return string.Concat(
+            normalizedContent,
+            Environment.NewLine,
+            $"/*# sourceMappingURL={sourceMapReference} */",
+            Environment.NewLine);
+    }
+
+    private static int CountSourceMapLines(string text)
+        => NormalizeLineEndings(text).Split('\n').Length;
+
+    private static string NormalizeLineEndings(string text)
+        => text.Replace("\r\n", "\n", StringComparison.Ordinal);
+
+    private static async Task<IReadOnlyList<CssFragment>> CollectExtractedCssFragmentsAsync(
+        string rootDirectory,
+        IReadOnlyDictionary<string, CompilationResult> cachedResults,
+        ModuleResolver moduleResolver,
+        string entryPointPath,
+        IReadOnlyList<ChunkInfo> chunks,
+        SourceMapOwnershipContext? sourceMapOwnershipContext,
+        CancellationToken cancellationToken)
+    {
+        if (cachedResults.Count == 0 || !cachedResults.ContainsKey(entryPointPath))
+        {
+            return [];
+        }
+
+        if (sourceMapOwnershipContext is not null)
+        {
+            return await CollectExtractedCssFragmentsFromSourceMapsAsync(
+                cachedResults,
+                moduleResolver,
+                entryPointPath,
+                sourceMapOwnershipContext,
+                cancellationToken);
+        }
+
+        return await CollectExtractedCssFragmentsWithFallbackOwnershipAsync(
+            rootDirectory,
+            cachedResults,
+            moduleResolver,
+            entryPointPath,
+            chunks,
+            cancellationToken);
+    }
+
+    private static async Task<IReadOnlyList<CssFragment>> CollectExtractedCssFragmentsFromSourceMapsAsync(
+        IReadOnlyDictionary<string, CompilationResult> cachedResults,
+        ModuleResolver moduleResolver,
+        string entryPointPath,
+        SourceMapOwnershipContext sourceMapOwnershipContext,
+        CancellationToken cancellationToken)
+    {
+        var reachableModulePaths = CollectReachableModulePaths(entryPointPath, cachedResults, moduleResolver);
+        if (reachableModulePaths.Count == 0)
+        {
+            return [];
+        }
+
+        var cssFragments = new List<CssFragment>();
+        var cssOwnerChunkPathsByPath = new Dictionary<string, HashSet<string>>(FilePathComparer);
+
+        foreach (var modulePath in reachableModulePaths)
+        {
+            if (!cachedResults.TryGetValue(modulePath, out var result))
+            {
+                continue;
+            }
+
+            var isCssModule = string.Equals(
+                Path.GetExtension(modulePath),
+                ".css",
+                StringComparison.OrdinalIgnoreCase);
+            var ownerChunkFilePaths = GetOwnerChunkFilePaths(
+                modulePath,
+                sourceMapOwnershipContext.ChunkFilePathsByModulePath);
+            var embeddedStyleDependencyPaths = result.EmbeddedStyleDependencies
+                .Select(dependency => moduleResolver.Resolve(dependency, modulePath))
+                .Where(static resolved => resolved.Found && !resolved.IsVirtual)
+                .Select(static resolved => resolved.AbsolutePath)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var dependency in result.Dependencies)
+            {
+                var resolved = moduleResolver.Resolve(dependency, modulePath);
+                if (!resolved.Found || resolved.IsVirtual
+                    || !string.Equals(Path.GetExtension(resolved.AbsolutePath), ".css", StringComparison.OrdinalIgnoreCase)
+                    || embeddedStyleDependencyPaths.Contains(resolved.AbsolutePath))
+                {
+                    continue;
+                }
+
+                if (!cssOwnerChunkPathsByPath.TryGetValue(resolved.AbsolutePath, out var cssOwnerChunkPaths))
+                {
+                    cssOwnerChunkPaths = new HashSet<string>(FilePathComparer);
+                    cssOwnerChunkPathsByPath[resolved.AbsolutePath] = cssOwnerChunkPaths;
+                }
+
+                cssOwnerChunkPaths.UnionWith(ownerChunkFilePaths);
+            }
+
+            if (isCssModule)
+            {
+                continue;
+            }
+
+            if (result.StyleFragments.Count > 0)
+            {
+                foreach (var styleFragment in result.StyleFragments)
+                {
+                    if (string.IsNullOrWhiteSpace(styleFragment.Content))
+                    {
+                        continue;
+                    }
+
+                    cssFragments.Add(new CssFragment(
+                        styleFragment.Content,
+                        GetStyleFragmentSourcePublicPath(moduleResolver, modulePath, styleFragment),
+                        GetStyleFragmentSourcePath(modulePath, styleFragment),
+                        styleFragment.SourceLineStart,
+                        styleFragment.SourceLineCount,
+                        ownerChunkFilePaths));
+                }
+            }
+            else if (!string.IsNullOrWhiteSpace(result.StyleContent))
+            {
+                cssFragments.Add(new CssFragment(
+                    result.StyleContent!,
+                    moduleResolver.GetResolvedUrlForAbsolutePath(modulePath).TrimStart('/'),
+                    modulePath,
+                    null,
+                    null,
+                    ownerChunkFilePaths));
+            }
+        }
+
+        foreach (var (cssPath, ownerChunkPaths) in cssOwnerChunkPathsByPath.OrderBy(static entry => entry.Key, FilePathComparer))
+        {
+            var cssText = await File.ReadAllTextAsync(cssPath, cancellationToken);
+            cssFragments.Add(new CssFragment(
+                cssText,
+                moduleResolver.GetResolvedUrlForAbsolutePath(cssPath).TrimStart('/'),
+                cssPath,
+                1,
+                CountSourceMapLines(cssText),
+                NormalizeOwnerChunkFilePaths(ownerChunkPaths, entryChunkFilePath: null)));
+        }
+
+        return cssFragments;
+    }
+
+    private static async Task<IReadOnlyList<CssFragment>> CollectExtractedCssFragmentsWithFallbackOwnershipAsync(
+        string rootDirectory,
+        IReadOnlyDictionary<string, CompilationResult> cachedResults,
+        ModuleResolver moduleResolver,
+        string entryPointPath,
+        IReadOnlyList<ChunkInfo> chunks,
+        CancellationToken cancellationToken)
+    {
+        var cssFragments = new List<CssFragment>();
+        var cssOwnerChunkPathsByPath = new Dictionary<string, HashSet<string>>(FilePathComparer);
+        var visitedModules = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var ownerChunkByModulePath = CreateModuleChunkOwnershipMap(
+            rootDirectory,
+            entryPointPath,
+            chunks,
+            cachedResults,
+            moduleResolver);
+
+        await CollectCssFragmentsWithFallbackOwnershipAsync(
+            entryPointPath,
+            currentOwnerChunkFilePath: null,
+            cachedResults,
+            ownerChunkByModulePath,
+            moduleResolver,
+            visitedModules,
+            cssOwnerChunkPathsByPath,
+            cssFragments,
+            cancellationToken);
+
+        foreach (var (cssPath, ownerChunkPaths) in cssOwnerChunkPathsByPath.OrderBy(static entry => entry.Key, FilePathComparer))
+        {
+            var cssText = await File.ReadAllTextAsync(cssPath, cancellationToken);
+            cssFragments.Add(new CssFragment(
+                cssText,
+                moduleResolver.GetResolvedUrlForAbsolutePath(cssPath).TrimStart('/'),
+                cssPath,
+                1,
+                CountSourceMapLines(cssText),
+                NormalizeOwnerChunkFilePaths(ownerChunkPaths, entryChunkFilePath: null)));
+        }
+
+        return cssFragments;
+    }
+
+    private static async Task CollectCssFragmentsWithFallbackOwnershipAsync(
+        string modulePath,
+        string? currentOwnerChunkFilePath,
+        IReadOnlyDictionary<string, CompilationResult> cachedResults,
+        IReadOnlyDictionary<string, string> ownerChunkByModulePath,
+        ModuleResolver moduleResolver,
+        ISet<string> visitedModules,
+        IDictionary<string, HashSet<string>> cssOwnerChunkPathsByPath,
+        ICollection<CssFragment> cssFragments,
+        CancellationToken cancellationToken)
+    {
+        var ownerChunkFilePath = ownerChunkByModulePath.TryGetValue(modulePath, out var explicitOwnerChunkFilePath)
+            ? explicitOwnerChunkFilePath
+            : currentOwnerChunkFilePath;
+        var isCssModule = string.Equals(
+            Path.GetExtension(modulePath),
+            ".css",
+            StringComparison.OrdinalIgnoreCase);
+        var visitKey = CreateOwnedKey(ownerChunkFilePath, modulePath);
+        if (!visitedModules.Add(visitKey) || !cachedResults.TryGetValue(modulePath, out var result))
+        {
+            return;
+        }
+
+        var embeddedStyleDependencyPaths = result.EmbeddedStyleDependencies
+            .Select(dependency => moduleResolver.Resolve(dependency, modulePath))
+            .Where(static resolved => resolved.Found && !resolved.IsVirtual)
+            .Select(static resolved => resolved.AbsolutePath)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var dependency in result.Dependencies)
+        {
+            var resolved = moduleResolver.Resolve(dependency, modulePath);
+            if (!resolved.Found || resolved.IsVirtual)
+            {
+                continue;
+            }
+
+            var extension = Path.GetExtension(resolved.AbsolutePath);
+            if (string.Equals(extension, ".css", StringComparison.OrdinalIgnoreCase))
+            {
+                if (embeddedStyleDependencyPaths.Contains(resolved.AbsolutePath))
+                {
+                    continue;
+                }
+
+                if (!cssOwnerChunkPathsByPath.TryGetValue(resolved.AbsolutePath, out var cssOwnerChunkPaths))
+                {
+                    cssOwnerChunkPaths = new HashSet<string>(FilePathComparer);
+                    cssOwnerChunkPathsByPath[resolved.AbsolutePath] = cssOwnerChunkPaths;
+                }
+
+                cssOwnerChunkPaths.UnionWith(CreateOwnerChunkFilePaths(ownerChunkFilePath));
+                continue;
+            }
+
+            if (cachedResults.ContainsKey(resolved.AbsolutePath))
+            {
+                await CollectCssFragmentsWithFallbackOwnershipAsync(
+                    resolved.AbsolutePath,
+                    ownerChunkFilePath,
+                    cachedResults,
+                    ownerChunkByModulePath,
+                    moduleResolver,
+                    visitedModules,
+                    cssOwnerChunkPathsByPath,
+                    cssFragments,
+                    cancellationToken);
+            }
+        }
+
+        if (isCssModule)
+        {
+            return;
+        }
+
+        if (result.StyleFragments.Count > 0)
+        {
+            foreach (var styleFragment in result.StyleFragments)
+            {
+                if (string.IsNullOrWhiteSpace(styleFragment.Content))
+                {
+                    continue;
+                }
+
+                cssFragments.Add(new CssFragment(
+                    styleFragment.Content,
+                    GetStyleFragmentSourcePublicPath(moduleResolver, modulePath, styleFragment),
+                    GetStyleFragmentSourcePath(modulePath, styleFragment),
+                    styleFragment.SourceLineStart,
+                    styleFragment.SourceLineCount,
+                    CreateOwnerChunkFilePaths(ownerChunkFilePath)));
+            }
+        }
+        else if (!string.IsNullOrWhiteSpace(result.StyleContent))
+        {
+            cssFragments.Add(new CssFragment(
+                result.StyleContent!,
+                moduleResolver.GetResolvedUrlForAbsolutePath(modulePath).TrimStart('/'),
+                modulePath,
+                null,
+                null,
+                CreateOwnerChunkFilePaths(ownerChunkFilePath)));
+        }
+    }
+
+    private static SourceMapOwnershipContext? CreateSourceMapOwnershipContext(
+        string rootDirectory,
+        IReadOnlyList<ChunkInfo> chunks,
+        IReadOnlyDictionary<string, CompilationResult> cachedResults,
+        ModuleResolver moduleResolver)
+    {
+        if (chunks.Count == 0 || cachedResults.Count == 0)
+        {
+            return null;
+        }
+
+        var chunkFilePathsByModulePath = new Dictionary<string, HashSet<string>>(FilePathComparer);
+        foreach (var chunk in chunks)
+        {
+            foreach (var sourcePath in ReadNormalizedSourceMapSources(rootDirectory, chunk.SourceMapPath, moduleResolver))
+            {
+                if (!cachedResults.ContainsKey(sourcePath))
+                {
+                    continue;
+                }
+
+                if (!chunkFilePathsByModulePath.TryGetValue(sourcePath, out var chunkFilePaths))
+                {
+                    chunkFilePaths = new HashSet<string>(FilePathComparer);
+                    chunkFilePathsByModulePath[sourcePath] = chunkFilePaths;
+                }
+
+                chunkFilePaths.Add(chunk.FilePath);
+            }
+        }
+
+        if (chunkFilePathsByModulePath.Count == 0)
+        {
+            return null;
+        }
+
+        var importerModulePathsByCssPath = new Dictionary<string, HashSet<string>>(FilePathComparer);
+        foreach (var (modulePath, result) in cachedResults)
+        {
+            var embeddedStyleDependencyPaths = result.EmbeddedStyleDependencies
+                .Select(dependency => moduleResolver.Resolve(dependency, modulePath))
+                .Where(static resolved => resolved.Found && !resolved.IsVirtual)
+                .Select(static resolved => resolved.AbsolutePath)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var dependency in result.Dependencies)
+            {
+                var resolved = moduleResolver.Resolve(dependency, modulePath);
+                if (!resolved.Found || resolved.IsVirtual
+                    || !string.Equals(Path.GetExtension(resolved.AbsolutePath), ".css", StringComparison.OrdinalIgnoreCase)
+                    || embeddedStyleDependencyPaths.Contains(resolved.AbsolutePath))
+                {
+                    continue;
+                }
+
+                if (!importerModulePathsByCssPath.TryGetValue(resolved.AbsolutePath, out var importerModulePaths))
+                {
+                    importerModulePaths = new HashSet<string>(FilePathComparer);
+                    importerModulePathsByCssPath[resolved.AbsolutePath] = importerModulePaths;
+                }
+
+                importerModulePaths.Add(modulePath);
+            }
+        }
+
+        return new SourceMapOwnershipContext(
+            chunkFilePathsByModulePath.ToDictionary(
+                static entry => entry.Key,
+                static entry => (IReadOnlySet<string>)entry.Value,
+                FilePathComparer),
+            importerModulePathsByCssPath.ToDictionary(
+                static entry => entry.Key,
+                static entry => (IReadOnlySet<string>)entry.Value,
+                FilePathComparer));
+    }
+
+    private static IReadOnlyList<string> CollectReachableModulePaths(
+        string entryPointPath,
+        IReadOnlyDictionary<string, CompilationResult> cachedResults,
+        ModuleResolver moduleResolver)
+    {
+        var reachableModulePaths = new List<string>();
+        var stack = new Stack<string>();
+        var visitedModulePaths = new HashSet<string>(FilePathComparer);
+        stack.Push(entryPointPath);
+
+        while (stack.Count > 0)
+        {
+            var modulePath = stack.Pop();
+            if (!visitedModulePaths.Add(modulePath) || !cachedResults.TryGetValue(modulePath, out var result))
+            {
+                continue;
+            }
+
+            reachableModulePaths.Add(modulePath);
+
+            foreach (var dependency in result.Dependencies)
+            {
+                var resolved = moduleResolver.Resolve(dependency, modulePath);
+                if (resolved.Found && !resolved.IsVirtual && cachedResults.ContainsKey(resolved.AbsolutePath))
+                {
+                    stack.Push(resolved.AbsolutePath);
+                }
+            }
+        }
+
+        return reachableModulePaths;
+    }
+
+    private static IReadOnlyList<string> GetOwnerChunkFilePaths(
+        string sourceModulePath,
+        IReadOnlyDictionary<string, IReadOnlySet<string>> chunkFilePathsByModulePath)
+        => chunkFilePathsByModulePath.TryGetValue(sourceModulePath, out var ownerChunkFilePaths)
+            ? NormalizeOwnerChunkFilePaths(ownerChunkFilePaths, entryChunkFilePath: null)
+            : [];
+
+    private static IReadOnlyList<string> ReadNormalizedSourceMapSources(
+        string rootDirectory,
+        string? sourceMapPath,
+        ModuleResolver moduleResolver)
+    {
+        if (string.IsNullOrWhiteSpace(sourceMapPath))
+        {
+            return [];
+        }
+
+        var sourceMapAbsolutePath = Path.Combine(
+            rootDirectory,
+            sourceMapPath.Replace('/', Path.DirectorySeparatorChar));
+        if (!File.Exists(sourceMapAbsolutePath))
+        {
+            return [];
+        }
+
+        try
+        {
+            using var sourceMapDocument = JsonDocument.Parse(File.ReadAllText(sourceMapAbsolutePath));
+            if (!sourceMapDocument.RootElement.TryGetProperty("sources", out var sourcesElement)
+                || sourcesElement.ValueKind != JsonValueKind.Array)
+            {
+                return [];
+            }
+
+            var normalizedSources = new HashSet<string>(FilePathComparer);
+            foreach (var sourceElement in sourcesElement.EnumerateArray())
+            {
+                if (sourceElement.ValueKind != JsonValueKind.String)
+                {
+                    continue;
+                }
+
+                var normalizedSourcePath = NormalizeSourceMapSourcePath(
+                    rootDirectory,
+                    Path.GetDirectoryName(sourceMapAbsolutePath)!,
+                    sourceElement.GetString(),
+                    moduleResolver);
+                if (!string.IsNullOrWhiteSpace(normalizedSourcePath))
+                {
+                    normalizedSources.Add(normalizedSourcePath);
+                }
+            }
+
+            return normalizedSources.OrderBy(static path => path, FilePathComparer).ToArray();
+        }
+        catch (IOException)
+        {
+            return [];
+        }
+        catch (JsonException)
+        {
+            return [];
+        }
+    }
+
+    private static string? NormalizeSourceMapSourcePath(
+        string rootDirectory,
+        string sourceMapDirectory,
+        string? source,
+        ModuleResolver moduleResolver)
+    {
+        if (string.IsNullOrWhiteSpace(source) || source.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        if (source.StartsWith("deno:", StringComparison.OrdinalIgnoreCase))
+        {
+            return NormalizeSourceMapSourcePath(
+                rootDirectory,
+                sourceMapDirectory,
+                source["deno:".Length..],
+                moduleResolver);
+        }
+
+        if (Uri.TryCreate(source, UriKind.Absolute, out var absoluteUri))
+        {
+            if (absoluteUri.IsFile)
+            {
+                return NormalizeAbsoluteSourceMapPath(rootDirectory, absoluteUri.LocalPath);
+            }
+
+            if (string.Equals(absoluteUri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(absoluteUri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+            {
+                var resolved = moduleResolver.Resolve(Uri.UnescapeDataString(absoluteUri.AbsolutePath));
+                return resolved.Found && !resolved.IsVirtual
+                    ? NormalizeAbsoluteSourceMapPath(rootDirectory, resolved.AbsolutePath)
+                    : null;
+            }
+
+            return null;
+        }
+
+        if (source.StartsWith("/", StringComparison.Ordinal))
+        {
+            var resolved = moduleResolver.Resolve(source);
+            return resolved.Found && !resolved.IsVirtual
+                ? NormalizeAbsoluteSourceMapPath(rootDirectory, resolved.AbsolutePath)
+                : null;
+        }
+
+        return NormalizeAbsoluteSourceMapPath(
+            rootDirectory,
+            Path.Combine(sourceMapDirectory, source.Replace('/', Path.DirectorySeparatorChar)));
+    }
+
+    private static string? NormalizeAbsoluteSourceMapPath(string rootDirectory, string path)
+    {
+        var absolutePath = Path.GetFullPath(Uri.UnescapeDataString(path));
+        return IsPathInsideRoot(rootDirectory, absolutePath) && File.Exists(absolutePath)
+            ? absolutePath
+            : null;
+    }
+
+    private static bool IsPathInsideRoot(string rootDirectory, string candidatePath)
+    {
+        var relativePath = Path.GetRelativePath(rootDirectory, candidatePath);
+        return string.Equals(relativePath, ".", StringComparison.Ordinal)
+            || (!string.Equals(relativePath, "..", StringComparison.Ordinal)
+                && !relativePath.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+                && !relativePath.StartsWith(".." + Path.AltDirectorySeparatorChar, StringComparison.Ordinal)
+                && !Path.IsPathRooted(relativePath));
+    }
+
+    private static IReadOnlyDictionary<string, string> CreateModuleChunkOwnershipMap(
+        string rootDirectory,
+        string entryPointPath,
+        IReadOnlyList<ChunkInfo> chunks,
+        IReadOnlyDictionary<string, CompilationResult> cachedResults,
+        ModuleResolver moduleResolver)
+    {
+        var ownerChunkByModulePath = new Dictionary<string, string>(FilePathComparer);
+        var entryChunk = chunks.FirstOrDefault(static chunk => chunk.IsEntry)
+            ?? chunks.FirstOrDefault();
+        if (entryChunk is not null)
+        {
+            ownerChunkByModulePath[entryPointPath] = entryChunk.FilePath;
+        }
+
+        var dynamicImportRootModules = ExtractDynamicImportRootModules(cachedResults, moduleResolver);
+        var chunkModulesByFilePath = ReadChunkModulesFromSourceMaps(
+            rootDirectory,
+            chunks,
+            cachedResults,
+            moduleResolver);
+
+        foreach (var dynamicImportRootModule in dynamicImportRootModules)
+        {
+            var matchingChunkFilePaths = chunkModulesByFilePath
+                .Where(entry => entry.Value.Contains(dynamicImportRootModule))
+                .Select(entry => entry.Key)
+                .Distinct(FilePathComparer)
+                .ToArray();
+            if (matchingChunkFilePaths.Length == 0)
+            {
+                continue;
+            }
+
+            var preferredChunkFilePaths = entryChunk is null
+                ? matchingChunkFilePaths
+                : matchingChunkFilePaths
+                    .Where(chunkFilePath => !string.Equals(chunkFilePath, entryChunk.FilePath, FilePathComparison))
+                    .ToArray();
+            var resolvedChunkFilePaths = preferredChunkFilePaths.Length > 0
+                ? preferredChunkFilePaths
+                : matchingChunkFilePaths;
+            if (resolvedChunkFilePaths.Length == 1)
+            {
+                ownerChunkByModulePath.TryAdd(dynamicImportRootModule, resolvedChunkFilePaths[0]);
+            }
+        }
+
+        var modulePathsByStem = dynamicImportRootModules
+            .Where(modulePath => !ownerChunkByModulePath.ContainsKey(modulePath))
+            .GroupBy(static modulePath => Path.GetFileNameWithoutExtension(modulePath), FilePathComparer)
+            .ToDictionary(
+                static group => group.Key,
+                static group => group
+                    .OrderBy(static path => path.Length)
+                    .ThenBy(static path => path, FilePathComparer)
+                    .ToArray(),
+                FilePathComparer);
+
+        foreach (var chunk in chunks.Where(static chunk => !chunk.IsEntry))
+        {
+            var chunkBaseName = GetChunkBaseName(chunk.FileName);
+            if (string.IsNullOrWhiteSpace(chunkBaseName)
+                || !TryGetChunkCandidateModulePaths(chunkBaseName, modulePathsByStem, out var candidateModulePaths)
+                || candidateModulePaths.Length != 1)
+            {
+                continue;
+            }
+
+            ownerChunkByModulePath.TryAdd(candidateModulePaths[0], chunk.FilePath);
+        }
+
+        var unresolvedChunks = chunks
+            .Where(chunk => !chunk.IsEntry
+                && !ownerChunkByModulePath.Values.Any(ownerChunkFilePath => string.Equals(ownerChunkFilePath, chunk.FilePath, FilePathComparison)))
+            .ToArray();
+        if (unresolvedChunks.Length == 1)
+        {
+            var unresolvedDynamicRoots = dynamicImportRootModules
+                .Where(modulePath => !ownerChunkByModulePath.ContainsKey(modulePath))
+                .ToArray();
+            if (unresolvedDynamicRoots.Length == 1)
+            {
+                ownerChunkByModulePath[unresolvedDynamicRoots[0]] = unresolvedChunks[0].FilePath;
+            }
+        }
+
+        return ownerChunkByModulePath;
+    }
+
+    private static bool TryGetChunkCandidateModulePaths(
+        string chunkBaseName,
+        IReadOnlyDictionary<string, string[]> modulePathsByStem,
+        out string[] candidateModulePaths)
+    {
+        if (modulePathsByStem.TryGetValue(chunkBaseName, out var exactCandidateModulePaths))
+        {
+            candidateModulePaths = exactCandidateModulePaths;
+            return true;
+        }
+
+        var prefixMatches = modulePathsByStem
+            .Where(entry => chunkBaseName.StartsWith(entry.Key + "-", FilePathComparison))
+            .OrderByDescending(static entry => entry.Key.Length)
+            .ToArray();
+        if (prefixMatches.Length == 0)
+        {
+            candidateModulePaths = [];
+            return false;
+        }
+
+        var bestMatchLength = prefixMatches[0].Key.Length;
+        var bestMatches = prefixMatches
+            .Where(entry => entry.Key.Length == bestMatchLength)
+            .ToArray();
+        if (bestMatches.Length != 1)
+        {
+            candidateModulePaths = [];
+            return false;
+        }
+
+        candidateModulePaths = bestMatches[0].Value;
+        return true;
+    }
+
+    private static IReadOnlyDictionary<string, HashSet<string>> ReadChunkModulesFromSourceMaps(
+        string rootDirectory,
+        IReadOnlyList<ChunkInfo> chunks,
+        IReadOnlyDictionary<string, CompilationResult> cachedResults,
+        ModuleResolver moduleResolver)
+    {
+        var chunkModulesByFilePath = new Dictionary<string, HashSet<string>>(FilePathComparer);
+
+        foreach (var chunk in chunks)
+        {
+            var chunkModules = ReadChunkSourceModules(rootDirectory, chunk, cachedResults, moduleResolver);
+            if (chunkModules.Count > 0)
+            {
+                chunkModulesByFilePath[chunk.FilePath] = chunkModules;
+            }
+        }
+
+        return chunkModulesByFilePath;
+    }
+
+    private static HashSet<string> ReadChunkSourceModules(
+        string rootDirectory,
+        ChunkInfo chunk,
+        IReadOnlyDictionary<string, CompilationResult> cachedResults,
+        ModuleResolver moduleResolver)
+    {
+        if (string.IsNullOrWhiteSpace(chunk.SourceMapPath))
+        {
+            return [];
+        }
+
+        var sourceMapAbsolutePath = Path.Combine(
+            rootDirectory,
+            chunk.SourceMapPath.Replace('/', Path.DirectorySeparatorChar));
+        if (!File.Exists(sourceMapAbsolutePath))
+        {
+            return [];
+        }
+
+        try
+        {
+            using var sourceMapDocument = JsonDocument.Parse(File.ReadAllText(sourceMapAbsolutePath));
+            if (!sourceMapDocument.RootElement.TryGetProperty("sources", out var sourcesElement)
+                || sourcesElement.ValueKind != JsonValueKind.Array)
+            {
+                return [];
+            }
+
+            var sourceModules = new HashSet<string>(FilePathComparer);
+            foreach (var sourceElement in sourcesElement.EnumerateArray())
+            {
+                if (sourceElement.ValueKind != JsonValueKind.String)
+                {
+                    continue;
+                }
+
+                var sourceModulePath = NormalizeSourceMapSourceToModulePath(
+                    sourceElement.GetString(),
+                    cachedResults,
+                    moduleResolver);
+                if (!string.IsNullOrWhiteSpace(sourceModulePath))
+                {
+                    sourceModules.Add(sourceModulePath);
+                }
+            }
+
+            return sourceModules;
+        }
+        catch (IOException)
+        {
+            return [];
+        }
+        catch (JsonException)
+        {
+            return [];
+        }
+    }
+
+    private static string? NormalizeSourceMapSourceToModulePath(
+        string? source,
+        IReadOnlyDictionary<string, CompilationResult> cachedResults,
+        ModuleResolver moduleResolver)
+    {
+        if (string.IsNullOrWhiteSpace(source))
+        {
+            return null;
+        }
+
+        if (source.StartsWith("deno:", StringComparison.OrdinalIgnoreCase))
+        {
+            return NormalizeSourceMapSourceToModulePath(
+                source["deno:".Length..],
+                cachedResults,
+                moduleResolver);
+        }
+
+        if (source.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        if (Uri.TryCreate(source, UriKind.Absolute, out var absoluteUri))
+        {
+            if (absoluteUri.IsFile)
+            {
+                var absolutePath = Path.GetFullPath(Uri.UnescapeDataString(absoluteUri.LocalPath));
+                return cachedResults.ContainsKey(absolutePath)
+                    ? absolutePath
+                    : null;
+            }
+
+            if (string.Equals(absoluteUri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(absoluteUri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+            {
+                return ResolveSourceMapRequestPathToModulePath(
+                    Uri.UnescapeDataString(absoluteUri.AbsolutePath),
+                    cachedResults,
+                    moduleResolver);
+            }
+
+            return null;
+        }
+
+        if (source.StartsWith("/", StringComparison.Ordinal))
+        {
+            return ResolveSourceMapRequestPathToModulePath(source, cachedResults, moduleResolver);
+        }
+
+        var resolved = moduleResolver.Resolve(source);
+        return resolved.Found && !resolved.IsVirtual && cachedResults.ContainsKey(resolved.AbsolutePath)
+            ? resolved.AbsolutePath
+            : null;
+    }
+
+    private static string? ResolveSourceMapRequestPathToModulePath(
+        string requestPath,
+        IReadOnlyDictionary<string, CompilationResult> cachedResults,
+        ModuleResolver moduleResolver)
+    {
+        var resolved = moduleResolver.Resolve(requestPath);
+        return resolved.Found && !resolved.IsVirtual && cachedResults.ContainsKey(resolved.AbsolutePath)
+            ? resolved.AbsolutePath
+            : null;
+    }
+
+    private static IReadOnlyList<string> ExtractDynamicImportRootModules(
+        IReadOnlyDictionary<string, CompilationResult> cachedResults,
+        ModuleResolver moduleResolver)
+    {
+        var dynamicImportRootModules = new HashSet<string>(FilePathComparer);
+
+        foreach (var (modulePath, result) in cachedResults)
+        {
+            foreach (Match match in DynamicImportPattern.Matches(result.Content))
+            {
+                var specifier = match.Groups["specifier"].Value;
+                if (string.IsNullOrWhiteSpace(specifier))
+                {
+                    continue;
+                }
+
+                var resolved = moduleResolver.Resolve(specifier, modulePath);
+                if (!resolved.Found || resolved.IsVirtual || !cachedResults.ContainsKey(resolved.AbsolutePath))
+                {
+                    continue;
+                }
+
+                dynamicImportRootModules.Add(resolved.AbsolutePath);
+            }
+        }
+
+        return dynamicImportRootModules.ToArray();
+    }
+
+    private static string CreateOwnedKey(string? ownerChunkFilePath, string path)
+        => $"{ownerChunkFilePath ?? "<entry>"}|{path}";
+
+    private static IReadOnlyList<string> CreateOwnerChunkFilePaths(string? ownerChunkFilePath)
+        => string.IsNullOrWhiteSpace(ownerChunkFilePath)
+            ? []
+            : [ownerChunkFilePath];
+
+    private static IReadOnlyList<string> NormalizeOwnerChunkFilePaths(
+        IEnumerable<string> ownerChunkFilePaths,
+        string? entryChunkFilePath)
+    {
+        var normalizedOwnerChunkFilePaths = ownerChunkFilePaths
+            .Where(static ownerChunkFilePath => !string.IsNullOrWhiteSpace(ownerChunkFilePath))
+            .Distinct(FilePathComparer)
+            .OrderBy(static ownerChunkFilePath => ownerChunkFilePath, FilePathComparer)
+            .ToArray();
+        if (normalizedOwnerChunkFilePaths.Length > 0)
+        {
+            return normalizedOwnerChunkFilePaths;
+        }
+
+        return string.IsNullOrWhiteSpace(entryChunkFilePath)
+            ? []
+            : [entryChunkFilePath];
+    }
+
+    private static string CreateOwnerChunkSetKey(
+        IEnumerable<string> ownerChunkFilePaths,
+        string? entryChunkFilePath)
+        => string.Join(
+            "|",
+            NormalizeOwnerChunkFilePaths(ownerChunkFilePaths, entryChunkFilePath));
+
+    private static bool IsEntryOnlyOwnerSet(
+        IEnumerable<string> ownerChunkFilePaths,
+        string? entryChunkFilePath)
+    {
+        var normalizedOwnerChunkFilePaths = NormalizeOwnerChunkFilePaths(ownerChunkFilePaths, entryChunkFilePath);
+        return normalizedOwnerChunkFilePaths.Count == 1
+            && string.Equals(normalizedOwnerChunkFilePaths[0], entryChunkFilePath, FilePathComparison);
+    }
+
+    private static string CreateCssAssetBaseName(
+        IReadOnlyList<string> ownerChunkFilePaths,
+        string? entryChunkFilePath)
+    {
+        if (ownerChunkFilePaths.Count == 0
+            || IsEntryOnlyOwnerSet(ownerChunkFilePaths, entryChunkFilePath))
+        {
+            return "styles";
+        }
+
+        if (ownerChunkFilePaths.Count == 1)
+        {
+            return $"{GetChunkBaseName(Path.GetFileName(ownerChunkFilePaths[0]))}-styles";
+        }
+
+        var ownerKey = string.Join("|", ownerChunkFilePaths);
+        var ownerHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(ownerKey)))[..8].ToLowerInvariant();
+        return $"shared-{ownerHash}-styles";
+    }
+
+    private static string GetChunkBaseName(string chunkFileName)
+    {
+        var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(chunkFileName);
+        var separatorIndex = fileNameWithoutExtension.LastIndexOf('-');
+        if (separatorIndex <= 0 || separatorIndex == fileNameWithoutExtension.Length - 1)
+        {
+            return fileNameWithoutExtension;
+        }
+
+        var suffix = fileNameWithoutExtension[(separatorIndex + 1)..];
+        return IsHexString(suffix)
+            ? fileNameWithoutExtension[..separatorIndex]
+            : fileNameWithoutExtension;
+    }
+
+    private static bool IsHexString(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        foreach (var character in value)
+        {
+            if (!Uri.IsHexDigit(character))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static async Task<IReadOnlyList<AssetInfo>> CopyReferencedSourceAssetsAsync(
+        BuildContext context,
+        StaticAssetHandler staticAssetHandler,
+        IReadOnlyList<CssFragment> cssFragments,
+        IReadOnlyList<AssetInfo> existingStaticAssets,
+        CancellationToken cancellationToken)
+    {
+        if (cssFragments.Count == 0)
+        {
+            return [];
+        }
+
+        var knownOriginalPaths = existingStaticAssets
+            .Where(static asset => !string.IsNullOrWhiteSpace(asset.OriginalPath))
+            .Select(static asset => asset.OriginalPath!)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var sourceAssetRequests = new List<SourceAssetRequest>();
+
+        foreach (var cssFragment in cssFragments)
+        {
+            foreach (var referencedAssetPath in CssUrlRewriter.ExtractAssetReferences(
+                         cssFragment.Content,
+                         cssFragment.SourcePublicPath))
+            {
+                if (!knownOriginalPaths.Add(referencedAssetPath))
+                {
+                    continue;
+                }
+
+                var absolutePath = Path.Combine(
+                    context.RootDirectory,
+                    referencedAssetPath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+                if (!File.Exists(absolutePath))
+                {
+                    continue;
+                }
+
+                sourceAssetRequests.Add(new SourceAssetRequest
+                {
+                    AbsolutePath = absolutePath,
+                    OriginalPath = referencedAssetPath
+                });
+            }
+        }
+
+        return await staticAssetHandler.CopySourceAssetsAsync(sourceAssetRequests, cancellationToken);
+    }
+
+    private static string CreateHashedAssetFileName(
+        string baseName,
+        string extension,
+        string content,
+        int hashLength)
+    {
+        var normalizedHashLength = Math.Max(1, Math.Min(hashLength, 64));
+        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(content)))[..normalizedHashLength].ToLowerInvariant();
+        return $"{baseName}-{hash}{extension}";
+    }
+
+    private static string GetStyleFragmentSourcePublicPath(
+        ModuleResolver moduleResolver,
+        string modulePath,
+        CompiledStyleFragment styleFragment)
+    {
+        var sourcePath = GetStyleFragmentSourcePath(modulePath, styleFragment);
+
+        try
+        {
+            return moduleResolver.GetResolvedUrlForAbsolutePath(sourcePath).TrimStart('/');
+        }
+        catch (InvalidOperationException)
+        {
+            return moduleResolver.GetResolvedUrlForAbsolutePath(modulePath).TrimStart('/');
+        }
+    }
+
+    private static string GetStyleFragmentSourcePath(
+        string modulePath,
+        CompiledStyleFragment styleFragment)
+        => string.IsNullOrWhiteSpace(styleFragment.SourcePath)
+            ? modulePath
+            : styleFragment.SourcePath!;
+
+    private static async Task<string> WriteManifestAsync(
+        BuildContext context,
+        IReadOnlyList<ChunkInfo> chunks,
+        IReadOnlyList<AssetInfo> cssAssets,
+        IReadOnlyList<AssetInfo> staticAssets,
+        long totalSize,
+        CancellationToken cancellationToken)
+    {
+        var entryChunk = chunks.FirstOrDefault(static chunk => chunk.IsEntry)
+            ?? chunks.FirstOrDefault()
+            ?? throw new InvalidOperationException("Cannot write build manifest without an entry chunk.");
+        var manifest = new BuildManifest
+        {
+            Entry = ToHtmlPath(context, entryChunk.FilePath),
+            Chunks = chunks
+                .Select(chunk => new BuildManifestChunk
+                {
+                    File = ToHtmlPath(context, chunk.FilePath),
+                    IsEntry = chunk.IsEntry,
+                    Imports = chunk.Imports.Select(importPath => ToHtmlPath(context, importPath)).ToArray(),
+                    Css = chunk.Css.Select(cssPath => ToHtmlPath(context, cssPath)).ToArray(),
+                    SourceMap = chunk.SourceMapPath is null
+                        ? null
+                        : ToHtmlPath(context, chunk.SourceMapPath)
+                })
+                .ToArray(),
+            Css = entryChunk.Css.Select(cssPath => ToHtmlPath(context, cssPath)).ToArray(),
+            StaticAssets = staticAssets
+                .Where(static asset => !string.IsNullOrWhiteSpace(asset.OriginalPath))
+                .Select(asset => new BuildManifestStaticAsset
+                {
+                    File = ToHtmlPath(context, asset.FilePath),
+                    OriginalPath = asset.OriginalPath!
+                })
+                .ToArray(),
+            TotalSize = totalSize
+        };
+
+        var manifestPath = Path.Combine(context.OutDirectory, ManifestFileName);
+        var json = JsonSerializer.Serialize(
+            manifest,
+            new JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
+        await File.WriteAllTextAsync(manifestPath, json, cancellationToken);
+        return manifestPath;
+    }
+
     /// <summary>
     /// Creates a DenoVolarHost for the build pipeline.
     /// </summary>
-    private static DenoVolarHost CreateDenoHost(string rootDirectory)
+    private static DenoVolarHost CreateDenoHost()
     {
+        var baseDirectory = ResolveDenoHostBaseDirectory();
+        var parsedOptions = DenoVolarHostOptionsParser.Parse(["--deno-worker"], baseDirectory);
         var options = new DenoVolarHostOptions
         {
-            Enabled = true,
-            ExecutablePath = DenoRuntimeAssetResolver.ResolveBundledExecutablePath(),
-            WorkerScriptPath = DenoRuntimeAssetResolver.ResolveWorkerPath(),
-            CacheDirectory = DenoRuntimeAssetResolver.ResolveCacheDirectory(),
-            WorkingDirectory = DenoRuntimeAssetResolver.ResolveWorkingDirectory(
-                null,
-                DenoRuntimeAssetResolver.ResolveWorkerPath()),
+            Enabled = parsedOptions.Enabled,
+            ExecutablePath = parsedOptions.ExecutablePath,
+            HasExplicitExecutableOverride = parsedOptions.HasExplicitExecutableOverride,
+            WorkerScriptPath = parsedOptions.WorkerScriptPath,
+            CacheDirectory = parsedOptions.CacheDirectory,
+            Arguments = parsedOptions.Arguments,
+            WorkingDirectory = parsedOptions.WorkingDirectory,
             IgnoreStartupFailure = false
         };
 
         return new DenoVolarHost(options);
     }
+
+    private static string ResolveDenoHostBaseDirectory()
+    {
+        var assemblyBaseDirectory = Path.GetDirectoryName(typeof(BuildOrchestrator).Assembly.Location)
+            ?? AppContext.BaseDirectory;
+        if (IsUsableDenoHostBaseDirectory(assemblyBaseDirectory))
+        {
+            return assemblyBaseDirectory;
+        }
+
+        var projectOutputBaseDirectory = TryResolveProjectOutputBaseDirectory(assemblyBaseDirectory);
+        if (projectOutputBaseDirectory is not null && IsUsableDenoHostBaseDirectory(projectOutputBaseDirectory))
+        {
+            return projectOutputBaseDirectory;
+        }
+
+        var workspaceProjectOutputBaseDirectory = TryResolveWorkspaceProjectOutputBaseDirectory(assemblyBaseDirectory);
+        if (workspaceProjectOutputBaseDirectory is not null)
+        {
+            return workspaceProjectOutputBaseDirectory;
+        }
+
+        var fallbackProjectOutputBaseDirectory = TryResolveFallbackProjectOutputBaseDirectory(projectOutputBaseDirectory)
+            ?? TryResolveFallbackProjectOutputBaseDirectory(workspaceProjectOutputBaseDirectory);
+        return fallbackProjectOutputBaseDirectory is not null
+            ? fallbackProjectOutputBaseDirectory
+            : assemblyBaseDirectory;
+    }
+
+    private static string? TryResolveFallbackProjectOutputBaseDirectory(string? projectOutputBaseDirectory)
+    {
+        if (string.IsNullOrWhiteSpace(projectOutputBaseDirectory))
+        {
+            return null;
+        }
+
+        var targetFramework = Path.GetFileName(projectOutputBaseDirectory);
+        var configurationDirectory = Path.GetDirectoryName(projectOutputBaseDirectory);
+        var binDirectory = string.IsNullOrWhiteSpace(configurationDirectory)
+            ? null
+            : Path.GetDirectoryName(configurationDirectory);
+        if (string.IsNullOrWhiteSpace(targetFramework)
+            || string.IsNullOrWhiteSpace(binDirectory)
+            || !Directory.Exists(binDirectory))
+        {
+            return null;
+        }
+
+        try
+        {
+            return Directory.EnumerateDirectories(binDirectory)
+                .Select(configurationPath => Path.Combine(configurationPath, targetFramework))
+                .Where(candidate => !string.Equals(
+                    Path.GetFullPath(candidate),
+                    Path.GetFullPath(projectOutputBaseDirectory),
+                    FilePathComparison))
+                .FirstOrDefault(IsUsableDenoHostBaseDirectory);
+        }
+        catch (IOException)
+        {
+            return null;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return null;
+        }
+    }
+
+    private static string? TryResolveProjectOutputBaseDirectory(string assemblyBaseDirectory)
+    {
+        var targetFramework = Path.GetFileName(assemblyBaseDirectory);
+        var configurationDirectory = Path.GetDirectoryName(assemblyBaseDirectory);
+        if (string.IsNullOrWhiteSpace(targetFramework) || string.IsNullOrWhiteSpace(configurationDirectory))
+        {
+            return null;
+        }
+
+        var configuration = Path.GetFileName(configurationDirectory);
+        if (string.IsNullOrWhiteSpace(configuration))
+        {
+            return null;
+        }
+
+        var candidate = Path.GetFullPath(Path.Combine(
+            assemblyBaseDirectory,
+            "..",
+            "..",
+            "..",
+            "..",
+            "Jazor.VueHost",
+            "bin",
+            configuration,
+            targetFramework));
+        return Directory.Exists(candidate)
+            ? candidate
+            : null;
+    }
+
+    private static string? TryResolveWorkspaceProjectOutputBaseDirectory(string assemblyBaseDirectory)
+    {
+        var repositoryRoot = TryResolveRepositoryRoot(assemblyBaseDirectory);
+        if (string.IsNullOrWhiteSpace(repositoryRoot))
+        {
+            return null;
+        }
+
+        var sourceProjectBinDirectory = Path.Combine(repositoryRoot, "src", "Jazor.VueHost", "bin");
+        if (!Directory.Exists(sourceProjectBinDirectory))
+        {
+            return null;
+        }
+
+        var preferredConfiguration = TryResolveBuildConfiguration(assemblyBaseDirectory);
+        try
+        {
+            foreach (var configurationDirectory in Directory.EnumerateDirectories(sourceProjectBinDirectory)
+                .OrderByDescending(path => string.Equals(
+                    Path.GetFileName(path),
+                    preferredConfiguration,
+                    StringComparison.OrdinalIgnoreCase))
+                .ThenBy(static path => path, FilePathComparer))
+            {
+                foreach (var candidate in Directory.EnumerateDirectories(configurationDirectory)
+                    .OrderBy(static path => path, FilePathComparer))
+                {
+                    if (IsUsableDenoHostBaseDirectory(candidate))
+                    {
+                        return candidate;
+                    }
+                }
+            }
+        }
+        catch (IOException)
+        {
+            return null;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return null;
+        }
+
+        return null;
+    }
+
+    private static string? TryResolveRepositoryRoot(string assemblyBaseDirectory)
+    {
+        var currentDirectory = new DirectoryInfo(assemblyBaseDirectory);
+        while (currentDirectory is not null)
+        {
+            var sourceProjectPath = Path.Combine(
+                currentDirectory.FullName,
+                "src",
+                "Jazor.VueHost",
+                "Jazor.VueHost.csproj");
+            if (File.Exists(sourceProjectPath))
+            {
+                return currentDirectory.FullName;
+            }
+
+            currentDirectory = currentDirectory.Parent;
+        }
+
+        return null;
+    }
+
+    private static string? TryResolveBuildConfiguration(string assemblyBaseDirectory)
+    {
+        var directoryName = Path.GetFileName(assemblyBaseDirectory);
+        if (IsBuildConfigurationName(directoryName))
+        {
+            return directoryName;
+        }
+
+        var parentDirectoryName = Path.GetFileName(Path.GetDirectoryName(assemblyBaseDirectory));
+        return IsBuildConfigurationName(parentDirectoryName)
+            ? parentDirectoryName
+            : null;
+    }
+
+    private static bool IsBuildConfigurationName(string? value)
+        => string.Equals(value, "Debug", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(value, "Release", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsUsableDenoHostBaseDirectory(string baseDirectory)
+    {
+        var workerPath = Path.Combine(baseDirectory, "Frontend", "Deno", "Worker", "frontend-worker.ts");
+        var workerDirectory = Path.GetDirectoryName(workerPath);
+        var workerConfigPath = string.IsNullOrWhiteSpace(workerDirectory)
+            ? null
+            : Path.Combine(workerDirectory, "deno.json");
+        var workerNodeModulesDirectory = string.IsNullOrWhiteSpace(workerDirectory)
+            ? null
+            : Path.Combine(workerDirectory, "node_modules");
+        var cacheDirectory = Path.Combine(baseDirectory, "Frontend", "Deno", "Cache");
+        var npmCacheDirectory = Path.Combine(cacheDirectory, "npm");
+        var registryCacheDirectory = Path.Combine(npmCacheDirectory, "registry.npmjs.org");
+        return File.Exists(workerPath)
+            && !string.IsNullOrWhiteSpace(workerConfigPath)
+            && File.Exists(workerConfigPath)
+            && HasReadyDenoWorkerDependencies(workerNodeModulesDirectory, registryCacheDirectory)
+            && DenoRuntimeAssetResolver.TryResolveBundledExecutablePath(baseDirectory, out _);
+    }
+
+    private static bool HasReadyDenoWorkerDependencies(
+        string? workerNodeModulesDirectory,
+        string registryCacheDirectory)
+    {
+        if (!string.IsNullOrWhiteSpace(workerNodeModulesDirectory)
+            && Directory.Exists(Path.Combine(workerNodeModulesDirectory, "@volar"))
+            && Directory.Exists(Path.Combine(workerNodeModulesDirectory, "@vue")))
+        {
+            return true;
+        }
+
+        return Directory.Exists(Path.Combine(registryCacheDirectory, "@volar"))
+            && Directory.Exists(Path.Combine(registryCacheDirectory, "@vue"));
+    }
+
+    private static async Task EnsureBuildGraphCompiledAsync(
+        OnDemandCompiler compiler,
+        ModuleResolver moduleResolver,
+        string entryPointPath,
+        CancellationToken cancellationToken)
+    {
+        var pendingModulePaths = new Stack<string>();
+        var visitedModulePaths = new HashSet<string>(FilePathComparer);
+        pendingModulePaths.Push(entryPointPath);
+
+        while (pendingModulePaths.Count > 0)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var modulePath = pendingModulePaths.Pop();
+            if (!visitedModulePaths.Add(modulePath)
+                || !File.Exists(modulePath)
+                || !IsBuildGraphCompilablePath(modulePath))
+            {
+                continue;
+            }
+
+            var result = await compiler.CompileAsync(modulePath, cancellationToken);
+            foreach (var dependency in result.Dependencies)
+            {
+                var resolved = moduleResolver.Resolve(dependency, modulePath);
+                if (!resolved.Found
+                    || resolved.IsVirtual
+                    || !IsBuildGraphCompilablePath(resolved.AbsolutePath))
+                {
+                    continue;
+                }
+
+                pendingModulePaths.Push(resolved.AbsolutePath);
+            }
+        }
+    }
+
+    private static bool IsBuildGraphCompilablePath(string path)
+        => BuildGraphCompilableExtensions.Contains(Path.GetExtension(path));
+
+    private static void PrepareOutputDirectory(BuildContext context)
+    {
+        var rootDirectory = Path.GetFullPath(context.RootDirectory);
+        var outDirectory = Path.GetFullPath(context.OutDirectory);
+        if (!IsInsideRoot(rootDirectory, outDirectory)
+            || string.Equals(rootDirectory, outDirectory, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                $"Resolved build output directory '{outDirectory}' must stay inside project root '{rootDirectory}' and cannot point at the project root itself.");
+        }
+
+        if (Directory.Exists(outDirectory))
+        {
+            Directory.Delete(outDirectory, recursive: true);
+        }
+
+        Directory.CreateDirectory(outDirectory);
+    }
+
+    private static int GetAvailablePort()
+    {
+        using var listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        var port = ((IPEndPoint)listener.LocalEndpoint).Port;
+        listener.Stop();
+        return port;
+    }
+
+    private static bool IsInsideRoot(string rootDirectory, string candidatePath)
+    {
+        var relativePath = Path.GetRelativePath(rootDirectory, candidatePath);
+        return string.Equals(relativePath, ".", StringComparison.Ordinal)
+            || (!string.Equals(relativePath, "..", StringComparison.Ordinal)
+                && !relativePath.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+                && !relativePath.StartsWith(".." + Path.AltDirectorySeparatorChar, StringComparison.Ordinal)
+                && !Path.IsPathRooted(relativePath));
+    }
+
+    private static string ToHtmlPath(BuildContext context, string rootRelativePath)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(rootRelativePath);
+
+        var absolutePath = Path.GetFullPath(Path.Combine(
+            context.RootDirectory,
+            rootRelativePath.Replace('/', Path.DirectorySeparatorChar)));
+        var relativePath = Path.GetRelativePath(context.OutDirectory, absolutePath).Replace('\\', '/');
+        return relativePath.StartsWith("./", StringComparison.Ordinal)
+            ? relativePath[2..]
+            : relativePath;
+    }
+
+    private static long GetAssetSize(BuildContext context, string rootRelativePath)
+    {
+        var absolutePath = Path.Combine(
+            context.RootDirectory,
+            rootRelativePath.Replace('/', Path.DirectorySeparatorChar));
+        return File.Exists(absolutePath)
+            ? new FileInfo(absolutePath).Length
+            : 0;
+    }
+
+    private static long GetOptionalFileSize(BuildContext context, string? rootRelativePath)
+        => string.IsNullOrWhiteSpace(rootRelativePath)
+            ? 0
+            : GetAssetSize(context, rootRelativePath);
 }

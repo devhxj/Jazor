@@ -1,11 +1,14 @@
+using System.Net;
+using System.Net.Sockets;
 using System.Text.Json;
-using System.Text;
+using Jazor.Vue;
 using Jazor.VueHost.Build;
 using Jazor.VueHost.DevServer;
 
 namespace Jazor.CompilerTest;
 
 [TestClass]
+[DoNotParallelize]
 public sealed class JazorVueHostBuildTests
 {
     [TestMethod]
@@ -148,18 +151,37 @@ public sealed class JazorVueHostBuildTests
             {
                 OutDir = "site",
                 SourceMap = "inline",
-                Minify = false
+                Minify = false,
+                Target = "es2020",
+                CodeSplitting = true,
+                AssetsDir = "assets",
+                AssetHashLength = 8,
+                ChunkSizeWarningLimit = 500_000
             }
         };
 
         var options = BuildCommandOptionsResolver.ResolveBuildOptions(
-            ["--out-dir=preview-dist", "--sourcemap=false", "--minify=true"],
+            [
+                "--out-dir=preview-dist",
+                "--sourcemap=true",
+                "--minify=true",
+                "--target=es2022",
+                "--code-splitting=false",
+                "--assets-dir=static",
+                "--asset-hash-length=12",
+                "--chunk-size-warning-limit=100000"
+            ],
             "/project",
             config);
 
         Assert.AreEqual("preview-dist", options.OutDir);
-        Assert.AreEqual(SourceMapOption.None, options.SourceMap);
+        Assert.AreEqual(SourceMapOption.External, options.SourceMap);
         Assert.IsTrue(options.Minify);
+        Assert.AreEqual("es2022", options.Target);
+        Assert.IsFalse(options.CodeSplitting);
+        Assert.AreEqual("static", options.AssetsDir);
+        Assert.AreEqual(12, options.AssetHashLength);
+        Assert.AreEqual(100_000, options.ChunkSizeWarningLimit);
     }
 
     [TestMethod]
@@ -251,6 +273,38 @@ public sealed class JazorVueHostBuildTests
     }
 
     [TestMethod]
+    public void BuildEntryPointResolver_ResolveEntryPoint_PrefersModuleScriptAndIgnoresQueryString()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            Directory.CreateDirectory(Path.Combine(tempDir, "src"));
+            var analyticsScript = Path.Combine(tempDir, "analytics.js");
+            var entryPoint = Path.Combine(tempDir, "src", "main.ts");
+            File.WriteAllText(analyticsScript, "console.log('analytics');");
+            File.WriteAllText(entryPoint, "console.log('main');");
+            File.WriteAllText(
+                Path.Combine(tempDir, "index.html"),
+                """
+                <html>
+                <body>
+                  <script src="/analytics.js"></script>
+                  <script type="module" src="/src/main.ts?v=42"></script>
+                </body>
+                </html>
+                """);
+
+            var resolved = BuildEntryPointResolver.ResolveEntryPoint(tempDir);
+
+            Assert.AreEqual(Path.GetFullPath(entryPoint), resolved);
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void BuildEntryPointResolver_ResolveEntryPoint_FallsBackToStandardCandidates()
     {
         var tempDir = CreateTemporaryDirectory();
@@ -271,18 +325,17 @@ public sealed class JazorVueHostBuildTests
     }
 
     [TestMethod]
-    public void EsbuildPackageResolver_ResolvePackageDirectory_ReturnsLocalNodeModulesPackage()
+    public async Task DenoBuildImportMapGenerator_GenerateAsync_IncludesVueFallback()
     {
         var tempDir = CreateTemporaryDirectory();
         try
         {
-            var packageDirectory = Path.Combine(tempDir, "node_modules", "esbuild");
-            Directory.CreateDirectory(packageDirectory);
-            File.WriteAllText(Path.Combine(packageDirectory, "package.json"), """{ "name": "esbuild", "main": "index.js" }""");
+            var importMapPath = await DenoBuildImportMapGenerator.GenerateAsync(tempDir, CancellationToken.None);
 
-            var resolved = EsbuildPackageResolver.ResolvePackageDirectory(tempDir);
-
-            Assert.AreEqual(Path.GetFullPath(packageDirectory), resolved);
+            Assert.IsTrue(File.Exists(importMapPath));
+            var json = await File.ReadAllTextAsync(importMapPath);
+            StringAssert.Contains(json, "\"vue\": \"npm:vue@3\"");
+            StringAssert.Contains(json, "\"vue/\": \"npm:vue@3/\"");
         }
         finally
         {
@@ -291,85 +344,544 @@ public sealed class JazorVueHostBuildTests
     }
 
     [TestMethod]
-    public async Task EsbuildRunner_RunAsync_UsesResolvedEntryPointAndLocalEsbuildPackage()
+    public async Task DenoBundleRunner_RunAsync_BundlesHttpEntryUsingBundledRuntime()
     {
         var tempDir = CreateTemporaryDirectory();
         try
         {
             Directory.CreateDirectory(Path.Combine(tempDir, "src"));
-            File.WriteAllText(
+            await File.WriteAllTextAsync(
                 Path.Combine(tempDir, "index.html"),
                 """
                 <html>
                 <body>
-                  <script type="module" src="/src/custom-entry.ts"></script>
+                  <script type="module" src="/src/main.js"></script>
                 </body>
                 </html>
                 """);
-            File.WriteAllText(Path.Combine(tempDir, "src", "custom-entry.ts"), "console.log('custom entry');");
-
-            var esbuildPackageDirectory = Path.Combine(tempDir, "node_modules", "esbuild");
-            Directory.CreateDirectory(esbuildPackageDirectory);
-            File.WriteAllText(Path.Combine(esbuildPackageDirectory, "package.json"), """{ "name": "esbuild", "main": "index.js" }""");
-            File.WriteAllText(
-                Path.Combine(esbuildPackageDirectory, "index.js"),
-                """
-                const path = require('node:path');
-
-                module.exports.build = async function build(options) {
-                  if (!Array.isArray(options.entryPoints) || options.entryPoints[0] !== 'src/custom-entry.ts') {
-                    throw new Error(`Unexpected entry point: ${JSON.stringify(options.entryPoints)}`);
-                  }
-
-                  if (options.entryNames !== 'assets/[name]-[hash]') {
-                    throw new Error(`Unexpected entryNames: ${options.entryNames}`);
-                  }
-
-                  if (!Array.isArray(options.plugins) || options.plugins.length !== 1 || options.plugins[0].name !== 'noop-plugin') {
-                    throw new Error('Expected the generated config to load the provided plugin.');
-                  }
-
-                  return {
-                    metafile: {
-                      inputs: {
-                        'src/custom-entry.ts': { bytes: 32 }
-                      },
-                      outputs: {
-                        [path.posix.join(options.outdir, 'assets/custom-entry-abc123.js')]: {
-                          bytes: 64,
-                          inputs: {
-                            'src/custom-entry.ts': { bytesInOutput: 64 }
-                          },
-                          imports: [],
-                          exports: []
-                        }
-                      }
-                    }
-                  };
-                };
-                """);
-
-            var pluginPath = Path.Combine(tempDir, ".jazor", "noop-plugin.mjs");
-            Directory.CreateDirectory(Path.GetDirectoryName(pluginPath)!);
             await File.WriteAllTextAsync(
-                pluginPath,
+                Path.Combine(tempDir, "src", "main.js"),
                 """
-                export default {
-                  name: 'noop-plugin',
-                  setup() {}
-                };
+                import { message } from "./message.js";
+                console.log(message);
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "src", "message.js"),
+                """export const message = "hello from deno bundle";""");
+
+            var port = GetAvailablePort();
+            var devOptions = new DevServerOptions
+            {
+                RootDirectory = tempDir,
+                Host = "127.0.0.1",
+                Port = port,
+                HmrEnabled = false,
+                FrontendCompiler = "stub"
+            };
+
+            var moduleResolver = new ModuleResolver(tempDir);
+            var compiler = new OnDemandCompiler(
+                new JazorVueParser(),
+                new JazorVueCompiler(),
+                frontendCompiler: null,
+                new CompilationCache(),
+                new DependencyGraph(moduleResolver),
+                moduleResolver);
+
+            await using var server = new DevHttpServer(
+                devOptions,
+                compiler,
+                moduleResolver,
+                new HtmlTransformer(devOptions));
+            await server.StartAsync(CancellationToken.None);
+
+            var buildOptions = new BuildOptions
+            {
+                RootDirectory = tempDir,
+                OutDir = "dist",
+                SourceMap = SourceMapOption.External,
+                Minify = false,
+                CodeSplitting = false
+            };
+            using var context = new BuildContext(buildOptions);
+            var runner = new DenoBundleRunner(context);
+
+            var entryPointPath = BuildEntryPointResolver.ResolveEntryPoint(tempDir);
+            var entryRequestPath = "/" + Path.GetRelativePath(tempDir, entryPointPath).Replace('\\', '/');
+            var entryUri = new Uri(server.ListeningUri!, entryRequestPath);
+
+            var result = await runner.RunAsync(entryUri, CancellationToken.None);
+
+            Assert.IsTrue(result.Success, string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
+            Assert.AreEqual(1, result.Chunks.Count);
+            StringAssert.StartsWith(result.Chunks[0].FileName, "index-");
+            StringAssert.EndsWith(result.Chunks[0].FileName, ".js");
+
+            var chunkPath = Path.Combine(tempDir, result.Chunks[0].FilePath.Replace('/', Path.DirectorySeparatorChar));
+            Assert.IsTrue(File.Exists(chunkPath));
+            var chunkContent = await File.ReadAllTextAsync(chunkPath);
+            StringAssert.Contains(chunkContent, "hello from deno bundle");
+
+            Assert.IsNotNull(result.Chunks[0].SourceMapPath);
+            var sourceMapPath = Path.Combine(tempDir, result.Chunks[0].SourceMapPath!.Replace('/', Path.DirectorySeparatorChar));
+            Assert.IsTrue(File.Exists(sourceMapPath));
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DenoBundleRunner_RunAsync_CodeSplitting_RewritesChunkImportsAndSourceMaps()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            Directory.CreateDirectory(Path.Combine(tempDir, "src"));
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "src", "main.js"),
+                """
+                console.log("main");
+                await import("./feature.js");
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "src", "feature.js"),
+                """
+                export const featureMessage = "hello from split chunk";
+                console.log(featureMessage);
                 """);
 
-            var options = new BuildOptions { RootDirectory = tempDir, OutDir = "dist" };
-            using var context = new BuildContext(options);
-            var runner = new EsbuildRunner(context);
+            var port = GetAvailablePort();
+            var devOptions = new DevServerOptions
+            {
+                RootDirectory = tempDir,
+                Host = "127.0.0.1",
+                Port = port,
+                HmrEnabled = false,
+                FrontendCompiler = "stub"
+            };
 
-            var result = await runner.RunAsync(pluginPath, CancellationToken.None);
+            var moduleResolver = new ModuleResolver(tempDir);
+            var compiler = new OnDemandCompiler(
+                new JazorVueParser(),
+                new JazorVueCompiler(),
+                frontendCompiler: null,
+                new CompilationCache(),
+                new DependencyGraph(moduleResolver),
+                moduleResolver);
 
-            Assert.IsTrue(result.Success, string.Join(Environment.NewLine, result.Errors.Select(static error => error.Message)));
-            Assert.IsNotNull(result.MetafileJson);
-            StringAssert.Contains(result.MetafileJson, "src/custom-entry.ts");
-            StringAssert.Contains(result.MetafileJson, "dist/assets/custom-entry-abc123.js");
+            await using var server = new DevHttpServer(
+                devOptions,
+                compiler,
+                moduleResolver,
+                new HtmlTransformer(devOptions));
+            await server.StartAsync(CancellationToken.None);
+
+            var buildOptions = new BuildOptions
+            {
+                RootDirectory = tempDir,
+                OutDir = "dist",
+                SourceMap = SourceMapOption.External,
+                Minify = false,
+                CodeSplitting = true
+            };
+            using var context = new BuildContext(buildOptions);
+            var runner = new DenoBundleRunner(context);
+
+            var entryUri = new Uri(server.ListeningUri!, "/src/main.js");
+            var result = await runner.RunAsync(entryUri, CancellationToken.None);
+
+            Assert.IsTrue(result.Success, string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
+            Assert.IsTrue(result.Chunks.Count >= 2, "Expected code splitting to emit multiple chunks.");
+
+            var entryChunk = result.Chunks.Single(static chunk => chunk.IsEntry);
+            var splitChunk = result.Chunks.Single(static chunk => !chunk.IsEntry);
+
+            StringAssert.StartsWith(entryChunk.FileName, "main-");
+            StringAssert.StartsWith(splitChunk.FileName, "feature-");
+            CollectionAssert.Contains(entryChunk.Imports.ToArray(), splitChunk.FilePath);
+
+            var entryChunkPath = Path.Combine(tempDir, entryChunk.FilePath.Replace('/', Path.DirectorySeparatorChar));
+            Assert.IsTrue(File.Exists(entryChunkPath));
+            var entryChunkContent = await File.ReadAllTextAsync(entryChunkPath);
+            StringAssert.Contains(entryChunkContent, $"./{splitChunk.FileName}");
+
+            Assert.IsNotNull(entryChunk.SourceMapPath);
+            Assert.IsNotNull(splitChunk.SourceMapPath);
+
+            var entrySourceMapPath = Path.Combine(tempDir, entryChunk.SourceMapPath!.Replace('/', Path.DirectorySeparatorChar));
+            var splitSourceMapPath = Path.Combine(tempDir, splitChunk.SourceMapPath!.Replace('/', Path.DirectorySeparatorChar));
+            Assert.IsTrue(File.Exists(entrySourceMapPath));
+            Assert.IsTrue(File.Exists(splitSourceMapPath));
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task BuildOrchestrator_BuildAsync_GeneratesBundleHtmlAndStaticAssets()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            Directory.CreateDirectory(Path.Combine(tempDir, "public"));
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "index.html"),
+                """
+                <html>
+                <head>
+                  <title>VueHost</title>
+                  <link rel="icon" href="/favicon.svg">
+                </head>
+                <body>
+                  <div id="app"></div>
+                  <script type="module" src="/main.js"></script>
+                </body>
+                </html>
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "main.js"),
+                """
+                import { message } from "./message.js";
+                console.log(message);
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "message.js"),
+                """export const message = "hello from orchestrator";""");
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "public", "favicon.svg"),
+                "<svg></svg>");
+
+            var orchestrator = new BuildOrchestrator();
+            var result = await orchestrator.BuildAsync(
+                new BuildOptions
+                {
+                    RootDirectory = tempDir,
+                    OutDir = "dist",
+                    SourceMap = SourceMapOption.External,
+                    Minify = false,
+                    CodeSplitting = false
+                },
+                CancellationToken.None);
+
+            Assert.IsTrue(result.Success, string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
+            Assert.IsNotNull(result.OutDirectory);
+            Assert.AreEqual(Path.Combine(tempDir, "dist"), result.OutDirectory);
+            Assert.AreEqual(1, result.Chunks.Count);
+
+            var distIndexHtmlPath = Path.Combine(tempDir, "dist", "index.html");
+            Assert.IsTrue(File.Exists(distIndexHtmlPath));
+
+            var html = await File.ReadAllTextAsync(distIndexHtmlPath);
+            var entryChunkHtmlPath = GetHtmlRelativePath(tempDir, "dist", result.Chunks[0].FilePath);
+            var faviconHtmlPath = GetHtmlRelativePath(tempDir, "dist", result.StaticAssets[0].FilePath);
+            Assert.IsFalse(html.Contains("src=\"/main.js\""), "Original entry script should be removed from production HTML");
+            StringAssert.Contains(html, $"src=\"{entryChunkHtmlPath}\"");
+            Assert.IsFalse(html.Contains("href=\"/favicon.svg\"", StringComparison.Ordinal), "Original favicon path should be rewritten");
+            StringAssert.Contains(html, $"href=\"{faviconHtmlPath}\"");
+
+            var chunkPath = Path.Combine(tempDir, result.Chunks[0].FilePath.Replace('/', Path.DirectorySeparatorChar));
+            Assert.IsTrue(File.Exists(chunkPath));
+            var chunkContent = await File.ReadAllTextAsync(chunkPath);
+            StringAssert.Contains(chunkContent, "hello from orchestrator");
+
+            Assert.IsNotNull(result.Chunks[0].SourceMapPath);
+            var sourceMapPath = Path.Combine(tempDir, result.Chunks[0].SourceMapPath!.Replace('/', Path.DirectorySeparatorChar));
+            Assert.IsTrue(File.Exists(sourceMapPath));
+
+            Assert.AreEqual(1, result.StaticAssets.Count);
+            StringAssert.Contains(result.StaticAssets[0].FileName, "favicon");
+            var faviconPath = Path.Combine(tempDir, result.StaticAssets[0].FilePath.Replace('/', Path.DirectorySeparatorChar));
+            Assert.IsTrue(File.Exists(faviconPath));
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task BuildOrchestrator_BuildAsync_RewritesMetaAndSrcSetAssetReferences()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            Directory.CreateDirectory(Path.Combine(tempDir, "public", "images"));
+            Directory.CreateDirectory(Path.Combine(tempDir, "public", "social"));
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "index.html"),
+                """
+                <html>
+                <head>
+                  <title>VueHost social</title>
+                  <link rel="icon" href="/favicon.svg?v=1">
+                  <meta property="og:image" content="/social/card.png#preview">
+                  <meta name="twitter:image" content="./images/logo.png?v=2">
+                </head>
+                <body>
+                  <div id="app"></div>
+                  <img srcset="/images/logo.png 1x, ./images/logo@2x.png?variant=wide 2x">
+                  <script type="module" src="/main.js"></script>
+                </body>
+                </html>
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "main.js"),
+                """console.log("build html rewrite");""");
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "public", "favicon.svg"),
+                "<svg></svg>");
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "public", "images", "logo.png"),
+                "fake-png-data");
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "public", "images", "logo@2x.png"),
+                "fake-png-data-2x");
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "public", "social", "card.png"),
+                "fake-card-data");
+
+            var orchestrator = new BuildOrchestrator();
+            var result = await orchestrator.BuildAsync(
+                new BuildOptions
+                {
+                    RootDirectory = tempDir,
+                    OutDir = "dist",
+                    SourceMap = SourceMapOption.External,
+                    Minify = false,
+                    CodeSplitting = false
+                },
+                CancellationToken.None);
+
+            Assert.IsTrue(result.Success, string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
+
+            var faviconAsset = result.StaticAssets.Single(static asset => asset.OriginalPath == "/favicon.svg");
+            var logoAsset = result.StaticAssets.Single(static asset => asset.OriginalPath == "/images/logo.png");
+            var retinaAsset = result.StaticAssets.Single(static asset => asset.OriginalPath == "/images/logo@2x.png");
+            var cardAsset = result.StaticAssets.Single(static asset => asset.OriginalPath == "/social/card.png");
+
+            var distIndexHtmlPath = Path.Combine(tempDir, "dist", "index.html");
+            Assert.IsTrue(File.Exists(distIndexHtmlPath));
+
+            var html = await File.ReadAllTextAsync(distIndexHtmlPath);
+            var faviconHtmlPath = GetHtmlRelativePath(tempDir, "dist", faviconAsset.FilePath);
+            var logoHtmlPath = GetHtmlRelativePath(tempDir, "dist", logoAsset.FilePath);
+            var retinaHtmlPath = GetHtmlRelativePath(tempDir, "dist", retinaAsset.FilePath);
+            var cardHtmlPath = GetHtmlRelativePath(tempDir, "dist", cardAsset.FilePath);
+
+            StringAssert.Contains(html, $"href=\"{faviconHtmlPath}?v=1\"");
+            StringAssert.Contains(html, $"content=\"{cardHtmlPath}#preview\"");
+            StringAssert.Contains(html, $"content=\"{logoHtmlPath}?v=2\"");
+            StringAssert.Contains(html, $"srcset=\"{logoHtmlPath} 1x, {retinaHtmlPath}?variant=wide 2x\"");
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task BuildOrchestrator_BuildAsync_WithCodeSplitting_InjectsEntryChunkIntoHtml()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "index.html"),
+                """
+                <html>
+                <head><title>VueHost split</title></head>
+                <body>
+                  <div id="app"></div>
+                  <script type="module" src="/main.js"></script>
+                </body>
+                </html>
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "main.js"),
+                """
+                console.log("main");
+                await import("./feature.js");
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "feature.js"),
+                """
+                export const message = "hello from build split";
+                console.log(message);
+                """);
+
+            var orchestrator = new BuildOrchestrator();
+            var result = await orchestrator.BuildAsync(
+                new BuildOptions
+                {
+                    RootDirectory = tempDir,
+                    OutDir = "dist",
+                    SourceMap = SourceMapOption.External,
+                    Minify = false,
+                    CodeSplitting = true
+                },
+                CancellationToken.None);
+
+            Assert.IsTrue(result.Success, string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
+            Assert.IsTrue(result.Chunks.Count >= 2, "Expected production build to emit multiple chunks.");
+
+            var entryChunk = result.Chunks.Single(static chunk => chunk.IsEntry);
+            var splitChunk = result.Chunks.Single(static chunk => !chunk.IsEntry);
+
+            var distIndexHtmlPath = Path.Combine(tempDir, "dist", "index.html");
+            Assert.IsTrue(File.Exists(distIndexHtmlPath));
+
+            var html = await File.ReadAllTextAsync(distIndexHtmlPath);
+            var entryChunkHtmlPath = GetHtmlRelativePath(tempDir, "dist", entryChunk.FilePath);
+            Assert.IsFalse(html.Contains("src=\"/main.js\""), "Original entry script should be removed from production HTML");
+            StringAssert.Contains(html, $"src=\"{entryChunkHtmlPath}\"");
+
+            var entryChunkPath = Path.Combine(tempDir, entryChunk.FilePath.Replace('/', Path.DirectorySeparatorChar));
+            Assert.IsTrue(File.Exists(entryChunkPath));
+            var entryChunkContent = await File.ReadAllTextAsync(entryChunkPath);
+            StringAssert.Contains(entryChunkContent, $"./{splitChunk.FileName}");
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task BuildOrchestrator_BuildAsync_WithCodeSplittingAndSourceMapNone_PreservesCssOwnership_WithoutEmittingSourceMaps()
+    {
+        const string entryMarker = "entry-style-marker";
+        const string lazyAMarker = "lazy-a-style-marker";
+        const string lazyBMarker = "lazy-b-style-marker";
+        const string lazyAChunkMarker = "lazy-a-payload";
+        const string lazyBChunkMarker = "lazy-b-payload";
+
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "index.html"),
+                """
+                <html>
+                <body>
+                  <script type="module" src="/main.js"></script>
+                </body>
+                </html>
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "main.js"),
+                """
+                import "./entry.css";
+                await Promise.all([
+                  import("./feature-a.js"),
+                  import("./feature-b.js")
+                ]);
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "entry.css"),
+                $$"""
+                .{{entryMarker}} {
+                  color: red;
+                }
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "feature-a.js"),
+                $$"""
+                import "./feature-a.css";
+                export const featureMessageA = "{{lazyAChunkMarker}}";
+                console.log(featureMessageA);
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "feature-a.css"),
+                $$"""
+                .{{lazyAMarker}} {
+                  color: blue;
+                }
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "feature-b.js"),
+                $$"""
+                import "./feature-b.css";
+                export const featureMessageB = "{{lazyBChunkMarker}}";
+                console.log(featureMessageB);
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "feature-b.css"),
+                $$"""
+                .{{lazyBMarker}} {
+                  color: green;
+                }
+                """);
+
+            var orchestrator = new BuildOrchestrator();
+            var result = await orchestrator.BuildAsync(
+                new BuildOptions
+                {
+                    RootDirectory = tempDir,
+                    OutDir = "dist",
+                    SourceMap = SourceMapOption.None,
+                    Minify = false,
+                    CodeSplitting = true
+                },
+                CancellationToken.None);
+
+            Assert.IsTrue(result.Success, string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
+            Assert.IsTrue(result.Chunks.Count >= 3, "Expected code splitting to produce an entry chunk and two lazy chunks.");
+            Assert.IsTrue(result.CssAssets.Count >= 3, "Expected extracted CSS assets for the entry and both lazy chunks.");
+            Assert.IsTrue(result.Chunks.All(static chunk => chunk.SourceMapPath is null));
+            Assert.IsTrue(result.CssAssets.All(static asset => asset.SourceMapPath is null));
+
+            var mapFiles = Directory.GetFiles(Path.Combine(tempDir, "dist"), "*.map", SearchOption.AllDirectories);
+            Assert.AreEqual(0, mapFiles.Length, "SourceMapOption.None should not emit any .map files.");
+
+            var entryChunk = result.Chunks.Single(static chunk => chunk.IsEntry);
+            var chunkOutputs = await Task.WhenAll(result.Chunks.Select(async chunk => new
+            {
+                Chunk = chunk,
+                Content = await File.ReadAllTextAsync(Path.Combine(tempDir, chunk.FilePath.Replace('/', Path.DirectorySeparatorChar)))
+            }));
+            var lazyAChunk = chunkOutputs.Single(output => !output.Chunk.IsEntry && output.Content.Contains(lazyAChunkMarker, StringComparison.Ordinal)).Chunk;
+            var lazyBChunk = chunkOutputs.Single(output => !output.Chunk.IsEntry && output.Content.Contains(lazyBChunkMarker, StringComparison.Ordinal)).Chunk;
+
+            var cssOutputs = await Task.WhenAll(result.CssAssets.Select(async asset => new
+            {
+                Asset = asset,
+                Content = await File.ReadAllTextAsync(Path.Combine(tempDir, asset.FilePath.Replace('/', Path.DirectorySeparatorChar)))
+            }));
+            var entryCss = cssOutputs.Single(output => output.Content.Contains(entryMarker, StringComparison.Ordinal));
+            var lazyACss = cssOutputs.Single(output => output.Content.Contains(lazyAMarker, StringComparison.Ordinal));
+            var lazyBCss = cssOutputs.Single(output => output.Content.Contains(lazyBMarker, StringComparison.Ordinal));
+
+            Assert.IsFalse(entryCss.Content.Contains("sourceMappingURL=", StringComparison.Ordinal));
+            Assert.IsFalse(lazyACss.Content.Contains("sourceMappingURL=", StringComparison.Ordinal));
+            Assert.IsFalse(lazyBCss.Content.Contains("sourceMappingURL=", StringComparison.Ordinal));
+
+            Assert.AreEqual(entryChunk.FilePath, entryCss.Asset.OwnerChunkFilePath);
+            Assert.AreEqual(lazyAChunk.FilePath, lazyACss.Asset.OwnerChunkFilePath);
+            Assert.AreEqual(lazyBChunk.FilePath, lazyBCss.Asset.OwnerChunkFilePath);
+
+            CollectionAssert.Contains(entryChunk.Css.ToArray(), entryCss.Asset.FilePath);
+            CollectionAssert.DoesNotContain(entryChunk.Css.ToArray(), lazyACss.Asset.FilePath);
+            CollectionAssert.DoesNotContain(entryChunk.Css.ToArray(), lazyBCss.Asset.FilePath);
+            CollectionAssert.Contains(lazyAChunk.Css.ToArray(), lazyACss.Asset.FilePath);
+            CollectionAssert.DoesNotContain(lazyAChunk.Css.ToArray(), entryCss.Asset.FilePath);
+            CollectionAssert.DoesNotContain(lazyAChunk.Css.ToArray(), lazyBCss.Asset.FilePath);
+            CollectionAssert.Contains(lazyBChunk.Css.ToArray(), lazyBCss.Asset.FilePath);
+            CollectionAssert.DoesNotContain(lazyBChunk.Css.ToArray(), entryCss.Asset.FilePath);
+            CollectionAssert.DoesNotContain(lazyBChunk.Css.ToArray(), lazyACss.Asset.FilePath);
+
+            var distIndexHtmlPath = Path.Combine(tempDir, "dist", "index.html");
+            var html = await File.ReadAllTextAsync(distIndexHtmlPath);
+            StringAssert.Contains(html, $"href=\"{GetHtmlRelativePath(tempDir, "dist", entryCss.Asset.FilePath)}\"");
+            Assert.IsFalse(
+                html.Contains($"href=\"{GetHtmlRelativePath(tempDir, "dist", lazyACss.Asset.FilePath)}\"", StringComparison.Ordinal),
+                "Production HTML should not eagerly inject lazy-a CSS.");
+            Assert.IsFalse(
+                html.Contains($"href=\"{GetHtmlRelativePath(tempDir, "dist", lazyBCss.Asset.FilePath)}\"", StringComparison.Ordinal),
+                "Production HTML should not eagerly inject lazy-b CSS.");
         }
         finally
         {
@@ -442,35 +954,21 @@ public sealed class JazorVueHostBuildTests
     }
 
     [TestMethod]
-    public void EsbuildPluginGenerator_GeneratesValidPlugin()
+    public void HtmlTransformer_RemoveScriptReference_RemovesMatchedEntryScript()
     {
-        var tempDir = CreateTemporaryDirectory();
-        try
-        {
-            var options = new BuildOptions { RootDirectory = tempDir };
-            var context = new BuildContext(options);
-            context.BuildServerPort = 12345;
+        var html = """
+            <html>
+            <body>
+                <script type="module" src="./main.js?v=1"></script>
+                <script src="https://cdn.example.com/lib.js"></script>
+            </body>
+            </html>
+            """;
 
-            var generator = new EsbuildPluginGenerator(context);
-            var pluginPath = generator.GenerateAsync().GetAwaiter().GetResult();
+        var result = HtmlTransformer.RemoveScriptReference(html, "/main.js");
 
-            Assert.IsTrue(File.Exists(pluginPath));
-            Assert.IsTrue(pluginPath.EndsWith("build-plugin.mjs"));
-
-            var content = File.ReadAllText(pluginPath);
-
-            // Verify key parts of the generated plugin
-            Assert.IsTrue(content.Contains("http://localhost:12345"), "Should contain build server URL");
-            Assert.IsTrue(content.Contains(".jazor"), "Should intercept .jazor files");
-            Assert.IsTrue(content.Contains(".vue"), "Should intercept .vue files");
-            Assert.IsTrue(content.Contains("export default"), "Should export default");
-            Assert.IsTrue(content.Contains("onLoad"), "Should use onLoad");
-            Assert.IsTrue(content.Contains("/compile"), "Should call /compile endpoint");
-        }
-        finally
-        {
-            Directory.Delete(tempDir, recursive: true);
-        }
+        Assert.IsFalse(result.Contains("./main.js?v=1"), "Matched entry script should be removed");
+        Assert.IsTrue(result.Contains("https://cdn.example.com/lib.js"), "External scripts should be preserved");
     }
 
     [TestMethod]
@@ -481,71 +979,75 @@ public sealed class JazorVueHostBuildTests
 
         Assert.AreEqual("/tmp/test", context.RootDirectory);
         Assert.IsTrue(context.OutDirectory.EndsWith("dist"), $"OutDirectory should end with 'dist', got: {context.OutDirectory}");
-        Assert.IsNotNull(context.CompilationCache);
-        Assert.IsNotNull(context.DependencyGraph);
+        Assert.IsTrue(context.AssetsDirectory.EndsWith(Path.Combine("dist", "assets")), $"AssetsDirectory should end with 'dist{Path.DirectorySeparatorChar}assets', got: {context.AssetsDirectory}");
         Assert.IsNotNull(context.Diagnostics);
         Assert.AreEqual(0, context.Diagnostics.Count);
     }
 
     [TestMethod]
-    public void BuildDiagnostic_Severity_Values()
+    public void BuildContext_Rejects_AssetsDirOutsideOutputDirectory()
     {
-        Assert.AreEqual(0, (int)DiagnosticSeverity.Error);
-        Assert.AreEqual(1, (int)DiagnosticSeverity.Warning);
-        Assert.AreEqual(2, (int)DiagnosticSeverity.Info);
+        var options = new BuildOptions
+        {
+            RootDirectory = "/tmp/test",
+            AssetsDir = "../escape"
+        };
+
+        var exception = Assert.Throws<InvalidOperationException>(() => new BuildContext(options));
+        StringAssert.Contains(exception.Message, "assets directory");
     }
 
     [TestMethod]
-    public void AssetProcessor_ProcessAsync_ParsesMetafile()
+    public void BuildContext_AddsWarning_WhenTargetIsIgnoredByBundledDeno()
+    {
+        var options = new BuildOptions
+        {
+            RootDirectory = "/tmp/test",
+            Target = "es2022"
+        };
+
+        using var context = new BuildContext(options);
+
+        Assert.AreEqual(1, context.Diagnostics.Count);
+        Assert.AreEqual(DiagnosticSeverity.Warning, context.Diagnostics[0].Severity);
+        StringAssert.Contains(context.Diagnostics[0].Message, "ignores target 'es2022'");
+    }
+
+    [TestMethod]
+    public void BuildDiagnostic_Severity_Values()
+    {
+        CollectionAssert.AreEqual(
+            new[] { DiagnosticSeverity.Error, DiagnosticSeverity.Warning, DiagnosticSeverity.Info },
+            Enum.GetValues<DiagnosticSeverity>());
+    }
+
+    [TestMethod]
+    public async Task DenoBuildImportMapGenerator_GenerateAsync_IncludesPackageDependencies()
     {
         var tempDir = CreateTemporaryDirectory();
         try
         {
-            var options = new BuildOptions { RootDirectory = tempDir };
-            using var context = new BuildContext(options);
-            var processor = new AssetProcessor(context);
-
-            var metafileJson = """
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "package.json"),
+                """
                 {
-                    "inputs": {},
-                    "outputs": {
-                        "dist/assets/index-abc123.js": {
-                            "bytes": 1024,
-                            "inputs": { "src/main.js": { "bytesInOutput": 512 } },
-                            "imports": [{ "path": "dist/assets/vendor-def456.js" }],
-                            "exports": []
-                        },
-                        "dist/assets/vendor-def456.js": {
-                            "bytes": 2048,
-                            "inputs": { "node_modules/vue/dist/vue.runtime.esm-bundler.js": { "bytesInOutput": 2048 } },
-                            "imports": [],
-                            "exports": []
-                        },
-                        "dist/assets/index-abc123.css": {
-                            "bytes": 256,
-                            "inputs": {},
-                            "imports": [],
-                            "exports": []
-                        }
-                    }
+                  "dependencies": {
+                    "pinia": "^2.3.1",
+                    "local-lib": "file:../local-lib"
+                  },
+                  "devDependencies": {
+                    "vue-router": "~4.5.1"
+                  }
                 }
-                """;
+                """);
 
-            var esbuildResult = new EsbuildResult
-            {
-                Success = true,
-                MetafileJson = metafileJson
-            };
+            var importMapPath = await DenoBuildImportMapGenerator.GenerateAsync(tempDir, CancellationToken.None);
+            var json = await File.ReadAllTextAsync(importMapPath);
 
-            var assets = processor.ProcessAsync(esbuildResult, CancellationToken.None).GetAwaiter().GetResult();
-
-            Assert.AreEqual(2, assets.Chunks.Count, "Should have 2 JS chunks");
-            Assert.AreEqual(1, assets.CssAssets.Count, "Should have 1 CSS asset");
-            Assert.AreEqual(1024 + 2048 + 256, assets.TotalSize, "Total size should sum all outputs");
-
-            var entryChunk = assets.Chunks.FirstOrDefault(c => c.IsEntry);
-            Assert.IsNotNull(entryChunk, "Should detect entry chunk from src/ inputs");
-            Assert.AreEqual("index-abc123.js", entryChunk!.FileName);
+            StringAssert.Contains(json, "\"pinia\": \"npm:pinia@^2.3.1\"");
+            StringAssert.Contains(json, "\"pinia/\": \"npm:pinia@^2.3.1/\"");
+            StringAssert.Contains(json, "\"vue-router\": \"npm:vue-router@~4.5.1\"");
+            Assert.IsFalse(json.Contains("local-lib", StringComparison.Ordinal), "file: dependencies should be excluded from the Deno import map");
         }
         finally
         {
@@ -578,6 +1080,9 @@ public sealed class JazorVueHostBuildTests
             var assets = handler.CopyPublicAssetsAsync(CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(2, assets.Count, "Should copy 2 files");
+            CollectionAssert.AreEquivalent(
+                new[] { "/favicon.svg", "/images/logo.png" },
+                assets.Select(static asset => asset.OriginalPath).ToArray());
 
             // Verify files were copied
             var distFiles = Directory.GetFiles(context.OutDirectory, "*", SearchOption.AllDirectories);
@@ -589,10 +1094,87 @@ public sealed class JazorVueHostBuildTests
         }
     }
 
+    [TestMethod]
+    public void HtmlTransformer_RewriteAssetReferences_RewritesPublicAssetUrlsAcrossAttributes()
+    {
+        var html = """
+            <html>
+            <head>
+              <link rel="icon" href="/favicon.svg?v=1">
+              <meta property="og:image" content="/social/card.png#preview">
+              <meta name="twitter:image" content="./images/logo.png?v=2">
+              <meta name="description" content="/images/logo.png">
+            </head>
+            <body>
+              <img srcset="/images/logo.png 1x, ./images/logo@2x.png?variant=wide 2x, https://cdn.example.com/logo.png 3x">
+              <img src="./images/logo.png#hero">
+              <img src="https://cdn.example.com/logo.png">
+            </body>
+            </html>
+            """;
+
+        var result = HtmlTransformer.RewriteAssetReferences(
+            html,
+            [
+                new AssetInfo
+                {
+                    FileName = "favicon-1234.svg",
+                    FilePath = "dist-assets/favicon-1234.svg",
+                    OriginalPath = "/favicon.svg",
+                    Size = 128
+                },
+                new AssetInfo
+                {
+                    FileName = "logo-5678.png",
+                    FilePath = "dist-assets/images/logo-5678.png",
+                    OriginalPath = "/images/logo.png",
+                    Size = 256
+                },
+                new AssetInfo
+                {
+                    FileName = "logo@2x-9abc.png",
+                    FilePath = "dist-assets/images/logo@2x-9abc.png",
+                    OriginalPath = "/images/logo@2x.png",
+                    Size = 512
+                },
+                new AssetInfo
+                {
+                    FileName = "card-9012.png",
+                    FilePath = "dist-assets/social/card-9012.png",
+                    OriginalPath = "/social/card.png",
+                    Size = 768
+                }
+            ]);
+
+        StringAssert.Contains(result, "href=\"dist-assets/favicon-1234.svg?v=1\"");
+        StringAssert.Contains(result, "content=\"dist-assets/social/card-9012.png#preview\"");
+        StringAssert.Contains(result, "content=\"dist-assets/images/logo-5678.png?v=2\"");
+        StringAssert.Contains(result, "srcset=\"dist-assets/images/logo-5678.png 1x, dist-assets/images/logo@2x-9abc.png?variant=wide 2x, https://cdn.example.com/logo.png 3x\"");
+        StringAssert.Contains(result, "src=\"dist-assets/images/logo-5678.png#hero\"");
+        StringAssert.Contains(result, "src=\"https://cdn.example.com/logo.png\"");
+        StringAssert.Contains(result, "name=\"description\" content=\"/images/logo.png\"");
+    }
+
     private static string CreateTemporaryDirectory()
     {
         var path = Path.Combine(Path.GetTempPath(), "jazor-build-test-" + Guid.NewGuid().ToString("N")[..8]);
         Directory.CreateDirectory(path);
         return path;
+    }
+
+    private static int GetAvailablePort()
+    {
+        using var listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        var port = ((IPEndPoint)listener.LocalEndpoint).Port;
+        listener.Stop();
+        return port;
+    }
+
+    private static string GetHtmlRelativePath(string rootDirectory, string outDirName, string rootRelativePath)
+    {
+        var outDirectory = Path.Combine(rootDirectory, outDirName);
+        var absolutePath = Path.Combine(rootDirectory, rootRelativePath.Replace('/', Path.DirectorySeparatorChar));
+        return Path.GetRelativePath(outDirectory, absolutePath).Replace('\\', '/');
     }
 }

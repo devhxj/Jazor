@@ -60,6 +60,10 @@ if (useBuild)
 
     Console.WriteLine($"Build completed in {result.Duration.TotalSeconds:F2}s");
     Console.WriteLine($"Output: {result.OutDirectory}");
+    if (!string.IsNullOrWhiteSpace(result.ManifestPath))
+    {
+        Console.WriteLine($"Manifest: {result.ManifestPath}");
+    }
     Console.WriteLine($"Total size: {result.TotalSize / 1024:N0} KB");
 
     foreach (var diag in result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Warning))
@@ -147,9 +151,12 @@ if (useDap && !useLsp)
     }
 
     var sourceMapService = devRuntime?.SourceMapService ?? new InMemorySourceMapService();
+    // TODO: Replace the fallback-only DAP session with a live browser CDP transport when the dev runtime exposes one.
+    var dapSession = new DapSession(hasCdpBackend: false);
+    dapSession.SeedFallbackPause();
     var dapServer = new DapServer(
         new DapRequestHandler(
-            new DapSession(),
+            dapSession,
             new BreakpointManager(sourceMapService),
             new CallStackMapper(sourceMapService)));
     await dapServer.RunStdioAsync(cancellationToken);

@@ -1,19 +1,44 @@
 using System.Text;
 using System.Text.RegularExpressions;
+using Jazor.VueHost.Build;
 
 namespace Jazor.VueHost.DevServer;
 
 internal sealed class HtmlTransformer
 {
+    private static readonly Regex ScriptElementPattern = new(
+        @"<script\b(?<attrs>[^>]*)>.*?</script>",
+        RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
     private static readonly Regex ScriptTagPattern = new(
         @"<script\b(?<attrs>[^>]*)>",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
     private static readonly Regex SourceAttributePattern = new(
         @"\bsrc\s*=\s*(?<quote>[""'])(?<value>[^""']+)\k<quote>",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    private static readonly Regex AssetUrlAttributePattern = new(
+        @"\b(?<name>src|href)\s*=\s*(?<quote>[""'])(?<value>[^""']+)\k<quote>",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    private static readonly Regex SrcSetAttributePattern = new(
+        @"\b(?<name>srcset)\s*=\s*(?<quote>[""'])(?<value>[^""']+)\k<quote>",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    private static readonly Regex MetaElementPattern = new(
+        @"<meta\b(?<attrs>[^>]*)>",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    private static readonly Regex HtmlAttributePattern = new(
+        @"\b(?<name>[^\s=/>]+)\s*=\s*(?<quote>[""'])(?<value>[^""']*)\k<quote>",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
     private static readonly Regex TypeAttributePattern = new(
         @"\btype\s*=",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    private static readonly HashSet<string> AssetMetaNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "og:image",
+        "og:image:url",
+        "og:image:secure_url",
+        "twitter:image",
+        "twitter:image:src",
+        "msapplication-tileimage"
+    };
     private const string DevClientPath = "/@jazor/client";
     private const string VueImportMap = """
         <script type="importmap">
@@ -398,10 +423,265 @@ internal sealed class HtmlTransformer
     {
         ArgumentNullException.ThrowIfNull(html);
 
-        var devScriptPattern = new Regex(
-            @"<script\b[^>]*\bsrc\s*=\s*([""'])([^""']*/src/[^""']*)\1[^>]*>.*?</script>",
-            RegexOptions.Singleline | RegexOptions.IgnoreCase);
+        return ScriptElementPattern.Replace(html, static match =>
+        {
+            var sourceMatch = SourceAttributePattern.Match(match.Groups["attrs"].Value);
+            if (!sourceMatch.Success)
+            {
+                return match.Value;
+            }
 
-        return devScriptPattern.Replace(html, string.Empty);
+            var source = NormalizeScriptPath(sourceMatch.Groups["value"].Value);
+            return source.StartsWith("/src/", StringComparison.OrdinalIgnoreCase)
+                ? string.Empty
+                : match.Value;
+        });
+    }
+
+    public static string RemoveScriptReference(string html, string scriptPath)
+    {
+        ArgumentNullException.ThrowIfNull(html);
+        ArgumentException.ThrowIfNullOrWhiteSpace(scriptPath);
+
+        var normalizedScriptPath = NormalizeScriptPath(scriptPath);
+        return ScriptElementPattern.Replace(html, match =>
+        {
+            var sourceMatch = SourceAttributePattern.Match(match.Groups["attrs"].Value);
+            if (!sourceMatch.Success)
+            {
+                return match.Value;
+            }
+
+            return string.Equals(
+                NormalizeScriptPath(sourceMatch.Groups["value"].Value),
+                normalizedScriptPath,
+                StringComparison.OrdinalIgnoreCase)
+                ? string.Empty
+                : match.Value;
+        });
+    }
+
+    public static string RewriteAssetReferences(string html, IReadOnlyList<AssetInfo> assets)
+    {
+        ArgumentNullException.ThrowIfNull(html);
+        ArgumentNullException.ThrowIfNull(assets);
+
+        if (assets.Count == 0)
+        {
+            return html;
+        }
+
+        var assetMap = assets
+            .Where(static asset => !string.IsNullOrWhiteSpace(asset.OriginalPath)
+                && !string.IsNullOrWhiteSpace(asset.FilePath))
+            .Select(static asset => new KeyValuePair<string, string>(
+                NormalizeAssetLookupPath(asset.OriginalPath!)!,
+                NormalizeOutputAssetPath(asset.FilePath)))
+            .ToDictionary(
+                static pair => pair.Key,
+                static pair => pair.Value,
+                StringComparer.OrdinalIgnoreCase);
+        if (assetMap.Count == 0)
+        {
+            return html;
+        }
+
+        var rewrittenHtml = AssetUrlAttributePattern.Replace(
+            html,
+            match => RewriteAssetAttribute(match, assetMap));
+        rewrittenHtml = SrcSetAttributePattern.Replace(
+            rewrittenHtml,
+            match => RewriteSrcSetAttribute(match, assetMap));
+        return MetaElementPattern.Replace(
+            rewrittenHtml,
+            match => RewriteMetaElement(match, assetMap));
+    }
+
+    private static string RewriteAssetAttribute(Match match, IReadOnlyDictionary<string, string> assetMap)
+    {
+        var originalValue = match.Groups["value"].Value;
+        var normalizedPath = NormalizeAssetLookupPath(originalValue);
+        if (normalizedPath is null || !assetMap.TryGetValue(normalizedPath, out var rewrittenPath))
+        {
+            return match.Value;
+        }
+
+        var suffix = ExtractQueryAndHashSuffix(originalValue);
+        return $"{match.Groups["name"].Value}={match.Groups["quote"].Value}{rewrittenPath}{suffix}{match.Groups["quote"].Value}";
+    }
+
+    private static string RewriteSrcSetAttribute(Match match, IReadOnlyDictionary<string, string> assetMap)
+    {
+        var originalValue = match.Groups["value"].Value;
+        var candidates = originalValue.Split(',');
+        var rewritten = false;
+
+        for (var index = 0; index < candidates.Length; index++)
+        {
+            var rewrittenCandidate = RewriteSrcSetCandidate(candidates[index], assetMap);
+            if (!string.Equals(rewrittenCandidate, candidates[index], StringComparison.Ordinal))
+            {
+                candidates[index] = rewrittenCandidate;
+                rewritten = true;
+            }
+        }
+
+        if (!rewritten)
+        {
+            return match.Value;
+        }
+
+        return $"{match.Groups["name"].Value}={match.Groups["quote"].Value}{string.Join(",", candidates)}{match.Groups["quote"].Value}";
+    }
+
+    private static string RewriteSrcSetCandidate(string candidate, IReadOnlyDictionary<string, string> assetMap)
+    {
+        var urlStart = 0;
+        while (urlStart < candidate.Length && char.IsWhiteSpace(candidate[urlStart]))
+        {
+            urlStart++;
+        }
+
+        if (urlStart >= candidate.Length)
+        {
+            return candidate;
+        }
+
+        var urlEnd = urlStart;
+        while (urlEnd < candidate.Length && !char.IsWhiteSpace(candidate[urlEnd]))
+        {
+            urlEnd++;
+        }
+
+        var originalUrl = candidate[urlStart..urlEnd];
+        var normalizedPath = NormalizeAssetLookupPath(originalUrl);
+        if (normalizedPath is null || !assetMap.TryGetValue(normalizedPath, out var rewrittenPath))
+        {
+            return candidate;
+        }
+
+        var suffix = ExtractQueryAndHashSuffix(originalUrl);
+        return candidate[..urlStart] + rewrittenPath + suffix + candidate[urlEnd..];
+    }
+
+    private static string RewriteMetaElement(Match match, IReadOnlyDictionary<string, string> assetMap)
+    {
+        var attributes = match.Groups["attrs"].Value;
+        Match? contentAttribute = null;
+        var isAssetMeta = false;
+
+        foreach (Match attributeMatch in HtmlAttributePattern.Matches(attributes))
+        {
+            var attributeName = attributeMatch.Groups["name"].Value;
+            var attributeValue = attributeMatch.Groups["value"].Value.Trim();
+
+            if (string.Equals(attributeName, "content", StringComparison.OrdinalIgnoreCase))
+            {
+                contentAttribute = attributeMatch;
+                continue;
+            }
+
+            if (IsAssetMetaAttribute(attributeName, attributeValue))
+            {
+                isAssetMeta = true;
+            }
+        }
+
+        if (!isAssetMeta || contentAttribute is null)
+        {
+            return match.Value;
+        }
+
+        var originalValue = contentAttribute.Groups["value"].Value;
+        var normalizedPath = NormalizeAssetLookupPath(originalValue);
+        if (normalizedPath is null || !assetMap.TryGetValue(normalizedPath, out var rewrittenPath))
+        {
+            return match.Value;
+        }
+
+        var suffix = ExtractQueryAndHashSuffix(originalValue);
+        var valueStart = contentAttribute.Groups["value"].Index;
+        var valueEnd = valueStart + contentAttribute.Groups["value"].Length;
+        var rewrittenAttributes = attributes[..valueStart]
+            + rewrittenPath
+            + suffix
+            + attributes[valueEnd..];
+
+        return "<meta" + rewrittenAttributes + ">";
+    }
+
+    private static bool IsAssetMetaAttribute(string attributeName, string attributeValue)
+    {
+        if (string.IsNullOrWhiteSpace(attributeValue))
+        {
+            return false;
+        }
+
+        return string.Equals(attributeName, "itemprop", StringComparison.OrdinalIgnoreCase)
+            ? string.Equals(attributeValue, "image", StringComparison.OrdinalIgnoreCase)
+            : (string.Equals(attributeName, "property", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(attributeName, "name", StringComparison.OrdinalIgnoreCase))
+                && AssetMetaNames.Contains(attributeValue);
+    }
+
+    private static string NormalizeScriptPath(string value)
+    {
+        var normalized = StripQueryAndHash(value).Replace('\\', '/').Trim();
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            return normalized;
+        }
+
+        while (normalized.StartsWith("./", StringComparison.Ordinal))
+        {
+            normalized = normalized[2..];
+        }
+
+        return normalized.StartsWith("/", StringComparison.Ordinal)
+            ? normalized
+            : "/" + normalized.TrimStart('/');
+    }
+
+    private static string? NormalizeAssetLookupPath(string value)
+    {
+        var normalized = StripQueryAndHash(value).Replace('\\', '/').Trim();
+        if (string.IsNullOrWhiteSpace(normalized)
+            || normalized.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+            || normalized.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+            || normalized.StartsWith("//", StringComparison.Ordinal)
+            || normalized.StartsWith("data:", StringComparison.OrdinalIgnoreCase)
+            || normalized.StartsWith("javascript:", StringComparison.OrdinalIgnoreCase)
+            || normalized.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase)
+            || normalized.StartsWith("tel:", StringComparison.OrdinalIgnoreCase)
+            || normalized.StartsWith('#'))
+        {
+            return null;
+        }
+
+        while (normalized.StartsWith("./", StringComparison.Ordinal))
+        {
+            normalized = normalized[2..];
+        }
+
+        return normalized.StartsWith("/", StringComparison.Ordinal)
+            ? normalized
+            : "/" + normalized.TrimStart('/');
+    }
+
+    private static string ExtractQueryAndHashSuffix(string value)
+    {
+        var index = value.IndexOfAny(['?', '#']);
+        return index >= 0 ? value[index..] : string.Empty;
+    }
+
+    private static string NormalizeOutputAssetPath(string value)
+    {
+        var normalized = value.Replace('\\', '/').Trim();
+        while (normalized.StartsWith("./", StringComparison.Ordinal))
+        {
+            normalized = normalized[2..];
+        }
+
+        return normalized;
     }
 }

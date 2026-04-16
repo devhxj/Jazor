@@ -7,6 +7,20 @@ internal static class BuildEntryPointResolver
     private static readonly Regex ScriptTagPattern = new(
         """<script\b(?<attrs>[^>]*)\bsrc\s*=\s*["'](?<src>[^"']+)["'][^>]*>""",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    private static readonly Regex ModuleTypeAttributePattern = new(
+        """\btype\s*=\s*["']module["']""",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    private static readonly HashSet<string> SupportedEntryExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".js",
+        ".jsx",
+        ".jazor",
+        ".mjs",
+        ".mts",
+        ".ts",
+        ".tsx",
+        ".vue"
+    };
 
     private static readonly string[] CandidateEntryPoints =
     [
@@ -56,30 +70,68 @@ internal static class BuildEntryPointResolver
         }
 
         var html = File.ReadAllText(indexHtmlPath);
+        string? fallbackCandidate = null;
         foreach (Match match in ScriptTagPattern.Matches(html))
         {
-            var src = match.Groups["src"].Value;
-            if (string.IsNullOrWhiteSpace(src) || IsExternalSource(src))
+            var attrs = match.Groups["attrs"].Value;
+            var src = StripQueryAndHash(match.Groups["src"].Value);
+            if (string.IsNullOrWhiteSpace(src)
+                || IsExternalSource(src)
+                || !HasSupportedEntryExtension(src)
+                || !TryResolveLocalScriptPath(rootDirectory, src, out var absolutePath)
+                || !File.Exists(absolutePath))
             {
                 continue;
             }
 
-            var normalizedPath = src.Replace('/', Path.DirectorySeparatorChar).TrimStart(Path.DirectorySeparatorChar);
-            var absolutePath = Path.GetFullPath(Path.Combine(rootDirectory, normalizedPath));
-            if (!absolutePath.StartsWith(rootDirectory, StringComparison.OrdinalIgnoreCase))
-            {
-                continue;
-            }
-
-            if (File.Exists(absolutePath))
+            if (ModuleTypeAttributePattern.IsMatch(attrs))
             {
                 entryPoint = absolutePath;
                 return true;
             }
+
+            fallbackCandidate ??= absolutePath;
+        }
+
+        if (fallbackCandidate is not null)
+        {
+            entryPoint = fallbackCandidate;
+            return true;
         }
 
         entryPoint = string.Empty;
         return false;
+    }
+
+    private static bool TryResolveLocalScriptPath(
+        string rootDirectory,
+        string src,
+        out string absolutePath)
+    {
+        var normalizedPath = src.Replace('\\', Path.DirectorySeparatorChar)
+            .Replace('/', Path.DirectorySeparatorChar)
+            .TrimStart(Path.DirectorySeparatorChar);
+        absolutePath = Path.GetFullPath(Path.Combine(rootDirectory, normalizedPath));
+        return IsInsideRoot(rootDirectory, absolutePath);
+    }
+
+    private static bool HasSupportedEntryExtension(string src)
+        => SupportedEntryExtensions.Contains(Path.GetExtension(src));
+
+    private static string StripQueryAndHash(string src)
+    {
+        var index = src.IndexOfAny(['?', '#']);
+        return index >= 0 ? src[..index] : src;
+    }
+
+    private static bool IsInsideRoot(string rootDirectory, string absolutePath)
+    {
+        var relativePath = Path.GetRelativePath(rootDirectory, absolutePath);
+        return string.Equals(relativePath, ".", StringComparison.Ordinal)
+            || (!string.Equals(relativePath, "..", StringComparison.Ordinal)
+                && !relativePath.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+                && !relativePath.StartsWith(".." + Path.AltDirectorySeparatorChar, StringComparison.Ordinal)
+                && !Path.IsPathRooted(relativePath));
     }
 
     private static bool IsExternalSource(string src)

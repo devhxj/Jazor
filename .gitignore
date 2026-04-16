@@ -38,6 +38,10 @@ bld/
 [Ll]og/
 [Ll]ogs/
 
+# Track VueHost debug protocol sources (Phase4) even with global Debug ignore.
+!src/Jazor.VueHost/Debug/
+!src/Jazor.VueHost/Debug/*.cs
+
 # Visual Studio 2015/2017 cache/options directory
 .vs/
 # Uncomment if you have tasks that create the project's static files in wwwroot
@@ -415,3 +419,4 @@ CLAUDE.md
 .tmp/
 .vs/
 .tmp-webidl-out/
+.test-results/

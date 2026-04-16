@@ -5,6 +5,8 @@ namespace Jazor.CompilerTest;
 
 internal static class SourceMapTestHelpers
 {
+    public readonly record struct SourceMapLocation(int SourceIndex, int SourceLine);
+
     public static void AssertGeneratedLineMapsToSourceLine(
         string generatedText,
         string generatedNeedle,
@@ -19,11 +21,35 @@ internal static class SourceMapTestHelpers
         Assert.AreEqual(GetLineIndexContaining(sourceText, sourceNeedle), sourceLine);
     }
 
+    public static void AssertGeneratedLineMapsToSource(
+        string generatedText,
+        string generatedNeedle,
+        JsonElement sourceMap,
+        string expectedSourcePath,
+        string sourceText,
+        string sourceNeedle,
+        IReadOnlyDictionary<int, SourceMapLocation> mappedLocations)
+    {
+        var generatedLine = GetLineIndexContaining(generatedText, generatedNeedle);
+        Assert.IsTrue(
+            mappedLocations.TryGetValue(generatedLine, out var sourceLocation),
+            $"Expected generated line containing '{generatedNeedle}' to have a source-map segment.");
+
+        Assert.AreEqual(FindSourceIndexContaining(sourceMap, expectedSourcePath), sourceLocation.SourceIndex);
+        Assert.AreEqual(GetLineIndexContaining(sourceText, sourceNeedle), sourceLocation.SourceLine);
+    }
+
     public static IReadOnlyDictionary<int, int> DecodeGeneratedLineToSourceLine(JsonElement sourceMap)
+    {
+        return DecodeGeneratedLineToSourceLocation(sourceMap)
+            .ToDictionary(static entry => entry.Key, static entry => entry.Value.SourceLine);
+    }
+
+    public static IReadOnlyDictionary<int, SourceMapLocation> DecodeGeneratedLineToSourceLocation(JsonElement sourceMap)
     {
         const string base64Digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
         var mappings = sourceMap.GetProperty("mappings").GetString() ?? string.Empty;
-        var result = new Dictionary<int, int>();
+        var result = new Dictionary<int, SourceMapLocation>();
         var generatedLine = 0;
         var previousGeneratedColumn = 0;
         var previousSourceIndex = 0;
@@ -57,7 +83,7 @@ internal static class SourceMapTestHelpers
             previousSourceIndex += DecodeVlq(mappings, ref position, base64Digits);
             previousSourceLine += DecodeVlq(mappings, ref position, base64Digits);
             previousSourceColumn += DecodeVlq(mappings, ref position, base64Digits);
-            result.TryAdd(generatedLine, previousSourceLine);
+            result.TryAdd(generatedLine, new SourceMapLocation(previousSourceIndex, previousSourceLine));
 
             if (position < mappings.Length && mappings[position] != ',' && mappings[position] != ';')
             {
@@ -115,6 +141,31 @@ internal static class SourceMapTestHelpers
         }
 
         return line;
+    }
+
+    public static int FindSourceIndexContaining(JsonElement sourceMap, string expectedSourcePath)
+    {
+        var normalizedExpectedPath = expectedSourcePath.Replace('\\', '/');
+        var sources = sourceMap.GetProperty("sources");
+        for (var index = 0; index < sources.GetArrayLength(); index++)
+        {
+            var source = sources[index].GetString();
+            if (string.IsNullOrWhiteSpace(source))
+            {
+                continue;
+            }
+
+            var normalizedSource = source.Replace('\\', '/');
+            if (normalizedSource.EndsWith(normalizedExpectedPath, StringComparison.OrdinalIgnoreCase)
+                || normalizedSource.Contains("/" + normalizedExpectedPath, StringComparison.OrdinalIgnoreCase))
+            {
+                return index;
+            }
+        }
+
+        Assert.Fail(
+            $"Expected source map sources to contain '{expectedSourcePath}', but found: {string.Join(", ", sources.EnumerateArray().Select(static source => source.GetString()))}");
+        return -1;
     }
 
     private static string EncodeVlq(int value)

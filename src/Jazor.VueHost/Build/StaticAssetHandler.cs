@@ -1,6 +1,4 @@
 using System.Security.Cryptography;
-using System.Text;
-
 namespace Jazor.VueHost.Build;
 
 /// <summary>
@@ -45,7 +43,7 @@ internal sealed class StaticAssetHandler
         }
 
         var assets = new List<AssetInfo>();
-        var distDir = Path.Combine(_context.RootDirectory, _context.Options.OutDir);
+        var distDir = _context.OutDirectory;
 
         await foreach (var assetPath in EnumerateFilesAsync(publicDir, ct))
         {
@@ -63,7 +61,7 @@ internal sealed class StaticAssetHandler
             var destFileName = fileName;
             if (shouldHash)
             {
-                var hash = await ComputeFileHashAsync(assetPath, ct);
+                var hash = await ComputeFileHashAsync(assetPath, _context.Options.AssetHashLength, ct);
                 destFileName = $"{fileNameWithoutExt}-{hash}{extension}";
             }
 
@@ -87,14 +85,93 @@ internal sealed class StaticAssetHandler
             var assetInfo = new AssetInfo
             {
                 FileName = destFileName,
-                FilePath = Path.GetRelativePath(_context.RootDirectory, destPath),
-                Size = new FileInfo(destPath).Length
+                FilePath = Path.GetRelativePath(_context.RootDirectory, destPath).Replace('\\', '/'),
+                Size = new FileInfo(destPath).Length,
+                OriginalPath = NormalizePublicAssetPath(relativePath)
             };
 
             assets.Add(assetInfo);
         }
 
         return assets;
+    }
+
+    public async Task<IReadOnlyList<AssetInfo>> CopySourceAssetsAsync(
+        IReadOnlyList<SourceAssetRequest> sourceAssets,
+        CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(sourceAssets);
+
+        if (sourceAssets.Count == 0)
+        {
+            return [];
+        }
+
+        var assets = new List<AssetInfo>();
+        var copiedOriginalPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var sourceAsset in sourceAssets)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            if (string.IsNullOrWhiteSpace(sourceAsset.OriginalPath)
+                || !copiedOriginalPaths.Add(sourceAsset.OriginalPath))
+            {
+                continue;
+            }
+
+            var absolutePath = Path.GetFullPath(sourceAsset.AbsolutePath);
+            if (!IsInsideRoot(absolutePath) || !File.Exists(absolutePath))
+            {
+                continue;
+            }
+
+            var normalizedOriginalPath = NormalizePublicAssetPath(sourceAsset.OriginalPath);
+            var relativeOutputDirectory = Path.GetDirectoryName(
+                normalizedOriginalPath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar))
+                ?? string.Empty;
+            var fileName = Path.GetFileName(absolutePath);
+            var extension = Path.GetExtension(absolutePath);
+            var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(absolutePath);
+            var fileInfo = new FileInfo(absolutePath);
+            var shouldHash = ShouldHash(absolutePath) && fileInfo.Length < HashSizeThreshold;
+            var outputDirectory = Path.Combine(_context.OutDirectory, relativeOutputDirectory);
+
+            Directory.CreateDirectory(outputDirectory);
+
+            var outputFileName = fileName;
+            if (shouldHash)
+            {
+                var hash = await ComputeFileHashAsync(absolutePath, _context.Options.AssetHashLength, ct);
+                outputFileName = $"{fileNameWithoutExtension}-{hash}{extension}";
+            }
+
+            var outputPath = Path.Combine(outputDirectory, outputFileName);
+            await CopyFileAsync(absolutePath, outputPath, ct);
+
+            assets.Add(new AssetInfo
+            {
+                FileName = outputFileName,
+                FilePath = Path.GetRelativePath(_context.RootDirectory, outputPath).Replace('\\', '/'),
+                Size = new FileInfo(outputPath).Length,
+                OriginalPath = normalizedOriginalPath
+            });
+        }
+
+        return assets;
+    }
+
+    private static string NormalizePublicAssetPath(string relativePath)
+    {
+        var normalized = relativePath.Replace('\\', '/').Trim();
+        while (normalized.StartsWith("./", StringComparison.Ordinal))
+        {
+            normalized = normalized[2..];
+        }
+
+        return normalized.StartsWith("/", StringComparison.Ordinal)
+            ? normalized
+            : "/" + normalized.TrimStart('/');
     }
 
     /// <summary>
@@ -107,23 +184,15 @@ internal sealed class StaticAssetHandler
     }
 
     /// <summary>
-    /// Computes SHA256 hash of a file and returns the first 8 hex characters.
+    /// Computes SHA256 hash of a file and returns the configured hex prefix length.
     /// </summary>
-    private static async Task<string> ComputeFileHashAsync(string filePath, CancellationToken ct)
+    private static async Task<string> ComputeFileHashAsync(string filePath, int hashLength, CancellationToken ct)
     {
         var bytes = await File.ReadAllBytesAsync(filePath, ct);
 
         using var sha256 = SHA256.Create();
         var hash = sha256.ComputeHash(bytes);
-
-        // Take first 8 characters (4 bytes) of the hash
-        var hashBuilder = new StringBuilder();
-        for (int i = 0; i < 4; i++)
-        {
-            hashBuilder.Append(hash[i].ToString("x2"));
-        }
-
-        return hashBuilder.ToString();
+        return Convert.ToHexString(hash)[..hashLength].ToLowerInvariant();
     }
 
     /// <summary>
@@ -169,4 +238,21 @@ internal sealed class StaticAssetHandler
             await Task.Yield();
         }
     }
+
+    private bool IsInsideRoot(string candidatePath)
+    {
+        var relativePath = Path.GetRelativePath(_context.RootDirectory, candidatePath);
+        return string.Equals(relativePath, ".", StringComparison.Ordinal)
+            || (!string.Equals(relativePath, "..", StringComparison.Ordinal)
+                && !relativePath.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+                && !relativePath.StartsWith(".." + Path.AltDirectorySeparatorChar, StringComparison.Ordinal)
+                && !Path.IsPathRooted(relativePath));
+    }
+}
+
+internal sealed class SourceAssetRequest
+{
+    public required string AbsolutePath { get; init; }
+
+    public required string OriginalPath { get; init; }
 }

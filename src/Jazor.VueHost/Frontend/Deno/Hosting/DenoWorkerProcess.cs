@@ -136,11 +136,26 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
             var responseLine = await _reader.ReadLineAsync(cancellationToken);
             if (string.IsNullOrWhiteSpace(responseLine))
             {
-                return default;
+                throw new InvalidOperationException(
+                    $"Deno frontend worker returned no response for request '{method}'.");
             }
 
             var response = JsonSerializer.Deserialize<DenoFrontendResponseEnvelope>(responseLine, _jsonOptions);
-            if (response is null || !response.Success || response.Result is null)
+            if (response is null)
+            {
+                throw new InvalidOperationException(
+                    $"Deno frontend worker returned an invalid response for request '{method}'.");
+            }
+
+            if (!response.Success)
+            {
+                throw new InvalidOperationException(
+                    string.IsNullOrWhiteSpace(response.Error)
+                        ? $"Deno frontend worker request '{method}' failed."
+                        : $"Deno frontend worker request '{method}' failed: {response.Error}");
+            }
+
+            if (response.Result is null)
             {
                 return default;
             }

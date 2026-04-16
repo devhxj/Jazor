@@ -81,5 +81,15 @@ internal sealed class CompilationCache
         }
     }
 
+    public IReadOnlyList<KeyValuePair<string, CompilationResult>> GetEntries()
+    {
+        lock (_gate)
+        {
+            return _entries
+                .Select(static entry => new KeyValuePair<string, CompilationResult>(entry.Key, entry.Value.Result))
+                .ToArray();
+        }
+    }
+
     private sealed record CacheEntry(string ContentHash, CompilationResult Result);
 }

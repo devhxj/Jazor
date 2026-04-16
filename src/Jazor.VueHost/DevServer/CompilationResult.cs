@@ -16,7 +16,11 @@ internal sealed class CompilationResult
 
     public string? StyleContent { get; init; }
 
+    public IReadOnlyList<CompiledStyleFragment> StyleFragments { get; init; } = [];
+
     public IReadOnlyList<string> Dependencies { get; init; } = [];
+
+    public IReadOnlyList<string> EmbeddedStyleDependencies { get; init; } = [];
 
     public IReadOnlyList<string> Diagnostics { get; init; } = [];
 

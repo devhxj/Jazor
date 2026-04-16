@@ -6,6 +6,8 @@ internal sealed class BuildResult
 
     public string? OutDirectory { get; init; }
 
+    public string? ManifestPath { get; init; }
+
     public IReadOnlyList<ChunkInfo> Chunks { get; init; } = [];
 
     public IReadOnlyList<AssetInfo> CssAssets { get; init; } = [];
@@ -27,6 +29,7 @@ internal sealed class ChunkInfo
     public bool IsEntry { get; init; }
     public bool IsDynamic { get; init; }
     public IReadOnlyList<string> Imports { get; init; } = [];
+    public IReadOnlyList<string> Css { get; init; } = [];
     public string? SourceMapPath { get; init; }
 }
 
@@ -36,6 +39,10 @@ internal sealed class AssetInfo
     public required string FilePath { get; init; }
     public required long Size { get; init; }
     public string? SourceMapPath { get; init; }
+    public string? OriginalPath { get; init; }
+    public IReadOnlyList<string> SourceModulePaths { get; init; } = [];
+    public IReadOnlyList<string> OwnerChunkFilePaths { get; init; } = [];
+    public string? OwnerChunkFilePath { get; init; }
 }
 
 internal sealed class BuildDiagnostic

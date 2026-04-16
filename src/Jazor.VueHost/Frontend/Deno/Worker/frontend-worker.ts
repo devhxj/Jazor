@@ -40,11 +40,21 @@ type ScriptLanguage = "ts" | "js";
 type ScriptSymbolKind = "const" | "let" | "var" | "function" | "class" | "import";
 type TemplateSymbol = { name: string; range: { start: Position; end: Position } };
 type SourceLineRange = { sourceStartLine: number; sourceLineCount: number };
-type SourceMappedPart = { content: string; sourceRange?: SourceLineRange };
+type SourceMappedPart = {
+  content: string;
+  sourceRange?: SourceLineRange;
+  sourceLineMappings?: ReadonlyArray<number | null>;
+};
 type SfcBlockLike = { loc: { start: { line: number }; end: { line: number } } };
+type CompiledStyleFragment = {
+  cssContent: string;
+  sourcePath?: string | null;
+  sourceLineStart?: number | null;
+  sourceLineCount?: number | null;
+};
 type FrontendDocumentSnapshot = {
   documentPath: string;
-  documentKind: string;
+  documentKind: string | number | null | undefined;
   text: string;
   version?: string | null;
 };
@@ -605,9 +615,16 @@ function compileVueSfc(
   documentPath: string,
   sfcText: string,
   filename: string,
-): { jsContent: string; jsSourceMap: string | null; cssContent: string | null; diagnostics: string[]; supportsHmr: boolean } {
+): {
+  jsContent: string;
+  jsSourceMap: string | null;
+  cssContent: string | null;
+  styleFragments: CompiledStyleFragment[];
+  diagnostics: string[];
+  supportsHmr: boolean;
+} {
   const diagnostics: string[] = [];
-  const { descriptor, errors } = vueCompilerSfc.parse(sfcText, { filename });
+  const { descriptor, errors } = vueCompilerSfc.parse(sfcText, { filename, sourceMap: true });
   for (const error of errors) {
     diagnostics.push(formatSfcCompilerMessage(error));
   }
@@ -631,16 +648,22 @@ function compileVueSfc(
       });
       bindingMetadata = compiledScript.bindings;
       let scriptContent = compiledScript.content.trim();
+      let scriptLineMappings = extractGeneratedLineMappings(compiledScript.map);
       if (requiresTypeScriptTranspile(descriptor)) {
-        const transpiled = transpileTypeScriptModule(scriptContent, filename, false);
+        const transpiled = transpileTypeScriptModule(scriptContent, filename, true);
         diagnostics.push(...transpiled.diagnostics);
         scriptContent = transpiled.jsContent;
+        scriptLineMappings = chainGeneratedLineMappings(
+          extractGeneratedLineMappings(transpiled.jsSourceMap),
+          scriptLineMappings,
+        );
       }
 
       if (scriptContent.length > 0) {
         jsParts.push({
           content: scriptContent,
           sourceRange: scriptSourceRange,
+          sourceLineMappings: scriptLineMappings,
         });
       }
     } catch (error) {
@@ -676,6 +699,8 @@ function compileVueSfc(
         id: scopeId,
         scoped: hasScopedStyles,
         isProd: false,
+        sourceMap: true,
+        inMap: descriptor.template.map,
         compilerOptions: bindingMetadata === undefined
           ? undefined
           : {
@@ -690,6 +715,10 @@ function compileVueSfc(
         jsParts.push({
           content: templateCompiled.code.trim(),
           sourceRange: templateSourceRange,
+          sourceLineMappings: chainGeneratedLineMappings(
+            extractGeneratedLineMappings(templateCompiled.map),
+            extractGeneratedLineMappings(descriptor.template.map),
+          ),
         });
       }
     } catch (error) {
@@ -698,11 +727,20 @@ function compileVueSfc(
   }
 
   const cssParts: string[] = [];
+  const styleFragments: CompiledStyleFragment[] = [];
   for (const styleBlock of descriptor.styles) {
     try {
+      const styleSourcePath = resolveVueStyleSourcePath(documentPath, styleBlock.src);
+      const styleSource = loadVueStyleSource(styleSourcePath, styleBlock.content);
+      const styleSourceRange = styleSourcePath === null
+        ? getSfcBlockSourceRange(styleBlock)
+        : {
+          sourceStartLine: 1,
+          sourceLineCount: Math.max(1, normalizeLineEndings(styleSource).split("\n").length),
+        };
       const styleCompiled = vueCompilerSfc.compileStyle({
-        source: styleBlock.content,
-        filename,
+        source: styleSource,
+        filename: styleSourcePath ?? filename,
         id: `data-v-${scopeId}`,
         scoped: styleBlock.scoped,
         isProd: false,
@@ -712,7 +750,14 @@ function compileVueSfc(
       }
 
       if (styleCompiled.code.trim().length > 0) {
-        cssParts.push(styleCompiled.code.trim());
+        const compiledCss = styleCompiled.code.trim();
+        cssParts.push(compiledCss);
+        styleFragments.push({
+          cssContent: compiledCss,
+          sourcePath: styleSourcePath ?? normalizePath(documentPath),
+          sourceLineStart: styleSourceRange?.sourceStartLine ?? null,
+          sourceLineCount: styleSourceRange?.sourceLineCount ?? null,
+        });
       }
     } catch (error) {
       diagnostics.push(`Failed to compile <style>: ${formatSfcCompilerMessage(error)}`);
@@ -738,7 +783,7 @@ function compileVueSfc(
   const scriptHash = createStableHash([
     descriptor.script?.content ?? "",
     descriptor.scriptSetup?.content ?? "",
-    descriptor.styles.map((style) => `${style.scoped}:${style.lang ?? ""}:${style.module ? "module" : "plain"}`).join("|"),
+    descriptor.styles.map((style) => `${style.scoped}:${style.lang ?? ""}:${style.module ? "module" : "plain"}:${style.src ?? ""}`).join("|"),
   ].join("\n"));
   jsParts.push({ content: `const __jazorHmrId = ${JSON.stringify(hmrId)};` });
   jsParts.push({ content: `const __jazorHmrTemplateHash = ${JSON.stringify(templateHash)};` });
@@ -791,6 +836,7 @@ if (import.meta.hot) {
     jsContent: sourceMappedModule.content,
     jsSourceMap: sourceMappedModule.sourceMap,
     cssContent: cssParts.length === 0 ? null : cssParts.join("\n\n"),
+    styleFragments,
     diagnostics,
     supportsHmr: true,
   };
@@ -2706,17 +2752,43 @@ function tryParseFrontendSummaryArtifact(content: string): FrontendSummaryArtifa
   }
 }
 
-function normalizeFrontendDocumentKind(value: string | undefined): FrontendDocumentKind {
-  switch ((value ?? "").toLowerCase()) {
+function normalizeFrontendDocumentKind(value: string | number | null | undefined): FrontendDocumentKind {
+  if (typeof value === "number") {
+    switch (value) {
+      case 0:
+        return "jazor";
+      case 2:
+        return "vue";
+      case 3:
+        return "javascript";
+      case 4:
+        return "typescript";
+      case 5:
+        return "css";
+      default:
+        return "unknown";
+    }
+  }
+
+  if (typeof value !== "string") {
+    return "unknown";
+  }
+
+  switch (value.trim().toLowerCase()) {
     case "jazor":
+    case "0":
       return "jazor";
     case "vue":
+    case "2":
       return "vue";
     case "typescript":
+    case "4":
       return "typescript";
     case "javascript":
+    case "3":
       return "javascript";
     case "css":
+    case "5":
       return "css";
     case "html":
       return "html";
@@ -2968,6 +3040,31 @@ function rewriteDefaultExport(scriptContent: string, localName: string): string 
     : `${scriptContent}\nconst ${localName} = {};`;
 }
 
+function resolveVueStyleSourcePath(documentPath: string, specifier: string | undefined): string | null {
+  if (specifier === undefined) {
+    return null;
+  }
+
+  const normalizedSpecifier = specifier.trim();
+  if (normalizedSpecifier.length === 0) {
+    return null;
+  }
+
+  if (!normalizedSpecifier.startsWith("./") && !normalizedSpecifier.startsWith("../") && !/^[A-Za-z]:\//.test(normalizedSpecifier)) {
+    throw new Error(`Unsupported <style src> specifier '${normalizedSpecifier}'. Only relative filesystem paths are supported.`);
+  }
+
+  return normalizePath(joinPath(getDirectoryName(documentPath), normalizedSpecifier));
+}
+
+function loadVueStyleSource(styleSourcePath: string | null, inlineContent: string): string {
+  if (styleSourcePath === null) {
+    return inlineContent;
+  }
+
+  return normalizeLineEndings(Deno.readTextFileSync(styleSourcePath));
+}
+
 function createVueScopeId(documentPath: string): string {
   return createStableHash(normalizePath(documentPath));
 }
@@ -3021,6 +3118,7 @@ function createSourceMappedModule(
     .map((part) => ({
       content: normalizeLineEndings(part.content),
       sourceRange: part.sourceRange,
+      sourceLineMappings: part.sourceLineMappings,
     }))
     .filter((part) => part.content.length > 0);
   if (normalizedParts.length === 0) {
@@ -3039,7 +3137,7 @@ function createSourceMappedModule(
     }
 
     content += part.content;
-    appendLineMappings(lineMappings, part.content, part.sourceRange);
+    appendLineMappings(lineMappings, part.content, part.sourceRange, part.sourceLineMappings);
   }
 
   return {
@@ -3083,12 +3181,146 @@ function createSingleSourceLineMap(
   });
 }
 
+function chainGeneratedLineMappings(
+  generatedLineMappings: ReadonlyArray<number | null> | undefined,
+  sourceLineMappings: ReadonlyArray<number | null> | undefined,
+): ReadonlyArray<number | null> | undefined {
+  if (generatedLineMappings === undefined) {
+    return sourceLineMappings;
+  }
+
+  if (sourceLineMappings === undefined) {
+    return generatedLineMappings;
+  }
+
+  return generatedLineMappings.map((sourceLine) => {
+    if (sourceLine === null || sourceLine < 0 || sourceLine >= sourceLineMappings.length) {
+      return null;
+    }
+
+    return sourceLineMappings[sourceLine] ?? null;
+  });
+}
+
+function extractGeneratedLineMappings(sourceMap: unknown): ReadonlyArray<number | null> | undefined {
+  const sourceMapObject = parseSourceMapObject(sourceMap);
+  if (sourceMapObject === null || sourceMapObject.mappings.length === 0) {
+    return undefined;
+  }
+
+  const lineMappings: Array<number | null> = [null];
+  const state = { position: 0 };
+  const mappings = (sourceMapObject as { mappings?: unknown }).mappings;
+  let generatedLine = 0;
+  let previousGeneratedColumn = 0;
+  let previousSourceIndex = 0;
+  let previousSourceLine = 0;
+  let previousSourceColumn = 0;
+
+  while (state.position < mappings.length) {
+    const current = mappings[state.position];
+    if (current === ";") {
+      generatedLine += 1;
+      previousGeneratedColumn = 0;
+      state.position += 1;
+      if (lineMappings.length <= generatedLine) {
+        lineMappings.push(null);
+      }
+
+      continue;
+    }
+
+    if (current === ",") {
+      state.position += 1;
+      continue;
+    }
+
+    const generatedColumnDelta = decodeBase64Vlq(mappings, state);
+    if (generatedColumnDelta === null) {
+      return undefined;
+    }
+
+    previousGeneratedColumn += generatedColumnDelta;
+    if (state.position >= mappings.length || mappings[state.position] === "," || mappings[state.position] === ";") {
+      continue;
+    }
+
+    const sourceIndexDelta = decodeBase64Vlq(mappings, state);
+    const sourceLineDelta = decodeBase64Vlq(mappings, state);
+    const sourceColumnDelta = decodeBase64Vlq(mappings, state);
+    if (sourceIndexDelta === null || sourceLineDelta === null || sourceColumnDelta === null) {
+      return undefined;
+    }
+
+    previousSourceIndex += sourceIndexDelta;
+    previousSourceLine += sourceLineDelta;
+    previousSourceColumn += sourceColumnDelta;
+    if (lineMappings[generatedLine] === null || lineMappings[generatedLine] === undefined) {
+      lineMappings[generatedLine] = previousSourceLine;
+    }
+
+    if (state.position < mappings.length && mappings[state.position] !== "," && mappings[state.position] !== ";") {
+      const nameDelta = decodeBase64Vlq(mappings, state);
+      if (nameDelta === null) {
+        return undefined;
+      }
+    }
+  }
+
+  return lineMappings;
+}
+
+function parseSourceMapObject(sourceMap: unknown): { mappings: string } | null {
+  let sourceMapObject = sourceMap;
+  if (typeof sourceMapObject === "string") {
+    if (sourceMapObject.trim().length === 0) {
+      return null;
+    }
+
+    try {
+      sourceMapObject = JSON.parse(sourceMapObject);
+    } catch {
+      return null;
+    }
+  }
+
+  if (typeof sourceMapObject !== "object" || sourceMapObject === null || !("mappings" in sourceMapObject)) {
+    return null;
+  }
+
+  const mappings = sourceMapObject.mappings;
+  if (typeof mappings !== "string") {
+    return null;
+  }
+
+  return { mappings };
+}
+
 function appendLineMappings(
   lineMappings: Array<number | null>,
   content: string,
   sourceRange?: SourceLineRange,
+  sourceLineMappings?: ReadonlyArray<number | null>,
 ): void {
   const lines = normalizeLineEndings(content).split("\n");
+  if (sourceLineMappings !== undefined && sourceLineMappings.length > 0) {
+    const maxOffset = Math.max(0, (sourceRange?.sourceLineCount ?? 1) - 1);
+    for (let index = 0; index < lines.length; index += 1) {
+      const mappedSourceLine = index < sourceLineMappings.length
+        ? sourceLineMappings[index]
+        : null;
+      if (mappedSourceLine !== null && mappedSourceLine !== undefined) {
+        lineMappings.push(mappedSourceLine);
+      } else if (sourceRange === undefined) {
+        lineMappings.push(null);
+      } else {
+        lineMappings.push(sourceRange.sourceStartLine - 1 + Math.min(index, maxOffset));
+      }
+    }
+
+    return;
+  }
+
   if (sourceRange === undefined) {
     for (let index = 0; index < lines.length; index += 1) {
       lineMappings.push(null);
@@ -3134,6 +3366,32 @@ function getCombinedSfcBlockSourceRange(
 
 function normalizeLineEndings(text: string): string {
   return text.replace(/\r\n/g, "\n");
+}
+
+function decodeBase64Vlq(mappings: string, state: { position: number }): number | null {
+  const base64Characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+  let result = 0;
+  let shift = 0;
+
+  while (state.position < mappings.length) {
+    const current = mappings[state.position];
+    const digit = base64Characters.indexOf(current);
+    if (digit < 0) {
+      return null;
+    }
+
+    state.position += 1;
+    const hasContinuation = (digit & 32) !== 0;
+    result += (digit & 31) << shift;
+    shift += 5;
+    if (!hasContinuation) {
+      const isNegative = (result & 1) === 1;
+      result >>= 1;
+      return isNegative ? -result : result;
+    }
+  }
+
+  return null;
 }
 
 function encodeBase64Vlq(value: number): string {
