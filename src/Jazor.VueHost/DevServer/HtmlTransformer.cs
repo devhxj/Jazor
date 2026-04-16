@@ -348,4 +348,60 @@ internal sealed class HtmlTransformer
         var index = value.IndexOfAny(['?', '#']);
         return index >= 0 ? value[..index] : value;
     }
+
+    /// <summary>
+    /// Inject a production script tag into HTML, placed before </body>.
+    /// </summary>
+    public static string InjectScript(string html, string scriptPath)
+    {
+        ArgumentNullException.ThrowIfNull(html);
+        ArgumentNullException.ThrowIfNull(scriptPath);
+
+        var scriptTag = $"<script type=\"module\" src=\"{scriptPath}\"></script>";
+        var bodyIndex = html.IndexOf("</body>", StringComparison.OrdinalIgnoreCase);
+        if (bodyIndex >= 0)
+        {
+            return html.Insert(bodyIndex, scriptTag);
+        }
+
+        return html + scriptTag;
+    }
+
+    /// <summary>
+    /// Inject a CSS link tag into HTML, placed before </head>.
+    /// </summary>
+    public static string InjectCss(string html, string cssPath)
+    {
+        ArgumentNullException.ThrowIfNull(html);
+        ArgumentNullException.ThrowIfNull(cssPath);
+
+        var linkTag = $"<link rel=\"stylesheet\" href=\"{cssPath}\">";
+        var headIndex = html.IndexOf("</head>", StringComparison.OrdinalIgnoreCase);
+        if (headIndex >= 0)
+        {
+            return html.Insert(headIndex, linkTag);
+        }
+
+        var bodyIndex = html.IndexOf("<body", StringComparison.OrdinalIgnoreCase);
+        if (bodyIndex >= 0)
+        {
+            return html.Insert(bodyIndex, linkTag);
+        }
+
+        return linkTag + html;
+    }
+
+    /// <summary>
+    /// Remove script tags that reference dev-mode /src/ paths.
+    /// </summary>
+    public static string RemoveDevScriptRefs(string html)
+    {
+        ArgumentNullException.ThrowIfNull(html);
+
+        var devScriptPattern = new Regex(
+            @"<script\b[^>]*\bsrc\s*=\s*([""'])([^""']*/src/[^""']*)\1[^>]*>.*?</script>",
+            RegexOptions.Singleline | RegexOptions.IgnoreCase);
+
+        return devScriptPattern.Replace(html, string.Empty);
+    }
 }

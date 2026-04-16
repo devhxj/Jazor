@@ -1,3 +1,5 @@
+using Jazor.VueHost.Build;
+
 namespace Jazor.VueHost.DevServer;
 
 internal sealed class JazorConfig
@@ -5,6 +7,8 @@ internal sealed class JazorConfig
     public JazorServerConfig? Server { get; init; }
 
     public Dictionary<string, JazorProxyConfig>? Proxy { get; init; }
+
+    public JazorBuildConfig? Build { get; init; }
 }
 
 internal sealed class JazorServerConfig
@@ -27,4 +31,50 @@ internal sealed class JazorProxyConfig
     public bool? WebSocket { get; init; }
 
     public string? RewritePath { get; init; }
+}
+
+internal sealed class JazorBuildConfig
+{
+    public string? OutDir { get; init; }
+
+    public string? SourceMap { get; init; }
+
+    public bool? Minify { get; init; }
+
+    public string? Target { get; init; }
+
+    public bool? CodeSplitting { get; init; }
+
+    public string? AssetsDir { get; init; }
+
+    public int? AssetHashLength { get; init; }
+
+    public int? ChunkSizeWarningLimit { get; init; }
+
+    public BuildOptions ToBuildOptions(string rootDirectory)
+    {
+        return new BuildOptions
+        {
+            RootDirectory = rootDirectory,
+            OutDir = OutDir ?? "dist",
+            SourceMap = ParseSourceMapOption(SourceMap),
+            Minify = Minify ?? true,
+            Target = Target ?? "es2020",
+            CodeSplitting = CodeSplitting ?? true,
+            AssetsDir = AssetsDir ?? "assets",
+            AssetHashLength = AssetHashLength ?? 8,
+            ChunkSizeWarningLimit = ChunkSizeWarningLimit ?? 500_000
+        };
+    }
+
+    private static SourceMapOption ParseSourceMapOption(string? value)
+    {
+        return value?.ToLowerInvariant() switch
+        {
+            "inline" => SourceMapOption.Inline,
+            "false" => SourceMapOption.None,
+            "external" => SourceMapOption.External,
+            _ => SourceMapOption.External
+        };
+    }
 }
