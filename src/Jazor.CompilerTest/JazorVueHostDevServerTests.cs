@@ -1101,6 +1101,159 @@ public sealed class JazorVueHostDevServerTests
     }
 
     [TestMethod]
+    public async Task DevHttpServer_ServesJazorSourceMap_ChainedToOriginalSourceAtMapUrl()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body><script src=\"/Counter.jazor\"></script></body></html>");
+            var documentPath = Path.Combine(rootDirectory, "Counter.jazor");
+            var source = """
+                <template>
+                  <button>@Count</button>
+                </template>
+
+                @code {
+                    [State] private int Count = 1;
+                }
+                """;
+            await File.WriteAllTextAsync(documentPath, source);
+
+            var frontendCompiler = new FakeFrontendModuleCompiler
+            {
+                SfcResult = new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter' };",
+                    SourceMap = """
+                        {"version":3,"sources":["Counter.jazor"],"sourcesContent":["<script setup>\nconst count = ref(1);\n</script>"],"names":[],"mappings":"AACA","file":"Counter.js"}
+                        """,
+                    Dependencies = []
+                }
+            };
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = false
+            };
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                new DependencyGraph(moduleResolver),
+                moduleResolver);
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                moduleResolver,
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+
+            Assert.IsNotNull(server.ListeningUri);
+            using var client = new HttpClient { BaseAddress = server.ListeningUri };
+            var response = await client.GetAsync("/Counter.jazor.map");
+            var content = await response.Content.ReadAsStringAsync();
+            using var sourceMap = JsonDocument.Parse(content);
+
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            Assert.AreEqual("application/json", response.Content.Headers.ContentType?.MediaType);
+            Assert.AreEqual("no-store", response.Headers.CacheControl?.ToString());
+            Assert.AreEqual("Counter.jazor", sourceMap.RootElement.GetProperty("sources")[0].GetString());
+            Assert.AreEqual(source, sourceMap.RootElement.GetProperty("sourcesContent")[0].GetString());
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_ServesJazorSourceMap_FromUnsavedWorkspaceDocument()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body><script src=\"/Counter.jazor\"></script></body></html>");
+            var documentPath = Path.Combine(rootDirectory, "Counter.jazor");
+            await File.WriteAllTextAsync(
+                documentPath,
+                """
+                <template>
+                  <button>Saved</button>
+                </template>
+                """);
+            var unsavedSource = """
+                <template>
+                  <button>Unsaved</button>
+                </template>
+
+                @code {
+                    [State] private int Count = 2;
+                }
+                """;
+
+            var frontendCompiler = new FakeFrontendModuleCompiler
+            {
+                SfcResult = new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'CounterUnsaved' };",
+                    SourceMap = """
+                        {"version":3,"sources":["Counter.jazor"],"sourcesContent":["<script setup>\nconst count = ref(2);\n</script>"],"names":[],"mappings":"AACA","file":"Counter.js"}
+                        """,
+                    Dependencies = []
+                }
+            };
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = false
+            };
+            var workspaceStore = new InMemoryWorkspaceStore();
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                new DependencyGraph(moduleResolver),
+                moduleResolver);
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                moduleResolver,
+                new HtmlTransformer(options),
+                workspaceStore);
+
+            await server.StartAsync(CancellationToken.None);
+            Assert.IsNotNull(server.ListeningUri);
+
+            await workspaceStore.UpsertDocumentAsync(
+                new DocumentSnapshot(documentPath, DocumentKind.Jazor, unsavedSource, version: "2"),
+                CancellationToken.None);
+
+            using var client = new HttpClient { BaseAddress = server.ListeningUri };
+            var response = await client.GetAsync("/Counter.jazor.map");
+            var content = await response.Content.ReadAsStringAsync();
+            using var sourceMap = JsonDocument.Parse(content);
+
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            Assert.AreEqual("Counter.jazor", sourceMap.RootElement.GetProperty("sources")[0].GetString());
+            Assert.AreEqual(unsavedSource, sourceMap.RootElement.GetProperty("sourcesContent")[0].GetString());
+            StringAssert.Contains(frontendCompiler.LastSfcText!, "Unsaved");
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public async Task DevHttpServer_ServesCompiledJazorModule()
     {
         var rootDirectory = CreateTemporaryDirectory();
