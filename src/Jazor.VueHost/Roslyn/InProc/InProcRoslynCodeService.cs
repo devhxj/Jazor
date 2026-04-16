@@ -44,14 +44,32 @@ internal sealed class InProcRoslynCodeService
         DocumentSnapshot document,
         LspPosition position,
         CancellationToken cancellationToken)
+        => GetHoverAsync(
+            document,
+            position,
+            openDocuments: null,
+            cancellationToken);
+
+    public ValueTask<LspHoverResult?> GetHoverAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        IReadOnlyList<DocumentSnapshot>? openDocuments,
+        CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (!TryCreateContext(document, position, openDocuments: null, cancellationToken, out var context))
+        if (!TryCreateContext(document, position, openDocuments, cancellationToken, out var context))
             return ValueTask.FromResult<LspHoverResult?>(null);
 
         var symbol = TryResolveSymbol(context);
         if (symbol is null)
+        {
+            if (TryCreateFallbackHover(context, cancellationToken, out var fallbackHover))
+            {
+                return ValueTask.FromResult<LspHoverResult?>(fallbackHover);
+            }
+
             return ValueTask.FromResult<LspHoverResult?>(null);
+        }
 
         var range = TryMapSpanToOriginalRange(context, GetPreferredSpan(context, symbol));
         return ValueTask.FromResult<LspHoverResult?>(new LspHoverResult
@@ -69,15 +87,38 @@ internal sealed class InProcRoslynCodeService
         DocumentSnapshot document,
         LspPosition position,
         CancellationToken cancellationToken)
+        => GetCompletionItemsAsync(
+            document,
+            position,
+            openDocuments: null,
+            cancellationToken);
+
+    public ValueTask<IReadOnlyList<LspCompletionItem>> GetCompletionItemsAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        IReadOnlyList<DocumentSnapshot>? openDocuments,
+        CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (!TryCreateContext(document, position, openDocuments: null, cancellationToken, out var context))
+        if (!TryCreateContext(document, position, openDocuments, cancellationToken, out var context))
             return ValueTask.FromResult<IReadOnlyList<LspCompletionItem>>(Array.Empty<LspCompletionItem>());
 
         var prefix = GetCompletionPrefix(context);
         var members = TryLookupMemberCompletion(context, prefix);
+        IReadOnlyList<LspCompletionItem> fallbackItems = Array.Empty<LspCompletionItem>();
         if (members.Length == 0)
+        {
             members = LookupVisibleSymbols(context, prefix);
+            if (members.Length == 0)
+            {
+                fallbackItems = LookupFallbackMemberCompletionItems(context, prefix, cancellationToken);
+            }
+        }
+
+        if (members.Length == 0 && fallbackItems.Count > 0)
+        {
+            return ValueTask.FromResult(fallbackItems);
+        }
 
         IReadOnlyList<LspCompletionItem> items = members
             .GroupBy(static symbol => symbol.Name, StringComparer.Ordinal)
@@ -150,7 +191,10 @@ internal sealed class InProcRoslynCodeService
 
         var symbol = TryResolveSymbol(context);
         if (symbol is null)
-            return ValueTask.FromResult<IReadOnlyList<LspLocation>>(Array.Empty<LspLocation>());
+        {
+            var fallbackDefinitions = GetFallbackDefinitionLocations(context, cancellationToken);
+            return ValueTask.FromResult<IReadOnlyList<LspLocation>>(fallbackDefinitions);
+        }
 
         var locations = new List<LspLocation>();
         foreach (var location in symbol.Locations)
@@ -159,6 +203,12 @@ internal sealed class InProcRoslynCodeService
                 continue;
 
             locations.Add(mappedLocation);
+        }
+
+        if (locations.Count == 0)
+        {
+            var fallbackDefinitions = GetFallbackDefinitionLocations(context, cancellationToken);
+            return ValueTask.FromResult<IReadOnlyList<LspLocation>>(fallbackDefinitions);
         }
 
         return ValueTask.FromResult<IReadOnlyList<LspLocation>>(DeduplicateLocations(locations));
@@ -224,7 +274,13 @@ internal sealed class InProcRoslynCodeService
 
         var symbol = TryResolveSymbol(context);
         if (symbol is null)
-            return ValueTask.FromResult<IReadOnlyList<LspLocation>>(Array.Empty<LspLocation>());
+        {
+            return ValueTask.FromResult<IReadOnlyList<LspLocation>>(
+                GetFallbackReferenceLocations(
+                    context,
+                    includeDeclaration,
+                    cancellationToken));
+        }
 
         var locations = new List<LspLocation>();
         foreach (var projectedDocument in context.ProjectedDocuments.Values)
@@ -257,7 +313,317 @@ internal sealed class InProcRoslynCodeService
             }
         }
 
+        if (locations.Count == 0)
+        {
+            return ValueTask.FromResult<IReadOnlyList<LspLocation>>(Array.Empty<LspLocation>());
+        }
+
         return ValueTask.FromResult<IReadOnlyList<LspLocation>>(DeduplicateLocations(locations));
+    }
+
+    private static IReadOnlyList<LspLocation> GetFallbackDefinitionLocations(
+        RoslynCodeContext context,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetFallbackMemberAccess(context, cancellationToken, out var memberAccess))
+        {
+            return Array.Empty<LspLocation>();
+        }
+
+        var declarations = FindFallbackMemberDeclarations(context, memberAccess, cancellationToken);
+        if (declarations.Count == 0)
+        {
+            return Array.Empty<LspLocation>();
+        }
+
+        var locations = new List<LspLocation>();
+        foreach (var declaration in declarations)
+        {
+            var range = TryMapSpanToOriginalRange(declaration.Document, declaration.IdentifierSpan);
+            if (range is null)
+            {
+                continue;
+            }
+
+            locations.Add(new LspLocation
+            {
+                Uri = LspProtocolHelpers.ToDocumentUri(declaration.Document.Document.DocumentPath),
+                Range = range
+            });
+        }
+
+        return DeduplicateLocations(locations);
+    }
+
+    private static IReadOnlyList<LspLocation> GetFallbackReferenceLocations(
+        RoslynCodeContext context,
+        bool includeDeclaration,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetFallbackMemberAccess(context, cancellationToken, out var memberAccess))
+        {
+            return Array.Empty<LspLocation>();
+        }
+
+        var declarations = FindFallbackMemberDeclarations(context, memberAccess, cancellationToken);
+        var declarationLocations = declarations
+            .Select(declaration => new FallbackMemberLocation(declaration.Document, declaration.IdentifierSpan, IsDeclaration: true))
+            .ToList();
+        var referenceLocations = FindFallbackMemberReferences(context, memberAccess, cancellationToken);
+
+        var locations = new List<LspLocation>();
+        foreach (var location in declarationLocations.Concat(referenceLocations))
+        {
+            if (!includeDeclaration && location.IsDeclaration)
+            {
+                continue;
+            }
+
+            var range = TryMapSpanToOriginalRange(location.Document, location.IdentifierSpan);
+            if (range is null)
+            {
+                continue;
+            }
+
+            locations.Add(new LspLocation
+            {
+                Uri = LspProtocolHelpers.ToDocumentUri(location.Document.Document.DocumentPath),
+                Range = range
+            });
+        }
+
+        return DeduplicateLocations(locations);
+    }
+
+    private static bool TryCreateFallbackHover(
+        RoslynCodeContext context,
+        CancellationToken cancellationToken,
+        out LspHoverResult hover)
+    {
+        hover = null!;
+        if (!TryGetFallbackMemberAccess(context, cancellationToken, out var memberAccess))
+        {
+            return false;
+        }
+
+        var declaration = FindFallbackMemberDeclarations(context, memberAccess, cancellationToken)
+            .FirstOrDefault();
+        if (declaration is null)
+        {
+            return false;
+        }
+
+        var range = TryMapSpanToOriginalRange(declaration.Document, declaration.IdentifierSpan);
+        var detail = string.IsNullOrWhiteSpace(declaration.Display)
+            ? $"{memberAccess.OwnerName}.{memberAccess.MemberName}"
+            : declaration.Display;
+        hover = new LspHoverResult
+        {
+            Contents = new LspMarkupContent
+            {
+                Kind = "markdown",
+                Value = $"```csharp\n{detail}\n```"
+            },
+            Range = range
+        };
+        return true;
+    }
+
+    private static IReadOnlyList<LspCompletionItem> LookupFallbackMemberCompletionItems(
+        RoslynCodeContext context,
+        string prefix,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetFallbackMemberAccess(context, cancellationToken, out var memberAccess))
+        {
+            return Array.Empty<LspCompletionItem>();
+        }
+
+        var declarations = FindFallbackMemberDeclarations(
+            context,
+            new FallbackMemberAccess(memberAccess.OwnerName, memberAccess.MemberName),
+            cancellationToken);
+        if (declarations.Count == 0)
+        {
+            declarations = FindFallbackMemberDeclarationsByPrefix(context, memberAccess.OwnerName, prefix, cancellationToken);
+        }
+
+        return declarations
+            .Where(declaration => string.IsNullOrEmpty(prefix)
+                || declaration.MemberName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            .GroupBy(static declaration => declaration.MemberName, StringComparer.Ordinal)
+            .Select(static group => group.First())
+            .Select(static declaration => new LspCompletionItem
+            {
+                Label = declaration.MemberName,
+                Kind = declaration.Kind switch
+                {
+                    SymbolKind.Method => 2,
+                    SymbolKind.Property => 10,
+                    SymbolKind.Field => 5,
+                    _ => 6
+                },
+                Detail = declaration.Display,
+                Documentation = "Fallback"
+            })
+            .ToArray();
+    }
+
+    private static IReadOnlyList<FallbackMemberDeclaration> FindFallbackMemberDeclarationsByPrefix(
+        RoslynCodeContext context,
+        string ownerName,
+        string memberPrefix,
+        CancellationToken cancellationToken)
+    {
+        return FindFallbackMemberDeclarationsCore(
+            context,
+            ownerName,
+            candidateName =>
+                string.IsNullOrWhiteSpace(memberPrefix)
+                || candidateName.StartsWith(memberPrefix, StringComparison.OrdinalIgnoreCase),
+            cancellationToken);
+    }
+
+    private static IReadOnlyList<FallbackMemberDeclaration> FindFallbackMemberDeclarations(
+        RoslynCodeContext context,
+        FallbackMemberAccess memberAccess,
+        CancellationToken cancellationToken)
+        => FindFallbackMemberDeclarationsCore(
+            context,
+            memberAccess.OwnerName,
+            candidateName => string.Equals(candidateName, memberAccess.MemberName, StringComparison.Ordinal),
+            cancellationToken);
+
+    private static IReadOnlyList<FallbackMemberDeclaration> FindFallbackMemberDeclarationsCore(
+        RoslynCodeContext context,
+        string ownerName,
+        Func<string, bool> memberNamePredicate,
+        CancellationToken cancellationToken)
+    {
+        var declarations = new List<FallbackMemberDeclaration>();
+        foreach (var projectedDocument in context.ProjectedDocuments.Values)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var root = projectedDocument.SyntaxTree.GetRoot(cancellationToken);
+            foreach (var typeDeclaration in root.DescendantNodes().OfType<TypeDeclarationSyntax>())
+            {
+                if (!string.Equals(typeDeclaration.Identifier.ValueText, ownerName, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                foreach (var member in typeDeclaration.Members)
+                {
+                    switch (member)
+                    {
+                        case FieldDeclarationSyntax fieldDeclaration:
+                            foreach (var variable in fieldDeclaration.Declaration.Variables)
+                            {
+                                if (!memberNamePredicate(variable.Identifier.ValueText))
+                                {
+                                    continue;
+                                }
+
+                                declarations.Add(new FallbackMemberDeclaration(
+                                    projectedDocument,
+                                    variable.Identifier.Span,
+                                    variable.Identifier.ValueText,
+                                    SymbolKind.Field,
+                                    $"{fieldDeclaration.Declaration.Type} {variable.Identifier.ValueText}"));
+                            }
+                            break;
+                        case PropertyDeclarationSyntax propertyDeclaration when memberNamePredicate(propertyDeclaration.Identifier.ValueText):
+                            declarations.Add(new FallbackMemberDeclaration(
+                                projectedDocument,
+                                propertyDeclaration.Identifier.Span,
+                                propertyDeclaration.Identifier.ValueText,
+                                SymbolKind.Property,
+                                $"{propertyDeclaration.Type} {propertyDeclaration.Identifier.ValueText}"));
+                            break;
+                        case MethodDeclarationSyntax methodDeclaration when memberNamePredicate(methodDeclaration.Identifier.ValueText):
+                            declarations.Add(new FallbackMemberDeclaration(
+                                projectedDocument,
+                                methodDeclaration.Identifier.Span,
+                                methodDeclaration.Identifier.ValueText,
+                                SymbolKind.Method,
+                                $"{methodDeclaration.ReturnType} {methodDeclaration.Identifier.ValueText}({string.Join(", ", methodDeclaration.ParameterList.Parameters.Select(static parameter => parameter.ToString()))})"));
+                            break;
+                    }
+                }
+            }
+        }
+
+        return declarations;
+    }
+
+    private static IReadOnlyList<FallbackMemberLocation> FindFallbackMemberReferences(
+        RoslynCodeContext context,
+        FallbackMemberAccess memberAccess,
+        CancellationToken cancellationToken)
+    {
+        var locations = new List<FallbackMemberLocation>();
+        foreach (var projectedDocument in context.ProjectedDocuments.Values)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var root = projectedDocument.SyntaxTree.GetRoot(cancellationToken);
+            foreach (var memberAccessSyntax in root.DescendantNodes().OfType<MemberAccessExpressionSyntax>())
+            {
+                if (memberAccessSyntax.Expression is not IdentifierNameSyntax ownerIdentifier
+                    || !string.Equals(ownerIdentifier.Identifier.ValueText, memberAccess.OwnerName, StringComparison.Ordinal)
+                    || !string.Equals(memberAccessSyntax.Name.Identifier.ValueText, memberAccess.MemberName, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                locations.Add(new FallbackMemberLocation(
+                    projectedDocument,
+                    memberAccessSyntax.Name.Identifier.Span,
+                    IsDeclaration: false));
+            }
+        }
+
+        return locations;
+    }
+
+    private static bool TryGetFallbackMemberAccess(
+        RoslynCodeContext context,
+        CancellationToken cancellationToken,
+        out FallbackMemberAccess memberAccess)
+    {
+        var projectedDocument = new ProjectedDocumentContext(
+            context.Document,
+            context.ProjectedText,
+            context.ProjectionMap,
+            context.SyntaxTree,
+            context.SemanticModel);
+        var root = projectedDocument.SyntaxTree.GetRoot(cancellationToken);
+        var maxOffset = Math.Max(0, projectedDocument.ProjectedText.Length - 1);
+        foreach (var offset in EnumerateCandidateOffsets(context.ProjectedOffset, maxOffset))
+        {
+            var token = root.FindToken(offset);
+            var memberAccessSyntax = token.Parent?.AncestorsAndSelf()
+                .OfType<MemberAccessExpressionSyntax>()
+                .FirstOrDefault(candidate => candidate.Name.Span.IntersectsWith(token.Span));
+            if (memberAccessSyntax is null
+                || memberAccessSyntax.Expression is not IdentifierNameSyntax ownerIdentifier)
+            {
+                continue;
+            }
+
+            var ownerName = ownerIdentifier.Identifier.ValueText;
+            var memberName = memberAccessSyntax.Name.Identifier.ValueText;
+            if (string.IsNullOrWhiteSpace(ownerName)
+                || string.IsNullOrWhiteSpace(memberName))
+            {
+                continue;
+            }
+
+            memberAccess = new FallbackMemberAccess(ownerName, memberName);
+            return true;
+        }
+
+        memberAccess = default;
+        return false;
     }
 
     public async ValueTask<LspWorkspaceEdit?> GetRenameAsync(
@@ -343,6 +709,17 @@ internal sealed class InProcRoslynCodeService
                 primaryDocument.ProjectedText,
                 out projectedPosition))
         {
+            if (document.DocumentKind == DocumentKind.CSharp
+                && PathsEqual(primaryDocument.Document.DocumentPath, document.DocumentPath))
+            {
+                // C# primary documents use whole-document identity projection. If a
+                // position lands on an edge case that fails strict segment lookup
+                // (for example EOF-adjacent offsets), fall back to direct identity
+                // mapping instead of dropping the entire request.
+                projectedPosition = originalPosition;
+                goto createCompilation;
+            }
+
             if (!TryCreateFallbackProjectedDocument(document, out var fallbackDocument)
                 || !fallbackDocument.ProjectionMap.TryMapToProjectedPosition(
                     document.Text,
@@ -366,6 +743,7 @@ internal sealed class InProcRoslynCodeService
             primaryDocument = fallbackDocument;
         }
 
+    createCompilation:
         var compilation = CSharpCompilation.Create(
             assemblyName: "__JazorVueHostRoslyn",
             syntaxTrees: projectedDocuments.Select(static projectedDocument => projectedDocument.SyntaxTree),
@@ -640,14 +1018,30 @@ internal sealed class InProcRoslynCodeService
     private static INamespaceOrTypeSymbol? TryResolveMemberCompletionContainer(
         RoslynCodeContext context,
         ExpressionSyntax expression)
+        => TryResolveMemberCompletionContainer(context.SemanticModel, expression);
+
+    private static INamespaceOrTypeSymbol? TryResolveMemberCompletionContainer(
+        SemanticModel semanticModel,
+        ExpressionSyntax expression)
     {
-        var type = context.SemanticModel.GetTypeInfo(expression).Type;
+        var type = semanticModel.GetTypeInfo(expression).Type;
         if (type is not null)
         {
             return type;
         }
 
-        return context.SemanticModel.GetSymbolInfo(expression).Symbol switch
+        var symbol = GetPrimarySymbol(semanticModel.GetSymbolInfo(expression));
+        if (symbol is null
+            && expression is IdentifierNameSyntax identifierName
+            && !string.IsNullOrWhiteSpace(identifierName.Identifier.ValueText))
+        {
+            symbol = semanticModel.LookupSymbols(
+                    expression.SpanStart,
+                    name: identifierName.Identifier.ValueText)
+                .FirstOrDefault();
+        }
+
+        return symbol switch
         {
             INamespaceOrTypeSymbol namespaceOrType => namespaceOrType,
             ILocalSymbol local => local.Type,
@@ -702,14 +1096,9 @@ internal sealed class InProcRoslynCodeService
     {
         var root = projectedDocument.SyntaxTree.GetRoot(cancellationToken);
         var maxOffset = Math.Max(0, projectedDocument.ProjectedText.Length - 1);
-        var candidateOffsets = new[]
-        {
-            Math.Max(0, Math.Min(projectedOffset, maxOffset)),
-            Math.Max(0, Math.Min(projectedOffset - 1, maxOffset))
-        };
         var seenTokens = new HashSet<TextSpan>();
 
-        foreach (var offset in candidateOffsets)
+        foreach (var offset in EnumerateCandidateOffsets(projectedOffset, maxOffset))
         {
             var token = root.FindToken(offset);
             if (!seenTokens.Add(token.Span))
@@ -733,8 +1122,9 @@ internal sealed class InProcRoslynCodeService
     {
         for (var node = token.Parent; node is not null; node = node.Parent)
         {
+            var symbolInfo = projectedDocument.SemanticModel.GetSymbolInfo(node, cancellationToken);
             var symbol = projectedDocument.SemanticModel.GetDeclaredSymbol(node, cancellationToken)
-                ?? projectedDocument.SemanticModel.GetSymbolInfo(node, cancellationToken).Symbol;
+                ?? GetPrimarySymbol(symbolInfo);
             if (symbol is not null)
                 return symbol;
         }
@@ -757,14 +1147,13 @@ internal sealed class InProcRoslynCodeService
         foreach (var node in token.Parent.AncestorsAndSelf())
         {
             var resolvedSymbol = node switch
-            {
+                {
                 IdentifierNameSyntax identifierName when identifierName.Identifier.Span.IntersectsWith(token.Span)
-                    => projectedDocument.SemanticModel.GetSymbolInfo(identifierName, cancellationToken).Symbol,
+                    => GetPrimarySymbol(projectedDocument.SemanticModel.GetSymbolInfo(identifierName, cancellationToken)),
                 GenericNameSyntax genericName when genericName.Identifier.Span.IntersectsWith(token.Span)
-                    => projectedDocument.SemanticModel.GetSymbolInfo(genericName, cancellationToken).Symbol,
+                    => GetPrimarySymbol(projectedDocument.SemanticModel.GetSymbolInfo(genericName, cancellationToken)),
                 MemberAccessExpressionSyntax memberAccess when memberAccess.Name.Span.IntersectsWith(token.Span)
-                    => projectedDocument.SemanticModel.GetSymbolInfo(memberAccess.Name, cancellationToken).Symbol
-                        ?? projectedDocument.SemanticModel.GetSymbolInfo(memberAccess, cancellationToken).Symbol,
+                    => TryResolveMemberAccessSymbol(projectedDocument, memberAccess, cancellationToken),
                 VariableDeclaratorSyntax variableDeclarator when variableDeclarator.Identifier.Span.IntersectsWith(token.Span)
                     => projectedDocument.SemanticModel.GetDeclaredSymbol(variableDeclarator, cancellationToken),
                 MethodDeclarationSyntax methodDeclaration when methodDeclaration.Identifier.Span.IntersectsWith(token.Span)
@@ -845,7 +1234,7 @@ internal sealed class InProcRoslynCodeService
         if (!location.IsInSource || location.SourceTree is null)
             return false;
 
-        if (!context.ProjectedDocuments.TryGetValue(location.SourceTree, out var projectedDocument))
+        if (!TryFindProjectedDocument(context, location.SourceTree, out var projectedDocument))
             return false;
 
         var range = TryMapSpanToOriginalRange(projectedDocument, location.SourceSpan);
@@ -858,6 +1247,32 @@ internal sealed class InProcRoslynCodeService
             Range = range
         };
         return true;
+    }
+
+    private static bool TryFindProjectedDocument(
+        RoslynCodeContext context,
+        SyntaxTree sourceTree,
+        out ProjectedDocumentContext projectedDocument)
+    {
+        if (context.ProjectedDocuments.TryGetValue(sourceTree, out projectedDocument!))
+        {
+            return true;
+        }
+
+        var sourceTreePath = GetComparablePath(sourceTree.FilePath);
+        foreach (var candidate in context.ProjectedDocuments.Values)
+        {
+            if (PathsEqual(candidate.SyntaxTree.FilePath, sourceTreePath)
+                || PathsEqual(candidate.Document.DocumentPath, sourceTreePath)
+                || PathsEqual(candidate.ProjectionMap.ProjectedDocumentPath, sourceTreePath))
+            {
+                projectedDocument = candidate;
+                return true;
+            }
+        }
+
+        projectedDocument = null!;
+        return false;
     }
 
     private IEnumerable<DocumentSnapshot> EnumerateRoslynSourceDocuments(
@@ -878,10 +1293,37 @@ internal sealed class InProcRoslynCodeService
         var trackedDocuments = openDocuments?
             .Where(static document => document.DocumentKind is DocumentKind.Jazor or DocumentKind.CSharp)
             .ToArray() ?? [];
+        var searchRoots = EnumerateRoslynSearchRoots(primaryDocument, trackedDocuments).ToArray();
+        foreach (var searchRoot in searchRoots)
+        {
+            var discoveredWorkspaceDocuments = 0;
+            foreach (var resolvedDocument in EnumerateWorkspaceRoslynDocuments(
+                         [searchRoot],
+                         trackedDocuments,
+                         seenPaths,
+                         cancellationToken))
+            {
+                discoveredWorkspaceDocuments++;
+                yield return resolvedDocument;
+            }
+
+            if (discoveredWorkspaceDocuments > 0)
+            {
+                yield break;
+            }
+        }
+    }
+
+    private IEnumerable<DocumentSnapshot> EnumerateWorkspaceRoslynDocuments(
+        IReadOnlyList<string> searchRoots,
+        IReadOnlyList<DocumentSnapshot> trackedDocuments,
+        ISet<string> seenPaths,
+        CancellationToken cancellationToken)
+    {
         foreach (var searchPattern in new[] { "*.cs", "*.jazor" })
         {
             foreach (var filePath in VueHostWorkspaceResolver.EnumerateWorkspaceFiles(
-                         EnumerateRoslynSearchRoots(primaryDocument, trackedDocuments),
+                         searchRoots,
                          searchPattern,
                          cancellationToken))
             {
@@ -1107,12 +1549,14 @@ internal sealed class InProcRoslynCodeService
     {
         symbol = null!;
         var range = TryMapSpanToOriginalRange(context, rangeSpan);
-        if (range is null)
+        var selectionRange = TryMapSpanToOriginalRange(context, selectionSpan);
+        if (range is null && selectionRange is null)
         {
             return false;
         }
 
-        var selectionRange = TryMapSpanToOriginalRange(context, selectionSpan) ?? range;
+        range ??= selectionRange;
+        selectionRange ??= range;
         symbol = new LspDocumentSymbol
         {
             Name = declaredSymbol?.Name ?? fallbackName,
@@ -1122,6 +1566,58 @@ internal sealed class InProcRoslynCodeService
             SelectionRange = selectionRange
         };
         return true;
+    }
+
+    private static IEnumerable<int> EnumerateCandidateOffsets(int projectedOffset, int maxOffset)
+    {
+        var seenOffsets = new HashSet<int>();
+        foreach (var candidate in new[]
+                 {
+                     projectedOffset,
+                     projectedOffset - 1,
+                     projectedOffset + 1,
+                     projectedOffset - 2,
+                     projectedOffset + 2,
+                     projectedOffset - 3,
+                     projectedOffset + 3
+                 })
+        {
+            var normalized = Math.Max(0, Math.Min(candidate, maxOffset));
+            if (seenOffsets.Add(normalized))
+            {
+                yield return normalized;
+            }
+        }
+    }
+
+    private static ISymbol? GetPrimarySymbol(SymbolInfo symbolInfo)
+        => symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault();
+
+    private static ISymbol? TryResolveMemberAccessSymbol(
+        ProjectedDocumentContext projectedDocument,
+        MemberAccessExpressionSyntax memberAccess,
+        CancellationToken cancellationToken)
+    {
+        var symbol = GetPrimarySymbol(projectedDocument.SemanticModel.GetSymbolInfo(memberAccess.Name, cancellationToken))
+            ?? GetPrimarySymbol(projectedDocument.SemanticModel.GetSymbolInfo(memberAccess, cancellationToken));
+        if (symbol is not null)
+        {
+            return symbol;
+        }
+
+        var container = TryResolveMemberCompletionContainer(projectedDocument.SemanticModel, memberAccess.Expression);
+        if (container is null)
+        {
+            return null;
+        }
+
+        var memberName = memberAccess.Name.Identifier.ValueText;
+        if (string.IsNullOrWhiteSpace(memberName))
+        {
+            return null;
+        }
+
+        return container.GetMembers(memberName).FirstOrDefault();
     }
 
     private static int MapDocumentSymbolKind(ISymbol? symbol, int fallbackKind)
@@ -1479,4 +1975,20 @@ internal sealed class InProcRoslynCodeService
         => OperatingSystem.IsWindows()
             ? StringComparer.OrdinalIgnoreCase
             : StringComparer.Ordinal;
+
+    private readonly record struct FallbackMemberAccess(
+        string OwnerName,
+        string MemberName);
+
+    private sealed record FallbackMemberDeclaration(
+        ProjectedDocumentContext Document,
+        TextSpan IdentifierSpan,
+        string MemberName,
+        SymbolKind Kind,
+        string Display);
+
+    private sealed record FallbackMemberLocation(
+        ProjectedDocumentContext Document,
+        TextSpan IdentifierSpan,
+        bool IsDeclaration);
 }

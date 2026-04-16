@@ -8,6 +8,8 @@ using Jazor.VueHost.Lsp.Coordination;
 using Jazor.VueHost.Lsp.Lanes;
 using Jazor.VueHost.Lsp.Routing;
 using Jazor.VueHost.Services;
+using Jazor.VueHost.VirtualDocuments.Mapping;
+using Jazor.VueHost.VirtualDocuments.Models;
 using Jazor.VueHost.VirtualDocuments.Registry;
 using Jazor.VueHost.Workspace;
 
@@ -79,6 +81,47 @@ public sealed class JazorVueHostFrontendLaneTests
         Assert.AreEqual("""{"version":3}""", result.SourceMap);
         Assert.AreEqual(".counter{color:red;}", result.StyleContent);
         Assert.IsTrue(result.SupportsHmr);
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_DenoFrontendHost_CompileSfcAsync_WithBundledWorker_ReturnsCompiledVueModule()
+    {
+        var tempDirectory = CreateTemporaryDirectory();
+
+        try
+        {
+            var documentPath = Path.Combine(tempDirectory, "App.vue");
+            const string sfcText = """
+                <template>
+                  <div class="app">Hello</div>
+                </template>
+                <style>
+                .app {
+                  color: red;
+                }
+                </style>
+                """;
+            await File.WriteAllTextAsync(documentPath, sfcText);
+
+            await using var host = CreateBundledDenoFrontendHost();
+
+            var result = await host.CompileSfcAsync(
+                documentPath,
+                sfcText,
+                Path.GetFileName(documentPath),
+                CancellationToken.None);
+
+            Assert.IsNotNull(result);
+            StringAssert.Contains(result.JsContent, "export default _sfc_main;");
+            StringAssert.Contains(result.CssContent!, "color: red");
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
     }
 
     [TestMethod]
@@ -934,6 +977,117 @@ public sealed class JazorVueHostFrontendLaneTests
         Assert.AreEqual(0, hover.Range!.Start.Line);
         Assert.AreEqual(1, hover.Range.Start.Character);
         Assert.AreEqual(9, hover.Range.End.Character);
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_FrontendLaneService_UsesPrimaryProjectedVueDocument_ForJazorTemplateRequests()
+    {
+        var denoHost = new FakeDenoFrontendHost
+        {
+            HoverResult = new LspHoverResult
+            {
+                Contents = new LspMarkupContent
+                {
+                    Kind = "markdown",
+                    Value = "projected"
+                },
+                Range = new LspRange
+                {
+                    Start = new LspPosition { Line = 0, Character = 1 },
+                    End = new LspPosition { Line = 0, Character = 9 }
+                }
+            }
+        };
+        var document = CreateDocument("""
+            <UserCard />
+            """);
+        var registry = new InMemoryVirtualDocumentRegistry();
+        var projectedPath = "virtual:" + document.DocumentPath + ".g.vue";
+        await registry.UpsertAsync(
+        [
+            new VirtualDocument(
+                new VirtualDocumentIdentity(
+                    document.DocumentPath,
+                    projectedPath,
+                    VirtualDocumentKind.Vue),
+                document.Text,
+                ProjectionMap.CreateWholeDocument(document.DocumentPath, projectedPath, document.Text.Length, document.Text.Length),
+                "1"),
+            new VirtualDocument(
+                new VirtualDocumentIdentity(
+                    document.DocumentPath,
+                    "virtual:" + document.DocumentPath + ".template-only.vue",
+                    VirtualDocumentKind.Vue),
+                "<template><FallbackOnly /></template>",
+                ProjectionMap.CreateWholeDocument(document.DocumentPath, "virtual:" + document.DocumentPath + ".template-only.vue", document.Text.Length, "<template><FallbackOnly /></template>".Length),
+                "1")
+        ],
+            CancellationToken.None);
+
+        var lane = CreateLane(denoHost, virtualDocumentRegistry: registry);
+
+        var hover = await lane.GetHoverAsync(
+            document,
+            new LspPosition { Line = 0, Character = 2 },
+            CreateTemplateTarget(document),
+            CancellationToken.None);
+
+        Assert.IsNotNull(hover);
+        Assert.IsNotNull(denoHost.LastDocument);
+        Assert.AreEqual(projectedPath, denoHost.LastDocument.DocumentPath);
+        Assert.AreEqual(DocumentKind.Vue, denoHost.LastDocument.DocumentKind);
+        Assert.AreEqual(document.Text, denoHost.LastDocument.Text);
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_FrontendLaneService_FallsBackToSource_WhenPrimaryProjectedVueDocumentIsMissing()
+    {
+        var denoHost = new FakeDenoFrontendHost
+        {
+            HoverResult = new LspHoverResult
+            {
+                Contents = new LspMarkupContent
+                {
+                    Kind = "markdown",
+                    Value = "fallback"
+                },
+                Range = new LspRange
+                {
+                    Start = new LspPosition { Line = 0, Character = 1 },
+                    End = new LspPosition { Line = 0, Character = 9 }
+                }
+            }
+        };
+        var document = CreateDocument("""
+            <UserCard />
+            """);
+        var registry = new InMemoryVirtualDocumentRegistry();
+        await registry.UpsertAsync(
+        [
+            new VirtualDocument(
+                new VirtualDocumentIdentity(
+                    document.DocumentPath,
+                    "virtual:" + document.DocumentPath + ".template-only.vue",
+                    VirtualDocumentKind.Vue),
+                "<template><FallbackOnly /></template>",
+                ProjectionMap.CreateWholeDocument(document.DocumentPath, "virtual:" + document.DocumentPath + ".template-only.vue", document.Text.Length, "<template><FallbackOnly /></template>".Length),
+                "1")
+        ],
+            CancellationToken.None);
+
+        var lane = CreateLane(denoHost, virtualDocumentRegistry: registry);
+
+        var hover = await lane.GetHoverAsync(
+            document,
+            new LspPosition { Line = 0, Character = 2 },
+            CreateTemplateTarget(document),
+            CancellationToken.None);
+
+        Assert.IsNotNull(hover);
+        Assert.IsNotNull(denoHost.LastDocument);
+        Assert.AreEqual(document.DocumentPath, denoHost.LastDocument.DocumentPath);
+        Assert.AreEqual(DocumentKind.Jazor, denoHost.LastDocument.DocumentKind);
+        Assert.AreEqual(document.Text, denoHost.LastDocument.Text);
     }
 
     [TestMethod]

@@ -21,11 +21,24 @@ internal sealed class MarkupBridgeFanoutCoordinator
         LspPosition position,
         IReadOnlyList<LspLocation> nativeLocations,
         CancellationToken cancellationToken)
+        => await CoordinateDefinitionAsync(
+            document,
+            position,
+            nativeLocations,
+            allowMarkupFallback: true,
+            cancellationToken);
+
+    public async ValueTask<IReadOnlyList<LspLocation>> CoordinateDefinitionAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        IReadOnlyList<LspLocation> nativeLocations,
+        bool allowMarkupFallback,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(document);
         ArgumentNullException.ThrowIfNull(nativeLocations);
 
-        if (nativeLocations.Count > 0)
+        if (nativeLocations.Count > 0 || !allowMarkupFallback)
         {
             return _resultAggregator.AggregateLocations(nativeLocations);
         }

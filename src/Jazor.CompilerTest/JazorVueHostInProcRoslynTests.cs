@@ -128,7 +128,7 @@ public sealed class JazorVueHostInProcRoslynTests
 
             var completionItems = await _service.GetCompletionItemsAsync(
                 consumer,
-                GetPosition(consumer.Text, "Cou", advance: "Cou".Length),
+                GetPosition(consumer.Text, "SharedState.Cou", advance: "SharedState.Cou".Length),
                 CancellationToken.None);
             var hover = await _service.GetHoverAsync(
                 new DocumentSnapshot(
@@ -136,7 +136,7 @@ public sealed class JazorVueHostInProcRoslynTests
                     consumer.DocumentKind,
                     consumer.Text.Replace("Cou", "Count"),
                     consumer.Version),
-                GetPosition(consumer.Text.Replace("Cou", "Count"), "Count", advance: 1),
+                GetPosition(consumer.Text.Replace("Cou", "Count"), "SharedState.Count", advance: "SharedState.".Length + 1),
                 CancellationToken.None);
 
             CollectionAssert.Contains(completionItems.Select(static item => item.Label).ToArray(), "Count");
@@ -488,7 +488,7 @@ public sealed class JazorVueHostInProcRoslynTests
                 }
                 """,
                 "1");
-            var usagePosition = GetPosition(consumer.Text, "Count", advance: 1);
+            var usagePosition = GetPosition(consumer.Text, "CounterLogic.Count", advance: "CounterLogic.".Length + 1);
 
             var definition = await _service.GetDefinitionAsync(
                 consumer,

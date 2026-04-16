@@ -5,7 +5,7 @@ namespace Jazor.VueHost.Lsp.Routing;
 internal sealed class LspLaneRouter : ILspLaneRouter
 {
     private static readonly IReadOnlyList<LaneKind> JazorOnly = [LaneKind.Jazor];
-    private static readonly IReadOnlyList<LaneKind> JazorSemanticTokenLanes = [LaneKind.Jazor, LaneKind.Volar, LaneKind.Roslyn];
+    private static readonly IReadOnlyList<LaneKind> JazorSemanticTokenLanes = [LaneKind.Volar, LaneKind.Roslyn];
     private static readonly IReadOnlyList<LaneKind> VolarOnly = [LaneKind.Volar];
     private static readonly IReadOnlyList<LaneKind> RoslynOnly = [LaneKind.Roslyn];
     private static readonly IReadOnlyList<LaneKind> DiagnosticLanes = [LaneKind.Jazor, LaneKind.Roslyn, LaneKind.Volar];

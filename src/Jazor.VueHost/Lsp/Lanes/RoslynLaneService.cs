@@ -36,7 +36,13 @@ internal sealed class RoslynLaneService : ILspLane
             return null;
         }
 
-        var inProcResult = await _inProcCodeService.GetHoverAsync(document, position, cancellationToken);
+        var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
+        var inProcResult = await _inProcCodeService.GetHoverAsync(document, position, openDocuments, cancellationToken);
+        if (inProcResult is null)
+        {
+            inProcResult = await _inProcCodeService.GetHoverAsync(document, position, cancellationToken);
+        }
+
         if (inProcResult is not null)
         {
             return inProcResult;
@@ -56,7 +62,13 @@ internal sealed class RoslynLaneService : ILspLane
             return Array.Empty<LspCompletionItem>();
         }
 
-        var inProcResult = await _inProcCodeService.GetCompletionItemsAsync(document, position, cancellationToken);
+        var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
+        var inProcResult = await _inProcCodeService.GetCompletionItemsAsync(document, position, openDocuments, cancellationToken);
+        if (inProcResult.Count == 0)
+        {
+            inProcResult = await _inProcCodeService.GetCompletionItemsAsync(document, position, cancellationToken);
+        }
+
         if (inProcResult.Count > 0)
         {
             return inProcResult;

@@ -165,7 +165,20 @@ internal sealed class VolarLaneService : ILspLane
         var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget: null, cancellationToken);
         var frontendContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
         var tokens = await TryGetDenoSemanticTokensAsync(frontendDocument.RequestDocument, frontendContext, cancellationToken);
-        return MapSemanticTokens(document, frontendDocument, tokens);
+        var mappedTokens = MapSemanticTokens(document, frontendDocument, tokens);
+        if (mappedTokens.Count > 0)
+        {
+            return mappedTokens;
+        }
+
+        if (document.DocumentKind == DocumentKind.Jazor
+            && frontendDocument.ProjectionMap is not null
+            && CanUseWorkspaceGraph())
+        {
+            return CreateConservativeProjectedTemplateSemanticTokens(document);
+        }
+
+        return mappedTokens;
     }
 
     private async ValueTask<IReadOnlyList<LspDocumentSymbol>> GetDocumentSymbolsCoreAsync(
@@ -525,16 +538,10 @@ internal sealed class VolarLaneService : ILspLane
         ProjectionTarget? projectionTarget,
         CancellationToken cancellationToken)
     {
-        if (sourceDocument.DocumentKind == DocumentKind.Jazor)
-        {
-            return new VolarRequestDocument(sourceDocument, ProjectionMap: null);
-        }
-
         if (_virtualDocumentRegistry is not null)
         {
             VirtualDocument? projectedDocument = null;
             if (projectionTarget is not null
-                && projectionTarget.IsProjected
                 && !string.IsNullOrWhiteSpace(projectionTarget.ProjectedDocumentPath))
             {
                 projectedDocument = await _virtualDocumentRegistry.GetByProjectedDocumentAsync(
@@ -544,7 +551,13 @@ internal sealed class VolarLaneService : ILspLane
 
             if (projectedDocument is null && sourceDocument.DocumentKind == DocumentKind.Jazor)
             {
-                projectedDocument = null;
+                var virtualDocuments = await _virtualDocumentRegistry.GetBySourceDocumentAsync(
+                    sourceDocument.DocumentPath,
+                    cancellationToken);
+                projectedDocument = FindPrimaryVueProjection(
+                    sourceDocument.DocumentPath,
+                    projectionTarget?.ProjectedDocumentPath,
+                    virtualDocuments);
             }
 
             if (projectedDocument is not null)
@@ -560,6 +573,34 @@ internal sealed class VolarLaneService : ILspLane
         }
 
         return new VolarRequestDocument(sourceDocument, ProjectionMap: null);
+    }
+
+    private static VirtualDocument? FindPrimaryVueProjection(
+        string sourceDocumentPath,
+        string? preferredProjectedPath,
+        IReadOnlyList<VirtualDocument> virtualDocuments)
+    {
+        if (!string.IsNullOrWhiteSpace(preferredProjectedPath))
+        {
+            var preferredDocument = virtualDocuments.FirstOrDefault(candidate =>
+                candidate.Identity.DocumentKind == VirtualDocumentKind.Vue
+                && string.Equals(
+                    NormalizePath(candidate.Identity.ProjectedDocumentPath),
+                    NormalizePath(preferredProjectedPath),
+                    StringComparison.OrdinalIgnoreCase));
+            if (preferredDocument is not null)
+            {
+                return preferredDocument;
+            }
+        }
+
+        var expectedProjectedPath = NormalizePath("virtual:" + sourceDocumentPath + ".g.vue");
+        return virtualDocuments.FirstOrDefault(candidate =>
+            candidate.Identity.DocumentKind == VirtualDocumentKind.Vue
+            && string.Equals(
+                NormalizePath(candidate.Identity.ProjectedDocumentPath),
+                expectedProjectedPath,
+                StringComparison.OrdinalIgnoreCase));
     }
 
     private static DocumentKind MapProjectedDocumentKind(VirtualDocumentKind documentKind)
@@ -875,6 +916,31 @@ internal sealed class VolarLaneService : ILspLane
     private bool CanUseWorkspaceGraph()
         => _denoVolarHost?.IsRunning == true;
 
+    private static IReadOnlyList<LspSemanticToken> CreateConservativeProjectedTemplateSemanticTokens(
+        DocumentSnapshot document)
+    {
+        var tokens = new List<LspSemanticToken>();
+        foreach (Match match in ComponentTagPattern.Matches(document.Text))
+        {
+            var group = match.Groups["name"];
+            if (!group.Success)
+            {
+                continue;
+            }
+
+            var position = LspProtocolHelpers.GetPosition(document.Text, group.Index);
+            tokens.Add(new LspSemanticToken
+            {
+                Line = position.Line,
+                Character = position.Character,
+                Length = group.Length,
+                TokenType = "class"
+            });
+        }
+
+        return tokens;
+    }
+
     private readonly record struct VolarRequestDocument(
         DocumentSnapshot RequestDocument,
         ProjectionMap? ProjectionMap)
@@ -884,4 +950,7 @@ internal sealed class VolarLaneService : ILspLane
                 ? sourcePosition
                 : projectedPosition ?? sourcePosition;
     }
+
+    private static string NormalizePath(string documentPath)
+        => documentPath.Replace('\\', '/');
 }

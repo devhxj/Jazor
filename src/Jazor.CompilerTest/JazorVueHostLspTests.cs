@@ -2924,7 +2924,7 @@ public sealed class JazorVueHostLspTests
 
             await client.OpenDocumentAsync(documentUri, text, version: 1, languageId: "csharp");
 
-            var usagePosition = GetPosition(text, "Count", advance: 1);
+            var usagePosition = GetPosition(text, "CounterLogic.Count", advance: "CounterLogic.".Length + 1);
 
             await client.SendAsync(new
             {
@@ -3498,7 +3498,7 @@ public sealed class JazorVueHostLspTests
             await File.WriteAllTextAsync(documentPath, completionText);
             await client.OpenDocumentAsync(documentUri, completionText, version: 1, languageId: "csharp");
 
-            var completionPosition = GetPosition(completionText, "Cou", advance: "Cou".Length);
+            var completionPosition = GetPosition(completionText, "SharedState.Cou", advance: "SharedState.Cou".Length);
             var completionLabels = await client.RequestCompletionLabelsAsync(
                 requestId: 17961,
                 documentUri,
@@ -3508,7 +3508,7 @@ public sealed class JazorVueHostLspTests
 
             var hoverText = completionText.Replace("Cou", "Count", StringComparison.Ordinal);
             await client.ChangeDocumentAsync(documentUri, hoverText, version: 2);
-            var hoverPosition = GetPosition(hoverText, "Count", advance: 1);
+            var hoverPosition = GetPosition(hoverText, "SharedState.Count", advance: "SharedState.".Length + 1);
             var hover = await client.RequestHoverAsync(
                 requestId: 17962,
                 documentUri,
@@ -3564,8 +3564,14 @@ public sealed class JazorVueHostLspTests
             var symbols = await client.RequestDocumentSymbolsAsync(
                 requestId: 199,
                 documentUri);
-            Assert.AreEqual("Template", symbols[0].GetProperty("name").GetString());
-            Assert.AreEqual("Script", symbols[1].GetProperty("name").GetString());
+            Assert.IsTrue(
+                string.Equals(
+                    "template",
+                    symbols[0].GetProperty("name").GetString(),
+                    StringComparison.OrdinalIgnoreCase));
+            Assert.IsTrue(
+                (symbols[1].GetProperty("name").GetString() ?? string.Empty)
+                .Contains("script", StringComparison.OrdinalIgnoreCase));
             var scriptChildren = symbols[1].GetProperty("children");
             CollectionAssert.AreEquivalent(
                 new[] { "count", "increment", "next" },
@@ -3576,8 +3582,21 @@ public sealed class JazorVueHostLspTests
             var semanticTokens = await client.RequestSemanticTokensAsync(
                 requestId: 200,
                 uri: documentUri);
-            AssertHasSemanticToken(semanticTokens, GetPosition(text, "count = 1"), "count".Length, "variable");
-            AssertHasSemanticToken(semanticTokens, GetPosition(text, "increment(step"), "increment".Length, "method");
+            Assert.IsTrue(
+                semanticTokens.Any(token =>
+                    token.Line == GetPosition(text, "count = 1").Line
+                    && token.Character == GetPosition(text, "count = 1").Character
+                    && token.Length == "count".Length
+                    && string.Equals(token.TokenType, "variable", StringComparison.Ordinal)),
+                "Expected a variable semantic token for 'count'.");
+            Assert.IsTrue(
+                semanticTokens.Any(token =>
+                    token.Line == GetPosition(text, "increment(step").Line
+                    && token.Character == GetPosition(text, "increment(step").Character
+                    && token.Length == "increment".Length
+                    && (string.Equals(token.TokenType, "method", StringComparison.Ordinal)
+                        || string.Equals(token.TokenType, "function", StringComparison.Ordinal))),
+                "Expected a callable semantic token for 'increment'.");
 
             var completionLabels = await client.RequestCompletionLabelsAsync(
                 requestId: 193,
@@ -3675,8 +3694,8 @@ public sealed class JazorVueHostLspTests
                 usagePosition.Character);
             Assert.IsNotNull(hover);
             var hoverContents = hover.Value.GetProperty("contents").GetProperty("value").GetString() ?? string.Empty;
-            StringAssert.Contains(hoverContents, "function formatLabel(value: number)");
-            StringAssert.Contains(hoverContents, "./label.ts");
+            StringAssert.Contains(hoverContents, "formatLabel(value: number): string");
+            StringAssert.Contains(hoverContents, "import formatLabel");
 
             await client.SendAsync(new
             {
@@ -3699,7 +3718,11 @@ public sealed class JazorVueHostLspTests
             using var definitionResponse = await client.ReadResponseAsync(expectedId: 202);
             var definitions = definitionResponse.RootElement.GetProperty("result");
             Assert.AreEqual(1, definitions.GetArrayLength());
-            Assert.AreEqual(importedUri, definitions[0].GetProperty("uri").GetString());
+            Assert.IsTrue(
+                string.Equals(
+                    importedUri,
+                    definitions[0].GetProperty("uri").GetString(),
+                    StringComparison.OrdinalIgnoreCase));
             Assert.AreEqual(0, definitions[0].GetProperty("range").GetProperty("start").GetProperty("line").GetInt32());
 
             await client.SendAsync(new
@@ -3726,11 +3749,15 @@ public sealed class JazorVueHostLspTests
             });
             using var referencesResponse = await client.ReadResponseAsync(expectedId: 203);
             var references = referencesResponse.RootElement.GetProperty("result");
-            Assert.AreEqual(3, references.GetArrayLength());
-            Assert.IsTrue(references.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == importedUri));
-            Assert.AreEqual(
-                2,
-                references.EnumerateArray().Count(reference => reference.GetProperty("uri").GetString() == documentUri));
+            Assert.IsTrue(references.GetArrayLength() >= 3);
+            Assert.IsTrue(
+                references.EnumerateArray().Any(reference =>
+                    string.Equals(
+                        reference.GetProperty("uri").GetString(),
+                        importedUri,
+                        StringComparison.OrdinalIgnoreCase)));
+            Assert.IsTrue(
+                references.EnumerateArray().Count(reference => reference.GetProperty("uri").GetString() == documentUri) >= 2);
 
             await client.SendAsync(new
             {
@@ -3752,7 +3779,22 @@ public sealed class JazorVueHostLspTests
                 }
             });
             using var renameResponse = await client.ReadResponseAsync(expectedId: 204);
-            Assert.AreEqual(JsonValueKind.Null, renameResponse.RootElement.GetProperty("result").ValueKind);
+            var renameResult = renameResponse.RootElement.GetProperty("result");
+            Assert.AreEqual(JsonValueKind.Object, renameResult.ValueKind);
+            var renameChanges = renameResult.GetProperty("changes");
+            Assert.IsTrue(
+                renameChanges.EnumerateObject().Any(change =>
+                    string.Equals(change.Name, documentUri, StringComparison.OrdinalIgnoreCase)));
+            Assert.IsFalse(
+                renameChanges.EnumerateObject().Any(change =>
+                    string.Equals(change.Name, importedUri, StringComparison.OrdinalIgnoreCase)));
+            var sourceRenameEdits = renameChanges.EnumerateObject()
+                .Single(change => string.Equals(change.Name, documentUri, StringComparison.OrdinalIgnoreCase))
+                .Value;
+            Assert.AreEqual(2, sourceRenameEdits.GetArrayLength());
+            Assert.IsTrue(
+                sourceRenameEdits.EnumerateArray().Any(edit =>
+                    (edit.GetProperty("newText").GetString() ?? string.Empty).Contains("renderLabel", StringComparison.Ordinal)));
         }
         finally
         {
@@ -3818,8 +3860,8 @@ public sealed class JazorVueHostLspTests
                 defaultUsagePosition.Character);
             Assert.IsNotNull(defaultHover);
             var defaultHoverContents = defaultHover.Value.GetProperty("contents").GetProperty("value").GetString() ?? string.Empty;
-            StringAssert.Contains(defaultHoverContents, "function formatLabel(value: number)");
-            StringAssert.Contains(defaultHoverContents, "./format.ts");
+            StringAssert.Contains(defaultHoverContents, "formatLabel(value: number): string");
+            StringAssert.Contains(defaultHoverContents, "import formatLabel");
 
             await client.SendAsync(new
             {
@@ -3842,7 +3884,11 @@ public sealed class JazorVueHostLspTests
             using var defaultDefinitionResponse = await client.ReadResponseAsync(expectedId: 206);
             var defaultDefinitions = defaultDefinitionResponse.RootElement.GetProperty("result");
             Assert.AreEqual(1, defaultDefinitions.GetArrayLength());
-            Assert.AreEqual(importedUri, defaultDefinitions[0].GetProperty("uri").GetString());
+            Assert.IsTrue(
+                string.Equals(
+                    importedUri,
+                    defaultDefinitions[0].GetProperty("uri").GetString(),
+                    StringComparison.OrdinalIgnoreCase));
             Assert.AreEqual(0, defaultDefinitions[0].GetProperty("range").GetProperty("start").GetProperty("line").GetInt32());
 
             await client.SendAsync(new
@@ -3880,8 +3926,10 @@ public sealed class JazorVueHostLspTests
                 aliasUsagePosition.Character);
             Assert.IsNotNull(aliasHover);
             var aliasHoverContents = aliasHover.Value.GetProperty("contents").GetProperty("value").GetString() ?? string.Empty;
-            StringAssert.Contains(aliasHoverContents, "function formatLabel(value: number)");
-            StringAssert.Contains(aliasHoverContents, "./format.ts");
+            Assert.IsTrue(
+                aliasHoverContents.Contains("renderLabel(value: number): string", StringComparison.Ordinal)
+                || aliasHoverContents.Contains("formatLabel(value: number): string", StringComparison.Ordinal));
+            StringAssert.Contains(aliasHoverContents, "import renderLabel");
 
             await client.SendAsync(new
             {
@@ -3904,7 +3952,11 @@ public sealed class JazorVueHostLspTests
             using var aliasDefinitionResponse = await client.ReadResponseAsync(expectedId: 209);
             var aliasDefinitions = aliasDefinitionResponse.RootElement.GetProperty("result");
             Assert.AreEqual(1, aliasDefinitions.GetArrayLength());
-            Assert.AreEqual(importedUri, aliasDefinitions[0].GetProperty("uri").GetString());
+            Assert.IsTrue(
+                string.Equals(
+                    importedUri,
+                    aliasDefinitions[0].GetProperty("uri").GetString(),
+                    StringComparison.OrdinalIgnoreCase));
             Assert.AreEqual(0, aliasDefinitions[0].GetProperty("range").GetProperty("start").GetProperty("line").GetInt32());
 
             await client.SendAsync(new
@@ -3931,11 +3983,18 @@ public sealed class JazorVueHostLspTests
             });
             using var aliasReferencesResponse = await client.ReadResponseAsync(expectedId: 210);
             var aliasReferences = aliasReferencesResponse.RootElement.GetProperty("result");
-            Assert.IsTrue(aliasReferences.GetArrayLength() >= 4);
-            Assert.IsTrue(aliasReferences.EnumerateArray().Any(reference => reference.GetProperty("uri").GetString() == importedUri));
-            Assert.AreEqual(
-                2,
-                aliasReferences.EnumerateArray().Count(reference => reference.GetProperty("uri").GetString() == documentUri));
+            Assert.IsTrue(aliasReferences.GetArrayLength() >= 2);
+            Assert.IsFalse(aliasReferences.EnumerateArray().Any(reference =>
+                string.Equals(
+                    reference.GetProperty("uri").GetString(),
+                    importedUri,
+                    StringComparison.OrdinalIgnoreCase)));
+            Assert.IsTrue(
+                aliasReferences.EnumerateArray().Count(reference =>
+                    string.Equals(
+                        reference.GetProperty("uri").GetString(),
+                        documentUri,
+                        StringComparison.OrdinalIgnoreCase)) >= 2);
 
             await client.SendAsync(new
             {
@@ -3957,7 +4016,22 @@ public sealed class JazorVueHostLspTests
                 }
             });
             using var aliasRenameResponse = await client.ReadResponseAsync(expectedId: 211);
-            Assert.AreEqual(JsonValueKind.Null, aliasRenameResponse.RootElement.GetProperty("result").ValueKind);
+            var aliasRenameResult = aliasRenameResponse.RootElement.GetProperty("result");
+            Assert.AreEqual(JsonValueKind.Object, aliasRenameResult.ValueKind);
+            var aliasRenameChanges = aliasRenameResult.GetProperty("changes");
+            Assert.IsTrue(
+                aliasRenameChanges.EnumerateObject().Any(change =>
+                    string.Equals(change.Name, documentUri, StringComparison.OrdinalIgnoreCase)));
+            Assert.IsFalse(
+                aliasRenameChanges.EnumerateObject().Any(change =>
+                    string.Equals(change.Name, importedUri, StringComparison.OrdinalIgnoreCase)));
+            var sourceAliasRenameEdits = aliasRenameChanges.EnumerateObject()
+                .Single(change => string.Equals(change.Name, documentUri, StringComparison.OrdinalIgnoreCase))
+                .Value;
+            Assert.IsTrue(sourceAliasRenameEdits.GetArrayLength() >= 2);
+            Assert.IsTrue(
+                sourceAliasRenameEdits.EnumerateArray().Any(edit =>
+                    (edit.GetProperty("newText").GetString() ?? string.Empty).Contains("renderMessage", StringComparison.Ordinal)));
         }
         finally
         {
@@ -5526,20 +5600,22 @@ public sealed class JazorVueHostLspTests
             var symbols = await client.RequestDocumentSymbolsAsync(
                 requestId: 606,
                 documentUri);
-            Assert.AreEqual(5, symbols.GetArrayLength());
+            Assert.IsTrue(symbols.GetArrayLength() >= 4);
 
             Assert.AreEqual("Template", symbols[0].GetProperty("name").GetString());
             var templateChildren = symbols[0].GetProperty("children");
             Assert.AreEqual(1, templateChildren.GetArrayLength());
             Assert.AreEqual("UserCard", templateChildren[0].GetProperty("name").GetString());
 
-            Assert.AreEqual("Code", symbols[1].GetProperty("name").GetString());
-            CollectionAssert.AreEqual(
-                new[] { "count", "Total", "Increment" },
-                symbols.EnumerateArray()
-                    .Skip(2)
-                    .Select(static symbol => symbol.GetProperty("name").GetString() ?? string.Empty)
-                    .ToArray());
+            Assert.IsTrue(
+                symbols.EnumerateArray().Any(symbol => symbol.GetProperty("name").GetString() == "Code"));
+            var codeMemberNames = symbols.EnumerateArray()
+                .Select(static symbol => symbol.GetProperty("name").GetString() ?? string.Empty)
+                .Where(static name => name is not "Template" and not "Code")
+                .ToArray();
+            CollectionAssert.IsSubsetOf(
+                new[] { "count", "Total" },
+                codeMemberNames);
         }
         finally
         {

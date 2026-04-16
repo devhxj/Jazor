@@ -177,10 +177,9 @@ internal sealed class LspSession
 
         foreach (var lane in GetOrderedLanes(projectionTarget))
         {
-            // Projection metadata is available on the target, but the current lane
-            // implementations still operate on the source snapshot rather than the
-            // virtual projected documents. Keep source coordinates on the request
-            // path until a lane consumes projected text end-to-end.
+            // Template requests still enter lanes with the source snapshot, but the
+            // Volar lane now resolves the real projected `.g.vue` document from the
+            // target metadata when that projection is available.
             var hover = await lane.GetHoverAsync(document, parameters.Position, projectionTarget, cancellationToken);
             if (hover is not null)
             {
@@ -276,6 +275,8 @@ internal sealed class LspSession
                 document,
                 parameters.Position,
                 locations,
+                allowMarkupFallback: !(document.DocumentKind == DocumentKind.Jazor
+                    && projectionTarget.RegionKind == DocumentRegionKind.Template),
                 cancellationToken));
     }
 
@@ -509,7 +510,7 @@ internal sealed class LspSession
             return;
         }
 
-        var virtualDocuments = await _projectionService.ProjectCodeAsync(document, cancellationToken);
+        var virtualDocuments = await _projectionService.ProjectAsync(document, cancellationToken);
         await _virtualDocumentRegistry.UpsertAsync(virtualDocuments, cancellationToken);
     }
 

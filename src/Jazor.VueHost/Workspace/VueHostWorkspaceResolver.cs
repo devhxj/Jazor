@@ -607,6 +607,11 @@ internal static class VueHostWorkspaceResolver
                 continue;
             }
 
+            if (IsSystemTempRoot(normalizedRoot))
+            {
+                continue;
+            }
+
             var cacheKey = CreateCacheKey(normalizedRoot, searchPattern);
             if (!WorkspaceFileCache.TryGetValue(cacheKey, out var files))
             {
@@ -790,6 +795,11 @@ internal static class VueHostWorkspaceResolver
                 yield break;
             }
 
+            if (depth > 0 && IsTooBroadTempAncestor(current))
+            {
+                yield break;
+            }
+
             yield return current;
             depth++;
 
@@ -879,6 +889,40 @@ internal static class VueHostWorkspaceResolver
 
     private static string CreateCacheKey(string searchRoot, string searchPattern)
         => NormalizePath(searchRoot) + "|" + searchPattern;
+
+    private static bool IsSystemTempRoot(string normalizedRoot)
+    {
+        var normalizedSystemTemp = NormalizePath(Path.GetTempPath())
+            .TrimEnd('/', '\\');
+        var comparableRoot = normalizedRoot.TrimEnd('/', '\\');
+        return string.Equals(
+                   comparableRoot,
+                   normalizedSystemTemp,
+                   StringComparison.OrdinalIgnoreCase)
+               || normalizedSystemTemp.StartsWith(
+                   comparableRoot + "/",
+                   StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsTooBroadTempAncestor(string directoryPath)
+    {
+        var normalizedSystemTemp = NormalizePath(Path.GetTempPath()).TrimEnd('/', '\\');
+        var normalizedDirectory = NormalizePath(directoryPath).TrimEnd('/', '\\');
+        if (string.IsNullOrWhiteSpace(normalizedSystemTemp)
+            || string.IsNullOrWhiteSpace(normalizedDirectory))
+        {
+            return false;
+        }
+
+        if (!normalizedDirectory.StartsWith(normalizedSystemTemp + "/", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var relativePath = normalizedDirectory[(normalizedSystemTemp.Length + 1)..];
+        var segmentCount = relativePath.Split('/', StringSplitOptions.RemoveEmptyEntries).Length;
+        return segmentCount <= 1;
+    }
 
     private static bool PathMatchesOrContains(string left, string right)
         => string.Equals(left, right, StringComparison.OrdinalIgnoreCase)

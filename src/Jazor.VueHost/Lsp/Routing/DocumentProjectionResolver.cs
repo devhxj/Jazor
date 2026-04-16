@@ -65,9 +65,24 @@ internal sealed class DocumentProjectionResolver
         var regionKind = _classifier.Classify(document.Text, offset);
         if (regionKind == DocumentRegionKind.Template)
         {
-            // `.jazor` template requests still flow into the frontend coordination lane,
-            // but they execute against the source document plus host-coordinated metadata
-            // rather than a projected virtual `.g.vue` file.
+            var virtualDocuments = await _virtualDocumentRegistry.GetBySourceDocumentAsync(document.DocumentPath, cancellationToken);
+            var projectedDocument = FindPrimaryVueProjection(
+                document.DocumentPath,
+                virtualDocuments);
+
+            if (projectedDocument is not null)
+            {
+                var projectedPosition = TryMapPosition(projectedDocument.ProjectionMap, document.Text, position, projectedDocument.Text);
+                return new ProjectionTarget(
+                    LaneKind.Volar,
+                    regionKind,
+                    projectedDocument.Identity.ProjectedDocumentPath,
+                    projectedDocument.Identity.SourceDocumentPath,
+                    projectedPosition ?? position,
+                    null,
+                    IsProjected: projectedPosition is not null);
+            }
+
             return new ProjectionTarget(
                 LaneKind.Volar,
                 regionKind,
@@ -132,4 +147,20 @@ internal sealed class DocumentProjectionResolver
 
         return LspProtocolHelpers.GetPosition(projectedText, projectedOffset);
     }
+
+    private static VirtualDocument? FindPrimaryVueProjection(
+        string sourceDocumentPath,
+        IReadOnlyList<VirtualDocument> virtualDocuments)
+    {
+        var expectedProjectedPath = NormalizePath("virtual:" + sourceDocumentPath + ".g.vue");
+        return virtualDocuments.FirstOrDefault(candidate =>
+            candidate.Identity.DocumentKind == VirtualDocumentKind.Vue
+            && string.Equals(
+                NormalizePath(candidate.Identity.ProjectedDocumentPath),
+                expectedProjectedPath,
+                StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static string NormalizePath(string documentPath)
+        => documentPath.Replace('\\', '/');
 }

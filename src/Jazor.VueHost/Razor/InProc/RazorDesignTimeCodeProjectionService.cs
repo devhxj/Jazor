@@ -1,8 +1,11 @@
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Components;
+using Jazor.Vue;
 using Jazor.VueContracts.Protocol;
 using Jazor.VueHost.Razor.Toolset;
 using Jazor.VueHost.VirtualDocuments.Mapping;
@@ -54,16 +57,28 @@ internal sealed class RazorDesignTimeCodeProjectionService
                     out var sourceMappings)
                 || string.IsNullOrWhiteSpace(generatedCode))
             {
-                projection = default;
-                return false;
+                return TryCreateFallbackProjection(document, out projection);
             }
 
             var projectedDocumentPath = "virtual:" + document.DocumentPath + ".razor.g.cs";
             var projectionMap = CreateProjectionMap(document.DocumentPath, projectedDocumentPath, sourceMappings);
             if (projectionMap.Segments.Count == 0)
             {
-                projection = default;
-                return false;
+                // Some design-time Razor toolchains produce generated source while omitting
+                // granular source mappings. Prefer a code-block segment fallback so Roslyn
+                // can still map @code operations accurately; only then degrade to whole-doc.
+                if (!TryCreateCodeBlockFallbackProjectionMap(
+                        document,
+                        projectedDocumentPath,
+                        generatedCode,
+                        out projectionMap))
+                {
+                    projectionMap = ProjectionMap.CreateWholeDocument(
+                        document.DocumentPath,
+                        projectedDocumentPath,
+                        document.Text.Length,
+                        generatedCode.Length);
+                }
             }
 
             projection = new RazorDesignTimeCodeProjection(
@@ -74,8 +89,7 @@ internal sealed class RazorDesignTimeCodeProjectionService
         }
         catch
         {
-            projection = default;
-            return false;
+            return TryCreateFallbackProjection(document, out projection);
         }
     }
 
@@ -123,6 +137,107 @@ internal sealed class RazorDesignTimeCodeProjectionService
             .ToArray();
 
         return new ProjectionMap(sourceDocumentPath, projectedDocumentPath, segments);
+    }
+
+    private static bool TryCreateCodeBlockFallbackProjectionMap(
+        DocumentSnapshot document,
+        string projectedDocumentPath,
+        string generatedCode,
+        out ProjectionMap projectionMap)
+    {
+        var parsed = new JazorVueParser().Parse(document.DocumentPath, document.Text);
+        if (parsed.CodeStartIndex < 0
+            || parsed.CodeLength <= 0
+            || string.IsNullOrWhiteSpace(parsed.Code))
+        {
+            projectionMap = default!;
+            return false;
+        }
+
+        var projectedCodeStart = generatedCode.IndexOf(parsed.Code, StringComparison.Ordinal);
+        if (projectedCodeStart < 0)
+        {
+            projectionMap = default!;
+            return false;
+        }
+
+        projectionMap = new ProjectionMap(
+            document.DocumentPath,
+            projectedDocumentPath,
+            [
+                new ProjectionSegment(
+                    parsed.CodeStartIndex,
+                    parsed.Code.Length,
+                    projectedCodeStart,
+                    parsed.Code.Length)
+            ]);
+        return true;
+    }
+
+    private static bool TryCreateFallbackProjection(
+        DocumentSnapshot document,
+        out RazorDesignTimeCodeProjection projection)
+    {
+        var parsed = new JazorVueParser().Parse(document.DocumentPath, document.Text);
+        if (parsed.CodeStartIndex < 0
+            || parsed.CodeLength <= 0
+            || string.IsNullOrWhiteSpace(parsed.Code))
+        {
+            projection = default;
+            return false;
+        }
+
+        var projectedDocumentPath = "virtual:" + document.DocumentPath + ".razor.g.cs";
+        var generatedCode = BuildFallbackProjectedSource(document.DocumentPath, parsed);
+        if (!TryCreateCodeBlockFallbackProjectionMap(document, projectedDocumentPath, generatedCode, out var projectionMap))
+        {
+            projectionMap = ProjectionMap.CreateWholeDocument(
+                document.DocumentPath,
+                projectedDocumentPath,
+                document.Text.Length,
+                generatedCode.Length);
+        }
+
+        projection = new RazorDesignTimeCodeProjection(
+            projectedDocumentPath,
+            generatedCode,
+            projectionMap);
+        return true;
+    }
+
+    private static string BuildFallbackProjectedSource(string documentPath, JazorVueDocument parsed)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("using System;");
+        builder.AppendLine("using System.Collections.Generic;");
+        builder.AppendLine("using System.Linq;");
+        builder.AppendLine("using System.Threading.Tasks;");
+        builder.AppendLine("#nullable enable");
+        builder.Append("namespace ")
+            .Append(ProjectionNamespace)
+            .AppendLine(";");
+        builder.Append("public partial class ")
+            .Append(CreateFallbackContainerName(documentPath))
+            .AppendLine();
+        builder.AppendLine("{");
+        builder.AppendLine(parsed.Code);
+        builder.AppendLine("}");
+        return builder.ToString();
+    }
+
+    private static string CreateFallbackContainerName(string documentPath)
+    {
+        var fileName = Path.GetFileNameWithoutExtension(documentPath);
+        var sanitized = string.Concat((fileName ?? "Document").Select(character =>
+            char.IsLetterOrDigit(character) || character == '_' ? character : '_'));
+        if (string.IsNullOrWhiteSpace(sanitized) || !char.IsLetter(sanitized[0]) && sanitized[0] != '_')
+        {
+            sanitized = "_" + sanitized;
+        }
+
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(documentPath));
+        var hash = Convert.ToHexString(bytes.AsSpan(0, 4));
+        return "__JazorDocument_" + sanitized + "_" + hash;
     }
 
     private static bool TryGetGeneratedCodeDocument(

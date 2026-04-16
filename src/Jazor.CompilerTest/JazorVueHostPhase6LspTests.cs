@@ -5,6 +5,10 @@ using Jazor.VueHost.Lsp.Aggregation;
 using Jazor.VueHost.Lsp.Coordination;
 using Jazor.VueHost.Lsp.Lanes;
 using Jazor.VueHost.Lsp.Routing;
+using Jazor.VueHost.Roslyn.InProc;
+using Jazor.VueHost.VirtualDocuments.Mapping;
+using Jazor.VueHost.VirtualDocuments.Models;
+using Jazor.VueHost.VirtualDocuments.Registry;
 using Jazor.VueHost.Workspace;
 
 namespace Jazor.CompilerTest;
@@ -84,6 +88,273 @@ public sealed class JazorVueHostPhase6LspTests
         var descriptor = LspSemanticTokenLegend.CreateDescriptor();
         Assert.AreEqual(LspSemanticTokenLegend.TokenTypes.Length, descriptor.TokenTypes.Length);
         Assert.AreEqual(LspSemanticTokenLegend.TokenModifiers.Length, descriptor.TokenModifiers.Length);
+    }
+
+    #endregion
+
+    #region Template Projection Routing
+
+    [TestMethod]
+    public async Task DocumentProjectionResolver_ResolveAsync_UsesProjectedVueDocumentForJazorTemplateRequests()
+    {
+        var sourcePath = Path.Combine(Path.GetTempPath(), $"projection-{Guid.NewGuid():N}.jazor");
+        var sourceText =
+            """
+            <template>
+              <UserCard />
+            </template>
+            """;
+        var projectedText =
+            """
+            <template>
+              <UserCard />
+            </template>
+            """;
+
+        var registry = new InMemoryVirtualDocumentRegistry();
+        await registry.UpsertAsync(
+        [
+            new VirtualDocument(
+                new VirtualDocumentIdentity(
+                    sourcePath,
+                    "virtual:" + sourcePath + ".g.vue",
+                    VirtualDocumentKind.Vue),
+                projectedText,
+                ProjectionMap.CreateWholeDocument(sourcePath, "virtual:" + sourcePath + ".g.vue", sourceText.Length, projectedText.Length),
+                version: "1")
+        ],
+            CancellationToken.None);
+
+        var resolver = new DocumentProjectionResolver(new DocumentRegionClassifier(), registry);
+        var target = await resolver.ResolveAsync(
+            new DocumentSnapshot(sourcePath, DocumentKind.Jazor, sourceText, "1"),
+            new LspPosition { Line = 1, Character = 3 },
+            CancellationToken.None);
+
+        Assert.AreEqual(LaneKind.Volar, target.LaneKind);
+        Assert.AreEqual(DocumentRegionKind.Template, target.RegionKind);
+        StringAssert.EndsWith(target.ProjectedDocumentPath, ".g.vue", StringComparison.Ordinal);
+        Assert.IsTrue(target.IsProjected);
+    }
+
+    [TestMethod]
+    public async Task DocumentProjectionResolver_ResolveAsync_FallsBackWhenPrimaryVueProjectionIsMissing()
+    {
+        var sourcePath = Path.Combine(Path.GetTempPath(), $"projection-{Guid.NewGuid():N}.jazor");
+        var sourceText =
+            """
+            <template>
+              <UserCard />
+            </template>
+            """;
+        var registry = new InMemoryVirtualDocumentRegistry();
+        await registry.UpsertAsync(
+        [
+            new VirtualDocument(
+                new VirtualDocumentIdentity(
+                    sourcePath,
+                    "virtual:" + sourcePath + ".template-only.vue",
+                    VirtualDocumentKind.Vue),
+                sourceText,
+                ProjectionMap.CreateWholeDocument(sourcePath, "virtual:" + sourcePath + ".template-only.vue", sourceText.Length, sourceText.Length),
+                version: "1")
+        ],
+            CancellationToken.None);
+
+        var resolver = new DocumentProjectionResolver(new DocumentRegionClassifier(), registry);
+        var target = await resolver.ResolveAsync(
+            new DocumentSnapshot(sourcePath, DocumentKind.Jazor, sourceText, "1"),
+            new LspPosition { Line = 1, Character = 3 },
+            CancellationToken.None);
+
+        Assert.AreEqual(LaneKind.Volar, target.LaneKind);
+        Assert.AreEqual(DocumentRegionKind.Template, target.RegionKind);
+        Assert.IsFalse(target.IsProjected);
+        Assert.AreEqual(sourcePath, target.ProjectedDocumentPath);
+        Assert.AreEqual(sourcePath, target.MappingId);
+    }
+
+    [TestMethod]
+    public void LspLaneRouter_GetSemanticTokenLanes_ForJazor_UsesFrontendAndRoslynOnly()
+    {
+        var router = new LspLaneRouter();
+        var lanes = router.GetSemanticTokenLanes(
+            new DocumentSnapshot("Counter.jazor", DocumentKind.Jazor, "<UserCard />", "1"));
+
+        CollectionAssert.AreEqual(new[] { LaneKind.Volar, LaneKind.Roslyn }, lanes.ToArray());
+    }
+
+    #endregion
+
+    #region Roslyn Unopened Disk Docs
+
+    [TestMethod]
+    public async Task InProcRoslynCodeService_Definition_ResolvesUnopenedDiskBackedCSharpDeclaration()
+    {
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "roslyn-unopened-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDirectory);
+
+        try
+        {
+            var declarationPath = Path.Combine(tempDirectory, "CounterLogic.cs");
+            await File.WriteAllTextAsync(
+                declarationPath,
+                """
+                internal static class CounterLogic
+                {
+                    public static int Count = 1;
+                }
+                """);
+
+            var consumerPath = Path.Combine(tempDirectory, "CounterLogicConsumer.cs");
+            var consumerText =
+                """
+                internal static class CounterLogicConsumer
+                {
+                    public static int Read()
+                    {
+                        return CounterLogic.Count;
+                    }
+                }
+                """;
+            await File.WriteAllTextAsync(consumerPath, consumerText);
+
+            var service = new InProcRoslynCodeService();
+            var consumer = new DocumentSnapshot(
+                consumerPath,
+                DocumentKind.CSharp,
+                consumerText,
+                version: "1");
+
+            var discoveredSourceDocuments = await service.GetSourceDocumentsAsync(
+                consumer,
+                openDocuments: null,
+                cancellationToken: CancellationToken.None);
+            Assert.IsTrue(discoveredSourceDocuments.Any(document =>
+                string.Equals(
+                    VueHostWorkspaceResolver.NormalizePath(document.DocumentPath),
+                    VueHostWorkspaceResolver.NormalizePath(declarationPath),
+                    StringComparison.OrdinalIgnoreCase)),
+                "Expected source discovery to include unopened CounterLogic.cs.");
+
+            var markerStartOffset = consumerText.IndexOf("CounterLogic.Count", StringComparison.Ordinal) + "CounterLogic.".Length;
+            var probeResults = new List<string>();
+            IReadOnlyList<LspLocation> definitions = Array.Empty<LspLocation>();
+            for (var delta = -1; delta <= 6; delta++)
+            {
+                var probeOffset = markerStartOffset + delta;
+                if (probeOffset < 0 || probeOffset > consumerText.Length)
+                {
+                    continue;
+                }
+
+                var probePosition = LspProtocolHelpers.GetPosition(consumerText, probeOffset);
+                var probeDefinitions = await service.GetDefinitionAsync(
+                    consumer,
+                    probePosition,
+                    cancellationToken: CancellationToken.None);
+                probeResults.Add($"delta={delta},defs={probeDefinitions.Count}");
+                if (probeDefinitions.Count > 0)
+                {
+                    definitions = probeDefinitions;
+                    break;
+                }
+            }
+            var diagnostics = await service.GetDiagnosticsAsync(
+                consumer,
+                cancellationToken: CancellationToken.None);
+
+            Assert.IsTrue(
+                definitions.Count > 0,
+                "Expected at least one definition for CounterLogic.Count. Diagnostics: "
+                + string.Join(" | ", diagnostics.Select(static diagnostic => diagnostic.Message))
+                + " ; probes: "
+                + string.Join(", ", probeResults));
+            Assert.IsTrue(definitions.Any(location =>
+                string.Equals(
+                    VueHostWorkspaceResolver.NormalizePath(LspProtocolHelpers.ToDocumentPath(location.Uri)),
+                    VueHostWorkspaceResolver.NormalizePath(declarationPath),
+                    StringComparison.OrdinalIgnoreCase)));
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task InProcRoslynCodeService_Definition_ResolvesUnopenedDiskBackedDeclaration_WithForwardSlashPathAndOpenDocuments()
+    {
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "roslyn-unopened-forward-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDirectory);
+
+        try
+        {
+            var declarationPath = Path.Combine(tempDirectory, "SharedState.cs");
+            await File.WriteAllTextAsync(
+                declarationPath,
+                """
+                namespace Demo;
+
+                internal static class SharedState
+                {
+                    internal static int Count = 1;
+                }
+                """);
+
+            var consumerDiskPath = Path.Combine(tempDirectory, "CounterConsumer.cs");
+            var consumerText =
+                """
+                namespace Demo;
+
+                internal static class CounterConsumer
+                {
+                    internal static int Read()
+                    {
+                        return SharedState.Count;
+                    }
+                }
+                """;
+
+            var consumerPath = VueHostWorkspaceResolver.NormalizePath(consumerDiskPath);
+            var service = new InProcRoslynCodeService();
+            var consumer = new DocumentSnapshot(
+                consumerPath,
+                DocumentKind.CSharp,
+                consumerText,
+                version: "1");
+            var usagePosition = ToPosition(
+                consumerText,
+                "SharedState.Count",
+                advance: "SharedState.".Length + 1);
+
+            var definitions = await service.GetDefinitionAsync(
+                consumer,
+                usagePosition,
+                openDocuments: [consumer],
+                cancellationToken: CancellationToken.None);
+            var resolvedUris = string.Join(
+                " | ",
+                definitions.Select(static location => location.Uri));
+            Assert.IsTrue(
+                definitions.Any(location =>
+                    string.Equals(
+                        VueHostWorkspaceResolver.NormalizePath(LspProtocolHelpers.ToDocumentPath(location.Uri)),
+                        VueHostWorkspaceResolver.NormalizePath(declarationPath),
+                        StringComparison.OrdinalIgnoreCase)),
+                "Expected definition to resolve into unopened SharedState.cs using normalized path + openDocuments. Resolved: "
+                + resolvedUris);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
     }
 
     #endregion
@@ -398,13 +669,40 @@ public sealed class JazorVueHostPhase6LspTests
         return path;
     }
 
+    private static LspPosition ToPosition(string text, string marker, int advance = 0)
+    {
+        var index = text.IndexOf(marker, StringComparison.Ordinal);
+        Assert.IsTrue(index >= 0, $"Expected marker '{marker}' to exist.");
+
+        var target = index + advance;
+        var line = 0;
+        var character = 0;
+        for (var offset = 0; offset < target; offset++)
+        {
+            if (text[offset] == '\n')
+            {
+                line++;
+                character = 0;
+                continue;
+            }
+
+            character++;
+        }
+
+        return new LspPosition
+        {
+            Line = line,
+            Character = character
+        };
+    }
+
     private sealed class StubVueAnalysisClient : IVueAnalysisClient
     {
         public ValueTask<AnalyzeJazorResponse> AnalyzeJazorAsync(
             AnalyzeJazorRequest request,
             CancellationToken cancellationToken)
             => ValueTask.FromResult(new AnalyzeJazorResponse(
-                [], [], [], null));
+                [], [], [], []));
     }
 
     #endregion
