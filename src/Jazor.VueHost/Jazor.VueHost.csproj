@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
@@ -14,7 +14,10 @@
     <VueHostBundledDenoPath>$(TargetDir)runtimes\$(NETCoreSdkPortableRuntimeIdentifier)\native\$(DenoExecutableName)</VueHostBundledDenoPath>
     <VueHostWorkerOutputPath>$(TargetDir)Frontend\Deno\Worker\frontend-worker.ts</VueHostWorkerOutputPath>
     <VueHostDenoCacheDir>$(TargetDir)Frontend\Deno\Cache</VueHostDenoCacheDir>
-    <VueHostRoslynBinariesPath>$([System.IO.Path]::GetFullPath('$(MSBuildSDKsPath)\..\Roslyn\bincore'))</VueHostRoslynBinariesPath>
+    <VueHostRoslynBinariesPath Condition="$([System.IO.Directory]::Exists('$([System.IO.Path]::GetFullPath('$(MSBuildSDKsPath)\..\Roslyn\bincore'))'))">$([System.IO.Path]::GetFullPath('$(MSBuildSDKsPath)\..\Roslyn\bincore'))</VueHostRoslynBinariesPath>
+    <VueHostRoslynBinariesPath Condition="'$(VueHostRoslynBinariesPath)' == '' And '$(NETCoreSdkVersion)' != ''">$([System.IO.Path]::GetFullPath('$(ProgramFiles)\dotnet\sdk\$(NETCoreSdkVersion)\Roslyn\bincore'))</VueHostRoslynBinariesPath>
+    <VueHostRazorSdkPath Condition="$([System.IO.Directory]::Exists('$(MSBuildSDKsPath)\Microsoft.NET.Sdk.Razor'))">$(MSBuildSDKsPath)</VueHostRazorSdkPath>
+    <VueHostRazorSdkPath Condition="'$(VueHostRazorSdkPath)' == '' And '$(NETCoreSdkVersion)' != ''">$([System.IO.Path]::GetFullPath('$(ProgramFiles)\dotnet\sdk\$(NETCoreSdkVersion)\Sdks'))</VueHostRazorSdkPath>
   </PropertyGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
@@ -34,7 +37,7 @@
       <Private>true</Private>
     </Reference>
     <Reference Include="Microsoft.CodeAnalysis.Razor.Compiler">
-      <HintPath>$(MSBuildSDKsPath)\Microsoft.NET.Sdk.Razor\source-generators\Microsoft.CodeAnalysis.Razor.Compiler.dll</HintPath>
+      <HintPath>$(VueHostRazorSdkPath)\Microsoft.NET.Sdk.Razor\source-generators\Microsoft.CodeAnalysis.Razor.Compiler.dll</HintPath>
       <Private>true</Private>
     </Reference>
     <None Include="Frontend\Deno\Worker\frontend-worker.ts">

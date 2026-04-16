@@ -7,6 +7,7 @@ using Jazor.Emit.SourceMaps;
 using Jazor.Vue;
 using Jazor.VueContracts.Protocol;
 using Jazor.VueHost.Roslyn.InProc;
+using Jazor.VueHost.SourceMap;
 
 namespace Jazor.VueHost.DevServer;
 
@@ -23,6 +24,7 @@ internal sealed class OnDemandCompiler
     private readonly DependencyGraph? _dependencyGraph;
     private readonly ModuleResolver? _moduleResolver;
     private readonly JazorHotReloadMetadataProvider _hotReloadMetadataProvider;
+    private readonly ISourceMapService? _sourceMapService;
 
     public DependencyGraph? DependencyGraph => _dependencyGraph;
 
@@ -33,7 +35,8 @@ internal sealed class OnDemandCompiler
         CompilationCache cache,
         DependencyGraph? dependencyGraph = null,
         ModuleResolver? moduleResolver = null,
-        JazorHotReloadMetadataProvider? hotReloadMetadataProvider = null)
+        JazorHotReloadMetadataProvider? hotReloadMetadataProvider = null,
+        ISourceMapService? sourceMapService = null)
     {
         _parser = parser ?? throw new ArgumentNullException(nameof(parser));
         _compiler = compiler ?? throw new ArgumentNullException(nameof(compiler));
@@ -42,6 +45,7 @@ internal sealed class OnDemandCompiler
         _dependencyGraph = dependencyGraph;
         _moduleResolver = moduleResolver;
         _hotReloadMetadataProvider = hotReloadMetadataProvider ?? new JazorHotReloadMetadataProvider();
+        _sourceMapService = sourceMapService;
     }
 
     public async ValueTask<CompilationResult> CompileAsync(
@@ -59,6 +63,7 @@ internal sealed class OnDemandCompiler
         }
 
         var result = await CompileCoreAsync(absolutePath, text, companionDocuments: null, cancellationToken);
+        SynchronizeSourceMapRegistration(absolutePath, result);
         _dependencyGraph?.Record(absolutePath, result.Dependencies);
         _cache.Set(absolutePath, contentHash, result);
         return result;
@@ -87,6 +92,7 @@ internal sealed class OnDemandCompiler
         }
 
         var result = await CompileCoreAsync(absolutePath, text, companionDocuments, cancellationToken);
+        SynchronizeSourceMapRegistration(absolutePath, result);
         _dependencyGraph?.Record(absolutePath, result.Dependencies);
         _cache.Set(absolutePath, contentHash, result);
         return result;
@@ -136,6 +142,7 @@ internal sealed class OnDemandCompiler
 
         var contentHash = ComputeContentHash(text);
         var result = await CompileCoreAsync(absolutePath, text, companionDocuments, cancellationToken);
+        SynchronizeSourceMapRegistration(absolutePath, result);
         _dependencyGraph?.Record(absolutePath, result.Dependencies);
         _cache.Set(absolutePath, contentHash, result);
         return result;
@@ -145,10 +152,16 @@ internal sealed class OnDemandCompiler
     {
         _cache.Invalidate(absolutePath);
         _dependencyGraph?.Remove(absolutePath);
+        UnregisterSourceMap(absolutePath);
     }
 
     public void InvalidateAll()
     {
+        foreach (var absolutePath in _cache.GetPaths())
+        {
+            UnregisterSourceMap(absolutePath);
+        }
+
         _cache.InvalidateAll();
         _dependencyGraph?.Clear();
     }
@@ -176,6 +189,55 @@ internal sealed class OnDemandCompiler
                 Diagnostics = [$"Unsupported document '{absolutePath}'."]
             }
         };
+    }
+
+    private void SynchronizeSourceMapRegistration(string absolutePath, CompilationResult result)
+    {
+        if (_sourceMapService is null)
+        {
+            return;
+        }
+
+        foreach (var key in GetSourceMapKeys(absolutePath))
+        {
+            if (string.IsNullOrWhiteSpace(result.SourceMap))
+            {
+                _sourceMapService.Unregister(key);
+            }
+            else
+            {
+                _sourceMapService.Register(key, result.SourceMap);
+            }
+        }
+    }
+
+    private void UnregisterSourceMap(string absolutePath)
+    {
+        if (_sourceMapService is null)
+        {
+            return;
+        }
+
+        foreach (var key in GetSourceMapKeys(absolutePath))
+        {
+            _sourceMapService.Unregister(key);
+        }
+    }
+
+    private IReadOnlyList<string> GetSourceMapKeys(string absolutePath)
+    {
+        if (_moduleResolver is not null)
+        {
+            try
+            {
+                return [_moduleResolver.GetResolvedUrlForAbsolutePath(absolutePath)];
+            }
+            catch (InvalidOperationException)
+            {
+            }
+        }
+
+        return [absolutePath];
     }
 
     private async ValueTask<CompilationResult> CompileJazorAsync(
@@ -376,7 +438,12 @@ internal sealed class OnDemandCompiler
         try
         {
             var generatedVueFileName = Path.GetFileName(compilation.Document.FilePath);
-            var generatedVueSourceMap = CreateGeneratedVueSourceMap(generatedVueFileName, compilation);
+            var generatedVueSourceMap = compilation.GeneratedVueSourceMap;
+            if (string.IsNullOrWhiteSpace(generatedVueSourceMap))
+            {
+                return javaScriptSourceMap;
+            }
+
             var chainedMap = new SourceMapChainBuilder().Chain(
                 javaScriptSourceMap,
                 new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -389,79 +456,6 @@ internal sealed class OnDemandCompiler
         {
             return javaScriptSourceMap;
         }
-    }
-
-    private static string CreateGeneratedVueSourceMap(
-        string generatedVueFileName,
-        JazorVueCompilationResult compilation)
-    {
-        var document = compilation.Document;
-        var sourceFileName = Path.GetFileName(document.FilePath);
-        var sources = new[]
-        {
-            new SourceMapSource(sourceFileName, document.SourceText)
-        };
-        var segments = new List<SourceMapSegment>();
-        var codeRange = CreateSourceLineRange(document.SourceText, document.CodeStartIndex, document.CodeLength);
-        var templateRange = CreateSourceLineRange(document.SourceText, document.TemplateStartIndex, document.TemplateLength);
-        var generatedLines = NormalizeLineEndings(compilation.GeneratedVueText).Split('\n');
-        var isInScript = false;
-        var isInTemplate = false;
-        var scriptLineOffset = 0;
-        var templateLineOffset = 0;
-
-        for (var generatedLine = 0; generatedLine < generatedLines.Length; generatedLine++)
-        {
-            var trimmedLine = generatedLines[generatedLine].Trim();
-            if (string.Equals(trimmedLine, "<script setup>", StringComparison.OrdinalIgnoreCase))
-            {
-                isInScript = true;
-                continue;
-            }
-
-            if (string.Equals(trimmedLine, "</script>", StringComparison.OrdinalIgnoreCase))
-            {
-                isInScript = false;
-                continue;
-            }
-
-            if (string.Equals(trimmedLine, "<template>", StringComparison.OrdinalIgnoreCase))
-            {
-                isInTemplate = true;
-                continue;
-            }
-
-            if (string.Equals(trimmedLine, "</template>", StringComparison.OrdinalIgnoreCase))
-            {
-                isInTemplate = false;
-                continue;
-            }
-
-            if (isInTemplate && templateRange is { } templateSourceRange)
-            {
-                segments.Add(new SourceMapSegment(
-                    GeneratedLine: generatedLine,
-                    GeneratedColumn: 0,
-                    SourceIndex: 0,
-                    SourceLine: templateSourceRange.StartLine + Math.Min(templateLineOffset, templateSourceRange.LineCount - 1),
-                    SourceColumn: 0));
-                templateLineOffset++;
-                continue;
-            }
-
-            if (isInScript && codeRange is { } codeSourceRange)
-            {
-                segments.Add(new SourceMapSegment(
-                    GeneratedLine: generatedLine,
-                    GeneratedColumn: 0,
-                    SourceIndex: 0,
-                    SourceLine: codeSourceRange.StartLine + Math.Min(scriptLineOffset, codeSourceRange.LineCount - 1),
-                    SourceColumn: 0));
-                scriptLineOffset++;
-            }
-        }
-
-        return new SourceMapWriter().Write(new SourceMapDocument(generatedVueFileName, sources, segments));
     }
 
     private static string AttachInlineSourceMap(string content, string? sourceMap)
@@ -494,39 +488,6 @@ internal sealed class OnDemandCompiler
 
         return count;
     }
-
-    private static SourceLineRange? CreateSourceLineRange(
-        string sourceText,
-        int startIndex,
-        int length)
-    {
-        if (startIndex < 0 || length <= 0 || startIndex >= sourceText.Length)
-        {
-            return null;
-        }
-
-        return new SourceLineRange(
-            StartLine: CountNewLines(sourceText, 0, startIndex),
-            LineCount: Math.Max(1, CountNewLines(sourceText, startIndex, Math.Min(length, sourceText.Length - startIndex)) + 1));
-    }
-
-    private static int CountNewLines(string text, int startIndex, int length)
-    {
-        var count = 0;
-        var endIndex = Math.Min(text.Length, startIndex + length);
-        for (var index = Math.Max(0, startIndex); index < endIndex; index++)
-        {
-            if (text[index] == '\n')
-            {
-                count++;
-            }
-        }
-
-        return count;
-    }
-
-    private static string NormalizeLineEndings(string text)
-        => text.Replace("\r\n", "\n", StringComparison.Ordinal);
 
     private static string ComputeJazorModuleSignature(
         string javaScript,
@@ -634,8 +595,4 @@ internal sealed class OnDemandCompiler
     private readonly record struct ServedModuleContent(
         string Content,
         int JavaScriptLineOffset);
-
-    private readonly record struct SourceLineRange(
-        int StartLine,
-        int LineCount);
 }

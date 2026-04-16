@@ -14,17 +14,18 @@
 - `compile/sfc` 已从 Deno worker 返回 `.vue -> .js` 行级 `jsSourceMap`，并透传到 `DenoFrontendModuleCompiler`。
 - `OnDemandCompiler` 在 TypeScript 模块存在 Source Map 时，会为输出 JS 追加 inline `sourceMappingURL=data:application/json;base64,...`。
 - `OnDemandCompiler` 已处理带 `<style>` 的 SFC 模块样式注入前缀，对返回给浏览器的 sourcemap 进行生成行偏移。
-- `.jazor` 编译路径已将 worker 的 `.js -> .g.vue` map 通过 `Jazor.Emit.SourceMaps.SourceMapChainBuilder` 链回原始 `.jazor`，并在 inline/external Source Map 中返回原始 `.jazor` 的 `sourcesContent`。
-- Dev Server 已支持对具备 `SourceMap` 的编译模块通过 `{module}.map` 返回 external Source Map JSON，覆盖 `.ts` 与 `.vue`。
+- `JazorVueCompiler` 已产出 `.jazor -> .g.vue` 行级 Source Map，覆盖 import/helper、Prop/State/Computed、方法声明/方法体、保留诊断注释与 template 输出行。
+- `.jazor` 编译路径已将 worker 的 `.js -> .g.vue` map 与 `JazorVueCompiler` 输出的 `.jazor -> .g.vue` map 通过 `Jazor.Emit.SourceMaps.SourceMapChainBuilder` 链回原始 `.jazor`，并在 inline/external Source Map 中返回原始 `.jazor` 的 `sourcesContent`。
+- Dev Server 已支持对具备 `SourceMap` 的编译模块通过 `{module}.map` 返回 external Source Map JSON，覆盖 `.ts`、`.vue` 与 `.jazor`。
 - 已补齐 TypeScript inline sourcemap 回归，覆盖 Deno host 协议透传、`OnDemandCompiler` 注入，以及 Dev Server HTTP 输出。
 - 已补齐 Vue SFC sourcemap 回归，覆盖 Deno host 协议透传、`DenoFrontendModuleCompiler` 透传、inline 注入、`.vue.map`、未保存 workspace 文本，以及 style wrapper 偏移。
-- 已补齐 `.jazor` 链式 sourcemap 最小回归，覆盖 `OnDemandCompiler` 将 worker sourcemap 链回原始 `.jazor` 源。
+- 已补齐 `.jazor` 链式 sourcemap 回归，覆盖 `JazorVueCompiler` 生成中间 map、`OnDemandCompiler` 将 worker sourcemap 链回原始 `.jazor` 源、Dev Server `.jazor.map`、未保存 workspace 文本，以及实际 `mappings` 行号。
 
 ### 尚未完成
 
-- VueHost 内仍未落地本文后续设计里的独立 `ISourceMapService`；当前先复用 `Jazor.Emit.SourceMaps` 的链式工具，并由编译请求内联处理。
+- VueHost 内的独立 `ISourceMapService` 已落地为 dev-server 内存注册表，并接入 `OnDemandCompiler` 的编译/失效生命周期；但尚未被 Phase 4 的 DAP/CDP 调试层消费，也没有额外的调试可视化或诊断端点。
 - `.vue` 当前是 worker 内直接生成的行级 Source Map，尚未合并 Vue 编译器原生 script/template Source Map，也未做到列级精度。
-- `.jazor -> .g.vue` 当前由 `OnDemandCompiler` 基于生成 SFC 的 `<script setup>` / `<template>` 区段构造行级映射；尚未把映射生成下沉到 `JazorVueCompiler`，也没有做到成员级/列级精度。
+- `.jazor -> .g.vue` 当前已下沉到 `JazorVueCompiler`，但仍是行级映射，尚未做到成员级/列级精度。
 
 ---
 

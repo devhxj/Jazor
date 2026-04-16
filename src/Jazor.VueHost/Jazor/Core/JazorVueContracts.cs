@@ -223,7 +223,8 @@ public sealed class JazorVueCompilationResult
             generatedVueText,
             CreateGeneratedExternalDeclarationsText(document, externalSymbols),
             diagnostics,
-            hotReload: null)
+            hotReload: null,
+            generatedVueSourceMap: null)
     {
     }
 
@@ -233,7 +234,8 @@ public sealed class JazorVueCompilationResult
         string generatedVueText,
         string generatedExternalDeclarationsText,
         IReadOnlyList<string> diagnostics,
-        JazorVueHotReloadMetadata? hotReload)
+        JazorVueHotReloadMetadata? hotReload,
+        string? generatedVueSourceMap = null)
     {
         Document = document ?? throw new ArgumentNullException(nameof(document));
         ExternalSymbols = externalSymbols ?? throw new ArgumentNullException(nameof(externalSymbols));
@@ -241,6 +243,7 @@ public sealed class JazorVueCompilationResult
         GeneratedExternalDeclarationsText = generatedExternalDeclarationsText ?? throw new ArgumentNullException(nameof(generatedExternalDeclarationsText));
         Diagnostics = diagnostics ?? throw new ArgumentNullException(nameof(diagnostics));
         HotReload = hotReload;
+        GeneratedVueSourceMap = generatedVueSourceMap;
     }
 
     public JazorVueDocument Document { get; }
@@ -254,6 +257,8 @@ public sealed class JazorVueCompilationResult
     public IReadOnlyList<string> Diagnostics { get; }
 
     public JazorVueHotReloadMetadata? HotReload { get; }
+
+    public string? GeneratedVueSourceMap { get; }
 
     private static string CreateGeneratedExternalDeclarationsText(
         JazorVueDocument document,

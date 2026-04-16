@@ -12,7 +12,9 @@ using Microsoft.AspNetCore.Http;
 using Jazor.Emit;
 using Jazor.VueContracts.Protocol;
 using Jazor.VueHost.DevServer;
+using Jazor.VueHost.SourceMap;
 using Jazor.VueHost.Workspace;
+using static Jazor.CompilerTest.SourceMapTestHelpers;
 
 namespace Jazor.CompilerTest;
 
@@ -7212,27 +7214,42 @@ public sealed class JazorVueHostDevServerTests
 
                 @code {
                     [State] private int Count = 1;
+
+                    public void Increment()
+                    {
+                        Count++;
+                    }
                 }
                 """;
             await File.WriteAllTextAsync(documentPath, source);
 
+            var parser = new Jazor.Vue.JazorVueParser();
+            var vueCompiler = new Jazor.Vue.JazorVueCompiler();
+            var generatedSfc = vueCompiler.Compile(parser.Parse(documentPath, source));
+            var frontendSourceMap = CreateSingleSourceLineMap(
+                "Counter.jazor",
+                generatedSfc.GeneratedVueText,
+                [
+                    GetLineIndexContaining(generatedSfc.GeneratedVueText, "const count = ref(1);"),
+                    GetLineIndexContaining(generatedSfc.GeneratedVueText, "count.value++;")
+                ]);
+            var sourceMapService = new InMemorySourceMapService();
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
                 SfcResult = new FrontendModuleCompilation
                 {
-                    JavaScript = "export default { name: 'Counter' };",
-                    SourceMap = """
-                        {"version":3,"sources":["Counter.jazor"],"sourcesContent":["<script setup>\nconst count = ref(1);\n</script>"],"names":[],"mappings":"AACA","file":"Counter.js"}
-                        """,
+                    JavaScript = "const count = ref(1);\ncount.value++;",
+                    SourceMap = frontendSourceMap,
                     Dependencies = []
                 }
             };
             var compiler = new OnDemandCompiler(
-                new Jazor.Vue.JazorVueParser(),
-                new Jazor.Vue.JazorVueCompiler(),
+                parser,
+                vueCompiler,
                 frontendCompiler,
                 new CompilationCache(),
-                moduleResolver: new ModuleResolver(rootDirectory));
+                moduleResolver: new ModuleResolver(rootDirectory),
+                sourceMapService: sourceMapService);
 
             var result = await compiler.CompileAsync(documentPath, CancellationToken.None);
 
@@ -7247,6 +7264,183 @@ public sealed class JazorVueHostDevServerTests
             Assert.AreEqual(
                 sourceMap.RootElement.GetProperty("sourcesContent")[0].GetString(),
                 resultSourceMap.RootElement.GetProperty("sourcesContent")[0].GetString());
+            var mappedLines = DecodeGeneratedLineToSourceLine(sourceMap.RootElement);
+            Assert.AreEqual(GetLineIndexContaining(source, "[State] private int Count = 1;"), mappedLines[0]);
+            Assert.AreEqual(GetLineIndexContaining(source, "Count++;"), mappedLines[1]);
+
+            var originalPosition = sourceMapService.OriginalPositionFor("/Counter.jazor", 1, 0);
+            Assert.IsNotNull(originalPosition);
+            Assert.AreEqual(GetLineIndexContaining(source, "Count++;"), originalPosition.Line);
+
+            var generatedPosition = sourceMapService.GeneratedPositionFor(documentPath, GetLineIndexContaining(source, "Count++;"), 0);
+            Assert.IsNotNull(generatedPosition);
+            Assert.AreEqual("/Counter.jazor", generatedPosition.GeneratedPath);
+            Assert.AreEqual(1, generatedPosition.Line);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task OnDemandCompiler_CompileAsync_TypeScriptFile_RegistersSourceMapServiceByResolvedUrl()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(rootDirectory, "counter.ts");
+            const string source = "export const count: number = 1;";
+            await File.WriteAllTextAsync(documentPath, source);
+
+            var sourceMapService = new InMemorySourceMapService();
+            var frontendCompiler = new FakeFrontendModuleCompiler
+            {
+                TypeScriptResult = new FrontendModuleCompilation
+                {
+                    JavaScript = "export const count = 1;",
+                    SourceMap = """
+                        {"version":3,"sources":["counter.ts"],"sourcesContent":["export const count: number = 1;"],"names":[],"mappings":"AAAA","file":"counter.js"}
+                        """,
+                    Dependencies = []
+                }
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                moduleResolver: new ModuleResolver(rootDirectory),
+                sourceMapService: sourceMapService);
+
+            var result = await compiler.CompileAsync(documentPath, CancellationToken.None);
+
+            Assert.IsFalse(result.IsError);
+            Assert.AreEqual(result.SourceMap, sourceMapService.GetSourceMapJson("/counter.ts"));
+
+            var original = sourceMapService.OriginalPositionFor("/counter.ts", 0, 0);
+            Assert.IsNotNull(original);
+            Assert.AreEqual("counter.ts", original.SourcePath);
+            Assert.AreEqual(0, original.Line);
+
+            var generated = sourceMapService.GeneratedPositionFor(documentPath, 0, 0);
+            Assert.IsNotNull(generated);
+            Assert.AreEqual("/counter.ts", generated.GeneratedPath);
+            Assert.AreEqual(0, generated.Line);
+
+            compiler.Invalidate(documentPath);
+
+            Assert.IsNull(sourceMapService.GetSourceMapJson("/counter.ts"));
+            Assert.IsNull(sourceMapService.OriginalPositionFor("/counter.ts", 0, 0));
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task OnDemandCompiler_CompileAsync_VueFile_RegistersSourceMapServiceByResolvedUrl()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(rootDirectory, "Counter.vue");
+            const string source = "<template><div>{{ count }}</div></template>";
+            await File.WriteAllTextAsync(documentPath, source);
+
+            var sourceMapService = new InMemorySourceMapService();
+            var frontendCompiler = new FakeFrontendModuleCompiler
+            {
+                SfcResult = new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { setup() { const count = 1; return { count }; } };",
+                    SourceMap = """
+                        {"version":3,"sources":["Counter.vue"],"sourcesContent":["<template><div>{{ count }}</div></template>"],"names":[],"mappings":"AAAA","file":"Counter.vue.js"}
+                        """,
+                    Dependencies = []
+                }
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                moduleResolver: new ModuleResolver(rootDirectory),
+                sourceMapService: sourceMapService);
+
+            var result = await compiler.CompileAsync(documentPath, CancellationToken.None);
+
+            Assert.IsFalse(result.IsError);
+            Assert.AreEqual(result.SourceMap, sourceMapService.GetSourceMapJson("/Counter.vue"));
+
+            var original = sourceMapService.OriginalPositionFor("/Counter.vue", 0, 0);
+            Assert.IsNotNull(original);
+            Assert.AreEqual("Counter.vue", original.SourcePath);
+            Assert.AreEqual(0, original.Line);
+
+            var generated = sourceMapService.GeneratedPositionFor(documentPath, 0, 0);
+            Assert.IsNotNull(generated);
+            Assert.AreEqual("/Counter.vue", generated.GeneratedPath);
+            Assert.AreEqual(0, generated.Line);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task OnDemandCompiler_InvalidateAll_UnregistersAllRegisteredSourceMaps()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var counterPath = Path.Combine(rootDirectory, "counter.ts");
+            var todoPath = Path.Combine(rootDirectory, "todo.ts");
+            await File.WriteAllTextAsync(counterPath, "export const count: number = 1;");
+            await File.WriteAllTextAsync(todoPath, "export const todo: string = 'ship';");
+
+            var sourceMapService = new InMemorySourceMapService();
+            var frontendCompiler = new FakeFrontendModuleCompiler();
+            frontendCompiler.SetTypeScriptResult(
+                counterPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export const count = 1;",
+                    SourceMap = """
+                        {"version":3,"sources":["counter.ts"],"sourcesContent":["export const count: number = 1;"],"names":[],"mappings":"AAAA","file":"counter.js"}
+                        """,
+                    Dependencies = []
+                });
+            frontendCompiler.SetTypeScriptResult(
+                todoPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export const todo = 'ship';",
+                    SourceMap = """
+                        {"version":3,"sources":["todo.ts"],"sourcesContent":["export const todo: string = 'ship';"],"names":[],"mappings":"AAAA","file":"todo.js"}
+                        """,
+                    Dependencies = []
+                });
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                moduleResolver: new ModuleResolver(rootDirectory),
+                sourceMapService: sourceMapService);
+
+            _ = await compiler.CompileAsync(counterPath, CancellationToken.None);
+            _ = await compiler.CompileAsync(todoPath, CancellationToken.None);
+
+            Assert.IsNotNull(sourceMapService.GetSourceMapJson("/counter.ts"));
+            Assert.IsNotNull(sourceMapService.GetSourceMapJson("/todo.ts"));
+
+            compiler.InvalidateAll();
+
+            Assert.IsNull(sourceMapService.GetSourceMapJson("/counter.ts"));
+            Assert.IsNull(sourceMapService.GetSourceMapJson("/todo.ts"));
         }
         finally
         {

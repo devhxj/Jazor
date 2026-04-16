@@ -73,5 +73,13 @@ internal sealed class CompilationCache
         }
     }
 
+    public IReadOnlyList<string> GetPaths()
+    {
+        lock (_gate)
+        {
+            return _entries.Keys.ToArray();
+        }
+    }
+
     private sealed record CacheEntry(string ContentHash, CompilationResult Result);
 }

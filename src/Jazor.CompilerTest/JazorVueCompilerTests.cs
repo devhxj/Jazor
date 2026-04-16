@@ -1,4 +1,6 @@
+using System.Text.Json;
 using Jazor.Vue;
+using static Jazor.CompilerTest.SourceMapTestHelpers;
 
 namespace Jazor.CompilerTest;
 
@@ -95,6 +97,65 @@ public sealed class JazorVueCompilerTests
         StringAssert.Contains(result.GeneratedVueText, "function increment()");
         StringAssert.Contains(result.GeneratedVueText, "count.value++;");
         StringAssert.Contains(result.GeneratedVueText, "<UserCard :title=\"title\" />");
+    }
+
+    [TestMethod]
+    public void JazorVue_Compiler_EmitsGeneratedVueSourceMapForGeneratedArtifact()
+    {
+        var source = """
+            @jsimport { debounce } from "lodash-es"
+
+            <template>
+              <button @click="increment()">@Count</button>
+            </template>
+
+            @code {
+                [State] private int Count = 1;
+
+                public void Increment()
+                {
+                    Count++;
+                }
+            }
+            """;
+
+        var parser = new JazorVueParser();
+        var compiler = new JazorVueCompiler();
+        var document = parser.Parse("Counter.jazor", source);
+        var result = compiler.Compile(document);
+
+        Assert.IsNotNull(result.GeneratedVueSourceMap);
+        using var sourceMap = JsonDocument.Parse(result.GeneratedVueSourceMap);
+        Assert.AreEqual(3, sourceMap.RootElement.GetProperty("version").GetInt32());
+        Assert.AreEqual("Counter.jazor", sourceMap.RootElement.GetProperty("file").GetString());
+        Assert.AreEqual("Counter.jazor", sourceMap.RootElement.GetProperty("sources")[0].GetString());
+        Assert.AreEqual(source, sourceMap.RootElement.GetProperty("sourcesContent")[0].GetString());
+
+        var mappedLines = DecodeGeneratedLineToSourceLine(sourceMap.RootElement);
+        AssertGeneratedLineMapsToSourceLine(
+            result.GeneratedVueText,
+            "const count = ref(1);",
+            source,
+            "[State] private int Count = 1;",
+            mappedLines);
+        AssertGeneratedLineMapsToSourceLine(
+            result.GeneratedVueText,
+            "function increment()",
+            source,
+            "public void Increment()",
+            mappedLines);
+        AssertGeneratedLineMapsToSourceLine(
+            result.GeneratedVueText,
+            "count.value++;",
+            source,
+            "Count++;",
+            mappedLines);
+        AssertGeneratedLineMapsToSourceLine(
+            result.GeneratedVueText,
+            "<button @click=\"increment()\">@Count</button>",
+            source,
+            "<button @click=\"increment()\">@Count</button>",
+            mappedLines);
     }
 
     [TestMethod]

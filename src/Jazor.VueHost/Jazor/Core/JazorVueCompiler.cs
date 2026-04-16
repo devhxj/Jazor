@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using Jazor.Emit;
+using Jazor.Emit.SourceMaps;
 
 namespace Jazor.Vue;
 
@@ -54,148 +55,344 @@ public sealed partial class JazorVueCompiler
             JazorVueExternalDeclarationEmitter.DefaultNamespace,
             JazorVueExternalDeclarationEmitter.CreateContainerName(document.FilePath));
         var imports = BuildImportStatements(document.Imports);
-        var props = ExtractProps(document.Code);
-        var states = ExtractStates(document.Code);
-        var computeds = ExtractComputeds(document.Code);
-        var methods = ExtractMethods(document.Code);
+        var importSourceLines = GetImportSourceLines(document);
+        var props = ExtractProps(document);
+        var states = ExtractStates(document);
+        var computeds = ExtractComputeds(document);
+        var methods = ExtractMethods(document);
         var loweringContext = LoweringContext.Create(props, states, computeds, methods);
         var builder = new StringBuilder();
+        var generatedSourceLines = new List<int?>();
+        var scriptAnchorSourceLine = GetScriptAnchorSourceLine(document, importSourceLines, props, states, computeds, methods);
 
-        builder.AppendLine("<script setup>");
+        AppendGeneratedLine(builder, generatedSourceLines, "<script setup>", scriptAnchorSourceLine);
         var vueHelpers = GetVueHelpers(props, states, computeds);
         if (vueHelpers.Count > 0)
         {
-            builder.Append("import { ")
-                .Append(string.Join(", ", vueHelpers))
-                .AppendLine(" } from \"vue\";");
+            AppendGeneratedLine(
+                builder,
+                generatedSourceLines,
+                $"import {{ {string.Join(", ", vueHelpers)} }} from \"vue\";",
+                scriptAnchorSourceLine);
         }
 
-        foreach (var importStatement in imports)
-            builder.AppendLine(importStatement);
+        for (var index = 0; index < imports.Count; index++)
+        {
+            AppendGeneratedLine(
+                builder,
+                generatedSourceLines,
+                imports[index],
+                index < importSourceLines.Count ? importSourceLines[index] : scriptAnchorSourceLine);
+        }
 
         if (props.Count > 0)
         {
-            builder.AppendLine();
-            builder.AppendLine("const props = defineProps({");
+            AppendGeneratedLine(builder, generatedSourceLines, string.Empty, props[0].SourceLine);
+            AppendGeneratedLine(builder, generatedSourceLines, "const props = defineProps({", props[0].SourceLine);
             foreach (var prop in props)
             {
-                builder.Append("  ")
-                    .Append(prop.RuntimeName)
-                    .Append(": ")
-                    .Append(prop.VueTypeExpression)
-                    .AppendLine(",");
+                AppendGeneratedLine(
+                    builder,
+                    generatedSourceLines,
+                    $"  {prop.RuntimeName}: {prop.VueTypeExpression},",
+                    prop.SourceLine);
             }
 
-            builder.AppendLine("});");
+            AppendGeneratedLine(builder, generatedSourceLines, "});", props[^1].SourceLine);
 
             foreach (var prop in props)
             {
-                builder.Append("const ")
-                    .Append(prop.RuntimeName)
-                    .Append(" = toRef(props, \"")
-                    .Append(prop.RuntimeName)
-                    .AppendLine("\");");
+                AppendGeneratedLine(
+                    builder,
+                    generatedSourceLines,
+                    $"const {prop.RuntimeName} = toRef(props, \"{prop.RuntimeName}\");",
+                    prop.SourceLine);
             }
         }
 
         if (states.Count > 0)
         {
-            builder.AppendLine();
+            AppendGeneratedLine(builder, generatedSourceLines, string.Empty, states[0].SourceLine);
             foreach (var state in states)
             {
-                builder.Append("const ")
-                    .Append(state.RuntimeName)
-                    .Append(" = ref(")
-                    .Append(LowerExpression(state.Initializer ?? "undefined", loweringContext, EmptyShadowedNames))
-                    .AppendLine(");");
+                AppendGeneratedLine(
+                    builder,
+                    generatedSourceLines,
+                    $"const {state.RuntimeName} = ref({LowerExpression(state.Initializer ?? "undefined", loweringContext, EmptyShadowedNames)});",
+                    state.SourceLine);
             }
         }
 
         if (computeds.Count > 0)
         {
-            builder.AppendLine();
+            AppendGeneratedLine(builder, generatedSourceLines, string.Empty, computeds[0].SourceLine);
             foreach (var computed in computeds)
             {
                 if (TryLowerComputed(computed, loweringContext, out var loweredExpression))
                 {
-                    builder.Append("const ")
-                        .Append(computed.RuntimeName)
-                        .Append(" = computed(() => ")
-                        .Append(loweredExpression)
-                        .AppendLine(");");
+                    AppendGeneratedLine(
+                        builder,
+                        generatedSourceLines,
+                        $"const {computed.RuntimeName} = computed(() => {loweredExpression});",
+                        computed.SourceLine);
                     continue;
                 }
 
                 diagnostics.Add($"Computed member '{computed.SourceName}' could not be lowered by the local fallback compiler.");
-                builder.Append("const ")
-                    .Append(computed.RuntimeName)
-                    .Append(" = computed(() => {")
-                    .AppendLine()
-                    .Append("  // Fallback compiler could not lower computed member ")
-                    .Append(computed.SourceName)
-                    .AppendLine(".")
-                    .AppendLine("  return undefined;")
-                    .AppendLine("});");
+                AppendGeneratedLine(
+                    builder,
+                    generatedSourceLines,
+                    $"const {computed.RuntimeName} = computed(() => {{",
+                    computed.SourceLine);
+                AppendGeneratedLine(
+                    builder,
+                    generatedSourceLines,
+                    $"  // Fallback compiler could not lower computed member {computed.SourceName}.",
+                    computed.SourceLine);
+                AppendGeneratedLine(builder, generatedSourceLines, "  return undefined;", computed.SourceLine);
+                AppendGeneratedLine(builder, generatedSourceLines, "});", computed.SourceLine);
             }
         }
 
         if (methods.Count > 0)
         {
-            builder.AppendLine();
+            AppendGeneratedLine(builder, generatedSourceLines, string.Empty, methods[0].SourceLine);
             foreach (var method in methods)
             {
-                builder.Append(method.IsAsync ? "async function " : "function ")
-                    .Append(method.RuntimeName)
-                    .Append("(")
-                    .Append(string.Join(", ", method.Parameters))
-                    .AppendLine(") {");
+                AppendGeneratedLine(
+                    builder,
+                    generatedSourceLines,
+                    $"{(method.IsAsync ? "async function " : "function ")}{method.RuntimeName}({string.Join(", ", method.Parameters)}) {{",
+                    method.SourceLine);
 
                 if (TryLowerMethodBody(method, loweringContext, out var loweredBody))
                 {
                     foreach (var line in loweredBody)
                     {
-                        builder.Append("  ")
-                            .AppendLine(line);
+                        AppendGeneratedLine(
+                            builder,
+                            generatedSourceLines,
+                            "  " + line.Line,
+                            line.SourceLine);
                     }
                 }
                 else
                 {
                     diagnostics.Add($"Method '{method.SourceName}' could not be lowered by the local fallback compiler.");
-                    builder.Append("  // Fallback compiler could not lower method ")
-                        .Append(method.SourceName)
-                        .AppendLine(".");
+                    AppendGeneratedLine(
+                        builder,
+                        generatedSourceLines,
+                        $"  // Fallback compiler could not lower method {method.SourceName}.",
+                        method.SourceLine);
                 }
 
-                builder.AppendLine("}");
+                AppendGeneratedLine(builder, generatedSourceLines, "}", method.SourceLine);
             }
         }
 
         if (!string.IsNullOrWhiteSpace(document.Code))
         {
-            builder.AppendLine();
-            builder.AppendLine("/*");
-            builder.AppendLine(" Original @code block retained for bridge diagnostics:");
-            builder.AppendLine(document.Code.Replace("*/", "* /"));
-            builder.AppendLine("*/");
+            var codeStartSourceLine = GetCodeStartSourceLine(document) ?? scriptAnchorSourceLine;
+            AppendGeneratedLine(builder, generatedSourceLines, string.Empty, codeStartSourceLine);
+            AppendGeneratedLine(builder, generatedSourceLines, "/*", codeStartSourceLine);
+            AppendGeneratedLine(
+                builder,
+                generatedSourceLines,
+                " Original @code block retained for bridge diagnostics:",
+                codeStartSourceLine);
+            AppendGeneratedTextLines(
+                builder,
+                generatedSourceLines,
+                document.Code.Replace("*/", "* /", StringComparison.Ordinal),
+                codeStartSourceLine);
+            AppendGeneratedLine(builder, generatedSourceLines, "*/", GetCodeEndSourceLine(document) ?? codeStartSourceLine);
         }
 
-        builder.AppendLine("</script>");
-        builder.AppendLine();
-        builder.AppendLine("<template>");
-        builder.AppendLine(string.IsNullOrWhiteSpace(document.Template) ? "<div />" : document.Template);
-        builder.AppendLine("</template>");
+        var templateAnchorSourceLine = GetTemplateStartSourceLine(document) ?? scriptAnchorSourceLine;
+        AppendGeneratedLine(builder, generatedSourceLines, "</script>", scriptAnchorSourceLine);
+        AppendGeneratedLine(builder, generatedSourceLines, string.Empty, templateAnchorSourceLine);
+        AppendGeneratedLine(builder, generatedSourceLines, "<template>", templateAnchorSourceLine);
+        if (string.IsNullOrWhiteSpace(document.Template))
+        {
+            AppendGeneratedLine(builder, generatedSourceLines, "<div />", templateAnchorSourceLine);
+        }
+        else
+        {
+            AppendGeneratedTextLines(builder, generatedSourceLines, document.Template, templateAnchorSourceLine);
+        }
+
+        AppendGeneratedLine(builder, generatedSourceLines, "</template>", GetTemplateEndSourceLine(document) ?? templateAnchorSourceLine);
 
         if (methods.Count == 0 && document.Code.Length > 0)
             diagnostics.Add("No public methods were lowered. The current bridge compiler emits method stubs only for public instance methods.");
 
+        var generatedVueText = builder.ToString();
+        var generatedVueSourceMap = CreateGeneratedVueSourceMap(document, generatedSourceLines);
+
         return new JazorVueCompilationResult(
             document,
             externalSymbols,
-            builder.ToString(),
+            generatedVueText,
             generatedExternalDeclarationsText,
             diagnostics,
-            hotReload: null);
+            hotReload: null,
+            generatedVueSourceMap);
     }
+
+    private static void AppendGeneratedLine(
+        StringBuilder builder,
+        List<int?> generatedSourceLines,
+        string line,
+        int? sourceLine)
+    {
+        builder.AppendLine(line);
+        generatedSourceLines.Add(sourceLine);
+    }
+
+    private static void AppendGeneratedTextLines(
+        StringBuilder builder,
+        List<int?> generatedSourceLines,
+        string text,
+        int? sourceStartLine)
+    {
+        var lines = NormalizeLineEndings(text).Split('\n');
+        for (var index = 0; index < lines.Length; index++)
+        {
+            AppendGeneratedLine(
+                builder,
+                generatedSourceLines,
+                lines[index],
+                sourceStartLine.HasValue ? sourceStartLine.Value + index : null);
+        }
+    }
+
+    private static string? CreateGeneratedVueSourceMap(
+        JazorVueDocument document,
+        IReadOnlyList<int?> generatedSourceLines)
+    {
+        var segments = generatedSourceLines
+            .Select((sourceLine, generatedLine) => sourceLine.HasValue
+                ? new SourceMapSegment(
+                    GeneratedLine: generatedLine,
+                    GeneratedColumn: 0,
+                    SourceIndex: 0,
+                    SourceLine: sourceLine.Value,
+                    SourceColumn: 0)
+                : null)
+            .Where(static segment => segment is not null)
+            .Select(static segment => segment!)
+            .ToArray();
+        if (segments.Length == 0)
+        {
+            return null;
+        }
+
+        var fileName = Path.GetFileName(document.FilePath);
+        var sourceMap = new SourceMapDocument(
+            fileName,
+            [new SourceMapSource(fileName, document.SourceText)],
+            segments);
+        return new SourceMapWriter().Write(sourceMap);
+    }
+
+    private static IReadOnlyList<int?> GetImportSourceLines(JazorVueDocument document)
+    {
+        var sourceLines = new List<int?>(document.Imports.Count);
+        var searchStart = 0;
+        foreach (var import in document.Imports)
+        {
+            int? sourceLine = null;
+            if (!string.IsNullOrWhiteSpace(import.RawText))
+            {
+                var index = document.SourceText.IndexOf(import.RawText, searchStart, StringComparison.Ordinal);
+                if (index < 0)
+                {
+                    index = document.SourceText.IndexOf(import.RawText, StringComparison.Ordinal);
+                }
+
+                if (index >= 0)
+                {
+                    sourceLine = CountNewLines(document.SourceText, 0, index);
+                    searchStart = index + import.RawText.Length;
+                }
+            }
+
+            sourceLines.Add(sourceLine ?? GetTemplateStartSourceLine(document) ?? GetCodeStartSourceLine(document));
+        }
+
+        return sourceLines;
+    }
+
+    private static int GetScriptAnchorSourceLine(
+        JazorVueDocument document,
+        IReadOnlyList<int?> importSourceLines,
+        IReadOnlyList<PropDescriptor> props,
+        IReadOnlyList<StateDescriptor> states,
+        IReadOnlyList<ComputedDescriptor> computeds,
+        IReadOnlyList<MethodDescriptor> methods)
+        => importSourceLines.FirstOrDefault(static line => line.HasValue)
+            ?? props.FirstOrDefault()?.SourceLine
+            ?? states.FirstOrDefault()?.SourceLine
+            ?? computeds.FirstOrDefault()?.SourceLine
+            ?? methods.FirstOrDefault()?.SourceLine
+            ?? GetCodeStartSourceLine(document)
+            ?? GetTemplateStartSourceLine(document)
+            ?? 0;
+
+    private static int GetCodeSourceLine(JazorVueDocument document, int relativeCodeOffset)
+    {
+        if (document.CodeStartIndex < 0)
+        {
+            return GetTemplateStartSourceLine(document) ?? 0;
+        }
+
+        var absoluteOffset = Math.Clamp(document.CodeStartIndex + Math.Max(relativeCodeOffset, 0), 0, document.SourceText.Length);
+        return CountNewLines(document.SourceText, 0, absoluteOffset);
+    }
+
+    private static int? GetCodeStartSourceLine(JazorVueDocument document)
+        => document.CodeStartIndex >= 0
+            ? CountNewLines(document.SourceText, 0, Math.Min(document.CodeStartIndex, document.SourceText.Length))
+            : null;
+
+    private static int? GetCodeEndSourceLine(JazorVueDocument document)
+        => document.CodeStartIndex >= 0
+            ? CountNewLines(
+                document.SourceText,
+                0,
+                Math.Min(document.CodeStartIndex + Math.Max(document.CodeLength - 1, 0), document.SourceText.Length))
+            : null;
+
+    private static int? GetTemplateStartSourceLine(JazorVueDocument document)
+        => document.TemplateStartIndex >= 0
+            ? CountNewLines(document.SourceText, 0, Math.Min(document.TemplateStartIndex, document.SourceText.Length))
+            : null;
+
+    private static int? GetTemplateEndSourceLine(JazorVueDocument document)
+        => document.TemplateStartIndex >= 0
+            ? CountNewLines(
+                document.SourceText,
+                0,
+                Math.Min(document.TemplateStartIndex + Math.Max(document.TemplateLength - 1, 0), document.SourceText.Length))
+            : null;
+
+    private static int CountNewLines(string text, int startIndex, int length)
+    {
+        var count = 0;
+        var endIndex = Math.Min(text.Length, startIndex + length);
+        for (var index = Math.Max(0, startIndex); index < endIndex; index++)
+        {
+            if (text[index] == '\n')
+            {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    private static string NormalizeLineEndings(string text)
+        => text.Replace("\r\n", "\n", StringComparison.Ordinal);
 
     private static IReadOnlyList<string> GetVueHelpers(
         IReadOnlyList<PropDescriptor> props,
@@ -266,22 +463,28 @@ public sealed partial class JazorVueCompiler
         return statements;
     }
 
-    private static IReadOnlyList<PropDescriptor> ExtractProps(string code)
+    private static IReadOnlyList<PropDescriptor> ExtractProps(JazorVueDocument document)
     {
         var results = new List<PropDescriptor>();
+        var code = document.Code;
         foreach (Match match in PropPattern.Matches(code))
         {
             var typeName = match.Groups["type"].Value.Trim();
             var sourceName = match.Groups["name"].Value.Trim();
-            results.Add(new PropDescriptor(sourceName, JazorVueNaming.ToCamelCase(sourceName), MapVueType(typeName)));
+            results.Add(new PropDescriptor(
+                sourceName,
+                JazorVueNaming.ToCamelCase(sourceName),
+                MapVueType(typeName),
+                GetCodeSourceLine(document, match.Index)));
         }
 
         return results;
     }
 
-    private static IReadOnlyList<StateDescriptor> ExtractStates(string code)
+    private static IReadOnlyList<StateDescriptor> ExtractStates(JazorVueDocument document)
     {
         var results = new List<StateDescriptor>();
+        var code = document.Code;
         foreach (Match match in StatePattern.Matches(code))
         {
             var typeName = match.Groups["type"].Value.Trim();
@@ -289,29 +492,41 @@ public sealed partial class JazorVueCompiler
             var initializer = match.Groups["initializer"].Success
                 ? match.Groups["initializer"].Value.Trim()
                 : null;
-            results.Add(new StateDescriptor(sourceName, JazorVueNaming.ToCamelCase(sourceName), typeName, initializer));
+            results.Add(new StateDescriptor(
+                sourceName,
+                JazorVueNaming.ToCamelCase(sourceName),
+                typeName,
+                initializer,
+                GetCodeSourceLine(document, match.Index)));
         }
 
         return results;
     }
 
-    private static IReadOnlyList<ComputedDescriptor> ExtractComputeds(string code)
+    private static IReadOnlyList<ComputedDescriptor> ExtractComputeds(JazorVueDocument document)
     {
         var results = new List<ComputedDescriptor>();
+        var code = document.Code;
         foreach (Match match in ComputedPattern.Matches(code))
         {
             var typeName = match.Groups["type"].Value.Trim();
             var sourceName = match.Groups["name"].Value.Trim();
             var expression = match.Groups["expression"].Value.Trim();
-            results.Add(new ComputedDescriptor(sourceName, JazorVueNaming.ToCamelCase(sourceName), typeName, expression));
+            results.Add(new ComputedDescriptor(
+                sourceName,
+                JazorVueNaming.ToCamelCase(sourceName),
+                typeName,
+                expression,
+                GetCodeSourceLine(document, match.Index)));
         }
 
         return results;
     }
 
-    private static IReadOnlyList<MethodDescriptor> ExtractMethods(string code)
+    private static IReadOnlyList<MethodDescriptor> ExtractMethods(JazorVueDocument document)
     {
         var results = new List<MethodDescriptor>();
+        var code = document.Code;
         foreach (Match match in MethodPattern.Matches(code))
         {
             var isAsync = match.Groups["async"].Success;
@@ -319,7 +534,7 @@ public sealed partial class JazorVueCompiler
             var sourceName = match.Groups["name"].Value.Trim();
             var parameterBlock = match.Groups["parameters"].Value.Trim();
             var bodyStart = match.Index + match.Length;
-            var body = ExtractBlockBody(code, bodyStart, out _);
+            var body = ExtractBlockBody(code, bodyStart, out _, out var bodyStartOffset);
             var parameters = string.IsNullOrWhiteSpace(parameterBlock)
                 ? Array.Empty<string>()
                 : parameterBlock.Split(',')
@@ -338,7 +553,9 @@ public sealed partial class JazorVueCompiler
                 CreateMethodSignature(isAsync, returnType, sourceName, parameterBlock),
                 parameters,
                 body,
-                isAsync));
+                isAsync,
+                GetCodeSourceLine(document, match.Index),
+                GetCodeSourceLine(document, bodyStartOffset)));
         }
 
         return results;
@@ -357,7 +574,7 @@ public sealed partial class JazorVueCompiler
             + NormalizeWhitespace(parameterBlock)
             + ")";
 
-    private static string ExtractBlockBody(string code, int bodyStart, out int nextIndex)
+    private static string ExtractBlockBody(string code, int bodyStart, out int nextIndex, out int bodyStartOffset)
     {
         var depth = 1;
         for (var index = bodyStart; index < code.Length; index++)
@@ -371,8 +588,14 @@ public sealed partial class JazorVueCompiler
                     depth--;
                     if (depth == 0)
                     {
+                        var body = code[bodyStart..index];
+                        var trimmedBody = body.Trim();
+                        var trimOffset = trimmedBody.Length == 0
+                            ? 0
+                            : body.IndexOf(trimmedBody, StringComparison.Ordinal);
                         nextIndex = index + 1;
-                        return code[bodyStart..index].Trim();
+                        bodyStartOffset = bodyStart + Math.Max(trimOffset, 0);
+                        return trimmedBody;
                     }
 
                     break;
@@ -380,7 +603,13 @@ public sealed partial class JazorVueCompiler
         }
 
         nextIndex = code.Length;
-        return code[bodyStart..].Trim();
+        var tail = code[bodyStart..];
+        var trimmedTail = tail.Trim();
+        var tailTrimOffset = trimmedTail.Length == 0
+            ? 0
+            : tail.IndexOf(trimmedTail, StringComparison.Ordinal);
+        bodyStartOffset = bodyStart + Math.Max(tailTrimOffset, 0);
+        return trimmedTail;
     }
 
     private static bool TryLowerComputed(
@@ -401,24 +630,26 @@ public sealed partial class JazorVueCompiler
     private static bool TryLowerMethodBody(
         MethodDescriptor method,
         LoweringContext loweringContext,
-        out IReadOnlyList<string> loweredLines)
+        out IReadOnlyList<LoweredMethodLine> loweredLines)
     {
         if (string.IsNullOrWhiteSpace(method.Body))
         {
-            loweredLines = Array.Empty<string>();
+            loweredLines = Array.Empty<LoweredMethodLine>();
             return true;
         }
 
         var scopeStack = new Stack<HashSet<string>>();
         scopeStack.Push(new HashSet<string>(method.Parameters, StringComparer.Ordinal));
         string[] pendingBlockScopedNames = [];
-        var results = new List<string>();
+        var results = new List<LoweredMethodLine>();
+        var sourceLineOffset = 0;
         foreach (var rawLine in method.Body.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n'))
         {
             var line = rawLine.Trim();
+            var sourceLine = method.BodyStartLine + sourceLineOffset++;
             if (line.Length == 0)
             {
-                results.Add(string.Empty);
+                results.Add(new LoweredMethodLine(string.Empty, sourceLine));
                 continue;
             }
 
@@ -431,7 +662,7 @@ public sealed partial class JazorVueCompiler
 
             var shadowedNames = GetVisibleShadowedNames(scopeStack);
             var loweredStatement = LowerStatementLine(line, loweringContext, shadowedNames);
-            results.Add(loweredStatement.Line);
+            results.Add(new LoweredMethodLine(loweredStatement.Line, sourceLine));
 
             var openingBraceCount = CountCharacters(line, '{');
             if (openingBraceCount > 0)
@@ -901,11 +1132,12 @@ public sealed partial class JazorVueCompiler
 
     private sealed class PropDescriptor
     {
-        public PropDescriptor(string sourceName, string runtimeName, string vueTypeExpression)
+        public PropDescriptor(string sourceName, string runtimeName, string vueTypeExpression, int sourceLine)
         {
             SourceName = sourceName;
             RuntimeName = runtimeName;
             VueTypeExpression = vueTypeExpression;
+            SourceLine = sourceLine;
         }
 
         public string SourceName { get; }
@@ -913,16 +1145,19 @@ public sealed partial class JazorVueCompiler
         public string RuntimeName { get; }
 
         public string VueTypeExpression { get; }
+
+        public int SourceLine { get; }
     }
 
     private sealed class StateDescriptor
     {
-        public StateDescriptor(string sourceName, string runtimeName, string typeName, string? initializer)
+        public StateDescriptor(string sourceName, string runtimeName, string typeName, string? initializer, int sourceLine)
         {
             SourceName = sourceName;
             RuntimeName = runtimeName;
             TypeName = typeName;
             Initializer = initializer;
+            SourceLine = sourceLine;
         }
 
         public string SourceName { get; }
@@ -932,16 +1167,19 @@ public sealed partial class JazorVueCompiler
         public string TypeName { get; }
 
         public string? Initializer { get; }
+
+        public int SourceLine { get; }
     }
 
     private sealed class ComputedDescriptor
     {
-        public ComputedDescriptor(string sourceName, string runtimeName, string typeName, string expression)
+        public ComputedDescriptor(string sourceName, string runtimeName, string typeName, string expression, int sourceLine)
         {
             SourceName = sourceName;
             RuntimeName = runtimeName;
             TypeName = typeName;
             Expression = expression;
+            SourceLine = sourceLine;
         }
 
         public string SourceName { get; }
@@ -951,6 +1189,8 @@ public sealed partial class JazorVueCompiler
         public string TypeName { get; }
 
         public string Expression { get; }
+
+        public int SourceLine { get; }
     }
 
     private sealed class MethodDescriptor
@@ -961,7 +1201,9 @@ public sealed partial class JazorVueCompiler
             string signature,
             IReadOnlyList<string> parameters,
             string body,
-            bool isAsync)
+            bool isAsync,
+            int sourceLine,
+            int bodyStartLine)
         {
             SourceName = sourceName;
             RuntimeName = runtimeName;
@@ -969,6 +1211,8 @@ public sealed partial class JazorVueCompiler
             Parameters = parameters;
             Body = body;
             IsAsync = isAsync;
+            SourceLine = sourceLine;
+            BodyStartLine = bodyStartLine;
         }
 
         public string SourceName { get; }
@@ -982,6 +1226,10 @@ public sealed partial class JazorVueCompiler
         public string Body { get; }
 
         public bool IsAsync { get; }
+
+        public int SourceLine { get; }
+
+        public int BodyStartLine { get; }
     }
 
     private sealed class LoweringContext
@@ -1038,4 +1286,8 @@ public sealed partial class JazorVueCompiler
         string Line,
         string[] DeclaredNames,
         DeclaredNameLifetime DeclaredNameLifetime);
+
+    private readonly record struct LoweredMethodLine(
+        string Line,
+        int SourceLine);
 }
