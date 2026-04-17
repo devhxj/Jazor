@@ -92,6 +92,9 @@ public partial class SemanticWalker
 		// 如果有表达式体，转换为返回语句
 		if (operation.ExpressionBody is not null)
 		{
+			if (operation.ExpressionBody is IBlockOperation blockExpression)
+				return Visit(blockExpression, argument);
+
 			var expr = Translate<Expression>(operation.ExpressionBody, argument);
 			var returnStmt = new ReturnStatement(expr);
 			return new FunctionBody(NodeList.From<Statement>(returnStmt), strict: true);
@@ -193,13 +196,13 @@ public partial class SemanticWalker
 	public override Node? VisitReturn(IReturnOperation operation, SenseArgument argument)
 	{
 		if (operation.ReturnedValue is null)
-			return new ReturnStatement(null);
+			return WithOrigin(new ReturnStatement(null), operation);
 
 		// return 也是 tuple 运行时协议切换边界。
 		// 如果返回表达式当前 tuple 视图和函数声明返回类型不同，
 		// 这里需要按目标返回类型显式 remap，而不是直接返回源对象。
 		var exp = TranslateTupleForTarget(operation.ReturnedValue, GetTupleReturnTargetType(operation), argument);
-		return new ReturnStatement(exp);
+		return WithOrigin(new ReturnStatement(exp), operation);
 	}
 
 	/// <summary>
@@ -518,7 +521,7 @@ public partial class SemanticWalker
 			// 不支持的类型报告错误 或 其他类型返回 null（如 Object、Array、Date 等不应出现在字面量中）
 			return HandleTransformationFailure<Node>(operation, $"Literal type '{operation.Type?.Name}' ({operation.Kind}) cannot be directly translated to JavaScript literal.");
 
-		return expr;
+		return WithOrigin(expr, operation);
 	}
 
 	/// <summary>
@@ -886,7 +889,7 @@ public partial class SemanticWalker
 		// 不会因为 IOperation 树里缺少显式 conversion 而漏掉 tuple remap。
 		var value = TranslateTupleForTarget(operation.Value, operation.Target.Type, argument);
 		if (operation.Target is IDiscardOperation)
-			return value;
+			return WithOriginIfMissing(value, operation);
 
 		if (operation.Target is IPropertyReferenceOperation propertyReference &&
 			propertyReference.Property.SetMethod is not null)
@@ -904,11 +907,11 @@ public partial class SemanticWalker
 
 			var mapperExpr = GetWhiteListExpression(propertyReference.Property.SetMethod, argument, setterArguments, instance, out _);
 			if (mapperExpr is not null)
-				return mapperExpr;
+				return WithOriginIfMissing(mapperExpr, operation);
 		}
 
 		var target = Translate<Expression>(operation.Target, argument);
-		return new AssignmentExpression(Operator.Assignment, target, value);
+		return WithOrigin(new AssignmentExpression(Operator.Assignment, target, value), operation);
 	}
 
 	/// <summary>

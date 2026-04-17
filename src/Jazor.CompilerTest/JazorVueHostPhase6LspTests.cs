@@ -1,5 +1,6 @@
 using Jazor.VueContracts.Protocol;
 using Jazor.VueHost.Analysis;
+using Jazor.VueHost.Jazor.Projection;
 using Jazor.VueHost.Lsp;
 using Jazor.VueHost.Lsp.Aggregation;
 using Jazor.VueHost.Lsp.Coordination;
@@ -172,6 +173,98 @@ public sealed class JazorVueHostPhase6LspTests
         Assert.IsFalse(target.IsProjected);
         Assert.AreEqual(sourcePath, target.ProjectedDocumentPath);
         Assert.AreEqual(sourcePath, target.MappingId);
+    }
+
+    [TestMethod]
+    public async Task LspSession_HandleRequestAsync_TemplateCompletion_ForColdDiskBackedJazor_UsesPrimaryProjectedVuePath()
+    {
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var documentText =
+                """
+                <template>
+                  <UserCard />
+                </template>
+                """;
+            await File.WriteAllTextAsync(documentPath, documentText);
+
+            var workspaceStore = new InMemoryWorkspaceStore();
+            var virtualDocumentRegistry = new InMemoryVirtualDocumentRegistry();
+            var laneRouter = new LspLaneRouter();
+            var capturingLane = new CapturingVolarLane();
+            ILspLane[] lanes = [capturingLane];
+            var lanesByKind = lanes.ToDictionary(static lane => lane.LaneKind);
+            using var outputStream = new MemoryStream();
+            var writer = new LspMessageWriter(outputStream);
+            var projectionService = new JazorProjectionService();
+            var projectionResolver = new DocumentProjectionResolver(
+                new DocumentRegionClassifier(),
+                virtualDocumentRegistry);
+            var resultAggregator = new LspResultAggregator();
+            var markupBridgeService = new MarkupComponentBridgeService(workspaceStore);
+            var markupBridgeFanout = new MarkupBridgeFanoutCoordinator(markupBridgeService, resultAggregator);
+            var referenceCoordinator = new ReferenceCoordinator(lanesByKind, laneRouter, markupBridgeFanout);
+            var renameCoordinator = new RenameCoordinator(lanesByKind, laneRouter, resultAggregator, markupBridgeFanout);
+            var codeActionCoordinator = new CodeActionCoordinator(lanesByKind, laneRouter, resultAggregator);
+
+            var session = new LspSession(
+                workspaceStore,
+                lanes,
+                laneRouter,
+                writer,
+                projectionService,
+                virtualDocumentRegistry,
+                projectionResolver,
+                resultAggregator,
+                markupBridgeFanout,
+                referenceCoordinator,
+                renameCoordinator,
+                codeActionCoordinator);
+
+            var response = await session.HandleRequestAsync(
+                new LspRequestMessage
+                {
+                    Id = 7001,
+                    Method = "textDocument/completion",
+                    Params = new LspCompletionParams
+                    {
+                        TextDocument = new LspTextDocumentIdentifier
+                        {
+                            Uri = LspProtocolHelpers.ToDocumentUri(documentPath)
+                        },
+                        Position = new LspPosition
+                        {
+                            Line = 1,
+                            Character = 3
+                        }
+                    }
+                },
+                CancellationToken.None);
+
+            Assert.IsNotNull(response);
+            Assert.IsNull(response!.Error);
+            Assert.IsNotNull(capturingLane.LastProjectionTarget);
+            StringAssert.EndsWith(
+                capturingLane.LastProjectionTarget!.ProjectedDocumentPath,
+                ".g.vue",
+                StringComparison.OrdinalIgnoreCase);
+            Assert.IsTrue(capturingLane.LastProjectionTarget.IsProjected);
+
+            var virtualDocuments = await virtualDocumentRegistry.GetBySourceDocumentAsync(
+                documentPath,
+                CancellationToken.None);
+            Assert.IsTrue(
+                virtualDocuments.Any(static document =>
+                    document.Identity.DocumentKind == VirtualDocumentKind.Vue
+                    && document.Identity.ProjectedDocumentPath.EndsWith(".g.vue", StringComparison.OrdinalIgnoreCase)),
+                "Expected cold disk-backed Jazor completion request to materialize the primary projected .g.vue document.");
+        }
+        finally
+        {
+            Directory.Delete(tempDirectory, recursive: true);
+        }
     }
 
     [TestMethod]
@@ -694,6 +787,83 @@ public sealed class JazorVueHostPhase6LspTests
             Line = line,
             Character = character
         };
+    }
+
+    private sealed class CapturingVolarLane : ILspLane
+    {
+        public LaneKind LaneKind => LaneKind.Volar;
+
+        public ProjectionTarget? LastProjectionTarget { get; private set; }
+
+        public ValueTask<IReadOnlyList<LspDiagnostic>> GetDiagnosticsAsync(
+            DocumentSnapshot document,
+            CancellationToken cancellationToken)
+            => ValueTask.FromResult<IReadOnlyList<LspDiagnostic>>(Array.Empty<LspDiagnostic>());
+
+        public ValueTask<LspHoverResult?> GetHoverAsync(
+            DocumentSnapshot document,
+            LspPosition position,
+            ProjectionTarget projectionTarget,
+            CancellationToken cancellationToken)
+            => ValueTask.FromResult<LspHoverResult?>(null);
+
+        public ValueTask<IReadOnlyList<LspCompletionItem>> GetCompletionItemsAsync(
+            DocumentSnapshot document,
+            LspPosition position,
+            ProjectionTarget projectionTarget,
+            CancellationToken cancellationToken)
+        {
+            LastProjectionTarget = projectionTarget;
+            return ValueTask.FromResult<IReadOnlyList<LspCompletionItem>>(Array.Empty<LspCompletionItem>());
+        }
+
+        public ValueTask<IReadOnlyList<LspDocumentSymbol>> GetDocumentSymbolsAsync(
+            DocumentSnapshot document,
+            CancellationToken cancellationToken)
+            => ValueTask.FromResult<IReadOnlyList<LspDocumentSymbol>>(Array.Empty<LspDocumentSymbol>());
+
+        public ValueTask<IReadOnlyList<LspSemanticToken>> GetSemanticTokensAsync(
+            DocumentSnapshot document,
+            CancellationToken cancellationToken)
+            => ValueTask.FromResult<IReadOnlyList<LspSemanticToken>>(Array.Empty<LspSemanticToken>());
+
+        public ValueTask<LspSignatureHelp?> GetSignatureHelpAsync(
+            DocumentSnapshot document,
+            LspPosition position,
+            ProjectionTarget projectionTarget,
+            CancellationToken cancellationToken)
+            => ValueTask.FromResult<LspSignatureHelp?>(null);
+
+        public ValueTask<IReadOnlyList<LspLocation>> GetDefinitionAsync(
+            DocumentSnapshot document,
+            LspPosition position,
+            ProjectionTarget projectionTarget,
+            CancellationToken cancellationToken)
+            => ValueTask.FromResult<IReadOnlyList<LspLocation>>(Array.Empty<LspLocation>());
+
+        public ValueTask<IReadOnlyList<LspLocation>> GetReferencesAsync(
+            DocumentSnapshot document,
+            LspPosition position,
+            bool includeDeclaration,
+            ProjectionTarget projectionTarget,
+            CancellationToken cancellationToken)
+            => ValueTask.FromResult<IReadOnlyList<LspLocation>>(Array.Empty<LspLocation>());
+
+        public ValueTask<LspWorkspaceEdit?> GetRenameAsync(
+            DocumentSnapshot document,
+            LspPosition position,
+            string newName,
+            ProjectionTarget projectionTarget,
+            CancellationToken cancellationToken)
+            => ValueTask.FromResult<LspWorkspaceEdit?>(null);
+
+        public ValueTask<IReadOnlyList<LspCodeAction>> GetCodeActionsAsync(
+            DocumentSnapshot document,
+            LspRange range,
+            IReadOnlyList<LspDiagnostic> diagnostics,
+            ProjectionTarget projectionTarget,
+            CancellationToken cancellationToken)
+            => ValueTask.FromResult<IReadOnlyList<LspCodeAction>>(Array.Empty<LspCodeAction>());
     }
 
     private sealed class StubVueAnalysisClient : IVueAnalysisClient

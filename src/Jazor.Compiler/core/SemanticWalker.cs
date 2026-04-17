@@ -31,11 +31,15 @@ namespace Jazor.Compiler;
 /// </summary>
 public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Node?>, IWhiteList
 {
-    private static readonly NullLiteral Null = new("null");
+    // SourceOrigin is stored on Node.UserData; these literals must not be shared
+    // across unrelated operation trees, otherwise later assignments can overwrite
+    // earlier origins.
+    private static NullLiteral Null => new("null");
 
-    private static readonly Identifier Undefined = new("undefined");
+    private static Identifier Undefined => new("undefined");
 
-    private static readonly MemberExpression IsArrayExpr = new(new Identifier("Array"), new Identifier("isArray"), computed: false, optional: false);
+    private static MemberExpression IsArrayExpr
+        => new(new Identifier("Array"), new Identifier("isArray"), computed: false, optional: false);
 
     /// <summary>
     /// 
@@ -601,6 +605,66 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
     public SemanticWalker(Action<Location, string?> report):this() => _report = report;
 
+	private static SourceOrigin CreateOrigin(IOperation operation, bool isSynthetic = false, string? name = null)
+	{
+		if (operation is null)
+			throw new ArgumentNullException(nameof(operation));
+
+		return CreateOrigin(operation.Syntax.GetLocation(), isSynthetic, name);
+	}
+
+	private static SourceOrigin CreateOrigin(Location location, bool isSynthetic = false, string? name = null)
+	{
+		if (location is null)
+			throw new ArgumentNullException(nameof(location));
+
+		var lineSpan = location.GetLineSpan();
+		var sourcePath = !string.IsNullOrWhiteSpace(lineSpan.Path)
+			? lineSpan.Path
+			: location.SourceTree?.FilePath;
+
+		return new SourceOrigin(
+			SourcePath: sourcePath,
+			StartLine: lineSpan.StartLinePosition.Line,
+			StartColumn: lineSpan.StartLinePosition.Character,
+			EndLine: lineSpan.EndLinePosition.Line,
+			EndColumn: lineSpan.EndLinePosition.Character,
+			Name: name,
+			IsSynthetic: isSynthetic);
+	}
+
+	private static T WithOrigin<T>(T node, IOperation operation)
+		where T : Node
+	{
+		if (node is null)
+			throw new ArgumentNullException(nameof(node));
+
+		node.UserData = CreateOrigin(operation);
+		return node;
+	}
+
+	private static T WithOriginIfMissing<T>(T node, IOperation operation)
+		where T : Node
+	{
+		if (node is null)
+			throw new ArgumentNullException(nameof(node));
+
+		if (node.UserData is not SourceOrigin)
+			node.UserData = CreateOrigin(operation);
+
+		return node;
+	}
+
+	private static T WithSyntheticOrigin<T>(T node, IOperation operation, string? name = null)
+		where T : Node
+	{
+		if (node is null)
+			throw new ArgumentNullException(nameof(node));
+
+		node.UserData = CreateOrigin(operation, isSynthetic: true, name);
+		return node;
+	}
+
 	partial void Generate(ref Dictionary<string, Func<Expression?, Expression?[], Expression?>> funcs);
 
 	[DebuggerStepThrough]
@@ -625,7 +689,15 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         try
         {
             EnsureSufficientExecutionStack(_recursionDepth);
-            return operation.Accept(this, argument);
+            var result = operation.Accept(this, argument);
+            if (result is null)
+                return null;
+
+            // Always anchor the operation root to the current operation.
+            // Child nodes keep their own origins (when present), and sourcemap
+            // emission still prefers innermost captures for same generated
+            // positions.
+            return WithOrigin(result, operation);
         }
         finally
         {

@@ -2875,7 +2875,7 @@ public sealed class ESGeneratorTests
         Assert.AreEqual(1, diagnostics.Length);
         StringAssert.Contains(diagnostics[0].GetMessage(), "Dispose");
         StringAssert.Contains(diagnostics[0].GetMessage(), "DisposeCard");
-        Assert.AreEqual(21, diagnostics[0].Location.GetLineSpan().StartLinePosition.Line + 1);
+        Assert.AreEqual(18, diagnostics[0].Location.GetLineSpan().StartLinePosition.Line + 1);
     }
 
     [TestMethod]
@@ -9351,7 +9351,7 @@ public sealed class ESGeneratorTests
         Assert.AreEqual(1, diagnostics.Length);
         StringAssert.Contains(diagnostics[0].GetMessage(), "VBtn");
         StringAssert.Contains(diagnostics[0].GetMessage(), "Variant");
-        Assert.AreEqual(21, diagnostics[0].Location.GetLineSpan().StartLinePosition.Line + 1);
+        Assert.AreEqual(18, diagnostics[0].Location.GetLineSpan().StartLinePosition.Line + 1);
     }
 
     [TestMethod]

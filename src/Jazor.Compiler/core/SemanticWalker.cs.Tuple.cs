@@ -52,7 +52,7 @@ public partial class SemanticWalker
 			));
 		}
 
-		return new ObjectExpression(NodeList.From(nodes));		
+		return WithOrigin(new ObjectExpression(NodeList.From(nodes)), operation);		
 	}
 
 	/// <summary>
@@ -178,22 +178,22 @@ public partial class SemanticWalker
 		Expression? sourceExpression = null;
 		if (tupleLiteral is null)
 		{
-			if (source is IOperation sourceOperation)
+			if (source is IOperation sourceOperationForProjection)
 			{
-				if (ShouldCacheTupleSource(sourceOperation))
+				if (ShouldCacheTupleSource(sourceOperationForProjection))
 				{
 					// projection 会按字段多次读取源值。
 					// 对调用、属性、复杂表达式必须先整体缓存，
 					// 否则会重复触发 getter/调用，改变原语义。
-					var tempId = new Identifier(GetUniqueName(sourceOperation));
-					var init = Translate<Expression>(sourceOperation, argument);
+					var tempId = new Identifier(GetUniqueName(sourceOperationForProjection));
+					var init = Translate<Expression>(sourceOperationForProjection, argument);
 					var declarator = new VariableDeclarator(tempId, init);
 					argument.AddVarDeclarator(declarator, _recursionDepth);
 					sourceExpression = tempId;
 				}
 				else
 				{
-					sourceExpression = Translate<Expression>(sourceOperation, argument);
+					sourceExpression = Translate<Expression>(sourceOperationForProjection, argument);
 				}
 			}
 			else if (source is Expression expression)
@@ -235,7 +235,10 @@ public partial class SemanticWalker
 				method: false));
 		}
 
-		return new ObjectExpression(NodeList.From(properties));
+		var projection = new ObjectExpression(NodeList.From(properties));
+		return source is IOperation operationForOrigin
+			? WithOriginIfMissing(projection, operationForOrigin)
+			: projection;
 	}
 
 	/// <summary>
@@ -312,7 +315,7 @@ public partial class SemanticWalker
 		// let yyy = temp.Item2;
 		var expressions = new List<Expression>();
 		Deconstruct(operation.Target, operation.Value.Type!, operation.Value, expressions);
-		return new SequenceExpression(NodeList.From(expressions));
+		return WithOrigin(new SequenceExpression(NodeList.From(expressions)), operation);
 
 		/// <summary>
 		/// 从 value 获取某个 tuple 槽位的值表达式。

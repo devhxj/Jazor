@@ -6,6 +6,12 @@ namespace Jazor.CompilerTest;
 internal static class SourceMapTestHelpers
 {
     public readonly record struct SourceMapLocation(int SourceIndex, int SourceLine);
+    public readonly record struct SourceMapSegment(
+        int GeneratedLine,
+        int GeneratedColumn,
+        int SourceIndex,
+        int SourceLine,
+        int SourceColumn);
 
     public static void AssertGeneratedLineMapsToSourceLine(
         string generatedText,
@@ -47,9 +53,18 @@ internal static class SourceMapTestHelpers
 
     public static IReadOnlyDictionary<int, SourceMapLocation> DecodeGeneratedLineToSourceLocation(JsonElement sourceMap)
     {
+        var result = new Dictionary<int, SourceMapLocation>();
+        foreach (var segment in DecodeSegments(sourceMap))
+            result.TryAdd(segment.GeneratedLine, new SourceMapLocation(segment.SourceIndex, segment.SourceLine));
+
+        return result;
+    }
+
+    public static IReadOnlyList<SourceMapSegment> DecodeSegments(JsonElement sourceMap)
+    {
         const string base64Digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
         var mappings = sourceMap.GetProperty("mappings").GetString() ?? string.Empty;
-        var result = new Dictionary<int, SourceMapLocation>();
+        var result = new List<SourceMapSegment>();
         var generatedLine = 0;
         var previousGeneratedColumn = 0;
         var previousSourceIndex = 0;
@@ -83,7 +98,12 @@ internal static class SourceMapTestHelpers
             previousSourceIndex += DecodeVlq(mappings, ref position, base64Digits);
             previousSourceLine += DecodeVlq(mappings, ref position, base64Digits);
             previousSourceColumn += DecodeVlq(mappings, ref position, base64Digits);
-            result.TryAdd(generatedLine, new SourceMapLocation(previousSourceIndex, previousSourceLine));
+            result.Add(new SourceMapSegment(
+                GeneratedLine: generatedLine,
+                GeneratedColumn: previousGeneratedColumn,
+                SourceIndex: previousSourceIndex,
+                SourceLine: previousSourceLine,
+                SourceColumn: previousSourceColumn));
 
             if (position < mappings.Length && mappings[position] != ',' && mappings[position] != ';')
             {
@@ -141,6 +161,41 @@ internal static class SourceMapTestHelpers
         }
 
         return line;
+    }
+
+    public static (int Line, int Column) GetLineColumnContaining(string text, string value)
+    {
+        var index = text.IndexOf(value, StringComparison.Ordinal);
+        Assert.IsTrue(index >= 0, $"Expected to find '{value}'.");
+
+        var line = 0;
+        var column = 0;
+        var lastWasCarriageReturn = false;
+        for (var position = 0; position < index; position++)
+        {
+            var ch = text[position];
+            switch (ch)
+            {
+                case '\r':
+                    line++;
+                    column = 0;
+                    lastWasCarriageReturn = true;
+                    break;
+                case '\n':
+                    if (!lastWasCarriageReturn)
+                        line++;
+
+                    column = 0;
+                    lastWasCarriageReturn = false;
+                    break;
+                default:
+                    column++;
+                    lastWasCarriageReturn = false;
+                    break;
+            }
+        }
+
+        return (line, column);
     }
 
     public static int FindSourceIndexContaining(JsonElement sourceMap, string expectedSourcePath)

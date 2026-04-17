@@ -1123,11 +1123,11 @@ public partial class SemanticWalker
 	{
 		// 隐式索引器引用的直接AST转换，生成最简洁的代码
 		var instance = Translate<Expression>(operation.Instance, argument);
-		var indexArgument = Translate<Expression>(operation.Argument, argument);
+		var indexArgument = operation.Argument is IUnaryOperation indexUnaryOp && indexUnaryOp.OperatorKind == UnaryOperatorKind.Hat
+			? Translate<Expression>(indexUnaryOp.Operand, argument)
+			: Translate<Expression>(operation.Argument, argument);
 		// 生成 array.length 访问
 		var lengthAccess = new MemberExpression(instance, new Identifier("length"), computed: false, optional: false);
-		if (operation.Argument is IUnaryOperation indexUnaryOp && indexUnaryOp.OperatorKind == UnaryOperatorKind.Hat)
-			indexArgument = Translate<Expression>(indexUnaryOp.Operand, argument);
 		// 处理从末尾开始的索引（^n），转换为 length - n
 		// 普通索引计算，不是从末尾开始的索引
 		// 这种情况可能出现在显式使用 Index.FromEnd() 等场景
@@ -1149,7 +1149,7 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitLocalReference(ILocalReferenceOperation operation, SenseArgument argument)
 	{
-		return new Identifier(operation.Local.Name);
+		return WithOrigin(new Identifier(operation.Local.Name), operation);
 	}
 
 	/// <summary>
@@ -1165,7 +1165,7 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitParameterReference(IParameterReferenceOperation operation, SenseArgument argument)
 	{
-		return new Identifier(operation.Parameter.Name);
+		return WithOrigin(new Identifier(operation.Parameter.Name), operation);
 	}
 
 	/// <summary>
@@ -1187,7 +1187,7 @@ public partial class SemanticWalker
 		// 字段没有 GetMethod/SetMethod，直接使用字段符号进行白名单查询
 		var mapperExpr = GetWhiteListExpression(operation.Field, argument, [], instance, out var alias);
 		if (mapperExpr is not null)
-			return mapperExpr;
+			return WithOriginIfMissing(mapperExpr, operation);
 
 		// 对于实例字段访问，需要创建成员访问表达式
 		// ImplicitReceiver 指那些语法上不需要、也不能写 this 的隐式实例引用
@@ -1197,7 +1197,7 @@ public partial class SemanticWalker
 			// 隐式接收者（如对象初始化器中的字段引用）
 			// 如果是常量字段，返回字面量；否则返回字段名
 			var fieldExpr = GetFieldName(operation, operation.Field);
-			return fieldExpr;
+			return WithOriginIfMissing(fieldExpr, operation);
 		}
 
 		// 获取字段名称（支持别名）
@@ -1209,7 +1209,7 @@ public partial class SemanticWalker
 		if (instance is not null)
 		{
 			var optional = operation.Instance is IConditionalAccessInstanceOperation;
-			return new MemberExpression(instance, property, false, optional);
+			return WithOriginIfMissing(new MemberExpression(instance, property, false, optional), operation);
 		}
 
 		// 静态成员：生成完整的限定名
@@ -1218,23 +1218,24 @@ public partial class SemanticWalker
 		{
 			if (TryBuildImportedModuleMember(operation.Field.ContainingType, fieldName!, argument, out var importedMember) &&
 				importedMember is not null)
-				return importedMember;
+				return WithOriginIfMissing(importedMember, operation);
 
 			if (operation.Field.IsConst)
-				return GetFieldName(operation, operation.Field);
+				return WithOriginIfMissing(GetFieldName(operation, operation.Field), operation);
 
 			var containing = BuildFullTypeName(operation.Field.ContainingType, argument);
 			if (containing is not null)
-				return new MemberExpression(containing, property, computed: false, optional: false);
+				return WithOriginIfMissing(new MemberExpression(containing, property, computed: false, optional: false), operation);
 
 			var qualified = TryBuildStaticQualifiedMemberFromSyntax(operation.Syntax, fieldName!);
 			if (qualified is not null)
-				return qualified;
+				return WithOriginIfMissing(qualified, operation);
 		}
 
-		return operation.Instance is null
+		var fallback = operation.Instance is null
 			? GetFieldName(operation, operation.Field)
 			: property;
+		return WithOriginIfMissing(fallback, operation);
 	}
 
 	/// <summary>
@@ -1251,7 +1252,7 @@ public partial class SemanticWalker
 	{
 		if (operation.Property.Name == "Rank" &&
 			operation.Instance?.Type is IArrayTypeSymbol arrayType)
-			return new NumericLiteral(arrayType.Rank, arrayType.Rank.ToString());
+			return WithOrigin(new NumericLiteral(arrayType.Rank, arrayType.Rank.ToString()), operation);
 
 		// 处理属性调用的实例对象
 		var instance = Translate<Expression>(operation.Instance, argument, null);
@@ -1269,13 +1270,13 @@ public partial class SemanticWalker
 			(operation.Property.IsIndexer || operation.Property.Parameters.Length > 0))
 		{
 			var indexerOptional = operation.Instance is IConditionalAccessInstanceOperation;
-			return new MemberExpression(instance, arguments[0], computed: true, optional: indexerOptional);
+			return WithOriginIfMissing(new MemberExpression(instance, arguments[0], computed: true, optional: indexerOptional), operation);
 		}
 
 		// 检查白名单映射
 		var mapperExpr = GetWhiteListExpression(operation.Property.GetMethod!, argument, arguments, instance, out var alias);
 		if (mapperExpr is not null)
-			return mapperExpr;
+			return WithOriginIfMissing(mapperExpr, operation);
 
 		// 获取方法名称
 		var propertyName = string.IsNullOrEmpty(alias)
@@ -1286,7 +1287,9 @@ public partial class SemanticWalker
 		if (instance is not null)
 		{
 			var optional = operation.Instance is IConditionalAccessInstanceOperation;
-			return BuildAliasedPropertyAccess(instance, propertyName!, optional, ShouldInvokeAliasedPropertyGetter(operation, propertyName!));
+			return WithOriginIfMissing(
+				BuildAliasedPropertyAccess(instance, propertyName!, optional, ShouldInvokeAliasedPropertyGetter(operation, propertyName!)),
+				operation);
 		}
 
 		// todo：后续需要清理和白名单整合
@@ -1296,19 +1299,19 @@ public partial class SemanticWalker
 		{
 			if (TryBuildImportedModulePropertyAccess(operation.Property, argument, out var importedProperty) &&
 				importedProperty is not null)
-				return importedProperty;
+				return WithOriginIfMissing(importedProperty, operation);
 
 			if (TryBuildPreferredRuntimeStaticMemberAccess(operation.Property, operation.Syntax, operation.SemanticModel, propertyName!, out var preferredStaticProperty) &&
 				preferredStaticProperty is not null)
-				return preferredStaticProperty;
+				return WithOriginIfMissing(preferredStaticProperty, operation);
 
 			// 生成类型标识符作为对象
 			var containing = BuildFullTypeName(operation.Property.ContainingType, argument);
 			if (containing is not null)
-				return new MemberExpression(containing, property, computed: false, optional: false);
+				return WithOriginIfMissing(new MemberExpression(containing, property, computed: false, optional: false), operation);
 		}
 
-		return property;
+		return WithOriginIfMissing(property, operation);
 	}
 
 	/// <summary>
@@ -1477,11 +1480,11 @@ public partial class SemanticWalker
 		var whiteListMethod = ResolveStaticInterfaceProjectionMethod(operation.TargetMethod, operation.Syntax, operation.SemanticModel);
 		if (TryBuildIntrinsicMethodInvocation(operation, whiteListMethod, instance, arguments, out var intrinsicExpr) &&
 			intrinsicExpr is not null)
-			return BuildInvExpr(hasReturn, intrinsicExpr, refParas, argument);
+			return WithOriginIfMissing(BuildInvExpr(hasReturn, intrinsicExpr, refParas, argument), operation);
 
 		var mapperExpr = GetWhiteListExpression(whiteListMethod, argument, arguments, instance, out var alias);
 		if (mapperExpr is not null)
-			return BuildInvExpr(hasReturn, mapperExpr, refParas, argument);
+			return WithOriginIfMissing(BuildInvExpr(hasReturn, mapperExpr, refParas, argument), operation);
 
 		// 判断方法调用的类型
 		var methodName = string.IsNullOrEmpty(alias) ? Util.GetConfigOrSymbolName(operation.TargetMethod) : alias;
@@ -1527,7 +1530,7 @@ public partial class SemanticWalker
 
 		callee = NormalizeRuntimeReceiverHostCallee(callee, operation.TargetMethod);
 		var callExpr = new CallExpression(callee, NodeList.From(arguments), optional: false);
-		return BuildInvExpr(hasReturn, callExpr, refParas, argument);
+		return WithOriginIfMissing(BuildInvExpr(hasReturn, callExpr, refParas, argument), operation);
 
 		Expression BuildInvExpr(bool hasReturns, in Expression expr, in List<Expression> refs, in SenseArgument ctx)
 		{

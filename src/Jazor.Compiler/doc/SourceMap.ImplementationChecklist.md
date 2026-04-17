@@ -40,6 +40,31 @@
 2. token 级极致 mapping
 3. 所有语法点一次性全覆盖
 
+### 3.1 当前“全节点 sourcemap”口径（active lane）
+
+当前执行层里的“全节点”定义为：
+
+1. 对 `SemanticWalker` 中“已支持且会产出 `Node`”的 `Visit*` 操作，`Visit(operation, ...)` 返回的根节点必须带 `SourceOrigin`
+2. sourcemap 只对可输出的语义节点做保证，不对未支持语法点做伪映射
+
+明确不纳入“全节点”保证的范围：
+
+1. `SemanticWalker.cs.NotSupport.cs` 中明确 `NotSupport` 的操作（抛错或返回 `null`）
+2. 由父节点统一处理、子节点自身不产出独立 AST 节点的场景（例如 `IDefaultCaseClauseOperation`）
+3. `IAttributeOperation` 当前未产出 decorator 节点的路径（返回 `null`）
+
+形态依赖（条件覆盖）：
+
+1. `IImplicitIndexerReferenceOperation` 是否出现受 Roslyn operation tree 形态影响
+2. 测试策略为“出现即强断言 SourceOrigin；未出现则通过 `IArrayElementReferenceOperation` 路径兜底验证”
+
+对应回归测试入口：
+
+1. `src/Jazor.CompilerTest/SemanticWalkerSourceOriginTest.cs`
+2. `src/Jazor.CompilerTest/SemanticWalkerSourceMapEmissionTest.cs`
+3. `src/Jazor.CompilerTest/ESGeneratorSourceMapCatalogTest.cs`
+4. `src/Jazor.EmitTest/StaticModuleSourceMapTests.cs`
+
 ## 4. 代码改动顺序
 
 建议严格按顺序推进，避免一次跨太多层。

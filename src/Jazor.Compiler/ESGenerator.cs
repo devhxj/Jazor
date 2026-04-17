@@ -1,7 +1,9 @@
+using Acornima.Ast;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -18,6 +20,25 @@ public sealed class ESGenerator : IIncrementalGenerator
         category: "Jazor.Compiler",
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor SourceMapGenerationFailed = new(
+        id: "JAZORG002",
+        title: "Jazor source map generation failed",
+        messageFormat: "Failed to generate source map for '{0}': {1}. JavaScript module was emitted without source map.",
+        category: "Jazor.Compiler",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
+    private static Func<Node, string, bool, string?, Func<string, string?>?, GeneratedJavaScriptArtifact> SourceMapArtifactFactory = static (
+        node,
+        generatedFileName,
+        includeSourcesContent,
+        sourceRootPath,
+        readSourceContent) => node.ToKnRECMAScriptWithSourceMap(
+            generatedFileName: generatedFileName,
+            includeSourcesContent: includeSourcesContent,
+            sourceRootPath: sourceRootPath,
+            readSourceContent: readSourceContent);
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -69,11 +90,12 @@ public sealed class ESGenerator : IIncrementalGenerator
             legacyCandidates.Add(candidate);
         }
 
-        EmitLegacyCatalog(context, assemblyName, legacyCandidates);
+        EmitLegacyCatalog(context, compilation, assemblyName, legacyCandidates);
     }
 
     private static void EmitLegacyCatalog(
         SourceProductionContext context,
+        Compilation compilation,
         string assemblyName,
         IReadOnlyList<ModuleCandidate> candidates)
     {
@@ -82,6 +104,8 @@ public sealed class ESGenerator : IIncrementalGenerator
 
         var seenTypes = new HashSet<string>(StringComparer.Ordinal);
         var generatedModules = new List<GeneratedModuleInfo>();
+        var sourceContentLookup = BuildSourceContentLookup(compilation);
+        var sourceRootPath = TryGetCompilationSourceRoot(compilation);
 
         foreach (var candidate in candidates)
         {
@@ -93,15 +117,47 @@ public sealed class ESGenerator : IIncrementalGenerator
             {
                 var converter = new AstConverter(candidate.ClassSymbol, candidate.SemanticModel);
                 var module = converter.Convert().GetAwaiter().GetResult();
-                var content = module?.ToKnRECMAScript() ?? string.Empty;
                 var relativePath = GetRelativePath(candidate.ClassSymbol);
+                GeneratedJavaScriptArtifact? artifact = null;
+                string content;
+
+                if (module is null)
+                {
+                    content = string.Empty;
+                }
+                else
+                {
+                    try
+                    {
+                        artifact = SourceMapArtifactFactory(
+                            module,
+                            relativePath,
+                            true,
+                            sourceRootPath,
+                            sourcePath => TryReadSourceContentFromCompilation(sourceContentLookup, sourcePath));
+                    }
+                    catch (Exception ex)
+                    {
+                        context.ReportDiagnostic(Diagnostic.Create(
+                            SourceMapGenerationFailed,
+                            candidate.Location,
+                            typeName,
+                            ex.Message));
+                    }
+
+                    content = artifact?.Content ?? module.ToKnRECMAScript();
+                }
+
                 generatedModules.Add(new GeneratedModuleInfo(
                     assemblyName,
                     typeName,
                     typeName,
                     relativePath,
                     content,
-                    ComputeSha256Hex(content)));
+                    artifact?.JsHash ?? ComputeSha256Hex(content),
+                    artifact is null ? null : BuildSourceMapRelativePath(relativePath),
+                    artifact?.SourceMapContent,
+                    artifact?.MapHash));
             }
             catch (Exception ex)
             {
@@ -123,6 +179,16 @@ public sealed class ESGenerator : IIncrementalGenerator
         });
 
         context.AddSource("Jazor.Generated.ModuleCatalog.g.cs", BuildModuleCatalogSource(assemblyName, generatedModules));
+
+        var sourceMapModules = generatedModules
+            .Where(static module => !string.IsNullOrWhiteSpace(module.SourceMapRelativePath) && !string.IsNullOrWhiteSpace(module.SourceMapContent))
+            .ToArray();
+        if (sourceMapModules.Length > 0)
+        {
+            context.AddSource(
+                "Jazor.Generated.ModuleSourceMapCatalog.g.cs",
+                BuildModuleSourceMapCatalogSource(assemblyName, sourceMapModules));
+        }
     }
 
     private static string BuildModuleCatalogSource(string assemblyName, IReadOnlyList<GeneratedModuleInfo> modules)
@@ -185,6 +251,73 @@ public sealed class ESGenerator : IIncrementalGenerator
         return builder.ToString();
     }
 
+    private static string BuildModuleSourceMapCatalogSource(string assemblyName, IReadOnlyList<GeneratedModuleInfo> modules)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("// <auto-generated/>");
+        builder.AppendLine("#nullable enable");
+        builder.AppendLine("namespace Jazor.Generated");
+        builder.AppendLine("{");
+        builder.AppendLine("    [global::System.Runtime.CompilerServices.CompilerGenerated]");
+        builder.AppendLine("    public static partial class ModuleSourceMapCatalog");
+        builder.AppendLine("    {");
+        builder.Append("        public static string AssemblyName { get; } = ");
+        builder.Append(EscapeCSharpString(assemblyName));
+        builder.AppendLine(";");
+        builder.AppendLine();
+        builder.AppendLine("        public static global::System.Collections.IEnumerable GetModules()");
+        builder.AppendLine("        {");
+        builder.AppendLine("            return _modules;");
+        builder.AppendLine("        }");
+        builder.AppendLine();
+        builder.AppendLine("        [global::System.Runtime.CompilerServices.CompilerGenerated]");
+        builder.AppendLine("        private sealed class GeneratedModuleSourceMap");
+        builder.AppendLine("        {");
+        builder.AppendLine("            public GeneratedModuleSourceMap(string assemblyName, string typeName, string id, string relativePath, string sourceMapRelativePath, string sourceMapContent, string mapHash)");
+        builder.AppendLine("            {");
+        builder.AppendLine("                AssemblyName = assemblyName;");
+        builder.AppendLine("                TypeName = typeName;");
+        builder.AppendLine("                Id = id;");
+        builder.AppendLine("                RelativePath = relativePath;");
+        builder.AppendLine("                SourceMapRelativePath = sourceMapRelativePath;");
+        builder.AppendLine("                SourceMapContent = sourceMapContent;");
+        builder.AppendLine("                MapHash = mapHash;");
+        builder.AppendLine("            }");
+        builder.AppendLine();
+        builder.AppendLine("            public string AssemblyName { get; }");
+        builder.AppendLine("            public string TypeName { get; }");
+        builder.AppendLine("            public string Id { get; }");
+        builder.AppendLine("            public string RelativePath { get; }");
+        builder.AppendLine("            public string SourceMapRelativePath { get; }");
+        builder.AppendLine("            public string SourceMapContent { get; }");
+        builder.AppendLine("            public string MapHash { get; }");
+        builder.AppendLine("        }");
+        builder.AppendLine();
+        builder.AppendLine("        private static readonly GeneratedModuleSourceMap[] _modules = new GeneratedModuleSourceMap[]");
+        builder.AppendLine("        {");
+
+        foreach (var module in modules)
+        {
+            var sourceMapRelativePath = module.SourceMapRelativePath!;
+            var sourceMapContent = module.SourceMapContent!;
+            var mapHash = module.MapHash ?? ComputeSha256Hex(sourceMapContent);
+
+            builder.AppendLine("            new GeneratedModuleSourceMap(");
+            builder.Append("                assemblyName: ").Append(EscapeCSharpString(module.AssemblyName)).AppendLine(",");
+            builder.Append("                typeName: ").Append(EscapeCSharpString(module.TypeName)).AppendLine(",");
+            builder.Append("                id: ").Append(EscapeCSharpString(module.Id)).AppendLine(",");
+            builder.Append("                relativePath: ").Append(EscapeCSharpString(module.RelativePath)).AppendLine(",");
+            builder.Append("                sourceMapRelativePath: ").Append(EscapeCSharpString(sourceMapRelativePath)).AppendLine(",");
+            builder.Append("                sourceMapContent: ").Append(EscapeCSharpString(sourceMapContent)).AppendLine(",");
+            builder.Append("                mapHash: ").Append(EscapeCSharpString(mapHash)).AppendLine("),");
+        }
+
+        builder.AppendLine("        };");
+        builder.AppendLine("    }");
+        builder.AppendLine("}");
+        return builder.ToString();
+    }
+
     private static string GetRelativePath(INamedTypeSymbol classSymbol)
     {
         foreach (var attribute in classSymbol.GetAttributes())
@@ -229,6 +362,144 @@ public sealed class ESGenerator : IIncrementalGenerator
         }
 
         return normalized;
+    }
+
+    private static string BuildSourceMapRelativePath(string relativePath)
+        => $"{relativePath}.map";
+
+    private static Dictionary<string, string> BuildSourceContentLookup(Compilation compilation)
+    {
+        var sourceContentByPath = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var syntaxTree in compilation.SyntaxTrees)
+        {
+            var sourcePath = syntaxTree.FilePath;
+            if (string.IsNullOrWhiteSpace(sourcePath))
+                continue;
+
+            var sourceText = syntaxTree.GetText().ToString();
+            TryAddPath(sourceContentByPath, sourcePath, sourceText);
+
+            try
+            {
+                TryAddPath(sourceContentByPath, Path.GetFullPath(sourcePath), sourceText);
+            }
+            catch
+            {
+                // ignored: keep best-effort in-memory lookup only
+            }
+        }
+
+        return sourceContentByPath;
+    }
+
+    private static string? TryGetCompilationSourceRoot(Compilation compilation)
+    {
+        var directories = new List<string>();
+        foreach (var syntaxTree in compilation.SyntaxTrees)
+        {
+            var sourcePath = syntaxTree.FilePath;
+            if (string.IsNullOrWhiteSpace(sourcePath) || !Path.IsPathRooted(sourcePath))
+                continue;
+
+            try
+            {
+                var fullPath = Path.GetFullPath(sourcePath);
+                var directory = Path.GetDirectoryName(fullPath);
+                if (!string.IsNullOrWhiteSpace(directory))
+                    directories.Add(directory);
+            }
+            catch
+            {
+                // ignored: keep best-effort root discovery
+            }
+        }
+
+        if (directories.Count == 0)
+            return null;
+
+        var current = Path.GetFullPath(directories[0]);
+        while (!string.IsNullOrWhiteSpace(current))
+        {
+            var normalizedCurrent = EnsureDirectorySeparator(current);
+            var containsAll = true;
+            foreach (var directory in directories)
+            {
+                var normalizedDirectory = EnsureDirectorySeparator(Path.GetFullPath(directory));
+                if (!normalizedDirectory.StartsWith(normalizedCurrent, StringComparison.OrdinalIgnoreCase))
+                {
+                    containsAll = false;
+                    break;
+                }
+            }
+
+            if (containsAll)
+                return current;
+
+            current = Path.GetDirectoryName(current);
+        }
+
+        return null;
+    }
+
+    private static string? TryReadSourceContentFromCompilation(
+        IReadOnlyDictionary<string, string> sourceContentByPath,
+        string sourcePath)
+    {
+        if (string.IsNullOrWhiteSpace(sourcePath))
+            return null;
+
+        var normalizedPath = NormalizePathKey(sourcePath);
+        if (sourceContentByPath.TryGetValue(normalizedPath, out var content))
+            return content;
+
+        try
+        {
+            var fullPath = NormalizePathKey(Path.GetFullPath(sourcePath));
+            if (sourceContentByPath.TryGetValue(fullPath, out content))
+                return content;
+        }
+        catch
+        {
+            // ignored: best-effort lookup
+        }
+
+        var fileName = Path.GetFileName(sourcePath);
+        if (string.IsNullOrWhiteSpace(fileName))
+            return null;
+
+        var suffix = "/" + fileName;
+        foreach (var entry in sourceContentByPath)
+        {
+            if (entry.Key.EndsWith(suffix, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(entry.Key, fileName, StringComparison.OrdinalIgnoreCase))
+            {
+                return entry.Value;
+            }
+        }
+
+        return null;
+    }
+
+    private static void TryAddPath(IDictionary<string, string> sourceContentByPath, string path, string content)
+    {
+        var normalizedPath = NormalizePathKey(path);
+        if (string.IsNullOrWhiteSpace(normalizedPath))
+            return;
+
+        sourceContentByPath[normalizedPath] = content;
+    }
+
+    private static string NormalizePathKey(string path)
+        => path.Replace('\\', '/').Trim();
+
+    private static string EnsureDirectorySeparator(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return string.Empty;
+
+        return path.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal)
+            ? path
+            : path + Path.DirectorySeparatorChar;
     }
 
     private static string ComputeSha256Hex(string content)
@@ -278,5 +549,8 @@ public sealed class ESGenerator : IIncrementalGenerator
         string Id,
         string RelativePath,
         string Content,
-        string Hash);
+        string Hash,
+        string? SourceMapRelativePath,
+        string? SourceMapContent,
+        string? MapHash);
 }

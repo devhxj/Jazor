@@ -40,10 +40,56 @@ public static class Util
         => node.ToJavaScript(KnRJavaScriptTextFormatterOptions.Default, AstToJavaScriptOptions.Default);
 
     /// <summary>
+    /// 以仓库测试使用的 KnR 风格输出 ECMAScript 文本与 source map。
+    /// </summary>
+    /// <param name="node">待输出的 AST 根节点。</param>
+    /// <param name="generatedFileName">source map 的 file 字段（通常为模块文件名）。</param>
+    /// <param name="includeSourcesContent">是否内嵌 sourcesContent。</param>
+    /// <param name="sourceRootPath">用于把绝对路径归一化为相对路径的根目录。</param>
+    /// <param name="readSourceContent">可选源码读取回调；未提供时不会内嵌 sourcesContent。</param>
+    public static GeneratedJavaScriptArtifact ToKnRECMAScriptWithSourceMap(
+        this Node node,
+        string generatedFileName = "module.mjs",
+        bool includeSourcesContent = true,
+        string? sourceRootPath = null,
+        Func<string, string?>? readSourceContent = null)
+        => SourceMapEmitter.Emit(
+            node,
+            KnRJavaScriptTextFormatterOptions.Default,
+            AstToJavaScriptOptions.Default,
+            generatedFileName,
+            includeSourcesContent,
+            sourceRootPath,
+            readSourceContent);
+
+    /// <summary>
     /// 以默认 writer 选项输出 ECMAScript 文本。
     /// </summary>
     public static string ToECMAScript(this Node node)
         => node.ToJavaScript(JavaScriptTextWriterOptions.Default, AstToJavaScriptOptions.Default);
+
+    /// <summary>
+    /// 以默认 writer 选项输出 ECMAScript 文本与 source map。
+    /// </summary>
+    /// <param name="node">待输出的 AST 根节点。</param>
+    /// <param name="generatedFileName">source map 的 file 字段（通常为模块文件名）。</param>
+    /// <param name="includeSourcesContent">是否内嵌 sourcesContent。</param>
+    /// <param name="sourceRootPath">用于把绝对路径归一化为相对路径的根目录。</param>
+    /// <param name="readSourceContent">可选源码读取回调；未提供时不会内嵌 sourcesContent。</param>
+    public static GeneratedJavaScriptArtifact ToECMAScriptWithSourceMap(
+        this Node node,
+        string generatedFileName = "module.js",
+        bool includeSourcesContent = true,
+        string? sourceRootPath = null,
+        Func<string, string?>? readSourceContent = null)
+        => SourceMapEmitter.Emit(
+            node,
+            JavaScriptTextWriterOptions.Default,
+            AstToJavaScriptOptions.Default,
+            generatedFileName,
+            includeSourcesContent,
+            sourceRootPath,
+            readSourceContent);
 
     /// <summary>
     /// 获取 ISymbol 显式配置的 JavaScript 名称。

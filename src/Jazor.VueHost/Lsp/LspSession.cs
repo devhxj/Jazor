@@ -645,6 +645,7 @@ internal sealed class LspSession
             await File.ReadAllTextAsync(documentPath, cancellationToken),
             version: null);
         await _workspaceStore.UpsertDocumentAsync(document, cancellationToken);
+        await UpdateProjectionStateAsync(document, cancellationToken);
         return document;
     }
 

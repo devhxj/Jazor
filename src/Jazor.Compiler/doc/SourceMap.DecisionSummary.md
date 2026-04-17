@@ -87,6 +87,18 @@ tuple 在 Jazor 中是语法糖，不是 runtime 类型设计问题。
 2. token 级极致 mapping
 3. 所有语法点一次性全覆盖
 
+### 2.8 “全节点 sourcemap”边界
+
+当前 active lane 里的“全节点”只覆盖 `SemanticWalker` 可输出 `Node` 的支持节点。  
+`NotSupport` 节点不强制提供 sourcemap。
+
+补充规则：
+
+1. `NotSupport`（抛错/返回 `null`）不纳入 sourcemap 保证
+2. 由父节点统一消费、子节点自身不产出节点的场景（如 default case clause）不单独要求映射
+3. `IImplicitIndexerReferenceOperation` 受 Roslyn 形态影响，采用条件覆盖（出现即断言）
+4. `IAttributeOperation` 仅在实际产出 decorator 节点时要求附带 `SourceOrigin`
+
 ## 3. 实施顺序
 
 后续实现时按这个顺序：

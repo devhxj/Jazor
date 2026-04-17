@@ -1,4 +1,5 @@
 using System.Text;
+using System.Security.Cryptography;
 
 namespace Jazor.Emit;
 
@@ -36,15 +37,46 @@ internal sealed class ModuleWriter
             if (!string.IsNullOrEmpty(targetDirectory))
                 Directory.CreateDirectory(targetDirectory);
 
+            var hasSourceMap = !string.IsNullOrWhiteSpace(module.SourceMapRelativePath) &&
+                               !string.IsNullOrWhiteSpace(module.SourceMapContent);
+            var sourceMapRelativePath = hasSourceMap ? module.SourceMapRelativePath : null;
+            var sourceMapPath = hasSourceMap
+                ? GetTargetPath(normalizedOutputDirectory, sourceMapRelativePath!)
+                : null;
+            var mapHash = hasSourceMap
+                ? module.MapHash ?? ComputeSha256Hex(module.SourceMapContent!)
+                : null;
+            var moduleContent = hasSourceMap
+                ? AppendSourceMappingUrl(module.Content, Path.GetFileName(sourceMapPath!))
+                : module.Content;
+            if (hasSourceMap)
+            {
+                var sourceMapDirectory = Path.GetDirectoryName(sourceMapPath);
+                if (!string.IsNullOrEmpty(sourceMapDirectory))
+                    Directory.CreateDirectory(sourceMapDirectory);
+            }
+
             if (existingByPath.TryGetValue(module.RelativePath, out var existingEntry) &&
                 StringComparer.Ordinal.Equals(existingEntry.Hash, module.Hash) &&
-                File.Exists(targetPath))
+                StringComparer.Ordinal.Equals(existingEntry.SourceMapPath, sourceMapRelativePath) &&
+                StringComparer.Ordinal.Equals(existingEntry.MapHash, mapHash) &&
+                File.Exists(targetPath) &&
+                (!hasSourceMap || File.Exists(sourceMapPath!)))
             {
                 skipped++;
             }
             else
             {
-                File.WriteAllText(targetPath, module.Content, Utf8WithoutBom);
+                File.WriteAllText(targetPath, moduleContent, Utf8WithoutBom);
+                if (hasSourceMap)
+                    File.WriteAllText(sourceMapPath!, module.SourceMapContent!, Utf8WithoutBom);
+
+                if (existingEntry?.SourceMapPath is { Length: > 0 } oldSourceMapPath &&
+                    !StringComparer.Ordinal.Equals(oldSourceMapPath, sourceMapRelativePath))
+                {
+                    DeleteIfExists(GetTargetPath(normalizedOutputDirectory, oldSourceMapPath));
+                }
+
                 written++;
             }
 
@@ -53,7 +85,9 @@ internal sealed class ModuleWriter
                 module.TypeName,
                 module.Id,
                 module.RelativePath,
-                module.Hash));
+                module.Hash,
+                sourceMapRelativePath,
+                mapHash));
         }
 
         if (clean && existingManifest is not null)
@@ -73,6 +107,9 @@ internal sealed class ModuleWriter
                     File.Delete(oldTargetPath);
                     deleted++;
                 }
+
+                if (oldModule.SourceMapPath is { Length: > 0 })
+                    DeleteIfExists(GetTargetPath(normalizedOutputDirectory, oldModule.SourceMapPath));
             }
         }
 
@@ -92,6 +129,32 @@ internal sealed class ModuleWriter
 
     private static string EnsureDirectorySeparator(string path)
         => path.EndsWith(Path.DirectorySeparatorChar) ? path : path + Path.DirectorySeparatorChar;
+
+    private static void DeleteIfExists(string path)
+    {
+        if (File.Exists(path))
+            File.Delete(path);
+    }
+
+    private static string AppendSourceMappingUrl(string content, string mapFileName)
+    {
+        var normalized = (content ?? string.Empty).TrimEnd('\r', '\n');
+        if (normalized.Length == 0)
+            return $"//# sourceMappingURL={mapFileName}" + Environment.NewLine;
+
+        return normalized + Environment.NewLine + $"//# sourceMappingURL={mapFileName}" + Environment.NewLine;
+    }
+
+    private static string ComputeSha256Hex(string content)
+    {
+        using var sha = SHA256.Create();
+        var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(content ?? string.Empty));
+        var builder = new StringBuilder(bytes.Length * 2);
+        foreach (var item in bytes)
+            builder.Append(item.ToString("X2"));
+
+        return builder.ToString();
+    }
 }
 
 internal sealed record WriteResult(

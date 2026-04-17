@@ -38,4 +38,6 @@ internal sealed record ManifestModuleEntry(
     string TypeName,
     string Id,
     string RelativePath,
-    string Hash);
+    string Hash,
+    string? SourceMapPath = null,
+    string? MapHash = null);

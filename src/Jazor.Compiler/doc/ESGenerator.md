@@ -49,8 +49,9 @@
 
 1. 构造 `AstConverter`
 2. 执行 `Convert()`
-3. 把 `Module` 转成 `ToKnRECMAScript()` 字符串
-4. 生成 `GeneratedModuleInfo`
+3. 优先走 `ToKnRECMAScriptWithSourceMap(...)` 产出 `JS + map`
+4. map 失败时降级为 `ToKnRECMAScript()`（仅 JS）
+5. 生成 `GeneratedModuleInfo`
 
 当前生成的信息包括：
 
@@ -60,12 +61,19 @@
 - `RelativePath`
 - `Content`
 - `Hash`
+- `SourceMapRelativePath`（可空）
+- `SourceMapContent`（可空）
+- `MapHash`（可空）
 
 ### 4. 生成模块目录表
 
 当前真正写出的 source 只有一个：
 
 - `Jazor.Generated.ModuleCatalog.g.cs`
+
+当模块有 sourcemap 内容时，还会额外生成：
+
+- `Jazor.Generated.ModuleSourceMapCatalog.g.cs`
 
 其中包含：
 
@@ -129,7 +137,17 @@
 - 通过 `ModuleGenerationFailed`
 - 报告诊断 `JAZORG001`
 
-### 4. 最终目录表会排序
+### 4. sourcemap 失败降级为 warning（`JAZORG002`）
+
+如果 JS AST 已经成功生成，但 sourcemap 组装失败：
+
+- 报告 `JAZORG002`（Warning）
+- 保留 JS 输出（`ModuleCatalog` 仍生成）
+- 跳过该模块的 sourcemap catalog 记录
+
+也就是说，sourcemap 失败不再把整个模块生成打成 Error。
+
+### 5. 最终目录表会排序
 
 生成前会按：
 

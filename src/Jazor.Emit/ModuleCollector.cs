@@ -66,15 +66,21 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
                 var key = $"{module.AssemblyName}::{module.Id}";
                 if (byKey.TryGetValue(key, out var existing))
                 {
-                    if (!StringComparer.Ordinal.Equals(existing.Hash, module.Hash))
+                    if (!StringComparer.Ordinal.Equals(existing.Hash, module.Hash) ||
+                        !StringComparer.Ordinal.Equals(existing.MapHash, module.MapHash) ||
+                        !StringComparer.Ordinal.Equals(existing.SourceMapRelativePath, module.SourceMapRelativePath))
+                    {
                         return CollectResult.Fail(4, $"Conflicting module content for '{key}'.");
+                    }
 
                     continue;
                 }
 
                 if (byRelativePath.TryGetValue(module.RelativePath, out var existingPath))
                 {
-                    if (!StringComparer.Ordinal.Equals(existingPath.Hash, module.Hash))
+                    if (!StringComparer.Ordinal.Equals(existingPath.Hash, module.Hash) ||
+                        !StringComparer.Ordinal.Equals(existingPath.MapHash, module.MapHash) ||
+                        !StringComparer.Ordinal.Equals(existingPath.SourceMapRelativePath, module.SourceMapRelativePath))
                     {
                         if (failOnPathConflict)
                         {
@@ -189,7 +195,10 @@ internal sealed record EmitModuleRecord(
     string Id,
     string RelativePath,
     string Content,
-    string Hash);
+    string Hash,
+    string? SourceMapRelativePath = null,
+    string? SourceMapContent = null,
+    string? MapHash = null);
 
 internal sealed record CollectResult(
     bool IsSuccess,
