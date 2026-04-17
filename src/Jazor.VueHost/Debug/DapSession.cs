@@ -2,22 +2,37 @@ using System.Globalization;
 
 namespace Jazor.VueHost.Debug;
 
-internal sealed class DapSession(bool hasCdpBackend = false)
+internal sealed class DapSession
 {
     private const string FallbackCallFrameId = "fallback-frame-1";
     private const string FallbackFunctionName = "render";
     private const string FallbackSourcePath = "/__jazor__/Counter.jazor";
 
+    private readonly ICdpClient? _cdpClient;
+    private readonly VariableMapper _variableMapper;
     private readonly Dictionary<string, IReadOnlyList<DapBreakpointBinding>> _breakpointsBySourcePath = new(StringComparer.OrdinalIgnoreCase);
-    private readonly Dictionary<int, IReadOnlyList<DapVariable>> _variablesByReference = [];
+    private readonly Dictionary<int, VariablesReferenceEntry> _variablesByReference = [];
     private IReadOnlyList<CdpCallFrame> _currentCallFrames = [];
     private int _nextVariablesReference = 1;
+
+    public DapSession(ICdpClient? cdpClient = null)
+    {
+        _cdpClient = cdpClient;
+        _variableMapper = new VariableMapper();
+
+        if (_cdpClient is not null)
+        {
+            _cdpClient.Paused += OnCdpPaused;
+            _cdpClient.Resumed += OnCdpResumed;
+            CurrentCallFrames = _cdpClient.LatestCallFrames;
+        }
+    }
 
     public bool IsInitialized { get; set; }
 
     public bool IsStarted { get; set; }
 
-    public bool HasCdpBackend { get; } = hasCdpBackend;
+    public bool HasCdpBackend => _cdpClient is not null;
 
     public bool IsPaused { get; private set; }
 
@@ -51,6 +66,37 @@ internal sealed class DapSession(bool hasCdpBackend = false)
             : [];
     }
 
+    public async ValueTask<MappedBreakpoint?> BindMappedBreakpointAsync(
+        MappedBreakpoint mappedBreakpoint,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(mappedBreakpoint);
+
+        if (_cdpClient is null)
+        {
+            return mappedBreakpoint;
+        }
+
+        try
+        {
+            var resolution = await _cdpClient.SetBreakpointByUrlAsync(
+                mappedBreakpoint.GeneratedPath,
+                mappedBreakpoint.GeneratedLine,
+                mappedBreakpoint.GeneratedColumn,
+                cancellationToken);
+            return resolution is null
+                ? null
+                : new MappedBreakpoint(
+                    resolution.Location.Url,
+                    resolution.Location.LineNumber,
+                    resolution.Location.ColumnNumber);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     public void SeedFallbackPause()
     {
         if (HasCdpBackend || IsPaused || CurrentCallFrames.Count > 0)
@@ -74,6 +120,28 @@ internal sealed class DapSession(bool hasCdpBackend = false)
             return [];
         }
 
+        if (_cdpClient is not null
+            && frame.ScopeChain is { Count: > 0 } scopeChain)
+        {
+            var scopes = new List<DapScope>(scopeChain.Count + 1);
+            foreach (var scope in scopeChain)
+            {
+                var variablesReference = RegisterRemoteObject(scope.Object);
+                if (variablesReference <= 0)
+                {
+                    continue;
+                }
+
+                scopes.Add(CreateScope(
+                    GetScopeDisplayName(scope),
+                    variablesReference,
+                    presentationHint: GetScopePresentationHint(scope.Type)));
+            }
+
+            scopes.Add(CreateScope("Session", CreateSessionVariables(frameId), presentationHint: "registers"));
+            return scopes;
+        }
+
         var locals = CreateFrameVariables(frame);
         var session = CreateSessionVariables(frameId);
 
@@ -84,12 +152,36 @@ internal sealed class DapSession(bool hasCdpBackend = false)
         ];
     }
 
-    public IReadOnlyList<DapVariable> GetVariables(int variablesReference)
-        => variablesReference > 0 && _variablesByReference.TryGetValue(variablesReference, out var variables)
-            ? variables
-            : [];
+    public async ValueTask<IReadOnlyList<DapVariable>> GetVariablesAsync(
+        int variablesReference,
+        CancellationToken cancellationToken = default)
+    {
+        if (variablesReference <= 0
+            || !_variablesByReference.TryGetValue(variablesReference, out var entry))
+        {
+            return [];
+        }
 
-    public DapEvaluationResult Evaluate(string? expression, int? frameId, string? context = null)
+        if (entry.Variables is not null)
+        {
+            return entry.Variables;
+        }
+
+        if (_cdpClient is null || entry.RemoteObject is null)
+        {
+            return [];
+        }
+
+        var variables = await ExpandRemoteObjectAsync(entry.RemoteObject, cancellationToken);
+        entry.Variables = variables;
+        return variables;
+    }
+
+    public async ValueTask<DapEvaluationResult> EvaluateAsync(
+        string? expression,
+        int? frameId,
+        string? context = null,
+        CancellationToken cancellationToken = default)
     {
         var trimmedExpression = expression?.Trim();
         if (string.IsNullOrWhiteSpace(trimmedExpression))
@@ -97,16 +189,16 @@ internal sealed class DapSession(bool hasCdpBackend = false)
             return new DapEvaluationResult("undefined", "undefined", 0);
         }
 
-        if (TryResolveVariablePath(frameId, trimmedExpression, out var resolvedVariable))
+        if (_cdpClient is null)
         {
-            return new DapEvaluationResult(
-                resolvedVariable.Value,
-                resolvedVariable.Type,
-                resolvedVariable.VariablesReference);
-        }
+            if (TryResolveVariablePath(frameId, trimmedExpression, out var resolvedVariable))
+            {
+                return new DapEvaluationResult(
+                    resolvedVariable.Value,
+                    resolvedVariable.Type,
+                    resolvedVariable.VariablesReference);
+            }
 
-        if (!HasCdpBackend)
-        {
             // Keep fallback evaluate deterministic before CDP Runtime.evaluate is connected.
             var normalizedContext = string.IsNullOrWhiteSpace(context)
                 ? "repl"
@@ -114,15 +206,18 @@ internal sealed class DapSession(bool hasCdpBackend = false)
             return new DapEvaluationResult($"[{normalizedContext}] {trimmedExpression}", "string", 0);
         }
 
-        // TODO: Replace this placeholder once a browser CDP Runtime.evaluate transport is available.
-        return new DapEvaluationResult(
-            "Evaluation unavailable (CDP Runtime.evaluate not connected).",
-            "string",
-            0);
+        var callFrameId = ResolveCallFrameId(frameId);
+        var remoteObject = await _cdpClient.EvaluateAsync(trimmedExpression, callFrameId, cancellationToken);
+        return _variableMapper.ToEvaluationResult(remoteObject, RegisterRemoteObject(remoteObject));
     }
 
-    public void ContinueExecution()
+    public async ValueTask ContinueExecutionAsync(CancellationToken cancellationToken = default)
     {
+        if (_cdpClient is not null)
+        {
+            await _cdpClient.ContinueAsync(cancellationToken);
+        }
+
         IsPaused = false;
         CurrentCallFrames = [];
     }
@@ -136,6 +231,22 @@ internal sealed class DapSession(bool hasCdpBackend = false)
         ResetVariableReferences();
         _breakpointsBySourcePath.Clear();
     }
+
+    private string? ResolveCallFrameId(int? frameId)
+    {
+        if (frameId is > 0 && TryGetCallFrame(frameId.Value, out var frame))
+        {
+            return frame.CallFrameId;
+        }
+
+        return CurrentCallFrames.FirstOrDefault()?.CallFrameId;
+    }
+
+    private void OnCdpPaused(IReadOnlyList<CdpCallFrame> callFrames)
+        => CurrentCallFrames = callFrames;
+
+    private void OnCdpResumed()
+        => CurrentCallFrames = [];
 
     private static bool TryResolveVariable(
         IReadOnlyList<DapVariable> variables,
@@ -187,8 +298,9 @@ internal sealed class DapSession(bool hasCdpBackend = false)
         for (var index = 1; index < segments.Count; index++)
         {
             if (current.VariablesReference <= 0
-                || !_variablesByReference.TryGetValue(current.VariablesReference, out var children)
-                || !TryResolveVariable(children, segments[index], out current))
+                || !_variablesByReference.TryGetValue(current.VariablesReference, out var childrenEntry)
+                || childrenEntry.Variables is null
+                || !TryResolveVariable(childrenEntry.Variables, segments[index], out current))
             {
                 variable = null!;
                 return false;
@@ -254,13 +366,24 @@ internal sealed class DapSession(bool hasCdpBackend = false)
         string name,
         IReadOnlyList<DapVariable> variables,
         string? presentationHint = null)
+        => CreateScope(
+            name,
+            RegisterVariables(variables),
+            presentationHint,
+            namedVariables: variables.Count);
+
+    private static DapScope CreateScope(
+        string name,
+        int variablesReference,
+        string? presentationHint = null,
+        int? namedVariables = null)
         => new()
         {
             Name = name,
-            VariablesReference = RegisterVariables(variables),
+            VariablesReference = variablesReference,
             Expensive = false,
             PresentationHint = presentationHint,
-            NamedVariables = variables.Count
+            NamedVariables = namedVariables
         };
 
     private DapVariable CreateLeafVariable(string name, string value, string type)
@@ -291,9 +414,55 @@ internal sealed class DapSession(bool hasCdpBackend = false)
     private int RegisterVariables(IReadOnlyList<DapVariable> variables)
     {
         var variablesReference = _nextVariablesReference++;
-        _variablesByReference[variablesReference] = variables;
+        _variablesByReference[variablesReference] = VariablesReferenceEntry.FromVariables(variables);
         return variablesReference;
     }
+
+    private int RegisterRemoteObject(CdpRemoteObject? remoteObject)
+    {
+        if (!CanExpand(remoteObject))
+        {
+            return 0;
+        }
+
+        var variablesReference = _nextVariablesReference++;
+        _variablesByReference[variablesReference] = VariablesReferenceEntry.FromRemoteObject(remoteObject!);
+        return variablesReference;
+    }
+
+    private async ValueTask<IReadOnlyList<DapVariable>> ExpandRemoteObjectAsync(
+        CdpRemoteObject remoteObject,
+        CancellationToken cancellationToken)
+    {
+        if (_cdpClient is null || string.IsNullOrWhiteSpace(remoteObject.ObjectId))
+        {
+            return [];
+        }
+
+        var properties = await _cdpClient.GetPropertiesAsync(remoteObject.ObjectId, cancellationToken);
+        if (properties.Count == 0)
+        {
+            return [];
+        }
+
+        var variables = new List<DapVariable>(properties.Count);
+        foreach (var property in properties)
+        {
+            variables.Add(_variableMapper.ToVariable(
+                property.Name,
+                property.Value,
+                RegisterRemoteObject(property.Value)));
+        }
+
+        return variables;
+    }
+
+    private static bool CanExpand(CdpRemoteObject? remoteObject)
+        => remoteObject is not null
+            && !string.IsNullOrWhiteSpace(remoteObject.ObjectId)
+            && !string.Equals(remoteObject.SubType, "null", StringComparison.Ordinal)
+            && (string.Equals(remoteObject.Type, "object", StringComparison.Ordinal)
+                || string.Equals(remoteObject.Type, "function", StringComparison.Ordinal));
 
     private static IReadOnlyList<DapVariable> CreateSourceVariables(string sourcePath)
         =>
@@ -360,11 +529,56 @@ internal sealed class DapSession(bool hasCdpBackend = false)
             : sourceName;
     }
 
+    private static string GetScopeDisplayName(CdpScope scope)
+    {
+        if (string.IsNullOrWhiteSpace(scope.Type))
+        {
+            return "Scope";
+        }
+
+        return scope.Type switch
+        {
+            "closure" when !string.IsNullOrWhiteSpace(scope.Name) => $"Closure ({scope.Name})",
+            _ => char.ToUpperInvariant(scope.Type[0]) + scope.Type[1..]
+        };
+    }
+
+    private static string? GetScopePresentationHint(string scopeType)
+        => scopeType switch
+        {
+            "local" => "locals",
+            "global" => "globals",
+            _ => null
+        };
+
     private void ResetVariableReferences()
     {
         _variablesByReference.Clear();
         _nextVariablesReference = 1;
     }
+}
+
+internal sealed class VariablesReferenceEntry
+{
+    private VariablesReferenceEntry()
+    {
+    }
+
+    public IReadOnlyList<DapVariable>? Variables { get; set; }
+
+    public CdpRemoteObject? RemoteObject { get; private init; }
+
+    public static VariablesReferenceEntry FromVariables(IReadOnlyList<DapVariable> variables)
+        => new()
+        {
+            Variables = variables
+        };
+
+    public static VariablesReferenceEntry FromRemoteObject(CdpRemoteObject remoteObject)
+        => new()
+        {
+            RemoteObject = remoteObject
+        };
 }
 
 internal sealed record DapBreakpointBinding(

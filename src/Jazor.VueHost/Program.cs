@@ -151,9 +151,15 @@ if (useDap && !useLsp)
     }
 
     var sourceMapService = devRuntime?.SourceMapService ?? new InMemorySourceMapService();
-    // TODO: Replace the fallback-only DAP session with a live browser CDP transport when the dev runtime exposes one.
-    var dapSession = new DapSession(hasCdpBackend: false);
-    dapSession.SeedFallbackPause();
+    var launchConfiguration = LaunchConfiguration.ResolveFromArgs(args, Directory.GetCurrentDirectory());
+    await using var cdpClient = await TryCreateCdpClientAsync(launchConfiguration, cancellationToken);
+
+    var dapSession = new DapSession(cdpClient);
+    if (cdpClient is null)
+    {
+        dapSession.SeedFallbackPause();
+    }
+
     var dapServer = new DapServer(
         new DapRequestHandler(
             dapSession,
@@ -409,6 +415,38 @@ static DevServerRuntime CreateDevServerRuntime(
             workspaceStore),
         sourceMapService,
         devOptions);
+}
+
+static async Task<CdpClient?> TryCreateCdpClientAsync(
+    LaunchConfiguration? launchConfiguration,
+    CancellationToken cancellationToken)
+{
+    var endpoint = launchConfiguration?.CdpWebSocketUrl;
+    if (string.IsNullOrWhiteSpace(endpoint))
+    {
+        return null;
+    }
+
+    if (!Uri.TryCreate(endpoint, UriKind.Absolute, out var endpointUri))
+    {
+        Console.Error.WriteLine($"DAP: ignoring invalid CDP endpoint '{endpoint}'.");
+        return null;
+    }
+
+    var cdpClient = new CdpClient(new CdpConnection());
+    try
+    {
+        await cdpClient.ConnectAsync(endpointUri, cancellationToken);
+        await cdpClient.InitializeAsync(cancellationToken);
+        Console.Error.WriteLine($"DAP: connected to CDP endpoint {endpointUri}.");
+        return cdpClient;
+    }
+    catch (Exception exception)
+    {
+        Console.Error.WriteLine($"DAP: failed to connect CDP endpoint '{endpointUri}': {exception.Message}");
+        await cdpClient.DisposeAsync();
+        return null;
+    }
 }
 
 file sealed class DevServerRuntime(

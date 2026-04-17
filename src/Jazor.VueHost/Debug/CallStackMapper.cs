@@ -44,7 +44,13 @@ internal sealed record CdpLocation(
 internal sealed record CdpCallFrame(
     string CallFrameId,
     string FunctionName,
-    CdpLocation Location);
+    CdpLocation Location,
+    IReadOnlyList<CdpScope>? ScopeChain = null);
+
+internal sealed record CdpScope(
+    string Type,
+    string? Name,
+    CdpRemoteObject Object);
 
 internal sealed record DapSource(
     string Name,

@@ -113,6 +113,120 @@ public sealed class JazorVueHostDebugProtocolTests
     }
 
     [TestMethod]
+    public async Task DapRequestHandler_HandleAsync_SetBreakpoints_WithCdpBackend_UsesResolvedGeneratedLocation()
+    {
+        var sourceMapService = new InMemorySourceMapService();
+        sourceMapService.Register(
+            "/Counter.jazor",
+            CreateSingleSourceLineMap(
+                "Counter.jazor",
+                "line0\nline1\nline2",
+                [
+                    1
+                ]));
+        var cdpClient = new FakeCdpClient();
+        cdpClient.SetBreakpointResolution(
+            "/Counter.jazor",
+            1,
+            0,
+            new CdpBreakpointResolution(
+                "bp-cdp-1",
+                new CdpLocation("/virtual/Counter.generated.js", 3, 2)));
+        var handler = CreateHandler(sourceMapService, out var session, cdpClient);
+
+        var result = await handler.HandleAsync(
+            new DapRequest
+            {
+                Seq = 100,
+                Command = "setBreakpoints",
+                Arguments = JsonSerializer.SerializeToElement(new
+                {
+                    source = new
+                    {
+                        path = @"D:\repo\Counter.jazor"
+                    },
+                    breakpoints = new object[]
+                    {
+                        new { line = 2, column = 1 }
+                    }
+                })
+            },
+            CancellationToken.None);
+
+        Assert.IsTrue(result.Response.Success);
+        using var body = GetResponseBody(result.Response);
+        var breakpoints = body.RootElement.GetProperty("breakpoints").EnumerateArray().ToArray();
+        Assert.AreEqual(1, breakpoints.Length);
+        Assert.IsTrue(breakpoints[0].GetProperty("verified").GetBoolean());
+        Assert.IsFalse(breakpoints[0].TryGetProperty("message", out _));
+
+        var bindings = session.GetBreakpoints(@"D:\repo\Counter.jazor");
+        Assert.AreEqual(1, bindings.Count);
+        Assert.IsNotNull(bindings[0].GeneratedBreakpoint);
+        Assert.AreEqual("/virtual/Counter.generated.js", bindings[0].GeneratedBreakpoint!.GeneratedPath);
+        Assert.AreEqual(3, bindings[0].GeneratedBreakpoint!.GeneratedLine);
+        Assert.AreEqual(2, bindings[0].GeneratedBreakpoint!.GeneratedColumn);
+
+        Assert.AreEqual(1, cdpClient.BreakpointRequests.Count);
+        Assert.AreEqual("/Counter.jazor", cdpClient.BreakpointRequests[0].GeneratedUrl);
+        Assert.AreEqual(1, cdpClient.BreakpointRequests[0].GeneratedLine);
+        Assert.AreEqual(0, cdpClient.BreakpointRequests[0].GeneratedColumn);
+    }
+
+    [TestMethod]
+    public async Task DapRequestHandler_HandleAsync_SetBreakpoints_WithCdpBackend_ReturnsUnverifiedWhenTargetBindingFails()
+    {
+        var sourceMapService = new InMemorySourceMapService();
+        sourceMapService.Register(
+            "/Counter.jazor",
+            CreateSingleSourceLineMap(
+                "Counter.jazor",
+                "line0\nline1\nline2",
+                [
+                    1
+                ]));
+        var cdpClient = new FakeCdpClient();
+        var handler = CreateHandler(sourceMapService, out var session, cdpClient);
+
+        var result = await handler.HandleAsync(
+            new DapRequest
+            {
+                Seq = 101,
+                Command = "setBreakpoints",
+                Arguments = JsonSerializer.SerializeToElement(new
+                {
+                    source = new
+                    {
+                        path = @"D:\repo\Counter.jazor"
+                    },
+                    breakpoints = new object[]
+                    {
+                        new { line = 2, column = 1 }
+                    }
+                })
+            },
+            CancellationToken.None);
+
+        Assert.IsTrue(result.Response.Success);
+        using var body = GetResponseBody(result.Response);
+        var breakpoints = body.RootElement.GetProperty("breakpoints").EnumerateArray().ToArray();
+        Assert.AreEqual(1, breakpoints.Length);
+        Assert.IsFalse(breakpoints[0].GetProperty("verified").GetBoolean());
+        StringAssert.Contains(
+            breakpoints[0].GetProperty("message").GetString() ?? string.Empty,
+            "CDP target");
+
+        var bindings = session.GetBreakpoints(@"D:\repo\Counter.jazor");
+        Assert.AreEqual(1, bindings.Count);
+        Assert.IsNull(bindings[0].GeneratedBreakpoint);
+
+        Assert.AreEqual(1, cdpClient.BreakpointRequests.Count);
+        Assert.AreEqual("/Counter.jazor", cdpClient.BreakpointRequests[0].GeneratedUrl);
+        Assert.AreEqual(1, cdpClient.BreakpointRequests[0].GeneratedLine);
+        Assert.AreEqual(0, cdpClient.BreakpointRequests[0].GeneratedColumn);
+    }
+
+    [TestMethod]
     public async Task DapRequestHandler_HandleAsync_StackTrace_MapsSessionFrames()
     {
         var sourceText = """
@@ -363,6 +477,197 @@ public sealed class JazorVueHostDebugProtocolTests
 
         using var continueBody = GetResponseBody(continueResult.Response);
         Assert.IsTrue(continueBody.RootElement.GetProperty("allThreadsContinued").GetBoolean());
+    }
+
+    [TestMethod]
+    public async Task DapRequestHandler_HandleAsync_CdpScopesVariablesAndEvaluate_UseScopeChainAndRemoteExpansion()
+    {
+        var sourceMapService = new InMemorySourceMapService();
+        var cdpClient = new FakeCdpClient();
+        var handler = CreateHandler(sourceMapService, out _, cdpClient);
+
+        cdpClient.SetProperties(
+            "scope-local-1",
+            new CdpPropertyDescriptor(
+                "count",
+                new CdpRemoteObject(
+                    Type: "number",
+                    SubType: null,
+                    Description: "3",
+                    Value: "3",
+                    UnserializableValue: null,
+                    ObjectId: null)),
+            new CdpPropertyDescriptor(
+                "model",
+                new CdpRemoteObject(
+                    Type: "object",
+                    SubType: null,
+                    Description: "Object",
+                    Value: null,
+                    UnserializableValue: null,
+                    ObjectId: "remote-model-1")));
+        cdpClient.SetProperties(
+            "scope-closure-1",
+            new CdpPropertyDescriptor(
+                "captured",
+                new CdpRemoteObject(
+                    Type: "string",
+                    SubType: null,
+                    Description: "\"from closure\"",
+                    Value: "from closure",
+                    UnserializableValue: null,
+                    ObjectId: null)));
+        cdpClient.SetProperties(
+            "remote-model-1",
+            new CdpPropertyDescriptor(
+                "label",
+                new CdpRemoteObject(
+                    Type: "string",
+                    SubType: null,
+                    Description: "\"counter\"",
+                    Value: "counter",
+                    UnserializableValue: null,
+                    ObjectId: null)));
+        cdpClient.SetEvaluationResult(
+            "frame-1",
+            "model",
+            new CdpRemoteObject(
+                Type: "object",
+                SubType: null,
+                Description: "Object",
+                Value: null,
+                UnserializableValue: null,
+                ObjectId: "remote-model-1"));
+
+        cdpClient.EmitPaused(
+        [
+            new CdpCallFrame(
+                "frame-1",
+                "increment",
+                new CdpLocation("/Counter.jazor", 1, 0),
+                [
+                    new CdpScope(
+                        "local",
+                        null,
+                        new CdpRemoteObject(
+                            Type: "object",
+                            SubType: null,
+                            Description: "Local",
+                            Value: null,
+                            UnserializableValue: null,
+                            ObjectId: "scope-local-1")),
+                    new CdpScope(
+                        "closure",
+                        "setup",
+                        new CdpRemoteObject(
+                            Type: "object",
+                            SubType: null,
+                            Description: "Closure",
+                            Value: null,
+                            UnserializableValue: null,
+                            ObjectId: "scope-closure-1"))
+                ])
+        ]);
+
+        var scopesResult = await handler.HandleAsync(
+            new DapRequest
+            {
+                Seq = 12,
+                Command = "scopes",
+                Arguments = JsonSerializer.SerializeToElement(new
+                {
+                    frameId = 1
+                })
+            },
+            CancellationToken.None);
+
+        using var scopesBody = GetResponseBody(scopesResult.Response);
+        var scopes = scopesBody.RootElement.GetProperty("scopes").EnumerateArray().ToArray();
+        Assert.AreEqual(3, scopes.Length);
+        Assert.AreEqual("Local", scopes[0].GetProperty("name").GetString());
+        Assert.AreEqual("Closure (setup)", scopes[1].GetProperty("name").GetString());
+        Assert.AreEqual("Session", scopes[2].GetProperty("name").GetString());
+
+        var localScopeReference = scopes[0].GetProperty("variablesReference").GetInt32();
+        var closureScopeReference = scopes[1].GetProperty("variablesReference").GetInt32();
+
+        var localVariablesResult = await handler.HandleAsync(
+            new DapRequest
+            {
+                Seq = 13,
+                Command = "variables",
+                Arguments = JsonSerializer.SerializeToElement(new
+                {
+                    variablesReference = localScopeReference
+                })
+            },
+            CancellationToken.None);
+
+        using var localVariablesBody = GetResponseBody(localVariablesResult.Response);
+        var localVariables = localVariablesBody.RootElement.GetProperty("variables").EnumerateArray().ToArray();
+        Assert.AreEqual(2, localVariables.Length);
+        Assert.AreEqual("count", localVariables[0].GetProperty("name").GetString());
+        Assert.AreEqual("3", localVariables[0].GetProperty("value").GetString());
+        Assert.AreEqual(0, localVariables[0].GetProperty("variablesReference").GetInt32());
+        Assert.AreEqual("model", localVariables[1].GetProperty("name").GetString());
+        Assert.IsTrue(localVariables[1].GetProperty("variablesReference").GetInt32() > 0);
+
+        var closureVariablesResult = await handler.HandleAsync(
+            new DapRequest
+            {
+                Seq = 14,
+                Command = "variables",
+                Arguments = JsonSerializer.SerializeToElement(new
+                {
+                    variablesReference = closureScopeReference
+                })
+            },
+            CancellationToken.None);
+
+        using var closureVariablesBody = GetResponseBody(closureVariablesResult.Response);
+        var closureVariables = closureVariablesBody.RootElement.GetProperty("variables").EnumerateArray().ToArray();
+        Assert.AreEqual(1, closureVariables.Length);
+        Assert.AreEqual("captured", closureVariables[0].GetProperty("name").GetString());
+        Assert.AreEqual("from closure", closureVariables[0].GetProperty("value").GetString());
+
+        var evaluateResult = await handler.HandleAsync(
+            new DapRequest
+            {
+                Seq = 15,
+                Command = "evaluate",
+                Arguments = JsonSerializer.SerializeToElement(new
+                {
+                    expression = "model",
+                    frameId = 1,
+                    context = "watch"
+                })
+            },
+            CancellationToken.None);
+
+        using var evaluateBody = GetResponseBody(evaluateResult.Response);
+        Assert.AreEqual("Object", evaluateBody.RootElement.GetProperty("result").GetString());
+        Assert.AreEqual("object", evaluateBody.RootElement.GetProperty("type").GetString());
+
+        var evaluationReference = evaluateBody.RootElement.GetProperty("variablesReference").GetInt32();
+        Assert.IsTrue(evaluationReference > 0);
+
+        var evaluatedObjectVariablesResult = await handler.HandleAsync(
+            new DapRequest
+            {
+                Seq = 16,
+                Command = "variables",
+                Arguments = JsonSerializer.SerializeToElement(new
+                {
+                    variablesReference = evaluationReference
+                })
+            },
+            CancellationToken.None);
+
+        using var evaluatedObjectVariablesBody = GetResponseBody(evaluatedObjectVariablesResult.Response);
+        var evaluatedObjectVariables = evaluatedObjectVariablesBody.RootElement.GetProperty("variables").EnumerateArray().ToArray();
+        Assert.AreEqual(1, evaluatedObjectVariables.Length);
+        Assert.AreEqual("label", evaluatedObjectVariables[0].GetProperty("name").GetString());
+        Assert.AreEqual("counter", evaluatedObjectVariables[0].GetProperty("value").GetString());
     }
 
     [TestMethod]
@@ -677,9 +982,10 @@ public sealed class JazorVueHostDebugProtocolTests
 
     private static DapRequestHandler CreateHandler(
         ISourceMapService sourceMapService,
-        out DapSession session)
+        out DapSession session,
+        ICdpClient? cdpClient = null)
     {
-        session = new DapSession();
+        session = new DapSession(cdpClient);
         return new DapRequestHandler(
             session,
             new BreakpointManager(sourceMapService),
@@ -890,5 +1196,100 @@ public sealed class JazorVueHostDebugProtocolTests
         }
 
         throw new InvalidOperationException("Expected Content-Length header in DAP response.");
+    }
+
+    private sealed class FakeCdpClient : ICdpClient
+    {
+        private readonly Dictionary<(string Url, int Line, int Column), CdpBreakpointResolution?> _breakpointResolutions = [];
+        private readonly Dictionary<(string? CallFrameId, string Expression), CdpRemoteObject> _evaluations = [];
+        private readonly Dictionary<string, IReadOnlyList<CdpPropertyDescriptor>> _propertiesByObjectId = new(StringComparer.Ordinal);
+
+        public IReadOnlyList<CdpCallFrame> LatestCallFrames { get; private set; } = [];
+
+        public event Action<IReadOnlyList<CdpCallFrame>>? Paused;
+
+        public event Action? Resumed;
+
+        public List<BreakpointRequest> BreakpointRequests { get; } = [];
+
+        public void SetEvaluationResult(string? callFrameId, string expression, CdpRemoteObject remoteObject)
+            => _evaluations[(callFrameId, expression)] = remoteObject;
+
+        public void SetProperties(string objectId, params CdpPropertyDescriptor[] properties)
+            => _propertiesByObjectId[objectId] = properties;
+
+        public void SetBreakpointResolution(
+            string generatedUrl,
+            int generatedLine,
+            int generatedColumn,
+            CdpBreakpointResolution? resolution)
+            => _breakpointResolutions[(generatedUrl, generatedLine, generatedColumn)] = resolution;
+
+        public void EmitPaused(IReadOnlyList<CdpCallFrame> callFrames)
+        {
+            LatestCallFrames = callFrames;
+            Paused?.Invoke(callFrames);
+        }
+
+        public Task ContinueAsync(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            LatestCallFrames = [];
+            Resumed?.Invoke();
+            return Task.CompletedTask;
+        }
+
+        public Task<CdpBreakpointResolution?> SetBreakpointByUrlAsync(
+            string generatedUrl,
+            int generatedLine,
+            int generatedColumn,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            BreakpointRequests.Add(new BreakpointRequest(generatedUrl, generatedLine, generatedColumn));
+
+            return Task.FromResult(
+                _breakpointResolutions.TryGetValue((generatedUrl, generatedLine, generatedColumn), out var resolution)
+                    ? resolution
+                    : null);
+        }
+
+        public Task<CdpRemoteObject?> EvaluateAsync(
+            string expression,
+            string? callFrameId,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (_evaluations.TryGetValue((callFrameId, expression), out var remoteObject))
+            {
+                return Task.FromResult<CdpRemoteObject?>(remoteObject);
+            }
+
+            if (_evaluations.TryGetValue((null, expression), out remoteObject))
+            {
+                return Task.FromResult<CdpRemoteObject?>(remoteObject);
+            }
+
+            return Task.FromResult<CdpRemoteObject?>(null);
+        }
+
+        public Task<IReadOnlyList<CdpPropertyDescriptor>> GetPropertiesAsync(
+            string objectId,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(
+                _propertiesByObjectId.TryGetValue(objectId, out var properties)
+                    ? properties
+                    : (IReadOnlyList<CdpPropertyDescriptor>)[]);
+        }
+
+        public ValueTask DisposeAsync()
+            => ValueTask.CompletedTask;
+
+        public readonly record struct BreakpointRequest(
+            string GeneratedUrl,
+            int GeneratedLine,
+            int GeneratedColumn);
     }
 }

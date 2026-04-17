@@ -28,12 +28,12 @@ internal sealed class DapRequestHandler(
             "configurationDone" => ValueTask.FromResult(HandleConfigurationDone(request)),
             "setExceptionBreakpoints" => ValueTask.FromResult(HandleSimpleSuccess(request)),
             "threads" => ValueTask.FromResult(HandleThreads(request)),
-            "setBreakpoints" => ValueTask.FromResult(HandleSetBreakpoints(request)),
+            "setBreakpoints" => HandleSetBreakpointsAsync(request, cancellationToken),
             "stackTrace" => ValueTask.FromResult(HandleStackTrace(request)),
             "scopes" => ValueTask.FromResult(HandleScopes(request)),
-            "variables" => ValueTask.FromResult(HandleVariables(request)),
-            "continue" => ValueTask.FromResult(HandleContinue(request)),
-            "evaluate" => ValueTask.FromResult(HandleEvaluate(request)),
+            "variables" => HandleVariablesAsync(request, cancellationToken),
+            "continue" => HandleContinueAsync(request, cancellationToken),
+            "evaluate" => HandleEvaluateAsync(request, cancellationToken),
             "disconnect" => ValueTask.FromResult(HandleDisconnect(request)),
             _ => ValueTask.FromResult(HandleUnsupported(request))
         };
@@ -96,7 +96,9 @@ internal sealed class DapRequestHandler(
                 })
         };
 
-    private DapDispatchResult HandleSetBreakpoints(DapRequest request)
+    private async ValueTask<DapDispatchResult> HandleSetBreakpointsAsync(
+        DapRequest request,
+        CancellationToken cancellationToken)
     {
         var arguments = request.Arguments;
         var sourcePath = TryGetString(arguments, "source", "path");
@@ -123,23 +125,34 @@ internal sealed class DapRequestHandler(
                     sourcePath,
                     Math.Max(sourceLine - 1, 0),
                     Math.Max(sourceColumn - 1, 0));
+                var generatedBreakpoint = mapped;
+                var message = mapped is null
+                    ? "Source position could not be mapped to a generated module."
+                    : null;
+
+                if (mapped is not null)
+                {
+                    generatedBreakpoint = await _session.BindMappedBreakpointAsync(mapped, cancellationToken);
+                    if (generatedBreakpoint is null && _session.HasCdpBackend)
+                    {
+                        message = "Mapped source position could not be bound in the connected CDP target.";
+                    }
+                }
 
                 bindings.Add(new DapBreakpointBinding(
                     breakpointId,
                     sourcePath,
                     sourceLine,
                     sourceColumn,
-                    mapped));
+                    generatedBreakpoint));
 
                 breakpoints.Add(new DapBreakpoint
                 {
                     Id = breakpointId,
-                    Verified = mapped is not null,
+                    Verified = generatedBreakpoint is not null,
                     Line = sourceLine,
                     Column = sourceColumn,
-                    Message = mapped is null
-                        ? "Source position could not be mapped to a generated module."
-                        : null
+                    Message = message
                 });
             }
         }
@@ -196,10 +209,12 @@ internal sealed class DapRequestHandler(
         };
     }
 
-    private DapDispatchResult HandleVariables(DapRequest request)
+    private async ValueTask<DapDispatchResult> HandleVariablesAsync(
+        DapRequest request,
+        CancellationToken cancellationToken)
     {
         var variablesReference = TryGetInt32(request.Arguments, "variablesReference") ?? 0;
-        var variables = _session.GetVariables(variablesReference);
+        var variables = await _session.GetVariablesAsync(variablesReference, cancellationToken);
 
         return new DapDispatchResult
         {
@@ -212,10 +227,12 @@ internal sealed class DapRequestHandler(
         };
     }
 
-    private DapDispatchResult HandleContinue(DapRequest request)
+    private async ValueTask<DapDispatchResult> HandleContinueAsync(
+        DapRequest request,
+        CancellationToken cancellationToken)
     {
         var threadId = Math.Max(TryGetInt32(request.Arguments, "threadId") ?? MainThreadId, MainThreadId);
-        _session.ContinueExecution();
+        await _session.ContinueExecutionAsync(cancellationToken);
 
         return new DapDispatchResult
         {
@@ -233,17 +250,19 @@ internal sealed class DapRequestHandler(
                     {
                         threadId,
                         allThreadsContinued = true
-                    })
+                })
             ]
         };
     }
 
-    private DapDispatchResult HandleEvaluate(DapRequest request)
+    private async ValueTask<DapDispatchResult> HandleEvaluateAsync(
+        DapRequest request,
+        CancellationToken cancellationToken)
     {
         var expression = TryGetString(request.Arguments, "expression");
         var frameId = TryGetInt32(request.Arguments, "frameId");
         var context = TryGetString(request.Arguments, "context");
-        var evaluation = _session.Evaluate(expression, frameId, context);
+        var evaluation = await _session.EvaluateAsync(expression, frameId, context, cancellationToken);
 
         return new DapDispatchResult
         {
