@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Jazor.VueHost.Extensions;
 using Jazor.VueContracts.Protocol;
 using Jazor.VueHost.Jazor.Projection;
 using Jazor.VueHost.Lsp.Aggregation;
@@ -25,6 +26,7 @@ internal sealed class LspSession
     private readonly RenameCoordinator _renameCoordinator;
     private readonly CodeActionCoordinator _codeActionCoordinator;
     private readonly IWorkspaceDocumentChangeSink _workspaceDocumentChangeSink;
+    private readonly IExtensionRegistry _extensionRegistry;
 
     public LspSession(
         IVueHostWorkspaceStore workspaceStore,
@@ -39,7 +41,8 @@ internal sealed class LspSession
         ReferenceCoordinator referenceCoordinator,
         RenameCoordinator renameCoordinator,
         CodeActionCoordinator codeActionCoordinator,
-        IWorkspaceDocumentChangeSink? workspaceDocumentChangeSink = null)
+        IWorkspaceDocumentChangeSink? workspaceDocumentChangeSink = null,
+        IExtensionRegistry? extensionRegistry = null)
     {
         _workspaceStore = workspaceStore ?? throw new ArgumentNullException(nameof(workspaceStore));
         ArgumentNullException.ThrowIfNull(lanes);
@@ -55,6 +58,7 @@ internal sealed class LspSession
         _renameCoordinator = renameCoordinator ?? throw new ArgumentNullException(nameof(renameCoordinator));
         _codeActionCoordinator = codeActionCoordinator ?? throw new ArgumentNullException(nameof(codeActionCoordinator));
         _workspaceDocumentChangeSink = workspaceDocumentChangeSink ?? NullWorkspaceDocumentChangeSink.Instance;
+        _extensionRegistry = extensionRegistry ?? NullExtensionRegistry.Instance;
     }
 
     public async ValueTask<LspResponseMessage?> HandleRequestAsync(
@@ -416,7 +420,7 @@ internal sealed class LspSession
 
         return CreateSuccessResponse(
             request.Id,
-            await _codeActionCoordinator.CoordinateAsync(
+            await CollectCodeActionsAsync(
                 document,
                 parameters.Range,
                 parameters.Context?.Diagnostics ?? [],
@@ -553,7 +557,85 @@ internal sealed class LspSession
             }
         }
 
-        return diagnostics;
+        return await CollectExtensionDiagnosticsAsync(document, diagnostics, cancellationToken);
+    }
+
+    private async ValueTask<IReadOnlyList<LspCodeAction>> CollectCodeActionsAsync(
+        DocumentSnapshot document,
+        LspRange range,
+        IReadOnlyList<LspDiagnostic> diagnostics,
+        ProjectionTarget projectionTarget,
+        CancellationToken cancellationToken)
+    {
+        var actions = (await _codeActionCoordinator.CoordinateAsync(
+            document,
+            range,
+            diagnostics,
+            projectionTarget,
+            cancellationToken))
+            .ToList();
+
+        foreach (var provider in _extensionRegistry.GetLspCodeActionProviders())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            try
+            {
+                var providedActions = await provider.ProvideCodeActionsAsync(
+                    new LspCodeActionProviderContext(
+                        document,
+                        range,
+                        diagnostics,
+                        projectionTarget,
+                        actions),
+                    cancellationToken);
+                if (providedActions.Count > 0)
+                {
+                    actions.AddRange(providedActions);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch
+            {
+                // Provider failures must not break the core code-action path.
+            }
+        }
+
+        return _resultAggregator.AggregateCodeActions(actions);
+    }
+
+    private async ValueTask<IReadOnlyList<LspDiagnostic>> CollectExtensionDiagnosticsAsync(
+        DocumentSnapshot document,
+        IReadOnlyList<LspDiagnostic> diagnostics,
+        CancellationToken cancellationToken)
+    {
+        var merged = diagnostics.ToList();
+        foreach (var provider in _extensionRegistry.GetLspDiagnosticProviders())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            try
+            {
+                var providedDiagnostics = await provider.ProvideDiagnosticsAsync(
+                    new LspDiagnosticProviderContext(document, merged),
+                    cancellationToken);
+                if (providedDiagnostics.Count > 0)
+                {
+                    merged.AddRange(providedDiagnostics);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch
+            {
+                // Provider failures must not break the core diagnostics pipeline.
+            }
+        }
+
+        return merged;
     }
 
     private async ValueTask RefreshOpenJazorDiagnosticsAsync(

@@ -215,6 +215,43 @@ public sealed class JazorVueCompilerTests
     }
 
     [TestMethod]
+    public void JazorVue_Compiler_EmitsMultipleColumnAnchorsForLoweredExpressionLine()
+    {
+        var source = """
+            <template>
+              <div>@Count</div>
+            </template>
+
+            @code {
+                [Prop] public int Step { get; set; } = 2;
+                [State] private int Count = 1;
+
+                public void Sync()
+                {
+                    Count = Count + Step;
+                }
+            }
+            """;
+
+        var parser = new JazorVueParser();
+        var compiler = new JazorVueCompiler();
+        var document = parser.Parse("Counter.jazor", source);
+        var result = compiler.Compile(document);
+
+        Assert.IsNotNull(result.GeneratedVueSourceMap);
+        using var sourceMap = JsonDocument.Parse(result.GeneratedVueSourceMap);
+        var segments = DecodeSegments(sourceMap.RootElement);
+
+        AssertGeneratedLineHasMultipleNonZeroColumnMappings(
+            result.GeneratedVueText,
+            "count.value = count.value + step.value;",
+            source,
+            "Count = Count + Step;",
+            segments,
+            minimumDistinctMappings: 2);
+    }
+
+    [TestMethod]
     public void JazorVue_Compiler_LowersSimpleComputedExpressionsAndMethodBodies()
     {
         var source = """
@@ -766,6 +803,32 @@ public sealed class JazorVueCompilerTests
                 && segment.GeneratedColumn == 0
                 && segment.SourceColumn > 0),
             $"Expected a source-column-shift segment for generated line containing '{generatedNeedle}'.");
+    }
+
+    private static void AssertGeneratedLineHasMultipleNonZeroColumnMappings(
+        string generatedText,
+        string generatedNeedle,
+        string sourceText,
+        string sourceNeedle,
+        IReadOnlyList<SourceMapSegment> segments,
+        int minimumDistinctMappings)
+    {
+        var generatedLine = GetLineIndexContaining(generatedText, generatedNeedle);
+        var sourceLine = GetLineIndexContaining(sourceText, sourceNeedle);
+
+        var mappedColumns = segments
+            .Where(segment =>
+                segment.GeneratedLine == generatedLine
+                && segment.SourceLine == sourceLine
+                && segment.GeneratedColumn > 0
+                && segment.SourceColumn > 0)
+            .Select(segment => (segment.GeneratedColumn, segment.SourceColumn))
+            .Distinct()
+            .ToArray();
+
+        Assert.IsTrue(
+            mappedColumns.Length >= minimumDistinctMappings,
+            $"Expected at least {minimumDistinctMappings} non-zero column source-map anchors for generated line containing '{generatedNeedle}', actual {mappedColumns.Length}.");
     }
 
     private static void AssertSymbol(

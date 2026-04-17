@@ -1148,7 +1148,7 @@ public sealed class JazorVueHostDebugProtocolTests
         var expectedBreakpointColumn = GetSourceColumn(moduleVersion1, breakpointNeedle);
         var devPort = AllocateLoopbackTcpPort();
         var cdpPort = AllocateLoopbackTcpPort();
-        const int iterations = 6;
+        const int iterations = 8;
 
         using var cancellationSource = new CancellationTokenSource(TimeSpan.FromMinutes(4));
         Process? browserProcess = null;
@@ -1288,6 +1288,67 @@ public sealed class JazorVueHostDebugProtocolTests
                 Assert.IsTrue(
                     pausedColumn >= expectedBreakpointColumn,
                     $"Expected mapped column >= {expectedBreakpointColumn}, actual {pausedColumn}.");
+
+                var frameId = pausedFrame.GetProperty("id").GetInt32();
+                using var scopesResponse = await SendDapRequestAsync(
+                    hostProcess,
+                    sequence,
+                    "scopes",
+                    new
+                    {
+                        frameId
+                    },
+                    cancellationSource.Token);
+                var scopes = scopesResponse.RootElement
+                    .GetProperty("body")
+                    .GetProperty("scopes")
+                    .EnumerateArray()
+                    .ToArray();
+                Assert.IsTrue(scopes.Length >= 2, "Expected at least one runtime scope plus the session scope.");
+
+                var runtimeScopeReference = scopes
+                    .Where(scope =>
+                        scope.TryGetProperty("variablesReference", out var referenceElement)
+                        && referenceElement.GetInt32() > 0
+                        && !string.Equals(scope.GetProperty("name").GetString(), "Session", StringComparison.OrdinalIgnoreCase))
+                    .Select(scope => scope.GetProperty("variablesReference").GetInt32())
+                    .DefaultIfEmpty(0)
+                    .First();
+                Assert.IsTrue(runtimeScopeReference > 0, "Expected runtime scope to expose variablesReference.");
+
+                using var variablesResponse = await SendDapRequestAsync(
+                    hostProcess,
+                    sequence,
+                    "variables",
+                    new
+                    {
+                        variablesReference = runtimeScopeReference
+                    },
+                    cancellationSource.Token);
+                var runtimeVariablesElement = variablesResponse.RootElement
+                    .GetProperty("body")
+                    .GetProperty("variables");
+                Assert.AreEqual(JsonValueKind.Array, runtimeVariablesElement.ValueKind);
+
+                using var evaluateBuildVersionResponse = await SendDapRequestAsync(
+                    hostProcess,
+                    sequence,
+                    "evaluate",
+                    new
+                    {
+                        expression = "buildVersion",
+                        frameId,
+                        context = "watch"
+                    },
+                    cancellationSource.Token);
+                var evaluatedBuildVersion = evaluateBuildVersionResponse.RootElement
+                    .GetProperty("body")
+                    .GetProperty("result")
+                    .GetString();
+                Assert.AreEqual(
+                    iteration.ToString(),
+                    evaluatedBuildVersion,
+                    $"Expected paused-frame evaluate(buildVersion) to stay aligned with HMR iteration {iteration}.");
 
                 using var continueResponse = await SendDapRequestAsync(
                     hostProcess,

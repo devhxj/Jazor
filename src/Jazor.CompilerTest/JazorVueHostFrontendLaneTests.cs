@@ -100,6 +100,14 @@ public sealed class JazorVueHostFrontendLaneTests
                 <script setup lang="ts">
                 const count: number = 1;
                 const typedLabel: string = `count:${count}`;
+                enum MarkerState {
+                  Active = 1
+                }
+                const buildVersion: number = 1;
+                function runIteration(): number {
+                  const marker = buildVersion + MarkerState.Active;
+                  return marker;
+                }
                 </script>
                 <style>
                 .app {
@@ -134,6 +142,11 @@ public sealed class JazorVueHostFrontendLaneTests
             var templateSegments = segments
                 .Where(segment => segment.SourceLine == templateExpressionSourceLine)
                 .ToArray();
+            var markerExpressionSourceLine = GetLineIndexContaining(sfcText, "const marker = buildVersion + MarkerState.Active;");
+            var markerStateSourcePosition = GetLineColumnContaining(sfcText, "MarkerState.Active");
+            var markerExpressionSegments = segments
+                .Where(segment => segment.SourceLine == markerExpressionSourceLine)
+                .ToArray();
 
             Assert.AreEqual(Path.GetFileName(documentPath), sourceMap.GetProperty("sources")[sourceIndex].GetString());
             Assert.AreEqual(sfcText, sourceMap.GetProperty("sourcesContent")[sourceIndex].GetString());
@@ -150,6 +163,12 @@ public sealed class JazorVueHostFrontendLaneTests
             Assert.IsTrue(
                 templateSegments.Any(segment => segment.SourceColumn > 0),
                 "Expected template source-map segments to preserve non-zero source columns.");
+            Assert.IsTrue(
+                markerExpressionSegments.Select(segment => segment.SourceColumn).Distinct().Count(static column => column > 0) >= 2,
+                "Expected transpiled script sourcemap chaining to preserve multiple non-zero source columns for complex expression lines.");
+            Assert.IsTrue(
+                markerExpressionSegments.Any(segment => segment.SourceColumn >= markerStateSourcePosition.Column),
+                "Expected sourcemap chaining to retain MarkerState.Active token column on the authored script line.");
         }
         finally
         {

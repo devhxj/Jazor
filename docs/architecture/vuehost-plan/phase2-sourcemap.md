@@ -21,12 +21,14 @@
 - 已补齐 Vue SFC sourcemap 回归，覆盖 Deno host 协议透传、`DenoFrontendModuleCompiler` 透传、inline 注入、`.vue.map`、未保存 workspace 文本，以及 style wrapper 偏移。
 - 已补齐 `.jazor` 链式 sourcemap 回归，覆盖 `JazorVueCompiler` 生成中间 map、`OnDemandCompiler` 将 worker sourcemap 链回原始 `.jazor` 源、Dev Server `.jazor.map`、未保存 workspace 文本，以及实际 `mappings` 行号。
 - 已补齐真实浏览器/CDP + HMR 长链路压测（环境变量门控），覆盖多轮热更新后断点重绑、调用栈回填与列号映射稳定性。
+- `JazorVueCompiler` 已将 `.jazor -> .g.vue` 列映射从“单锚点”提升为“多锚点”策略：同一生成行可输出多个 token 级列段，并保留缩进偏移回退段，减少列 0 退化。
+- Deno worker 已将 Vue 编译器原生 script/template source map 进行列级链式合并增强：按行排序段、早列回退到首段、列回推负偏移保护，复杂转换行不再轻易退化到 line-map。
+- build 产物回归已补“模板 token 逆向列号 > 0”断言，验证最终 external source map 可链回原始 `.vue` 作者列信息。
+- 真实浏览器/CDP + HMR 压测已补 `scopes/variables/evaluate/continue` 闭环断言，覆盖多轮热更新后调试会话的一致性。
 
 ### 尚未完成
 
-- VueHost 内的独立 `ISourceMapService` 已落地为 dev-server 内存注册表，并接入 `OnDemandCompiler` 的编译/失效生命周期；Phase 4 的 DAP 基础链路已经消费这套 sourcemap 做断点映射和调用栈回填，且已有真实浏览器/CDP + HMR 长链路压测基线（env-gated），后续仍需扩展更高压力矩阵、调试可视化与诊断端点。
-- `.vue` 当前是 worker 内直接生成的行级 Source Map，尚未合并 Vue 编译器原生 script/template Source Map，也未做到列级精度。
-- `.jazor -> .g.vue` 当前已下沉到 `JazorVueCompiler`，但仍是行级映射，尚未做到成员级/列级精度。
+- SourceMap 主链路（生成、链式、调试消费）已可用且具备列级增强；后续仍需继续扩展真实浏览器/CDP + HMR 的更高压力矩阵（并发断点、异常栈、长时运行）以及调试可视化/诊断端点。
 
 ---
 

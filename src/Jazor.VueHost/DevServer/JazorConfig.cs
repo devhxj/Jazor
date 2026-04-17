@@ -11,6 +11,8 @@ internal sealed class JazorConfig
     public JazorResolveConfig? Resolve { get; init; }
 
     public JazorBuildConfig? Build { get; init; }
+
+    public JazorExtensionsConfig? Extensions { get; init; }
 }
 
 internal sealed class JazorServerConfig
@@ -84,4 +86,13 @@ internal sealed class JazorBuildConfig
             _ => SourceMapOption.External
         };
     }
+}
+
+internal sealed class JazorExtensionsConfig
+{
+    public bool? Enabled { get; init; }
+
+    public string? Directory { get; init; }
+
+    public string[]? Disabled { get; init; }
 }

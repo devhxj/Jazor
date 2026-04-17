@@ -3318,6 +3318,9 @@ function chainGeneratedSourceSegments(
       lineSegments.push(segment);
     }
   }
+  for (const lineSegments of sourceSegmentsByGeneratedLine.values()) {
+    lineSegments.sort((left, right) => left.generatedColumn - right.generatedColumn);
+  }
 
   const chainedSegments: SourceMapSegment[] = [];
   for (const segment of generatedSourceSegments) {
@@ -3334,7 +3337,7 @@ function chainGeneratedSourceSegments(
       generatedLine: segment.generatedLine,
       generatedColumn: segment.generatedColumn,
       sourceLine: sourceSegment.sourceLine,
-      sourceColumn: sourceSegment.sourceColumn + (segment.sourceColumn - sourceSegment.generatedColumn),
+      sourceColumn: mapChainedSourceColumn(segment.sourceColumn, sourceSegment),
     });
   }
 
@@ -3597,7 +3600,18 @@ function findSourceSegment(
     candidate = segment;
   }
 
-  return candidate;
+  return candidate ?? lineSegments[0] ?? null;
+}
+
+function mapChainedSourceColumn(
+  generatedSourceColumn: number,
+  sourceSegment: SourceMapSegment,
+): number {
+  if (generatedSourceColumn <= sourceSegment.generatedColumn) {
+    return sourceSegment.sourceColumn;
+  }
+
+  return sourceSegment.sourceColumn + (generatedSourceColumn - sourceSegment.generatedColumn);
 }
 
 function decodeBase64Vlq(mappings: string, state: { position: number }): number | null {

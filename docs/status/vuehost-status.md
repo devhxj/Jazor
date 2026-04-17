@@ -11,10 +11,10 @@
 当前更准确的描述是：
 
 - Phase 1/2/3：主路径已落地，正在持续修边与稳定性补强
-- Phase 4：DAP 基础链路已消费 sourcemap，且已具备真实浏览器/CDP + HMR 长链路压测基线（env-gated）
+- Phase 4：DAP + CDP 已具备断点/调用栈/scopes/variables/evaluate/continue 基础闭环，且已有真实浏览器/CDP + HMR 长链路压测（env-gated）
 - Phase 5：生产构建路径已进入实现与回归覆盖阶段
 - Phase 6：高级 LSP（P2 + 部分 P3）已进入可用状态并持续增强
-- Phase 7：扩展系统与生态层仍处于规划阶段
+- Phase 7：扩展系统已启动最小闭环（diagnostics/codeAction provider 抽象 + LSP 接入 + 基础加载器）
 
 ## 当前状态判断
 
@@ -28,7 +28,7 @@
 
 - `--dev` 路径、HMR 通道、workspace 变更去重已具备系统级实现
 - `.jazor/.vue/.ts` 的编译与 SourceMap 回传/链式处理已在主路径可用
-- SourceMap 已被 DAP 基础链路消费于断点映射和调用栈回填；并已新增真实浏览器/CDP + HMR 长链路压测；列级精度与 Vue map 保真度仍待补齐
+- SourceMap 已被 DAP/CDP 调试链路消费于断点映射与调用栈回填；`.jazor` 多锚点列映射与 `.vue` 原生 script/template 链式列映射已落地，并有真实浏览器/CDP + HMR 长链路压测
 - `resolve.alias` 已接入 `jazor.config.json -> DevServerOptions/BuildOptions -> ModuleResolver`，dev/build 共用解析链路
 
 ### 3. 高级 LSP 能力已超过 phase-one 最小范围
@@ -47,12 +47,12 @@
 | 阶段 | 进展判断 | 说明 |
 |------|---------|------|
 | Phase 1 Dev Server MVP | 已完成并持续增强 | 核心 HTTP 模块服务与编译路径已可用 |
-| Phase 2 Source Map | 大部分完成 | 行级映射与链式映射已落地，DAP 基础消费已接入，列级精度与调试硬化待补 |
+| Phase 2 Source Map | 高完成度（收尾中） | 行级+列级映射与链式映射已落地，DAP/CDP 消费已接入，仍需持续扩展高压调试矩阵 |
 | Phase 3 HMR | 已完成并持续增强 | 工作区变更、去重、style/js/full-reload 分类已实现，`resolve.alias` 已补齐 |
-| Phase 4 Debug (DAP + CDP) | 部分完成 | DAP 基础可用并已消费 sourcemap，已有真实浏览器/CDP+HMR 长链路压测基线，仍需扩大压力矩阵 |
+| Phase 4 Debug (DAP + CDP) | 收尾中 | DAP + CDP 已覆盖 stackTrace/scopes/variables/evaluate/continue，并有真实浏览器/CDP+HMR 多轮压测；仍需更高压并发与异常栈矩阵 |
 | Phase 5 Production Build | 活跃推进中 | build skeleton 已落地并有较多构建回归测试 |
 | Phase 6 Advanced LSP | 高完成度 | P2 基本可用，P3 中 semantic tokens 等已部分落地 |
-| Phase 7 Extension System | 规划中 | 扩展接口、健康监控、IDE 生态层尚未落地 |
+| Phase 7 Extension System | 已启动（最小闭环） | 扩展核心接口、注册表、加载器与 LSP diagnostics/codeAction provider 接入已落地；IDE 集成与生态层仍待推进 |
 
 ## 近期推进信号（截至 2026-04-17）
 
@@ -64,9 +64,9 @@
 
 ## 下一步行动
 
-1. **Phase 4 调试闭环**
+1. **Phase 4 调试稳态**
    - 扩展真实浏览器/CDP 压测矩阵（异常栈、并发断点、长时间 HMR）
-   - 持续收敛列级映射精度，减少 fallback 场景
+   - 补调试可视化与诊断端点，降低问题定位成本
 
 2. **Phase 5 构建收口**
    - 继续压实构建产物一致性（manifest/css/js/source map）
@@ -77,8 +77,8 @@
    - 明确哪些能力是“native first”，哪些由 host 负责补桥接
 
 4. **Phase 7 启动门槛**
-   - 在不破坏现有主线稳定性的前提下，引入最小扩展接口原型
-   - 优先做 diagnostics/code-action provider 抽象，而不是一次性铺开全扩展面
+   - 在不破坏现有主线稳定性的前提下，继续扩展 provider 面（completion/hover/symbol）
+   - 补扩展健康监控、超时与隔离策略，再推进 IDE 生态层集成
 
 ## 风险与注意项
 

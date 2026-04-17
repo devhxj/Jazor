@@ -13,6 +13,7 @@ using Jazor.VueHost.Lsp.Aggregation;
 using Jazor.VueHost.Lsp.Coordination;
 using Jazor.VueHost.Lsp.Lanes;
 using Jazor.VueHost.Lsp.Routing;
+using Jazor.VueHost.Extensions;
 using Jazor.VueHost.Rpc;
 using Jazor.VueHost.Roslyn.InProc;
 using Jazor.VueHost.SourceMap;
@@ -239,6 +240,17 @@ try
 
     if (useLsp)
     {
+        var hostRootDirectory = Path.GetFullPath(GetOptionValue(args, "--dev-root") ?? Directory.GetCurrentDirectory());
+        var hostConfig = LoadJazorConfig(hostRootDirectory);
+        var extensionHostOptions = ExtensionHostOptionsResolver.Resolve(args, hostRootDirectory, hostConfig);
+        var extensionRegistry = new ExtensionRegistry();
+        var extensionLoader = new ExtensionLoader(extensionRegistry);
+        await extensionLoader.LoadBuiltinExtensionsAsync(
+            builtinExtensions: Array.Empty<IExtension>(),
+            rootDirectory: extensionHostOptions.RootDirectory,
+            cancellationToken);
+        await extensionLoader.LoadUserExtensionsAsync(extensionHostOptions, cancellationToken);
+
         DevHttpServer? devServer = null;
         if (useDev)
         {
@@ -271,7 +283,8 @@ try
                 new ReferenceCoordinator(laneMap, laneRouter, markupBridgeFanoutCoordinator),
                 new RenameCoordinator(laneMap, laneRouter, resultAggregator, markupBridgeFanoutCoordinator),
                 new CodeActionCoordinator(laneMap, laneRouter, resultAggregator),
-                devServer));
+                devServer,
+                extensionRegistry));
         try
         {
             await lspServer.RunAsync(

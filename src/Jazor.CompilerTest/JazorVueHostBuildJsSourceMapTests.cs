@@ -163,6 +163,16 @@ public sealed class JazorVueHostBuildJsSourceMapTests
                 expectedSourcePath: "AppEntry.vue",
                 source,
                 "message.value = \"updated-vue-source-map\";");
+
+            AssertSourceMapReverseLookupToOriginalAuthoring(
+                generatedPath: entryChunk.FilePath,
+                sourceMapJson,
+                chunkContent,
+                "template-sourcemap-marker",
+                expectedSourcePath: "AppEntry.vue",
+                source,
+                "template-sourcemap-marker {{ message }}",
+                minimumOriginalColumn: 1);
         }
         finally
         {
@@ -212,7 +222,9 @@ public sealed class JazorVueHostBuildJsSourceMapTests
         string generatedNeedle,
         string expectedSourcePath,
         string sourceText,
-        string sourceNeedle)
+        string sourceNeedle,
+        int? minimumOriginalColumn = null,
+        int? minimumGeneratedColumn = null)
     {
         var generatedPosition = GetLineColumnContaining(generatedText, generatedNeedle);
         var expectedSourcePosition = GetLineColumnContaining(sourceText, sourceNeedle);
@@ -230,6 +242,12 @@ public sealed class JazorVueHostBuildJsSourceMapTests
         Assert.IsTrue(
             original.Column <= expectedSourcePosition.Column,
             $"Expected authored column <= token start column ({expectedSourcePosition.Column}), actual {original.Column}.");
+        if (minimumOriginalColumn.HasValue)
+        {
+            Assert.IsTrue(
+                original.Column >= minimumOriginalColumn.Value,
+                $"Expected authored column >= {minimumOriginalColumn.Value}, actual {original.Column}.");
+        }
 
         var generated = service.GeneratedPositionFor(expectedSourcePath, expectedSourcePosition.Line, expectedSourcePosition.Column);
         Assert.IsNotNull(generated, "Expected forward source-map lookup from authored location to return generated position.");
@@ -238,6 +256,12 @@ public sealed class JazorVueHostBuildJsSourceMapTests
         Assert.IsTrue(
             generated.Column <= generatedPosition.Column,
             $"Expected generated column <= token start column ({generatedPosition.Column}), actual {generated.Column}.");
+        if (minimumGeneratedColumn.HasValue)
+        {
+            Assert.IsTrue(
+                generated.Column >= minimumGeneratedColumn.Value,
+                $"Expected generated column >= {minimumGeneratedColumn.Value}, actual {generated.Column}.");
+        }
     }
 
     private static void AssertSourceMapContainsOriginalSource(

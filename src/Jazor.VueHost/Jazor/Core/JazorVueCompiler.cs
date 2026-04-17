@@ -290,13 +290,11 @@ public sealed partial class JazorVueCompiler
                 SourceLine: generatedLineMapping.SourceLine.Value,
                 SourceColumn: 0));
 
-            if (TryCreateColumnPreciseSegment(
+            foreach (var preciseSegment in CreateColumnPreciseSegments(
                 generatedLine,
                 generatedLineMapping.Text,
                 GetSourceLineText(sourceLines, generatedLineMapping.SourceLine.Value),
-                generatedLineMapping.SourceLine.Value,
-                out var preciseSegment)
-                && preciseSegment is not null)
+                generatedLineMapping.SourceLine.Value))
             {
                 segments.Add(preciseSegment);
             }
@@ -315,52 +313,58 @@ public sealed partial class JazorVueCompiler
         return new SourceMapWriter().Write(sourceMap);
     }
 
-    private static bool TryCreateColumnPreciseSegment(
+    private static IReadOnlyList<SourceMapSegment> CreateColumnPreciseSegments(
         int generatedLine,
         string generatedText,
         string sourceText,
-        int sourceLine,
-        out SourceMapSegment? segment)
+        int sourceLine)
     {
-        if (TryFindSharedTokenAnchor(generatedText, sourceText, out var generatedColumn, out var sourceColumn))
+        var segments = new List<SourceMapSegment>(4);
+        foreach (var (generatedColumn, sourceColumn) in EnumerateSharedTokenAnchors(generatedText, sourceText))
         {
-            segment = new SourceMapSegment(
+            if (generatedColumn == 0 && sourceColumn == 0)
+            {
+                continue;
+            }
+
+            if (segments.Count > 0 && segments[^1].GeneratedColumn == generatedColumn)
+            {
+                continue;
+            }
+
+            segments.Add(new SourceMapSegment(
                 GeneratedLine: generatedLine,
                 GeneratedColumn: generatedColumn,
                 SourceIndex: 0,
                 SourceLine: sourceLine,
-                SourceColumn: sourceColumn);
-            return true;
+                SourceColumn: sourceColumn));
         }
 
-        generatedColumn = GetFirstNonWhitespaceColumn(generatedText);
-        sourceColumn = GetFirstNonWhitespaceColumn(sourceText);
-        if (generatedColumn != 0 || sourceColumn != 0)
+        if (segments.Count > 0)
         {
-            segment = new SourceMapSegment(
+            return segments;
+        }
+
+        var generatedNonWhitespaceColumn = GetFirstNonWhitespaceColumn(generatedText);
+        var sourceNonWhitespaceColumn = GetFirstNonWhitespaceColumn(sourceText);
+        if (generatedNonWhitespaceColumn != 0 || sourceNonWhitespaceColumn != 0)
+        {
+            segments.Add(new SourceMapSegment(
                 GeneratedLine: generatedLine,
-                GeneratedColumn: generatedColumn,
+                GeneratedColumn: generatedNonWhitespaceColumn,
                 SourceIndex: 0,
                 SourceLine: sourceLine,
-                SourceColumn: sourceColumn);
-            return true;
+                SourceColumn: sourceNonWhitespaceColumn));
         }
 
-        segment = default;
-        return false;
+        return segments;
     }
 
-    private static bool TryFindSharedTokenAnchor(
+    private static IEnumerable<(int GeneratedColumn, int SourceColumn)> EnumerateSharedTokenAnchors(
         string generatedText,
-        string sourceText,
-        out int generatedColumn,
-        out int sourceColumn)
+        string sourceText)
     {
-        generatedColumn = 0;
-        sourceColumn = 0;
-
-        var fallbackGeneratedColumn = -1;
-        var fallbackSourceColumn = -1;
+        var sourceSearchStart = 0;
         foreach (Match match in SourceMapAnchorTokenPattern.Matches(generatedText))
         {
             var candidate = match.Value;
@@ -369,39 +373,27 @@ public sealed partial class JazorVueCompiler
                 continue;
             }
 
-            var sourceIndex = sourceText.IndexOf(candidate, StringComparison.OrdinalIgnoreCase);
+            var sourceIndex = sourceSearchStart < sourceText.Length
+                ? sourceText.IndexOf(candidate, sourceSearchStart, StringComparison.OrdinalIgnoreCase)
+                : -1;
+            if (sourceIndex < 0)
+            {
+                sourceIndex = sourceText.IndexOf(candidate, StringComparison.OrdinalIgnoreCase);
+            }
+
             if (sourceIndex < 0)
             {
                 continue;
             }
 
+            sourceSearchStart = sourceIndex + candidate.Length;
             if (match.Index == 0 && sourceIndex == 0)
             {
                 continue;
             }
 
-            if (sourceIndex > 0)
-            {
-                generatedColumn = match.Index;
-                sourceColumn = sourceIndex;
-                return true;
-            }
-
-            if (fallbackGeneratedColumn < 0)
-            {
-                fallbackGeneratedColumn = match.Index;
-                fallbackSourceColumn = sourceIndex;
-            }
+            yield return (match.Index, sourceIndex);
         }
-
-        if (fallbackGeneratedColumn > 0)
-        {
-            generatedColumn = fallbackGeneratedColumn;
-            sourceColumn = fallbackSourceColumn;
-            return true;
-        }
-
-        return false;
     }
 
     private static string GetSourceLineText(IReadOnlyList<string> sourceLines, int sourceLine)

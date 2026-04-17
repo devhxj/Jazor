@@ -13,6 +13,24 @@
 - VS Code 扩展可一键启动 VueHost
 - Lane 故障时自动降级，不影响其他功能
 
+## 当前实现状态（2026-04-17）
+
+### 已完成（最小闭环）
+
+- 新增扩展核心接口与元数据模型：`IExtension` / `ExtensionMetadata` / `ExtensionContext`。
+- 新增 LSP 扩展 provider 抽象：`ILspDiagnosticProvider`、`ILspCodeActionProvider` 及统一上下文对象。
+- 新增扩展注册表与空实现：`ExtensionRegistry` / `NullExtensionRegistry`，支持 provider 按优先级注册与读取。
+- 新增扩展加载器与配置解析：`ExtensionLoader` + `ExtensionHostOptionsResolver`，支持 builtin 与目录扩展加载（`extension.json`）。
+- `LspSession` 已接入扩展 provider 聚合点：诊断发布链路与 codeAction 返回链路都会合并扩展结果，且 provider 失败不会中断主链路。
+- `Program` 的 `--lsp` 启动路径已集成扩展加载与注入。
+- 新增 Phase7 回归测试，覆盖注册表、加载器、options 解析，以及 diagnostics/codeAction 的端到端接入断言。
+
+### 尚未完成
+
+- completion / hover / references / rename / documentSymbol 等 provider 面尚未扩展。
+- 扩展健康监控、超时隔离、权限约束与沙箱策略尚未实现。
+- VS Code 扩展与生态层（市场、发布、安装）尚未落地。
+
 ---
 
 ## 一、扩展系统架构
