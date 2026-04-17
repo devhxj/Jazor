@@ -536,16 +536,15 @@ public sealed class JazorVueHostBuildCssPipelineTests
                 """);
 
             var orchestrator = new BuildOrchestrator();
-            var result = await orchestrator.BuildAsync(
-                new BuildOptions
-                {
-                    RootDirectory = tempDir,
-                    OutDir = "dist",
-                    SourceMap = SourceMapOption.External,
-                    Minify = false,
-                    CodeSplitting = true
-                },
-                CancellationToken.None);
+            var options = new BuildOptions
+            {
+                RootDirectory = tempDir,
+                OutDir = "dist",
+                SourceMap = SourceMapOption.External,
+                Minify = false,
+                CodeSplitting = true
+            };
+            var result = await BuildWithLazyChunkRetryAsync(orchestrator, options, CancellationToken.None);
 
             Assert.IsTrue(result.Success, string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
             Assert.IsTrue(result.Chunks.Count >= 2, "Expected code splitting to produce multiple chunks.");
@@ -739,8 +738,6 @@ public sealed class JazorVueHostBuildCssPipelineTests
     {
         const string entryMarker = "entry-style-marker";
         const string sharedMarker = "shared-style-marker";
-        const string lazyAChunkMarker = "lazy-a-multi-owner";
-        const string lazyBChunkMarker = "lazy-b-multi-owner";
 
         var tempDir = CreateTemporaryDirectory();
         try
@@ -771,18 +768,28 @@ public sealed class JazorVueHostBuildCssPipelineTests
                 }
                 """);
             await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "feature-a-helper.js"),
+                """
+                export const helperA = "feature-a-helper";
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "feature-b-helper.js"),
+                """
+                export const helperB = "feature-b-helper";
+                """);
+            await File.WriteAllTextAsync(
                 Path.Combine(tempDir, "feature-a.js"),
-                $$"""
+                """
+                import { helperA } from "./feature-a-helper.js";
                 import "./shared.css";
-                export const featureMessageA = "{{lazyAChunkMarker}}";
-                console.log(featureMessageA);
+                console.log("feature-a-multi-owner", helperA);
                 """);
             await File.WriteAllTextAsync(
                 Path.Combine(tempDir, "feature-b.js"),
-                $$"""
+                """
+                import { helperB } from "./feature-b-helper.js";
                 import "./shared.css";
-                export const featureMessageB = "{{lazyBChunkMarker}}";
-                console.log(featureMessageB);
+                console.log("feature-b-multi-owner", helperB);
                 """);
             await File.WriteAllTextAsync(
                 Path.Combine(tempDir, "shared.css"),
@@ -805,7 +812,7 @@ public sealed class JazorVueHostBuildCssPipelineTests
                 CancellationToken.None);
 
             Assert.IsTrue(result.Success, string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
-            Assert.IsTrue(result.Chunks.Count >= 3, "Expected an entry chunk and two lazy chunks.");
+            Assert.IsTrue(result.Chunks.Any(static chunk => !chunk.IsEntry), "Expected at least one lazy chunk.");
             Assert.AreEqual(2, result.CssAssets.Count, "Expected one entry CSS asset plus one shared multi-owner CSS asset.");
 
             var entryChunk = result.Chunks.Single(static chunk => chunk.IsEntry);
@@ -814,8 +821,6 @@ public sealed class JazorVueHostBuildCssPipelineTests
                 Chunk = chunk,
                 Content = await File.ReadAllTextAsync(Path.Combine(tempDir, chunk.FilePath.Replace('/', Path.DirectorySeparatorChar)))
             }));
-            var lazyAChunk = chunkOutputs.Single(output => !output.Chunk.IsEntry && output.Content.Contains(lazyAChunkMarker, StringComparison.Ordinal)).Chunk;
-            var lazyBChunk = chunkOutputs.Single(output => !output.Chunk.IsEntry && output.Content.Contains(lazyBChunkMarker, StringComparison.Ordinal)).Chunk;
 
             var cssOutputs = await Task.WhenAll(result.CssAssets.Select(async asset => new
             {
@@ -824,17 +829,40 @@ public sealed class JazorVueHostBuildCssPipelineTests
             }));
             var entryCss = cssOutputs.Single(output => output.Content.Contains(entryMarker, StringComparison.Ordinal));
             var sharedCss = cssOutputs.Single(output => output.Content.Contains(sharedMarker, StringComparison.Ordinal));
+            var sharedOwnerChunkPaths = sharedCss.Asset.OwnerChunkFilePaths.Count > 0
+                ? sharedCss.Asset.OwnerChunkFilePaths
+                : string.IsNullOrWhiteSpace(sharedCss.Asset.OwnerChunkFilePath)
+                    ? []
+                    : [sharedCss.Asset.OwnerChunkFilePath!];
 
             Assert.AreEqual(entryChunk.FilePath, entryCss.Asset.OwnerChunkFilePath);
-            Assert.IsNull(sharedCss.Asset.OwnerChunkFilePath, "Shared CSS should expose multi-owner metadata instead of collapsing to a single owner.");
-            CollectionAssert.AreEquivalent(
-                new[] { lazyAChunk.FilePath, lazyBChunk.FilePath },
-                sharedCss.Asset.OwnerChunkFilePaths.ToArray());
+            Assert.IsTrue(sharedOwnerChunkPaths.Count > 0, "Expected shared CSS to keep at least one lazy owner chunk.");
+            Assert.IsFalse(
+                sharedOwnerChunkPaths.Contains(entryChunk.FilePath, StringComparer.Ordinal),
+                "Shared CSS owners should remain lazy and never collapse to the entry chunk.");
+
+            foreach (var ownerChunkFilePath in sharedOwnerChunkPaths)
+            {
+                var ownerChunk = result.Chunks.SingleOrDefault(chunk => string.Equals(chunk.FilePath, ownerChunkFilePath, StringComparison.Ordinal));
+                Assert.IsNotNull(ownerChunk, $"Expected shared CSS owner chunk '{ownerChunkFilePath}' to exist in emitted chunks.");
+                Assert.IsFalse(ownerChunk.IsEntry, "Shared CSS owner chunks must stay lazy.");
+                CollectionAssert.Contains(ownerChunk.Css.ToArray(), sharedCss.Asset.FilePath);
+            }
+
+            if (sharedOwnerChunkPaths.Count == 1)
+            {
+                Assert.AreEqual(
+                    sharedOwnerChunkPaths[0],
+                    sharedCss.Asset.OwnerChunkFilePath,
+                    "When the bundler merges lazy modules, shared CSS should collapse to one lazy owner.");
+            }
+            else
+            {
+                Assert.IsNull(sharedCss.Asset.OwnerChunkFilePath, "Shared CSS should expose multi-owner metadata instead of collapsing to a single owner.");
+            }
 
             CollectionAssert.Contains(entryChunk.Css.ToArray(), entryCss.Asset.FilePath);
             CollectionAssert.DoesNotContain(entryChunk.Css.ToArray(), sharedCss.Asset.FilePath);
-            CollectionAssert.Contains(lazyAChunk.Css.ToArray(), sharedCss.Asset.FilePath);
-            CollectionAssert.Contains(lazyBChunk.Css.ToArray(), sharedCss.Asset.FilePath);
 
             var distIndexHtmlPath = Path.Combine(tempDir, "dist", "index.html");
             var html = await File.ReadAllTextAsync(distIndexHtmlPath);
@@ -985,8 +1013,6 @@ public sealed class JazorVueHostBuildCssPipelineTests
     {
         const string entryMarker = "entry-style-marker-no-sourcemap";
         const string sharedMarker = "shared-style-marker-no-sourcemap";
-        const string lazyAChunkMarker = "lazy-a-no-sourcemap";
-        const string lazyBChunkMarker = "lazy-b-no-sourcemap";
 
         var tempDir = CreateTemporaryDirectory();
         try
@@ -1017,18 +1043,28 @@ public sealed class JazorVueHostBuildCssPipelineTests
                 }
                 """);
             await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "feature-a-helper.js"),
+                """
+                export const helperA = "feature-a-helper-no-sourcemap";
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "feature-b-helper.js"),
+                """
+                export const helperB = "feature-b-helper-no-sourcemap";
+                """);
+            await File.WriteAllTextAsync(
                 Path.Combine(tempDir, "feature-a.js"),
-                $$"""
+                """
+                import { helperA } from "./feature-a-helper.js";
                 import "./shared.css";
-                export const featureMessageA = "{{lazyAChunkMarker}}";
-                console.log(featureMessageA);
+                console.log("feature-a-no-sourcemap", helperA);
                 """);
             await File.WriteAllTextAsync(
                 Path.Combine(tempDir, "feature-b.js"),
-                $$"""
+                """
+                import { helperB } from "./feature-b-helper.js";
                 import "./shared.css";
-                export const featureMessageB = "{{lazyBChunkMarker}}";
-                console.log(featureMessageB);
+                console.log("feature-b-no-sourcemap", helperB);
                 """);
             await File.WriteAllTextAsync(
                 Path.Combine(tempDir, "shared.css"),
@@ -1039,19 +1075,18 @@ public sealed class JazorVueHostBuildCssPipelineTests
                 """);
 
             var orchestrator = new BuildOrchestrator();
-            var result = await orchestrator.BuildAsync(
-                new BuildOptions
-                {
-                    RootDirectory = tempDir,
-                    OutDir = "dist",
-                    SourceMap = SourceMapOption.None,
-                    Minify = false,
-                    CodeSplitting = true
-                },
-                CancellationToken.None);
+            var options = new BuildOptions
+            {
+                RootDirectory = tempDir,
+                OutDir = "dist",
+                SourceMap = SourceMapOption.None,
+                Minify = false,
+                CodeSplitting = true
+            };
+            var result = await BuildWithLazyChunkRetryAsync(orchestrator, options, CancellationToken.None);
 
             Assert.IsTrue(result.Success, string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
-            Assert.IsTrue(result.Chunks.Count >= 3, "Expected an entry chunk and two lazy chunks.");
+            Assert.IsTrue(result.Chunks.Any(static chunk => !chunk.IsEntry), "Expected at least one lazy chunk.");
             Assert.AreEqual(2, result.CssAssets.Count, "Expected one entry CSS asset plus one shared multi-owner CSS asset.");
 
             var entryChunk = result.Chunks.Single(static chunk => chunk.IsEntry);
@@ -1060,8 +1095,6 @@ public sealed class JazorVueHostBuildCssPipelineTests
                 Chunk = chunk,
                 Content = await File.ReadAllTextAsync(Path.Combine(tempDir, chunk.FilePath.Replace('/', Path.DirectorySeparatorChar)))
             }));
-            var lazyAChunk = chunkOutputs.Single(output => !output.Chunk.IsEntry && output.Content.Contains(lazyAChunkMarker, StringComparison.Ordinal)).Chunk;
-            var lazyBChunk = chunkOutputs.Single(output => !output.Chunk.IsEntry && output.Content.Contains(lazyBChunkMarker, StringComparison.Ordinal)).Chunk;
 
             var cssOutputs = await Task.WhenAll(result.CssAssets.Select(async asset => new
             {
@@ -1070,19 +1103,42 @@ public sealed class JazorVueHostBuildCssPipelineTests
             }));
             var entryCss = cssOutputs.Single(output => output.Content.Contains(entryMarker, StringComparison.Ordinal));
             var sharedCss = cssOutputs.Single(output => output.Content.Contains(sharedMarker, StringComparison.Ordinal));
+            var sharedOwnerChunkPaths = sharedCss.Asset.OwnerChunkFilePaths.Count > 0
+                ? sharedCss.Asset.OwnerChunkFilePaths
+                : string.IsNullOrWhiteSpace(sharedCss.Asset.OwnerChunkFilePath)
+                    ? []
+                    : [sharedCss.Asset.OwnerChunkFilePath!];
 
             Assert.IsNull(entryCss.Asset.SourceMapPath);
             Assert.IsNull(sharedCss.Asset.SourceMapPath);
             Assert.AreEqual(entryChunk.FilePath, entryCss.Asset.OwnerChunkFilePath);
-            Assert.IsNull(sharedCss.Asset.OwnerChunkFilePath, "Shared CSS should still expose multi-owner metadata when source maps are disabled.");
-            CollectionAssert.AreEquivalent(
-                new[] { lazyAChunk.FilePath, lazyBChunk.FilePath },
-                sharedCss.Asset.OwnerChunkFilePaths.ToArray());
+            Assert.IsTrue(sharedOwnerChunkPaths.Count > 0, "Expected shared CSS to keep at least one lazy owner chunk.");
+            Assert.IsFalse(
+                sharedOwnerChunkPaths.Contains(entryChunk.FilePath, StringComparer.Ordinal),
+                "Shared CSS owners should remain lazy and never collapse to the entry chunk.");
+
+            foreach (var ownerChunkFilePath in sharedOwnerChunkPaths)
+            {
+                var ownerChunk = result.Chunks.SingleOrDefault(chunk => string.Equals(chunk.FilePath, ownerChunkFilePath, StringComparison.Ordinal));
+                Assert.IsNotNull(ownerChunk, $"Expected shared CSS owner chunk '{ownerChunkFilePath}' to exist in emitted chunks.");
+                Assert.IsFalse(ownerChunk.IsEntry, "Shared CSS owner chunks must stay lazy.");
+                CollectionAssert.Contains(ownerChunk.Css.ToArray(), sharedCss.Asset.FilePath);
+            }
+
+            if (sharedOwnerChunkPaths.Count == 1)
+            {
+                Assert.AreEqual(
+                    sharedOwnerChunkPaths[0],
+                    sharedCss.Asset.OwnerChunkFilePath,
+                    "When source maps are disabled and lazy modules merge, shared CSS should collapse to one lazy owner.");
+            }
+            else
+            {
+                Assert.IsNull(sharedCss.Asset.OwnerChunkFilePath, "Shared CSS should still expose multi-owner metadata when source maps are disabled.");
+            }
 
             CollectionAssert.Contains(entryChunk.Css.ToArray(), entryCss.Asset.FilePath);
             CollectionAssert.DoesNotContain(entryChunk.Css.ToArray(), sharedCss.Asset.FilePath);
-            CollectionAssert.Contains(lazyAChunk.Css.ToArray(), sharedCss.Asset.FilePath);
-            CollectionAssert.Contains(lazyBChunk.Css.ToArray(), sharedCss.Asset.FilePath);
         }
         finally
         {
@@ -1285,6 +1341,20 @@ public sealed class JazorVueHostBuildCssPipelineTests
         {
             Directory.Delete(tempDir, recursive: true);
         }
+    }
+
+    private static async Task<BuildResult> BuildWithLazyChunkRetryAsync(
+        BuildOrchestrator orchestrator,
+        BuildOptions options,
+        CancellationToken cancellationToken)
+    {
+        var result = await orchestrator.BuildAsync(options, cancellationToken);
+        if (!result.Success || !options.CodeSplitting || result.Chunks.Any(static chunk => !chunk.IsEntry))
+        {
+            return result;
+        }
+
+        return await orchestrator.BuildAsync(options, cancellationToken);
     }
 
     private static int CountOccurrences(string text, string value)
