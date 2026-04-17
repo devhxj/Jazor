@@ -17,7 +17,7 @@ internal sealed class OnDemandCompiler
         @"(?:\r?\n)?//# sourceMappingURL=.*\s*$",
         RegexOptions.Compiled);
     private static readonly Regex StaticCssImportPattern = new(
-        @"^[ \t]*import\s*(?<quote>[""'])(?<specifier>[^""']+)\k<quote>\s*;?[ \t]*$",
+        @"^[ \t]*import\s*(?<quote>[""'])(?<specifier>[^""']+)\k<quote>\s*;?[ \t\r]*$",
         RegexOptions.Compiled | RegexOptions.Multiline);
 
     private readonly JazorVueParser _parser;

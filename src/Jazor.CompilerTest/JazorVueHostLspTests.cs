@@ -6698,6 +6698,9 @@ public sealed class JazorVueHostLspTests
 
     private sealed class LspTestClient : IAsyncDisposable
     {
+        private const int ReadRetryCount = 40;
+        private static readonly TimeSpan ReadRetryDelay = TimeSpan.FromMilliseconds(25);
+
         private readonly Process _process;
         private readonly Stream _input;
         private readonly Stream _output;
@@ -7002,15 +7005,7 @@ public sealed class JazorVueHostLspTests
             var offset = 0;
             while (offset < body.Length)
             {
-                var read = await _output.ReadAsync(body.AsMemory(offset, body.Length - offset));
-                if (read == 0)
-                {
-                    var stderr = _process.HasExited
-                        ? await _process.StandardError.ReadToEndAsync()
-                        : string.Empty;
-                    throw new EndOfStreamException("Unexpected end of stream while reading LSP body. stderr: " + stderr);
-                }
-
+                var read = await ReadWithRetryAsync(body.AsMemory(offset, body.Length - offset), "body");
                 offset += read;
             }
 
@@ -7088,15 +7083,7 @@ public sealed class JazorVueHostLspTests
             var buffer = new byte[1];
             while (true)
             {
-                var read = await _output.ReadAsync(buffer.AsMemory(0, 1));
-                if (read == 0)
-                {
-                    var stderr = _process.HasExited
-                        ? await _process.StandardError.ReadToEndAsync()
-                        : string.Empty;
-                    throw new EndOfStreamException("Unexpected end of stream while reading LSP headers. stderr: " + stderr);
-                }
-
+                _ = await ReadWithRetryAsync(buffer.AsMemory(0, 1), "headers");
                 headerBytes.Add(buffer[0]);
                 var count = headerBytes.Count;
                 if (count >= 4
@@ -7123,6 +7110,39 @@ public sealed class JazorVueHostLspTests
             }
 
             throw new InvalidOperationException("Expected Content-Length header in LSP response.");
+        }
+
+        private async Task<int> ReadWithRetryAsync(
+            Memory<byte> buffer,
+            string sectionName)
+        {
+            for (var attempt = 0; attempt < ReadRetryCount; attempt++)
+            {
+                var read = await _output.ReadAsync(buffer);
+                if (read > 0)
+                {
+                    return read;
+                }
+
+                if (_process.HasExited)
+                {
+                    var stderr = await _process.StandardError.ReadToEndAsync();
+                    throw new EndOfStreamException(
+                        $"Unexpected end of stream while reading LSP {sectionName}. stderr: {stderr}");
+                }
+
+                await Task.Delay(ReadRetryDelay);
+            }
+
+            var processState = _process.HasExited
+                ? $"exited({_process.ExitCode})"
+                : "running";
+            var stderrTail = _process.HasExited
+                ? await _process.StandardError.ReadToEndAsync()
+                : string.Empty;
+            throw new EndOfStreamException(
+                $"LSP stream stayed empty while reading {sectionName} after {ReadRetryCount} retries. "
+                + $"process={processState}. stderr: {stderrTail}");
         }
 
         private static bool TryGetMessageId(JsonElement element, out int messageId)

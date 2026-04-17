@@ -127,7 +127,7 @@ public sealed class JazorVueHostDebugProtocolTests
         var cdpClient = new FakeCdpClient();
         cdpClient.SetBreakpointResolution(
             "/Counter.jazor",
-            1,
+            0,
             0,
             new CdpBreakpointResolution(
                 "bp-cdp-1",
@@ -169,7 +169,7 @@ public sealed class JazorVueHostDebugProtocolTests
 
         Assert.AreEqual(1, cdpClient.BreakpointRequests.Count);
         Assert.AreEqual("/Counter.jazor", cdpClient.BreakpointRequests[0].GeneratedUrl);
-        Assert.AreEqual(1, cdpClient.BreakpointRequests[0].GeneratedLine);
+        Assert.AreEqual(0, cdpClient.BreakpointRequests[0].GeneratedLine);
         Assert.AreEqual(0, cdpClient.BreakpointRequests[0].GeneratedColumn);
     }
 
@@ -222,7 +222,7 @@ public sealed class JazorVueHostDebugProtocolTests
 
         Assert.AreEqual(1, cdpClient.BreakpointRequests.Count);
         Assert.AreEqual("/Counter.jazor", cdpClient.BreakpointRequests[0].GeneratedUrl);
-        Assert.AreEqual(1, cdpClient.BreakpointRequests[0].GeneratedLine);
+        Assert.AreEqual(0, cdpClient.BreakpointRequests[0].GeneratedLine);
         Assert.AreEqual(0, cdpClient.BreakpointRequests[0].GeneratedColumn);
     }
 
@@ -1253,9 +1253,7 @@ public sealed class JazorVueHostDebugProtocolTests
                 return Task.FromResult(resolution);
             }
 
-            var fallback = _breakpointResolutions.FirstOrDefault(pair =>
-                string.Equals(pair.Key.Url, generatedUrl, StringComparison.Ordinal));
-            return Task.FromResult(string.IsNullOrWhiteSpace(fallback.Key.Url) ? null : fallback.Value);
+            return Task.FromResult<CdpBreakpointResolution?>(null);
         }
 
         public Task<CdpRemoteObject?> EvaluateAsync(

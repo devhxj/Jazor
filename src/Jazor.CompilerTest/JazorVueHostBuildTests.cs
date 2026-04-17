@@ -890,6 +890,79 @@ public sealed class JazorVueHostBuildTests
     }
 
     [TestMethod]
+    public async Task BuildOrchestrator_BuildAsync_WithCrLfJavaScriptCssImports_StripsCssImportsForBundler()
+    {
+        const string entryMarker = "entry-crlf-style-marker";
+
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            const string crlf = "\r\n";
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "index.html"),
+                """
+                <html>
+                <body>
+                  <script type="module" src="/main.js"></script>
+                </body>
+                </html>
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "main.js"),
+                string.Concat(
+                    "import \"./entry.css\";", crlf,
+                    "console.log(\"entry-crlf-payload\");", crlf));
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "entry.css"),
+                $$"""
+                .{{entryMarker}} {
+                  color: tomato;
+                }
+                """);
+
+            var orchestrator = new BuildOrchestrator();
+            var result = await orchestrator.BuildAsync(
+                new BuildOptions
+                {
+                    RootDirectory = tempDir,
+                    OutDir = "dist",
+                    SourceMap = SourceMapOption.None,
+                    Minify = false,
+                    CodeSplitting = false
+                },
+                CancellationToken.None);
+
+            Assert.IsTrue(result.Success, string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
+            Assert.AreEqual(1, result.Chunks.Count, "Expected a single entry chunk when code splitting is disabled.");
+            Assert.IsTrue(result.CssAssets.Count >= 1, "Expected extracted CSS assets from CRLF-authored JS imports.");
+
+            var entryChunk = result.Chunks.Single(static chunk => chunk.IsEntry);
+            var entryChunkPath = Path.Combine(tempDir, entryChunk.FilePath.Replace('/', Path.DirectorySeparatorChar));
+            var entryChunkContent = await File.ReadAllTextAsync(entryChunkPath);
+            Assert.IsFalse(
+                entryChunkContent.Contains("./entry.css", StringComparison.Ordinal),
+                "Build-mode JS preprocessing should strip static CSS imports before bundling.");
+            StringAssert.Contains(entryChunkContent, "entry-crlf-payload");
+
+            var cssOutputs = await Task.WhenAll(result.CssAssets.Select(async asset => new
+            {
+                Asset = asset,
+                Content = await File.ReadAllTextAsync(Path.Combine(tempDir, asset.FilePath.Replace('/', Path.DirectorySeparatorChar)))
+            }));
+            var entryCss = cssOutputs.Single(output => output.Content.Contains(entryMarker, StringComparison.Ordinal));
+            Assert.AreEqual(entryChunk.FilePath, entryCss.Asset.OwnerChunkFilePath);
+
+            var distIndexHtmlPath = Path.Combine(tempDir, "dist", "index.html");
+            var html = await File.ReadAllTextAsync(distIndexHtmlPath);
+            StringAssert.Contains(html, $"href=\"{GetHtmlRelativePath(tempDir, "dist", entryCss.Asset.FilePath)}\"");
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void HtmlTransformer_InjectScript_BeforeBodyClose()
     {
         var html = "<html><head></head><body><div>app</div></body></html>";
