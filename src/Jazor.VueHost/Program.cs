@@ -14,6 +14,7 @@ using Jazor.VueHost.Lsp.Coordination;
 using Jazor.VueHost.Lsp.Lanes;
 using Jazor.VueHost.Lsp.Routing;
 using Jazor.VueHost.Extensions;
+using Jazor.VueHost.Extensions.Builtin;
 using Jazor.VueHost.Rpc;
 using Jazor.VueHost.Roslyn.InProc;
 using Jazor.VueHost.SourceMap;
@@ -246,7 +247,7 @@ try
         var extensionRegistry = new ExtensionRegistry();
         var extensionLoader = new ExtensionLoader(extensionRegistry);
         await extensionLoader.LoadBuiltinExtensionsAsync(
-            builtinExtensions: Array.Empty<IExtension>(),
+            builtinExtensions: BuiltinExtensionCatalog.Create(),
             rootDirectory: extensionHostOptions.RootDirectory,
             cancellationToken);
         await extensionLoader.LoadUserExtensionsAsync(extensionHostOptions, cancellationToken);

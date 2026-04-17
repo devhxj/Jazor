@@ -97,4 +97,16 @@ internal sealed class JazorExtensionsConfig
     public bool? AllowExternalDirectory { get; init; }
 
     public string[]? Disabled { get; init; }
+
+    public string[]? Trusted { get; init; }
+
+    public Dictionary<string, string>? TrustedPublicKeys { get; init; }
+
+    public string? TrustKeysFile { get; init; }
+
+    public bool? RequireAssemblyHash { get; init; }
+
+    public bool? EnforceProviderPermissions { get; init; }
+
+    public bool? RequireManifestSignature { get; init; }
 }

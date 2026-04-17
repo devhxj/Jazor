@@ -25,13 +25,16 @@
 - `LspSession` 已接入扩展 provider 超时隔离（连续失败阈值 + 隔离窗口）与健康查询请求（`jazor/extensionProviderHealth`）。
 - `LspSession` 已接入 signatureHelp / inlayHint / workspaceSymbol / foldingRange 扩展 provider 请求路径。
 - 扩展目录与程序集加载路径已增加边界约束：默认拒绝 root 外扩展目录（可显式 `--extensions-allow-external=true` 放开），并阻断程序集路径越界。
-- `Program` 的 `--lsp` 启动路径已集成扩展加载与注入。
-- 新增 Phase7 回归测试，覆盖注册表、加载器、options 解析，以及 diagnostics/codeAction/hover/completion/documentSymbol/references/rename、超时隔离与健康统计的端到端断言。
+- 扩展安全策略第一层已完成：manifest `id` 对齐、trusted allowlist、`assemblySha256` 强校验、provider capability permission 前置校验。
+- builtin 生产 provider 已落地：结构诊断、指令补全、组件 `codeAction`、`workspace/symbol`（`WorkspaceSymbolIndex`）。
+- `Program` 的 `--lsp` 启动路径已改为默认加载 builtin extension catalog。
+- VS Code 最小集成骨架已落地：`src/Jazor.VSCodeExtension`（`package.json` + `extension.js` + `README.md`，支持启动/停止/重启与日志）。
+- 新增 Phase7 回归测试，覆盖注册表、加载器、options 解析、安全拦截路径、builtin provider 消费链路、超时隔离与健康统计端到端断言。
 
 ### 尚未完成
 
-- 扩展沙箱策略仍需细化到更细粒度权限（例如按 capability/目录白名单分层）。
-- VS Code 扩展与生态层（市场、发布、安装）尚未落地。
+- 扩展沙箱策略仍需进入下一层约束（进程级隔离、I/O/网络能力分级、签名信任链）。
+- VS Code 生态层仍待补全 LanguageClient 传输、打包发布与市场分发。
 
 ---
 

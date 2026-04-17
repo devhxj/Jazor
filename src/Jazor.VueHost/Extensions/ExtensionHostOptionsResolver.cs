@@ -22,6 +22,9 @@ internal static class ExtensionHostOptionsResolver
             ? ".jazor/extensions"
             : configExtensions!.Directory!;
         var disabledIds = ToSet(configExtensions?.Disabled);
+        var trustedIds = ToSet(configExtensions?.Trusted);
+        var requireAssemblyHash = configExtensions?.RequireAssemblyHash ?? true;
+        var enforceProviderPermissions = configExtensions?.EnforceProviderPermissions ?? true;
 
         if (TryGetOptionValue(args, "--extensions-enabled", out var enabledValue)
             && TryParseBoolean(enabledValue, out var enabledOverride))
@@ -40,10 +43,27 @@ internal static class ExtensionHostOptionsResolver
             disabledIds = ToSet(ParseList(disabledOverride));
         }
 
+        if (TryGetOptionValue(args, "--extensions-trusted", out var trustedOverride))
+        {
+            trustedIds = ToSet(ParseList(trustedOverride));
+        }
+
         if (TryGetOptionValue(args, "--extensions-allow-external", out var allowExternalOverrideValue)
             && TryParseBoolean(allowExternalOverrideValue, out var allowExternalOverride))
         {
             allowExternalDirectory = allowExternalOverride;
+        }
+
+        if (TryGetOptionValue(args, "--extensions-require-hash", out var requireHashOverrideValue)
+            && TryParseBoolean(requireHashOverrideValue, out var requireHashOverride))
+        {
+            requireAssemblyHash = requireHashOverride;
+        }
+
+        if (TryGetOptionValue(args, "--extensions-enforce-provider-permissions", out var enforcePermissionsOverrideValue)
+            && TryParseBoolean(enforcePermissionsOverrideValue, out var enforcePermissionsOverride))
+        {
+            enforceProviderPermissions = enforcePermissionsOverride;
         }
 
         var extensionDirectoryPath = Path.IsPathRooted(directory)
@@ -62,7 +82,10 @@ internal static class ExtensionHostOptionsResolver
             Enabled = enabled,
             ExtensionsDirectory = extensionDirectoryPath,
             AllowExternalDirectory = allowExternalDirectory,
-            DisabledExtensionIds = disabledIds
+            DisabledExtensionIds = disabledIds,
+            TrustedExtensionIds = trustedIds,
+            RequireAssemblyHash = requireAssemblyHash,
+            EnforceProviderPermissions = enforceProviderPermissions
         };
     }
 

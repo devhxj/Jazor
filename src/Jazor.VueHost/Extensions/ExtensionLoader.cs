@@ -56,18 +56,61 @@ internal sealed class ExtensionLoader
 
             try
             {
-                var extension = CreateExtensionFromDirectory(extensionDirectory);
+                var manifest = ReadManifest(extensionDirectory);
+                if (manifest is null
+                    || string.IsNullOrWhiteSpace(manifest.Id)
+                    || string.IsNullOrWhiteSpace(manifest.Assembly)
+                    || string.IsNullOrWhiteSpace(manifest.Type))
+                {
+                    continue;
+                }
+
+                var manifestId = manifest.Id.Trim();
+                if (options.DisabledExtensionIds.Contains(manifestId))
+                {
+                    continue;
+                }
+
+                if (options.TrustedExtensionIds.Count > 0
+                    && !options.TrustedExtensionIds.Contains(manifestId))
+                {
+                    continue;
+                }
+
+                var assemblyPath = ResolveAssemblyPath(extensionDirectory, manifest.Assembly);
+                if (!File.Exists(assemblyPath))
+                {
+                    continue;
+                }
+
+                if (options.RequireAssemblyHash
+                    && !ExtensionSecurityPolicy.IsAssemblyHashSatisfied(
+                        assemblyPath,
+                        manifest.AssemblySha256 ?? string.Empty))
+                {
+                    continue;
+                }
+
+                var extension = CreateExtension(assemblyPath, manifest.Type);
                 if (extension is null)
                 {
                     continue;
                 }
 
-                if (options.DisabledExtensionIds.Contains(extension.Metadata.Id))
+                if (!string.Equals(extension.Metadata.Id, manifestId, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
 
-                var manifest = ReadManifest(extensionDirectory);
+                if (options.EnforceProviderPermissions
+                    && !ExtensionSecurityPolicy.IsProviderPermissionSatisfied(
+                        extension.GetType(),
+                        manifest,
+                        out _))
+                {
+                    continue;
+                }
+
                 var settings = manifest?.Settings is null
                     ? null
                     : manifest.Settings
@@ -90,24 +133,17 @@ internal sealed class ExtensionLoader
         }
     }
 
-    private static IExtension? CreateExtensionFromDirectory(string extensionDirectory)
+    private static IExtension? CreateExtension(
+        string assemblyPath,
+        string extensionTypeName)
     {
-        var manifest = ReadManifest(extensionDirectory);
-        if (manifest is null
-            || string.IsNullOrWhiteSpace(manifest.Assembly)
-            || string.IsNullOrWhiteSpace(manifest.Type))
-        {
-            return null;
-        }
-
-        var assemblyPath = ResolveAssemblyPath(extensionDirectory, manifest.Assembly);
-        if (!File.Exists(assemblyPath))
+        if (string.IsNullOrWhiteSpace(assemblyPath) || string.IsNullOrWhiteSpace(extensionTypeName))
         {
             return null;
         }
 
         var assembly = Assembly.LoadFrom(assemblyPath);
-        var extensionType = assembly.GetType(manifest.Type, throwOnError: false, ignoreCase: false);
+        var extensionType = assembly.GetType(extensionTypeName, throwOnError: false, ignoreCase: false);
         if (extensionType is null || !typeof(IExtension).IsAssignableFrom(extensionType))
         {
             return null;

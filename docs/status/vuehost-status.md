@@ -14,7 +14,7 @@
 - Phase 4：DAP + CDP 闭环目标达成（并发断点、异常栈映射与链路稳态回归通过）
 - Phase 5：生产构建目标达成（失败路径与边界场景回归补齐）
 - Phase 6：高级 LSP 核心目标达成（P2 + 关键 P3 稳定可用）
-- Phase 7：扩展系统核心目标达成（provider 扩展面 + 超时隔离 + 健康查询 + 目录边界约束）
+- Phase 7：扩展系统核心目标达成并继续硬化（provider 扩展面 + 超时隔离 + 健康查询 + 目录边界约束 + 权限/哈希校验 + builtin 生产 provider + VS Code 最小集成）
 
 ## 当前状态判断
 
@@ -52,13 +52,14 @@
 | Phase 4 Debug (DAP + CDP) | 100% | 里程碑验收完成 | stackTrace/scopes/variables/evaluate/continue 闭环稳定；并发断点与异常栈映射回归通过 |
 | Phase 5 Production Build | 100% | 里程碑验收完成 | build lane 串台问题前置修复（端口竞态 + bundler 前缀/路径归一化），失败路径/边界回归通过 |
 | Phase 6 Advanced LSP | 100% | 里程碑验收完成 | references/rename/codeAction/documentSymbol/semantic tokens 主能力稳定，跨 lane 补桥接用例回归通过 |
-| Phase 7 Extension System | 100% | 里程碑验收完成 | 扩展 provider 聚合 + 超时隔离 + 健康查询 + signature/inlay/workspace/folding + 目录越界防护全部接入 |
+| Phase 7 Extension System | 100% | 里程碑验收完成 | 扩展 provider 聚合 + 超时隔离 + 健康查询 + signature/inlay/workspace/folding + 目录越界防护 + trusted/hash/provider-permission 前置拦截 + builtin 结构诊断/指令补全/组件 codeAction/workspace-symbol + VS Code 最小扩展骨架 |
 
 ## 本轮验证（2026-04-17）
 
 - `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter 'FullyQualifiedName~JazorVueHost' --no-restore -v minimal`：**466/466 通过**
 - `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter 'FullyQualifiedName~JazorVueHostLspTests|FullyQualifiedName~JazorVueHostPhase7ExtensionTests|FullyQualifiedName~JazorVueHostDebugProtocolTests|FullyQualifiedName~JazorVueHostBuildTests|FullyQualifiedName~JazorVueHostFrontendLaneTests' --no-restore -v minimal`：**178/178 通过**
 - `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter 'FullyQualifiedName~JazorVueHostPhase7ExtensionTests' --no-restore -v minimal`：**19/19 通过**
+- `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter 'FullyQualifiedName~JazorVueHostPhase7ExtensionSecurityAndBuiltinTests|FullyQualifiedName~JazorVueHostPhase7ExtensionTests' --no-restore -v minimal`：**32/32 通过**
 
 ## 近期推进信号（截至 2026-04-17）
 
@@ -83,8 +84,8 @@
    - 明确哪些能力是“native first”，哪些由 host 负责补桥接
 
 4. **生态拓展（后续项）**
-   - 在不影响主线稳定性的前提下推进 IDE 生态层（发布/安装/市场）
-   - 继续完善扩展权限与沙箱策略的工程化落地
+   - 在最小 VS Code 集成骨架基础上补 LanguageClient 传输层与发布链路
+   - 继续细化扩展权限与沙箱策略（进程/IO/网络分级约束）
 
 ## 风险与注意项
 
