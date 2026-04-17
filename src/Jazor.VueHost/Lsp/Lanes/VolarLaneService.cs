@@ -200,11 +200,12 @@ internal sealed class VolarLaneService : ILspLane
     {
         cancellationToken.ThrowIfCancellationRequested();
 
+        var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget: null, cancellationToken);
         var frontendContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
-        var denoResult = await TryGetDenoDocumentSymbolsAsync(document, frontendContext, cancellationToken);
+        var denoResult = await TryGetDenoDocumentSymbolsAsync(frontendDocument.RequestDocument, frontendContext, cancellationToken);
         if (denoResult is { Count: > 0 })
         {
-            return denoResult;
+            return MapDocumentSymbols(document, frontendDocument, denoResult);
         }
 
         return Array.Empty<LspDocumentSymbol>();
@@ -808,6 +809,72 @@ internal sealed class VolarLaneService : ILspLane
             {
                 Changes = mappedChanges
             };
+    }
+
+    private static IReadOnlyList<LspDocumentSymbol> MapDocumentSymbols(
+        DocumentSnapshot sourceDocument,
+        VolarRequestDocument requestDocument,
+        IReadOnlyList<LspDocumentSymbol> symbols)
+    {
+        if (requestDocument.ProjectionMap is null)
+        {
+            return symbols;
+        }
+
+        return symbols
+            .Select(symbol => MapDocumentSymbol(sourceDocument, requestDocument, symbol))
+            .Where(static symbol => symbol is not null)
+            .Cast<LspDocumentSymbol>()
+            .ToArray();
+    }
+
+    private static LspDocumentSymbol? MapDocumentSymbol(
+        DocumentSnapshot sourceDocument,
+        VolarRequestDocument requestDocument,
+        LspDocumentSymbol symbol)
+    {
+        var projectionMap = requestDocument.ProjectionMap;
+        if (projectionMap is null)
+        {
+            return symbol;
+        }
+
+        if (!projectionMap.TryMapToOriginalRange(
+                requestDocument.RequestDocument.Text,
+                symbol.Range,
+                sourceDocument.Text,
+                out var sourceRange))
+        {
+            return null;
+        }
+
+        var sourceSelectionRange = projectionMap.TryMapToOriginalRange(
+            requestDocument.RequestDocument.Text,
+            symbol.SelectionRange,
+            sourceDocument.Text,
+            out var mappedSelectionRange)
+            ? mappedSelectionRange
+            : sourceRange;
+
+        LspDocumentSymbol[]? mappedChildren = null;
+        if (symbol.Children is { Length: > 0 })
+        {
+            mappedChildren = symbol.Children
+                .Select(child => MapDocumentSymbol(sourceDocument, requestDocument, child))
+                .Where(static child => child is not null)
+                .Cast<LspDocumentSymbol>()
+                .ToArray();
+        }
+
+        return new LspDocumentSymbol
+        {
+            Name = symbol.Name,
+            Detail = symbol.Detail,
+            Kind = symbol.Kind,
+            Range = sourceRange,
+            SelectionRange = sourceSelectionRange,
+            Children = mappedChildren
+        };
     }
 
     private static IReadOnlyList<LspSemanticToken> MapSemanticTokens(
