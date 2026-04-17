@@ -94,17 +94,21 @@
 
 - 已进入：
   - 单项目 `VueHost`
-  - LSP
+  - LSP 主路径（P1/P2 + 部分 P3）
   - workspace graph / resolver
   - `.jazor <-> .vue` 设计时关系
   - lane routing
   - internal projections
+  - Dev Server + HMR 主路径
+  - SourceMap narrow lane（编译链路与服务端点）
+  - 生产构建骨架（build lane）
+  - DAP 基础调试链路
 
 - 尚未完整进入：
-  - 完整 Dev Server 形态
-  - 完整编译管道统一入口
-  - 完整 Source Map 服务
-  - DAP / CDP 调试闭环
+  - CDP 实浏览器调试闭环
+  - SourceMap 列级精度与调试消费完整闭环
+  - Phase 7 扩展系统（provider/health/IDE 生态）
+  - 部分高级 LSP 能力（如 inlay hints/workspace symbol/folding 的统一交付）
 
 这不表示这些能力被否定，只表示它们仍属于 `vuehost-capabilities.md` 所描述的后续宿主建设阶段。
 

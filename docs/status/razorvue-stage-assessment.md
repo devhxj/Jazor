@@ -2,7 +2,7 @@
 
 > Status: current status snapshot
 > Positioning: Workstream-specific status snapshot for the historical RazorVue lane.
-> Note: this document is archived context; the current active development-time boundary is `Jazor.VueHost`, with Deno as the only runtime host path and `Jazor.VueHost --analysis-stdio` as the migration-time analysis process entrypoint.
+> Note: this document is archived context; the current active development-time boundary is `Jazor.VueHost`, with Deno as the only runtime host path and `Jazor.VueHost --analysis-stdio` as the migration-time analysis process entrypoint. For current VueHost progress, read `docs/status/vuehost-status.md`.
 
 ## 1. 评估范围
 

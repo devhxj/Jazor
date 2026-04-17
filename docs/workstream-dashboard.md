@@ -1,6 +1,6 @@
 # Jazor 工作流总览
 
-> 最后更新：2026-04-07
+> 最后更新：2026-04-16
 > 作用：这是恢复工作的唯一入口，告诉你每个工作流现在在哪个阶段、下一步该做什么。
 
 ## 快速导航
@@ -9,8 +9,8 @@
 |--------|---------|-----------|---------|
 | Compiler 主线 | 接近稳定 | 压实 output closure、import closure、host seam | [详情](./status/compiler-mainline-status.md) |
 | Emit / Materialisation | 持续承接 | 显式化 materialisation / sourcemap 承接职责 | [详情](./status/emit-host-materialization-status.md) |
-| Jazor.VueHost | 活跃执行中 | Razor-first host closure、Deno runtime lane、VueHost-only consolidation | [详情](./status/razorvue-stage-assessment.md) |
-| SourceMap | 局部活跃 | VueHost / Deno bundle chaining 实现 | [详情](./status/sourcemap-status.md) |
+| Jazor.VueHost | Phase 1-6 收口中 | 调试闭环（CDP）、构建收口、Phase 7 扩展系统启动门槛 | [详情](./status/vuehost-status.md) |
+| SourceMap | 局部活跃（narrow lane） | 继续补齐调试消费链路与精度提升 | [详情](./status/sourcemap-status.md) |
 
 ## 依赖顺序与并行策略
 
@@ -87,42 +87,45 @@ Emit 不是单独的大专题，但确实是多个工作流共同的承接层。
 
 ### Jazor.VueHost
 
-**当前状态**：主链路已进主干，正在做 phase-one closure 和 authoring lane 收口
+**当前状态**：主链路已进入“能力收口与补齐”阶段，Phase 1/2/3 主路径已落地，Phase 4/5/6 持续推进，Phase 7 仍在规划。
 
-`Jazor.VueHost` 当前不是"在编译器里顺手多加一点 Vue 支持"，而是当前的 `.jazor` 开发时边界。主链路已经从早期的职责混杂，收敛为更清晰的结构。
+`Jazor.VueHost` 当前是 `.jazor` 的唯一开发时边界。In-proc Razor/Roslyn、Deno frontend worker、LSP bridge/coordinator、Dev Server/HMR、SourceMap 管线和 build lane 已形成活跃主路径。
 
 **下一步行动**：
 
-1. **Phase-one closure**
-   - 完成 layering 实现
-   - 完成 lifecycle safe subset 实现
-   - 参考：[2026-04-05-razorvue-layering-implementation.md](./superpowers/plans/2026-04-05-razorvue-layering-implementation.md)
+1. **调试闭环补齐（Phase 4）**
+   - 从 DAP fallback 推进到 CDP 实浏览器闭环
+   - 将 SourceMap 服务完整接入断点/调用栈映射路径
 
-2. **Authoring lane 收口**
-   - 从 PR1 开始执行 authoring roadmap
-   - 参考：[2026-04-06-razorvue-v1-authoring-roadmap.md](./superpowers/plans/2026-04-06-razorvue-v1-authoring-roadmap.md)
+2. **构建与 LSP 收口（Phase 5/6）**
+   - 继续压实 manifest/css/js/source map 产物一致性
+   - 收敛跨 lane supplement 边界，避免“伪造语义结果”
+
+3. **扩展系统启动门槛（Phase 7）**
+   - 先引入最小 provider 抽象（diagnostic/code-action）
+   - 在不破坏当前主线稳定性的前提下逐步扩展
 
 **深度文档**：
-- [RazorVue.Overview.md](../src/Jazor.Compiler/doc/RazorVue.Overview.md)
-- [RazorVue.Design.md](../src/Jazor.Compiler/doc/RazorVue.Design.md)
+- [VueHost 状态快照](./status/vuehost-status.md)
+- [jazor-vuehost-single-project.md](./architecture/jazor-vuehost-single-project.md)
+- [vuehost-capabilities.md](./architecture/vuehost-capabilities.md)
 
 ---
 
 ### SourceMap
 
-**当前状态**：通用 sourcemap 大计划偏保守，但 VueHost / Deno 相关 bundle chaining 已进入活跃执行
+**当前状态**：broad programme 仍偏保守；narrow lane（VueHost / Deno）已形成可运行链路并进入收口阶段。
 
-SourceMap 当前不能再用一句"deferred"概括了。更准确地说：broad SourceMap programme 仍然偏保守，但 VueHost / Deno 相关 bundle chaining 已进入 narrower active lane。
+SourceMap 当前不是“全 deferred”也不是“全 active”。更准确的状态是：构建/服务主链路已可用，调试消费与精度仍需持续补齐。
 
 **下一步行动**：
 
-1. **Narrow active lane**
-   - 完成 VueHost / Deno bundle chaining 实现
-   - 让 writer / manifest / bundler 演进就位
-   - 参考：[2026-04-06-razorvue-sourcemap-bundle-chaining-implementation.md](./superpowers/plans/2026-04-06-razorvue-sourcemap-bundle-chaining-implementation.md)
+1. **继续完善 narrow lane**
+   - 补齐调试消费路径（断点/调用栈）对 SourceMap 服务的直接使用
+   - 持续提升映射精度与链路稳定性
 
 2. **维持 broad programme 和 narrow lane 的边界**
-   - 莫让 narrow lane 的活跃掩盖了 broad programme 的保守基调
+   - 保持“稳定上游优先”原则，不提前扩大 broad rollout 范围
 
 **深度文档**：
 - [SourceMap.Overview.md](../src/Jazor.Compiler/doc/SourceMap.Overview.md)
