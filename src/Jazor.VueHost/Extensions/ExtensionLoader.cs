@@ -3,15 +3,25 @@ using System.Text.Json;
 
 namespace Jazor.VueHost.Extensions;
 
-internal sealed class ExtensionLoader
+internal sealed class ExtensionLoader : IAsyncDisposable
 {
+    private const string BuiltinSource = "builtin";
+    private const string UserSource = "user";
     private const string ManifestFileName = "extension.json";
 
     private readonly IExtensionRegistry _registry;
+    private readonly Action<ExtensionLoadInvocation>? _loadEventSink;
+    private readonly Lock _stateGate = new();
+    private readonly List<LoadedExtensionState> _loadedExtensions = [];
 
-    public ExtensionLoader(IExtensionRegistry registry)
+    private bool _disposed;
+
+    public ExtensionLoader(
+        IExtensionRegistry registry,
+        Action<ExtensionLoadInvocation>? loadEventSink = null)
     {
         _registry = registry ?? throw new ArgumentNullException(nameof(registry));
+        _loadEventSink = loadEventSink;
     }
 
     public async ValueTask LoadBuiltinExtensionsAsync(
@@ -19,6 +29,7 @@ internal sealed class ExtensionLoader
         string rootDirectory,
         CancellationToken cancellationToken)
     {
+        ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(builtinExtensions);
 
         foreach (var extension in builtinExtensions)
@@ -29,13 +40,34 @@ internal sealed class ExtensionLoader
                 continue;
             }
 
-            var extensionDirectory = Path.GetDirectoryName(extension.GetType().Assembly.Location);
-            await LoadExtensionCoreAsync(
-                extension,
-                rootDirectory,
-                extensionDirectory ?? rootDirectory,
-                settings: null,
-                cancellationToken);
+            var extensionDirectory = Path.GetDirectoryName(extension.GetType().Assembly.Location) ?? rootDirectory;
+            var extensionId = NormalizeExtensionId(extension.Metadata.Id, extension.GetType().FullName ?? "builtin.unknown");
+            try
+            {
+                await LoadExtensionCoreAsync(
+                    extension,
+                    rootDirectory,
+                    extensionDirectory,
+                    settings: null,
+                    source: BuiltinSource,
+                    extensionId: extensionId,
+                    manifestPath: null,
+                    assemblyPath: extension.GetType().Assembly.Location,
+                    loadContext: null,
+                    cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                ReportLoad(
+                    extensionId,
+                    BuiltinSource,
+                    extensionDirectory,
+                    manifestPath: null,
+                    assemblyPath: extension.GetType().Assembly.Location,
+                    status: ExtensionLoadStatus.Failed,
+                    reason: $"builtin extension load failed: {ex.Message}");
+                throw;
+            }
         }
     }
 
@@ -43,6 +75,7 @@ internal sealed class ExtensionLoader
         ExtensionHostOptions options,
         CancellationToken cancellationToken)
     {
+        ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(options);
 
         if (!options.Enabled || !Directory.Exists(options.ExtensionsDirectory))
@@ -53,108 +86,308 @@ internal sealed class ExtensionLoader
         foreach (var extensionDirectory in Directory.EnumerateDirectories(options.ExtensionsDirectory))
         {
             cancellationToken.ThrowIfCancellationRequested();
-
-            try
-            {
-                var manifest = ReadManifest(extensionDirectory);
-                if (manifest is null
-                    || string.IsNullOrWhiteSpace(manifest.Id)
-                    || string.IsNullOrWhiteSpace(manifest.Assembly)
-                    || string.IsNullOrWhiteSpace(manifest.Type))
-                {
-                    continue;
-                }
-
-                var manifestId = manifest.Id.Trim();
-                if (options.DisabledExtensionIds.Contains(manifestId))
-                {
-                    continue;
-                }
-
-                if (options.TrustedExtensionIds.Count > 0
-                    && !options.TrustedExtensionIds.Contains(manifestId))
-                {
-                    continue;
-                }
-
-                var assemblyPath = ResolveAssemblyPath(extensionDirectory, manifest.Assembly);
-                if (!File.Exists(assemblyPath))
-                {
-                    continue;
-                }
-
-                if (options.RequireAssemblyHash
-                    && !ExtensionSecurityPolicy.IsAssemblyHashSatisfied(
-                        assemblyPath,
-                        manifest.AssemblySha256 ?? string.Empty))
-                {
-                    continue;
-                }
-
-                var extension = CreateExtension(assemblyPath, manifest.Type);
-                if (extension is null)
-                {
-                    continue;
-                }
-
-                if (!string.Equals(extension.Metadata.Id, manifestId, StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                if (options.EnforceProviderPermissions
-                    && !ExtensionSecurityPolicy.IsProviderPermissionSatisfied(
-                        extension.GetType(),
-                        manifest,
-                        out _))
-                {
-                    continue;
-                }
-
-                var settings = manifest?.Settings is null
-                    ? null
-                    : manifest.Settings
-                        .Where(static pair => pair.Value.ValueKind is JsonValueKind.String or JsonValueKind.Number or JsonValueKind.True or JsonValueKind.False)
-                        .ToDictionary(
-                            static pair => pair.Key,
-                            static pair => pair.Value.ToString(),
-                            StringComparer.OrdinalIgnoreCase);
-                await LoadExtensionCoreAsync(
-                    extension,
-                    options.RootDirectory,
-                    extensionDirectory,
-                    settings,
-                    cancellationToken);
-            }
-            catch
-            {
-                // Phase7 initial rollout: extension load failures should not block host startup.
-            }
+            await LoadUserExtensionFromDirectoryAsync(options, extensionDirectory, cancellationToken);
         }
     }
 
-    private static IExtension? CreateExtension(
-        string assemblyPath,
-        string extensionTypeName)
+    public async ValueTask DisposeAsync()
     {
-        if (string.IsNullOrWhiteSpace(assemblyPath) || string.IsNullOrWhiteSpace(extensionTypeName))
+        List<LoadedExtensionState> loadedExtensions;
+        lock (_stateGate)
         {
-            return null;
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            loadedExtensions = [.. _loadedExtensions];
+            _loadedExtensions.Clear();
         }
 
-        var assembly = Assembly.LoadFrom(assemblyPath);
-        var extensionType = assembly.GetType(extensionTypeName, throwOnError: false, ignoreCase: false);
-        if (extensionType is null || !typeof(IExtension).IsAssignableFrom(extensionType))
+        foreach (var loaded in loadedExtensions.AsEnumerable().Reverse())
         {
-            return null;
+            try
+            {
+                await loaded.Extension.DeactivateAsync(CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                ReportLoad(
+                    extensionId: loaded.ExtensionId,
+                    source: loaded.Source,
+                    extensionDirectory: loaded.ExtensionDirectory,
+                    manifestPath: loaded.ManifestPath,
+                    assemblyPath: loaded.AssemblyPath,
+                    status: ExtensionLoadStatus.Failed,
+                    reason: $"deactivate failed: {ex.Message}");
+            }
+            finally
+            {
+                _registry.UnregisterExtension(loaded.Extension);
+            }
         }
 
-        if (Activator.CreateInstance(extensionType) is not IExtension extension)
+        var collectibleContexts = loadedExtensions
+            .Select(static loaded => loaded.LoadContext)
+            .OfType<CollectibleExtensionLoadContext>()
+            .Distinct()
+            .ToArray();
+        if (collectibleContexts.Length == 0)
         {
-            return null;
+            return;
         }
 
-        return extension;
+        foreach (var collectibleContext in collectibleContexts)
+        {
+            collectibleContext.Unload();
+        }
+
+        // Force finalization cycle so collectible contexts can fully unload and release file handles.
+        for (var cycle = 0; cycle < 3; cycle++)
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+        }
+    }
+
+    private async ValueTask LoadUserExtensionFromDirectoryAsync(
+        ExtensionHostOptions options,
+        string extensionDirectory,
+        CancellationToken cancellationToken)
+    {
+        var manifestPath = Path.Combine(extensionDirectory, ManifestFileName);
+        var fallbackExtensionId = NormalizeExtensionId(
+            Path.GetFileName(extensionDirectory),
+            "user.unknown");
+        var extensionId = fallbackExtensionId;
+        string? assemblyPath = null;
+
+        try
+        {
+            var manifest = ReadManifest(manifestPath);
+            if (manifest is null)
+            {
+                ReportLoad(
+                    extensionId,
+                    UserSource,
+                    extensionDirectory,
+                    manifestPath,
+                    assemblyPath,
+                    ExtensionLoadStatus.Rejected,
+                    "manifest file is missing or invalid json");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(manifest.Id))
+            {
+                ReportLoad(
+                    extensionId,
+                    UserSource,
+                    extensionDirectory,
+                    manifestPath,
+                    assemblyPath,
+                    ExtensionLoadStatus.Rejected,
+                    "manifest id is required");
+                return;
+            }
+
+            extensionId = NormalizeExtensionId(manifest.Id, fallbackExtensionId);
+            if (string.IsNullOrWhiteSpace(manifest.Assembly))
+            {
+                ReportLoad(
+                    extensionId,
+                    UserSource,
+                    extensionDirectory,
+                    manifestPath,
+                    assemblyPath,
+                    ExtensionLoadStatus.Rejected,
+                    "manifest assembly is required");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(manifest.Type))
+            {
+                ReportLoad(
+                    extensionId,
+                    UserSource,
+                    extensionDirectory,
+                    manifestPath,
+                    assemblyPath,
+                    ExtensionLoadStatus.Rejected,
+                    "manifest type is required");
+                return;
+            }
+
+            if (options.DisabledExtensionIds.Contains(extensionId))
+            {
+                ReportLoad(
+                    extensionId,
+                    UserSource,
+                    extensionDirectory,
+                    manifestPath,
+                    assemblyPath,
+                    ExtensionLoadStatus.Rejected,
+                    "extension id is disabled by host policy");
+                return;
+            }
+
+            if (options.TrustedExtensionIds.Count > 0
+                && !options.TrustedExtensionIds.Contains(extensionId))
+            {
+                ReportLoad(
+                    extensionId,
+                    UserSource,
+                    extensionDirectory,
+                    manifestPath,
+                    assemblyPath,
+                    ExtensionLoadStatus.Rejected,
+                    "extension id is not in trusted allow-list");
+                return;
+            }
+
+            try
+            {
+                assemblyPath = ResolveAssemblyPath(extensionDirectory, manifest.Assembly);
+            }
+            catch (InvalidOperationException ex)
+            {
+                ReportLoad(
+                    extensionId,
+                    UserSource,
+                    extensionDirectory,
+                    manifestPath,
+                    assemblyPath,
+                    ExtensionLoadStatus.Rejected,
+                    ex.Message);
+                return;
+            }
+
+            if (!File.Exists(assemblyPath))
+            {
+                ReportLoad(
+                    extensionId,
+                    UserSource,
+                    extensionDirectory,
+                    manifestPath,
+                    assemblyPath,
+                    ExtensionLoadStatus.Rejected,
+                    "extension assembly file does not exist");
+                return;
+            }
+
+            if (options.RequireAssemblyHash
+                && !ExtensionSecurityPolicy.IsAssemblyHashSatisfied(
+                    assemblyPath,
+                    manifest.AssemblySha256 ?? string.Empty))
+            {
+                ReportLoad(
+                    extensionId,
+                    UserSource,
+                    extensionDirectory,
+                    manifestPath,
+                    assemblyPath,
+                    ExtensionLoadStatus.Rejected,
+                    "assembly sha256 verification failed");
+                return;
+            }
+
+            var requireSignatureValidation = options.RequireManifestSignature || manifest.Signature is not null;
+            if (requireSignatureValidation
+                && !ExtensionSecurityPolicy.IsManifestSignatureSatisfied(
+                    manifest,
+                    options.TrustedPublicKeys,
+                    out var signatureFailureReason))
+            {
+                ReportLoad(
+                    extensionId,
+                    UserSource,
+                    extensionDirectory,
+                    manifestPath,
+                    assemblyPath,
+                    ExtensionLoadStatus.Rejected,
+                    signatureFailureReason ?? "manifest signature verification failed");
+                return;
+            }
+
+            if (!TryCreateUserExtension(
+                    assemblyPath,
+                    manifest.Type,
+                    out var extension,
+                    out var loadContext,
+                    out var creationFailureReason))
+            {
+                ReportLoad(
+                    extensionId,
+                    UserSource,
+                    extensionDirectory,
+                    manifestPath,
+                    assemblyPath,
+                    ExtensionLoadStatus.Rejected,
+                    creationFailureReason);
+                return;
+            }
+
+            if (!string.Equals(extension.Metadata.Id, extensionId, StringComparison.OrdinalIgnoreCase))
+            {
+                loadContext.Unload();
+                ReportLoad(
+                    extensionId,
+                    UserSource,
+                    extensionDirectory,
+                    manifestPath,
+                    assemblyPath,
+                    ExtensionLoadStatus.Rejected,
+                    $"extension metadata id '{extension.Metadata.Id}' does not match manifest id '{extensionId}'");
+                return;
+            }
+
+            if (options.EnforceProviderPermissions
+                && !ExtensionSecurityPolicy.IsProviderPermissionSatisfied(
+                    extension.GetType(),
+                    manifest,
+                    out var providerPermissionFailureReason))
+            {
+                loadContext.Unload();
+                ReportLoad(
+                    extensionId,
+                    UserSource,
+                    extensionDirectory,
+                    manifestPath,
+                    assemblyPath,
+                    ExtensionLoadStatus.Rejected,
+                    providerPermissionFailureReason ?? "provider permission validation failed");
+                return;
+            }
+
+            var settings = NormalizeSettings(manifest.Settings);
+            await LoadExtensionCoreAsync(
+                extension,
+                options.RootDirectory,
+                extensionDirectory,
+                settings,
+                source: UserSource,
+                extensionId: extensionId,
+                manifestPath: manifestPath,
+                assemblyPath: assemblyPath,
+                loadContext: loadContext,
+                cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            ReportLoad(
+                extensionId,
+                UserSource,
+                extensionDirectory,
+                manifestPath,
+                assemblyPath,
+                ExtensionLoadStatus.Failed,
+                $"unexpected load failure: {ex.Message}");
+        }
     }
 
     private async ValueTask LoadExtensionCoreAsync(
@@ -162,6 +395,11 @@ internal sealed class ExtensionLoader
         string rootDirectory,
         string extensionDirectory,
         IReadOnlyDictionary<string, string>? settings,
+        string source,
+        string extensionId,
+        string? manifestPath,
+        string? assemblyPath,
+        CollectibleExtensionLoadContext? loadContext,
         CancellationToken cancellationToken)
     {
         var context = new ExtensionContext(
@@ -169,14 +407,61 @@ internal sealed class ExtensionLoader
             extensionDirectory: Path.GetFullPath(extensionDirectory),
             registry: _registry,
             settings: settings);
-        await extension.InitializeAsync(context, cancellationToken);
-        _registry.RegisterExtension(extension);
-        await extension.ActivateAsync(cancellationToken);
+
+        try
+        {
+            await extension.InitializeAsync(context, cancellationToken);
+            await extension.ActivateAsync(cancellationToken);
+            _registry.RegisterExtension(extension);
+            TrackLoadedExtension(
+                extension,
+                extensionId,
+                source,
+                extensionDirectory,
+                manifestPath,
+                assemblyPath,
+                loadContext);
+            ReportLoad(
+                extensionId,
+                source,
+                extensionDirectory,
+                manifestPath,
+                assemblyPath,
+                ExtensionLoadStatus.Loaded,
+                "extension loaded");
+        }
+        catch (Exception)
+        {
+            await TryDeactivateSilentlyAsync(extension);
+            loadContext?.Unload();
+            throw;
+        }
     }
 
-    private static ExtensionManifest? ReadManifest(string extensionDirectory)
+    private static IReadOnlyDictionary<string, string>? NormalizeSettings(Dictionary<string, JsonElement>? settings)
     {
-        var manifestPath = Path.Combine(extensionDirectory, ManifestFileName);
+        if (settings is null || settings.Count == 0)
+        {
+            return null;
+        }
+
+        var normalized = settings
+            .Where(static pair => pair.Value.ValueKind is JsonValueKind.String
+                or JsonValueKind.Number
+                or JsonValueKind.True
+                or JsonValueKind.False)
+            .ToDictionary(
+                static pair => pair.Key,
+                static pair => pair.Value.ToString(),
+                StringComparer.OrdinalIgnoreCase);
+
+        return normalized.Count == 0
+            ? null
+            : normalized;
+    }
+
+    private static ExtensionManifest? ReadManifest(string manifestPath)
+    {
         if (!File.Exists(manifestPath))
         {
             return null;
@@ -194,6 +479,146 @@ internal sealed class ExtensionLoader
         catch
         {
             return null;
+        }
+    }
+
+    private static bool TryCreateUserExtension(
+        string assemblyPath,
+        string extensionTypeName,
+        out IExtension extension,
+        out CollectibleExtensionLoadContext loadContext,
+        out string failureReason)
+    {
+        extension = null!;
+        loadContext = null!;
+        failureReason = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(assemblyPath) || string.IsNullOrWhiteSpace(extensionTypeName))
+        {
+            failureReason = "assembly path and type name are required";
+            return false;
+        }
+
+        CollectibleExtensionLoadContext? candidateContext = null;
+        try
+        {
+            candidateContext = new CollectibleExtensionLoadContext(assemblyPath);
+            var assembly = candidateContext.LoadMainAssembly(assemblyPath);
+            var extensionType = assembly.GetType(extensionTypeName, throwOnError: false, ignoreCase: false);
+            if (extensionType is null)
+            {
+                candidateContext.Unload();
+                failureReason = $"extension type '{extensionTypeName}' was not found";
+                return false;
+            }
+
+            if (!typeof(IExtension).IsAssignableFrom(extensionType))
+            {
+                candidateContext.Unload();
+                failureReason = $"extension type '{extensionTypeName}' does not implement IExtension";
+                return false;
+            }
+
+            if (Activator.CreateInstance(extensionType) is not IExtension created)
+            {
+                candidateContext.Unload();
+                failureReason = $"extension type '{extensionTypeName}' cannot be instantiated";
+                return false;
+            }
+
+            extension = created;
+            loadContext = candidateContext;
+            return true;
+        }
+        catch (Exception ex)
+        {
+            candidateContext?.Unload();
+            failureReason = $"failed to load extension assembly: {ex.Message}";
+            return false;
+        }
+    }
+
+    private static async ValueTask TryDeactivateSilentlyAsync(IExtension extension)
+    {
+        try
+        {
+            await extension.DeactivateAsync(CancellationToken.None);
+        }
+        catch
+        {
+            // Ignore deactivate failures during failed activation path.
+        }
+    }
+
+    private void TrackLoadedExtension(
+        IExtension extension,
+        string extensionId,
+        string source,
+        string extensionDirectory,
+        string? manifestPath,
+        string? assemblyPath,
+        CollectibleExtensionLoadContext? loadContext)
+    {
+        lock (_stateGate)
+        {
+            _loadedExtensions.Add(new LoadedExtensionState(
+                extension,
+                extensionId,
+                source,
+                extensionDirectory,
+                manifestPath,
+                assemblyPath,
+                loadContext));
+        }
+    }
+
+    private void ReportLoad(
+        string extensionId,
+        string source,
+        string extensionDirectory,
+        string? manifestPath,
+        string? assemblyPath,
+        string status,
+        string reason)
+    {
+        var invocation = new ExtensionLoadInvocation(
+            ExtensionId: NormalizeExtensionId(extensionId, "unknown"),
+            Source: source,
+            ExtensionDirectory: Path.GetFullPath(extensionDirectory),
+            ManifestPath: string.IsNullOrWhiteSpace(manifestPath)
+                ? null
+                : Path.GetFullPath(manifestPath),
+            AssemblyPath: string.IsNullOrWhiteSpace(assemblyPath)
+                ? null
+                : Path.GetFullPath(assemblyPath),
+            Status: status,
+            Reason: reason,
+            Timestamp: DateTimeOffset.UtcNow);
+        _registry.ReportExtensionLoad(invocation);
+
+        if (_loadEventSink is null)
+        {
+            return;
+        }
+
+        try
+        {
+            _loadEventSink(invocation);
+        }
+        catch
+        {
+            // Ignore sink errors to keep extension loading isolated from telemetry output.
+        }
+    }
+
+    private void ThrowIfDisposed()
+    {
+        lock (_stateGate)
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(ExtensionLoader));
+            }
         }
     }
 
@@ -222,4 +647,25 @@ internal sealed class ExtensionLoader
             && !relativePath.StartsWith("..", StringComparison.Ordinal)
             && !Path.IsPathRooted(relativePath);
     }
+
+    private static string NormalizeExtensionId(string? value, string fallback)
+    {
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            return value.Trim();
+        }
+
+        return string.IsNullOrWhiteSpace(fallback)
+            ? "unknown"
+            : fallback.Trim();
+    }
+
+    private sealed record LoadedExtensionState(
+        IExtension Extension,
+        string ExtensionId,
+        string Source,
+        string ExtensionDirectory,
+        string? ManifestPath,
+        string? AssemblyPath,
+        CollectibleExtensionLoadContext? LoadContext);
 }

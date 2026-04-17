@@ -150,6 +150,9 @@ internal sealed class LspSession
             "jazor/extensionProviderHealth" => CreateSuccessResponse(
                 request.Id,
                 _extensionRegistry.GetProviderHealth()),
+            "jazor/extensionLoadHealth" => CreateSuccessResponse(
+                request.Id,
+                _extensionRegistry.GetExtensionLoadHealth()),
             _ => CreateErrorResponse(request.Id, -32601, $"Unsupported LSP method '{request.Method}'.")
         };
     }

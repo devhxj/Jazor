@@ -113,18 +113,23 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
         var sandbox = CreateExtensionSandbox();
         try
         {
+            using var signer = new ManifestSigner("phase7-signing-key");
             WriteManifest(
                 sandbox.ExtensionDirectory,
                 id: ManifestLoadableTestExtension.ExtensionId,
                 assembly: sandbox.AssemblyFileName,
                 type: typeof(ManifestLoadableTestExtension).FullName!,
                 assemblySha256: sandbox.AssemblySha256,
-                providers: ["hover", "completion"]);
+                providers: ["hover", "completion"],
+                signer: signer);
 
             var registry = new ExtensionRegistry();
-            var loader = new ExtensionLoader(registry);
+            await using var loader = new ExtensionLoader(registry);
             await loader.LoadUserExtensionsAsync(
-                CreateHostOptions(sandbox.RootDirectory, sandbox.ExtensionsDirectory),
+                CreateHostOptions(
+                    sandbox.RootDirectory,
+                    sandbox.ExtensionsDirectory,
+                    trustedPublicKeys: signer.TrustedPublicKeys),
                 CancellationToken.None);
 
             Assert.AreEqual(1, registry.GetExtensions().Count);
@@ -144,20 +149,23 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
         var sandbox = CreateExtensionSandbox();
         try
         {
+            using var signer = new ManifestSigner("phase7-provider-permission-key");
             WriteManifest(
                 sandbox.ExtensionDirectory,
                 id: ManifestLoadableTestExtension.ExtensionId,
                 assembly: sandbox.AssemblyFileName,
                 type: typeof(ManifestLoadableTestExtension).FullName!,
                 assemblySha256: sandbox.AssemblySha256,
-                providers: ["hover"]);
+                providers: ["hover"],
+                signer: signer);
 
             var registry = new ExtensionRegistry();
-            var loader = new ExtensionLoader(registry);
+            await using var loader = new ExtensionLoader(registry);
             await loader.LoadUserExtensionsAsync(
                 CreateHostOptions(
                     sandbox.RootDirectory,
                     sandbox.ExtensionsDirectory,
+                    trustedPublicKeys: signer.TrustedPublicKeys,
                     enforceProviderPermissions: true),
                 CancellationToken.None);
 
@@ -177,20 +185,23 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
         var sandbox = CreateExtensionSandbox();
         try
         {
+            using var signer = new ManifestSigner("phase7-hash-key");
             WriteManifest(
                 sandbox.ExtensionDirectory,
                 id: ManifestLoadableTestExtension.ExtensionId,
                 assembly: sandbox.AssemblyFileName,
                 type: typeof(ManifestLoadableTestExtension).FullName!,
                 assemblySha256: null,
-                providers: ["hover", "completion"]);
+                providers: ["hover", "completion"],
+                signer: signer);
 
             var registry = new ExtensionRegistry();
-            var loader = new ExtensionLoader(registry);
+            await using var loader = new ExtensionLoader(registry);
             await loader.LoadUserExtensionsAsync(
                 CreateHostOptions(
                     sandbox.RootDirectory,
                     sandbox.ExtensionsDirectory,
+                    trustedPublicKeys: signer.TrustedPublicKeys,
                     requireAssemblyHash: true),
                 CancellationToken.None);
 
@@ -208,18 +219,23 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
         var sandbox = CreateExtensionSandbox();
         try
         {
+            using var signer = new ManifestSigner("phase7-id-mismatch-key");
             WriteManifest(
                 sandbox.ExtensionDirectory,
                 id: "phase7.manifest.id-mismatch",
                 assembly: sandbox.AssemblyFileName,
                 type: typeof(ManifestLoadableTestExtension).FullName!,
                 assemblySha256: sandbox.AssemblySha256,
-                providers: ["hover", "completion"]);
+                providers: ["hover", "completion"],
+                signer: signer);
 
             var registry = new ExtensionRegistry();
-            var loader = new ExtensionLoader(registry);
+            await using var loader = new ExtensionLoader(registry);
             await loader.LoadUserExtensionsAsync(
-                CreateHostOptions(sandbox.RootDirectory, sandbox.ExtensionsDirectory),
+                CreateHostOptions(
+                    sandbox.RootDirectory,
+                    sandbox.ExtensionsDirectory,
+                    trustedPublicKeys: signer.TrustedPublicKeys),
                 CancellationToken.None);
 
             Assert.AreEqual(0, registry.GetExtensions().Count);
@@ -236,6 +252,138 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
         var sandbox = CreateExtensionSandbox();
         try
         {
+            using var signer = new ManifestSigner("phase7-trusted-list-key");
+            WriteManifest(
+                sandbox.ExtensionDirectory,
+                id: ManifestLoadableTestExtension.ExtensionId,
+                assembly: sandbox.AssemblyFileName,
+                type: typeof(ManifestLoadableTestExtension).FullName!,
+                assemblySha256: sandbox.AssemblySha256,
+                providers: ["hover", "completion"],
+                signer: signer);
+
+            var registry = new ExtensionRegistry();
+            await using var loader = new ExtensionLoader(registry);
+            await loader.LoadUserExtensionsAsync(
+                CreateHostOptions(
+                    sandbox.RootDirectory,
+                    sandbox.ExtensionsDirectory,
+                    trustedExtensionIds: new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        "phase7.other-extension"
+                    },
+                    trustedPublicKeys: signer.TrustedPublicKeys),
+                CancellationToken.None);
+
+            Assert.AreEqual(0, registry.GetExtensions().Count);
+        }
+        finally
+        {
+            sandbox.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task ExtensionLoader_LoadUserExtensionsAsync_WithInvalidManifestSignature_RejectsExtensionAndReportsHealth()
+    {
+        var sandbox = CreateExtensionSandbox();
+        try
+        {
+            using var signer = new ManifestSigner("phase7-invalid-signature-key");
+            var invalidSignature = new ExtensionSignatureManifest
+            {
+                KeyId = signer.KeyId,
+                Algorithm = "RS256",
+                Value = Convert.ToBase64String("invalid-signature"u8.ToArray())
+            };
+            WriteManifest(
+                sandbox.ExtensionDirectory,
+                id: ManifestLoadableTestExtension.ExtensionId,
+                assembly: sandbox.AssemblyFileName,
+                type: typeof(ManifestLoadableTestExtension).FullName!,
+                assemblySha256: sandbox.AssemblySha256,
+                providers: ["hover", "completion"],
+                explicitSignature: invalidSignature);
+
+            var registry = new ExtensionRegistry();
+            await using var loader = new ExtensionLoader(registry);
+            await loader.LoadUserExtensionsAsync(
+                CreateHostOptions(
+                    sandbox.RootDirectory,
+                    sandbox.ExtensionsDirectory,
+                    trustedPublicKeys: signer.TrustedPublicKeys),
+                CancellationToken.None);
+
+            Assert.AreEqual(0, registry.GetExtensions().Count);
+            var loadHealth = registry.GetExtensionLoadHealth()
+                .Single(static item =>
+                    string.Equals(item.ExtensionId, ManifestLoadableTestExtension.ExtensionId, StringComparison.Ordinal)
+                    && string.Equals(item.Source, "user", StringComparison.Ordinal));
+            Assert.AreEqual(0, loadHealth.LoadedCount);
+            Assert.AreEqual(1, loadHealth.RejectedCount);
+            Assert.AreEqual(0, loadHealth.FailedCount);
+            StringAssert.Contains(
+                loadHealth.LastReason ?? string.Empty,
+                "signature",
+                StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            sandbox.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task ExtensionLoader_LoadUserExtensionsAsync_WithUnknownManifestSignatureKey_RejectsExtension()
+    {
+        var sandbox = CreateExtensionSandbox();
+        try
+        {
+            var unknownKeySignature = new ExtensionSignatureManifest
+            {
+                KeyId = "phase7.unknown-signing-key",
+                Algorithm = "RS256",
+                Value = "AA=="
+            };
+            WriteManifest(
+                sandbox.ExtensionDirectory,
+                id: ManifestLoadableTestExtension.ExtensionId,
+                assembly: sandbox.AssemblyFileName,
+                type: typeof(ManifestLoadableTestExtension).FullName!,
+                assemblySha256: sandbox.AssemblySha256,
+                providers: ["hover", "completion"],
+                explicitSignature: unknownKeySignature);
+
+            var registry = new ExtensionRegistry();
+            await using var loader = new ExtensionLoader(registry);
+            await loader.LoadUserExtensionsAsync(
+                CreateHostOptions(
+                    sandbox.RootDirectory,
+                    sandbox.ExtensionsDirectory,
+                    trustedPublicKeys: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)),
+                CancellationToken.None);
+
+            Assert.AreEqual(0, registry.GetExtensions().Count);
+            var loadHealth = registry.GetExtensionLoadHealth()
+                .Single(static item => string.Equals(item.ExtensionId, ManifestLoadableTestExtension.ExtensionId, StringComparison.Ordinal));
+            Assert.AreEqual(1, loadHealth.RejectedCount);
+            StringAssert.Contains(
+                loadHealth.LastReason ?? string.Empty,
+                "not configured",
+                StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            sandbox.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task ExtensionLoader_LoadUserExtensionsAsync_WithSignatureRequirementDisabled_LoadsUnsignedManifest()
+    {
+        var sandbox = CreateExtensionSandbox();
+        try
+        {
             WriteManifest(
                 sandbox.ExtensionDirectory,
                 id: ManifestLoadableTestExtension.ExtensionId,
@@ -245,18 +393,52 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
                 providers: ["hover", "completion"]);
 
             var registry = new ExtensionRegistry();
-            var loader = new ExtensionLoader(registry);
+            await using var loader = new ExtensionLoader(registry);
             await loader.LoadUserExtensionsAsync(
                 CreateHostOptions(
                     sandbox.RootDirectory,
                     sandbox.ExtensionsDirectory,
-                    trustedExtensionIds: new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        "phase7.other-extension"
-                    }),
+                    requireManifestSignature: false),
                 CancellationToken.None);
 
+            Assert.AreEqual(1, registry.GetExtensions().Count);
+            Assert.IsTrue(registry.GetExtensions().ContainsKey(ManifestLoadableTestExtension.ExtensionId));
+        }
+        finally
+        {
+            sandbox.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task ExtensionLoader_DisposeAsync_AfterUserLoad_AllowsAssemblyReplacement()
+    {
+        var sandbox = CreateExtensionSandbox();
+        try
+        {
+            using var signer = new ManifestSigner("phase7-unload-key");
+            WriteManifest(
+                sandbox.ExtensionDirectory,
+                id: ManifestLoadableTestExtension.ExtensionId,
+                assembly: sandbox.AssemblyFileName,
+                type: typeof(ManifestLoadableTestExtension).FullName!,
+                assemblySha256: sandbox.AssemblySha256,
+                providers: ["hover", "completion"],
+                signer: signer);
+
+            var registry = new ExtensionRegistry();
+            await using (var loader = new ExtensionLoader(registry))
+            {
+                await loader.LoadUserExtensionsAsync(
+                    CreateHostOptions(
+                        sandbox.RootDirectory,
+                        sandbox.ExtensionsDirectory,
+                        trustedPublicKeys: signer.TrustedPublicKeys),
+                    CancellationToken.None);
+            }
+
             Assert.AreEqual(0, registry.GetExtensions().Count);
+            File.Copy(typeof(ManifestLoadableTestExtension).Assembly.Location, sandbox.AssemblyPath, overwrite: true);
         }
         finally
         {
@@ -566,12 +748,57 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
         }
     }
 
+    [TestMethod]
+    public async Task LspSession_ExtensionLoadHealth_Request_ExposesLoadHealthSnapshot()
+    {
+        var workspaceStore = new InMemoryWorkspaceStore();
+        var virtualDocumentRegistry = new InMemoryVirtualDocumentRegistry();
+        var registry = new ExtensionRegistry();
+        registry.ReportExtensionLoad(new ExtensionLoadInvocation(
+            ExtensionId: ManifestLoadableTestExtension.ExtensionId,
+            Source: "user",
+            ExtensionDirectory: Path.GetTempPath(),
+            ManifestPath: null,
+            AssemblyPath: null,
+            Status: ExtensionLoadStatus.Rejected,
+            Reason: "manifest signature verification failed",
+            Timestamp: DateTimeOffset.UtcNow));
+
+        using var outputStream = new MemoryStream();
+        var session = CreateSession(
+            workspaceStore,
+            virtualDocumentRegistry,
+            [new EmptyJazorLane()],
+            outputStream,
+            registry);
+
+        var response = await session.HandleRequestAsync(
+            new LspRequestMessage
+            {
+                Id = 3105,
+                Method = "jazor/extensionLoadHealth"
+            },
+            CancellationToken.None);
+
+        Assert.IsNotNull(response);
+        Assert.IsNull(response!.Error);
+        var health = response.Result as IReadOnlyList<ExtensionLoadHealth>;
+        Assert.IsNotNull(health);
+        var item = health.Single(static entry =>
+            string.Equals(entry.ExtensionId, ManifestLoadableTestExtension.ExtensionId, StringComparison.Ordinal)
+            && string.Equals(entry.Source, "user", StringComparison.Ordinal));
+        Assert.AreEqual(0, item.LoadedCount);
+        Assert.AreEqual(1, item.RejectedCount);
+    }
+
     private static ExtensionHostOptions CreateHostOptions(
         string rootDirectory,
         string extensionsDirectory,
         IReadOnlySet<string>? trustedExtensionIds = null,
+        IReadOnlyDictionary<string, string>? trustedPublicKeys = null,
         bool requireAssemblyHash = true,
-        bool enforceProviderPermissions = true)
+        bool enforceProviderPermissions = true,
+        bool requireManifestSignature = true)
     {
         return new ExtensionHostOptions
         {
@@ -580,8 +807,10 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
             ExtensionsDirectory = extensionsDirectory,
             AllowExternalDirectory = false,
             TrustedExtensionIds = trustedExtensionIds ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+            TrustedPublicKeys = trustedPublicKeys ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
             RequireAssemblyHash = requireAssemblyHash,
-            EnforceProviderPermissions = enforceProviderPermissions
+            EnforceProviderPermissions = enforceProviderPermissions,
+            RequireManifestSignature = requireManifestSignature
         };
     }
 
@@ -591,27 +820,45 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
         string assembly,
         string type,
         string? assemblySha256,
-        string[] providers)
+        string[] providers,
+        ManifestSigner? signer = null,
+        ExtensionSignatureManifest? explicitSignature = null)
     {
-        var payload = new Dictionary<string, object?>(StringComparer.Ordinal)
+        var unsignedManifest = new ExtensionManifest
         {
-            ["id"] = id,
-            ["assembly"] = assembly,
-            ["type"] = type,
-            ["permissions"] = new Dictionary<string, object?>
+            Id = id,
+            Assembly = assembly,
+            AssemblySha256 = assemblySha256,
+            Type = type,
+            Permissions = new ExtensionPermissionManifest
             {
-                ["providers"] = providers
+                Providers = providers
             }
         };
-        if (!string.IsNullOrWhiteSpace(assemblySha256))
+
+        var finalSignature = explicitSignature;
+        if (finalSignature is null && signer is not null)
         {
-            payload["assemblySha256"] = assemblySha256;
+            finalSignature = signer.CreateManifestSignature(unsignedManifest);
         }
+
+        var manifest = new ExtensionManifest
+        {
+            Id = id,
+            Assembly = assembly,
+            AssemblySha256 = assemblySha256,
+            Type = type,
+            Permissions = new ExtensionPermissionManifest
+            {
+                Providers = providers
+            },
+            Signature = finalSignature
+        };
 
         var manifestPath = Path.Combine(extensionDirectory, "extension.json");
         File.WriteAllText(
             manifestPath,
-            JsonSerializer.Serialize(payload));
+            JsonSerializer.Serialize(manifest));
     }
 
     private static ExtensionSandbox CreateExtensionSandbox()
@@ -733,6 +980,45 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
             {
                 Directory.Delete(RootDirectory, recursive: true);
             }
+        }
+    }
+
+    private sealed class ManifestSigner : IDisposable
+    {
+        private readonly RSA _rsa;
+
+        public ManifestSigner(string keyId)
+        {
+            _rsa = RSA.Create(2048);
+            KeyId = keyId;
+            TrustedPublicKeys = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [keyId] = _rsa.ExportSubjectPublicKeyInfoPem()
+            };
+        }
+
+        public string KeyId { get; }
+
+        public IReadOnlyDictionary<string, string> TrustedPublicKeys { get; }
+
+        public ExtensionSignatureManifest CreateManifestSignature(ExtensionManifest unsignedManifest)
+        {
+            var payload = ExtensionSecurityPolicy.BuildManifestSignaturePayload(unsignedManifest);
+            var signatureBytes = _rsa.SignData(
+                Encoding.UTF8.GetBytes(payload),
+                HashAlgorithmName.SHA256,
+                RSASignaturePadding.Pkcs1);
+            return new ExtensionSignatureManifest
+            {
+                KeyId = KeyId,
+                Algorithm = "RS256",
+                Value = Convert.ToBase64String(signatureBytes)
+            };
+        }
+
+        public void Dispose()
+        {
+            _rsa.Dispose();
         }
     }
 }

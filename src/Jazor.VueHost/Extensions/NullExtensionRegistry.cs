@@ -12,6 +12,10 @@ internal sealed class NullExtensionRegistry : IExtensionRegistry
     {
     }
 
+    public void UnregisterExtension(IExtension extension)
+    {
+    }
+
     public void RegisterLspDiagnosticProvider(ILspDiagnosticProvider provider)
     {
     }
@@ -91,6 +95,13 @@ internal sealed class NullExtensionRegistry : IExtensionRegistry
 
     public IReadOnlyList<ILspRenameProvider> GetLspRenameProviders()
         => Array.Empty<ILspRenameProvider>();
+
+    public void ReportExtensionLoad(ExtensionLoadInvocation invocation)
+    {
+    }
+
+    public IReadOnlyList<ExtensionLoadHealth> GetExtensionLoadHealth()
+        => Array.Empty<ExtensionLoadHealth>();
 
     public void ReportProviderInvocation(ExtensionProviderInvocation invocation)
     {

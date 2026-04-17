@@ -3,6 +3,7 @@ using Jazor.VueHost.Build;
 using Jazor.VueHost.Debug;
 using Jazor.VueHost.DevServer;
 using Jazor.VueHost.Analysis;
+using System.Text.Json;
 using Jazor.VueHost.Frontend.Deno.Hosting;
 using Jazor.VueHost.Hosting;
 using Jazor.VueHost.Jazor.Projection;
@@ -245,7 +246,7 @@ try
         var hostConfig = LoadJazorConfig(hostRootDirectory);
         var extensionHostOptions = ExtensionHostOptionsResolver.Resolve(args, hostRootDirectory, hostConfig);
         var extensionRegistry = new ExtensionRegistry();
-        var extensionLoader = new ExtensionLoader(extensionRegistry);
+        await using var extensionLoader = new ExtensionLoader(extensionRegistry, WriteExtensionLoadLog);
         await extensionLoader.LoadBuiltinExtensionsAsync(
             builtinExtensions: BuiltinExtensionCatalog.Create(),
             rootDirectory: extensionHostOptions.RootDirectory,
@@ -397,6 +398,24 @@ static JazorConfig? LoadJazorConfig(string rootDirectory)
     {
         return null;
     }
+}
+
+static void WriteExtensionLoadLog(ExtensionLoadInvocation invocation)
+{
+    var payload = new
+    {
+        eventType = "extensionLoad",
+        invocation.Timestamp,
+        invocation.Source,
+        invocation.ExtensionId,
+        invocation.Status,
+        invocation.Reason,
+        invocation.ExtensionDirectory,
+        invocation.ManifestPath,
+        invocation.AssemblyPath
+    };
+
+    Console.Error.WriteLine(JsonSerializer.Serialize(payload));
 }
 
 static DevServerRuntime CreateDevServerRuntime(

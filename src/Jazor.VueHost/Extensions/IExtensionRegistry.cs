@@ -4,6 +4,8 @@ internal interface IExtensionRegistry
 {
     void RegisterExtension(IExtension extension);
 
+    void UnregisterExtension(IExtension extension);
+
     void RegisterLspDiagnosticProvider(ILspDiagnosticProvider provider);
 
     void RegisterLspCodeActionProvider(ILspCodeActionProvider provider);
@@ -49,6 +51,10 @@ internal interface IExtensionRegistry
     IReadOnlyList<ILspReferenceProvider> GetLspReferenceProviders();
 
     IReadOnlyList<ILspRenameProvider> GetLspRenameProviders();
+
+    void ReportExtensionLoad(ExtensionLoadInvocation invocation);
+
+    IReadOnlyList<ExtensionLoadHealth> GetExtensionLoadHealth();
 
     void ReportProviderInvocation(ExtensionProviderInvocation invocation);
 

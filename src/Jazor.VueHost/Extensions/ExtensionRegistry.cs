@@ -15,6 +15,7 @@ internal sealed class ExtensionRegistry : IExtensionRegistry
     private readonly List<ILspFoldingRangeProvider> _lspFoldingRangeProviders = [];
     private readonly List<ILspReferenceProvider> _lspReferenceProviders = [];
     private readonly List<ILspRenameProvider> _lspRenameProviders = [];
+    private readonly Dictionary<string, ExtensionLoadHealth> _extensionLoadHealthByKey = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, ExtensionProviderHealth> _providerHealthByKey = new(StringComparer.OrdinalIgnoreCase);
 
     public void RegisterExtension(IExtension extension)
@@ -90,6 +91,75 @@ internal sealed class ExtensionRegistry : IExtensionRegistry
         if (extension is ILspRenameProvider renameProvider)
         {
             RegisterLspRenameProvider(renameProvider);
+        }
+    }
+
+    public void UnregisterExtension(IExtension extension)
+    {
+        ArgumentNullException.ThrowIfNull(extension);
+
+        var id = extension.Metadata.Id;
+        lock (_gate)
+        {
+            if (!string.IsNullOrWhiteSpace(id))
+            {
+                _extensions.Remove(id);
+            }
+
+            if (extension is ILspDiagnosticProvider diagnosticProvider)
+            {
+                _lspDiagnosticProviders.RemoveAll(existing => ReferenceEquals(existing, diagnosticProvider));
+            }
+
+            if (extension is ILspCodeActionProvider codeActionProvider)
+            {
+                _lspCodeActionProviders.RemoveAll(existing => ReferenceEquals(existing, codeActionProvider));
+            }
+
+            if (extension is ILspHoverProvider hoverProvider)
+            {
+                _lspHoverProviders.RemoveAll(existing => ReferenceEquals(existing, hoverProvider));
+            }
+
+            if (extension is ILspCompletionProvider completionProvider)
+            {
+                _lspCompletionProviders.RemoveAll(existing => ReferenceEquals(existing, completionProvider));
+            }
+
+            if (extension is ILspDocumentSymbolProvider documentSymbolProvider)
+            {
+                _lspDocumentSymbolProviders.RemoveAll(existing => ReferenceEquals(existing, documentSymbolProvider));
+            }
+
+            if (extension is ILspSignatureHelpProvider signatureHelpProvider)
+            {
+                _lspSignatureHelpProviders.RemoveAll(existing => ReferenceEquals(existing, signatureHelpProvider));
+            }
+
+            if (extension is ILspInlayHintProvider inlayHintProvider)
+            {
+                _lspInlayHintProviders.RemoveAll(existing => ReferenceEquals(existing, inlayHintProvider));
+            }
+
+            if (extension is ILspWorkspaceSymbolProvider workspaceSymbolProvider)
+            {
+                _lspWorkspaceSymbolProviders.RemoveAll(existing => ReferenceEquals(existing, workspaceSymbolProvider));
+            }
+
+            if (extension is ILspFoldingRangeProvider foldingRangeProvider)
+            {
+                _lspFoldingRangeProviders.RemoveAll(existing => ReferenceEquals(existing, foldingRangeProvider));
+            }
+
+            if (extension is ILspReferenceProvider referenceProvider)
+            {
+                _lspReferenceProviders.RemoveAll(existing => ReferenceEquals(existing, referenceProvider));
+            }
+
+            if (extension is ILspRenameProvider renameProvider)
+            {
+                _lspRenameProviders.RemoveAll(existing => ReferenceEquals(existing, renameProvider));
+            }
         }
     }
 
@@ -439,6 +509,93 @@ internal sealed class ExtensionRegistry : IExtensionRegistry
         lock (_gate)
         {
             return _lspRenameProviders.ToArray();
+        }
+    }
+
+    public void ReportExtensionLoad(ExtensionLoadInvocation invocation)
+    {
+        ArgumentNullException.ThrowIfNull(invocation);
+
+        if (string.IsNullOrWhiteSpace(invocation.ExtensionId)
+            || string.IsNullOrWhiteSpace(invocation.Source))
+        {
+            return;
+        }
+
+        var status = invocation.Status?.Trim();
+        if (string.IsNullOrWhiteSpace(status))
+        {
+            return;
+        }
+
+        var key = CreateHealthKey(invocation.Source, invocation.ExtensionId);
+        lock (_gate)
+        {
+            _extensionLoadHealthByKey.TryGetValue(key, out var current);
+            current ??= new ExtensionLoadHealth(
+                ExtensionId: invocation.ExtensionId,
+                Source: invocation.Source,
+                LoadedCount: 0,
+                RejectedCount: 0,
+                FailedCount: 0,
+                AttemptCount: 0,
+                LastAttemptAt: null,
+                LastLoadedAt: null,
+                LastRejectedAt: null,
+                LastFailedAt: null,
+                LastReason: null,
+                LastManifestPath: null,
+                LastAssemblyPath: null,
+                LastExtensionDirectory: null);
+
+            var loadedCount = current.LoadedCount;
+            var rejectedCount = current.RejectedCount;
+            var failedCount = current.FailedCount;
+            var lastLoadedAt = current.LastLoadedAt;
+            var lastRejectedAt = current.LastRejectedAt;
+            var lastFailedAt = current.LastFailedAt;
+            if (string.Equals(status, ExtensionLoadStatus.Loaded, StringComparison.OrdinalIgnoreCase))
+            {
+                loadedCount++;
+                lastLoadedAt = invocation.Timestamp;
+            }
+            else if (string.Equals(status, ExtensionLoadStatus.Rejected, StringComparison.OrdinalIgnoreCase))
+            {
+                rejectedCount++;
+                lastRejectedAt = invocation.Timestamp;
+            }
+            else if (string.Equals(status, ExtensionLoadStatus.Failed, StringComparison.OrdinalIgnoreCase))
+            {
+                failedCount++;
+                lastFailedAt = invocation.Timestamp;
+            }
+
+            _extensionLoadHealthByKey[key] = current with
+            {
+                LoadedCount = loadedCount,
+                RejectedCount = rejectedCount,
+                FailedCount = failedCount,
+                AttemptCount = current.AttemptCount + 1,
+                LastAttemptAt = invocation.Timestamp,
+                LastLoadedAt = lastLoadedAt,
+                LastRejectedAt = lastRejectedAt,
+                LastFailedAt = lastFailedAt,
+                LastReason = invocation.Reason,
+                LastManifestPath = invocation.ManifestPath,
+                LastAssemblyPath = invocation.AssemblyPath,
+                LastExtensionDirectory = invocation.ExtensionDirectory
+            };
+        }
+    }
+
+    public IReadOnlyList<ExtensionLoadHealth> GetExtensionLoadHealth()
+    {
+        lock (_gate)
+        {
+            return _extensionLoadHealthByKey.Values
+                .OrderBy(static item => item.Source, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(static item => item.ExtensionId, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
         }
     }
 
