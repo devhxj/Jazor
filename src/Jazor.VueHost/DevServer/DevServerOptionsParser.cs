@@ -71,6 +71,13 @@ internal static class DevServerOptionsParser
                 TryParseProxyRule(proxyValue, out var proxyPrefix, out var proxyTarget))
             {
                 options = ApplyProxyRule(options, proxyPrefix, proxyTarget);
+                continue;
+            }
+
+            if (TryGetOptionValue(arg, "--dev-alias", out var aliasValue) &&
+                TryParseAliasRule(aliasValue, out var aliasPrefix, out var aliasTarget))
+            {
+                options = ApplyResolveAlias(options, aliasPrefix, aliasTarget);
             }
         }
 
@@ -128,24 +135,35 @@ internal static class DevServerOptionsParser
             }
         }
 
-        if (config.Proxy is null)
+        if (config.Resolve?.Alias is not null)
         {
-            return options;
+            foreach (var (prefix, target) in config.Resolve.Alias)
+            {
+                if (string.IsNullOrWhiteSpace(prefix) || string.IsNullOrWhiteSpace(target))
+                {
+                    continue;
+                }
+
+                options = ApplyResolveAlias(options, prefix.Trim(), target.Trim());
+            }
         }
 
-        foreach (var (prefix, proxyConfig) in config.Proxy)
+        if (config.Proxy is not null)
         {
-            if (!TryCreateProxyTarget(proxyConfig, out var proxyTarget))
+            foreach (var (prefix, proxyConfig) in config.Proxy)
             {
-                continue;
-            }
+                if (!TryCreateProxyTarget(proxyConfig, out var proxyTarget))
+                {
+                    continue;
+                }
 
-            if (string.IsNullOrWhiteSpace(prefix) || !prefix.StartsWith("/", StringComparison.Ordinal))
-            {
-                continue;
-            }
+                if (string.IsNullOrWhiteSpace(prefix) || !prefix.StartsWith("/", StringComparison.Ordinal))
+                {
+                    continue;
+                }
 
-            options = ApplyProxyRule(options, prefix, proxyTarget);
+                options = ApplyProxyRule(options, prefix, proxyTarget);
+            }
         }
 
         return options;
@@ -201,6 +219,37 @@ internal static class DevServerOptionsParser
         return true;
     }
 
+    private static bool TryParseAliasRule(
+        string value,
+        out string prefix,
+        out string target)
+    {
+        prefix = string.Empty;
+        target = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        var separatorIndex = value.IndexOf('=');
+        if (separatorIndex <= 0 || separatorIndex == value.Length - 1)
+        {
+            return false;
+        }
+
+        prefix = value[..separatorIndex].Trim();
+        target = value[(separatorIndex + 1)..].Trim();
+        if (string.IsNullOrWhiteSpace(prefix) || string.IsNullOrWhiteSpace(target))
+        {
+            prefix = string.Empty;
+            target = string.Empty;
+            return false;
+        }
+
+        return true;
+    }
+
     private static bool TryCreateProxyTarget(
         JazorProxyConfig proxyConfig,
         out ProxyTarget target)
@@ -233,5 +282,17 @@ internal static class DevServerOptionsParser
             [proxyPrefix] = proxyTarget
         };
         return options with { ProxyRules = proxyRules };
+    }
+
+    private static DevServerOptions ApplyResolveAlias(
+        DevServerOptions options,
+        string aliasPrefix,
+        string aliasTarget)
+    {
+        var aliases = new Dictionary<string, string>(options.ResolveAliases, StringComparer.Ordinal)
+        {
+            [aliasPrefix] = aliasTarget
+        };
+        return options with { ResolveAliases = aliases };
     }
 }

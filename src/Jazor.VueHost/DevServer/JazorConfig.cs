@@ -8,6 +8,8 @@ internal sealed class JazorConfig
 
     public Dictionary<string, JazorProxyConfig>? Proxy { get; init; }
 
+    public JazorResolveConfig? Resolve { get; init; }
+
     public JazorBuildConfig? Build { get; init; }
 }
 
@@ -31,6 +33,11 @@ internal sealed class JazorProxyConfig
     public bool? WebSocket { get; init; }
 
     public string? RewritePath { get; init; }
+}
+
+internal sealed class JazorResolveConfig
+{
+    public Dictionary<string, string>? Alias { get; init; }
 }
 
 internal sealed class JazorBuildConfig

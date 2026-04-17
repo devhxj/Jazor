@@ -20,6 +20,9 @@ internal sealed record BuildOptions
 
     public int AssetHashLength { get; init; } = 8;
 
+    public IReadOnlyDictionary<string, string> ResolveAliases { get; init; }
+        = new Dictionary<string, string>(StringComparer.Ordinal);
+
     public bool GenerateSourceMap => SourceMap != SourceMapOption.None;
 }
 

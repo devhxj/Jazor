@@ -76,7 +76,7 @@ internal sealed class BuildOrchestrator
             await using var denoHost = CreateDenoHost();
             await denoHost.StartAsync(cancellationToken);
 
-            var moduleResolver = new ModuleResolver(options.RootDirectory);
+            var moduleResolver = new ModuleResolver(options.RootDirectory, options.ResolveAliases);
             var frontendCompiler = new DenoFrontendModuleCompiler(denoHost);
             var compiler = new OnDemandCompiler(
                 new JazorVueParser(),

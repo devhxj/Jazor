@@ -15,11 +15,15 @@ internal sealed class ModuleResolver
     ];
 
     private readonly string _rootDirectory;
+    private readonly IReadOnlyList<ResolveAliasRule> _resolveAliasRules;
 
-    public ModuleResolver(string rootDirectory)
+    public ModuleResolver(
+        string rootDirectory,
+        IReadOnlyDictionary<string, string>? resolveAliases = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(rootDirectory);
         _rootDirectory = Path.GetFullPath(rootDirectory);
+        _resolveAliasRules = CreateResolveAliasRules(resolveAliases);
     }
 
     public ResolveResult Resolve(string requestPath, string? importerPath = null)
@@ -42,6 +46,11 @@ internal sealed class ModuleResolver
                 IsVirtual = true,
                 Found = true
             };
+        }
+
+        if (TryResolveAliasPath(sanitizedRequestPath, out var aliasedAbsolutePath))
+        {
+            return ResolveCandidate(aliasedAbsolutePath, BuildResolvedUrl(aliasedAbsolutePath));
         }
 
         if (sanitizedRequestPath.StartsWith("/", StringComparison.Ordinal))
@@ -165,6 +174,116 @@ internal sealed class ModuleResolver
             ".js" => DocumentKind.JavaScript,
             _ => DocumentKind.Unknown
         };
+
+    private bool TryResolveAliasPath(string requestPath, out string absolutePath)
+    {
+        absolutePath = string.Empty;
+        if (_resolveAliasRules.Count == 0)
+        {
+            return false;
+        }
+
+        foreach (var aliasRule in _resolveAliasRules)
+        {
+            if (!TryMatchAlias(requestPath, aliasRule.Prefix, out var suffix))
+            {
+                continue;
+            }
+
+            absolutePath = string.IsNullOrEmpty(suffix)
+                ? aliasRule.AbsoluteTargetPath
+                : Path.Combine(aliasRule.AbsoluteTargetPath, suffix.Replace('/', Path.DirectorySeparatorChar));
+            return true;
+        }
+
+        return false;
+    }
+
+    private IReadOnlyList<ResolveAliasRule> CreateResolveAliasRules(
+        IReadOnlyDictionary<string, string>? resolveAliases)
+    {
+        if (resolveAliases is null || resolveAliases.Count == 0)
+        {
+            return [];
+        }
+
+        var rules = new List<ResolveAliasRule>(resolveAliases.Count);
+        foreach (var (rawPrefix, rawTarget) in resolveAliases)
+        {
+            if (string.IsNullOrWhiteSpace(rawPrefix) || string.IsNullOrWhiteSpace(rawTarget))
+            {
+                continue;
+            }
+
+            var normalizedPrefix = NormalizeAliasPrefix(rawPrefix);
+            if (string.IsNullOrWhiteSpace(normalizedPrefix))
+            {
+                continue;
+            }
+
+            rules.Add(new ResolveAliasRule(
+                normalizedPrefix,
+                ToAbsoluteAliasTargetPath(rawTarget)));
+        }
+
+        rules.Sort(static (left, right) => right.Prefix.Length.CompareTo(left.Prefix.Length));
+        return rules;
+    }
+
+    private string ToAbsoluteAliasTargetPath(string rawTarget)
+    {
+        var trimmedTarget = rawTarget.Trim();
+        if (trimmedTarget.StartsWith("/", StringComparison.Ordinal))
+        {
+            var relativePath = trimmedTarget.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
+            return Path.GetFullPath(Path.Combine(_rootDirectory, relativePath));
+        }
+
+        var normalizedTarget = trimmedTarget.Replace('/', Path.DirectorySeparatorChar);
+        if (Path.IsPathRooted(normalizedTarget))
+        {
+            return Path.GetFullPath(normalizedTarget);
+        }
+
+        return Path.GetFullPath(Path.Combine(_rootDirectory, normalizedTarget));
+    }
+
+    private static string NormalizeAliasPrefix(string value)
+    {
+        var normalized = value.Trim().Replace('\\', '/');
+        if (normalized.Length > 1 && normalized.EndsWith("/", StringComparison.Ordinal))
+        {
+            normalized = normalized.TrimEnd('/');
+        }
+
+        return normalized;
+    }
+
+    private static bool TryMatchAlias(
+        string requestPath,
+        string aliasPrefix,
+        out string suffix)
+    {
+        suffix = string.Empty;
+        if (string.Equals(requestPath, aliasPrefix, StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        if (!requestPath.StartsWith(aliasPrefix, StringComparison.Ordinal)
+            || requestPath.Length <= aliasPrefix.Length
+            || requestPath[aliasPrefix.Length] != '/')
+        {
+            return false;
+        }
+
+        suffix = requestPath[(aliasPrefix.Length + 1)..];
+        return true;
+    }
+
+    private sealed record ResolveAliasRule(
+        string Prefix,
+        string AbsoluteTargetPath);
 }
 
 internal sealed class ResolveResult

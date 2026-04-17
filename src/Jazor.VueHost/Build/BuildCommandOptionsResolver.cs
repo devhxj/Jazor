@@ -14,6 +14,11 @@ internal static class BuildCommandOptionsResolver
 
         var buildOptions = config?.Build?.ToBuildOptions(rootDirectory)
             ?? new BuildOptions { RootDirectory = rootDirectory };
+        var resolveAliases = NormalizeResolveAliases(config?.Resolve?.Alias);
+        if (resolveAliases.Count > 0)
+        {
+            buildOptions = buildOptions with { ResolveAliases = resolveAliases };
+        }
 
         if (TryGetOptionValue(args, "--sourcemap", out var sourcemapOverride))
         {
@@ -94,5 +99,27 @@ internal static class BuildCommandOptionsResolver
 
         value = string.Empty;
         return false;
+    }
+
+    private static IReadOnlyDictionary<string, string> NormalizeResolveAliases(
+        IDictionary<string, string>? aliases)
+    {
+        if (aliases is null || aliases.Count == 0)
+        {
+            return new Dictionary<string, string>(StringComparer.Ordinal);
+        }
+
+        var normalized = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var (key, value) in aliases)
+        {
+            if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(value))
+            {
+                continue;
+            }
+
+            normalized[key.Trim()] = value.Trim();
+        }
+
+        return normalized;
     }
 }

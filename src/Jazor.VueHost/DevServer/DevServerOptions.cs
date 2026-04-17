@@ -16,4 +16,7 @@ internal sealed record DevServerOptions
 
     public IReadOnlyDictionary<string, ProxyTarget> ProxyRules { get; init; }
         = new Dictionary<string, ProxyTarget>(StringComparer.OrdinalIgnoreCase);
+
+    public IReadOnlyDictionary<string, string> ResolveAliases { get; init; }
+        = new Dictionary<string, string>(StringComparer.Ordinal);
 }

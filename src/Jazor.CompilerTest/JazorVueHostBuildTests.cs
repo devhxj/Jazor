@@ -25,6 +25,7 @@ public sealed class JazorVueHostBuildTests
         Assert.AreEqual(500_000, options.ChunkSizeWarningLimit);
         Assert.AreEqual("assets", options.AssetsDir);
         Assert.AreEqual(8, options.AssetHashLength);
+        Assert.AreEqual(0, options.ResolveAliases.Count);
         Assert.IsTrue(options.GenerateSourceMap);
     }
 
@@ -126,6 +127,13 @@ public sealed class JazorVueHostBuildTests
     {
         var config = new JazorConfig
         {
+            Resolve = new JazorResolveConfig
+            {
+                Alias = new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["@"] = "/src"
+                }
+            },
             Build = new JazorBuildConfig
             {
                 OutDir = "site",
@@ -140,6 +148,8 @@ public sealed class JazorVueHostBuildTests
         Assert.AreEqual("site", options.OutDir);
         Assert.AreEqual(SourceMapOption.Inline, options.SourceMap);
         Assert.IsFalse(options.Minify);
+        Assert.AreEqual(1, options.ResolveAliases.Count);
+        Assert.AreEqual("/src", options.ResolveAliases["@"]);
     }
 
     [TestMethod]
@@ -215,6 +225,12 @@ public sealed class JazorVueHostBuildTests
                     "outDir": "out",
                     "minify": false,
                     "target": "esnext"
+                },
+                "resolve": {
+                    "alias": {
+                        "@": "/src",
+                        "@shared": "./shared"
+                    }
                 }
             }
             """;
@@ -229,6 +245,10 @@ public sealed class JazorVueHostBuildTests
         Assert.AreEqual("out", config.Build.OutDir);
         Assert.IsFalse(config.Build.Minify);
         Assert.AreEqual("esnext", config.Build.Target);
+        Assert.IsNotNull(config.Resolve);
+        Assert.IsNotNull(config.Resolve.Alias);
+        Assert.AreEqual("/src", config.Resolve.Alias["@"]);
+        Assert.AreEqual("./shared", config.Resolve.Alias["@shared"]);
     }
 
     [TestMethod]

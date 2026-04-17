@@ -390,7 +390,7 @@ static DevServerRuntime CreateDevServerRuntime(
     IDenoVolarHost denoFrontendHost,
     IVueHostWorkspaceStore? workspaceStore = null)
 {
-    var moduleResolver = new ModuleResolver(devOptions.RootDirectory);
+    var moduleResolver = new ModuleResolver(devOptions.RootDirectory, devOptions.ResolveAliases);
     var sourceMapService = new InMemorySourceMapService();
     IFrontendModuleCompiler frontendCompiler = string.Equals(
         devOptions.FrontendCompiler,

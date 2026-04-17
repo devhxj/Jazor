@@ -68,6 +68,59 @@ public sealed class JazorVueHostDevServerTests
     }
 
     [TestMethod]
+    public void ModuleResolver_Resolve_AliasImport_UsesAliasTargetDirectory()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var scriptsDirectory = Path.Combine(rootDirectory, "src");
+            Directory.CreateDirectory(scriptsDirectory);
+            var componentPath = Path.Combine(scriptsDirectory, "Counter.jazor");
+            File.WriteAllText(componentPath, "<div />");
+
+            var resolver = new ModuleResolver(
+                rootDirectory,
+                new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["@"] = "/src"
+                });
+            var result = resolver.Resolve("@/Counter", Path.Combine(rootDirectory, "main.ts"));
+
+            Assert.IsTrue(result.Found);
+            Assert.AreEqual(componentPath, result.AbsolutePath);
+            Assert.AreEqual("/src/Counter.jazor", result.ResolvedUrl);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void ModuleResolver_Resolve_AliasOutsideRoot_ReturnsNotFound()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        var resolver = new ModuleResolver(
+            rootDirectory,
+            new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["@"] = "../shared"
+            });
+
+        try
+        {
+            var result = resolver.Resolve("@/Counter.ts");
+
+            Assert.IsFalse(result.Found);
+            StringAssert.Contains(result.Error!, "escapes the dev-server root");
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void ModuleResolver_Resolve_StripsQueryAndHash()
     {
         var rootDirectory = CreateTemporaryDirectory();
@@ -148,6 +201,20 @@ public sealed class JazorVueHostDevServerTests
     }
 
     [TestMethod]
+    public void DevServerOptionsParser_Parse_CollectsAliasRules()
+    {
+        var options = DevServerOptionsParser.Parse(
+        [
+            "--dev-alias=@=/src",
+            "--dev-alias=@shared=./shared"
+        ]);
+
+        Assert.AreEqual(2, options.ResolveAliases.Count);
+        Assert.AreEqual("/src", options.ResolveAliases["@"]);
+        Assert.AreEqual("./shared", options.ResolveAliases["@shared"]);
+    }
+
+    [TestMethod]
     public void DevServerOptionsParser_Parse_LoadsServerAndProxyRulesFromJazorConfig()
     {
         var rootDirectory = CreateTemporaryDirectory();
@@ -170,6 +237,12 @@ public sealed class JazorVueHostDevServerTests
                       "websocket": false,
                       "rewritePath": "/gateway"
                     }
+                  },
+                  "resolve": {
+                    "alias": {
+                      "@": "/src",
+                      "@shared": "./shared"
+                    }
                   }
                 }
                 """);
@@ -189,6 +262,9 @@ public sealed class JazorVueHostDevServerTests
             Assert.IsTrue(options.ProxyRules["/api"].Secure);
             Assert.IsFalse(options.ProxyRules["/api"].WebSocket);
             Assert.AreEqual("/gateway", options.ProxyRules["/api"].RewritePath);
+            Assert.AreEqual(2, options.ResolveAliases.Count);
+            Assert.AreEqual("/src", options.ResolveAliases["@"]);
+            Assert.AreEqual("./shared", options.ResolveAliases["@shared"]);
         }
         finally
         {
@@ -217,6 +293,12 @@ public sealed class JazorVueHostDevServerTests
                       "target": "https://backend.example/base",
                       "websocket": false
                     }
+                  },
+                  "resolve": {
+                    "alias": {
+                      "@": "/src",
+                      "@shared": "./shared"
+                    }
                   }
                 }
                 """);
@@ -229,7 +311,8 @@ public sealed class JazorVueHostDevServerTests
                 "--open-browser",
                 "--no-hmr",
                 "--dev-frontend=stub",
-                "--dev-proxy=/api=http://localhost:5000"
+                "--dev-proxy=/api=http://localhost:5000",
+                "--dev-alias=@=/client-src"
             ]);
 
             Assert.AreEqual(7001, options.Port);
@@ -240,6 +323,8 @@ public sealed class JazorVueHostDevServerTests
             Assert.AreEqual(1, options.ProxyRules.Count);
             Assert.AreEqual("http://localhost:5000", options.ProxyRules["/api"].Target);
             Assert.IsTrue(options.ProxyRules["/api"].WebSocket);
+            Assert.AreEqual("/client-src", options.ResolveAliases["@"]);
+            Assert.AreEqual("./shared", options.ResolveAliases["@shared"]);
         }
         finally
         {
@@ -7332,6 +7417,85 @@ public sealed class JazorVueHostDevServerTests
 
             Assert.IsNull(sourceMapService.GetSourceMapJson("/counter.ts"));
             Assert.IsNull(sourceMapService.OriginalPositionFor("/counter.ts", 0, 0));
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task OnDemandCompiler_CompileAsync_TypeScriptFile_AfterInvalidate_RegistersLatestSourceMap()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(rootDirectory, "counter.ts");
+            const string initialSource = "export const count: number = 1;";
+            const string updatedSource = """
+                export const count: number = 1;
+                export const label: string = "updated";
+                """;
+            await File.WriteAllTextAsync(documentPath, initialSource);
+
+            var sourceMapService = new InMemorySourceMapService();
+            var frontendCompiler = new FakeFrontendModuleCompiler();
+            frontendCompiler.SetTypeScriptResult(
+                documentPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export const count = 1;",
+                    SourceMap = """
+                        {"version":3,"sources":["counter.ts"],"sourcesContent":["export const count: number = 1;"],"names":[],"mappings":"AAAA","file":"counter.js"}
+                        """,
+                    Dependencies = []
+                });
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                moduleResolver: new ModuleResolver(rootDirectory),
+                sourceMapService: sourceMapService);
+
+            var initialResult = await compiler.CompileAsync(documentPath, CancellationToken.None);
+
+            Assert.IsFalse(initialResult.IsError);
+            Assert.AreEqual(initialResult.SourceMap, sourceMapService.GetSourceMapJson("/counter.ts"));
+            Assert.AreEqual(0, sourceMapService.OriginalPositionFor("/counter.ts", 0, 0)?.Line);
+
+            await File.WriteAllTextAsync(documentPath, updatedSource);
+            frontendCompiler.SetTypeScriptResult(
+                documentPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = """
+                        export const count = 1;
+                        export const label = "updated";
+                        """,
+                    SourceMap = """
+                        {"version":3,"sources":["counter.ts"],"sourcesContent":["export const count: number = 1;\nexport const label: string = \"updated\";"],"names":[],"mappings":";AACS","file":"counter.js"}
+                        """,
+                    Dependencies = []
+                });
+
+            compiler.Invalidate(documentPath);
+            var updatedResult = await compiler.CompileAsync(documentPath, CancellationToken.None);
+
+            Assert.IsFalse(updatedResult.IsError);
+            Assert.AreEqual(updatedResult.SourceMap, sourceMapService.GetSourceMapJson("/counter.ts"));
+            Assert.AreNotEqual(initialResult.SourceMap, updatedResult.SourceMap);
+
+            var updatedOriginal = sourceMapService.OriginalPositionFor("/counter.ts", 1, 0);
+            Assert.IsNotNull(updatedOriginal);
+            Assert.AreEqual(1, updatedOriginal.Line);
+            Assert.AreEqual(9, updatedOriginal.Column);
+
+            var updatedGenerated = sourceMapService.GeneratedPositionFor(documentPath, 1, 9);
+            Assert.IsNotNull(updatedGenerated);
+            Assert.AreEqual("/counter.ts", updatedGenerated.GeneratedPath);
+            Assert.AreEqual(1, updatedGenerated.Line);
+            Assert.AreEqual(0, updatedGenerated.Column);
         }
         finally
         {
