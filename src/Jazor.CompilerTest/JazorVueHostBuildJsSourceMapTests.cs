@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Jazor.VueHost.Build;
+using Jazor.VueHost.SourceMap;
 using static Jazor.CompilerTest.SourceMapTestHelpers;
 
 namespace Jazor.CompilerTest;
@@ -72,6 +73,15 @@ public sealed class JazorVueHostBuildJsSourceMapTests
                 source,
                 "Count++;",
                 mappedLocations);
+
+            AssertSourceMapReverseLookupToOriginalAuthoring(
+                generatedPath: entryChunk.FilePath,
+                sourceMapJson,
+                chunkContent,
+                "count.value++;",
+                expectedSourcePath: "CounterEntry.jazor",
+                source,
+                "Count++;");
         }
         finally
         {
@@ -144,6 +154,15 @@ public sealed class JazorVueHostBuildJsSourceMapTests
                 source,
                 "template-sourcemap-marker {{ message }}",
                 mappedLocations);
+
+            AssertSourceMapReverseLookupToOriginalAuthoring(
+                generatedPath: entryChunk.FilePath,
+                sourceMapJson,
+                chunkContent,
+                "message.value = \"updated-vue-source-map\";",
+                expectedSourcePath: "AppEntry.vue",
+                source,
+                "message.value = \"updated-vue-source-map\";");
         }
         finally
         {
@@ -184,6 +203,41 @@ public sealed class JazorVueHostBuildJsSourceMapTests
             await File.ReadAllTextAsync(chunkPath),
             sourceMapPath,
             await File.ReadAllTextAsync(sourceMapPath));
+    }
+
+    private static void AssertSourceMapReverseLookupToOriginalAuthoring(
+        string generatedPath,
+        string sourceMapJson,
+        string generatedText,
+        string generatedNeedle,
+        string expectedSourcePath,
+        string sourceText,
+        string sourceNeedle)
+    {
+        var generatedPosition = GetLineColumnContaining(generatedText, generatedNeedle);
+        var expectedSourcePosition = GetLineColumnContaining(sourceText, sourceNeedle);
+
+        var service = new InMemorySourceMapService();
+        service.Register(generatedPath, sourceMapJson);
+
+        var original = service.OriginalPositionFor(generatedPath, generatedPosition.Line, generatedPosition.Column);
+        Assert.IsNotNull(original, $"Expected reverse source-map lookup for '{generatedNeedle}' to return an authored location.");
+        StringAssert.EndsWith(
+            original.SourcePath.Replace('\\', '/'),
+            expectedSourcePath.Replace('\\', '/'),
+            $"Expected reverse source-map lookup to resolve into '{expectedSourcePath}'.");
+        Assert.AreEqual(expectedSourcePosition.Line, original.Line, "Expected reverse source-map lookup to preserve authored line.");
+        Assert.IsTrue(
+            original.Column <= expectedSourcePosition.Column,
+            $"Expected authored column <= token start column ({expectedSourcePosition.Column}), actual {original.Column}.");
+
+        var generated = service.GeneratedPositionFor(expectedSourcePath, expectedSourcePosition.Line, expectedSourcePosition.Column);
+        Assert.IsNotNull(generated, "Expected forward source-map lookup from authored location to return generated position.");
+        Assert.AreEqual(generatedPath.Replace('\\', '/'), generated.GeneratedPath.Replace('\\', '/'));
+        Assert.AreEqual(generatedPosition.Line, generated.Line, "Expected forward source-map lookup to preserve generated line.");
+        Assert.IsTrue(
+            generated.Column <= generatedPosition.Column,
+            $"Expected generated column <= token start column ({generatedPosition.Column}), actual {generated.Column}.");
     }
 
     private static void AssertSourceMapContainsOriginalSource(

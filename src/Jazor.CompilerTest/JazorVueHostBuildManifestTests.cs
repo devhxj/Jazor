@@ -245,7 +245,7 @@ public sealed class JazorVueHostBuildManifestTests
                 """
                 import "./entry.css";
                 console.log("main");
-                await import("./feature.js");
+                globalThis.__loadFeature = () => import("./feature.js");
                 """);
             await File.WriteAllTextAsync(
                 Path.Combine(tempDir, "entry.css"),
