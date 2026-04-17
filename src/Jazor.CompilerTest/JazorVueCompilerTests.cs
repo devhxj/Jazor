@@ -185,6 +185,36 @@ public sealed class JazorVueCompilerTests
     }
 
     [TestMethod]
+    public void JazorVue_Compiler_EmitsColumnShiftSegmentForGeneratedPunctuationLine()
+    {
+        var source = """
+            <template>
+              <div>@Title</div>
+            </template>
+
+            @code {
+                [Prop] public string Title { get; set; } = "";
+            }
+            """;
+
+        var parser = new JazorVueParser();
+        var compiler = new JazorVueCompiler();
+        var document = parser.Parse("Counter.jazor", source);
+        var result = compiler.Compile(document);
+
+        Assert.IsNotNull(result.GeneratedVueSourceMap);
+        using var sourceMap = JsonDocument.Parse(result.GeneratedVueSourceMap);
+        var segments = DecodeSegments(sourceMap.RootElement);
+
+        AssertGeneratedLineHasSourceColumnShiftMapping(
+            result.GeneratedVueText,
+            "});",
+            source,
+            "[Prop] public string Title { get; set; } = \"\";",
+            segments);
+    }
+
+    [TestMethod]
     public void JazorVue_Compiler_LowersSimpleComputedExpressionsAndMethodBodies()
     {
         var source = """
@@ -717,6 +747,25 @@ public sealed class JazorVueCompilerTests
                 && segment.GeneratedColumn > 0
                 && segment.SourceColumn > 0),
             $"Expected a non-zero column source-map segment for generated line containing '{generatedNeedle}'.");
+    }
+
+    private static void AssertGeneratedLineHasSourceColumnShiftMapping(
+        string generatedText,
+        string generatedNeedle,
+        string sourceText,
+        string sourceNeedle,
+        IReadOnlyList<SourceMapSegment> segments)
+    {
+        var generatedLine = GetLineIndexContaining(generatedText, generatedNeedle);
+        var sourceLine = GetLineIndexContaining(sourceText, sourceNeedle);
+
+        Assert.IsTrue(
+            segments.Any(segment =>
+                segment.GeneratedLine == generatedLine
+                && segment.SourceLine == sourceLine
+                && segment.GeneratedColumn == 0
+                && segment.SourceColumn > 0),
+            $"Expected a source-column-shift segment for generated line containing '{generatedNeedle}'.");
     }
 
     private static void AssertSymbol(

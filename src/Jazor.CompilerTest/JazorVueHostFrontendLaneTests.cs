@@ -1127,6 +1127,75 @@ public sealed class JazorVueHostFrontendLaneTests
     }
 
     [TestMethod]
+    public async Task JazorVueHost_FrontendLaneService_UsesPrimaryProjectedVueDocument_ForJazorTemplateRequestMatrix()
+    {
+        var document = CreateDocument("""
+            <UserCard />
+            """);
+        var projectedPath = "virtual:" + document.DocumentPath + ".g.vue";
+        var denoHost = CreateTemplateRequestMatrixHost(projectedPath);
+        var registry = new InMemoryVirtualDocumentRegistry();
+        await registry.UpsertAsync(
+        [
+            new VirtualDocument(
+                new VirtualDocumentIdentity(
+                    document.DocumentPath,
+                    projectedPath,
+                    VirtualDocumentKind.Vue),
+                document.Text,
+                ProjectionMap.CreateWholeDocument(document.DocumentPath, projectedPath, document.Text.Length, document.Text.Length),
+                "1"),
+            new VirtualDocument(
+                new VirtualDocumentIdentity(
+                    document.DocumentPath,
+                    "virtual:" + document.DocumentPath + ".template-only.vue",
+                    VirtualDocumentKind.Vue),
+                "<template><FallbackOnly /></template>",
+                ProjectionMap.CreateWholeDocument(document.DocumentPath, "virtual:" + document.DocumentPath + ".template-only.vue", document.Text.Length, "<template><FallbackOnly /></template>".Length),
+                "1")
+        ],
+            CancellationToken.None);
+        var lane = CreateLane(denoHost, virtualDocumentRegistry: registry);
+
+        await AssertTemplateRequestDocumentSelectionAsync(
+            lane,
+            denoHost,
+            document,
+            projectedPath,
+            DocumentKind.Vue);
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_FrontendLaneService_FallsBackToSource_ForJazorTemplateRequestMatrix_WhenPrimaryProjectedVueDocumentIsMissing()
+    {
+        var document = CreateDocument("""
+            <UserCard />
+            """);
+        var denoHost = CreateTemplateRequestMatrixHost(document.DocumentPath);
+        var registry = new InMemoryVirtualDocumentRegistry();
+        await registry.UpsertAsync(
+        [
+            new VirtualDocument(
+                new VirtualDocumentIdentity(
+                    document.DocumentPath,
+                    "virtual:" + document.DocumentPath + ".template-only.vue",
+                    VirtualDocumentKind.Vue),
+                "<template><FallbackOnly /></template>",
+                ProjectionMap.CreateWholeDocument(document.DocumentPath, "virtual:" + document.DocumentPath + ".template-only.vue", document.Text.Length, "<template><FallbackOnly /></template>".Length),
+                "1")
+        ],
+            CancellationToken.None);
+        var lane = CreateLane(denoHost, virtualDocumentRegistry: registry);
+
+        await AssertTemplateRequestDocumentSelectionAsync(
+            lane,
+            denoHost,
+            document,
+            document.DocumentPath,
+            DocumentKind.Jazor);
+    }
+
+    [TestMethod]
     public async Task JazorVueHost_FrontendLaneService_GetDefinition_ReturnsEmptyWhenDenoReturnsEmpty()
     {
         var lane = CreateLane(new FakeDenoFrontendHost());
@@ -1710,6 +1779,167 @@ public sealed class JazorVueHostFrontendLaneTests
                     }),
                     contentHash: null)
             ]);
+
+    private static FakeDenoFrontendHost CreateTemplateRequestMatrixHost(string requestDocumentPath)
+    {
+        var uri = LspProtocolHelpers.ToDocumentUri(requestDocumentPath);
+        return new FakeDenoFrontendHost
+        {
+            Diagnostics =
+            [
+                new LspDiagnostic
+                {
+                    Range = new LspRange
+                    {
+                        Start = new LspPosition { Line = 0, Character = 1 },
+                        End = new LspPosition { Line = 0, Character = 9 }
+                    },
+                    Severity = 2,
+                    Code = "VUE001",
+                    Source = "Volar",
+                    Message = "matrix"
+                }
+            ],
+            CompletionItems =
+            [
+                new LspCompletionItem
+                {
+                    Label = "UserCard",
+                    Kind = 7,
+                    Detail = "./UserCard.vue"
+                }
+            ],
+            HoverResult = new LspHoverResult
+            {
+                Contents = new LspMarkupContent
+                {
+                    Kind = "markdown",
+                    Value = "matrix"
+                },
+                Range = new LspRange
+                {
+                    Start = new LspPosition { Line = 0, Character = 1 },
+                    End = new LspPosition { Line = 0, Character = 9 }
+                }
+            },
+            DocumentSymbols =
+            [
+                new LspDocumentSymbol
+                {
+                    Name = "Template",
+                    Kind = 2,
+                    Range = new LspRange
+                    {
+                        Start = new LspPosition { Line = 0, Character = 0 },
+                        End = new LspPosition { Line = 0, Character = 11 }
+                    },
+                    SelectionRange = new LspRange
+                    {
+                        Start = new LspPosition { Line = 0, Character = 1 },
+                        End = new LspPosition { Line = 0, Character = 9 }
+                    }
+                }
+            ],
+            SemanticTokens =
+            [
+                new LspSemanticToken
+                {
+                    Line = 0,
+                    Character = 1,
+                    Length = 8,
+                    TokenType = "class",
+                    TokenModifiers = []
+                }
+            ],
+            Definitions =
+            [
+                new LspLocation
+                {
+                    Uri = uri,
+                    Range = new LspRange
+                    {
+                        Start = new LspPosition { Line = 0, Character = 1 },
+                        End = new LspPosition { Line = 0, Character = 9 }
+                    }
+                }
+            ],
+            References =
+            [
+                new LspLocation
+                {
+                    Uri = uri,
+                    Range = new LspRange
+                    {
+                        Start = new LspPosition { Line = 0, Character = 1 },
+                        End = new LspPosition { Line = 0, Character = 9 }
+                    }
+                }
+            ],
+            RenameResult = new LspWorkspaceEdit
+            {
+                Changes = new Dictionary<string, LspTextEdit[]>(StringComparer.Ordinal)
+                {
+                    [uri] =
+                    [
+                        new LspTextEdit
+                        {
+                            Range = new LspRange
+                            {
+                                Start = new LspPosition { Line = 0, Character = 1 },
+                                End = new LspPosition { Line = 0, Character = 9 }
+                            },
+                            NewText = "AccountCard"
+                        }
+                    ]
+                }
+            }
+        };
+    }
+
+    private static async Task AssertTemplateRequestDocumentSelectionAsync(
+        VolarLaneService lane,
+        FakeDenoFrontendHost denoHost,
+        DocumentSnapshot document,
+        string expectedDocumentPath,
+        DocumentKind expectedDocumentKind)
+    {
+        var position = new LspPosition { Line = 0, Character = 2 };
+        var target = CreateTemplateTarget(document);
+
+        _ = await lane.GetDiagnosticsAsync(document, CancellationToken.None);
+        AssertLastTemplateRequestDocument(denoHost, expectedDocumentPath, expectedDocumentKind);
+
+        _ = await lane.GetCompletionItemsAsync(document, position, target, CancellationToken.None);
+        AssertLastTemplateRequestDocument(denoHost, expectedDocumentPath, expectedDocumentKind);
+
+        _ = await lane.GetHoverAsync(document, position, target, CancellationToken.None);
+        AssertLastTemplateRequestDocument(denoHost, expectedDocumentPath, expectedDocumentKind);
+
+        _ = await lane.GetDocumentSymbolsAsync(document, CancellationToken.None);
+        AssertLastTemplateRequestDocument(denoHost, expectedDocumentPath, expectedDocumentKind);
+
+        _ = await lane.GetSemanticTokensAsync(document, CancellationToken.None);
+        AssertLastTemplateRequestDocument(denoHost, expectedDocumentPath, expectedDocumentKind);
+
+        _ = await lane.GetDefinitionAsync(document, position, target, CancellationToken.None);
+        AssertLastTemplateRequestDocument(denoHost, expectedDocumentPath, expectedDocumentKind);
+
+        _ = await lane.GetReferencesAsync(document, position, includeDeclaration: true, target, CancellationToken.None);
+        AssertLastTemplateRequestDocument(denoHost, expectedDocumentPath, expectedDocumentKind);
+
+        _ = await lane.GetRenameAsync(document, position, "AccountCard", target, CancellationToken.None);
+        AssertLastTemplateRequestDocument(denoHost, expectedDocumentPath, expectedDocumentKind);
+    }
+
+    private static void AssertLastTemplateRequestDocument(
+        FakeDenoFrontendHost denoHost,
+        string expectedDocumentPath,
+        DocumentKind expectedDocumentKind)
+    {
+        Assert.IsNotNull(denoHost.LastDocument);
+        Assert.AreEqual(expectedDocumentPath, denoHost.LastDocument.DocumentPath);
+        Assert.AreEqual(expectedDocumentKind, denoHost.LastDocument.DocumentKind);
+    }
 
     private sealed class FakeDenoWorkerProcess : IDenoWorkerProcess
     {

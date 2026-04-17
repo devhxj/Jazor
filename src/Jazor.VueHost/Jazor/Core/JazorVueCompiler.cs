@@ -335,7 +335,7 @@ public sealed partial class JazorVueCompiler
 
         generatedColumn = GetFirstNonWhitespaceColumn(generatedText);
         sourceColumn = GetFirstNonWhitespaceColumn(sourceText);
-        if (generatedColumn > 0 && sourceColumn > 0)
+        if (generatedColumn != 0 || sourceColumn != 0)
         {
             segment = new SourceMapSegment(
                 GeneratedLine: generatedLine,
@@ -363,11 +363,6 @@ public sealed partial class JazorVueCompiler
         var fallbackSourceColumn = -1;
         foreach (Match match in SourceMapAnchorTokenPattern.Matches(generatedText))
         {
-            if (match.Index <= 0)
-            {
-                continue;
-            }
-
             var candidate = match.Value;
             if (candidate.Length == 0)
             {
@@ -376,6 +371,11 @@ public sealed partial class JazorVueCompiler
 
             var sourceIndex = sourceText.IndexOf(candidate, StringComparison.OrdinalIgnoreCase);
             if (sourceIndex < 0)
+            {
+                continue;
+            }
+
+            if (match.Index == 0 && sourceIndex == 0)
             {
                 continue;
             }
