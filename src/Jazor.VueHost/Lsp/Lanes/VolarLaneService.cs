@@ -47,9 +47,12 @@ internal sealed class VolarLaneService : ILspLane
     {
         var diagnostics = new List<LspDiagnostic>();
         var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget: null, cancellationToken);
-        var frontendContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
-        var denoDiagnostics = await TryGetDenoDiagnosticsAsync(frontendDocument.RequestDocument, frontendContext, cancellationToken);
-        diagnostics.AddRange(await FilterDenoDiagnosticsAsync(document, MapDiagnostics(document, frontendDocument, denoDiagnostics), cancellationToken));
+        if (document.DocumentKind != DocumentKind.Vue || frontendDocument.ProjectionMap is not null)
+        {
+            var frontendContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
+            var denoDiagnostics = await TryGetDenoDiagnosticsAsync(frontendDocument.RequestDocument, frontendContext, cancellationToken);
+            diagnostics.AddRange(await FilterDenoDiagnosticsAsync(document, MapDiagnostics(document, frontendDocument, denoDiagnostics), cancellationToken));
+        }
 
         if (document.DocumentKind is DocumentKind.Jazor or DocumentKind.Vue
             && frontendDocument.ProjectionMap is null)
@@ -78,6 +81,16 @@ internal sealed class VolarLaneService : ILspLane
 
         var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget, cancellationToken);
         var requestPosition = frontendDocument.MapPosition(position, projectionTarget.ProjectedPosition);
+        if (frontendDocument.ProjectionMap is null
+            && TryGetComponentTagNameAtPosition(document.Text, position, out _))
+        {
+            var bridgeHover = await _markupComponentBridge.GetHoverAsync(document, position, allowWorkspaceScan: true, cancellationToken);
+            if (bridgeHover is not null)
+            {
+                return bridgeHover;
+            }
+        }
+
         var frontendContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
         var denoResult = await TryGetDenoHoverAsync(frontendDocument.RequestDocument, requestPosition, frontendContext, cancellationToken);
         if (denoResult is not null)
@@ -337,6 +350,30 @@ internal sealed class VolarLaneService : ILspLane
 
         tagPrefix = match.Groups["name"].Value;
         return true;
+    }
+
+    private static bool TryGetComponentTagNameAtPosition(string text, LspPosition position, out string componentName)
+    {
+        var offset = LspProtocolHelpers.GetOffset(text, position);
+        foreach (Match match in ComponentTagPattern.Matches(text))
+        {
+            var group = match.Groups["name"];
+            if (!group.Success)
+            {
+                continue;
+            }
+
+            if (offset < group.Index || offset > group.Index + group.Length)
+            {
+                continue;
+            }
+
+            componentName = group.Value;
+            return true;
+        }
+
+        componentName = string.Empty;
+        return false;
     }
 
     private async ValueTask<IReadOnlyList<LspCompletionItem>> TryGetDenoCompletionItemsAsync(

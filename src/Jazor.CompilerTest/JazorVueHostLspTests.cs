@@ -6369,7 +6369,21 @@ public sealed class JazorVueHostLspTests
                 }
                 """;
 
-            await client.OpenDocumentAsync(documentUri, text, version: 1);
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                method = "textDocument/didOpen",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri,
+                        languageId = "jazor",
+                        version = 1,
+                        text
+                    }
+                }
+            });
             using var diagnosticsMessage = await client.ReadMessageAsync();
             Assert.AreEqual(documentUri, diagnosticsMessage.RootElement.GetProperty("params").GetProperty("uri").GetString());
             Assert.IsFalse(diagnosticsMessage.RootElement
