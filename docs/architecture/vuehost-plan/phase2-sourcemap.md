@@ -6,7 +6,7 @@
 
 **验收标准**: 浏览器 DevTools 的 Sources 面板中可见 `.jazor` 源码，断点可命中，调用栈显示 `.jazor` 文件名和行号。
 
-## 当前实现状态（2026-04-16）
+## 当前实现状态（2026-04-17）
 
 ### 已完成
 
@@ -20,10 +20,11 @@
 - 已补齐 TypeScript inline sourcemap 回归，覆盖 Deno host 协议透传、`OnDemandCompiler` 注入，以及 Dev Server HTTP 输出。
 - 已补齐 Vue SFC sourcemap 回归，覆盖 Deno host 协议透传、`DenoFrontendModuleCompiler` 透传、inline 注入、`.vue.map`、未保存 workspace 文本，以及 style wrapper 偏移。
 - 已补齐 `.jazor` 链式 sourcemap 回归，覆盖 `JazorVueCompiler` 生成中间 map、`OnDemandCompiler` 将 worker sourcemap 链回原始 `.jazor` 源、Dev Server `.jazor.map`、未保存 workspace 文本，以及实际 `mappings` 行号。
+- 已补齐真实浏览器/CDP + HMR 长链路压测（环境变量门控），覆盖多轮热更新后断点重绑、调用栈回填与列号映射稳定性。
 
 ### 尚未完成
 
-- VueHost 内的独立 `ISourceMapService` 已落地为 dev-server 内存注册表，并接入 `OnDemandCompiler` 的编译/失效生命周期；但尚未被 Phase 4 的 DAP/CDP 调试层消费，也没有额外的调试可视化或诊断端点。
+- VueHost 内的独立 `ISourceMapService` 已落地为 dev-server 内存注册表，并接入 `OnDemandCompiler` 的编译/失效生命周期；Phase 4 的 DAP 基础链路已经消费这套 sourcemap 做断点映射和调用栈回填，且已有真实浏览器/CDP + HMR 长链路压测基线（env-gated），后续仍需扩展更高压力矩阵、调试可视化与诊断端点。
 - `.vue` 当前是 worker 内直接生成的行级 Source Map，尚未合并 Vue 编译器原生 script/template Source Map，也未做到列级精度。
 - `.jazor -> .g.vue` 当前已下沉到 `JazorVueCompiler`，但仍是行级映射，尚未做到成员级/列级精度。
 

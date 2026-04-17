@@ -1,4 +1,7 @@
 using System.Diagnostics;
+using System.Net;
+using System.Net.Http;
+using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using Jazor.VueHost.Debug;
@@ -10,6 +13,9 @@ namespace Jazor.CompilerTest;
 [TestClass]
 public sealed class JazorVueHostDebugProtocolTests
 {
+    private const string RealCdpHmrStressEnvironmentVariable = "JAZOR_VUEHOST_RUN_REAL_CDP_HMR_STRESS";
+    private const string RealCdpBrowserPathEnvironmentVariable = "JAZOR_VUEHOST_REAL_BROWSER_PATH";
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true
@@ -174,6 +180,72 @@ public sealed class JazorVueHostDebugProtocolTests
     }
 
     [TestMethod]
+    public async Task DapRequestHandler_HandleAsync_SetBreakpoints_UsesColumnAwareSourceMapSegment()
+    {
+        var sourceText = """
+            <button>Count</button>
+            @code {
+                private int Count = 1;
+            }
+            """;
+        var sourceMapService = new InMemorySourceMapService();
+        sourceMapService.Register(
+            "/Counter.jazor",
+            CreateSingleSourceColumnMap(
+                "Counter.jazor",
+                sourceText,
+                (0, 0, 0, 0),
+                (0, 8, 1, 8)));
+        var cdpClient = new FakeCdpClient();
+        cdpClient.SetBreakpointResolution(
+            "/Counter.jazor",
+            0,
+            8,
+            new CdpBreakpointResolution(
+                "bp-cdp-column",
+                new CdpLocation("/virtual/Counter.generated.js", 4, 11)));
+        var handler = CreateHandler(sourceMapService, out var session, cdpClient);
+
+        var result = await handler.HandleAsync(
+            new DapRequest
+            {
+                Seq = 100,
+                Command = "setBreakpoints",
+                Arguments = JsonSerializer.SerializeToElement(new
+                {
+                    source = new
+                    {
+                        path = @"D:\repo\Counter.jazor"
+                    },
+                    breakpoints = new object[]
+                    {
+                        new { line = 2, column = 9 }
+                    }
+                })
+            },
+            CancellationToken.None);
+
+        Assert.IsTrue(result.Response.Success);
+        using var body = GetResponseBody(result.Response);
+        var breakpoints = body.RootElement.GetProperty("breakpoints").EnumerateArray().ToArray();
+        Assert.AreEqual(1, breakpoints.Length);
+        Assert.IsTrue(breakpoints[0].GetProperty("verified").GetBoolean());
+        Assert.AreEqual(9, breakpoints[0].GetProperty("column").GetInt32());
+
+        var bindings = session.GetBreakpoints(@"D:\repo\Counter.jazor");
+        Assert.AreEqual(1, bindings.Count);
+        Assert.IsNotNull(bindings[0].GeneratedBreakpoint);
+        Assert.AreEqual("/virtual/Counter.generated.js", bindings[0].GeneratedBreakpoint!.GeneratedPath);
+        Assert.AreEqual(4, bindings[0].GeneratedBreakpoint!.GeneratedLine);
+        Assert.AreEqual(11, bindings[0].GeneratedBreakpoint!.GeneratedColumn);
+
+        Assert.AreEqual(1, cdpClient.BreakpointRequests.Count);
+        Assert.AreEqual("/Counter.jazor", cdpClient.BreakpointRequests[0].GeneratedUrl);
+        Assert.AreEqual(0, cdpClient.BreakpointRequests[0].GeneratedLine);
+        Assert.AreEqual(8, cdpClient.BreakpointRequests[0].GeneratedColumn);
+    }
+
+    [TestMethod]
     public async Task DapRequestHandler_HandleAsync_SetBreakpoints_WithCdpBackend_ReturnsUnverifiedWhenTargetBindingFails()
     {
         var sourceMapService = new InMemorySourceMapService();
@@ -278,6 +350,57 @@ public sealed class JazorVueHostDebugProtocolTests
         Assert.AreEqual("increment", frames[0].GetProperty("name").GetString());
         Assert.AreEqual("Counter.jazor", frames[0].GetProperty("source").GetProperty("path").GetString());
         Assert.AreEqual(GetLineIndexContaining(sourceText, "Count++;") + 1, frames[0].GetProperty("line").GetInt32());
+    }
+
+    [TestMethod]
+    public async Task DapRequestHandler_HandleAsync_StackTrace_MapsSessionFrameColumns()
+    {
+        var sourceText = """
+            <button>Count</button>
+
+            @code {
+                private int Count = 1;
+                public void Increment()
+                {
+                    Count++;
+                }
+            }
+            """;
+        var sourceLine = GetLineIndexContaining(sourceText, "Count++;");
+        var sourceMapService = new InMemorySourceMapService();
+        sourceMapService.Register(
+            "/Counter.jazor",
+            CreateSingleSourceColumnMap(
+                "Counter.jazor",
+                sourceText,
+                (0, 0, sourceLine - 1, 4),
+                (1, 4, sourceLine, 8)));
+        var handler = CreateHandler(sourceMapService, out var session);
+        session.CurrentCallFrames =
+        [
+            new CdpCallFrame(
+                "frame-1",
+                "increment",
+                new CdpLocation("/Counter.jazor", 1, 4))
+        ];
+
+        var result = await handler.HandleAsync(
+            new DapRequest
+            {
+                Seq = 3,
+                Command = "stackTrace",
+                Arguments = JsonSerializer.SerializeToElement(new
+                {
+                    threadId = 1
+                })
+            },
+            CancellationToken.None);
+
+        using var body = GetResponseBody(result.Response);
+        var frames = body.RootElement.GetProperty("stackFrames").EnumerateArray().ToArray();
+        Assert.AreEqual(1, frames.Length);
+        Assert.AreEqual(GetLineIndexContaining(sourceText, "Count++;") + 1, frames[0].GetProperty("line").GetInt32());
+        Assert.AreEqual(9, frames[0].GetProperty("column").GetInt32());
     }
 
     [TestMethod]
@@ -980,6 +1103,686 @@ public sealed class JazorVueHostDebugProtocolTests
         Assert.AreEqual(0, process.ExitCode, errorOutput);
     }
 
+    [TestMethod]
+    public async Task JazorVueHost_DapProcess_RealBrowserCdpAndHmrStress_PreservesMappedBreakpointAcrossHotUpdates()
+    {
+        if (!ReadBooleanEnvironmentVariable(RealCdpHmrStressEnvironmentVariable))
+        {
+            return;
+        }
+
+        var browserExecutablePath = ResolveRealBrowserExecutablePath();
+        if (string.IsNullOrWhiteSpace(browserExecutablePath))
+        {
+            Assert.Inconclusive(
+                $"Unable to locate browser executable. Set {RealCdpBrowserPathEnvironmentVariable} to Chrome/Edge path.");
+        }
+
+        var devRoot = CreateTemporaryDirectory();
+        var browserProfilePath = Path.Combine(devRoot, ".browser-profile");
+        Directory.CreateDirectory(browserProfilePath);
+
+        var indexPath = Path.Combine(devRoot, "index.html");
+        var modulePath = Path.Combine(devRoot, "main.ts");
+        var moduleVersion1 = CreateRealCdpStressMainModule(1);
+        await File.WriteAllTextAsync(
+            indexPath,
+            """
+            <!doctype html>
+            <html lang="en">
+            <head>
+              <meta charset="utf-8">
+              <title>Jazor VueHost CDP Stress</title>
+            </head>
+            <body>
+              <div id="app">ready</div>
+              <script type="module" src="/main.ts"></script>
+            </body>
+            </html>
+            """,
+            CancellationToken.None);
+        await File.WriteAllTextAsync(modulePath, moduleVersion1, CancellationToken.None);
+
+        var breakpointNeedle = "const marker = buildVersion + MarkerState.Active;";
+        var expectedBreakpointLine = GetLineIndexContaining(moduleVersion1, breakpointNeedle) + 1;
+        var expectedBreakpointColumn = GetSourceColumn(moduleVersion1, breakpointNeedle);
+        var devPort = AllocateLoopbackTcpPort();
+        var cdpPort = AllocateLoopbackTcpPort();
+        const int iterations = 6;
+
+        using var cancellationSource = new CancellationTokenSource(TimeSpan.FromMinutes(4));
+        Process? browserProcess = null;
+        Process? hostProcess = null;
+
+        try
+        {
+            browserProcess = CreateHeadlessBrowserProcess(
+                browserExecutablePath,
+                cdpPort,
+                browserProfilePath);
+            Assert.IsTrue(browserProcess.Start(), "Expected headless browser process to start.");
+
+            var cdpWebSocket = await WaitForBrowserCdpPageEndpointAsync(cdpPort, cancellationSource.Token);
+            Assert.IsFalse(
+                string.IsNullOrWhiteSpace(cdpWebSocket),
+                "Expected browser to expose a page-level CDP WebSocket endpoint.");
+
+            hostProcess = CreateVueHostDapDevProcess(
+                devRoot,
+                devPort,
+                cdpWebSocket!);
+            Assert.IsTrue(hostProcess.Start(), "Expected Jazor.VueHost DAP+Dev process to start.");
+
+            await WaitForHttpReadyAsync(
+                new Uri($"http://127.0.0.1:{devPort}/index.html"),
+                cancellationSource.Token);
+
+            var sequence = new DapSequenceCounter();
+
+            using var initializeResponse = await SendDapRequestAsync(
+                hostProcess,
+                sequence,
+                "initialize",
+                new
+                {
+                    adapterID = "jazor-vuehost"
+                },
+                cancellationSource.Token);
+            Assert.AreEqual("initialize", initializeResponse.RootElement.GetProperty("command").GetString());
+            Assert.IsTrue(
+                initializeResponse.RootElement.GetProperty("body").GetProperty("supportsConfigurationDoneRequest").GetBoolean());
+
+            using var initializedEvent = await ReadDapMessageAsync(hostProcess, cancellationSource.Token);
+            Assert.AreEqual("initialized", initializedEvent.RootElement.GetProperty("event").GetString());
+
+            using var configurationDoneResponse = await SendDapRequestAsync(
+                hostProcess,
+                sequence,
+                "configurationDone",
+                null,
+                cancellationSource.Token);
+            Assert.IsTrue(configurationDoneResponse.RootElement.GetProperty("success").GetBoolean());
+
+            var navigateExpression = "location.href = "
+                + JsonSerializer.Serialize($"http://127.0.0.1:{devPort}/index.html")
+                + "; 'navigating';";
+            using var navigateResponse = await SendDapRequestAsync(
+                hostProcess,
+                sequence,
+                "evaluate",
+                new
+                {
+                    expression = navigateExpression,
+                    context = "repl"
+                },
+                cancellationSource.Token);
+            Assert.IsTrue(navigateResponse.RootElement.GetProperty("success").GetBoolean());
+
+            await WaitForIterationReadyAsync(
+                hostProcess,
+                sequence,
+                expectedVersion: 1,
+                cancellationSource.Token);
+
+            using var setBreakpointsResponse = await SendDapRequestAsync(
+                hostProcess,
+                sequence,
+                "setBreakpoints",
+                new
+                {
+                    source = new
+                    {
+                        path = modulePath
+                    },
+                    breakpoints = new object[]
+                    {
+                        new
+                        {
+                            line = expectedBreakpointLine,
+                            column = expectedBreakpointColumn
+                        }
+                    }
+                },
+                cancellationSource.Token);
+            Assert.IsTrue(setBreakpointsResponse.RootElement.GetProperty("success").GetBoolean());
+            var verifiedBreakpoints = setBreakpointsResponse.RootElement
+                .GetProperty("body")
+                .GetProperty("breakpoints")
+                .EnumerateArray()
+                .ToArray();
+            Assert.AreEqual(1, verifiedBreakpoints.Length);
+            Assert.IsTrue(
+                verifiedBreakpoints[0].GetProperty("verified").GetBoolean(),
+                "Breakpoint binding failed: " + verifiedBreakpoints[0].GetRawText());
+
+            for (var iteration = 1; iteration <= iterations; iteration++)
+            {
+                if (iteration > 1)
+                {
+                    var updatedSource = CreateRealCdpStressMainModule(iteration);
+                    await File.WriteAllTextAsync(modulePath, updatedSource, cancellationSource.Token);
+                    await WaitForIterationReadyAsync(
+                        hostProcess,
+                        sequence,
+                        expectedVersion: iteration,
+                        cancellationSource.Token);
+                }
+
+                using var triggerResponse = await SendDapRequestAsync(
+                    hostProcess,
+                    sequence,
+                    "evaluate",
+                    new
+                    {
+                        expression = "setTimeout(() => globalThis.__jazorRunIteration?.(), 0); 'scheduled';",
+                        context = "repl"
+                    },
+                    cancellationSource.Token);
+                Assert.IsTrue(triggerResponse.RootElement.GetProperty("success").GetBoolean());
+
+                var pausedFrame = await WaitForPausedFrameAsync(hostProcess, sequence, cancellationSource.Token);
+                var sourcePath = pausedFrame.GetProperty("source").GetProperty("path").GetString() ?? string.Empty;
+                Assert.AreEqual("main.ts", Path.GetFileName(sourcePath));
+                Assert.AreEqual(expectedBreakpointLine, pausedFrame.GetProperty("line").GetInt32());
+                var pausedColumn = pausedFrame.GetProperty("column").GetInt32();
+                Assert.IsTrue(
+                    pausedColumn >= expectedBreakpointColumn,
+                    $"Expected mapped column >= {expectedBreakpointColumn}, actual {pausedColumn}.");
+
+                using var continueResponse = await SendDapRequestAsync(
+                    hostProcess,
+                    sequence,
+                    "continue",
+                    new
+                    {
+                        threadId = 1
+                    },
+                    cancellationSource.Token);
+                Assert.IsTrue(continueResponse.RootElement.GetProperty("success").GetBoolean());
+
+                using var continuedEvent = await ReadDapMessageAsync(hostProcess, cancellationSource.Token);
+                Assert.AreEqual("continued", continuedEvent.RootElement.GetProperty("event").GetString());
+
+                await WaitForStackToClearAsync(hostProcess, sequence, cancellationSource.Token);
+            }
+
+            using var disconnectResponse = await SendDapRequestAsync(
+                hostProcess,
+                sequence,
+                "disconnect",
+                null,
+                cancellationSource.Token);
+            Assert.AreEqual("disconnect", disconnectResponse.RootElement.GetProperty("command").GetString());
+
+            await hostProcess.WaitForExitAsync(cancellationSource.Token);
+            var hostStandardError = await hostProcess.StandardError.ReadToEndAsync(cancellationSource.Token);
+            Assert.AreEqual(0, hostProcess.ExitCode, hostStandardError);
+        }
+        finally
+        {
+            await EnsureProcessTerminatedAsync(hostProcess, cancellationSource.Token);
+            await EnsureProcessTerminatedAsync(browserProcess, cancellationSource.Token);
+            TryDeleteDirectoryWithRetry(devRoot);
+        }
+    }
+
+    private static async Task<JsonDocument> SendDapRequestAsync(
+        Process process,
+        DapSequenceCounter sequence,
+        string command,
+        object? arguments,
+        CancellationToken cancellationToken)
+    {
+        if (arguments is null)
+        {
+            await WriteDapMessageAsync(
+                process.StandardInput.BaseStream,
+                new
+                {
+                    seq = sequence.Next(),
+                    type = "request",
+                    command
+                },
+                cancellationToken);
+        }
+        else
+        {
+            await WriteDapMessageAsync(
+                process.StandardInput.BaseStream,
+                new
+                {
+                    seq = sequence.Next(),
+                    type = "request",
+                    command,
+                    arguments
+                },
+                cancellationToken);
+        }
+
+        var response = await ReadDapMessageAsync(process, cancellationToken);
+        Assert.AreEqual("response", response.RootElement.GetProperty("type").GetString());
+        Assert.AreEqual(command, response.RootElement.GetProperty("command").GetString());
+        Assert.IsTrue(
+            response.RootElement.GetProperty("success").GetBoolean(),
+            response.RootElement.TryGetProperty("message", out var messageElement)
+                ? messageElement.GetString()
+                : "DAP request failed.");
+        return response;
+    }
+
+    private static async Task WaitForIterationReadyAsync(
+        Process process,
+        DapSequenceCounter sequence,
+        int expectedVersion,
+        CancellationToken cancellationToken)
+    {
+        var timeoutAt = DateTime.UtcNow + TimeSpan.FromSeconds(20);
+        while (DateTime.UtcNow < timeoutAt)
+        {
+            using var evaluateResponse = await SendDapRequestAsync(
+                process,
+                sequence,
+                "evaluate",
+                new
+                {
+                    expression = "(() => { const g = globalThis; return String(g.__jazorBuildVersion ?? 'null') + ':' + String(g.__jazorRuntimeCounter ?? 'null'); })()",
+                    context = "repl"
+                },
+                cancellationToken);
+
+            var state = evaluateResponse.RootElement
+                .GetProperty("body")
+                .GetProperty("result")
+                .GetString() ?? string.Empty;
+            var parts = state.Split(':', 2, StringSplitOptions.TrimEntries);
+            if (parts.Length == 2
+                && int.TryParse(parts[0], out var version)
+                && int.TryParse(parts[1], out var runtimeCounter)
+                && version == expectedVersion
+                && runtimeCounter >= expectedVersion)
+            {
+                return;
+            }
+
+            await Task.Delay(100, cancellationToken);
+        }
+
+        throw new TimeoutException($"Timed out waiting for HMR iteration {expectedVersion} readiness.");
+    }
+
+    private static async Task<JsonElement> WaitForPausedFrameAsync(
+        Process process,
+        DapSequenceCounter sequence,
+        CancellationToken cancellationToken)
+    {
+        var timeoutAt = DateTime.UtcNow + TimeSpan.FromSeconds(20);
+        while (DateTime.UtcNow < timeoutAt)
+        {
+            using var stackTraceResponse = await SendDapRequestAsync(
+                process,
+                sequence,
+                "stackTrace",
+                new
+                {
+                    threadId = 1
+                },
+                cancellationToken);
+            var stackFrames = stackTraceResponse.RootElement
+                .GetProperty("body")
+                .GetProperty("stackFrames")
+                .EnumerateArray()
+                .ToArray();
+            if (stackFrames.Length > 0)
+            {
+                return stackFrames[0].Clone();
+            }
+
+            await Task.Delay(100, cancellationToken);
+        }
+
+        throw new TimeoutException("Timed out waiting for CDP pause frame.");
+    }
+
+    private static async Task WaitForStackToClearAsync(
+        Process process,
+        DapSequenceCounter sequence,
+        CancellationToken cancellationToken)
+    {
+        var timeoutAt = DateTime.UtcNow + TimeSpan.FromSeconds(10);
+        while (DateTime.UtcNow < timeoutAt)
+        {
+            using var stackTraceResponse = await SendDapRequestAsync(
+                process,
+                sequence,
+                "stackTrace",
+                new
+                {
+                    threadId = 1
+                },
+                cancellationToken);
+            var totalFrames = stackTraceResponse.RootElement
+                .GetProperty("body")
+                .GetProperty("totalFrames")
+                .GetInt32();
+            if (totalFrames == 0)
+            {
+                return;
+            }
+
+            await Task.Delay(50, cancellationToken);
+        }
+
+        throw new TimeoutException("Timed out waiting for cleared call stack after continue.");
+    }
+
+    private static Process CreateHeadlessBrowserProcess(
+        string browserExecutablePath,
+        int cdpPort,
+        string profilePath)
+    {
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = browserExecutablePath,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+        startInfo.ArgumentList.Add($"--remote-debugging-port={cdpPort}");
+        startInfo.ArgumentList.Add("--headless=new");
+        startInfo.ArgumentList.Add("--disable-gpu");
+        startInfo.ArgumentList.Add("--no-first-run");
+        startInfo.ArgumentList.Add("--no-default-browser-check");
+        startInfo.ArgumentList.Add("--disable-background-networking");
+        startInfo.ArgumentList.Add("--disable-background-timer-throttling");
+        startInfo.ArgumentList.Add("--disable-renderer-backgrounding");
+        startInfo.ArgumentList.Add($"--user-data-dir={profilePath}");
+        startInfo.ArgumentList.Add("about:blank");
+
+        return new Process
+        {
+            StartInfo = startInfo
+        };
+    }
+
+    private static Process CreateVueHostDapDevProcess(
+        string devRoot,
+        int devPort,
+        string cdpWebSocketUrl)
+    {
+        var hostAssemblyPath = ResolveDapHostAssemblyPath();
+        Assert.IsTrue(File.Exists(hostAssemblyPath), $"Expected Jazor.VueHost assembly to exist at '{hostAssemblyPath}'.");
+
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = "dotnet",
+            UseShellExecute = false,
+            RedirectStandardInput = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true
+        };
+        startInfo.ArgumentList.Add(hostAssemblyPath);
+        startInfo.ArgumentList.Add("--dap");
+        startInfo.ArgumentList.Add("--stdio");
+        startInfo.ArgumentList.Add("--dev");
+        startInfo.ArgumentList.Add($"--dev-root={devRoot}");
+        startInfo.ArgumentList.Add("--dev-host=127.0.0.1");
+        startInfo.ArgumentList.Add($"--dev-port={devPort}");
+        startInfo.ArgumentList.Add($"--dap-cdp-ws={cdpWebSocketUrl}");
+
+        return new Process
+        {
+            StartInfo = startInfo
+        };
+    }
+
+    private static async Task<string> WaitForBrowserCdpPageEndpointAsync(
+        int cdpPort,
+        CancellationToken cancellationToken)
+    {
+        var timeoutAt = DateTime.UtcNow + TimeSpan.FromSeconds(20);
+        using var httpClient = new HttpClient
+        {
+            Timeout = TimeSpan.FromSeconds(2)
+        };
+
+        while (DateTime.UtcNow < timeoutAt)
+        {
+            try
+            {
+                using var response = await httpClient.GetAsync(
+                    new Uri($"http://127.0.0.1:{cdpPort}/json/list"),
+                    cancellationToken);
+                if (response.IsSuccessStatusCode)
+                {
+                    var payload = await response.Content.ReadAsStringAsync(cancellationToken);
+                    using var document = JsonDocument.Parse(payload);
+                    if (document.RootElement.ValueKind == JsonValueKind.Array)
+                    {
+                        foreach (var entry in document.RootElement.EnumerateArray())
+                        {
+                            if (entry.TryGetProperty("type", out var typeElement)
+                                && typeElement.ValueKind == JsonValueKind.String
+                                && !string.Equals(typeElement.GetString(), "page", StringComparison.OrdinalIgnoreCase))
+                            {
+                                continue;
+                            }
+
+                            if (entry.TryGetProperty("webSocketDebuggerUrl", out var urlElement)
+                                && urlElement.ValueKind == JsonValueKind.String
+                                && !string.IsNullOrWhiteSpace(urlElement.GetString()))
+                            {
+                                return urlElement.GetString()!;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (HttpRequestException)
+            {
+            }
+            catch (TaskCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+            }
+
+            await Task.Delay(100, cancellationToken);
+        }
+
+        throw new TimeoutException($"Timed out waiting for browser CDP endpoint on port {cdpPort}.");
+    }
+
+    private static async Task WaitForHttpReadyAsync(
+        Uri url,
+        CancellationToken cancellationToken)
+    {
+        var timeoutAt = DateTime.UtcNow + TimeSpan.FromSeconds(20);
+        using var httpClient = new HttpClient
+        {
+            Timeout = TimeSpan.FromSeconds(2)
+        };
+
+        while (DateTime.UtcNow < timeoutAt)
+        {
+            try
+            {
+                using var response = await httpClient.GetAsync(url, cancellationToken);
+                if (response.IsSuccessStatusCode)
+                {
+                    return;
+                }
+            }
+            catch (HttpRequestException)
+            {
+            }
+            catch (TaskCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+            }
+
+            await Task.Delay(100, cancellationToken);
+        }
+
+        throw new TimeoutException($"Timed out waiting for HTTP endpoint '{url}'.");
+    }
+
+    private static int AllocateLoopbackTcpPort()
+    {
+        using var listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        return ((IPEndPoint)listener.LocalEndpoint).Port;
+    }
+
+    private static string CreateTemporaryDirectory()
+    {
+        var path = Path.Combine(
+            Path.GetTempPath(),
+            "JazorVueHostDebugProtocolTests",
+            Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(path);
+        return path;
+    }
+
+    private static void TryDeleteDirectoryWithRetry(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return;
+        }
+
+        for (var attempt = 0; attempt < 20; attempt++)
+        {
+            try
+            {
+                if (Directory.Exists(path))
+                {
+                    Directory.Delete(path, recursive: true);
+                }
+
+                return;
+            }
+            catch (IOException)
+            {
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
+
+            Thread.Sleep(100);
+        }
+    }
+
+    private static async Task EnsureProcessTerminatedAsync(Process? process, CancellationToken cancellationToken)
+    {
+        if (process is null)
+        {
+            return;
+        }
+
+        try
+        {
+            if (!process.HasExited)
+            {
+                process.Kill(entireProcessTree: true);
+            }
+        }
+        catch (InvalidOperationException)
+        {
+        }
+
+        try
+        {
+            await process.WaitForExitAsync(cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        finally
+        {
+            process.Dispose();
+        }
+    }
+
+    private static string CreateRealCdpStressMainModule(int version)
+        => $$"""
+        export const buildVersion = {{version}};
+
+        enum MarkerState {
+          Active = 1
+        }
+
+        export function runIteration() {
+          const marker = buildVersion + MarkerState.Active;
+          return marker;
+        }
+
+        const __jazorGlobal = globalThis;
+        __jazorGlobal.__jazorRuntimeCounter = (__jazorGlobal.__jazorRuntimeCounter ?? 0) + 1;
+        const __jazorHot = import.meta.hot ?? __jazorGlobal.__JAZOR_HMR__?.createHotContext(import.meta.url);
+        if (__jazorHot) {
+          import.meta.hot = __jazorHot;
+          __jazorHot.accept((updatedModule) => {
+            if (typeof updatedModule?.runIteration === "function") {
+              __jazorGlobal.__jazorRunIteration = updatedModule.runIteration;
+            }
+            __jazorGlobal.__jazorBuildVersion = updatedModule?.buildVersion ?? -1;
+          });
+        }
+
+        __jazorGlobal.__jazorRunIteration = runIteration;
+        __jazorGlobal.__jazorBuildVersion = buildVersion;
+        __jazorGlobal.__jazorEditToken = "v{{version}}";
+        """;
+
+    private static int GetSourceColumn(string sourceText, string needle)
+    {
+        var lines = sourceText
+            .Replace("\r\n", "\n", StringComparison.Ordinal)
+            .Split('\n');
+        var lineIndex = GetLineIndexContaining(sourceText, needle);
+        var lineText = lines[lineIndex];
+        var columnIndex = lineText.IndexOf(needle, StringComparison.Ordinal);
+        return columnIndex < 0
+            ? 1
+            : columnIndex + 1;
+    }
+
+    private static bool ReadBooleanEnvironmentVariable(string name)
+    {
+        var value = Environment.GetEnvironmentVariable(name);
+        return string.Equals(value, "1", StringComparison.Ordinal)
+            || string.Equals(value, "true", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(value, "yes", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(value, "on", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string? ResolveRealBrowserExecutablePath()
+    {
+        var configured = Environment.GetEnvironmentVariable(RealCdpBrowserPathEnvironmentVariable);
+        if (!string.IsNullOrWhiteSpace(configured) && File.Exists(configured))
+        {
+            return configured;
+        }
+
+        var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+        var programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+        var candidates = new[]
+        {
+            Path.Combine(programFiles, "Microsoft", "Edge", "Application", "msedge.exe"),
+            Path.Combine(programFilesX86, "Microsoft", "Edge", "Application", "msedge.exe"),
+            Path.Combine(programFiles, "Google", "Chrome", "Application", "chrome.exe"),
+            Path.Combine(programFilesX86, "Google", "Chrome", "Application", "chrome.exe")
+        };
+        return candidates.FirstOrDefault(File.Exists);
+    }
+
+    private sealed class DapSequenceCounter
+    {
+        private int _nextValue = 1;
+
+        public int Next() => _nextValue++;
+    }
+
     private static DapRequestHandler CreateHandler(
         ISourceMapService sourceMapService,
         out DapSession session,
@@ -1112,6 +1915,81 @@ public sealed class JazorVueHostDebugProtocolTests
 
         repositoryRoot = string.Empty;
         return false;
+    }
+
+    // Deterministic fake-CDP tests cover sourcemap rebinding semantics here.
+    // Real browser/CDP target reload timing remains better suited to env-gated integration runs.
+    private static string CreateSingleSourceColumnMap(
+        string fileName,
+        string sourceText,
+        params (int GeneratedLine, int GeneratedColumn, int SourceLine, int SourceColumn)[] segments)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(fileName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(sourceText);
+        ArgumentNullException.ThrowIfNull(segments);
+
+        var builder = new StringBuilder();
+        var previousGeneratedLine = 0;
+        var previousGeneratedColumn = 0;
+        var previousSourceLine = 0;
+        var previousSourceColumn = 0;
+
+        foreach (var segment in segments
+            .OrderBy(static item => item.GeneratedLine)
+            .ThenBy(static item => item.GeneratedColumn))
+        {
+            while (previousGeneratedLine < segment.GeneratedLine)
+            {
+                builder.Append(';');
+                previousGeneratedLine++;
+                previousGeneratedColumn = 0;
+            }
+
+            if (builder.Length > 0 && builder[^1] != ';')
+            {
+                builder.Append(',');
+            }
+
+            builder.Append(EncodeVlq(segment.GeneratedColumn - previousGeneratedColumn));
+            builder.Append(EncodeVlq(0));
+            builder.Append(EncodeVlq(segment.SourceLine - previousSourceLine));
+            builder.Append(EncodeVlq(segment.SourceColumn - previousSourceColumn));
+
+            previousGeneratedColumn = segment.GeneratedColumn;
+            previousSourceLine = segment.SourceLine;
+            previousSourceColumn = segment.SourceColumn;
+        }
+
+        return JsonSerializer.Serialize(new
+        {
+            version = 3,
+            sources = new[] { fileName },
+            sourcesContent = new[] { sourceText },
+            names = Array.Empty<string>(),
+            mappings = builder.ToString(),
+            file = Path.ChangeExtension(fileName, ".js")
+        });
+    }
+
+    private static string EncodeVlq(int value)
+    {
+        const string base64Digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+        var vlq = value < 0 ? ((-value) << 1) + 1 : value << 1;
+        var builder = new StringBuilder();
+        do
+        {
+            var digit = vlq & 31;
+            vlq >>= 5;
+            if (vlq > 0)
+            {
+                digit |= 32;
+            }
+
+            builder.Append(base64Digits[digit]);
+        }
+        while (vlq > 0);
+
+        return builder.ToString();
     }
 
     private static async Task WriteDapMessageAsync(

@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace Jazor.VueHost.Debug;
 
@@ -33,6 +34,7 @@ internal sealed class CdpClient(CdpConnection connection) : ICdpClient
 {
     private readonly CdpConnection _connection = connection ?? throw new ArgumentNullException(nameof(connection));
     private readonly ConcurrentDictionary<int, TaskCompletionSource<JsonElement>> _pendingById = [];
+    private readonly ConcurrentDictionary<string, string> _scriptUrlById = new(StringComparer.Ordinal);
     private readonly CancellationTokenSource _readLoopCancellation = new();
     private Task? _readLoopTask;
     private int _nextRequestId = 1;
@@ -147,40 +149,29 @@ internal sealed class CdpClient(CdpConnection connection) : ICdpClient
             },
             cancellationToken);
 
-        if (!TryGetProperty(response, "result", out var result)
-            || !TryGetProperty(result, "locations", out var locations)
-            || locations.ValueKind != JsonValueKind.Array)
+        var resolution = ParseBreakpointResolution(response, generatedUrl);
+        if (resolution is not null)
+        {
+            return resolution;
+        }
+
+        var urlRegex = BuildBreakpointUrlRegex(generatedUrl);
+        if (string.IsNullOrWhiteSpace(urlRegex))
         {
             return null;
         }
 
-        foreach (var location in locations.EnumerateArray())
-        {
-            if (!TryGetProperty(location, "lineNumber", out var lineElement)
-                || !lineElement.TryGetInt32(out var lineNumber))
+        var fallbackResponse = await SendCommandAsync(
+            "Debugger.setBreakpointByUrl",
+            new
             {
-                continue;
-            }
+                urlRegex,
+                lineNumber = generatedLine,
+                columnNumber = generatedColumn
+            },
+            cancellationToken);
 
-            var columnNumber = TryGetProperty(location, "columnNumber", out var columnElement)
-                && columnElement.TryGetInt32(out var parsedColumn)
-                ? parsedColumn
-                : 0;
-            var url = TryGetProperty(location, "url", out var urlElement)
-                && urlElement.ValueKind == JsonValueKind.String
-                ? urlElement.GetString() ?? generatedUrl
-                : generatedUrl;
-            var breakpointId = TryGetProperty(result, "breakpointId", out var breakpointIdElement)
-                && breakpointIdElement.ValueKind == JsonValueKind.String
-                ? breakpointIdElement.GetString()
-                : null;
-
-            return new CdpBreakpointResolution(
-                breakpointId,
-                new CdpLocation(url, lineNumber, columnNumber));
-        }
-
-        return null;
+        return ParseBreakpointResolution(fallbackResponse, generatedUrl);
     }
 
     private async Task<JsonElement> SendCommandAsync(
@@ -271,11 +262,15 @@ internal sealed class CdpClient(CdpConnection connection) : ICdpClient
     {
         switch (method)
         {
+            case "Debugger.scriptParsed":
+                TryTrackScriptParsed(message);
+                break;
             case "Debugger.paused":
             {
                 var callFrames = TryGetProperty(message, "params", out var parameters)
                     ? ParsePausedCallFrames(parameters)
                     : [];
+                callFrames = ResolveScriptUrls(callFrames);
                 _latestCallFrames = callFrames;
                 Paused?.Invoke(callFrames);
                 break;
@@ -285,6 +280,92 @@ internal sealed class CdpClient(CdpConnection connection) : ICdpClient
                 Resumed?.Invoke();
                 break;
         }
+    }
+
+    private void TryTrackScriptParsed(JsonElement message)
+    {
+        if (!TryParseScriptParsed(message, out var scriptId, out var scriptUrl))
+        {
+            return;
+        }
+
+        _scriptUrlById[scriptId] = scriptUrl;
+    }
+
+    private IReadOnlyList<CdpCallFrame> ResolveScriptUrls(IReadOnlyList<CdpCallFrame> callFrames)
+        => ResolveScriptUrls(callFrames, _scriptUrlById);
+
+    internal static IReadOnlyList<CdpCallFrame> ResolveScriptUrls(
+        IReadOnlyList<CdpCallFrame> callFrames,
+        IReadOnlyDictionary<string, string> scriptUrlById)
+    {
+        ArgumentNullException.ThrowIfNull(callFrames);
+        ArgumentNullException.ThrowIfNull(scriptUrlById);
+
+        if (callFrames.Count == 0)
+        {
+            return callFrames;
+        }
+
+        CdpCallFrame[]? rewrittenFrames = null;
+        for (var index = 0; index < callFrames.Count; index++)
+        {
+            var frame = callFrames[index];
+            if (string.IsNullOrWhiteSpace(frame.Location.Url)
+                || !scriptUrlById.TryGetValue(frame.Location.Url, out var scriptUrl))
+            {
+                continue;
+            }
+
+            rewrittenFrames ??= callFrames.ToArray();
+            rewrittenFrames[index] = frame with
+            {
+                Location = frame.Location with
+                {
+                    Url = scriptUrl
+                }
+            };
+        }
+
+        return rewrittenFrames ?? callFrames;
+    }
+
+    internal static bool TryParseScriptParsed(
+        JsonElement message,
+        out string scriptId,
+        out string scriptUrl)
+    {
+        scriptId = string.Empty;
+        scriptUrl = string.Empty;
+
+        if (!TryGetProperty(message, "params", out var parameters)
+            || !TryGetProperty(parameters, "scriptId", out var scriptIdElement)
+            || scriptIdElement.ValueKind != JsonValueKind.String)
+        {
+            return false;
+        }
+
+        var parsedScriptId = scriptIdElement.GetString();
+        if (string.IsNullOrWhiteSpace(parsedScriptId))
+        {
+            return false;
+        }
+
+        if (!TryGetProperty(parameters, "url", out var urlElement)
+            || urlElement.ValueKind != JsonValueKind.String)
+        {
+            return false;
+        }
+
+        var parsedScriptUrl = urlElement.GetString();
+        if (string.IsNullOrWhiteSpace(parsedScriptUrl))
+        {
+            return false;
+        }
+
+        scriptId = parsedScriptId;
+        scriptUrl = parsedScriptUrl;
+        return true;
     }
 
     internal static IReadOnlyList<CdpCallFrame> ParsePausedCallFrames(JsonElement parameters)
@@ -424,6 +505,80 @@ internal sealed class CdpClient(CdpConnection connection) : ICdpClient
         }
 
         return properties;
+    }
+
+    internal static CdpBreakpointResolution? ParseBreakpointResolution(JsonElement response, string fallbackUrl)
+    {
+        if (!TryGetProperty(response, "result", out var result)
+            || !TryGetProperty(result, "locations", out var locations)
+            || locations.ValueKind != JsonValueKind.Array)
+        {
+            return null;
+        }
+
+        foreach (var location in locations.EnumerateArray())
+        {
+            if (!TryGetProperty(location, "lineNumber", out var lineElement)
+                || !lineElement.TryGetInt32(out var lineNumber))
+            {
+                continue;
+            }
+
+            var columnNumber = TryGetProperty(location, "columnNumber", out var columnElement)
+                && columnElement.TryGetInt32(out var parsedColumn)
+                ? parsedColumn
+                : 0;
+            var url = TryGetProperty(location, "url", out var urlElement)
+                && urlElement.ValueKind == JsonValueKind.String
+                ? urlElement.GetString() ?? fallbackUrl
+                : fallbackUrl;
+            var breakpointId = TryGetProperty(result, "breakpointId", out var breakpointIdElement)
+                && breakpointIdElement.ValueKind == JsonValueKind.String
+                ? breakpointIdElement.GetString()
+                : null;
+
+            return new CdpBreakpointResolution(
+                breakpointId,
+                new CdpLocation(url, lineNumber, columnNumber));
+        }
+
+        return null;
+    }
+
+    internal static string? BuildBreakpointUrlRegex(string generatedUrl)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(generatedUrl);
+
+        var normalizedUrl = generatedUrl.Replace('\\', '/');
+        if (Uri.TryCreate(normalizedUrl, UriKind.Absolute, out var uri)
+            && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
+        {
+            return null;
+        }
+
+        var pathOnly = StripQueryAndFragment(normalizedUrl)
+            .Trim()
+            .TrimStart('.');
+        if (string.IsNullOrWhiteSpace(pathOnly))
+        {
+            return null;
+        }
+
+        var suffix = pathOnly.TrimStart('/');
+        if (string.IsNullOrWhiteSpace(suffix))
+        {
+            return null;
+        }
+
+        return $"^.*(?:/|^){Regex.Escape(suffix)}(?:[?#].*)?$";
+    }
+
+    private static string StripQueryAndFragment(string value)
+    {
+        var queryIndex = value.IndexOfAny(['?', '#']);
+        return queryIndex >= 0
+            ? value[..queryIndex]
+            : value;
     }
 
     private static bool TryGetProperty(JsonElement element, string propertyName, out JsonElement value)

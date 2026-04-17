@@ -44,6 +44,13 @@ type SourceMappedPart = {
   content: string;
   sourceRange?: SourceLineRange;
   sourceLineMappings?: ReadonlyArray<number | null>;
+  sourceSegments?: ReadonlyArray<SourceMapSegment>;
+};
+type SourceMapSegment = {
+  generatedLine: number;
+  generatedColumn: number;
+  sourceLine: number;
+  sourceColumn: number;
 };
 type SfcBlockLike = { loc: { start: { line: number }; end: { line: number } } };
 type CompiledStyleFragment = {
@@ -648,11 +655,13 @@ function compileVueSfc(
       });
       bindingMetadata = compiledScript.bindings;
       let scriptContent = compiledScript.content.trim();
+      let scriptSourceSegments = extractGeneratedSourceSegments(compiledScript.map);
       let scriptLineMappings = extractGeneratedLineMappings(compiledScript.map);
       if (requiresTypeScriptTranspile(descriptor)) {
         const transpiled = transpileTypeScriptModule(scriptContent, filename, true);
         diagnostics.push(...transpiled.diagnostics);
         scriptContent = transpiled.jsContent;
+        scriptSourceSegments = chainGeneratedSourceSegments(transpiled.jsSourceMap, compiledScript.map);
         scriptLineMappings = chainGeneratedLineMappings(
           extractGeneratedLineMappings(transpiled.jsSourceMap),
           scriptLineMappings,
@@ -664,6 +673,7 @@ function compileVueSfc(
           content: scriptContent,
           sourceRange: scriptSourceRange,
           sourceLineMappings: scriptLineMappings,
+          sourceSegments: scriptSourceSegments,
         });
       }
     } catch (error) {
@@ -712,6 +722,10 @@ function compileVueSfc(
       }
 
       if (templateCompiled.code.trim().length > 0) {
+        const templateSourceSegments = chainGeneratedSourceSegments(
+          templateCompiled.map,
+          descriptor.template.map,
+        );
         jsParts.push({
           content: templateCompiled.code.trim(),
           sourceRange: templateSourceRange,
@@ -719,6 +733,7 @@ function compileVueSfc(
             extractGeneratedLineMappings(templateCompiled.map),
             extractGeneratedLineMappings(descriptor.template.map),
           ),
+          sourceSegments: templateSourceSegments,
         });
       }
     } catch (error) {
@@ -3119,6 +3134,7 @@ function createSourceMappedModule(
       content: normalizeLineEndings(part.content),
       sourceRange: part.sourceRange,
       sourceLineMappings: part.sourceLineMappings,
+      sourceSegments: part.sourceSegments,
     }))
     .filter((part) => part.content.length > 0);
   if (normalizedParts.length === 0) {
@@ -3128,22 +3144,103 @@ function createSourceMappedModule(
     };
   }
 
-  const lineMappings: Array<number | null> = [];
+  const sourceSegments: SourceMapSegment[] = [];
   let content = "";
+  let generatedLineOffset = 0;
   for (const part of normalizedParts) {
     if (content.length > 0) {
       content += "\n\n";
-      lineMappings.push(null);
+      generatedLineOffset += 1;
     }
 
     content += part.content;
-    appendLineMappings(lineMappings, part.content, part.sourceRange, part.sourceLineMappings);
+    appendSourceSegments(
+      sourceSegments,
+      generatedLineOffset,
+      part.content,
+      part.sourceRange,
+      part.sourceLineMappings,
+      part.sourceSegments,
+    );
+    generatedLineOffset += getLineCount(part.content);
   }
 
   return {
     content,
-    sourceMap: createSingleSourceLineMap(sourceFilename, sourceText, lineMappings),
+    sourceMap: createSingleSourceSegmentMap(
+      sourceFilename,
+      sourceText,
+      sourceSegments,
+      getLineCount(content),
+    ),
   };
+}
+
+function createSingleSourceSegmentMap(
+  sourceFilename: string,
+  sourceText: string,
+  sourceSegments: ReadonlyArray<SourceMapSegment>,
+  generatedLineCount: number,
+): string | null {
+  if (sourceSegments.length === 0) {
+    return null;
+  }
+
+  const sortedSegments = [...sourceSegments].sort((left, right) => {
+    if (left.generatedLine !== right.generatedLine) {
+      return left.generatedLine - right.generatedLine;
+    }
+
+    if (left.generatedColumn !== right.generatedColumn) {
+      return left.generatedColumn - right.generatedColumn;
+    }
+
+    if (left.sourceLine !== right.sourceLine) {
+      return left.sourceLine - right.sourceLine;
+    }
+
+    return left.sourceColumn - right.sourceColumn;
+  });
+
+  const mappingLines: string[] = [];
+  let currentLine = 0;
+  let currentLineSegments: string[] = [];
+  let previousGeneratedColumn = 0;
+  let previousSourceLine = 0;
+  let previousSourceColumn = 0;
+
+  for (const segment of sortedSegments) {
+    while (currentLine < segment.generatedLine) {
+      mappingLines.push(currentLineSegments.join(","));
+      currentLine += 1;
+      currentLineSegments = [];
+      previousGeneratedColumn = 0;
+    }
+
+    currentLineSegments.push([
+      encodeBase64Vlq(segment.generatedColumn - previousGeneratedColumn),
+      encodeBase64Vlq(0),
+      encodeBase64Vlq(segment.sourceLine - previousSourceLine),
+      encodeBase64Vlq(segment.sourceColumn - previousSourceColumn),
+    ].join(""));
+    previousGeneratedColumn = segment.generatedColumn;
+    previousSourceLine = segment.sourceLine;
+    previousSourceColumn = segment.sourceColumn;
+  }
+
+  mappingLines.push(currentLineSegments.join(","));
+  while (mappingLines.length < generatedLineCount) {
+    mappingLines.push("");
+  }
+
+  return JSON.stringify({
+    version: 3,
+    file: sourceFilename,
+    sources: [sourceFilename],
+    sourcesContent: [sourceText],
+    names: [],
+    mappings: mappingLines.join(";"),
+  });
 }
 
 function createSingleSourceLineMap(
@@ -3202,15 +3299,57 @@ function chainGeneratedLineMappings(
   });
 }
 
-function extractGeneratedLineMappings(sourceMap: unknown): ReadonlyArray<number | null> | undefined {
+function chainGeneratedSourceSegments(
+  generatedSourceMap: unknown,
+  sourceSourceMap: unknown,
+): ReadonlyArray<SourceMapSegment> | undefined {
+  const generatedSourceSegments = extractGeneratedSourceSegments(generatedSourceMap);
+  const sourceSegments = extractGeneratedSourceSegments(sourceSourceMap);
+  if (generatedSourceSegments === undefined || sourceSegments === undefined) {
+    return undefined;
+  }
+
+  const sourceSegmentsByGeneratedLine = new Map<number, SourceMapSegment[]>();
+  for (const segment of sourceSegments) {
+    const lineSegments = sourceSegmentsByGeneratedLine.get(segment.generatedLine);
+    if (lineSegments === undefined) {
+      sourceSegmentsByGeneratedLine.set(segment.generatedLine, [segment]);
+    } else {
+      lineSegments.push(segment);
+    }
+  }
+
+  const chainedSegments: SourceMapSegment[] = [];
+  for (const segment of generatedSourceSegments) {
+    const sourceSegment = findSourceSegment(
+      sourceSegmentsByGeneratedLine,
+      segment.sourceLine,
+      segment.sourceColumn,
+    );
+    if (sourceSegment === null) {
+      continue;
+    }
+
+    chainedSegments.push({
+      generatedLine: segment.generatedLine,
+      generatedColumn: segment.generatedColumn,
+      sourceLine: sourceSegment.sourceLine,
+      sourceColumn: sourceSegment.sourceColumn + (segment.sourceColumn - sourceSegment.generatedColumn),
+    });
+  }
+
+  return chainedSegments.length === 0 ? undefined : chainedSegments;
+}
+
+function extractGeneratedSourceSegments(sourceMap: unknown): ReadonlyArray<SourceMapSegment> | undefined {
   const sourceMapObject = parseSourceMapObject(sourceMap);
   if (sourceMapObject === null || sourceMapObject.mappings.length === 0) {
     return undefined;
   }
 
-  const lineMappings: Array<number | null> = [null];
+  const segments: SourceMapSegment[] = [];
   const state = { position: 0 };
-  const mappings = (sourceMapObject as { mappings?: unknown }).mappings;
+  const mappings = sourceMapObject.mappings;
   let generatedLine = 0;
   let previousGeneratedColumn = 0;
   let previousSourceIndex = 0;
@@ -3223,10 +3362,6 @@ function extractGeneratedLineMappings(sourceMap: unknown): ReadonlyArray<number 
       generatedLine += 1;
       previousGeneratedColumn = 0;
       state.position += 1;
-      if (lineMappings.length <= generatedLine) {
-        lineMappings.push(null);
-      }
-
       continue;
     }
 
@@ -3255,15 +3390,44 @@ function extractGeneratedLineMappings(sourceMap: unknown): ReadonlyArray<number 
     previousSourceIndex += sourceIndexDelta;
     previousSourceLine += sourceLineDelta;
     previousSourceColumn += sourceColumnDelta;
-    if (lineMappings[generatedLine] === null || lineMappings[generatedLine] === undefined) {
-      lineMappings[generatedLine] = previousSourceLine;
+    if (previousSourceIndex < 0 || previousSourceLine < 0 || previousSourceColumn < 0) {
+      return undefined;
     }
+
+    segments.push({
+      generatedLine,
+      generatedColumn: previousGeneratedColumn,
+      sourceLine: previousSourceLine,
+      sourceColumn: previousSourceColumn,
+    });
 
     if (state.position < mappings.length && mappings[state.position] !== "," && mappings[state.position] !== ";") {
       const nameDelta = decodeBase64Vlq(mappings, state);
       if (nameDelta === null) {
         return undefined;
       }
+    }
+  }
+
+  return segments.length === 0 ? undefined : segments;
+}
+
+function extractGeneratedLineMappings(sourceMap: unknown): ReadonlyArray<number | null> | undefined {
+  const sourceSegments = extractGeneratedSourceSegments(sourceMap);
+  if (sourceSegments === undefined) {
+    return undefined;
+  }
+
+  const lineMappings: Array<number | null> = [];
+  for (const segment of sourceSegments) {
+    if (lineMappings[segment.generatedLine] === null || lineMappings[segment.generatedLine] === undefined) {
+      lineMappings[segment.generatedLine] = segment.sourceLine;
+    }
+  }
+
+  for (let index = 0; index < lineMappings.length; index += 1) {
+    if (lineMappings[index] === undefined) {
+      lineMappings[index] = null;
     }
   }
 
@@ -3335,6 +3499,48 @@ function appendLineMappings(
   }
 }
 
+function appendSourceSegments(
+  sourceSegments: Array<SourceMapSegment>,
+  generatedLineOffset: number,
+  content: string,
+  sourceRange?: SourceLineRange,
+  sourceLineMappings?: ReadonlyArray<number | null>,
+  partSourceSegments?: ReadonlyArray<SourceMapSegment>,
+): void {
+  const mappedGeneratedLines = new Set<number>();
+  if (partSourceSegments !== undefined && partSourceSegments.length > 0) {
+    for (const segment of partSourceSegments) {
+      sourceSegments.push({
+        generatedLine: generatedLineOffset + segment.generatedLine,
+        generatedColumn: segment.generatedColumn,
+        sourceLine: segment.sourceLine,
+        sourceColumn: segment.sourceColumn,
+      });
+      mappedGeneratedLines.add(segment.generatedLine);
+    }
+  }
+
+  const lineMappings: Array<number | null> = [];
+  appendLineMappings(lineMappings, content, sourceRange, sourceLineMappings);
+  for (let index = 0; index < lineMappings.length; index += 1) {
+    if (mappedGeneratedLines.has(index)) {
+      continue;
+    }
+
+    const sourceLine = lineMappings[index];
+    if (sourceLine === null || sourceLine === undefined) {
+      continue;
+    }
+
+    sourceSegments.push({
+      generatedLine: generatedLineOffset + index,
+      generatedColumn: 0,
+      sourceLine,
+      sourceColumn: 0,
+    });
+  }
+}
+
 function getSfcBlockSourceRange(block: SfcBlockLike | null | undefined): SourceLineRange | undefined {
   if (block === null || block === undefined) {
     return undefined;
@@ -3366,6 +3572,32 @@ function getCombinedSfcBlockSourceRange(
 
 function normalizeLineEndings(text: string): string {
   return text.replace(/\r\n/g, "\n");
+}
+
+function getLineCount(text: string): number {
+  return normalizeLineEndings(text).split("\n").length;
+}
+
+function findSourceSegment(
+  sourceSegmentsByGeneratedLine: ReadonlyMap<number, ReadonlyArray<SourceMapSegment>>,
+  generatedLine: number,
+  generatedColumn: number,
+): SourceMapSegment | null {
+  const lineSegments = sourceSegmentsByGeneratedLine.get(generatedLine);
+  if (lineSegments === undefined || lineSegments.length === 0) {
+    return null;
+  }
+
+  let candidate: SourceMapSegment | null = null;
+  for (const segment of lineSegments) {
+    if (segment.generatedColumn > generatedColumn) {
+      break;
+    }
+
+    candidate = segment;
+  }
+
+  return candidate;
 }
 
 function decodeBase64Vlq(mappings: string, state: { position: number }): number | null {

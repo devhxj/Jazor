@@ -132,6 +132,7 @@ public sealed class JazorVueCompilerTests
         Assert.AreEqual(source, sourceMap.RootElement.GetProperty("sourcesContent")[0].GetString());
 
         var mappedLines = DecodeGeneratedLineToSourceLine(sourceMap.RootElement);
+        var segments = DecodeSegments(sourceMap.RootElement);
         AssertGeneratedLineMapsToSourceLine(
             result.GeneratedVueText,
             "const count = ref(1);",
@@ -156,6 +157,31 @@ public sealed class JazorVueCompilerTests
             source,
             "<button @click=\"increment()\">@Count</button>",
             mappedLines);
+
+        AssertGeneratedLineHasStableColumnZeroAnchor(
+            result.GeneratedVueText,
+            "count.value++;",
+            source,
+            "Count++;",
+            segments);
+        AssertGeneratedLineHasNonZeroColumnMapping(
+            result.GeneratedVueText,
+            "count.value++;",
+            source,
+            "Count++;",
+            segments);
+        AssertGeneratedLineHasNonZeroColumnMapping(
+            result.GeneratedVueText,
+            "[State] private int Count = 1;",
+            source,
+            "[State] private int Count = 1;",
+            segments);
+        AssertGeneratedLineHasNonZeroColumnMapping(
+            result.GeneratedVueText,
+            "<button @click=\"increment()\">@Count</button>",
+            source,
+            "<button @click=\"increment()\">@Count</button>",
+            segments);
     }
 
     [TestMethod]
@@ -652,6 +678,45 @@ public sealed class JazorVueCompilerTests
         var path = Path.Combine(Path.GetTempPath(), "JazorVueCompilerTests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(path);
         return path;
+    }
+
+    private static void AssertGeneratedLineHasStableColumnZeroAnchor(
+        string generatedText,
+        string generatedNeedle,
+        string sourceText,
+        string sourceNeedle,
+        IReadOnlyList<SourceMapSegment> segments)
+    {
+        var generatedLine = GetLineIndexContaining(generatedText, generatedNeedle);
+        var sourceLine = GetLineIndexContaining(sourceText, sourceNeedle);
+        var lineSegments = segments
+            .Where(segment => segment.GeneratedLine == generatedLine)
+            .OrderBy(segment => segment.GeneratedColumn)
+            .ToArray();
+
+        Assert.IsTrue(lineSegments.Length > 0, $"Expected source-map segments for generated line containing '{generatedNeedle}'.");
+        Assert.AreEqual(0, lineSegments[0].GeneratedColumn);
+        Assert.AreEqual(sourceLine, lineSegments[0].SourceLine);
+        Assert.AreEqual(0, lineSegments[0].SourceColumn);
+    }
+
+    private static void AssertGeneratedLineHasNonZeroColumnMapping(
+        string generatedText,
+        string generatedNeedle,
+        string sourceText,
+        string sourceNeedle,
+        IReadOnlyList<SourceMapSegment> segments)
+    {
+        var generatedLine = GetLineIndexContaining(generatedText, generatedNeedle);
+        var sourceLine = GetLineIndexContaining(sourceText, sourceNeedle);
+
+        Assert.IsTrue(
+            segments.Any(segment =>
+                segment.GeneratedLine == generatedLine
+                && segment.SourceLine == sourceLine
+                && segment.GeneratedColumn > 0
+                && segment.SourceColumn > 0),
+            $"Expected a non-zero column source-map segment for generated line containing '{generatedNeedle}'.");
     }
 
     private static void AssertSymbol(

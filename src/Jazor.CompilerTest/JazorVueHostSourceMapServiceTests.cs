@@ -52,4 +52,21 @@ public sealed class JazorVueHostSourceMapServiceTests
         Assert.IsNull(service.GetSourceMapJson("/Counter.jazor"));
         Assert.IsNull(service.GeneratedPositionFor("Counter.jazor", 0, 0));
     }
+
+    [TestMethod]
+    public void SourceMapService_OriginalPositionFor_HttpGeneratedUrl_IgnoresHostAndQueryString()
+    {
+        var service = new InMemorySourceMapService();
+        const string sourceMapJson = """
+            {"version":3,"sources":["main.ts"],"sourcesContent":["export const version = 1;"],"names":[],"mappings":"AAAA","file":"main.js"}
+            """;
+        service.Register("/main.ts", sourceMapJson);
+
+        var original = service.OriginalPositionFor("http://127.0.0.1:5173/main.ts?t=1710000000", 0, 0);
+
+        Assert.IsNotNull(original);
+        Assert.AreEqual("main.ts", original.SourcePath);
+        Assert.AreEqual(0, original.Line);
+        Assert.AreEqual(0, original.Column);
+    }
 }

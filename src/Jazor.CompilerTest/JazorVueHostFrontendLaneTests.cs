@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Jazor.VueContracts.Protocol;
 using Jazor.VueHost.DevServer;
 using Jazor.VueHost.Frontend.Deno.Hosting;
@@ -12,6 +13,7 @@ using Jazor.VueHost.VirtualDocuments.Mapping;
 using Jazor.VueHost.VirtualDocuments.Models;
 using Jazor.VueHost.VirtualDocuments.Registry;
 using Jazor.VueHost.Workspace;
+using static Jazor.CompilerTest.SourceMapTestHelpers;
 
 namespace Jazor.CompilerTest;
 
@@ -84,7 +86,7 @@ public sealed class JazorVueHostFrontendLaneTests
     }
 
     [TestMethod]
-    public async Task JazorVueHost_DenoFrontendHost_CompileSfcAsync_WithBundledWorker_ReturnsCompiledVueModule()
+    public async Task JazorVueHost_DenoFrontendHost_CompileSfcAsync_WithBundledWorker_ReturnsCompiledVueModuleAndColumnAwareSourceMap()
     {
         var tempDirectory = CreateTemporaryDirectory();
 
@@ -93,8 +95,12 @@ public sealed class JazorVueHostFrontendLaneTests
             var documentPath = Path.Combine(tempDirectory, "App.vue");
             const string sfcText = """
                 <template>
-                  <div class="app">Hello</div>
+                  <div class="app">{{ count + 1 }}</div>
                 </template>
+                <script setup lang="ts">
+                const count: number = 1;
+                const typedLabel: string = `count:${count}`;
+                </script>
                 <style>
                 .app {
                   color: red;
@@ -114,6 +120,36 @@ public sealed class JazorVueHostFrontendLaneTests
             Assert.IsNotNull(result);
             StringAssert.Contains(result.JsContent, "export default _sfc_main;");
             StringAssert.Contains(result.CssContent!, "color: red");
+            Assert.IsFalse(string.IsNullOrWhiteSpace(result.JsSourceMap));
+
+            using var sourceMapDocument = JsonDocument.Parse(result.JsSourceMap!);
+            var sourceMap = sourceMapDocument.RootElement;
+            var sourceIndex = FindSourceIndexContaining(sourceMap, Path.GetFileName(documentPath));
+            var segments = DecodeSegments(sourceMap)
+                .Where(segment => segment.SourceIndex == sourceIndex)
+                .ToArray();
+            var typedLabelGeneratedPosition = GetLineColumnContaining(result.JsContent, "typedLabel");
+            var typedLabelSourcePosition = GetLineColumnContaining(sfcText, "typedLabel");
+            var templateExpressionSourceLine = GetLineIndexContaining(sfcText, "{{ count + 1 }}");
+            var templateSegments = segments
+                .Where(segment => segment.SourceLine == templateExpressionSourceLine)
+                .ToArray();
+
+            Assert.AreEqual(Path.GetFileName(documentPath), sourceMap.GetProperty("sources")[sourceIndex].GetString());
+            Assert.AreEqual(sfcText, sourceMap.GetProperty("sourcesContent")[sourceIndex].GetString());
+            Assert.IsTrue(
+                segments.Any(segment =>
+                    segment.GeneratedLine == typedLabelGeneratedPosition.Line &&
+                    segment.GeneratedColumn == typedLabelGeneratedPosition.Column &&
+                    segment.SourceLine == typedLabelSourcePosition.Line &&
+                    segment.SourceColumn == typedLabelSourcePosition.Column),
+                "Expected script-setup sourcemap to preserve the typedLabel token column mapping back to the original Vue file.");
+            Assert.IsTrue(
+                templateSegments.Length >= 2,
+                "Expected template render output to retain multiple source-map segments for the original template expression line.");
+            Assert.IsTrue(
+                templateSegments.Any(segment => segment.SourceColumn > 0),
+                "Expected template source-map segments to preserve non-zero source columns.");
         }
         finally
         {

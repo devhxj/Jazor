@@ -310,9 +310,16 @@ internal sealed class InMemorySourceMapService : ISourceMapService
         }
 
         var normalized = path.Trim();
-        if (Uri.TryCreate(normalized, UriKind.Absolute, out var uri) && uri.IsFile)
+        if (Uri.TryCreate(normalized, UriKind.Absolute, out var uri))
         {
-            normalized = uri.LocalPath;
+            if (uri.IsFile)
+            {
+                normalized = uri.LocalPath;
+            }
+            else if (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)
+            {
+                normalized = uri.AbsolutePath;
+            }
         }
 
         normalized = normalized.Replace('\\', '/');

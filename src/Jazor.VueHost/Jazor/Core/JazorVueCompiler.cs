@@ -41,6 +41,9 @@ public sealed partial class JazorVueCompiler
     private static readonly Regex ExceptionConstructorPattern = new(
         @"\bnew\s+(?<type>(?:[A-Za-z_][A-Za-z0-9_]*\.)*[A-Za-z_][A-Za-z0-9_]*)\s*\(",
         RegexOptions.Compiled);
+    private static readonly Regex SourceMapAnchorTokenPattern = new(
+        @"[A-Za-z_][A-Za-z0-9_]*|\d+",
+        RegexOptions.Compiled);
     private static readonly ISet<string> EmptyShadowedNames = new HashSet<string>(StringComparer.Ordinal);
 
     public JazorVueCompilationResult Compile(JazorVueDocument document)
@@ -62,16 +65,16 @@ public sealed partial class JazorVueCompiler
         var methods = ExtractMethods(document);
         var loweringContext = LoweringContext.Create(props, states, computeds, methods);
         var builder = new StringBuilder();
-        var generatedSourceLines = new List<int?>();
+        var generatedLines = new List<GeneratedVueLine>();
         var scriptAnchorSourceLine = GetScriptAnchorSourceLine(document, importSourceLines, props, states, computeds, methods);
 
-        AppendGeneratedLine(builder, generatedSourceLines, "<script setup>", scriptAnchorSourceLine);
+        AppendGeneratedLine(builder, generatedLines, "<script setup>", scriptAnchorSourceLine);
         var vueHelpers = GetVueHelpers(props, states, computeds);
         if (vueHelpers.Count > 0)
         {
             AppendGeneratedLine(
                 builder,
-                generatedSourceLines,
+                generatedLines,
                 $"import {{ {string.Join(", ", vueHelpers)} }} from \"vue\";",
                 scriptAnchorSourceLine);
         }
@@ -80,31 +83,31 @@ public sealed partial class JazorVueCompiler
         {
             AppendGeneratedLine(
                 builder,
-                generatedSourceLines,
+                generatedLines,
                 imports[index],
                 index < importSourceLines.Count ? importSourceLines[index] : scriptAnchorSourceLine);
         }
 
         if (props.Count > 0)
         {
-            AppendGeneratedLine(builder, generatedSourceLines, string.Empty, props[0].SourceLine);
-            AppendGeneratedLine(builder, generatedSourceLines, "const props = defineProps({", props[0].SourceLine);
+            AppendGeneratedLine(builder, generatedLines, string.Empty, props[0].SourceLine);
+            AppendGeneratedLine(builder, generatedLines, "const props = defineProps({", props[0].SourceLine);
             foreach (var prop in props)
             {
                 AppendGeneratedLine(
                     builder,
-                    generatedSourceLines,
+                    generatedLines,
                     $"  {prop.RuntimeName}: {prop.VueTypeExpression},",
                     prop.SourceLine);
             }
 
-            AppendGeneratedLine(builder, generatedSourceLines, "});", props[^1].SourceLine);
+            AppendGeneratedLine(builder, generatedLines, "});", props[^1].SourceLine);
 
             foreach (var prop in props)
             {
                 AppendGeneratedLine(
                     builder,
-                    generatedSourceLines,
+                    generatedLines,
                     $"const {prop.RuntimeName} = toRef(props, \"{prop.RuntimeName}\");",
                     prop.SourceLine);
             }
@@ -112,12 +115,12 @@ public sealed partial class JazorVueCompiler
 
         if (states.Count > 0)
         {
-            AppendGeneratedLine(builder, generatedSourceLines, string.Empty, states[0].SourceLine);
+            AppendGeneratedLine(builder, generatedLines, string.Empty, states[0].SourceLine);
             foreach (var state in states)
             {
                 AppendGeneratedLine(
                     builder,
-                    generatedSourceLines,
+                    generatedLines,
                     $"const {state.RuntimeName} = ref({LowerExpression(state.Initializer ?? "undefined", loweringContext, EmptyShadowedNames)});",
                     state.SourceLine);
             }
@@ -125,14 +128,14 @@ public sealed partial class JazorVueCompiler
 
         if (computeds.Count > 0)
         {
-            AppendGeneratedLine(builder, generatedSourceLines, string.Empty, computeds[0].SourceLine);
+            AppendGeneratedLine(builder, generatedLines, string.Empty, computeds[0].SourceLine);
             foreach (var computed in computeds)
             {
                 if (TryLowerComputed(computed, loweringContext, out var loweredExpression))
                 {
                     AppendGeneratedLine(
                         builder,
-                        generatedSourceLines,
+                        generatedLines,
                         $"const {computed.RuntimeName} = computed(() => {loweredExpression});",
                         computed.SourceLine);
                     continue;
@@ -141,27 +144,27 @@ public sealed partial class JazorVueCompiler
                 diagnostics.Add($"Computed member '{computed.SourceName}' could not be lowered by the local fallback compiler.");
                 AppendGeneratedLine(
                     builder,
-                    generatedSourceLines,
+                    generatedLines,
                     $"const {computed.RuntimeName} = computed(() => {{",
                     computed.SourceLine);
                 AppendGeneratedLine(
                     builder,
-                    generatedSourceLines,
+                    generatedLines,
                     $"  // Fallback compiler could not lower computed member {computed.SourceName}.",
                     computed.SourceLine);
-                AppendGeneratedLine(builder, generatedSourceLines, "  return undefined;", computed.SourceLine);
-                AppendGeneratedLine(builder, generatedSourceLines, "});", computed.SourceLine);
+                AppendGeneratedLine(builder, generatedLines, "  return undefined;", computed.SourceLine);
+                AppendGeneratedLine(builder, generatedLines, "});", computed.SourceLine);
             }
         }
 
         if (methods.Count > 0)
         {
-            AppendGeneratedLine(builder, generatedSourceLines, string.Empty, methods[0].SourceLine);
+            AppendGeneratedLine(builder, generatedLines, string.Empty, methods[0].SourceLine);
             foreach (var method in methods)
             {
                 AppendGeneratedLine(
                     builder,
-                    generatedSourceLines,
+                    generatedLines,
                     $"{(method.IsAsync ? "async function " : "function ")}{method.RuntimeName}({string.Join(", ", method.Parameters)}) {{",
                     method.SourceLine);
 
@@ -171,7 +174,7 @@ public sealed partial class JazorVueCompiler
                     {
                         AppendGeneratedLine(
                             builder,
-                            generatedSourceLines,
+                            generatedLines,
                             "  " + line.Line,
                             line.SourceLine);
                     }
@@ -181,53 +184,53 @@ public sealed partial class JazorVueCompiler
                     diagnostics.Add($"Method '{method.SourceName}' could not be lowered by the local fallback compiler.");
                     AppendGeneratedLine(
                         builder,
-                        generatedSourceLines,
+                        generatedLines,
                         $"  // Fallback compiler could not lower method {method.SourceName}.",
                         method.SourceLine);
                 }
 
-                AppendGeneratedLine(builder, generatedSourceLines, "}", method.SourceLine);
+                AppendGeneratedLine(builder, generatedLines, "}", method.SourceLine);
             }
         }
 
         if (!string.IsNullOrWhiteSpace(document.Code))
         {
             var codeStartSourceLine = GetCodeStartSourceLine(document) ?? scriptAnchorSourceLine;
-            AppendGeneratedLine(builder, generatedSourceLines, string.Empty, codeStartSourceLine);
-            AppendGeneratedLine(builder, generatedSourceLines, "/*", codeStartSourceLine);
+            AppendGeneratedLine(builder, generatedLines, string.Empty, codeStartSourceLine);
+            AppendGeneratedLine(builder, generatedLines, "/*", codeStartSourceLine);
             AppendGeneratedLine(
                 builder,
-                generatedSourceLines,
+                generatedLines,
                 " Original @code block retained for bridge diagnostics:",
                 codeStartSourceLine);
             AppendGeneratedTextLines(
                 builder,
-                generatedSourceLines,
+                generatedLines,
                 document.Code.Replace("*/", "* /", StringComparison.Ordinal),
                 codeStartSourceLine);
-            AppendGeneratedLine(builder, generatedSourceLines, "*/", GetCodeEndSourceLine(document) ?? codeStartSourceLine);
+            AppendGeneratedLine(builder, generatedLines, "*/", GetCodeEndSourceLine(document) ?? codeStartSourceLine);
         }
 
         var templateAnchorSourceLine = GetTemplateStartSourceLine(document) ?? scriptAnchorSourceLine;
-        AppendGeneratedLine(builder, generatedSourceLines, "</script>", scriptAnchorSourceLine);
-        AppendGeneratedLine(builder, generatedSourceLines, string.Empty, templateAnchorSourceLine);
-        AppendGeneratedLine(builder, generatedSourceLines, "<template>", templateAnchorSourceLine);
+        AppendGeneratedLine(builder, generatedLines, "</script>", scriptAnchorSourceLine);
+        AppendGeneratedLine(builder, generatedLines, string.Empty, templateAnchorSourceLine);
+        AppendGeneratedLine(builder, generatedLines, "<template>", templateAnchorSourceLine);
         if (string.IsNullOrWhiteSpace(document.Template))
         {
-            AppendGeneratedLine(builder, generatedSourceLines, "<div />", templateAnchorSourceLine);
+            AppendGeneratedLine(builder, generatedLines, "<div />", templateAnchorSourceLine);
         }
         else
         {
-            AppendGeneratedTextLines(builder, generatedSourceLines, document.Template, templateAnchorSourceLine);
+            AppendGeneratedTextLines(builder, generatedLines, document.Template, templateAnchorSourceLine);
         }
 
-        AppendGeneratedLine(builder, generatedSourceLines, "</template>", GetTemplateEndSourceLine(document) ?? templateAnchorSourceLine);
+        AppendGeneratedLine(builder, generatedLines, "</template>", GetTemplateEndSourceLine(document) ?? templateAnchorSourceLine);
 
         if (methods.Count == 0 && document.Code.Length > 0)
             diagnostics.Add("No public methods were lowered. The current bridge compiler emits method stubs only for public instance methods.");
 
         var generatedVueText = builder.ToString();
-        var generatedVueSourceMap = CreateGeneratedVueSourceMap(document, generatedSourceLines);
+        var generatedVueSourceMap = CreateGeneratedVueSourceMap(document, generatedLines);
 
         return new JazorVueCompilationResult(
             document,
@@ -241,17 +244,17 @@ public sealed partial class JazorVueCompiler
 
     private static void AppendGeneratedLine(
         StringBuilder builder,
-        List<int?> generatedSourceLines,
+        List<GeneratedVueLine> generatedLines,
         string line,
         int? sourceLine)
     {
         builder.AppendLine(line);
-        generatedSourceLines.Add(sourceLine);
+        generatedLines.Add(new GeneratedVueLine(line, sourceLine));
     }
 
     private static void AppendGeneratedTextLines(
         StringBuilder builder,
-        List<int?> generatedSourceLines,
+        List<GeneratedVueLine> generatedLines,
         string text,
         int? sourceStartLine)
     {
@@ -260,7 +263,7 @@ public sealed partial class JazorVueCompiler
         {
             AppendGeneratedLine(
                 builder,
-                generatedSourceLines,
+                generatedLines,
                 lines[index],
                 sourceStartLine.HasValue ? sourceStartLine.Value + index : null);
         }
@@ -268,21 +271,38 @@ public sealed partial class JazorVueCompiler
 
     private static string? CreateGeneratedVueSourceMap(
         JazorVueDocument document,
-        IReadOnlyList<int?> generatedSourceLines)
+        IReadOnlyList<GeneratedVueLine> generatedLines)
     {
-        var segments = generatedSourceLines
-            .Select((sourceLine, generatedLine) => sourceLine.HasValue
-                ? new SourceMapSegment(
-                    GeneratedLine: generatedLine,
-                    GeneratedColumn: 0,
-                    SourceIndex: 0,
-                    SourceLine: sourceLine.Value,
-                    SourceColumn: 0)
-                : null)
-            .Where(static segment => segment is not null)
-            .Select(static segment => segment!)
-            .ToArray();
-        if (segments.Length == 0)
+        var sourceLines = NormalizeLineEndings(document.SourceText).Split('\n');
+        var segments = new List<SourceMapSegment>(generatedLines.Count * 2);
+        for (var generatedLine = 0; generatedLine < generatedLines.Count; generatedLine++)
+        {
+            var generatedLineMapping = generatedLines[generatedLine];
+            if (!generatedLineMapping.SourceLine.HasValue)
+            {
+                continue;
+            }
+
+            segments.Add(new SourceMapSegment(
+                GeneratedLine: generatedLine,
+                GeneratedColumn: 0,
+                SourceIndex: 0,
+                SourceLine: generatedLineMapping.SourceLine.Value,
+                SourceColumn: 0));
+
+            if (TryCreateColumnPreciseSegment(
+                generatedLine,
+                generatedLineMapping.Text,
+                GetSourceLineText(sourceLines, generatedLineMapping.SourceLine.Value),
+                generatedLineMapping.SourceLine.Value,
+                out var preciseSegment)
+                && preciseSegment is not null)
+            {
+                segments.Add(preciseSegment);
+            }
+        }
+
+        if (segments.Count == 0)
         {
             return null;
         }
@@ -293,6 +313,113 @@ public sealed partial class JazorVueCompiler
             [new SourceMapSource(fileName, document.SourceText)],
             segments);
         return new SourceMapWriter().Write(sourceMap);
+    }
+
+    private static bool TryCreateColumnPreciseSegment(
+        int generatedLine,
+        string generatedText,
+        string sourceText,
+        int sourceLine,
+        out SourceMapSegment? segment)
+    {
+        if (TryFindSharedTokenAnchor(generatedText, sourceText, out var generatedColumn, out var sourceColumn))
+        {
+            segment = new SourceMapSegment(
+                GeneratedLine: generatedLine,
+                GeneratedColumn: generatedColumn,
+                SourceIndex: 0,
+                SourceLine: sourceLine,
+                SourceColumn: sourceColumn);
+            return true;
+        }
+
+        generatedColumn = GetFirstNonWhitespaceColumn(generatedText);
+        sourceColumn = GetFirstNonWhitespaceColumn(sourceText);
+        if (generatedColumn > 0 && sourceColumn > 0)
+        {
+            segment = new SourceMapSegment(
+                GeneratedLine: generatedLine,
+                GeneratedColumn: generatedColumn,
+                SourceIndex: 0,
+                SourceLine: sourceLine,
+                SourceColumn: sourceColumn);
+            return true;
+        }
+
+        segment = default;
+        return false;
+    }
+
+    private static bool TryFindSharedTokenAnchor(
+        string generatedText,
+        string sourceText,
+        out int generatedColumn,
+        out int sourceColumn)
+    {
+        generatedColumn = 0;
+        sourceColumn = 0;
+
+        var fallbackGeneratedColumn = -1;
+        var fallbackSourceColumn = -1;
+        foreach (Match match in SourceMapAnchorTokenPattern.Matches(generatedText))
+        {
+            if (match.Index <= 0)
+            {
+                continue;
+            }
+
+            var candidate = match.Value;
+            if (candidate.Length == 0)
+            {
+                continue;
+            }
+
+            var sourceIndex = sourceText.IndexOf(candidate, StringComparison.OrdinalIgnoreCase);
+            if (sourceIndex < 0)
+            {
+                continue;
+            }
+
+            if (sourceIndex > 0)
+            {
+                generatedColumn = match.Index;
+                sourceColumn = sourceIndex;
+                return true;
+            }
+
+            if (fallbackGeneratedColumn < 0)
+            {
+                fallbackGeneratedColumn = match.Index;
+                fallbackSourceColumn = sourceIndex;
+            }
+        }
+
+        if (fallbackGeneratedColumn > 0)
+        {
+            generatedColumn = fallbackGeneratedColumn;
+            sourceColumn = fallbackSourceColumn;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static string GetSourceLineText(IReadOnlyList<string> sourceLines, int sourceLine)
+        => sourceLine >= 0 && sourceLine < sourceLines.Count
+            ? sourceLines[sourceLine]
+            : string.Empty;
+
+    private static int GetFirstNonWhitespaceColumn(string text)
+    {
+        for (var index = 0; index < text.Length; index++)
+        {
+            if (!char.IsWhiteSpace(text[index]))
+            {
+                return index;
+            }
+        }
+
+        return 0;
     }
 
     private static IReadOnlyList<int?> GetImportSourceLines(JazorVueDocument document)
@@ -1286,6 +1413,10 @@ public sealed partial class JazorVueCompiler
         string Line,
         string[] DeclaredNames,
         DeclaredNameLifetime DeclaredNameLifetime);
+
+    private readonly record struct GeneratedVueLine(
+        string Text,
+        int? SourceLine);
 
     private readonly record struct LoweredMethodLine(
         string Line,
