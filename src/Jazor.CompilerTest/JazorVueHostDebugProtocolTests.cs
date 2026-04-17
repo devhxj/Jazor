@@ -1248,10 +1248,14 @@ public sealed class JazorVueHostDebugProtocolTests
             cancellationToken.ThrowIfCancellationRequested();
             BreakpointRequests.Add(new BreakpointRequest(generatedUrl, generatedLine, generatedColumn));
 
-            return Task.FromResult(
-                _breakpointResolutions.TryGetValue((generatedUrl, generatedLine, generatedColumn), out var resolution)
-                    ? resolution
-                    : null);
+            if (_breakpointResolutions.TryGetValue((generatedUrl, generatedLine, generatedColumn), out var resolution))
+            {
+                return Task.FromResult(resolution);
+            }
+
+            var fallback = _breakpointResolutions.FirstOrDefault(pair =>
+                string.Equals(pair.Key.Url, generatedUrl, StringComparison.Ordinal));
+            return Task.FromResult(string.IsNullOrWhiteSpace(fallback.Key.Url) ? null : fallback.Value);
         }
 
         public Task<CdpRemoteObject?> EvaluateAsync(
