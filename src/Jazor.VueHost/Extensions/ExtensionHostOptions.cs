@@ -8,5 +8,7 @@ internal sealed class ExtensionHostOptions
 
     public required string ExtensionsDirectory { get; init; }
 
+    public bool AllowExternalDirectory { get; init; }
+
     public IReadOnlySet<string> DisabledExtensionIds { get; init; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 }

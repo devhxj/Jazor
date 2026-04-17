@@ -438,9 +438,11 @@ internal sealed class DevHttpServer : IAsyncDisposable, IWorkspaceDocumentChange
         IReadOnlyList<DocumentSnapshot> openDocuments,
         CancellationToken cancellationToken)
     {
+        // Register the workspace hash before compilation so watcher events emitted by
+        // the same disk write can be suppressed even if they are processed first.
+        RecordPendingWorkspaceBroadcastHash(document.DocumentPath, document.Text);
         var result = await _changeProcessor.ProcessWorkspaceDocumentChangeAsync(document, openDocuments, cancellationToken);
         RecordBroadcastSnapshots(result.ChangedPaths);
-        RecordPendingWorkspaceBroadcastHash(document.DocumentPath, document.Text);
         await BroadcastChangeResultAsync(result, cancellationToken);
     }
 

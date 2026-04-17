@@ -9,6 +9,10 @@ internal sealed class ExtensionRegistry : IExtensionRegistry
     private readonly List<ILspHoverProvider> _lspHoverProviders = [];
     private readonly List<ILspCompletionProvider> _lspCompletionProviders = [];
     private readonly List<ILspDocumentSymbolProvider> _lspDocumentSymbolProviders = [];
+    private readonly List<ILspSignatureHelpProvider> _lspSignatureHelpProviders = [];
+    private readonly List<ILspInlayHintProvider> _lspInlayHintProviders = [];
+    private readonly List<ILspWorkspaceSymbolProvider> _lspWorkspaceSymbolProviders = [];
+    private readonly List<ILspFoldingRangeProvider> _lspFoldingRangeProviders = [];
     private readonly List<ILspReferenceProvider> _lspReferenceProviders = [];
     private readonly List<ILspRenameProvider> _lspRenameProviders = [];
     private readonly Dictionary<string, ExtensionProviderHealth> _providerHealthByKey = new(StringComparer.OrdinalIgnoreCase);
@@ -56,6 +60,26 @@ internal sealed class ExtensionRegistry : IExtensionRegistry
         if (extension is ILspDocumentSymbolProvider documentSymbolProvider)
         {
             RegisterLspDocumentSymbolProvider(documentSymbolProvider);
+        }
+
+        if (extension is ILspSignatureHelpProvider signatureHelpProvider)
+        {
+            RegisterLspSignatureHelpProvider(signatureHelpProvider);
+        }
+
+        if (extension is ILspInlayHintProvider inlayHintProvider)
+        {
+            RegisterLspInlayHintProvider(inlayHintProvider);
+        }
+
+        if (extension is ILspWorkspaceSymbolProvider workspaceSymbolProvider)
+        {
+            RegisterLspWorkspaceSymbolProvider(workspaceSymbolProvider);
+        }
+
+        if (extension is ILspFoldingRangeProvider foldingRangeProvider)
+        {
+            RegisterLspFoldingRangeProvider(foldingRangeProvider);
         }
 
         if (extension is ILspReferenceProvider referenceProvider)
@@ -184,6 +208,98 @@ internal sealed class ExtensionRegistry : IExtensionRegistry
         }
     }
 
+    public void RegisterLspSignatureHelpProvider(ILspSignatureHelpProvider provider)
+    {
+        ArgumentNullException.ThrowIfNull(provider);
+        if (string.IsNullOrWhiteSpace(provider.Name))
+        {
+            throw new InvalidOperationException("Signature help provider name cannot be empty.");
+        }
+
+        lock (_gate)
+        {
+            _lspSignatureHelpProviders.RemoveAll(existing =>
+                string.Equals(existing.Name, provider.Name, StringComparison.OrdinalIgnoreCase));
+            _lspSignatureHelpProviders.Add(provider);
+            _lspSignatureHelpProviders.Sort(static (left, right) =>
+            {
+                var priority = right.Priority.CompareTo(left.Priority);
+                return priority != 0
+                    ? priority
+                    : string.Compare(left.Name, right.Name, StringComparison.OrdinalIgnoreCase);
+            });
+        }
+    }
+
+    public void RegisterLspInlayHintProvider(ILspInlayHintProvider provider)
+    {
+        ArgumentNullException.ThrowIfNull(provider);
+        if (string.IsNullOrWhiteSpace(provider.Name))
+        {
+            throw new InvalidOperationException("Inlay hint provider name cannot be empty.");
+        }
+
+        lock (_gate)
+        {
+            _lspInlayHintProviders.RemoveAll(existing =>
+                string.Equals(existing.Name, provider.Name, StringComparison.OrdinalIgnoreCase));
+            _lspInlayHintProviders.Add(provider);
+            _lspInlayHintProviders.Sort(static (left, right) =>
+            {
+                var priority = right.Priority.CompareTo(left.Priority);
+                return priority != 0
+                    ? priority
+                    : string.Compare(left.Name, right.Name, StringComparison.OrdinalIgnoreCase);
+            });
+        }
+    }
+
+    public void RegisterLspWorkspaceSymbolProvider(ILspWorkspaceSymbolProvider provider)
+    {
+        ArgumentNullException.ThrowIfNull(provider);
+        if (string.IsNullOrWhiteSpace(provider.Name))
+        {
+            throw new InvalidOperationException("Workspace symbol provider name cannot be empty.");
+        }
+
+        lock (_gate)
+        {
+            _lspWorkspaceSymbolProviders.RemoveAll(existing =>
+                string.Equals(existing.Name, provider.Name, StringComparison.OrdinalIgnoreCase));
+            _lspWorkspaceSymbolProviders.Add(provider);
+            _lspWorkspaceSymbolProviders.Sort(static (left, right) =>
+            {
+                var priority = right.Priority.CompareTo(left.Priority);
+                return priority != 0
+                    ? priority
+                    : string.Compare(left.Name, right.Name, StringComparison.OrdinalIgnoreCase);
+            });
+        }
+    }
+
+    public void RegisterLspFoldingRangeProvider(ILspFoldingRangeProvider provider)
+    {
+        ArgumentNullException.ThrowIfNull(provider);
+        if (string.IsNullOrWhiteSpace(provider.Name))
+        {
+            throw new InvalidOperationException("Folding range provider name cannot be empty.");
+        }
+
+        lock (_gate)
+        {
+            _lspFoldingRangeProviders.RemoveAll(existing =>
+                string.Equals(existing.Name, provider.Name, StringComparison.OrdinalIgnoreCase));
+            _lspFoldingRangeProviders.Add(provider);
+            _lspFoldingRangeProviders.Sort(static (left, right) =>
+            {
+                var priority = right.Priority.CompareTo(left.Priority);
+                return priority != 0
+                    ? priority
+                    : string.Compare(left.Name, right.Name, StringComparison.OrdinalIgnoreCase);
+            });
+        }
+    }
+
     public void RegisterLspReferenceProvider(ILspReferenceProvider provider)
     {
         ArgumentNullException.ThrowIfNull(provider);
@@ -278,6 +394,38 @@ internal sealed class ExtensionRegistry : IExtensionRegistry
         }
     }
 
+    public IReadOnlyList<ILspSignatureHelpProvider> GetLspSignatureHelpProviders()
+    {
+        lock (_gate)
+        {
+            return _lspSignatureHelpProviders.ToArray();
+        }
+    }
+
+    public IReadOnlyList<ILspInlayHintProvider> GetLspInlayHintProviders()
+    {
+        lock (_gate)
+        {
+            return _lspInlayHintProviders.ToArray();
+        }
+    }
+
+    public IReadOnlyList<ILspWorkspaceSymbolProvider> GetLspWorkspaceSymbolProviders()
+    {
+        lock (_gate)
+        {
+            return _lspWorkspaceSymbolProviders.ToArray();
+        }
+    }
+
+    public IReadOnlyList<ILspFoldingRangeProvider> GetLspFoldingRangeProviders()
+    {
+        lock (_gate)
+        {
+            return _lspFoldingRangeProviders.ToArray();
+        }
+    }
+
     public IReadOnlyList<ILspReferenceProvider> GetLspReferenceProviders()
     {
         lock (_gate)
@@ -313,20 +461,35 @@ internal sealed class ExtensionRegistry : IExtensionRegistry
                 SuccessCount: 0,
                 FailureCount: 0,
                 TimeoutCount: 0,
+                SkippedCount: 0,
                 LastDuration: TimeSpan.Zero,
                 LastSuccessAt: null,
                 LastFailureAt: null,
                 LastErrorMessage: null);
 
             var now = DateTimeOffset.UtcNow;
-            var next = invocation.Succeeded
-                ? current with
+            ExtensionProviderHealth next;
+            if (invocation.Skipped)
+            {
+                next = current with
+                {
+                    SkippedCount = current.SkippedCount + 1,
+                    LastDuration = invocation.Duration,
+                    LastErrorMessage = invocation.ErrorMessage
+                };
+            }
+            else if (invocation.Succeeded)
+            {
+                next = current with
                 {
                     SuccessCount = current.SuccessCount + 1,
                     LastDuration = invocation.Duration,
                     LastSuccessAt = now
-                }
-                : current with
+                };
+            }
+            else
+            {
+                next = current with
                 {
                     FailureCount = current.FailureCount + 1,
                     TimeoutCount = invocation.TimedOut
@@ -336,6 +499,7 @@ internal sealed class ExtensionRegistry : IExtensionRegistry
                     LastFailureAt = now,
                     LastErrorMessage = invocation.ErrorMessage
                 };
+            }
 
             _providerHealthByKey[key] = next;
         }

@@ -2,7 +2,7 @@
 
 ## 目标
 
-实现 VueHost 的可扩展分析器系统、高级 LSP 特性补充（Signature Help、Inlay Hints、Workspace Symbol、Folding Range）、VS Code 扩展集成、降级与容错机制完善，构建完整的开发生态。
+实现 VueHost 的可扩展分析器系统、高级 LSP 特性补充（Signature Help、Inlay Hints、Workspace Symbol、Folding Range）、VS Code 扩展集成、故障隔离与健康治理，构建完整的开发生态。
 
 **验收标准**:
 - 自定义分析器插件可注册并提供诊断/代码操作
@@ -11,24 +11,26 @@
 - Workspace Symbol 可搜索项目内所有符号
 - Folding Range 支持 @code 块和组件标签折叠
 - VS Code 扩展可一键启动 VueHost
-- Lane 故障时自动降级，不影响其他功能
+- provider 故障时隔离失效点且不影响主链路
 
 ## 当前实现状态（2026-04-17）
 
 ### 已完成（最小闭环）
 
 - 新增扩展核心接口与元数据模型：`IExtension` / `ExtensionMetadata` / `ExtensionContext`。
-- 新增 LSP 扩展 provider 抽象：`ILspDiagnosticProvider`、`ILspCodeActionProvider`、`ILspHoverProvider`、`ILspCompletionProvider`、`ILspDocumentSymbolProvider`、`ILspReferenceProvider`、`ILspRenameProvider` 及统一上下文对象。
+- 新增 LSP 扩展 provider 抽象：`ILspDiagnosticProvider`、`ILspCodeActionProvider`、`ILspHoverProvider`、`ILspCompletionProvider`、`ILspDocumentSymbolProvider`、`ILspSignatureHelpProvider`、`ILspInlayHintProvider`、`ILspWorkspaceSymbolProvider`、`ILspFoldingRangeProvider`、`ILspReferenceProvider`、`ILspRenameProvider` 及统一上下文对象。
 - 新增扩展注册表与空实现：`ExtensionRegistry` / `NullExtensionRegistry`，支持 provider 按优先级注册与读取。
 - 新增扩展加载器与配置解析：`ExtensionLoader` + `ExtensionHostOptionsResolver`，支持 builtin 与目录扩展加载（`extension.json`）。
 - `LspSession` 已接入扩展 provider 聚合点：diagnostics / codeAction / hover / completion / documentSymbol / references / rename 都会合并扩展结果，且 provider 失败不会中断主链路。
+- `LspSession` 已接入扩展 provider 超时隔离（连续失败阈值 + 隔离窗口）与健康查询请求（`jazor/extensionProviderHealth`）。
+- `LspSession` 已接入 signatureHelp / inlayHint / workspaceSymbol / foldingRange 扩展 provider 请求路径。
+- 扩展目录与程序集加载路径已增加边界约束：默认拒绝 root 外扩展目录（可显式 `--extensions-allow-external=true` 放开），并阻断程序集路径越界。
 - `Program` 的 `--lsp` 启动路径已集成扩展加载与注入。
-- 新增 Phase7 回归测试，覆盖注册表、加载器、options 解析，以及 diagnostics/codeAction/hover/completion/documentSymbol/references/rename 的端到端接入断言。
+- 新增 Phase7 回归测试，覆盖注册表、加载器、options 解析，以及 diagnostics/codeAction/hover/completion/documentSymbol/references/rename、超时隔离与健康统计的端到端断言。
 
 ### 尚未完成
 
-- signatureHelp / inlayHints / workspaceSymbol / foldingRange 等 provider 面尚未扩展。
-- 扩展健康监控、超时隔离、权限约束与沙箱策略尚未实现。
+- 扩展沙箱策略仍需细化到更细粒度权限（例如按 capability/目录白名单分层）。
 - VS Code 扩展与生态层（市场、发布、安装）尚未落地。
 
 ---
@@ -2269,5 +2271,5 @@ export async function deactivate() {
 ---
 
 **文档维护者**: developerhan  
-**最后更新**: 2026-04-15  
-**文档版本**: v1.0
+**最后更新**: 2026-04-17  
+**文档版本**: v1.2

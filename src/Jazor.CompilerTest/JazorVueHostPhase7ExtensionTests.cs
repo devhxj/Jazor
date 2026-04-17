@@ -31,6 +31,10 @@ public sealed class JazorVueHostPhase7ExtensionTests
         Assert.AreEqual(1, registry.GetLspHoverProviders().Count);
         Assert.AreEqual(1, registry.GetLspCompletionProviders().Count);
         Assert.AreEqual(1, registry.GetLspDocumentSymbolProviders().Count);
+        Assert.AreEqual(1, registry.GetLspSignatureHelpProviders().Count);
+        Assert.AreEqual(1, registry.GetLspInlayHintProviders().Count);
+        Assert.AreEqual(1, registry.GetLspWorkspaceSymbolProviders().Count);
+        Assert.AreEqual(1, registry.GetLspFoldingRangeProviders().Count);
         Assert.AreEqual(1, registry.GetLspReferenceProviders().Count);
         Assert.AreEqual(1, registry.GetLspRenameProviders().Count);
     }
@@ -56,6 +60,10 @@ public sealed class JazorVueHostPhase7ExtensionTests
         Assert.AreEqual(1, registry.GetLspHoverProviders().Count);
         Assert.AreEqual(1, registry.GetLspCompletionProviders().Count);
         Assert.AreEqual(1, registry.GetLspDocumentSymbolProviders().Count);
+        Assert.AreEqual(1, registry.GetLspSignatureHelpProviders().Count);
+        Assert.AreEqual(1, registry.GetLspInlayHintProviders().Count);
+        Assert.AreEqual(1, registry.GetLspWorkspaceSymbolProviders().Count);
+        Assert.AreEqual(1, registry.GetLspFoldingRangeProviders().Count);
         Assert.AreEqual(1, registry.GetLspReferenceProviders().Count);
         Assert.AreEqual(1, registry.GetLspRenameProviders().Count);
     }
@@ -88,6 +96,117 @@ public sealed class JazorVueHostPhase7ExtensionTests
         CollectionAssert.AreEquivalent(
             new[] { "ext.c", "ext.d" },
             options.DisabledExtensionIds.ToArray());
+    }
+
+    [TestMethod]
+    public void ExtensionHostOptionsResolver_Resolve_WithExternalDirectoryWithoutOptIn_Throws()
+    {
+        var rootDirectory = Path.Combine(Path.GetTempPath(), $"phase7-root-{Guid.NewGuid():N}");
+        var externalDirectory = Path.Combine(Path.GetTempPath(), $"phase7-external-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(rootDirectory);
+        Directory.CreateDirectory(externalDirectory);
+
+        try
+        {
+            _ = Assert.ThrowsExactly<InvalidOperationException>(() =>
+                ExtensionHostOptionsResolver.Resolve(
+                    [$"--extensions-dir={externalDirectory}"],
+                    rootDirectory,
+                    config: null));
+        }
+        finally
+        {
+            if (Directory.Exists(rootDirectory))
+            {
+                Directory.Delete(rootDirectory, recursive: true);
+            }
+
+            if (Directory.Exists(externalDirectory))
+            {
+                Directory.Delete(externalDirectory, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
+    public void ExtensionHostOptionsResolver_Resolve_WithExternalDirectoryOptIn_AllowsExternalDirectory()
+    {
+        var rootDirectory = Path.Combine(Path.GetTempPath(), $"phase7-root-{Guid.NewGuid():N}");
+        var externalDirectory = Path.Combine(Path.GetTempPath(), $"phase7-external-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(rootDirectory);
+        Directory.CreateDirectory(externalDirectory);
+
+        try
+        {
+            var options = ExtensionHostOptionsResolver.Resolve(
+                [
+                    $"--extensions-dir={externalDirectory}",
+                    "--extensions-allow-external=true"
+                ],
+                rootDirectory,
+                config: null);
+
+            Assert.IsTrue(options.AllowExternalDirectory);
+            Assert.AreEqual(
+                Path.GetFullPath(externalDirectory),
+                options.ExtensionsDirectory,
+                ignoreCase: true);
+        }
+        finally
+        {
+            if (Directory.Exists(rootDirectory))
+            {
+                Directory.Delete(rootDirectory, recursive: true);
+            }
+
+            if (Directory.Exists(externalDirectory))
+            {
+                Directory.Delete(externalDirectory, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task ExtensionLoader_LoadUserExtensionsAsync_WithEscapingAssemblyPath_SkipsExtension()
+    {
+        var rootDirectory = Path.Combine(Path.GetTempPath(), $"phase7-root-{Guid.NewGuid():N}");
+        var extensionsDirectory = Path.Combine(rootDirectory, ".jazor", "extensions");
+        var extensionDirectory = Path.Combine(extensionsDirectory, "escape-extension");
+        Directory.CreateDirectory(extensionDirectory);
+
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(extensionDirectory, "extension.json"),
+                """
+                {
+                  "assembly": "../outside/escape.dll",
+                  "type": "Phase7.Escape.Extension"
+                }
+                """);
+
+            var registry = new ExtensionRegistry();
+            var loader = new ExtensionLoader(registry);
+            await loader.LoadUserExtensionsAsync(
+                new ExtensionHostOptions
+                {
+                    RootDirectory = rootDirectory,
+                    Enabled = true,
+                    ExtensionsDirectory = extensionsDirectory,
+                    AllowExternalDirectory = false
+                },
+                CancellationToken.None);
+
+            Assert.AreEqual(0, registry.GetExtensions().Count);
+            Assert.AreEqual(0, registry.GetLspDiagnosticProviders().Count);
+        }
+        finally
+        {
+            if (Directory.Exists(rootDirectory))
+            {
+                Directory.Delete(rootDirectory, recursive: true);
+            }
+        }
     }
 
     [TestMethod]
@@ -198,8 +317,10 @@ public sealed class JazorVueHostPhase7ExtensionTests
         var workspaceStore = new InMemoryWorkspaceStore();
         var virtualDocumentRegistry = new InMemoryVirtualDocumentRegistry();
         var extensionRegistry = new ExtensionRegistry();
-        extensionRegistry.RegisterLspHoverProvider(new TestSlowHoverProvider("Slow Hover", priority: 20, delay: TimeSpan.FromMilliseconds(150)));
-        extensionRegistry.RegisterLspHoverProvider(new TestHoverProvider("Fast Hover", priority: 10));
+        var slowProvider = new TestSlowHoverProvider("Slow Hover", priority: 20, delay: TimeSpan.FromMilliseconds(150));
+        var fastProvider = new TestHoverProvider("Fast Hover", priority: 10);
+        extensionRegistry.RegisterLspHoverProvider(slowProvider);
+        extensionRegistry.RegisterLspHoverProvider(fastProvider);
 
         var documentPath = Path.Combine(Path.GetTempPath(), $"phase7-{Guid.NewGuid():N}.jazor");
         var document = new DocumentSnapshot(
@@ -246,12 +367,292 @@ public sealed class JazorVueHostPhase7ExtensionTests
             && string.Equals(entry.Capability, "hover", StringComparison.Ordinal));
         Assert.AreEqual(1, slowHealth.FailureCount);
         Assert.AreEqual(1, slowHealth.TimeoutCount);
+        Assert.AreEqual(0, slowHealth.SkippedCount);
 
         var fastHealth = providerHealth.Single(static entry =>
             string.Equals(entry.ProviderName, "Phase7HoverProvider", StringComparison.Ordinal)
             && string.Equals(entry.Capability, "hover", StringComparison.Ordinal));
         Assert.AreEqual(1, fastHealth.SuccessCount);
         Assert.AreEqual(0, fastHealth.FailureCount);
+        Assert.AreEqual(0, fastHealth.SkippedCount);
+        Assert.AreEqual(1, slowProvider.InvocationCount);
+        Assert.AreEqual(1, fastProvider.InvocationCount);
+    }
+
+    [TestMethod]
+    public async Task LspSession_Hover_Request_WithRepeatedTimeoutingProvider_IsolatesProviderAndExposesHealth()
+    {
+        var workspaceStore = new InMemoryWorkspaceStore();
+        var virtualDocumentRegistry = new InMemoryVirtualDocumentRegistry();
+        var extensionRegistry = new ExtensionRegistry();
+        var slowProvider = new TestSlowHoverProvider("Slow Hover", priority: 20, delay: TimeSpan.FromMilliseconds(150));
+        var fastProvider = new TestHoverProvider("Fast Hover", priority: 10);
+        extensionRegistry.RegisterLspHoverProvider(slowProvider);
+        extensionRegistry.RegisterLspHoverProvider(fastProvider);
+
+        var documentPath = Path.Combine(Path.GetTempPath(), $"phase7-{Guid.NewGuid():N}.jazor");
+        var document = new DocumentSnapshot(
+            documentPath,
+            DocumentKind.Jazor,
+            "<div>@value</div>",
+            "1");
+        await workspaceStore.UpsertDocumentAsync(document, CancellationToken.None);
+
+        using var outputStream = new MemoryStream();
+        var session = CreateSession(
+            workspaceStore,
+            virtualDocumentRegistry,
+            [new EmptyJazorLane()],
+            outputStream,
+            extensionRegistry,
+            extensionProviderTimeout: TimeSpan.FromMilliseconds(30),
+            extensionProviderIsolationFailureThreshold: 1,
+            extensionProviderIsolationDuration: TimeSpan.FromSeconds(30));
+
+        async Task<LspResponseMessage?> SendHoverRequestAsync(int requestId)
+            => await session.HandleRequestAsync(
+                new LspRequestMessage
+                {
+                    Id = requestId,
+                    Method = "textDocument/hover",
+                    Params = new LspHoverParams
+                    {
+                        TextDocument = new LspTextDocumentIdentifier
+                        {
+                            Uri = LspProtocolHelpers.ToDocumentUri(documentPath)
+                        },
+                        Position = new LspPosition { Line = 0, Character = 6 }
+                    }
+                },
+                CancellationToken.None);
+
+        var firstResponse = await SendHoverRequestAsync(2021);
+        var secondResponse = await SendHoverRequestAsync(2022);
+
+        Assert.IsNotNull(firstResponse);
+        Assert.IsNotNull(secondResponse);
+        Assert.IsNull(firstResponse!.Error);
+        Assert.IsNull(secondResponse!.Error);
+        Assert.AreEqual("Fast Hover", (firstResponse.Result as LspHoverResult)?.Contents.Value);
+        Assert.AreEqual("Fast Hover", (secondResponse.Result as LspHoverResult)?.Contents.Value);
+        Assert.AreEqual(1, slowProvider.InvocationCount);
+        Assert.AreEqual(2, fastProvider.InvocationCount);
+
+        var healthResponse = await session.HandleRequestAsync(
+            new LspRequestMessage
+            {
+                Id = 2023,
+                Method = "jazor/extensionProviderHealth"
+            },
+            CancellationToken.None);
+        Assert.IsNotNull(healthResponse);
+        Assert.IsNull(healthResponse!.Error);
+
+        var providerHealth = healthResponse.Result as IReadOnlyList<ExtensionProviderHealth>;
+        Assert.IsNotNull(providerHealth);
+        var slowHealth = providerHealth.Single(static entry =>
+            string.Equals(entry.ProviderName, "Phase7SlowHoverProvider", StringComparison.Ordinal)
+            && string.Equals(entry.Capability, "hover", StringComparison.Ordinal));
+        Assert.AreEqual(1, slowHealth.FailureCount);
+        Assert.AreEqual(1, slowHealth.TimeoutCount);
+        Assert.AreEqual(1, slowHealth.SkippedCount);
+
+        var fastHealth = providerHealth.Single(static entry =>
+            string.Equals(entry.ProviderName, "Phase7HoverProvider", StringComparison.Ordinal)
+            && string.Equals(entry.Capability, "hover", StringComparison.Ordinal));
+        Assert.AreEqual(2, fastHealth.SuccessCount);
+        Assert.AreEqual(0, fastHealth.FailureCount);
+    }
+
+    [TestMethod]
+    public async Task LspSession_SignatureHelp_Request_UsesExtensionProvider()
+    {
+        var workspaceStore = new InMemoryWorkspaceStore();
+        var virtualDocumentRegistry = new InMemoryVirtualDocumentRegistry();
+        var extensionRegistry = new ExtensionRegistry();
+        extensionRegistry.RegisterLspSignatureHelpProvider(new TestSignatureHelpProvider(priority: 10));
+
+        var documentPath = Path.Combine(Path.GetTempPath(), $"phase7-{Guid.NewGuid():N}.jazor");
+        var document = new DocumentSnapshot(
+            documentPath,
+            DocumentKind.Jazor,
+            "<div>@value</div>",
+            "1");
+        await workspaceStore.UpsertDocumentAsync(document, CancellationToken.None);
+
+        using var outputStream = new MemoryStream();
+        var session = CreateSession(
+            workspaceStore,
+            virtualDocumentRegistry,
+            [new EmptyJazorLane()],
+            outputStream,
+            extensionRegistry);
+
+        var response = await session.HandleRequestAsync(
+            new LspRequestMessage
+            {
+                Id = 203,
+                Method = "textDocument/signatureHelp",
+                Params = new LspSignatureHelpParams
+                {
+                    TextDocument = new LspTextDocumentIdentifier
+                    {
+                        Uri = LspProtocolHelpers.ToDocumentUri(documentPath)
+                    },
+                    Position = new LspPosition { Line = 0, Character = 6 }
+                }
+            },
+            CancellationToken.None);
+
+        Assert.IsNotNull(response);
+        Assert.IsNull(response!.Error);
+        var signatureHelp = response.Result as LspSignatureHelp;
+        Assert.IsNotNull(signatureHelp);
+        Assert.AreEqual("Phase7Signature(value: string)", signatureHelp.Signatures[0].Label);
+    }
+
+    [TestMethod]
+    public async Task LspSession_InlayHint_Request_UsesExtensionProvider()
+    {
+        var workspaceStore = new InMemoryWorkspaceStore();
+        var virtualDocumentRegistry = new InMemoryVirtualDocumentRegistry();
+        var extensionRegistry = new ExtensionRegistry();
+        extensionRegistry.RegisterLspInlayHintProvider(new TestInlayHintProvider(priority: 10));
+
+        var documentPath = Path.Combine(Path.GetTempPath(), $"phase7-{Guid.NewGuid():N}.jazor");
+        var document = new DocumentSnapshot(
+            documentPath,
+            DocumentKind.Jazor,
+            "<div>@value</div>",
+            "1");
+        await workspaceStore.UpsertDocumentAsync(document, CancellationToken.None);
+
+        using var outputStream = new MemoryStream();
+        var session = CreateSession(
+            workspaceStore,
+            virtualDocumentRegistry,
+            [new EmptyJazorLane()],
+            outputStream,
+            extensionRegistry);
+
+        var response = await session.HandleRequestAsync(
+            new LspRequestMessage
+            {
+                Id = 204,
+                Method = "textDocument/inlayHint",
+                Params = new LspInlayHintParams
+                {
+                    TextDocument = new LspTextDocumentIdentifier
+                    {
+                        Uri = LspProtocolHelpers.ToDocumentUri(documentPath)
+                    },
+                    Range = new LspRange
+                    {
+                        Start = new LspPosition { Line = 0, Character = 0 },
+                        End = new LspPosition { Line = 0, Character = 12 }
+                    }
+                }
+            },
+            CancellationToken.None);
+
+        Assert.IsNotNull(response);
+        Assert.IsNull(response!.Error);
+        var hints = response.Result as IReadOnlyList<LspInlayHint>;
+        Assert.IsNotNull(hints);
+        Assert.AreEqual(1, hints.Count);
+        Assert.AreEqual(": string", hints[0].Label);
+    }
+
+    [TestMethod]
+    public async Task LspSession_WorkspaceSymbol_Request_UsesExtensionProvider()
+    {
+        var workspaceStore = new InMemoryWorkspaceStore();
+        var virtualDocumentRegistry = new InMemoryVirtualDocumentRegistry();
+        var extensionRegistry = new ExtensionRegistry();
+        extensionRegistry.RegisterLspWorkspaceSymbolProvider(new TestWorkspaceSymbolProvider(priority: 10));
+
+        var documentPath = Path.Combine(Path.GetTempPath(), $"phase7-{Guid.NewGuid():N}.jazor");
+        var document = new DocumentSnapshot(
+            documentPath,
+            DocumentKind.Jazor,
+            "<div>@value</div>",
+            "1");
+        await workspaceStore.UpsertDocumentAsync(document, CancellationToken.None);
+
+        using var outputStream = new MemoryStream();
+        var session = CreateSession(
+            workspaceStore,
+            virtualDocumentRegistry,
+            [new EmptyJazorLane()],
+            outputStream,
+            extensionRegistry);
+
+        var response = await session.HandleRequestAsync(
+            new LspRequestMessage
+            {
+                Id = 205,
+                Method = "workspace/symbol",
+                Params = new LspWorkspaceSymbolParams
+                {
+                    Query = "Phase7"
+                }
+            },
+            CancellationToken.None);
+
+        Assert.IsNotNull(response);
+        Assert.IsNull(response!.Error);
+        var symbols = response.Result as IReadOnlyList<LspWorkspaceSymbol>;
+        Assert.IsNotNull(symbols);
+        Assert.AreEqual(1, symbols.Count);
+        Assert.AreEqual("Phase7Symbol", symbols[0].Name);
+    }
+
+    [TestMethod]
+    public async Task LspSession_FoldingRange_Request_UsesExtensionProvider()
+    {
+        var workspaceStore = new InMemoryWorkspaceStore();
+        var virtualDocumentRegistry = new InMemoryVirtualDocumentRegistry();
+        var extensionRegistry = new ExtensionRegistry();
+        extensionRegistry.RegisterLspFoldingRangeProvider(new TestFoldingRangeProvider(priority: 10));
+
+        var documentPath = Path.Combine(Path.GetTempPath(), $"phase7-{Guid.NewGuid():N}.jazor");
+        var document = new DocumentSnapshot(
+            documentPath,
+            DocumentKind.Jazor,
+            "<div>@value</div>",
+            "1");
+        await workspaceStore.UpsertDocumentAsync(document, CancellationToken.None);
+
+        using var outputStream = new MemoryStream();
+        var session = CreateSession(
+            workspaceStore,
+            virtualDocumentRegistry,
+            [new EmptyJazorLane()],
+            outputStream,
+            extensionRegistry);
+
+        var response = await session.HandleRequestAsync(
+            new LspRequestMessage
+            {
+                Id = 206,
+                Method = "textDocument/foldingRange",
+                Params = new LspFoldingRangeParams
+                {
+                    TextDocument = new LspTextDocumentIdentifier
+                    {
+                        Uri = LspProtocolHelpers.ToDocumentUri(documentPath)
+                    }
+                }
+            },
+            CancellationToken.None);
+
+        Assert.IsNotNull(response);
+        Assert.IsNull(response!.Error);
+        var ranges = response.Result as IReadOnlyList<LspFoldingRange>;
+        Assert.IsNotNull(ranges);
+        Assert.AreEqual(1, ranges.Count);
+        Assert.AreEqual(0, ranges[0].StartLine);
+        Assert.AreEqual(1, ranges[0].EndLine);
     }
 
     [TestMethod]
@@ -504,7 +905,9 @@ public sealed class JazorVueHostPhase7ExtensionTests
         ILspLane[] lanes,
         Stream outputStream,
         IExtensionRegistry extensionRegistry,
-        TimeSpan? extensionProviderTimeout = null)
+        TimeSpan? extensionProviderTimeout = null,
+        int extensionProviderIsolationFailureThreshold = 2,
+        TimeSpan? extensionProviderIsolationDuration = null)
     {
         var laneRouter = new LspLaneRouter();
         var projectionResolver = new DocumentProjectionResolver(
@@ -531,7 +934,9 @@ public sealed class JazorVueHostPhase7ExtensionTests
             new CodeActionCoordinator(laneMap, laneRouter, resultAggregator),
             workspaceDocumentChangeSink: null,
             extensionRegistry: extensionRegistry,
-            extensionProviderTimeout: extensionProviderTimeout);
+            extensionProviderTimeout: extensionProviderTimeout,
+            extensionProviderIsolationFailureThreshold: extensionProviderIsolationFailureThreshold,
+            extensionProviderIsolationDuration: extensionProviderIsolationDuration);
     }
 
     private static JsonDocument ReadSingleLspMessage(MemoryStream stream)
@@ -636,14 +1041,19 @@ public sealed class JazorVueHostPhase7ExtensionTests
 
     private sealed class TestHoverProvider(string value, int priority) : ILspHoverProvider
     {
+        private int _invocationCount;
+
         public string Name => "Phase7HoverProvider";
 
         public int Priority => priority;
+
+        public int InvocationCount => _invocationCount;
 
         public ValueTask<LspHoverResult?> ProvideHoverAsync(
             LspHoverProviderContext context,
             CancellationToken cancellationToken)
         {
+            Interlocked.Increment(ref _invocationCount);
             return ValueTask.FromResult<LspHoverResult?>(new LspHoverResult
             {
                 Contents = new LspMarkupContent
@@ -657,14 +1067,19 @@ public sealed class JazorVueHostPhase7ExtensionTests
 
     private sealed class TestSlowHoverProvider(string value, int priority, TimeSpan delay) : ILspHoverProvider
     {
+        private int _invocationCount;
+
         public string Name => "Phase7SlowHoverProvider";
 
         public int Priority => priority;
+
+        public int InvocationCount => _invocationCount;
 
         public async ValueTask<LspHoverResult?> ProvideHoverAsync(
             LspHoverProviderContext context,
             CancellationToken cancellationToken)
         {
+            Interlocked.Increment(ref _invocationCount);
             await Task.Delay(delay, cancellationToken);
             return new LspHoverResult
             {
@@ -730,6 +1145,119 @@ public sealed class JazorVueHostPhase7ExtensionTests
             ];
 
             return ValueTask.FromResult(symbols);
+        }
+    }
+
+    private sealed class TestSignatureHelpProvider(int priority) : ILspSignatureHelpProvider
+    {
+        public string Name => "Phase7SignatureHelpProvider";
+
+        public int Priority => priority;
+
+        public ValueTask<LspSignatureHelp?> ProvideSignatureHelpAsync(
+            LspSignatureHelpProviderContext context,
+            CancellationToken cancellationToken)
+        {
+            return ValueTask.FromResult<LspSignatureHelp?>(new LspSignatureHelp
+            {
+                ActiveSignature = 0,
+                ActiveParameter = 0,
+                Signatures =
+                [
+                    new LspSignatureInformation
+                    {
+                        Label = "Phase7Signature(value: string)",
+                        Parameters =
+                        [
+                            new LspParameterInformation
+                            {
+                                Label = "value: string"
+                            }
+                        ]
+                    }
+                ]
+            });
+        }
+    }
+
+    private sealed class TestInlayHintProvider(int priority) : ILspInlayHintProvider
+    {
+        public string Name => "Phase7InlayHintProvider";
+
+        public int Priority => priority;
+
+        public ValueTask<IReadOnlyList<LspInlayHint>> ProvideInlayHintsAsync(
+            LspInlayHintProviderContext context,
+            CancellationToken cancellationToken)
+        {
+            IReadOnlyList<LspInlayHint> hints =
+            [
+                new LspInlayHint
+                {
+                    Position = new LspPosition { Line = 0, Character = 6 },
+                    Label = ": string",
+                    Kind = 1
+                }
+            ];
+            return ValueTask.FromResult(hints);
+        }
+    }
+
+    private sealed class TestWorkspaceSymbolProvider(int priority) : ILspWorkspaceSymbolProvider
+    {
+        public string Name => "Phase7WorkspaceSymbolProvider";
+
+        public int Priority => priority;
+
+        public ValueTask<IReadOnlyList<LspWorkspaceSymbol>> ProvideWorkspaceSymbolsAsync(
+            LspWorkspaceSymbolProviderContext context,
+            CancellationToken cancellationToken)
+        {
+            var document = context.OpenDocuments.First();
+            IReadOnlyList<LspWorkspaceSymbol> symbols =
+            [
+                new LspWorkspaceSymbol
+                {
+                    Name = "Phase7Symbol",
+                    Kind = 5,
+                    Location = new LspLocation
+                    {
+                        Uri = LspProtocolHelpers.ToDocumentUri(document.DocumentPath),
+                        Range = new LspRange
+                        {
+                            Start = new LspPosition { Line = 0, Character = 0 },
+                            End = new LspPosition { Line = 0, Character = 5 }
+                        }
+                    },
+                    ContainerName = "Phase7"
+                }
+            ];
+
+            return ValueTask.FromResult(symbols);
+        }
+    }
+
+    private sealed class TestFoldingRangeProvider(int priority) : ILspFoldingRangeProvider
+    {
+        public string Name => "Phase7FoldingRangeProvider";
+
+        public int Priority => priority;
+
+        public ValueTask<IReadOnlyList<LspFoldingRange>> ProvideFoldingRangesAsync(
+            LspFoldingRangeProviderContext context,
+            CancellationToken cancellationToken)
+        {
+            IReadOnlyList<LspFoldingRange> ranges =
+            [
+                new LspFoldingRange
+                {
+                    StartLine = 0,
+                    EndLine = 1,
+                    Kind = "region"
+                }
+            ];
+
+            return ValueTask.FromResult(ranges);
         }
     }
 
@@ -822,7 +1350,7 @@ public sealed class JazorVueHostPhase7ExtensionTests
         }
     }
 
-    private sealed class TestExtension(string id) : IExtension, ILspDiagnosticProvider, ILspCodeActionProvider, ILspHoverProvider, ILspCompletionProvider, ILspDocumentSymbolProvider, ILspReferenceProvider, ILspRenameProvider
+    private sealed class TestExtension(string id) : IExtension, ILspDiagnosticProvider, ILspCodeActionProvider, ILspHoverProvider, ILspCompletionProvider, ILspDocumentSymbolProvider, ILspSignatureHelpProvider, ILspInlayHintProvider, ILspWorkspaceSymbolProvider, ILspFoldingRangeProvider, ILspReferenceProvider, ILspRenameProvider
     {
         public bool Initialized { get; private set; }
 
@@ -866,6 +1394,18 @@ public sealed class JazorVueHostPhase7ExtensionTests
 
         public ValueTask<IReadOnlyList<LspDocumentSymbol>> ProvideDocumentSymbolsAsync(LspDocumentSymbolProviderContext context, CancellationToken cancellationToken)
             => ValueTask.FromResult<IReadOnlyList<LspDocumentSymbol>>(Array.Empty<LspDocumentSymbol>());
+
+        public ValueTask<LspSignatureHelp?> ProvideSignatureHelpAsync(LspSignatureHelpProviderContext context, CancellationToken cancellationToken)
+            => ValueTask.FromResult<LspSignatureHelp?>(null);
+
+        public ValueTask<IReadOnlyList<LspInlayHint>> ProvideInlayHintsAsync(LspInlayHintProviderContext context, CancellationToken cancellationToken)
+            => ValueTask.FromResult<IReadOnlyList<LspInlayHint>>(Array.Empty<LspInlayHint>());
+
+        public ValueTask<IReadOnlyList<LspWorkspaceSymbol>> ProvideWorkspaceSymbolsAsync(LspWorkspaceSymbolProviderContext context, CancellationToken cancellationToken)
+            => ValueTask.FromResult<IReadOnlyList<LspWorkspaceSymbol>>(Array.Empty<LspWorkspaceSymbol>());
+
+        public ValueTask<IReadOnlyList<LspFoldingRange>> ProvideFoldingRangesAsync(LspFoldingRangeProviderContext context, CancellationToken cancellationToken)
+            => ValueTask.FromResult<IReadOnlyList<LspFoldingRange>>(Array.Empty<LspFoldingRange>());
 
         public ValueTask<IReadOnlyList<LspLocation>> ProvideReferencesAsync(LspReferenceProviderContext context, CancellationToken cancellationToken)
             => ValueTask.FromResult<IReadOnlyList<LspLocation>>(Array.Empty<LspLocation>());

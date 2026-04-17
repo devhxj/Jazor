@@ -170,12 +170,20 @@ internal sealed class ExtensionLoader
             : Path.GetFullPath(Path.Combine(extensionDirectory, assemblyPath));
 
         var normalizedExtensionDirectory = Path.GetFullPath(extensionDirectory);
-        if (!combined.StartsWith(normalizedExtensionDirectory, StringComparison.OrdinalIgnoreCase))
+        if (!IsPathInsideDirectory(normalizedExtensionDirectory, combined))
         {
             throw new InvalidOperationException(
                 $"Extension assembly path '{assemblyPath}' escapes extension directory '{extensionDirectory}'.");
         }
 
         return combined;
+    }
+
+    private static bool IsPathInsideDirectory(string directoryPath, string candidatePath)
+    {
+        var relativePath = Path.GetRelativePath(directoryPath, candidatePath);
+        return !string.IsNullOrWhiteSpace(relativePath)
+            && !relativePath.StartsWith("..", StringComparison.Ordinal)
+            && !Path.IsPathRooted(relativePath);
     }
 }

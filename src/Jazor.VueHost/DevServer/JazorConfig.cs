@@ -94,5 +94,7 @@ internal sealed class JazorExtensionsConfig
 
     public string? Directory { get; init; }
 
+    public bool? AllowExternalDirectory { get; init; }
+
     public string[]? Disabled { get; init; }
 }

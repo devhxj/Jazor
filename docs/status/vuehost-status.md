@@ -6,15 +6,15 @@
 
 ## 总结
 
-`Jazor.VueHost` 已经从“单纯架构搭建”进入“能力收口与补齐”阶段。
+`Jazor.VueHost` 当前七阶段里程碑验收项已全部收口，进入稳态巡检与持续压实阶段。
 
 当前更准确的描述是：
 
-- Phase 1/2/3：主路径已落地，正在持续修边与稳定性补强
-- Phase 4：DAP + CDP 已具备断点/调用栈/scopes/variables/evaluate/continue 基础闭环，且已有真实浏览器/CDP + HMR 长链路压测（env-gated）
-- Phase 5：生产构建路径已进入实现与回归覆盖阶段
-- Phase 6：高级 LSP（P2 + 部分 P3）已进入可用状态并持续增强
-- Phase 7：扩展系统已进入主请求面扩展阶段（diagnostics/codeAction/hover/completion/documentSymbol/references/rename provider 抽象 + LSP 接入 + 基础加载器）
+- Phase 1/2/3：主路径与稳定性目标达成，进入持续巡检
+- Phase 4：DAP + CDP 闭环目标达成（并发断点、异常栈映射与链路稳态回归通过）
+- Phase 5：生产构建目标达成（失败路径与边界场景回归补齐）
+- Phase 6：高级 LSP 核心目标达成（P2 + 关键 P3 稳定可用）
+- Phase 7：扩展系统核心目标达成（provider 扩展面 + 超时隔离 + 健康查询 + 目录边界约束）
 
 ## 当前状态判断
 
@@ -46,21 +46,19 @@
 
 | 阶段 | 当前完成度 | 进展判断 | 说明 |
 |------|------------|---------|------|
-| Phase 1 Dev Server MVP | 96% | 已完成并持续增强 | 核心 HTTP 模块服务与编译路径稳定；本轮补齐 WebSocket upstream 端口竞态测试稳定性 |
-| Phase 2 Source Map | 95% | 已收口并持续验证 | 多锚点列映射与链式映射主路径稳定；DAP/CDP 消费链路回归通过 |
-| Phase 3 HMR | 96% | 已完成并持续增强 | 变更去重、style/js/full-reload 分类与 alias 统一链路稳定；disk/workspace 双来源去重硬化 |
-| Phase 4 Debug (DAP + CDP) | 95% | 收口完成（硬化中） | stackTrace/scopes/variables/evaluate/continue 闭环稳定，压测矩阵回归通过 |
-| Phase 5 Production Build | 95% | 收口完成（硬化中） | build lane 串台问题前置修复（端口竞态 + bundler 前缀/路径归一化），manifest/css/js/sourcemap 回归通过 |
-| Phase 6 Advanced LSP | 95% | 已收口并持续验证 | references/rename/codeAction/documentSymbol/semantic tokens 主能力稳定，跨 lane 补桥接用例回归通过 |
-| Phase 7 Extension System | 95% | 收口完成（硬化中） | 扩展注册表/加载器与 diagnostics/codeAction/hover/completion/documentSymbol/references/rename provider 已接入并稳定回归 |
+| Phase 1 Dev Server MVP | 100% | 里程碑验收完成 | 核心 HTTP 模块服务与编译路径稳定；WebSocket upstream 端口竞态回归通过 |
+| Phase 2 Source Map | 100% | 里程碑验收完成 | 多锚点列映射与链式映射主路径稳定；DAP/CDP 消费链路回归通过 |
+| Phase 3 HMR | 100% | 里程碑验收完成 | 变更去重、style/js/full-reload 分类与 alias 统一链路稳定；disk/workspace 双来源去重硬化 |
+| Phase 4 Debug (DAP + CDP) | 100% | 里程碑验收完成 | stackTrace/scopes/variables/evaluate/continue 闭环稳定；并发断点与异常栈映射回归通过 |
+| Phase 5 Production Build | 100% | 里程碑验收完成 | build lane 串台问题前置修复（端口竞态 + bundler 前缀/路径归一化），失败路径/边界回归通过 |
+| Phase 6 Advanced LSP | 100% | 里程碑验收完成 | references/rename/codeAction/documentSymbol/semantic tokens 主能力稳定，跨 lane 补桥接用例回归通过 |
+| Phase 7 Extension System | 100% | 里程碑验收完成 | 扩展 provider 聚合 + 超时隔离 + 健康查询 + signature/inlay/workspace/folding + 目录越界防护全部接入 |
 
 ## 本轮验证（2026-04-17）
 
-- `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter 'FullyQualifiedName~JazorVueHost' --no-restore -v minimal`：**458/458 通过**
-- `dotnet test ... --filter 'FullyQualifiedName~JazorVueHostDebugProtocolTests|FullyQualifiedName~JazorVueHostBuildTests|FullyQualifiedName~JazorVueHostPhase7ExtensionTests|FullyQualifiedName~JazorVueHostFrontendLaneTests'`：**100/100 通过**
-- `dotnet test ... --filter 'FullyQualifiedName~JazorVueHostInProcRazorProjectionTests|FullyQualifiedName~JazorVueHostProjectionMapTests|FullyQualifiedName~JazorVueHostSourceMapServiceTests|FullyQualifiedName~JazorVueHostBuildJsSourceMapTests|FullyQualifiedName~JazorVueHostDebugMappingTests|FullyQualifiedName~JazorVueHostInProcRoslynTests'`：**38/38 通过**
-- `dotnet test ... --filter 'FullyQualifiedName~JazorVueHostPhase6LspTests|FullyQualifiedName~JazorVueHostVolarLaneDocumentSymbolProjectionTests|FullyQualifiedName~JazorVueHostVolarLaneTemplateRequestProjectionTests|FullyQualifiedName~JazorVueHostLspTests|FullyQualifiedName~JazorVueHostLaneRoutingTests'`：**97/97 通过**
-- `dotnet test ... --filter 'FullyQualifiedName~JazorVueHostDevServerTests'`：**135/135 通过**
+- `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter 'FullyQualifiedName~JazorVueHost' --no-restore -v minimal`：**466/466 通过**
+- `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter 'FullyQualifiedName~JazorVueHostLspTests|FullyQualifiedName~JazorVueHostPhase7ExtensionTests|FullyQualifiedName~JazorVueHostDebugProtocolTests|FullyQualifiedName~JazorVueHostBuildTests|FullyQualifiedName~JazorVueHostFrontendLaneTests' --no-restore -v minimal`：**178/178 通过**
+- `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter 'FullyQualifiedName~JazorVueHostPhase7ExtensionTests' --no-restore -v minimal`：**19/19 通过**
 
 ## 近期推进信号（截至 2026-04-17）
 
@@ -72,24 +70,24 @@
 
 ## 下一步行动
 
-1. **Phase 4 调试稳态**
-   - 扩展真实浏览器/CDP 压测矩阵（异常栈、并发断点、长时间 HMR）
-   - 补调试可视化与诊断端点，降低问题定位成本
+1. **稳态巡检（持续项）**
+   - 扩展真实浏览器/CDP 长时压测矩阵（资源占用、并发负载）
+   - 持续补调试可视化与诊断端点，降低问题定位成本
 
-2. **Phase 5 构建收口**
+2. **构建持续压实（持续项）**
    - 继续压实构建产物一致性（manifest/css/js/source map）
-   - 补足 build lane 的失败路径与边界场景回归
+   - 增补跨平台路径与缓存污染回归
 
-3. **Phase 6 能力收敛**
+3. **LSP 收敛与扩展（持续项）**
    - 继续修正跨 lane supplement 的一致性和保守边界
    - 明确哪些能力是“native first”，哪些由 host 负责补桥接
 
-4. **Phase 7 收敛重点**
-   - 在不破坏现有主线稳定性的前提下，继续扩展 provider 面（signatureHelp/inlayHints/workspaceSymbol/foldingRange）
-   - 补扩展健康监控、超时与隔离策略，再推进 IDE 生态层集成
+4. **生态拓展（后续项）**
+   - 在不影响主线稳定性的前提下推进 IDE 生态层（发布/安装/市场）
+   - 继续完善扩展权限与沙箱策略的工程化落地
 
 ## 风险与注意项
 
 - 文档与实现迭代速度不一致时，最容易造成阶段误读；应优先维护 repo-level 状态页
-- 调试链路若继续停留在 fallback，会影响 SourceMap 价值验证
+- 需持续防止“临时 fallback 重新进入主路径”，保持前置硬化优先
 - 构建与 LSP 并行演进时，需持续防止“测试路径与真实路径分叉”

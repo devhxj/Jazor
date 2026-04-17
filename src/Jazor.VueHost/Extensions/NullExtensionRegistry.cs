@@ -32,6 +32,22 @@ internal sealed class NullExtensionRegistry : IExtensionRegistry
     {
     }
 
+    public void RegisterLspSignatureHelpProvider(ILspSignatureHelpProvider provider)
+    {
+    }
+
+    public void RegisterLspInlayHintProvider(ILspInlayHintProvider provider)
+    {
+    }
+
+    public void RegisterLspWorkspaceSymbolProvider(ILspWorkspaceSymbolProvider provider)
+    {
+    }
+
+    public void RegisterLspFoldingRangeProvider(ILspFoldingRangeProvider provider)
+    {
+    }
+
     public void RegisterLspReferenceProvider(ILspReferenceProvider provider)
     {
     }
@@ -57,6 +73,18 @@ internal sealed class NullExtensionRegistry : IExtensionRegistry
 
     public IReadOnlyList<ILspDocumentSymbolProvider> GetLspDocumentSymbolProviders()
         => Array.Empty<ILspDocumentSymbolProvider>();
+
+    public IReadOnlyList<ILspSignatureHelpProvider> GetLspSignatureHelpProviders()
+        => Array.Empty<ILspSignatureHelpProvider>();
+
+    public IReadOnlyList<ILspInlayHintProvider> GetLspInlayHintProviders()
+        => Array.Empty<ILspInlayHintProvider>();
+
+    public IReadOnlyList<ILspWorkspaceSymbolProvider> GetLspWorkspaceSymbolProviders()
+        => Array.Empty<ILspWorkspaceSymbolProvider>();
+
+    public IReadOnlyList<ILspFoldingRangeProvider> GetLspFoldingRangeProviders()
+        => Array.Empty<ILspFoldingRangeProvider>();
 
     public IReadOnlyList<ILspReferenceProvider> GetLspReferenceProviders()
         => Array.Empty<ILspReferenceProvider>();

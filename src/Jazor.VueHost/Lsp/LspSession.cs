@@ -29,6 +29,10 @@ internal sealed class LspSession
     private readonly IWorkspaceDocumentChangeSink _workspaceDocumentChangeSink;
     private readonly IExtensionRegistry _extensionRegistry;
     private readonly TimeSpan _extensionProviderTimeout;
+    private readonly int _extensionProviderIsolationFailureThreshold;
+    private readonly TimeSpan _extensionProviderIsolationDuration;
+    private readonly Lock _providerIsolationGate = new();
+    private readonly Dictionary<string, ProviderIsolationState> _providerIsolationByKey = new(StringComparer.OrdinalIgnoreCase);
 
     public LspSession(
         IVueHostWorkspaceStore workspaceStore,
@@ -45,7 +49,9 @@ internal sealed class LspSession
         CodeActionCoordinator codeActionCoordinator,
         IWorkspaceDocumentChangeSink? workspaceDocumentChangeSink = null,
         IExtensionRegistry? extensionRegistry = null,
-        TimeSpan? extensionProviderTimeout = null)
+        TimeSpan? extensionProviderTimeout = null,
+        int extensionProviderIsolationFailureThreshold = 2,
+        TimeSpan? extensionProviderIsolationDuration = null)
     {
         _workspaceStore = workspaceStore ?? throw new ArgumentNullException(nameof(workspaceStore));
         ArgumentNullException.ThrowIfNull(lanes);
@@ -66,6 +72,11 @@ internal sealed class LspSession
             && extensionProviderTimeout.Value > TimeSpan.Zero
                 ? extensionProviderTimeout.Value
                 : TimeSpan.FromSeconds(2);
+        _extensionProviderIsolationFailureThreshold = Math.Max(1, extensionProviderIsolationFailureThreshold);
+        _extensionProviderIsolationDuration = extensionProviderIsolationDuration.HasValue
+            && extensionProviderIsolationDuration.Value > TimeSpan.Zero
+                ? extensionProviderIsolationDuration.Value
+                : TimeSpan.FromSeconds(10);
     }
 
     public async ValueTask<LspResponseMessage?> HandleRequestAsync(
@@ -101,6 +112,9 @@ internal sealed class LspSession
                             TriggerCharacters = ["(", ","],
                             RetriggerCharacters = [")"]
                         },
+                        WorkspaceSymbolProvider = true,
+                        FoldingRangeProvider = true,
+                        InlayHintProvider = true,
                         CompletionProvider = new LspCompletionOptions
                         {
                             ResolveProvider = false,
@@ -125,11 +139,17 @@ internal sealed class LspSession
             "textDocument/documentSymbol" => await HandleDocumentSymbolsAsync(request, cancellationToken),
             "textDocument/semanticTokens/full" => await HandleSemanticTokensAsync(request, cancellationToken),
             "textDocument/signatureHelp" => await HandleSignatureHelpAsync(request, cancellationToken),
+            "textDocument/inlayHint" => await HandleInlayHintAsync(request, cancellationToken),
+            "workspace/symbol" => await HandleWorkspaceSymbolAsync(request, cancellationToken),
+            "textDocument/foldingRange" => await HandleFoldingRangeAsync(request, cancellationToken),
             "textDocument/definition" => await HandleDefinitionAsync(request, cancellationToken),
             "textDocument/references" => await HandleReferencesAsync(request, cancellationToken),
             "textDocument/rename" => await HandleRenameAsync(request, cancellationToken),
             "textDocument/prepareRename" => await HandlePrepareRenameAsync(request, cancellationToken),
             "textDocument/codeAction" => await HandleCodeActionAsync(request, cancellationToken),
+            "jazor/extensionProviderHealth" => CreateSuccessResponse(
+                request.Id,
+                _extensionRegistry.GetProviderHealth()),
             _ => CreateErrorResponse(request.Id, -32601, $"Unsupported LSP method '{request.Method}'.")
         };
     }
@@ -269,17 +289,45 @@ internal sealed class LspSession
         var parameters = DeserializeParams<LspSignatureHelpParams>(request.Params);
         var document = await GetRequiredDocumentAsync(parameters.TextDocument.Uri, cancellationToken);
         var projectionTarget = await _projectionResolver.ResolveAsync(document, parameters.Position, cancellationToken);
+        return CreateSuccessResponse(
+            request.Id,
+            await CollectSignatureHelpAsync(
+                document,
+                parameters.Position,
+                projectionTarget,
+                cancellationToken));
+    }
 
-        foreach (var lane in GetOrderedLanes(projectionTarget))
-        {
-            var signatureHelp = await lane.GetSignatureHelpAsync(document, parameters.Position, projectionTarget, cancellationToken);
-            if (signatureHelp is not null)
-            {
-                return CreateSuccessResponse(request.Id, signatureHelp);
-            }
-        }
+    private async ValueTask<LspResponseMessage> HandleInlayHintAsync(
+        LspRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        var parameters = DeserializeParams<LspInlayHintParams>(request.Params);
+        var document = await GetRequiredDocumentAsync(parameters.TextDocument.Uri, cancellationToken);
+        return CreateSuccessResponse(
+            request.Id,
+            await CollectInlayHintsAsync(document, parameters.Range, cancellationToken));
+    }
 
-        return CreateSuccessResponse(request.Id, result: null);
+    private async ValueTask<LspResponseMessage> HandleWorkspaceSymbolAsync(
+        LspRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        var parameters = DeserializeParams<LspWorkspaceSymbolParams>(request.Params);
+        return CreateSuccessResponse(
+            request.Id,
+            await CollectWorkspaceSymbolsAsync(parameters.Query, cancellationToken));
+    }
+
+    private async ValueTask<LspResponseMessage> HandleFoldingRangeAsync(
+        LspRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        var parameters = DeserializeParams<LspFoldingRangeParams>(request.Params);
+        var document = await GetRequiredDocumentAsync(parameters.TextDocument.Uri, cancellationToken);
+        return CreateSuccessResponse(
+            request.Id,
+            await CollectFoldingRangesAsync(document, cancellationToken));
     }
 
     private async ValueTask<LspResponseMessage> HandleReferencesAsync(
@@ -635,6 +683,140 @@ internal sealed class LspSession
         return _resultAggregator.AggregateDocumentSymbols(symbols);
     }
 
+    private async ValueTask<LspSignatureHelp?> CollectSignatureHelpAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        ProjectionTarget projectionTarget,
+        CancellationToken cancellationToken)
+    {
+        LspSignatureHelp? signatureHelp = null;
+        foreach (var lane in GetOrderedLanes(projectionTarget))
+        {
+            var laneSignatureHelp = await lane.GetSignatureHelpAsync(document, position, projectionTarget, cancellationToken);
+            if (laneSignatureHelp is not null)
+            {
+                signatureHelp = laneSignatureHelp;
+                break;
+            }
+        }
+
+        foreach (var provider in _extensionRegistry.GetLspSignatureHelpProviders())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var invocation = await InvokeProviderAsync(
+                capability: "signatureHelp",
+                providerName: provider.Name,
+                invocation: token => provider.ProvideSignatureHelpAsync(
+                    new LspSignatureHelpProviderContext(
+                        document,
+                        position,
+                        projectionTarget,
+                        signatureHelp),
+                    token),
+                cancellationToken);
+            if (invocation.TimedOut)
+            {
+                continue;
+            }
+
+            if (invocation.Result is not null)
+            {
+                signatureHelp = invocation.Result;
+            }
+        }
+
+        return signatureHelp;
+    }
+
+    private async ValueTask<IReadOnlyList<LspInlayHint>> CollectInlayHintsAsync(
+        DocumentSnapshot document,
+        LspRange range,
+        CancellationToken cancellationToken)
+    {
+        var hints = new List<LspInlayHint>();
+        foreach (var provider in _extensionRegistry.GetLspInlayHintProviders())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var invocation = await InvokeProviderAsync(
+                capability: "inlayHint",
+                providerName: provider.Name,
+                invocation: token => provider.ProvideInlayHintsAsync(
+                    new LspInlayHintProviderContext(document, range, hints),
+                    token),
+                cancellationToken);
+            if (invocation.Result is { Count: > 0 } providedHints)
+            {
+                hints.AddRange(providedHints);
+            }
+        }
+
+        return hints
+            .GroupBy(static hint =>
+                $"{hint.Position.Line}:{hint.Position.Character}:{hint.Label}:{hint.Kind}",
+                StringComparer.Ordinal)
+            .Select(static group => group.First())
+            .ToArray();
+    }
+
+    private async ValueTask<IReadOnlyList<LspWorkspaceSymbol>> CollectWorkspaceSymbolsAsync(
+        string query,
+        CancellationToken cancellationToken)
+    {
+        var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
+        var symbols = new List<LspWorkspaceSymbol>();
+        foreach (var provider in _extensionRegistry.GetLspWorkspaceSymbolProviders())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var invocation = await InvokeProviderAsync(
+                capability: "workspaceSymbol",
+                providerName: provider.Name,
+                invocation: token => provider.ProvideWorkspaceSymbolsAsync(
+                    new LspWorkspaceSymbolProviderContext(query, openDocuments, symbols),
+                    token),
+                cancellationToken);
+            if (invocation.Result is { Count: > 0 } providedSymbols)
+            {
+                symbols.AddRange(providedSymbols);
+            }
+        }
+
+        return symbols
+            .GroupBy(static symbol =>
+                $"{symbol.Name}:{symbol.Location.Uri}:{symbol.Location.Range.Start.Line}:{symbol.Location.Range.Start.Character}",
+                StringComparer.Ordinal)
+            .Select(static group => group.First())
+            .ToArray();
+    }
+
+    private async ValueTask<IReadOnlyList<LspFoldingRange>> CollectFoldingRangesAsync(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken)
+    {
+        var ranges = new List<LspFoldingRange>();
+        foreach (var provider in _extensionRegistry.GetLspFoldingRangeProviders())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var invocation = await InvokeProviderAsync(
+                capability: "foldingRange",
+                providerName: provider.Name,
+                invocation: token => provider.ProvideFoldingRangesAsync(
+                    new LspFoldingRangeProviderContext(document, ranges),
+                    token),
+                cancellationToken);
+            if (invocation.Result is { Count: > 0 } providedRanges)
+            {
+                ranges.AddRange(providedRanges);
+            }
+        }
+
+        return ranges
+            .GroupBy(static range =>
+                $"{range.StartLine}:{range.StartCharacter}:{range.EndLine}:{range.EndCharacter}:{range.Kind}",
+                StringComparer.Ordinal)
+            .Select(static group => group.First())
+            .ToArray();
+    }
+
     private async ValueTask<IReadOnlyList<LspLocation>> CollectReferencesAsync(
         DocumentSnapshot document,
         LspPosition position,
@@ -815,6 +997,19 @@ internal sealed class LspSession
         cancellationToken.ThrowIfCancellationRequested();
 
         var startedTimestamp = Stopwatch.GetTimestamp();
+        if (TryGetProviderIsolationWindow(capability, providerName, out var isolationRemaining))
+        {
+            _extensionRegistry.ReportProviderInvocation(new ExtensionProviderInvocation(
+                ProviderName: providerName,
+                Capability: capability,
+                Duration: Stopwatch.GetElapsedTime(startedTimestamp),
+                Succeeded: false,
+                TimedOut: false,
+                Skipped: true,
+                ErrorMessage: $"Provider isolated for {isolationRemaining.TotalMilliseconds:F0} ms due to recent failures."));
+            return ProviderInvocationResult<TResult>.Isolated();
+        }
+
         using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
         Task<TResult> invocationTask;
@@ -828,12 +1023,14 @@ internal sealed class LspSession
         }
         catch (Exception ex)
         {
+            RecordProviderFailure(capability, providerName);
             _extensionRegistry.ReportProviderInvocation(new ExtensionProviderInvocation(
                 ProviderName: providerName,
                 Capability: capability,
                 Duration: Stopwatch.GetElapsedTime(startedTimestamp),
                 Succeeded: false,
                 TimedOut: false,
+                Skipped: false,
                 ErrorMessage: ex.Message));
             return ProviderInvocationResult<TResult>.Failure();
         }
@@ -841,12 +1038,14 @@ internal sealed class LspSession
         try
         {
             var result = await invocationTask.WaitAsync(_extensionProviderTimeout, cancellationToken);
+            RecordProviderSuccess(capability, providerName);
             _extensionRegistry.ReportProviderInvocation(new ExtensionProviderInvocation(
                 ProviderName: providerName,
                 Capability: capability,
                 Duration: Stopwatch.GetElapsedTime(startedTimestamp),
                 Succeeded: true,
                 TimedOut: false,
+                Skipped: false,
                 ErrorMessage: null));
             return ProviderInvocationResult<TResult>.Success(result);
         }
@@ -856,6 +1055,7 @@ internal sealed class LspSession
         }
         catch (TimeoutException)
         {
+            RecordProviderFailure(capability, providerName);
             timeoutCts.Cancel();
             _ = ObserveProviderCompletionAsync(invocationTask);
             _extensionRegistry.ReportProviderInvocation(new ExtensionProviderInvocation(
@@ -864,21 +1064,94 @@ internal sealed class LspSession
                 Duration: Stopwatch.GetElapsedTime(startedTimestamp),
                 Succeeded: false,
                 TimedOut: true,
+                Skipped: false,
                 ErrorMessage: $"Provider timed out after {_extensionProviderTimeout.TotalMilliseconds:F0} ms."));
             return ProviderInvocationResult<TResult>.Timeout();
         }
         catch (Exception ex)
         {
+            RecordProviderFailure(capability, providerName);
             _extensionRegistry.ReportProviderInvocation(new ExtensionProviderInvocation(
                 ProviderName: providerName,
                 Capability: capability,
                 Duration: Stopwatch.GetElapsedTime(startedTimestamp),
                 Succeeded: false,
                 TimedOut: false,
+                Skipped: false,
                 ErrorMessage: ex.Message));
             return ProviderInvocationResult<TResult>.Failure();
         }
     }
+
+    private bool TryGetProviderIsolationWindow(
+        string capability,
+        string providerName,
+        out TimeSpan remaining)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var key = CreateProviderIsolationKey(capability, providerName);
+
+        lock (_providerIsolationGate)
+        {
+            if (!_providerIsolationByKey.TryGetValue(key, out var state)
+                || state.IsolatedUntil is null)
+            {
+                remaining = TimeSpan.Zero;
+                return false;
+            }
+
+            var isolatedUntil = state.IsolatedUntil.Value;
+            if (isolatedUntil <= now)
+            {
+                _providerIsolationByKey[key] = state with { IsolatedUntil = null };
+                remaining = TimeSpan.Zero;
+                return false;
+            }
+
+            remaining = isolatedUntil - now;
+            return true;
+        }
+    }
+
+    private void RecordProviderSuccess(string capability, string providerName)
+    {
+        var key = CreateProviderIsolationKey(capability, providerName);
+        lock (_providerIsolationGate)
+        {
+            _providerIsolationByKey[key] = new ProviderIsolationState(
+                ConsecutiveFailureCount: 0,
+                IsolatedUntil: null);
+        }
+    }
+
+    private void RecordProviderFailure(string capability, string providerName)
+    {
+        var key = CreateProviderIsolationKey(capability, providerName);
+        var now = DateTimeOffset.UtcNow;
+
+        lock (_providerIsolationGate)
+        {
+            _providerIsolationByKey.TryGetValue(key, out var currentState);
+
+            var currentFailures = currentState.IsolatedUntil is { } isolatedUntil && isolatedUntil > now
+                ? 0
+                : currentState.ConsecutiveFailureCount;
+            var nextFailureCount = currentFailures + 1;
+            var nextIsolatedUntil = nextFailureCount >= _extensionProviderIsolationFailureThreshold
+                ? now + _extensionProviderIsolationDuration
+                : (DateTimeOffset?)null;
+            var persistedFailures = nextIsolatedUntil is not null
+                ? 0
+                : nextFailureCount;
+
+            _providerIsolationByKey[key] = new ProviderIsolationState(
+                persistedFailures,
+                nextIsolatedUntil);
+        }
+    }
+
+    private static string CreateProviderIsolationKey(string capability, string providerName)
+        => capability.Trim() + "|" + providerName.Trim();
 
     private static async Task ObserveProviderCompletionAsync<TResult>(Task<TResult> task)
     {
@@ -1026,15 +1299,23 @@ internal sealed class LspSession
     private readonly record struct ProviderInvocationResult<TResult>(
         bool IsSuccess,
         bool TimedOut,
+        bool Skipped,
         TResult? Result)
     {
         public static ProviderInvocationResult<TResult> Success(TResult result)
-            => new(true, false, result);
+            => new(true, false, false, result);
 
         public static ProviderInvocationResult<TResult> Timeout()
-            => new(false, true, default);
+            => new(false, true, false, default);
+
+        public static ProviderInvocationResult<TResult> Isolated()
+            => new(false, false, true, default);
 
         public static ProviderInvocationResult<TResult> Failure()
-            => new(false, false, default);
+            => new(false, false, false, default);
     }
+
+    private readonly record struct ProviderIsolationState(
+        int ConsecutiveFailureCount,
+        DateTimeOffset? IsolatedUntil);
 }

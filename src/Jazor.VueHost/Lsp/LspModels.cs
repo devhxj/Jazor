@@ -97,6 +97,15 @@ internal sealed class LspServerCapabilities
     [JsonPropertyName("signatureHelpProvider")]
     public LspSignatureHelpOptions? SignatureHelpProvider { get; init; }
 
+    [JsonPropertyName("workspaceSymbolProvider")]
+    public bool WorkspaceSymbolProvider { get; init; }
+
+    [JsonPropertyName("foldingRangeProvider")]
+    public bool FoldingRangeProvider { get; init; }
+
+    [JsonPropertyName("inlayHintProvider")]
+    public bool InlayHintProvider { get; init; }
+
     [JsonPropertyName("completionProvider")]
     public required LspCompletionOptions CompletionProvider { get; init; }
 
@@ -320,6 +329,27 @@ internal sealed class LspSemanticTokensParams
     public required LspTextDocumentIdentifier TextDocument { get; init; }
 }
 
+internal sealed class LspFoldingRangeParams
+{
+    [JsonPropertyName("textDocument")]
+    public required LspTextDocumentIdentifier TextDocument { get; init; }
+}
+
+internal sealed class LspInlayHintParams
+{
+    [JsonPropertyName("textDocument")]
+    public required LspTextDocumentIdentifier TextDocument { get; init; }
+
+    [JsonPropertyName("range")]
+    public required LspRange Range { get; init; }
+}
+
+internal sealed class LspWorkspaceSymbolParams
+{
+    [JsonPropertyName("query")]
+    public required string Query { get; init; }
+}
+
 internal sealed class LspPublishDiagnosticsParams
 {
     [JsonPropertyName("uri")]
@@ -468,6 +498,51 @@ internal sealed class LspDocumentSymbol
 
     [JsonPropertyName("children")]
     public LspDocumentSymbol[]? Children { get; init; }
+}
+
+internal sealed class LspInlayHint
+{
+    [JsonPropertyName("position")]
+    public required LspPosition Position { get; init; }
+
+    [JsonPropertyName("label")]
+    public required string Label { get; init; }
+
+    [JsonPropertyName("kind")]
+    public int? Kind { get; init; }
+}
+
+internal sealed class LspWorkspaceSymbol
+{
+    [JsonPropertyName("name")]
+    public required string Name { get; init; }
+
+    [JsonPropertyName("kind")]
+    public int Kind { get; init; }
+
+    [JsonPropertyName("location")]
+    public required LspLocation Location { get; init; }
+
+    [JsonPropertyName("containerName")]
+    public string? ContainerName { get; init; }
+}
+
+internal sealed class LspFoldingRange
+{
+    [JsonPropertyName("startLine")]
+    public int StartLine { get; init; }
+
+    [JsonPropertyName("startCharacter")]
+    public int? StartCharacter { get; init; }
+
+    [JsonPropertyName("endLine")]
+    public int EndLine { get; init; }
+
+    [JsonPropertyName("endCharacter")]
+    public int? EndCharacter { get; init; }
+
+    [JsonPropertyName("kind")]
+    public string? Kind { get; init; }
 }
 
 internal sealed class LspSemanticTokensResult

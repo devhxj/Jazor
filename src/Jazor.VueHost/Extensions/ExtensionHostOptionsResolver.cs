@@ -17,6 +17,7 @@ internal static class ExtensionHostOptionsResolver
 
         var configExtensions = config?.Extensions;
         var enabled = configExtensions?.Enabled ?? true;
+        var allowExternalDirectory = configExtensions?.AllowExternalDirectory ?? false;
         var directory = string.IsNullOrWhiteSpace(configExtensions?.Directory)
             ? ".jazor/extensions"
             : configExtensions!.Directory!;
@@ -39,15 +40,28 @@ internal static class ExtensionHostOptionsResolver
             disabledIds = ToSet(ParseList(disabledOverride));
         }
 
+        if (TryGetOptionValue(args, "--extensions-allow-external", out var allowExternalOverrideValue)
+            && TryParseBoolean(allowExternalOverrideValue, out var allowExternalOverride))
+        {
+            allowExternalDirectory = allowExternalOverride;
+        }
+
         var extensionDirectoryPath = Path.IsPathRooted(directory)
             ? Path.GetFullPath(directory)
             : Path.GetFullPath(Path.Combine(normalizedRoot, directory));
+        if (!allowExternalDirectory && !IsPathInsideRoot(normalizedRoot, extensionDirectoryPath))
+        {
+            throw new InvalidOperationException(
+                $"Extensions directory '{extensionDirectoryPath}' must be inside root directory '{normalizedRoot}'. " +
+                "Set '--extensions-allow-external=true' to opt in.");
+        }
 
         return new ExtensionHostOptions
         {
             RootDirectory = normalizedRoot,
             Enabled = enabled,
             ExtensionsDirectory = extensionDirectoryPath,
+            AllowExternalDirectory = allowExternalDirectory,
             DisabledExtensionIds = disabledIds
         };
     }
@@ -120,5 +134,13 @@ internal static class ExtensionHostOptionsResolver
                 yield return item;
             }
         }
+    }
+
+    private static bool IsPathInsideRoot(string rootDirectory, string candidatePath)
+    {
+        var relativePath = Path.GetRelativePath(rootDirectory, candidatePath);
+        return !string.IsNullOrWhiteSpace(relativePath)
+            && !relativePath.StartsWith("..", StringComparison.Ordinal)
+            && !Path.IsPathRooted(relativePath);
     }
 }

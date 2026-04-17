@@ -14,6 +14,14 @@ internal interface IExtensionRegistry
 
     void RegisterLspDocumentSymbolProvider(ILspDocumentSymbolProvider provider);
 
+    void RegisterLspSignatureHelpProvider(ILspSignatureHelpProvider provider);
+
+    void RegisterLspInlayHintProvider(ILspInlayHintProvider provider);
+
+    void RegisterLspWorkspaceSymbolProvider(ILspWorkspaceSymbolProvider provider);
+
+    void RegisterLspFoldingRangeProvider(ILspFoldingRangeProvider provider);
+
     void RegisterLspReferenceProvider(ILspReferenceProvider provider);
 
     void RegisterLspRenameProvider(ILspRenameProvider provider);
@@ -29,6 +37,14 @@ internal interface IExtensionRegistry
     IReadOnlyList<ILspCompletionProvider> GetLspCompletionProviders();
 
     IReadOnlyList<ILspDocumentSymbolProvider> GetLspDocumentSymbolProviders();
+
+    IReadOnlyList<ILspSignatureHelpProvider> GetLspSignatureHelpProviders();
+
+    IReadOnlyList<ILspInlayHintProvider> GetLspInlayHintProviders();
+
+    IReadOnlyList<ILspWorkspaceSymbolProvider> GetLspWorkspaceSymbolProviders();
+
+    IReadOnlyList<ILspFoldingRangeProvider> GetLspFoldingRangeProviders();
 
     IReadOnlyList<ILspReferenceProvider> GetLspReferenceProviders();
 

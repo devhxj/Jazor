@@ -6,6 +6,7 @@ internal sealed record ExtensionProviderInvocation(
     TimeSpan Duration,
     bool Succeeded,
     bool TimedOut,
+    bool Skipped,
     string? ErrorMessage);
 
 internal sealed record ExtensionProviderHealth(
@@ -14,6 +15,7 @@ internal sealed record ExtensionProviderHealth(
     int SuccessCount,
     int FailureCount,
     int TimeoutCount,
+    int SkippedCount,
     TimeSpan LastDuration,
     DateTimeOffset? LastSuccessAt,
     DateTimeOffset? LastFailureAt,
