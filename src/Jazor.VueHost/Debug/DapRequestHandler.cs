@@ -12,8 +12,8 @@ internal sealed class DapRequestHandler(
     private readonly DapSession _session = session ?? throw new ArgumentNullException(nameof(session));
     private readonly BreakpointManager _breakpointManager = breakpointManager ?? throw new ArgumentNullException(nameof(breakpointManager));
     private readonly CallStackMapper _callStackMapper = callStackMapper ?? throw new ArgumentNullException(nameof(callStackMapper));
-    private int _nextProtocolSeq = 1;
-    private int _nextBreakpointId = 1;
+    private int _nextProtocolSeq;
+    private int _nextBreakpointId;
 
     public ValueTask<DapDispatchResult> HandleAsync(DapRequest request, CancellationToken cancellationToken)
     {
@@ -318,9 +318,9 @@ internal sealed class DapRequestHandler(
             Body = body
         };
 
-    private int NextProtocolSeq() => _nextProtocolSeq++;
+    private int NextProtocolSeq() => Interlocked.Increment(ref _nextProtocolSeq);
 
-    private int NextBreakpointId() => _nextBreakpointId++;
+    private int NextBreakpointId() => Interlocked.Increment(ref _nextBreakpointId);
 
     private static bool TryGetProperty(JsonElement? element, string propertyName, out JsonElement value)
     {

@@ -704,6 +704,89 @@ public sealed class JazorVueHostBuildTests
     }
 
     [TestMethod]
+    public async Task BuildOrchestrator_BuildAsync_WithoutResolvableEntryPoint_ReturnsFailureDiagnostic()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "index.html"),
+                """
+                <html>
+                <body>
+                  <div id="app"></div>
+                </body>
+                </html>
+                """);
+
+            var orchestrator = new BuildOrchestrator();
+            var result = await orchestrator.BuildAsync(
+                new BuildOptions
+                {
+                    RootDirectory = tempDir,
+                    OutDir = "dist",
+                    SourceMap = SourceMapOption.External,
+                    Minify = false,
+                    CodeSplitting = true
+                },
+                CancellationToken.None);
+
+            Assert.IsFalse(result.Success);
+            Assert.IsTrue(
+                result.Diagnostics.Any(static diagnostic =>
+                    diagnostic.Message.Contains("Unable to locate a frontend entry point", StringComparison.OrdinalIgnoreCase)),
+                string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task BuildOrchestrator_BuildAsync_WithOutputDirectoryEscapingRoot_ReturnsFailureDiagnostic()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "index.html"),
+                """
+                <html>
+                <body>
+                  <script type="module" src="/main.js"></script>
+                </body>
+                </html>
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "main.js"),
+                """console.log("build escape root");""");
+
+            var orchestrator = new BuildOrchestrator();
+            var result = await orchestrator.BuildAsync(
+                new BuildOptions
+                {
+                    RootDirectory = tempDir,
+                    OutDir = "..\\dist-outside-root",
+                    SourceMap = SourceMapOption.External,
+                    Minify = false,
+                    CodeSplitting = false
+                },
+                CancellationToken.None);
+
+            Assert.IsFalse(result.Success);
+            Assert.IsTrue(
+                result.Diagnostics.Any(static diagnostic =>
+                    diagnostic.Message.Contains("must stay inside project root", StringComparison.OrdinalIgnoreCase)),
+                string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public async Task BuildOrchestrator_BuildAsync_WithCodeSplitting_InjectsEntryChunkIntoHtml()
     {
         var tempDir = CreateTemporaryDirectory();

@@ -81,13 +81,30 @@ public sealed class JazorVueHostInProcRoslynTests
                 }
             }
             """);
+        var completionPosition = GetPosition(
+            document.Text,
+            "return cou",
+            advance: "return cou".Length);
+        var projectionService = new RazorDesignTimeCodeProjectionService();
+        Assert.IsTrue(projectionService.TryCreateProjection(document, out var projection));
+        Assert.IsTrue(
+            projection.ProjectionMap.TryMapToProjectedOffset(
+                LspProtocolHelpers.GetOffset(document.Text, completionPosition),
+                out _),
+            "Primary Razor projection should map completion cursor without fallback.");
 
         var items = await _service.GetCompletionItemsAsync(
             document,
-            GetPosition(document.Text, "cou", advance: "cou".Length),
+            completionPosition,
             CancellationToken.None);
+        var symbols = await _service.GetDocumentSymbolsAsync(document, CancellationToken.None);
 
-        CollectionAssert.Contains(items.Select(static item => item.Label).ToArray(), "count");
+        var labels = items.Select(static item => item.Label).ToArray();
+        CollectionAssert.Contains(
+            labels,
+            "count",
+            "Completion labels: " + string.Join(", ", labels)
+            + " ; symbols: " + string.Join(", ", symbols.Select(static symbol => symbol.Name)));
     }
 
     [TestMethod]

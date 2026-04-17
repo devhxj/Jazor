@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using Jazor.VueHost.Extensions;
 using Jazor.VueContracts.Protocol;
@@ -27,6 +28,7 @@ internal sealed class LspSession
     private readonly CodeActionCoordinator _codeActionCoordinator;
     private readonly IWorkspaceDocumentChangeSink _workspaceDocumentChangeSink;
     private readonly IExtensionRegistry _extensionRegistry;
+    private readonly TimeSpan _extensionProviderTimeout;
 
     public LspSession(
         IVueHostWorkspaceStore workspaceStore,
@@ -42,7 +44,8 @@ internal sealed class LspSession
         RenameCoordinator renameCoordinator,
         CodeActionCoordinator codeActionCoordinator,
         IWorkspaceDocumentChangeSink? workspaceDocumentChangeSink = null,
-        IExtensionRegistry? extensionRegistry = null)
+        IExtensionRegistry? extensionRegistry = null,
+        TimeSpan? extensionProviderTimeout = null)
     {
         _workspaceStore = workspaceStore ?? throw new ArgumentNullException(nameof(workspaceStore));
         ArgumentNullException.ThrowIfNull(lanes);
@@ -59,6 +62,10 @@ internal sealed class LspSession
         _codeActionCoordinator = codeActionCoordinator ?? throw new ArgumentNullException(nameof(codeActionCoordinator));
         _workspaceDocumentChangeSink = workspaceDocumentChangeSink ?? NullWorkspaceDocumentChangeSink.Instance;
         _extensionRegistry = extensionRegistry ?? NullExtensionRegistry.Instance;
+        _extensionProviderTimeout = extensionProviderTimeout.HasValue
+            && extensionProviderTimeout.Value > TimeSpan.Zero
+                ? extensionProviderTimeout.Value
+                : TimeSpan.FromSeconds(2);
     }
 
     public async ValueTask<LspResponseMessage?> HandleRequestAsync(
@@ -178,20 +185,9 @@ internal sealed class LspSession
         var parameters = DeserializeParams<LspHoverParams>(request.Params);
         var document = await GetRequiredDocumentAsync(parameters.TextDocument.Uri, cancellationToken);
         var projectionTarget = await _projectionResolver.ResolveAsync(document, parameters.Position, cancellationToken);
-
-        foreach (var lane in GetOrderedLanes(projectionTarget))
-        {
-            // Template requests still enter lanes with the source snapshot, but the
-            // Volar lane now resolves the real projected `.g.vue` document from the
-            // target metadata when that projection is available.
-            var hover = await lane.GetHoverAsync(document, parameters.Position, projectionTarget, cancellationToken);
-            if (hover is not null)
-            {
-                return CreateSuccessResponse(request.Id, hover);
-            }
-        }
-
-        return CreateSuccessResponse(request.Id, result: null);
+        return CreateSuccessResponse(
+            request.Id,
+            await CollectHoverAsync(document, parameters.Position, projectionTarget, cancellationToken));
     }
 
     private async ValueTask<LspResponseMessage> HandleCompletionAsync(
@@ -201,18 +197,9 @@ internal sealed class LspSession
         var parameters = DeserializeParams<LspCompletionParams>(request.Params);
         var document = await GetRequiredDocumentAsync(parameters.TextDocument.Uri, cancellationToken);
         var projectionTarget = await _projectionResolver.ResolveAsync(document, parameters.Position, cancellationToken);
-        var items = new List<LspCompletionItem>();
-
-        foreach (var lane in GetOrderedLanes(projectionTarget))
-        {
-            var laneItems = await lane.GetCompletionItemsAsync(document, parameters.Position, projectionTarget, cancellationToken);
-            if (laneItems.Count > 0)
-            {
-                items.AddRange(laneItems);
-            }
-        }
-
-        return CreateSuccessResponse(request.Id, _resultAggregator.AggregateCompletionItems(items));
+        return CreateSuccessResponse(
+            request.Id,
+            await CollectCompletionItemsAsync(document, parameters.Position, projectionTarget, cancellationToken));
     }
 
     private async ValueTask<LspResponseMessage> HandleDocumentSymbolsAsync(
@@ -221,18 +208,9 @@ internal sealed class LspSession
     {
         var parameters = DeserializeParams<LspDocumentSymbolParams>(request.Params);
         var document = await GetRequiredDocumentAsync(parameters.TextDocument.Uri, cancellationToken);
-        var symbols = new List<LspDocumentSymbol>();
-
-        foreach (var lane in GetDocumentSymbolLanes(document))
-        {
-            var laneSymbols = await lane.GetDocumentSymbolsAsync(document, cancellationToken);
-            if (laneSymbols.Count > 0)
-            {
-                symbols.AddRange(laneSymbols);
-            }
-        }
-
-        return CreateSuccessResponse(request.Id, _resultAggregator.AggregateDocumentSymbols(symbols));
+        return CreateSuccessResponse(
+            request.Id,
+            await CollectDocumentSymbolsAsync(document, cancellationToken));
     }
 
     private async ValueTask<LspResponseMessage> HandleSemanticTokensAsync(
@@ -313,7 +291,7 @@ internal sealed class LspSession
         var projectionTarget = await _projectionResolver.ResolveAsync(document, parameters.Position, cancellationToken);
         return CreateSuccessResponse(
             request.Id,
-            await _referenceCoordinator.CoordinateAsync(
+            await CollectReferencesAsync(
                 document,
                 parameters.Position,
                 parameters.Context?.IncludeDeclaration ?? true,
@@ -331,7 +309,7 @@ internal sealed class LspSession
 
         return CreateSuccessResponse(
             request.Id,
-            await _renameCoordinator.CoordinateAsync(
+            await CollectRenameEditAsync(
                 document,
                 parameters.Position,
                 parameters.NewName,
@@ -537,6 +515,210 @@ internal sealed class LspSession
         }
     }
 
+    private async ValueTask<LspHoverResult?> CollectHoverAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        ProjectionTarget projectionTarget,
+        CancellationToken cancellationToken)
+    {
+        LspHoverResult? hover = null;
+        foreach (var lane in GetOrderedLanes(projectionTarget))
+        {
+            // Template requests still enter lanes with the source snapshot, but the
+            // Volar lane now resolves the real projected `.g.vue` document from the
+            // target metadata when that projection is available.
+            var laneHover = await lane.GetHoverAsync(document, position, projectionTarget, cancellationToken);
+            if (laneHover is not null)
+            {
+                hover = laneHover;
+                break;
+            }
+        }
+
+        foreach (var provider in _extensionRegistry.GetLspHoverProviders())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var invocation = await InvokeProviderAsync(
+                capability: "hover",
+                providerName: provider.Name,
+                invocation: token => provider.ProvideHoverAsync(
+                    new LspHoverProviderContext(
+                        document,
+                        position,
+                        projectionTarget,
+                        hover),
+                    token),
+                cancellationToken);
+            if (invocation.TimedOut)
+            {
+                continue;
+            }
+
+            if (invocation.Result is not null)
+            {
+                hover = invocation.Result;
+            }
+        }
+
+        return hover;
+    }
+
+    private async ValueTask<IReadOnlyList<LspCompletionItem>> CollectCompletionItemsAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        ProjectionTarget projectionTarget,
+        CancellationToken cancellationToken)
+    {
+        var items = new List<LspCompletionItem>();
+        foreach (var lane in GetOrderedLanes(projectionTarget))
+        {
+            var laneItems = await lane.GetCompletionItemsAsync(document, position, projectionTarget, cancellationToken);
+            if (laneItems.Count > 0)
+            {
+                items.AddRange(laneItems);
+            }
+        }
+
+        foreach (var provider in _extensionRegistry.GetLspCompletionProviders())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var invocation = await InvokeProviderAsync(
+                capability: "completion",
+                providerName: provider.Name,
+                invocation: token => provider.ProvideCompletionItemsAsync(
+                    new LspCompletionProviderContext(
+                        document,
+                        position,
+                        projectionTarget,
+                        items),
+                    token),
+                cancellationToken);
+            if (invocation.Result is { Count: > 0 } providedItems)
+            {
+                items.AddRange(providedItems);
+            }
+        }
+
+        return _resultAggregator.AggregateCompletionItems(items);
+    }
+
+    private async ValueTask<IReadOnlyList<LspDocumentSymbol>> CollectDocumentSymbolsAsync(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken)
+    {
+        var symbols = new List<LspDocumentSymbol>();
+        foreach (var lane in GetDocumentSymbolLanes(document))
+        {
+            var laneSymbols = await lane.GetDocumentSymbolsAsync(document, cancellationToken);
+            if (laneSymbols.Count > 0)
+            {
+                symbols.AddRange(laneSymbols);
+            }
+        }
+
+        foreach (var provider in _extensionRegistry.GetLspDocumentSymbolProviders())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var invocation = await InvokeProviderAsync(
+                capability: "documentSymbol",
+                providerName: provider.Name,
+                invocation: token => provider.ProvideDocumentSymbolsAsync(
+                    new LspDocumentSymbolProviderContext(document, symbols),
+                    token),
+                cancellationToken);
+            if (invocation.Result is { Count: > 0 } providedSymbols)
+            {
+                symbols.AddRange(providedSymbols);
+            }
+        }
+
+        return _resultAggregator.AggregateDocumentSymbols(symbols);
+    }
+
+    private async ValueTask<IReadOnlyList<LspLocation>> CollectReferencesAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        bool includeDeclaration,
+        ProjectionTarget projectionTarget,
+        CancellationToken cancellationToken)
+    {
+        var locations = (await _referenceCoordinator.CoordinateAsync(
+            document,
+            position,
+            includeDeclaration,
+            projectionTarget,
+            cancellationToken))
+            .ToList();
+
+        foreach (var provider in _extensionRegistry.GetLspReferenceProviders())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var invocation = await InvokeProviderAsync(
+                capability: "references",
+                providerName: provider.Name,
+                invocation: token => provider.ProvideReferencesAsync(
+                    new LspReferenceProviderContext(
+                        document,
+                        position,
+                        includeDeclaration,
+                        projectionTarget,
+                        locations),
+                    token),
+                cancellationToken);
+            if (invocation.Result is { Count: > 0 } providedLocations)
+            {
+                locations.AddRange(providedLocations);
+            }
+        }
+
+        return _resultAggregator.AggregateLocations(locations);
+    }
+
+    private async ValueTask<LspWorkspaceEdit?> CollectRenameEditAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        string newName,
+        ProjectionTarget projectionTarget,
+        CancellationToken cancellationToken)
+    {
+        var edits = new List<LspWorkspaceEdit>();
+        var laneEdit = await _renameCoordinator.CoordinateAsync(
+            document,
+            position,
+            newName,
+            projectionTarget,
+            cancellationToken);
+        if (laneEdit is not null)
+        {
+            edits.Add(laneEdit);
+        }
+
+        var mergedEdit = _resultAggregator.AggregateWorkspaceEdits(edits);
+        foreach (var provider in _extensionRegistry.GetLspRenameProviders())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var invocation = await InvokeProviderAsync(
+                capability: "rename",
+                providerName: provider.Name,
+                invocation: token => provider.ProvideRenameAsync(
+                    new LspRenameProviderContext(
+                        document,
+                        position,
+                        newName,
+                        projectionTarget,
+                        mergedEdit),
+                    token),
+                cancellationToken);
+            if (invocation.Result is not null)
+            {
+                edits.Add(invocation.Result);
+                mergedEdit = _resultAggregator.AggregateWorkspaceEdits(edits);
+            }
+        }
+
+        return mergedEdit;
+    }
+
     private async ValueTask<IReadOnlyList<LspDiagnostic>> CollectDiagnosticsAsync(
         DocumentSnapshot document,
         CancellationToken cancellationToken)
@@ -578,28 +760,21 @@ internal sealed class LspSession
         foreach (var provider in _extensionRegistry.GetLspCodeActionProviders())
         {
             cancellationToken.ThrowIfCancellationRequested();
-            try
-            {
-                var providedActions = await provider.ProvideCodeActionsAsync(
+            var invocation = await InvokeProviderAsync(
+                capability: "codeAction",
+                providerName: provider.Name,
+                invocation: token => provider.ProvideCodeActionsAsync(
                     new LspCodeActionProviderContext(
                         document,
                         range,
                         diagnostics,
                         projectionTarget,
                         actions),
-                    cancellationToken);
-                if (providedActions.Count > 0)
-                {
-                    actions.AddRange(providedActions);
-                }
-            }
-            catch (OperationCanceledException)
+                    token),
+                cancellationToken);
+            if (invocation.Result is { Count: > 0 } providedActions)
             {
-                throw;
-            }
-            catch
-            {
-                // Provider failures must not break the core code-action path.
+                actions.AddRange(providedActions);
             }
         }
 
@@ -615,27 +790,106 @@ internal sealed class LspSession
         foreach (var provider in _extensionRegistry.GetLspDiagnosticProviders())
         {
             cancellationToken.ThrowIfCancellationRequested();
-            try
-            {
-                var providedDiagnostics = await provider.ProvideDiagnosticsAsync(
+            var invocation = await InvokeProviderAsync(
+                capability: "diagnostic",
+                providerName: provider.Name,
+                invocation: token => provider.ProvideDiagnosticsAsync(
                     new LspDiagnosticProviderContext(document, merged),
-                    cancellationToken);
-                if (providedDiagnostics.Count > 0)
-                {
-                    merged.AddRange(providedDiagnostics);
-                }
-            }
-            catch (OperationCanceledException)
+                    token),
+                cancellationToken);
+            if (invocation.Result is { Count: > 0 } providedDiagnostics)
             {
-                throw;
-            }
-            catch
-            {
-                // Provider failures must not break the core diagnostics pipeline.
+                merged.AddRange(providedDiagnostics);
             }
         }
 
         return merged;
+    }
+
+    private async ValueTask<ProviderInvocationResult<TResult>> InvokeProviderAsync<TResult>(
+        string capability,
+        string providerName,
+        Func<CancellationToken, ValueTask<TResult>> invocation,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var startedTimestamp = Stopwatch.GetTimestamp();
+        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
+        Task<TResult> invocationTask;
+        try
+        {
+            invocationTask = invocation(timeoutCts.Token).AsTask();
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _extensionRegistry.ReportProviderInvocation(new ExtensionProviderInvocation(
+                ProviderName: providerName,
+                Capability: capability,
+                Duration: Stopwatch.GetElapsedTime(startedTimestamp),
+                Succeeded: false,
+                TimedOut: false,
+                ErrorMessage: ex.Message));
+            return ProviderInvocationResult<TResult>.Failure();
+        }
+
+        try
+        {
+            var result = await invocationTask.WaitAsync(_extensionProviderTimeout, cancellationToken);
+            _extensionRegistry.ReportProviderInvocation(new ExtensionProviderInvocation(
+                ProviderName: providerName,
+                Capability: capability,
+                Duration: Stopwatch.GetElapsedTime(startedTimestamp),
+                Succeeded: true,
+                TimedOut: false,
+                ErrorMessage: null));
+            return ProviderInvocationResult<TResult>.Success(result);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (TimeoutException)
+        {
+            timeoutCts.Cancel();
+            _ = ObserveProviderCompletionAsync(invocationTask);
+            _extensionRegistry.ReportProviderInvocation(new ExtensionProviderInvocation(
+                ProviderName: providerName,
+                Capability: capability,
+                Duration: Stopwatch.GetElapsedTime(startedTimestamp),
+                Succeeded: false,
+                TimedOut: true,
+                ErrorMessage: $"Provider timed out after {_extensionProviderTimeout.TotalMilliseconds:F0} ms."));
+            return ProviderInvocationResult<TResult>.Timeout();
+        }
+        catch (Exception ex)
+        {
+            _extensionRegistry.ReportProviderInvocation(new ExtensionProviderInvocation(
+                ProviderName: providerName,
+                Capability: capability,
+                Duration: Stopwatch.GetElapsedTime(startedTimestamp),
+                Succeeded: false,
+                TimedOut: false,
+                ErrorMessage: ex.Message));
+            return ProviderInvocationResult<TResult>.Failure();
+        }
+    }
+
+    private static async Task ObserveProviderCompletionAsync<TResult>(Task<TResult> task)
+    {
+        try
+        {
+            await task;
+        }
+        catch
+        {
+            // Swallow fault/cancel from timed-out provider calls to avoid unobserved exceptions.
+        }
     }
 
     private async ValueTask RefreshOpenJazorDiagnosticsAsync(
@@ -768,4 +1022,19 @@ internal sealed class LspSession
                 _ => DocumentKind.Unknown
             }
         };
+
+    private readonly record struct ProviderInvocationResult<TResult>(
+        bool IsSuccess,
+        bool TimedOut,
+        TResult? Result)
+    {
+        public static ProviderInvocationResult<TResult> Success(TResult result)
+            => new(true, false, result);
+
+        public static ProviderInvocationResult<TResult> Timeout()
+            => new(false, true, default);
+
+        public static ProviderInvocationResult<TResult> Failure()
+            => new(false, false, default);
+    }
 }

@@ -21,12 +21,14 @@ internal sealed class BundlerModuleProxyServer : IAsyncDisposable
     ];
 
     private readonly Uri _originBaseUri;
+    private readonly string _requestPrefix;
     private readonly HttpClient _httpClient;
     private WebApplication? _application;
 
     private BundlerModuleProxyServer(Uri originEntryUri)
     {
         _originBaseUri = new Uri(originEntryUri.GetLeftPart(UriPartial.Authority));
+        _requestPrefix = "/__jazor_bundle/" + Guid.NewGuid().ToString("N") + "/";
         _httpClient = new HttpClient(new SocketsHttpHandler
         {
             AutomaticDecompression = DecompressionMethods.All,
@@ -46,7 +48,7 @@ internal sealed class BundlerModuleProxyServer : IAsyncDisposable
     }
 
     public Uri CreateBundlerEntryUri(Uri originEntryUri)
-        => new(ListeningUri, RewriteSpecifierForBundler(originEntryUri.PathAndQuery));
+        => new(ListeningUri, ToBundlerRequestPath(RewriteSpecifierForBundler(originEntryUri.PathAndQuery, _requestPrefix)));
 
     public async ValueTask DisposeAsync()
     {
@@ -135,10 +137,10 @@ internal sealed class BundlerModuleProxyServer : IAsyncDisposable
         => string.Equals(mediaType, "text/javascript", StringComparison.OrdinalIgnoreCase)
             || string.Equals(mediaType, "application/javascript", StringComparison.OrdinalIgnoreCase);
 
-    private static string RewriteJavaScriptSpecifiers(string content)
+    private string RewriteJavaScriptSpecifiers(string content)
         => JavaScriptImportSpecifierPattern.Replace(
             content,
-            static match =>
+            match =>
             {
                 var specifierGroup = match.Groups["specifier"];
                 if (!specifierGroup.Success)
@@ -146,7 +148,7 @@ internal sealed class BundlerModuleProxyServer : IAsyncDisposable
                     return match.Value;
                 }
 
-                var rewrittenSpecifier = RewriteSpecifierForBundler(specifierGroup.Value);
+                var rewrittenSpecifier = RewriteSpecifierForBundler(specifierGroup.Value, _requestPrefix);
                 if (string.Equals(rewrittenSpecifier, specifierGroup.Value, StringComparison.Ordinal))
                 {
                     return match.Value;
@@ -159,7 +161,7 @@ internal sealed class BundlerModuleProxyServer : IAsyncDisposable
                     match.Value.AsSpan(relativeStart + specifierGroup.Length));
             });
 
-    private static string RewriteSpecifierForBundler(string specifier)
+    private static string RewriteSpecifierForBundler(string specifier, string requestPrefix)
     {
         if (string.IsNullOrWhiteSpace(specifier))
         {
@@ -184,18 +186,32 @@ internal sealed class BundlerModuleProxyServer : IAsyncDisposable
         var path = suffixIndex >= 0
             ? specifier[..suffixIndex]
             : specifier;
-        if (!IsAuthoredModulePath(path))
+
+        if (path.StartsWith("/", StringComparison.Ordinal)
+            && !path.StartsWith(requestPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            path = requestPrefix + path[1..];
+        }
+
+        var rewrittenPath = IsAuthoredModulePath(path)
+            ? path + ".js"
+            : path;
+
+        if (string.Equals(rewrittenPath, path, StringComparison.Ordinal)
+            && suffixIndex < 0)
         {
             return specifier;
         }
 
         return suffixIndex >= 0
-            ? string.Concat(path, ".js", specifier.AsSpan(suffixIndex))
-            : path + ".js";
+            ? string.Concat(rewrittenPath, specifier.AsSpan(suffixIndex))
+            : rewrittenPath;
     }
 
-    private static string MapBundlerRequestPathToOriginPath(string requestPath)
+    private string MapBundlerRequestPathToOriginPath(string requestPath)
     {
+        requestPath = StripRequestPrefix(requestPath);
+
         foreach (var extension in AuthoredModuleExtensions)
         {
             var aliasSuffix = extension + ".js";
@@ -215,6 +231,49 @@ internal sealed class BundlerModuleProxyServer : IAsyncDisposable
 
     private static bool IsAuthoredModulePath(string path)
         => AuthoredModuleExtensions.Any(extension => path.EndsWith(extension, StringComparison.OrdinalIgnoreCase));
+
+    private string ToBundlerRequestPath(string pathOrPathAndQuery)
+    {
+        if (string.IsNullOrWhiteSpace(pathOrPathAndQuery))
+        {
+            return _requestPrefix;
+        }
+
+        if (pathOrPathAndQuery.StartsWith(_requestPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return pathOrPathAndQuery;
+        }
+
+        var suffixIndex = pathOrPathAndQuery.IndexOfAny(['?', '#']);
+        var path = suffixIndex >= 0
+            ? pathOrPathAndQuery[..suffixIndex]
+            : pathOrPathAndQuery;
+        var suffix = suffixIndex >= 0
+            ? pathOrPathAndQuery[suffixIndex..]
+            : string.Empty;
+
+        if (path.StartsWith(_requestPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return path + suffix;
+        }
+
+        var trimmedPath = path.StartsWith("/", StringComparison.Ordinal)
+            ? path[1..]
+            : path;
+
+        return _requestPrefix + trimmedPath + suffix;
+    }
+
+    private string StripRequestPrefix(string path)
+    {
+        if (path.StartsWith(_requestPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            var trimmed = path[_requestPrefix.Length..];
+            return "/" + trimmed;
+        }
+
+        return path;
+    }
 
     private static Uri? ResolveListeningUri(WebApplication application)
     {

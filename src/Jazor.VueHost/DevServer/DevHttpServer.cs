@@ -382,6 +382,11 @@ internal sealed class DevHttpServer : IAsyncDisposable, IWorkspaceDocumentChange
             or DocumentKind.Css)
         {
             var normalizedDocument = new DocumentSnapshot(fullPath, document.DocumentKind, document.Text, document.Version);
+            if (ShouldSuppressWorkspaceBroadcastForDiskSyncedSnapshot(normalizedDocument))
+            {
+                return;
+            }
+
             await ProcessAndBroadcastWorkspaceDocumentChangeAsync(normalizedDocument, openDocuments, cancellationToken);
             return;
         }
@@ -390,6 +395,11 @@ internal sealed class DevHttpServer : IAsyncDisposable, IWorkspaceDocumentChange
             && VueHostWorkspaceResolver.TryResolveOwningJazorPath(fullPath, out _))
         {
             var normalizedDocument = new DocumentSnapshot(fullPath, document.DocumentKind, document.Text, document.Version);
+            if (ShouldSuppressWorkspaceBroadcastForDiskSyncedSnapshot(normalizedDocument))
+            {
+                return;
+            }
+
             await ProcessAndBroadcastWorkspaceDocumentChangeAsync(normalizedDocument, openDocuments, cancellationToken);
             return;
         }
@@ -534,6 +544,28 @@ internal sealed class DevHttpServer : IAsyncDisposable, IWorkspaceDocumentChange
         lock (_lastBroadcastSnapshotsLock)
         {
             _pendingWorkspaceBroadcastHashes[Path.GetFullPath(path)] = ComputeContentHash(text);
+        }
+    }
+
+    private bool ShouldSuppressWorkspaceBroadcastForDiskSyncedSnapshot(DocumentSnapshot document)
+    {
+        var fullPath = Path.GetFullPath(document.DocumentPath);
+        if (!TryComputeFileContentHash(fullPath, out var diskHash))
+        {
+            return false;
+        }
+
+        var workspaceHash = ComputeContentHash(document.Text);
+        if (!string.Equals(diskHash, workspaceHash, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        var snapshot = CaptureObservedFileSnapshot(fullPath);
+        lock (_lastBroadcastSnapshotsLock)
+        {
+            return _lastBroadcastSnapshots.TryGetValue(fullPath, out var previousSnapshot)
+                && Nullable.Equals(previousSnapshot, snapshot);
         }
     }
 

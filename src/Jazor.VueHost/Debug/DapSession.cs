@@ -10,6 +10,7 @@ internal sealed class DapSession
 
     private readonly ICdpClient? _cdpClient;
     private readonly VariableMapper _variableMapper;
+    private readonly Lock _breakpointGate = new();
     private readonly Dictionary<string, IReadOnlyList<DapBreakpointBinding>> _breakpointsBySourcePath = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<int, VariablesReferenceEntry> _variablesByReference = [];
     private IReadOnlyList<CdpCallFrame> _currentCallFrames = [];
@@ -54,16 +55,22 @@ internal sealed class DapSession
         ArgumentException.ThrowIfNullOrWhiteSpace(sourcePath);
         ArgumentNullException.ThrowIfNull(breakpoints);
 
-        _breakpointsBySourcePath[sourcePath] = breakpoints;
+        lock (_breakpointGate)
+        {
+            _breakpointsBySourcePath[sourcePath] = breakpoints;
+        }
     }
 
     public IReadOnlyList<DapBreakpointBinding> GetBreakpoints(string sourcePath)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(sourcePath);
 
-        return _breakpointsBySourcePath.TryGetValue(sourcePath, out var breakpoints)
-            ? breakpoints
-            : [];
+        lock (_breakpointGate)
+        {
+            return _breakpointsBySourcePath.TryGetValue(sourcePath, out var breakpoints)
+                ? breakpoints.ToArray()
+                : [];
+        }
     }
 
     public async ValueTask<MappedBreakpoint?> BindMappedBreakpointAsync(
@@ -229,7 +236,10 @@ internal sealed class DapSession
         IsPaused = false;
         CurrentCallFrames = [];
         ResetVariableReferences();
-        _breakpointsBySourcePath.Clear();
+        lock (_breakpointGate)
+        {
+            _breakpointsBySourcePath.Clear();
+        }
     }
 
     private string? ResolveCallFrameId(int? frameId)
@@ -360,7 +370,12 @@ internal sealed class DapSession
         => value ? "true" : "false";
 
     private int GetBreakpointCount()
-        => _breakpointsBySourcePath.Values.Sum(static items => items.Count);
+    {
+        lock (_breakpointGate)
+        {
+            return _breakpointsBySourcePath.Values.Sum(static items => items.Count);
+        }
+    }
 
     private DapScope CreateScope(
         string name,

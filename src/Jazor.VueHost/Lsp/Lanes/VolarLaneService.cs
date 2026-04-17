@@ -54,8 +54,8 @@ internal sealed class VolarLaneService : ILspLane
             diagnostics.AddRange(await FilterDenoDiagnosticsAsync(document, MapDiagnostics(document, frontendDocument, denoDiagnostics), cancellationToken));
         }
 
-        if (document.DocumentKind is DocumentKind.Jazor or DocumentKind.Vue
-            && frontendDocument.ProjectionMap is null)
+        if (CanUseWorkspaceGraph()
+            && document.DocumentKind is DocumentKind.Jazor or DocumentKind.Vue)
         {
             diagnostics.AddRange(await CreateUnresolvedMarkupComponentDiagnosticsAsync(document, cancellationToken));
         }
@@ -81,7 +81,7 @@ internal sealed class VolarLaneService : ILspLane
 
         var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget, cancellationToken);
         var requestPosition = frontendDocument.MapPosition(position, projectionTarget.ProjectedPosition);
-        if (frontendDocument.ProjectionMap is null
+        if (CanUseWorkspaceGraph()
             && TryGetComponentTagNameAtPosition(document.Text, position, out _))
         {
             var bridgeHover = await _markupComponentBridge.GetHoverAsync(document, position, allowWorkspaceScan: true, cancellationToken);
@@ -98,7 +98,7 @@ internal sealed class VolarLaneService : ILspLane
             return MapHover(document, frontendDocument, denoResult);
         }
 
-        if (frontendDocument.ProjectionMap is not null || !CanUseWorkspaceGraph())
+        if (!CanUseWorkspaceGraph())
         {
             return null;
         }
@@ -130,8 +130,7 @@ internal sealed class VolarLaneService : ILspLane
             }
         }
 
-        if (frontendDocument.ProjectionMap is null
-            && CanUseWorkspaceGraph()
+        if (CanUseWorkspaceGraph()
             && TryGetTagCompletionPrefix(document.Text, position, out var tagPrefix))
         {
             foreach (var component in await _markupComponentBridge.GetComponentSuggestionsAsync(
@@ -232,13 +231,43 @@ internal sealed class VolarLaneService : ILspLane
         var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget, cancellationToken);
         var requestPosition = frontendDocument.MapPosition(position, projectionTarget.ProjectedPosition);
         var frontendContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
+        var locations = new List<LspLocation>();
         var denoResult = await TryGetDenoDefinitionsAsync(frontendDocument.RequestDocument, requestPosition, frontendContext, cancellationToken);
         if (denoResult is { Count: > 0 })
         {
-            return MapLocations(document, frontendDocument, denoResult);
+            locations.AddRange(MapLocations(document, frontendDocument, denoResult));
         }
 
-        return Array.Empty<LspLocation>();
+        if (locations.Count == 0 && CanUseWorkspaceGraph())
+        {
+            var bridgeSymbol = await _markupComponentBridge.ResolveBridgeSymbolAsync(
+                document,
+                position,
+                locations,
+                allowWorkspaceScan: document.DocumentKind == DocumentKind.Jazor,
+                cancellationToken);
+            if (bridgeSymbol is { } resolved)
+            {
+                locations.Add(new LspLocation
+                {
+                    Uri = NormalizeFileUri(LspProtocolHelpers.ToDocumentUri(resolved.AbsolutePath)),
+                    Range = new LspRange
+                    {
+                        Start = new LspPosition { Line = 0, Character = 0 },
+                        End = new LspPosition { Line = 0, Character = 0 }
+                    }
+                });
+            }
+        }
+
+        return locations.Count == 0
+            ? Array.Empty<LspLocation>()
+            : locations
+                .GroupBy(static location =>
+                    $"{location.Uri}:{location.Range.Start.Line}:{location.Range.Start.Character}:{location.Range.End.Line}:{location.Range.End.Character}",
+                    StringComparer.Ordinal)
+                .Select(static group => group.First())
+                .ToArray();
     }
 
     public async ValueTask<IReadOnlyList<LspLocation>> GetReferencesAsync(
@@ -722,14 +751,15 @@ internal sealed class VolarLaneService : ILspLane
     {
         if (requestDocument.ProjectionMap is null)
         {
-            return locations;
+            return NormalizeLocationUris(locations);
         }
 
         var projectedUri = LspProtocolHelpers.ToDocumentUri(requestDocument.RequestDocument.DocumentPath);
-        return locations
+        var projectedPath = NormalizePath(requestDocument.RequestDocument.DocumentPath);
+        return NormalizeLocationUris(locations
             .Select(location =>
             {
-                if (!string.Equals(location.Uri, projectedUri, StringComparison.Ordinal))
+                if (!LocationTargetsProjectedDocument(location.Uri, projectedUri, projectedPath))
                 {
                     return location;
                 }
@@ -751,7 +781,7 @@ internal sealed class VolarLaneService : ILspLane
             })
             .Where(static location => location is not null)
             .Cast<LspLocation>()
-            .ToArray();
+            .ToArray());
     }
 
     private static LspWorkspaceEdit? MapWorkspaceEdit(
@@ -769,9 +799,10 @@ internal sealed class VolarLaneService : ILspLane
         var mappedChanges = new Dictionary<string, LspTextEdit[]>(StringComparer.Ordinal);
         foreach (var change in workspaceEdit.Changes)
         {
+            var normalizedKey = NormalizeFileUri(change.Key);
             if (!string.Equals(change.Key, projectedUri, StringComparison.Ordinal))
             {
-                mappedChanges[change.Key] = change.Value;
+                mappedChanges[normalizedKey] = change.Value;
                 continue;
             }
 
@@ -799,7 +830,7 @@ internal sealed class VolarLaneService : ILspLane
 
             if (edits.Length > 0)
             {
-                mappedChanges[sourceUri] = edits;
+                mappedChanges[NormalizeFileUri(sourceUri)] = edits;
             }
         }
 
@@ -1057,4 +1088,62 @@ internal sealed class VolarLaneService : ILspLane
 
     private static string NormalizePath(string documentPath)
         => documentPath.Replace('\\', '/');
+
+    private static bool LocationTargetsProjectedDocument(
+        string locationUri,
+        string projectedUri,
+        string normalizedProjectedPath)
+    {
+        if (string.Equals(locationUri, projectedUri, StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        var locationPath = NormalizePath(GetComparableLocationPath(locationUri));
+        return string.Equals(locationPath, normalizedProjectedPath, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string GetComparableLocationPath(string locationUri)
+    {
+        const string virtualFileUriPrefix = "file://virtual:";
+        if (locationUri.StartsWith(virtualFileUriPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return "virtual:" + locationUri[virtualFileUriPrefix.Length..];
+        }
+
+        return LspProtocolHelpers.ToDocumentPath(locationUri);
+    }
+
+    private static IReadOnlyList<LspLocation> NormalizeLocationUris(
+        IReadOnlyList<LspLocation> locations)
+    {
+        if (locations.Count == 0)
+        {
+            return locations;
+        }
+
+        return locations
+            .Select(location => new LspLocation
+            {
+                Uri = NormalizeFileUri(location.Uri),
+                Range = location.Range
+            })
+            .ToArray();
+    }
+
+    private static string NormalizeFileUri(string uri)
+    {
+        if (!Uri.TryCreate(uri, UriKind.Absolute, out var parsed) || !parsed.IsFile)
+        {
+            return uri;
+        }
+
+        var localPath = parsed.LocalPath;
+        if (localPath.Length >= 2 && localPath[1] == ':')
+        {
+            localPath = char.ToUpperInvariant(localPath[0]) + localPath[1..];
+        }
+
+        return new Uri(localPath).AbsoluteUri;
+    }
 }

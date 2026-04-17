@@ -174,7 +174,7 @@ public sealed class JazorVueHostFrontendLaneTests
         {
             if (Directory.Exists(tempDirectory))
             {
-                Directory.Delete(tempDirectory, recursive: true);
+                DeleteDirectoryWithRetry(tempDirectory);
             }
         }
     }
@@ -427,7 +427,7 @@ public sealed class JazorVueHostFrontendLaneTests
         {
             if (Directory.Exists(tempDirectory))
             {
-                Directory.Delete(tempDirectory, recursive: true);
+                DeleteDirectoryWithRetry(tempDirectory);
             }
         }
     }
@@ -485,7 +485,7 @@ public sealed class JazorVueHostFrontendLaneTests
         {
             if (Directory.Exists(tempDirectory))
             {
-                Directory.Delete(tempDirectory, recursive: true);
+                DeleteDirectoryWithRetry(tempDirectory);
             }
         }
     }
@@ -520,7 +520,7 @@ public sealed class JazorVueHostFrontendLaneTests
         {
             if (Directory.Exists(tempDirectory))
             {
-                Directory.Delete(tempDirectory, recursive: true);
+                DeleteDirectoryWithRetry(tempDirectory);
             }
         }
     }
@@ -551,7 +551,7 @@ public sealed class JazorVueHostFrontendLaneTests
         {
             if (Directory.Exists(tempDirectory))
             {
-                Directory.Delete(tempDirectory, recursive: true);
+                DeleteDirectoryWithRetry(tempDirectory);
             }
         }
     }
@@ -610,7 +610,7 @@ public sealed class JazorVueHostFrontendLaneTests
         {
             if (Directory.Exists(tempDirectory))
             {
-                Directory.Delete(tempDirectory, recursive: true);
+                DeleteDirectoryWithRetry(tempDirectory);
             }
         }
     }
@@ -696,7 +696,7 @@ public sealed class JazorVueHostFrontendLaneTests
         {
             if (Directory.Exists(tempDirectory))
             {
-                Directory.Delete(tempDirectory, recursive: true);
+                DeleteDirectoryWithRetry(tempDirectory);
             }
         }
     }
@@ -755,7 +755,7 @@ public sealed class JazorVueHostFrontendLaneTests
         {
             if (Directory.Exists(tempDirectory))
             {
-                Directory.Delete(tempDirectory, recursive: true);
+                DeleteDirectoryWithRetry(tempDirectory);
             }
         }
     }
@@ -819,7 +819,7 @@ public sealed class JazorVueHostFrontendLaneTests
         {
             if (Directory.Exists(tempDirectory))
             {
-                Directory.Delete(tempDirectory, recursive: true);
+                DeleteDirectoryWithRetry(tempDirectory);
             }
         }
     }
@@ -1369,7 +1369,7 @@ public sealed class JazorVueHostFrontendLaneTests
         {
             if (Directory.Exists(tempDirectory))
             {
-                Directory.Delete(tempDirectory, recursive: true);
+                DeleteDirectoryWithRetry(tempDirectory);
             }
         }
     }
@@ -1485,7 +1485,7 @@ public sealed class JazorVueHostFrontendLaneTests
         {
             if (Directory.Exists(tempDirectory))
             {
-                Directory.Delete(tempDirectory, recursive: true);
+                DeleteDirectoryWithRetry(tempDirectory);
             }
         }
     }
@@ -1611,7 +1611,7 @@ public sealed class JazorVueHostFrontendLaneTests
         {
             if (Directory.Exists(tempDirectory))
             {
-                Directory.Delete(tempDirectory, recursive: true);
+                DeleteDirectoryWithRetry(tempDirectory);
             }
         }
     }
@@ -1669,7 +1669,7 @@ public sealed class JazorVueHostFrontendLaneTests
         {
             if (Directory.Exists(tempDirectory))
             {
-                Directory.Delete(tempDirectory, recursive: true);
+                DeleteDirectoryWithRetry(tempDirectory);
             }
         }
     }
@@ -1689,6 +1689,37 @@ public sealed class JazorVueHostFrontendLaneTests
         var path = Path.Combine(Path.GetTempPath(), "JazorVueHostFrontendLaneTests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(path);
         return path;
+    }
+
+    private static void DeleteDirectoryWithRetry(string path)
+    {
+        const int maxAttempts = 5;
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
+        {
+            try
+            {
+                if (!Directory.Exists(path))
+                {
+                    return;
+                }
+
+                Directory.Delete(path, recursive: true);
+                return;
+            }
+            catch (IOException) when (attempt < maxAttempts)
+            {
+                System.Threading.Thread.Sleep(100 * attempt);
+            }
+            catch (UnauthorizedAccessException) when (attempt < maxAttempts)
+            {
+                System.Threading.Thread.Sleep(100 * attempt);
+            }
+        }
+
+        if (Directory.Exists(path))
+        {
+            Directory.Delete(path, recursive: true);
+        }
     }
 
     private static DenoVolarHost CreateBundledDenoFrontendHost()

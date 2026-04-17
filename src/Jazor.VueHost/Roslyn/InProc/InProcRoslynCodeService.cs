@@ -104,6 +104,11 @@ internal sealed class InProcRoslynCodeService
             return ValueTask.FromResult<IReadOnlyList<LspCompletionItem>>(Array.Empty<LspCompletionItem>());
 
         var prefix = GetCompletionPrefix(context);
+        var originalPrefix = GetCompletionPrefix(document.Text, LspProtocolHelpers.GetOffset(document.Text, position));
+        if (!string.IsNullOrEmpty(originalPrefix))
+        {
+            prefix = originalPrefix;
+        }
         var members = TryLookupMemberCompletion(context, prefix);
         IReadOnlyList<LspCompletionItem> fallbackItems = Array.Empty<LspCompletionItem>();
         if (members.Length == 0)
@@ -111,7 +116,11 @@ internal sealed class InProcRoslynCodeService
             members = LookupVisibleSymbols(context, prefix);
             if (members.Length == 0)
             {
-                fallbackItems = LookupFallbackMemberCompletionItems(context, prefix, cancellationToken);
+                members = LookupDeclaredTypeMemberSymbols(context, prefix, cancellationToken);
+                if (members.Length == 0)
+                {
+                    fallbackItems = LookupFallbackMemberCompletionItems(context, prefix, cancellationToken);
+                }
             }
         }
 
@@ -703,7 +712,8 @@ internal sealed class InProcRoslynCodeService
 
         var projectedPosition = new LspPosition();
         if (originalPosition is not null &&
-            !primaryDocument.ProjectionMap.TryMapToProjectedPosition(
+            !TryMapToProjectedPositionWithBoundaryFallback(
+                primaryDocument.ProjectionMap,
                 document.Text,
                 originalPosition,
                 primaryDocument.ProjectedText,
@@ -721,7 +731,8 @@ internal sealed class InProcRoslynCodeService
             }
 
             if (!TryCreateFallbackProjectedDocument(document, out var fallbackDocument)
-                || !fallbackDocument.ProjectionMap.TryMapToProjectedPosition(
+                || !TryMapToProjectedPositionWithBoundaryFallback(
+                    fallbackDocument.ProjectionMap,
                     document.Text,
                     originalPosition,
                     fallbackDocument.ProjectedText,
@@ -774,6 +785,43 @@ internal sealed class InProcRoslynCodeService
                 : LspProtocolHelpers.GetOffset(primaryContext.ProjectedText, projectedPosition),
             projectedPosition);
         return true;
+    }
+
+    private static bool TryMapToProjectedPositionWithBoundaryFallback(
+        ProjectionMap projectionMap,
+        string sourceText,
+        LspPosition sourcePosition,
+        string projectedText,
+        out LspPosition projectedPosition)
+    {
+        if (projectionMap.TryMapToProjectedPosition(sourceText, sourcePosition, projectedText, out projectedPosition))
+        {
+            return true;
+        }
+
+        var sourceOffset = LspProtocolHelpers.GetOffset(sourceText, sourcePosition);
+        if (sourceOffset <= 0)
+        {
+            projectedPosition = new LspPosition();
+            return false;
+        }
+
+        var maxDelta = sourceOffset;
+        for (var delta = 1; delta <= maxDelta; delta++)
+        {
+            var probeSourceOffset = sourceOffset - delta;
+            if (!projectionMap.TryMapToProjectedOffset(probeSourceOffset, out var probeProjectedOffset))
+            {
+                continue;
+            }
+
+            var adjustedProjectedOffset = Math.Min(probeProjectedOffset + delta, projectedText.Length);
+            projectedPosition = LspProtocolHelpers.GetPosition(projectedText, adjustedProjectedOffset);
+            return true;
+        }
+
+        projectedPosition = new LspPosition();
+        return false;
     }
 
     private List<ProjectedDocumentContext> BuildProjectedDocuments(
@@ -991,6 +1039,68 @@ internal sealed class InProcRoslynCodeService
             .Where(symbol => !string.IsNullOrWhiteSpace(symbol.Name))
             .Where(symbol => string.IsNullOrEmpty(prefix) || symbol.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             .Where(IsCompletionSymbolSupported)
+            .OrderBy(symbol => symbol.Name, StringComparer.OrdinalIgnoreCase)
+            .ToImmutableArray();
+    }
+
+    private static ImmutableArray<ISymbol> LookupDeclaredTypeMemberSymbols(
+        RoslynCodeContext context,
+        string prefix,
+        CancellationToken cancellationToken)
+    {
+        var root = context.SyntaxTree.GetRoot(cancellationToken);
+        var typeDeclaration = root.DescendantNodes()
+            .OfType<TypeDeclarationSyntax>()
+            .FirstOrDefault();
+        if (typeDeclaration is null)
+        {
+            return ImmutableArray<ISymbol>.Empty;
+        }
+
+        var symbols = new List<ISymbol>();
+        foreach (var member in typeDeclaration.Members)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            switch (member)
+            {
+                case FieldDeclarationSyntax fieldDeclaration:
+                    foreach (var variable in fieldDeclaration.Declaration.Variables)
+                    {
+                        var symbol = context.SemanticModel.GetDeclaredSymbol(variable, cancellationToken);
+                        if (symbol is not null)
+                        {
+                            symbols.Add(symbol);
+                        }
+                    }
+                    break;
+                case PropertyDeclarationSyntax propertyDeclaration:
+                    {
+                        var symbol = context.SemanticModel.GetDeclaredSymbol(propertyDeclaration, cancellationToken);
+                        if (symbol is not null)
+                        {
+                            symbols.Add(symbol);
+                        }
+                    }
+                    break;
+                case MethodDeclarationSyntax methodDeclaration:
+                    {
+                        var symbol = context.SemanticModel.GetDeclaredSymbol(methodDeclaration, cancellationToken);
+                        if (symbol is not null)
+                        {
+                            symbols.Add(symbol);
+                        }
+                    }
+                    break;
+            }
+        }
+
+        return symbols
+            .Where(symbol => !string.IsNullOrWhiteSpace(symbol.Name))
+            .Where(symbol => string.IsNullOrEmpty(prefix) || symbol.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            .Where(IsCompletionSymbolSupported)
+            .GroupBy(static symbol => symbol.Name, StringComparer.Ordinal)
+            .Select(static group => group.First())
             .OrderBy(symbol => symbol.Name, StringComparer.OrdinalIgnoreCase)
             .ToImmutableArray();
     }
@@ -1925,18 +2035,23 @@ internal sealed class InProcRoslynCodeService
 
     private static string GetCompletionPrefix(RoslynCodeContext context)
     {
-        var offset = Math.Max(0, Math.Min(context.ProjectedOffset, context.ProjectedText.Length));
-        var start = offset;
+        return GetCompletionPrefix(context.ProjectedText, context.ProjectedOffset);
+    }
+
+    private static string GetCompletionPrefix(string text, int offset)
+    {
+        var normalizedOffset = Math.Max(0, Math.Min(offset, text.Length));
+        var start = normalizedOffset;
         while (start > 0)
         {
-            var character = context.ProjectedText[start - 1];
+            var character = text[start - 1];
             if (!char.IsLetterOrDigit(character) && character != '_')
                 break;
 
             start--;
         }
 
-        return context.ProjectedText[start..offset];
+        return text[start..normalizedOffset];
     }
 
     private static ImmutableArray<MetadataReference> CreateMetadataReferences()

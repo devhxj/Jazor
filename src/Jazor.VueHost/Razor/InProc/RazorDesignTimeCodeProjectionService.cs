@@ -120,13 +120,16 @@ internal sealed class RazorDesignTimeCodeProjectionService
         string projectedDocumentPath,
         IEnumerable<SourceMapping> sourceMappings)
     {
+        var normalizedSourceDocumentPath = NormalizeComparablePath(sourceDocumentPath);
         var segments = sourceMappings
             .Select(static mapping => TryCreateSegment(mapping))
             .Where(static segment => segment is not null)
             .Select(static segment => segment!)
             .Where(segment => segment.OriginalLength > 0 && segment.ProjectedLength > 0)
             .Where(segment => string.IsNullOrWhiteSpace(segment.FilePath)
-                || PathComparer.Equals(segment.FilePath, sourceDocumentPath))
+                || PathComparer.Equals(
+                    NormalizeComparablePath(segment.FilePath),
+                    normalizedSourceDocumentPath))
             .Select(static segment => new ProjectionSegment(
                 segment.OriginalStart,
                 segment.OriginalLength,
@@ -137,6 +140,26 @@ internal sealed class RazorDesignTimeCodeProjectionService
             .ToArray();
 
         return new ProjectionMap(sourceDocumentPath, projectedDocumentPath, segments);
+    }
+
+    private static string NormalizeComparablePath(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return string.Empty;
+        }
+
+        try
+        {
+            var fullPath = Path.IsPathRooted(path)
+                ? Path.GetFullPath(path)
+                : path;
+            return fullPath.Replace('\\', '/');
+        }
+        catch
+        {
+            return path.Replace('\\', '/');
+        }
     }
 
     private static bool TryCreateCodeBlockFallbackProjectionMap(

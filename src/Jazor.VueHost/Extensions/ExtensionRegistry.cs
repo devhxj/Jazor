@@ -6,6 +6,12 @@ internal sealed class ExtensionRegistry : IExtensionRegistry
     private readonly Dictionary<string, IExtension> _extensions = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<ILspDiagnosticProvider> _lspDiagnosticProviders = [];
     private readonly List<ILspCodeActionProvider> _lspCodeActionProviders = [];
+    private readonly List<ILspHoverProvider> _lspHoverProviders = [];
+    private readonly List<ILspCompletionProvider> _lspCompletionProviders = [];
+    private readonly List<ILspDocumentSymbolProvider> _lspDocumentSymbolProviders = [];
+    private readonly List<ILspReferenceProvider> _lspReferenceProviders = [];
+    private readonly List<ILspRenameProvider> _lspRenameProviders = [];
+    private readonly Dictionary<string, ExtensionProviderHealth> _providerHealthByKey = new(StringComparer.OrdinalIgnoreCase);
 
     public void RegisterExtension(IExtension extension)
     {
@@ -35,6 +41,31 @@ internal sealed class ExtensionRegistry : IExtensionRegistry
         if (extension is ILspCodeActionProvider codeActionProvider)
         {
             RegisterLspCodeActionProvider(codeActionProvider);
+        }
+
+        if (extension is ILspHoverProvider hoverProvider)
+        {
+            RegisterLspHoverProvider(hoverProvider);
+        }
+
+        if (extension is ILspCompletionProvider completionProvider)
+        {
+            RegisterLspCompletionProvider(completionProvider);
+        }
+
+        if (extension is ILspDocumentSymbolProvider documentSymbolProvider)
+        {
+            RegisterLspDocumentSymbolProvider(documentSymbolProvider);
+        }
+
+        if (extension is ILspReferenceProvider referenceProvider)
+        {
+            RegisterLspReferenceProvider(referenceProvider);
+        }
+
+        if (extension is ILspRenameProvider renameProvider)
+        {
+            RegisterLspRenameProvider(renameProvider);
         }
     }
 
@@ -84,6 +115,121 @@ internal sealed class ExtensionRegistry : IExtensionRegistry
         }
     }
 
+    public void RegisterLspHoverProvider(ILspHoverProvider provider)
+    {
+        ArgumentNullException.ThrowIfNull(provider);
+        if (string.IsNullOrWhiteSpace(provider.Name))
+        {
+            throw new InvalidOperationException("Hover provider name cannot be empty.");
+        }
+
+        lock (_gate)
+        {
+            _lspHoverProviders.RemoveAll(existing =>
+                string.Equals(existing.Name, provider.Name, StringComparison.OrdinalIgnoreCase));
+            _lspHoverProviders.Add(provider);
+            _lspHoverProviders.Sort(static (left, right) =>
+            {
+                var priority = right.Priority.CompareTo(left.Priority);
+                return priority != 0
+                    ? priority
+                    : string.Compare(left.Name, right.Name, StringComparison.OrdinalIgnoreCase);
+            });
+        }
+    }
+
+    public void RegisterLspCompletionProvider(ILspCompletionProvider provider)
+    {
+        ArgumentNullException.ThrowIfNull(provider);
+        if (string.IsNullOrWhiteSpace(provider.Name))
+        {
+            throw new InvalidOperationException("Completion provider name cannot be empty.");
+        }
+
+        lock (_gate)
+        {
+            _lspCompletionProviders.RemoveAll(existing =>
+                string.Equals(existing.Name, provider.Name, StringComparison.OrdinalIgnoreCase));
+            _lspCompletionProviders.Add(provider);
+            _lspCompletionProviders.Sort(static (left, right) =>
+            {
+                var priority = right.Priority.CompareTo(left.Priority);
+                return priority != 0
+                    ? priority
+                    : string.Compare(left.Name, right.Name, StringComparison.OrdinalIgnoreCase);
+            });
+        }
+    }
+
+    public void RegisterLspDocumentSymbolProvider(ILspDocumentSymbolProvider provider)
+    {
+        ArgumentNullException.ThrowIfNull(provider);
+        if (string.IsNullOrWhiteSpace(provider.Name))
+        {
+            throw new InvalidOperationException("Document symbol provider name cannot be empty.");
+        }
+
+        lock (_gate)
+        {
+            _lspDocumentSymbolProviders.RemoveAll(existing =>
+                string.Equals(existing.Name, provider.Name, StringComparison.OrdinalIgnoreCase));
+            _lspDocumentSymbolProviders.Add(provider);
+            _lspDocumentSymbolProviders.Sort(static (left, right) =>
+            {
+                var priority = right.Priority.CompareTo(left.Priority);
+                return priority != 0
+                    ? priority
+                    : string.Compare(left.Name, right.Name, StringComparison.OrdinalIgnoreCase);
+            });
+        }
+    }
+
+    public void RegisterLspReferenceProvider(ILspReferenceProvider provider)
+    {
+        ArgumentNullException.ThrowIfNull(provider);
+        if (string.IsNullOrWhiteSpace(provider.Name))
+        {
+            throw new InvalidOperationException("Reference provider name cannot be empty.");
+        }
+
+        lock (_gate)
+        {
+            _lspReferenceProviders.RemoveAll(existing =>
+                string.Equals(existing.Name, provider.Name, StringComparison.OrdinalIgnoreCase));
+            _lspReferenceProviders.Add(provider);
+            _lspReferenceProviders.Sort(static (left, right) =>
+            {
+                var priority = right.Priority.CompareTo(left.Priority);
+                return priority != 0
+                    ? priority
+                    : string.Compare(left.Name, right.Name, StringComparison.OrdinalIgnoreCase);
+            });
+        }
+    }
+
+    public void RegisterLspRenameProvider(ILspRenameProvider provider)
+    {
+        ArgumentNullException.ThrowIfNull(provider);
+        if (string.IsNullOrWhiteSpace(provider.Name))
+        {
+            throw new InvalidOperationException("Rename provider name cannot be empty.");
+        }
+
+        lock (_gate)
+        {
+            _lspRenameProviders.RemoveAll(existing =>
+                string.Equals(existing.Name, provider.Name, StringComparison.OrdinalIgnoreCase));
+            _lspRenameProviders.Add(provider);
+            _lspRenameProviders.Sort(static (left, right) =>
+            {
+                var priority = right.Priority.CompareTo(left.Priority);
+                return priority != 0
+                    ? priority
+                    : string.Compare(left.Name, right.Name, StringComparison.OrdinalIgnoreCase);
+            });
+        }
+    }
+
     public IReadOnlyDictionary<string, IExtension> GetExtensions()
     {
         lock (_gate)
@@ -107,4 +253,105 @@ internal sealed class ExtensionRegistry : IExtensionRegistry
             return _lspCodeActionProviders.ToArray();
         }
     }
+
+    public IReadOnlyList<ILspHoverProvider> GetLspHoverProviders()
+    {
+        lock (_gate)
+        {
+            return _lspHoverProviders.ToArray();
+        }
+    }
+
+    public IReadOnlyList<ILspCompletionProvider> GetLspCompletionProviders()
+    {
+        lock (_gate)
+        {
+            return _lspCompletionProviders.ToArray();
+        }
+    }
+
+    public IReadOnlyList<ILspDocumentSymbolProvider> GetLspDocumentSymbolProviders()
+    {
+        lock (_gate)
+        {
+            return _lspDocumentSymbolProviders.ToArray();
+        }
+    }
+
+    public IReadOnlyList<ILspReferenceProvider> GetLspReferenceProviders()
+    {
+        lock (_gate)
+        {
+            return _lspReferenceProviders.ToArray();
+        }
+    }
+
+    public IReadOnlyList<ILspRenameProvider> GetLspRenameProviders()
+    {
+        lock (_gate)
+        {
+            return _lspRenameProviders.ToArray();
+        }
+    }
+
+    public void ReportProviderInvocation(ExtensionProviderInvocation invocation)
+    {
+        ArgumentNullException.ThrowIfNull(invocation);
+
+        if (string.IsNullOrWhiteSpace(invocation.ProviderName) || string.IsNullOrWhiteSpace(invocation.Capability))
+        {
+            return;
+        }
+
+        lock (_gate)
+        {
+            var key = CreateHealthKey(invocation.Capability, invocation.ProviderName);
+            _providerHealthByKey.TryGetValue(key, out var current);
+            current ??= new ExtensionProviderHealth(
+                ProviderName: invocation.ProviderName,
+                Capability: invocation.Capability,
+                SuccessCount: 0,
+                FailureCount: 0,
+                TimeoutCount: 0,
+                LastDuration: TimeSpan.Zero,
+                LastSuccessAt: null,
+                LastFailureAt: null,
+                LastErrorMessage: null);
+
+            var now = DateTimeOffset.UtcNow;
+            var next = invocation.Succeeded
+                ? current with
+                {
+                    SuccessCount = current.SuccessCount + 1,
+                    LastDuration = invocation.Duration,
+                    LastSuccessAt = now
+                }
+                : current with
+                {
+                    FailureCount = current.FailureCount + 1,
+                    TimeoutCount = invocation.TimedOut
+                        ? current.TimeoutCount + 1
+                        : current.TimeoutCount,
+                    LastDuration = invocation.Duration,
+                    LastFailureAt = now,
+                    LastErrorMessage = invocation.ErrorMessage
+                };
+
+            _providerHealthByKey[key] = next;
+        }
+    }
+
+    public IReadOnlyList<ExtensionProviderHealth> GetProviderHealth()
+    {
+        lock (_gate)
+        {
+            return _providerHealthByKey.Values
+                .OrderBy(static item => item.Capability, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(static item => item.ProviderName, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+        }
+    }
+
+    private static string CreateHealthKey(string capability, string providerName)
+        => capability.Trim() + "|" + providerName.Trim();
 }

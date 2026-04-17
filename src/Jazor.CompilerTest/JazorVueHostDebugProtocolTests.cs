@@ -299,6 +299,52 @@ public sealed class JazorVueHostDebugProtocolTests
     }
 
     [TestMethod]
+    public async Task DapRequestHandler_HandleAsync_SetBreakpoints_ConcurrentRequests_ProduceUniqueBreakpointIds()
+    {
+        var sourceMapService = new InMemorySourceMapService();
+        sourceMapService.Register(
+            "/Counter.jazor",
+            CreateSingleSourceLineMap(
+                "Counter.jazor",
+                "line0\nline1\nline2",
+                [1]));
+        var handler = CreateHandler(sourceMapService, out _);
+
+        const int requestCount = 48;
+        var startGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requests = Enumerable.Range(0, requestCount)
+            .Select(index => CreateSetBreakpointsRequest(seq: 500 + index))
+            .ToArray();
+        var tasks = requests
+            .Select(async request =>
+            {
+                await startGate.Task;
+                return await handler.HandleAsync(request, CancellationToken.None);
+            })
+            .ToArray();
+
+        startGate.SetResult();
+        var results = await Task.WhenAll(tasks);
+
+        var breakpointIds = new List<int>(requestCount);
+        foreach (var result in results)
+        {
+            Assert.IsTrue(result.Response.Success);
+            using var body = GetResponseBody(result.Response);
+            var breakpoints = body.RootElement.GetProperty("breakpoints").EnumerateArray().ToArray();
+            Assert.AreEqual(1, breakpoints.Length);
+            Assert.IsTrue(breakpoints[0].GetProperty("verified").GetBoolean());
+            breakpointIds.Add(breakpoints[0].GetProperty("id").GetInt32());
+        }
+
+        Assert.AreEqual(requestCount, breakpointIds.Count);
+        Assert.AreEqual(requestCount, breakpointIds.Distinct().Count());
+        CollectionAssert.AreEqual(
+            Enumerable.Range(1, requestCount).ToArray(),
+            breakpointIds.OrderBy(static id => id).ToArray());
+    }
+
+    [TestMethod]
     public async Task DapRequestHandler_HandleAsync_StackTrace_MapsSessionFrames()
     {
         var sourceText = """
@@ -401,6 +447,78 @@ public sealed class JazorVueHostDebugProtocolTests
         Assert.AreEqual(1, frames.Length);
         Assert.AreEqual(GetLineIndexContaining(sourceText, "Count++;") + 1, frames[0].GetProperty("line").GetInt32());
         Assert.AreEqual(9, frames[0].GetProperty("column").GetInt32());
+    }
+
+    [TestMethod]
+    public async Task DapRequestHandler_HandleAsync_StackTrace_ExceptionStyleFrames_KeepMappedAndUnmappedOrder()
+    {
+        var sourceText = """
+            <button>Count</button>
+
+            @code {
+                private int Count = 1;
+                public void Increment()
+                {
+                    throw new InvalidOperationException();
+                }
+            }
+            """;
+        var throwLine = GetLineIndexContaining(sourceText, "throw new InvalidOperationException();");
+        var incrementLine = GetLineIndexContaining(sourceText, "public void Increment()");
+        var sourceMapService = new InMemorySourceMapService();
+        sourceMapService.Register(
+            "/Counter.jazor",
+            CreateSingleSourceColumnMap(
+                "Counter.jazor",
+                sourceText,
+                (0, 0, incrementLine, 16),
+                (1, 4, throwLine, 8)));
+        var handler = CreateHandler(sourceMapService, out var session);
+        session.CurrentCallFrames =
+        [
+            new CdpCallFrame(
+                "frame-throw",
+                "Increment",
+                new CdpLocation("/Counter.jazor", 1, 4)),
+            new CdpCallFrame(
+                "frame-anonymous",
+                string.Empty,
+                new CdpLocation("/Counter.jazor", 0, 0)),
+            new CdpCallFrame(
+                "frame-runtime",
+                "Promise.then",
+                new CdpLocation("/runtime/internal.js", 20, 2))
+        ];
+
+        var result = await handler.HandleAsync(
+            new DapRequest
+            {
+                Seq = 6,
+                Command = "stackTrace",
+                Arguments = JsonSerializer.SerializeToElement(new
+                {
+                    threadId = 1
+                })
+            },
+            CancellationToken.None);
+
+        Assert.IsTrue(result.Response.Success);
+        using var body = GetResponseBody(result.Response);
+        var frames = body.RootElement.GetProperty("stackFrames").EnumerateArray().ToArray();
+        Assert.AreEqual(3, frames.Length);
+
+        Assert.AreEqual("Increment", frames[0].GetProperty("name").GetString());
+        Assert.AreEqual("Counter.jazor", frames[0].GetProperty("source").GetProperty("path").GetString());
+        Assert.AreEqual(throwLine + 1, frames[0].GetProperty("line").GetInt32());
+
+        Assert.AreEqual("(anonymous)", frames[1].GetProperty("name").GetString());
+        Assert.AreEqual("Counter.jazor", frames[1].GetProperty("source").GetProperty("path").GetString());
+        Assert.AreEqual(incrementLine + 1, frames[1].GetProperty("line").GetInt32());
+
+        Assert.AreEqual("Promise.then", frames[2].GetProperty("name").GetString());
+        Assert.AreEqual("/runtime/internal.js", frames[2].GetProperty("source").GetProperty("path").GetString());
+        Assert.AreEqual(21, frames[2].GetProperty("line").GetInt32());
+        Assert.AreEqual(3, frames[2].GetProperty("column").GetInt32());
     }
 
     [TestMethod]
@@ -1980,6 +2098,24 @@ public sealed class JazorVueHostDebugProtocolTests
 
     // Deterministic fake-CDP tests cover sourcemap rebinding semantics here.
     // Real browser/CDP target reload timing remains better suited to env-gated integration runs.
+    private static DapRequest CreateSetBreakpointsRequest(int seq)
+        => new()
+        {
+            Seq = seq,
+            Command = "setBreakpoints",
+            Arguments = JsonSerializer.SerializeToElement(new
+            {
+                source = new
+                {
+                    path = @"D:\repo\Counter.jazor"
+                },
+                breakpoints = new object[]
+                {
+                    new { line = 2, column = 1 }
+                }
+            })
+        };
+
     private static string CreateSingleSourceColumnMap(
         string fileName,
         string sourceText,

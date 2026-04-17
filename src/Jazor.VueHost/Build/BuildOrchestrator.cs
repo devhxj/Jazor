@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Net;
-using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -91,7 +90,9 @@ internal sealed class BuildOrchestrator
             {
                 RootDirectory = options.RootDirectory,
                 Host = IPAddress.Loopback.ToString(),
-                Port = GetAvailablePort(),
+                // Let Kestrel bind an ephemeral port directly to avoid
+                // cross-test port races between "pick free port" and "bind".
+                Port = 0,
                 HmrEnabled = false,
                 FrontendCompiler = "deno"
             };
@@ -1387,7 +1388,8 @@ internal sealed class BuildOrchestrator
             if (string.Equals(absoluteUri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)
                 || string.Equals(absoluteUri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
             {
-                var resolved = moduleResolver.Resolve(Uri.UnescapeDataString(absoluteUri.AbsolutePath));
+                var requestPath = NormalizeBundlerProxyRequestPath(Uri.UnescapeDataString(absoluteUri.AbsolutePath));
+                var resolved = moduleResolver.Resolve(requestPath);
                 return resolved.Found && !resolved.IsVirtual
                     ? NormalizeAbsoluteSourceMapPath(rootDirectory, resolved.AbsolutePath)
                     : null;
@@ -1398,7 +1400,7 @@ internal sealed class BuildOrchestrator
 
         if (source.StartsWith("/", StringComparison.Ordinal))
         {
-            var resolved = moduleResolver.Resolve(source);
+            var resolved = moduleResolver.Resolve(NormalizeBundlerProxyRequestPath(source));
             return resolved.Found && !resolved.IsVirtual
                 ? NormalizeAbsoluteSourceMapPath(rootDirectory, resolved.AbsolutePath)
                 : null;
@@ -1691,10 +1693,51 @@ internal sealed class BuildOrchestrator
         IReadOnlyDictionary<string, CompilationResult> cachedResults,
         ModuleResolver moduleResolver)
     {
+        requestPath = NormalizeBundlerProxyRequestPath(requestPath);
         var resolved = moduleResolver.Resolve(requestPath);
         return resolved.Found && !resolved.IsVirtual && cachedResults.ContainsKey(resolved.AbsolutePath)
             ? resolved.AbsolutePath
             : null;
+    }
+
+    private static string NormalizeBundlerProxyRequestPath(string requestPath)
+    {
+        if (string.IsNullOrWhiteSpace(requestPath))
+        {
+            return requestPath;
+        }
+
+        const string bundlerPrefixMarker = "/__jazor_bundle/";
+        var markerIndex = requestPath.IndexOf(bundlerPrefixMarker, StringComparison.OrdinalIgnoreCase);
+        if (markerIndex < 0)
+        {
+            return requestPath;
+        }
+
+        var suffixIndex = requestPath.IndexOfAny(['?', '#']);
+        var path = suffixIndex >= 0
+            ? requestPath[..suffixIndex]
+            : requestPath;
+        var markerPathIndex = path.IndexOf(bundlerPrefixMarker, StringComparison.OrdinalIgnoreCase);
+        if (markerPathIndex < 0)
+        {
+            return requestPath;
+        }
+
+        var tokenStart = markerPathIndex + bundlerPrefixMarker.Length;
+        var afterTokenSeparatorIndex = path.IndexOf('/', tokenStart);
+        if (afterTokenSeparatorIndex < 0)
+        {
+            return "/";
+        }
+
+        var normalizedPath = path[afterTokenSeparatorIndex..];
+        if (suffixIndex < 0)
+        {
+            return normalizedPath;
+        }
+
+        return normalizedPath + requestPath[suffixIndex..];
     }
 
     private static IReadOnlyList<string> ExtractDynamicImportRootModules(
@@ -2251,15 +2294,6 @@ internal sealed class BuildOrchestrator
         }
 
         Directory.CreateDirectory(outDirectory);
-    }
-
-    private static int GetAvailablePort()
-    {
-        using var listener = new TcpListener(IPAddress.Loopback, 0);
-        listener.Start();
-        var port = ((IPEndPoint)listener.LocalEndpoint).Port;
-        listener.Stop();
-        return port;
     }
 
     private static bool IsInsideRoot(string rootDirectory, string candidatePath)

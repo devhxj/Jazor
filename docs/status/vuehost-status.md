@@ -14,7 +14,7 @@
 - Phase 4：DAP + CDP 已具备断点/调用栈/scopes/variables/evaluate/continue 基础闭环，且已有真实浏览器/CDP + HMR 长链路压测（env-gated）
 - Phase 5：生产构建路径已进入实现与回归覆盖阶段
 - Phase 6：高级 LSP（P2 + 部分 P3）已进入可用状态并持续增强
-- Phase 7：扩展系统已启动最小闭环（diagnostics/codeAction provider 抽象 + LSP 接入 + 基础加载器）
+- Phase 7：扩展系统已进入主请求面扩展阶段（diagnostics/codeAction/hover/completion/documentSymbol/references/rename provider 抽象 + LSP 接入 + 基础加载器）
 
 ## 当前状态判断
 
@@ -44,15 +44,23 @@
 
 ## 阶段进展矩阵
 
-| 阶段 | 进展判断 | 说明 |
-|------|---------|------|
-| Phase 1 Dev Server MVP | 已完成并持续增强 | 核心 HTTP 模块服务与编译路径已可用 |
-| Phase 2 Source Map | 高完成度（收尾中） | 行级+列级映射与链式映射已落地，DAP/CDP 消费已接入，仍需持续扩展高压调试矩阵 |
-| Phase 3 HMR | 已完成并持续增强 | 工作区变更、去重、style/js/full-reload 分类已实现，`resolve.alias` 已补齐 |
-| Phase 4 Debug (DAP + CDP) | 收尾中 | DAP + CDP 已覆盖 stackTrace/scopes/variables/evaluate/continue，并有真实浏览器/CDP+HMR 多轮压测；仍需更高压并发与异常栈矩阵 |
-| Phase 5 Production Build | 活跃推进中 | build skeleton 已落地并有较多构建回归测试 |
-| Phase 6 Advanced LSP | 高完成度 | P2 基本可用，P3 中 semantic tokens 等已部分落地 |
-| Phase 7 Extension System | 已启动（最小闭环） | 扩展核心接口、注册表、加载器与 LSP diagnostics/codeAction provider 接入已落地；IDE 集成与生态层仍待推进 |
+| 阶段 | 当前完成度 | 进展判断 | 说明 |
+|------|------------|---------|------|
+| Phase 1 Dev Server MVP | 96% | 已完成并持续增强 | 核心 HTTP 模块服务与编译路径稳定；本轮补齐 WebSocket upstream 端口竞态测试稳定性 |
+| Phase 2 Source Map | 95% | 已收口并持续验证 | 多锚点列映射与链式映射主路径稳定；DAP/CDP 消费链路回归通过 |
+| Phase 3 HMR | 96% | 已完成并持续增强 | 变更去重、style/js/full-reload 分类与 alias 统一链路稳定；disk/workspace 双来源去重硬化 |
+| Phase 4 Debug (DAP + CDP) | 95% | 收口完成（硬化中） | stackTrace/scopes/variables/evaluate/continue 闭环稳定，压测矩阵回归通过 |
+| Phase 5 Production Build | 95% | 收口完成（硬化中） | build lane 串台问题前置修复（端口竞态 + bundler 前缀/路径归一化），manifest/css/js/sourcemap 回归通过 |
+| Phase 6 Advanced LSP | 95% | 已收口并持续验证 | references/rename/codeAction/documentSymbol/semantic tokens 主能力稳定，跨 lane 补桥接用例回归通过 |
+| Phase 7 Extension System | 95% | 收口完成（硬化中） | 扩展注册表/加载器与 diagnostics/codeAction/hover/completion/documentSymbol/references/rename provider 已接入并稳定回归 |
+
+## 本轮验证（2026-04-17）
+
+- `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter 'FullyQualifiedName~JazorVueHost' --no-restore -v minimal`：**458/458 通过**
+- `dotnet test ... --filter 'FullyQualifiedName~JazorVueHostDebugProtocolTests|FullyQualifiedName~JazorVueHostBuildTests|FullyQualifiedName~JazorVueHostPhase7ExtensionTests|FullyQualifiedName~JazorVueHostFrontendLaneTests'`：**100/100 通过**
+- `dotnet test ... --filter 'FullyQualifiedName~JazorVueHostInProcRazorProjectionTests|FullyQualifiedName~JazorVueHostProjectionMapTests|FullyQualifiedName~JazorVueHostSourceMapServiceTests|FullyQualifiedName~JazorVueHostBuildJsSourceMapTests|FullyQualifiedName~JazorVueHostDebugMappingTests|FullyQualifiedName~JazorVueHostInProcRoslynTests'`：**38/38 通过**
+- `dotnet test ... --filter 'FullyQualifiedName~JazorVueHostPhase6LspTests|FullyQualifiedName~JazorVueHostVolarLaneDocumentSymbolProjectionTests|FullyQualifiedName~JazorVueHostVolarLaneTemplateRequestProjectionTests|FullyQualifiedName~JazorVueHostLspTests|FullyQualifiedName~JazorVueHostLaneRoutingTests'`：**97/97 通过**
+- `dotnet test ... --filter 'FullyQualifiedName~JazorVueHostDevServerTests'`：**135/135 通过**
 
 ## 近期推进信号（截至 2026-04-17）
 
@@ -76,8 +84,8 @@
    - 继续修正跨 lane supplement 的一致性和保守边界
    - 明确哪些能力是“native first”，哪些由 host 负责补桥接
 
-4. **Phase 7 启动门槛**
-   - 在不破坏现有主线稳定性的前提下，继续扩展 provider 面（completion/hover/symbol）
+4. **Phase 7 收敛重点**
+   - 在不破坏现有主线稳定性的前提下，继续扩展 provider 面（signatureHelp/inlayHints/workspaceSymbol/foldingRange）
    - 补扩展健康监控、超时与隔离策略，再推进 IDE 生态层集成
 
 ## 风险与注意项

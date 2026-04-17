@@ -7988,11 +7988,7 @@ public sealed class JazorVueHostDevServerTests
 
         public static Task<TestUpstreamServer> StartAsync(Func<HttpListenerContext, Task> handler)
         {
-            var port = GetFreePort();
-            var baseAddress = $"http://127.0.0.1:{port}/";
-            var listener = new HttpListener();
-            listener.Prefixes.Add(baseAddress);
-            listener.Start();
+            var (listener, baseAddress) = StartHttpListenerWithRetry();
             return Task.FromResult(new TestUpstreamServer(listener, handler, baseAddress));
         }
 
@@ -8063,22 +8059,22 @@ public sealed class JazorVueHostDevServerTests
 
         public static async Task<TestHttpsUpstreamServer> StartAsync(Func<HttpContext, Task> handler)
         {
-            var port = GetFreePort();
             var certificate = CreateSelfSignedCertificate();
             var builder = WebApplication.CreateSlimBuilder();
             builder.WebHost.ConfigureKestrel(options =>
             {
-                options.Listen(IPAddress.Loopback, port, listenOptions => listenOptions.UseHttps(certificate));
+                options.Listen(IPAddress.Loopback, 0, listenOptions => listenOptions.UseHttps(certificate));
             });
 
             var application = builder.Build();
             application.Map("/{**path}", handler);
             await application.StartAsync();
+            var baseAddress = ResolveApplicationBaseAddress(application, Uri.UriSchemeHttps);
 
             return new TestHttpsUpstreamServer(
                 application,
                 certificate,
-                $"https://127.0.0.1:{port}/");
+                baseAddress);
         }
 
         public async ValueTask DisposeAsync()
@@ -8111,11 +8107,7 @@ public sealed class JazorVueHostDevServerTests
 
         public static Task<TestWebSocketUpstreamServer> StartAsync(Func<HttpListenerContext, WebSocket, Task> handler)
         {
-            var port = GetFreePort();
-            var baseAddress = $"http://127.0.0.1:{port}/";
-            var listener = new HttpListener();
-            listener.Prefixes.Add(baseAddress);
-            listener.Start();
+            var (listener, baseAddress) = StartHttpListenerWithRetry();
             return Task.FromResult(new TestWebSocketUpstreamServer(listener, handler, baseAddress));
         }
 
@@ -8206,12 +8198,11 @@ public sealed class JazorVueHostDevServerTests
             Func<HttpContext, WebSocket, Task> handler,
             Func<HttpContext, string?>? subProtocolSelector = null)
         {
-            var port = GetFreePort();
             var certificate = CreateSelfSignedCertificate();
             var builder = WebApplication.CreateSlimBuilder();
             builder.WebHost.ConfigureKestrel(options =>
             {
-                options.Listen(IPAddress.Loopback, port, listenOptions => listenOptions.UseHttps(certificate));
+                options.Listen(IPAddress.Loopback, 0, listenOptions => listenOptions.UseHttps(certificate));
             });
 
             var application = builder.Build();
@@ -8231,11 +8222,12 @@ public sealed class JazorVueHostDevServerTests
                     await handler(context, socket);
                 });
             await application.StartAsync();
+            var baseAddress = ResolveApplicationBaseAddress(application, Uri.UriSchemeHttps);
 
             return new TestSecureWebSocketUpstreamServer(
                 application,
                 certificate,
-                $"https://127.0.0.1:{port}/");
+                baseAddress);
         }
 
         public async ValueTask DisposeAsync()
@@ -8271,6 +8263,52 @@ public sealed class JazorVueHostDevServerTests
             DateTimeOffset.UtcNow.AddDays(-1),
             DateTimeOffset.UtcNow.AddDays(7));
         return X509CertificateLoader.LoadPkcs12(certificate.Export(X509ContentType.Pfx), password: null);
+    }
+
+    private static (HttpListener Listener, string BaseAddress) StartHttpListenerWithRetry()
+    {
+        const int maxAttempts = 10;
+        HttpListenerException? lastException = null;
+
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
+        {
+            var port = GetFreePort();
+            var baseAddress = $"http://127.0.0.1:{port}/";
+            var listener = new HttpListener();
+            listener.Prefixes.Add(baseAddress);
+
+            try
+            {
+                listener.Start();
+                return (listener, baseAddress);
+            }
+            catch (HttpListenerException ex) when (attempt < maxAttempts)
+            {
+                lastException = ex;
+                listener.Close();
+                System.Threading.Thread.Sleep(20 * attempt);
+            }
+        }
+
+        throw new InvalidOperationException("Failed to start HTTP listener for upstream test server.", lastException);
+    }
+
+    private static string ResolveApplicationBaseAddress(WebApplication application, string scheme)
+    {
+        foreach (var address in application.Urls)
+        {
+            if (!Uri.TryCreate(address, UriKind.Absolute, out var uri)
+                || !string.Equals(uri.Scheme, scheme, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            return uri.AbsoluteUri.EndsWith("/", StringComparison.Ordinal)
+                ? uri.AbsoluteUri
+                : uri.AbsoluteUri + "/";
+        }
+
+        throw new InvalidOperationException($"Failed to resolve '{scheme}' listening address.");
     }
 
     private static int GetFreePort()
