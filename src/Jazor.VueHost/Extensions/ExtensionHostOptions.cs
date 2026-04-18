@@ -2,6 +2,14 @@ namespace Jazor.VueHost.Extensions;
 
 internal sealed class ExtensionHostOptions
 {
+    public const string IoCapabilityNone = "none";
+    public const string IoCapabilityRead = "read";
+    public const string IoCapabilityReadWrite = "readWrite";
+
+    public const string NetworkCapabilityNone = "none";
+    public const string NetworkCapabilityLoopback = "loopback";
+    public const string NetworkCapabilityInternet = "internet";
+
     public required string RootDirectory { get; init; }
 
     public bool Enabled { get; init; } = true;
@@ -21,4 +29,14 @@ internal sealed class ExtensionHostOptions
     public bool EnforceProviderPermissions { get; init; } = true;
 
     public bool RequireManifestSignature { get; init; } = true;
+
+    public bool RequireProcessIsolation { get; init; }
+
+    public string MaxIoCapability { get; init; } = IoCapabilityRead;
+
+    public string MaxNetworkCapability { get; init; } = NetworkCapabilityLoopback;
+
+    public string? LoadLogFilePath { get; init; }
+
+    public int LoadEventRetention { get; init; } = 200;
 }

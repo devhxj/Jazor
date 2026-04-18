@@ -6,6 +6,14 @@ namespace Jazor.VueHost.Extensions;
 
 internal static class ExtensionSecurityPolicy
 {
+    private const int IoRankNone = 0;
+    private const int IoRankRead = 1;
+    private const int IoRankReadWrite = 2;
+
+    private const int NetworkRankNone = 0;
+    private const int NetworkRankLoopback = 1;
+    private const int NetworkRankInternet = 2;
+
     private static readonly IReadOnlyDictionary<Type, string> ProviderCapabilityByInterface = new Dictionary<Type, string>
     {
         [typeof(ILspDiagnosticProvider)] = "diagnostic",
@@ -96,6 +104,35 @@ internal static class ExtensionSecurityPolicy
 
         reason = $"provider capability denied: {string.Join(", ", deniedCapabilities)}";
         return false;
+    }
+
+    public static bool IsSandboxPermissionSatisfied(
+        ExtensionManifest manifest,
+        ExtensionHostOptions options,
+        string rootDirectory,
+        string extensionDirectory,
+        out string? reason)
+    {
+        ArgumentNullException.ThrowIfNull(manifest);
+        ArgumentNullException.ThrowIfNull(options);
+
+        if (!ValidateProcessIsolationRequirement(manifest, options, out reason))
+        {
+            return false;
+        }
+
+        if (!ValidateIoCapability(manifest, options, rootDirectory, extensionDirectory, out reason))
+        {
+            return false;
+        }
+
+        if (!ValidateNetworkCapability(manifest, options, out reason))
+        {
+            return false;
+        }
+
+        reason = null;
+        return true;
     }
 
     public static bool IsAssemblyHashSatisfied(
@@ -221,6 +258,9 @@ internal static class ExtensionSecurityPolicy
             .ToArray();
         payload["providers"] = providers;
 
+        payload["processIsolation"] = manifest.Permissions?.ProcessIsolation ?? false;
+        payload["io"] = NormalizeIoPermissionForPayload(manifest.Permissions?.Io);
+        payload["network"] = NormalizeNetworkPermissionForPayload(manifest.Permissions?.Network);
         payload["settings"] = NormalizeSettingsForPayload(manifest.Settings);
 
         return JsonSerializer.Serialize(payload);
@@ -339,5 +379,303 @@ internal static class ExtensionSecurityPolicy
         }
 
         return Convert.FromBase64String(normalized);
+    }
+
+    private static bool ValidateProcessIsolationRequirement(
+        ExtensionManifest manifest,
+        ExtensionHostOptions options,
+        out string? reason)
+    {
+        if (options.RequireProcessIsolation
+            && manifest.Permissions?.ProcessIsolation != true)
+        {
+            reason = "process-level isolation is required by host policy";
+            return false;
+        }
+
+        reason = null;
+        return true;
+    }
+
+    private static bool ValidateIoCapability(
+        ExtensionManifest manifest,
+        ExtensionHostOptions options,
+        string rootDirectory,
+        string extensionDirectory,
+        out string? reason)
+    {
+        var ioPermission = manifest.Permissions?.Io;
+        var normalizedIoLevel = NormalizeIoCapability(ioPermission?.Level);
+        if (!string.IsNullOrWhiteSpace(ioPermission?.Level) && normalizedIoLevel is null)
+        {
+            reason = $"unsupported io capability '{ioPermission?.Level}'";
+            return false;
+        }
+
+        var ioLevel = normalizedIoLevel ?? ExtensionHostOptions.IoCapabilityNone;
+        if (!TryGetIoCapabilityRank(ioLevel, out var requestedRank))
+        {
+            reason = $"unsupported io capability '{ioPermission?.Level}'";
+            return false;
+        }
+
+        if (!TryGetIoCapabilityRank(options.MaxIoCapability, out var maxRank))
+        {
+            reason = $"unsupported host max io capability '{options.MaxIoCapability}'";
+            return false;
+        }
+
+        if (requestedRank > maxRank)
+        {
+            reason = $"io capability '{ioLevel}' exceeds host max '{options.MaxIoCapability}'";
+            return false;
+        }
+
+        var readRoots = NormalizePermissionPaths(ioPermission?.ReadRoots);
+        var writeRoots = NormalizePermissionPaths(ioPermission?.WriteRoots);
+        if (requestedRank == IoRankNone && (readRoots.Length > 0 || writeRoots.Length > 0))
+        {
+            reason = "io level 'none' cannot declare readRoots/writeRoots";
+            return false;
+        }
+
+        if (requestedRank == IoRankRead && writeRoots.Length > 0)
+        {
+            reason = "io level 'read' cannot declare writeRoots";
+            return false;
+        }
+
+        foreach (var root in readRoots.Concat(writeRoots))
+        {
+            if (!TryResolvePermissionPath(rootDirectory, extensionDirectory, root, out _, out reason))
+            {
+                return false;
+            }
+        }
+
+        reason = null;
+        return true;
+    }
+
+    private static bool ValidateNetworkCapability(
+        ExtensionManifest manifest,
+        ExtensionHostOptions options,
+        out string? reason)
+    {
+        var networkPermission = manifest.Permissions?.Network;
+        var normalizedNetworkLevel = NormalizeNetworkCapability(networkPermission?.Level);
+        if (!string.IsNullOrWhiteSpace(networkPermission?.Level) && normalizedNetworkLevel is null)
+        {
+            reason = $"unsupported network capability '{networkPermission?.Level}'";
+            return false;
+        }
+
+        var networkLevel = normalizedNetworkLevel ?? ExtensionHostOptions.NetworkCapabilityNone;
+        if (!TryGetNetworkCapabilityRank(networkLevel, out var requestedRank))
+        {
+            reason = $"unsupported network capability '{networkPermission?.Level}'";
+            return false;
+        }
+
+        if (!TryGetNetworkCapabilityRank(options.MaxNetworkCapability, out var maxRank))
+        {
+            reason = $"unsupported host max network capability '{options.MaxNetworkCapability}'";
+            return false;
+        }
+
+        if (requestedRank > maxRank)
+        {
+            reason = $"network capability '{networkLevel}' exceeds host max '{options.MaxNetworkCapability}'";
+            return false;
+        }
+
+        var allowedHosts = NormalizeHosts(networkPermission?.AllowedHosts);
+        if (requestedRank == NetworkRankNone && allowedHosts.Length > 0)
+        {
+            reason = "network level 'none' cannot declare allowedHosts";
+            return false;
+        }
+
+        foreach (var host in allowedHosts)
+        {
+            if (Uri.CheckHostName(host) == UriHostNameType.Unknown && !string.Equals(host, "*", StringComparison.Ordinal))
+            {
+                reason = $"invalid network host '{host}'";
+                return false;
+            }
+
+            if (requestedRank == NetworkRankLoopback
+                && !IsLoopbackHost(host))
+            {
+                reason = $"network level 'loopback' does not allow host '{host}'";
+                return false;
+            }
+        }
+
+        reason = null;
+        return true;
+    }
+
+    private static object NormalizeIoPermissionForPayload(ExtensionIoPermissionManifest? io)
+    {
+        var level = NormalizeIoCapability(io?.Level) ?? ExtensionHostOptions.IoCapabilityNone;
+        return new SortedDictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["level"] = level,
+            ["readRoots"] = NormalizePermissionPaths(io?.ReadRoots),
+            ["writeRoots"] = NormalizePermissionPaths(io?.WriteRoots)
+        };
+    }
+
+    private static object NormalizeNetworkPermissionForPayload(ExtensionNetworkPermissionManifest? network)
+    {
+        var level = NormalizeNetworkCapability(network?.Level) ?? ExtensionHostOptions.NetworkCapabilityNone;
+        return new SortedDictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["level"] = level,
+            ["allowedHosts"] = NormalizeHosts(network?.AllowedHosts)
+        };
+    }
+
+    private static string[] NormalizePermissionPaths(string[]? paths)
+    {
+        if (paths is null)
+        {
+            return Array.Empty<string>();
+        }
+
+        return paths
+            .Where(static item => !string.IsNullOrWhiteSpace(item))
+            .Select(static item => item.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static string[] NormalizeHosts(string[]? hosts)
+    {
+        if (hosts is null)
+        {
+            return Array.Empty<string>();
+        }
+
+        return hosts
+            .Where(static item => !string.IsNullOrWhiteSpace(item))
+            .Select(static item => item.Trim().ToLowerInvariant())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static string? NormalizeIoCapability(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return null;
+        }
+
+        return raw.Trim().ToLowerInvariant() switch
+        {
+            "none" => ExtensionHostOptions.IoCapabilityNone,
+            "read" => ExtensionHostOptions.IoCapabilityRead,
+            "readwrite" or "read-write" or "read_write" => ExtensionHostOptions.IoCapabilityReadWrite,
+            _ => null
+        };
+    }
+
+    private static string? NormalizeNetworkCapability(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return null;
+        }
+
+        return raw.Trim().ToLowerInvariant() switch
+        {
+            "none" => ExtensionHostOptions.NetworkCapabilityNone,
+            "loopback" => ExtensionHostOptions.NetworkCapabilityLoopback,
+            "internet" => ExtensionHostOptions.NetworkCapabilityInternet,
+            _ => null
+        };
+    }
+
+    private static bool TryGetIoCapabilityRank(string capability, out int rank)
+    {
+        switch (capability)
+        {
+            case ExtensionHostOptions.IoCapabilityNone:
+                rank = IoRankNone;
+                return true;
+            case ExtensionHostOptions.IoCapabilityRead:
+                rank = IoRankRead;
+                return true;
+            case ExtensionHostOptions.IoCapabilityReadWrite:
+                rank = IoRankReadWrite;
+                return true;
+            default:
+                rank = default;
+                return false;
+        }
+    }
+
+    private static bool TryGetNetworkCapabilityRank(string capability, out int rank)
+    {
+        switch (capability)
+        {
+            case ExtensionHostOptions.NetworkCapabilityNone:
+                rank = NetworkRankNone;
+                return true;
+            case ExtensionHostOptions.NetworkCapabilityLoopback:
+                rank = NetworkRankLoopback;
+                return true;
+            case ExtensionHostOptions.NetworkCapabilityInternet:
+                rank = NetworkRankInternet;
+                return true;
+            default:
+                rank = default;
+                return false;
+        }
+    }
+
+    private static bool IsLoopbackHost(string host)
+    {
+        return string.Equals(host, "localhost", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(host, "127.0.0.1", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(host, "::1", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool TryResolvePermissionPath(
+        string rootDirectory,
+        string extensionDirectory,
+        string rawPath,
+        out string resolvedPath,
+        out string? reason)
+    {
+        var candidate = Path.IsPathRooted(rawPath)
+            ? Path.GetFullPath(rawPath)
+            : Path.GetFullPath(Path.Combine(extensionDirectory, rawPath));
+        var normalizedExtensionDirectory = Path.GetFullPath(extensionDirectory);
+        var normalizedRootDirectory = Path.GetFullPath(rootDirectory);
+
+        var insideExtension = IsPathInsideDirectory(normalizedExtensionDirectory, candidate);
+        var insideRoot = IsPathInsideDirectory(normalizedRootDirectory, candidate);
+        if (!insideExtension && !insideRoot)
+        {
+            resolvedPath = string.Empty;
+            reason = $"io permission path '{rawPath}' escapes extension/root boundary";
+            return false;
+        }
+
+        resolvedPath = candidate;
+        reason = null;
+        return true;
+    }
+
+    private static bool IsPathInsideDirectory(string directoryPath, string candidatePath)
+    {
+        var relativePath = Path.GetRelativePath(directoryPath, candidatePath);
+        return !string.IsNullOrWhiteSpace(relativePath)
+            && !relativePath.StartsWith("..", StringComparison.Ordinal)
+            && !Path.IsPathRooted(relativePath);
     }
 }

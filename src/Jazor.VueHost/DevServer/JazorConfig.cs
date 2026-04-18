@@ -109,4 +109,14 @@ internal sealed class JazorExtensionsConfig
     public bool? EnforceProviderPermissions { get; init; }
 
     public bool? RequireManifestSignature { get; init; }
+
+    public bool? RequireProcessIsolation { get; init; }
+
+    public string? MaxIoCapability { get; init; }
+
+    public string? MaxNetworkCapability { get; init; }
+
+    public string? LoadLogFile { get; init; }
+
+    public int? LoadEventRetention { get; init; }
 }

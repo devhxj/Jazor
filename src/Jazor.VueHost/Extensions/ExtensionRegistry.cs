@@ -15,8 +15,15 @@ internal sealed class ExtensionRegistry : IExtensionRegistry
     private readonly List<ILspFoldingRangeProvider> _lspFoldingRangeProviders = [];
     private readonly List<ILspReferenceProvider> _lspReferenceProviders = [];
     private readonly List<ILspRenameProvider> _lspRenameProviders = [];
+    private readonly List<ExtensionLoadInvocation> _extensionLoadInvocations = [];
     private readonly Dictionary<string, ExtensionLoadHealth> _extensionLoadHealthByKey = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, ExtensionProviderHealth> _providerHealthByKey = new(StringComparer.OrdinalIgnoreCase);
+    private readonly int _loadEventRetention;
+
+    public ExtensionRegistry(int loadEventRetention = 200)
+    {
+        _loadEventRetention = Math.Max(0, loadEventRetention);
+    }
 
     public void RegisterExtension(IExtension extension)
     {
@@ -531,6 +538,16 @@ internal sealed class ExtensionRegistry : IExtensionRegistry
         var key = CreateHealthKey(invocation.Source, invocation.ExtensionId);
         lock (_gate)
         {
+            if (_loadEventRetention > 0)
+            {
+                _extensionLoadInvocations.Add(invocation);
+                var overflow = _extensionLoadInvocations.Count - _loadEventRetention;
+                if (overflow > 0)
+                {
+                    _extensionLoadInvocations.RemoveRange(0, overflow);
+                }
+            }
+
             _extensionLoadHealthByKey.TryGetValue(key, out var current);
             current ??= new ExtensionLoadHealth(
                 ExtensionId: invocation.ExtensionId,
@@ -595,6 +612,23 @@ internal sealed class ExtensionRegistry : IExtensionRegistry
             return _extensionLoadHealthByKey.Values
                 .OrderBy(static item => item.Source, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(static item => item.ExtensionId, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+        }
+    }
+
+    public IReadOnlyList<ExtensionLoadInvocation> GetRecentExtensionLoadInvocations(int maxCount = 100)
+    {
+        var boundedCount = Math.Max(0, maxCount);
+        lock (_gate)
+        {
+            if (boundedCount == 0 || _extensionLoadInvocations.Count == 0)
+            {
+                return Array.Empty<ExtensionLoadInvocation>();
+            }
+
+            var skip = Math.Max(0, _extensionLoadInvocations.Count - boundedCount);
+            return _extensionLoadInvocations
+                .Skip(skip)
                 .ToArray();
         }
     }

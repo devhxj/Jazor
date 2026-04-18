@@ -1,12 +1,13 @@
-# Jazor VueHost VS Code Extension (MVP)
+# Jazor VueHost VS Code Extension
 
-This extension provides a minimal process-level integration for `Jazor.VueHost`.
+This extension provides a VS Code Language Client integration for `Jazor.VueHost`.
 
 ## Features
 
 - `Jazor VueHost: Start LSP`
 - `Jazor VueHost: Stop LSP`
 - `Jazor VueHost: Restart LSP`
+- `Jazor VueHost: Show Extension Dashboard` (`jazor/extensionObservabilityDashboard`, Webview + output summary)
 - Output channel logging (`Jazor VueHost`)
 
 ## Configuration
@@ -17,6 +18,10 @@ This extension provides a minimal process-level integration for `Jazor.VueHost`.
 
 The extension appends `--dev-root=<workspaceRoot>` automatically when missing.
 
-## Scope
+## Packaging and Publish
 
-This is an ecosystem bootstrap only. It does not yet include a full VS Code Language Client transport layer.
+```bash
+npm install
+npm run package
+# npm run publish
+```

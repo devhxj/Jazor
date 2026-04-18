@@ -310,6 +310,24 @@ internal sealed class ExtensionLoader : IAsyncDisposable
                 return;
             }
 
+            if (!ExtensionSecurityPolicy.IsSandboxPermissionSatisfied(
+                    manifest,
+                    options,
+                    options.RootDirectory,
+                    extensionDirectory,
+                    out var sandboxFailureReason))
+            {
+                ReportLoad(
+                    extensionId,
+                    UserSource,
+                    extensionDirectory,
+                    manifestPath,
+                    assemblyPath,
+                    ExtensionLoadStatus.Rejected,
+                    sandboxFailureReason ?? "sandbox permission validation failed");
+                return;
+            }
+
             if (!TryCreateUserExtension(
                     assemblyPath,
                     manifest.Type,

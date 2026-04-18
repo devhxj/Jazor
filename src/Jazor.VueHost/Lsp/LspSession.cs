@@ -153,6 +153,9 @@ internal sealed class LspSession
             "jazor/extensionLoadHealth" => CreateSuccessResponse(
                 request.Id,
                 _extensionRegistry.GetExtensionLoadHealth()),
+            "jazor/extensionObservabilityDashboard" => CreateSuccessResponse(
+                request.Id,
+                CreateObservabilityDashboard()),
             _ => CreateErrorResponse(request.Id, -32601, $"Unsupported LSP method '{request.Method}'.")
         };
     }
@@ -1167,6 +1170,13 @@ internal sealed class LspSession
             // Swallow fault/cancel from timed-out provider calls to avoid unobserved exceptions.
         }
     }
+
+    private ExtensionObservabilityDashboard CreateObservabilityDashboard()
+        => new(
+            LoadHealth: _extensionRegistry.GetExtensionLoadHealth(),
+            ProviderHealth: _extensionRegistry.GetProviderHealth(),
+            RecentLoadEvents: _extensionRegistry.GetRecentExtensionLoadInvocations(maxCount: 200),
+            GeneratedAt: DateTimeOffset.UtcNow);
 
     private async ValueTask RefreshOpenJazorDiagnosticsAsync(
         DocumentSnapshot triggeringDocument,

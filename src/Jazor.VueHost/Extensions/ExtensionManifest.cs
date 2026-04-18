@@ -22,6 +22,12 @@ internal sealed class ExtensionManifest
 internal sealed class ExtensionPermissionManifest
 {
     public string[]? Providers { get; init; }
+
+    public ExtensionIoPermissionManifest? Io { get; init; }
+
+    public ExtensionNetworkPermissionManifest? Network { get; init; }
+
+    public bool? ProcessIsolation { get; init; }
 }
 
 internal sealed class ExtensionSignatureManifest
@@ -31,4 +37,20 @@ internal sealed class ExtensionSignatureManifest
     public string? Algorithm { get; init; }
 
     public string? Value { get; init; }
+}
+
+internal sealed class ExtensionIoPermissionManifest
+{
+    public string? Level { get; init; }
+
+    public string[]? ReadRoots { get; init; }
+
+    public string[]? WriteRoots { get; init; }
+}
+
+internal sealed class ExtensionNetworkPermissionManifest
+{
+    public string? Level { get; init; }
+
+    public string[]? AllowedHosts { get; init; }
 }

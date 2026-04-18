@@ -47,6 +47,72 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
     }
 
     [TestMethod]
+    public void ExtensionHostOptionsResolver_Resolve_WithInvalidIoCapability_Throws()
+    {
+        var exception = ExpectInvalidOperationException(
+            () => ExtensionHostOptionsResolver.Resolve(
+                ["--extensions-max-io-capability=read-only"],
+                rootDirectory: @"D:\repo\phase7",
+                config: null));
+
+        StringAssert.Contains(
+            exception.Message,
+            "--extensions-max-io-capability",
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    [TestMethod]
+    public void ExtensionHostOptionsResolver_Resolve_WithInvalidNetworkCapabilityInConfig_Throws()
+    {
+        var exception = ExpectInvalidOperationException(
+            () => ExtensionHostOptionsResolver.Resolve(
+                args: [],
+                rootDirectory: @"D:\repo\phase7",
+                config: new JazorConfig
+                {
+                    Extensions = new JazorExtensionsConfig
+                    {
+                        MaxNetworkCapability = "public"
+                    }
+                }));
+
+        StringAssert.Contains(
+            exception.Message,
+            "extensions.maxNetworkCapability",
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    [TestMethod]
+    public void ExtensionHostOptionsResolver_Resolve_WithInvalidBooleanOption_Throws()
+    {
+        var exception = ExpectInvalidOperationException(
+            () => ExtensionHostOptionsResolver.Resolve(
+                ["--extensions-require-process-isolation=maybe"],
+                rootDirectory: @"D:\repo\phase7",
+                config: null));
+
+        StringAssert.Contains(
+            exception.Message,
+            "--extensions-require-process-isolation",
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    [TestMethod]
+    public void ExtensionHostOptionsResolver_Resolve_WithInvalidRetentionOption_Throws()
+    {
+        var exception = ExpectInvalidOperationException(
+            () => ExtensionHostOptionsResolver.Resolve(
+                ["--extensions-load-event-retention=abc"],
+                rootDirectory: @"D:\repo\phase7",
+                config: null));
+
+        StringAssert.Contains(
+            exception.Message,
+            "--extensions-load-event-retention",
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    [TestMethod]
     public void ExtensionSecurityPolicy_IsAssemblyHashSatisfied_AcceptsNormalizedSha256()
     {
         var tempFile = Path.Combine(Path.GetTempPath(), $"phase7-hash-{Guid.NewGuid():N}.bin");
@@ -105,6 +171,78 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
         CollectionAssert.AreEquivalent(
             new[] { "hover", "completion" },
             normalized.ToArray());
+    }
+
+    [TestMethod]
+    public void ExtensionSecurityPolicy_IsSandboxPermissionSatisfied_WithInvalidIoLevel_Rejects()
+    {
+        var rootDirectory = Path.GetFullPath(Path.Combine(Path.GetTempPath(), $"phase7-sandbox-root-{Guid.NewGuid():N}"));
+        var extensionDirectory = Path.Combine(rootDirectory, ".jazor", "extensions", "invalid-io");
+        Directory.CreateDirectory(extensionDirectory);
+        try
+        {
+            var satisfied = ExtensionSecurityPolicy.IsSandboxPermissionSatisfied(
+                manifest: new ExtensionManifest
+                {
+                    Permissions = new ExtensionPermissionManifest
+                    {
+                        Io = new ExtensionIoPermissionManifest
+                        {
+                            Level = "read-only"
+                        }
+                    }
+                },
+                options: CreateHostOptions(rootDirectory, Path.Combine(rootDirectory, ".jazor", "extensions")),
+                rootDirectory: rootDirectory,
+                extensionDirectory: extensionDirectory,
+                reason: out var reason);
+
+            Assert.IsFalse(satisfied);
+            StringAssert.Contains(reason ?? string.Empty, "unsupported io capability", StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            if (Directory.Exists(rootDirectory))
+            {
+                Directory.Delete(rootDirectory, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
+    public void ExtensionSecurityPolicy_IsSandboxPermissionSatisfied_WithInvalidNetworkLevel_Rejects()
+    {
+        var rootDirectory = Path.GetFullPath(Path.Combine(Path.GetTempPath(), $"phase7-sandbox-root-{Guid.NewGuid():N}"));
+        var extensionDirectory = Path.Combine(rootDirectory, ".jazor", "extensions", "invalid-network");
+        Directory.CreateDirectory(extensionDirectory);
+        try
+        {
+            var satisfied = ExtensionSecurityPolicy.IsSandboxPermissionSatisfied(
+                manifest: new ExtensionManifest
+                {
+                    Permissions = new ExtensionPermissionManifest
+                    {
+                        Network = new ExtensionNetworkPermissionManifest
+                        {
+                            Level = "lan"
+                        }
+                    }
+                },
+                options: CreateHostOptions(rootDirectory, Path.Combine(rootDirectory, ".jazor", "extensions")),
+                rootDirectory: rootDirectory,
+                extensionDirectory: extensionDirectory,
+                reason: out var reason);
+
+            Assert.IsFalse(satisfied);
+            StringAssert.Contains(reason ?? string.Empty, "unsupported network capability", StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            if (Directory.Exists(rootDirectory))
+            {
+                Directory.Delete(rootDirectory, recursive: true);
+            }
+        }
     }
 
     [TestMethod]
@@ -403,6 +541,370 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
 
             Assert.AreEqual(1, registry.GetExtensions().Count);
             Assert.IsTrue(registry.GetExtensions().ContainsKey(ManifestLoadableTestExtension.ExtensionId));
+        }
+        finally
+        {
+            sandbox.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task ExtensionLoader_LoadUserExtensionsAsync_WithUnsupportedManifestSignatureAlgorithm_RejectsExtension()
+    {
+        var sandbox = CreateExtensionSandbox();
+        try
+        {
+            using var signer = new ManifestSigner("phase7-unsupported-alg-key");
+            WriteManifest(
+                sandbox.ExtensionDirectory,
+                id: ManifestLoadableTestExtension.ExtensionId,
+                assembly: sandbox.AssemblyFileName,
+                type: typeof(ManifestLoadableTestExtension).FullName!,
+                assemblySha256: sandbox.AssemblySha256,
+                providers: ["hover", "completion"],
+                explicitSignature: new ExtensionSignatureManifest
+                {
+                    KeyId = signer.KeyId,
+                    Algorithm = "ES256",
+                    Value = "AA=="
+                });
+
+            var registry = new ExtensionRegistry();
+            await using var loader = new ExtensionLoader(registry);
+            await loader.LoadUserExtensionsAsync(
+                CreateHostOptions(
+                    sandbox.RootDirectory,
+                    sandbox.ExtensionsDirectory,
+                    trustedPublicKeys: signer.TrustedPublicKeys),
+                CancellationToken.None);
+
+            Assert.AreEqual(0, registry.GetExtensions().Count);
+            var loadHealth = GetSingleUserLoadHealth(registry);
+            Assert.AreEqual(1, loadHealth.RejectedCount);
+            StringAssert.Contains(
+                loadHealth.LastReason ?? string.Empty,
+                "algorithm",
+                StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            sandbox.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task ExtensionLoader_LoadUserExtensionsAsync_WithMalformedManifestSignatureEncoding_RejectsExtension()
+    {
+        var sandbox = CreateExtensionSandbox();
+        try
+        {
+            using var signer = new ManifestSigner("phase7-malformed-signature-key");
+            WriteManifest(
+                sandbox.ExtensionDirectory,
+                id: ManifestLoadableTestExtension.ExtensionId,
+                assembly: sandbox.AssemblyFileName,
+                type: typeof(ManifestLoadableTestExtension).FullName!,
+                assemblySha256: sandbox.AssemblySha256,
+                providers: ["hover", "completion"],
+                explicitSignature: new ExtensionSignatureManifest
+                {
+                    KeyId = signer.KeyId,
+                    Algorithm = "RS256",
+                    Value = "%%%bad-base64%%%"
+                });
+
+            var registry = new ExtensionRegistry();
+            await using var loader = new ExtensionLoader(registry);
+            await loader.LoadUserExtensionsAsync(
+                CreateHostOptions(
+                    sandbox.RootDirectory,
+                    sandbox.ExtensionsDirectory,
+                    trustedPublicKeys: signer.TrustedPublicKeys),
+                CancellationToken.None);
+
+            Assert.AreEqual(0, registry.GetExtensions().Count);
+            var loadHealth = GetSingleUserLoadHealth(registry);
+            Assert.AreEqual(1, loadHealth.RejectedCount);
+            StringAssert.Contains(
+                loadHealth.LastReason ?? string.Empty,
+                "base64",
+                StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            sandbox.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public void ExtensionSecurityPolicy_IsManifestSignatureSatisfied_WithMalformedTrustedKeyData_ReturnsFalse()
+    {
+        var manifest = new ExtensionManifest
+        {
+            Id = "phase7.invalid-public-key",
+            Assembly = "sample.dll",
+            AssemblySha256 = "sha256:deadbeef",
+            Type = "Sample.Extension",
+            Permissions = new ExtensionPermissionManifest
+            {
+                Providers = ["hover"],
+                ProcessIsolation = false
+            },
+            Signature = new ExtensionSignatureManifest
+            {
+                KeyId = "phase7.invalid-public-key",
+                Algorithm = "RS256",
+                Value = "AA=="
+            }
+        };
+
+        var satisfied = ExtensionSecurityPolicy.IsManifestSignatureSatisfied(
+            manifest,
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["phase7.invalid-public-key"] = "this-is-not-a-valid-pem-key"
+            },
+            out var reason);
+
+        Assert.IsFalse(satisfied);
+        StringAssert.Contains(
+            reason ?? string.Empty,
+            "public key",
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    [TestMethod]
+    public async Task ExtensionLoader_LoadUserExtensionsAsync_WithPermissionTamperingAfterSigning_RejectsExtension()
+    {
+        var sandbox = CreateExtensionSandbox();
+        try
+        {
+            using var signer = new ManifestSigner("phase7-permission-tamper-key");
+            WriteManifest(
+                sandbox.ExtensionDirectory,
+                id: ManifestLoadableTestExtension.ExtensionId,
+                assembly: sandbox.AssemblyFileName,
+                type: typeof(ManifestLoadableTestExtension).FullName!,
+                assemblySha256: sandbox.AssemblySha256,
+                providers: ["hover", "completion"],
+                signer: signer);
+
+            var manifestPath = Path.Combine(sandbox.ExtensionDirectory, "extension.json");
+            var signedManifest = JsonSerializer.Deserialize<ExtensionManifest>(
+                File.ReadAllText(manifestPath));
+            Assert.IsNotNull(signedManifest);
+
+            var tamperedManifest = new ExtensionManifest
+            {
+                Id = signedManifest!.Id,
+                Assembly = signedManifest.Assembly,
+                AssemblySha256 = signedManifest.AssemblySha256,
+                Type = signedManifest.Type,
+                Permissions = new ExtensionPermissionManifest
+                {
+                    Providers = signedManifest.Permissions?.Providers ?? Array.Empty<string>(),
+                    ProcessIsolation = true,
+                    Io = signedManifest.Permissions?.Io,
+                    Network = signedManifest.Permissions?.Network
+                },
+                Signature = signedManifest.Signature,
+                Settings = signedManifest.Settings
+            };
+            File.WriteAllText(manifestPath, JsonSerializer.Serialize(tamperedManifest));
+
+            var registry = new ExtensionRegistry();
+            await using var loader = new ExtensionLoader(registry);
+            await loader.LoadUserExtensionsAsync(
+                CreateHostOptions(
+                    sandbox.RootDirectory,
+                    sandbox.ExtensionsDirectory,
+                    trustedPublicKeys: signer.TrustedPublicKeys),
+                CancellationToken.None);
+
+            Assert.AreEqual(0, registry.GetExtensions().Count);
+            var loadHealth = GetSingleUserLoadHealth(registry);
+            Assert.AreEqual(1, loadHealth.RejectedCount);
+            StringAssert.Contains(
+                loadHealth.LastReason ?? string.Empty,
+                "signature",
+                StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            sandbox.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task ExtensionLoader_LoadUserExtensionsAsync_WithRequiredProcessIsolationAndMissingManifestFlag_RejectsExtension()
+    {
+        var sandbox = CreateExtensionSandbox();
+        try
+        {
+            using var signer = new ManifestSigner("phase7-process-isolation-key");
+            WriteManifest(
+                sandbox.ExtensionDirectory,
+                id: ManifestLoadableTestExtension.ExtensionId,
+                assembly: sandbox.AssemblyFileName,
+                type: typeof(ManifestLoadableTestExtension).FullName!,
+                assemblySha256: sandbox.AssemblySha256,
+                providers: ["hover", "completion"],
+                processIsolation: false,
+                signer: signer);
+
+            var registry = new ExtensionRegistry();
+            await using var loader = new ExtensionLoader(registry);
+            await loader.LoadUserExtensionsAsync(
+                CreateHostOptions(
+                    sandbox.RootDirectory,
+                    sandbox.ExtensionsDirectory,
+                    trustedPublicKeys: signer.TrustedPublicKeys,
+                    requireProcessIsolation: true),
+                CancellationToken.None);
+
+            Assert.AreEqual(0, registry.GetExtensions().Count);
+            var loadHealth = GetSingleUserLoadHealth(registry);
+            Assert.AreEqual(1, loadHealth.RejectedCount);
+            StringAssert.Contains(
+                loadHealth.LastReason ?? string.Empty,
+                "process-level isolation",
+                StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            sandbox.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task ExtensionLoader_LoadUserExtensionsAsync_WithIoCapabilityExceedingHostPolicy_RejectsExtension()
+    {
+        var sandbox = CreateExtensionSandbox();
+        try
+        {
+            using var signer = new ManifestSigner("phase7-io-capability-key");
+            WriteManifest(
+                sandbox.ExtensionDirectory,
+                id: ManifestLoadableTestExtension.ExtensionId,
+                assembly: sandbox.AssemblyFileName,
+                type: typeof(ManifestLoadableTestExtension).FullName!,
+                assemblySha256: sandbox.AssemblySha256,
+                providers: ["hover", "completion"],
+                ioPermission: new ExtensionIoPermissionManifest
+                {
+                    Level = ExtensionHostOptions.IoCapabilityReadWrite,
+                    ReadRoots = ["./data"],
+                    WriteRoots = ["./data"]
+                },
+                signer: signer);
+
+            var registry = new ExtensionRegistry();
+            await using var loader = new ExtensionLoader(registry);
+            await loader.LoadUserExtensionsAsync(
+                CreateHostOptions(
+                    sandbox.RootDirectory,
+                    sandbox.ExtensionsDirectory,
+                    trustedPublicKeys: signer.TrustedPublicKeys,
+                    maxIoCapability: ExtensionHostOptions.IoCapabilityRead),
+                CancellationToken.None);
+
+            Assert.AreEqual(0, registry.GetExtensions().Count);
+            var loadHealth = GetSingleUserLoadHealth(registry);
+            Assert.AreEqual(1, loadHealth.RejectedCount);
+            StringAssert.Contains(
+                loadHealth.LastReason ?? string.Empty,
+                "io capability",
+                StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            sandbox.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task ExtensionLoader_LoadUserExtensionsAsync_WithLoopbackNetworkPolicyAndPublicHost_RejectsExtension()
+    {
+        var sandbox = CreateExtensionSandbox();
+        try
+        {
+            using var signer = new ManifestSigner("phase7-loopback-network-key");
+            WriteManifest(
+                sandbox.ExtensionDirectory,
+                id: ManifestLoadableTestExtension.ExtensionId,
+                assembly: sandbox.AssemblyFileName,
+                type: typeof(ManifestLoadableTestExtension).FullName!,
+                assemblySha256: sandbox.AssemblySha256,
+                providers: ["hover", "completion"],
+                networkPermission: new ExtensionNetworkPermissionManifest
+                {
+                    Level = ExtensionHostOptions.NetworkCapabilityLoopback,
+                    AllowedHosts = ["example.com"]
+                },
+                signer: signer);
+
+            var registry = new ExtensionRegistry();
+            await using var loader = new ExtensionLoader(registry);
+            await loader.LoadUserExtensionsAsync(
+                CreateHostOptions(
+                    sandbox.RootDirectory,
+                    sandbox.ExtensionsDirectory,
+                    trustedPublicKeys: signer.TrustedPublicKeys,
+                    maxNetworkCapability: ExtensionHostOptions.NetworkCapabilityLoopback),
+                CancellationToken.None);
+
+            Assert.AreEqual(0, registry.GetExtensions().Count);
+            var loadHealth = GetSingleUserLoadHealth(registry);
+            Assert.AreEqual(1, loadHealth.RejectedCount);
+            StringAssert.Contains(
+                loadHealth.LastReason ?? string.Empty,
+                "loopback",
+                StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            sandbox.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task ExtensionLoader_LoadUserExtensionsAsync_WithIoPermissionPathEscapingBoundary_RejectsExtension()
+    {
+        var sandbox = CreateExtensionSandbox();
+        try
+        {
+            using var signer = new ManifestSigner("phase7-io-boundary-key");
+            WriteManifest(
+                sandbox.ExtensionDirectory,
+                id: ManifestLoadableTestExtension.ExtensionId,
+                assembly: sandbox.AssemblyFileName,
+                type: typeof(ManifestLoadableTestExtension).FullName!,
+                assemblySha256: sandbox.AssemblySha256,
+                providers: ["hover", "completion"],
+                ioPermission: new ExtensionIoPermissionManifest
+                {
+                    Level = ExtensionHostOptions.IoCapabilityRead,
+                    ReadRoots = ["../../../../outside-root"]
+                },
+                signer: signer);
+
+            var registry = new ExtensionRegistry();
+            await using var loader = new ExtensionLoader(registry);
+            await loader.LoadUserExtensionsAsync(
+                CreateHostOptions(
+                    sandbox.RootDirectory,
+                    sandbox.ExtensionsDirectory,
+                    trustedPublicKeys: signer.TrustedPublicKeys,
+                    maxIoCapability: ExtensionHostOptions.IoCapabilityRead),
+                CancellationToken.None);
+
+            Assert.AreEqual(0, registry.GetExtensions().Count);
+            var loadHealth = GetSingleUserLoadHealth(registry);
+            Assert.AreEqual(1, loadHealth.RejectedCount);
+            StringAssert.Contains(
+                loadHealth.LastReason ?? string.Empty,
+                "escapes extension/root boundary",
+                StringComparison.OrdinalIgnoreCase);
         }
         finally
         {
@@ -791,6 +1293,69 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
         Assert.AreEqual(1, item.RejectedCount);
     }
 
+    [TestMethod]
+    public async Task LspSession_ExtensionObservabilityDashboard_Request_ExposesDashboardSnapshot()
+    {
+        var workspaceStore = new InMemoryWorkspaceStore();
+        var virtualDocumentRegistry = new InMemoryVirtualDocumentRegistry();
+        var registry = new ExtensionRegistry();
+        registry.ReportExtensionLoad(new ExtensionLoadInvocation(
+            ExtensionId: ManifestLoadableTestExtension.ExtensionId,
+            Source: "user",
+            ExtensionDirectory: Path.GetTempPath(),
+            ManifestPath: null,
+            AssemblyPath: null,
+            Status: ExtensionLoadStatus.Loaded,
+            Reason: "extension loaded",
+            Timestamp: DateTimeOffset.UtcNow));
+        registry.ReportProviderInvocation(new ExtensionProviderInvocation(
+            ProviderName: "ManifestLoadableHoverProvider",
+            Capability: "hover",
+            Duration: TimeSpan.FromMilliseconds(5),
+            Succeeded: true,
+            TimedOut: false,
+            Skipped: false,
+            ErrorMessage: null));
+
+        using var outputStream = new MemoryStream();
+        var session = CreateSession(
+            workspaceStore,
+            virtualDocumentRegistry,
+            [new EmptyJazorLane()],
+            outputStream,
+            registry);
+
+        var response = await session.HandleRequestAsync(
+            new LspRequestMessage
+            {
+                Id = 3106,
+                Method = "jazor/extensionObservabilityDashboard"
+            },
+            CancellationToken.None);
+
+        Assert.IsNotNull(response);
+        Assert.IsNull(response!.Error);
+        var dashboard = response.Result as ExtensionObservabilityDashboard;
+        Assert.IsNotNull(dashboard);
+        Assert.AreEqual(1, dashboard.LoadHealth.Count);
+        Assert.AreEqual(1, dashboard.ProviderHealth.Count);
+        Assert.AreEqual(1, dashboard.RecentLoadEvents.Count);
+    }
+
+    private static InvalidOperationException ExpectInvalidOperationException(Action action)
+    {
+        try
+        {
+            action();
+        }
+        catch (InvalidOperationException exception)
+        {
+            return exception;
+        }
+
+        throw new AssertFailedException("Expected InvalidOperationException was not thrown.");
+    }
+
     private static ExtensionHostOptions CreateHostOptions(
         string rootDirectory,
         string extensionsDirectory,
@@ -798,7 +1363,10 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
         IReadOnlyDictionary<string, string>? trustedPublicKeys = null,
         bool requireAssemblyHash = true,
         bool enforceProviderPermissions = true,
-        bool requireManifestSignature = true)
+        bool requireManifestSignature = true,
+        bool requireProcessIsolation = false,
+        string maxIoCapability = ExtensionHostOptions.IoCapabilityRead,
+        string maxNetworkCapability = ExtensionHostOptions.NetworkCapabilityLoopback)
     {
         return new ExtensionHostOptions
         {
@@ -810,7 +1378,10 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
             TrustedPublicKeys = trustedPublicKeys ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
             RequireAssemblyHash = requireAssemblyHash,
             EnforceProviderPermissions = enforceProviderPermissions,
-            RequireManifestSignature = requireManifestSignature
+            RequireManifestSignature = requireManifestSignature,
+            RequireProcessIsolation = requireProcessIsolation,
+            MaxIoCapability = maxIoCapability,
+            MaxNetworkCapability = maxNetworkCapability
         };
     }
 
@@ -821,19 +1392,24 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
         string type,
         string? assemblySha256,
         string[] providers,
+        ExtensionIoPermissionManifest? ioPermission = null,
+        ExtensionNetworkPermissionManifest? networkPermission = null,
+        bool? processIsolation = null,
         ManifestSigner? signer = null,
         ExtensionSignatureManifest? explicitSignature = null)
     {
+        var permissions = CreatePermissionsManifest(
+            providers,
+            ioPermission,
+            networkPermission,
+            processIsolation);
         var unsignedManifest = new ExtensionManifest
         {
             Id = id,
             Assembly = assembly,
             AssemblySha256 = assemblySha256,
             Type = type,
-            Permissions = new ExtensionPermissionManifest
-            {
-                Providers = providers
-            }
+            Permissions = permissions
         };
 
         var finalSignature = explicitSignature;
@@ -848,10 +1424,11 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
             Assembly = assembly,
             AssemblySha256 = assemblySha256,
             Type = type,
-            Permissions = new ExtensionPermissionManifest
-            {
-                Providers = providers
-            },
+            Permissions = CreatePermissionsManifest(
+                providers,
+                ioPermission,
+                networkPermission,
+                processIsolation),
             Signature = finalSignature
         };
 
@@ -859,6 +1436,29 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
         File.WriteAllText(
             manifestPath,
             JsonSerializer.Serialize(manifest));
+    }
+
+    private static ExtensionPermissionManifest CreatePermissionsManifest(
+        string[] providers,
+        ExtensionIoPermissionManifest? ioPermission,
+        ExtensionNetworkPermissionManifest? networkPermission,
+        bool? processIsolation)
+    {
+        return new ExtensionPermissionManifest
+        {
+            Providers = providers,
+            Io = ioPermission,
+            Network = networkPermission,
+            ProcessIsolation = processIsolation
+        };
+    }
+
+    private static ExtensionLoadHealth GetSingleUserLoadHealth(ExtensionRegistry registry)
+    {
+        return registry.GetExtensionLoadHealth()
+            .Single(static item =>
+                string.Equals(item.ExtensionId, ManifestLoadableTestExtension.ExtensionId, StringComparison.Ordinal)
+                && string.Equals(item.Source, "user", StringComparison.Ordinal));
     }
 
     private static ExtensionSandbox CreateExtensionSandbox()

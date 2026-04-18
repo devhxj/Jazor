@@ -5,6 +5,28 @@
   "version": "0.1.0",
   "publisher": "jazor",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/devhxj/Jazor.git",
+    "directory": "src/Jazor.VSCodeExtension"
+  },
+  "files": [
+    "extension.js",
+    "package.json",
+    "README.md",
+    "LICENSE",
+    "node_modules/**"
+  ],
+  "scripts": {
+    "package": "vsce package",
+    "publish": "vsce publish"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^3.2.2"
+  },
   "engines": {
     "vscode": "^1.90.0"
   },
@@ -16,7 +38,8 @@
     "onLanguage:jazor",
     "onCommand:jazorVueHost.start",
     "onCommand:jazorVueHost.stop",
-    "onCommand:jazorVueHost.restart"
+    "onCommand:jazorVueHost.restart",
+    "onCommand:jazorVueHost.showExtensionDashboard"
   ],
   "main": "./extension.js",
   "contributes": {
@@ -44,6 +67,10 @@
       {
         "command": "jazorVueHost.restart",
         "title": "Jazor VueHost: Restart LSP"
+      },
+      {
+        "command": "jazorVueHost.showExtensionDashboard",
+        "title": "Jazor VueHost: Show Extension Dashboard"
       }
     ],
     "configuration": {

@@ -29,10 +29,25 @@ internal static class ExtensionHostOptionsResolver
         var requireAssemblyHash = configExtensions?.RequireAssemblyHash ?? true;
         var enforceProviderPermissions = configExtensions?.EnforceProviderPermissions ?? true;
         var requireManifestSignature = configExtensions?.RequireManifestSignature ?? true;
+        var requireProcessIsolation = configExtensions?.RequireProcessIsolation ?? false;
+        var maxIoCapability = ResolveIoCapability(
+                configExtensions?.MaxIoCapability,
+                "extensions.maxIoCapability")
+            ?? ExtensionHostOptions.IoCapabilityRead;
+        var maxNetworkCapability = ResolveNetworkCapability(
+                configExtensions?.MaxNetworkCapability,
+                "extensions.maxNetworkCapability")
+            ?? ExtensionHostOptions.NetworkCapabilityLoopback;
+        var loadLogFile = configExtensions?.LoadLogFile;
+        var loadEventRetention = configExtensions?.LoadEventRetention ?? 200;
 
-        if (TryGetOptionValue(args, "--extensions-enabled", out var enabledValue)
-            && TryParseBoolean(enabledValue, out var enabledOverride))
+        if (TryGetOptionValue(args, "--extensions-enabled", out var enabledValue))
         {
+            if (!TryParseBoolean(enabledValue, out var enabledOverride))
+            {
+                throw CreateInvalidBooleanOptionException("--extensions-enabled", enabledValue);
+            }
+
             enabled = enabledOverride;
         }
 
@@ -63,28 +78,84 @@ internal static class ExtensionHostOptionsResolver
             trustKeysFile = trustKeysFileOverride;
         }
 
-        if (TryGetOptionValue(args, "--extensions-allow-external", out var allowExternalOverrideValue)
-            && TryParseBoolean(allowExternalOverrideValue, out var allowExternalOverride))
+        if (TryGetOptionValue(args, "--extensions-allow-external", out var allowExternalOverrideValue))
         {
+            if (!TryParseBoolean(allowExternalOverrideValue, out var allowExternalOverride))
+            {
+                throw CreateInvalidBooleanOptionException("--extensions-allow-external", allowExternalOverrideValue);
+            }
+
             allowExternalDirectory = allowExternalOverride;
         }
 
-        if (TryGetOptionValue(args, "--extensions-require-hash", out var requireHashOverrideValue)
-            && TryParseBoolean(requireHashOverrideValue, out var requireHashOverride))
+        if (TryGetOptionValue(args, "--extensions-require-hash", out var requireHashOverrideValue))
         {
+            if (!TryParseBoolean(requireHashOverrideValue, out var requireHashOverride))
+            {
+                throw CreateInvalidBooleanOptionException("--extensions-require-hash", requireHashOverrideValue);
+            }
+
             requireAssemblyHash = requireHashOverride;
         }
 
-        if (TryGetOptionValue(args, "--extensions-enforce-provider-permissions", out var enforcePermissionsOverrideValue)
-            && TryParseBoolean(enforcePermissionsOverrideValue, out var enforcePermissionsOverride))
+        if (TryGetOptionValue(args, "--extensions-enforce-provider-permissions", out var enforcePermissionsOverrideValue))
         {
+            if (!TryParseBoolean(enforcePermissionsOverrideValue, out var enforcePermissionsOverride))
+            {
+                throw CreateInvalidBooleanOptionException("--extensions-enforce-provider-permissions", enforcePermissionsOverrideValue);
+            }
+
             enforceProviderPermissions = enforcePermissionsOverride;
         }
 
-        if (TryGetOptionValue(args, "--extensions-require-signature", out var requireSignatureOverrideValue)
-            && TryParseBoolean(requireSignatureOverrideValue, out var requireSignatureOverride))
+        if (TryGetOptionValue(args, "--extensions-require-signature", out var requireSignatureOverrideValue))
         {
+            if (!TryParseBoolean(requireSignatureOverrideValue, out var requireSignatureOverride))
+            {
+                throw CreateInvalidBooleanOptionException("--extensions-require-signature", requireSignatureOverrideValue);
+            }
+
             requireManifestSignature = requireSignatureOverride;
+        }
+
+        if (TryGetOptionValue(args, "--extensions-require-process-isolation", out var requireProcessIsolationOverrideValue))
+        {
+            if (!TryParseBoolean(requireProcessIsolationOverrideValue, out var requireProcessIsolationOverride))
+            {
+                throw CreateInvalidBooleanOptionException("--extensions-require-process-isolation", requireProcessIsolationOverrideValue);
+            }
+
+            requireProcessIsolation = requireProcessIsolationOverride;
+        }
+
+        if (TryGetOptionValue(args, "--extensions-max-io-capability", out var maxIoCapabilityOverride))
+        {
+            maxIoCapability = ResolveIoCapability(maxIoCapabilityOverride, "--extensions-max-io-capability")
+                ?? maxIoCapability;
+        }
+
+        if (TryGetOptionValue(args, "--extensions-max-network-capability", out var maxNetworkCapabilityOverride))
+        {
+            maxNetworkCapability = ResolveNetworkCapability(maxNetworkCapabilityOverride, "--extensions-max-network-capability")
+                ?? maxNetworkCapability;
+        }
+
+        if (TryGetOptionValue(args, "--extensions-load-log-file", out var loadLogFileOverride)
+            && !string.IsNullOrWhiteSpace(loadLogFileOverride))
+        {
+            loadLogFile = loadLogFileOverride;
+        }
+
+        if (TryGetOptionValue(args, "--extensions-load-event-retention", out var loadEventRetentionOverride))
+        {
+            if (!int.TryParse(loadEventRetentionOverride, out var parsedRetention))
+            {
+                throw new InvalidOperationException(
+                    $"Invalid value '{loadEventRetentionOverride}' for '--extensions-load-event-retention'. " +
+                    "Expected an integer.");
+            }
+
+            loadEventRetention = parsedRetention;
         }
 
         var extensionDirectoryPath = Path.IsPathRooted(directory)
@@ -101,6 +172,8 @@ internal static class ExtensionHostOptionsResolver
             trustedPublicKeys,
             LoadTrustedPublicKeysFromFile(normalizedRoot, trustKeysFile));
 
+        var loadLogFilePath = ResolveOptionalPath(normalizedRoot, loadLogFile);
+
         return new ExtensionHostOptions
         {
             RootDirectory = normalizedRoot,
@@ -112,7 +185,12 @@ internal static class ExtensionHostOptionsResolver
             TrustedPublicKeys = trustedPublicKeys,
             RequireAssemblyHash = requireAssemblyHash,
             EnforceProviderPermissions = enforceProviderPermissions,
-            RequireManifestSignature = requireManifestSignature
+            RequireManifestSignature = requireManifestSignature,
+            RequireProcessIsolation = requireProcessIsolation,
+            MaxIoCapability = maxIoCapability,
+            MaxNetworkCapability = maxNetworkCapability,
+            LoadLogFilePath = loadLogFilePath,
+            LoadEventRetention = Math.Clamp(loadEventRetention, 0, 10_000)
         };
     }
 
@@ -292,5 +370,92 @@ internal static class ExtensionHostOptionsResolver
                 $"Failed to parse trusted keys file '{trustFilePath}': {exception.Message}",
                 exception);
         }
+    }
+
+    private static string? ResolveOptionalPath(string rootDirectory, string? configuredPath)
+    {
+        if (string.IsNullOrWhiteSpace(configuredPath))
+        {
+            return null;
+        }
+
+        return Path.IsPathRooted(configuredPath)
+            ? Path.GetFullPath(configuredPath)
+            : Path.GetFullPath(Path.Combine(rootDirectory, configuredPath));
+    }
+
+    private static string? NormalizeIoCapability(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return null;
+        }
+
+        return raw.Trim().ToLowerInvariant() switch
+        {
+            "none" => ExtensionHostOptions.IoCapabilityNone,
+            "read" => ExtensionHostOptions.IoCapabilityRead,
+            "readwrite" or "read-write" or "read_write" => ExtensionHostOptions.IoCapabilityReadWrite,
+            _ => null
+        };
+    }
+
+    private static string? NormalizeNetworkCapability(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return null;
+        }
+
+        return raw.Trim().ToLowerInvariant() switch
+        {
+            "none" => ExtensionHostOptions.NetworkCapabilityNone,
+            "loopback" => ExtensionHostOptions.NetworkCapabilityLoopback,
+            "internet" => ExtensionHostOptions.NetworkCapabilityInternet,
+            _ => null
+        };
+    }
+
+    private static string? ResolveIoCapability(string? raw, string source)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return null;
+        }
+
+        var normalized = NormalizeIoCapability(raw);
+        if (normalized is null)
+        {
+            throw new InvalidOperationException(
+                $"Invalid value '{raw}' for '{source}'. Expected one of: none, read, readWrite.");
+        }
+
+        return normalized;
+    }
+
+    private static string? ResolveNetworkCapability(string? raw, string source)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return null;
+        }
+
+        var normalized = NormalizeNetworkCapability(raw);
+        if (normalized is null)
+        {
+            throw new InvalidOperationException(
+                $"Invalid value '{raw}' for '{source}'. Expected one of: none, loopback, internet.");
+        }
+
+        return normalized;
+    }
+
+    private static InvalidOperationException CreateInvalidBooleanOptionException(
+        string optionName,
+        string providedValue)
+    {
+        return new InvalidOperationException(
+            $"Invalid value '{providedValue}' for '{optionName}'. " +
+            "Expected boolean value: true/false/1/0/yes/no/on/off.");
     }
 }

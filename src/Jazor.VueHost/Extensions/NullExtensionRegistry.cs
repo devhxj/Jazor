@@ -103,6 +103,9 @@ internal sealed class NullExtensionRegistry : IExtensionRegistry
     public IReadOnlyList<ExtensionLoadHealth> GetExtensionLoadHealth()
         => Array.Empty<ExtensionLoadHealth>();
 
+    public IReadOnlyList<ExtensionLoadInvocation> GetRecentExtensionLoadInvocations(int maxCount = 100)
+        => Array.Empty<ExtensionLoadInvocation>();
+
     public void ReportProviderInvocation(ExtensionProviderInvocation invocation)
     {
     }

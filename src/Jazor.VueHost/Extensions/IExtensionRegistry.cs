@@ -56,6 +56,8 @@ internal interface IExtensionRegistry
 
     IReadOnlyList<ExtensionLoadHealth> GetExtensionLoadHealth();
 
+    IReadOnlyList<ExtensionLoadInvocation> GetRecentExtensionLoadInvocations(int maxCount = 100);
+
     void ReportProviderInvocation(ExtensionProviderInvocation invocation);
 
     IReadOnlyList<ExtensionProviderHealth> GetProviderHealth();

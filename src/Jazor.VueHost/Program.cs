@@ -245,8 +245,15 @@ try
         var hostRootDirectory = Path.GetFullPath(GetOptionValue(args, "--dev-root") ?? Directory.GetCurrentDirectory());
         var hostConfig = LoadJazorConfig(hostRootDirectory);
         var extensionHostOptions = ExtensionHostOptionsResolver.Resolve(args, hostRootDirectory, hostConfig);
-        var extensionRegistry = new ExtensionRegistry();
-        await using var extensionLoader = new ExtensionLoader(extensionRegistry, WriteExtensionLoadLog);
+        var extensionRegistry = new ExtensionRegistry(extensionHostOptions.LoadEventRetention);
+        ExtensionLoadLogPersistence.Replay(extensionRegistry, extensionHostOptions.LoadLogFilePath);
+        await using var extensionLoader = new ExtensionLoader(
+            extensionRegistry,
+            invocation =>
+            {
+                WriteExtensionLoadLog(invocation);
+                ExtensionLoadLogPersistence.Append(invocation, extensionHostOptions.LoadLogFilePath);
+            });
         await extensionLoader.LoadBuiltinExtensionsAsync(
             builtinExtensions: BuiltinExtensionCatalog.Create(),
             rootDirectory: extensionHostOptions.RootDirectory,
