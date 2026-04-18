@@ -74,6 +74,12 @@ internal static class BuildCommandOptionsResolver
             buildOptions = buildOptions with { ChunkSizeWarningLimit = chunkSizeWarningLimit };
         }
 
+        if (TryGetOptionValue(args, "--incremental", out var incrementalOverride)
+            && bool.TryParse(incrementalOverride, out var incremental))
+        {
+            buildOptions = buildOptions with { Incremental = incremental };
+        }
+
         return buildOptions;
     }
 

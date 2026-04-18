@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Globalization;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
@@ -18,6 +19,8 @@ namespace Jazor.VueHost.Build;
 internal sealed class BuildOrchestrator
 {
     private const string ManifestFileName = "jazor-build-manifest.json";
+    private const string IncrementalStateFileName = "jazor-build-state.json";
+    private const string IncrementalCacheHitMessage = "Incremental build cache hit.";
     private static readonly Regex CssSourceMapCommentPattern = new(
         @"/\*#\s*sourceMappingURL=(?<value>[^*]+?)\s*\*/\s*$",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
@@ -41,6 +44,16 @@ internal sealed class BuildOrchestrator
         ".js",
         ".css"
     };
+    private static readonly HashSet<string> IncrementalFingerprintExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".jazor",
+        ".vue",
+        ".ts",
+        ".js",
+        ".css",
+        ".html",
+        ".json"
+    };
     private readonly record struct CssFragment(
         string Content,
         string SourcePublicPath,
@@ -57,6 +70,20 @@ internal sealed class BuildOrchestrator
     private sealed record SourceMapOwnershipContext(
         IReadOnlyDictionary<string, IReadOnlySet<string>> ChunkFilePathsByModulePath,
         IReadOnlyDictionary<string, IReadOnlySet<string>> ImporterModulePathsByCssPath);
+    private sealed class BuildIncrementalState
+    {
+        public required string Fingerprint { get; init; }
+
+        public required string ManifestPath { get; init; }
+
+        public IReadOnlyList<ChunkInfo> Chunks { get; init; } = [];
+
+        public IReadOnlyList<AssetInfo> CssAssets { get; init; } = [];
+
+        public IReadOnlyList<AssetInfo> StaticAssets { get; init; } = [];
+
+        public long TotalSize { get; init; }
+    }
 
     /// <summary>
     /// Executes a production build.
@@ -70,6 +97,38 @@ internal sealed class BuildOrchestrator
         try
         {
             using var context = new BuildContext(options);
+            string? incrementalFingerprint = null;
+            if (options.Incremental)
+            {
+                incrementalFingerprint = ComputeIncrementalFingerprint(context);
+                if (TryReadIncrementalState(context, out var incrementalState)
+                    && string.Equals(incrementalState.Fingerprint, incrementalFingerprint, StringComparison.Ordinal)
+                    && AreIncrementalOutputsAvailable(context, incrementalState))
+                {
+                    stopwatch.Stop();
+                    return new BuildResult
+                    {
+                        Success = true,
+                        OutDirectory = context.OutDirectory,
+                        ManifestPath = ResolveAbsolutePath(context.RootDirectory, incrementalState.ManifestPath),
+                        Chunks = incrementalState.Chunks,
+                        CssAssets = incrementalState.CssAssets,
+                        StaticAssets = incrementalState.StaticAssets,
+                        Diagnostics =
+                        [
+                            .. context.Diagnostics,
+                            new BuildDiagnostic
+                            {
+                                Severity = DiagnosticSeverity.Info,
+                                Message = IncrementalCacheHitMessage
+                            }
+                        ],
+                        Duration = stopwatch.Elapsed,
+                        TotalSize = incrementalState.TotalSize
+                    };
+                }
+            }
+
             PrepareOutputDirectory(context);
 
             await using var denoHost = CreateDenoHost();
@@ -205,8 +264,7 @@ internal sealed class BuildOrchestrator
                 cancellationToken);
 
             stopwatch.Stop();
-
-            return new BuildResult
+            var buildResult = new BuildResult
             {
                 Success = true,
                 OutDirectory = context.OutDirectory,
@@ -218,6 +276,17 @@ internal sealed class BuildOrchestrator
                 Duration = stopwatch.Elapsed,
                 TotalSize = totalSize
             };
+
+            if (options.Incremental && !string.IsNullOrWhiteSpace(incrementalFingerprint))
+            {
+                await PersistIncrementalStateAsync(
+                    context,
+                    buildResult,
+                    incrementalFingerprint,
+                    cancellationToken);
+            }
+
+            return buildResult;
         }
         catch (OperationCanceledException)
         {
@@ -2276,6 +2345,313 @@ internal sealed class BuildOrchestrator
 
     private static bool IsBuildGraphCompilablePath(string path)
         => BuildGraphCompilableExtensions.Contains(Path.GetExtension(path));
+
+    private static string ComputeIncrementalFingerprint(BuildContext context)
+    {
+        var fingerprintBuilder = new StringBuilder();
+        fingerprintBuilder.Append(BuildIncrementalOptionsFingerprint(context.Options));
+
+        foreach (var filePath in EnumerateIncrementalInputFiles(context))
+        {
+            try
+            {
+                var fileInfo = new FileInfo(filePath);
+                var relativePath = Path.GetRelativePath(context.RootDirectory, filePath).Replace('\\', '/');
+                fingerprintBuilder
+                    .Append(relativePath)
+                    .Append('|')
+                    .Append(fileInfo.Length.ToString(CultureInfo.InvariantCulture))
+                    .Append('|')
+                    .Append(fileInfo.LastWriteTimeUtc.Ticks.ToString(CultureInfo.InvariantCulture))
+                    .AppendLine();
+            }
+            catch (IOException)
+            {
+                // Skip transiently inaccessible files. A subsequent build run will re-evaluate.
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // Skip inaccessible files. Fingerprint remains stable for accessible inputs.
+            }
+        }
+
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(fingerprintBuilder.ToString())));
+    }
+
+    private static string BuildIncrementalOptionsFingerprint(BuildOptions options)
+    {
+        var builder = new StringBuilder();
+        builder
+            .Append("outDir=").Append(options.OutDir).AppendLine()
+            .Append("sourceMap=").Append(options.SourceMap).AppendLine()
+            .Append("minify=").Append(options.Minify.ToString(CultureInfo.InvariantCulture)).AppendLine()
+            .Append("target=").Append(options.Target).AppendLine()
+            .Append("codeSplitting=").Append(options.CodeSplitting.ToString(CultureInfo.InvariantCulture)).AppendLine()
+            .Append("assetsDir=").Append(options.AssetsDir).AppendLine()
+            .Append("assetHashLength=").Append(options.AssetHashLength.ToString(CultureInfo.InvariantCulture)).AppendLine()
+            .Append("chunkSizeWarningLimit=").Append(options.ChunkSizeWarningLimit.ToString(CultureInfo.InvariantCulture)).AppendLine();
+        foreach (var (alias, target) in options.ResolveAliases
+                     .OrderBy(static item => item.Key, StringComparer.Ordinal)
+                     .ThenBy(static item => item.Value, StringComparer.Ordinal))
+        {
+            builder
+                .Append("alias:")
+                .Append(alias)
+                .Append('=')
+                .Append(target)
+                .AppendLine();
+        }
+
+        return builder.ToString();
+    }
+
+    private static IEnumerable<string> EnumerateIncrementalInputFiles(BuildContext context)
+    {
+        var rootDirectory = Path.GetFullPath(context.RootDirectory);
+        if (!Directory.Exists(rootDirectory))
+        {
+            yield break;
+        }
+
+        var outDirectory = Path.GetFullPath(context.OutDirectory);
+        var pendingDirectories = new Stack<string>();
+        pendingDirectories.Push(rootDirectory);
+
+        while (pendingDirectories.Count > 0)
+        {
+            var directory = pendingDirectories.Pop();
+            if (string.Equals(directory, outDirectory, FilePathComparison))
+            {
+                continue;
+            }
+
+            var directoryName = Path.GetFileName(directory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+            if (!string.Equals(directory, rootDirectory, FilePathComparison)
+                && IsIgnoredIncrementalDirectory(directoryName))
+            {
+                continue;
+            }
+
+            IEnumerable<string> childDirectories;
+            try
+            {
+                childDirectories = Directory.EnumerateDirectories(directory);
+            }
+            catch (IOException)
+            {
+                continue;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                continue;
+            }
+
+            foreach (var childDirectory in childDirectories)
+            {
+                pendingDirectories.Push(Path.GetFullPath(childDirectory));
+            }
+
+            IEnumerable<string> files;
+            try
+            {
+                files = Directory.EnumerateFiles(directory);
+            }
+            catch (IOException)
+            {
+                continue;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                continue;
+            }
+
+            foreach (var filePath in files)
+            {
+                if (ShouldIncludeIncrementalInputFile(rootDirectory, outDirectory, filePath))
+                {
+                    yield return filePath;
+                }
+            }
+        }
+    }
+
+    private static bool IsIgnoredIncrementalDirectory(string? directoryName)
+        => string.Equals(directoryName, ".git", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(directoryName, ".jazor", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(directoryName, "node_modules", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(directoryName, ".vs", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(directoryName, ".idea", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(directoryName, "bin", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(directoryName, "obj", StringComparison.OrdinalIgnoreCase);
+
+    private static bool ShouldIncludeIncrementalInputFile(
+        string rootDirectory,
+        string outDirectory,
+        string filePath)
+    {
+        var fullPath = Path.GetFullPath(filePath);
+        if (!File.Exists(fullPath))
+        {
+            return false;
+        }
+
+        if (string.Equals(Path.GetDirectoryName(fullPath), outDirectory, FilePathComparison))
+        {
+            return false;
+        }
+
+        var relativePath = Path.GetRelativePath(rootDirectory, fullPath).Replace('\\', '/');
+        if (relativePath.StartsWith("public/", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        var fileName = Path.GetFileName(fullPath);
+        if (string.Equals(fileName, "index.html", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(fileName, "package.json", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(fileName, "jazor.config.json", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return IncrementalFingerprintExtensions.Contains(Path.GetExtension(fullPath));
+    }
+
+    private static bool TryReadIncrementalState(
+        BuildContext context,
+        out BuildIncrementalState state)
+    {
+        state = null!;
+        var statePath = Path.Combine(context.OutDirectory, IncrementalStateFileName);
+        if (!File.Exists(statePath))
+        {
+            return false;
+        }
+
+        try
+        {
+            var json = File.ReadAllText(statePath);
+            var deserialized = JsonSerializer.Deserialize<BuildIncrementalState>(json);
+            if (deserialized is null
+                || string.IsNullOrWhiteSpace(deserialized.Fingerprint)
+                || string.IsNullOrWhiteSpace(deserialized.ManifestPath))
+            {
+                return false;
+            }
+
+            state = deserialized;
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static bool AreIncrementalOutputsAvailable(
+        BuildContext context,
+        BuildIncrementalState state)
+    {
+        if (!File.Exists(ResolveAbsolutePath(context.RootDirectory, state.ManifestPath)))
+        {
+            return false;
+        }
+
+        foreach (var chunk in state.Chunks)
+        {
+            if (string.IsNullOrWhiteSpace(chunk.FilePath)
+                || !File.Exists(ResolveAbsolutePath(context.RootDirectory, chunk.FilePath)))
+            {
+                return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(chunk.SourceMapPath)
+                && !File.Exists(ResolveAbsolutePath(context.RootDirectory, chunk.SourceMapPath!)))
+            {
+                return false;
+            }
+        }
+
+        foreach (var asset in state.CssAssets.Concat(state.StaticAssets))
+        {
+            if (string.IsNullOrWhiteSpace(asset.FilePath)
+                || !File.Exists(ResolveAbsolutePath(context.RootDirectory, asset.FilePath)))
+            {
+                return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(asset.SourceMapPath)
+                && !File.Exists(ResolveAbsolutePath(context.RootDirectory, asset.SourceMapPath!)))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static async Task PersistIncrementalStateAsync(
+        BuildContext context,
+        BuildResult buildResult,
+        string fingerprint,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(buildResult.ManifestPath))
+        {
+            return;
+        }
+
+        var state = new BuildIncrementalState
+        {
+            Fingerprint = fingerprint,
+            ManifestPath = ResolveRootRelativePath(context.RootDirectory, buildResult.ManifestPath),
+            Chunks = buildResult.Chunks,
+            CssAssets = buildResult.CssAssets,
+            StaticAssets = buildResult.StaticAssets,
+            TotalSize = buildResult.TotalSize
+        };
+        var statePath = Path.Combine(context.OutDirectory, IncrementalStateFileName);
+        var stateJson = JsonSerializer.Serialize(
+            state,
+            new JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
+        await File.WriteAllTextAsync(statePath, stateJson, cancellationToken);
+    }
+
+    private static string ResolveRootRelativePath(string rootDirectory, string absoluteOrRelativePath)
+    {
+        if (string.IsNullOrWhiteSpace(absoluteOrRelativePath))
+        {
+            return string.Empty;
+        }
+
+        if (!Path.IsPathRooted(absoluteOrRelativePath))
+        {
+            return absoluteOrRelativePath.Replace('\\', '/');
+        }
+
+        var fullRootPath = Path.GetFullPath(rootDirectory);
+        var fullPath = Path.GetFullPath(absoluteOrRelativePath);
+        return IsInsideRoot(fullRootPath, fullPath)
+            ? Path.GetRelativePath(fullRootPath, fullPath).Replace('\\', '/')
+            : fullPath.Replace('\\', '/');
+    }
+
+    private static string ResolveAbsolutePath(string rootDirectory, string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return path;
+        }
+
+        return Path.IsPathRooted(path)
+            ? Path.GetFullPath(path)
+            : Path.GetFullPath(Path.Combine(
+                rootDirectory,
+                path.Replace('/', Path.DirectorySeparatorChar)));
+    }
 
     private static void PrepareOutputDirectory(BuildContext context)
     {

@@ -23,6 +23,8 @@ internal sealed record BuildOptions
     public IReadOnlyDictionary<string, string> ResolveAliases { get; init; }
         = new Dictionary<string, string>(StringComparer.Ordinal);
 
+    public bool Incremental { get; init; } = false;
+
     public bool GenerateSourceMap => SourceMap != SourceMapOption.None;
 }
 

@@ -180,7 +180,111 @@ public sealed class JazorVueHostBuildJsSourceMapTests
         }
     }
 
-    private static async Task<BuildResult> BuildAsync(string rootDirectory)
+    [TestMethod]
+    public async Task BuildOrchestrator_BuildAsync_ForCodeSplitVueChunk_EmitsJsSourceMapChainedToLazySfcAuthoringFile()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            const string appSource = """
+                <template>
+                  <button @click="loadLazyCard">load-lazy-card</button>
+                  <component :is="lazyComponent" />
+                </template>
+
+                <script setup>
+                import { ref } from "vue";
+
+                const lazyComponent = ref(null);
+
+                async function loadLazyCard() {
+                  const module = await import("./LazyCard.vue");
+                  lazyComponent.value = module.default;
+                }
+                </script>
+                """;
+            const string lazySource = """
+                <template>
+                  <div class="lazy-card">lazy-sourcemap-marker {{ lazyLabel }}</div>
+                </template>
+
+                <script setup>
+                const lazyLabel = "lazy-script-marker";
+                </script>
+                """;
+
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "index.html"),
+                """
+                <html>
+                <body>
+                  <div id="app"></div>
+                  <script type="module" src="/AppEntry.vue"></script>
+                </body>
+                </html>
+                """);
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "AppEntry.vue"), appSource);
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "LazyCard.vue"), lazySource);
+
+            var result = await BuildAsync(tempDir, codeSplitting: true);
+
+            Assert.IsTrue(result.Success, string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
+            Assert.IsTrue(result.Chunks.Count >= 2, "Expected code splitting to emit lazy chunks.");
+
+            var chunkOutputs = await Task.WhenAll(result.Chunks.Select(async chunk =>
+            {
+                var chunkPath = Path.Combine(tempDir, chunk.FilePath.Replace('/', Path.DirectorySeparatorChar));
+                return new
+                {
+                    Chunk = chunk,
+                    Content = await File.ReadAllTextAsync(chunkPath)
+                };
+            }));
+            var lazyChunkOutput = chunkOutputs.Single(output => output.Content.Contains("lazy-sourcemap-marker", StringComparison.Ordinal));
+            Assert.IsNotNull(lazyChunkOutput.Chunk.SourceMapPath);
+
+            var lazySourceMapPath = Path.Combine(tempDir, lazyChunkOutput.Chunk.SourceMapPath!.Replace('/', Path.DirectorySeparatorChar));
+            Assert.IsTrue(File.Exists(lazySourceMapPath));
+            var lazySourceMapJson = await File.ReadAllTextAsync(lazySourceMapPath);
+            using var sourceMapDocument = JsonDocument.Parse(lazySourceMapJson);
+            AssertSourceMapContainsOriginalSource(sourceMapDocument.RootElement, "LazyCard.vue", lazySource);
+
+            var mappedLocations = DecodeGeneratedLineToSourceLocation(sourceMapDocument.RootElement);
+            AssertGeneratedLineMapsToSource(
+                lazyChunkOutput.Content,
+                "lazy-sourcemap-marker",
+                sourceMapDocument.RootElement,
+                "LazyCard.vue",
+                lazySource,
+                "lazy-sourcemap-marker {{ lazyLabel }}",
+                mappedLocations);
+            AssertGeneratedLineMapsToSource(
+                lazyChunkOutput.Content,
+                "lazy-script-marker",
+                sourceMapDocument.RootElement,
+                "LazyCard.vue",
+                lazySource,
+                "const lazyLabel = \"lazy-script-marker\";",
+                mappedLocations);
+
+            AssertSourceMapReverseLookupToOriginalAuthoring(
+                generatedPath: lazyChunkOutput.Chunk.FilePath,
+                sourceMapJson: lazySourceMapJson,
+                generatedText: lazyChunkOutput.Content,
+                generatedNeedle: "lazy-script-marker",
+                expectedSourcePath: "LazyCard.vue",
+                sourceText: lazySource,
+                sourceNeedle: "lazy-script-marker");
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    private static async Task<BuildResult> BuildAsync(
+        string rootDirectory,
+        bool codeSplitting = false)
     {
         var orchestrator = new BuildOrchestrator();
         return await orchestrator.BuildAsync(
@@ -190,7 +294,7 @@ public sealed class JazorVueHostBuildJsSourceMapTests
                 OutDir = "dist",
                 SourceMap = SourceMapOption.External,
                 Minify = false,
-                CodeSplitting = false
+                CodeSplitting = codeSplitting
             },
             CancellationToken.None);
     }

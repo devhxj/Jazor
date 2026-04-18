@@ -460,6 +460,83 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
     }
 
     [TestMethod]
+    public async Task ExtensionLoader_LoadUserExtensionsAsync_WithLegacySchemaVersionStringAndDelimitedCapabilities_MigratesAndLoadsExtension()
+    {
+        var sandbox = CreateExtensionSandbox();
+        try
+        {
+            var manifestPath = Path.Combine(sandbox.ExtensionDirectory, "extension.json");
+            var legacyManifest = new
+            {
+                schemaVersion = "0",
+                id = ManifestLoadableTestExtension.ExtensionId,
+                assemblyPath = sandbox.AssemblyFileName,
+                typeName = typeof(ManifestLoadableTestExtension).FullName,
+                assemblyHash = sandbox.AssemblySha256,
+                capabilities = "hover, completion",
+                processIsolation = "false"
+            };
+            File.WriteAllText(manifestPath, JsonSerializer.Serialize(legacyManifest));
+
+            var registry = new ExtensionRegistry();
+            await using var loader = new ExtensionLoader(registry);
+            await loader.LoadUserExtensionsAsync(
+                CreateHostOptions(
+                    sandbox.RootDirectory,
+                    sandbox.ExtensionsDirectory,
+                    requireManifestSignature: false),
+                CancellationToken.None);
+
+            Assert.AreEqual(1, registry.GetExtensions().Count);
+            Assert.IsTrue(registry.GetExtensions().ContainsKey(ManifestLoadableTestExtension.ExtensionId));
+            Assert.AreEqual(1, registry.GetLspHoverProviders().Count);
+            Assert.AreEqual(1, registry.GetLspCompletionProviders().Count);
+        }
+        finally
+        {
+            sandbox.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task ExtensionLoader_LoadUserExtensionsAsync_WithLegacyFieldsWithoutVersion_MigratesAndLoadsExtension()
+    {
+        var sandbox = CreateExtensionSandbox();
+        try
+        {
+            var manifestPath = Path.Combine(sandbox.ExtensionDirectory, "extension.json");
+            var legacyManifest = new
+            {
+                id = ManifestLoadableTestExtension.ExtensionId,
+                main = sandbox.AssemblyFileName,
+                entryType = typeof(ManifestLoadableTestExtension).FullName,
+                sha256 = sandbox.AssemblySha256,
+                providers = new[] { "hover", "completion" },
+                processIsolation = false
+            };
+            File.WriteAllText(manifestPath, JsonSerializer.Serialize(legacyManifest));
+
+            var registry = new ExtensionRegistry();
+            await using var loader = new ExtensionLoader(registry);
+            await loader.LoadUserExtensionsAsync(
+                CreateHostOptions(
+                    sandbox.RootDirectory,
+                    sandbox.ExtensionsDirectory,
+                    requireManifestSignature: false),
+                CancellationToken.None);
+
+            Assert.AreEqual(1, registry.GetExtensions().Count);
+            Assert.IsTrue(registry.GetExtensions().ContainsKey(ManifestLoadableTestExtension.ExtensionId));
+            Assert.AreEqual(1, registry.GetLspHoverProviders().Count);
+            Assert.AreEqual(1, registry.GetLspCompletionProviders().Count);
+        }
+        finally
+        {
+            sandbox.Dispose();
+        }
+    }
+
+    [TestMethod]
     public async Task ExtensionLoader_LoadUserExtensionsAsync_WithUnsupportedFutureManifestVersion_RejectsExtension()
     {
         var sandbox = CreateExtensionSandbox();
@@ -1144,6 +1221,91 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
             var completionItems = completionResponse.Result as IReadOnlyList<LspCompletionItem>;
             Assert.IsNotNull(completionItems);
             Assert.IsTrue(completionItems.Any(static item => string.Equals(item.Label, "manifest-loadable-item", StringComparison.Ordinal)));
+        }
+        finally
+        {
+            sandbox.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task ExtensionLoader_LoadUserExtensionsAsync_WithProcessIsolatedWorkerUnexpectedExit_RestartsWorkerAndServesRequest()
+    {
+        var sandbox = CreateExtensionSandbox();
+        try
+        {
+            using var signer = new ManifestSigner("phase7-process-worker-restart-key");
+            WriteManifest(
+                sandbox.ExtensionDirectory,
+                id: ManifestLoadableTestExtension.ExtensionId,
+                assembly: sandbox.AssemblyFileName,
+                type: typeof(ManifestLoadableTestExtension).FullName!,
+                assemblySha256: sandbox.AssemblySha256,
+                providers: ["hover", "completion"],
+                ioPermission: new ExtensionIoPermissionManifest
+                {
+                    Level = ExtensionHostOptions.IoCapabilityRead
+                },
+                processIsolation: true,
+                signer: signer);
+
+            var registry = new ExtensionRegistry();
+            await using var loader = new ExtensionLoader(registry);
+            await loader.LoadUserExtensionsAsync(
+                CreateHostOptions(
+                    sandbox.RootDirectory,
+                    sandbox.ExtensionsDirectory,
+                    trustedPublicKeys: signer.TrustedPublicKeys,
+                    enforceProviderPermissions: true),
+                CancellationToken.None);
+
+            Assert.AreEqual(1, registry.GetExtensions().Count);
+            var extension = registry.GetExtensions()[ManifestLoadableTestExtension.ExtensionId];
+            TerminateOutOfProcessWorkerProcess(extension);
+
+            var workspaceStore = new InMemoryWorkspaceStore();
+            var virtualDocumentRegistry = new InMemoryVirtualDocumentRegistry();
+            var documentPath = Path.Combine(sandbox.RootDirectory, "ProcessIsolatedRestart.jazor");
+            await workspaceStore.UpsertDocumentAsync(
+                new DocumentSnapshot(documentPath, DocumentKind.Jazor, "@", version: "1"),
+                CancellationToken.None);
+
+            using var outputStream = new MemoryStream();
+            var session = CreateSession(
+                workspaceStore,
+                virtualDocumentRegistry,
+                [new EmptyJazorLane()],
+                outputStream,
+                registry);
+
+            var completionResponse = await session.HandleRequestAsync(
+                new LspRequestMessage
+                {
+                    Id = 3116,
+                    Method = "textDocument/completion",
+                    Params = new LspCompletionParams
+                    {
+                        TextDocument = new LspTextDocumentIdentifier
+                        {
+                            Uri = LspProtocolHelpers.ToDocumentUri(documentPath)
+                        },
+                        Position = new LspPosition { Line = 0, Character = 1 }
+                    }
+                },
+                CancellationToken.None);
+
+            Assert.IsNotNull(completionResponse);
+            Assert.IsNull(completionResponse!.Error);
+            var completionItems = completionResponse.Result as IReadOnlyList<LspCompletionItem>;
+            Assert.IsNotNull(completionItems);
+            Assert.IsTrue(completionItems.Any(static item => string.Equals(item.Label, "manifest-loadable-item", StringComparison.Ordinal)));
+
+            var providerHealth = registry.GetProviderHealth()
+                .Single(static item =>
+                    string.Equals(item.ProviderName, "ManifestLoadableCompletionProvider", StringComparison.Ordinal)
+                    && string.Equals(item.Capability, "completion", StringComparison.Ordinal));
+            Assert.IsTrue(providerHealth.SuccessCount >= 1);
+            Assert.AreEqual(0, providerHealth.FailureCount);
         }
         finally
         {
@@ -2225,6 +2387,33 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
         }
 
         throw new AssertFailedException("Expected InvalidOperationException was not thrown.");
+    }
+
+    private static void TerminateOutOfProcessWorkerProcess(IExtension extension)
+    {
+        ArgumentNullException.ThrowIfNull(extension);
+
+        var workerClientField = extension.GetType().GetField(
+            "_workerClient",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+        Assert.IsNotNull(workerClientField);
+        var workerClient = workerClientField.GetValue(extension);
+        Assert.IsNotNull(workerClient);
+
+        var processField = workerClient.GetType().GetField(
+            "_process",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+        Assert.IsNotNull(processField);
+        var process = processField.GetValue(workerClient) as System.Diagnostics.Process;
+        Assert.IsNotNull(process);
+
+        if (process.HasExited)
+        {
+            return;
+        }
+
+        process.Kill(entireProcessTree: true);
+        Assert.IsTrue(process.WaitForExit(5_000), "process-isolated extension worker did not exit within timeout.");
     }
 
     private static ExtensionHostOptions CreateHostOptions(

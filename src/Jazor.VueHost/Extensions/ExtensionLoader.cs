@@ -632,7 +632,22 @@ internal sealed class ExtensionLoader : IAsyncDisposable
             return schemaVersion;
         }
 
+        if (LooksLikeLegacyManifest(root))
+        {
+            return LegacyManifestVersion;
+        }
+
         return CurrentManifestVersion;
+    }
+
+    private static bool LooksLikeLegacyManifest(JsonElement root)
+    {
+        return TryGetPropertyCaseInsensitive(root, "main", out _)
+            || TryGetPropertyCaseInsensitive(root, "entryType", out _)
+            || TryGetPropertyCaseInsensitive(root, "assemblyPath", out _)
+            || TryGetPropertyCaseInsensitive(root, "typeName", out _)
+            || TryGetPropertyCaseInsensitive(root, "capabilities", out _)
+            || TryGetPropertyCaseInsensitive(root, "processIsolation", out _);
     }
 
     private static ExtensionManifest MigrateLegacyManifest(JsonElement root)
@@ -711,19 +726,45 @@ internal sealed class ExtensionLoader : IAsyncDisposable
 
     private static string[]? TryGetStringArrayProperty(JsonElement root, string propertyName)
     {
-        if (!TryGetPropertyCaseInsensitive(root, propertyName, out var value)
-            || value.ValueKind != JsonValueKind.Array)
+        if (!TryGetPropertyCaseInsensitive(root, propertyName, out var value))
         {
             return null;
         }
 
-        var items = value.EnumerateArray()
-            .Where(static item => item.ValueKind == JsonValueKind.String)
-            .Select(static item => item.GetString())
-            .Where(static item => !string.IsNullOrWhiteSpace(item))
-            .Select(static item => item!.Trim())
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
+        string[] items;
+        if (value.ValueKind == JsonValueKind.Array)
+        {
+            items = value.EnumerateArray()
+                .Where(static item => item.ValueKind == JsonValueKind.String)
+                .Select(static item => item.GetString())
+                .Where(static item => !string.IsNullOrWhiteSpace(item))
+                .Select(static item => item!.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+        }
+        else if (value.ValueKind == JsonValueKind.String)
+        {
+            var rawValue = value.GetString();
+            if (string.IsNullOrWhiteSpace(rawValue))
+            {
+                return null;
+            }
+
+            var separators = rawValue.IndexOf(',') >= 0 || rawValue.IndexOf(';') >= 0
+                ? new[] { ',', ';' }
+                : null;
+            items = (separators is null
+                    ? [rawValue]
+                    : rawValue.Split(separators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                .Where(static item => !string.IsNullOrWhiteSpace(item))
+                .Select(static item => item.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+        }
+        else
+        {
+            return null;
+        }
 
         return items.Length == 0
             ? null

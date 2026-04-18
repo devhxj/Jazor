@@ -60,6 +60,8 @@ internal sealed class JazorBuildConfig
 
     public int? ChunkSizeWarningLimit { get; init; }
 
+    public bool? Incremental { get; init; }
+
     public BuildOptions ToBuildOptions(string rootDirectory)
     {
         return new BuildOptions
@@ -72,7 +74,8 @@ internal sealed class JazorBuildConfig
             CodeSplitting = CodeSplitting ?? true,
             AssetsDir = AssetsDir ?? "assets",
             AssetHashLength = AssetHashLength ?? 8,
-            ChunkSizeWarningLimit = ChunkSizeWarningLimit ?? 500_000
+            ChunkSizeWarningLimit = ChunkSizeWarningLimit ?? 500_000,
+            Incremental = Incremental ?? false
         };
     }
 

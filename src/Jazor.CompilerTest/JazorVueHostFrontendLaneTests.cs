@@ -138,6 +138,50 @@ public sealed class JazorVueHostFrontendLaneTests
     }
 
     [TestMethod]
+    public async Task JazorVueHost_DenoFrontendHost_TemplateCompletion_WhenWorkerCrashes_RetriesWithinSameRequestAndRecovers()
+    {
+        var workerProcess = new FakeDenoWorkerProcess();
+        workerProcess.SetResult(
+            "template/completion",
+            new[]
+            {
+                new LspCompletionItem
+                {
+                    Label = "RecoveredTemplateItem",
+                    Kind = 7,
+                    Detail = "Recovered after worker restart."
+                }
+            });
+        workerProcess.SetFailure("template/completion", new InvalidOperationException("simulated worker crash"));
+
+        var host = new DenoVolarHost(
+            new DenoVolarHostOptions
+            {
+                Enabled = true,
+                IgnoreStartupFailure = false
+            },
+            workerProcess);
+
+        var items = await host.GetTemplateCompletionItemsAsync(
+            new DocumentSnapshot(
+                @"D:\temp\App.vue",
+                DocumentKind.Vue,
+                "<template><App",
+                "1"),
+            new LspPosition { Line = 0, Character = 13 },
+            context: null,
+            CancellationToken.None);
+
+        Assert.AreEqual(2, workerProcess.StartCallCount);
+        Assert.AreEqual(1, workerProcess.StopCallCount);
+        Assert.AreEqual(1, items.Count);
+        Assert.AreEqual("RecoveredTemplateItem", items[0].Label);
+        CollectionAssert.AreEqual(
+            new[] { "template/completion", "template/completion" },
+            workerProcess.RequestMethods);
+    }
+
+    [TestMethod]
     public async Task DenoFrontendModuleCompiler_CompileSfcAsync_PropagatesWorkerSourceMap()
     {
         var compiler = new DenoFrontendModuleCompiler(
@@ -969,6 +1013,7 @@ public sealed class JazorVueHostFrontendLaneTests
     }
 
     [TestMethod]
+    [DoNotParallelize]
     public async Task JazorVueHost_FrontendLaneService_RecordsDenoFailureSnapshot_WhenCompletionThrows()
     {
         VolarLaneService.ResetDenoFailureSnapshotsForTests();
@@ -1000,6 +1045,7 @@ public sealed class JazorVueHostFrontendLaneTests
     }
 
     [TestMethod]
+    [DoNotParallelize]
     public async Task JazorVueHost_FrontendLaneService_Cancellation_DoesNotRecordDenoFailureSnapshot()
     {
         VolarLaneService.ResetDenoFailureSnapshotsForTests();

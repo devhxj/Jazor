@@ -26,6 +26,7 @@ public sealed class JazorVueHostBuildTests
         Assert.AreEqual("assets", options.AssetsDir);
         Assert.AreEqual(8, options.AssetHashLength);
         Assert.AreEqual(0, options.ResolveAliases.Count);
+        Assert.IsFalse(options.Incremental);
         Assert.IsTrue(options.GenerateSourceMap);
     }
 
@@ -68,6 +69,7 @@ public sealed class JazorVueHostBuildTests
         Assert.AreEqual("assets", options.AssetsDir);
         Assert.AreEqual(8, options.AssetHashLength);
         Assert.AreEqual(500_000, options.ChunkSizeWarningLimit);
+        Assert.IsFalse(options.Incremental);
     }
 
     [TestMethod]
@@ -82,7 +84,8 @@ public sealed class JazorVueHostBuildTests
             CodeSplitting = false,
             AssetsDir = "static",
             AssetHashLength = 12,
-            ChunkSizeWarningLimit = 100_000
+            ChunkSizeWarningLimit = 100_000,
+            Incremental = true
         };
 
         var options = config.ToBuildOptions("/app");
@@ -96,6 +99,7 @@ public sealed class JazorVueHostBuildTests
         Assert.AreEqual("static", options.AssetsDir);
         Assert.AreEqual(12, options.AssetHashLength);
         Assert.AreEqual(100_000, options.ChunkSizeWarningLimit);
+        Assert.IsTrue(options.Incremental);
     }
 
     [TestMethod]
@@ -138,7 +142,8 @@ public sealed class JazorVueHostBuildTests
             {
                 OutDir = "site",
                 SourceMap = "inline",
-                Minify = false
+                Minify = false,
+                Incremental = true
             }
         };
 
@@ -148,6 +153,7 @@ public sealed class JazorVueHostBuildTests
         Assert.AreEqual("site", options.OutDir);
         Assert.AreEqual(SourceMapOption.Inline, options.SourceMap);
         Assert.IsFalse(options.Minify);
+        Assert.IsTrue(options.Incremental);
         Assert.AreEqual(1, options.ResolveAliases.Count);
         Assert.AreEqual("/src", options.ResolveAliases["@"]);
     }
@@ -166,7 +172,8 @@ public sealed class JazorVueHostBuildTests
                 CodeSplitting = true,
                 AssetsDir = "assets",
                 AssetHashLength = 8,
-                ChunkSizeWarningLimit = 500_000
+                ChunkSizeWarningLimit = 500_000,
+                Incremental = false
             }
         };
 
@@ -179,7 +186,8 @@ public sealed class JazorVueHostBuildTests
                 "--code-splitting=false",
                 "--assets-dir=static",
                 "--asset-hash-length=12",
-                "--chunk-size-warning-limit=100000"
+                "--chunk-size-warning-limit=100000",
+                "--incremental=true"
             ],
             "/project",
             config);
@@ -192,6 +200,7 @@ public sealed class JazorVueHostBuildTests
         Assert.AreEqual("static", options.AssetsDir);
         Assert.AreEqual(12, options.AssetHashLength);
         Assert.AreEqual(100_000, options.ChunkSizeWarningLimit);
+        Assert.IsTrue(options.Incremental);
     }
 
     [TestMethod]
@@ -1058,6 +1067,116 @@ public sealed class JazorVueHostBuildTests
             var distIndexHtmlPath = Path.Combine(tempDir, "dist", "index.html");
             var html = await File.ReadAllTextAsync(distIndexHtmlPath);
             StringAssert.Contains(html, $"href=\"{GetHtmlRelativePath(tempDir, "dist", entryCss.Asset.FilePath)}\"");
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task BuildOrchestrator_BuildAsync_WithIncrementalEnabled_ReusesPreviousOutputsWhenInputsUnchanged()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "index.html"),
+                """
+                <html>
+                <body>
+                  <script type="module" src="/main.js"></script>
+                </body>
+                </html>
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "main.js"),
+                """console.log("incremental-cache-hit");""");
+
+            var orchestrator = new BuildOrchestrator();
+            var options = new BuildOptions
+            {
+                RootDirectory = tempDir,
+                OutDir = "dist",
+                SourceMap = SourceMapOption.External,
+                Minify = false,
+                CodeSplitting = false,
+                Incremental = true
+            };
+
+            var first = await orchestrator.BuildAsync(options, CancellationToken.None);
+            Assert.IsTrue(first.Success, string.Join(Environment.NewLine, first.Diagnostics.Select(static diagnostic => diagnostic.Message)));
+            var entryChunk = first.Chunks.Single(static chunk => chunk.IsEntry);
+            var entryChunkPath = Path.Combine(tempDir, entryChunk.FilePath.Replace('/', Path.DirectorySeparatorChar));
+            var firstChunkWriteTime = File.GetLastWriteTimeUtc(entryChunkPath);
+
+            await Task.Delay(TimeSpan.FromMilliseconds(1200));
+
+            var second = await orchestrator.BuildAsync(options, CancellationToken.None);
+            Assert.IsTrue(second.Success, string.Join(Environment.NewLine, second.Diagnostics.Select(static diagnostic => diagnostic.Message)));
+            CollectionAssert.Contains(
+                second.Diagnostics.Select(static diagnostic => diagnostic.Message).ToArray(),
+                "Incremental build cache hit.");
+            Assert.AreEqual(entryChunk.FilePath, second.Chunks.Single(static chunk => chunk.IsEntry).FilePath);
+            Assert.AreEqual(firstChunkWriteTime, File.GetLastWriteTimeUtc(entryChunkPath));
+            Assert.IsTrue(File.Exists(Path.Combine(tempDir, "dist", "jazor-build-state.json")));
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task BuildOrchestrator_BuildAsync_WithIncrementalEnabled_RebuildsWhenInputsChange()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "index.html"),
+                """
+                <html>
+                <body>
+                  <script type="module" src="/main.js"></script>
+                </body>
+                </html>
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "main.js"),
+                """console.log("incremental-before");""");
+
+            var orchestrator = new BuildOrchestrator();
+            var options = new BuildOptions
+            {
+                RootDirectory = tempDir,
+                OutDir = "dist",
+                SourceMap = SourceMapOption.External,
+                Minify = false,
+                CodeSplitting = false,
+                Incremental = true
+            };
+
+            var first = await orchestrator.BuildAsync(options, CancellationToken.None);
+            Assert.IsTrue(first.Success, string.Join(Environment.NewLine, first.Diagnostics.Select(static diagnostic => diagnostic.Message)));
+            var firstEntryChunk = first.Chunks.Single(static chunk => chunk.IsEntry);
+
+            await Task.Delay(TimeSpan.FromMilliseconds(1200));
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "main.js"),
+                """console.log("incremental-after-change");""");
+
+            var second = await orchestrator.BuildAsync(options, CancellationToken.None);
+            Assert.IsTrue(second.Success, string.Join(Environment.NewLine, second.Diagnostics.Select(static diagnostic => diagnostic.Message)));
+            CollectionAssert.DoesNotContain(
+                second.Diagnostics.Select(static diagnostic => diagnostic.Message).ToArray(),
+                "Incremental build cache hit.");
+
+            var secondEntryChunk = second.Chunks.Single(static chunk => chunk.IsEntry);
+            Assert.AreNotEqual(firstEntryChunk.FilePath, secondEntryChunk.FilePath);
+            var secondChunkPath = Path.Combine(tempDir, secondEntryChunk.FilePath.Replace('/', Path.DirectorySeparatorChar));
+            var secondChunkContent = await File.ReadAllTextAsync(secondChunkPath);
+            StringAssert.Contains(secondChunkContent, "incremental-after-change");
         }
         finally
         {

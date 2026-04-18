@@ -152,11 +152,47 @@ internal sealed class ExtensionWorkerClient : IAsyncDisposable
                 Id: requestId,
                 Method: method,
                 Params: parameters);
-            await _writer.WriteMessageAsync(
-                LspJsonSerializer.Serialize(request),
-                CancellationToken.None);
+            ExtensionWorkerResponseEnvelope response;
+            try
+            {
+                await _writer.WriteMessageAsync(
+                    LspJsonSerializer.Serialize(request),
+                    CancellationToken.None);
 
-            var response = await ReadResponseAsync(requestId, cancellationToken);
+                response = await ReadResponseAsync(requestId, cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                await TerminateWorkerAsync();
+                throw;
+            }
+            catch (ExtensionWorkerConnectionException)
+            {
+                throw;
+            }
+            catch (ObjectDisposedException exception)
+            {
+                await TerminateWorkerAsync();
+                throw new ExtensionWorkerConnectionException(
+                    $"extension worker connection was disposed while invoking '{method}': {exception.Message}",
+                    exception);
+            }
+            catch (IOException exception)
+            {
+                await TerminateWorkerAsync();
+                throw new ExtensionWorkerConnectionException(
+                    $"failed to communicate with extension worker while invoking '{method}': {exception.Message}",
+                    exception);
+            }
+            catch (InvalidOperationException exception) when (_process.HasExited)
+            {
+                await TerminateWorkerAsync();
+                ThrowIfProcessExited();
+                throw new ExtensionWorkerConnectionException(
+                    $"extension worker process exited while invoking '{method}': {exception.Message}",
+                    exception);
+            }
+
             if (response.Error is not null)
             {
                 throw new InvalidOperationException(
@@ -183,7 +219,7 @@ internal sealed class ExtensionWorkerClient : IAsyncDisposable
         catch (Exception exception)
         {
             await TerminateWorkerAsync();
-            throw new InvalidOperationException(
+            throw new ExtensionWorkerConnectionException(
                 $"failed to read extension worker response: {exception.Message}",
                 exception);
         }
@@ -198,20 +234,27 @@ internal sealed class ExtensionWorkerClient : IAsyncDisposable
             await TerminateWorkerAsync();
             throw;
         }
+        catch (Exception exception)
+        {
+            await TerminateWorkerAsync();
+            throw new ExtensionWorkerConnectionException(
+                $"failed to receive extension worker response: {exception.Message}",
+                exception);
+        }
 
         if (responseJson is null)
         {
             await TerminateWorkerAsync();
             ThrowIfProcessExited();
-            throw new InvalidOperationException("extension worker connection closed unexpectedly.");
+            throw new ExtensionWorkerConnectionException("extension worker connection closed unexpectedly.");
         }
 
         var response = LspJsonSerializer.Deserialize<ExtensionWorkerResponseEnvelope>(responseJson)
-            ?? throw new InvalidOperationException("extension worker response payload is invalid.");
+            ?? throw new ExtensionWorkerConnectionException("extension worker response payload is invalid.");
         if (response.Id != expectedRequestId)
         {
             await TerminateWorkerAsync();
-            throw new InvalidOperationException(
+            throw new ExtensionWorkerConnectionException(
                 $"extension worker response id mismatch: expected {expectedRequestId}, actual {response.Id}.");
         }
 
@@ -513,7 +556,7 @@ internal sealed class ExtensionWorkerClient : IAsyncDisposable
             message.Append(stderr.Trim());
         }
 
-        throw new InvalidOperationException(message.ToString());
+        throw new ExtensionWorkerConnectionException(message.ToString());
     }
 
     private string GetCapturedStderr()
@@ -522,5 +565,18 @@ internal sealed class ExtensionWorkerClient : IAsyncDisposable
         {
             return _stderrBuffer.ToString();
         }
+    }
+}
+
+internal sealed class ExtensionWorkerConnectionException : InvalidOperationException
+{
+    public ExtensionWorkerConnectionException(string message)
+        : base(message)
+    {
+    }
+
+    public ExtensionWorkerConnectionException(string message, Exception innerException)
+        : base(message, innerException)
+    {
     }
 }

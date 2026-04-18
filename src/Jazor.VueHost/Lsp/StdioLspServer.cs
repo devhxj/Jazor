@@ -90,7 +90,21 @@ internal sealed class StdioLspServer
             {
                 if (message.Id is null)
                 {
-                    var shouldContinue = await _session.HandleNotificationAsync(message, cancellationToken);
+                    bool shouldContinue;
+                    try
+                    {
+                        shouldContinue = await _session.HandleNotificationAsync(message, cancellationToken);
+                    }
+                    catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                    {
+                        throw;
+                    }
+                    catch
+                    {
+                        // Ignore malformed notification payloads to keep the server loop alive.
+                        continue;
+                    }
+
                     if (!shouldContinue)
                     {
                         return;
@@ -139,6 +153,18 @@ internal sealed class StdioLspServer
         catch (OperationCanceledException) when (requestCancellationSource.IsCancellationRequested)
         {
             response = CreateCancelledResponse(request.Id);
+        }
+        catch (LspRequestException ex)
+        {
+            response = new LspResponseMessage
+            {
+                Id = request.Id,
+                Error = new LspResponseError
+                {
+                    Code = ex.ErrorCode,
+                    Message = ex.Message
+                }
+            };
         }
         catch (Exception ex)
         {

@@ -8,7 +8,16 @@ namespace Jazor.VueHost.DevServer;
 
 internal sealed class DevServerReloadHub : IAsyncDisposable
 {
+    private static readonly TimeSpan DefaultSendTimeout = TimeSpan.FromSeconds(2);
     private readonly ConcurrentDictionary<WebSocket, HmrClientState> _sockets = new();
+    private readonly TimeSpan _sendTimeout;
+
+    public DevServerReloadHub(TimeSpan? sendTimeout = null)
+    {
+        _sendTimeout = sendTimeout is { } timeout && timeout > TimeSpan.Zero
+            ? timeout
+            : DefaultSendTimeout;
+    }
 
     public int ConnectedClientCount => _sockets.Count;
 
@@ -21,8 +30,9 @@ internal sealed class DevServerReloadHub : IAsyncDisposable
 
         try
         {
-            await SendAsync(
+            await SendWithClientStateAsync(
                 socket,
+                state,
                 new DevServerNotificationEnvelope
                 {
                     Type = "connected",
@@ -49,7 +59,7 @@ internal sealed class DevServerReloadHub : IAsyncDisposable
         }
         finally
         {
-            _sockets.TryRemove(socket, out _);
+            RemoveSocket(socket);
             await CloseAndDisposeAsync(socket, CancellationToken.None);
         }
     }
@@ -106,22 +116,65 @@ internal sealed class DevServerReloadHub : IAsyncDisposable
 
     private async Task BroadcastAsync(object payload, CancellationToken cancellationToken)
     {
-        foreach (var socket in _sockets.Keys)
+        var broadcastTasks = new List<Task>(_sockets.Count);
+        foreach (var entry in _sockets.ToArray())
         {
+            var socket = entry.Key;
+            var state = entry.Value;
             if (socket.State != WebSocketState.Open)
             {
-                _sockets.TryRemove(socket, out _);
+                RemoveSocket(socket);
                 continue;
             }
 
-            try
-            {
-                await SendAsync(socket, payload, cancellationToken);
-            }
-            catch
-            {
-                _sockets.TryRemove(socket, out _);
-            }
+            broadcastTasks.Add(SendToClientAsync(socket, state, payload, cancellationToken));
+        }
+
+        if (broadcastTasks.Count == 0)
+        {
+            return;
+        }
+
+        await Task.WhenAll(broadcastTasks);
+    }
+
+    private async Task SendToClientAsync(
+        WebSocket socket,
+        HmrClientState state,
+        object payload,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await SendWithClientStateAsync(socket, state, payload, cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch
+        {
+            RemoveSocket(socket);
+            await CloseAndDisposeAsync(socket, CancellationToken.None);
+        }
+    }
+
+    private async Task SendWithClientStateAsync(
+        WebSocket socket,
+        HmrClientState state,
+        object payload,
+        CancellationToken cancellationToken)
+    {
+        using var sendTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        sendTokenSource.CancelAfter(_sendTimeout);
+        await state.SendGate.WaitAsync(sendTokenSource.Token);
+        try
+        {
+            await SendAsync(socket, payload, sendTokenSource.Token);
+        }
+        finally
+        {
+            state.SendGate.Release();
         }
     }
 
@@ -200,10 +253,18 @@ internal sealed class DevServerReloadHub : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        foreach (var socket in _sockets.Keys)
+        foreach (var entry in _sockets.ToArray())
         {
-            _sockets.TryRemove(socket, out _);
-            await CloseAndDisposeAsync(socket, CancellationToken.None);
+            RemoveSocket(entry.Key);
+            await CloseAndDisposeAsync(entry.Key, CancellationToken.None);
+        }
+    }
+
+    private void RemoveSocket(WebSocket socket)
+    {
+        if (_sockets.TryRemove(socket, out var state))
+        {
+            state.Dispose();
         }
     }
 
@@ -265,13 +326,18 @@ internal sealed class DevServerClientMessage
     public string? Type { get; init; }
 }
 
-internal sealed class HmrClientState(string clientId)
+internal sealed class HmrClientState(string clientId) : IDisposable
 {
     public string ClientId { get; } = clientId;
 
     public bool IsReady { get; set; }
 
     public DateTimeOffset LastSeenUtc { get; set; } = DateTimeOffset.UtcNow;
+
+    public SemaphoreSlim SendGate { get; } = new(1, 1);
+
+    public void Dispose()
+        => SendGate.Dispose();
 }
 
 internal readonly record struct HmrReceivedMessage(

@@ -17,18 +17,24 @@ internal sealed class OutOfProcessExtensionProxy :
     ILspReferenceProvider,
     ILspRenameProvider
 {
-    private readonly ExtensionWorkerClient _workerClient;
+    private readonly ExtensionWorkerBootstrapRequest _bootstrapRequest;
     private readonly IReadOnlyDictionary<string, ExtensionWorkerProviderDescriptor> _providerByCapability;
     private readonly IReadOnlySet<string> _providedCapabilities;
+    private readonly SemaphoreSlim _workerRestartGate = new(1, 1);
+    private readonly Lock _workerGate = new();
+
+    private ExtensionWorkerClient? _workerClient;
     private int _deactivateInvoked;
 
     private OutOfProcessExtensionProxy(
         ExtensionWorkerClient workerClient,
         ExtensionMetadata metadata,
+        ExtensionWorkerBootstrapRequest bootstrapRequest,
         IReadOnlyList<ExtensionWorkerProviderDescriptor> providers)
     {
         _workerClient = workerClient ?? throw new ArgumentNullException(nameof(workerClient));
         Metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
+        _bootstrapRequest = bootstrapRequest ?? throw new ArgumentNullException(nameof(bootstrapRequest));
 
         var providerByCapability = new Dictionary<string, ExtensionWorkerProviderDescriptor>(StringComparer.OrdinalIgnoreCase);
         foreach (var provider in providers)
@@ -127,28 +133,21 @@ internal sealed class OutOfProcessExtensionProxy :
         IReadOnlyDictionary<string, string>? settings,
         CancellationToken cancellationToken)
     {
-        var workerClient = await ExtensionWorkerClient.StartAsync(cancellationToken);
-        try
-        {
-            var bootstrap = await workerClient.BootstrapAsync(
-                new ExtensionWorkerBootstrapRequest(
-                    RootDirectory: rootDirectory,
-                    ExtensionDirectory: extensionDirectory,
-                    AssemblyPath: assemblyPath,
-                    ExtensionTypeName: extensionTypeName,
-                    Settings: settings,
-                    SandboxProfile: sandboxProfile),
-                cancellationToken);
-            return new OutOfProcessExtensionProxy(
-                workerClient,
-                bootstrap.Metadata,
-                bootstrap.Providers);
-        }
-        catch
-        {
-            await workerClient.DisposeAsync();
-            throw;
-        }
+        var bootstrapRequest = new ExtensionWorkerBootstrapRequest(
+            RootDirectory: rootDirectory,
+            ExtensionDirectory: extensionDirectory,
+            AssemblyPath: assemblyPath,
+            ExtensionTypeName: extensionTypeName,
+            Settings: settings,
+            SandboxProfile: sandboxProfile);
+        var (workerClient, bootstrap) = await CreateBootstrappedWorkerAsync(
+            bootstrapRequest,
+            cancellationToken);
+        return new OutOfProcessExtensionProxy(
+            workerClient,
+            bootstrap.Metadata,
+            bootstrapRequest,
+            bootstrap.Providers);
     }
 
     ValueTask IExtension.InitializeAsync(ExtensionContext context, CancellationToken cancellationToken)
@@ -164,13 +163,25 @@ internal sealed class OutOfProcessExtensionProxy :
             return;
         }
 
+        ExtensionWorkerClient? workerClient;
+        lock (_workerGate)
+        {
+            workerClient = _workerClient;
+            _workerClient = null;
+        }
+
+        if (workerClient is null)
+        {
+            return;
+        }
+
         try
         {
-            await _workerClient.ShutdownAsync();
+            await workerClient.ShutdownAsync();
         }
         finally
         {
-            await _workerClient.DisposeAsync();
+            await workerClient.DisposeAsync();
         }
     }
 
@@ -284,13 +295,123 @@ internal sealed class OutOfProcessExtensionProxy :
             return defaultValue;
         }
 
-        var invoked = await _workerClient.InvokeAsync<TResult>(
+        var invoked = await InvokeWithRecoveryAsync<TResult>(
             capability,
             context,
             cancellationToken);
         return invoked is null
             ? defaultValue
             : invoked;
+    }
+
+    private async ValueTask<TResult?> InvokeWithRecoveryAsync<TResult>(
+        string capability,
+        object context,
+        CancellationToken cancellationToken)
+    {
+        var workerClient = GetWorkerClient();
+        try
+        {
+            return await workerClient.InvokeAsync<TResult>(
+                capability,
+                context,
+                cancellationToken);
+        }
+        catch (ExtensionWorkerConnectionException)
+            when (Volatile.Read(ref _deactivateInvoked) == 0)
+        {
+            var replacement = await RestartWorkerAsync(workerClient, cancellationToken);
+            return await replacement.InvokeAsync<TResult>(
+                capability,
+                context,
+                cancellationToken);
+        }
+    }
+
+    private async ValueTask<ExtensionWorkerClient> RestartWorkerAsync(
+        ExtensionWorkerClient failedWorker,
+        CancellationToken cancellationToken)
+    {
+        await _workerRestartGate.WaitAsync(cancellationToken);
+        try
+        {
+            if (Volatile.Read(ref _deactivateInvoked) != 0)
+            {
+                throw new ObjectDisposedException(nameof(OutOfProcessExtensionProxy));
+            }
+
+            var currentWorker = GetWorkerClient();
+            if (!ReferenceEquals(currentWorker, failedWorker))
+            {
+                return currentWorker;
+            }
+
+            var (replacementWorker, _) = await CreateBootstrappedWorkerAsync(
+                _bootstrapRequest,
+                cancellationToken);
+            var replacementAdopted = false;
+            lock (_workerGate)
+            {
+                if (_workerClient is not null
+                    && ReferenceEquals(_workerClient, failedWorker)
+                    && Volatile.Read(ref _deactivateInvoked) == 0)
+                {
+                    _workerClient = replacementWorker;
+                    replacementAdopted = true;
+                }
+            }
+
+            if (replacementAdopted)
+            {
+                await DisposeWorkerSilentlyAsync(failedWorker);
+                return replacementWorker;
+            }
+
+            await DisposeWorkerSilentlyAsync(replacementWorker);
+            return GetWorkerClient();
+        }
+        finally
+        {
+            _workerRestartGate.Release();
+        }
+    }
+
+    private ExtensionWorkerClient GetWorkerClient()
+    {
+        lock (_workerGate)
+        {
+            return _workerClient
+                ?? throw new ObjectDisposedException(nameof(OutOfProcessExtensionProxy));
+        }
+    }
+
+    private static async ValueTask<(ExtensionWorkerClient WorkerClient, ExtensionWorkerBootstrapResponse Bootstrap)> CreateBootstrappedWorkerAsync(
+        ExtensionWorkerBootstrapRequest bootstrapRequest,
+        CancellationToken cancellationToken)
+    {
+        var workerClient = await ExtensionWorkerClient.StartAsync(cancellationToken);
+        try
+        {
+            var bootstrap = await workerClient.BootstrapAsync(bootstrapRequest, cancellationToken);
+            return (workerClient, bootstrap);
+        }
+        catch
+        {
+            await DisposeWorkerSilentlyAsync(workerClient);
+            throw;
+        }
+    }
+
+    private static async ValueTask DisposeWorkerSilentlyAsync(ExtensionWorkerClient workerClient)
+    {
+        try
+        {
+            await workerClient.DisposeAsync();
+        }
+        catch
+        {
+            // Ignore disposal failures while recovering from worker crashes.
+        }
     }
 
     private string GetProviderName(string capability, string fallback)

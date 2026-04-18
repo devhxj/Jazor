@@ -14,6 +14,8 @@ namespace Jazor.VueHost.Lsp;
 
 internal sealed class LspSession
 {
+    private const int InvalidParamsErrorCode = -32602;
+
     private readonly IVueHostWorkspaceStore _workspaceStore;
     private readonly IReadOnlyDictionary<LaneKind, ILspLane> _lanes;
     private readonly ILspLaneRouter _laneRouter;
@@ -231,7 +233,9 @@ internal sealed class LspSession
         CancellationToken cancellationToken)
     {
         var parameters = DeserializeParams<LspHoverParams>(request.Params);
-        var document = await GetRequiredDocumentAsync(parameters.TextDocument.Uri, cancellationToken);
+        var document = await GetRequiredDocumentAsync(
+            GetRequiredTextDocumentUri(parameters.TextDocument),
+            cancellationToken);
         var projectionTarget = await _projectionResolver.ResolveAsync(document, parameters.Position, cancellationToken);
         return CreateSuccessResponse(
             request.Id,
@@ -243,7 +247,9 @@ internal sealed class LspSession
         CancellationToken cancellationToken)
     {
         var parameters = DeserializeParams<LspCompletionParams>(request.Params);
-        var document = await GetRequiredDocumentAsync(parameters.TextDocument.Uri, cancellationToken);
+        var document = await GetRequiredDocumentAsync(
+            GetRequiredTextDocumentUri(parameters.TextDocument),
+            cancellationToken);
         var projectionTarget = await _projectionResolver.ResolveAsync(document, parameters.Position, cancellationToken);
         return CreateSuccessResponse(
             request.Id,
@@ -255,7 +261,9 @@ internal sealed class LspSession
         CancellationToken cancellationToken)
     {
         var parameters = DeserializeParams<LspDocumentSymbolParams>(request.Params);
-        var document = await GetRequiredDocumentAsync(parameters.TextDocument.Uri, cancellationToken);
+        var document = await GetRequiredDocumentAsync(
+            GetRequiredTextDocumentUri(parameters.TextDocument),
+            cancellationToken);
         return CreateSuccessResponse(
             request.Id,
             await CollectDocumentSymbolsAsync(document, cancellationToken));
@@ -266,7 +274,9 @@ internal sealed class LspSession
         CancellationToken cancellationToken)
     {
         var parameters = DeserializeParams<LspSemanticTokensParams>(request.Params);
-        var document = await GetRequiredDocumentAsync(parameters.TextDocument.Uri, cancellationToken);
+        var document = await GetRequiredDocumentAsync(
+            GetRequiredTextDocumentUri(parameters.TextDocument),
+            cancellationToken);
         var tokens = new List<LspSemanticToken>();
 
         foreach (var lane in GetSemanticTokenLanes(document))
@@ -286,7 +296,9 @@ internal sealed class LspSession
         CancellationToken cancellationToken)
     {
         var parameters = DeserializeParams<LspDefinitionParams>(request.Params);
-        var document = await GetRequiredDocumentAsync(parameters.TextDocument.Uri, cancellationToken);
+        var document = await GetRequiredDocumentAsync(
+            GetRequiredTextDocumentUri(parameters.TextDocument),
+            cancellationToken);
         var projectionTarget = await _projectionResolver.ResolveAsync(document, parameters.Position, cancellationToken);
         var locations = new List<LspLocation>();
 
@@ -315,7 +327,9 @@ internal sealed class LspSession
         CancellationToken cancellationToken)
     {
         var parameters = DeserializeParams<LspSignatureHelpParams>(request.Params);
-        var document = await GetRequiredDocumentAsync(parameters.TextDocument.Uri, cancellationToken);
+        var document = await GetRequiredDocumentAsync(
+            GetRequiredTextDocumentUri(parameters.TextDocument),
+            cancellationToken);
         var projectionTarget = await _projectionResolver.ResolveAsync(document, parameters.Position, cancellationToken);
         return CreateSuccessResponse(
             request.Id,
@@ -331,7 +345,9 @@ internal sealed class LspSession
         CancellationToken cancellationToken)
     {
         var parameters = DeserializeParams<LspInlayHintParams>(request.Params);
-        var document = await GetRequiredDocumentAsync(parameters.TextDocument.Uri, cancellationToken);
+        var document = await GetRequiredDocumentAsync(
+            GetRequiredTextDocumentUri(parameters.TextDocument),
+            cancellationToken);
         return CreateSuccessResponse(
             request.Id,
             await CollectInlayHintsAsync(document, parameters.Range, cancellationToken));
@@ -342,6 +358,11 @@ internal sealed class LspSession
         CancellationToken cancellationToken)
     {
         var parameters = DeserializeParams<LspWorkspaceSymbolParams>(request.Params);
+        if (parameters.Query is null)
+        {
+            throw CreateInvalidParamsException("workspace/symbol query is required.");
+        }
+
         return CreateSuccessResponse(
             request.Id,
             await CollectWorkspaceSymbolsAsync(parameters.Query, cancellationToken));
@@ -352,7 +373,9 @@ internal sealed class LspSession
         CancellationToken cancellationToken)
     {
         var parameters = DeserializeParams<LspFoldingRangeParams>(request.Params);
-        var document = await GetRequiredDocumentAsync(parameters.TextDocument.Uri, cancellationToken);
+        var document = await GetRequiredDocumentAsync(
+            GetRequiredTextDocumentUri(parameters.TextDocument),
+            cancellationToken);
         return CreateSuccessResponse(
             request.Id,
             await CollectFoldingRangesAsync(document, cancellationToken));
@@ -363,7 +386,9 @@ internal sealed class LspSession
         CancellationToken cancellationToken)
     {
         var parameters = DeserializeParams<LspReferenceParams>(request.Params);
-        var document = await GetRequiredDocumentAsync(parameters.TextDocument.Uri, cancellationToken);
+        var document = await GetRequiredDocumentAsync(
+            GetRequiredTextDocumentUri(parameters.TextDocument),
+            cancellationToken);
         var projectionTarget = await _projectionResolver.ResolveAsync(document, parameters.Position, cancellationToken);
         return CreateSuccessResponse(
             request.Id,
@@ -380,7 +405,14 @@ internal sealed class LspSession
         CancellationToken cancellationToken)
     {
         var parameters = DeserializeParams<LspRenameParams>(request.Params);
-        var document = await GetRequiredDocumentAsync(parameters.TextDocument.Uri, cancellationToken);
+        if (string.IsNullOrWhiteSpace(parameters.NewName))
+        {
+            throw CreateInvalidParamsException("textDocument/rename newName is required.");
+        }
+
+        var document = await GetRequiredDocumentAsync(
+            GetRequiredTextDocumentUri(parameters.TextDocument),
+            cancellationToken);
         var projectionTarget = await _projectionResolver.ResolveAsync(document, parameters.Position, cancellationToken);
 
         return CreateSuccessResponse(
@@ -398,7 +430,9 @@ internal sealed class LspSession
         CancellationToken cancellationToken)
     {
         var parameters = DeserializeParams<LspPrepareRenameParams>(request.Params);
-        var document = await GetRequiredDocumentAsync(parameters.TextDocument.Uri, cancellationToken);
+        var document = await GetRequiredDocumentAsync(
+            GetRequiredTextDocumentUri(parameters.TextDocument),
+            cancellationToken);
         var projectionTarget = await _projectionResolver.ResolveAsync(document, parameters.Position, cancellationToken);
 
         // Try each lane to see if the position is renamable
@@ -469,7 +503,9 @@ internal sealed class LspSession
         CancellationToken cancellationToken)
     {
         var parameters = DeserializeParams<LspCodeActionParams>(request.Params);
-        var document = await GetRequiredDocumentAsync(parameters.TextDocument.Uri, cancellationToken);
+        var document = await GetRequiredDocumentAsync(
+            GetRequiredTextDocumentUri(parameters.TextDocument),
+            cancellationToken);
         var projectionTarget = await _projectionResolver.ResolveAsync(document, parameters.Range.Start, cancellationToken);
 
         return CreateSuccessResponse(
@@ -487,12 +523,14 @@ internal sealed class LspSession
         CancellationToken cancellationToken)
     {
         var parameters = DeserializeParams<LspDidOpenTextDocumentParams>(notification.Params);
-        var documentPath = LspProtocolHelpers.ToDocumentPath(parameters.TextDocument.Uri);
+        var textDocument = parameters.TextDocument
+            ?? throw CreateInvalidParamsException("textDocument/didOpen textDocument is required.");
+        var documentPath = LspProtocolHelpers.ToDocumentPath(GetRequiredTextDocumentUri(textDocument));
         var document = new DocumentSnapshot(
             documentPath,
-            MapDocumentKind(parameters.TextDocument.LanguageId, documentPath),
-            parameters.TextDocument.Text,
-            parameters.TextDocument.Version?.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            MapDocumentKind(textDocument.LanguageId, documentPath),
+            textDocument.Text,
+            textDocument.Version?.ToString(System.Globalization.CultureInfo.InvariantCulture));
         await _workspaceStore.UpsertDocumentAsync(document, cancellationToken);
         VueHostWorkspaceResolver.InvalidatePath(documentPath);
         await UpdateProjectionStateAsync(document, cancellationToken);
@@ -505,13 +543,20 @@ internal sealed class LspSession
         CancellationToken cancellationToken)
     {
         var parameters = DeserializeParams<LspDidChangeTextDocumentParams>(notification.Params);
-        var documentPath = LspProtocolHelpers.ToDocumentPath(parameters.TextDocument.Uri);
+        var textDocument = parameters.TextDocument
+            ?? throw CreateInvalidParamsException("textDocument/didChange textDocument is required.");
+        if (parameters.ContentChanges is null || parameters.ContentChanges.Length == 0)
+        {
+            throw CreateInvalidParamsException("textDocument/didChange contentChanges is required.");
+        }
+
+        var documentPath = LspProtocolHelpers.ToDocumentPath(GetRequiredTextDocumentUri(textDocument));
         var existing = await _workspaceStore.GetDocumentAsync(documentPath, cancellationToken);
         var document = new DocumentSnapshot(
             documentPath,
             existing?.DocumentKind ?? MapDocumentKind(languageId: null, documentPath),
             parameters.ContentChanges.LastOrDefault()?.Text ?? string.Empty,
-            parameters.TextDocument.Version?.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            textDocument.Version?.ToString(System.Globalization.CultureInfo.InvariantCulture));
         await _workspaceStore.UpsertDocumentAsync(document, cancellationToken);
         VueHostWorkspaceResolver.InvalidatePath(documentPath);
         await UpdateProjectionStateAsync(document, cancellationToken);
@@ -526,7 +571,9 @@ internal sealed class LspSession
         CancellationToken cancellationToken)
     {
         var parameters = DeserializeParams<LspDidCloseTextDocumentParams>(notification.Params);
-        var documentPath = LspProtocolHelpers.ToDocumentPath(parameters.TextDocument.Uri);
+        var textDocument = parameters.TextDocument
+            ?? throw CreateInvalidParamsException("textDocument/didClose textDocument is required.");
+        var documentPath = LspProtocolHelpers.ToDocumentPath(GetRequiredTextDocumentUri(textDocument));
         await _workspaceStore.RemoveDocumentAsync(documentPath, cancellationToken);
         VueHostWorkspaceResolver.InvalidatePath(documentPath);
         await _virtualDocumentRegistry.RemoveBySourceDocumentAsync(documentPath, cancellationToken);
@@ -1400,6 +1447,11 @@ internal sealed class LspSession
         string documentUri,
         CancellationToken cancellationToken)
     {
+        if (string.IsNullOrWhiteSpace(documentUri))
+        {
+            throw CreateInvalidParamsException("textDocument.uri is required.");
+        }
+
         var documentPath = LspProtocolHelpers.ToDocumentPath(documentUri);
         var document = await _workspaceStore.GetDocumentAsync(documentPath, cancellationToken);
         if (document is not null)
@@ -1424,18 +1476,32 @@ internal sealed class LspSession
 
     private static TParams DeserializeParams<TParams>(object? payload)
     {
-        if (payload is JsonElement element)
+        try
         {
-            return element.Deserialize<TParams>() ?? throw new InvalidOperationException("Invalid LSP params payload.");
-        }
+            if (payload is JsonElement element)
+            {
+                return element.Deserialize<TParams>() ?? throw new InvalidOperationException("Invalid LSP params payload.");
+            }
 
-        if (payload is TParams typed)
+            if (payload is TParams typed)
+            {
+                return typed;
+            }
+
+            return LspJsonSerializer.Deserialize<TParams>(LspJsonSerializer.Serialize(payload))
+                ?? throw new InvalidOperationException("Invalid LSP params payload.");
+        }
+        catch (LspRequestException)
         {
-            return typed;
+            throw;
         }
-
-        return LspJsonSerializer.Deserialize<TParams>(LspJsonSerializer.Serialize(payload))
-            ?? throw new InvalidOperationException("Invalid LSP params payload.");
+        catch (Exception exception)
+        {
+            throw new LspRequestException(
+                InvalidParamsErrorCode,
+                $"Invalid LSP params payload for '{typeof(TParams).Name}'.",
+                exception);
+        }
     }
 
     private static TParams? TryDeserializeParams<TParams>(object? payload)
@@ -1476,6 +1542,24 @@ internal sealed class LspSession
                 _ => DocumentKind.Unknown
             }
         };
+
+    private static string GetRequiredTextDocumentUri(LspTextDocumentIdentifier? textDocument)
+    {
+        if (textDocument is null)
+        {
+            throw CreateInvalidParamsException("textDocument is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(textDocument.Uri))
+        {
+            throw CreateInvalidParamsException("textDocument.uri is required.");
+        }
+
+        return textDocument.Uri;
+    }
+
+    private static LspRequestException CreateInvalidParamsException(string message)
+        => new(InvalidParamsErrorCode, message);
 
     private readonly record struct ProviderInvocationResult<TResult>(
         bool IsSuccess,
