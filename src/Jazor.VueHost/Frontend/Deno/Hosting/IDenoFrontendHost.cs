@@ -10,6 +10,8 @@ internal sealed record DenoVolarIntelliSenseContext(
 
 internal interface IDenoVolarHost : IAsyncDisposable
 {
+    bool IsEnabled { get; }
+
     bool IsRunning { get; }
 
     ValueTask StartAsync(CancellationToken cancellationToken);

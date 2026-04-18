@@ -8,6 +8,13 @@ internal sealed class ExtensionLoader : IAsyncDisposable
     private const string BuiltinSource = "builtin";
     private const string UserSource = "user";
     private const string ManifestFileName = "extension.json";
+    private const int LegacyManifestVersion = 0;
+    private const int CurrentManifestVersion = 1;
+
+    private static readonly JsonSerializerOptions ManifestJsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
 
     private readonly IExtensionRegistry _registry;
     private readonly Action<ExtensionLoadInvocation>? _loadEventSink;
@@ -166,8 +173,8 @@ internal sealed class ExtensionLoader : IAsyncDisposable
 
         try
         {
-            var manifest = ReadManifest(manifestPath);
-            if (manifest is null)
+            if (!TryReadManifest(manifestPath, out var manifest, out var manifestFailureReason)
+                || manifest is null)
             {
                 ReportLoad(
                     extensionId,
@@ -176,7 +183,7 @@ internal sealed class ExtensionLoader : IAsyncDisposable
                     manifestPath,
                     assemblyPath,
                     ExtensionLoadStatus.Rejected,
-                    "manifest file is missing or invalid json");
+                    manifestFailureReason);
                 return;
             }
 
@@ -557,26 +564,250 @@ internal sealed class ExtensionLoader : IAsyncDisposable
             : normalized;
     }
 
-    private static ExtensionManifest? ReadManifest(string manifestPath)
+    private static bool TryReadManifest(
+        string manifestPath,
+        out ExtensionManifest? manifest,
+        out string failureReason)
     {
+        manifest = null;
+        failureReason = "manifest file is missing or invalid json";
+
         if (!File.Exists(manifestPath))
         {
-            return null;
+            failureReason = "manifest file does not exist";
+            return false;
         }
 
         try
         {
-            return JsonSerializer.Deserialize<ExtensionManifest>(
-                File.ReadAllText(manifestPath),
-                new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+            using var document = JsonDocument.Parse(File.ReadAllText(manifestPath));
+            if (document.RootElement.ValueKind != JsonValueKind.Object)
+            {
+                failureReason = "manifest root must be a JSON object";
+                return false;
+            }
+
+            var root = document.RootElement;
+            var manifestVersion = ResolveManifestVersion(root);
+            if (manifestVersion > CurrentManifestVersion)
+            {
+                failureReason =
+                    $"unsupported manifest version '{manifestVersion}'. maximum supported version is '{CurrentManifestVersion}'.";
+                return false;
+            }
+
+            if (manifestVersion < LegacyManifestVersion)
+            {
+                failureReason = $"unsupported manifest version '{manifestVersion}'.";
+                return false;
+            }
+
+            manifest = manifestVersion == LegacyManifestVersion
+                ? MigrateLegacyManifest(root)
+                : root.Deserialize<ExtensionManifest>(ManifestJsonOptions);
+            if (manifest is null)
+            {
+                failureReason = "manifest file is missing or invalid json";
+                return false;
+            }
+
+            return true;
         }
         catch
         {
+            failureReason = "manifest file is missing or invalid json";
+            return false;
+        }
+    }
+
+    private static int ResolveManifestVersion(JsonElement root)
+    {
+        if (TryGetIntegerProperty(root, "manifestVersion", out var manifestVersion))
+        {
+            return manifestVersion;
+        }
+
+        if (TryGetIntegerProperty(root, "schemaVersion", out var schemaVersion))
+        {
+            return schemaVersion;
+        }
+
+        return CurrentManifestVersion;
+    }
+
+    private static ExtensionManifest MigrateLegacyManifest(JsonElement root)
+    {
+        var permissions = MigrateLegacyPermissions(root);
+
+        return new ExtensionManifest
+        {
+            ManifestVersion = CurrentManifestVersion,
+            Id = GetStringProperty(root, "id"),
+            Assembly = GetStringProperty(root, "assembly")
+                ?? GetStringProperty(root, "main")
+                ?? GetStringProperty(root, "assemblyPath"),
+            AssemblySha256 = GetStringProperty(root, "assemblySha256")
+                ?? GetStringProperty(root, "assemblyHash")
+                ?? GetStringProperty(root, "sha256"),
+            Type = GetStringProperty(root, "type")
+                ?? GetStringProperty(root, "entryType")
+                ?? GetStringProperty(root, "typeName"),
+            Permissions = permissions,
+            Signature = TryDeserializeProperty<ExtensionSignatureManifest>(root, "signature"),
+            Settings = TryDeserializeProperty<Dictionary<string, JsonElement>>(root, "settings")
+        };
+    }
+
+    private static ExtensionPermissionManifest? MigrateLegacyPermissions(JsonElement root)
+    {
+        var permissions = TryDeserializeProperty<ExtensionPermissionManifest>(root, "permissions");
+        var providers = permissions?.Providers is { Length: > 0 }
+            ? permissions.Providers
+            : TryGetStringArrayProperty(root, "capabilities")
+                ?? TryGetStringArrayProperty(root, "providers");
+        var io = permissions?.Io ?? TryDeserializeProperty<ExtensionIoPermissionManifest>(root, "io");
+        var network = permissions?.Network ?? TryDeserializeProperty<ExtensionNetworkPermissionManifest>(root, "network");
+        var processIsolation = permissions?.ProcessIsolation;
+        if (processIsolation is null
+            && TryGetBooleanProperty(root, "processIsolation", out var legacyProcessIsolation))
+        {
+            processIsolation = legacyProcessIsolation;
+        }
+
+        if ((providers is null || providers.Length == 0)
+            && io is null
+            && network is null
+            && processIsolation is null)
+        {
             return null;
         }
+
+        return new ExtensionPermissionManifest
+        {
+            Providers = providers,
+            Io = io,
+            Network = network,
+            ProcessIsolation = processIsolation
+        };
+    }
+
+    private static T? TryDeserializeProperty<T>(JsonElement root, string propertyName)
+    {
+        if (!TryGetPropertyCaseInsensitive(root, propertyName, out var value)
+            || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+        {
+            return default;
+        }
+
+        try
+        {
+            return value.Deserialize<T>(ManifestJsonOptions);
+        }
+        catch
+        {
+            return default;
+        }
+    }
+
+    private static string[]? TryGetStringArrayProperty(JsonElement root, string propertyName)
+    {
+        if (!TryGetPropertyCaseInsensitive(root, propertyName, out var value)
+            || value.ValueKind != JsonValueKind.Array)
+        {
+            return null;
+        }
+
+        var items = value.EnumerateArray()
+            .Where(static item => item.ValueKind == JsonValueKind.String)
+            .Select(static item => item.GetString())
+            .Where(static item => !string.IsNullOrWhiteSpace(item))
+            .Select(static item => item!.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return items.Length == 0
+            ? null
+            : items;
+    }
+
+    private static string? GetStringProperty(JsonElement root, string propertyName)
+    {
+        if (!TryGetPropertyCaseInsensitive(root, propertyName, out var value)
+            || value.ValueKind != JsonValueKind.String)
+        {
+            return null;
+        }
+
+        var text = value.GetString();
+        return string.IsNullOrWhiteSpace(text)
+            ? null
+            : text.Trim();
+    }
+
+    private static bool TryGetIntegerProperty(JsonElement root, string propertyName, out int value)
+    {
+        value = default;
+        if (!TryGetPropertyCaseInsensitive(root, propertyName, out var property))
+        {
+            return false;
+        }
+
+        if (property.ValueKind == JsonValueKind.Number
+            && property.TryGetInt32(out value))
+        {
+            return true;
+        }
+
+        if (property.ValueKind == JsonValueKind.String
+            && int.TryParse(property.GetString(), out value))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryGetBooleanProperty(JsonElement root, string propertyName, out bool value)
+    {
+        value = default;
+        if (!TryGetPropertyCaseInsensitive(root, propertyName, out var property))
+        {
+            return false;
+        }
+
+        if (property.ValueKind is JsonValueKind.True or JsonValueKind.False)
+        {
+            value = property.GetBoolean();
+            return true;
+        }
+
+        if (property.ValueKind == JsonValueKind.String
+            && bool.TryParse(property.GetString(), out value))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryGetPropertyCaseInsensitive(
+        JsonElement root,
+        string propertyName,
+        out JsonElement property)
+    {
+        foreach (var candidate in root.EnumerateObject())
+        {
+            if (!string.Equals(candidate.Name, propertyName, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            property = candidate.Value;
+            return true;
+        }
+
+        property = default;
+        return false;
     }
 
     private static bool TryCreateUserExtension(

@@ -4,6 +4,8 @@ namespace Jazor.VueHost.Extensions;
 
 internal sealed class ExtensionManifest
 {
+    public int? ManifestVersion { get; init; }
+
     public string? Id { get; init; }
 
     public string? Assembly { get; init; }

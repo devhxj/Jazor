@@ -169,6 +169,8 @@ public sealed class JazorVueHostVolarLaneDocumentSymbolProjectionTests
 
     private sealed class FakeDenoFrontendHost : IDenoVolarHost
     {
+        public bool IsEnabled => true;
+
         public bool IsRunning => true;
 
         public IReadOnlyList<LspDocumentSymbol> DocumentSymbols { get; init; } = [];

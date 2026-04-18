@@ -246,6 +246,8 @@ public sealed class JazorVueHostVolarLaneTemplateRequestProjectionTests
 
     private sealed class FakeDenoFrontendHost : IDenoVolarHost
     {
+        public bool IsEnabled => true;
+
         public bool IsRunning => true;
 
         public IReadOnlyList<LspLocation> References { get; init; } = [];

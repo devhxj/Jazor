@@ -1049,7 +1049,7 @@ internal sealed class VolarLaneService : ILspLane
     }
 
     private bool CanUseWorkspaceGraph()
-        => _denoVolarHost?.IsRunning == true;
+        => _denoVolarHost?.IsEnabled == true;
 
     private static IReadOnlyList<LspSemanticToken> CreateConservativeProjectedTemplateSemanticTokens(
         DocumentSnapshot document)

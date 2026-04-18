@@ -71,6 +71,169 @@ public sealed class JazorVueHostLspTests
     }
 
     [TestMethod]
+    public async Task JazorVueHost_Lsp_Initialize_AdvertisesWorkspaceFolderCapabilities()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 11,
+                method = "initialize",
+                @params = new
+                {
+                    workspaceFolders = new[]
+                    {
+                        new
+                        {
+                            uri = new Uri(rootDirectory).AbsoluteUri,
+                            name = "workspace-root"
+                        }
+                    }
+                }
+            });
+            using var response = await client.ReadResponseAsync(expectedId: 11);
+
+            var workspaceFolders = response.RootElement
+                .GetProperty("result")
+                .GetProperty("capabilities")
+                .GetProperty("workspace")
+                .GetProperty("workspaceFolders");
+            Assert.IsTrue(workspaceFolders.GetProperty("supported").GetBoolean());
+            Assert.IsTrue(workspaceFolders.GetProperty("changeNotifications").GetBoolean());
+        }
+        finally
+        {
+            if (Directory.Exists(rootDirectory))
+            {
+                Directory.Delete(rootDirectory, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_WorkspaceFoldersChanged_ContinuesServingWorkspaceSymbolRequests()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        var workspaceA = CreateTemporaryDirectory();
+        var workspaceB = CreateTemporaryDirectory();
+        try
+        {
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 12,
+                method = "initialize",
+                @params = new
+                {
+                    workspaceFolders = new[]
+                    {
+                        new
+                        {
+                            uri = new Uri(workspaceA).AbsoluteUri,
+                            name = "workspace-a"
+                        }
+                    }
+                }
+            });
+            using var _ = await client.ReadResponseAsync(expectedId: 12);
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                method = "workspace/didChangeWorkspaceFolders",
+                @params = new
+                {
+                    @event = new
+                    {
+                        added = new[]
+                        {
+                            new
+                            {
+                                uri = new Uri(workspaceB).AbsoluteUri,
+                                name = "workspace-b"
+                            }
+                        },
+                        removed = new[]
+                        {
+                            new
+                            {
+                                uri = new Uri(workspaceA).AbsoluteUri,
+                                name = "workspace-a"
+                            }
+                        }
+                    }
+                }
+            });
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 13,
+                method = "workspace/symbol",
+                @params = new
+                {
+                    query = "any"
+                }
+            });
+            using var response = await client.ReadResponseAsync(expectedId: 13);
+            Assert.IsTrue(response.RootElement.TryGetProperty("result", out var result));
+            Assert.AreEqual(JsonValueKind.Array, result.ValueKind);
+        }
+        finally
+        {
+            if (Directory.Exists(workspaceA))
+            {
+                Directory.Delete(workspaceA, recursive: true);
+            }
+
+            if (Directory.Exists(workspaceB))
+            {
+                Directory.Delete(workspaceB, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_CancelRequest_WithUnknownId_DoesNotBreakSubsequentRequests()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        await client.SendAsync(new
+        {
+            jsonrpc = "2.0",
+            method = "$/cancelRequest",
+            @params = new
+            {
+                id = 99999
+            }
+        });
+
+        await client.SendAsync(new
+        {
+            jsonrpc = "2.0",
+            id = 14,
+            method = "workspace/symbol",
+            @params = new
+            {
+                query = "any"
+            }
+        });
+        using var response = await client.ReadResponseAsync(expectedId: 14);
+        Assert.IsTrue(response.RootElement.TryGetProperty("result", out var result));
+        Assert.AreEqual(JsonValueKind.Array, result.ValueKind);
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
     public async Task JazorVueHost_Lsp_Initialize_SucceedsWhenDenoIsEnabledWithInvalidCommand()
     {
         var client = await LspTestClient.StartAsync(

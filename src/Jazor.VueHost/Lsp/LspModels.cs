@@ -111,6 +111,9 @@ internal sealed class LspServerCapabilities
 
     [JsonPropertyName("semanticTokensProvider")]
     public LspSemanticTokensOptions? SemanticTokensProvider { get; init; }
+
+    [JsonPropertyName("workspace")]
+    public LspWorkspaceServerCapabilities? Workspace { get; init; }
 }
 
 internal sealed class LspTextDocumentSyncOptions
@@ -156,6 +159,63 @@ internal sealed class LspSemanticTokensOptions
 
     [JsonPropertyName("range")]
     public bool Range { get; init; }
+}
+
+internal sealed class LspWorkspaceServerCapabilities
+{
+    [JsonPropertyName("workspaceFolders")]
+    public LspWorkspaceFoldersServerCapabilities? WorkspaceFolders { get; init; }
+}
+
+internal sealed class LspWorkspaceFoldersServerCapabilities
+{
+    [JsonPropertyName("supported")]
+    public bool Supported { get; init; }
+
+    [JsonPropertyName("changeNotifications")]
+    public bool ChangeNotifications { get; init; }
+}
+
+internal sealed class LspInitializeParams
+{
+    [JsonPropertyName("rootUri")]
+    public string? RootUri { get; init; }
+
+    [JsonPropertyName("rootPath")]
+    public string? RootPath { get; init; }
+
+    [JsonPropertyName("workspaceFolders")]
+    public LspWorkspaceFolder[]? WorkspaceFolders { get; init; }
+}
+
+internal sealed class LspWorkspaceFolder
+{
+    [JsonPropertyName("uri")]
+    public string Uri { get; init; } = string.Empty;
+
+    [JsonPropertyName("name")]
+    public string Name { get; init; } = string.Empty;
+}
+
+internal sealed class LspDidChangeWorkspaceFoldersParams
+{
+    [JsonPropertyName("event")]
+    public LspWorkspaceFoldersChangeEvent? Event { get; init; }
+}
+
+internal sealed class LspWorkspaceFoldersChangeEvent
+{
+    [JsonPropertyName("added")]
+    public LspWorkspaceFolder[]? Added { get; init; }
+
+    [JsonPropertyName("removed")]
+    public LspWorkspaceFolder[]? Removed { get; init; }
+}
+
+internal sealed class LspCancelRequestParams
+{
+    [JsonPropertyName("id")]
+    public object? Id { get; init; }
 }
 
 internal sealed class LspSemanticTokensLegendDescriptor

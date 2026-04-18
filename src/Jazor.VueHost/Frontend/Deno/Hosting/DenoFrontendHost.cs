@@ -8,7 +8,6 @@ internal sealed class DenoVolarHost : IDenoVolarHost
 {
     private readonly DenoVolarHostOptions _options;
     private readonly IDenoWorkerProcess _workerProcess;
-    private int _startupAttempted;
 
     public DenoVolarHost(DenoVolarHostOptions options)
         : this(options, workerProcess: null)
@@ -21,11 +20,13 @@ internal sealed class DenoVolarHost : IDenoVolarHost
         _workerProcess = workerProcess ?? new DenoWorkerProcess(_options);
     }
 
+    public bool IsEnabled => _options.Enabled;
+
     public bool IsRunning => _workerProcess.IsRunning;
 
     public async ValueTask StartAsync(CancellationToken cancellationToken)
     {
-        if (!_options.Enabled || Interlocked.Exchange(ref _startupAttempted, 1) != 0)
+        if (!_options.Enabled || IsRunning)
         {
             return;
         }
@@ -36,7 +37,7 @@ internal sealed class DenoVolarHost : IDenoVolarHost
         }
         catch when (_options.IgnoreStartupFailure)
         {
-            // Keep the host process available even when the optional worker is unavailable.
+            await TryResetWorkerStateAsync();
         }
     }
 
@@ -229,9 +230,45 @@ internal sealed class DenoVolarHost : IDenoVolarHost
         {
             return await _workerProcess.SendRequestAsync<TResult>(method, payload, cancellationToken);
         }
-        catch when (_options.IgnoreStartupFailure)
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch
+        {
+            await TryResetWorkerStateAsync();
+        }
+
+        await EnsureStartedAsync(cancellationToken);
+        if (!IsRunning)
         {
             return default;
+        }
+
+        try
+        {
+            return await _workerProcess.SendRequestAsync<TResult>(method, payload, cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch
+        {
+            await TryResetWorkerStateAsync();
+            throw;
+        }
+    }
+
+    private async ValueTask TryResetWorkerStateAsync()
+    {
+        try
+        {
+            await _workerProcess.StopAsync(CancellationToken.None);
+        }
+        catch
+        {
+            // Ignore worker teardown failures so the next request can retry startup.
         }
     }
 

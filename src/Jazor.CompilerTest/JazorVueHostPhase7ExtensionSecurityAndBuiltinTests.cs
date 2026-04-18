@@ -421,6 +421,90 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
     }
 
     [TestMethod]
+    public async Task ExtensionLoader_LoadUserExtensionsAsync_WithLegacyManifestVersion0_MigratesAndLoadsExtension()
+    {
+        var sandbox = CreateExtensionSandbox();
+        try
+        {
+            var manifestPath = Path.Combine(sandbox.ExtensionDirectory, "extension.json");
+            var legacyManifest = new
+            {
+                manifestVersion = 0,
+                id = ManifestLoadableTestExtension.ExtensionId,
+                main = sandbox.AssemblyFileName,
+                entryType = typeof(ManifestLoadableTestExtension).FullName,
+                assemblySha256 = sandbox.AssemblySha256,
+                capabilities = new[] { "hover", "completion" },
+                processIsolation = false
+            };
+            File.WriteAllText(manifestPath, JsonSerializer.Serialize(legacyManifest));
+
+            var registry = new ExtensionRegistry();
+            await using var loader = new ExtensionLoader(registry);
+            await loader.LoadUserExtensionsAsync(
+                CreateHostOptions(
+                    sandbox.RootDirectory,
+                    sandbox.ExtensionsDirectory,
+                    requireManifestSignature: false),
+                CancellationToken.None);
+
+            Assert.AreEqual(1, registry.GetExtensions().Count);
+            Assert.IsTrue(registry.GetExtensions().ContainsKey(ManifestLoadableTestExtension.ExtensionId));
+            Assert.AreEqual(1, registry.GetLspHoverProviders().Count);
+            Assert.AreEqual(1, registry.GetLspCompletionProviders().Count);
+        }
+        finally
+        {
+            sandbox.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task ExtensionLoader_LoadUserExtensionsAsync_WithUnsupportedFutureManifestVersion_RejectsExtension()
+    {
+        var sandbox = CreateExtensionSandbox();
+        try
+        {
+            var manifestPath = Path.Combine(sandbox.ExtensionDirectory, "extension.json");
+            var futureManifest = new
+            {
+                manifestVersion = 99,
+                id = ManifestLoadableTestExtension.ExtensionId,
+                assembly = sandbox.AssemblyFileName,
+                assemblySha256 = sandbox.AssemblySha256,
+                type = typeof(ManifestLoadableTestExtension).FullName,
+                permissions = new
+                {
+                    providers = new[] { "hover", "completion" }
+                }
+            };
+            File.WriteAllText(manifestPath, JsonSerializer.Serialize(futureManifest));
+
+            var registry = new ExtensionRegistry();
+            await using var loader = new ExtensionLoader(registry);
+            await loader.LoadUserExtensionsAsync(
+                CreateHostOptions(
+                    sandbox.RootDirectory,
+                    sandbox.ExtensionsDirectory,
+                    requireManifestSignature: false),
+                CancellationToken.None);
+
+            Assert.AreEqual(0, registry.GetExtensions().Count);
+            var loadHealth = registry.GetExtensionLoadHealth()
+                .Single(static item => string.Equals(item.Source, "user", StringComparison.Ordinal));
+            Assert.AreEqual(1, loadHealth.RejectedCount);
+            StringAssert.Contains(
+                loadHealth.LastReason ?? string.Empty,
+                "unsupported manifest version",
+                StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            sandbox.Dispose();
+        }
+    }
+
+    [TestMethod]
     public async Task ExtensionLoader_LoadUserExtensionsAsync_WithProviderPermissionMismatch_SkipsExtension()
     {
         var sandbox = CreateExtensionSandbox();

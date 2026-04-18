@@ -17,4 +17,5 @@ internal interface ILspWorkspaceSymbolProvider
 internal sealed record LspWorkspaceSymbolProviderContext(
     string Query,
     IReadOnlyList<DocumentSnapshot> OpenDocuments,
-    IReadOnlyList<LspWorkspaceSymbol> ExistingSymbols);
+    IReadOnlyList<LspWorkspaceSymbol> ExistingSymbols,
+    IReadOnlyList<LspWorkspaceFolder>? WorkspaceFolders = null);

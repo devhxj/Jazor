@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
 using Jazor.VueHost.Frontend.Deno.Protocol;
@@ -112,18 +113,12 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
         ArgumentNullException.ThrowIfNull(payload);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (!IsRunning || _writer is null || _reader is null)
-        {
-            return default;
-        }
+        ThrowIfWorkerUnavailable();
 
         await _requestGate.WaitAsync(cancellationToken);
         try
         {
-            if (!IsRunning || _writer is null || _reader is null)
-            {
-                return default;
-            }
+            ThrowIfWorkerUnavailable();
 
             var request = new DenoFrontendRequestEnvelope
             {
@@ -155,17 +150,32 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
                         : $"Deno frontend worker request '{method}' failed: {response.Error}");
             }
 
-            if (response.Result is null)
+            var responseResult = response.Result;
+            if (responseResult is null
+                || responseResult.Value.ValueKind == JsonValueKind.Null)
             {
                 return default;
             }
 
-            return response.Result.Value.Deserialize<TResult>(_jsonOptions);
+            return responseResult.Value.Deserialize<TResult>(_jsonOptions);
         }
         finally
         {
             _requestGate.Release();
         }
+    }
+
+    [MemberNotNull(nameof(_process), nameof(_writer), nameof(_reader))]
+    private void ThrowIfWorkerUnavailable()
+    {
+        if (_process is { HasExited: false }
+            && _writer is not null
+            && _reader is not null)
+        {
+            return;
+        }
+
+        throw new InvalidOperationException("Deno frontend worker is not running.");
     }
 
     public async ValueTask StopAsync(CancellationToken cancellationToken)

@@ -58,6 +58,86 @@ public sealed class JazorVueHostFrontendLaneTests
     }
 
     [TestMethod]
+    public async Task JazorVueHost_DenoFrontendHost_CompileSfc_WhenWorkerCrashes_RetriesWithinSameRequestAndRecovers()
+    {
+        var workerProcess = new FakeDenoWorkerProcess();
+        workerProcess.SetResult(
+            "compile/sfc",
+            new DenoSfcCompileResult
+            {
+                JsContent = "export default { ok: true };",
+                JsSourceMap = """{"version":3}""",
+                CssContent = ".ok{color:green;}",
+                Diagnostics = [],
+                SupportsHmr = true
+            });
+        workerProcess.SetFailure("compile/sfc", new InvalidOperationException("simulated worker crash"));
+
+        var host = new DenoVolarHost(
+            new DenoVolarHostOptions
+            {
+                Enabled = true,
+                IgnoreStartupFailure = false
+            },
+            workerProcess);
+
+        var recovered = await host.CompileSfcAsync(
+            @"D:\temp\Counter.jazor",
+            "<template><div /></template>",
+            "Counter.jazor",
+            CancellationToken.None);
+
+        Assert.AreEqual(2, workerProcess.StartCallCount);
+        Assert.AreEqual(1, workerProcess.StopCallCount);
+        Assert.IsNotNull(recovered);
+        Assert.AreEqual("export default { ok: true };", recovered.JsContent);
+        CollectionAssert.AreEqual(
+            new[] { "compile/sfc", "compile/sfc" },
+            workerProcess.RequestMethods);
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_DenoFrontendHost_CompileSfc_WithIgnoreStartupFailure_RetriesWithoutReturningFallback()
+    {
+        var workerProcess = new FakeDenoWorkerProcess();
+        workerProcess.SetResult(
+            "compile/sfc",
+            new DenoSfcCompileResult
+            {
+                JsContent = "export default { recovered: true };",
+                JsSourceMap = """{"version":3}""",
+                CssContent = ".recovered{color:blue;}",
+                Diagnostics = [],
+                SupportsHmr = true
+            });
+        workerProcess.SetFailure("compile/sfc", new InvalidOperationException("simulated worker crash"));
+
+        var host = new DenoVolarHost(
+            new DenoVolarHostOptions
+            {
+                Enabled = true,
+                IgnoreStartupFailure = true
+            },
+            workerProcess);
+
+        var firstResult = await host.CompileSfcAsync(
+            @"D:\temp\Counter.jazor",
+            "<template><div /></template>",
+            "Counter.jazor",
+            CancellationToken.None);
+        var secondResult = await host.CompileSfcAsync(
+            @"D:\temp\Counter.jazor",
+            "<template><div /></template>",
+            "Counter.jazor",
+            CancellationToken.None);
+
+        Assert.IsNotNull(firstResult);
+        Assert.IsNotNull(secondResult);
+        Assert.AreEqual(2, workerProcess.StartCallCount);
+        Assert.AreEqual(1, workerProcess.StopCallCount);
+    }
+
+    [TestMethod]
     public async Task DenoFrontendModuleCompiler_CompileSfcAsync_PropagatesWorkerSourceMap()
     {
         var compiler = new DenoFrontendModuleCompiler(
@@ -886,6 +966,50 @@ public sealed class JazorVueHostFrontendLaneTests
 
         Assert.AreEqual(1, items.Count);
         Assert.AreEqual("DenoOnlyCard", items[0].Label);
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_FrontendLaneService_GetCompletionItems_UsesWorkspaceGraphWhenDenoEnabledButTemporarilyNotRunning()
+    {
+        var tempDirectory = CreateTemporaryDirectory();
+
+        try
+        {
+            var componentPath = Path.Combine(tempDirectory, "UserCard.vue");
+            await File.WriteAllTextAsync(componentPath, "<template><div>UserCard</div></template>");
+
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            await File.WriteAllTextAsync(documentPath, "<");
+            var document = new DocumentSnapshot(
+                documentPath,
+                DocumentKind.Jazor,
+                "<",
+                "1");
+
+            var lane = CreateLane(new FakeDenoFrontendHost
+            {
+                IsEnabled = true,
+                IsRunning = false
+            });
+
+            var items = await lane.GetCompletionItemsAsync(
+                document,
+                new LspPosition { Line = 0, Character = 1 },
+                CreateTemplateTarget(document),
+                CancellationToken.None);
+            var labels = items
+                .Select(static item => item.Label)
+                .ToArray();
+
+            CollectionAssert.Contains(labels, "UserCard");
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                DeleteDirectoryWithRetry(tempDirectory);
+            }
+        }
     }
 
     [TestMethod]
@@ -1994,10 +2118,13 @@ public sealed class JazorVueHostFrontendLaneTests
     private sealed class FakeDenoWorkerProcess : IDenoWorkerProcess
     {
         private readonly Dictionary<string, object?> _results = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, Queue<Exception>> _failures = new(StringComparer.Ordinal);
 
         public bool IsRunning { get; private set; }
 
         public int StartCallCount { get; private set; }
+
+        public int StopCallCount { get; private set; }
 
         public string[] RequestMethods => _requestMethods.ToArray();
 
@@ -2006,6 +2133,20 @@ public sealed class JazorVueHostFrontendLaneTests
         public void SetResult(string method, object? result)
         {
             _results[method] = result;
+        }
+
+        public void SetFailure(string method, Exception exception)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(method);
+            ArgumentNullException.ThrowIfNull(exception);
+
+            if (!_failures.TryGetValue(method, out var queue))
+            {
+                queue = new Queue<Exception>();
+                _failures[method] = queue;
+            }
+
+            queue.Enqueue(exception);
         }
 
         public ValueTask StartAsync(CancellationToken cancellationToken)
@@ -2023,6 +2164,14 @@ public sealed class JazorVueHostFrontendLaneTests
         {
             cancellationToken.ThrowIfCancellationRequested();
             _requestMethods.Add(method);
+
+            if (_failures.TryGetValue(method, out var failures)
+                && failures.Count > 0)
+            {
+                IsRunning = false;
+                throw failures.Dequeue();
+            }
+
             return ValueTask.FromResult(
                 _results.TryGetValue(method, out var result)
                     ? (TResult?)result
@@ -2032,6 +2181,7 @@ public sealed class JazorVueHostFrontendLaneTests
         public ValueTask StopAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            StopCallCount++;
             IsRunning = false;
             return ValueTask.CompletedTask;
         }
@@ -2039,7 +2189,9 @@ public sealed class JazorVueHostFrontendLaneTests
 
     private sealed class FakeDenoFrontendHost : IDenoVolarHost
     {
-        public bool IsRunning => true;
+        public bool IsEnabled { get; init; } = true;
+
+        public bool IsRunning { get; init; } = true;
 
         public DenoSfcCompileResult? SfcCompileResult { get; init; }
 

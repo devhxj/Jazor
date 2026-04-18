@@ -33,6 +33,8 @@ internal sealed class LspSession
     private readonly TimeSpan _extensionProviderIsolationDuration;
     private readonly Lock _providerIsolationGate = new();
     private readonly Dictionary<string, ProviderIsolationState> _providerIsolationByKey = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Lock _workspaceFoldersGate = new();
+    private readonly Dictionary<string, LspWorkspaceFolder> _workspaceFoldersByUri = new(StringComparer.OrdinalIgnoreCase);
 
     public LspSession(
         IVueHostWorkspaceStore workspaceStore,
@@ -87,52 +89,7 @@ internal sealed class LspSession
 
         return request.Method switch
         {
-            "initialize" => CreateSuccessResponse(
-                request.Id,
-                new LspInitializeResult
-                {
-                    Capabilities = new LspServerCapabilities
-                    {
-                        TextDocumentSync = new LspTextDocumentSyncOptions
-                        {
-                            OpenClose = true,
-                            Change = 1
-                        },
-                        HoverProvider = true,
-                        DefinitionProvider = true,
-                        ReferencesProvider = true,
-                        RenameProvider = new LspRenameOptions
-                        {
-                            PrepareProvider = true
-                        },
-                        CodeActionProvider = true,
-                        DocumentSymbolProvider = true,
-                        SignatureHelpProvider = new LspSignatureHelpOptions
-                        {
-                            TriggerCharacters = ["(", ","],
-                            RetriggerCharacters = [")"]
-                        },
-                        WorkspaceSymbolProvider = true,
-                        FoldingRangeProvider = true,
-                        InlayHintProvider = true,
-                        CompletionProvider = new LspCompletionOptions
-                        {
-                            ResolveProvider = false,
-                            TriggerCharacters = ["@", "<", "/"]
-                        },
-                        SemanticTokensProvider = new LspSemanticTokensOptions
-                        {
-                            Legend = LspSemanticTokenLegend.CreateDescriptor(),
-                            Full = true,
-                            Range = false
-                        }
-                    },
-                    ServerInfo = new LspServerInfo
-                    {
-                        Name = "Jazor.VueHost",
-                        Version = "0.1"
-                    }
-                }),
+            "initialize" => HandleInitialize(request),
             "shutdown" => CreateSuccessResponse(request.Id, result: null),
             "textDocument/hover" => await HandleHoverAsync(request, cancellationToken),
             "textDocument/completion" => await HandleCompletionAsync(request, cancellationToken),
@@ -181,9 +138,72 @@ internal sealed class LspSession
             case "textDocument/didClose":
                 await HandleDidCloseAsync(notification, cancellationToken);
                 return true;
+            case "workspace/didChangeWorkspaceFolders":
+                HandleDidChangeWorkspaceFolders(notification);
+                return true;
             default:
                 return true;
         }
+    }
+
+    private LspResponseMessage HandleInitialize(LspRequestMessage request)
+    {
+        var parameters = TryDeserializeParams<LspInitializeParams>(request.Params);
+        ApplyInitializeWorkspaceFolders(parameters);
+        return CreateSuccessResponse(
+            request.Id,
+            new LspInitializeResult
+            {
+                Capabilities = new LspServerCapabilities
+                {
+                    TextDocumentSync = new LspTextDocumentSyncOptions
+                    {
+                        OpenClose = true,
+                        Change = 1
+                    },
+                    HoverProvider = true,
+                    DefinitionProvider = true,
+                    ReferencesProvider = true,
+                    RenameProvider = new LspRenameOptions
+                    {
+                        PrepareProvider = true
+                    },
+                    CodeActionProvider = true,
+                    DocumentSymbolProvider = true,
+                    SignatureHelpProvider = new LspSignatureHelpOptions
+                    {
+                        TriggerCharacters = ["(", ","],
+                        RetriggerCharacters = [")"]
+                    },
+                    WorkspaceSymbolProvider = true,
+                    FoldingRangeProvider = true,
+                    InlayHintProvider = true,
+                    CompletionProvider = new LspCompletionOptions
+                    {
+                        ResolveProvider = false,
+                        TriggerCharacters = ["@", "<", "/"]
+                    },
+                    SemanticTokensProvider = new LspSemanticTokensOptions
+                    {
+                        Legend = LspSemanticTokenLegend.CreateDescriptor(),
+                        Full = true,
+                        Range = false
+                    },
+                    Workspace = new LspWorkspaceServerCapabilities
+                    {
+                        WorkspaceFolders = new LspWorkspaceFoldersServerCapabilities
+                        {
+                            Supported = true,
+                            ChangeNotifications = true
+                        }
+                    }
+                },
+                ServerInfo = new LspServerInfo
+                {
+                    Name = "Jazor.VueHost",
+                    Version = "0.1"
+                }
+            });
     }
 
     private static LspResponseMessage CreateSuccessResponse(object? id, object? result)
@@ -517,6 +537,17 @@ internal sealed class LspSession
             cancellationToken);
     }
 
+    private void HandleDidChangeWorkspaceFolders(LspRequestMessage notification)
+    {
+        var parameters = TryDeserializeParams<LspDidChangeWorkspaceFoldersParams>(notification.Params);
+        if (parameters?.Event is null)
+        {
+            return;
+        }
+
+        ApplyWorkspaceFolderChanges(parameters.Event);
+    }
+
     private async ValueTask PublishDiagnosticsAsync(
         DocumentSnapshot document,
         CancellationToken cancellationToken,
@@ -769,6 +800,7 @@ internal sealed class LspSession
         CancellationToken cancellationToken)
     {
         var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
+        var workspaceFolders = GetWorkspaceFoldersSnapshot();
         var symbols = new List<LspWorkspaceSymbol>();
         foreach (var provider in _extensionRegistry.GetLspWorkspaceSymbolProviders())
         {
@@ -777,7 +809,7 @@ internal sealed class LspSession
                 capability: "workspaceSymbol",
                 providerName: provider.Name,
                 invocation: token => provider.ProvideWorkspaceSymbolsAsync(
-                    new LspWorkspaceSymbolProviderContext(query, openDocuments, symbols),
+                    new LspWorkspaceSymbolProviderContext(query, openDocuments, symbols, workspaceFolders),
                     token),
                 cancellationToken);
             if (invocation.Result is { Count: > 0 } providedSymbols)
@@ -793,6 +825,92 @@ internal sealed class LspSession
             .Select(static group => group.First())
             .ToArray();
     }
+
+    private void ApplyInitializeWorkspaceFolders(LspInitializeParams? parameters)
+    {
+        var workspaceFolders = (parameters?.WorkspaceFolders ?? [])
+            .Where(static folder => !string.IsNullOrWhiteSpace(folder.Uri))
+            .Select(CloneWorkspaceFolder)
+            .ToArray();
+
+        if (workspaceFolders.Length == 0)
+        {
+            var fallbackRootUri = parameters?.RootUri;
+            if (string.IsNullOrWhiteSpace(fallbackRootUri)
+                && !string.IsNullOrWhiteSpace(parameters?.RootPath))
+            {
+                fallbackRootUri = new Uri(Path.GetFullPath(parameters.RootPath!)).AbsoluteUri;
+            }
+
+            if (!string.IsNullOrWhiteSpace(fallbackRootUri))
+            {
+                workspaceFolders =
+                [
+                    new LspWorkspaceFolder
+                    {
+                        Uri = fallbackRootUri!,
+                        Name = Path.GetFileName(LspProtocolHelpers.ToDocumentPath(fallbackRootUri!))
+                    }
+                ];
+            }
+        }
+
+        lock (_workspaceFoldersGate)
+        {
+            _workspaceFoldersByUri.Clear();
+            foreach (var folder in workspaceFolders)
+            {
+                _workspaceFoldersByUri[folder.Uri] = folder;
+            }
+        }
+    }
+
+    private void ApplyWorkspaceFolderChanges(LspWorkspaceFoldersChangeEvent changeEvent)
+    {
+        lock (_workspaceFoldersGate)
+        {
+            foreach (var removed in changeEvent.Removed ?? [])
+            {
+                if (string.IsNullOrWhiteSpace(removed.Uri))
+                {
+                    continue;
+                }
+
+                _workspaceFoldersByUri.Remove(removed.Uri);
+            }
+
+            foreach (var added in changeEvent.Added ?? [])
+            {
+                if (string.IsNullOrWhiteSpace(added.Uri))
+                {
+                    continue;
+                }
+
+                _workspaceFoldersByUri[added.Uri] = CloneWorkspaceFolder(added);
+            }
+        }
+    }
+
+    private IReadOnlyList<LspWorkspaceFolder> GetWorkspaceFoldersSnapshot()
+    {
+        lock (_workspaceFoldersGate)
+        {
+            return _workspaceFoldersByUri.Values
+                .OrderBy(static folder => folder.Name, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(static folder => folder.Uri, StringComparer.OrdinalIgnoreCase)
+                .Select(CloneWorkspaceFolder)
+                .ToArray();
+        }
+    }
+
+    private static LspWorkspaceFolder CloneWorkspaceFolder(LspWorkspaceFolder folder)
+        => new()
+        {
+            Uri = folder.Uri,
+            Name = string.IsNullOrWhiteSpace(folder.Name)
+                ? folder.Uri
+                : folder.Name
+        };
 
     private async ValueTask<IReadOnlyList<LspFoldingRange>> CollectFoldingRangesAsync(
         DocumentSnapshot document,
@@ -1286,6 +1404,23 @@ internal sealed class LspSession
 
         return LspJsonSerializer.Deserialize<TParams>(LspJsonSerializer.Serialize(payload))
             ?? throw new InvalidOperationException("Invalid LSP params payload.");
+    }
+
+    private static TParams? TryDeserializeParams<TParams>(object? payload)
+    {
+        if (payload is null)
+        {
+            return default;
+        }
+
+        try
+        {
+            return DeserializeParams<TParams>(payload);
+        }
+        catch
+        {
+            return default;
+        }
     }
 
     private static DocumentKind MapDocumentKind(string? languageId, string documentPath)
