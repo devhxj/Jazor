@@ -1185,6 +1185,81 @@ public sealed class JazorVueHostBuildTests
     }
 
     [TestMethod]
+    public async Task BuildOrchestrator_BuildAsync_WithIncrementalEnabled_RefreshesHtmlWithoutRebundling_WhenOnlyIndexChanges()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "index.html"),
+                """
+                <html>
+                <body>
+                  <div id="version">v1</div>
+                  <script type="module" src="/main.js"></script>
+                </body>
+                </html>
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "main.js"),
+                """console.log("incremental-html-refresh");""");
+
+            var orchestrator = new BuildOrchestrator();
+            var options = new BuildOptions
+            {
+                RootDirectory = tempDir,
+                OutDir = "dist",
+                SourceMap = SourceMapOption.External,
+                Minify = false,
+                CodeSplitting = false,
+                Incremental = true
+            };
+
+            var first = await orchestrator.BuildAsync(options, CancellationToken.None);
+            Assert.IsTrue(first.Success, string.Join(Environment.NewLine, first.Diagnostics.Select(static diagnostic => diagnostic.Message)));
+            var firstEntryChunk = first.Chunks.Single(static chunk => chunk.IsEntry);
+            var firstEntryChunkPath = Path.Combine(tempDir, firstEntryChunk.FilePath.Replace('/', Path.DirectorySeparatorChar));
+            var firstChunkWriteTime = File.GetLastWriteTimeUtc(firstEntryChunkPath);
+
+            await Task.Delay(TimeSpan.FromMilliseconds(1200));
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "index.html"),
+                """
+                <html>
+                <body>
+                  <div id="version">v2</div>
+                  <script type="module" src="/main.js"></script>
+                </body>
+                </html>
+                """);
+
+            var second = await orchestrator.BuildAsync(options, CancellationToken.None);
+            Assert.IsTrue(second.Success, string.Join(Environment.NewLine, second.Diagnostics.Select(static diagnostic => diagnostic.Message)));
+            CollectionAssert.Contains(
+                second.Diagnostics.Select(static diagnostic => diagnostic.Message).ToArray(),
+                "Incremental build html refresh.");
+            CollectionAssert.DoesNotContain(
+                second.Diagnostics.Select(static diagnostic => diagnostic.Message).ToArray(),
+                "Incremental build cache hit.");
+
+            var secondEntryChunk = second.Chunks.Single(static chunk => chunk.IsEntry);
+            Assert.AreEqual(firstEntryChunk.FilePath, secondEntryChunk.FilePath);
+            Assert.AreEqual(firstChunkWriteTime, File.GetLastWriteTimeUtc(firstEntryChunkPath));
+
+            var distIndexHtmlPath = Path.Combine(tempDir, "dist", "index.html");
+            var refreshedHtml = await File.ReadAllTextAsync(distIndexHtmlPath);
+            StringAssert.Contains(refreshedHtml, "id=\"version\">v2");
+            Assert.IsFalse(
+                refreshedHtml.Contains("id=\"version\">v1", StringComparison.Ordinal),
+                "Expected refreshed html to replace stale markup.");
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void HtmlTransformer_InjectScript_BeforeBodyClose()
     {
         var html = "<html><head></head><body><div>app</div></body></html>";

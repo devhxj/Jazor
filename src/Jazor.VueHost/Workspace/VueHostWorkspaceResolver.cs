@@ -401,8 +401,11 @@ internal static class VueHostWorkspaceResolver
         out WorkspaceVueComponentResolution resolvedComponent)
     {
         var documentDirectory = Path.GetDirectoryName(documentPath);
+        var scopedWorkspaceRoot = TryGetScopedWorkspaceRootForDocument(documentPath);
         var tracked = openDocuments.FirstOrDefault(openDocument =>
             openDocument.DocumentKind == DocumentKind.Vue
+            && (scopedWorkspaceRoot is null
+                || IsPathWithinWorkspaceRoot(openDocument.DocumentPath, scopedWorkspaceRoot))
             && string.Equals(
                 Path.GetFileNameWithoutExtension(openDocument.DocumentPath),
                 componentName,
@@ -430,7 +433,11 @@ internal static class VueHostWorkspaceResolver
             yield break;
         }
 
-        foreach (var openDocument in openDocuments.Where(static candidate => candidate.DocumentKind == DocumentKind.Vue))
+        var scopedWorkspaceRoot = TryGetScopedWorkspaceRootForDocument(documentPath);
+        foreach (var openDocument in openDocuments.Where(candidate =>
+                     candidate.DocumentKind == DocumentKind.Vue
+                     && (scopedWorkspaceRoot is null
+                         || IsPathWithinWorkspaceRoot(candidate.DocumentPath, scopedWorkspaceRoot))))
         {
             var componentName = Path.GetFileNameWithoutExtension(openDocument.DocumentPath);
             if (string.IsNullOrWhiteSpace(componentName) || !char.IsUpper(componentName[0]))
@@ -667,6 +674,16 @@ internal static class VueHostWorkspaceResolver
                 Root = item.Root!
             })
             .ToArray();
+        var primaryDirectory = directories.FirstOrDefault();
+        var primaryRoot = string.IsNullOrWhiteSpace(primaryDirectory)
+            ? null
+            : FindContainingWorkspaceFolderRoot(primaryDirectory, normalizedFolderRoots);
+        if (!string.IsNullOrWhiteSpace(primaryRoot))
+        {
+            boundedDirectories = boundedDirectories
+                .Where(item => string.Equals(item.Root, primaryRoot, StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+        }
 
         if (boundedDirectories.Length == 0)
         {
@@ -1027,6 +1044,35 @@ internal static class VueHostWorkspaceResolver
         }
 
         return bestMatch;
+    }
+
+    private static string? TryGetScopedWorkspaceRootForDocument(string documentPath)
+    {
+        var scopedRoots = GetScopedWorkspaceFolderRoots();
+        if (scopedRoots.Count == 0 || !Path.IsPathRooted(documentPath))
+        {
+            return null;
+        }
+
+        var documentDirectory = Path.GetDirectoryName(documentPath);
+        if (string.IsNullOrWhiteSpace(documentDirectory))
+        {
+            return null;
+        }
+
+        return FindContainingWorkspaceFolderRoot(documentDirectory, scopedRoots);
+    }
+
+    private static bool IsPathWithinWorkspaceRoot(string path, string workspaceRoot)
+    {
+        if (string.IsNullOrWhiteSpace(path) || string.IsNullOrWhiteSpace(workspaceRoot))
+        {
+            return false;
+        }
+
+        return PathMatchesOrContains(
+            NormalizeComparablePath(path),
+            NormalizeComparablePath(workspaceRoot));
     }
 
     private static bool ShouldSkipWorkspaceDirectory(string directoryPath)

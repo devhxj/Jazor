@@ -522,6 +522,149 @@ public sealed class JazorVueHostDebugProtocolTests
     }
 
     [TestMethod]
+    public async Task DapRequestHandler_HandleAsync_StackTrace_PaginatesMixedFrames_WithStableTotalFrames()
+    {
+        var sourceText = """
+            <button>Count</button>
+
+            @code {
+                private int Count = 1;
+                public void Increment()
+                {
+                    Count++;
+                    Count += 2;
+                }
+            }
+            """;
+        var incrementLine = GetLineIndexContaining(sourceText, "Count++;");
+        var incrementByTwoLine = GetLineIndexContaining(sourceText, "Count += 2;");
+        var sourceMapService = new InMemorySourceMapService();
+        sourceMapService.Register(
+            "/Counter.jazor",
+            CreateSingleSourceColumnMap(
+                "Counter.jazor",
+                sourceText,
+                (0, 0, incrementLine, 8),
+                (1, 8, incrementByTwoLine, 12)));
+        var handler = CreateHandler(sourceMapService, out var session);
+        session.CurrentCallFrames =
+        [
+            new CdpCallFrame(
+                "frame-mapped-head",
+                "Increment",
+                new CdpLocation("/Counter.jazor", 0, 0)),
+            new CdpCallFrame(
+                "frame-runtime",
+                "Promise.then",
+                new CdpLocation("/runtime/internal.js", 20, 2)),
+            new CdpCallFrame(
+                "frame-mapped-tail",
+                "IncrementTail",
+                new CdpLocation("/Counter.jazor", 1, 8)),
+            new CdpCallFrame(
+                "frame-vendor",
+                "vendorTick",
+                new CdpLocation("/vendor/chunk.js", 8, 0))
+        ];
+
+        var result = await handler.HandleAsync(
+            new DapRequest
+            {
+                Seq = 7,
+                Command = "stackTrace",
+                Arguments = JsonSerializer.SerializeToElement(new
+                {
+                    threadId = 1,
+                    startFrame = 1,
+                    levels = 2
+                })
+            },
+            CancellationToken.None);
+
+        Assert.IsTrue(result.Response.Success);
+        using var body = GetResponseBody(result.Response);
+        Assert.AreEqual(4, body.RootElement.GetProperty("totalFrames").GetInt32());
+
+        var frames = body.RootElement.GetProperty("stackFrames").EnumerateArray().ToArray();
+        Assert.AreEqual(2, frames.Length);
+
+        Assert.AreEqual("Promise.then", frames[0].GetProperty("name").GetString());
+        Assert.AreEqual("/runtime/internal.js", frames[0].GetProperty("source").GetProperty("path").GetString());
+        Assert.AreEqual(21, frames[0].GetProperty("line").GetInt32());
+        Assert.AreEqual(3, frames[0].GetProperty("column").GetInt32());
+
+        Assert.AreEqual("IncrementTail", frames[1].GetProperty("name").GetString());
+        Assert.AreEqual("Counter.jazor", frames[1].GetProperty("source").GetProperty("path").GetString());
+        Assert.AreEqual(incrementByTwoLine + 1, frames[1].GetProperty("line").GetInt32());
+        Assert.AreEqual(13, frames[1].GetProperty("column").GetInt32());
+    }
+
+    [TestMethod]
+    public async Task DapRequestHandler_HandleAsync_StackTrace_OutOfRangeStartFrame_ReturnsEmptyFramesAndStableTotalFrames()
+    {
+        var handler = CreateHandler(new InMemorySourceMapService(), out var session);
+        session.CurrentCallFrames =
+        [
+            new CdpCallFrame("frame-1", "render", new CdpLocation("/Counter.jazor", 1, 0)),
+            new CdpCallFrame("frame-2", "tick", new CdpLocation("/runtime/internal.js", 8, 2)),
+            new CdpCallFrame("frame-3", "flush", new CdpLocation("/runtime/internal.js", 10, 1))
+        ];
+
+        var result = await handler.HandleAsync(
+            new DapRequest
+            {
+                Seq = 8,
+                Command = "stackTrace",
+                Arguments = JsonSerializer.SerializeToElement(new
+                {
+                    threadId = 1,
+                    startFrame = 99,
+                    levels = 5
+                })
+            },
+            CancellationToken.None);
+
+        Assert.IsTrue(result.Response.Success);
+        using var body = GetResponseBody(result.Response);
+        Assert.AreEqual(3, body.RootElement.GetProperty("totalFrames").GetInt32());
+        Assert.AreEqual(0, body.RootElement.GetProperty("stackFrames").GetArrayLength());
+    }
+
+    [TestMethod]
+    public async Task DapRequestHandler_HandleAsync_StackTrace_ClampsNegativeStartAndTreatsNonPositiveLevelsAsAllRemaining()
+    {
+        var handler = CreateHandler(new InMemorySourceMapService(), out var session);
+        session.CurrentCallFrames =
+        [
+            new CdpCallFrame("frame-1", "render", new CdpLocation("/Counter.jazor", 1, 0)),
+            new CdpCallFrame("frame-2", "tick", new CdpLocation("/runtime/internal.js", 8, 2))
+        ];
+
+        var result = await handler.HandleAsync(
+            new DapRequest
+            {
+                Seq = 9,
+                Command = "stackTrace",
+                Arguments = JsonSerializer.SerializeToElement(new
+                {
+                    threadId = 1,
+                    startFrame = -12,
+                    levels = -1
+                })
+            },
+            CancellationToken.None);
+
+        Assert.IsTrue(result.Response.Success);
+        using var body = GetResponseBody(result.Response);
+        Assert.AreEqual(2, body.RootElement.GetProperty("totalFrames").GetInt32());
+
+        var frames = body.RootElement.GetProperty("stackFrames").EnumerateArray().ToArray();
+        Assert.AreEqual(2, frames.Length);
+        Assert.AreEqual("render", frames[0].GetProperty("name").GetString());
+        Assert.AreEqual("tick", frames[1].GetProperty("name").GetString());
+    }
+
+    [TestMethod]
     public async Task DapRequestHandler_HandleAsync_ScopesAndVariables_ReturnDeterministicFallbackState()
     {
         var handler = CreateHandler(new InMemorySourceMapService(), out var session);

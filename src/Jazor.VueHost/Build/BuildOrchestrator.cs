@@ -21,6 +21,7 @@ internal sealed class BuildOrchestrator
     private const string ManifestFileName = "jazor-build-manifest.json";
     private const string IncrementalStateFileName = "jazor-build-state.json";
     private const string IncrementalCacheHitMessage = "Incremental build cache hit.";
+    private const string IncrementalHtmlRefreshMessage = "Incremental build html refresh.";
     private static readonly Regex CssSourceMapCommentPattern = new(
         @"/\*#\s*sourceMappingURL=(?<value>[^*]+?)\s*\*/\s*$",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
@@ -76,6 +77,10 @@ internal sealed class BuildOrchestrator
 
         public required string ManifestPath { get; init; }
 
+        public string EntryRequestPath { get; init; } = string.Empty;
+
+        public IReadOnlyDictionary<string, string> Inputs { get; init; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
         public IReadOnlyList<ChunkInfo> Chunks { get; init; } = [];
 
         public IReadOnlyList<AssetInfo> CssAssets { get; init; } = [];
@@ -97,35 +102,63 @@ internal sealed class BuildOrchestrator
         try
         {
             using var context = new BuildContext(options);
+            IReadOnlyDictionary<string, string> incrementalInputs = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             string? incrementalFingerprint = null;
             if (options.Incremental)
             {
-                incrementalFingerprint = ComputeIncrementalFingerprint(context);
+                incrementalInputs = CollectIncrementalInputSignatures(context);
+                incrementalFingerprint = ComputeIncrementalFingerprint(options, incrementalInputs);
                 if (TryReadIncrementalState(context, out var incrementalState)
-                    && string.Equals(incrementalState.Fingerprint, incrementalFingerprint, StringComparison.Ordinal)
                     && AreIncrementalOutputsAvailable(context, incrementalState))
                 {
-                    stopwatch.Stop();
-                    return new BuildResult
+                    if (string.Equals(incrementalState.Fingerprint, incrementalFingerprint, StringComparison.Ordinal))
                     {
-                        Success = true,
-                        OutDirectory = context.OutDirectory,
-                        ManifestPath = ResolveAbsolutePath(context.RootDirectory, incrementalState.ManifestPath),
-                        Chunks = incrementalState.Chunks,
-                        CssAssets = incrementalState.CssAssets,
-                        StaticAssets = incrementalState.StaticAssets,
-                        Diagnostics =
-                        [
-                            .. context.Diagnostics,
-                            new BuildDiagnostic
-                            {
-                                Severity = DiagnosticSeverity.Info,
-                                Message = IncrementalCacheHitMessage
-                            }
-                        ],
-                        Duration = stopwatch.Elapsed,
-                        TotalSize = incrementalState.TotalSize
-                    };
+                        stopwatch.Stop();
+                        return new BuildResult
+                        {
+                            Success = true,
+                            OutDirectory = context.OutDirectory,
+                            ManifestPath = ResolveAbsolutePath(context.RootDirectory, incrementalState.ManifestPath),
+                            Chunks = incrementalState.Chunks,
+                            CssAssets = incrementalState.CssAssets,
+                            StaticAssets = incrementalState.StaticAssets,
+                            Diagnostics =
+                            [
+                                .. context.Diagnostics,
+                                new BuildDiagnostic
+                                {
+                                    Severity = DiagnosticSeverity.Info,
+                                    Message = IncrementalCacheHitMessage
+                                }
+                            ],
+                            Duration = stopwatch.Elapsed,
+                            TotalSize = incrementalState.TotalSize
+                        };
+                    }
+
+                    var htmlRefreshResult = await TryBuildHtmlRefreshIncrementalResultAsync(
+                        context,
+                        options,
+                        incrementalState,
+                        incrementalInputs,
+                        incrementalFingerprint,
+                        cancellationToken);
+                    if (htmlRefreshResult is not null)
+                    {
+                        stopwatch.Stop();
+                        return new BuildResult
+                        {
+                            Success = htmlRefreshResult.Success,
+                            OutDirectory = htmlRefreshResult.OutDirectory,
+                            ManifestPath = htmlRefreshResult.ManifestPath,
+                            Chunks = htmlRefreshResult.Chunks,
+                            CssAssets = htmlRefreshResult.CssAssets,
+                            StaticAssets = htmlRefreshResult.StaticAssets,
+                            Diagnostics = htmlRefreshResult.Diagnostics,
+                            Duration = stopwatch.Elapsed,
+                            TotalSize = htmlRefreshResult.TotalSize
+                        };
+                    }
                 }
             }
 
@@ -164,7 +197,7 @@ internal sealed class BuildOrchestrator
             await moduleServer.StartAsync(cancellationToken);
 
             var entryPointPath = BuildEntryPointResolver.ResolveEntryPoint(options.RootDirectory);
-            var entryRequestPath = "/" + Path.GetRelativePath(options.RootDirectory, entryPointPath).Replace('\\', '/');
+            var entryRequestPath = ResolveEntryRequestPath(options.RootDirectory, entryPointPath);
             var serverUri = moduleServer.ListeningUri ?? new Uri($"http://{devOptions.Host}:{devOptions.Port}/");
             var entryUri = new Uri(serverUri, entryRequestPath);
 
@@ -283,6 +316,8 @@ internal sealed class BuildOrchestrator
                     context,
                     buildResult,
                     incrementalFingerprint,
+                    incrementalInputs,
+                    entryRequestPath,
                     cancellationToken);
             }
 
@@ -2346,24 +2381,19 @@ internal sealed class BuildOrchestrator
     private static bool IsBuildGraphCompilablePath(string path)
         => BuildGraphCompilableExtensions.Contains(Path.GetExtension(path));
 
-    private static string ComputeIncrementalFingerprint(BuildContext context)
+    private static IReadOnlyDictionary<string, string> CollectIncrementalInputSignatures(BuildContext context)
     {
-        var fingerprintBuilder = new StringBuilder();
-        fingerprintBuilder.Append(BuildIncrementalOptionsFingerprint(context.Options));
-
+        var inputs = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (var filePath in EnumerateIncrementalInputFiles(context))
         {
             try
             {
                 var fileInfo = new FileInfo(filePath);
                 var relativePath = Path.GetRelativePath(context.RootDirectory, filePath).Replace('\\', '/');
-                fingerprintBuilder
-                    .Append(relativePath)
-                    .Append('|')
-                    .Append(fileInfo.Length.ToString(CultureInfo.InvariantCulture))
-                    .Append('|')
-                    .Append(fileInfo.LastWriteTimeUtc.Ticks.ToString(CultureInfo.InvariantCulture))
-                    .AppendLine();
+                var signature = fileInfo.Length.ToString(CultureInfo.InvariantCulture)
+                    + "|"
+                    + fileInfo.LastWriteTimeUtc.Ticks.ToString(CultureInfo.InvariantCulture);
+                inputs[relativePath] = signature;
             }
             catch (IOException)
             {
@@ -2375,7 +2405,53 @@ internal sealed class BuildOrchestrator
             }
         }
 
+        return inputs;
+    }
+
+    private static string ComputeIncrementalFingerprint(
+        BuildOptions options,
+        IReadOnlyDictionary<string, string> incrementalInputs)
+    {
+        var fingerprintBuilder = new StringBuilder();
+        fingerprintBuilder.Append(BuildIncrementalOptionsFingerprint(options));
+        foreach (var (path, signature) in incrementalInputs
+                     .OrderBy(static item => item.Key, StringComparer.OrdinalIgnoreCase))
+        {
+            fingerprintBuilder
+                .Append(path)
+                .Append('|')
+                .Append(signature)
+                .AppendLine();
+        }
+
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(fingerprintBuilder.ToString())));
+    }
+
+    private static IReadOnlyList<string> GetIncrementalChangedPaths(
+        IReadOnlyDictionary<string, string> previousInputs,
+        IReadOnlyDictionary<string, string> currentInputs)
+    {
+        var changedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (path, previousSignature) in previousInputs)
+        {
+            if (!currentInputs.TryGetValue(path, out var currentSignature)
+                || !string.Equals(previousSignature, currentSignature, StringComparison.Ordinal))
+            {
+                changedPaths.Add(path);
+            }
+        }
+
+        foreach (var path in currentInputs.Keys)
+        {
+            if (!previousInputs.ContainsKey(path))
+            {
+                changedPaths.Add(path);
+            }
+        }
+
+        return changedPaths
+            .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 
     private static string BuildIncrementalOptionsFingerprint(BuildOptions options)
@@ -2590,10 +2666,93 @@ internal sealed class BuildOrchestrator
         return true;
     }
 
+    private static async Task<BuildResult?> TryBuildHtmlRefreshIncrementalResultAsync(
+        BuildContext context,
+        BuildOptions options,
+        BuildIncrementalState state,
+        IReadOnlyDictionary<string, string> incrementalInputs,
+        string incrementalFingerprint,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(state.EntryRequestPath))
+        {
+            return null;
+        }
+
+        var changedPaths = GetIncrementalChangedPaths(state.Inputs, incrementalInputs);
+        if (changedPaths.Count != 1
+            || !string.Equals(changedPaths[0], "index.html", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        string entryPointPath;
+        try
+        {
+            entryPointPath = BuildEntryPointResolver.ResolveEntryPoint(options.RootDirectory);
+        }
+        catch
+        {
+            return null;
+        }
+
+        var currentEntryRequestPath = ResolveEntryRequestPath(options.RootDirectory, entryPointPath);
+        if (!string.Equals(currentEntryRequestPath, state.EntryRequestPath, StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        await GenerateHtmlAsync(
+            context,
+            state.Chunks,
+            state.CssAssets,
+            state.StaticAssets,
+            currentEntryRequestPath,
+            cancellationToken);
+        var manifestPath = await WriteManifestAsync(
+            context,
+            state.Chunks,
+            state.CssAssets,
+            state.StaticAssets,
+            state.TotalSize,
+            cancellationToken);
+
+        var result = new BuildResult
+        {
+            Success = true,
+            OutDirectory = context.OutDirectory,
+            ManifestPath = manifestPath,
+            Chunks = state.Chunks,
+            CssAssets = state.CssAssets,
+            StaticAssets = state.StaticAssets,
+            Diagnostics =
+            [
+                .. context.Diagnostics,
+                new BuildDiagnostic
+                {
+                    Severity = DiagnosticSeverity.Info,
+                    Message = IncrementalHtmlRefreshMessage
+                }
+            ],
+            TotalSize = state.TotalSize
+        };
+
+        await PersistIncrementalStateAsync(
+            context,
+            result,
+            incrementalFingerprint,
+            incrementalInputs,
+            currentEntryRequestPath,
+            cancellationToken);
+        return result;
+    }
+
     private static async Task PersistIncrementalStateAsync(
         BuildContext context,
         BuildResult buildResult,
         string fingerprint,
+        IReadOnlyDictionary<string, string> incrementalInputs,
+        string entryRequestPath,
         CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(buildResult.ManifestPath))
@@ -2605,6 +2764,8 @@ internal sealed class BuildOrchestrator
         {
             Fingerprint = fingerprint,
             ManifestPath = ResolveRootRelativePath(context.RootDirectory, buildResult.ManifestPath),
+            EntryRequestPath = entryRequestPath,
+            Inputs = incrementalInputs,
             Chunks = buildResult.Chunks,
             CssAssets = buildResult.CssAssets,
             StaticAssets = buildResult.StaticAssets,
@@ -2681,6 +2842,9 @@ internal sealed class BuildOrchestrator
                 && !relativePath.StartsWith(".." + Path.AltDirectorySeparatorChar, StringComparison.Ordinal)
                 && !Path.IsPathRooted(relativePath));
     }
+
+    private static string ResolveEntryRequestPath(string rootDirectory, string entryPointPath)
+        => "/" + Path.GetRelativePath(rootDirectory, entryPointPath).Replace('\\', '/');
 
     private static string ToHtmlPath(BuildContext context, string rootRelativePath)
     {

@@ -1665,15 +1665,20 @@ internal sealed class InProcRoslynCodeService
             return false;
         }
 
-        range ??= selectionRange;
-        selectionRange ??= range;
+        var resolvedRange = range ?? selectionRange;
+        var resolvedSelectionRange = selectionRange ?? range;
+        if (resolvedRange is null || resolvedSelectionRange is null)
+        {
+            return false;
+        }
+
         symbol = new LspDocumentSymbol
         {
             Name = declaredSymbol?.Name ?? fallbackName,
             Detail = declaredSymbol?.ToDisplayString(SymbolDisplayFormat),
             Kind = MapDocumentSymbolKind(declaredSymbol, fallbackKind),
-            Range = range,
-            SelectionRange = selectionRange
+            Range = resolvedRange,
+            SelectionRange = resolvedSelectionRange
         };
         return true;
     }
