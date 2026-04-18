@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Threading.Channels;
 
 namespace Jazor.VueHost.Lsp;
 
@@ -7,6 +8,7 @@ internal sealed class StdioLspServer
     private readonly LspSession _session;
     private readonly Lock _requestGate = new();
     private readonly Dictionary<string, CancellationTokenSource> _activeRequests = new(StringComparer.Ordinal);
+    private readonly HashSet<string> _pendingCancellationRequests = new(StringComparer.Ordinal);
 
     public StdioLspServer(LspSession session)
     {
@@ -20,6 +22,12 @@ internal sealed class StdioLspServer
     {
         var reader = new LspMessageReader(input);
         var writer = new LspMessageWriter(output);
+        var queue = Channel.CreateUnbounded<LspRequestMessage>(new UnboundedChannelOptions
+        {
+            SingleReader = true,
+            SingleWriter = true
+        });
+        var workerTask = ProcessMessagesAsync(queue.Reader, writer, cancellationToken);
 
         try
         {
@@ -43,23 +51,56 @@ internal sealed class StdioLspServer
                     continue;
                 }
 
-                if (request.Id is null)
+                if (request.Id is null
+                    && string.Equals(request.Method, "exit", StringComparison.Ordinal))
                 {
-                    var shouldContinue = await _session.HandleNotificationAsync(request, cancellationToken);
+                    await queue.Writer.WriteAsync(request, cancellationToken);
+                    break;
+                }
+
+                await queue.Writer.WriteAsync(request, cancellationToken);
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+        }
+        finally
+        {
+            queue.Writer.TryComplete();
+            try
+            {
+                await workerTask;
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+            }
+
+            CancelAndDisposeActiveRequests();
+        }
+    }
+
+    private async ValueTask ProcessMessagesAsync(
+        ChannelReader<LspRequestMessage> queueReader,
+        LspMessageWriter writer,
+        CancellationToken cancellationToken)
+    {
+        while (await queueReader.WaitToReadAsync(cancellationToken))
+        {
+            while (queueReader.TryRead(out var message))
+            {
+                if (message.Id is null)
+                {
+                    var shouldContinue = await _session.HandleNotificationAsync(message, cancellationToken);
                     if (!shouldContinue)
                     {
-                        break;
+                        return;
                     }
 
                     continue;
                 }
 
-                await HandleRequestAsync(request, writer, cancellationToken);
+                await HandleRequestAsync(message, writer, cancellationToken);
             }
-        }
-        finally
-        {
-            CancelAndDisposeActiveRequests();
         }
     }
 
@@ -68,8 +109,14 @@ internal sealed class StdioLspServer
         LspMessageWriter writer,
         CancellationToken sessionCancellationToken)
     {
-        using var requestCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(sessionCancellationToken);
         var requestKey = CreateRequestKey(request.Id);
+        if (requestKey is not null && IsRequestCancelledBeforeExecution(requestKey))
+        {
+            await WriteResponseAsync(writer, CreateCancelledResponse(request.Id));
+            return;
+        }
+
+        using var requestCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(sessionCancellationToken);
         if (requestKey is not null)
         {
             lock (_requestGate)
@@ -91,15 +138,7 @@ internal sealed class StdioLspServer
         }
         catch (OperationCanceledException) when (requestCancellationSource.IsCancellationRequested)
         {
-            response = new LspResponseMessage
-            {
-                Id = request.Id,
-                Error = new LspResponseError
-                {
-                    Code = -32800,
-                    Message = "Request cancelled."
-                }
-            };
+            response = CreateCancelledResponse(request.Id);
         }
         catch (Exception ex)
         {
@@ -129,6 +168,13 @@ internal sealed class StdioLspServer
             return;
         }
 
+        await WriteResponseAsync(writer, response);
+    }
+
+    private static async ValueTask WriteResponseAsync(
+        LspMessageWriter writer,
+        LspResponseMessage response)
+    {
         try
         {
             await writer.WriteMessageAsync(
@@ -138,6 +184,25 @@ internal sealed class StdioLspServer
         catch
         {
             // Output stream can be closed during shutdown; suppress late write failures.
+        }
+    }
+
+    private static LspResponseMessage CreateCancelledResponse(object? requestId)
+        => new()
+        {
+            Id = requestId,
+            Error = new LspResponseError
+            {
+                Code = -32800,
+                Message = "Request cancelled."
+            }
+        };
+
+    private bool IsRequestCancelledBeforeExecution(string requestKey)
+    {
+        lock (_requestGate)
+        {
+            return _pendingCancellationRequests.Remove(requestKey);
         }
     }
 
@@ -155,7 +220,10 @@ internal sealed class StdioLspServer
             if (_activeRequests.TryGetValue(requestKey, out var cancellationTokenSource))
             {
                 cancellationTokenSource.Cancel();
+                return;
             }
+
+            _pendingCancellationRequests.Add(requestKey);
         }
     }
 
@@ -166,6 +234,7 @@ internal sealed class StdioLspServer
         {
             activeSources = _activeRequests.Values.ToArray();
             _activeRequests.Clear();
+            _pendingCancellationRequests.Clear();
         }
 
         foreach (var source in activeSources)

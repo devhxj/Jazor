@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Threading;
 using Jazor.VueContracts.Protocol;
 
 namespace Jazor.VueHost.Workspace;
@@ -6,6 +7,23 @@ namespace Jazor.VueHost.Workspace;
 internal static class VueHostWorkspaceResolver
 {
     private static readonly ConcurrentDictionary<string, string[]> WorkspaceFileCache = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly AsyncLocal<string[]?> WorkspaceFolderRoots = new();
+
+    public static IDisposable PushWorkspaceFolderRoots(IEnumerable<string> workspaceFolderRoots)
+    {
+        ArgumentNullException.ThrowIfNull(workspaceFolderRoots);
+
+        var previous = WorkspaceFolderRoots.Value;
+        var normalizedRoots = workspaceFolderRoots
+            .Where(static root => !string.IsNullOrWhiteSpace(root))
+            .Select(root => Path.GetFullPath(root))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        WorkspaceFolderRoots.Value = normalizedRoots.Length == 0
+            ? null
+            : normalizedRoots;
+        return new WorkspaceFolderRootScope(previous);
+    }
 
     public static void InvalidatePath(string documentPath)
     {
@@ -532,6 +550,29 @@ internal static class VueHostWorkspaceResolver
         string? secondaryDocumentPath,
         IReadOnlyList<DocumentSnapshot> openDocuments)
     {
+        var directories = CollectSearchDirectories(documentPath, secondaryDocumentPath, openDocuments);
+        var workspaceFolderRoots = GetScopedWorkspaceFolderRoots();
+        if (workspaceFolderRoots.Count > 0)
+        {
+            foreach (var root in GetWorkspaceSearchRootsWithinFolders(directories, workspaceFolderRoots))
+            {
+                yield return root;
+            }
+
+            yield break;
+        }
+
+        foreach (var root in GetDefaultWorkspaceSearchRoots(directories))
+        {
+            yield return root;
+        }
+    }
+
+    private static IReadOnlyList<string> CollectSearchDirectories(
+        string documentPath,
+        string? secondaryDocumentPath,
+        IReadOnlyList<DocumentSnapshot> openDocuments)
+    {
         var directories = new List<string>();
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var path in new[] { documentPath, secondaryDocumentPath }
@@ -557,6 +598,14 @@ internal static class VueHostWorkspaceResolver
             }
         }
 
+        return directories;
+    }
+
+    private static IReadOnlyList<string> GetScopedWorkspaceFolderRoots()
+        => WorkspaceFolderRoots.Value ?? Array.Empty<string>();
+
+    private static IEnumerable<string> GetDefaultWorkspaceSearchRoots(IReadOnlyList<string> directories)
+    {
         if (directories.Count == 0)
         {
             yield break;
@@ -587,6 +636,82 @@ internal static class VueHostWorkspaceResolver
                 {
                     yield return ancestor;
                 }
+            }
+        }
+    }
+
+    private static IEnumerable<string> GetWorkspaceSearchRootsWithinFolders(
+        IReadOnlyList<string> directories,
+        IReadOnlyList<string> workspaceFolderRoots)
+    {
+        var normalizedFolderRoots = workspaceFolderRoots
+            .Where(static root => !string.IsNullOrWhiteSpace(root))
+            .Select(static root => Path.GetFullPath(root))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (normalizedFolderRoots.Length == 0)
+        {
+            yield break;
+        }
+
+        var boundedDirectories = directories
+            .Select(directory => new
+            {
+                Directory = directory,
+                Root = FindContainingWorkspaceFolderRoot(directory, normalizedFolderRoots)
+            })
+            .Where(static item => item.Root is not null)
+            .Select(static item => new
+            {
+                item.Directory,
+                Root = item.Root!
+            })
+            .ToArray();
+
+        if (boundedDirectories.Length == 0)
+        {
+            foreach (var root in normalizedFolderRoots)
+            {
+                yield return root;
+            }
+
+            yield break;
+        }
+
+        if (boundedDirectories.Length > 1
+            && TryGetCommonSearchAncestor(boundedDirectories.Select(static item => item.Directory).ToArray()) is { } commonAncestor)
+        {
+            var normalizedCommonAncestor = NormalizeComparablePath(commonAncestor);
+            var isBoundedAncestor = boundedDirectories.All(item =>
+                PathMatchesOrContains(normalizedCommonAncestor, NormalizeComparablePath(item.Root)));
+            if (isBoundedAncestor)
+            {
+                yield return commonAncestor;
+                yield break;
+            }
+        }
+
+        var emitted = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var bounded in boundedDirectories)
+        {
+            foreach (var ancestor in EnumerateSearchAncestors(bounded.Directory, bounded.Root))
+            {
+                if (emitted.Add(ancestor))
+                {
+                    yield return ancestor;
+                }
+            }
+        }
+
+        var relevantRoots = boundedDirectories
+            .Select(static item => item.Root)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        foreach (var root in relevantRoots)
+        {
+            if (emitted.Add(root))
+            {
+                yield return root;
             }
         }
     }
@@ -784,23 +909,43 @@ internal static class VueHostWorkspaceResolver
             || importSource.StartsWith(".\\", StringComparison.Ordinal)
             || importSource.StartsWith("..\\", StringComparison.Ordinal);
 
-    private static IEnumerable<string> EnumerateSearchAncestors(string directory)
+    private static IEnumerable<string> EnumerateSearchAncestors(
+        string directory,
+        string? stopAtDirectory = null)
     {
         var current = Path.GetFullPath(directory);
+        var normalizedStopAt = string.IsNullOrWhiteSpace(stopAtDirectory)
+            ? null
+            : NormalizeComparablePath(Path.GetFullPath(stopAtDirectory));
         var depth = 0;
+        var emittedStopDirectory = false;
         while (!string.IsNullOrWhiteSpace(current) && depth < 3)
         {
+            var normalizedCurrent = NormalizeComparablePath(current);
+            if (normalizedStopAt is not null
+                && !PathMatchesOrContains(normalizedCurrent, normalizedStopAt))
+            {
+                break;
+            }
+
             if (string.Equals(current, Path.GetPathRoot(current), StringComparison.OrdinalIgnoreCase))
             {
                 yield break;
             }
 
-            if (depth > 0 && IsTooBroadTempAncestor(current))
+            if (normalizedStopAt is null && depth > 0 && IsTooBroadTempAncestor(current))
             {
                 yield break;
             }
 
             yield return current;
+            if (normalizedStopAt is not null
+                && string.Equals(normalizedCurrent, normalizedStopAt, StringComparison.OrdinalIgnoreCase))
+            {
+                emittedStopDirectory = true;
+                yield break;
+            }
+
             depth++;
 
             var parent = Directory.GetParent(current)?.FullName;
@@ -811,6 +956,11 @@ internal static class VueHostWorkspaceResolver
             }
 
             current = parent;
+        }
+
+        if (normalizedStopAt is not null && !emittedStopDirectory)
+        {
+            yield return Path.GetFullPath(stopAtDirectory!);
         }
     }
 
@@ -854,6 +1004,29 @@ internal static class VueHostWorkspaceResolver
         }
 
         return null;
+    }
+
+    private static string? FindContainingWorkspaceFolderRoot(
+        string directory,
+        IReadOnlyList<string> workspaceFolderRoots)
+    {
+        var normalizedDirectory = NormalizeComparablePath(directory);
+        string? bestMatch = null;
+        foreach (var root in workspaceFolderRoots)
+        {
+            var normalizedRoot = NormalizeComparablePath(root);
+            if (!PathMatchesOrContains(normalizedDirectory, normalizedRoot))
+            {
+                continue;
+            }
+
+            if (bestMatch is null || normalizedRoot.Length > bestMatch.Length)
+            {
+                bestMatch = normalizedRoot;
+            }
+        }
+
+        return bestMatch;
     }
 
     private static bool ShouldSkipWorkspaceDirectory(string directoryPath)
@@ -928,6 +1101,9 @@ internal static class VueHostWorkspaceResolver
         => string.Equals(left, right, StringComparison.OrdinalIgnoreCase)
             || left.StartsWith(right + "/", StringComparison.OrdinalIgnoreCase);
 
+    private static string NormalizeComparablePath(string path)
+        => NormalizePath(path).TrimEnd('/', '\\');
+
     private static string? GetParentDirectoryPath(string documentDirectory)
     {
         if (Path.IsPathRooted(documentDirectory))
@@ -942,6 +1118,22 @@ internal static class VueHostWorkspaceResolver
         }
 
         return Path.GetDirectoryName(normalized);
+    }
+
+    private sealed class WorkspaceFolderRootScope(string[]? previousRoots) : IDisposable
+    {
+        private bool _disposed;
+
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            WorkspaceFolderRoots.Value = previousRoots;
+            _disposed = true;
+        }
     }
 }
 

@@ -7,7 +7,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <NoWarn>$(NoWarn);RS1035</NoWarn>
-    <DenoHostVersion>2.7.7</DenoHostVersion>
+    <DenoHostVersion>2.7.12</DenoHostVersion>
     <DenoHostRuntimePackageId Condition="'$(NETCoreSdkPortableRuntimeIdentifier)' != ''">DenoHost.Runtime.$(NETCoreSdkPortableRuntimeIdentifier)</DenoHostRuntimePackageId>
     <DenoExecutableName Condition="$([MSBuild]::IsOsPlatform('Windows'))">deno.exe</DenoExecutableName>
     <DenoExecutableName Condition="'$(DenoExecutableName)' == ''">deno</DenoExecutableName>
@@ -26,7 +26,7 @@
     <ProjectReference Include="..\Jazor.Emit\Jazor.Emit.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="DenoHost.Core" Version="2.7.12" />
+    <PackageReference Include="DenoHost.Core" Version="$(DenoHostVersion)" />
     <PackageReference Include="$(DenoHostRuntimePackageId)" Version="$(DenoHostVersion)" Condition="'$(DenoHostRuntimePackageId)' != ''" />
     <Reference Include="Microsoft.CodeAnalysis">
       <HintPath>$(VueHostRoslynBinariesPath)\Microsoft.CodeAnalysis.dll</HintPath>
@@ -50,7 +50,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Update="DenoHost.Runtime.win-x64" Version="2.7.12" />
+    <PackageReference Update="DenoHost.Runtime.win-x64" Version="$(DenoHostVersion)" />
   </ItemGroup>
 
   <Target Name="CacheVueHostFrontendWorkerDependencies" AfterTargets="Build" Condition="'$(DesignTimeBuild)' != 'true' and Exists('$(VueHostBundledDenoPath)') and Exists('$(VueHostWorkerOutputPath)')">

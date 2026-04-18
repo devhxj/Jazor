@@ -86,6 +86,7 @@ internal sealed class LspSession
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        using var workspaceFolderScope = VueHostWorkspaceResolver.PushWorkspaceFolderRoots(GetWorkspaceFolderRootPaths());
 
         return request.Method switch
         {
@@ -122,6 +123,7 @@ internal sealed class LspSession
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        using var workspaceFolderScope = VueHostWorkspaceResolver.PushWorkspaceFolderRoots(GetWorkspaceFolderRootPaths());
 
         switch (notification.Method)
         {
@@ -900,6 +902,36 @@ internal sealed class LspSession
                 .ThenBy(static folder => folder.Uri, StringComparer.OrdinalIgnoreCase)
                 .Select(CloneWorkspaceFolder)
                 .ToArray();
+        }
+    }
+
+    private IReadOnlyList<string> GetWorkspaceFolderRootPaths()
+    {
+        lock (_workspaceFoldersGate)
+        {
+            return _workspaceFoldersByUri.Values
+                .Select(static folder => TryResolveWorkspaceFolderRootPath(folder.Uri))
+                .Where(static path => !string.IsNullOrWhiteSpace(path))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Select(static path => path!)
+                .ToArray();
+        }
+    }
+
+    private static string? TryResolveWorkspaceFolderRootPath(string? workspaceFolderUri)
+    {
+        if (string.IsNullOrWhiteSpace(workspaceFolderUri))
+        {
+            return null;
+        }
+
+        try
+        {
+            return Path.GetFullPath(LspProtocolHelpers.ToDocumentPath(workspaceFolderUri));
+        }
+        catch
+        {
+            return null;
         }
     }
 

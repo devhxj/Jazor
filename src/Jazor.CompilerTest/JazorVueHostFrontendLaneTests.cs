@@ -969,6 +969,72 @@ public sealed class JazorVueHostFrontendLaneTests
     }
 
     [TestMethod]
+    public async Task JazorVueHost_FrontendLaneService_RecordsDenoFailureSnapshot_WhenCompletionThrows()
+    {
+        VolarLaneService.ResetDenoFailureSnapshotsForTests();
+        try
+        {
+            var denoHost = new FakeDenoFrontendHost();
+            denoHost.SetFailure("completion", new InvalidOperationException("simulated completion failure"));
+            var lane = CreateLane(denoHost);
+            var document = CreateDocument("<");
+
+            var items = await lane.GetCompletionItemsAsync(
+                document,
+                new LspPosition { Line = 0, Character = 1 },
+                CreateTemplateTarget(document),
+                CancellationToken.None);
+
+            Assert.AreEqual(0, items.Count);
+            var snapshot = VolarLaneService
+                .GetDenoFailureSnapshots()
+                .SingleOrDefault(static entry => string.Equals(entry.Operation, "completion", StringComparison.OrdinalIgnoreCase));
+            Assert.IsNotNull(snapshot);
+            Assert.AreEqual(1, snapshot.FailureCount);
+            StringAssert.Contains(snapshot.LastErrorMessage, "simulated completion failure");
+        }
+        finally
+        {
+            VolarLaneService.ResetDenoFailureSnapshotsForTests();
+        }
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_FrontendLaneService_Cancellation_DoesNotRecordDenoFailureSnapshot()
+    {
+        VolarLaneService.ResetDenoFailureSnapshotsForTests();
+        try
+        {
+            var lane = CreateLane(new FakeDenoFrontendHost());
+            var document = CreateDocument("<");
+            using var cancellationSource = new CancellationTokenSource();
+            cancellationSource.Cancel();
+
+            var canceled = false;
+            try
+            {
+                await lane.GetCompletionItemsAsync(
+                    document,
+                    new LspPosition { Line = 0, Character = 1 },
+                    CreateTemplateTarget(document),
+                    cancellationSource.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                canceled = true;
+            }
+
+            Assert.IsTrue(canceled, "Expected completion request to honor cancellation.");
+
+            Assert.AreEqual(0, VolarLaneService.GetDenoFailureSnapshots().Count);
+        }
+        finally
+        {
+            VolarLaneService.ResetDenoFailureSnapshotsForTests();
+        }
+    }
+
+    [TestMethod]
     public async Task JazorVueHost_FrontendLaneService_GetCompletionItems_UsesWorkspaceGraphWhenDenoEnabledButTemporarilyNotRunning()
     {
         var tempDirectory = CreateTemporaryDirectory();
@@ -2189,6 +2255,8 @@ public sealed class JazorVueHostFrontendLaneTests
 
     private sealed class FakeDenoFrontendHost : IDenoVolarHost
     {
+        private readonly Dictionary<string, Queue<Exception>> _failures = new(StringComparer.OrdinalIgnoreCase);
+
         public bool IsEnabled { get; init; } = true;
 
         public bool IsRunning { get; init; } = true;
@@ -2216,6 +2284,20 @@ public sealed class JazorVueHostFrontendLaneTests
         public LspPosition? LastPosition { get; private set; }
 
         public DenoVolarIntelliSenseContext? LastContext { get; private set; }
+
+        public void SetFailure(string method, Exception exception)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(method);
+            ArgumentNullException.ThrowIfNull(exception);
+
+            if (!_failures.TryGetValue(method, out var queue))
+            {
+                queue = new Queue<Exception>();
+                _failures[method] = queue;
+            }
+
+            queue.Enqueue(exception);
+        }
 
         public ValueTask StartAsync(CancellationToken cancellationToken)
         {
@@ -2257,7 +2339,7 @@ public sealed class JazorVueHostFrontendLaneTests
             DenoVolarIntelliSenseContext? context,
             CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfConfigured("diagnostics", cancellationToken);
             LastDocument = document;
             LastContext = context;
             return ValueTask.FromResult(Diagnostics);
@@ -2269,7 +2351,7 @@ public sealed class JazorVueHostFrontendLaneTests
             DenoVolarIntelliSenseContext? context,
             CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfConfigured("completion", cancellationToken);
             LastDocument = document;
             LastPosition = position;
             LastContext = context;
@@ -2281,7 +2363,7 @@ public sealed class JazorVueHostFrontendLaneTests
             DenoVolarIntelliSenseContext? context,
             CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfConfigured("documentSymbol", cancellationToken);
             LastDocument = document;
             LastContext = context;
             return ValueTask.FromResult(DocumentSymbols);
@@ -2292,7 +2374,7 @@ public sealed class JazorVueHostFrontendLaneTests
             DenoVolarIntelliSenseContext? context,
             CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfConfigured("semanticTokens", cancellationToken);
             LastDocument = document;
             LastContext = context;
             return ValueTask.FromResult(SemanticTokens);
@@ -2304,7 +2386,7 @@ public sealed class JazorVueHostFrontendLaneTests
             DenoVolarIntelliSenseContext? context,
             CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfConfigured("hover", cancellationToken);
             LastDocument = document;
             LastPosition = position;
             LastContext = context;
@@ -2317,7 +2399,7 @@ public sealed class JazorVueHostFrontendLaneTests
             DenoVolarIntelliSenseContext? context,
             CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfConfigured("definition", cancellationToken);
             LastDocument = document;
             LastPosition = position;
             LastContext = context;
@@ -2331,7 +2413,7 @@ public sealed class JazorVueHostFrontendLaneTests
             DenoVolarIntelliSenseContext? context,
             CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfConfigured("references", cancellationToken);
             LastDocument = document;
             LastPosition = position;
             LastContext = context;
@@ -2345,11 +2427,21 @@ public sealed class JazorVueHostFrontendLaneTests
             DenoVolarIntelliSenseContext? context,
             CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfConfigured("rename", cancellationToken);
             LastDocument = document;
             LastPosition = position;
             LastContext = context;
             return ValueTask.FromResult(RenameResult);
+        }
+
+        private void ThrowIfConfigured(string method, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (_failures.TryGetValue(method, out var queue)
+                && queue.Count > 0)
+            {
+                throw queue.Dequeue();
+            }
         }
     }
 

@@ -7,6 +7,8 @@ using Jazor.VueHost.VirtualDocuments.Mapping;
 using Jazor.VueHost.VirtualDocuments.Models;
 using Jazor.VueHost.VirtualDocuments.Registry;
 using Jazor.VueHost.Workspace;
+using System.Collections.Concurrent;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace Jazor.VueHost.Lsp.Lanes;
@@ -20,6 +22,7 @@ internal sealed class VolarLaneService : ILspLane
     private static readonly Regex TagCompletionPrefixPattern = new(
         @"</?(?<name>[A-Za-z0-9_]*)$",
         RegexOptions.Compiled);
+    private static readonly ConcurrentDictionary<string, DenoFailureSnapshot> DenoFailureSnapshots = new(StringComparer.OrdinalIgnoreCase);
     private readonly IFrontendContextProvider? _frontendContextProvider;
     private readonly IVirtualDocumentRegistry? _virtualDocumentRegistry;
     private readonly IDenoVolarHost? _denoVolarHost;
@@ -40,6 +43,14 @@ internal sealed class VolarLaneService : ILspLane
     }
 
     public LaneKind LaneKind => LaneKind.Volar;
+
+    internal static IReadOnlyList<DenoFailureSnapshot> GetDenoFailureSnapshots()
+        => DenoFailureSnapshots.Values
+            .OrderBy(static snapshot => snapshot.Operation, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+    internal static void ResetDenoFailureSnapshotsForTests()
+        => DenoFailureSnapshots.Clear();
 
     public async ValueTask<IReadOnlyList<LspDiagnostic>> GetDiagnosticsAsync(
         DocumentSnapshot document,
@@ -421,8 +432,16 @@ internal sealed class VolarLaneService : ILspLane
         {
             return await _denoVolarHost.GetTemplateCompletionItemsAsync(document, position, context, cancellationToken);
         }
-        catch
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            RecordDenoFailure(
+                operation: "completion",
+                documentPath: document.DocumentPath,
+                exception);
             return Array.Empty<LspCompletionItem>();
         }
     }
@@ -442,8 +461,16 @@ internal sealed class VolarLaneService : ILspLane
         {
             return await _denoVolarHost.GetTemplateHoverAsync(document, position, context, cancellationToken);
         }
-        catch
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            RecordDenoFailure(
+                operation: "hover",
+                documentPath: document.DocumentPath,
+                exception);
             return null;
         }
     }
@@ -463,8 +490,16 @@ internal sealed class VolarLaneService : ILspLane
         {
             return await _denoVolarHost.GetTemplateDefinitionAsync(document, position, context, cancellationToken);
         }
-        catch
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            RecordDenoFailure(
+                operation: "definition",
+                documentPath: document.DocumentPath,
+                exception);
             return Array.Empty<LspLocation>();
         }
     }
@@ -490,8 +525,16 @@ internal sealed class VolarLaneService : ILspLane
                 context,
                 cancellationToken);
         }
-        catch
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            RecordDenoFailure(
+                operation: "references",
+                documentPath: document.DocumentPath,
+                exception);
             return Array.Empty<LspLocation>();
         }
     }
@@ -512,8 +555,16 @@ internal sealed class VolarLaneService : ILspLane
         {
             return await _denoVolarHost.GetTemplateRenameAsync(document, position, newName, context, cancellationToken);
         }
-        catch
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            RecordDenoFailure(
+                operation: "rename",
+                documentPath: document.DocumentPath,
+                exception);
             return null;
         }
     }
@@ -532,8 +583,16 @@ internal sealed class VolarLaneService : ILspLane
         {
             return await _denoVolarHost.GetTemplateDocumentSymbolsAsync(document, context, cancellationToken);
         }
-        catch
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            RecordDenoFailure(
+                operation: "documentSymbol",
+                documentPath: document.DocumentPath,
+                exception);
             return Array.Empty<LspDocumentSymbol>();
         }
     }
@@ -552,8 +611,16 @@ internal sealed class VolarLaneService : ILspLane
         {
             return await _denoVolarHost.GetTemplateDiagnosticsAsync(document, context, cancellationToken);
         }
-        catch
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            RecordDenoFailure(
+                operation: "diagnostics",
+                documentPath: document.DocumentPath,
+                exception);
             return Array.Empty<LspDiagnostic>();
         }
     }
@@ -572,8 +639,16 @@ internal sealed class VolarLaneService : ILspLane
         {
             return await _denoVolarHost.GetTemplateSemanticTokensAsync(document, context, cancellationToken);
         }
-        catch
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            RecordDenoFailure(
+                operation: "semanticTokens",
+                documentPath: document.DocumentPath,
+                exception);
             return Array.Empty<LspSemanticToken>();
         }
     }
@@ -594,8 +669,16 @@ internal sealed class VolarLaneService : ILspLane
                 cancellationToken);
             return new DenoVolarIntelliSenseContext(response.SemanticContext, response.Artifacts);
         }
-        catch
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            RecordDenoFailure(
+                operation: "frontendContext",
+                documentPath: document.DocumentPath,
+                exception);
             return null;
         }
     }
@@ -1036,6 +1119,42 @@ internal sealed class VolarLaneService : ILspLane
         return filtered;
     }
 
+    private static void RecordDenoFailure(
+        string operation,
+        string documentPath,
+        Exception exception)
+    {
+        var timestamp = DateTimeOffset.UtcNow;
+        var snapshot = DenoFailureSnapshots.AddOrUpdate(
+            operation,
+            static (op, state) => new DenoFailureSnapshot(
+                Operation: op,
+                FailureCount: 1,
+                LastFailureAt: state.Timestamp,
+                LastErrorType: state.Exception.GetType().FullName ?? state.Exception.GetType().Name,
+                LastErrorMessage: state.Exception.Message),
+            static (op, current, state) => current with
+            {
+                FailureCount = current.FailureCount + 1,
+                LastFailureAt = state.Timestamp,
+                LastErrorType = state.Exception.GetType().FullName ?? state.Exception.GetType().Name,
+                LastErrorMessage = state.Exception.Message
+            },
+            (Timestamp: timestamp, Exception: exception));
+
+        var payload = new
+        {
+            eventType = "volarDenoLaneDegraded",
+            operation,
+            documentPath,
+            failureCount = snapshot.FailureCount,
+            errorType = snapshot.LastErrorType,
+            message = snapshot.LastErrorMessage,
+            timestamp = snapshot.LastFailureAt
+        };
+        Console.Error.WriteLine(JsonSerializer.Serialize(payload));
+    }
+
     private static string? TryGetComponentName(string text, LspRange range)
     {
         var start = LspProtocolHelpers.GetOffset(text, range.Start);
@@ -1075,6 +1194,13 @@ internal sealed class VolarLaneService : ILspLane
 
         return tokens;
     }
+
+    internal sealed record DenoFailureSnapshot(
+        string Operation,
+        int FailureCount,
+        DateTimeOffset LastFailureAt,
+        string LastErrorType,
+        string LastErrorMessage);
 
     private readonly record struct VolarRequestDocument(
         DocumentSnapshot RequestDocument,
