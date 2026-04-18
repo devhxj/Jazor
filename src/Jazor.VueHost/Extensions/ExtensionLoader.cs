@@ -54,7 +54,8 @@ internal sealed class ExtensionLoader : IAsyncDisposable
                     manifestPath: null,
                     assemblyPath: extension.GetType().Assembly.Location,
                     loadContext: null,
-                    cancellationToken);
+                    sandboxProfile: null,
+                    cancellationToken: cancellationToken);
             }
             catch (Exception ex)
             {
@@ -328,6 +329,82 @@ internal sealed class ExtensionLoader : IAsyncDisposable
                 return;
             }
 
+            var sandboxProfile = ExtensionSecurityPolicy.CreateRuntimeSandboxProfile(
+                manifest,
+                options.RootDirectory,
+                extensionDirectory);
+            var settings = NormalizeSettings(manifest.Settings);
+            if (manifest.Permissions?.ProcessIsolation == true)
+            {
+                var isolatedCreation = await TryCreateOutOfProcessExtensionAsync(
+                    options.RootDirectory,
+                    extensionDirectory,
+                    assemblyPath,
+                    manifest.Type,
+                    sandboxProfile,
+                    settings,
+                    cancellationToken);
+                if (!isolatedCreation.Success || isolatedCreation.Extension is null)
+                {
+                    ReportLoad(
+                        extensionId,
+                        UserSource,
+                        extensionDirectory,
+                        manifestPath,
+                        assemblyPath,
+                        ExtensionLoadStatus.Rejected,
+                        isolatedCreation.FailureReason);
+                    return;
+                }
+
+                var isolatedExtension = isolatedCreation.Extension;
+                if (!string.Equals(isolatedExtension.Metadata.Id, extensionId, StringComparison.OrdinalIgnoreCase))
+                {
+                    await TryDeactivateSilentlyAsync(isolatedExtension);
+                    ReportLoad(
+                        extensionId,
+                        UserSource,
+                        extensionDirectory,
+                        manifestPath,
+                        assemblyPath,
+                        ExtensionLoadStatus.Rejected,
+                        $"extension metadata id '{isolatedExtension.Metadata.Id}' does not match manifest id '{extensionId}'");
+                    return;
+                }
+
+                if (options.EnforceProviderPermissions
+                    && !ExtensionSecurityPolicy.IsProviderPermissionSatisfied(
+                        isolatedCreation.ProvidedCapabilities,
+                        manifest,
+                        out var isolatedPermissionFailureReason))
+                {
+                    await TryDeactivateSilentlyAsync(isolatedExtension);
+                    ReportLoad(
+                        extensionId,
+                        UserSource,
+                        extensionDirectory,
+                        manifestPath,
+                        assemblyPath,
+                        ExtensionLoadStatus.Rejected,
+                        isolatedPermissionFailureReason ?? "provider permission validation failed");
+                    return;
+                }
+
+                await LoadExtensionCoreAsync(
+                    isolatedExtension,
+                    options.RootDirectory,
+                    extensionDirectory,
+                    settings,
+                    source: UserSource,
+                    extensionId: extensionId,
+                    manifestPath: manifestPath,
+                    assemblyPath: assemblyPath,
+                    loadContext: null,
+                    sandboxProfile: sandboxProfile,
+                    cancellationToken: cancellationToken);
+                return;
+            }
+
             if (!TryCreateUserExtension(
                     assemblyPath,
                     manifest.Type,
@@ -378,7 +455,6 @@ internal sealed class ExtensionLoader : IAsyncDisposable
                 return;
             }
 
-            var settings = NormalizeSettings(manifest.Settings);
             await LoadExtensionCoreAsync(
                 extension,
                 options.RootDirectory,
@@ -389,7 +465,8 @@ internal sealed class ExtensionLoader : IAsyncDisposable
                 manifestPath: manifestPath,
                 assemblyPath: assemblyPath,
                 loadContext: loadContext,
-                cancellationToken);
+                sandboxProfile: sandboxProfile,
+                cancellationToken: cancellationToken);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -418,13 +495,15 @@ internal sealed class ExtensionLoader : IAsyncDisposable
         string? manifestPath,
         string? assemblyPath,
         CollectibleExtensionLoadContext? loadContext,
+        ExtensionSandboxProfile? sandboxProfile,
         CancellationToken cancellationToken)
     {
         var context = new ExtensionContext(
             rootDirectory: Path.GetFullPath(rootDirectory),
             extensionDirectory: Path.GetFullPath(extensionDirectory),
             registry: _registry,
-            settings: settings);
+            settings: settings,
+            sandboxProfile: sandboxProfile);
 
         try
         {
@@ -553,6 +632,57 @@ internal sealed class ExtensionLoader : IAsyncDisposable
             candidateContext?.Unload();
             failureReason = $"failed to load extension assembly: {ex.Message}";
             return false;
+        }
+    }
+
+    private static async ValueTask<OutOfProcessExtensionCreationResult> TryCreateOutOfProcessExtensionAsync(
+        string rootDirectory,
+        string extensionDirectory,
+        string assemblyPath,
+        string extensionTypeName,
+        ExtensionSandboxProfile sandboxProfile,
+        IReadOnlyDictionary<string, string>? settings,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(rootDirectory)
+            || string.IsNullOrWhiteSpace(extensionDirectory)
+            || string.IsNullOrWhiteSpace(assemblyPath)
+            || string.IsNullOrWhiteSpace(extensionTypeName))
+        {
+            return new OutOfProcessExtensionCreationResult(
+                Success: false,
+                Extension: null,
+                ProvidedCapabilities: new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+                FailureReason: "process-isolated extension bootstrap requires root, extension directory, assembly path, and type name");
+        }
+
+        try
+        {
+            var proxy = await OutOfProcessExtensionProxy.CreateAsync(
+                rootDirectory: Path.GetFullPath(rootDirectory),
+                extensionDirectory: Path.GetFullPath(extensionDirectory),
+                assemblyPath: Path.GetFullPath(assemblyPath),
+                extensionTypeName: extensionTypeName,
+                sandboxProfile: sandboxProfile,
+                settings: settings,
+                cancellationToken: cancellationToken);
+            return new OutOfProcessExtensionCreationResult(
+                Success: true,
+                Extension: proxy,
+                ProvidedCapabilities: proxy.ProvidedCapabilities,
+                FailureReason: string.Empty);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            return new OutOfProcessExtensionCreationResult(
+                Success: false,
+                Extension: null,
+                ProvidedCapabilities: new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+                FailureReason: $"process-isolated worker bootstrap failed: {exception.Message}");
         }
     }
 
@@ -686,4 +816,10 @@ internal sealed class ExtensionLoader : IAsyncDisposable
         string? ManifestPath,
         string? AssemblyPath,
         CollectibleExtensionLoadContext? LoadContext);
+
+    private sealed record OutOfProcessExtensionCreationResult(
+        bool Success,
+        IExtension? Extension,
+        IReadOnlySet<string> ProvidedCapabilities,
+        string FailureReason);
 }

@@ -1176,6 +1176,7 @@ internal sealed class LspSession
             LoadHealth: _extensionRegistry.GetExtensionLoadHealth(),
             ProviderHealth: _extensionRegistry.GetProviderHealth(),
             RecentLoadEvents: _extensionRegistry.GetRecentExtensionLoadInvocations(maxCount: 200),
+            RecentProviderEvents: _extensionRegistry.GetRecentProviderInvocations(maxCount: 500),
             GeneratedAt: DateTimeOffset.UtcNow);
 
     private async ValueTask RefreshOpenJazorDiagnosticsAsync(

@@ -39,4 +39,8 @@ internal sealed class ExtensionHostOptions
     public string? LoadLogFilePath { get; init; }
 
     public int LoadEventRetention { get; init; } = 200;
+
+    public string? ProviderLogFilePath { get; init; }
+
+    public int ProviderEventRetention { get; init; } = 500;
 }

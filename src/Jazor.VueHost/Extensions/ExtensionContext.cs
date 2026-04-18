@@ -6,7 +6,8 @@ internal sealed class ExtensionContext
         string rootDirectory,
         string extensionDirectory,
         IExtensionRegistry registry,
-        IReadOnlyDictionary<string, string>? settings = null)
+        IReadOnlyDictionary<string, string>? settings = null,
+        ExtensionSandboxProfile? sandboxProfile = null)
     {
         if (string.IsNullOrWhiteSpace(rootDirectory))
         {
@@ -22,6 +23,7 @@ internal sealed class ExtensionContext
         ExtensionDirectory = extensionDirectory;
         Registry = registry ?? throw new ArgumentNullException(nameof(registry));
         Settings = settings ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        SandboxProfile = sandboxProfile ?? ExtensionSandboxProfile.Unrestricted;
     }
 
     public string RootDirectory { get; }
@@ -31,4 +33,6 @@ internal sealed class ExtensionContext
     public IExtensionRegistry Registry { get; }
 
     public IReadOnlyDictionary<string, string> Settings { get; }
+
+    public ExtensionSandboxProfile SandboxProfile { get; }
 }

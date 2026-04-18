@@ -16,17 +16,17 @@ internal static class ExtensionSecurityPolicy
 
     private static readonly IReadOnlyDictionary<Type, string> ProviderCapabilityByInterface = new Dictionary<Type, string>
     {
-        [typeof(ILspDiagnosticProvider)] = "diagnostic",
-        [typeof(ILspCodeActionProvider)] = "codeAction",
-        [typeof(ILspHoverProvider)] = "hover",
-        [typeof(ILspCompletionProvider)] = "completion",
-        [typeof(ILspDocumentSymbolProvider)] = "documentSymbol",
-        [typeof(ILspSignatureHelpProvider)] = "signatureHelp",
-        [typeof(ILspInlayHintProvider)] = "inlayHint",
-        [typeof(ILspWorkspaceSymbolProvider)] = "workspaceSymbol",
-        [typeof(ILspFoldingRangeProvider)] = "foldingRange",
-        [typeof(ILspReferenceProvider)] = "references",
-        [typeof(ILspRenameProvider)] = "rename"
+        [typeof(ILspDiagnosticProvider)] = ExtensionCapabilityNames.Diagnostic,
+        [typeof(ILspCodeActionProvider)] = ExtensionCapabilityNames.CodeAction,
+        [typeof(ILspHoverProvider)] = ExtensionCapabilityNames.Hover,
+        [typeof(ILspCompletionProvider)] = ExtensionCapabilityNames.Completion,
+        [typeof(ILspDocumentSymbolProvider)] = ExtensionCapabilityNames.DocumentSymbol,
+        [typeof(ILspSignatureHelpProvider)] = ExtensionCapabilityNames.SignatureHelp,
+        [typeof(ILspInlayHintProvider)] = ExtensionCapabilityNames.InlayHint,
+        [typeof(ILspWorkspaceSymbolProvider)] = ExtensionCapabilityNames.WorkspaceSymbol,
+        [typeof(ILspFoldingRangeProvider)] = ExtensionCapabilityNames.FoldingRange,
+        [typeof(ILspReferenceProvider)] = ExtensionCapabilityNames.References,
+        [typeof(ILspRenameProvider)] = ExtensionCapabilityNames.Rename
     };
 
     public static IReadOnlySet<string> GetProvidedCapabilities(IExtension extension)
@@ -85,6 +85,17 @@ internal static class ExtensionSecurityPolicy
         ArgumentNullException.ThrowIfNull(manifest);
 
         var providedCapabilities = GetProvidedCapabilities(extensionType);
+        return IsProviderPermissionSatisfied(providedCapabilities, manifest, out reason);
+    }
+
+    public static bool IsProviderPermissionSatisfied(
+        IReadOnlySet<string> providedCapabilities,
+        ExtensionManifest manifest,
+        out string? reason)
+    {
+        ArgumentNullException.ThrowIfNull(providedCapabilities);
+        ArgumentNullException.ThrowIfNull(manifest);
+
         if (providedCapabilities.Count == 0)
         {
             reason = null;
@@ -133,6 +144,103 @@ internal static class ExtensionSecurityPolicy
 
         reason = null;
         return true;
+    }
+
+    public static ExtensionSandboxProfile CreateRuntimeSandboxProfile(
+        ExtensionManifest manifest,
+        string rootDirectory,
+        string extensionDirectory)
+    {
+        ArgumentNullException.ThrowIfNull(manifest);
+        if (string.IsNullOrWhiteSpace(rootDirectory))
+        {
+            throw new ArgumentException("Value cannot be null or whitespace.", nameof(rootDirectory));
+        }
+
+        if (string.IsNullOrWhiteSpace(extensionDirectory))
+        {
+            throw new ArgumentException("Value cannot be null or whitespace.", nameof(extensionDirectory));
+        }
+
+        var normalizedRootDirectory = Path.GetFullPath(rootDirectory);
+        var normalizedExtensionDirectory = Path.GetFullPath(extensionDirectory);
+        var ioPermission = manifest.Permissions?.Io;
+        var networkPermission = manifest.Permissions?.Network;
+
+        var ioCapability = NormalizeIoCapability(ioPermission?.Level) ?? ExtensionHostOptions.IoCapabilityNone;
+        var networkCapability = NormalizeNetworkCapability(networkPermission?.Level) ?? ExtensionHostOptions.NetworkCapabilityNone;
+
+        var readRoots = ResolvePermissionPathsForRuntime(
+            normalizedRootDirectory,
+            normalizedExtensionDirectory,
+            NormalizePermissionPaths(ioPermission?.ReadRoots));
+        var writeRoots = ResolvePermissionPathsForRuntime(
+            normalizedRootDirectory,
+            normalizedExtensionDirectory,
+            NormalizePermissionPaths(ioPermission?.WriteRoots));
+
+        if (string.Equals(ioCapability, ExtensionHostOptions.IoCapabilityNone, StringComparison.OrdinalIgnoreCase))
+        {
+            readRoots = Array.Empty<string>();
+            writeRoots = Array.Empty<string>();
+        }
+        else if (string.Equals(ioCapability, ExtensionHostOptions.IoCapabilityRead, StringComparison.OrdinalIgnoreCase))
+        {
+            if (writeRoots.Length > 0)
+            {
+                throw new InvalidOperationException("io level 'read' cannot declare writeRoots.");
+            }
+
+            if (readRoots.Length == 0)
+            {
+                readRoots =
+                [
+                    normalizedRootDirectory,
+                    normalizedExtensionDirectory
+                ];
+            }
+        }
+        else if (string.Equals(ioCapability, ExtensionHostOptions.IoCapabilityReadWrite, StringComparison.OrdinalIgnoreCase))
+        {
+            if (readRoots.Length == 0)
+            {
+                readRoots =
+                [
+                    normalizedRootDirectory,
+                    normalizedExtensionDirectory
+                ];
+            }
+
+            if (writeRoots.Length == 0)
+            {
+                writeRoots = [normalizedExtensionDirectory];
+            }
+        }
+
+        var allowedHosts = NormalizeHosts(networkPermission?.AllowedHosts);
+        if (string.Equals(networkCapability, ExtensionHostOptions.NetworkCapabilityNone, StringComparison.OrdinalIgnoreCase))
+        {
+            allowedHosts = Array.Empty<string>();
+        }
+        else if (string.Equals(networkCapability, ExtensionHostOptions.NetworkCapabilityLoopback, StringComparison.OrdinalIgnoreCase)
+                 && allowedHosts.Length == 0)
+        {
+            allowedHosts =
+            [
+                "localhost",
+                "127.0.0.1",
+                "::1"
+            ];
+        }
+
+        return new ExtensionSandboxProfile
+        {
+            IoCapability = ioCapability,
+            NetworkCapability = networkCapability,
+            ReadRoots = readRoots,
+            WriteRoots = writeRoots,
+            AllowedHosts = allowedHosts
+        };
     }
 
     public static bool IsAssemblyHashSatisfied(
@@ -386,6 +494,13 @@ internal static class ExtensionSecurityPolicy
         ExtensionHostOptions options,
         out string? reason)
     {
+        if (RequiresCapabilityBoundSandbox(manifest)
+            && manifest.Permissions?.ProcessIsolation != true)
+        {
+            reason = "process-level isolation is required when io/network capabilities are declared";
+            return false;
+        }
+
         if (options.RequireProcessIsolation
             && manifest.Permissions?.ProcessIsolation != true)
         {
@@ -395,6 +510,30 @@ internal static class ExtensionSecurityPolicy
 
         reason = null;
         return true;
+    }
+
+    private static bool RequiresCapabilityBoundSandbox(ExtensionManifest manifest)
+    {
+        var permissions = manifest.Permissions;
+        if (permissions is null)
+        {
+            return false;
+        }
+
+        var ioLevel = NormalizeIoCapability(permissions.Io?.Level) ?? ExtensionHostOptions.IoCapabilityNone;
+        var networkLevel = NormalizeNetworkCapability(permissions.Network?.Level) ?? ExtensionHostOptions.NetworkCapabilityNone;
+        if (!string.Equals(ioLevel, ExtensionHostOptions.IoCapabilityNone, StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(networkLevel, ExtensionHostOptions.NetworkCapabilityNone, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        var readRoots = NormalizePermissionPaths(permissions.Io?.ReadRoots);
+        var writeRoots = NormalizePermissionPaths(permissions.Io?.WriteRoots);
+        var allowedHosts = NormalizeHosts(permissions.Network?.AllowedHosts);
+        return readRoots.Length > 0
+            || writeRoots.Length > 0
+            || allowedHosts.Length > 0;
     }
 
     private static bool ValidateIoCapability(
@@ -455,6 +594,33 @@ internal static class ExtensionSecurityPolicy
 
         reason = null;
         return true;
+    }
+
+    private static string[] ResolvePermissionPathsForRuntime(
+        string rootDirectory,
+        string extensionDirectory,
+        IReadOnlyList<string> rawPaths)
+    {
+        if (rawPaths.Count == 0)
+        {
+            return Array.Empty<string>();
+        }
+
+        var resolved = new List<string>(rawPaths.Count);
+        foreach (var rawPath in rawPaths)
+        {
+            if (!TryResolvePermissionPath(rootDirectory, extensionDirectory, rawPath, out var resolvedPath, out var reason))
+            {
+                throw new InvalidOperationException(reason ?? $"Invalid io permission path '{rawPath}'.");
+            }
+
+            resolved.Add(resolvedPath);
+        }
+
+        return resolved
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 
     private static bool ValidateNetworkCapability(

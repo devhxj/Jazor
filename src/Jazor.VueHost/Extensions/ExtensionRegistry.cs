@@ -16,18 +16,38 @@ internal sealed class ExtensionRegistry : IExtensionRegistry
     private readonly List<ILspReferenceProvider> _lspReferenceProviders = [];
     private readonly List<ILspRenameProvider> _lspRenameProviders = [];
     private readonly List<ExtensionLoadInvocation> _extensionLoadInvocations = [];
+    private readonly List<ExtensionProviderInvocationSnapshot> _providerInvocationSnapshots = [];
     private readonly Dictionary<string, ExtensionLoadHealth> _extensionLoadHealthByKey = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, ExtensionProviderHealth> _providerHealthByKey = new(StringComparer.OrdinalIgnoreCase);
     private readonly int _loadEventRetention;
+    private readonly int _providerEventRetention;
 
-    public ExtensionRegistry(int loadEventRetention = 200)
+    public ExtensionRegistry(
+        int loadEventRetention = 200,
+        int providerEventRetention = 500)
     {
         _loadEventRetention = Math.Max(0, loadEventRetention);
+        _providerEventRetention = Math.Max(0, providerEventRetention);
     }
+
+    public event Action<ExtensionProviderInvocation>? ProviderInvocationReported;
 
     public void RegisterExtension(IExtension extension)
     {
         ArgumentNullException.ThrowIfNull(extension);
+
+        var capabilityDescriptor = extension as IExtensionCapabilityDescriptor;
+        var providedCapabilities = capabilityDescriptor?.ProvidedCapabilities;
+
+        bool SupportsCapability(string capability)
+        {
+            if (providedCapabilities is null)
+            {
+                return true;
+            }
+
+            return providedCapabilities.Contains(capability);
+        }
 
         var id = extension.Metadata.Id;
         if (string.IsNullOrWhiteSpace(id))
@@ -45,57 +65,68 @@ internal sealed class ExtensionRegistry : IExtensionRegistry
             _extensions[id] = extension;
         }
 
-        if (extension is ILspDiagnosticProvider diagnosticProvider)
+        if (extension is ILspDiagnosticProvider diagnosticProvider
+            && SupportsCapability(ExtensionCapabilityNames.Diagnostic))
         {
             RegisterLspDiagnosticProvider(diagnosticProvider);
         }
 
-        if (extension is ILspCodeActionProvider codeActionProvider)
+        if (extension is ILspCodeActionProvider codeActionProvider
+            && SupportsCapability(ExtensionCapabilityNames.CodeAction))
         {
             RegisterLspCodeActionProvider(codeActionProvider);
         }
 
-        if (extension is ILspHoverProvider hoverProvider)
+        if (extension is ILspHoverProvider hoverProvider
+            && SupportsCapability(ExtensionCapabilityNames.Hover))
         {
             RegisterLspHoverProvider(hoverProvider);
         }
 
-        if (extension is ILspCompletionProvider completionProvider)
+        if (extension is ILspCompletionProvider completionProvider
+            && SupportsCapability(ExtensionCapabilityNames.Completion))
         {
             RegisterLspCompletionProvider(completionProvider);
         }
 
-        if (extension is ILspDocumentSymbolProvider documentSymbolProvider)
+        if (extension is ILspDocumentSymbolProvider documentSymbolProvider
+            && SupportsCapability(ExtensionCapabilityNames.DocumentSymbol))
         {
             RegisterLspDocumentSymbolProvider(documentSymbolProvider);
         }
 
-        if (extension is ILspSignatureHelpProvider signatureHelpProvider)
+        if (extension is ILspSignatureHelpProvider signatureHelpProvider
+            && SupportsCapability(ExtensionCapabilityNames.SignatureHelp))
         {
             RegisterLspSignatureHelpProvider(signatureHelpProvider);
         }
 
-        if (extension is ILspInlayHintProvider inlayHintProvider)
+        if (extension is ILspInlayHintProvider inlayHintProvider
+            && SupportsCapability(ExtensionCapabilityNames.InlayHint))
         {
             RegisterLspInlayHintProvider(inlayHintProvider);
         }
 
-        if (extension is ILspWorkspaceSymbolProvider workspaceSymbolProvider)
+        if (extension is ILspWorkspaceSymbolProvider workspaceSymbolProvider
+            && SupportsCapability(ExtensionCapabilityNames.WorkspaceSymbol))
         {
             RegisterLspWorkspaceSymbolProvider(workspaceSymbolProvider);
         }
 
-        if (extension is ILspFoldingRangeProvider foldingRangeProvider)
+        if (extension is ILspFoldingRangeProvider foldingRangeProvider
+            && SupportsCapability(ExtensionCapabilityNames.FoldingRange))
         {
             RegisterLspFoldingRangeProvider(foldingRangeProvider);
         }
 
-        if (extension is ILspReferenceProvider referenceProvider)
+        if (extension is ILspReferenceProvider referenceProvider
+            && SupportsCapability(ExtensionCapabilityNames.References))
         {
             RegisterLspReferenceProvider(referenceProvider);
         }
 
-        if (extension is ILspRenameProvider renameProvider)
+        if (extension is ILspRenameProvider renameProvider
+            && SupportsCapability(ExtensionCapabilityNames.Rename))
         {
             RegisterLspRenameProvider(renameProvider);
         }
@@ -642,6 +673,7 @@ internal sealed class ExtensionRegistry : IExtensionRegistry
             return;
         }
 
+        var now = DateTimeOffset.UtcNow;
         lock (_gate)
         {
             var key = CreateHealthKey(invocation.Capability, invocation.ProviderName);
@@ -658,7 +690,6 @@ internal sealed class ExtensionRegistry : IExtensionRegistry
                 LastFailureAt: null,
                 LastErrorMessage: null);
 
-            var now = DateTimeOffset.UtcNow;
             ExtensionProviderHealth next;
             if (invocation.Skipped)
             {
@@ -693,6 +724,39 @@ internal sealed class ExtensionRegistry : IExtensionRegistry
             }
 
             _providerHealthByKey[key] = next;
+
+            if (_providerEventRetention > 0)
+            {
+                _providerInvocationSnapshots.Add(new ExtensionProviderInvocationSnapshot(
+                    ProviderName: invocation.ProviderName,
+                    Capability: invocation.Capability,
+                    Duration: invocation.Duration,
+                    Succeeded: invocation.Succeeded,
+                    TimedOut: invocation.TimedOut,
+                    Skipped: invocation.Skipped,
+                    ErrorMessage: invocation.ErrorMessage,
+                    Timestamp: now));
+                var overflow = _providerInvocationSnapshots.Count - _providerEventRetention;
+                if (overflow > 0)
+                {
+                    _providerInvocationSnapshots.RemoveRange(0, overflow);
+                }
+            }
+        }
+
+        var sink = ProviderInvocationReported;
+        if (sink is null)
+        {
+            return;
+        }
+
+        try
+        {
+            sink(invocation);
+        }
+        catch
+        {
+            // Keep provider execution isolated from observability sink failures.
         }
     }
 
@@ -703,6 +767,23 @@ internal sealed class ExtensionRegistry : IExtensionRegistry
             return _providerHealthByKey.Values
                 .OrderBy(static item => item.Capability, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(static item => item.ProviderName, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+        }
+    }
+
+    public IReadOnlyList<ExtensionProviderInvocationSnapshot> GetRecentProviderInvocations(int maxCount = 200)
+    {
+        var boundedCount = Math.Max(0, maxCount);
+        lock (_gate)
+        {
+            if (boundedCount == 0 || _providerInvocationSnapshots.Count == 0)
+            {
+                return Array.Empty<ExtensionProviderInvocationSnapshot>();
+            }
+
+            var skip = Math.Max(0, _providerInvocationSnapshots.Count - boundedCount);
+            return _providerInvocationSnapshots
+                .Skip(skip)
                 .ToArray();
         }
     }

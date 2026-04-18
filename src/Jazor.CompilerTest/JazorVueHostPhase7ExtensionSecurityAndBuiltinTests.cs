@@ -113,6 +113,54 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
     }
 
     [TestMethod]
+    public void ExtensionHostOptionsResolver_Resolve_MergesProviderLogAndRetentionOverrides()
+    {
+        var rootDirectory = Path.Combine(Path.GetTempPath(), $"phase7-provider-options-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(rootDirectory);
+        try
+        {
+            var options = ExtensionHostOptionsResolver.Resolve(
+                [
+                    "--extensions-provider-log-file=logs/providers-cli.jsonl",
+                    "--extensions-provider-event-retention=321"
+                ],
+                rootDirectory: rootDirectory,
+                config: new JazorConfig
+                {
+                    Extensions = new JazorExtensionsConfig
+                    {
+                        ProviderLogFile = "logs/providers-config.jsonl",
+                        ProviderEventRetention = 123
+                    }
+                });
+
+            Assert.AreEqual(
+                Path.GetFullPath(Path.Combine(rootDirectory, "logs", "providers-cli.jsonl")),
+                options.ProviderLogFilePath);
+            Assert.AreEqual(321, options.ProviderEventRetention);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void ExtensionHostOptionsResolver_Resolve_WithInvalidProviderRetentionOption_Throws()
+    {
+        var exception = ExpectInvalidOperationException(
+            () => ExtensionHostOptionsResolver.Resolve(
+                ["--extensions-provider-event-retention=not-number"],
+                rootDirectory: @"D:\repo\phase7",
+                config: null));
+
+        StringAssert.Contains(
+            exception.Message,
+            "--extensions-provider-event-retention",
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    [TestMethod]
     public void ExtensionSecurityPolicy_IsAssemblyHashSatisfied_AcceptsNormalizedSha256()
     {
         var tempFile = Path.Combine(Path.GetTempPath(), $"phase7-hash-{Guid.NewGuid():N}.bin");
@@ -235,6 +283,97 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
 
             Assert.IsFalse(satisfied);
             StringAssert.Contains(reason ?? string.Empty, "unsupported network capability", StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            if (Directory.Exists(rootDirectory))
+            {
+                Directory.Delete(rootDirectory, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
+    public void ExtensionSecurityPolicy_CreateRuntimeSandboxProfile_AppliesDefaultRootsAndLoopbackHosts()
+    {
+        var rootDirectory = Path.GetFullPath(Path.Combine(Path.GetTempPath(), $"phase7-runtime-profile-root-{Guid.NewGuid():N}"));
+        var extensionDirectory = Path.Combine(rootDirectory, ".jazor", "extensions", "runtime-profile");
+        Directory.CreateDirectory(extensionDirectory);
+        try
+        {
+            var profile = ExtensionSecurityPolicy.CreateRuntimeSandboxProfile(
+                manifest: new ExtensionManifest
+                {
+                    Permissions = new ExtensionPermissionManifest
+                    {
+                        Io = new ExtensionIoPermissionManifest
+                        {
+                            Level = ExtensionHostOptions.IoCapabilityReadWrite
+                        },
+                        Network = new ExtensionNetworkPermissionManifest
+                        {
+                            Level = ExtensionHostOptions.NetworkCapabilityLoopback
+                        }
+                    }
+                },
+                rootDirectory: rootDirectory,
+                extensionDirectory: extensionDirectory);
+
+            Assert.AreEqual(ExtensionHostOptions.IoCapabilityReadWrite, profile.IoCapability);
+            CollectionAssert.Contains(profile.ReadRoots, Path.GetFullPath(rootDirectory));
+            CollectionAssert.Contains(profile.ReadRoots, Path.GetFullPath(extensionDirectory));
+            CollectionAssert.AreEquivalent(
+                new[] { Path.GetFullPath(extensionDirectory) },
+                profile.WriteRoots);
+
+            CollectionAssert.Contains(profile.AllowedHosts, "localhost");
+            CollectionAssert.Contains(profile.AllowedHosts, "127.0.0.1");
+            CollectionAssert.Contains(profile.AllowedHosts, "::1");
+
+            Assert.IsTrue(profile.IsReadPathAllowed(Path.Combine(rootDirectory, "runtime-profile.jazor")));
+            Assert.IsTrue(profile.IsWritePathAllowed(Path.Combine(extensionDirectory, "cache", "state.json")));
+            Assert.IsFalse(profile.IsWritePathAllowed(Path.Combine(rootDirectory, "blocked-output.txt")));
+            Assert.IsTrue(profile.IsNetworkHostAllowed("localhost"));
+            Assert.IsFalse(profile.IsNetworkHostAllowed("example.com"));
+        }
+        finally
+        {
+            if (Directory.Exists(rootDirectory))
+            {
+                Directory.Delete(rootDirectory, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
+    public void ExtensionSecurityPolicy_CreateRuntimeSandboxProfile_WithIoNoneAndNetworkNone_DeniesRuntimeAccess()
+    {
+        var rootDirectory = Path.GetFullPath(Path.Combine(Path.GetTempPath(), $"phase7-runtime-none-root-{Guid.NewGuid():N}"));
+        var extensionDirectory = Path.Combine(rootDirectory, ".jazor", "extensions", "runtime-none");
+        Directory.CreateDirectory(extensionDirectory);
+        try
+        {
+            var profile = ExtensionSecurityPolicy.CreateRuntimeSandboxProfile(
+                manifest: new ExtensionManifest
+                {
+                    Permissions = new ExtensionPermissionManifest
+                    {
+                        Io = new ExtensionIoPermissionManifest
+                        {
+                            Level = ExtensionHostOptions.IoCapabilityNone
+                        },
+                        Network = new ExtensionNetworkPermissionManifest
+                        {
+                            Level = ExtensionHostOptions.NetworkCapabilityNone
+                        }
+                    }
+                },
+                rootDirectory: rootDirectory,
+                extensionDirectory: extensionDirectory);
+
+            Assert.IsFalse(profile.IsReadPathAllowed(Path.Combine(extensionDirectory, "input.txt")));
+            Assert.IsFalse(profile.IsWritePathAllowed(Path.Combine(extensionDirectory, "output.txt")));
+            Assert.IsFalse(profile.IsNetworkHostAllowed("localhost"));
         }
         finally
         {
@@ -777,6 +916,596 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
     }
 
     [TestMethod]
+    public async Task ExtensionLoader_LoadUserExtensionsAsync_WithIoOrNetworkCapabilityAndMissingProcessIsolation_RejectsExtension()
+    {
+        var sandbox = CreateExtensionSandbox();
+        try
+        {
+            using var signer = new ManifestSigner("phase7-capability-process-isolation-key");
+            WriteManifest(
+                sandbox.ExtensionDirectory,
+                id: ManifestLoadableTestExtension.ExtensionId,
+                assembly: sandbox.AssemblyFileName,
+                type: typeof(ManifestLoadableTestExtension).FullName!,
+                assemblySha256: sandbox.AssemblySha256,
+                providers: ["hover", "completion"],
+                ioPermission: new ExtensionIoPermissionManifest
+                {
+                    Level = ExtensionHostOptions.IoCapabilityRead
+                },
+                processIsolation: false,
+                signer: signer);
+
+            var registry = new ExtensionRegistry();
+            await using var loader = new ExtensionLoader(registry);
+            await loader.LoadUserExtensionsAsync(
+                CreateHostOptions(
+                    sandbox.RootDirectory,
+                    sandbox.ExtensionsDirectory,
+                    trustedPublicKeys: signer.TrustedPublicKeys),
+                CancellationToken.None);
+
+            Assert.AreEqual(0, registry.GetExtensions().Count);
+            var loadHealth = GetSingleUserLoadHealth(registry);
+            Assert.AreEqual(1, loadHealth.RejectedCount);
+            StringAssert.Contains(
+                loadHealth.LastReason ?? string.Empty,
+                "required when io/network capabilities are declared",
+                StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            sandbox.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task ExtensionLoader_LoadUserExtensionsAsync_WithProcessIsolatedManifest_LoadsViaWorkerProxy()
+    {
+        var sandbox = CreateExtensionSandbox();
+        try
+        {
+            using var signer = new ManifestSigner("phase7-process-worker-key");
+            WriteManifest(
+                sandbox.ExtensionDirectory,
+                id: ManifestLoadableTestExtension.ExtensionId,
+                assembly: sandbox.AssemblyFileName,
+                type: typeof(ManifestLoadableTestExtension).FullName!,
+                assemblySha256: sandbox.AssemblySha256,
+                providers: ["hover", "completion"],
+                ioPermission: new ExtensionIoPermissionManifest
+                {
+                    Level = ExtensionHostOptions.IoCapabilityRead
+                },
+                processIsolation: true,
+                signer: signer);
+
+            var registry = new ExtensionRegistry();
+            await using var loader = new ExtensionLoader(registry);
+            await loader.LoadUserExtensionsAsync(
+                CreateHostOptions(
+                    sandbox.RootDirectory,
+                    sandbox.ExtensionsDirectory,
+                    trustedPublicKeys: signer.TrustedPublicKeys,
+                    enforceProviderPermissions: true),
+                CancellationToken.None);
+
+            var loadReason = string.Join(
+                " | ",
+                registry.GetExtensionLoadHealth()
+                    .Where(static item => string.Equals(item.Source, "user", StringComparison.Ordinal))
+                    .Select(static item => $"{item.ExtensionId}:{item.LastReason}"));
+            Assert.AreEqual(1, registry.GetExtensions().Count, loadReason);
+            var extension = registry.GetExtensions()[ManifestLoadableTestExtension.ExtensionId];
+            Assert.IsTrue(
+                string.Equals(extension.GetType().Name, "OutOfProcessExtensionProxy", StringComparison.Ordinal),
+                $"expected worker proxy extension type but got '{extension.GetType().FullName}'.");
+
+            var workspaceStore = new InMemoryWorkspaceStore();
+            var virtualDocumentRegistry = new InMemoryVirtualDocumentRegistry();
+            var documentPath = Path.Combine(sandbox.RootDirectory, "ProcessIsolated.jazor");
+            await workspaceStore.UpsertDocumentAsync(
+                new DocumentSnapshot(documentPath, DocumentKind.Jazor, "@", version: "1"),
+                CancellationToken.None);
+
+            using var outputStream = new MemoryStream();
+            var session = CreateSession(
+                workspaceStore,
+                virtualDocumentRegistry,
+                [new EmptyJazorLane()],
+                outputStream,
+                registry);
+
+            var hoverResponse = await session.HandleRequestAsync(
+                new LspRequestMessage
+                {
+                    Id = 3110,
+                    Method = "textDocument/hover",
+                    Params = new LspHoverParams
+                    {
+                        TextDocument = new LspTextDocumentIdentifier
+                        {
+                            Uri = LspProtocolHelpers.ToDocumentUri(documentPath)
+                        },
+                        Position = new LspPosition { Line = 0, Character = 0 }
+                    }
+                },
+                CancellationToken.None);
+            Assert.IsNotNull(hoverResponse);
+            Assert.IsNull(hoverResponse!.Error);
+            var hoverResult = hoverResponse.Result as LspHoverResult;
+            Assert.IsNotNull(hoverResult);
+            StringAssert.Contains(
+                hoverResult!.Contents.Value,
+                "manifest-loadable-hover",
+                StringComparison.Ordinal);
+
+            var completionResponse = await session.HandleRequestAsync(
+                new LspRequestMessage
+                {
+                    Id = 3111,
+                    Method = "textDocument/completion",
+                    Params = new LspCompletionParams
+                    {
+                        TextDocument = new LspTextDocumentIdentifier
+                        {
+                            Uri = LspProtocolHelpers.ToDocumentUri(documentPath)
+                        },
+                        Position = new LspPosition { Line = 0, Character = 1 }
+                    }
+                },
+                CancellationToken.None);
+            Assert.IsNotNull(completionResponse);
+            Assert.IsNull(completionResponse!.Error);
+            var completionItems = completionResponse.Result as IReadOnlyList<LspCompletionItem>;
+            Assert.IsNotNull(completionItems);
+            Assert.IsTrue(completionItems.Any(static item => string.Equals(item.Label, "manifest-loadable-item", StringComparison.Ordinal)));
+        }
+        finally
+        {
+            sandbox.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task ExtensionLoader_LoadUserExtensionsAsync_WithProcessIsolatedIoNone_DeniesProviderInvocationAtRuntime()
+    {
+        var sandbox = CreateExtensionSandbox();
+        try
+        {
+            using var signer = new ManifestSigner("phase7-process-worker-io-none-key");
+            WriteManifest(
+                sandbox.ExtensionDirectory,
+                id: ManifestLoadableTestExtension.ExtensionId,
+                assembly: sandbox.AssemblyFileName,
+                type: typeof(ManifestLoadableTestExtension).FullName!,
+                assemblySha256: sandbox.AssemblySha256,
+                providers: ["hover", "completion"],
+                ioPermission: new ExtensionIoPermissionManifest
+                {
+                    Level = ExtensionHostOptions.IoCapabilityNone
+                },
+                processIsolation: true,
+                signer: signer);
+
+            var registry = new ExtensionRegistry();
+            await using var loader = new ExtensionLoader(registry);
+            await loader.LoadUserExtensionsAsync(
+                CreateHostOptions(
+                    sandbox.RootDirectory,
+                    sandbox.ExtensionsDirectory,
+                    trustedPublicKeys: signer.TrustedPublicKeys,
+                    enforceProviderPermissions: true),
+                CancellationToken.None);
+
+            Assert.AreEqual(1, registry.GetExtensions().Count);
+
+            var workspaceStore = new InMemoryWorkspaceStore();
+            var virtualDocumentRegistry = new InMemoryVirtualDocumentRegistry();
+            var documentPath = Path.Combine(sandbox.RootDirectory, "ProcessIsolatedIoNone.jazor");
+            await workspaceStore.UpsertDocumentAsync(
+                new DocumentSnapshot(documentPath, DocumentKind.Jazor, "@", version: "1"),
+                CancellationToken.None);
+
+            using var outputStream = new MemoryStream();
+            var session = CreateSession(
+                workspaceStore,
+                virtualDocumentRegistry,
+                [new EmptyJazorLane()],
+                outputStream,
+                registry);
+
+            var hoverResponse = await session.HandleRequestAsync(
+                new LspRequestMessage
+                {
+                    Id = 3210,
+                    Method = "textDocument/hover",
+                    Params = new LspHoverParams
+                    {
+                        TextDocument = new LspTextDocumentIdentifier
+                        {
+                            Uri = LspProtocolHelpers.ToDocumentUri(documentPath)
+                        },
+                        Position = new LspPosition { Line = 0, Character = 0 }
+                    }
+                },
+                CancellationToken.None);
+            Assert.IsNotNull(hoverResponse);
+            Assert.IsNull(hoverResponse!.Error);
+            Assert.IsNull(hoverResponse.Result as LspHoverResult);
+
+            var completionResponse = await session.HandleRequestAsync(
+                new LspRequestMessage
+                {
+                    Id = 3211,
+                    Method = "textDocument/completion",
+                    Params = new LspCompletionParams
+                    {
+                        TextDocument = new LspTextDocumentIdentifier
+                        {
+                            Uri = LspProtocolHelpers.ToDocumentUri(documentPath)
+                        },
+                        Position = new LspPosition { Line = 0, Character = 1 }
+                    }
+                },
+                CancellationToken.None);
+            Assert.IsNotNull(completionResponse);
+            Assert.IsNull(completionResponse!.Error);
+            var completionItems = completionResponse.Result as IReadOnlyList<LspCompletionItem>;
+            Assert.IsNotNull(completionItems);
+            Assert.IsFalse(completionItems.Any(static item => string.Equals(item.Label, "manifest-loadable-item", StringComparison.Ordinal)));
+
+            var hoverHealth = registry.GetProviderHealth()
+                .Single(static item =>
+                    string.Equals(item.ProviderName, "ManifestLoadableHoverProvider", StringComparison.Ordinal)
+                    && string.Equals(item.Capability, "hover", StringComparison.Ordinal));
+            Assert.IsTrue(hoverHealth.FailureCount >= 1);
+            StringAssert.Contains(
+                hoverHealth.LastErrorMessage ?? string.Empty,
+                "sandbox_violation",
+                StringComparison.OrdinalIgnoreCase);
+
+            var completionHealth = registry.GetProviderHealth()
+                .Single(static item =>
+                    string.Equals(item.ProviderName, "ManifestLoadableCompletionProvider", StringComparison.Ordinal)
+                    && string.Equals(item.Capability, "completion", StringComparison.Ordinal));
+            Assert.IsTrue(completionHealth.FailureCount >= 1);
+            StringAssert.Contains(
+                completionHealth.LastErrorMessage ?? string.Empty,
+                "sandbox_violation",
+                StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            sandbox.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task ExtensionLoader_LoadUserExtensionsAsync_WithProcessIsolatedReadOnlyIo_DeniesCodeActionAndRenameWorkspaceEdits()
+    {
+        var sandbox = CreateExtensionSandbox();
+        try
+        {
+            using var signer = new ManifestSigner("phase7-process-worker-write-denied-key");
+            WriteManifest(
+                sandbox.ExtensionDirectory,
+                id: ProcessIsolatedMutableEditTestExtension.ExtensionId,
+                assembly: sandbox.AssemblyFileName,
+                type: typeof(ProcessIsolatedMutableEditTestExtension).FullName!,
+                assemblySha256: sandbox.AssemblySha256,
+                providers: ["codeAction", "rename"],
+                ioPermission: new ExtensionIoPermissionManifest
+                {
+                    Level = ExtensionHostOptions.IoCapabilityRead
+                },
+                processIsolation: true,
+                signer: signer);
+
+            var registry = new ExtensionRegistry();
+            await using var loader = new ExtensionLoader(registry);
+            await loader.LoadUserExtensionsAsync(
+                CreateHostOptions(
+                    sandbox.RootDirectory,
+                    sandbox.ExtensionsDirectory,
+                    trustedPublicKeys: signer.TrustedPublicKeys,
+                    enforceProviderPermissions: true),
+                CancellationToken.None);
+
+            Assert.AreEqual(1, registry.GetExtensions().Count);
+
+            var workspaceStore = new InMemoryWorkspaceStore();
+            var virtualDocumentRegistry = new InMemoryVirtualDocumentRegistry();
+            var documentPath = Path.Combine(sandbox.RootDirectory, "ProcessIsolatedReadOnlyIo.jazor");
+            await workspaceStore.UpsertDocumentAsync(
+                new DocumentSnapshot(
+                    documentPath,
+                    DocumentKind.Jazor,
+                    "<template><Counter /></template>",
+                    version: "1"),
+                CancellationToken.None);
+
+            using var outputStream = new MemoryStream();
+            var session = CreateSession(
+                workspaceStore,
+                virtualDocumentRegistry,
+                [new EmptyJazorLane()],
+                outputStream,
+                registry);
+
+            var codeActionResponse = await session.HandleRequestAsync(
+                new LspRequestMessage
+                {
+                    Id = 3212,
+                    Method = "textDocument/codeAction",
+                    Params = new LspCodeActionParams
+                    {
+                        TextDocument = new LspTextDocumentIdentifier
+                        {
+                            Uri = LspProtocolHelpers.ToDocumentUri(documentPath)
+                        },
+                        Range = new LspRange
+                        {
+                            Start = new LspPosition { Line = 0, Character = 0 },
+                            End = new LspPosition { Line = 0, Character = 1 }
+                        },
+                        Context = new LspCodeActionContext
+                        {
+                            Diagnostics = []
+                        }
+                    }
+                },
+                CancellationToken.None);
+            Assert.IsNotNull(codeActionResponse);
+            Assert.IsNull(codeActionResponse!.Error);
+            var codeActions = codeActionResponse.Result as IReadOnlyList<LspCodeAction>;
+            Assert.IsNotNull(codeActions);
+            Assert.AreEqual(0, codeActions.Count);
+
+            var renameResponse = await session.HandleRequestAsync(
+                new LspRequestMessage
+                {
+                    Id = 3213,
+                    Method = "textDocument/rename",
+                    Params = new LspRenameParams
+                    {
+                        TextDocument = new LspTextDocumentIdentifier
+                        {
+                            Uri = LspProtocolHelpers.ToDocumentUri(documentPath)
+                        },
+                        Position = new LspPosition { Line = 0, Character = 1 },
+                        NewName = "RenamedCounter"
+                    }
+                },
+                CancellationToken.None);
+            Assert.IsNotNull(renameResponse);
+            Assert.IsNull(renameResponse!.Error);
+            Assert.IsNull(renameResponse.Result as LspWorkspaceEdit);
+
+            var codeActionHealth = registry.GetProviderHealth()
+                .Single(static item =>
+                    string.Equals(item.ProviderName, "ProcessIsolatedMutableCodeActionProvider", StringComparison.Ordinal)
+                    && string.Equals(item.Capability, "codeAction", StringComparison.Ordinal));
+            Assert.IsTrue(codeActionHealth.FailureCount >= 1);
+            StringAssert.Contains(
+                codeActionHealth.LastErrorMessage ?? string.Empty,
+                "sandbox_violation",
+                StringComparison.OrdinalIgnoreCase);
+
+            var renameHealth = registry.GetProviderHealth()
+                .Single(static item =>
+                    string.Equals(item.ProviderName, "ProcessIsolatedMutableRenameProvider", StringComparison.Ordinal)
+                    && string.Equals(item.Capability, "rename", StringComparison.Ordinal));
+            Assert.IsTrue(renameHealth.FailureCount >= 1);
+            StringAssert.Contains(
+                renameHealth.LastErrorMessage ?? string.Empty,
+                "sandbox_violation",
+                StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            sandbox.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task ExtensionLoader_LoadUserExtensionsAsync_WithProcessIsolatedLoopbackNetwork_DeniesDisallowedResultHostAtRuntime()
+    {
+        var sandbox = CreateExtensionSandbox();
+        try
+        {
+            using var signer = new ManifestSigner("phase7-process-worker-network-result-key");
+            WriteManifest(
+                sandbox.ExtensionDirectory,
+                id: ProcessIsolatedNetworkWorkspaceSymbolTestExtension.ExtensionId,
+                assembly: sandbox.AssemblyFileName,
+                type: typeof(ProcessIsolatedNetworkWorkspaceSymbolTestExtension).FullName!,
+                assemblySha256: sandbox.AssemblySha256,
+                providers: ["workspaceSymbol"],
+                networkPermission: new ExtensionNetworkPermissionManifest
+                {
+                    Level = ExtensionHostOptions.NetworkCapabilityLoopback
+                },
+                processIsolation: true,
+                signer: signer);
+
+            var registry = new ExtensionRegistry();
+            await using var loader = new ExtensionLoader(registry);
+            await loader.LoadUserExtensionsAsync(
+                CreateHostOptions(
+                    sandbox.RootDirectory,
+                    sandbox.ExtensionsDirectory,
+                    trustedPublicKeys: signer.TrustedPublicKeys,
+                    enforceProviderPermissions: true),
+                CancellationToken.None);
+
+            var workspaceStore = new InMemoryWorkspaceStore();
+            var virtualDocumentRegistry = new InMemoryVirtualDocumentRegistry();
+            using var outputStream = new MemoryStream();
+            var session = CreateSession(
+                workspaceStore,
+                virtualDocumentRegistry,
+                [new EmptyJazorLane()],
+                outputStream,
+                registry);
+
+            var response = await session.HandleRequestAsync(
+                new LspRequestMessage
+                {
+                    Id = 3214,
+                    Method = "workspace/symbol",
+                    Params = new LspWorkspaceSymbolParams
+                    {
+                        Query = "runtime"
+                    }
+                },
+                CancellationToken.None);
+
+            Assert.IsNotNull(response);
+            Assert.IsNull(response!.Error);
+            var symbols = response.Result as IReadOnlyList<LspWorkspaceSymbol>;
+            Assert.IsNotNull(symbols);
+            Assert.AreEqual(0, symbols.Count);
+
+            var providerHealth = registry.GetProviderHealth()
+                .Single(static item =>
+                    string.Equals(item.ProviderName, "ProcessIsolatedNetworkWorkspaceSymbolProvider", StringComparison.Ordinal)
+                    && string.Equals(item.Capability, "workspaceSymbol", StringComparison.Ordinal));
+            Assert.IsTrue(providerHealth.FailureCount >= 1);
+            StringAssert.Contains(
+                providerHealth.LastErrorMessage ?? string.Empty,
+                "sandbox_violation",
+                StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            sandbox.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task ExtensionLoader_LoadUserExtensionsAsync_WithProcessIsolatedLoopbackNetwork_DeniesDisallowedContextHostAtRuntime()
+    {
+        var sandbox = CreateExtensionSandbox();
+        try
+        {
+            using var signer = new ManifestSigner("phase7-process-worker-network-context-key");
+            WriteManifest(
+                sandbox.ExtensionDirectory,
+                id: ProcessIsolatedNetworkWorkspaceSymbolTestExtension.ExtensionId,
+                assembly: sandbox.AssemblyFileName,
+                type: typeof(ProcessIsolatedNetworkWorkspaceSymbolTestExtension).FullName!,
+                assemblySha256: sandbox.AssemblySha256,
+                providers: ["workspaceSymbol"],
+                networkPermission: new ExtensionNetworkPermissionManifest
+                {
+                    Level = ExtensionHostOptions.NetworkCapabilityLoopback
+                },
+                processIsolation: true,
+                signer: signer);
+
+            var registry = new ExtensionRegistry();
+            await using var loader = new ExtensionLoader(registry);
+            await loader.LoadUserExtensionsAsync(
+                CreateHostOptions(
+                    sandbox.RootDirectory,
+                    sandbox.ExtensionsDirectory,
+                    trustedPublicKeys: signer.TrustedPublicKeys,
+                    enforceProviderPermissions: true),
+                CancellationToken.None);
+
+            registry.RegisterLspWorkspaceSymbolProvider(new ContextSeedWorkspaceSymbolProvider());
+
+            var workspaceStore = new InMemoryWorkspaceStore();
+            var virtualDocumentRegistry = new InMemoryVirtualDocumentRegistry();
+            using var outputStream = new MemoryStream();
+            var session = CreateSession(
+                workspaceStore,
+                virtualDocumentRegistry,
+                [new EmptyJazorLane()],
+                outputStream,
+                registry);
+
+            var response = await session.HandleRequestAsync(
+                new LspRequestMessage
+                {
+                    Id = 3215,
+                    Method = "workspace/symbol",
+                    Params = new LspWorkspaceSymbolParams
+                    {
+                        Query = "context"
+                    }
+                },
+                CancellationToken.None);
+
+            Assert.IsNotNull(response);
+            Assert.IsNull(response!.Error);
+            var symbols = response.Result as IReadOnlyList<LspWorkspaceSymbol>;
+            Assert.IsNotNull(symbols);
+            Assert.IsTrue(symbols.Any(static item => string.Equals(item.Name, "seed-context-symbol", StringComparison.Ordinal)));
+
+            var providerHealth = registry.GetProviderHealth()
+                .Single(static item =>
+                    string.Equals(item.ProviderName, "ProcessIsolatedNetworkWorkspaceSymbolProvider", StringComparison.Ordinal)
+                    && string.Equals(item.Capability, "workspaceSymbol", StringComparison.Ordinal));
+            Assert.IsTrue(providerHealth.FailureCount >= 1);
+            StringAssert.Contains(
+                providerHealth.LastErrorMessage ?? string.Empty,
+                "sandbox_violation",
+                StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            sandbox.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task ExtensionLoader_LoadUserExtensionsAsync_WithProcessIsolatedWorkerBootstrapFailure_RejectsWithoutFallback()
+    {
+        var sandbox = CreateExtensionSandbox();
+        try
+        {
+            using var signer = new ManifestSigner("phase7-worker-bootstrap-failure-key");
+            WriteManifest(
+                sandbox.ExtensionDirectory,
+                id: WorkerBootstrapSensitiveTestExtension.ExtensionId,
+                assembly: sandbox.AssemblyFileName,
+                type: typeof(WorkerBootstrapSensitiveTestExtension).FullName!,
+                assemblySha256: sandbox.AssemblySha256,
+                providers: ["hover"],
+                processIsolation: true,
+                signer: signer);
+
+            var registry = new ExtensionRegistry();
+            await using var loader = new ExtensionLoader(registry);
+            await loader.LoadUserExtensionsAsync(
+                CreateHostOptions(
+                    sandbox.RootDirectory,
+                    sandbox.ExtensionsDirectory,
+                    trustedPublicKeys: signer.TrustedPublicKeys),
+                CancellationToken.None);
+
+            Assert.AreEqual(0, registry.GetExtensions().Count);
+            Assert.AreEqual(0, registry.GetLspHoverProviders().Count);
+
+            var loadHealth = registry.GetExtensionLoadHealth()
+                .Single(static item =>
+                    string.Equals(item.ExtensionId, WorkerBootstrapSensitiveTestExtension.ExtensionId, StringComparison.Ordinal)
+                    && string.Equals(item.Source, "user", StringComparison.Ordinal));
+            Assert.AreEqual(1, loadHealth.RejectedCount);
+            StringAssert.Contains(
+                loadHealth.LastReason ?? string.Empty,
+                "process-isolated worker bootstrap failed",
+                StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            sandbox.Dispose();
+        }
+    }
+
+    [TestMethod]
     public async Task ExtensionLoader_LoadUserExtensionsAsync_WithIoCapabilityExceedingHostPolicy_RejectsExtension()
     {
         var sandbox = CreateExtensionSandbox();
@@ -796,6 +1525,7 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
                     ReadRoots = ["./data"],
                     WriteRoots = ["./data"]
                 },
+                processIsolation: true,
                 signer: signer);
 
             var registry = new ExtensionRegistry();
@@ -841,6 +1571,7 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
                     Level = ExtensionHostOptions.NetworkCapabilityLoopback,
                     AllowedHosts = ["example.com"]
                 },
+                processIsolation: true,
                 signer: signer);
 
             var registry = new ExtensionRegistry();
@@ -886,6 +1617,7 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
                     Level = ExtensionHostOptions.IoCapabilityRead,
                     ReadRoots = ["../../../../outside-root"]
                 },
+                processIsolation: true,
                 signer: signer);
 
             var registry = new ExtensionRegistry();
@@ -1251,6 +1983,58 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
     }
 
     [TestMethod]
+    public void ExtensionProviderLogPersistence_AppendAndReplay_RehydratesProviderHealthAndRecentEvents()
+    {
+        var rootDirectory = Path.Combine(Path.GetTempPath(), $"phase7-provider-log-{Guid.NewGuid():N}");
+        var logFilePath = Path.Combine(rootDirectory, "logs", "provider-events.jsonl");
+        Directory.CreateDirectory(rootDirectory);
+        try
+        {
+            ExtensionProviderLogPersistence.Append(
+                new ExtensionProviderInvocation(
+                    ProviderName: "ReplayHoverProvider",
+                    Capability: "hover",
+                    Duration: TimeSpan.FromMilliseconds(12),
+                    Succeeded: true,
+                    TimedOut: false,
+                    Skipped: false,
+                    ErrorMessage: null),
+                logFilePath);
+            ExtensionProviderLogPersistence.Append(
+                new ExtensionProviderInvocation(
+                    ProviderName: "ReplayHoverProvider",
+                    Capability: "hover",
+                    Duration: TimeSpan.FromMilliseconds(8),
+                    Succeeded: false,
+                    TimedOut: false,
+                    Skipped: false,
+                    ErrorMessage: "sandbox_violation"),
+                logFilePath);
+
+            var registry = new ExtensionRegistry(
+                loadEventRetention: 0,
+                providerEventRetention: 10);
+            ExtensionProviderLogPersistence.Replay(registry, logFilePath);
+
+            var health = registry.GetProviderHealth().Single(static item =>
+                string.Equals(item.ProviderName, "ReplayHoverProvider", StringComparison.Ordinal)
+                && string.Equals(item.Capability, "hover", StringComparison.Ordinal));
+            Assert.AreEqual(1, health.SuccessCount);
+            Assert.AreEqual(1, health.FailureCount);
+            Assert.AreEqual("sandbox_violation", health.LastErrorMessage);
+
+            var recent = registry.GetRecentProviderInvocations(maxCount: 10);
+            Assert.AreEqual(2, recent.Count);
+            Assert.IsTrue(recent.Any(static item => item.Succeeded));
+            Assert.IsTrue(recent.Any(static item => !item.Succeeded && string.Equals(item.ErrorMessage, "sandbox_violation", StringComparison.Ordinal)));
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public async Task LspSession_ExtensionLoadHealth_Request_ExposesLoadHealthSnapshot()
     {
         var workspaceStore = new InMemoryWorkspaceStore();
@@ -1340,6 +2124,9 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
         Assert.AreEqual(1, dashboard.LoadHealth.Count);
         Assert.AreEqual(1, dashboard.ProviderHealth.Count);
         Assert.AreEqual(1, dashboard.RecentLoadEvents.Count);
+        Assert.AreEqual(1, dashboard.RecentProviderEvents.Count);
+        Assert.AreEqual("ManifestLoadableHoverProvider", dashboard.RecentProviderEvents[0].ProviderName);
+        Assert.AreEqual("hover", dashboard.RecentProviderEvents[0].Capability);
     }
 
     private static InvalidOperationException ExpectInvalidOperationException(Action action)
@@ -1655,13 +2442,249 @@ public sealed class ManifestLoadableTestExtension : IExtension, ILspHoverProvide
         LspHoverProviderContext context,
         CancellationToken cancellationToken)
     {
-        return ValueTask.FromResult<LspHoverResult?>(null);
+        return ValueTask.FromResult<LspHoverResult?>(new LspHoverResult
+        {
+            Contents = new LspMarkupContent
+            {
+                Kind = "plaintext",
+                Value = "manifest-loadable-hover"
+            },
+            Range = null
+        });
     }
 
     ValueTask<IReadOnlyList<LspCompletionItem>> ILspCompletionProvider.ProvideCompletionItemsAsync(
         LspCompletionProviderContext context,
         CancellationToken cancellationToken)
     {
-        return ValueTask.FromResult<IReadOnlyList<LspCompletionItem>>(Array.Empty<LspCompletionItem>());
+        return ValueTask.FromResult<IReadOnlyList<LspCompletionItem>>(
+        [
+            new LspCompletionItem
+            {
+                Label = "manifest-loadable-item",
+                Kind = 3,
+                Detail = "phase7 process-isolated completion item",
+                Documentation = "generated from process-isolated extension worker"
+            }
+        ]);
+    }
+}
+
+public sealed class ProcessIsolatedMutableEditTestExtension : IExtension, ILspCodeActionProvider, ILspRenameProvider
+{
+    public const string ExtensionId = "phase7.process-isolated-mutable-edit";
+
+    private static readonly ExtensionMetadata MetadataValue = new(
+        Id: ExtensionId,
+        Name: "Process Isolated Mutable Edit Test Extension",
+        Version: "1.0.0");
+
+    ExtensionMetadata IExtension.Metadata => MetadataValue;
+
+    string ILspCodeActionProvider.Name => "ProcessIsolatedMutableCodeActionProvider";
+
+    int ILspCodeActionProvider.Priority => 10;
+
+    string ILspRenameProvider.Name => "ProcessIsolatedMutableRenameProvider";
+
+    int ILspRenameProvider.Priority => 10;
+
+    ValueTask IExtension.InitializeAsync(ExtensionContext context, CancellationToken cancellationToken)
+        => ValueTask.CompletedTask;
+
+    ValueTask IExtension.ActivateAsync(CancellationToken cancellationToken)
+        => ValueTask.CompletedTask;
+
+    ValueTask IExtension.DeactivateAsync(CancellationToken cancellationToken)
+        => ValueTask.CompletedTask;
+
+    ValueTask<IReadOnlyList<LspCodeAction>> ILspCodeActionProvider.ProvideCodeActionsAsync(
+        LspCodeActionProviderContext context,
+        CancellationToken cancellationToken)
+    {
+        var documentUri = LspProtocolHelpers.ToDocumentUri(context.Document.DocumentPath);
+        return ValueTask.FromResult<IReadOnlyList<LspCodeAction>>(
+        [
+            new LspCodeAction
+            {
+                Title = "process-isolated mutable code action",
+                Kind = "quickfix",
+                Edit = new LspWorkspaceEdit
+                {
+                    Changes = new Dictionary<string, LspTextEdit[]>
+                    {
+                        [documentUri] =
+                        [
+                            new LspTextEdit
+                            {
+                                Range = new LspRange
+                                {
+                                    Start = new LspPosition { Line = 0, Character = 0 },
+                                    End = new LspPosition { Line = 0, Character = 0 }
+                                },
+                                NewText = "<!-- code-action-edit -->"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]);
+    }
+
+    ValueTask<LspWorkspaceEdit?> ILspRenameProvider.ProvideRenameAsync(
+        LspRenameProviderContext context,
+        CancellationToken cancellationToken)
+    {
+        var documentUri = LspProtocolHelpers.ToDocumentUri(context.Document.DocumentPath);
+        return ValueTask.FromResult<LspWorkspaceEdit?>(new LspWorkspaceEdit
+        {
+            Changes = new Dictionary<string, LspTextEdit[]>
+            {
+                [documentUri] =
+                [
+                    new LspTextEdit
+                    {
+                        Range = new LspRange
+                        {
+                            Start = new LspPosition { Line = 0, Character = 0 },
+                            End = new LspPosition { Line = 0, Character = 1 }
+                        },
+                        NewText = context.NewName
+                    }
+                ]
+            }
+        });
+    }
+}
+
+public sealed class ProcessIsolatedNetworkWorkspaceSymbolTestExtension : IExtension, ILspWorkspaceSymbolProvider
+{
+    public const string ExtensionId = "phase7.process-isolated-network-workspace-symbol";
+
+    private static readonly ExtensionMetadata MetadataValue = new(
+        Id: ExtensionId,
+        Name: "Process Isolated Network Workspace Symbol Test Extension",
+        Version: "1.0.0");
+
+    ExtensionMetadata IExtension.Metadata => MetadataValue;
+
+    string ILspWorkspaceSymbolProvider.Name => "ProcessIsolatedNetworkWorkspaceSymbolProvider";
+
+    int ILspWorkspaceSymbolProvider.Priority => 10;
+
+    ValueTask IExtension.InitializeAsync(ExtensionContext context, CancellationToken cancellationToken)
+        => ValueTask.CompletedTask;
+
+    ValueTask IExtension.ActivateAsync(CancellationToken cancellationToken)
+        => ValueTask.CompletedTask;
+
+    ValueTask IExtension.DeactivateAsync(CancellationToken cancellationToken)
+        => ValueTask.CompletedTask;
+
+    ValueTask<IReadOnlyList<LspWorkspaceSymbol>> ILspWorkspaceSymbolProvider.ProvideWorkspaceSymbolsAsync(
+        LspWorkspaceSymbolProviderContext context,
+        CancellationToken cancellationToken)
+    {
+        var symbolUri = context.ExistingSymbols.Count > 0
+            ? "https://localhost/context-allowed"
+            : "https://example.com/runtime-forbidden";
+
+        return ValueTask.FromResult<IReadOnlyList<LspWorkspaceSymbol>>(
+        [
+            new LspWorkspaceSymbol
+            {
+                Name = "process-isolated-network-symbol",
+                Kind = 5,
+                Location = new LspLocation
+                {
+                    Uri = symbolUri,
+                    Range = new LspRange
+                    {
+                        Start = new LspPosition { Line = 0, Character = 0 },
+                        End = new LspPosition { Line = 0, Character = 1 }
+                    }
+                },
+                ContainerName = "phase7"
+            }
+        ]);
+    }
+}
+
+public sealed class ContextSeedWorkspaceSymbolProvider : ILspWorkspaceSymbolProvider
+{
+    string ILspWorkspaceSymbolProvider.Name => "ContextSeedWorkspaceSymbolProvider";
+
+    int ILspWorkspaceSymbolProvider.Priority => 100;
+
+    ValueTask<IReadOnlyList<LspWorkspaceSymbol>> ILspWorkspaceSymbolProvider.ProvideWorkspaceSymbolsAsync(
+        LspWorkspaceSymbolProviderContext context,
+        CancellationToken cancellationToken)
+    {
+        return ValueTask.FromResult<IReadOnlyList<LspWorkspaceSymbol>>(
+        [
+            new LspWorkspaceSymbol
+            {
+                Name = "seed-context-symbol",
+                Kind = 5,
+                Location = new LspLocation
+                {
+                    Uri = "https://example.com/context-disallowed",
+                    Range = new LspRange
+                    {
+                        Start = new LspPosition { Line = 0, Character = 0 },
+                        End = new LspPosition { Line = 0, Character = 1 }
+                    }
+                },
+                ContainerName = "phase7-seed"
+            }
+        ]);
+    }
+}
+
+public sealed class WorkerBootstrapSensitiveTestExtension : IExtension, ILspHoverProvider
+{
+    public const string ExtensionId = "phase7.worker-bootstrap-sensitive";
+
+    private static readonly ExtensionMetadata MetadataValue = new(
+        Id: ExtensionId,
+        Name: "Worker Bootstrap Sensitive Test Extension",
+        Version: "1.0.0");
+
+    ExtensionMetadata IExtension.Metadata => MetadataValue;
+
+    string ILspHoverProvider.Name => "WorkerBootstrapSensitiveHoverProvider";
+
+    int ILspHoverProvider.Priority => 10;
+
+    ValueTask IExtension.InitializeAsync(ExtensionContext context, CancellationToken cancellationToken)
+    {
+        if (Environment.GetCommandLineArgs()
+            .Any(static arg => string.Equals(arg, "--extension-worker", StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new InvalidOperationException("worker bootstrap intentionally failed for no-fallback test.");
+        }
+
+        return ValueTask.CompletedTask;
+    }
+
+    ValueTask IExtension.ActivateAsync(CancellationToken cancellationToken)
+        => ValueTask.CompletedTask;
+
+    ValueTask IExtension.DeactivateAsync(CancellationToken cancellationToken)
+        => ValueTask.CompletedTask;
+
+    ValueTask<LspHoverResult?> ILspHoverProvider.ProvideHoverAsync(
+        LspHoverProviderContext context,
+        CancellationToken cancellationToken)
+    {
+        return ValueTask.FromResult<LspHoverResult?>(new LspHoverResult
+        {
+            Contents = new LspMarkupContent
+            {
+                Kind = "plaintext",
+                Value = "worker-bootstrap-sensitive-hover"
+            },
+            Range = null
+        });
     }
 }

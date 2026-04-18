@@ -40,6 +40,8 @@ internal static class ExtensionHostOptionsResolver
             ?? ExtensionHostOptions.NetworkCapabilityLoopback;
         var loadLogFile = configExtensions?.LoadLogFile;
         var loadEventRetention = configExtensions?.LoadEventRetention ?? 200;
+        var providerLogFile = configExtensions?.ProviderLogFile;
+        var providerEventRetention = configExtensions?.ProviderEventRetention ?? 500;
 
         if (TryGetOptionValue(args, "--extensions-enabled", out var enabledValue))
         {
@@ -158,6 +160,24 @@ internal static class ExtensionHostOptionsResolver
             loadEventRetention = parsedRetention;
         }
 
+        if (TryGetOptionValue(args, "--extensions-provider-log-file", out var providerLogFileOverride)
+            && !string.IsNullOrWhiteSpace(providerLogFileOverride))
+        {
+            providerLogFile = providerLogFileOverride;
+        }
+
+        if (TryGetOptionValue(args, "--extensions-provider-event-retention", out var providerEventRetentionOverride))
+        {
+            if (!int.TryParse(providerEventRetentionOverride, out var parsedProviderRetention))
+            {
+                throw new InvalidOperationException(
+                    $"Invalid value '{providerEventRetentionOverride}' for '--extensions-provider-event-retention'. " +
+                    "Expected an integer.");
+            }
+
+            providerEventRetention = parsedProviderRetention;
+        }
+
         var extensionDirectoryPath = Path.IsPathRooted(directory)
             ? Path.GetFullPath(directory)
             : Path.GetFullPath(Path.Combine(normalizedRoot, directory));
@@ -173,6 +193,7 @@ internal static class ExtensionHostOptionsResolver
             LoadTrustedPublicKeysFromFile(normalizedRoot, trustKeysFile));
 
         var loadLogFilePath = ResolveOptionalPath(normalizedRoot, loadLogFile);
+        var providerLogFilePath = ResolveOptionalPath(normalizedRoot, providerLogFile);
 
         return new ExtensionHostOptions
         {
@@ -190,7 +211,9 @@ internal static class ExtensionHostOptionsResolver
             MaxIoCapability = maxIoCapability,
             MaxNetworkCapability = maxNetworkCapability,
             LoadLogFilePath = loadLogFilePath,
-            LoadEventRetention = Math.Clamp(loadEventRetention, 0, 10_000)
+            LoadEventRetention = Math.Clamp(loadEventRetention, 0, 10_000),
+            ProviderLogFilePath = providerLogFilePath,
+            ProviderEventRetention = Math.Clamp(providerEventRetention, 0, 100_000)
         };
     }
 

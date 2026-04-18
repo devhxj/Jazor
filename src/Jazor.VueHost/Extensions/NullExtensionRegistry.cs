@@ -112,4 +112,7 @@ internal sealed class NullExtensionRegistry : IExtensionRegistry
 
     public IReadOnlyList<ExtensionProviderHealth> GetProviderHealth()
         => Array.Empty<ExtensionProviderHealth>();
+
+    public IReadOnlyList<ExtensionProviderInvocationSnapshot> GetRecentProviderInvocations(int maxCount = 200)
+        => Array.Empty<ExtensionProviderInvocationSnapshot>();
 }

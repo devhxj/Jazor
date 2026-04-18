@@ -35,9 +35,20 @@ var useAnalysisStdio = args.Any(static arg => string.Equals(arg, "--analysis-std
 var useDap = args.Any(static arg => string.Equals(arg, "--dap", StringComparison.OrdinalIgnoreCase));
 var inspectRazorToolset = args.Any(static arg => string.Equals(arg, "--inspect-razor-toolset", StringComparison.OrdinalIgnoreCase));
 var probeInProcRazorPath = GetOptionValue(args, "--probe-inproc-razor");
+var useExtensionWorker = args.Any(static arg => string.Equals(arg, "--extension-worker", StringComparison.OrdinalIgnoreCase));
 var useStdio = Console.IsInputRedirected
     || args.Any(static arg => string.Equals(arg, "--stdio", StringComparison.OrdinalIgnoreCase));
 var cancellationToken = CancellationToken.None;
+
+if (useExtensionWorker)
+{
+    var workerServer = new ExtensionWorkerServer();
+    await workerServer.RunAsync(
+        Console.OpenStandardInput(),
+        Console.OpenStandardOutput(),
+        cancellationToken);
+    return;
+}
 
 if (useBuild)
 {
@@ -245,8 +256,16 @@ try
         var hostRootDirectory = Path.GetFullPath(GetOptionValue(args, "--dev-root") ?? Directory.GetCurrentDirectory());
         var hostConfig = LoadJazorConfig(hostRootDirectory);
         var extensionHostOptions = ExtensionHostOptionsResolver.Resolve(args, hostRootDirectory, hostConfig);
-        var extensionRegistry = new ExtensionRegistry(extensionHostOptions.LoadEventRetention);
+        var extensionRegistry = new ExtensionRegistry(
+            loadEventRetention: extensionHostOptions.LoadEventRetention,
+            providerEventRetention: extensionHostOptions.ProviderEventRetention);
         ExtensionLoadLogPersistence.Replay(extensionRegistry, extensionHostOptions.LoadLogFilePath);
+        ExtensionProviderLogPersistence.Replay(extensionRegistry, extensionHostOptions.ProviderLogFilePath);
+        extensionRegistry.ProviderInvocationReported += invocation =>
+        {
+            WriteExtensionProviderLog(invocation);
+            ExtensionProviderLogPersistence.Append(invocation, extensionHostOptions.ProviderLogFilePath);
+        };
         await using var extensionLoader = new ExtensionLoader(
             extensionRegistry,
             invocation =>
@@ -420,6 +439,24 @@ static void WriteExtensionLoadLog(ExtensionLoadInvocation invocation)
         invocation.ExtensionDirectory,
         invocation.ManifestPath,
         invocation.AssemblyPath
+    };
+
+    Console.Error.WriteLine(JsonSerializer.Serialize(payload));
+}
+
+static void WriteExtensionProviderLog(ExtensionProviderInvocation invocation)
+{
+    var payload = new
+    {
+        eventType = "extensionProvider",
+        timestamp = DateTimeOffset.UtcNow,
+        invocation.ProviderName,
+        invocation.Capability,
+        durationMs = invocation.Duration.TotalMilliseconds,
+        invocation.Succeeded,
+        invocation.TimedOut,
+        invocation.Skipped,
+        invocation.ErrorMessage
     };
 
     Console.Error.WriteLine(JsonSerializer.Serialize(payload));

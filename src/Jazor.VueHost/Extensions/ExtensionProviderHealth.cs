@@ -9,6 +9,16 @@ internal sealed record ExtensionProviderInvocation(
     bool Skipped,
     string? ErrorMessage);
 
+internal sealed record ExtensionProviderInvocationSnapshot(
+    string ProviderName,
+    string Capability,
+    TimeSpan Duration,
+    bool Succeeded,
+    bool TimedOut,
+    bool Skipped,
+    string? ErrorMessage,
+    DateTimeOffset Timestamp);
+
 internal sealed record ExtensionProviderHealth(
     string ProviderName,
     string Capability,

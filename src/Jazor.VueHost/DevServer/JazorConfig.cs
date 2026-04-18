@@ -119,4 +119,8 @@ internal sealed class JazorExtensionsConfig
     public string? LoadLogFile { get; init; }
 
     public int? LoadEventRetention { get; init; }
+
+    public string? ProviderLogFile { get; init; }
+
+    public int? ProviderEventRetention { get; init; }
 }

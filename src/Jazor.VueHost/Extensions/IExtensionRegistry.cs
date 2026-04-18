@@ -61,4 +61,6 @@ internal interface IExtensionRegistry
     void ReportProviderInvocation(ExtensionProviderInvocation invocation);
 
     IReadOnlyList<ExtensionProviderHealth> GetProviderHealth();
+
+    IReadOnlyList<ExtensionProviderInvocationSnapshot> GetRecentProviderInvocations(int maxCount = 200);
 }
