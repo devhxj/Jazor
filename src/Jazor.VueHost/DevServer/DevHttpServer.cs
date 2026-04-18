@@ -122,10 +122,24 @@ internal sealed class DevHttpServer : IAsyncDisposable, IWorkspaceDocumentChange
 
     public async ValueTask DisposeAsync()
     {
-        _fileWatcher?.Dispose();
-        _fileWatcher = null;
-        _fileChangeDebouncer?.Dispose();
-        _fileChangeDebouncer = null;
+        if (_fileWatcher is not null)
+        {
+            _fileWatcher.EnableRaisingEvents = false;
+            _fileWatcher.Changed -= OnFileChanged;
+            _fileWatcher.Created -= OnFileChanged;
+            _fileWatcher.Deleted -= OnFileChanged;
+            _fileWatcher.Renamed -= OnFileRenamed;
+            _fileWatcher.Dispose();
+            _fileWatcher = null;
+        }
+
+        if (_fileChangeDebouncer is not null)
+        {
+            _fileChangeDebouncer.DebouncedChange -= OnDebouncedFileChanges;
+            _fileChangeDebouncer.Dispose();
+            _fileChangeDebouncer = null;
+        }
+
         if (_fileSnapshotPoller is not null)
         {
             await _fileSnapshotPoller.DisposeAsync();
@@ -322,9 +336,18 @@ internal sealed class DevHttpServer : IAsyncDisposable, IWorkspaceDocumentChange
 
     private void QueueFileChange(string path)
     {
-        if (DevServerFileWatchFilter.ShouldObserve(_options.RootDirectory, path))
+        if (!DevServerFileWatchFilter.ShouldObserve(_options.RootDirectory, path))
+        {
+            return;
+        }
+
+        try
         {
             _fileChangeDebouncer?.Record(path);
+        }
+        catch (ObjectDisposedException)
+        {
+            // Shutdown can race file watcher callbacks; ignore late events.
         }
     }
 

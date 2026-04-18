@@ -779,6 +779,20 @@ public sealed class JazorVueHostDevServerTests
     }
 
     [TestMethod]
+    public async Task FileChangeDebouncer_Record_AfterDispose_IsIgnored()
+    {
+        using var debouncer = new FileChangeDebouncer(TimeSpan.FromMilliseconds(25));
+        var notificationReceived = false;
+        debouncer.DebouncedChange += _ => notificationReceived = true;
+
+        debouncer.Dispose();
+        debouncer.Record(Path.Combine(Path.GetTempPath(), "debouncer", "App.vue"));
+
+        await Task.Delay(TimeSpan.FromMilliseconds(100));
+        Assert.IsFalse(notificationReceived);
+    }
+
+    [TestMethod]
     public void DevServerFileSnapshotPoller_GetChangedPaths_DetectsCreateModifyDeleteAndIgnoresFilteredFiles()
     {
         var rootDirectory = CreateTemporaryDirectory();

@@ -27,7 +27,10 @@ internal sealed class FileChangeDebouncer : IDisposable
         CancellationTokenSource flushCancellationSource;
         lock (_gate)
         {
-            ThrowIfDisposed();
+            if (_disposed)
+            {
+                return;
+            }
 
             _pendingPaths.Add(Path.GetFullPath(path));
             _flushCancellationSource?.Cancel();
@@ -91,14 +94,6 @@ internal sealed class FileChangeDebouncer : IDisposable
         if (changedPaths is not null)
         {
             DebouncedChange?.Invoke(changedPaths);
-        }
-    }
-
-    private void ThrowIfDisposed()
-    {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(FileChangeDebouncer));
         }
     }
 }

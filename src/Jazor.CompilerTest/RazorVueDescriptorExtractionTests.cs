@@ -474,7 +474,8 @@ public sealed class RazorVueDescriptorExtractionTests
             }
             """);
 
-        var descriptor = context.DiscoverLibraryComponents().Single();
+        var descriptor = context.DiscoverLibraryComponents()
+            .Single(static item => item.FullName == "Demo.Ui.Custom.DemoButton");
         var prop = descriptor.Props.Single(static item => item.PublicName == "Label");
         var emit = descriptor.Emits.Single(static item => item.RazorAlias == "OnSubmit");
         var slot = descriptor.Slots.Single(static item => item.PublicName == "Footer");

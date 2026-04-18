@@ -1505,7 +1505,19 @@ internal sealed class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         if (string.IsNullOrEmpty(eventName))
             return "on";
 
+        if (IsVueEventHandlerName(eventName))
+            return eventName;
+
         return "on" + char.ToUpperInvariant(eventName[0]) + eventName.Substring(1);
+    }
+
+    private static bool IsVueEventHandlerName(string eventName)
+    {
+        if (!eventName.StartsWith("on", StringComparison.Ordinal) || eventName.Length <= 2)
+            return false;
+
+        var marker = eventName[2];
+        return char.IsUpper(marker) || marker == ':';
     }
 
     private static ImmutableArray<string> BuildImports(ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents)
