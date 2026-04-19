@@ -420,7 +420,20 @@ static JazorConfig? LoadJazorConfig(string rootDirectory)
                 PropertyNameCaseInsensitive = true
             });
     }
-    catch (Exception) {
+    catch (IOException)
+    {
+        return null;
+    }
+    catch (UnauthorizedAccessException)
+    {
+        return null;
+    }
+    catch (System.Text.Json.JsonException)
+    {
+        return null;
+    }
+    catch (NotSupportedException)
+    {
         return null;
     }
 }
@@ -517,7 +530,43 @@ static async Task<CdpClient?> TryCreateCdpClientAsync(
         Console.Error.WriteLine($"DAP: connected to CDP endpoint {endpointUri}.");
         return cdpClient;
     }
-    catch (Exception exception)
+    catch (ObjectDisposedException exception)
+    {
+        Console.Error.WriteLine($"DAP: failed to connect CDP endpoint '{endpointUri}': {exception.Message}");
+        await cdpClient.DisposeAsync();
+        return null;
+    }
+    catch (InvalidOperationException exception)
+    {
+        Console.Error.WriteLine($"DAP: failed to connect CDP endpoint '{endpointUri}': {exception.Message}");
+        await cdpClient.DisposeAsync();
+        return null;
+    }
+    catch (OperationCanceledException exception)
+    {
+        Console.Error.WriteLine($"DAP: failed to connect CDP endpoint '{endpointUri}': {exception.Message}");
+        await cdpClient.DisposeAsync();
+        return null;
+    }
+    catch (System.Net.WebSockets.WebSocketException exception)
+    {
+        Console.Error.WriteLine($"DAP: failed to connect CDP endpoint '{endpointUri}': {exception.Message}");
+        await cdpClient.DisposeAsync();
+        return null;
+    }
+    catch (IOException exception)
+    {
+        Console.Error.WriteLine($"DAP: failed to connect CDP endpoint '{endpointUri}': {exception.Message}");
+        await cdpClient.DisposeAsync();
+        return null;
+    }
+    catch (System.Text.Json.JsonException exception)
+    {
+        Console.Error.WriteLine($"DAP: failed to connect CDP endpoint '{endpointUri}': {exception.Message}");
+        await cdpClient.DisposeAsync();
+        return null;
+    }
+    catch (NotSupportedException exception)
     {
         Console.Error.WriteLine($"DAP: failed to connect CDP endpoint '{endpointUri}': {exception.Message}");
         await cdpClient.DisposeAsync();

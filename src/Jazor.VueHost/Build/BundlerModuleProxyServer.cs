@@ -23,6 +23,7 @@ internal sealed class BundlerModuleProxyServer : IAsyncDisposable
     private readonly Uri _originBaseUri;
     private readonly string _requestPrefix;
     private readonly HttpClient _httpClient;
+    private Uri? _listeningUri;
     private WebApplication? _application;
 
     private BundlerModuleProxyServer(Uri originEntryUri)
@@ -36,7 +37,9 @@ internal sealed class BundlerModuleProxyServer : IAsyncDisposable
         });
     }
 
-    public Uri ListeningUri { get; private set; } = null!;
+    public Uri ListeningUri
+        => _listeningUri
+            ?? throw new InvalidOperationException("Bundler proxy is not started.");
 
     public static async Task<BundlerModuleProxyServer> StartAsync(
         Uri originEntryUri,
@@ -90,7 +93,7 @@ internal sealed class BundlerModuleProxyServer : IAsyncDisposable
 
         await application.StartAsync(cancellationToken);
         _application = application;
-        ListeningUri = ResolveListeningUri(application)
+        _listeningUri = ResolveListeningUri(application)
             ?? throw new InvalidOperationException("Failed to resolve bundler proxy listening URI.");
     }
 

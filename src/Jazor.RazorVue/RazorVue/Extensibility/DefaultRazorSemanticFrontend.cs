@@ -4,6 +4,9 @@ using Microsoft.CodeAnalysis;
 
 namespace Jazor.RazorVue.Extensibility;
 
+/// <summary>
+/// Built-in semantic frontend that projects RazorVue snapshots from a Roslyn compilation.
+/// </summary>
 internal sealed class DefaultRazorSemanticFrontend : IRazorSemanticFrontend
 {
     public static DefaultRazorSemanticFrontend Instance { get; } = new();

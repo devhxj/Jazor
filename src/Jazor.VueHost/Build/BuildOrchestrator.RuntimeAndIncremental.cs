@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -604,9 +605,9 @@ internal sealed partial class BuildOrchestrator
 
     private static bool TryReadIncrementalState(
         BuildContext context,
-        out BuildIncrementalState state)
+        [NotNullWhen(true)] out BuildIncrementalState? state)
     {
-        state = null!;
+        state = null;
         var statePath = Path.Combine(context.OutDirectory, IncrementalStateFileName);
         if (!File.Exists(statePath))
         {
@@ -627,7 +628,20 @@ internal sealed partial class BuildOrchestrator
             state = deserialized;
             return true;
         }
-        catch (Exception) {
+        catch (IOException)
+        {
+            return false;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return false;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+        catch (NotSupportedException)
+        {
             return false;
         }
     }
@@ -699,7 +713,20 @@ internal sealed partial class BuildOrchestrator
         {
             entryPointPath = BuildEntryPointResolver.ResolveEntryPoint(options.RootDirectory);
         }
-        catch (Exception) {
+        catch (InvalidOperationException)
+        {
+            return null;
+        }
+        catch (ArgumentException)
+        {
+            return null;
+        }
+        catch (NotSupportedException)
+        {
+            return null;
+        }
+        catch (PathTooLongException)
+        {
             return null;
         }
 

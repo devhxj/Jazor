@@ -387,7 +387,25 @@ internal static class ExtensionHostOptionsResolver
                 });
             return ToDictionary(parsed);
         }
-        catch (Exception exception)
+        catch (JsonException exception)
+        {
+            throw new InvalidOperationException(
+                $"Failed to parse trusted keys file '{trustFilePath}': {exception.Message}",
+                exception);
+        }
+        catch (IOException exception)
+        {
+            throw new InvalidOperationException(
+                $"Failed to parse trusted keys file '{trustFilePath}': {exception.Message}",
+                exception);
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            throw new InvalidOperationException(
+                $"Failed to parse trusted keys file '{trustFilePath}': {exception.Message}",
+                exception);
+        }
+        catch (NotSupportedException exception)
         {
             throw new InvalidOperationException(
                 $"Failed to parse trusted keys file '{trustFilePath}': {exception.Message}",

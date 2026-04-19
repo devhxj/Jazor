@@ -155,7 +155,20 @@ internal sealed class RazorDesignTimeCodeProjectionService
                 : path;
             return fullPath.Replace('\\', '/');
         }
-        catch (Exception) {
+        catch (ArgumentException)
+        {
+            return path.Replace('\\', '/');
+        }
+        catch (NotSupportedException)
+        {
+            return path.Replace('\\', '/');
+        }
+        catch (PathTooLongException)
+        {
+            return path.Replace('\\', '/');
+        }
+        catch (IOException)
+        {
             return path.Replace('\\', '/');
         }
     }

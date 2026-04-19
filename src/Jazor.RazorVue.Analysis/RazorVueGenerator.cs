@@ -185,7 +185,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         }
         catch (NotSupportedException ex) when (TryCreateUnsupportedSetupLogicIssueException(ex, candidate, out var issueException))
         {
-            context.ReportDiagnostic(CreateCompilationIssueDiagnostic(issueException, candidate));
+            context.ReportDiagnostic(CreateCompilationIssueDiagnostic(issueException!, candidate));
         }
         catch (global::System.Exception ex)
         {
@@ -227,9 +227,9 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
     private static bool TryCreateUnsupportedSetupLogicIssueException(
         NotSupportedException exception,
         ModuleCandidate? candidate,
-        out RazorVueCompilationIssueException issueException)
+        out RazorVueCompilationIssueException? issueException)
     {
-        issueException = null!;
+        issueException = null;
         if (candidate?.ClassSymbol is null)
             return false;
 

@@ -1,4 +1,6 @@
 using System.Text.Json;
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using Jazor.VueContracts.Protocol;
 using Jazor.VueHost.Lsp;
 
@@ -198,6 +200,7 @@ internal sealed class ExtensionWorkerServer
         }
 
         var (extension, loadContext) = CreateExtension(normalizedAssemblyPath, request.ExtensionTypeName);
+        var bootstrapped = false;
         try
         {
             var sandboxProfile = request.SandboxProfile ?? ExtensionSandboxProfile.Unrestricted;
@@ -215,15 +218,19 @@ internal sealed class ExtensionWorkerServer
             _providerDescriptors = DescribeProviders(extension);
             _sandboxProfile = sandboxProfile;
             _bootstrapped = true;
+            bootstrapped = true;
 
             return new ExtensionWorkerBootstrapResponse(
                 Metadata: extension.Metadata,
                 Providers: _providerDescriptors);
         }
-        catch (Exception) {
-            await TryDeactivateSilentlyAsync(extension);
-            loadContext.Unload();
-            throw;
+        finally
+        {
+            if (!bootstrapped)
+            {
+                await TryDeactivateSilentlyAsync(extension);
+                loadContext.Unload();
+            }
         }
     }
 
@@ -620,7 +627,19 @@ internal sealed class ExtensionWorkerServer
             {
                 return Path.GetFullPath(uri.LocalPath);
             }
-            catch (Exception)
+            catch (ArgumentException)
+            {
+                throw new ExtensionWorkerProtocolException(
+                    ExtensionWorkerErrorCodes.SandboxViolation,
+                    $"sandbox io write denied for capability '{capability}': invalid workspace edit uri '{trimmed}'.");
+            }
+            catch (NotSupportedException)
+            {
+                throw new ExtensionWorkerProtocolException(
+                    ExtensionWorkerErrorCodes.SandboxViolation,
+                    $"sandbox io write denied for capability '{capability}': invalid workspace edit uri '{trimmed}'.");
+            }
+            catch (PathTooLongException)
             {
                 throw new ExtensionWorkerProtocolException(
                     ExtensionWorkerErrorCodes.SandboxViolation,
@@ -632,7 +651,19 @@ internal sealed class ExtensionWorkerServer
         {
             return Path.GetFullPath(trimmed);
         }
-        catch (Exception)
+        catch (ArgumentException)
+        {
+            throw new ExtensionWorkerProtocolException(
+                ExtensionWorkerErrorCodes.SandboxViolation,
+                $"sandbox io write denied for capability '{capability}': invalid workspace edit path '{trimmed}'.");
+        }
+        catch (NotSupportedException)
+        {
+            throw new ExtensionWorkerProtocolException(
+                ExtensionWorkerErrorCodes.SandboxViolation,
+                $"sandbox io write denied for capability '{capability}': invalid workspace edit path '{trimmed}'.");
+        }
+        catch (PathTooLongException)
         {
             throw new ExtensionWorkerProtocolException(
                 ExtensionWorkerErrorCodes.SandboxViolation,
@@ -750,9 +781,9 @@ internal sealed class ExtensionWorkerServer
             $"sandbox network denied for capability '{capability}' {payloadKind} uri '{uri.AbsoluteUri}'.");
     }
 
-    private static bool TryParseNetworkUri(string? value, out Uri uri)
+    private static bool TryParseNetworkUri(string? value, [NotNullWhen(true)] out Uri? uri)
     {
-        uri = null!;
+        uri = null;
         if (string.IsNullOrWhiteSpace(value))
         {
             return false;
@@ -790,7 +821,19 @@ internal sealed class ExtensionWorkerServer
         {
             return Path.GetFullPath(document.DocumentPath);
         }
-        catch (Exception)
+        catch (ArgumentException)
+        {
+            throw new ExtensionWorkerProtocolException(
+                ExtensionWorkerErrorCodes.SandboxViolation,
+                $"sandbox io read denied for capability '{capability}': invalid document path '{document.DocumentPath}'.");
+        }
+        catch (NotSupportedException)
+        {
+            throw new ExtensionWorkerProtocolException(
+                ExtensionWorkerErrorCodes.SandboxViolation,
+                $"sandbox io read denied for capability '{capability}': invalid document path '{document.DocumentPath}'.");
+        }
+        catch (PathTooLongException)
         {
             throw new ExtensionWorkerProtocolException(
                 ExtensionWorkerErrorCodes.SandboxViolation,
@@ -873,7 +916,63 @@ internal sealed class ExtensionWorkerServer
         {
             throw;
         }
-        catch (Exception exception)
+        catch (FileNotFoundException exception)
+        {
+            candidateContext?.Unload();
+            throw new ExtensionWorkerProtocolException(
+                ExtensionWorkerErrorCodes.InternalError,
+                $"failed to load extension assembly: {exception.Message}");
+        }
+        catch (FileLoadException exception)
+        {
+            candidateContext?.Unload();
+            throw new ExtensionWorkerProtocolException(
+                ExtensionWorkerErrorCodes.InternalError,
+                $"failed to load extension assembly: {exception.Message}");
+        }
+        catch (BadImageFormatException exception)
+        {
+            candidateContext?.Unload();
+            throw new ExtensionWorkerProtocolException(
+                ExtensionWorkerErrorCodes.InternalError,
+                $"failed to load extension assembly: {exception.Message}");
+        }
+        catch (TypeLoadException exception)
+        {
+            candidateContext?.Unload();
+            throw new ExtensionWorkerProtocolException(
+                ExtensionWorkerErrorCodes.InternalError,
+                $"failed to load extension assembly: {exception.Message}");
+        }
+        catch (ReflectionTypeLoadException exception)
+        {
+            candidateContext?.Unload();
+            throw new ExtensionWorkerProtocolException(
+                ExtensionWorkerErrorCodes.InternalError,
+                $"failed to load extension assembly: {exception.Message}");
+        }
+        catch (MissingMethodException exception)
+        {
+            candidateContext?.Unload();
+            throw new ExtensionWorkerProtocolException(
+                ExtensionWorkerErrorCodes.InternalError,
+                $"failed to load extension assembly: {exception.Message}");
+        }
+        catch (MemberAccessException exception)
+        {
+            candidateContext?.Unload();
+            throw new ExtensionWorkerProtocolException(
+                ExtensionWorkerErrorCodes.InternalError,
+                $"failed to load extension assembly: {exception.Message}");
+        }
+        catch (TargetInvocationException exception)
+        {
+            candidateContext?.Unload();
+            throw new ExtensionWorkerProtocolException(
+                ExtensionWorkerErrorCodes.InternalError,
+                $"failed to load extension assembly: {exception.Message}");
+        }
+        catch (InvalidOperationException exception)
         {
             candidateContext?.Unload();
             throw new ExtensionWorkerProtocolException(

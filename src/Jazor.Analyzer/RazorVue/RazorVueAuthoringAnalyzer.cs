@@ -102,7 +102,7 @@ public sealed class RazorVueAuthoringAnalyzer : DiagnosticAnalyzer
         out DiagnosticDescriptor descriptor,
         out string message)
     {
-        descriptor = null!;
+        descriptor = RazorVueDiagnosticDescriptors.InvalidLibraryComponentDeclaration;
         message = string.Empty;
 
         if (!HasValidLibraryComponentAttribute(symbol, symbols))
@@ -229,7 +229,7 @@ public sealed class RazorVueAuthoringAnalyzer : DiagnosticAnalyzer
                 descriptor = RazorVueDiagnosticDescriptors.InvalidLibraryPluginRequirementDeclaration;
                 return true;
             default:
-                descriptor = null!;
+                descriptor = RazorVueDiagnosticDescriptors.InvalidLibraryComponentDeclaration;
                 return false;
         }
     }

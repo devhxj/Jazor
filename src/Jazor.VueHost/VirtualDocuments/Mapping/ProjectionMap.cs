@@ -1,4 +1,5 @@
 using Jazor.VueHost.Lsp;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Jazor.VueHost.VirtualDocuments.Mapping;
 
@@ -33,12 +34,16 @@ public sealed class ProjectionMap
         return true;
     }
 
-    internal bool TryMapToProjectedRange(string sourceText, LspRange sourceRange, string projectedText, out LspRange projectedRange)
+    internal bool TryMapToProjectedRange(
+        string sourceText,
+        LspRange sourceRange,
+        string projectedText,
+        [NotNullWhen(true)] out LspRange? projectedRange)
     {
         if (!TryMapToProjectedPosition(sourceText, sourceRange.Start, projectedText, out var projectedStart)
             || !TryMapToProjectedPosition(sourceText, sourceRange.End, projectedText, out var projectedEnd))
         {
-            projectedRange = null!;
+            projectedRange = null;
             return false;
         }
 
@@ -63,12 +68,16 @@ public sealed class ProjectionMap
         return true;
     }
 
-    internal bool TryMapToOriginalRange(string projectedText, LspRange projectedRange, string sourceText, out LspRange originalRange)
+    internal bool TryMapToOriginalRange(
+        string projectedText,
+        LspRange projectedRange,
+        string sourceText,
+        [NotNullWhen(true)] out LspRange? originalRange)
     {
         if (!TryMapToOriginalPosition(projectedText, projectedRange.Start, sourceText, out var originalStart)
             || !TryMapToOriginalPosition(projectedText, projectedRange.End, sourceText, out var originalEnd))
         {
-            originalRange = null!;
+            originalRange = null;
             return false;
         }
 

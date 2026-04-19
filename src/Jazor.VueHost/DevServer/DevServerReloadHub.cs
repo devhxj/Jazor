@@ -152,7 +152,33 @@ internal sealed class DevServerReloadHub : IAsyncDisposable
         {
             throw;
         }
-        catch (Exception) {
+        catch (OperationCanceledException)
+        {
+            RemoveSocket(socket);
+            await CloseAndDisposeAsync(socket, CancellationToken.None);
+        }
+        catch (WebSocketException)
+        {
+            RemoveSocket(socket);
+            await CloseAndDisposeAsync(socket, CancellationToken.None);
+        }
+        catch (ObjectDisposedException)
+        {
+            RemoveSocket(socket);
+            await CloseAndDisposeAsync(socket, CancellationToken.None);
+        }
+        catch (InvalidOperationException)
+        {
+            RemoveSocket(socket);
+            await CloseAndDisposeAsync(socket, CancellationToken.None);
+        }
+        catch (JsonException)
+        {
+            RemoveSocket(socket);
+            await CloseAndDisposeAsync(socket, CancellationToken.None);
+        }
+        catch (NotSupportedException)
+        {
             RemoveSocket(socket);
             await CloseAndDisposeAsync(socket, CancellationToken.None);
         }
@@ -279,7 +305,17 @@ internal sealed class DevServerReloadHub : IAsyncDisposable
                     cancellationToken);
             }
         }
-        catch (Exception) {
+        catch (OperationCanceledException)
+        {
+        }
+        catch (WebSocketException)
+        {
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
         }
         finally
         {

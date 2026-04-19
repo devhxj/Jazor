@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Jazor.VueHost.Extensions;
 
@@ -41,7 +42,23 @@ internal static class ExtensionProviderLogPersistence
                 registry.ReportProviderInvocation(invocation);
             }
         }
-        catch (Exception exception)
+        catch (IOException exception)
+        {
+            WritePersistenceEvent(
+                eventType: "extensionProviderReplayFailed",
+                logFilePath,
+                $"failed to replay extension provider log: {exception.Message}");
+            return;
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            WritePersistenceEvent(
+                eventType: "extensionProviderReplayFailed",
+                logFilePath,
+                $"failed to replay extension provider log: {exception.Message}");
+            return;
+        }
+        catch (NotSupportedException exception)
         {
             WritePersistenceEvent(
                 eventType: "extensionProviderReplayFailed",
@@ -97,7 +114,21 @@ internal static class ExtensionProviderLogPersistence
                 File.AppendAllText(logFilePath, line + Environment.NewLine);
             }
         }
-        catch (Exception exception)
+        catch (IOException exception)
+        {
+            WritePersistenceEvent(
+                eventType: "extensionProviderPersistFailed",
+                logFilePath,
+                $"failed to append extension provider event: {exception.Message}");
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            WritePersistenceEvent(
+                eventType: "extensionProviderPersistFailed",
+                logFilePath,
+                $"failed to append extension provider event: {exception.Message}");
+        }
+        catch (NotSupportedException exception)
         {
             WritePersistenceEvent(
                 eventType: "extensionProviderPersistFailed",
@@ -108,15 +139,20 @@ internal static class ExtensionProviderLogPersistence
 
     private static bool TryParseInvocation(
         string line,
-        out ExtensionProviderInvocation invocation)
+        [NotNullWhen(true)] out ExtensionProviderInvocation? invocation)
     {
-        invocation = null!;
+        invocation = null;
         PersistedExtensionProviderInvocation? persisted;
         try
         {
             persisted = JsonSerializer.Deserialize<PersistedExtensionProviderInvocation>(line, JsonOptions);
         }
-        catch (Exception) {
+        catch (JsonException)
+        {
+            return false;
+        }
+        catch (NotSupportedException)
+        {
             return false;
         }
 

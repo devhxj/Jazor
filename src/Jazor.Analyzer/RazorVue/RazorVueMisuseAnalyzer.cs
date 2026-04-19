@@ -368,7 +368,7 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
 
     private static bool TryUnwrapValueTaskCreation(ExpressionSyntax expression, out ExpressionSyntax innerExpression)
     {
-        innerExpression = null!;
+        innerExpression = expression;
         expression = UnwrapExpression(expression);
         if (expression is not ObjectCreationExpressionSyntax creation ||
             creation.ArgumentList?.Arguments.Count != 1)

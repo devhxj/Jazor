@@ -8,8 +8,14 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Jazor.RazorVue.RenderTree;
 
+/// <summary>
+/// Extracts a framework-agnostic RazorVue render tree from BuildRenderTree operations.
+/// </summary>
 internal sealed class RazorVueRenderTreeExtractor
 {
+    /// <summary>
+    /// Converts BuildRenderTree syntax/operations into a <see cref="RazorVueRenderFragment"/>.
+    /// </summary>
     public RazorVueRenderFragment Extract(RazorVueCompilationContext context, RazorVueSemanticSnapshot snapshot)
     {
         if (context is null)

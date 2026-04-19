@@ -409,7 +409,17 @@ internal sealed class DevServerProxy : IDisposable
                     cancellationToken);
             }
         }
-        catch (Exception) {
+        catch (OperationCanceledException)
+        {
+        }
+        catch (WebSocketException)
+        {
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
         }
 
         try
@@ -422,7 +432,17 @@ internal sealed class DevServerProxy : IDisposable
                     cancellationToken);
             }
         }
-        catch (Exception) {
+        catch (OperationCanceledException)
+        {
+        }
+        catch (WebSocketException)
+        {
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
         }
     }
 

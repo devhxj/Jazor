@@ -390,14 +390,19 @@ internal sealed class OutOfProcessExtensionProxy :
         CancellationToken cancellationToken)
     {
         var workerClient = await ExtensionWorkerClient.StartAsync(cancellationToken);
+        var bootstrapSucceeded = false;
         try
         {
             var bootstrap = await workerClient.BootstrapAsync(bootstrapRequest, cancellationToken);
+            bootstrapSucceeded = true;
             return (workerClient, bootstrap);
         }
-        catch (Exception) {
-            await DisposeWorkerSilentlyAsync(workerClient);
-            throw;
+        finally
+        {
+            if (!bootstrapSucceeded)
+            {
+                await DisposeWorkerSilentlyAsync(workerClient);
+            }
         }
     }
 

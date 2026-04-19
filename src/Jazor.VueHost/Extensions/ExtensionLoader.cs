@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 namespace Jazor.VueHost.Extensions;
@@ -512,6 +513,7 @@ internal sealed class ExtensionLoader : IAsyncDisposable
             settings: settings,
             sandboxProfile: sandboxProfile);
 
+        var loadedSuccessfully = false;
         try
         {
             await extension.InitializeAsync(context, cancellationToken);
@@ -533,12 +535,15 @@ internal sealed class ExtensionLoader : IAsyncDisposable
                 assemblyPath,
                 ExtensionLoadStatus.Loaded,
                 "extension loaded");
+            loadedSuccessfully = true;
         }
-        catch (Exception)
+        finally
         {
-            await TryDeactivateSilentlyAsync(extension);
-            loadContext?.Unload();
-            throw;
+            if (!loadedSuccessfully)
+            {
+                await TryDeactivateSilentlyAsync(extension);
+                loadContext?.Unload();
+            }
         }
     }
 
@@ -613,7 +618,23 @@ internal sealed class ExtensionLoader : IAsyncDisposable
 
             return true;
         }
-        catch (Exception) {
+        catch (JsonException)
+        {
+            failureReason = "manifest file is missing or invalid json";
+            return false;
+        }
+        catch (IOException)
+        {
+            failureReason = "manifest file is missing or invalid json";
+            return false;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            failureReason = "manifest file is missing or invalid json";
+            return false;
+        }
+        catch (NotSupportedException)
+        {
             failureReason = "manifest file is missing or invalid json";
             return false;
         }
@@ -717,7 +738,12 @@ internal sealed class ExtensionLoader : IAsyncDisposable
         {
             return value.Deserialize<T>(ManifestJsonOptions);
         }
-        catch (Exception) {
+        catch (JsonException)
+        {
+            return default;
+        }
+        catch (NotSupportedException)
+        {
             return default;
         }
     }
@@ -852,12 +878,12 @@ internal sealed class ExtensionLoader : IAsyncDisposable
     private static bool TryCreateUserExtension(
         string assemblyPath,
         string extensionTypeName,
-        out IExtension extension,
-        out CollectibleExtensionLoadContext loadContext,
+        [NotNullWhen(true)] out IExtension? extension,
+        [NotNullWhen(true)] out CollectibleExtensionLoadContext? loadContext,
         out string failureReason)
     {
-        extension = null!;
-        loadContext = null!;
+        extension = null;
+        loadContext = null;
         failureReason = string.Empty;
 
         if (string.IsNullOrWhiteSpace(assemblyPath) || string.IsNullOrWhiteSpace(extensionTypeName))
@@ -897,7 +923,55 @@ internal sealed class ExtensionLoader : IAsyncDisposable
             loadContext = candidateContext;
             return true;
         }
-        catch (Exception ex)
+        catch (FileNotFoundException ex)
+        {
+            candidateContext?.Unload();
+            failureReason = $"failed to load extension assembly: {ex.Message}";
+            return false;
+        }
+        catch (FileLoadException ex)
+        {
+            candidateContext?.Unload();
+            failureReason = $"failed to load extension assembly: {ex.Message}";
+            return false;
+        }
+        catch (BadImageFormatException ex)
+        {
+            candidateContext?.Unload();
+            failureReason = $"failed to load extension assembly: {ex.Message}";
+            return false;
+        }
+        catch (TypeLoadException ex)
+        {
+            candidateContext?.Unload();
+            failureReason = $"failed to load extension assembly: {ex.Message}";
+            return false;
+        }
+        catch (ReflectionTypeLoadException ex)
+        {
+            candidateContext?.Unload();
+            failureReason = $"failed to load extension assembly: {ex.Message}";
+            return false;
+        }
+        catch (MissingMethodException ex)
+        {
+            candidateContext?.Unload();
+            failureReason = $"failed to load extension assembly: {ex.Message}";
+            return false;
+        }
+        catch (MemberAccessException ex)
+        {
+            candidateContext?.Unload();
+            failureReason = $"failed to load extension assembly: {ex.Message}";
+            return false;
+        }
+        catch (TargetInvocationException ex)
+        {
+            candidateContext?.Unload();
+            failureReason = $"failed to load extension assembly: {ex.Message}";
+            return false;
+        }
+        catch (InvalidOperationException ex)
         {
             candidateContext?.Unload();
             failureReason = $"failed to load extension assembly: {ex.Message}";
@@ -946,7 +1020,47 @@ internal sealed class ExtensionLoader : IAsyncDisposable
         {
             throw;
         }
-        catch (Exception exception)
+        catch (IOException exception)
+        {
+            return new OutOfProcessExtensionCreationResult(
+                Success: false,
+                Extension: null,
+                ProvidedCapabilities: new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+                FailureReason: $"process-isolated worker bootstrap failed: {exception.Message}");
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            return new OutOfProcessExtensionCreationResult(
+                Success: false,
+                Extension: null,
+                ProvidedCapabilities: new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+                FailureReason: $"process-isolated worker bootstrap failed: {exception.Message}");
+        }
+        catch (InvalidOperationException exception)
+        {
+            return new OutOfProcessExtensionCreationResult(
+                Success: false,
+                Extension: null,
+                ProvidedCapabilities: new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+                FailureReason: $"process-isolated worker bootstrap failed: {exception.Message}");
+        }
+        catch (JsonException exception)
+        {
+            return new OutOfProcessExtensionCreationResult(
+                Success: false,
+                Extension: null,
+                ProvidedCapabilities: new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+                FailureReason: $"process-isolated worker bootstrap failed: {exception.Message}");
+        }
+        catch (NotSupportedException exception)
+        {
+            return new OutOfProcessExtensionCreationResult(
+                Success: false,
+                Extension: null,
+                ProvidedCapabilities: new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+                FailureReason: $"process-isolated worker bootstrap failed: {exception.Message}");
+        }
+        catch (TimeoutException exception)
         {
             return new OutOfProcessExtensionCreationResult(
                 Success: false,

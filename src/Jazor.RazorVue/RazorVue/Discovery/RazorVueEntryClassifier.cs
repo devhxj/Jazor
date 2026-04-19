@@ -3,6 +3,10 @@ using Microsoft.CodeAnalysis;
 
 namespace Jazor.RazorVue.Discovery;
 
+/// <summary>
+/// Classifies component-like symbols into RazorVue entry kinds and exposes
+/// lifecycle/logic member discovery helpers used by semantic extraction.
+/// </summary>
 internal static class RazorVueEntryClassifier
 {
     private static readonly SymbolEqualityComparer Comparer = SymbolEqualityComparer.Default;

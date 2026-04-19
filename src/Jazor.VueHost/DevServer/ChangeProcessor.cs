@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using System.Diagnostics.CodeAnalysis;
 using Jazor.Emit;
 using Jazor.VueContracts.Protocol;
 using Jazor.VueHost.Workspace;
@@ -548,15 +549,21 @@ internal sealed class ChangeProcessor
     private static bool TryGetDocumentOverride(
         string path,
         IReadOnlyDictionary<string, DocumentSnapshot>? documentOverrides,
-        out DocumentSnapshot documentOverride)
+        [NotNullWhen(true)] out DocumentSnapshot? documentOverride)
     {
-        documentOverride = null!;
+        documentOverride = null;
         if (documentOverrides is null)
         {
             return false;
         }
 
-        return documentOverrides.TryGetValue(Path.GetFullPath(path), out documentOverride!);
+        if (documentOverrides.TryGetValue(Path.GetFullPath(path), out var candidate))
+        {
+            documentOverride = candidate;
+            return true;
+        }
+
+        return false;
     }
 
     private static IReadOnlyList<DocumentSnapshot> GetCompanionDocumentOverrides(

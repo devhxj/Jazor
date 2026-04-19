@@ -238,7 +238,7 @@ public sealed class RazorVueDescriptorExtractionTests
             .ToArray();
 
         CollectionAssert.AreEquivalent(
-            new[] { "VAlert", "VAutocomplete", "VAvatar", "VBadge", "VBtn", "VCard", "VCardText", "VCardTitle", "VCheckbox", "VChip", "VCol", "VContainer", "VDialog", "VDivider", "VForm", "VIcon", "VList", "VListItem", "VMenu", "VProgressCircular", "VProgressLinear", "VRadioGroup", "VRow", "VSelect", "VSheet", "VSnackbar", "VSpacer", "VSwitch", "VTab", "VTabs", "VTextField", "VTextarea", "VToolbar", "VToolbarTitle" },
+            new[] { "VAlert", "VAutocomplete", "VAvatar", "VBadge", "VBreadcrumbs", "VBtn", "VCard", "VCardText", "VCardTitle", "VCheckbox", "VChip", "VCol", "VContainer", "VDataTable", "VDialog", "VDivider", "VForm", "VIcon", "VImg", "VList", "VListItem", "VMenu", "VPagination", "VProgressCircular", "VProgressLinear", "VRadioGroup", "VRow", "VSelect", "VSheet", "VSnackbar", "VSpacer", "VSwitch", "VTab", "VTabs", "VTextField", "VTextarea", "VToolbar", "VToolbarTitle", "VTooltip" },
             vuetifyDescriptors
                 .Select(static descriptor => descriptor.Name)
                 .OrderBy(static name => name, StringComparer.Ordinal)
@@ -318,6 +318,26 @@ public sealed class RazorVueDescriptorExtractionTests
 
         var form = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.UI.Vue.Vuetify.VForm");
         Assert.AreEqual("fastFail", form.Props.Single(static prop => prop.PublicName == "FastFail").Name);
+
+        var breadcrumbs = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.UI.Vue.Vuetify.VBreadcrumbs");
+        Assert.AreEqual("items", breadcrumbs.Props.Single(static prop => prop.PublicName == "Items").Name);
+        Assert.IsTrue(breadcrumbs.Slots.Single(static slot => slot.IsDefault).IsDefault);
+
+        var dataTable = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.UI.Vue.Vuetify.VDataTable");
+        Assert.AreEqual("headers", dataTable.Props.Single(static prop => prop.PublicName == "Headers").Name);
+        Assert.AreEqual("items", dataTable.Props.Single(static prop => prop.PublicName == "Items").Name);
+
+        var pagination = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.UI.Vue.Vuetify.VPagination");
+        Assert.AreEqual("modelValue", pagination.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", pagination.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+
+        var image = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.UI.Vue.Vuetify.VImg");
+        Assert.AreEqual("src", image.Props.Single(static prop => prop.PublicName == "Src").Name);
+        Assert.AreEqual("alt", image.Props.Single(static prop => prop.PublicName == "Alt").Name);
+
+        var tooltip = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.UI.Vue.Vuetify.VTooltip");
+        Assert.AreEqual("text", tooltip.Props.Single(static prop => prop.PublicName == "Text").Name);
+        Assert.IsTrue(tooltip.Slots.Any(static slot => slot.Name == "activator"));
         Assert.IsTrue(form.Slots.Single(static slot => slot.IsDefault).IsDefault);
 
         var menu = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.UI.Vue.Vuetify.VMenu");

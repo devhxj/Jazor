@@ -4,6 +4,10 @@ using Microsoft.CodeAnalysis;
 
 namespace Jazor.Analyzer;
 
+/// <summary>
+/// Analyzer-side facade over <see cref="RazorVueCompilationSymbols"/> with
+/// commonly used classification and misuse checks.
+/// </summary>
 internal sealed class RazorVueKnownSymbols
 {
     private RazorVueKnownSymbols(RazorVueCompilationSymbols symbols)

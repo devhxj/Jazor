@@ -502,7 +502,20 @@ internal sealed class OnDemandCompiler
             sourceMapObject["mappings"] = string.Concat(new string(';', generatedLineOffset), mappings);
             return sourceMapObject.ToJsonString();
         }
-        catch (Exception) {
+        catch (System.Text.Json.JsonException)
+        {
+            return sourceMap;
+        }
+        catch (FormatException)
+        {
+            return sourceMap;
+        }
+        catch (InvalidOperationException)
+        {
+            return sourceMap;
+        }
+        catch (NotSupportedException)
+        {
             return sourceMap;
         }
     }
@@ -533,7 +546,24 @@ internal sealed class OnDemandCompiler
                 });
             return new SourceMapWriter().Write(chainedMap);
         }
-        catch (Exception) {
+        catch (System.Text.Json.JsonException)
+        {
+            return javaScriptSourceMap;
+        }
+        catch (FormatException)
+        {
+            return javaScriptSourceMap;
+        }
+        catch (ArgumentException)
+        {
+            return javaScriptSourceMap;
+        }
+        catch (InvalidOperationException)
+        {
+            return javaScriptSourceMap;
+        }
+        catch (NotSupportedException)
+        {
             return javaScriptSourceMap;
         }
     }

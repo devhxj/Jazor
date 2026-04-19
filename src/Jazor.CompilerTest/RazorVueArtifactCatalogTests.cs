@@ -47,6 +47,50 @@ public sealed class RazorVueArtifactCatalogTests
         StringAssert.Contains(exception.Message, "cannot escape output directory");
     }
 
+    [TestMethod]
+    public void RazorVue_CatalogBuilder_RejectsAbsolutePaths()
+    {
+        var builder = new RazorVueCatalogBuilder();
+        InvalidOperationException? exception = null;
+        try
+        {
+            builder.Build(
+                "Demo.Assembly",
+                [
+                    CreateArtifact("AbsoluteCard", "C:/temp/absolute-card.mjs")
+                ]);
+        }
+        catch (InvalidOperationException ex)
+        {
+            exception = ex;
+        }
+
+        Assert.IsNotNull(exception);
+        StringAssert.Contains(exception.Message, "must be relative");
+    }
+
+    [TestMethod]
+    public void RazorVue_CatalogBuilder_RejectsEmptyAssemblyName()
+    {
+        var builder = new RazorVueCatalogBuilder();
+        ArgumentException? exception = null;
+        try
+        {
+            builder.Build(
+                "",
+                [
+                    CreateArtifact("Card", "components/card.mjs")
+                ]);
+        }
+        catch (ArgumentException ex)
+        {
+            exception = ex;
+        }
+
+        Assert.IsNotNull(exception);
+        StringAssert.Contains(exception.Message, "Assembly name cannot be empty");
+    }
+
     private static VueCompiledArtifact CreateArtifact(string componentName, string relativeModulePath)
         => new(
             ComponentName: componentName,

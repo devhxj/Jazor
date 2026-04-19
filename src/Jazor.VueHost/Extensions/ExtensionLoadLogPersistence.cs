@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Jazor.VueHost.Extensions;
 
@@ -41,7 +42,23 @@ internal static class ExtensionLoadLogPersistence
                 registry.ReportExtensionLoad(invocation);
             }
         }
-        catch (Exception exception)
+        catch (IOException exception)
+        {
+            WritePersistenceEvent(
+                eventType: "extensionLoadReplayFailed",
+                logFilePath,
+                $"failed to replay extension load log: {exception.Message}");
+            return;
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            WritePersistenceEvent(
+                eventType: "extensionLoadReplayFailed",
+                logFilePath,
+                $"failed to replay extension load log: {exception.Message}");
+            return;
+        }
+        catch (NotSupportedException exception)
         {
             WritePersistenceEvent(
                 eventType: "extensionLoadReplayFailed",
@@ -97,7 +114,21 @@ internal static class ExtensionLoadLogPersistence
                 File.AppendAllText(logFilePath, line + Environment.NewLine);
             }
         }
-        catch (Exception exception)
+        catch (IOException exception)
+        {
+            WritePersistenceEvent(
+                eventType: "extensionLoadPersistFailed",
+                logFilePath,
+                $"failed to append extension load event: {exception.Message}");
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            WritePersistenceEvent(
+                eventType: "extensionLoadPersistFailed",
+                logFilePath,
+                $"failed to append extension load event: {exception.Message}");
+        }
+        catch (NotSupportedException exception)
         {
             WritePersistenceEvent(
                 eventType: "extensionLoadPersistFailed",
@@ -108,15 +139,20 @@ internal static class ExtensionLoadLogPersistence
 
     private static bool TryParseInvocation(
         string line,
-        out ExtensionLoadInvocation invocation)
+        [NotNullWhen(true)] out ExtensionLoadInvocation? invocation)
     {
-        invocation = null!;
+        invocation = null;
         PersistedExtensionLoadInvocation? persisted;
         try
         {
             persisted = JsonSerializer.Deserialize<PersistedExtensionLoadInvocation>(line, JsonOptions);
         }
-        catch (Exception) {
+        catch (JsonException)
+        {
+            return false;
+        }
+        catch (NotSupportedException)
+        {
             return false;
         }
 

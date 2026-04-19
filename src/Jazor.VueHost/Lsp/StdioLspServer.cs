@@ -206,7 +206,16 @@ internal sealed class StdioLspServer
                 LspJsonSerializer.Serialize(response),
                 CancellationToken.None);
         }
-        catch (Exception) {
+        catch (IOException)
+        {
+            // Output stream can be closed during shutdown; suppress late write failures.
+        }
+        catch (ObjectDisposedException)
+        {
+            // Output stream can be closed during shutdown; suppress late write failures.
+        }
+        catch (InvalidOperationException)
+        {
             // Output stream can be closed during shutdown; suppress late write failures.
         }
     }
@@ -267,7 +276,11 @@ internal sealed class StdioLspServer
             {
                 source.Cancel();
             }
-            catch (Exception) {
+            catch (ObjectDisposedException)
+            {
+            }
+            catch (InvalidOperationException)
+            {
             }
         }
 
@@ -306,7 +319,16 @@ internal sealed class StdioLspServer
             var deserialized = LspJsonSerializer.Deserialize<LspCancelRequestParams>(raw);
             return deserialized?.Id;
         }
-        catch (Exception) {
+        catch (JsonException)
+        {
+            return null;
+        }
+        catch (NotSupportedException)
+        {
+            return null;
+        }
+        catch (InvalidOperationException)
+        {
             return null;
         }
     }

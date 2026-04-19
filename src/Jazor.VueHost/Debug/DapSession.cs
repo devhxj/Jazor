@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Jazor.VueHost.Debug;
 
@@ -98,7 +99,24 @@ internal sealed class DapSession
                     resolution.Location.LineNumber,
                     resolution.Location.ColumnNumber);
         }
-        catch (Exception) {
+        catch (OperationCanceledException)
+        {
+            return null;
+        }
+        catch (ObjectDisposedException)
+        {
+            return null;
+        }
+        catch (InvalidOperationException)
+        {
+            return null;
+        }
+        catch (IOException)
+        {
+            return null;
+        }
+        catch (System.Text.Json.JsonException)
+        {
             return null;
         }
     }
@@ -260,7 +278,7 @@ internal sealed class DapSession
     private static bool TryResolveVariable(
         IReadOnlyList<DapVariable> variables,
         string expression,
-        out DapVariable variable)
+        [NotNullWhen(true)] out DapVariable? variable)
     {
         foreach (var candidate in variables)
         {
@@ -271,16 +289,16 @@ internal sealed class DapSession
             }
         }
 
-        variable = null!;
+        variable = null;
         return false;
     }
 
-    private bool TryResolveVariablePath(int? frameId, string expression, out DapVariable variable)
+    private bool TryResolveVariablePath(int? frameId, string expression, [NotNullWhen(true)] out DapVariable? variable)
     {
         var segments = expression.Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         if (segments.Length == 0)
         {
-            variable = null!;
+            variable = null;
             return false;
         }
 
@@ -296,11 +314,11 @@ internal sealed class DapSession
     private bool TryResolveVariablePath(
         IReadOnlyList<DapVariable> variables,
         IReadOnlyList<string> segments,
-        out DapVariable variable)
+        [NotNullWhen(true)] out DapVariable? variable)
     {
         if (segments.Count == 0 || !TryResolveVariable(variables, segments[0], out var current))
         {
-            variable = null!;
+            variable = null;
             return false;
         }
 
@@ -311,7 +329,7 @@ internal sealed class DapSession
                 || childrenEntry.Variables is null
                 || !TryResolveVariable(childrenEntry.Variables, segments[index], out current))
             {
-                variable = null!;
+                variable = null;
                 return false;
             }
         }
@@ -320,12 +338,12 @@ internal sealed class DapSession
         return true;
     }
 
-    private bool TryGetCallFrame(int frameId, out CdpCallFrame frame)
+    private bool TryGetCallFrame(int frameId, [NotNullWhen(true)] out CdpCallFrame? frame)
     {
         var frameIndex = frameId - 1;
         if (frameIndex < 0 || frameIndex >= CurrentCallFrames.Count)
         {
-            frame = null!;
+            frame = null;
             return false;
         }
 

@@ -43,7 +43,18 @@ internal sealed class ExtensionWorkerClient : IAsyncDisposable
                 throw new InvalidOperationException("failed to start extension worker process.");
             }
         }
-        catch (Exception) {
+        catch (ObjectDisposedException)
+        {
+            process.Dispose();
+            throw;
+        }
+        catch (InvalidOperationException)
+        {
+            process.Dispose();
+            throw;
+        }
+        catch (System.ComponentModel.Win32Exception)
+        {
             process.Dispose();
             throw;
         }
@@ -97,7 +108,24 @@ internal sealed class ExtensionWorkerClient : IAsyncDisposable
                 parameters: null,
                 shutdownTimeout.Token);
         }
-        catch (Exception) {
+        catch (OperationCanceledException)
+        {
+            // Best-effort shutdown. We'll terminate forcefully below.
+        }
+        catch (ExtensionWorkerConnectionException)
+        {
+            // Best-effort shutdown. We'll terminate forcefully below.
+        }
+        catch (ObjectDisposedException)
+        {
+            // Best-effort shutdown. We'll terminate forcefully below.
+        }
+        catch (InvalidOperationException)
+        {
+            // Best-effort shutdown. We'll terminate forcefully below.
+        }
+        catch (IOException)
+        {
             // Best-effort shutdown. We'll terminate forcefully below.
         }
         finally
@@ -121,7 +149,20 @@ internal sealed class ExtensionWorkerClient : IAsyncDisposable
         {
             await _stderrPumpTask;
         }
-        catch (Exception) {
+        catch (OperationCanceledException)
+        {
+            // Ignore stderr read termination errors.
+        }
+        catch (ObjectDisposedException)
+        {
+            // Ignore stderr read termination errors.
+        }
+        catch (IOException)
+        {
+            // Ignore stderr read termination errors.
+        }
+        catch (InvalidOperationException)
+        {
             // Ignore stderr read termination errors.
         }
 
@@ -213,7 +254,21 @@ internal sealed class ExtensionWorkerClient : IAsyncDisposable
         {
             readTask = _reader.ReadMessageAsync(CancellationToken.None).AsTask();
         }
-        catch (Exception exception)
+        catch (ObjectDisposedException exception)
+        {
+            await TerminateWorkerAsync();
+            throw new ExtensionWorkerConnectionException(
+                $"failed to read extension worker response: {exception.Message}",
+                exception);
+        }
+        catch (IOException exception)
+        {
+            await TerminateWorkerAsync();
+            throw new ExtensionWorkerConnectionException(
+                $"failed to read extension worker response: {exception.Message}",
+                exception);
+        }
+        catch (InvalidOperationException exception)
         {
             await TerminateWorkerAsync();
             throw new ExtensionWorkerConnectionException(
@@ -231,7 +286,21 @@ internal sealed class ExtensionWorkerClient : IAsyncDisposable
             await TerminateWorkerAsync();
             throw;
         }
-        catch (Exception exception)
+        catch (ObjectDisposedException exception)
+        {
+            await TerminateWorkerAsync();
+            throw new ExtensionWorkerConnectionException(
+                $"failed to receive extension worker response: {exception.Message}",
+                exception);
+        }
+        catch (IOException exception)
+        {
+            await TerminateWorkerAsync();
+            throw new ExtensionWorkerConnectionException(
+                $"failed to receive extension worker response: {exception.Message}",
+                exception);
+        }
+        catch (InvalidOperationException exception)
         {
             await TerminateWorkerAsync();
             throw new ExtensionWorkerConnectionException(
@@ -285,7 +354,16 @@ internal sealed class ExtensionWorkerClient : IAsyncDisposable
         {
             // Expected on shutdown.
         }
-        catch (Exception) {
+        catch (ObjectDisposedException)
+        {
+            // Ignore stderr collection failures.
+        }
+        catch (IOException)
+        {
+            // Ignore stderr collection failures.
+        }
+        catch (InvalidOperationException)
+        {
             // Ignore stderr collection failures.
         }
     }
@@ -299,7 +377,24 @@ internal sealed class ExtensionWorkerClient : IAsyncDisposable
                 _process.Kill(entireProcessTree: true);
             }
         }
-        catch (Exception) {
+        catch (ObjectDisposedException)
+        {
+            // Ignore kill failures if the process already exited.
+        }
+        catch (InvalidOperationException)
+        {
+            // Ignore kill failures if the process already exited.
+        }
+        catch (PlatformNotSupportedException)
+        {
+            // Ignore kill failures if the process already exited.
+        }
+        catch (NotSupportedException)
+        {
+            // Ignore kill failures if the process already exited.
+        }
+        catch (System.ComponentModel.Win32Exception)
+        {
             // Ignore kill failures if the process already exited.
         }
 
@@ -307,7 +402,12 @@ internal sealed class ExtensionWorkerClient : IAsyncDisposable
         {
             await _process.WaitForExitAsync(CancellationToken.None);
         }
-        catch (Exception) {
+        catch (ObjectDisposedException)
+        {
+            // Ignore wait failures during teardown.
+        }
+        catch (InvalidOperationException)
+        {
             // Ignore wait failures during teardown.
         }
     }
