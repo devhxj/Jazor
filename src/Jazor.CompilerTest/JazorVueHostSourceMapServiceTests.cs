@@ -1,4 +1,5 @@
 using Jazor.VueHost.SourceMap;
+using static Jazor.CompilerTest.SourceMapTestHelpers;
 
 namespace Jazor.CompilerTest;
 
@@ -66,6 +67,62 @@ public sealed class JazorVueHostSourceMapServiceTests
 
         Assert.IsNotNull(original);
         Assert.AreEqual("main.ts", original.SourcePath);
+        Assert.AreEqual(0, original.Line);
+        Assert.AreEqual(0, original.Column);
+    }
+
+    [TestMethod]
+    public void SourceMapService_GeneratedPositionFor_PrefersForwardSourceSegmentOverBackwardSegment()
+    {
+        var service = new InMemorySourceMapService();
+        const string sourceText = "line0\nline1\nline2";
+        var sourceMapJson = CreateSingleSourceLineMap(
+            "Counter.jazor",
+            sourceText,
+            [0, 2]);
+        service.Register("/Counter.jazor", sourceMapJson);
+
+        var generated = service.GeneratedPositionFor("Counter.jazor", line: 1, column: 0);
+
+        Assert.IsNotNull(generated);
+        Assert.AreEqual("/Counter.jazor", generated.GeneratedPath);
+        Assert.AreEqual(
+            1,
+            generated.Line,
+            "Expected mapper to prefer the forward source segment (line 2) over the backward one (line 0).");
+        Assert.AreEqual(0, generated.Column);
+    }
+
+    [TestMethod]
+    public void SourceMapService_GeneratedPositionFor_FileUriSourcePath_MatchesRegisteredSource()
+    {
+        var service = new InMemorySourceMapService();
+        const string sourceMapJson = """
+            {"version":3,"sources":["Counter.jazor"],"sourcesContent":["line0"],"names":[],"mappings":"AAAA","file":"Counter.js"}
+            """;
+        service.Register("/Counter.jazor", sourceMapJson);
+
+        var generated = service.GeneratedPositionFor("file:///D:/repo/Counter.jazor", 0, 0);
+
+        Assert.IsNotNull(generated);
+        Assert.AreEqual("/Counter.jazor", generated.GeneratedPath);
+        Assert.AreEqual(0, generated.Line);
+        Assert.AreEqual(0, generated.Column);
+    }
+
+    [TestMethod]
+    public void SourceMapService_OriginalPositionFor_DotRelativeGeneratedPath_ResolvesRegisteredEntry()
+    {
+        var service = new InMemorySourceMapService();
+        const string sourceMapJson = """
+            {"version":3,"sources":["Counter.jazor"],"sourcesContent":["line0"],"names":[],"mappings":"AAAA","file":"Counter.js"}
+            """;
+        service.Register("Counter.jazor", sourceMapJson);
+
+        var original = service.OriginalPositionFor("./Counter.jazor", 0, 0);
+
+        Assert.IsNotNull(original);
+        Assert.AreEqual("Counter.jazor", original.SourcePath);
         Assert.AreEqual(0, original.Line);
         Assert.AreEqual(0, original.Column);
     }

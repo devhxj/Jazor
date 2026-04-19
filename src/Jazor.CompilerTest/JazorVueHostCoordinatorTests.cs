@@ -374,6 +374,132 @@ public sealed class JazorVueHostCoordinatorTests
         }
     }
 
+    [TestMethod]
+    public async Task JazorVueHost_MarkupBridgeFanoutCoordinator_Definition_WithFallbackDisabled_DeduplicatesNativeLocationsOnly()
+    {
+        var document = new DocumentSnapshot(
+            @"D:\temp\Counter.jazor",
+            DocumentKind.Jazor,
+            "<Counter />",
+            "1");
+        var duplicatedLocation = new LspLocation
+        {
+            Uri = LspProtocolHelpers.ToDocumentUri(document.DocumentPath),
+            Range = new LspRange
+            {
+                Start = new LspPosition { Line = 0, Character = 1 },
+                End = new LspPosition { Line = 0, Character = 8 }
+            }
+        };
+        var coordinator = new MarkupBridgeFanoutCoordinator(
+            new MarkupComponentBridgeService(new InMemoryWorkspaceStore()),
+            new LspResultAggregator());
+
+        var locations = await coordinator.CoordinateDefinitionAsync(
+            document,
+            new LspPosition { Line = 0, Character = 2 },
+            [duplicatedLocation, duplicatedLocation],
+            allowMarkupFallback: false,
+            CancellationToken.None);
+
+        Assert.AreEqual(1, locations.Count);
+        Assert.AreEqual(duplicatedLocation.Uri, locations[0].Uri);
+        Assert.AreEqual(duplicatedLocation.Range.Start.Character, locations[0].Range.Start.Character);
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_ReferenceCoordinator_WithoutBridgeSymbol_DeduplicatesDuplicateLaneLocations()
+    {
+        var document = new DocumentSnapshot(
+            @"D:\temp\consumer.ts",
+            DocumentKind.TypeScript,
+            "const value = target;",
+            "1");
+        var duplicatedLocation = new LspLocation
+        {
+            Uri = LspProtocolHelpers.ToDocumentUri(document.DocumentPath),
+            Range = new LspRange
+            {
+                Start = new LspPosition { Line = 0, Character = 14 },
+                End = new LspPosition { Line = 0, Character = 20 }
+            }
+        };
+        var coordinator = new ReferenceCoordinator(
+            new Dictionary<LaneKind, ILspLane>
+            {
+                [LaneKind.Volar] = new FakeLane
+                {
+                    References = [duplicatedLocation, duplicatedLocation]
+                }
+            },
+            new LspLaneRouter(),
+            new MarkupBridgeFanoutCoordinator(
+                new MarkupComponentBridgeService(new InMemoryWorkspaceStore()),
+                new LspResultAggregator()));
+
+        var locations = await coordinator.CoordinateAsync(
+            document,
+            new LspPosition { Line = 0, Character = 14 },
+            includeDeclaration: true,
+            CreateVolarTarget(document),
+            CancellationToken.None);
+
+        Assert.AreEqual(1, locations.Count);
+        Assert.AreEqual(duplicatedLocation.Uri, locations[0].Uri);
+        Assert.AreEqual(duplicatedLocation.Range.Start.Character, locations[0].Range.Start.Character);
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_RenameCoordinator_WithoutBridgeSymbol_DeduplicatesDuplicateNativeTextEdits()
+    {
+        var document = new DocumentSnapshot(
+            @"D:\temp\consumer.ts",
+            DocumentKind.TypeScript,
+            "const value = target;",
+            "1");
+        var duplicateEdit = new LspTextEdit
+        {
+            Range = new LspRange
+            {
+                Start = new LspPosition { Line = 0, Character = 14 },
+                End = new LspPosition { Line = 0, Character = 20 }
+            },
+            NewText = "renamed"
+        };
+        var scriptUri = LspProtocolHelpers.ToDocumentUri(document.DocumentPath);
+        var coordinator = new RenameCoordinator(
+            new Dictionary<LaneKind, ILspLane>
+            {
+                [LaneKind.Volar] = new FakeLane
+                {
+                    RenameEdit = new LspWorkspaceEdit
+                    {
+                        Changes = new Dictionary<string, LspTextEdit[]>(StringComparer.Ordinal)
+                        {
+                            [scriptUri] = [duplicateEdit, duplicateEdit]
+                        }
+                    }
+                }
+            },
+            new LspLaneRouter(),
+            new LspResultAggregator(),
+            new MarkupBridgeFanoutCoordinator(
+                new MarkupComponentBridgeService(new InMemoryWorkspaceStore()),
+                new LspResultAggregator()));
+
+        var edit = await coordinator.CoordinateAsync(
+            document,
+            new LspPosition { Line = 0, Character = 14 },
+            "renamed",
+            CreateVolarTarget(document),
+            CancellationToken.None);
+
+        Assert.IsNotNull(edit);
+        Assert.IsTrue(edit.Changes.ContainsKey(scriptUri));
+        Assert.AreEqual(1, edit.Changes[scriptUri].Length);
+        Assert.AreEqual("renamed", edit.Changes[scriptUri][0].NewText);
+    }
+
     private static ProjectionTarget CreateVolarTarget(DocumentSnapshot document)
         => new(
             LaneKind.Volar,

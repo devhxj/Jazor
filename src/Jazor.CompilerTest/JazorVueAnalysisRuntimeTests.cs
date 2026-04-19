@@ -175,4 +175,89 @@ public sealed class JazorVueAnalysisRuntimeTests
         Assert.IsTrue(response.Success);
         Assert.AreEqual("analysis-stdio", response.Id);
     }
+
+    [TestMethod]
+    public async Task JazorVueAnalysisRpcProcessor_AnalyzeJazor_MissingPayload_ReturnsInvalidPayloadError()
+    {
+        var processor = new VueAnalysisRpcProcessor(new JazorVueAnalysisService());
+        var requestJson = VueAnalysisRpcSerializer.Serialize(new RpcRequestEnvelope(
+            id: "analysis-invalid-payload",
+            method: VueAnalysisRpcMethodNames.AnalyzeJazor,
+            payloadJson: null));
+
+        var responseJson = await processor.ProcessAsync(requestJson, CancellationToken.None);
+        var response = VueAnalysisRpcSerializer.Deserialize<RpcResponseEnvelope>(responseJson);
+
+        Assert.IsNotNull(response);
+        Assert.IsFalse(response.Success);
+        Assert.AreEqual("analysis-invalid-payload", response.Id);
+        Assert.IsNotNull(response.Error);
+        Assert.AreEqual("invalid_payload", response.Error.Code);
+    }
+
+    [TestMethod]
+    public async Task JazorVueAnalysisRpcProcessor_WhenServiceCancellationBubbles_ReturnsCancelledError()
+    {
+        var processor = new VueAnalysisRpcProcessor(new CancelledAnalysisService());
+        var request = new AnalyzeJazorRequest(
+            new DocumentSnapshot(
+                "Counter.jazor",
+                DocumentKind.Jazor,
+                "<template><div /></template>",
+                "5"),
+            relatedDocuments: Array.Empty<DocumentSnapshot>(),
+            frontendContext: null);
+        var requestJson = VueAnalysisRpcSerializer.Serialize(new RpcRequestEnvelope(
+            id: "analysis-cancelled",
+            method: VueAnalysisRpcMethodNames.AnalyzeJazor,
+            payloadJson: VueAnalysisRpcSerializer.Serialize(request)));
+
+        var responseJson = await processor.ProcessAsync(requestJson, CancellationToken.None);
+        var response = VueAnalysisRpcSerializer.Deserialize<RpcResponseEnvelope>(responseJson);
+
+        Assert.IsNotNull(response);
+        Assert.IsFalse(response.Success);
+        Assert.AreEqual("analysis-cancelled", response.Id);
+        Assert.IsNotNull(response.Error);
+        Assert.AreEqual("cancelled", response.Error.Code);
+    }
+
+    [TestMethod]
+    public async Task JazorVueAnalysisStdioServer_SkipsBlankLinesAndContinuesProcessing()
+    {
+        var processor = new VueAnalysisRpcProcessor(new JazorVueAnalysisService());
+        var server = new StdioVueAnalysisRpcServer(processor);
+        var request = new AnalyzeJazorRequest(
+            new DocumentSnapshot(
+                "Counter.jazor",
+                DocumentKind.Jazor,
+                "<template><div /></template>",
+                "6"),
+            relatedDocuments: Array.Empty<DocumentSnapshot>(),
+            frontendContext: null);
+        var requestJson = VueAnalysisRpcSerializer.Serialize(new RpcRequestEnvelope(
+            id: "analysis-stdio-blank-lines",
+            method: VueAnalysisRpcMethodNames.AnalyzeJazor,
+            payloadJson: VueAnalysisRpcSerializer.Serialize(request)));
+
+        using var input = new StringReader(Environment.NewLine + requestJson + Environment.NewLine + Environment.NewLine);
+        using var output = new StringWriter();
+
+        await server.RunAsync(input, output, CancellationToken.None);
+
+        var responseLines = output.ToString()
+            .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        Assert.AreEqual(1, responseLines.Length);
+
+        var response = VueAnalysisRpcSerializer.Deserialize<RpcResponseEnvelope>(responseLines[0]);
+        Assert.IsNotNull(response);
+        Assert.IsTrue(response.Success);
+        Assert.AreEqual("analysis-stdio-blank-lines", response.Id);
+    }
+
+    private sealed class CancelledAnalysisService : IVueAnalysisRpcService
+    {
+        public ValueTask<AnalyzeJazorResponse> AnalyzeJazorAsync(AnalyzeJazorRequest request, CancellationToken cancellationToken)
+            => throw new OperationCanceledException("cancelled for test");
+    }
 }

@@ -259,6 +259,119 @@ public sealed class JazorVueHostWorkspaceResolverTests
         }
     }
 
+    [TestMethod]
+    public async Task JazorVueHost_WorkspaceResolver_ResolveDocumentAsync_PrefersOpenDocumentSnapshotOverDiskContent()
+    {
+        var baseDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(baseDirectory, "Counter.vue");
+            await File.WriteAllTextAsync(documentPath, "<template>disk</template>");
+            var openDocument = new DocumentSnapshot(
+                documentPath,
+                DocumentKind.Vue,
+                "<template>open</template>",
+                "2");
+
+            var resolved = await VueHostWorkspaceResolver.ResolveDocumentAsync(
+                documentPath,
+                [openDocument],
+                CancellationToken.None);
+
+            Assert.IsNotNull(resolved);
+            Assert.AreEqual("<template>open</template>", resolved.Text);
+            Assert.AreEqual("2", resolved.Version);
+        }
+        finally
+        {
+            DeleteDirectory(baseDirectory);
+        }
+    }
+
+    [TestMethod]
+    public void JazorVueHost_WorkspaceResolver_EnumerateWorkspaceFiles_ThrowsWhenCancellationRequested()
+    {
+        var baseDirectory = CreateTemporaryDirectory();
+        try
+        {
+            Directory.CreateDirectory(Path.Combine(baseDirectory, "src"));
+            File.WriteAllText(Path.Combine(baseDirectory, "src", "Counter.vue"), "<template />");
+
+            using var cancellationSource = new CancellationTokenSource();
+            cancellationSource.Cancel();
+
+            Assert.Throws<OperationCanceledException>(() =>
+            {
+                _ = VueHostWorkspaceResolver
+                    .EnumerateWorkspaceFiles([baseDirectory], "*.vue", cancellationSource.Token)
+                    .ToArray();
+            });
+        }
+        finally
+        {
+            DeleteDirectory(baseDirectory);
+        }
+    }
+
+    [TestMethod]
+    public void JazorVueHost_WorkspaceResolver_PushWorkspaceFolderRoots_NestedScopesRestorePreviousState()
+    {
+        var baseDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var workspaceA = Path.Combine(baseDirectory, "workspace-a");
+            var workspaceB = Path.Combine(baseDirectory, "workspace-b");
+            Directory.CreateDirectory(workspaceA);
+            Directory.CreateDirectory(workspaceB);
+
+            var documentA = new DocumentSnapshot(
+                Path.Combine(workspaceA, "Counter.jazor"),
+                DocumentKind.Jazor,
+                "<Counter />",
+                "1");
+            var documentB = new DocumentSnapshot(
+                Path.Combine(workspaceB, "Counter.jazor"),
+                DocumentKind.Jazor,
+                "<Counter />",
+                "1");
+
+            using var scopeA = VueHostWorkspaceResolver.PushWorkspaceFolderRoots([workspaceA]);
+            var rootsInScopeA = VueHostWorkspaceResolver
+                .GetWorkspaceSearchRoots(documentA.DocumentPath, secondaryDocumentPath: null, [documentA])
+                .Select(Path.GetFullPath)
+                .ToArray();
+            Assert.IsTrue(rootsInScopeA.Length > 0);
+            Assert.IsTrue(
+                rootsInScopeA.All(root => IsSameOrDescendantPath(root, workspaceA)),
+                "Expected nested scope A roots to stay inside workspace A.");
+
+            using (VueHostWorkspaceResolver.PushWorkspaceFolderRoots([workspaceB]))
+            {
+                var rootsInScopeB = VueHostWorkspaceResolver
+                    .GetWorkspaceSearchRoots(documentB.DocumentPath, secondaryDocumentPath: null, [documentB])
+                    .Select(Path.GetFullPath)
+                    .ToArray();
+                Assert.IsTrue(rootsInScopeB.Length > 0);
+                Assert.IsTrue(
+                    rootsInScopeB.All(root => IsSameOrDescendantPath(root, workspaceB)),
+                    "Expected nested scope B roots to stay inside workspace B.");
+            }
+
+            var rootsAfterNestedScope = VueHostWorkspaceResolver
+                .GetWorkspaceSearchRoots(documentA.DocumentPath, secondaryDocumentPath: null, [documentA])
+                .Select(Path.GetFullPath)
+                .ToArray();
+            Assert.IsTrue(rootsAfterNestedScope.Length > 0);
+            Assert.IsTrue(
+                rootsAfterNestedScope.All(root => IsSameOrDescendantPath(root, workspaceA)),
+                "Expected workspace roots to restore scope A after nested scope disposal.");
+        }
+        finally
+        {
+            DeleteDirectory(baseDirectory);
+        }
+    }
+
     private static bool IsSameOrDescendantPath(string path, string root)
     {
         var normalizedPath = path.Replace('\\', '/').TrimEnd('/');

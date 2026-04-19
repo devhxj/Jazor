@@ -14,6 +14,7 @@ namespace Jazor.CompilerTest;
 public sealed class JazorVueHostDebugProtocolTests
 {
     private const string RealCdpHmrStressEnvironmentVariable = "JAZOR_VUEHOST_RUN_REAL_CDP_HMR_STRESS";
+    private const string RealCdpSourceMapMatrixEnvironmentVariable = "JAZOR_VUEHOST_RUN_REAL_CDP_SOURCE_MAP_MATRIX";
     private const string RealCdpBrowserPathEnvironmentVariable = "JAZOR_VUEHOST_REAL_BROWSER_PATH";
 
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -1648,6 +1649,659 @@ public sealed class JazorVueHostDebugProtocolTests
         }
     }
 
+    [TestMethod]
+    public async Task JazorVueHost_DapProcess_RealBrowserCdpSourceMapMatrix_ValidatesStackTracePaginationAcrossHmrIterations()
+    {
+        if (!ReadBooleanEnvironmentVariable(RealCdpSourceMapMatrixEnvironmentVariable))
+        {
+            return;
+        }
+
+        var browserExecutablePath = ResolveRealBrowserExecutablePath();
+        if (string.IsNullOrWhiteSpace(browserExecutablePath))
+        {
+            Assert.Inconclusive(
+                $"Unable to locate browser executable. Set {RealCdpBrowserPathEnvironmentVariable} to Chrome/Edge path.");
+        }
+
+        var devRoot = CreateTemporaryDirectory();
+        var browserProfilePath = Path.Combine(devRoot, ".browser-profile");
+        Directory.CreateDirectory(browserProfilePath);
+
+        var indexPath = Path.Combine(devRoot, "index.html");
+        var modulePath = Path.Combine(devRoot, "main.ts");
+        var moduleVersion1 = CreateRealCdpSourceMapMatrixMainModule(1);
+        await File.WriteAllTextAsync(
+            indexPath,
+            """
+            <!doctype html>
+            <html lang="en">
+            <head>
+              <meta charset="utf-8">
+              <title>Jazor VueHost CDP SourceMap Matrix</title>
+            </head>
+            <body>
+              <div id="app">ready</div>
+              <script type="module" src="/main.ts"></script>
+            </body>
+            </html>
+            """,
+            CancellationToken.None);
+        await File.WriteAllTextAsync(modulePath, moduleVersion1, CancellationToken.None);
+
+        var breakpointNeedle = "const marker = buildVersion + depth + MarkerState.Active;";
+        var expectedBreakpointLine = GetLineIndexContaining(moduleVersion1, breakpointNeedle) + 1;
+        var expectedBreakpointColumn = GetSourceColumn(moduleVersion1, breakpointNeedle);
+        var devPort = AllocateLoopbackTcpPort();
+        var cdpPort = AllocateLoopbackTcpPort();
+        const int iterations = 4;
+        const int recursionDepth = 6;
+
+        using var cancellationSource = new CancellationTokenSource(TimeSpan.FromMinutes(4));
+        Process? browserProcess = null;
+        Process? hostProcess = null;
+
+        try
+        {
+            browserProcess = CreateHeadlessBrowserProcess(
+                browserExecutablePath,
+                cdpPort,
+                browserProfilePath);
+            Assert.IsTrue(browserProcess.Start(), "Expected headless browser process to start.");
+
+            var cdpWebSocket = await WaitForBrowserCdpPageEndpointAsync(cdpPort, cancellationSource.Token);
+            Assert.IsFalse(
+                string.IsNullOrWhiteSpace(cdpWebSocket),
+                "Expected browser to expose a page-level CDP WebSocket endpoint.");
+
+            hostProcess = CreateVueHostDapDevProcess(
+                devRoot,
+                devPort,
+                cdpWebSocket!);
+            Assert.IsTrue(hostProcess.Start(), "Expected Jazor.VueHost DAP+Dev process to start.");
+
+            await WaitForHttpReadyAsync(
+                new Uri($"http://127.0.0.1:{devPort}/index.html"),
+                cancellationSource.Token);
+
+            var sequence = new DapSequenceCounter();
+
+            using var initializeResponse = await SendDapRequestAsync(
+                hostProcess,
+                sequence,
+                "initialize",
+                new
+                {
+                    adapterID = "jazor-vuehost"
+                },
+                cancellationSource.Token);
+            Assert.AreEqual("initialize", initializeResponse.RootElement.GetProperty("command").GetString());
+            Assert.IsTrue(
+                initializeResponse.RootElement.GetProperty("body").GetProperty("supportsConfigurationDoneRequest").GetBoolean());
+
+            using var initializedEvent = await ReadDapMessageAsync(hostProcess, cancellationSource.Token);
+            Assert.AreEqual("initialized", initializedEvent.RootElement.GetProperty("event").GetString());
+
+            using var configurationDoneResponse = await SendDapRequestAsync(
+                hostProcess,
+                sequence,
+                "configurationDone",
+                null,
+                cancellationSource.Token);
+            Assert.IsTrue(configurationDoneResponse.RootElement.GetProperty("success").GetBoolean());
+
+            var navigateExpression = "location.href = "
+                + JsonSerializer.Serialize($"http://127.0.0.1:{devPort}/index.html")
+                + "; 'navigating';";
+            using var navigateResponse = await SendDapRequestAsync(
+                hostProcess,
+                sequence,
+                "evaluate",
+                new
+                {
+                    expression = navigateExpression,
+                    context = "repl"
+                },
+                cancellationSource.Token);
+            Assert.IsTrue(navigateResponse.RootElement.GetProperty("success").GetBoolean());
+
+            await WaitForIterationReadyAsync(
+                hostProcess,
+                sequence,
+                expectedVersion: 1,
+                cancellationSource.Token);
+
+            using var setBreakpointsResponse = await SendDapRequestAsync(
+                hostProcess,
+                sequence,
+                "setBreakpoints",
+                new
+                {
+                    source = new
+                    {
+                        path = modulePath
+                    },
+                    breakpoints = new object[]
+                    {
+                        new
+                        {
+                            line = expectedBreakpointLine,
+                            column = expectedBreakpointColumn
+                        }
+                    }
+                },
+                cancellationSource.Token);
+            Assert.IsTrue(setBreakpointsResponse.RootElement.GetProperty("success").GetBoolean());
+            var verifiedBreakpoints = setBreakpointsResponse.RootElement
+                .GetProperty("body")
+                .GetProperty("breakpoints")
+                .EnumerateArray()
+                .ToArray();
+            Assert.AreEqual(1, verifiedBreakpoints.Length);
+            Assert.IsTrue(
+                verifiedBreakpoints[0].GetProperty("verified").GetBoolean(),
+                "Breakpoint binding failed: " + verifiedBreakpoints[0].GetRawText());
+
+            for (var iteration = 1; iteration <= iterations; iteration++)
+            {
+                if (iteration > 1)
+                {
+                    var updatedSource = CreateRealCdpSourceMapMatrixMainModule(iteration);
+                    await File.WriteAllTextAsync(modulePath, updatedSource, cancellationSource.Token);
+                    await WaitForIterationReadyAsync(
+                        hostProcess,
+                        sequence,
+                        expectedVersion: iteration,
+                        cancellationSource.Token);
+                }
+
+                using var triggerResponse = await SendDapRequestAsync(
+                    hostProcess,
+                    sequence,
+                    "evaluate",
+                    new
+                    {
+                        expression = $"setTimeout(() => globalThis.__jazorRunIteration?.({recursionDepth}), 0); 'scheduled';",
+                        context = "repl"
+                    },
+                    cancellationSource.Token);
+                Assert.IsTrue(triggerResponse.RootElement.GetProperty("success").GetBoolean());
+
+                var pausedFrame = await WaitForPausedFrameAsync(hostProcess, sequence, cancellationSource.Token);
+                var sourcePath = pausedFrame.GetProperty("source").GetProperty("path").GetString() ?? string.Empty;
+                Assert.AreEqual("main.ts", Path.GetFileName(sourcePath));
+                Assert.AreEqual(expectedBreakpointLine, pausedFrame.GetProperty("line").GetInt32());
+                var pausedColumn = pausedFrame.GetProperty("column").GetInt32();
+                Assert.IsTrue(
+                    pausedColumn >= expectedBreakpointColumn,
+                    $"Expected mapped column >= {expectedBreakpointColumn}, actual {pausedColumn}.");
+
+                using var fullStackTraceResponse = await SendDapRequestAsync(
+                    hostProcess,
+                    sequence,
+                    "stackTrace",
+                    new
+                    {
+                        threadId = 1
+                    },
+                    cancellationSource.Token);
+                var totalFrames = fullStackTraceResponse.RootElement
+                    .GetProperty("body")
+                    .GetProperty("totalFrames")
+                    .GetInt32();
+                Assert.IsTrue(
+                    totalFrames >= 3,
+                    $"Expected recursive pause stack to contain at least 3 frames, actual {totalFrames}.");
+
+                using var firstPageResponse = await SendDapRequestAsync(
+                    hostProcess,
+                    sequence,
+                    "stackTrace",
+                    new
+                    {
+                        threadId = 1,
+                        startFrame = 0,
+                        levels = 2
+                    },
+                    cancellationSource.Token);
+                var firstPageBody = firstPageResponse.RootElement.GetProperty("body");
+                Assert.AreEqual(totalFrames, firstPageBody.GetProperty("totalFrames").GetInt32());
+                var firstPageFrames = firstPageBody.GetProperty("stackFrames").EnumerateArray().ToArray();
+                Assert.AreEqual(Math.Min(totalFrames, 2), firstPageFrames.Length);
+                Assert.AreEqual("main.ts", Path.GetFileName(firstPageFrames[0].GetProperty("source").GetProperty("path").GetString()));
+                Assert.AreEqual(expectedBreakpointLine, firstPageFrames[0].GetProperty("line").GetInt32());
+
+                using var secondPageResponse = await SendDapRequestAsync(
+                    hostProcess,
+                    sequence,
+                    "stackTrace",
+                    new
+                    {
+                        threadId = 1,
+                        startFrame = 2,
+                        levels = 2
+                    },
+                    cancellationSource.Token);
+                var secondPageBody = secondPageResponse.RootElement.GetProperty("body");
+                Assert.AreEqual(totalFrames, secondPageBody.GetProperty("totalFrames").GetInt32());
+                var secondPageFrames = secondPageBody.GetProperty("stackFrames").EnumerateArray().ToArray();
+                Assert.IsTrue(
+                    secondPageFrames.Length > 0,
+                    "Expected second pagination window to contain additional frames.");
+
+                using var outOfRangeResponse = await SendDapRequestAsync(
+                    hostProcess,
+                    sequence,
+                    "stackTrace",
+                    new
+                    {
+                        threadId = 1,
+                        startFrame = totalFrames + 5,
+                        levels = 2
+                    },
+                    cancellationSource.Token);
+                var outOfRangeBody = outOfRangeResponse.RootElement.GetProperty("body");
+                Assert.AreEqual(totalFrames, outOfRangeBody.GetProperty("totalFrames").GetInt32());
+                Assert.AreEqual(0, outOfRangeBody.GetProperty("stackFrames").GetArrayLength());
+
+                var frameId = pausedFrame.GetProperty("id").GetInt32();
+                using var evaluateBuildVersionResponse = await SendDapRequestAsync(
+                    hostProcess,
+                    sequence,
+                    "evaluate",
+                    new
+                    {
+                        expression = "buildVersion",
+                        frameId,
+                        context = "watch"
+                    },
+                    cancellationSource.Token);
+                var evaluatedBuildVersion = evaluateBuildVersionResponse.RootElement
+                    .GetProperty("body")
+                    .GetProperty("result")
+                    .GetString();
+                Assert.AreEqual(
+                    iteration.ToString(),
+                    evaluatedBuildVersion,
+                    $"Expected paused-frame evaluate(buildVersion) to stay aligned with HMR iteration {iteration}.");
+
+                using var continueResponse = await SendDapRequestAsync(
+                    hostProcess,
+                    sequence,
+                    "continue",
+                    new
+                    {
+                        threadId = 1
+                    },
+                    cancellationSource.Token);
+                Assert.IsTrue(continueResponse.RootElement.GetProperty("success").GetBoolean());
+
+                using var continuedEvent = await ReadDapMessageAsync(hostProcess, cancellationSource.Token);
+                Assert.AreEqual("continued", continuedEvent.RootElement.GetProperty("event").GetString());
+
+                await WaitForStackToClearAsync(hostProcess, sequence, cancellationSource.Token);
+            }
+
+            using var disconnectResponse = await SendDapRequestAsync(
+                hostProcess,
+                sequence,
+                "disconnect",
+                null,
+                cancellationSource.Token);
+            Assert.AreEqual("disconnect", disconnectResponse.RootElement.GetProperty("command").GetString());
+
+            await hostProcess.WaitForExitAsync(cancellationSource.Token);
+            var hostStandardError = await hostProcess.StandardError.ReadToEndAsync(cancellationSource.Token);
+            Assert.AreEqual(0, hostProcess.ExitCode, hostStandardError);
+        }
+        finally
+        {
+            await EnsureProcessTerminatedAsync(hostProcess, cancellationSource.Token);
+            await EnsureProcessTerminatedAsync(browserProcess, cancellationSource.Token);
+            TryDeleteDirectoryWithRetry(devRoot);
+        }
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_DapProcess_RealBrowserCdpSourceMapExceptionMatrix_ValidatesMixedMappedAndUnmappedFramesAcrossHmrIterations()
+    {
+        if (!ReadBooleanEnvironmentVariable(RealCdpSourceMapMatrixEnvironmentVariable))
+        {
+            return;
+        }
+
+        var browserExecutablePath = ResolveRealBrowserExecutablePath();
+        if (string.IsNullOrWhiteSpace(browserExecutablePath))
+        {
+            Assert.Inconclusive(
+                $"Unable to locate browser executable. Set {RealCdpBrowserPathEnvironmentVariable} to Chrome/Edge path.");
+        }
+
+        var devRoot = CreateTemporaryDirectory();
+        var browserProfilePath = Path.Combine(devRoot, ".browser-profile");
+        Directory.CreateDirectory(browserProfilePath);
+
+        var indexPath = Path.Combine(devRoot, "index.html");
+        var modulePath = Path.Combine(devRoot, "main.ts");
+        var bridgePath = Path.Combine(devRoot, "bridge.js");
+        var moduleVersion1 = CreateRealCdpSourceMapExceptionMatrixMainModule(1);
+        await File.WriteAllTextAsync(
+            indexPath,
+            """
+            <!doctype html>
+            <html lang="en">
+            <head>
+              <meta charset="utf-8">
+              <title>Jazor VueHost CDP SourceMap Exception Matrix</title>
+            </head>
+            <body>
+              <div id="app">ready</div>
+              <script type="module" src="/main.ts"></script>
+            </body>
+            </html>
+            """,
+            CancellationToken.None);
+        await File.WriteAllTextAsync(bridgePath, CreateRealCdpSourceMapMatrixBridgeModule(), CancellationToken.None);
+        await File.WriteAllTextAsync(modulePath, moduleVersion1, CancellationToken.None);
+
+        var breakpointNeedle = "throw new Error(`matrix-iteration-${buildVersion}`);";
+        var expectedBreakpointLine = GetLineIndexContaining(moduleVersion1, breakpointNeedle) + 1;
+        var expectedBreakpointColumn = GetSourceColumn(moduleVersion1, breakpointNeedle);
+        var devPort = AllocateLoopbackTcpPort();
+        var cdpPort = AllocateLoopbackTcpPort();
+        const int iterations = 4;
+        const int recursionDepth = 6;
+
+        using var cancellationSource = new CancellationTokenSource(TimeSpan.FromMinutes(4));
+        Process? browserProcess = null;
+        Process? hostProcess = null;
+
+        try
+        {
+            browserProcess = CreateHeadlessBrowserProcess(
+                browserExecutablePath,
+                cdpPort,
+                browserProfilePath);
+            Assert.IsTrue(browserProcess.Start(), "Expected headless browser process to start.");
+
+            var cdpWebSocket = await WaitForBrowserCdpPageEndpointAsync(cdpPort, cancellationSource.Token);
+            Assert.IsFalse(
+                string.IsNullOrWhiteSpace(cdpWebSocket),
+                "Expected browser to expose a page-level CDP WebSocket endpoint.");
+
+            hostProcess = CreateVueHostDapDevProcess(
+                devRoot,
+                devPort,
+                cdpWebSocket!);
+            Assert.IsTrue(hostProcess.Start(), "Expected Jazor.VueHost DAP+Dev process to start.");
+
+            await WaitForHttpReadyAsync(
+                new Uri($"http://127.0.0.1:{devPort}/index.html"),
+                cancellationSource.Token);
+
+            var sequence = new DapSequenceCounter();
+
+            using var initializeResponse = await SendDapRequestAsync(
+                hostProcess,
+                sequence,
+                "initialize",
+                new
+                {
+                    adapterID = "jazor-vuehost"
+                },
+                cancellationSource.Token);
+            Assert.AreEqual("initialize", initializeResponse.RootElement.GetProperty("command").GetString());
+            Assert.IsTrue(
+                initializeResponse.RootElement.GetProperty("body").GetProperty("supportsConfigurationDoneRequest").GetBoolean());
+
+            using var initializedEvent = await ReadDapMessageAsync(hostProcess, cancellationSource.Token);
+            Assert.AreEqual("initialized", initializedEvent.RootElement.GetProperty("event").GetString());
+
+            using var configurationDoneResponse = await SendDapRequestAsync(
+                hostProcess,
+                sequence,
+                "configurationDone",
+                null,
+                cancellationSource.Token);
+            Assert.IsTrue(configurationDoneResponse.RootElement.GetProperty("success").GetBoolean());
+
+            var navigateExpression = "location.href = "
+                + JsonSerializer.Serialize($"http://127.0.0.1:{devPort}/index.html")
+                + "; 'navigating';";
+            using var navigateResponse = await SendDapRequestAsync(
+                hostProcess,
+                sequence,
+                "evaluate",
+                new
+                {
+                    expression = navigateExpression,
+                    context = "repl"
+                },
+                cancellationSource.Token);
+            Assert.IsTrue(navigateResponse.RootElement.GetProperty("success").GetBoolean());
+
+            await WaitForIterationReadyAsync(
+                hostProcess,
+                sequence,
+                expectedVersion: 1,
+                cancellationSource.Token);
+
+            using var setBreakpointsResponse = await SendDapRequestAsync(
+                hostProcess,
+                sequence,
+                "setBreakpoints",
+                new
+                {
+                    source = new
+                    {
+                        path = modulePath
+                    },
+                    breakpoints = new object[]
+                    {
+                        new
+                        {
+                            line = expectedBreakpointLine,
+                            column = expectedBreakpointColumn
+                        }
+                    }
+                },
+                cancellationSource.Token);
+            Assert.IsTrue(setBreakpointsResponse.RootElement.GetProperty("success").GetBoolean());
+            var verifiedBreakpoints = setBreakpointsResponse.RootElement
+                .GetProperty("body")
+                .GetProperty("breakpoints")
+                .EnumerateArray()
+                .ToArray();
+            Assert.AreEqual(1, verifiedBreakpoints.Length);
+            Assert.IsTrue(
+                verifiedBreakpoints[0].GetProperty("verified").GetBoolean(),
+                "Breakpoint binding failed: " + verifiedBreakpoints[0].GetRawText());
+
+            for (var iteration = 1; iteration <= iterations; iteration++)
+            {
+                if (iteration > 1)
+                {
+                    var updatedSource = CreateRealCdpSourceMapExceptionMatrixMainModule(iteration);
+                    await File.WriteAllTextAsync(modulePath, updatedSource, cancellationSource.Token);
+                    await WaitForIterationReadyAsync(
+                        hostProcess,
+                        sequence,
+                        expectedVersion: iteration,
+                        cancellationSource.Token);
+                }
+
+                using var triggerResponse = await SendDapRequestAsync(
+                    hostProcess,
+                    sequence,
+                    "evaluate",
+                    new
+                    {
+                        expression = $"setTimeout(() => {{ try {{ globalThis.__jazorRunIteration?.({recursionDepth}); }} catch {{ }} }}, 0); 'scheduled';",
+                        context = "repl"
+                    },
+                    cancellationSource.Token);
+                Assert.IsTrue(triggerResponse.RootElement.GetProperty("success").GetBoolean());
+
+                var pausedFrame = await WaitForPausedFrameAsync(hostProcess, sequence, cancellationSource.Token);
+                var sourcePath = pausedFrame.GetProperty("source").GetProperty("path").GetString() ?? string.Empty;
+                Assert.AreEqual("main.ts", Path.GetFileName(sourcePath));
+                Assert.AreEqual(expectedBreakpointLine, pausedFrame.GetProperty("line").GetInt32());
+                var pausedColumn = pausedFrame.GetProperty("column").GetInt32();
+                Assert.IsTrue(
+                    pausedColumn >= expectedBreakpointColumn,
+                    $"Expected mapped column >= {expectedBreakpointColumn}, actual {pausedColumn}.");
+
+                using var fullStackTraceResponse = await SendDapRequestAsync(
+                    hostProcess,
+                    sequence,
+                    "stackTrace",
+                    new
+                    {
+                        threadId = 1
+                    },
+                    cancellationSource.Token);
+                var fullStackBody = fullStackTraceResponse.RootElement.GetProperty("body");
+                var totalFrames = fullStackBody.GetProperty("totalFrames").GetInt32();
+                var fullStackFrames = fullStackBody
+                    .GetProperty("stackFrames")
+                    .EnumerateArray()
+                    .ToArray();
+                Assert.IsTrue(
+                    totalFrames >= 4,
+                    $"Expected exception matrix stack to contain at least 4 frames, actual {totalFrames}.");
+                Assert.AreEqual(totalFrames, fullStackFrames.Length);
+                Assert.IsTrue(
+                    fullStackFrames.Any(frame => string.Equals(
+                        Path.GetFileName(frame.GetProperty("source").GetProperty("path").GetString()),
+                        "main.ts",
+                        StringComparison.OrdinalIgnoreCase)),
+                    "Expected full stack to include mapped main.ts frames.");
+                var bridgeFrameIndex = Array.FindIndex(
+                    fullStackFrames,
+                    frame => string.Equals(
+                        Path.GetFileName(frame.GetProperty("source").GetProperty("path").GetString()),
+                        "bridge.js",
+                        StringComparison.OrdinalIgnoreCase));
+                Assert.IsTrue(
+                    bridgeFrameIndex >= 0,
+                    "Expected full stack to include unmapped bridge.js frame.");
+
+                var bridgeWindowStart = Math.Max(bridgeFrameIndex - 1, 0);
+                using var bridgeWindowResponse = await SendDapRequestAsync(
+                    hostProcess,
+                    sequence,
+                    "stackTrace",
+                    new
+                    {
+                        threadId = 1,
+                        startFrame = bridgeWindowStart,
+                        levels = 3
+                    },
+                    cancellationSource.Token);
+                var bridgeWindowBody = bridgeWindowResponse.RootElement.GetProperty("body");
+                Assert.AreEqual(totalFrames, bridgeWindowBody.GetProperty("totalFrames").GetInt32());
+                var bridgeWindowFrames = bridgeWindowBody.GetProperty("stackFrames").EnumerateArray().ToArray();
+                Assert.IsTrue(
+                    bridgeWindowFrames.Any(frame => string.Equals(
+                        Path.GetFileName(frame.GetProperty("source").GetProperty("path").GetString()),
+                        "bridge.js",
+                        StringComparison.OrdinalIgnoreCase)),
+                    "Expected bridge pagination window to retain unmapped frame.");
+
+                using var firstPageResponse = await SendDapRequestAsync(
+                    hostProcess,
+                    sequence,
+                    "stackTrace",
+                    new
+                    {
+                        threadId = 1,
+                        startFrame = 0,
+                        levels = 2
+                    },
+                    cancellationSource.Token);
+                var firstPageBody = firstPageResponse.RootElement.GetProperty("body");
+                var firstPageFrames = firstPageBody.GetProperty("stackFrames").EnumerateArray().ToArray();
+                Assert.AreEqual(totalFrames, firstPageBody.GetProperty("totalFrames").GetInt32());
+                Assert.AreEqual(2, firstPageFrames.Length);
+
+                using var secondPageResponse = await SendDapRequestAsync(
+                    hostProcess,
+                    sequence,
+                    "stackTrace",
+                    new
+                    {
+                        threadId = 1,
+                        startFrame = 2,
+                        levels = 2
+                    },
+                    cancellationSource.Token);
+                var secondPageBody = secondPageResponse.RootElement.GetProperty("body");
+                var secondPageFrames = secondPageBody.GetProperty("stackFrames").EnumerateArray().ToArray();
+                Assert.AreEqual(totalFrames, secondPageBody.GetProperty("totalFrames").GetInt32());
+                Assert.IsTrue(secondPageFrames.Length > 0);
+                Assert.AreNotEqual(
+                    firstPageFrames[^1].GetProperty("id").GetInt32(),
+                    secondPageFrames[0].GetProperty("id").GetInt32(),
+                    "Expected adjacent pagination windows to advance stack frame identity.");
+
+                var frameId = pausedFrame.GetProperty("id").GetInt32();
+                using var evaluateBuildVersionResponse = await SendDapRequestAsync(
+                    hostProcess,
+                    sequence,
+                    "evaluate",
+                    new
+                    {
+                        expression = "buildVersion",
+                        frameId,
+                        context = "watch"
+                    },
+                    cancellationSource.Token);
+                var evaluatedBuildVersion = evaluateBuildVersionResponse.RootElement
+                    .GetProperty("body")
+                    .GetProperty("result")
+                    .GetString();
+                Assert.AreEqual(
+                    iteration.ToString(),
+                    evaluatedBuildVersion,
+                    $"Expected paused-frame evaluate(buildVersion) to stay aligned with HMR iteration {iteration}.");
+
+                using var continueResponse = await SendDapRequestAsync(
+                    hostProcess,
+                    sequence,
+                    "continue",
+                    new
+                    {
+                        threadId = 1
+                    },
+                    cancellationSource.Token);
+                Assert.IsTrue(continueResponse.RootElement.GetProperty("success").GetBoolean());
+
+                using var continuedEvent = await ReadDapMessageAsync(hostProcess, cancellationSource.Token);
+                Assert.AreEqual("continued", continuedEvent.RootElement.GetProperty("event").GetString());
+
+                await WaitForStackToClearAsync(hostProcess, sequence, cancellationSource.Token);
+            }
+
+            using var disconnectResponse = await SendDapRequestAsync(
+                hostProcess,
+                sequence,
+                "disconnect",
+                null,
+                cancellationSource.Token);
+            Assert.AreEqual("disconnect", disconnectResponse.RootElement.GetProperty("command").GetString());
+
+            await hostProcess.WaitForExitAsync(cancellationSource.Token);
+            var hostStandardError = await hostProcess.StandardError.ReadToEndAsync(cancellationSource.Token);
+            Assert.AreEqual(0, hostProcess.ExitCode, hostStandardError);
+        }
+        finally
+        {
+            await EnsureProcessTerminatedAsync(hostProcess, cancellationSource.Token);
+            await EnsureProcessTerminatedAsync(browserProcess, cancellationSource.Token);
+            TryDeleteDirectoryWithRetry(devRoot);
+        }
+    }
+
     private static async Task<JsonDocument> SendDapRequestAsync(
         Process process,
         DapSequenceCounter sequence,
@@ -2054,6 +2708,113 @@ public sealed class JazorVueHostDebugProtocolTests
         __jazorGlobal.__jazorRunIteration = runIteration;
         __jazorGlobal.__jazorBuildVersion = buildVersion;
         __jazorGlobal.__jazorEditToken = "v{{version}}";
+        """;
+
+    private static string CreateRealCdpSourceMapMatrixMainModule(int version)
+        => $$"""
+        export const buildVersion = {{version}};
+
+        enum MarkerState {
+          Active = 1
+        }
+
+        function leaf(depth: number): number {
+          const marker = buildVersion + depth + MarkerState.Active;
+          return marker;
+        }
+
+        function descend(depth: number): number {
+          if (depth <= 0) {
+            return leaf(depth);
+          }
+
+          return descend(depth - 1) + 1;
+        }
+
+        export function runIteration(depth: number = 6): number {
+          return descend(depth);
+        }
+
+        const __jazorGlobal = globalThis;
+        __jazorGlobal.__jazorRuntimeCounter = (__jazorGlobal.__jazorRuntimeCounter ?? 0) + 1;
+        const __jazorHot = import.meta.hot ?? __jazorGlobal.__JAZOR_HMR__?.createHotContext(import.meta.url);
+        if (__jazorHot) {
+          import.meta.hot = __jazorHot;
+          __jazorHot.accept((updatedModule) => {
+            if (typeof updatedModule?.runIteration === "function") {
+              __jazorGlobal.__jazorRunIteration = updatedModule.runIteration;
+            }
+            __jazorGlobal.__jazorBuildVersion = updatedModule?.buildVersion ?? -1;
+          });
+        }
+
+        __jazorGlobal.__jazorRunIteration = runIteration;
+        __jazorGlobal.__jazorBuildVersion = buildVersion;
+        __jazorGlobal.__jazorEditToken = "matrix-v{{version}}";
+        """;
+
+    private static string CreateRealCdpSourceMapExceptionMatrixMainModule(int version)
+        => $$"""
+        import { invokeWithBridge } from "./bridge.js";
+
+        export const buildVersion = {{version}};
+
+        enum MarkerState {
+          Active = 1
+        }
+
+        function throwLeaf(depth: number): number {
+          const marker = buildVersion + depth + MarkerState.Active;
+          if (depth <= 0) {
+            throw new Error(`matrix-iteration-${buildVersion}`);
+          }
+
+          return marker;
+        }
+
+        function descend(depth: number): number {
+          if (depth <= 0) {
+            return throwLeaf(depth);
+          }
+
+          return descend(depth - 1) + 1;
+        }
+
+        export function runIteration(depth: number = 6): number {
+          return invokeWithBridge(depth, (value: number) => descend(value));
+        }
+
+        const __jazorGlobal = globalThis;
+        __jazorGlobal.__jazorRuntimeCounter = (__jazorGlobal.__jazorRuntimeCounter ?? 0) + 1;
+        const __jazorHot = import.meta.hot ?? __jazorGlobal.__JAZOR_HMR__?.createHotContext(import.meta.url);
+        if (__jazorHot) {
+          import.meta.hot = __jazorHot;
+          __jazorHot.accept((updatedModule) => {
+            if (typeof updatedModule?.runIteration === "function") {
+              __jazorGlobal.__jazorRunIteration = updatedModule.runIteration;
+            }
+            __jazorGlobal.__jazorBuildVersion = updatedModule?.buildVersion ?? -1;
+          });
+        }
+
+        __jazorGlobal.__jazorRunIteration = runIteration;
+        __jazorGlobal.__jazorBuildVersion = buildVersion;
+        __jazorGlobal.__jazorEditToken = "matrix-ex-v{{version}}";
+        """;
+
+    private static string CreateRealCdpSourceMapMatrixBridgeModule()
+        => """
+        export function invokeWithBridge(depth, callback) {
+          return bridgeLevelOne(depth, callback);
+        }
+
+        function bridgeLevelOne(depth, callback) {
+          return bridgeLevelTwo(depth, callback);
+        }
+
+        function bridgeLevelTwo(depth, callback) {
+          return callback(depth);
+        }
         """;
 
     private static int GetSourceColumn(string sourceText, string needle)
