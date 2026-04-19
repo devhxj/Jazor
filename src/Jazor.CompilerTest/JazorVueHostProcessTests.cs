@@ -29,7 +29,7 @@ public sealed class JazorVueHostProcessTests
                 "Features/Counter.jazor",
                 DocumentKind.Jazor,
                 """
-                @jsimport dayjs from "dayjs"
+                @module dayjs from "dayjs"
 
                 <template>
                   <div>{{ dayjs }}</div>

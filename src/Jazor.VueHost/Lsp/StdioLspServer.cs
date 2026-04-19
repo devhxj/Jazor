@@ -99,8 +99,7 @@ internal sealed class StdioLspServer
                     {
                         throw;
                     }
-                    catch
-                    {
+                    catch (Exception) {
                         // Ignore malformed notification payloads to keep the server loop alive.
                         continue;
                     }
@@ -207,8 +206,7 @@ internal sealed class StdioLspServer
                 LspJsonSerializer.Serialize(response),
                 CancellationToken.None);
         }
-        catch
-        {
+        catch (Exception) {
             // Output stream can be closed during shutdown; suppress late write failures.
         }
     }
@@ -269,8 +267,7 @@ internal sealed class StdioLspServer
             {
                 source.Cancel();
             }
-            catch
-            {
+            catch (Exception) {
             }
         }
 
@@ -309,8 +306,7 @@ internal sealed class StdioLspServer
             var deserialized = LspJsonSerializer.Deserialize<LspCancelRequestParams>(raw);
             return deserialized?.Id;
         }
-        catch
-        {
+        catch (Exception) {
             return null;
         }
     }

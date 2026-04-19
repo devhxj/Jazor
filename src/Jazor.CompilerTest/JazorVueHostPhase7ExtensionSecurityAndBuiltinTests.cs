@@ -2029,7 +2029,7 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
     }
 
     [TestMethod]
-    public async Task BuiltinComponentCodeActionProvider_OffersVueImportQuickFixThroughLspSession()
+    public async Task BuiltinComponentCodeActionProvider_OffersImportQuickFixThroughLspSession()
     {
         var workspaceStore = new InMemoryWorkspaceStore();
         var virtualDocumentRegistry = new InMemoryVirtualDocumentRegistry();
@@ -2111,14 +2111,14 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
             Assert.IsNotNull(actions);
 
             var importAction = actions.FirstOrDefault(static action =>
-                string.Equals(action.Title, "Add @vueimport for CounterWidget", StringComparison.Ordinal));
+                string.Equals(action.Title, "Add @module for CounterWidget", StringComparison.Ordinal));
             Assert.IsNotNull(importAction);
             Assert.IsNotNull(importAction!.Edit);
 
             var uri = LspProtocolHelpers.ToDocumentUri(documentPath);
             Assert.IsTrue(importAction.Edit.Changes.ContainsKey(uri));
             var inserted = importAction.Edit.Changes[uri].Single();
-            StringAssert.Contains(inserted.NewText, "@vueimport CounterWidget from \"./CounterWidget.vue\"", StringComparison.Ordinal);
+            StringAssert.Contains(inserted.NewText, "@module CounterWidget from \"./CounterWidget.vue\"", StringComparison.Ordinal);
         }
         finally
         {
@@ -2588,6 +2588,9 @@ public sealed class JazorVueHostPhase7ExtensionSecurityAndBuiltinTests
 
         public ValueTask<LspHoverResult?> GetHoverAsync(DocumentSnapshot document, LspPosition position, ProjectionTarget projectionTarget, CancellationToken cancellationToken)
             => ValueTask.FromResult<LspHoverResult?>(null);
+
+        public ValueTask<IReadOnlyList<LspDocumentHighlight>> GetDocumentHighlightsAsync(DocumentSnapshot document, LspPosition position, ProjectionTarget projectionTarget, CancellationToken cancellationToken)
+            => ValueTask.FromResult<IReadOnlyList<LspDocumentHighlight>>(Array.Empty<LspDocumentHighlight>());
 
         public ValueTask<IReadOnlyList<LspCompletionItem>> GetCompletionItemsAsync(DocumentSnapshot document, LspPosition position, ProjectionTarget projectionTarget, CancellationToken cancellationToken)
             => ValueTask.FromResult<IReadOnlyList<LspCompletionItem>>(Array.Empty<LspCompletionItem>());

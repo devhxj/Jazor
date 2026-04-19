@@ -613,8 +613,7 @@ internal sealed class ExtensionLoader : IAsyncDisposable
 
             return true;
         }
-        catch
-        {
+        catch (Exception) {
             failureReason = "manifest file is missing or invalid json";
             return false;
         }
@@ -718,8 +717,7 @@ internal sealed class ExtensionLoader : IAsyncDisposable
         {
             return value.Deserialize<T>(ManifestJsonOptions);
         }
-        catch
-        {
+        catch (Exception) {
             return default;
         }
     }
@@ -964,8 +962,7 @@ internal sealed class ExtensionLoader : IAsyncDisposable
         {
             await extension.DeactivateAsync(CancellationToken.None);
         }
-        catch
-        {
+        catch (Exception) {
             // Ignore deactivate failures during failed activation path.
         }
     }
@@ -1025,8 +1022,7 @@ internal sealed class ExtensionLoader : IAsyncDisposable
         {
             _loadEventSink(invocation);
         }
-        catch
-        {
+        catch (Exception) {
             // Ignore sink errors to keep extension loading isolated from telemetry output.
         }
     }

@@ -549,6 +549,13 @@ public sealed class JazorVueHostCoordinatorTests
             CancellationToken cancellationToken)
             => ValueTask.FromResult<LspHoverResult?>(null);
 
+        public ValueTask<IReadOnlyList<LspDocumentHighlight>> GetDocumentHighlightsAsync(
+            DocumentSnapshot document,
+            LspPosition position,
+            ProjectionTarget projectionTarget,
+            CancellationToken cancellationToken)
+            => ValueTask.FromResult<IReadOnlyList<LspDocumentHighlight>>(Array.Empty<LspDocumentHighlight>());
+
         public ValueTask<IReadOnlyList<LspCompletionItem>> GetCompletionItemsAsync(
             DocumentSnapshot document,
             LspPosition position,

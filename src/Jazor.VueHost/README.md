@@ -9,7 +9,8 @@ Authoring model:
 
 - `.jazor` follows Razor syntax.
 - Editor intelligence is Razor-first and should resolve nearby `.vue`, `.css`, `.js`, and `.ts` files from the `.jazor` document graph.
-- Legacy `@vueimport` / `@jsimport` are compatibility inputs only; they are not the target authoring model.
+- Use `@module` as the canonical authoring directive.
+- `@import` / `@vueimport` / `@jsimport` are unsupported and produce diagnostics with rewrite quick-fixes.
 - Virtual `.vue` / `.cs` artifacts may still be produced for projection and tooling, but they are implementation details.
 
 Implementation model:

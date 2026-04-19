@@ -1731,7 +1731,7 @@ public sealed class JazorVueHostFrontendLaneTests
     {
         var lane = CreateLane(new FakeDenoFrontendHost());
         var document = CreateDocument("""
-            @jsimport dayjs from "dayjs"
+            @module dayjs from "dayjs"
 
             <MissingCard />
             """);

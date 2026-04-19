@@ -87,8 +87,7 @@ internal sealed class RazorDesignTimeCodeProjectionService
                 projectionMap);
             return true;
         }
-        catch
-        {
+        catch (Exception) {
             return TryCreateFallbackProjection(document, out projection);
         }
     }
@@ -156,8 +155,7 @@ internal sealed class RazorDesignTimeCodeProjectionService
                 : path;
             return fullPath.Replace('\\', '/');
         }
-        catch
-        {
+        catch (Exception) {
             return path.Replace('\\', '/');
         }
     }
@@ -282,8 +280,7 @@ internal sealed class RazorDesignTimeCodeProjectionService
         {
             return true;
         }
-        catch
-        {
+        catch (Exception) {
             generatedCode = string.Empty;
             sourceMappings = [];
             return false;
@@ -309,8 +306,7 @@ internal sealed class RazorDesignTimeCodeProjectionService
             sourceMappings = GetSourceMappings(csharpDocument);
             return !string.IsNullOrWhiteSpace(generatedCode);
         }
-        catch
-        {
+        catch (Exception) {
             generatedCode = string.Empty;
             sourceMappings = [];
             return false;

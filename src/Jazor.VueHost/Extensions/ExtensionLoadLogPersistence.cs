@@ -116,8 +116,7 @@ internal static class ExtensionLoadLogPersistence
         {
             persisted = JsonSerializer.Deserialize<PersistedExtensionLoadInvocation>(line, JsonOptions);
         }
-        catch
-        {
+        catch (Exception) {
             return false;
         }
 

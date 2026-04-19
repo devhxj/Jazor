@@ -12,6 +12,11 @@ type Position = {
   character: number;
 };
 
+type Range = {
+  start: Position;
+  end: Position;
+};
+
 type RequestEnvelope = {
   id: string;
   method: string;
@@ -21,6 +26,7 @@ type RequestEnvelope = {
     sfcText?: string;
     filename?: string;
     position?: Position;
+    range?: Range;
     includeDeclaration?: boolean;
     newName?: string;
     frontendContext?: FrontendSemanticContext | null;
@@ -229,6 +235,15 @@ async function dispatch(method: string, payload: RequestEnvelope["payload"]): Pr
         payload.frontendContext,
         payload.frontendArtifacts,
       );
+    case "template/implementation":
+      assertPosition(method, payload.position);
+      return await getImplementation(
+        payload.documentPath,
+        payload.text,
+        payload.position,
+        payload.frontendContext,
+        payload.frontendArtifacts,
+      );
     case "template/references":
       assertPosition(method, payload.position);
       return await getReferences(
@@ -253,6 +268,13 @@ async function dispatch(method: string, payload: RequestEnvelope["payload"]): Pr
       return await getDocumentSymbols(payload.documentPath, payload.text);
     case "template/semanticTokens":
       return await getSemanticTokens(payload.documentPath, payload.text);
+    case "template/documentLinks":
+      return await getDocumentLinks(payload.documentPath, payload.text);
+    case "template/inlayHints":
+      assertRange(method, payload.range);
+      return await getInlayHints(payload.documentPath, payload.text, payload.range);
+    case "template/foldingRanges":
+      return await getFoldingRanges(payload.documentPath, payload.text);
     default:
       throw new Error(`Unsupported method '${method}'.`);
   }
@@ -396,6 +418,44 @@ async function getDefinition(
   const scriptContext = tryCreateScriptContext(documentPath, text, position);
   if (scriptContext !== null) {
     return getScriptDefinition(scriptContext, position);
+  }
+
+  const symbol = findTemplateSymbol(text, position);
+  if (symbol === null) {
+    return [];
+  }
+
+  const component = resolveComponent(documentPath, symbol.name, frontendContext, frontendArtifacts);
+  if (component === null) {
+    return [];
+  }
+
+  return [{
+    uri: toDocumentUri(component.absolutePath),
+    range: {
+      start: { line: 0, character: 0 },
+      end: { line: 0, character: 0 },
+    },
+  }];
+}
+
+async function getImplementation(
+  documentPath: string,
+  text: string,
+  position: Position,
+  frontendContext?: FrontendSemanticContext | null,
+  frontendArtifacts?: FrontendArtifactRecord[] | null,
+): Promise<unknown[]> {
+  if (getFrontendDocumentKind(documentPath) === "vue") {
+    const locations = await tryGetVueImplementation(documentPath, text, position);
+    if (locations !== volarUnhandled) {
+      return locations;
+    }
+  }
+
+  const scriptContext = tryCreateScriptContext(documentPath, text, position);
+  if (scriptContext !== null) {
+    return getScriptImplementation(scriptContext, position);
   }
 
   const symbol = findTemplateSymbol(text, position);
@@ -616,6 +676,40 @@ async function getSemanticTokens(documentPath: string, text: string): Promise<un
   }
 
   return dedupeSemanticTokens(tokens);
+}
+
+async function getDocumentLinks(documentPath: string, text: string): Promise<unknown[]> {
+  if (getFrontendDocumentKind(documentPath) !== "vue") {
+    return [];
+  }
+
+  const links = await tryGetVueDocumentLinks(documentPath, text);
+  return links === volarUnhandled ? [] : links;
+}
+
+async function getInlayHints(
+  documentPath: string,
+  text: string,
+  range: Range,
+): Promise<unknown[]> {
+  if (getFrontendDocumentKind(documentPath) !== "vue") {
+    return [];
+  }
+
+  const hints = await tryGetVueInlayHints(documentPath, text, range);
+  return hints === volarUnhandled ? [] : hints;
+}
+
+async function getFoldingRanges(
+  documentPath: string,
+  text: string,
+): Promise<unknown[]> {
+  if (getFrontendDocumentKind(documentPath) !== "vue") {
+    return [];
+  }
+
+  const ranges = await tryGetVueFoldingRanges(documentPath, text);
+  return ranges === volarUnhandled ? [] : ranges;
 }
 
 function compileVueSfc(
@@ -914,6 +1008,30 @@ async function tryGetVueDefinition(
   });
 }
 
+async function tryGetVueImplementation(
+  documentPath: string,
+  text: string,
+  position: Position,
+): Promise<unknown[] | typeof volarUnhandled> {
+  return await withVueLanguageService(documentPath, text, async (context) => {
+    const dynamicService = context.service as unknown as {
+      getImplementations?: (uri: URI, position: Position) => Promise<unknown[] | undefined>;
+      getImplementation?: (uri: URI, position: Position) => Promise<unknown[] | undefined>;
+    };
+    const getImplementations = typeof dynamicService.getImplementations === "function"
+      ? dynamicService.getImplementations.bind(dynamicService)
+      : typeof dynamicService.getImplementation === "function"
+        ? dynamicService.getImplementation.bind(dynamicService)
+        : null;
+    if (getImplementations === null) {
+      return [];
+    }
+
+    const locations = await getImplementations(context.documentUri, position);
+    return normalizeVolarImplementationLocations(locations ?? [], context);
+  });
+}
+
 async function tryGetVueReferences(
   documentPath: string,
   text: string,
@@ -958,6 +1076,58 @@ async function tryGetVueSemanticTokens(
   return await withVueLanguageService(documentPath, text, async ({ service, documentUri }) => {
     const tokens = await service.getSemanticTokens(documentUri, undefined, service.semanticTokenLegend);
     return decodeVolarSemanticTokens(tokens, service.semanticTokenLegend);
+  });
+}
+
+async function tryGetVueDocumentLinks(
+  documentPath: string,
+  text: string,
+): Promise<unknown[] | typeof volarUnhandled> {
+  return await withVueLanguageService(documentPath, text, async (context) => {
+    const dynamicService = context.service as unknown as {
+      getDocumentLinks?: (uri: URI) => Promise<Array<{ range: Range; target?: string; tooltip?: string }> | undefined>;
+    };
+    if (typeof dynamicService.getDocumentLinks !== "function") {
+      return [];
+    }
+
+    const links = await dynamicService.getDocumentLinks(context.documentUri);
+    return normalizeVolarDocumentLinks(links ?? [], context);
+  });
+}
+
+async function tryGetVueInlayHints(
+  documentPath: string,
+  text: string,
+  range: Range,
+): Promise<unknown[] | typeof volarUnhandled> {
+  return await withVueLanguageService(documentPath, text, async ({ service, documentUri }) => {
+    const dynamicService = service as unknown as {
+      getInlayHints?: (uri: URI, range: Range) => Promise<Array<{ position: Position; label: unknown; kind?: number }> | undefined>;
+    };
+    if (typeof dynamicService.getInlayHints !== "function") {
+      return [];
+    }
+
+    const hints = await dynamicService.getInlayHints(documentUri, range);
+    return normalizeVolarInlayHints(hints ?? []);
+  });
+}
+
+async function tryGetVueFoldingRanges(
+  documentPath: string,
+  text: string,
+): Promise<unknown[] | typeof volarUnhandled> {
+  return await withVueLanguageService(documentPath, text, async ({ service, documentUri }) => {
+    const dynamicService = service as unknown as {
+      getFoldingRanges?: (uri: URI) => Promise<Array<{ startLine: number; startCharacter?: number; endLine: number; endCharacter?: number; kind?: string }> | undefined>;
+    };
+    if (typeof dynamicService.getFoldingRanges !== "function") {
+      return [];
+    }
+
+    const ranges = await dynamicService.getFoldingRanges(documentUri);
+    return normalizeVolarFoldingRanges(ranges ?? []);
   });
 }
 
@@ -1194,6 +1364,28 @@ function mapVolarDefinitionLinksToLocations(
   }));
 }
 
+function normalizeVolarImplementationLocations(
+  locations: unknown[],
+  context: VolarServiceContext,
+): unknown[] {
+  const firstLocation = locations.find((location) => typeof location === "object" && location !== null);
+  if (firstLocation !== undefined && "targetUri" in (firstLocation as Record<string, unknown>)) {
+    return mapVolarDefinitionLinksToLocations(
+      locations as Array<{
+        targetUri: string;
+        targetRange: { start: Position; end: Position };
+        targetSelectionRange?: { start: Position; end: Position };
+      }>,
+      context,
+    );
+  }
+
+  return normalizeVolarLocations(
+    locations as Array<{ uri: string; range: { start: Position; end: Position } }>,
+    context,
+  );
+}
+
 function normalizeVolarLocations(
   locations: Array<{ uri: string; range: { start: Position; end: Position } }>,
   context: VolarServiceContext,
@@ -1202,6 +1394,77 @@ function normalizeVolarLocations(
     uri: normalizeVolarResultUri(location.uri, context),
     range: location.range,
   }));
+}
+
+function normalizeVolarDocumentLinks(
+  links: Array<{ range: Range; target?: string; tooltip?: string }>,
+  context: VolarServiceContext,
+): unknown[] {
+  return links.map((link) => ({
+    range: link.range,
+    target: typeof link.target === "string"
+      ? normalizeVolarResultUri(link.target, context)
+      : undefined,
+    tooltip: typeof link.tooltip === "string" ? link.tooltip : undefined,
+  }));
+}
+
+function normalizeVolarInlayHints(
+  hints: Array<{ position: Position; label: unknown; kind?: number }>,
+): unknown[] {
+  return hints
+    .map((hint) => {
+      const label = normalizeVolarInlayHintLabel(hint.label);
+      if (label === null || label.length === 0) {
+        return null;
+      }
+
+      return {
+        position: hint.position,
+        label,
+        kind: typeof hint.kind === "number" ? hint.kind : undefined,
+      };
+    })
+    .filter((hint): hint is { position: Position; label: string; kind?: number } => hint !== null);
+}
+
+function normalizeVolarInlayHintLabel(label: unknown): string | null {
+  if (typeof label === "string") {
+    return label;
+  }
+
+  if (Array.isArray(label)) {
+    const combined = label
+      .map((part) => {
+        if (typeof part === "string") {
+          return part;
+        }
+
+        if (typeof part === "object" && part !== null && "value" in part && typeof part.value === "string") {
+          return part.value;
+        }
+
+        return "";
+      })
+      .join("");
+    return combined.length === 0 ? null : combined;
+  }
+
+  return null;
+}
+
+function normalizeVolarFoldingRanges(
+  ranges: Array<{ startLine: number; startCharacter?: number; endLine: number; endCharacter?: number; kind?: string }>,
+): unknown[] {
+  return ranges
+    .filter((range) => Number.isInteger(range.startLine) && Number.isInteger(range.endLine))
+    .map((range) => ({
+      startLine: range.startLine,
+      startCharacter: typeof range.startCharacter === "number" ? range.startCharacter : undefined,
+      endLine: range.endLine,
+      endCharacter: typeof range.endCharacter === "number" ? range.endCharacter : undefined,
+      kind: typeof range.kind === "string" ? range.kind : undefined,
+    }));
 }
 
 function normalizeVolarWorkspaceEdit(
@@ -1402,6 +1665,15 @@ function getScriptHover(context: ScriptContext, position: Position): unknown | n
     },
     range: symbol.range,
   };
+}
+
+function getScriptImplementation(context: ScriptContext, position: Position): unknown[] {
+  const typeScriptImplementations = tryGetTypeScriptImplementation(context, position);
+  if (typeScriptImplementations !== undefined) {
+    return typeScriptImplementations;
+  }
+
+  return getScriptDefinition(context, position);
 }
 
 function getScriptDefinition(context: ScriptContext, position: Position): unknown[] {
@@ -1638,6 +1910,20 @@ function tryGetTypeScriptDefinition(context: ScriptContext, position: Position):
     return definitions
       .map((definition) => tryMapTypeScriptTextSpan(project, definition.fileName, definition.textSpan))
       .filter((definition): definition is { uri: string; range: { start: Position; end: Position } } => definition !== null);
+  });
+}
+
+function tryGetTypeScriptImplementation(context: ScriptContext, position: Position): unknown[] | undefined {
+  return withTypeScriptProject(context, (project) => {
+    const offset = getTypeScriptProjectOffset(project.context, position);
+    if (offset === null) {
+      return [];
+    }
+
+    const implementations = project.languageService.getImplementationAtPosition(project.entryFilePath, offset) ?? [];
+    return implementations
+      .map((implementation) => tryMapTypeScriptTextSpan(project, implementation.fileName, implementation.textSpan))
+      .filter((implementation): implementation is { uri: string; range: { start: Position; end: Position } } => implementation !== null);
   });
 }
 
@@ -3031,6 +3317,12 @@ function createSemanticToken(
 function assertPosition(method: string, position: Position | undefined): asserts position is Position {
   if (position === undefined) {
     throw new Error(`Method '${method}' requires a position.`);
+  }
+}
+
+function assertRange(method: string, range: Range | undefined): asserts range is Range {
+  if (range === undefined) {
+    throw new Error(`Method '${method}' requires a range.`);
   }
 }
 

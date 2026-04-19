@@ -51,6 +51,47 @@ internal sealed class LspResultAggregator
             .ToArray();
     }
 
+    public IReadOnlyList<LspDocumentHighlight> AggregateDocumentHighlights(
+        IReadOnlyList<LspDocumentHighlight> highlights)
+    {
+        ArgumentNullException.ThrowIfNull(highlights);
+
+        return highlights
+            .GroupBy(static highlight => string.Join(
+                '|',
+                highlight.Range.Start.Line,
+                highlight.Range.Start.Character,
+                highlight.Range.End.Line,
+                highlight.Range.End.Character,
+                highlight.Kind),
+                StringComparer.Ordinal)
+            .Select(static group => group.First())
+            .OrderBy(static highlight => highlight.Range.Start.Line)
+            .ThenBy(static highlight => highlight.Range.Start.Character)
+            .ToArray();
+    }
+
+    public IReadOnlyList<LspDocumentLink> AggregateDocumentLinks(
+        IReadOnlyList<LspDocumentLink> links)
+    {
+        ArgumentNullException.ThrowIfNull(links);
+
+        return links
+            .GroupBy(static link => string.Join(
+                    '|',
+                    link.Range.Start.Line,
+                    link.Range.Start.Character,
+                    link.Range.End.Line,
+                    link.Range.End.Character,
+                    link.Target,
+                    link.Tooltip),
+                StringComparer.Ordinal)
+            .Select(static group => group.First())
+            .OrderBy(static link => link.Range.Start.Line)
+            .ThenBy(static link => link.Range.Start.Character)
+            .ToArray();
+    }
+
     public IReadOnlyList<LspCodeAction> AggregateCodeActions(
         IReadOnlyList<LspCodeAction> actions)
     {

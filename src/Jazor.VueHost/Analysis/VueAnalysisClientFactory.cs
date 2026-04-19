@@ -1,3 +1,5 @@
+using Jazor.VueHost.Hosting;
+
 namespace Jazor.VueHost.Analysis;
 
 public static class VueAnalysisClientFactory
@@ -33,7 +35,13 @@ public static class VueAnalysisClientFactory
     }
 
     public static IVueAnalysisClient CreateDefault()
-        => new Services.NullVueAnalysisClient();
+    {
+        FallbackTelemetry.ReportActivation(
+            component: "analysisClientFactory",
+            mode: "null",
+            reason: "analysis-client-transport-not-configured");
+        return new Services.NullVueAnalysisClient();
+    }
 
     public static IVueAnalysisClient CreateFromTransport(IAnalysisRpcTransport transport)
     {

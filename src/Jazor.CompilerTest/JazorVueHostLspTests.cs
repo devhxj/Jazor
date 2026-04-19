@@ -39,12 +39,23 @@ public sealed class JazorVueHostLspTests
         Assert.AreEqual(1, response.RootElement.GetProperty("id").GetInt32());
         var result = response.RootElement.GetProperty("result");
         Assert.IsTrue(result.GetProperty("capabilities").GetProperty("hoverProvider").GetBoolean());
+        Assert.IsTrue(result.GetProperty("capabilities").GetProperty("documentHighlightProvider").GetBoolean());
+        Assert.IsTrue(result.GetProperty("capabilities").GetProperty("documentLinkProvider").GetBoolean());
         Assert.IsTrue(result.GetProperty("capabilities").GetProperty("definitionProvider").GetBoolean());
+        Assert.IsTrue(result.GetProperty("capabilities").GetProperty("typeDefinitionProvider").GetBoolean());
+        Assert.IsTrue(result.GetProperty("capabilities").GetProperty("implementationProvider").GetBoolean());
+        Assert.IsTrue(result.GetProperty("capabilities").GetProperty("selectionRangeProvider").GetBoolean());
+        Assert.IsTrue(result.GetProperty("capabilities").GetProperty("linkedEditingRangeProvider").GetBoolean());
         Assert.IsTrue(result.GetProperty("capabilities").GetProperty("referencesProvider").GetBoolean());
         var renameProvider = result.GetProperty("capabilities").GetProperty("renameProvider");
         Assert.IsTrue(renameProvider.GetProperty("prepareProvider").GetBoolean());
         Assert.IsTrue(result.GetProperty("capabilities").GetProperty("codeActionProvider").GetBoolean());
+        Assert.IsTrue(result.GetProperty("capabilities").GetProperty("codeLensProvider").GetBoolean());
         Assert.IsTrue(result.GetProperty("capabilities").GetProperty("documentSymbolProvider").GetBoolean());
+        Assert.IsTrue(result.GetProperty("capabilities").GetProperty("documentFormattingProvider").GetBoolean());
+        Assert.IsTrue(result.GetProperty("capabilities").GetProperty("documentRangeFormattingProvider").GetBoolean());
+        Assert.IsTrue(result.GetProperty("capabilities").GetProperty("callHierarchyProvider").GetBoolean());
+        Assert.IsTrue(result.GetProperty("capabilities").GetProperty("typeHierarchyProvider").GetBoolean());
         var semanticTokensProvider = result.GetProperty("capabilities").GetProperty("semanticTokensProvider");
         Assert.IsTrue(semanticTokensProvider.GetProperty("full").GetBoolean());
         Assert.IsFalse(semanticTokensProvider.GetProperty("range").GetBoolean());
@@ -65,6 +76,8 @@ public sealed class JazorVueHostLspTests
         CollectionAssert.Contains(triggerCharacters, "(");
         CollectionAssert.Contains(triggerCharacters, ",");
         Assert.AreEqual(1, result.GetProperty("capabilities").GetProperty("textDocumentSync").GetProperty("change").GetInt32());
+        Assert.IsTrue(result.GetProperty("capabilities").GetProperty("textDocumentSync").GetProperty("save").GetBoolean());
+        Assert.IsTrue(result.GetProperty("capabilities").GetProperty("completionProvider").GetProperty("resolveProvider").GetBoolean());
         Assert.AreEqual("Jazor.VueHost", result.GetProperty("serverInfo").GetProperty("name").GetString());
 
         await client.ShutdownAsync();
@@ -332,6 +345,465 @@ public sealed class JazorVueHostLspTests
             });
             using var definitionResponse = await client.ReadResponseAsync(expectedId: 903);
             Assert.AreEqual(0, definitionResponse.RootElement.GetProperty("result").GetArrayLength());
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                DeleteDirectoryWithRetries(tempDirectory);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_DocumentHighlight_ReturnsJazorTemplateMatches()
+    {
+        await using var client = await LspTestClient.StartAsync("--no-deno-worker");
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var componentPath = Path.Combine(tempDirectory, "UserCard.vue");
+            await File.WriteAllTextAsync(componentPath, "<template><div>UserCard</div></template>");
+
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            var text =
+                """
+                <template>
+                  <UserCard />
+                  <div>
+                    <UserCard />
+                  </div>
+                </template>
+                """;
+
+            await client.OpenDocumentAsync(documentUri, text, version: 1);
+            var highlights = await client.RequestDocumentHighlightsAsync(
+                requestId: 904,
+                uri: documentUri,
+                line: 1,
+                character: 4);
+
+            Assert.IsTrue(highlights.GetArrayLength() >= 2);
+            Assert.IsTrue(
+                highlights.EnumerateArray().All(static highlight => highlight.GetProperty("kind").GetInt32() == 1),
+                "Expected text highlights (kind=1).");
+            Assert.IsTrue(
+                highlights.EnumerateArray().All(static highlight =>
+                    highlight.GetProperty("range").GetProperty("start").GetProperty("line").GetInt32() >= 1),
+                "Expected highlight ranges in template area.");
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                DeleteDirectoryWithRetries(tempDirectory);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_DocumentLink_ReturnsImportTargets()
+    {
+        await using var client = await LspTestClient.StartAsync("--no-deno-worker");
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var importedScriptPath = Path.Combine(tempDirectory, "useMath.ts");
+            await File.WriteAllTextAsync(importedScriptPath, "export const useMath = () => 1;");
+
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            var text =
+                """
+                @module useMath from "./useMath.ts"
+                <template>
+                  <div></div>
+                </template>
+                """;
+
+            await client.OpenDocumentAsync(documentUri, text, version: 1);
+            var links = await client.RequestDocumentLinksAsync(requestId: 905, uri: documentUri);
+
+            Assert.IsTrue(links.GetArrayLength() >= 1);
+            var targets = links.EnumerateArray()
+                .Select(static item => item.TryGetProperty("target", out var target) ? target.GetString() : null)
+                .Where(static target => !string.IsNullOrWhiteSpace(target))
+                .ToArray();
+            CollectionAssert.Contains(targets, new Uri(importedScriptPath).AbsoluteUri);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                DeleteDirectoryWithRetries(tempDirectory);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_Implementation_ReturnsInterfaceMethodImplementation()
+    {
+        await using var client = await LspTestClient.StartAsync("--no-deno-worker");
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(tempDirectory, "Greeter.cs");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            var text =
+                """
+                namespace Sample;
+                public interface IGreeter
+                {
+                    string Greet(string name);
+                }
+
+                public sealed class Greeter : IGreeter
+                {
+                    public string Greet(string name) => "hi " + name;
+                }
+                """;
+
+            await client.OpenDocumentAsync(documentUri, text, version: 1, languageId: "csharp");
+            var locations = await client.RequestImplementationAsync(
+                requestId: 906,
+                uri: documentUri,
+                line: 3,
+                character: 13);
+
+            Assert.IsTrue(locations.GetArrayLength() >= 1);
+            Assert.IsTrue(
+                locations.EnumerateArray().Any(location =>
+                    string.Equals(location.GetProperty("uri").GetString(), documentUri, StringComparison.OrdinalIgnoreCase)
+                    && location.GetProperty("range").GetProperty("start").GetProperty("line").GetInt32() == 8),
+                "Expected implementation location on Greeter.Greet.");
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                DeleteDirectoryWithRetries(tempDirectory);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_TypeDefinition_ReturnsLocations()
+    {
+        await using var client = await LspTestClient.StartAsync("--no-deno-worker");
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(tempDirectory, "Holder.cs");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            var text =
+                """
+                namespace Sample;
+                public sealed class Widget {}
+                public sealed class Holder
+                {
+                    private Widget _value = new Widget();
+                    public Widget Value => _value;
+                }
+                """;
+
+            await client.OpenDocumentAsync(documentUri, text, version: 1, languageId: "csharp");
+            var locations = await client.RequestTypeDefinitionAsync(
+                requestId: 907,
+                uri: documentUri,
+                line: 5,
+                character: 19);
+
+            Assert.IsTrue(
+                locations.EnumerateArray().Any(location =>
+                    string.Equals(location.GetProperty("uri").GetString(), documentUri, StringComparison.OrdinalIgnoreCase)
+                    && location.GetProperty("range").GetProperty("start").GetProperty("line").GetInt32() == 1),
+                "Expected type definition to resolve to Widget declaration.");
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                DeleteDirectoryWithRetries(tempDirectory);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_SelectionRange_ReturnsNestedRanges()
+    {
+        await using var client = await LspTestClient.StartAsync("--no-deno-worker");
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            var text = "<template>\n  <UserCard />\n</template>";
+            await client.OpenDocumentAsync(documentUri, text, version: 1);
+
+            var ranges = await client.RequestSelectionRangeAsync(
+                requestId: 908,
+                uri: documentUri,
+                line: 1,
+                character: 4);
+
+            Assert.AreEqual(1, ranges.GetArrayLength());
+            var first = ranges[0];
+            Assert.IsTrue(first.TryGetProperty("parent", out var parent) && parent.ValueKind == JsonValueKind.Object);
+            Assert.IsTrue(parent.TryGetProperty("parent", out var grandParent) && grandParent.ValueKind == JsonValueKind.Object);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                DeleteDirectoryWithRetries(tempDirectory);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_LinkedEditingRange_ReturnsTagNameRanges()
+    {
+        await using var client = await LspTestClient.StartAsync("--no-deno-worker");
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            var text = "<template>\n  <UserCard></UserCard>\n</template>";
+            await client.OpenDocumentAsync(documentUri, text, version: 1);
+
+            var linked = await client.RequestLinkedEditingRangeAsync(
+                requestId: 909,
+                uri: documentUri,
+                line: 1,
+                character: 5);
+
+            Assert.IsTrue(linked.HasValue);
+            Assert.IsTrue(linked.Value.GetProperty("ranges").GetArrayLength() >= 2);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                DeleteDirectoryWithRetries(tempDirectory);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_Formatting_TrimsTrailingWhitespace()
+    {
+        await using var client = await LspTestClient.StartAsync("--no-deno-worker");
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            var text = "<template>   \n  <div>ok</div>   \n</template>   ";
+            await client.OpenDocumentAsync(documentUri, text, version: 1);
+
+            var edits = await client.RequestFormattingAsync(
+                requestId: 910,
+                uri: documentUri);
+            Assert.IsTrue(edits.GetArrayLength() >= 1);
+            var newText = edits[0].GetProperty("newText").GetString() ?? string.Empty;
+            Assert.IsFalse(newText.Contains("   \n", StringComparison.Ordinal));
+            Assert.IsFalse(newText.Contains("   \r\n", StringComparison.Ordinal));
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                DeleteDirectoryWithRetries(tempDirectory);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_CompletionResolve_ReturnsCompletionItem()
+    {
+        await using var client = await LspTestClient.StartAsync("--no-deno-worker");
+        await client.InitializeAsync();
+
+        var resolved = await client.RequestCompletionResolveAsync(
+            requestId: 911,
+            new
+            {
+                label = "Widget",
+                kind = 7,
+                detail = "symbol"
+            });
+        Assert.AreEqual("Widget", resolved.GetProperty("label").GetString());
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_CallHierarchy_ReturnsIncomingAndOutgoingCalls()
+    {
+        await using var client = await LspTestClient.StartAsync("--no-deno-worker");
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(tempDirectory, "Hierarchy.cs");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            var text =
+                """
+                namespace Sample;
+                public sealed class Service
+                {
+                    public void DoWork() { }
+                }
+
+                public sealed class Consumer
+                {
+                    private readonly Service _service = new();
+
+                    public void Run()
+                    {
+                        _service.DoWork();
+                    }
+                }
+                """;
+
+            await client.OpenDocumentAsync(documentUri, text, version: 1, languageId: "csharp");
+
+            var doWorkItems = await client.RequestPrepareCallHierarchyAsync(
+                requestId: 912,
+                uri: documentUri,
+                line: 3,
+                character: 18);
+            Assert.IsTrue(doWorkItems.GetArrayLength() >= 1);
+
+            var incoming = await client.RequestCallHierarchyIncomingAsync(
+                requestId: 913,
+                item: doWorkItems[0]);
+            Assert.IsTrue(
+                incoming.EnumerateArray().Any(call => string.Equals(
+                    call.GetProperty("from").GetProperty("name").GetString(),
+                    "Run",
+                    StringComparison.Ordinal)),
+                "Expected incoming call from Consumer.Run.");
+
+            var runItems = await client.RequestPrepareCallHierarchyAsync(
+                requestId: 914,
+                uri: documentUri,
+                line: 10,
+                character: 18);
+            Assert.IsTrue(runItems.GetArrayLength() >= 1);
+
+            var outgoing = await client.RequestCallHierarchyOutgoingAsync(
+                requestId: 915,
+                item: runItems[0]);
+            Assert.IsTrue(
+                outgoing.EnumerateArray().Any(call => string.Equals(
+                    call.GetProperty("to").GetProperty("name").GetString(),
+                    "DoWork",
+                    StringComparison.Ordinal)),
+                "Expected outgoing call to Service.DoWork.");
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                DeleteDirectoryWithRetries(tempDirectory);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_TypeHierarchy_ReturnsSuperAndSubTypes()
+    {
+        await using var client = await LspTestClient.StartAsync("--no-deno-worker");
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(tempDirectory, "Types.cs");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            var text =
+                """
+                namespace Sample;
+                public interface IEntity { }
+                public abstract class EntityBase : IEntity { }
+                public sealed class UserEntity : EntityBase { }
+                """;
+
+            await client.OpenDocumentAsync(documentUri, text, version: 1, languageId: "csharp");
+
+            var entityBaseItems = await client.RequestPrepareTypeHierarchyAsync(
+                requestId: 916,
+                uri: documentUri,
+                line: 2,
+                character: 28);
+            Assert.IsTrue(entityBaseItems.GetArrayLength() >= 1);
+
+            var userEntityItems = await client.RequestPrepareTypeHierarchyAsync(
+                requestId: 917,
+                uri: documentUri,
+                line: 3,
+                character: 24);
+            Assert.IsTrue(userEntityItems.GetArrayLength() >= 1);
+
+            var supertypes = await client.RequestTypeHierarchySupertypesAsync(
+                requestId: 918,
+                item: userEntityItems[0]);
+            var superTypeNames = supertypes
+                .EnumerateArray()
+                .Select(item => item.GetProperty("name").GetString() ?? string.Empty)
+                .ToArray();
+            Assert.IsTrue(
+                superTypeNames.Any(name => string.Equals(
+                    name,
+                    "EntityBase",
+                    StringComparison.Ordinal)),
+                $"Expected EntityBase as a super type. Actual: {string.Join(", ", superTypeNames)}");
+
+            var subtypes = await client.RequestTypeHierarchySubtypesAsync(
+                requestId: 919,
+                item: entityBaseItems[0]);
+            Assert.IsTrue(
+                subtypes.EnumerateArray().Any(item => string.Equals(
+                    item.GetProperty("name").GetString(),
+                    "UserEntity",
+                    StringComparison.Ordinal)),
+                "Expected UserEntity as a subtype.");
         }
         finally
         {
@@ -1532,7 +2004,7 @@ public sealed class JazorVueHostLspTests
             await File.WriteAllTextAsync(vuePath, "<template><div>UserCard</div></template>");
             var text =
                 """
-                @vueimport UserCard from "./UserCard.vue"
+                @module UserCard from "./UserCard.vue"
 
                 <template>
                   <
@@ -4292,7 +4764,7 @@ public sealed class JazorVueHostLspTests
                 "<template><div>UserCard</div></template>");
             var text =
                 """
-                @vueimport UserCard from "./UserCard.vue"
+                @module UserCard from "./UserCard.vue"
 
                 <template>
                   <UserCard />
@@ -4356,7 +4828,7 @@ public sealed class JazorVueHostLspTests
             var text =
                 """
                 @
-                @vueimport UserCard from "./UserCard.vue"
+                @module UserCard from "./UserCard.vue"
 
                 <template>
                   <
@@ -4448,8 +4920,8 @@ public sealed class JazorVueHostLspTests
                 "<template><div>ProfileCard</div></template>");
             var text =
                 """
-                @vueimport UserCard from "./UserCard.vue"
-                @vueimport ProfileCard from "./ProfileCard.vue"
+                @module UserCard from "./UserCard.vue"
+                @module ProfileCard from "./ProfileCard.vue"
 
                 <template>
                   <Use
@@ -5252,7 +5724,7 @@ public sealed class JazorVueHostLspTests
             await File.WriteAllTextAsync(vuePath, "<template><div>UserCard</div></template>");
             var text =
                 """
-                @vueimport UserCard from "./UserCard.vue"
+                @module UserCard from "./UserCard.vue"
 
                 <template>
                   <UserCard />
@@ -5309,7 +5781,7 @@ public sealed class JazorVueHostLspTests
             await File.WriteAllTextAsync(vuePath, "<template><div>UserCard</div></template>");
             var text =
                 """
-                @vueimport UserCard from "./UserCard.vue"
+                @module UserCard from "./UserCard.vue"
 
                 <template>
                   <UserCard />
@@ -5405,7 +5877,7 @@ public sealed class JazorVueHostLspTests
             var text =
                 """
                 @
-                @vueimport UserCard from "./UserCard.vue"
+                @module UserCard from "./UserCard.vue"
 
                 <template>
                   <
@@ -5471,7 +5943,7 @@ public sealed class JazorVueHostLspTests
                 "<template><div>UserCard</div></template>");
             var text =
                 """
-                @vueimport UserCard from "./UserCard.vue"
+                @module UserCard from "./UserCard.vue"
 
                 <template>
                   <UserCard />
@@ -6116,7 +6588,7 @@ public sealed class JazorVueHostLspTests
                 "<template><div>UserCard</div></template>");
             var text =
                 """
-                @vueimport UserCard from "./UserCard.vue"
+                @module UserCard from "./UserCard.vue"
 
                 <template>
                   <UserCard />
@@ -6571,7 +7043,7 @@ public sealed class JazorVueHostLspTests
     }
 
     [TestMethod]
-    public async Task JazorVueHost_Lsp_LegacyVueImportText_DoesNotProduceImportRewriteDiagnostics()
+    public async Task JazorVueHost_Lsp_LegacyVueImportText_ProducesUnsupportedDiagnosticAndQuickFix()
     {
         await using var client = await LspTestClient.StartAsync();
         await client.InitializeAsync();
@@ -6614,7 +7086,46 @@ public sealed class JazorVueHostLspTests
             var diagnostics = openDiagnostics.RootElement
                 .GetProperty("params")
                 .GetProperty("diagnostics");
-            Assert.AreEqual(0, diagnostics.GetArrayLength());
+            Assert.IsTrue(
+                diagnostics.EnumerateArray().Any(diagnostic =>
+                    string.Equals(diagnostic.GetProperty("code").GetString(), "JAZORVUE020", StringComparison.Ordinal)));
+            var legacyDiagnostic = diagnostics.EnumerateArray()
+                .First(diagnostic => string.Equals(diagnostic.GetProperty("code").GetString(), "JAZORVUE020", StringComparison.Ordinal));
+            StringAssert.Contains(
+                legacyDiagnostic.GetProperty("message").GetString() ?? string.Empty,
+                "Use @module");
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 110,
+                method = "textDocument/codeAction",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri
+                    },
+                    range = legacyDiagnostic.GetProperty("range"),
+                    context = new
+                    {
+                        diagnostics = new[] { JsonSerializer.Deserialize<object>(legacyDiagnostic.GetRawText(), JsonOptions)! }
+                    }
+                }
+            });
+            using var codeActionResponse = await client.ReadMessageAsync();
+            var actions = codeActionResponse.RootElement.GetProperty("result");
+            Assert.IsTrue(
+                actions.EnumerateArray().Any(action =>
+                    string.Equals(action.GetProperty("title").GetString(), "Replace @vueimport with @module", StringComparison.Ordinal)));
+            var rewriteAction = actions.EnumerateArray()
+                .First(action => string.Equals(action.GetProperty("title").GetString(), "Replace @vueimport with @module", StringComparison.Ordinal));
+            Assert.AreEqual("@module", rewriteAction
+                .GetProperty("edit")
+                .GetProperty("changes")
+                .GetProperty(documentUri)[0]
+                .GetProperty("newText")
+                .GetString());
 
             var hover = await client.RequestHoverAsync(
                 requestId: 109,
@@ -6625,6 +7136,189 @@ public sealed class JazorVueHostLspTests
             StringAssert.Contains(
                 hover.Value.GetProperty("contents").GetProperty("value").GetString() ?? string.Empty,
                 "./Components/MissingCard.vue");
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_LegacyJsImportText_ProducesUnsupportedDiagnosticAndQuickFix()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            var text =
+                """
+                @jsimport dayjs from "dayjs"
+
+                <template>
+                  <div />
+                </template>
+                """;
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                method = "textDocument/didOpen",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri,
+                        languageId = "jazor",
+                        version = 1,
+                        text
+                    }
+                }
+            });
+            using var openDiagnostics = await client.ReadMessageAsync();
+            var diagnostics = openDiagnostics.RootElement
+                .GetProperty("params")
+                .GetProperty("diagnostics");
+            Assert.IsTrue(
+                diagnostics.EnumerateArray().Any(diagnostic =>
+                    string.Equals(diagnostic.GetProperty("code").GetString(), "JAZORVUE020", StringComparison.Ordinal)));
+            var legacyDiagnostic = diagnostics.EnumerateArray()
+                .First(diagnostic => string.Equals(diagnostic.GetProperty("code").GetString(), "JAZORVUE020", StringComparison.Ordinal));
+            StringAssert.Contains(
+                legacyDiagnostic.GetProperty("message").GetString() ?? string.Empty,
+                "Use @module");
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 111,
+                method = "textDocument/codeAction",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri
+                    },
+                    range = legacyDiagnostic.GetProperty("range"),
+                    context = new
+                    {
+                        diagnostics = new[] { JsonSerializer.Deserialize<object>(legacyDiagnostic.GetRawText(), JsonOptions)! }
+                    }
+                }
+            });
+            using var codeActionResponse = await client.ReadMessageAsync();
+            var actions = codeActionResponse.RootElement.GetProperty("result");
+            Assert.IsTrue(
+                actions.EnumerateArray().Any(action =>
+                    string.Equals(action.GetProperty("title").GetString(), "Replace @jsimport with @module", StringComparison.Ordinal)));
+            var rewriteAction = actions.EnumerateArray()
+                .First(action => string.Equals(action.GetProperty("title").GetString(), "Replace @jsimport with @module", StringComparison.Ordinal));
+            Assert.AreEqual("@module", rewriteAction
+                .GetProperty("edit")
+                .GetProperty("changes")
+                .GetProperty(documentUri)[0]
+                .GetProperty("newText")
+                .GetString());
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task JazorVueHost_Lsp_LegacyImportText_ProducesUnsupportedDiagnosticAndQuickFix()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            var text =
+                """
+                @import dayjs from "dayjs"
+
+                <template>
+                  <div />
+                </template>
+                """;
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                method = "textDocument/didOpen",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri,
+                        languageId = "jazor",
+                        version = 1,
+                        text
+                    }
+                }
+            });
+            using var openDiagnostics = await client.ReadMessageAsync();
+            var diagnostics = openDiagnostics.RootElement
+                .GetProperty("params")
+                .GetProperty("diagnostics");
+            Assert.IsTrue(
+                diagnostics.EnumerateArray().Any(diagnostic =>
+                    string.Equals(diagnostic.GetProperty("code").GetString(), "JAZORVUE020", StringComparison.Ordinal)));
+            var legacyDiagnostic = diagnostics.EnumerateArray()
+                .First(diagnostic => string.Equals(diagnostic.GetProperty("code").GetString(), "JAZORVUE020", StringComparison.Ordinal));
+            StringAssert.Contains(
+                legacyDiagnostic.GetProperty("message").GetString() ?? string.Empty,
+                "@import");
+            StringAssert.Contains(
+                legacyDiagnostic.GetProperty("message").GetString() ?? string.Empty,
+                "Use @module");
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 112,
+                method = "textDocument/codeAction",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri
+                    },
+                    range = legacyDiagnostic.GetProperty("range"),
+                    context = new
+                    {
+                        diagnostics = new[] { JsonSerializer.Deserialize<object>(legacyDiagnostic.GetRawText(), JsonOptions)! }
+                    }
+                }
+            });
+            using var codeActionResponse = await client.ReadMessageAsync();
+            var actions = codeActionResponse.RootElement.GetProperty("result");
+            Assert.IsTrue(
+                actions.EnumerateArray().Any(action =>
+                    string.Equals(action.GetProperty("title").GetString(), "Replace @import with @module", StringComparison.Ordinal)));
+            var rewriteAction = actions.EnumerateArray()
+                .First(action => string.Equals(action.GetProperty("title").GetString(), "Replace @import with @module", StringComparison.Ordinal));
+            Assert.AreEqual("@module", rewriteAction
+                .GetProperty("edit")
+                .GetProperty("changes")
+                .GetProperty(documentUri)[0]
+                .GetProperty("newText")
+                .GetString());
         }
         finally
         {
@@ -7067,6 +7761,368 @@ public sealed class JazorVueHostLspTests
             }
 
             return result.ValueKind == JsonValueKind.Null ? null : result.Clone();
+        }
+
+        public async Task<JsonElement> RequestDocumentHighlightsAsync(int requestId, string uri, int line, int character)
+        {
+            await SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = requestId,
+                method = "textDocument/documentHighlight",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri
+                    },
+                    position = new
+                    {
+                        line,
+                        character
+                    }
+                }
+            });
+            using var response = await ReadResponseAsync(expectedId: requestId);
+            if (!response.RootElement.TryGetProperty("result", out var result))
+            {
+                Assert.Fail("Expected LSP documentHighlight result. Raw response: " + response.RootElement.GetRawText());
+            }
+
+            return result.Clone();
+        }
+
+        public async Task<JsonElement> RequestDocumentLinksAsync(int requestId, string uri)
+        {
+            await SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = requestId,
+                method = "textDocument/documentLink",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri
+                    }
+                }
+            });
+            using var response = await ReadResponseAsync(expectedId: requestId);
+            if (!response.RootElement.TryGetProperty("result", out var result))
+            {
+                Assert.Fail("Expected LSP documentLink result. Raw response: " + response.RootElement.GetRawText());
+            }
+
+            return result.Clone();
+        }
+
+        public async Task<JsonElement> RequestImplementationAsync(int requestId, string uri, int line, int character)
+        {
+            await SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = requestId,
+                method = "textDocument/implementation",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri
+                    },
+                    position = new
+                    {
+                        line,
+                        character
+                    }
+                }
+            });
+            using var response = await ReadResponseAsync(expectedId: requestId);
+            if (!response.RootElement.TryGetProperty("result", out var result))
+            {
+                Assert.Fail("Expected LSP implementation result. Raw response: " + response.RootElement.GetRawText());
+            }
+
+            return result.Clone();
+        }
+
+        public async Task<JsonElement> RequestTypeDefinitionAsync(int requestId, string uri, int line, int character)
+        {
+            await SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = requestId,
+                method = "textDocument/typeDefinition",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri
+                    },
+                    position = new
+                    {
+                        line,
+                        character
+                    }
+                }
+            });
+            using var response = await ReadResponseAsync(expectedId: requestId);
+            if (!response.RootElement.TryGetProperty("result", out var result))
+            {
+                Assert.Fail("Expected LSP typeDefinition result. Raw response: " + response.RootElement.GetRawText());
+            }
+
+            return result.Clone();
+        }
+
+        public async Task<JsonElement> RequestSelectionRangeAsync(int requestId, string uri, int line, int character)
+        {
+            await SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = requestId,
+                method = "textDocument/selectionRange",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri
+                    },
+                    positions = new[]
+                    {
+                        new
+                        {
+                            line,
+                            character
+                        }
+                    }
+                }
+            });
+            using var response = await ReadResponseAsync(expectedId: requestId);
+            if (!response.RootElement.TryGetProperty("result", out var result))
+            {
+                Assert.Fail("Expected LSP selectionRange result. Raw response: " + response.RootElement.GetRawText());
+            }
+
+            return result.Clone();
+        }
+
+        public async Task<JsonElement?> RequestLinkedEditingRangeAsync(int requestId, string uri, int line, int character)
+        {
+            await SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = requestId,
+                method = "textDocument/linkedEditingRange",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri
+                    },
+                    position = new
+                    {
+                        line,
+                        character
+                    }
+                }
+            });
+            using var response = await ReadResponseAsync(expectedId: requestId);
+            if (!response.RootElement.TryGetProperty("result", out var result))
+            {
+                Assert.Fail("Expected LSP linkedEditingRange result. Raw response: " + response.RootElement.GetRawText());
+            }
+
+            return result.ValueKind == JsonValueKind.Null ? null : result.Clone();
+        }
+
+        public async Task<JsonElement> RequestFormattingAsync(int requestId, string uri)
+        {
+            await SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = requestId,
+                method = "textDocument/formatting",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri
+                    },
+                    options = new
+                    {
+                        tabSize = 4,
+                        insertSpaces = true,
+                        trimTrailingWhitespace = true
+                    }
+                }
+            });
+            using var response = await ReadResponseAsync(expectedId: requestId);
+            if (!response.RootElement.TryGetProperty("result", out var result))
+            {
+                Assert.Fail("Expected LSP formatting result. Raw response: " + response.RootElement.GetRawText());
+            }
+
+            return result.Clone();
+        }
+
+        public async Task<JsonElement> RequestPrepareCallHierarchyAsync(int requestId, string uri, int line, int character)
+        {
+            await SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = requestId,
+                method = "textDocument/prepareCallHierarchy",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri
+                    },
+                    position = new
+                    {
+                        line,
+                        character
+                    }
+                }
+            });
+            using var response = await ReadResponseAsync(expectedId: requestId);
+            if (!response.RootElement.TryGetProperty("result", out var result))
+            {
+                Assert.Fail("Expected LSP prepareCallHierarchy result. Raw response: " + response.RootElement.GetRawText());
+            }
+
+            return result.Clone();
+        }
+
+        public async Task<JsonElement> RequestCallHierarchyIncomingAsync(int requestId, JsonElement item)
+        {
+            await SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = requestId,
+                method = "callHierarchy/incomingCalls",
+                @params = new
+                {
+                    item
+                }
+            });
+            using var response = await ReadResponseAsync(expectedId: requestId);
+            if (!response.RootElement.TryGetProperty("result", out var result))
+            {
+                Assert.Fail("Expected LSP callHierarchy/incomingCalls result. Raw response: " + response.RootElement.GetRawText());
+            }
+
+            return result.Clone();
+        }
+
+        public async Task<JsonElement> RequestCallHierarchyOutgoingAsync(int requestId, JsonElement item)
+        {
+            await SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = requestId,
+                method = "callHierarchy/outgoingCalls",
+                @params = new
+                {
+                    item
+                }
+            });
+            using var response = await ReadResponseAsync(expectedId: requestId);
+            if (!response.RootElement.TryGetProperty("result", out var result))
+            {
+                Assert.Fail("Expected LSP callHierarchy/outgoingCalls result. Raw response: " + response.RootElement.GetRawText());
+            }
+
+            return result.Clone();
+        }
+
+        public async Task<JsonElement> RequestPrepareTypeHierarchyAsync(int requestId, string uri, int line, int character)
+        {
+            await SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = requestId,
+                method = "textDocument/prepareTypeHierarchy",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri
+                    },
+                    position = new
+                    {
+                        line,
+                        character
+                    }
+                }
+            });
+            using var response = await ReadResponseAsync(expectedId: requestId);
+            if (!response.RootElement.TryGetProperty("result", out var result))
+            {
+                Assert.Fail("Expected LSP prepareTypeHierarchy result. Raw response: " + response.RootElement.GetRawText());
+            }
+
+            return result.Clone();
+        }
+
+        public async Task<JsonElement> RequestTypeHierarchySupertypesAsync(int requestId, JsonElement item)
+        {
+            await SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = requestId,
+                method = "typeHierarchy/supertypes",
+                @params = new
+                {
+                    item
+                }
+            });
+            using var response = await ReadResponseAsync(expectedId: requestId);
+            if (!response.RootElement.TryGetProperty("result", out var result))
+            {
+                Assert.Fail("Expected LSP typeHierarchy/supertypes result. Raw response: " + response.RootElement.GetRawText());
+            }
+
+            return result.Clone();
+        }
+
+        public async Task<JsonElement> RequestTypeHierarchySubtypesAsync(int requestId, JsonElement item)
+        {
+            await SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = requestId,
+                method = "typeHierarchy/subtypes",
+                @params = new
+                {
+                    item
+                }
+            });
+            using var response = await ReadResponseAsync(expectedId: requestId);
+            if (!response.RootElement.TryGetProperty("result", out var result))
+            {
+                Assert.Fail("Expected LSP typeHierarchy/subtypes result. Raw response: " + response.RootElement.GetRawText());
+            }
+
+            return result.Clone();
+        }
+
+        public async Task<JsonElement> RequestCompletionResolveAsync(int requestId, object item)
+        {
+            await SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = requestId,
+                method = "completionItem/resolve",
+                @params = item
+            });
+            using var response = await ReadResponseAsync(expectedId: requestId);
+            if (!response.RootElement.TryGetProperty("result", out var result))
+            {
+                Assert.Fail("Expected LSP completion resolve result. Raw response: " + response.RootElement.GetRawText());
+            }
+
+            return result.Clone();
         }
 
         public async Task<JsonElement?> RequestSignatureHelpAsync(int requestId, string uri, int line, int character)

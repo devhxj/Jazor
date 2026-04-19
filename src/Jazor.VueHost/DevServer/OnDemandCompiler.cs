@@ -502,8 +502,7 @@ internal sealed class OnDemandCompiler
             sourceMapObject["mappings"] = string.Concat(new string(';', generatedLineOffset), mappings);
             return sourceMapObject.ToJsonString();
         }
-        catch
-        {
+        catch (Exception) {
             return sourceMap;
         }
     }
@@ -534,8 +533,7 @@ internal sealed class OnDemandCompiler
                 });
             return new SourceMapWriter().Write(chainedMap);
         }
-        catch
-        {
+        catch (Exception) {
             return javaScriptSourceMap;
         }
     }

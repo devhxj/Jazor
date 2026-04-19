@@ -26,6 +26,18 @@ internal sealed class JazorLaneService : ILspLane
         CancellationToken cancellationToken)
         => _documentService.GetHoverAsync(document, position, cancellationToken);
 
+    public ValueTask<IReadOnlyList<LspDocumentHighlight>> GetDocumentHighlightsAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        ProjectionTarget projectionTarget,
+        CancellationToken cancellationToken)
+        => _documentService.GetDocumentHighlightsAsync(document, position, cancellationToken);
+
+    public ValueTask<IReadOnlyList<LspDocumentLink>> GetDocumentLinksAsync(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken)
+        => _documentService.GetDocumentLinksAsync(document, cancellationToken);
+
     public ValueTask<IReadOnlyList<LspCompletionItem>> GetCompletionItemsAsync(
         DocumentSnapshot document,
         LspPosition position,
@@ -51,6 +63,13 @@ internal sealed class JazorLaneService : ILspLane
         => ValueTask.FromResult<LspSignatureHelp?>(null);
 
     public ValueTask<IReadOnlyList<LspLocation>> GetDefinitionAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        ProjectionTarget projectionTarget,
+        CancellationToken cancellationToken)
+        => _documentService.GetDefinitionAsync(document, position, cancellationToken);
+
+    public ValueTask<IReadOnlyList<LspLocation>> GetImplementationAsync(
         DocumentSnapshot document,
         LspPosition position,
         ProjectionTarget projectionTarget,

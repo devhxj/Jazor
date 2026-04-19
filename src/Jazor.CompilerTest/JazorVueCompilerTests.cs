@@ -11,8 +11,8 @@ public sealed class JazorVueCompilerTests
     public void JazorVue_Parser_ParsesJsImportsAndInfersVueComponentsFromRazorMarkup()
     {
         var source = """
-            @jsimport { debounce } from "lodash-es"
-            @jsimport dayjs from "dayjs"
+            @module { debounce } from "lodash-es"
+            @module dayjs from "dayjs"
 
             <template>
               <UserCard :title="title" />
@@ -39,6 +39,30 @@ public sealed class JazorVueCompilerTests
     }
 
     [TestMethod]
+    public void JazorVue_Parser_SupportsRazorImportDirectiveAndInfersImportKindFromSource()
+    {
+        var source = """
+            @module UserCard from "./UserCard.vue"
+            @module { debounce } from "lodash-es"
+
+            <template>
+              <div />
+            </template>
+            """;
+
+        var parser = new JazorVueParser();
+        var document = parser.Parse("Counter.jazor", source);
+
+        Assert.AreEqual(2, document.Imports.Count);
+        Assert.AreEqual(JazorImportKind.VueImport, document.Imports[0].Kind);
+        Assert.AreEqual("./UserCard.vue", document.Imports[0].Source);
+        Assert.AreEqual("UserCard", document.Imports[0].Bindings[0].LocalName);
+        Assert.AreEqual(JazorImportKind.JSImport, document.Imports[1].Kind);
+        Assert.AreEqual("lodash-es", document.Imports[1].Source);
+        Assert.AreEqual("debounce", document.Imports[1].Bindings[0].LocalName);
+    }
+
+    [TestMethod]
     public void JazorVue_Parser_UsesRazorMarkupWhenTemplateBlockIsAbsent()
     {
         var source = """
@@ -60,8 +84,8 @@ public sealed class JazorVueCompilerTests
     public void JazorVue_Compiler_EmitsBridgeVueArtifactFromDocument()
     {
         var source = """
-            @jsimport { debounce } from "lodash-es"
-            @jsimport dayjs from "dayjs"
+            @module { debounce } from "lodash-es"
+            @module dayjs from "dayjs"
 
             <template>
               <UserCard :title="title" />
@@ -103,7 +127,7 @@ public sealed class JazorVueCompilerTests
     public void JazorVue_Compiler_EmitsGeneratedVueSourceMapForGeneratedArtifact()
     {
         var source = """
-            @jsimport { debounce } from "lodash-es"
+            @module { debounce } from "lodash-es"
 
             <template>
               <button @click="increment()">@Count</button>
@@ -516,9 +540,9 @@ public sealed class JazorVueCompilerTests
     public void JazorVue_Parser_ParsesDefaultNamespaceAndNamedAliasBindings()
     {
         var source = """
-            @jsimport dayjs from "dayjs"
-            @jsimport * as math from "./math"
-            @jsimport { format as formatDate, debounce } from "date-kit"
+            @module dayjs from "dayjs"
+            @module * as math from "./math"
+            @module { format as formatDate, debounce } from "date-kit"
             """;
 
         var parser = new JazorVueParser();
@@ -549,8 +573,8 @@ public sealed class JazorVueCompilerTests
     public void JazorVue_Parser_ParsesDefaultPlusNamedAndDefaultPlusNamespaceBindings()
     {
         var source = """
-            @jsimport Vue, { ref as vueRef, computed } from "vue"
-            @jsimport React, * as ReactRuntime from "react"
+            @module Vue, { ref as vueRef, computed } from "vue"
+            @module React, * as ReactRuntime from "react"
             """;
 
         var parser = new JazorVueParser();
@@ -585,12 +609,12 @@ public sealed class JazorVueCompilerTests
                 JazorImportKind.JSImport,
                 "dayjs",
                 [new JazorImportBinding("dayjs", null, JazorImportBindingKind.Default)],
-                "@jsimport dayjs from \"dayjs\""),
+                "@module dayjs from \"dayjs\""),
             new JazorImportDirective(
                 JazorImportKind.JSImport,
                 "./math",
                 [new JazorImportBinding("math", null, JazorImportBindingKind.Namespace)],
-                "@jsimport * as math from \"./math\""),
+                "@module * as math from \"./math\""),
             new JazorImportDirective(
                 JazorImportKind.JSImport,
                 "vueuse",
@@ -598,12 +622,12 @@ public sealed class JazorVueCompilerTests
                     new JazorImportBinding("useMouse", "useMouse", JazorImportBindingKind.Named),
                     new JazorImportBinding("debounce", "debounce", JazorImportBindingKind.Named)
                 ],
-                "@jsimport { useMouse, debounce } from \"vueuse\""),
+                "@module { useMouse, debounce } from \"vueuse\""),
             new JazorImportDirective(
                 JazorImportKind.VueImport,
                 "./UserCard.vue",
                 [new JazorImportBinding("UserCard", null, JazorImportBindingKind.Default)],
-                "@vueimport UserCard from \"./UserCard.vue\"")
+                "@module UserCard from \"./UserCard.vue\"")
         };
 
         var symbols = VirtualExternalSymbolTable.FromImports(imports).Symbols.ToDictionary(static symbol => symbol.PublicName);
@@ -620,9 +644,9 @@ public sealed class JazorVueCompilerTests
     public void JazorVue_Compiler_EmitsDefaultNamespaceAndNamedAliasImportSyntax()
     {
         var source = """
-            @jsimport dayjs from "dayjs"
-            @jsimport * as math from "./math"
-            @jsimport { format as formatDate, debounce } from "date-kit"
+            @module dayjs from "dayjs"
+            @module * as math from "./math"
+            @module { format as formatDate, debounce } from "date-kit"
 
             <template>
               <div>{{ formatDate(dayjs()) }} {{ math.PI }} {{ debounce }}</div>
@@ -646,8 +670,8 @@ public sealed class JazorVueCompilerTests
     public void JazorVue_Compiler_EmitsCompositeImportSyntax()
     {
         var source = """
-            @jsimport Vue, { ref as vueRef, computed } from "vue"
-            @jsimport React, * as ReactRuntime from "react"
+            @module Vue, { ref as vueRef, computed } from "vue"
+            @module React, * as ReactRuntime from "react"
 
             <template>
               <div>{{ vueRef }} {{ computed }} {{ ReactRuntime.Fragment }}</div>

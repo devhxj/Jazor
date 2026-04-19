@@ -135,6 +135,64 @@ public sealed class JazorVueHostBuildCssPipelineTests
     }
 
     [TestMethod]
+    public async Task BuildOrchestrator_BuildAsync_MinifyTrue_CompressesExtractedCss()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "index.html"),
+                """
+                <html>
+                <body>
+                  <div id="app"></div>
+                  <script type="module" src="/main.js"></script>
+                </body>
+                </html>
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "main.js"),
+                """
+                import "./app.css";
+                console.log("css minify test");
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "app.css"),
+                """
+                .app {
+                  color : red ;
+                  padding : 4px 8px ;
+                }
+                """);
+
+            var orchestrator = new BuildOrchestrator();
+            var result = await orchestrator.BuildAsync(
+                new BuildOptions
+                {
+                    RootDirectory = tempDir,
+                    OutDir = "dist",
+                    SourceMap = SourceMapOption.None,
+                    Minify = true,
+                    CodeSplitting = false
+                },
+                CancellationToken.None);
+
+            Assert.IsTrue(result.Success, string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
+            var cssAsset = result.CssAssets.Single(static asset => asset.FileName.StartsWith("styles-", StringComparison.OrdinalIgnoreCase));
+            var cssPath = Path.Combine(tempDir, cssAsset.FilePath.Replace('/', Path.DirectorySeparatorChar));
+            var cssContent = await File.ReadAllTextAsync(cssPath);
+
+            Assert.IsFalse(cssContent.Contains('\n'), "Expected minified CSS to be emitted as compact text.");
+            Assert.IsFalse(cssContent.Contains("  ", StringComparison.Ordinal), "Expected minified CSS to remove redundant spaces.");
+            StringAssert.Contains(cssContent, ".app{color:red;padding:4px 8px}");
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public async Task BuildOrchestrator_BuildAsync_ExtractsVueStyleContentIntoBuildAsset()
     {
         var tempDir = CreateTemporaryDirectory();

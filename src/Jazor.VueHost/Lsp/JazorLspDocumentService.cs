@@ -11,6 +11,9 @@ internal sealed class JazorLspDocumentService
 {
     private static readonly Regex TagPattern = new(@"<(?<name>[A-Z][A-Za-z0-9_]*)\b", RegexOptions.Compiled);
     private static readonly Regex TagCompletionPrefixPattern = new(@"</?(?<name>[A-Za-z0-9_]*)$", RegexOptions.Compiled);
+    private static readonly Regex ImportDirectiveSourcePattern = new(
+        @"^\s*@module\s+.+?\s+from\s+(?<quote>[""'])(?<source>[^""']+)\k<quote>\s*$",
+        RegexOptions.Multiline | RegexOptions.Compiled);
     private static readonly Regex PrivateMethodPattern = new(@"(?<modifier>\bprivate\b)\s+(?<signature>(?:async\s+)?[\w<>\.\?]+\s+\w+\s*\()", RegexOptions.Compiled);
     private readonly IVueHostWorkspaceStore _workspaceStore;
     private readonly IVueAnalysisClient _analysisClient;
@@ -33,7 +36,7 @@ internal sealed class JazorLspDocumentService
         CancellationToken cancellationToken)
     {
         var response = await AnalyzeAsync(document, cancellationToken);
-        return response.Diagnostics
+        var diagnostics = response.Diagnostics
             .Where(diagnostic => string.Equals(
                 NormalizeDocumentPath(diagnostic.DocumentPath),
                 NormalizeDocumentPath(document.DocumentPath),
@@ -51,6 +54,13 @@ internal sealed class JazorLspDocumentService
                 Source = "Jazor.VueHost",
                 Message = diagnostic.Message
             })
+            .ToList();
+
+        return diagnostics
+            .GroupBy(
+                static diagnostic => $"{diagnostic.Code}:{GetRangeKey(diagnostic.Range)}:{diagnostic.Message}",
+                StringComparer.Ordinal)
+            .Select(static group => group.First())
             .ToArray();
     }
 
@@ -65,6 +75,116 @@ internal sealed class JazorLspDocumentService
         LspPosition position,
         CancellationToken cancellationToken)
         => await _markupComponentBridge.GetHoverAsync(document, position, allowWorkspaceScan: true, cancellationToken);
+
+    public async ValueTask<IReadOnlyList<LspDocumentHighlight>> GetDocumentHighlightsAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var symbol = await _markupComponentBridge.ResolveBridgeSymbolAsync(
+            document,
+            position,
+            locationHints: null,
+            allowWorkspaceScan: true,
+            cancellationToken);
+        var componentName = symbol?.ComponentName;
+        var highlightRanges = new List<LspRange>();
+
+        if (symbol is not null)
+        {
+            var referenceLocations = await _markupComponentBridge.FindJazorReferencesAsync(
+                document,
+                symbol.Value.ComponentName,
+                symbol.Value.AbsolutePath,
+                includeDeclaration: true,
+                cancellationToken);
+            var currentDocumentPath = NormalizeDocumentPath(document.DocumentPath);
+            highlightRanges.AddRange(referenceLocations
+                .Where(location =>
+                {
+                    var referencePath = NormalizeDocumentPath(LspProtocolHelpers.ToDocumentPath(location.Uri));
+                    return string.Equals(referencePath, currentDocumentPath, StringComparison.OrdinalIgnoreCase);
+                })
+                .Select(static location => location.Range));
+        }
+
+        if (string.IsNullOrWhiteSpace(componentName)
+            && TryGetComponentTagNameAtPosition(document.Text, position, out var positionComponentName))
+        {
+            componentName = positionComponentName;
+        }
+
+        if (!string.IsNullOrWhiteSpace(componentName))
+        {
+            foreach (Match match in TagPattern.Matches(document.Text))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var nameGroup = match.Groups["name"];
+                if (!nameGroup.Success
+                    || !string.Equals(nameGroup.Value, componentName, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                highlightRanges.Add(LspProtocolHelpers.ToRange(document.Text, nameGroup.Index, nameGroup.Length));
+            }
+        }
+
+        return highlightRanges
+            .Select(static range => new LspDocumentHighlight
+            {
+                Range = range,
+                Kind = 1
+            })
+            .GroupBy(
+                static highlight =>
+                    $"{highlight.Range.Start.Line}:{highlight.Range.Start.Character}:{highlight.Range.End.Line}:{highlight.Range.End.Character}:{highlight.Kind}",
+                StringComparer.Ordinal)
+            .Select(static group => group.First())
+            .ToArray();
+    }
+
+    public ValueTask<IReadOnlyList<LspDocumentLink>> GetDocumentLinksAsync(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (document.DocumentKind != DocumentKind.Jazor)
+        {
+            return ValueTask.FromResult<IReadOnlyList<LspDocumentLink>>(Array.Empty<LspDocumentLink>());
+        }
+
+        var links = new List<LspDocumentLink>();
+        foreach (Match match in ImportDirectiveSourcePattern.Matches(document.Text))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var sourceGroup = match.Groups["source"];
+            if (!sourceGroup.Success
+                || !TryResolveImportLinkTargetPath(document.DocumentPath, sourceGroup.Value, out var targetPath))
+            {
+                continue;
+            }
+
+            links.Add(new LspDocumentLink
+            {
+                Range = LspProtocolHelpers.ToRange(document.Text, sourceGroup.Index, sourceGroup.Length),
+                Target = LspProtocolHelpers.ToDocumentUri(targetPath),
+                Tooltip = "Open import target"
+            });
+        }
+
+        return ValueTask.FromResult<IReadOnlyList<LspDocumentLink>>(links
+            .GroupBy(
+                static link => $"{link.Range.Start.Line}:{link.Range.Start.Character}:{link.Range.End.Line}:{link.Range.End.Character}:{link.Target}",
+                StringComparer.Ordinal)
+            .Select(static group => group.First())
+            .ToArray());
+    }
 
     public ValueTask<IReadOnlyList<LspCompletionItem>> GetCompletionItemsAsync(
         DocumentSnapshot document,
@@ -145,7 +265,7 @@ internal sealed class JazorLspDocumentService
         // @code directive keyword
         AddCodeDirectiveToken(document.Text, tokens);
 
-        // Legacy import directives: @jsimport, @vueimport
+        // Import directives: canonical @module plus unsupported legacy forms for highlighting.
         AddImportDirectiveTokens(document.Text, tokens);
 
         // Component tags (PascalCase) in template region
@@ -205,7 +325,7 @@ internal sealed class JazorLspDocumentService
     }
 
     private static readonly Regex ImportDirectivePattern = new(
-        @"^\s*@(?<kind>jsimport|vueimport)\b",
+        @"^\s*@(?<kind>module|import|jsimport|vueimport)\b",
         RegexOptions.Multiline | RegexOptions.Compiled);
 
     private static void AddImportDirectiveTokens(string text, List<LspSemanticToken> tokens)
@@ -413,22 +533,82 @@ internal sealed class JazorLspDocumentService
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (!diagnostics.Any(static diagnostic => string.Equals(diagnostic.Code, "JAZORVUE001", StringComparison.Ordinal)))
+        if (diagnostics.Count == 0)
         {
             return ValueTask.FromResult<IReadOnlyList<LspCodeAction>>(Array.Empty<LspCodeAction>());
         }
 
-        var privateMethodMatch = PrivateMethodPattern.Match(document.Text);
-        if (!privateMethodMatch.Success)
-        {
-            return ValueTask.FromResult<IReadOnlyList<LspCodeAction>>(Array.Empty<LspCodeAction>());
-        }
+        var actions = new List<LspCodeAction>();
 
-        IReadOnlyList<LspCodeAction> actions =
-        [
-            new LspCodeAction
+        if (diagnostics.Any(static diagnostic => string.Equals(diagnostic.Code, "JAZORVUE001", StringComparison.Ordinal)))
+        {
+            var privateMethodMatch = PrivateMethodPattern.Match(document.Text);
+            if (privateMethodMatch.Success)
             {
-                Title = "Make method public for bridge lowering",
+                actions.Add(new LspCodeAction
+                {
+                    Title = "Make method public for bridge lowering",
+                    Kind = "quickfix",
+                    Edit = new LspWorkspaceEdit
+                    {
+                        Changes = new Dictionary<string, LspTextEdit[]>
+                        {
+                            [LspProtocolHelpers.ToDocumentUri(document.DocumentPath)] =
+                            [
+                                new LspTextEdit
+                                {
+                                    Range = LspProtocolHelpers.ToRange(document.Text, privateMethodMatch.Groups["modifier"].Index, privateMethodMatch.Groups["modifier"].Length),
+                                    NewText = "public"
+                                }
+                            ]
+                        }
+                    }
+                });
+            }
+        }
+
+        var legacyDirectiveDiagnostics = diagnostics
+            .Where(static diagnostic => string.Equals(diagnostic.Code, LegacyImportDirectiveCatalog.DiagnosticCode, StringComparison.Ordinal))
+            .ToArray();
+        if (legacyDirectiveDiagnostics.Length > 0)
+        {
+            var rangeKeys = legacyDirectiveDiagnostics
+                .Select(static diagnostic => GetRangeKey(diagnostic.Range))
+                .ToHashSet(StringComparer.Ordinal);
+            actions.AddRange(CreateLegacyImportDirectiveCodeActions(document, rangeKeys));
+        }
+
+        if (actions.Count == 0)
+        {
+            return ValueTask.FromResult<IReadOnlyList<LspCodeAction>>(Array.Empty<LspCodeAction>());
+        }
+
+        return ValueTask.FromResult<IReadOnlyList<LspCodeAction>>(actions);
+    }
+
+    private static IReadOnlyList<LspCodeAction> CreateLegacyImportDirectiveCodeActions(
+        DocumentSnapshot document,
+        HashSet<string> rangeKeys)
+    {
+        if (document.DocumentKind != DocumentKind.Jazor)
+        {
+            return Array.Empty<LspCodeAction>();
+        }
+
+        var actions = new List<LspCodeAction>();
+        foreach (var occurrence in LegacyImportDirectiveCatalog.FindOccurrences(document.Text))
+        {
+            var range = LspProtocolHelpers.ToRange(document.Text, occurrence.Start, occurrence.Length);
+            var rangeKey = GetRangeKey(range);
+            if (rangeKeys.Count > 0 && !rangeKeys.Contains(rangeKey))
+            {
+                continue;
+            }
+
+            var legacyDirective = "@" + occurrence.Kind;
+            actions.Add(new LspCodeAction
+            {
+                Title = $"Replace {legacyDirective} with @module",
                 Kind = "quickfix",
                 Edit = new LspWorkspaceEdit
                 {
@@ -438,17 +618,20 @@ internal sealed class JazorLspDocumentService
                         [
                             new LspTextEdit
                             {
-                                Range = LspProtocolHelpers.ToRange(document.Text, privateMethodMatch.Groups["modifier"].Index, privateMethodMatch.Groups["modifier"].Length),
-                                NewText = "public"
+                                Range = range,
+                                NewText = "@module"
                             }
                         ]
                     }
                 }
-            }
-        ];
+            });
+        }
 
-        return ValueTask.FromResult(actions);
+        return actions;
     }
+
+    private static string GetRangeKey(LspRange range)
+        => $"{range.Start.Line}:{range.Start.Character}:{range.End.Line}:{range.End.Character}";
 
     private async ValueTask<AnalyzeJazorResponse> AnalyzeAsync(
         DocumentSnapshot document,
@@ -565,6 +748,61 @@ internal sealed class JazorLspDocumentService
 
         tagPrefix = match.Groups["name"].Value;
         return true;
+    }
+
+    private static bool TryGetComponentTagNameAtPosition(
+        string text,
+        LspPosition position,
+        out string componentName)
+    {
+        var offset = LspProtocolHelpers.GetOffset(text, position);
+        foreach (Match match in TagPattern.Matches(text))
+        {
+            var nameGroup = match.Groups["name"];
+            if (!nameGroup.Success)
+            {
+                continue;
+            }
+
+            if (offset < nameGroup.Index || offset > nameGroup.Index + nameGroup.Length)
+            {
+                continue;
+            }
+
+            componentName = nameGroup.Value;
+            return true;
+        }
+
+        componentName = string.Empty;
+        return false;
+    }
+
+    private static bool TryResolveImportLinkTargetPath(
+        string documentPath,
+        string importSource,
+        out string targetPath)
+    {
+        foreach (var candidate in VueHostWorkspaceResolver.GetImportPathCandidates(documentPath, importSource))
+        {
+            if (string.IsNullOrWhiteSpace(candidate))
+            {
+                continue;
+            }
+
+            var fullPath = Path.IsPathRooted(candidate)
+                ? Path.GetFullPath(candidate)
+                : Path.GetFullPath(Path.Combine(Path.GetDirectoryName(documentPath) ?? string.Empty, candidate));
+            if (!File.Exists(fullPath))
+            {
+                continue;
+            }
+
+            targetPath = fullPath;
+            return true;
+        }
+
+        targetPath = string.Empty;
+        return false;
     }
 
     private static LspDocumentSymbol[] CreateTemplateComponentSymbols(

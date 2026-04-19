@@ -152,8 +152,7 @@ internal sealed class DevServerReloadHub : IAsyncDisposable
         {
             throw;
         }
-        catch
-        {
+        catch (Exception) {
             RemoveSocket(socket);
             await CloseAndDisposeAsync(socket, CancellationToken.None);
         }
@@ -280,8 +279,7 @@ internal sealed class DevServerReloadHub : IAsyncDisposable
                     cancellationToken);
             }
         }
-        catch
-        {
+        catch (Exception) {
         }
         finally
         {

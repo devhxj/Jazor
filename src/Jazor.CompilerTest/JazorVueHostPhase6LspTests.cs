@@ -556,7 +556,7 @@ public sealed class JazorVueHostPhase6LspTests
         var documentService = CreateDocumentService(workspaceStore);
         var lane = new JazorLaneService(documentService);
 
-        var jazorText = "@vueimport MyComponent from \"./MyComponent.vue\"\n@jsimport { ref } from \"vue\"\n\n<template>\n  <div />\n</template>";
+        var jazorText = "@module MyComponent from \"./MyComponent.vue\"\n@module { ref } from \"vue\"\n\n<template>\n  <div />\n</template>";
         var document = new DocumentSnapshot(
             Path.Combine(Path.GetTempPath(), "test-imports.jazor"),
             DocumentKind.Jazor,
@@ -806,6 +806,13 @@ public sealed class JazorVueHostPhase6LspTests
             ProjectionTarget projectionTarget,
             CancellationToken cancellationToken)
             => ValueTask.FromResult<LspHoverResult?>(null);
+
+        public ValueTask<IReadOnlyList<LspDocumentHighlight>> GetDocumentHighlightsAsync(
+            DocumentSnapshot document,
+            LspPosition position,
+            ProjectionTarget projectionTarget,
+            CancellationToken cancellationToken)
+            => ValueTask.FromResult<IReadOnlyList<LspDocumentHighlight>>(Array.Empty<LspDocumentHighlight>());
 
         public ValueTask<IReadOnlyList<LspCompletionItem>> GetCompletionItemsAsync(
             DocumentSnapshot document,

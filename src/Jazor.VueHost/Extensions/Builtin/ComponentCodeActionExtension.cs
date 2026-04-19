@@ -14,7 +14,7 @@ internal sealed class ComponentCodeActionExtension : IExtension, ILspCodeActionP
         RegexOptions.Compiled);
 
     private static readonly Regex ImportDirectivePattern = new(
-        @"^\s*@(?:jsimport|vueimport)\b.*$",
+        @"^\s*@(?:module|import|jsimport|vueimport)\b.*$",
         RegexOptions.Compiled | RegexOptions.Multiline);
 
     private static readonly Regex QuotedComponentNamePattern = new(
@@ -151,7 +151,7 @@ internal sealed class ComponentCodeActionExtension : IExtension, ILspCodeActionP
         var escapedComponentName = Regex.Escape(componentName);
         return Regex.IsMatch(
             text,
-            $@"^\s*@(?:jsimport|vueimport)\s+.*\b{escapedComponentName}\b.*$",
+            $@"^\s*@module\s+.*\b{escapedComponentName}\b.*$",
             RegexOptions.Multiline);
     }
 
@@ -182,13 +182,13 @@ internal sealed class ComponentCodeActionExtension : IExtension, ILspCodeActionP
         var newline = text.Contains("\r\n", StringComparison.Ordinal)
             ? "\r\n"
             : "\n";
-        var importLine = $"@vueimport {componentName} from \"{importPath}\"";
+        var importLine = $"@module {componentName} from \"{importPath}\"";
         var (insertOffset, newText) = DetermineInsertion(text, importLine, newline);
 
         var uri = LspProtocolHelpers.ToDocumentUri(document.DocumentPath);
         return new LspCodeAction
         {
-            Title = $"Add @vueimport for {componentName}",
+            Title = $"Add @module for {componentName}",
             Kind = "quickfix",
             Edit = new LspWorkspaceEdit
             {

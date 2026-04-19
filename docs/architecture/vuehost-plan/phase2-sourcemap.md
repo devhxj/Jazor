@@ -480,7 +480,7 @@ public JazorVueCompilationResult Compile(JazorVueDocument document)
     {
         builder.AppendLine(importStatement);
         sourceMapGen.NextLine();
-        // 用户 import → 映射到 @vueimport/@jsimport 指令行
+        // 用户 import → 映射到 @module 指令行（@import/@vueimport/@jsimport 均为不支持输入）
         // Phase 2 初始: 不映射 import 语句（它们来自 JazorVueParser 解析，不是逐行对应）
     }
 

@@ -82,7 +82,7 @@ This design explicitly does **not** inherit RazorVue's host/bundling conclusions
 ### 6. Non-goals
 
 - do not make `.jazor` into another `.vue`.
-- do not make `@vueimport` / `@jsimport` the long-term authoring model.
+- use `@module` as the long-term authoring model; `@import` / `@vueimport` / `@jsimport` are unsupported.
 - do not make IntelliSense wait for generated `g.cs` or final materialized output.
 - do not split VueHost responsibilities back into sibling analysis/runtime products.
 

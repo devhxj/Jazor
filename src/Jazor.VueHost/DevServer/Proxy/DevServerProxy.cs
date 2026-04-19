@@ -409,8 +409,7 @@ internal sealed class DevServerProxy : IDisposable
                     cancellationToken);
             }
         }
-        catch
-        {
+        catch (Exception) {
         }
 
         try
@@ -423,8 +422,7 @@ internal sealed class DevServerProxy : IDisposable
                     cancellationToken);
             }
         }
-        catch
-        {
+        catch (Exception) {
         }
     }
 

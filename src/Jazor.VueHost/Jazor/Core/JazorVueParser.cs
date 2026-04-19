@@ -4,8 +4,11 @@ namespace Jazor.Vue;
 
 public sealed partial class JazorVueParser
 {
-    private static readonly Regex LegacyImportDirectivePattern = new Regex(
-        @"^\s*@(?<kind>jsimport|vueimport)\s+(?<clause>.+?)\s+from\s+[""'](?<source>[^""']+)[""']\s*$",
+    private static readonly Regex ModuleDirectivePattern = new Regex(
+        @"^\s*@module\s+(?<clause>.+?)\s+from\s+[""'](?<source>[^""']+)[""']\s*$",
+        RegexOptions.Multiline | RegexOptions.Compiled);
+    private static readonly Regex LegacyDirectiveLinePattern = new Regex(
+        @"^\s*@(?:import|jsimport|vueimport)\b.*$",
         RegexOptions.Multiline | RegexOptions.Compiled);
     private static readonly Regex ComponentTagPattern = new Regex(
         @"<(?<name>[A-Z][A-Za-z0-9_]*)\b",
@@ -45,18 +48,18 @@ public sealed partial class JazorVueParser
         string sourceText,
         string template)
     {
-        var legacyImports = ParseLegacyImports(sourceText);
+        var declaredImports = ParseImportDirectives(sourceText);
         var inferredVueImports = InferVueImports(filePath, template);
         if (inferredVueImports.Count == 0)
         {
-            return legacyImports;
+            return declaredImports;
         }
 
         var inferredComponentNames = inferredVueImports
             .SelectMany(static import => import.Bindings)
             .Select(static binding => binding.LocalName)
             .ToHashSet(StringComparer.Ordinal);
-        var compatibilityImports = legacyImports
+        var compatibilityImports = declaredImports
             .Where(import => import.Kind != JazorImportKind.VueImport
                 || import.Bindings.All(binding => !inferredComponentNames.Contains(binding.LocalName)));
 
@@ -65,16 +68,14 @@ public sealed partial class JazorVueParser
             .ToArray();
     }
 
-    private static IReadOnlyList<JazorImportDirective> ParseLegacyImports(string sourceText)
+    private static IReadOnlyList<JazorImportDirective> ParseImportDirectives(string sourceText)
     {
         var imports = new List<JazorImportDirective>();
-        foreach (Match match in LegacyImportDirectivePattern.Matches(sourceText))
+        foreach (Match match in ModuleDirectivePattern.Matches(sourceText))
         {
-            var kind = string.Equals(match.Groups["kind"].Value, "vueimport", StringComparison.Ordinal)
-                ? JazorImportKind.VueImport
-                : JazorImportKind.JSImport;
             var clause = match.Groups["clause"].Value.Trim();
             var source = match.Groups["source"].Value.Trim();
+            var kind = ResolveImportKind(source);
 
             imports.Add(new JazorImportDirective(kind, source, ParseBindings(clause), match.Value));
         }
@@ -201,7 +202,8 @@ public sealed partial class JazorVueParser
             ? codeParseResult.DirectiveIndex
             : sourceText.Length;
         var markup = sourceText[..markupEnd];
-        var sanitizedMarkup = LegacyImportDirectivePattern.Replace(markup, string.Empty);
+        var sanitizedMarkup = ModuleDirectivePattern.Replace(markup, string.Empty);
+        sanitizedMarkup = LegacyDirectiveLinePattern.Replace(sanitizedMarkup, string.Empty);
         var trimmedMarkup = sanitizedMarkup.Trim();
         if (trimmedMarkup.Length == 0)
         {
@@ -372,4 +374,14 @@ public sealed partial class JazorVueParser
 
         public int Length { get; }
     }
+
+    private static JazorImportKind ResolveImportKind(string source)
+    {
+        return IsVueImportSource(source)
+            ? JazorImportKind.VueImport
+            : JazorImportKind.JSImport;
+    }
+
+    private static bool IsVueImportSource(string source)
+        => source.EndsWith(".vue", StringComparison.OrdinalIgnoreCase);
 }

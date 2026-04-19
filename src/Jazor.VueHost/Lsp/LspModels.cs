@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Jazor.VueHost.Lsp;
@@ -79,8 +80,26 @@ internal sealed class LspServerCapabilities
     [JsonPropertyName("hoverProvider")]
     public bool HoverProvider { get; init; }
 
+    [JsonPropertyName("documentHighlightProvider")]
+    public bool DocumentHighlightProvider { get; init; }
+
+    [JsonPropertyName("documentLinkProvider")]
+    public bool DocumentLinkProvider { get; init; }
+
     [JsonPropertyName("definitionProvider")]
     public bool DefinitionProvider { get; init; }
+
+    [JsonPropertyName("typeDefinitionProvider")]
+    public bool TypeDefinitionProvider { get; init; }
+
+    [JsonPropertyName("implementationProvider")]
+    public bool ImplementationProvider { get; init; }
+
+    [JsonPropertyName("selectionRangeProvider")]
+    public bool SelectionRangeProvider { get; init; }
+
+    [JsonPropertyName("linkedEditingRangeProvider")]
+    public bool LinkedEditingRangeProvider { get; init; }
 
     [JsonPropertyName("referencesProvider")]
     public bool ReferencesProvider { get; init; }
@@ -91,8 +110,17 @@ internal sealed class LspServerCapabilities
     [JsonPropertyName("codeActionProvider")]
     public bool CodeActionProvider { get; init; }
 
+    [JsonPropertyName("codeLensProvider")]
+    public bool CodeLensProvider { get; init; }
+
     [JsonPropertyName("documentSymbolProvider")]
     public bool DocumentSymbolProvider { get; init; }
+
+    [JsonPropertyName("documentFormattingProvider")]
+    public bool DocumentFormattingProvider { get; init; }
+
+    [JsonPropertyName("documentRangeFormattingProvider")]
+    public bool DocumentRangeFormattingProvider { get; init; }
 
     [JsonPropertyName("signatureHelpProvider")]
     public LspSignatureHelpOptions? SignatureHelpProvider { get; init; }
@@ -105,6 +133,12 @@ internal sealed class LspServerCapabilities
 
     [JsonPropertyName("inlayHintProvider")]
     public bool InlayHintProvider { get; init; }
+
+    [JsonPropertyName("callHierarchyProvider")]
+    public bool CallHierarchyProvider { get; init; }
+
+    [JsonPropertyName("typeHierarchyProvider")]
+    public bool TypeHierarchyProvider { get; init; }
 
     [JsonPropertyName("completionProvider")]
     public required LspCompletionOptions CompletionProvider { get; init; }
@@ -123,6 +157,9 @@ internal sealed class LspTextDocumentSyncOptions
 
     [JsonPropertyName("change")]
     public int Change { get; init; }
+
+    [JsonPropertyName("save")]
+    public bool Save { get; init; }
 }
 
 internal sealed class LspCompletionOptions
@@ -284,6 +321,15 @@ internal sealed class LspHoverParams
     public required LspPosition Position { get; init; }
 }
 
+internal sealed class LspDocumentHighlightParams
+{
+    [JsonPropertyName("textDocument")]
+    public required LspTextDocumentIdentifier TextDocument { get; init; }
+
+    [JsonPropertyName("position")]
+    public required LspPosition Position { get; init; }
+}
+
 internal sealed class LspCompletionParams
 {
     [JsonPropertyName("textDocument")]
@@ -291,6 +337,12 @@ internal sealed class LspCompletionParams
 
     [JsonPropertyName("position")]
     public required LspPosition Position { get; init; }
+}
+
+internal sealed class LspDocumentLinkParams
+{
+    [JsonPropertyName("textDocument")]
+    public required LspTextDocumentIdentifier TextDocument { get; init; }
 }
 
 internal sealed class LspSignatureHelpParams
@@ -309,6 +361,177 @@ internal sealed class LspDefinitionParams
 
     [JsonPropertyName("position")]
     public required LspPosition Position { get; init; }
+}
+
+internal sealed class LspImplementationParams
+{
+    [JsonPropertyName("textDocument")]
+    public required LspTextDocumentIdentifier TextDocument { get; init; }
+
+    [JsonPropertyName("position")]
+    public required LspPosition Position { get; init; }
+}
+
+internal sealed class LspTypeDefinitionParams
+{
+    [JsonPropertyName("textDocument")]
+    public required LspTextDocumentIdentifier TextDocument { get; init; }
+
+    [JsonPropertyName("position")]
+    public required LspPosition Position { get; init; }
+}
+
+internal sealed class LspSelectionRangeParams
+{
+    [JsonPropertyName("textDocument")]
+    public required LspTextDocumentIdentifier TextDocument { get; init; }
+
+    [JsonPropertyName("positions")]
+    public required LspPosition[] Positions { get; init; }
+}
+
+internal sealed class LspSelectionRange
+{
+    [JsonPropertyName("range")]
+    public required LspRange Range { get; init; }
+
+    [JsonPropertyName("parent")]
+    public LspSelectionRange? Parent { get; init; }
+}
+
+internal sealed class LspLinkedEditingRangeParams
+{
+    [JsonPropertyName("textDocument")]
+    public required LspTextDocumentIdentifier TextDocument { get; init; }
+
+    [JsonPropertyName("position")]
+    public required LspPosition Position { get; init; }
+}
+
+internal sealed class LspLinkedEditingRanges
+{
+    [JsonPropertyName("ranges")]
+    public required LspRange[] Ranges { get; init; }
+
+    [JsonPropertyName("wordPattern")]
+    public string? WordPattern { get; init; }
+}
+
+internal sealed class LspFormattingOptions
+{
+    [JsonPropertyName("tabSize")]
+    public int TabSize { get; init; } = 4;
+
+    [JsonPropertyName("insertSpaces")]
+    public bool InsertSpaces { get; init; } = true;
+
+    [JsonPropertyName("trimTrailingWhitespace")]
+    public bool? TrimTrailingWhitespace { get; init; }
+
+    [JsonPropertyName("insertFinalNewline")]
+    public bool? InsertFinalNewline { get; init; }
+}
+
+internal sealed class LspDocumentFormattingParams
+{
+    [JsonPropertyName("textDocument")]
+    public required LspTextDocumentIdentifier TextDocument { get; init; }
+
+    [JsonPropertyName("options")]
+    public LspFormattingOptions? Options { get; init; }
+}
+
+internal sealed class LspDocumentRangeFormattingParams
+{
+    [JsonPropertyName("textDocument")]
+    public required LspTextDocumentIdentifier TextDocument { get; init; }
+
+    [JsonPropertyName("range")]
+    public required LspRange Range { get; init; }
+
+    [JsonPropertyName("options")]
+    public LspFormattingOptions? Options { get; init; }
+}
+
+internal sealed class LspCodeLensParams
+{
+    [JsonPropertyName("textDocument")]
+    public required LspTextDocumentIdentifier TextDocument { get; init; }
+}
+
+internal sealed class LspCallHierarchyPrepareParams
+{
+    [JsonPropertyName("textDocument")]
+    public required LspTextDocumentIdentifier TextDocument { get; init; }
+
+    [JsonPropertyName("position")]
+    public required LspPosition Position { get; init; }
+}
+
+internal sealed class LspTypeHierarchyPrepareParams
+{
+    [JsonPropertyName("textDocument")]
+    public required LspTextDocumentIdentifier TextDocument { get; init; }
+
+    [JsonPropertyName("position")]
+    public required LspPosition Position { get; init; }
+}
+
+internal sealed class LspTypeHierarchyParams
+{
+    [JsonPropertyName("item")]
+    public required LspTypeHierarchyItem Item { get; init; }
+}
+
+internal sealed class LspCallHierarchyIncomingCallsParams
+{
+    [JsonPropertyName("item")]
+    public required LspCallHierarchyItem Item { get; init; }
+}
+
+internal sealed class LspCallHierarchyOutgoingCallsParams
+{
+    [JsonPropertyName("item")]
+    public required LspCallHierarchyItem Item { get; init; }
+}
+
+internal sealed class LspDidSaveTextDocumentParams
+{
+    [JsonPropertyName("textDocument")]
+    public required LspTextDocumentIdentifier TextDocument { get; init; }
+
+    [JsonPropertyName("text")]
+    public string? Text { get; init; }
+}
+
+internal sealed class LspWillSaveTextDocumentParams
+{
+    [JsonPropertyName("textDocument")]
+    public required LspTextDocumentIdentifier TextDocument { get; init; }
+
+    [JsonPropertyName("reason")]
+    public int Reason { get; init; }
+}
+
+internal sealed class LspDidChangeConfigurationParams
+{
+    [JsonPropertyName("settings")]
+    public JsonElement? Settings { get; init; }
+}
+
+internal sealed class LspDidChangeWatchedFilesParams
+{
+    [JsonPropertyName("changes")]
+    public LspFileEvent[]? Changes { get; init; }
+}
+
+internal sealed class LspFileEvent
+{
+    [JsonPropertyName("uri")]
+    public string Uri { get; init; } = string.Empty;
+
+    [JsonPropertyName("type")]
+    public int Type { get; init; }
 }
 
 internal sealed class LspReferenceContext
@@ -512,6 +735,27 @@ internal sealed class LspLocation
     public required LspRange Range { get; init; }
 }
 
+internal sealed class LspDocumentHighlight
+{
+    [JsonPropertyName("range")]
+    public required LspRange Range { get; init; }
+
+    [JsonPropertyName("kind")]
+    public int Kind { get; init; }
+}
+
+internal sealed class LspDocumentLink
+{
+    [JsonPropertyName("range")]
+    public required LspRange Range { get; init; }
+
+    [JsonPropertyName("target")]
+    public string? Target { get; init; }
+
+    [JsonPropertyName("tooltip")]
+    public string? Tooltip { get; init; }
+}
+
 internal sealed class LspTextEdit
 {
     [JsonPropertyName("range")]
@@ -537,6 +781,72 @@ internal sealed class LspCodeAction
 
     [JsonPropertyName("edit")]
     public LspWorkspaceEdit? Edit { get; init; }
+}
+
+internal sealed class LspCodeLens
+{
+    [JsonPropertyName("range")]
+    public required LspRange Range { get; init; }
+}
+
+internal sealed class LspCallHierarchyItem
+{
+    [JsonPropertyName("name")]
+    public required string Name { get; init; }
+
+    [JsonPropertyName("kind")]
+    public int Kind { get; init; }
+
+    [JsonPropertyName("uri")]
+    public required string Uri { get; init; }
+
+    [JsonPropertyName("range")]
+    public required LspRange Range { get; init; }
+
+    [JsonPropertyName("selectionRange")]
+    public required LspRange SelectionRange { get; init; }
+
+    [JsonPropertyName("detail")]
+    public string? Detail { get; init; }
+}
+
+internal sealed class LspCallHierarchyIncomingCall
+{
+    [JsonPropertyName("from")]
+    public required LspCallHierarchyItem From { get; init; }
+
+    [JsonPropertyName("fromRanges")]
+    public required LspRange[] FromRanges { get; init; }
+}
+
+internal sealed class LspCallHierarchyOutgoingCall
+{
+    [JsonPropertyName("to")]
+    public required LspCallHierarchyItem To { get; init; }
+
+    [JsonPropertyName("fromRanges")]
+    public required LspRange[] FromRanges { get; init; }
+}
+
+internal sealed class LspTypeHierarchyItem
+{
+    [JsonPropertyName("name")]
+    public required string Name { get; init; }
+
+    [JsonPropertyName("kind")]
+    public int Kind { get; init; }
+
+    [JsonPropertyName("uri")]
+    public required string Uri { get; init; }
+
+    [JsonPropertyName("range")]
+    public required LspRange Range { get; init; }
+
+    [JsonPropertyName("selectionRange")]
+    public required LspRange SelectionRange { get; init; }
+
+    [JsonPropertyName("detail")]
+    public string? Detail { get; init; }
 }
 
 internal sealed class LspDocumentSymbol

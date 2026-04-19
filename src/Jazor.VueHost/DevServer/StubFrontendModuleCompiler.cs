@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using Jazor.VueHost.Hosting;
 
 namespace Jazor.VueHost.DevServer;
 
@@ -16,6 +17,7 @@ internal sealed class StubFrontendModuleCompiler : IFrontendModuleCompiler
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        ReportStubCompilationActivated();
 
         return ValueTask.FromResult<FrontendModuleCompilation?>(
             new FrontendModuleCompilation
@@ -33,6 +35,7 @@ internal sealed class StubFrontendModuleCompiler : IFrontendModuleCompiler
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        ReportStubCompilationActivated();
 
         return ValueTask.FromResult<FrontendModuleCompilation?>(
             new FrontendModuleCompilation
@@ -75,4 +78,10 @@ internal sealed class StubFrontendModuleCompiler : IFrontendModuleCompiler
         => value
             .Replace("\\", "\\\\", StringComparison.Ordinal)
             .Replace("\"", "\\\"", StringComparison.Ordinal);
+
+    private static void ReportStubCompilationActivated()
+        => FallbackTelemetry.ReportActivation(
+            component: "frontendCompiler",
+            mode: "stub",
+            reason: "deno-frontend-unavailable");
 }

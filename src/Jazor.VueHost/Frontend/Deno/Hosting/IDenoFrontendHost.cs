@@ -52,6 +52,25 @@ internal interface IDenoVolarHost : IAsyncDisposable
         DenoVolarIntelliSenseContext? context,
         CancellationToken cancellationToken);
 
+    ValueTask<IReadOnlyList<LspDocumentLink>> GetTemplateDocumentLinksAsync(
+        DocumentSnapshot document,
+        DenoVolarIntelliSenseContext? context,
+        CancellationToken cancellationToken)
+        => ValueTask.FromResult<IReadOnlyList<LspDocumentLink>>(Array.Empty<LspDocumentLink>());
+
+    ValueTask<IReadOnlyList<LspInlayHint>> GetTemplateInlayHintsAsync(
+        DocumentSnapshot document,
+        LspRange range,
+        DenoVolarIntelliSenseContext? context,
+        CancellationToken cancellationToken)
+        => ValueTask.FromResult<IReadOnlyList<LspInlayHint>>(Array.Empty<LspInlayHint>());
+
+    ValueTask<IReadOnlyList<LspFoldingRange>> GetTemplateFoldingRangesAsync(
+        DocumentSnapshot document,
+        DenoVolarIntelliSenseContext? context,
+        CancellationToken cancellationToken)
+        => ValueTask.FromResult<IReadOnlyList<LspFoldingRange>>(Array.Empty<LspFoldingRange>());
+
     ValueTask<LspHoverResult?> GetTemplateHoverAsync(
         DocumentSnapshot document,
         LspPosition position,
@@ -63,6 +82,13 @@ internal interface IDenoVolarHost : IAsyncDisposable
         LspPosition position,
         DenoVolarIntelliSenseContext? context,
         CancellationToken cancellationToken);
+
+    ValueTask<IReadOnlyList<LspLocation>> GetTemplateImplementationAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        DenoVolarIntelliSenseContext? context,
+        CancellationToken cancellationToken)
+        => ValueTask.FromResult<IReadOnlyList<LspLocation>>(Array.Empty<LspLocation>());
 
     ValueTask<IReadOnlyList<LspLocation>> GetTemplateReferencesAsync(
         DocumentSnapshot document,

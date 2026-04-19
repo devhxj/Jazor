@@ -35,7 +35,7 @@ internal sealed class DenoVolarHost : IDenoVolarHost
         {
             await _workerProcess.StartAsync(cancellationToken);
         }
-        catch when (_options.IgnoreStartupFailure)
+        catch (Exception) when (_options.IgnoreStartupFailure)
         {
             await TryResetWorkerStateAsync();
         }
@@ -155,6 +155,56 @@ internal sealed class DenoVolarHost : IDenoVolarHost
         return tokens ?? Array.Empty<LspSemanticToken>();
     }
 
+    public async ValueTask<IReadOnlyList<LspDocumentLink>> GetTemplateDocumentLinksAsync(
+        DocumentSnapshot document,
+        DenoVolarIntelliSenseContext? context,
+        CancellationToken cancellationToken)
+    {
+        var request = new DenoTemplateDocumentRequest
+        {
+            DocumentPath = document.DocumentPath,
+            Text = document.Text,
+            FrontendContext = context?.SemanticContext,
+            FrontendArtifacts = context?.Artifacts
+        };
+        var links = await SendAsync<LspDocumentLink[]>("template/documentLinks", request, cancellationToken);
+        return links ?? Array.Empty<LspDocumentLink>();
+    }
+
+    public async ValueTask<IReadOnlyList<LspInlayHint>> GetTemplateInlayHintsAsync(
+        DocumentSnapshot document,
+        LspRange range,
+        DenoVolarIntelliSenseContext? context,
+        CancellationToken cancellationToken)
+    {
+        var request = new DenoTemplateRangeRequest
+        {
+            DocumentPath = document.DocumentPath,
+            Text = document.Text,
+            Range = range,
+            FrontendContext = context?.SemanticContext,
+            FrontendArtifacts = context?.Artifacts
+        };
+        var hints = await SendAsync<LspInlayHint[]>("template/inlayHints", request, cancellationToken);
+        return hints ?? Array.Empty<LspInlayHint>();
+    }
+
+    public async ValueTask<IReadOnlyList<LspFoldingRange>> GetTemplateFoldingRangesAsync(
+        DocumentSnapshot document,
+        DenoVolarIntelliSenseContext? context,
+        CancellationToken cancellationToken)
+    {
+        var request = new DenoTemplateDocumentRequest
+        {
+            DocumentPath = document.DocumentPath,
+            Text = document.Text,
+            FrontendContext = context?.SemanticContext,
+            FrontendArtifacts = context?.Artifacts
+        };
+        var ranges = await SendAsync<LspFoldingRange[]>("template/foldingRanges", request, cancellationToken);
+        return ranges ?? Array.Empty<LspFoldingRange>();
+    }
+
     public async ValueTask<LspHoverResult?> GetTemplateHoverAsync(
         DocumentSnapshot document,
         LspPosition position,
@@ -173,6 +223,17 @@ internal sealed class DenoVolarHost : IDenoVolarHost
     {
         var request = CreateRequest(document, position, context);
         var locations = await SendAsync<LspLocation[]>("template/definition", request, cancellationToken);
+        return locations ?? Array.Empty<LspLocation>();
+    }
+
+    public async ValueTask<IReadOnlyList<LspLocation>> GetTemplateImplementationAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        DenoVolarIntelliSenseContext? context,
+        CancellationToken cancellationToken)
+    {
+        var request = CreateRequest(document, position, context);
+        var locations = await SendAsync<LspLocation[]>("template/implementation", request, cancellationToken);
         return locations ?? Array.Empty<LspLocation>();
     }
 
@@ -234,8 +295,7 @@ internal sealed class DenoVolarHost : IDenoVolarHost
         {
             throw;
         }
-        catch
-        {
+        catch (Exception) {
             await TryResetWorkerStateAsync();
         }
 
@@ -253,8 +313,7 @@ internal sealed class DenoVolarHost : IDenoVolarHost
         {
             throw;
         }
-        catch
-        {
+        catch (Exception) {
             await TryResetWorkerStateAsync();
             throw;
         }
@@ -266,8 +325,7 @@ internal sealed class DenoVolarHost : IDenoVolarHost
         {
             await _workerProcess.StopAsync(CancellationToken.None);
         }
-        catch
-        {
+        catch (Exception) {
             // Ignore worker teardown failures so the next request can retry startup.
         }
     }

@@ -98,8 +98,7 @@ internal sealed class DapSession
                     resolution.Location.LineNumber,
                     resolution.Location.ColumnNumber);
         }
-        catch
-        {
+        catch (Exception) {
             return null;
         }
     }

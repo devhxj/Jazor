@@ -228,6 +228,63 @@ internal sealed class VolarLaneService : ILspLane
         CancellationToken cancellationToken)
         => ValueTask.FromResult<LspSignatureHelp?>(null);
 
+    public async ValueTask<IReadOnlyList<LspDocumentLink>> GetDocumentLinksAsync(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken)
+    {
+        if (document.DocumentKind is not (DocumentKind.Jazor or DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript or DocumentKind.Css))
+        {
+            return Array.Empty<LspDocumentLink>();
+        }
+
+        var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget: null, cancellationToken);
+        var frontendContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
+        var links = await TryGetDenoDocumentLinksAsync(frontendDocument.RequestDocument, frontendContext, cancellationToken);
+        return MapDocumentLinks(document, frontendDocument, links);
+    }
+
+    public async ValueTask<IReadOnlyList<LspInlayHint>> GetInlayHintsAsync(
+        DocumentSnapshot document,
+        LspRange range,
+        CancellationToken cancellationToken)
+    {
+        if (document.DocumentKind is not (DocumentKind.Jazor or DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript or DocumentKind.Css))
+        {
+            return Array.Empty<LspInlayHint>();
+        }
+
+        var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget: null, cancellationToken);
+        var requestRange = range;
+        if (frontendDocument.ProjectionMap is not null
+            && !frontendDocument.ProjectionMap.TryMapToProjectedRange(
+                document.Text,
+                range,
+                frontendDocument.RequestDocument.Text,
+                out requestRange))
+        {
+            return Array.Empty<LspInlayHint>();
+        }
+
+        var frontendContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
+        var hints = await TryGetDenoInlayHintsAsync(frontendDocument.RequestDocument, requestRange, frontendContext, cancellationToken);
+        return MapInlayHints(document, frontendDocument, hints);
+    }
+
+    public async ValueTask<IReadOnlyList<LspFoldingRange>> GetFoldingRangesAsync(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken)
+    {
+        if (document.DocumentKind is not (DocumentKind.Jazor or DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript or DocumentKind.Css))
+        {
+            return Array.Empty<LspFoldingRange>();
+        }
+
+        var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget: null, cancellationToken);
+        var frontendContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
+        var ranges = await TryGetDenoFoldingRangesAsync(frontendDocument.RequestDocument, frontendContext, cancellationToken);
+        return MapFoldingRanges(document, frontendDocument, ranges);
+    }
+
     public async ValueTask<IReadOnlyList<LspLocation>> GetDefinitionAsync(
         DocumentSnapshot document,
         LspPosition position,
@@ -281,6 +338,36 @@ internal sealed class VolarLaneService : ILspLane
                 .ToArray();
     }
 
+    public async ValueTask<IReadOnlyList<LspLocation>> GetImplementationAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        ProjectionTarget projectionTarget,
+        CancellationToken cancellationToken)
+    {
+        if (!IsTemplateTarget(projectionTarget))
+        {
+            return Array.Empty<LspLocation>();
+        }
+
+        var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget, cancellationToken);
+        var requestPosition = frontendDocument.MapPosition(position, projectionTarget.ProjectedPosition);
+        var frontendContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
+        var denoLocations = await TryGetDenoImplementationsAsync(
+            frontendDocument.RequestDocument,
+            requestPosition,
+            frontendContext,
+            cancellationToken);
+
+        var locations = MapLocations(
+            document,
+            frontendDocument,
+            denoLocations);
+        return locations
+            .GroupBy(static location => $"{location.Uri}:{location.Range.Start.Line}:{location.Range.Start.Character}:{location.Range.End.Line}:{location.Range.End.Character}", StringComparer.Ordinal)
+            .Select(static group => group.First())
+            .ToArray();
+    }
+
     public async ValueTask<IReadOnlyList<LspLocation>> GetReferencesAsync(
         DocumentSnapshot document,
         LspPosition position,
@@ -311,6 +398,31 @@ internal sealed class VolarLaneService : ILspLane
             .GroupBy(static location => $"{location.Uri}:{location.Range.Start.Line}:{location.Range.Start.Character}:{location.Range.End.Line}:{location.Range.End.Character}", StringComparer.Ordinal)
             .Select(static group => group.First())
             .ToArray();
+    }
+
+    public async ValueTask<IReadOnlyList<LspDocumentHighlight>> GetDocumentHighlightsAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        ProjectionTarget projectionTarget,
+        CancellationToken cancellationToken)
+    {
+        if (!IsTemplateTarget(projectionTarget))
+        {
+            return Array.Empty<LspDocumentHighlight>();
+        }
+
+        var locations = await GetReferencesAsync(
+            document,
+            position,
+            includeDeclaration: true,
+            projectionTarget,
+            cancellationToken);
+        if (locations.Count == 0)
+        {
+            return Array.Empty<LspDocumentHighlight>();
+        }
+
+        return CreateDocumentHighlightsFromLocations(document, locations);
     }
 
     public async ValueTask<LspWorkspaceEdit?> GetRenameAsync(
@@ -417,257 +529,206 @@ internal sealed class VolarLaneService : ILspLane
         return false;
     }
 
-    private async ValueTask<IReadOnlyList<LspCompletionItem>> TryGetDenoCompletionItemsAsync(
+    private ValueTask<IReadOnlyList<LspCompletionItem>> TryGetDenoCompletionItemsAsync(
         DocumentSnapshot document,
         LspPosition position,
         DenoVolarIntelliSenseContext? context,
         CancellationToken cancellationToken)
-    {
-        if (_denoVolarHost is null)
-        {
-            return Array.Empty<LspCompletionItem>();
-        }
+        => ExecuteDenoRequestAsync(
+            document,
+            operation: "completion",
+            fallbackValue: Array.Empty<LspCompletionItem>(),
+            requestAsync: (host, token) => host.GetTemplateCompletionItemsAsync(document, position, context, token),
+            cancellationToken);
 
-        try
-        {
-            return await _denoVolarHost.GetTemplateCompletionItemsAsync(document, position, context, cancellationToken);
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch (Exception exception)
-        {
-            RecordDenoFailure(
-                operation: "completion",
-                documentPath: document.DocumentPath,
-                exception);
-            return Array.Empty<LspCompletionItem>();
-        }
-    }
-
-    private async ValueTask<LspHoverResult?> TryGetDenoHoverAsync(
+    private ValueTask<LspHoverResult?> TryGetDenoHoverAsync(
         DocumentSnapshot document,
         LspPosition position,
         DenoVolarIntelliSenseContext? context,
         CancellationToken cancellationToken)
-    {
-        if (_denoVolarHost is null)
-        {
-            return null;
-        }
+        => ExecuteDenoRequestAsync(
+            document,
+            operation: "hover",
+            fallbackValue: null,
+            requestAsync: (host, token) => host.GetTemplateHoverAsync(document, position, context, token),
+            cancellationToken);
 
-        try
-        {
-            return await _denoVolarHost.GetTemplateHoverAsync(document, position, context, cancellationToken);
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch (Exception exception)
-        {
-            RecordDenoFailure(
-                operation: "hover",
-                documentPath: document.DocumentPath,
-                exception);
-            return null;
-        }
-    }
-
-    private async ValueTask<IReadOnlyList<LspLocation>> TryGetDenoDefinitionsAsync(
+    private ValueTask<IReadOnlyList<LspLocation>> TryGetDenoDefinitionsAsync(
         DocumentSnapshot document,
         LspPosition position,
         DenoVolarIntelliSenseContext? context,
         CancellationToken cancellationToken)
-    {
-        if (_denoVolarHost is null)
-        {
-            return Array.Empty<LspLocation>();
-        }
+        => ExecuteDenoRequestAsync(
+            document,
+            operation: "definition",
+            fallbackValue: Array.Empty<LspLocation>(),
+            requestAsync: (host, token) => host.GetTemplateDefinitionAsync(document, position, context, token),
+            cancellationToken);
 
-        try
-        {
-            return await _denoVolarHost.GetTemplateDefinitionAsync(document, position, context, cancellationToken);
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch (Exception exception)
-        {
-            RecordDenoFailure(
-                operation: "definition",
-                documentPath: document.DocumentPath,
-                exception);
-            return Array.Empty<LspLocation>();
-        }
-    }
+    private ValueTask<IReadOnlyList<LspLocation>> TryGetDenoImplementationsAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        DenoVolarIntelliSenseContext? context,
+        CancellationToken cancellationToken)
+        => ExecuteDenoRequestAsync(
+            document,
+            operation: "implementation",
+            fallbackValue: Array.Empty<LspLocation>(),
+            requestAsync: (host, token) => host.GetTemplateImplementationAsync(document, position, context, token),
+            cancellationToken);
 
-    private async ValueTask<IReadOnlyList<LspLocation>> TryGetDenoReferencesAsync(
+    private ValueTask<IReadOnlyList<LspLocation>> TryGetDenoReferencesAsync(
         DocumentSnapshot document,
         LspPosition position,
         bool includeDeclaration,
         DenoVolarIntelliSenseContext? context,
         CancellationToken cancellationToken)
-    {
-        if (_denoVolarHost is null)
-        {
-            return Array.Empty<LspLocation>();
-        }
-
-        try
-        {
-            return await _denoVolarHost.GetTemplateReferencesAsync(
+        => ExecuteDenoRequestAsync(
+            document,
+            operation: "references",
+            fallbackValue: Array.Empty<LspLocation>(),
+            requestAsync: (host, token) => host.GetTemplateReferencesAsync(
                 document,
                 position,
                 includeDeclaration,
                 context,
-                cancellationToken);
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch (Exception exception)
-        {
-            RecordDenoFailure(
-                operation: "references",
-                documentPath: document.DocumentPath,
-                exception);
-            return Array.Empty<LspLocation>();
-        }
-    }
+                token),
+            cancellationToken);
 
-    private async ValueTask<LspWorkspaceEdit?> TryGetDenoRenameAsync(
+    private ValueTask<LspWorkspaceEdit?> TryGetDenoRenameAsync(
         DocumentSnapshot document,
         LspPosition position,
         string newName,
         DenoVolarIntelliSenseContext? context,
         CancellationToken cancellationToken)
-    {
-        if (_denoVolarHost is null)
-        {
-            return null;
-        }
+        => ExecuteDenoRequestAsync(
+            document,
+            operation: "rename",
+            fallbackValue: null,
+            requestAsync: (host, token) => host.GetTemplateRenameAsync(document, position, newName, context, token),
+            cancellationToken);
 
-        try
-        {
-            return await _denoVolarHost.GetTemplateRenameAsync(document, position, newName, context, cancellationToken);
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch (Exception exception)
-        {
-            RecordDenoFailure(
-                operation: "rename",
-                documentPath: document.DocumentPath,
-                exception);
-            return null;
-        }
-    }
-
-    private async ValueTask<IReadOnlyList<LspDocumentSymbol>> TryGetDenoDocumentSymbolsAsync(
+    private ValueTask<IReadOnlyList<LspDocumentSymbol>> TryGetDenoDocumentSymbolsAsync(
         DocumentSnapshot document,
         DenoVolarIntelliSenseContext? context,
         CancellationToken cancellationToken)
-    {
-        if (_denoVolarHost is null)
-        {
-            return Array.Empty<LspDocumentSymbol>();
-        }
+        => ExecuteDenoRequestAsync(
+            document,
+            operation: "documentSymbol",
+            fallbackValue: Array.Empty<LspDocumentSymbol>(),
+            requestAsync: (host, token) => host.GetTemplateDocumentSymbolsAsync(document, context, token),
+            cancellationToken);
 
-        try
-        {
-            return await _denoVolarHost.GetTemplateDocumentSymbolsAsync(document, context, cancellationToken);
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch (Exception exception)
-        {
-            RecordDenoFailure(
-                operation: "documentSymbol",
-                documentPath: document.DocumentPath,
-                exception);
-            return Array.Empty<LspDocumentSymbol>();
-        }
-    }
-
-    private async ValueTask<IReadOnlyList<LspDiagnostic>> TryGetDenoDiagnosticsAsync(
+    private ValueTask<IReadOnlyList<LspDiagnostic>> TryGetDenoDiagnosticsAsync(
         DocumentSnapshot document,
         DenoVolarIntelliSenseContext? context,
         CancellationToken cancellationToken)
-    {
-        if (_denoVolarHost is null)
-        {
-            return Array.Empty<LspDiagnostic>();
-        }
+        => ExecuteDenoRequestAsync(
+            document,
+            operation: "diagnostics",
+            fallbackValue: Array.Empty<LspDiagnostic>(),
+            requestAsync: (host, token) => host.GetTemplateDiagnosticsAsync(document, context, token),
+            cancellationToken);
 
-        try
-        {
-            return await _denoVolarHost.GetTemplateDiagnosticsAsync(document, context, cancellationToken);
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch (Exception exception)
-        {
-            RecordDenoFailure(
-                operation: "diagnostics",
-                documentPath: document.DocumentPath,
-                exception);
-            return Array.Empty<LspDiagnostic>();
-        }
-    }
-
-    private async ValueTask<IReadOnlyList<LspSemanticToken>> TryGetDenoSemanticTokensAsync(
+    private ValueTask<IReadOnlyList<LspSemanticToken>> TryGetDenoSemanticTokensAsync(
         DocumentSnapshot document,
         DenoVolarIntelliSenseContext? context,
         CancellationToken cancellationToken)
-    {
-        if (_denoVolarHost is null)
-        {
-            return Array.Empty<LspSemanticToken>();
-        }
+        => ExecuteDenoRequestAsync(
+            document,
+            operation: "semanticTokens",
+            fallbackValue: Array.Empty<LspSemanticToken>(),
+            requestAsync: (host, token) => host.GetTemplateSemanticTokensAsync(document, context, token),
+            cancellationToken);
 
-        try
-        {
-            return await _denoVolarHost.GetTemplateSemanticTokensAsync(document, context, cancellationToken);
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch (Exception exception)
-        {
-            RecordDenoFailure(
-                operation: "semanticTokens",
-                documentPath: document.DocumentPath,
-                exception);
-            return Array.Empty<LspSemanticToken>();
-        }
-    }
+    private ValueTask<IReadOnlyList<LspDocumentLink>> TryGetDenoDocumentLinksAsync(
+        DocumentSnapshot document,
+        DenoVolarIntelliSenseContext? context,
+        CancellationToken cancellationToken)
+        => ExecuteDenoRequestAsync(
+            document,
+            operation: "documentLink",
+            fallbackValue: Array.Empty<LspDocumentLink>(),
+            requestAsync: (host, token) => host.GetTemplateDocumentLinksAsync(document, context, token),
+            cancellationToken);
 
-    private async ValueTask<DenoVolarIntelliSenseContext?> GetVolarIntelliSenseContextAsync(
+    private ValueTask<IReadOnlyList<LspInlayHint>> TryGetDenoInlayHintsAsync(
+        DocumentSnapshot document,
+        LspRange range,
+        DenoVolarIntelliSenseContext? context,
+        CancellationToken cancellationToken)
+        => ExecuteDenoRequestAsync(
+            document,
+            operation: "inlayHint",
+            fallbackValue: Array.Empty<LspInlayHint>(),
+            requestAsync: (host, token) => host.GetTemplateInlayHintsAsync(document, range, context, token),
+            cancellationToken);
+
+    private ValueTask<IReadOnlyList<LspFoldingRange>> TryGetDenoFoldingRangesAsync(
+        DocumentSnapshot document,
+        DenoVolarIntelliSenseContext? context,
+        CancellationToken cancellationToken)
+        => ExecuteDenoRequestAsync(
+            document,
+            operation: "foldingRange",
+            fallbackValue: Array.Empty<LspFoldingRange>(),
+            requestAsync: (host, token) => host.GetTemplateFoldingRangesAsync(document, context, token),
+            cancellationToken);
+
+    private ValueTask<DenoVolarIntelliSenseContext?> GetVolarIntelliSenseContextAsync(
         DocumentSnapshot document,
         CancellationToken cancellationToken)
     {
         if (document.DocumentKind != DocumentKind.Jazor || _frontendContextProvider is null)
         {
-            return null;
+            return ValueTask.FromResult<DenoVolarIntelliSenseContext?>(null);
         }
 
+        return ExecuteWithFailureCaptureAsync(
+            operation: "frontendContext",
+            documentPath: document.DocumentPath,
+            fallbackValue: default(DenoVolarIntelliSenseContext?),
+            operationAsync: async token =>
+            {
+                var response = await _frontendContextProvider.GetFrontendContextAsync(
+                    new GetFrontendContextRequest(document.DocumentPath, Array.Empty<string>()),
+                    token);
+                return new DenoVolarIntelliSenseContext(response.SemanticContext, response.Artifacts);
+            },
+            cancellationToken);
+    }
+
+    private async ValueTask<T> ExecuteDenoRequestAsync<T>(
+        DocumentSnapshot document,
+        string operation,
+        T fallbackValue,
+        Func<IDenoVolarHost, CancellationToken, ValueTask<T>> requestAsync,
+        CancellationToken cancellationToken)
+    {
+        var denoHost = _denoVolarHost;
+        if (denoHost is null)
+        {
+            return fallbackValue;
+        }
+
+        return await ExecuteWithFailureCaptureAsync(
+            operation,
+            document.DocumentPath,
+            fallbackValue,
+            token => requestAsync(denoHost, token),
+            cancellationToken);
+    }
+
+    private async ValueTask<T> ExecuteWithFailureCaptureAsync<T>(
+        string operation,
+        string documentPath,
+        T fallbackValue,
+        Func<CancellationToken, ValueTask<T>> operationAsync,
+        CancellationToken cancellationToken)
+    {
         try
         {
-            var response = await _frontendContextProvider.GetFrontendContextAsync(
-                new GetFrontendContextRequest(document.DocumentPath, Array.Empty<string>()),
-                cancellationToken);
-            return new DenoVolarIntelliSenseContext(response.SemanticContext, response.Artifacts);
+            return await operationAsync(cancellationToken);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -675,11 +736,8 @@ internal sealed class VolarLaneService : ILspLane
         }
         catch (Exception exception)
         {
-            RecordDenoFailure(
-                operation: "frontendContext",
-                documentPath: document.DocumentPath,
-                exception);
-            return null;
+            RecordDenoFailure(operation, documentPath, exception);
+            return fallbackValue;
         }
     }
 
@@ -1045,6 +1103,138 @@ internal sealed class VolarLaneService : ILspLane
         return mappedTokens;
     }
 
+    private static IReadOnlyList<LspDocumentLink> MapDocumentLinks(
+        DocumentSnapshot sourceDocument,
+        VolarRequestDocument requestDocument,
+        IReadOnlyList<LspDocumentLink> links)
+    {
+        if (requestDocument.ProjectionMap is null)
+        {
+            return links
+                .Select(link => new LspDocumentLink
+                {
+                    Range = link.Range,
+                    Target = NormalizeDocumentLinkTarget(link.Target),
+                    Tooltip = link.Tooltip
+                })
+                .ToArray();
+        }
+
+        return links
+            .Select(link =>
+            {
+                if (!requestDocument.ProjectionMap.TryMapToOriginalRange(
+                        requestDocument.RequestDocument.Text,
+                        link.Range,
+                        sourceDocument.Text,
+                        out var sourceRange))
+                {
+                    return null;
+                }
+
+                return new LspDocumentLink
+                {
+                    Range = sourceRange,
+                    Target = NormalizeDocumentLinkTarget(link.Target),
+                    Tooltip = link.Tooltip
+                };
+            })
+            .Where(static link => link is not null)
+            .Cast<LspDocumentLink>()
+            .ToArray();
+    }
+
+    private static IReadOnlyList<LspInlayHint> MapInlayHints(
+        DocumentSnapshot sourceDocument,
+        VolarRequestDocument requestDocument,
+        IReadOnlyList<LspInlayHint> hints)
+    {
+        if (requestDocument.ProjectionMap is null)
+        {
+            return hints;
+        }
+
+        return hints
+            .Select(hint =>
+            {
+                if (!requestDocument.ProjectionMap.TryMapToOriginalPosition(
+                        requestDocument.RequestDocument.Text,
+                        hint.Position,
+                        sourceDocument.Text,
+                        out var sourcePosition))
+                {
+                    return null;
+                }
+
+                return new LspInlayHint
+                {
+                    Position = sourcePosition,
+                    Label = hint.Label,
+                    Kind = hint.Kind
+                };
+            })
+            .Where(static hint => hint is not null)
+            .Cast<LspInlayHint>()
+            .ToArray();
+    }
+
+    private static IReadOnlyList<LspFoldingRange> MapFoldingRanges(
+        DocumentSnapshot sourceDocument,
+        VolarRequestDocument requestDocument,
+        IReadOnlyList<LspFoldingRange> ranges)
+    {
+        if (requestDocument.ProjectionMap is null)
+        {
+            return ranges;
+        }
+
+        return ranges
+            .Select(range =>
+            {
+                var projectedStart = new LspPosition
+                {
+                    Line = Math.Max(0, range.StartLine),
+                    Character = Math.Max(0, range.StartCharacter ?? 0)
+                };
+                var projectedEnd = new LspPosition
+                {
+                    Line = Math.Max(0, range.EndLine),
+                    Character = Math.Max(0, range.EndCharacter ?? 0)
+                };
+                if (!requestDocument.ProjectionMap.TryMapToOriginalPosition(
+                        requestDocument.RequestDocument.Text,
+                        projectedStart,
+                        sourceDocument.Text,
+                        out var sourceStart)
+                    || !requestDocument.ProjectionMap.TryMapToOriginalPosition(
+                        requestDocument.RequestDocument.Text,
+                        projectedEnd,
+                        sourceDocument.Text,
+                        out var sourceEnd))
+                {
+                    return null;
+                }
+
+                if (sourceEnd.Line < sourceStart.Line
+                    || (sourceEnd.Line == sourceStart.Line && sourceEnd.Character < sourceStart.Character))
+                {
+                    return null;
+                }
+
+                return new LspFoldingRange
+                {
+                    StartLine = sourceStart.Line,
+                    StartCharacter = range.StartCharacter is null ? null : sourceStart.Character,
+                    EndLine = sourceEnd.Line,
+                    EndCharacter = range.EndCharacter is null ? null : sourceEnd.Character,
+                    Kind = range.Kind
+                };
+            })
+            .Where(static range => range is not null)
+            .Cast<LspFoldingRange>()
+            .ToArray();
+    }
+
     private async ValueTask<IReadOnlyList<LspDiagnostic>> CreateUnresolvedMarkupComponentDiagnosticsAsync(
         DocumentSnapshot document,
         CancellationToken cancellationToken)
@@ -1257,6 +1447,25 @@ internal sealed class VolarLaneService : ILspLane
             .ToArray();
     }
 
+    private static IReadOnlyList<LspDocumentHighlight> CreateDocumentHighlightsFromLocations(
+        DocumentSnapshot sourceDocument,
+        IReadOnlyList<LspLocation> locations)
+    {
+        var sourceUri = NormalizeFileUri(LspProtocolHelpers.ToDocumentUri(sourceDocument.DocumentPath));
+        return locations
+            .Where(location => string.Equals(NormalizeFileUri(location.Uri), sourceUri, StringComparison.Ordinal))
+            .Select(static location => new LspDocumentHighlight
+            {
+                Range = location.Range,
+                Kind = 1
+            })
+            .GroupBy(static highlight =>
+                $"{highlight.Range.Start.Line}:{highlight.Range.Start.Character}:{highlight.Range.End.Line}:{highlight.Range.End.Character}:{highlight.Kind}",
+                StringComparer.Ordinal)
+            .Select(static group => group.First())
+            .ToArray();
+    }
+
     private static string NormalizeFileUri(string uri)
     {
         if (!Uri.TryCreate(uri, UriKind.Absolute, out var parsed) || !parsed.IsFile)
@@ -1271,5 +1480,17 @@ internal sealed class VolarLaneService : ILspLane
         }
 
         return new Uri(localPath).AbsoluteUri;
+    }
+
+    private static string? NormalizeDocumentLinkTarget(string? target)
+    {
+        if (string.IsNullOrWhiteSpace(target))
+        {
+            return target;
+        }
+
+        return Uri.TryCreate(target, UriKind.Absolute, out var parsed) && parsed.IsFile
+            ? NormalizeFileUri(target)
+            : target;
     }
 }

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using System.Text.Json;
 using Jazor.VueHost.Extensions;
 using Jazor.VueContracts.Protocol;
@@ -15,6 +16,9 @@ namespace Jazor.VueHost.Lsp;
 internal sealed class LspSession
 {
     private const int InvalidParamsErrorCode = -32602;
+    private static readonly Regex TagNamePattern = new(
+        @"</?(?<name>[A-Za-z][A-Za-z0-9_\-:]*)\b",
+        RegexOptions.Compiled);
 
     private readonly IVueHostWorkspaceStore _workspaceStore;
     private readonly IReadOnlyDictionary<LaneKind, ILspLane> _lanes;
@@ -95,7 +99,10 @@ internal sealed class LspSession
             "initialize" => HandleInitialize(request),
             "shutdown" => CreateSuccessResponse(request.Id, result: null),
             "textDocument/hover" => await HandleHoverAsync(request, cancellationToken),
+            "textDocument/documentHighlight" => await HandleDocumentHighlightsAsync(request, cancellationToken),
+            "textDocument/documentLink" => await HandleDocumentLinksAsync(request, cancellationToken),
             "textDocument/completion" => await HandleCompletionAsync(request, cancellationToken),
+            "completionItem/resolve" => HandleCompletionItemResolve(request),
             "textDocument/documentSymbol" => await HandleDocumentSymbolsAsync(request, cancellationToken),
             "textDocument/semanticTokens/full" => await HandleSemanticTokensAsync(request, cancellationToken),
             "textDocument/signatureHelp" => await HandleSignatureHelpAsync(request, cancellationToken),
@@ -103,6 +110,20 @@ internal sealed class LspSession
             "workspace/symbol" => await HandleWorkspaceSymbolAsync(request, cancellationToken),
             "textDocument/foldingRange" => await HandleFoldingRangeAsync(request, cancellationToken),
             "textDocument/definition" => await HandleDefinitionAsync(request, cancellationToken),
+            "textDocument/typeDefinition" => await HandleTypeDefinitionAsync(request, cancellationToken),
+            "textDocument/implementation" => await HandleImplementationAsync(request, cancellationToken),
+            "textDocument/selectionRange" => await HandleSelectionRangeAsync(request, cancellationToken),
+            "textDocument/linkedEditingRange" => await HandleLinkedEditingRangeAsync(request, cancellationToken),
+            "textDocument/formatting" => await HandleDocumentFormattingAsync(request, cancellationToken),
+            "textDocument/rangeFormatting" => await HandleDocumentRangeFormattingAsync(request, cancellationToken),
+            "textDocument/codeLens" => await HandleCodeLensAsync(request, cancellationToken),
+            "textDocument/prepareCallHierarchy" => await HandlePrepareCallHierarchyAsync(request, cancellationToken),
+            "callHierarchy/incomingCalls" => await HandleIncomingCallsAsync(request, cancellationToken),
+            "callHierarchy/outgoingCalls" => await HandleOutgoingCallsAsync(request, cancellationToken),
+            "textDocument/prepareTypeHierarchy" => await HandlePrepareTypeHierarchyAsync(request, cancellationToken),
+            "typeHierarchy/supertypes" => await HandleTypeHierarchySuperTypesAsync(request, cancellationToken),
+            "typeHierarchy/subtypes" => await HandleTypeHierarchySubTypesAsync(request, cancellationToken),
+            "textDocument/willSaveWaitUntil" => CreateSuccessResponse(request.Id, Array.Empty<LspTextEdit>()),
             "textDocument/references" => await HandleReferencesAsync(request, cancellationToken),
             "textDocument/rename" => await HandleRenameAsync(request, cancellationToken),
             "textDocument/prepareRename" => await HandlePrepareRenameAsync(request, cancellationToken),
@@ -142,8 +163,20 @@ internal sealed class LspSession
             case "textDocument/didClose":
                 await HandleDidCloseAsync(notification, cancellationToken);
                 return true;
+            case "textDocument/didSave":
+                await HandleDidSaveAsync(notification, cancellationToken);
+                return true;
+            case "textDocument/willSave":
+                HandleWillSave(notification);
+                return true;
             case "workspace/didChangeWorkspaceFolders":
                 HandleDidChangeWorkspaceFolders(notification);
+                return true;
+            case "workspace/didChangeConfiguration":
+                await HandleDidChangeConfigurationAsync(cancellationToken);
+                return true;
+            case "workspace/didChangeWatchedFiles":
+                await HandleDidChangeWatchedFilesAsync(notification, cancellationToken);
                 return true;
             default:
                 return true;
@@ -163,17 +196,27 @@ internal sealed class LspSession
                     TextDocumentSync = new LspTextDocumentSyncOptions
                     {
                         OpenClose = true,
-                        Change = 1
+                        Change = 1,
+                        Save = true
                     },
                     HoverProvider = true,
+                    DocumentHighlightProvider = true,
+                    DocumentLinkProvider = true,
                     DefinitionProvider = true,
+                    TypeDefinitionProvider = true,
+                    ImplementationProvider = true,
+                    SelectionRangeProvider = true,
+                    LinkedEditingRangeProvider = true,
                     ReferencesProvider = true,
                     RenameProvider = new LspRenameOptions
                     {
                         PrepareProvider = true
                     },
                     CodeActionProvider = true,
+                    CodeLensProvider = true,
                     DocumentSymbolProvider = true,
+                    DocumentFormattingProvider = true,
+                    DocumentRangeFormattingProvider = true,
                     SignatureHelpProvider = new LspSignatureHelpOptions
                     {
                         TriggerCharacters = ["(", ","],
@@ -182,9 +225,11 @@ internal sealed class LspSession
                     WorkspaceSymbolProvider = true,
                     FoldingRangeProvider = true,
                     InlayHintProvider = true,
+                    CallHierarchyProvider = true,
+                    TypeHierarchyProvider = true,
                     CompletionProvider = new LspCompletionOptions
                     {
-                        ResolveProvider = false,
+                        ResolveProvider = true,
                         TriggerCharacters = ["@", "<", "/"]
                     },
                     SemanticTokensProvider = new LspSemanticTokensOptions
@@ -242,6 +287,33 @@ internal sealed class LspSession
             await CollectHoverAsync(document, parameters.Position, projectionTarget, cancellationToken));
     }
 
+    private async ValueTask<LspResponseMessage> HandleDocumentHighlightsAsync(
+        LspRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        var parameters = DeserializeParams<LspDocumentHighlightParams>(request.Params);
+        var document = await GetRequiredDocumentAsync(
+            GetRequiredTextDocumentUri(parameters.TextDocument),
+            cancellationToken);
+        var projectionTarget = await _projectionResolver.ResolveAsync(document, parameters.Position, cancellationToken);
+        return CreateSuccessResponse(
+            request.Id,
+            await CollectDocumentHighlightsAsync(document, parameters.Position, projectionTarget, cancellationToken));
+    }
+
+    private async ValueTask<LspResponseMessage> HandleDocumentLinksAsync(
+        LspRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        var parameters = DeserializeParams<LspDocumentLinkParams>(request.Params);
+        var document = await GetRequiredDocumentAsync(
+            GetRequiredTextDocumentUri(parameters.TextDocument),
+            cancellationToken);
+        return CreateSuccessResponse(
+            request.Id,
+            await CollectDocumentLinksAsync(document, cancellationToken));
+    }
+
     private async ValueTask<LspResponseMessage> HandleCompletionAsync(
         LspRequestMessage request,
         CancellationToken cancellationToken)
@@ -254,6 +326,12 @@ internal sealed class LspSession
         return CreateSuccessResponse(
             request.Id,
             await CollectCompletionItemsAsync(document, parameters.Position, projectionTarget, cancellationToken));
+    }
+
+    private LspResponseMessage HandleCompletionItemResolve(LspRequestMessage request)
+    {
+        var item = DeserializeParams<LspCompletionItem>(request.Params);
+        return CreateSuccessResponse(request.Id, item);
     }
 
     private async ValueTask<LspResponseMessage> HandleDocumentSymbolsAsync(
@@ -320,6 +398,346 @@ internal sealed class LspSession
                 allowMarkupFallback: !(document.DocumentKind == DocumentKind.Jazor
                     && projectionTarget.RegionKind == DocumentRegionKind.Template),
                 cancellationToken));
+    }
+
+    private async ValueTask<LspResponseMessage> HandleTypeDefinitionAsync(
+        LspRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        var parameters = DeserializeParams<LspTypeDefinitionParams>(request.Params);
+        var document = await GetRequiredDocumentAsync(
+            GetRequiredTextDocumentUri(parameters.TextDocument),
+            cancellationToken);
+        var projectionTarget = await _projectionResolver.ResolveAsync(document, parameters.Position, cancellationToken);
+        if (TryGetRoslynLaneService(out var roslynLane)
+            && IsRoslynSemanticTarget(document, projectionTarget))
+        {
+            var typeLocations = await roslynLane.GetTypeDefinitionAsync(document, parameters.Position, cancellationToken);
+            return CreateSuccessResponse(
+                request.Id,
+                _resultAggregator.AggregateLocations(typeLocations));
+        }
+
+        var locations = new List<LspLocation>();
+        foreach (var lane in GetOrderedLanes(projectionTarget))
+        {
+            var laneLocations = await lane.GetDefinitionAsync(document, parameters.Position, projectionTarget, cancellationToken);
+            if (laneLocations.Count > 0)
+            {
+                locations.AddRange(laneLocations);
+            }
+        }
+
+        return CreateSuccessResponse(
+            request.Id,
+            _resultAggregator.AggregateLocations(locations));
+    }
+
+    private async ValueTask<LspResponseMessage> HandleImplementationAsync(
+        LspRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        var parameters = DeserializeParams<LspImplementationParams>(request.Params);
+        var document = await GetRequiredDocumentAsync(
+            GetRequiredTextDocumentUri(parameters.TextDocument),
+            cancellationToken);
+        var projectionTarget = await _projectionResolver.ResolveAsync(document, parameters.Position, cancellationToken);
+        var locations = new List<LspLocation>();
+
+        foreach (var lane in GetOrderedLanes(projectionTarget))
+        {
+            var laneLocations = await lane.GetImplementationAsync(document, parameters.Position, projectionTarget, cancellationToken);
+            if (laneLocations.Count > 0)
+            {
+                locations.AddRange(laneLocations);
+            }
+        }
+
+        return CreateSuccessResponse(
+            request.Id,
+            _resultAggregator.AggregateLocations(locations));
+    }
+
+    private async ValueTask<LspResponseMessage> HandleSelectionRangeAsync(
+        LspRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        var parameters = DeserializeParams<LspSelectionRangeParams>(request.Params);
+        var positions = parameters.Positions ?? [];
+        var document = await GetRequiredDocumentAsync(
+            GetRequiredTextDocumentUri(parameters.TextDocument),
+            cancellationToken);
+
+        var results = new List<LspSelectionRange>(positions.Length);
+        foreach (var position in positions)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            results.Add(CreateSelectionRange(document.Text, position));
+        }
+
+        return CreateSuccessResponse(request.Id, results);
+    }
+
+    private async ValueTask<LspResponseMessage> HandleLinkedEditingRangeAsync(
+        LspRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        var parameters = DeserializeParams<LspLinkedEditingRangeParams>(request.Params);
+        var document = await GetRequiredDocumentAsync(
+            GetRequiredTextDocumentUri(parameters.TextDocument),
+            cancellationToken);
+        var ranges = CollectLinkedEditingRanges(document.Text, parameters.Position);
+        if (ranges.Count == 0)
+        {
+            return CreateSuccessResponse(request.Id, result: null);
+        }
+
+        return CreateSuccessResponse(
+            request.Id,
+            new LspLinkedEditingRanges
+            {
+                Ranges = ranges.ToArray(),
+                WordPattern = @"[A-Za-z][A-Za-z0-9_\-:]*"
+            });
+    }
+
+    private async ValueTask<LspResponseMessage> HandleDocumentFormattingAsync(
+        LspRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        var parameters = DeserializeParams<LspDocumentFormattingParams>(request.Params);
+        var document = await GetRequiredDocumentAsync(
+            GetRequiredTextDocumentUri(parameters.TextDocument),
+            cancellationToken);
+        var formattedText = FormatText(document.Text, parameters.Options, ensureFinalNewline: false);
+        if (string.Equals(formattedText, document.Text, StringComparison.Ordinal))
+        {
+            return CreateSuccessResponse(request.Id, Array.Empty<LspTextEdit>());
+        }
+
+        return CreateSuccessResponse(
+            request.Id,
+            new[]
+            {
+                new LspTextEdit
+                {
+                    Range = LspProtocolHelpers.ToRange(document.Text, 0, document.Text.Length),
+                    NewText = formattedText
+                }
+            });
+    }
+
+    private async ValueTask<LspResponseMessage> HandleDocumentRangeFormattingAsync(
+        LspRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        var parameters = DeserializeParams<LspDocumentRangeFormattingParams>(request.Params);
+        var document = await GetRequiredDocumentAsync(
+            GetRequiredTextDocumentUri(parameters.TextDocument),
+            cancellationToken);
+        var startOffset = LspProtocolHelpers.GetOffset(document.Text, parameters.Range.Start);
+        var endOffset = LspProtocolHelpers.GetOffset(document.Text, parameters.Range.End);
+        if (startOffset < 0 || endOffset < startOffset || startOffset > document.Text.Length)
+        {
+            return CreateSuccessResponse(request.Id, Array.Empty<LspTextEdit>());
+        }
+
+        endOffset = Math.Min(endOffset, document.Text.Length);
+        var length = endOffset - startOffset;
+        var originalText = document.Text.Substring(startOffset, length);
+        var formattedText = FormatText(originalText, parameters.Options, ensureFinalNewline: false);
+        if (string.Equals(formattedText, originalText, StringComparison.Ordinal))
+        {
+            return CreateSuccessResponse(request.Id, Array.Empty<LspTextEdit>());
+        }
+
+        return CreateSuccessResponse(
+            request.Id,
+            new[]
+            {
+                new LspTextEdit
+                {
+                    Range = parameters.Range,
+                    NewText = formattedText
+                }
+            });
+    }
+
+    private async ValueTask<LspResponseMessage> HandleCodeLensAsync(
+        LspRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        var parameters = DeserializeParams<LspCodeLensParams>(request.Params);
+        _ = await GetRequiredDocumentAsync(
+            GetRequiredTextDocumentUri(parameters.TextDocument),
+            cancellationToken);
+        return CreateSuccessResponse(request.Id, Array.Empty<LspCodeLens>());
+    }
+
+    private async ValueTask<LspResponseMessage> HandlePrepareCallHierarchyAsync(
+        LspRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        var parameters = DeserializeParams<LspCallHierarchyPrepareParams>(request.Params);
+        var document = await GetRequiredDocumentAsync(
+            GetRequiredTextDocumentUri(parameters.TextDocument),
+            cancellationToken);
+        var projectionTarget = await _projectionResolver.ResolveAsync(document, parameters.Position, cancellationToken);
+        if (TryGetRoslynLaneService(out var roslynLane)
+            && IsRoslynSemanticTarget(document, projectionTarget))
+        {
+            var semanticItems = await roslynLane.PrepareCallHierarchyAsync(document, parameters.Position, cancellationToken);
+            if (semanticItems.Count > 0)
+            {
+                return CreateSuccessResponse(request.Id, semanticItems);
+            }
+        }
+
+        var range = GetWordRangeAtPosition(
+            document.Text,
+            LspProtocolHelpers.GetOffset(document.Text, parameters.Position));
+        var label = document.Text.Substring(
+            LspProtocolHelpers.GetOffset(document.Text, range.Start),
+            Math.Max(0, LspProtocolHelpers.GetOffset(document.Text, range.End) - LspProtocolHelpers.GetOffset(document.Text, range.Start)));
+        if (string.IsNullOrWhiteSpace(label))
+        {
+            return CreateSuccessResponse(request.Id, Array.Empty<LspCallHierarchyItem>());
+        }
+
+        return CreateSuccessResponse(
+            request.Id,
+            new[]
+            {
+                new LspCallHierarchyItem
+                {
+                    Name = label,
+                    Kind = 12,
+                    Uri = LspProtocolHelpers.ToDocumentUri(document.DocumentPath),
+                    Range = range,
+                    SelectionRange = range,
+                    Detail = Path.GetFileName(document.DocumentPath)
+                }
+            });
+    }
+
+    private async ValueTask<LspResponseMessage> HandleIncomingCallsAsync(
+        LspRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        var parameters = DeserializeParams<LspCallHierarchyIncomingCallsParams>(request.Params);
+        var item = parameters.Item;
+        var document = await GetRequiredDocumentAsync(item.Uri, cancellationToken);
+        var position = item.SelectionRange.Start;
+        var projectionTarget = await _projectionResolver.ResolveAsync(document, position, cancellationToken);
+        if (TryGetRoslynLaneService(out var roslynLane)
+            && IsRoslynSemanticTarget(document, projectionTarget))
+        {
+            var incomingCalls = await roslynLane.GetIncomingCallsAsync(document, position, cancellationToken);
+            return CreateSuccessResponse(request.Id, incomingCalls);
+        }
+
+        return CreateSuccessResponse(request.Id, Array.Empty<LspCallHierarchyIncomingCall>());
+    }
+
+    private async ValueTask<LspResponseMessage> HandleOutgoingCallsAsync(
+        LspRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        var parameters = DeserializeParams<LspCallHierarchyOutgoingCallsParams>(request.Params);
+        var item = parameters.Item;
+        var document = await GetRequiredDocumentAsync(item.Uri, cancellationToken);
+        var position = item.SelectionRange.Start;
+        var projectionTarget = await _projectionResolver.ResolveAsync(document, position, cancellationToken);
+        if (TryGetRoslynLaneService(out var roslynLane)
+            && IsRoslynSemanticTarget(document, projectionTarget))
+        {
+            var outgoingCalls = await roslynLane.GetOutgoingCallsAsync(document, position, cancellationToken);
+            return CreateSuccessResponse(request.Id, outgoingCalls);
+        }
+
+        return CreateSuccessResponse(request.Id, Array.Empty<LspCallHierarchyOutgoingCall>());
+    }
+
+    private async ValueTask<LspResponseMessage> HandlePrepareTypeHierarchyAsync(
+        LspRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        var parameters = DeserializeParams<LspTypeHierarchyPrepareParams>(request.Params);
+        var document = await GetRequiredDocumentAsync(
+            GetRequiredTextDocumentUri(parameters.TextDocument),
+            cancellationToken);
+        var projectionTarget = await _projectionResolver.ResolveAsync(document, parameters.Position, cancellationToken);
+        if (TryGetRoslynLaneService(out var roslynLane)
+            && IsRoslynSemanticTarget(document, projectionTarget))
+        {
+            var semanticItems = await roslynLane.PrepareTypeHierarchyAsync(document, parameters.Position, cancellationToken);
+            if (semanticItems.Count > 0)
+            {
+                return CreateSuccessResponse(request.Id, semanticItems);
+            }
+        }
+
+        var range = GetWordRangeAtPosition(
+            document.Text,
+            LspProtocolHelpers.GetOffset(document.Text, parameters.Position));
+        var label = document.Text.Substring(
+            LspProtocolHelpers.GetOffset(document.Text, range.Start),
+            Math.Max(0, LspProtocolHelpers.GetOffset(document.Text, range.End) - LspProtocolHelpers.GetOffset(document.Text, range.Start)));
+        if (string.IsNullOrWhiteSpace(label))
+        {
+            return CreateSuccessResponse(request.Id, Array.Empty<LspTypeHierarchyItem>());
+        }
+
+        return CreateSuccessResponse(
+            request.Id,
+            new[]
+            {
+                new LspTypeHierarchyItem
+                {
+                    Name = label,
+                    Kind = 5,
+                    Uri = LspProtocolHelpers.ToDocumentUri(document.DocumentPath),
+                    Range = range,
+                    SelectionRange = range,
+                    Detail = Path.GetFileName(document.DocumentPath)
+                }
+            });
+    }
+
+    private async ValueTask<LspResponseMessage> HandleTypeHierarchySuperTypesAsync(
+        LspRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        var parameters = DeserializeParams<LspTypeHierarchyParams>(request.Params);
+        var document = await GetRequiredDocumentAsync(parameters.Item.Uri, cancellationToken);
+        var position = parameters.Item.SelectionRange.Start;
+        var projectionTarget = await _projectionResolver.ResolveAsync(document, position, cancellationToken);
+        if (TryGetRoslynLaneService(out var roslynLane)
+            && IsRoslynSemanticTarget(document, projectionTarget))
+        {
+            var superTypes = await roslynLane.GetTypeHierarchySuperTypesAsync(document, position, cancellationToken);
+            return CreateSuccessResponse(request.Id, superTypes);
+        }
+
+        return CreateSuccessResponse(request.Id, Array.Empty<LspTypeHierarchyItem>());
+    }
+
+    private async ValueTask<LspResponseMessage> HandleTypeHierarchySubTypesAsync(
+        LspRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        var parameters = DeserializeParams<LspTypeHierarchyParams>(request.Params);
+        var document = await GetRequiredDocumentAsync(parameters.Item.Uri, cancellationToken);
+        var position = parameters.Item.SelectionRange.Start;
+        var projectionTarget = await _projectionResolver.ResolveAsync(document, position, cancellationToken);
+        if (TryGetRoslynLaneService(out var roslynLane)
+            && IsRoslynSemanticTarget(document, projectionTarget))
+        {
+            var subTypes = await roslynLane.GetTypeHierarchySubTypesAsync(document, position, cancellationToken);
+            return CreateSuccessResponse(request.Id, subTypes);
+        }
+
+        return CreateSuccessResponse(request.Id, Array.Empty<LspTypeHierarchyItem>());
     }
 
     private async ValueTask<LspResponseMessage> HandleSignatureHelpAsync(
@@ -495,6 +913,126 @@ internal sealed class LspSession
         return (start, end - start);
     }
 
+    private static LspSelectionRange CreateSelectionRange(string text, LspPosition position)
+    {
+        var offset = LspProtocolHelpers.GetOffset(text, position);
+        var wordRange = GetWordRangeAtPosition(text, offset);
+        var lineRange = GetLineRangeAtOffset(text, offset);
+        var documentRange = LspProtocolHelpers.ToRange(text, 0, text.Length);
+
+        var lineSelection = new LspSelectionRange
+        {
+            Range = lineRange,
+            Parent = new LspSelectionRange
+            {
+                Range = documentRange
+            }
+        };
+
+        return new LspSelectionRange
+        {
+            Range = wordRange,
+            Parent = lineSelection
+        };
+    }
+
+    private static LspRange GetLineRangeAtOffset(string text, int offset)
+    {
+        var boundedOffset = Math.Clamp(offset, 0, text.Length);
+        var lineStart = boundedOffset;
+        while (lineStart > 0 && text[lineStart - 1] != '\n')
+        {
+            lineStart--;
+        }
+
+        var lineEnd = boundedOffset;
+        while (lineEnd < text.Length && text[lineEnd] != '\n')
+        {
+            lineEnd++;
+        }
+
+        return LspProtocolHelpers.ToRange(text, lineStart, Math.Max(0, lineEnd - lineStart));
+    }
+
+    private static IReadOnlyList<LspRange> CollectLinkedEditingRanges(string text, LspPosition position)
+    {
+        if (!TryFindTagNameAtPosition(text, position, out var tagName))
+        {
+            return Array.Empty<LspRange>();
+        }
+
+        var ranges = new List<LspRange>();
+        foreach (Match match in TagNamePattern.Matches(text))
+        {
+            var nameGroup = match.Groups["name"];
+            if (!nameGroup.Success
+                || !string.Equals(nameGroup.Value, tagName, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            ranges.Add(LspProtocolHelpers.ToRange(text, nameGroup.Index, nameGroup.Length));
+        }
+
+        return ranges
+            .GroupBy(
+                static range => $"{range.Start.Line}:{range.Start.Character}:{range.End.Line}:{range.End.Character}",
+                StringComparer.Ordinal)
+            .Select(static group => group.First())
+            .ToArray();
+    }
+
+    private static bool TryFindTagNameAtPosition(
+        string text,
+        LspPosition position,
+        out string tagName)
+    {
+        var offset = LspProtocolHelpers.GetOffset(text, position);
+        foreach (Match match in TagNamePattern.Matches(text))
+        {
+            var nameGroup = match.Groups["name"];
+            if (!nameGroup.Success)
+            {
+                continue;
+            }
+
+            if (offset < nameGroup.Index || offset > nameGroup.Index + nameGroup.Length)
+            {
+                continue;
+            }
+
+            tagName = nameGroup.Value;
+            return true;
+        }
+
+        tagName = string.Empty;
+        return false;
+    }
+
+    private static string FormatText(
+        string text,
+        LspFormattingOptions? options,
+        bool ensureFinalNewline)
+    {
+        var newline = text.Contains("\r\n", StringComparison.Ordinal)
+            ? "\r\n"
+            : "\n";
+        var lines = text
+            .Replace("\r\n", "\n", StringComparison.Ordinal)
+            .Split('\n')
+            .Select(static line => line.TrimEnd(' ', '\t'))
+            .ToArray();
+        var formatted = string.Join(newline, lines);
+        var shouldInsertFinalNewline = options?.InsertFinalNewline ?? ensureFinalNewline;
+        if (shouldInsertFinalNewline
+            && !formatted.EndsWith(newline, StringComparison.Ordinal))
+        {
+            formatted += newline;
+        }
+
+        return formatted;
+    }
+
     private static bool IsWordCharacter(char c)
         => char.IsLetterOrDigit(c) || c == '_';
 
@@ -586,6 +1124,85 @@ internal sealed class LspSession
             cancellationToken);
     }
 
+    private async ValueTask HandleDidSaveAsync(
+        LspRequestMessage notification,
+        CancellationToken cancellationToken)
+    {
+        var parameters = DeserializeParams<LspDidSaveTextDocumentParams>(notification.Params);
+        var documentPath = LspProtocolHelpers.ToDocumentPath(GetRequiredTextDocumentUri(parameters.TextDocument));
+        var document = await _workspaceStore.GetDocumentAsync(documentPath, cancellationToken);
+        if (document is null)
+        {
+            return;
+        }
+
+        if (parameters.Text is not null && !string.Equals(parameters.Text, document.Text, StringComparison.Ordinal))
+        {
+            document = new DocumentSnapshot(
+                document.DocumentPath,
+                document.DocumentKind,
+                parameters.Text,
+                document.Version);
+            await _workspaceStore.UpsertDocumentAsync(document, cancellationToken);
+        }
+
+        VueHostWorkspaceResolver.InvalidatePath(documentPath);
+        await PublishDiagnosticsAsync(document, cancellationToken);
+        await RefreshOpenJazorDiagnosticsAsync(document, cancellationToken);
+    }
+
+    private void HandleWillSave(LspRequestMessage notification)
+    {
+        var parameters = TryDeserializeParams<LspWillSaveTextDocumentParams>(notification.Params);
+        if (parameters?.TextDocument is null)
+        {
+            return;
+        }
+
+        var documentPath = LspProtocolHelpers.ToDocumentPath(GetRequiredTextDocumentUri(parameters.TextDocument));
+        VueHostWorkspaceResolver.InvalidatePath(documentPath);
+    }
+
+    private async ValueTask HandleDidChangeConfigurationAsync(CancellationToken cancellationToken)
+    {
+        var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
+        foreach (var document in openDocuments)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            await PublishDiagnosticsAsync(document, cancellationToken);
+        }
+    }
+
+    private async ValueTask HandleDidChangeWatchedFilesAsync(
+        LspRequestMessage notification,
+        CancellationToken cancellationToken)
+    {
+        var parameters = TryDeserializeParams<LspDidChangeWatchedFilesParams>(notification.Params);
+        if (parameters?.Changes is null || parameters.Changes.Length == 0)
+        {
+            return;
+        }
+
+        var affectedPaths = parameters.Changes
+            .Select(static change => change.Uri)
+            .Where(static uri => !string.IsNullOrWhiteSpace(uri))
+            .Select(LspProtocolHelpers.ToDocumentPath)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        foreach (var path in affectedPaths)
+        {
+            VueHostWorkspaceResolver.InvalidatePath(path);
+            var openDocument = await _workspaceStore.GetDocumentAsync(path, cancellationToken);
+            if (openDocument is null)
+            {
+                continue;
+            }
+
+            await PublishDiagnosticsAsync(openDocument, cancellationToken);
+            await RefreshOpenJazorDiagnosticsAsync(openDocument, cancellationToken);
+        }
+    }
+
     private void HandleDidChangeWorkspaceFolders(LspRequestMessage notification)
     {
         var parameters = TryDeserializeParams<LspDidChangeWorkspaceFoldersParams>(notification.Params);
@@ -643,8 +1260,7 @@ internal sealed class LspSession
         {
             throw;
         }
-        catch
-        {
+        catch (Exception) {
             // LSP diagnostics/projection updates must keep working even if dev-server HMR coordination fails.
         }
     }
@@ -695,6 +1311,59 @@ internal sealed class LspSession
         }
 
         return hover;
+    }
+
+    private async ValueTask<IReadOnlyList<LspDocumentHighlight>> CollectDocumentHighlightsAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        ProjectionTarget projectionTarget,
+        CancellationToken cancellationToken)
+    {
+        var highlights = new List<LspDocumentHighlight>();
+        foreach (var lane in GetOrderedLanes(projectionTarget))
+        {
+            var laneHighlights = await lane.GetDocumentHighlightsAsync(document, position, projectionTarget, cancellationToken);
+            if (laneHighlights.Count > 0)
+            {
+                highlights.AddRange(laneHighlights);
+            }
+        }
+
+        if (highlights.Count == 0
+            && document.DocumentKind == DocumentKind.Jazor
+            && projectionTarget.LaneKind == LaneKind.Volar
+            && _lanes.TryGetValue(LaneKind.Jazor, out var jazorLane))
+        {
+            var fallbackHighlights = await jazorLane.GetDocumentHighlightsAsync(
+                document,
+                position,
+                projectionTarget,
+                cancellationToken);
+            if (fallbackHighlights.Count > 0)
+            {
+                highlights.AddRange(fallbackHighlights);
+            }
+        }
+
+        return _resultAggregator.AggregateDocumentHighlights(highlights);
+    }
+
+    private async ValueTask<IReadOnlyList<LspDocumentLink>> CollectDocumentLinksAsync(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken)
+    {
+        var links = new List<LspDocumentLink>();
+        foreach (var lane in GetDocumentLinkLanes(document))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var laneLinks = await lane.GetDocumentLinksAsync(document, cancellationToken);
+            if (laneLinks.Count > 0)
+            {
+                links.AddRange(laneLinks);
+            }
+        }
+
+        return _resultAggregator.AggregateDocumentLinks(links);
     }
 
     private async ValueTask<IReadOnlyList<LspCompletionItem>> CollectCompletionItemsAsync(
@@ -820,6 +1489,16 @@ internal sealed class LspSession
         CancellationToken cancellationToken)
     {
         var hints = new List<LspInlayHint>();
+        foreach (var lane in GetInlayAndFoldingLanes(document))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var laneHints = await lane.GetInlayHintsAsync(document, range, cancellationToken);
+            if (laneHints.Count > 0)
+            {
+                hints.AddRange(laneHints);
+            }
+        }
+
         foreach (var provider in _extensionRegistry.GetLspInlayHintProviders())
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -976,8 +1655,7 @@ internal sealed class LspSession
         {
             return Path.GetFullPath(LspProtocolHelpers.ToDocumentPath(workspaceFolderUri));
         }
-        catch
-        {
+        catch (Exception) {
             return null;
         }
     }
@@ -996,6 +1674,16 @@ internal sealed class LspSession
         CancellationToken cancellationToken)
     {
         var ranges = new List<LspFoldingRange>();
+        foreach (var lane in GetInlayAndFoldingLanes(document))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var laneRanges = await lane.GetFoldingRangesAsync(document, cancellationToken);
+            if (laneRanges.Count > 0)
+            {
+                ranges.AddRange(laneRanges);
+            }
+        }
+
         foreach (var provider in _extensionRegistry.GetLspFoldingRangeProviders())
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -1362,8 +2050,7 @@ internal sealed class LspSession
         {
             await task;
         }
-        catch
-        {
+        catch (Exception) {
             // Swallow fault/cancel from timed-out provider calls to avoid unobserved exceptions.
         }
     }
@@ -1429,6 +2116,28 @@ internal sealed class LspSession
         return orderedLanes;
     }
 
+    private IReadOnlyList<ILspLane> GetDocumentLinkLanes(DocumentSnapshot document)
+    {
+        LaneKind[] laneKinds = document.DocumentKind switch
+        {
+            DocumentKind.Jazor => [LaneKind.Jazor, LaneKind.Volar],
+            DocumentKind.CSharp => [LaneKind.Roslyn],
+            DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript or DocumentKind.Css => [LaneKind.Volar],
+            _ => [LaneKind.Jazor]
+        };
+
+        var orderedLanes = new List<ILspLane>();
+        foreach (var laneKind in laneKinds)
+        {
+            if (_lanes.TryGetValue(laneKind, out var lane))
+            {
+                orderedLanes.Add(lane);
+            }
+        }
+
+        return orderedLanes;
+    }
+
     private IReadOnlyList<ILspLane> GetSemanticTokenLanes(DocumentSnapshot document)
     {
         var orderedLanes = new List<ILspLane>();
@@ -1442,6 +2151,48 @@ internal sealed class LspSession
 
         return orderedLanes;
     }
+
+    private IReadOnlyList<ILspLane> GetInlayAndFoldingLanes(DocumentSnapshot document)
+    {
+        LaneKind[] laneKinds = document.DocumentKind switch
+        {
+            DocumentKind.Jazor => [LaneKind.Jazor, LaneKind.Volar, LaneKind.Roslyn],
+            DocumentKind.CSharp => [LaneKind.Roslyn],
+            DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript or DocumentKind.Css => [LaneKind.Volar],
+            _ => [LaneKind.Jazor]
+        };
+
+        var orderedLanes = new List<ILspLane>();
+        foreach (var laneKind in laneKinds)
+        {
+            if (_lanes.TryGetValue(laneKind, out var lane))
+            {
+                orderedLanes.Add(lane);
+            }
+        }
+
+        return orderedLanes;
+    }
+
+    private bool TryGetRoslynLaneService(out RoslynLaneService roslynLane)
+    {
+        if (_lanes.TryGetValue(LaneKind.Roslyn, out var lane)
+            && lane is RoslynLaneService typedLane)
+        {
+            roslynLane = typedLane;
+            return true;
+        }
+
+        roslynLane = null!;
+        return false;
+    }
+
+    private static bool IsRoslynSemanticTarget(
+        DocumentSnapshot document,
+        ProjectionTarget projectionTarget)
+        => document.DocumentKind == DocumentKind.CSharp
+            || projectionTarget.LaneKind == LaneKind.Roslyn
+            || projectionTarget.RegionKind == DocumentRegionKind.Code;
 
     private async ValueTask<DocumentSnapshot> GetRequiredDocumentAsync(
         string documentUri,
@@ -1515,8 +2266,7 @@ internal sealed class LspSession
         {
             return DeserializeParams<TParams>(payload);
         }
-        catch
-        {
+        catch (Exception) {
             return default;
         }
     }

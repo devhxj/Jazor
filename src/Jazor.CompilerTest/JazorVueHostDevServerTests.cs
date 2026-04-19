@@ -6620,7 +6620,7 @@ public sealed class JazorVueHostDevServerTests
             await File.WriteAllTextAsync(
                 documentPath,
                 """
-                @jsimport helper from "./helper-a"
+                @module helper from "./helper-a"
 
                 <template>
                   <div>@Count</div>
@@ -6658,7 +6658,7 @@ public sealed class JazorVueHostDevServerTests
             await File.WriteAllTextAsync(
                 documentPath,
                 """
-                @jsimport helper from "./helper-b"
+                @module helper from "./helper-b"
 
                 <template>
                   <div>@Count</div>

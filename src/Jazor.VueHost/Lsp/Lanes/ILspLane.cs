@@ -17,6 +17,17 @@ internal interface ILspLane
         ProjectionTarget projectionTarget,
         CancellationToken cancellationToken);
 
+    ValueTask<IReadOnlyList<LspDocumentHighlight>> GetDocumentHighlightsAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        ProjectionTarget projectionTarget,
+        CancellationToken cancellationToken);
+
+    ValueTask<IReadOnlyList<LspDocumentLink>> GetDocumentLinksAsync(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken)
+        => ValueTask.FromResult<IReadOnlyList<LspDocumentLink>>(Array.Empty<LspDocumentLink>());
+
     ValueTask<IReadOnlyList<LspCompletionItem>> GetCompletionItemsAsync(
         DocumentSnapshot document,
         LspPosition position,
@@ -37,11 +48,29 @@ internal interface ILspLane
         ProjectionTarget projectionTarget,
         CancellationToken cancellationToken);
 
+    ValueTask<IReadOnlyList<LspInlayHint>> GetInlayHintsAsync(
+        DocumentSnapshot document,
+        LspRange range,
+        CancellationToken cancellationToken)
+        => ValueTask.FromResult<IReadOnlyList<LspInlayHint>>(Array.Empty<LspInlayHint>());
+
+    ValueTask<IReadOnlyList<LspFoldingRange>> GetFoldingRangesAsync(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken)
+        => ValueTask.FromResult<IReadOnlyList<LspFoldingRange>>(Array.Empty<LspFoldingRange>());
+
     ValueTask<IReadOnlyList<LspLocation>> GetDefinitionAsync(
         DocumentSnapshot document,
         LspPosition position,
         ProjectionTarget projectionTarget,
         CancellationToken cancellationToken);
+
+    ValueTask<IReadOnlyList<LspLocation>> GetImplementationAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        ProjectionTarget projectionTarget,
+        CancellationToken cancellationToken)
+        => ValueTask.FromResult<IReadOnlyList<LspLocation>>(Array.Empty<LspLocation>());
 
     ValueTask<IReadOnlyList<LspLocation>> GetReferencesAsync(
         DocumentSnapshot document,

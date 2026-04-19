@@ -223,6 +223,419 @@ internal sealed class InProcRoslynCodeService
         return ValueTask.FromResult<IReadOnlyList<LspLocation>>(DeduplicateLocations(locations));
     }
 
+    public ValueTask<IReadOnlyList<LspLocation>> GetTypeDefinitionAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        CancellationToken cancellationToken)
+        => GetTypeDefinitionAsync(
+            document,
+            position,
+            openDocuments: null,
+            cancellationToken);
+
+    public ValueTask<IReadOnlyList<LspLocation>> GetTypeDefinitionAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        IReadOnlyList<DocumentSnapshot>? openDocuments,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (!TryCreateContext(document, position, openDocuments, cancellationToken, out var context))
+        {
+            return ValueTask.FromResult<IReadOnlyList<LspLocation>>(Array.Empty<LspLocation>());
+        }
+
+        var symbol = TryResolveSymbol(context);
+        var typeSymbol = ResolveTypeDefinitionSymbol(symbol);
+        if (typeSymbol is null)
+        {
+            return ValueTask.FromResult<IReadOnlyList<LspLocation>>(Array.Empty<LspLocation>());
+        }
+
+        return ValueTask.FromResult(CreateSymbolLocations(context, typeSymbol));
+    }
+
+    public ValueTask<IReadOnlyList<LspCallHierarchyItem>> PrepareCallHierarchyAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        CancellationToken cancellationToken)
+        => PrepareCallHierarchyAsync(
+            document,
+            position,
+            openDocuments: null,
+            cancellationToken);
+
+    public ValueTask<IReadOnlyList<LspCallHierarchyItem>> PrepareCallHierarchyAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        IReadOnlyList<DocumentSnapshot>? openDocuments,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (!TryCreateContext(document, position, openDocuments, cancellationToken, out var context))
+        {
+            return ValueTask.FromResult<IReadOnlyList<LspCallHierarchyItem>>(Array.Empty<LspCallHierarchyItem>());
+        }
+
+        var symbol = TryResolveSymbol(context);
+        if (symbol is null
+            || !TryCreateCallHierarchyItem(context, symbol, out var item))
+        {
+            return ValueTask.FromResult<IReadOnlyList<LspCallHierarchyItem>>(Array.Empty<LspCallHierarchyItem>());
+        }
+
+        return ValueTask.FromResult<IReadOnlyList<LspCallHierarchyItem>>([item]);
+    }
+
+    public ValueTask<IReadOnlyList<LspCallHierarchyIncomingCall>> GetIncomingCallsAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        CancellationToken cancellationToken)
+        => GetIncomingCallsAsync(
+            document,
+            position,
+            openDocuments: null,
+            cancellationToken);
+
+    public ValueTask<IReadOnlyList<LspCallHierarchyIncomingCall>> GetIncomingCallsAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        IReadOnlyList<DocumentSnapshot>? openDocuments,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (!TryCreateContext(document, position, openDocuments, cancellationToken, out var context))
+        {
+            return ValueTask.FromResult<IReadOnlyList<LspCallHierarchyIncomingCall>>(Array.Empty<LspCallHierarchyIncomingCall>());
+        }
+
+        var symbol = TryResolveSymbol(context);
+        if (symbol is null)
+        {
+            return ValueTask.FromResult<IReadOnlyList<LspCallHierarchyIncomingCall>>(Array.Empty<LspCallHierarchyIncomingCall>());
+        }
+
+        var groupedCalls = new Dictionary<string, CallHierarchyRangeGroup>(StringComparer.Ordinal);
+        foreach (var projectedDocument in context.ProjectedDocuments.Values)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var root = projectedDocument.SyntaxTree.GetRoot(cancellationToken);
+
+            foreach (var invocation in root.DescendantNodes().OfType<InvocationExpressionSyntax>())
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var calledSymbol = GetPrimarySymbol(projectedDocument.SemanticModel.GetSymbolInfo(invocation, cancellationToken));
+                if (!IsCallHierarchyTargetMatch(calledSymbol, symbol))
+                {
+                    continue;
+                }
+
+                var fromRange = TryMapSpanToOriginalRange(projectedDocument, GetInvocationSelectionSpan(invocation));
+                if (fromRange is null)
+                {
+                    continue;
+                }
+
+                var callerSymbol = projectedDocument.SemanticModel.GetEnclosingSymbol(invocation.SpanStart, cancellationToken);
+                if (callerSymbol is null
+                    || SymbolEqualityComparer.Default.Equals(callerSymbol.OriginalDefinition, symbol.OriginalDefinition)
+                    || !TryCreateCallHierarchyItem(context, callerSymbol, out var callerItem))
+                {
+                    continue;
+                }
+
+                AddRangeToCallHierarchyGroup(groupedCalls, callerItem, fromRange);
+            }
+
+            foreach (var objectCreation in root.DescendantNodes().OfType<ObjectCreationExpressionSyntax>())
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var calledSymbol = GetPrimarySymbol(projectedDocument.SemanticModel.GetSymbolInfo(objectCreation, cancellationToken));
+                if (!IsCallHierarchyTargetMatch(calledSymbol, symbol))
+                {
+                    continue;
+                }
+
+                var fromRange = TryMapSpanToOriginalRange(projectedDocument, objectCreation.Type.Span);
+                if (fromRange is null)
+                {
+                    continue;
+                }
+
+                var callerSymbol = projectedDocument.SemanticModel.GetEnclosingSymbol(objectCreation.SpanStart, cancellationToken);
+                if (callerSymbol is null
+                    || SymbolEqualityComparer.Default.Equals(callerSymbol.OriginalDefinition, symbol.OriginalDefinition)
+                    || !TryCreateCallHierarchyItem(context, callerSymbol, out var callerItem))
+                {
+                    continue;
+                }
+
+                AddRangeToCallHierarchyGroup(groupedCalls, callerItem, fromRange);
+            }
+        }
+
+        return ValueTask.FromResult<IReadOnlyList<LspCallHierarchyIncomingCall>>(
+            groupedCalls.Values
+                .Select(static group => new LspCallHierarchyIncomingCall
+                {
+                    From = group.Item,
+                    FromRanges = DeduplicateRanges(group.Ranges)
+                })
+                .ToArray());
+    }
+
+    public ValueTask<IReadOnlyList<LspCallHierarchyOutgoingCall>> GetOutgoingCallsAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        CancellationToken cancellationToken)
+        => GetOutgoingCallsAsync(
+            document,
+            position,
+            openDocuments: null,
+            cancellationToken);
+
+    public ValueTask<IReadOnlyList<LspCallHierarchyOutgoingCall>> GetOutgoingCallsAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        IReadOnlyList<DocumentSnapshot>? openDocuments,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (!TryCreateContext(document, position, openDocuments, cancellationToken, out var context))
+        {
+            return ValueTask.FromResult<IReadOnlyList<LspCallHierarchyOutgoingCall>>(Array.Empty<LspCallHierarchyOutgoingCall>());
+        }
+
+        var symbol = TryResolveSymbol(context);
+        if (symbol is null)
+        {
+            return ValueTask.FromResult<IReadOnlyList<LspCallHierarchyOutgoingCall>>(Array.Empty<LspCallHierarchyOutgoingCall>());
+        }
+
+        var groupedCalls = new Dictionary<string, CallHierarchyRangeGroup>(StringComparer.Ordinal);
+        foreach (var declaration in symbol.DeclaringSyntaxReferences)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!TryFindProjectedDocument(context, declaration.SyntaxTree, out var projectedDocument))
+            {
+                continue;
+            }
+
+            var declarationNode = declaration.GetSyntax(cancellationToken);
+            foreach (var invocation in declarationNode.DescendantNodes().OfType<InvocationExpressionSyntax>())
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var calledSymbol = GetPrimarySymbol(projectedDocument.SemanticModel.GetSymbolInfo(invocation, cancellationToken));
+                if (calledSymbol is null
+                    || !TryCreateCallHierarchyItem(context, calledSymbol, out var toItem))
+                {
+                    continue;
+                }
+
+                var fromRange = TryMapSpanToOriginalRange(projectedDocument, GetInvocationSelectionSpan(invocation));
+                if (fromRange is null)
+                {
+                    continue;
+                }
+
+                AddRangeToCallHierarchyGroup(groupedCalls, toItem, fromRange);
+            }
+
+            foreach (var objectCreation in declarationNode.DescendantNodes().OfType<ObjectCreationExpressionSyntax>())
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var calledSymbol = GetPrimarySymbol(projectedDocument.SemanticModel.GetSymbolInfo(objectCreation, cancellationToken));
+                if (calledSymbol is null
+                    || !TryCreateCallHierarchyItem(context, calledSymbol, out var toItem))
+                {
+                    continue;
+                }
+
+                var fromRange = TryMapSpanToOriginalRange(projectedDocument, objectCreation.Type.Span);
+                if (fromRange is null)
+                {
+                    continue;
+                }
+
+                AddRangeToCallHierarchyGroup(groupedCalls, toItem, fromRange);
+            }
+        }
+
+        return ValueTask.FromResult<IReadOnlyList<LspCallHierarchyOutgoingCall>>(
+            groupedCalls.Values
+                .Select(static group => new LspCallHierarchyOutgoingCall
+                {
+                    To = group.Item,
+                    FromRanges = DeduplicateRanges(group.Ranges)
+                })
+                .ToArray());
+    }
+
+    public ValueTask<IReadOnlyList<LspTypeHierarchyItem>> PrepareTypeHierarchyAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        CancellationToken cancellationToken)
+        => PrepareTypeHierarchyAsync(
+            document,
+            position,
+            openDocuments: null,
+            cancellationToken);
+
+    public ValueTask<IReadOnlyList<LspTypeHierarchyItem>> PrepareTypeHierarchyAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        IReadOnlyList<DocumentSnapshot>? openDocuments,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (!TryCreateContext(document, position, openDocuments, cancellationToken, out var context))
+        {
+            return ValueTask.FromResult<IReadOnlyList<LspTypeHierarchyItem>>(Array.Empty<LspTypeHierarchyItem>());
+        }
+
+        var typeSymbol = ResolveHierarchyTypeSymbol(TryResolveSymbol(context));
+        if (typeSymbol is null
+            || !TryCreateTypeHierarchyItem(context, typeSymbol, out var item))
+        {
+            return ValueTask.FromResult<IReadOnlyList<LspTypeHierarchyItem>>(Array.Empty<LspTypeHierarchyItem>());
+        }
+
+        return ValueTask.FromResult<IReadOnlyList<LspTypeHierarchyItem>>([item]);
+    }
+
+    public ValueTask<IReadOnlyList<LspTypeHierarchyItem>> GetTypeHierarchySuperTypesAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        CancellationToken cancellationToken)
+        => GetTypeHierarchySuperTypesAsync(
+            document,
+            position,
+            openDocuments: null,
+            cancellationToken);
+
+    public ValueTask<IReadOnlyList<LspTypeHierarchyItem>> GetTypeHierarchySuperTypesAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        IReadOnlyList<DocumentSnapshot>? openDocuments,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (!TryCreateContext(document, position, openDocuments, cancellationToken, out var context))
+        {
+            return ValueTask.FromResult<IReadOnlyList<LspTypeHierarchyItem>>(Array.Empty<LspTypeHierarchyItem>());
+        }
+
+        var typeSymbol = ResolveHierarchyTypeSymbol(TryResolveSymbol(context));
+        if (typeSymbol is null)
+        {
+            return ValueTask.FromResult<IReadOnlyList<LspTypeHierarchyItem>>(Array.Empty<LspTypeHierarchyItem>());
+        }
+
+        var items = new List<LspTypeHierarchyItem>();
+        if (typeSymbol.BaseType is { SpecialType: not SpecialType.System_Object } baseType
+            && TryCreateTypeHierarchyItem(context, baseType, out var baseItem))
+        {
+            items.Add(baseItem);
+        }
+
+        foreach (var interfaceType in typeSymbol.Interfaces)
+        {
+            if (TryCreateTypeHierarchyItem(context, interfaceType, out var interfaceItem))
+            {
+                items.Add(interfaceItem);
+            }
+        }
+
+        return ValueTask.FromResult(DeduplicateTypeHierarchyItems(items));
+    }
+
+    public ValueTask<IReadOnlyList<LspTypeHierarchyItem>> GetTypeHierarchySubTypesAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        CancellationToken cancellationToken)
+        => GetTypeHierarchySubTypesAsync(
+            document,
+            position,
+            openDocuments: null,
+            cancellationToken);
+
+    public ValueTask<IReadOnlyList<LspTypeHierarchyItem>> GetTypeHierarchySubTypesAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        IReadOnlyList<DocumentSnapshot>? openDocuments,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (!TryCreateContext(document, position, openDocuments, cancellationToken, out var context))
+        {
+            return ValueTask.FromResult<IReadOnlyList<LspTypeHierarchyItem>>(Array.Empty<LspTypeHierarchyItem>());
+        }
+
+        var typeSymbol = ResolveHierarchyTypeSymbol(TryResolveSymbol(context));
+        if (typeSymbol is null)
+        {
+            return ValueTask.FromResult<IReadOnlyList<LspTypeHierarchyItem>>(Array.Empty<LspTypeHierarchyItem>());
+        }
+
+        var items = new List<LspTypeHierarchyItem>();
+        foreach (var projectedDocument in context.ProjectedDocuments.Values)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var root = projectedDocument.SyntaxTree.GetRoot(cancellationToken);
+            foreach (var typeDeclaration in root.DescendantNodes().OfType<TypeDeclarationSyntax>())
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var candidate = projectedDocument.SemanticModel.GetDeclaredSymbol(typeDeclaration, cancellationToken) as INamedTypeSymbol;
+                if (candidate is null
+                    || SymbolEqualityComparer.Default.Equals(candidate.OriginalDefinition, typeSymbol.OriginalDefinition)
+                    || !IsNamedTypeImplementation(candidate, typeSymbol)
+                    || !TryCreateTypeHierarchyItem(context, candidate, out var candidateItem))
+                {
+                    continue;
+                }
+
+                items.Add(candidateItem);
+            }
+        }
+
+        return ValueTask.FromResult(DeduplicateTypeHierarchyItems(items));
+    }
+
+    public ValueTask<IReadOnlyList<LspLocation>> GetImplementationAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        CancellationToken cancellationToken)
+        => GetImplementationAsync(
+            document,
+            position,
+            openDocuments: null,
+            cancellationToken);
+
+    public ValueTask<IReadOnlyList<LspLocation>> GetImplementationAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        IReadOnlyList<DocumentSnapshot>? openDocuments,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (!TryCreateContext(document, position, openDocuments, cancellationToken, out var context))
+        {
+            return ValueTask.FromResult<IReadOnlyList<LspLocation>>(Array.Empty<LspLocation>());
+        }
+
+        var symbol = TryResolveSymbol(context);
+        if (symbol is null)
+        {
+            return ValueTask.FromResult<IReadOnlyList<LspLocation>>(Array.Empty<LspLocation>());
+        }
+
+        return ValueTask.FromResult(
+            FindImplementationLocations(
+                context,
+                symbol,
+                cancellationToken));
+    }
+
     public ValueTask<IReadOnlyList<LspDiagnostic>> GetDiagnosticsAsync(
         DocumentSnapshot document,
         CancellationToken cancellationToken)
@@ -269,6 +682,53 @@ internal sealed class InProcRoslynCodeService
             includeDeclaration,
             openDocuments: null,
             cancellationToken);
+
+    public ValueTask<IReadOnlyList<LspDocumentHighlight>> GetDocumentHighlightsAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        CancellationToken cancellationToken)
+        => GetDocumentHighlightsAsync(
+            document,
+            position,
+            openDocuments: null,
+            cancellationToken);
+
+    public async ValueTask<IReadOnlyList<LspDocumentHighlight>> GetDocumentHighlightsAsync(
+        DocumentSnapshot document,
+        LspPosition position,
+        IReadOnlyList<DocumentSnapshot>? openDocuments,
+        CancellationToken cancellationToken)
+    {
+        var references = await GetReferencesAsync(
+            document,
+            position,
+            includeDeclaration: true,
+            openDocuments,
+            cancellationToken);
+        if (references.Count == 0)
+        {
+            return Array.Empty<LspDocumentHighlight>();
+        }
+
+        var documentUri = LspProtocolHelpers.ToDocumentUri(document.DocumentPath);
+        return references
+            .Where(location => string.Equals(location.Uri, documentUri, StringComparison.Ordinal))
+            .Select(static location => new LspDocumentHighlight
+            {
+                Range = location.Range,
+                Kind = 1
+            })
+            .GroupBy(static highlight => string.Join(
+                '|',
+                highlight.Range.Start.Line,
+                highlight.Range.Start.Character,
+                highlight.Range.End.Line,
+                highlight.Range.End.Character,
+                highlight.Kind),
+                StringComparer.Ordinal)
+            .Select(static group => group.First())
+            .ToArray();
+    }
 
     public ValueTask<IReadOnlyList<LspLocation>> GetReferencesAsync(
         DocumentSnapshot document,
@@ -328,6 +788,222 @@ internal sealed class InProcRoslynCodeService
         }
 
         return ValueTask.FromResult<IReadOnlyList<LspLocation>>(DeduplicateLocations(locations));
+    }
+
+    private static IReadOnlyList<LspLocation> FindImplementationLocations(
+        RoslynCodeContext context,
+        ISymbol symbol,
+        CancellationToken cancellationToken)
+    {
+        var locations = new List<LspLocation>();
+        foreach (var projectedDocument in context.ProjectedDocuments.Values)
+        {
+            foreach (var token in projectedDocument.SyntaxTree.GetRoot(cancellationToken).DescendantTokens())
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                if (!token.IsKind(SyntaxKind.IdentifierToken))
+                {
+                    continue;
+                }
+
+                var candidate = TryResolveTokenSymbol(projectedDocument, token, cancellationToken);
+                if (candidate is null
+                    || !IsDeclarationToken(candidate, projectedDocument, token.Span)
+                    || !IsImplementationSymbol(candidate, symbol))
+                {
+                    continue;
+                }
+
+                var range = TryMapSpanToOriginalRange(projectedDocument, token.Span);
+                if (range is null)
+                {
+                    continue;
+                }
+
+                locations.Add(new LspLocation
+                {
+                    Uri = LspProtocolHelpers.ToDocumentUri(projectedDocument.Document.DocumentPath),
+                    Range = range
+                });
+            }
+        }
+
+        return DeduplicateLocations(locations);
+    }
+
+    private static bool IsDeclarationToken(
+        ISymbol symbol,
+        ProjectedDocumentContext projectedDocument,
+        TextSpan tokenSpan)
+        => symbol.Locations.Any(location =>
+            location.IsInSource
+            && location.SourceTree == projectedDocument.SyntaxTree
+            && location.SourceSpan.IntersectsWith(tokenSpan));
+
+    private static bool IsImplementationSymbol(ISymbol candidateSymbol, ISymbol targetSymbol)
+    {
+        var candidate = candidateSymbol.OriginalDefinition;
+        var target = targetSymbol.OriginalDefinition;
+
+        return (candidate, target) switch
+        {
+            (IMethodSymbol candidateMethod, IMethodSymbol targetMethod)
+                => IsMethodImplementation(candidateMethod, targetMethod),
+            (IPropertySymbol candidateProperty, IPropertySymbol targetProperty)
+                => IsPropertyImplementation(candidateProperty, targetProperty),
+            (IEventSymbol candidateEvent, IEventSymbol targetEvent)
+                => IsEventImplementation(candidateEvent, targetEvent),
+            (INamedTypeSymbol candidateType, INamedTypeSymbol targetType)
+                => IsNamedTypeImplementation(candidateType, targetType),
+            _ => false
+        };
+    }
+
+    private static bool IsMethodImplementation(
+        IMethodSymbol candidateMethod,
+        IMethodSymbol targetMethod)
+    {
+        if (targetMethod.MethodKind == MethodKind.Constructor
+            || targetMethod.MethodKind == MethodKind.StaticConstructor)
+        {
+            return false;
+        }
+
+        if (targetMethod.ContainingType.TypeKind == TypeKind.Interface)
+        {
+            if (candidateMethod.ExplicitInterfaceImplementations.Any(implemented =>
+                    SymbolEqualityComparer.Default.Equals(
+                        implemented.OriginalDefinition,
+                        targetMethod.OriginalDefinition)))
+            {
+                return true;
+            }
+
+            var mapped = candidateMethod.ContainingType.FindImplementationForInterfaceMember(targetMethod);
+            return mapped is IMethodSymbol mappedMethod
+                && SymbolEqualityComparer.Default.Equals(
+                    mappedMethod.OriginalDefinition,
+                    candidateMethod.OriginalDefinition);
+        }
+
+        for (var overridden = candidateMethod.OverriddenMethod;
+             overridden is not null;
+             overridden = overridden.OverriddenMethod)
+        {
+            if (SymbolEqualityComparer.Default.Equals(
+                    overridden.OriginalDefinition,
+                    targetMethod.OriginalDefinition))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool IsPropertyImplementation(
+        IPropertySymbol candidateProperty,
+        IPropertySymbol targetProperty)
+    {
+        if (targetProperty.ContainingType.TypeKind == TypeKind.Interface)
+        {
+            if (candidateProperty.ExplicitInterfaceImplementations.Any(implemented =>
+                    SymbolEqualityComparer.Default.Equals(
+                        implemented.OriginalDefinition,
+                        targetProperty.OriginalDefinition)))
+            {
+                return true;
+            }
+
+            var mapped = candidateProperty.ContainingType.FindImplementationForInterfaceMember(targetProperty);
+            return mapped is IPropertySymbol mappedProperty
+                && SymbolEqualityComparer.Default.Equals(
+                    mappedProperty.OriginalDefinition,
+                    candidateProperty.OriginalDefinition);
+        }
+
+        for (var overridden = candidateProperty.OverriddenProperty;
+             overridden is not null;
+             overridden = overridden.OverriddenProperty)
+        {
+            if (SymbolEqualityComparer.Default.Equals(
+                    overridden.OriginalDefinition,
+                    targetProperty.OriginalDefinition))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool IsEventImplementation(
+        IEventSymbol candidateEvent,
+        IEventSymbol targetEvent)
+    {
+        if (targetEvent.ContainingType.TypeKind == TypeKind.Interface)
+        {
+            if (candidateEvent.ExplicitInterfaceImplementations.Any(implemented =>
+                    SymbolEqualityComparer.Default.Equals(
+                        implemented.OriginalDefinition,
+                        targetEvent.OriginalDefinition)))
+            {
+                return true;
+            }
+
+            var mapped = candidateEvent.ContainingType.FindImplementationForInterfaceMember(targetEvent);
+            return mapped is IEventSymbol mappedEvent
+                && SymbolEqualityComparer.Default.Equals(
+                    mappedEvent.OriginalDefinition,
+                    candidateEvent.OriginalDefinition);
+        }
+
+        for (var overridden = candidateEvent.OverriddenEvent;
+             overridden is not null;
+             overridden = overridden.OverriddenEvent)
+        {
+            if (SymbolEqualityComparer.Default.Equals(
+                    overridden.OriginalDefinition,
+                    targetEvent.OriginalDefinition))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool IsNamedTypeImplementation(
+        INamedTypeSymbol candidateType,
+        INamedTypeSymbol targetType)
+    {
+        if (targetType.TypeKind == TypeKind.Interface)
+        {
+            return candidateType.TypeKind != TypeKind.Interface
+                && candidateType.AllInterfaces.Any(implementedInterface =>
+                    SymbolEqualityComparer.Default.Equals(
+                        implementedInterface.OriginalDefinition,
+                        targetType.OriginalDefinition));
+        }
+
+        if (!targetType.IsAbstract)
+        {
+            return false;
+        }
+
+        for (var baseType = candidateType.BaseType;
+             baseType is not null;
+             baseType = baseType.BaseType)
+        {
+            if (SymbolEqualityComparer.Default.Equals(
+                    baseType.OriginalDefinition,
+                    targetType.OriginalDefinition))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static IReadOnlyList<LspLocation> GetFallbackDefinitionLocations(
@@ -1266,10 +1942,20 @@ internal sealed class InProcRoslynCodeService
                     => TryResolveMemberAccessSymbol(projectedDocument, memberAccess, cancellationToken),
                 VariableDeclaratorSyntax variableDeclarator when variableDeclarator.Identifier.Span.IntersectsWith(token.Span)
                     => projectedDocument.SemanticModel.GetDeclaredSymbol(variableDeclarator, cancellationToken),
+                BaseTypeDeclarationSyntax typeDeclaration when typeDeclaration.Identifier.Span.IntersectsWith(token.Span)
+                    => projectedDocument.SemanticModel.GetDeclaredSymbol(typeDeclaration, cancellationToken),
+                DelegateDeclarationSyntax delegateDeclaration when delegateDeclaration.Identifier.Span.IntersectsWith(token.Span)
+                    => projectedDocument.SemanticModel.GetDeclaredSymbol(delegateDeclaration, cancellationToken),
                 MethodDeclarationSyntax methodDeclaration when methodDeclaration.Identifier.Span.IntersectsWith(token.Span)
                     => projectedDocument.SemanticModel.GetDeclaredSymbol(methodDeclaration, cancellationToken),
+                ConstructorDeclarationSyntax constructorDeclaration when constructorDeclaration.Identifier.Span.IntersectsWith(token.Span)
+                    => projectedDocument.SemanticModel.GetDeclaredSymbol(constructorDeclaration, cancellationToken),
                 PropertyDeclarationSyntax propertyDeclaration when propertyDeclaration.Identifier.Span.IntersectsWith(token.Span)
                     => projectedDocument.SemanticModel.GetDeclaredSymbol(propertyDeclaration, cancellationToken),
+                EventDeclarationSyntax eventDeclaration when eventDeclaration.Identifier.Span.IntersectsWith(token.Span)
+                    => projectedDocument.SemanticModel.GetDeclaredSymbol(eventDeclaration, cancellationToken),
+                EnumMemberDeclarationSyntax enumMember when enumMember.Identifier.Span.IntersectsWith(token.Span)
+                    => projectedDocument.SemanticModel.GetDeclaredSymbol(enumMember, cancellationToken),
                 ParameterSyntax parameterSyntax when parameterSyntax.Identifier.Span.IntersectsWith(token.Span)
                     => projectedDocument.SemanticModel.GetDeclaredSymbol(parameterSyntax, cancellationToken),
                 _ => null
@@ -1334,6 +2020,325 @@ internal sealed class InProcRoslynCodeService
 
         return uniqueLocations;
     }
+
+    private static ISymbol? ResolveTypeDefinitionSymbol(ISymbol? symbol)
+    {
+        if (symbol is null)
+        {
+            return null;
+        }
+
+        symbol = symbol switch
+        {
+            IAliasSymbol alias => alias.Target,
+            _ => symbol
+        };
+
+        return symbol switch
+        {
+            INamedTypeSymbol namedType => namedType.OriginalDefinition,
+            IArrayTypeSymbol arrayType => arrayType.ElementType,
+            IPointerTypeSymbol pointerType => pointerType.PointedAtType,
+            ITypeParameterSymbol typeParameter => typeParameter,
+            ILocalSymbol local => local.Type,
+            IParameterSymbol parameter => parameter.Type,
+            IFieldSymbol field => field.Type,
+            IPropertySymbol property => property.Type,
+            IEventSymbol @event => @event.Type,
+            IMethodSymbol method when method.MethodKind is MethodKind.Constructor or MethodKind.StaticConstructor
+                => method.ContainingType,
+            IMethodSymbol method => method.ReturnType,
+            _ => null
+        };
+    }
+
+    private static INamedTypeSymbol? ResolveHierarchyTypeSymbol(ISymbol? symbol)
+        => ResolveTypeDefinitionSymbol(symbol) switch
+        {
+            INamedTypeSymbol namedType => namedType.OriginalDefinition,
+            _ => null
+        };
+
+    private static IReadOnlyList<LspLocation> CreateSymbolLocations(RoslynCodeContext context, ISymbol symbol)
+    {
+        var locations = new List<LspLocation>();
+        foreach (var location in symbol.Locations)
+        {
+            if (TryMapLocationToOriginal(context, location, out var mappedLocation))
+            {
+                locations.Add(mappedLocation);
+            }
+        }
+
+        foreach (var syntaxReference in symbol.DeclaringSyntaxReferences)
+        {
+            if (!TryFindProjectedDocument(context, syntaxReference.SyntaxTree, out var projectedDocument))
+            {
+                continue;
+            }
+
+            var declarationNode = syntaxReference.GetSyntax(CancellationToken.None);
+            var selectionSpan = GetSymbolSelectionSpan(declarationNode);
+            var range = TryMapSpanToOriginalRange(projectedDocument, selectionSpan)
+                ?? TryMapSpanToOriginalRange(projectedDocument, declarationNode.Span);
+            if (range is null)
+            {
+                continue;
+            }
+
+            locations.Add(new LspLocation
+            {
+                Uri = LspProtocolHelpers.ToDocumentUri(projectedDocument.Document.DocumentPath),
+                Range = range
+            });
+        }
+
+        return DeduplicateLocations(locations);
+    }
+
+    private static bool TryCreateCallHierarchyItem(
+        RoslynCodeContext context,
+        ISymbol symbol,
+        out LspCallHierarchyItem item)
+    {
+        item = null!;
+        if (!TryCreateHierarchyLocation(context, symbol, out var uri, out var range, out var selectionRange))
+        {
+            return false;
+        }
+
+        var name = string.IsNullOrWhiteSpace(symbol.Name)
+            ? symbol.ToDisplayString(SymbolDisplayFormat)
+            : symbol.Name;
+        item = new LspCallHierarchyItem
+        {
+            Name = name,
+            Kind = MapHierarchySymbolKind(symbol),
+            Uri = uri,
+            Range = range,
+            SelectionRange = selectionRange,
+            Detail = symbol.ToDisplayString(SymbolDisplayFormat)
+        };
+        return true;
+    }
+
+    private static bool TryCreateTypeHierarchyItem(
+        RoslynCodeContext context,
+        INamedTypeSymbol symbol,
+        out LspTypeHierarchyItem item)
+    {
+        item = null!;
+        if (!TryCreateHierarchyLocation(context, symbol, out var uri, out var range, out var selectionRange))
+        {
+            return false;
+        }
+
+        item = new LspTypeHierarchyItem
+        {
+            Name = symbol.Name,
+            Kind = MapHierarchySymbolKind(symbol),
+            Uri = uri,
+            Range = range,
+            SelectionRange = selectionRange,
+            Detail = symbol.ToDisplayString(SymbolDisplayFormat)
+        };
+        return true;
+    }
+
+    private static bool TryCreateHierarchyLocation(
+        RoslynCodeContext context,
+        ISymbol symbol,
+        out string uri,
+        out LspRange range,
+        out LspRange selectionRange)
+    {
+        uri = string.Empty;
+        range = null!;
+        selectionRange = null!;
+
+        foreach (var location in symbol.Locations)
+        {
+            if (!TryMapLocationToOriginal(context, location, out var mappedLocation))
+            {
+                continue;
+            }
+
+            uri = mappedLocation.Uri;
+            range = mappedLocation.Range;
+            selectionRange = mappedLocation.Range;
+            break;
+        }
+
+        if (string.IsNullOrEmpty(uri))
+        {
+            return false;
+        }
+
+        foreach (var syntaxReference in symbol.DeclaringSyntaxReferences)
+        {
+            if (!TryFindProjectedDocument(context, syntaxReference.SyntaxTree, out var projectedDocument))
+            {
+                continue;
+            }
+
+            var declarationNode = syntaxReference.GetSyntax(CancellationToken.None);
+            var selectionSpan = GetSymbolSelectionSpan(declarationNode);
+            var mappedSelectionRange = TryMapSpanToOriginalRange(projectedDocument, selectionSpan)
+                ?? TryMapSpanToOriginalRange(projectedDocument, declarationNode.Span);
+            if (mappedSelectionRange is null)
+            {
+                continue;
+            }
+
+            var selectionUri = LspProtocolHelpers.ToDocumentUri(projectedDocument.Document.DocumentPath);
+            if (string.Equals(selectionUri, uri, StringComparison.Ordinal))
+            {
+                selectionRange = mappedSelectionRange;
+                return true;
+            }
+        }
+
+        return true;
+    }
+
+    private static TextSpan GetSymbolSelectionSpan(SyntaxNode declarationNode)
+        => declarationNode switch
+        {
+            BaseTypeDeclarationSyntax typeDeclaration => typeDeclaration.Identifier.Span,
+            MethodDeclarationSyntax methodDeclaration => methodDeclaration.Identifier.Span,
+            ConstructorDeclarationSyntax constructorDeclaration => constructorDeclaration.Identifier.Span,
+            PropertyDeclarationSyntax propertyDeclaration => propertyDeclaration.Identifier.Span,
+            EventDeclarationSyntax eventDeclaration => eventDeclaration.Identifier.Span,
+            VariableDeclaratorSyntax variableDeclarator => variableDeclarator.Identifier.Span,
+            DelegateDeclarationSyntax delegateDeclaration => delegateDeclaration.Identifier.Span,
+            EnumMemberDeclarationSyntax enumMemberDeclaration => enumMemberDeclaration.Identifier.Span,
+            ParameterSyntax parameterSyntax => parameterSyntax.Identifier.Span,
+            _ => declarationNode.Span
+        };
+
+    private static int MapHierarchySymbolKind(ISymbol symbol)
+        => symbol switch
+        {
+            INamedTypeSymbol namedType => namedType.TypeKind switch
+            {
+                TypeKind.Class => 5,
+                TypeKind.Interface => 11,
+                TypeKind.Struct => 23,
+                TypeKind.Enum => 10,
+                TypeKind.Delegate => 12,
+                _ => 5
+            },
+            IMethodSymbol => 6,
+            IPropertySymbol => 7,
+            IFieldSymbol => 8,
+            IEventSymbol => 24,
+            IParameterSymbol => 13,
+            _ => 13
+        };
+
+    private static bool IsCallHierarchyTargetMatch(ISymbol? calledSymbol, ISymbol targetSymbol)
+    {
+        if (calledSymbol is null)
+        {
+            return false;
+        }
+
+        var normalizedCalled = calledSymbol switch
+        {
+            IMethodSymbol { MethodKind: MethodKind.ReducedExtension } reducedMethod => reducedMethod.ReducedFrom ?? reducedMethod,
+            _ => calledSymbol
+        };
+        var calledDefinition = normalizedCalled.OriginalDefinition;
+        var targetDefinition = targetSymbol.OriginalDefinition;
+        if (SymbolEqualityComparer.Default.Equals(calledDefinition, targetDefinition))
+        {
+            return true;
+        }
+
+        if (calledDefinition is IMethodSymbol calledMethod
+            && calledMethod.MethodKind is MethodKind.Constructor or MethodKind.StaticConstructor
+            && targetDefinition is INamedTypeSymbol targetType)
+        {
+            return SymbolEqualityComparer.Default.Equals(
+                calledMethod.ContainingType.OriginalDefinition,
+                targetType.OriginalDefinition);
+        }
+
+        return false;
+    }
+
+    private static TextSpan GetInvocationSelectionSpan(InvocationExpressionSyntax invocation)
+        => invocation.Expression switch
+        {
+            MemberAccessExpressionSyntax memberAccess => memberAccess.Name.Span,
+            MemberBindingExpressionSyntax memberBinding => memberBinding.Name.Span,
+            GenericNameSyntax genericName => genericName.Identifier.Span,
+            IdentifierNameSyntax identifierName => identifierName.Identifier.Span,
+            _ => invocation.Expression.Span
+        };
+
+    private static void AddRangeToCallHierarchyGroup(
+        IDictionary<string, CallHierarchyRangeGroup> groups,
+        LspCallHierarchyItem item,
+        LspRange range)
+    {
+        var key = CreateHierarchyItemKey(item.Uri, item.SelectionRange);
+        if (!groups.TryGetValue(key, out var group))
+        {
+            group = new CallHierarchyRangeGroup(item, new List<LspRange>());
+            groups[key] = group;
+        }
+
+        group.Ranges.Add(range);
+    }
+
+    private static LspRange[] DeduplicateRanges(IEnumerable<LspRange> ranges)
+    {
+        var uniqueRanges = new List<LspRange>();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var range in ranges)
+        {
+            var key = CreateHierarchyItemKey(string.Empty, range);
+            if (!seen.Add(key))
+            {
+                continue;
+            }
+
+            uniqueRanges.Add(range);
+        }
+
+        return uniqueRanges.ToArray();
+    }
+
+    private static IReadOnlyList<LspTypeHierarchyItem> DeduplicateTypeHierarchyItems(IEnumerable<LspTypeHierarchyItem> items)
+    {
+        var uniqueItems = new List<LspTypeHierarchyItem>();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var item in items)
+        {
+            var key = CreateHierarchyItemKey(item.Uri, item.SelectionRange);
+            if (!seen.Add(key))
+            {
+                continue;
+            }
+
+            uniqueItems.Add(item);
+        }
+
+        return uniqueItems;
+    }
+
+    private static string CreateHierarchyItemKey(string uri, LspRange range)
+        => string.Concat(
+            uri,
+            "|",
+            range.Start.Line,
+            ":",
+            range.Start.Character,
+            "-",
+            range.End.Line,
+            ":",
+            range.End.Character);
 
     private static bool TryMapLocationToOriginal(
         RoslynCodeContext context,
@@ -2090,6 +3095,10 @@ internal sealed class InProcRoslynCodeService
         ProjectionMap ProjectionMap,
         SyntaxTree SyntaxTree,
         SemanticModel SemanticModel);
+
+    private sealed record CallHierarchyRangeGroup(
+        LspCallHierarchyItem Item,
+        List<LspRange> Ranges);
 
     private static StringComparer PathComparer
         => OperatingSystem.IsWindows()

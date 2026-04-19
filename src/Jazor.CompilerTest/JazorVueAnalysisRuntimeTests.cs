@@ -1,3 +1,4 @@
+using Jazor.Vue;
 using Jazor.VueContracts.Protocol;
 using Jazor.VueHost.Analysis;
 
@@ -15,7 +16,7 @@ public sealed class JazorVueAnalysisRuntimeTests
                 "Counter.jazor",
                 DocumentKind.Jazor,
                 """
-                @jsimport { debounce } from "lodash-es"
+                @module { debounce } from "lodash-es"
 
                 <template>
                   <UserCard />
@@ -73,6 +74,93 @@ public sealed class JazorVueAnalysisRuntimeTests
     }
 
     [TestMethod]
+    public async Task JazorVueAnalysisService_AnalyzeJazor_LegacyVueImport_ReportsUnsupportedDiagnostic()
+    {
+        var service = new JazorVueAnalysisService();
+        var request = new AnalyzeJazorRequest(
+            new DocumentSnapshot(
+                "Counter.jazor",
+                DocumentKind.Jazor,
+                """
+                @vueimport UserCard from "./UserCard.vue"
+
+                <template>
+                  <UserCard />
+                </template>
+                """,
+                "legacy-vueimport"),
+            relatedDocuments: Array.Empty<DocumentSnapshot>(),
+            frontendContext: null);
+
+        var response = await service.AnalyzeJazorAsync(request, CancellationToken.None);
+        var diagnostic = response.Diagnostics.FirstOrDefault(static record =>
+            string.Equals(record.Id, LegacyImportDirectiveCatalog.DiagnosticCode, StringComparison.Ordinal));
+
+        Assert.IsNotNull(diagnostic);
+        Assert.AreEqual(DiagnosticSeverityKind.Error, diagnostic.Severity);
+        Assert.AreEqual(0, diagnostic.Start);
+        Assert.AreEqual("@vueimport".Length, diagnostic.Length);
+        StringAssert.Contains(diagnostic.Message, "@vueimport");
+        StringAssert.Contains(diagnostic.Message, "Use @module");
+    }
+
+    [TestMethod]
+    public async Task JazorVueAnalysisService_AnalyzeJazor_LegacyJsImport_ReportsUnsupportedDiagnostic()
+    {
+        var service = new JazorVueAnalysisService();
+        var request = new AnalyzeJazorRequest(
+            new DocumentSnapshot(
+                "Counter.jazor",
+                DocumentKind.Jazor,
+                """
+                @jsimport dayjs from "dayjs"
+                <template><div /></template>
+                """,
+                "legacy-jsimport"),
+            relatedDocuments: Array.Empty<DocumentSnapshot>(),
+            frontendContext: null);
+
+        var response = await service.AnalyzeJazorAsync(request, CancellationToken.None);
+        var diagnostic = response.Diagnostics.FirstOrDefault(static record =>
+            string.Equals(record.Id, LegacyImportDirectiveCatalog.DiagnosticCode, StringComparison.Ordinal));
+
+        Assert.IsNotNull(diagnostic);
+        Assert.AreEqual(DiagnosticSeverityKind.Error, diagnostic.Severity);
+        Assert.AreEqual(0, diagnostic.Start);
+        Assert.AreEqual("@jsimport".Length, diagnostic.Length);
+        StringAssert.Contains(diagnostic.Message, "@jsimport");
+        StringAssert.Contains(diagnostic.Message, "Use @module");
+    }
+
+    [TestMethod]
+    public async Task JazorVueAnalysisService_AnalyzeJazor_LegacyImport_ReportsUnsupportedDiagnostic()
+    {
+        var service = new JazorVueAnalysisService();
+        var request = new AnalyzeJazorRequest(
+            new DocumentSnapshot(
+                "Counter.jazor",
+                DocumentKind.Jazor,
+                """
+                @import dayjs from "dayjs"
+                <template><div /></template>
+                """,
+                "legacy-import"),
+            relatedDocuments: Array.Empty<DocumentSnapshot>(),
+            frontendContext: null);
+
+        var response = await service.AnalyzeJazorAsync(request, CancellationToken.None);
+        var diagnostic = response.Diagnostics.FirstOrDefault(static record =>
+            string.Equals(record.Id, LegacyImportDirectiveCatalog.DiagnosticCode, StringComparison.Ordinal));
+
+        Assert.IsNotNull(diagnostic);
+        Assert.AreEqual(DiagnosticSeverityKind.Error, diagnostic.Severity);
+        Assert.AreEqual(0, diagnostic.Start);
+        Assert.AreEqual("@import".Length, diagnostic.Length);
+        StringAssert.Contains(diagnostic.Message, "@import");
+        StringAssert.Contains(diagnostic.Message, "Use @module");
+    }
+
+    [TestMethod]
     public async Task JazorVueAnalysisRpcProcessor_AnalyzeJazor_ReturnsResponseEnvelope()
     {
         var service = new JazorVueAnalysisService();
@@ -82,7 +170,7 @@ public sealed class JazorVueAnalysisRuntimeTests
                 "Counter.jazor",
                 DocumentKind.Jazor,
                 """
-                @jsimport dayjs from "dayjs"
+                @module dayjs from "dayjs"
 
                 <template>
                   <div />

@@ -754,8 +754,7 @@ internal sealed class ExtensionRegistry : IExtensionRegistry
         {
             sink(invocation);
         }
-        catch
-        {
+        catch (Exception) {
             // Keep provider execution isolated from observability sink failures.
         }
     }

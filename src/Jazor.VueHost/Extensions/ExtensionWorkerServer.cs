@@ -220,8 +220,7 @@ internal sealed class ExtensionWorkerServer
                 Metadata: extension.Metadata,
                 Providers: _providerDescriptors);
         }
-        catch
-        {
+        catch (Exception) {
             await TryDeactivateSilentlyAsync(extension);
             loadContext.Unload();
             throw;
@@ -816,8 +815,7 @@ internal sealed class ExtensionWorkerServer
             {
                 await extension.DeactivateAsync(cancellationToken);
             }
-            catch
-            {
+            catch (Exception) {
                 // Best-effort shutdown.
             }
         }
@@ -890,8 +888,7 @@ internal sealed class ExtensionWorkerServer
         {
             await extension.DeactivateAsync(CancellationToken.None);
         }
-        catch
-        {
+        catch (Exception) {
             // Ignore deactivate failures when bootstrap does not complete.
         }
     }

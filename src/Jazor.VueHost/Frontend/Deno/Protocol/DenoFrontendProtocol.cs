@@ -40,6 +40,11 @@ internal class DenoTemplateRequest : DenoTemplateDocumentRequest
     public required LspPosition Position { get; init; }
 }
 
+internal class DenoTemplateRangeRequest : DenoTemplateDocumentRequest
+{
+    public required LspRange Range { get; init; }
+}
+
 internal sealed class DenoTemplateDiagnosticRequest : DenoTemplateDocumentRequest
 {
 }

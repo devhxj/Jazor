@@ -1,3 +1,5 @@
+using Jazor.VueHost.Hosting;
+
 namespace Jazor.VueHost.Extensions;
 
 internal sealed class NullExtensionRegistry : IExtensionRegistry
@@ -6,6 +8,10 @@ internal sealed class NullExtensionRegistry : IExtensionRegistry
 
     private NullExtensionRegistry()
     {
+        FallbackTelemetry.ReportActivation(
+            component: "extensionRegistry",
+            mode: "null",
+            reason: "extension-registry-not-configured");
     }
 
     public void RegisterExtension(IExtension extension)

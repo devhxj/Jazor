@@ -54,7 +54,7 @@ public sealed class JazorVueHostTests
                 "Features/Pages/Counter.jazor",
                 DocumentKind.Jazor,
                 """
-                @jsimport * as userCard from "../Scripts/user-card"
+                @module * as userCard from "../Scripts/user-card"
 
                 <template>
                   <UserCard />
@@ -435,8 +435,8 @@ public sealed class JazorVueHostTests
                     "Features/Pages/Counter.jazor",
                     DocumentKind.Jazor,
                     """
-                    @vueimport UserCard from "../Components/UserCard.vue"
-                    @jsimport * as userCard from "../Scripts/user-card"
+                    @module UserCard from "../Components/UserCard.vue"
+                    @module * as userCard from "../Scripts/user-card"
 
                     <template>
                       <UserCard />
@@ -525,8 +525,8 @@ public sealed class JazorVueHostTests
                     "Features/Counter.jazor",
                     DocumentKind.Jazor,
                     """
-                    @vueimport UserCard from "./Components/UserCard.vue"
-                    @jsimport { count } from "./scripts/counter.ts"
+                    @module UserCard from "./Components/UserCard.vue"
+                    @module { count } from "./scripts/counter.ts"
 
                     <template>
                       <UserCard />
@@ -557,7 +557,7 @@ public sealed class JazorVueHostTests
                 "Features/Counter.jazor",
                 DocumentKind.Jazor,
                 """
-                @vueimport UserCard from "./Components/UserCard.vue"
+                @module UserCard from "./Components/UserCard.vue"
 
                 <template>
                   <UserCard />
@@ -666,8 +666,8 @@ public sealed class JazorVueHostTests
                 "Features/Counter.jazor",
                 DocumentKind.Jazor,
                 """
-                @vueimport UserCard from "./Components/UserCard.vue"
-                @jsimport { counterStore } from "./scripts/counter-store.ts"
+                @module UserCard from "./Components/UserCard.vue"
+                @module { counterStore } from "./scripts/counter-store.ts"
 
                 <template>
                   <UserCard />
@@ -726,7 +726,7 @@ public sealed class JazorVueHostTests
                 "Features/Pages/Counter.jazor",
                 DocumentKind.Jazor,
                 """
-                @vueimport UserCard from "../Components/UserCard.vue"
+                @module UserCard from "../Components/UserCard.vue"
 
                 <template>
                   <UserCard />
@@ -767,7 +767,7 @@ public sealed class JazorVueHostTests
                 "Features/Counter.jazor",
                 DocumentKind.Jazor,
                 """
-                @jsimport dayjs from "dayjs"
+                @module dayjs from "dayjs"
 
                 <template>
                   <div>{{ dayjs }}</div>
@@ -1090,7 +1090,7 @@ public sealed class JazorVueHostTests
                 "Features/Pages/Counter.jazor",
                 DocumentKind.Jazor,
                 """
-                @vueimport UserCard from "../Components/UserCard.vue"
+                @module UserCard from "../Components/UserCard.vue"
 
                 <template>
                   <UserCard />
@@ -1147,7 +1147,7 @@ public sealed class JazorVueHostTests
                 artifactKind: "vue-sfc",
                 text:
                 """
-                @vueimport UserCard from "./Components/UserCard.vue"
+                @module UserCard from "./Components/UserCard.vue"
 
                 <template>
                   <UserCard />
@@ -1297,7 +1297,7 @@ public sealed class JazorVueHostTests
                 "Features/Counter.jazor",
                 DocumentKind.Jazor,
                 """
-                @jsimport dayjs from "dayjs"
+                @module dayjs from "dayjs"
 
                 <template>
                   <div />
@@ -1342,7 +1342,7 @@ public sealed class JazorVueHostTests
                     "Features/Counter.jazor",
                     DocumentKind.Jazor,
                     """
-                    @jsimport dayjs from "dayjs"
+                    @module dayjs from "dayjs"
 
                     <template>
                       <div />
@@ -1382,7 +1382,7 @@ public sealed class JazorVueHostTests
                     "Features/Counter.jazor",
                     DocumentKind.Jazor,
                     """
-                    @jsimport dayjs from "dayjs"
+                    @module dayjs from "dayjs"
 
                     <template>
                       <div />
@@ -1416,7 +1416,7 @@ public sealed class JazorVueHostTests
                     "Features/Counter.jazor",
                     DocumentKind.Jazor,
                     """
-                    @vueimport UserCard from "./UserCard.vue"
+                    @module UserCard from "./UserCard.vue"
 
                     <template>
                       <UserCard />

@@ -633,6 +633,72 @@ public sealed class JazorVueHostBuildTests
     }
 
     [TestMethod]
+    public async Task BuildOrchestrator_BuildAsync_WithLegacyImport_FailsWithUnsupportedDirectiveError()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            Directory.CreateDirectory(Path.Combine(tempDir, "src"));
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "index.html"),
+                """
+                <html>
+                <body>
+                  <script type="module" src="/src/main.js"></script>
+                </body>
+                </html>
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "src", "main.js"),
+                """
+                import "./Counter.jazor";
+                console.log("legacy-import-build");
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "src", "helper.js"),
+                """export default 1;""");
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "src", "Counter.jazor"),
+                """
+                @jsimport helper from "./helper.js"
+
+                <template>
+                  <div>{{ helper }}</div>
+                </template>
+                """);
+
+            var orchestrator = new BuildOrchestrator();
+            var result = await orchestrator.BuildAsync(
+                new BuildOptions
+                {
+                    RootDirectory = tempDir,
+                    OutDir = "dist",
+                    SourceMap = SourceMapOption.External,
+                    Minify = false,
+                    CodeSplitting = false
+                },
+                CancellationToken.None);
+
+            Assert.IsFalse(result.Success, string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
+            var legacyDiagnostic = result.Diagnostics.SingleOrDefault(static diagnostic =>
+                diagnostic.Severity == DiagnosticSeverity.Error
+                && diagnostic.Message.Contains("@jsimport is unsupported. Use @module instead.", StringComparison.Ordinal));
+            Assert.IsNotNull(legacyDiagnostic);
+            Assert.IsTrue(string.Equals(
+                legacyDiagnostic.File,
+                Path.Combine(tempDir, "src", "Counter.jazor"),
+                StringComparison.OrdinalIgnoreCase));
+            Assert.IsTrue(legacyDiagnostic.Location.HasValue);
+            Assert.AreEqual(1, legacyDiagnostic.Location!.Value.Line);
+            Assert.AreEqual(1, legacyDiagnostic.Location!.Value.Column);
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public async Task BuildOrchestrator_BuildAsync_RewritesMetaAndSrcSetAssetReferences()
     {
         var tempDir = CreateTemporaryDirectory();

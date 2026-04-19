@@ -395,8 +395,7 @@ internal sealed class OutOfProcessExtensionProxy :
             var bootstrap = await workerClient.BootstrapAsync(bootstrapRequest, cancellationToken);
             return (workerClient, bootstrap);
         }
-        catch
-        {
+        catch (Exception) {
             await DisposeWorkerSilentlyAsync(workerClient);
             throw;
         }
@@ -408,8 +407,7 @@ internal sealed class OutOfProcessExtensionProxy :
         {
             await workerClient.DisposeAsync();
         }
-        catch
-        {
+        catch (Exception) {
             // Ignore disposal failures while recovering from worker crashes.
         }
     }

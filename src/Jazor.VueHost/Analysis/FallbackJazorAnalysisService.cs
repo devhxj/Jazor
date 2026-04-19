@@ -1,5 +1,6 @@
 using Jazor.Vue;
 using Jazor.VueContracts.Protocol;
+using Jazor.VueHost.Hosting;
 
 namespace Jazor.VueHost.Analysis;
 
@@ -14,21 +15,34 @@ internal sealed class FallbackJazorAnalysisService
     {
         ArgumentNullException.ThrowIfNull(request);
         cancellationToken.ThrowIfCancellationRequested();
+        FallbackTelemetry.ReportActivation(
+            component: "analysisService",
+            mode: "inProcFallback",
+            reason: "analysis-rpc-unavailable",
+            documentPath: request.JazorDocument.DocumentPath);
 
         var document = _parser.Parse(
             request.JazorDocument.DocumentPath,
             request.JazorDocument.Text);
         var compilation = _compiler.Compile(document);
 
-        var diagnostics = compilation.Diagnostics
+        var diagnostics = new List<DiagnosticRecord>(compilation.Diagnostics.Count + 4);
+        diagnostics.AddRange(compilation.Diagnostics
             .Select((message, index) => new DiagnosticRecord(
                 id: $"JAZORVUE{index + 1:000}",
                 severity: DiagnosticSeverityKind.Warning,
                 message: message,
                 documentPath: request.JazorDocument.DocumentPath,
                 start: 0,
-                length: 0))
-            .ToArray();
+                length: 0)));
+        diagnostics.AddRange(LegacyImportDirectiveCatalog.FindOccurrences(request.JazorDocument.Text)
+            .Select(occurrence => new DiagnosticRecord(
+                id: LegacyImportDirectiveCatalog.DiagnosticCode,
+                severity: DiagnosticSeverityKind.Error,
+                message: LegacyImportDirectiveCatalog.CreateDiagnosticMessage(occurrence.Kind),
+                documentPath: request.JazorDocument.DocumentPath,
+                start: occurrence.Start,
+                length: occurrence.Length)));
 
         var imports = document.Imports
             .SelectMany(import => import.Bindings.Select(binding => new ImportDescriptor(

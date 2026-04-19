@@ -420,8 +420,7 @@ static JazorConfig? LoadJazorConfig(string rootDirectory)
                 PropertyNameCaseInsensitive = true
             });
     }
-    catch
-    {
+    catch (Exception) {
         return null;
     }
 }
