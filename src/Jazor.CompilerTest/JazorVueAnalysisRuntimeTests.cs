@@ -1,6 +1,6 @@
 using Jazor.Vue;
 using Jazor.VueContracts.Protocol;
-using Jazor.VueHost.Analysis;
+using Jolt.Analysis;
 
 namespace Jazor.CompilerTest;
 

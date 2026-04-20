@@ -8,20 +8,20 @@ let outputChannel = null;
 let dashboardPanel = null;
 
 function activate(context) {
-    outputChannel = vscode.window.createOutputChannel("Jazor VueHost");
+    outputChannel = vscode.window.createOutputChannel("Jolt");
     context.subscriptions.push(outputChannel);
 
     context.subscriptions.push(
-        vscode.commands.registerCommand("jazorVueHost.start", () => startHost(context)),
-        vscode.commands.registerCommand("jazorVueHost.stop", () => stopHost()),
-        vscode.commands.registerCommand("jazorVueHost.restart", async () => {
+        vscode.commands.registerCommand("jolt.start", () => startHost(context)),
+        vscode.commands.registerCommand("jolt.stop", () => stopHost()),
+        vscode.commands.registerCommand("jolt.restart", async () => {
             await stopHost();
             await startHost(context);
         }),
-        vscode.commands.registerCommand("jazorVueHost.showExtensionDashboard", () => showExtensionDashboard(context))
+        vscode.commands.registerCommand("jolt.showExtensionDashboard", () => showExtensionDashboard(context))
     );
 
-    const autoStart = vscode.workspace.getConfiguration("jazorVueHost").get("autoStart", true);
+    const autoStart = vscode.workspace.getConfiguration("jolt").get("autoStart", true);
     if (autoStart) {
         void startHost(context);
     }
@@ -29,7 +29,7 @@ function activate(context) {
 
 async function startHost(context) {
     if (languageClient) {
-        outputChannel.appendLine("[info] Jazor.VueHost is already running.");
+        outputChannel.appendLine("[info] Jolt is already running.");
         return;
     }
 
@@ -62,13 +62,13 @@ async function startHost(context) {
         ],
         outputChannel,
         synchronize: {
-            configurationSection: "jazorVueHost"
+            configurationSection: "jolt"
         }
     };
 
     const client = new LanguageClient(
-        "jazorVueHost",
-        "Jazor VueHost",
+        "jolt",
+        "Jolt",
         serverOptions,
         clientOptions
     );
@@ -77,22 +77,22 @@ async function startHost(context) {
     try {
         await client.start();
         languageClient = client;
-        outputChannel.appendLine("[ready] Jazor.VueHost language client started.");
+        outputChannel.appendLine("[ready] Jolt language client started.");
     } catch (error) {
         outputChannel.appendLine(`[error] failed to start language client: ${formatError(error)}`);
-        void vscode.window.showErrorMessage("Jazor VueHost failed to start. See output channel for details.");
+        void vscode.window.showErrorMessage("Jolt failed to start. See output channel for details.");
     }
 }
 
 async function stopHost() {
     if (!languageClient) {
-        outputChannel.appendLine("[info] Jazor.VueHost is not running.");
+        outputChannel.appendLine("[info] Jolt is not running.");
         return;
     }
 
     const client = languageClient;
     languageClient = null;
-    outputChannel.appendLine("[stop] stopping Jazor.VueHost language client.");
+    outputChannel.appendLine("[stop] stopping Jolt language client.");
     try {
         await client.stop();
     } catch (error) {
@@ -114,13 +114,13 @@ async function showExtensionDashboard(context) {
         renderDashboard(dashboard);
     } catch (error) {
         outputChannel.appendLine(`[error] dashboard request failed: ${formatError(error)}`);
-        void vscode.window.showErrorMessage("Failed to fetch Jazor VueHost extension dashboard.");
+        void vscode.window.showErrorMessage("Failed to fetch Jolt extension dashboard.");
     }
 }
 
 function resolveLaunchConfig() {
-    const config = vscode.workspace.getConfiguration("jazorVueHost");
-    const executable = config.get("executable", "Jazor.VueHost");
+    const config = vscode.workspace.getConfiguration("jolt");
+    const executable = config.get("executable", "Jolt");
     const configuredArguments = config.get("arguments", ["--lsp", "--stdio"]);
     const args = Array.isArray(configuredArguments)
         ? configuredArguments
@@ -148,7 +148,7 @@ function renderDashboard(dashboard) {
 
     if (!dashboardPanel) {
         dashboardPanel = vscode.window.createWebviewPanel(
-            "jazorVueHostExtensionDashboard",
+            "joltExtensionDashboard",
             "Jazor Extension Dashboard",
             vscode.ViewColumn.Beside,
             {

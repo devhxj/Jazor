@@ -1,20 +1,20 @@
-# Jazor VueHost VS Code Extension
+# Jolt VS Code Extension
 
-This extension provides a VS Code Language Client integration for `Jazor.VueHost`.
+This extension provides a VS Code Language Client integration for `Jolt`.
 
 ## Features
 
-- `Jazor VueHost: Start LSP`
-- `Jazor VueHost: Stop LSP`
-- `Jazor VueHost: Restart LSP`
-- `Jazor VueHost: Show Extension Dashboard` (`jazor/extensionObservabilityDashboard`, Webview + output summary)
-- Output channel logging (`Jazor VueHost`)
+- `Jolt: Start LSP`
+- `Jolt: Stop LSP`
+- `Jolt: Restart LSP`
+- `Jolt: Show Extension Dashboard` (`jazor/extensionObservabilityDashboard`, Webview + output summary)
+- Output channel logging (`Jolt`)
 
 ## Configuration
 
-- `jazorVueHost.executable` (default: `Jazor.VueHost`)
-- `jazorVueHost.arguments` (default: `["--lsp", "--stdio"]`)
-- `jazorVueHost.autoStart` (default: `true`)
+- `jolt.executable` (default: `Jolt`)
+- `jolt.arguments` (default: `["--lsp", "--stdio"]`)
+- `jolt.autoStart` (default: `true`)
 
 The extension appends `--dev-root=<workspaceRoot>` automatically when missing.
 

@@ -2,7 +2,7 @@
 
 > Status: 当前状态快照
 > Positioning: SourceMap 项目的仓库级状态快照
-> Note: 本快照早于 `Jazor.VueHost` 的整合；请将 RazorVue 的措辞理解为历史 lane 上下文，而非独立的活跃边界。当前活跃的宿主/运行时措辞应理解为 `Jazor.VueHost` 加上 Deno
+> Note: 本快照早于 `Jolt` 的整合；请将 RazorVue 的措辞理解为历史 lane 上下文，而非独立的活跃边界。当前活跃的宿主/运行时措辞应理解为 `Jolt` 加上 Deno
 
 ## 总结
 
@@ -11,7 +11,7 @@ SourceMap 当前不能再用一句"deferred"概括了。
 更准确地说：
 
 - broad SourceMap programme 仍然偏保守
-- 但由 RazorVue 演进出来、并由 VueHost / Deno 承接的 bundle chaining 已进入 narrower active lane
+- 但由 RazorVue 演进出来、并由 Jolt / Deno 承接的 bundle chaining 已进入 narrower active lane
 - repo-level 文档需要同时表达这两层现实，不能二选一
 
 ## 当前状态判断
@@ -35,7 +35,7 @@ Broad programme 依然强调：
 
 当前已经存在一个 narrower active lane：
 
-- VueHost / Deno emitted module sourcemap
+- Jolt / Deno emitted module sourcemap
 - writer / manifest evolution
 - bundle chaining continuation
 

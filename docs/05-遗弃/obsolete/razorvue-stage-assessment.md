@@ -2,7 +2,7 @@
 
 > Status: current status snapshot
 > Positioning: Workstream-specific status snapshot for the historical RazorVue lane.
-> Note: this document is archived context; the current active development-time boundary is `Jazor.VueHost`, with Deno as the only runtime host path and `Jazor.VueHost --analysis-stdio` as the migration-time analysis process entrypoint. For current VueHost progress, read `docs/status/vuehost-status.md`.
+> Note: this document is archived context; the current active development-time boundary is `Jolt`, with Deno as the only runtime host path and `Jolt --analysis-stdio` as the migration-time analysis process entrypoint. For current Jolt progress, read `docs/status/jolt-status.md`.
 
 ## 1. 评估范围
 
@@ -32,7 +32,7 @@ RazorVue 当前不是"在编译器里顺手多加一点 Vue 支持"，而是一�
 - Vue 是实际运行时语义目标。
 - Roslyn / analyser 负责发现与提取语义输入。
 - RazorVue core 负责 descriptor、render tree、lowering、artifact shaping。
-- 当前方向里，这部分宿主 / 构建所有权已经收拢到 `Jazor.VueHost` 和其 Deno 运行时路径里。
+- 当前方向里，这部分宿主 / 构建所有权已经收拢到 `Jolt` 和其 Deno 运行时路径里。
 
 ### 2.2 当前真实分层
 

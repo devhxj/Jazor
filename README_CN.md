@@ -11,7 +11,7 @@
 > ⚠️ **实验性演示** ⚠️\
 > Jazor 仍在演进中。随着仓库持续稳定，公共 API、生成的输出形态以及相关工具链可能会发生变化。
 
-Jazor 是一个基于 Roslyn 的实验性 C# 到 JavaScript 编译器项目。它专注于语义保持的 JavaScript AST 降低，目前将编译器主线视为仓库最稳定的参考领域。当前的 Vue 侧开发边界是 `Jazor.VueHost`；`Jazor.Vite`、Bun 以及旧的 split-host / analysis-host 路线都只是迁移残留。
+Jazor 是一个基于 Roslyn 的实验性 C# 到 JavaScript 编译器项目。它专注于语义保持的 JavaScript AST 降低，目前将编译器主线视为仓库最稳定的参考领域。当前的 Vue 侧开发边界是 `Jolt`；`Jazor.Vite`、Bun 以及旧的 split-host / analysis-host 路线都只是迁移残留。
 
 ## 文档入口
 
@@ -21,12 +21,12 @@ Jazor 是一个基于 Roslyn 的实验性 C# 到 JavaScript 编译器项目。�
 
 ## 项目状态
 
-Jazor 当前以编译器主线和 `Jazor.VueHost` 为核心，Deno 是唯一的前端/运行时宿主路径。`Jazor.Vite`、Bun 以及旧的 split-host / analysis-host 路线都只是迁移残留。详见 [工作流总览](docs/workstream-dashboard.md)。
+Jazor 当前以编译器主线和 `Jolt` 为核心，Deno 是唯一的前端/运行时宿主路径。`Jazor.Vite`、Bun 以及旧的 split-host / analysis-host 路线都只是迁移残留。详见 [工作流总览](docs/workstream-dashboard.md)。
 
 - ✅ **Compiler 主线**：接近稳定，是仓库最成熟的部分
-- ✅ **Jazor.VueHost**：当前的开发时边界，负责 `.jazor` 和前端智能感知
+- ✅ **Jolt**：当前的开发时边界，负责 `.jazor` 和前端智能感知
 - 🔄 **Emit / Materialisation**：持续承接，产物输出和打包管道
-- 🔄 **SourceMap**：局部活跃，支撑当前的 VueHost / Deno 物化链路
+- 🔄 **SourceMap**：局部活跃，支撑当前的 Jolt / Deno 物化链路
 
 ## 项目结构
 
@@ -40,7 +40,7 @@ Jazor/
 │   ├── Jazor.RazorVue/              # RazorVue 集成层
 │   ├── Jazor.RazorVue.Analysis/     # RazorVue 分析和 lowering
 │   ├── Jazor.RazorVue.Vuetify/      # Vuetify 组件桩
-│   ├── Jazor.VueHost/               # `.jazor` 的活跃开发时宿主
+│   ├── Jolt/               # `.jazor` 的活跃开发时宿主
 │   ├── Jazor.Razor/                 # Razor 模板支持
 │   ├── Jazor.Common/                # 共享工具和类型
 │   ├── ECMAScript/                  # ECMAScript 核心类型和特性
@@ -58,8 +58,8 @@ Jazor/
 - **Jazor.CLR** - .NET 类型的运行时模块支持，提供 JavaScript 运行时实现
 - **Jazor.Emit** - 产物输出和打包管道，处理 host-facing 输出
 - **Jazor.RazorVue** - Vue 导向的 Razor 编译路径，支持 Blazor 风格的组件编写
-- **Jazor.VueHost** - `.jazor` 开发时边界和前端智能感知宿主
-`.jazor` 以 Razor 作为源码语法，Vue 相关产物仅作为内部投影或桥接工件。`Jazor.Vite`、Bun 和旧的分析宿主路径都不再是当前架构方向；若迁移期间仍需独立分析进程，兼容入口是 `Jazor.VueHost --analysis-stdio`。
+- **Jolt** - `.jazor` 开发时边界和前端智能感知宿主
+`.jazor` 以 Razor 作为源码语法，Vue 相关产物仅作为内部投影或桥接工件。`Jazor.Vite`、Bun 和旧的分析宿主路径都不再是当前架构方向；若迁移期间仍需独立分析进程，兼容入口是 `Jolt --analysis-stdio`。
 
 详见 [模块索引](docs/architecture/modules/README.md) 了解所有模块。
 

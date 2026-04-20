@@ -119,14 +119,14 @@ static int RunRazorVueDiff(string[] args)
 
     try
     {
-        var previous = RazorVueManifestModel.TryLoad(options.PreviousManifestPath);
+        var previous = RazorVueManifestSerializer.TryLoad(options.PreviousManifestPath);
         if (previous is null)
         {
             Console.Error.WriteLine($"Previous RazorVue manifest was not found: '{options.PreviousManifestPath}'.");
             return 6;
         }
 
-        var current = RazorVueManifestModel.TryLoad(options.CurrentManifestPath);
+        var current = RazorVueManifestSerializer.TryLoad(options.CurrentManifestPath);
         if (current is null)
         {
             Console.Error.WriteLine($"Current RazorVue manifest was not found: '{options.CurrentManifestPath}'.");

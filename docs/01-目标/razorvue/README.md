@@ -59,9 +59,9 @@ public partial class VBtn : VuetifyComponentBase
 
 已包装 35 个组件：VBtn、VCard、VDialog、VDataTable、VTextField、VSelect、VTabs、VToolbar 等。
 
-### 与 VueHost 的对比
+### 与 Jolt 的对比
 
-| 维度 | RazorVue（库模式） | VueHost（全功能模式） |
+| 维度 | RazorVue（库模式） | Jolt（全功能模式） |
 |------|-------------------|---------------------|
 | 触发方式 | Source Generator（编译时） | 独立进程（LSP + DevServer） |
 | 输出格式 | 纯 JS/TS 模块 | .vue SFC + JS/CSS |

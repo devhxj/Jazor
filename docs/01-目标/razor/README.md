@@ -4,7 +4,7 @@
 
 ## 为什么需要
 
-RazorVue 和 VueHost 都需要在 Razor 组件模型上构建。但 ASP.NET Core 的 Razor 组件系统（Blazor）与 Jazor 的编译目标（JavaScript/Vue）有根本差异——Blazor 生成 .NET 运行时代码，Jazor 生成 JavaScript。需要一层薄薄的适配层把 Razor 语法树桥接到 Jazor 编译管线。
+RazorVue 和 Jolt 都需要在 Razor 组件模型上构建。但 ASP.NET Core 的 Razor 组件系统（Blazor）与 Jazor 的编译目标（JavaScript/Vue）有根本差异——Blazor 生成 .NET 运行时代码，Jazor 生成 JavaScript。需要一层薄薄的适配层把 Razor 语法树桥接到 Jazor 编译管线。
 
 ## 解决什么问题
 

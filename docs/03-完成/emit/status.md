@@ -2,7 +2,7 @@
 
 > Status: 当前状态快照
 > Positioning: 仓库级状态快照，涵盖 emit、manifest、bundle 和面向宿主的物化工作
-> Note: 当前面向 Vue 的宿主路径是 `Jazor.VueHost`；本页描述的是为其提供支撑的 emit/materialisation 层
+> Note: 当前面向 Vue 的宿主路径是 `Jolt`；本页描述的是为其提供支撑的 emit/materialisation 层
 
 ## 总结
 
@@ -12,7 +12,7 @@
 
 - compiler 负责生成 catalog / artifact / manifest-ready data
 - emit 负责读取、物化、写出和 bundle 承接
-- host-facing materialisation 已经是当前 `Jazor.VueHost` / Deno 架构边界的一部分，不应该再被误读成只存在于测试侧
+- host-facing materialisation 已经是当前 `Jolt` / Deno 架构边界的一部分，不应该再被误读成只存在于测试侧
 
 ## 当前状态判断
 
@@ -24,7 +24,7 @@
 - manifest persistence
 - module / artifact writing
 - bundler 和 host-facing output assembly
-- VueHost 和 SourceMap handoff continuation
+- Jolt 和 SourceMap handoff continuation
 
 ### 2. 当前 repo-level 入口已经补齐第一层，但仍需要持续维护
 
@@ -38,11 +38,11 @@
 
 这比之前只靠测试 README 和相邻专题间接暴露要强得多，但仍需要随着 emit 职责演进持续维护。
 
-### 3. 当前最明显的活跃执行交点是 VueHost 和 SourceMap
+### 3. 当前最明显的活跃执行交点是 Jolt 和 SourceMap
 
 目前 emit 最直接的活跃执行关联是：
 
-- VueHost catalog / manifest materialisation
+- Jolt catalog / manifest materialisation
 - SourceMap module map 和 bundle chaining 承接
 
 所以 emit 当前应该被描述成"被多个 lane 依赖的活跃承接层"。
@@ -87,7 +87,7 @@
 
 ## 深度文档
 
-- [Modules Bridge](../../01-目标/vuehost/modules-bridge.md)
+- [Modules Bridge](../../01-目标/jolt/modules-bridge.md)
 - [Jazor.Emit README](../../src/Jazor.Emit/README.md)
 - [Jazor.Emit Docs](../../src/Jazor.Emit/doc/README.md)
 - [Emit.Pipeline.Overview.md](../../src/Jazor.Emit/doc/Emit.Pipeline.Overview.md)

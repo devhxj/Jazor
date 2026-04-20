@@ -1,3 +1,5 @@
+using Jazor.SourceMaps;
+
 namespace Jazor.Emit.SourceMaps;
 
 internal sealed class SourceMapBuilder

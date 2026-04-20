@@ -1,4 +1,4 @@
-﻿<Project Sdk="MSTest.Sdk/4.1.0">
+<Project Sdk="MSTest.Sdk/4.1.0">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <LangVersion>latest</LangVersion>
@@ -7,9 +7,12 @@
     <UseVSTest>true</UseVSTest>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="bin\**\*.cs;obj\**\*.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Jazor.Compiler\Jazor.Compiler.csproj" />
     <ProjectReference Include="..\Jazor.Razor\Jazor.Razor.csproj" />
-    <ProjectReference Include="..\Jazor.VueHost\Jazor.VueHost.csproj" />
+    <ProjectReference Include="..\Jolt\Jolt.csproj" />
     <ProjectReference Include="..\Jazor.RazorVue\Jazor.RazorVue.csproj" />
     <ProjectReference Include="..\Jazor.RazorVue.Vuetify\Jazor.RazorVue.Vuetify.csproj" />
     <ProjectReference Include="..\Jazor.RazorVue.Analysis\Jazor.RazorVue.Analysis.csproj" />

@@ -2,7 +2,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using DenoHost.Core;
-using Jazor.Emit.SourceMaps;
+using Jazor.SourceMaps;
 
 namespace Jazor.Emit;
 
@@ -29,7 +29,7 @@ internal sealed class ModuleBundler
             return BundleResult.Fail(6, $"Manifest was not found: '{options.ManifestPath}'.");
 
         var razorVueManifestPath = RazorVueModuleWriter.GetManifestPath(options.ManifestPath);
-        var razorVueManifest = RazorVueManifestModel.TryLoad(razorVueManifestPath);
+        var razorVueManifest = RazorVueManifestSerializer.TryLoad(razorVueManifestPath);
         var previousRazorVueManifest = TryLoadPreviousRazorVueManifest(options);
 
         var relativePaths = manifest.Modules
@@ -199,7 +199,7 @@ internal sealed class ModuleBundler
         if (string.IsNullOrWhiteSpace(options.PreviousRazorVueManifestPath))
             return null;
 
-        return RazorVueManifestModel.TryLoad(options.PreviousRazorVueManifestPath);
+        return RazorVueManifestSerializer.TryLoad(options.PreviousRazorVueManifestPath);
     }
 
     private static void WriteRazorVueUpdatePlanIfRequested(
@@ -228,7 +228,7 @@ internal sealed class ModuleBundler
         string bundleWorkspace)
     {
         var razorVueManifestPath = RazorVueModuleWriter.GetManifestPath(manifestPath);
-        var razorVueManifest = RazorVueManifestModel.TryLoad(razorVueManifestPath);
+        var razorVueManifest = RazorVueManifestSerializer.TryLoad(razorVueManifestPath);
         if (razorVueManifest is null || razorVueManifest.Modules.Count == 0)
             return null;
 

@@ -11,6 +11,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="bin\**\*.cs;obj\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Jazor.Common\Jazor.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="DenoHost.Core" Version="2.7.12" />
     <PackageReference Include="$(DenoHostRuntimePackageId)" Version="$(DenoHostVersion)" Condition="'$(DenoHostRuntimePackageId)' != ''" />
   </ItemGroup>

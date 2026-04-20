@@ -1,4 +1,5 @@
 using Jazor.Emit.SourceMaps;
+using Jazor.SourceMaps;
 using System.Text;
 using System.Text.Json;
 
@@ -22,7 +23,7 @@ internal sealed class RazorVueModuleWriter
         Directory.CreateDirectory(outputDirectory);
 
         var normalizedOutputDirectory = EnsureDirectorySeparator(Path.GetFullPath(outputDirectory));
-        var existingManifest = RazorVueManifestModel.TryLoad(manifestPath);
+        var existingManifest = RazorVueManifestSerializer.TryLoad(manifestPath);
         var artifacts = catalogs
             .SelectMany(static catalog => catalog.Artifacts)
             .OrderBy(static artifact => artifact.RelativeModulePath, StringComparer.OrdinalIgnoreCase)
@@ -33,7 +34,7 @@ internal sealed class RazorVueModuleWriter
         var skipped = 0;
         var deleted = 0;
 
-        var nextManifest = RazorVueManifestModel.Create(rootAssemblyPath, catalogs);
+        var nextManifest = RazorVueManifestFactory.Create(rootAssemblyPath, catalogs);
         var hostRequirementsModulePath = GetHostRequirementsModulePath(normalizedOutputDirectory);
 
         foreach (var artifact in artifacts)

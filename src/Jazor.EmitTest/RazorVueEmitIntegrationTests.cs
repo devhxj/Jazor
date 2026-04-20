@@ -128,7 +128,7 @@ public sealed class RazorVueEmitIntegrationTests
                 new[] { "vuetify" },
                 manifestJson.RootElement.GetProperty("PluginRequirements").EnumerateArray().Select(static item => item.GetString()).OfType<string>().ToArray());
 
-            var manifest = RazorVueManifestModel.TryLoad(manifestPath);
+            var manifest = RazorVueManifestSerializer.TryLoad(manifestPath);
             Assert.IsNotNull(manifest);
             Assert.HasCount(1, manifest.Modules);
             Assert.AreEqual("Demo.Components", manifest.Modules[0].AssemblyName);
@@ -209,7 +209,7 @@ public sealed class RazorVueEmitIntegrationTests
 
             Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
 
-            var manifest = RazorVueManifestModel.TryLoad(manifestPath);
+            var manifest = RazorVueManifestSerializer.TryLoad(manifestPath);
             Assert.IsNotNull(manifest);
             Assert.AreEqual("Demo.Host", manifest.AssemblyName);
             Assert.HasCount(2, manifest.Modules);

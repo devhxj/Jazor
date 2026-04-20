@@ -38,9 +38,9 @@ bld/
 [Ll]og/
 [Ll]ogs/
 
-# Track VueHost debug protocol sources (Phase4) even with global Debug ignore.
-!src/Jazor.VueHost/Debug/
-!src/Jazor.VueHost/Debug/*.cs
+# Track Jolt debug protocol sources (Phase4) even with global Debug ignore.
+!src/Jolt/Debug/
+!src/Jolt/Debug/*.cs
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/

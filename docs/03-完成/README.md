@@ -6,7 +6,7 @@
 
 | 目录 | 对应源码 | 内容 |
 |------|---------|------|
-| `vuehost/` | `src/Jazor.VueHost/` | 完成度分析报告 + 状态快照 |
+| `jolt/` | `src/Jolt/` | 完成度分析报告 + 状态快照 |
 | `razorvue/` | `src/Jazor.RazorVue/` | 完成度分析报告 |
 | `compiler/` | `src/ECMAScript.Compiler/` + `src/Jazor.Compiler/` | 状态快照 + 历史测试审计 |
 | `emit/` | `src/Jazor.Emit/` | 状态快照 |

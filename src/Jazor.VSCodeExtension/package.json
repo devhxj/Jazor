@@ -1,7 +1,7 @@
 {
-  "name": "jazor-vuehost",
-  "displayName": "Jazor VueHost",
-  "description": "Minimal VS Code integration for managing Jazor.VueHost LSP process.",
+  "name": "jolt",
+  "displayName": "Jolt",
+  "description": "Minimal VS Code integration for managing Jolt LSP process.",
   "version": "0.1.0",
   "publisher": "jazor",
   "license": "MIT",
@@ -36,10 +36,10 @@
   ],
   "activationEvents": [
     "onLanguage:jazor",
-    "onCommand:jazorVueHost.start",
-    "onCommand:jazorVueHost.stop",
-    "onCommand:jazorVueHost.restart",
-    "onCommand:jazorVueHost.showExtensionDashboard"
+    "onCommand:jolt.start",
+    "onCommand:jolt.stop",
+    "onCommand:jolt.restart",
+    "onCommand:jolt.showExtensionDashboard"
   ],
   "main": "./extension.js",
   "contributes": {
@@ -57,31 +57,31 @@
     ],
     "commands": [
       {
-        "command": "jazorVueHost.start",
-        "title": "Jazor VueHost: Start LSP"
+        "command": "jolt.start",
+        "title": "Jolt: Start LSP"
       },
       {
-        "command": "jazorVueHost.stop",
-        "title": "Jazor VueHost: Stop LSP"
+        "command": "jolt.stop",
+        "title": "Jolt: Stop LSP"
       },
       {
-        "command": "jazorVueHost.restart",
-        "title": "Jazor VueHost: Restart LSP"
+        "command": "jolt.restart",
+        "title": "Jolt: Restart LSP"
       },
       {
-        "command": "jazorVueHost.showExtensionDashboard",
-        "title": "Jazor VueHost: Show Extension Dashboard"
+        "command": "jolt.showExtensionDashboard",
+        "title": "Jolt: Show Extension Dashboard"
       }
     ],
     "configuration": {
-      "title": "Jazor VueHost",
+      "title": "Jolt",
       "properties": {
-        "jazorVueHost.executable": {
+        "jolt.executable": {
           "type": "string",
-          "default": "Jazor.VueHost",
-          "description": "Executable or command used to launch Jazor.VueHost."
+          "default": "Jolt",
+          "description": "Executable or command used to launch Jolt."
         },
-        "jazorVueHost.arguments": {
+        "jolt.arguments": {
           "type": "array",
           "items": {
             "type": "string"
@@ -90,12 +90,12 @@
             "--lsp",
             "--stdio"
           ],
-          "description": "Arguments passed to the Jazor.VueHost executable."
+          "description": "Arguments passed to the Jolt executable."
         },
-        "jazorVueHost.autoStart": {
+        "jolt.autoStart": {
           "type": "boolean",
           "default": true,
-          "description": "Auto-start Jazor.VueHost when the extension activates."
+          "description": "Auto-start Jolt when the extension activates."
         }
       }
     }

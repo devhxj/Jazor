@@ -9,7 +9,7 @@
 |--------|---------|-----------|---------|
 | Compiler 主线 | 接近稳定 | 压实 output closure、import closure、host seam | [详情](../03-完成/compiler/status.md) |
 | Emit / Materialisation | 持续承接 | 显式化 materialisation / sourcemap 承接职责 | [详情](../03-完成/emit/status.md) |
-| Jazor.VueHost | Phase 1-6 收口中 | 调试闭环（CDP）、构建收口、Phase 7 扩展系统启动门槛 | [详情](../03-完成/vuehost/status.md) |
+| Jolt | Phase 1-6 收口中 | 调试闭环（CDP）、构建收口、Phase 7 扩展系统启动门槛 | [详情](../03-完成/jolt/status.md) |
 | SourceMap | 局部活跃（narrow lane） | 继续补齐调试消费链路与精度提升 | [详情](../03-完成/sourcemap/status.md) |
 
 ## 依赖顺序与并行策略
@@ -18,20 +18,20 @@
 
 1. Compiler mainline stabilisation
 2. Emit / host materialisation consolidation
-3. Jazor.VueHost phase-one closure
-4. Jazor.VueHost authoring lane execution
+3. Jolt phase-one closure
+4. Jolt authoring lane execution
 5. SourceMap partial rollout for active consumers
 6. Broader SourceMap programme
 7. Ongoing documentation governance
 
 **允许的并行**：
 - Documentation governance 可以持续运行
-- Narrow SourceMap 工作可以和 Jazor.VueHost / emit 集成并行推进
+- Narrow SourceMap 工作可以和 Jolt / emit 集成并行推进
 - Emit 可以作为活跃依赖层持续演进（compiler 作为上游基础）
 
 **不允许的并行**：
 - Broad SourceMap 扩张不能超过 compiler / emit 稳定性
-- Authoring 广度不能超过 Jazor.VueHost phase-one closure
+- Authoring 广度不能超过 Jolt phase-one closure
 
 ## 详细工作流说明
 
@@ -67,7 +67,7 @@
 
 **当前状态**：承担 catalog、manifest、materialisation 以及 sourcemap/output 承接职责，仓库级入口已经补齐第一层桥接
 
-Emit 不是单独的大专题，但确实是多个工作流共同的承接层。它负责把上游 compiler / Jazor.VueHost 的产出落盘成 host-facing artefact。
+Emit 不是单独的大专题，但确实是多个工作流共同的承接层。它负责把上游 compiler / Jolt 的产出落盘成 host-facing artefact。
 
 **下一步行动**：
 
@@ -79,17 +79,17 @@ Emit 不是单独的大专题，但确实是多个工作流共同的承接层。
    - 避免测试和真实执行继续分裂
 
 **深度文档**：
-- [Modules Bridge](../01-目标/vuehost/modules-bridge.md)
+- [Modules Bridge](../01-目标/jolt/modules-bridge.md)
 - [Jazor.Emit README](../src/Jazor.Emit/README.md)
 - [Jazor.Emit Docs](../src/Jazor.Emit/doc/README.md)
 
 ---
 
-### Jazor.VueHost
+### Jolt
 
 **当前状态**：主链路已进入“能力收口与补齐”阶段，Phase 1/2/3 主路径已落地，Phase 4/5/6 持续推进，Phase 7 仍在规划。
 
-`Jazor.VueHost` 当前是 `.jazor` 的唯一开发时边界。In-proc Razor/Roslyn、Deno frontend worker、LSP bridge/coordinator、Dev Server/HMR、SourceMap 管线和 build lane 已形成活跃主路径。
+`Jolt` 当前是 `.jazor` 的唯一开发时边界。In-proc Razor/Roslyn、Deno frontend worker、LSP bridge/coordinator、Dev Server/HMR、SourceMap 管线和 build lane 已形成活跃主路径。
 
 **下一步行动**：
 
@@ -106,13 +106,13 @@ Emit 不是单独的大专题，但确实是多个工作流共同的承接层。
    - 在不破坏当前主线稳定性的前提下逐步扩展
 
 **深度文档**：
-- [VueHost 状态快照](../03-完成/vuehost/status.md)
+- [Jolt 状态快照](../03-完成/jolt/status.md)
 
 ---
 
 ### SourceMap
 
-**当前状态**：broad programme 仍偏保守；narrow lane（VueHost / Deno）已形成可运行链路并进入收口阶段。
+**当前状态**：broad programme 仍偏保守；narrow lane（Jolt / Deno）已形成可运行链路并进入收口阶段。
 
 SourceMap 当前不是“全 deferred”也不是“全 active”。更准确的状态是：构建/服务主链路已可用，调试消费与精度仍需持续补齐。
 
@@ -141,13 +141,13 @@ SourceMap 当前不是“全 deferred”也不是“全 active”。更准确的
 
 ### Gate B. Emit / materialisation 桥接优先于下游闭环声明
 
-如果 host-facing 交接仍然不清楚，就不能声称下游工作流已经闭环。这个门槛对 VueHost artifact / manifest 流程和 SourceMap writer / bundle chaining 流程都很重要。
+如果 host-facing 交接仍然不清楚，就不能声称下游工作流已经闭环。这个门槛对 Jolt artifact / manifest 流程和 SourceMap writer / bundle chaining 流程都很重要。
 
-### Gate C. Jazor.VueHost 最小路径优先于 authoring 广度
+### Gate C. Jolt 最小路径优先于 authoring 广度
 
-Authoring 扩张应该建立在已闭环的最小 Jazor.VueHost 路径上，而不是绕过它。
+Authoring 扩张应该建立在已闭环的最小 Jolt 路径上，而不是绕过它。
 
-### Gate D. Jazor.VueHost authoring 不能分叉核心语义
+### Gate D. Jolt authoring 不能分叉核心语义
 
 在跨过 mid-authoring review gate 之前，必须确认：
 - stub-as-truth-source 仍然成立

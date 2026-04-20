@@ -97,7 +97,7 @@ dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter FullyQuali
 
 补充（本轮注释收尾验证）：
 
-- 当前工作区 `VueHost` 路线存在既有编译错误（与 RazorVue 改动无关），因此本轮采用 RazorVue 路线独立项目构建验证：
+- 当前工作区 `Jolt` 路线存在既有编译错误（与 RazorVue 改动无关），因此本轮采用 RazorVue 路线独立项目构建验证：
   - `dotnet build src/Jazor.RazorVue/Jazor.RazorVue.csproj` ✅
   - `dotnet build src/Jazor.RazorVue.Analysis/Jazor.RazorVue.Analysis.csproj` ✅
   - `dotnet build src/Jazor.Analyzer/Jazor.Analyzer.csproj` ✅

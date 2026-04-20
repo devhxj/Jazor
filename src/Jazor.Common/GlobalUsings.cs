@@ -7,3 +7,7 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Jazor.Compiler.Generator")]
 [assembly: InternalsVisibleTo("Jazor.SourceGeneration")]
 [assembly: InternalsVisibleTo("Jazor.CLR")]
+[assembly: InternalsVisibleTo("Jazor.Emit")]
+[assembly: InternalsVisibleTo("Jazor.EmitTest")]
+[assembly: InternalsVisibleTo("Jolt")]
+[assembly: InternalsVisibleTo("Jazor.CompilerTest")]

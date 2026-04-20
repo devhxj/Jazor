@@ -297,7 +297,7 @@ namespace Jazor.EmitTest
             var catalog = RazorVueCatalogReader.TryRead(typeof(RazorVueCatalogReaderTests).Assembly);
             Assert.IsNotNull(catalog);
 
-            var manifest = RazorVueManifestModel.Create(catalog);
+            var manifest = RazorVueManifestFactory.Create(catalog);
 
             Assert.AreEqual("RazorVue.Reader.Tests", manifest.AssemblyName);
             Assert.HasCount(1, manifest.Modules);
@@ -321,7 +321,7 @@ namespace Jazor.EmitTest
             try
             {
                 manifest.Save(manifestPath);
-                var loaded = RazorVueManifestModel.TryLoad(manifestPath);
+                var loaded = RazorVueManifestSerializer.TryLoad(manifestPath);
 
                 Assert.IsNotNull(loaded);
                 Assert.AreEqual(manifest.AssemblyName, loaded.AssemblyName);
@@ -369,7 +369,7 @@ namespace Jazor.EmitTest
                         []),
                 ]);
 
-            var manifest = RazorVueManifestModel.Create(catalog);
+            var manifest = RazorVueManifestFactory.Create(catalog);
 
             CollectionAssert.AreEqual(
                 new[] { "vuetify/base", "vuetify/styles" },
@@ -426,7 +426,7 @@ namespace Jazor.EmitTest
                     }
                     """.ReplaceLineEndings("\n"));
 
-                var manifest = RazorVueManifestModel.TryLoad(manifestPath);
+                var manifest = RazorVueManifestSerializer.TryLoad(manifestPath);
 
                 Assert.IsNotNull(manifest);
                 CollectionAssert.AreEqual(

@@ -6,8 +6,8 @@
 
 | 文件 | 说明 |
 |------|------|
-| `obsolete/jazor-ls-bun-vite.md` | 旧的 Bun/Vite 分离方案，已被 VueHost + Deno 替代 |
-| `obsolete/razorvue-stage-assessment.md` | RazorVue 历史阶段评估，当前活跃边界为 VueHost |
+| `obsolete/jazor-ls-bun-vite.md` | 旧的 Bun/Vite 分离方案，已被 Jolt + Deno 替代 |
+| `obsolete/razorvue-stage-assessment.md` | RazorVue 历史阶段评估，当前活跃边界为 Jolt |
 | `tasks/` | 各项目的历史 task.md / rule.md 文件 |
 
 ## 保留规则

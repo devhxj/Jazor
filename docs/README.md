@@ -5,7 +5,7 @@
 | 线路 | 模式 | 说明 |
 |------|------|------|
 | **RazorVue** | 库模式 | Source Generator 驱动，不使用 .vue SFC，编译时转换 |
-| **VueHost** | 全功能模式 | 类似 Vite，支持 .jazor + .vue SFC，LSP + HMR + Debug + Build |
+| **Jolt** | 全功能模式 | 类似 Vite，支持 .jazor + .vue SFC，LSP + HMR + Debug + Build |
 
 ## 导航
 
@@ -32,14 +32,14 @@
 | `01-目标/webidl/` | `src/ECMAScript.WebIDL.Generator/` |
 | `01-目标/razor/` | `src/Jazor.Razor/` |
 | `01-目标/razorvue/` | `src/Jazor.RazorVue/`（库模式 + Vuetify） |
-| `01-目标/vuehost/` | `src/Jazor.VueHost/`（全功能模式） |
+| `01-目标/jolt/` | `src/Jolt/`（全功能模式） |
 | `01-目标/common/` | `src/Jazor.Common/` + `src/Jazor.Name/` |
 | `01-目标/tools/` | `src/Jazor/` + VSCode + Test |
 | **02-计划** | |
-| `02-计划/vuehost/` | `src/Jazor.VueHost/`（Phase 1–7） |
+| `02-计划/jolt/` | `src/Jolt/`（Phase 1–7） |
 | `02-计划/compiler/` | `src/Jazor.Compiler/` 实施清单 |
 | **03-完成** | |
-| `03-完成/vuehost/` | `src/Jazor.VueHost/` |
+| `03-完成/jolt/` | `src/Jolt/` |
 | `03-完成/razorvue/` | `src/Jazor.RazorVue/` |
 | `03-完成/compiler/` | `src/Jazor.Compiler/` |
 | `03-完成/emit/` | `src/Jazor.Emit/` |
@@ -47,8 +47,8 @@
 ## 快速入口
 
 - 恢复工作 → [02-计划/workstream-dashboard.md](./02-计划/workstream-dashboard.md)
-- VueHost 进度 → [03-完成/vuehost/completion-analysis.md](./03-完成/vuehost/completion-analysis.md)
+- Jolt 进度 → [03-完成/jolt/completion-analysis.md](./03-完成/jolt/completion-analysis.md)
 - 编译器架构 → [01-目标/compiler/ArchitectureOverview.Simplified.md](./01-目标/compiler/ArchitectureOverview.Simplified.md)
 - 白名单机制 → [01-目标/clr/](./01-目标/clr/README.md)
 - RazorVue 库模式 → [01-目标/razorvue/](./01-目标/razorvue/README.md)
-- VueHost 全功能模式 → [01-目标/vuehost/](./01-目标/vuehost/README.md)
+- Jolt 全功能模式 → [01-目标/jolt/](./01-目标/jolt/README.md)

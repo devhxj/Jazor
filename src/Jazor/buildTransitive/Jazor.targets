@@ -7,6 +7,7 @@
       <_JazorEmitOutDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorOutDir)')), '[\\/]+$', ''))</_JazorEmitOutDir>
       <JazorManifestPath Condition="'$(JazorManifestPath)' == ''">$(_JazorEmitOutDir)\jazor-manifest.json</JazorManifestPath>
       <JazorRazorVueManifestPath Condition="'$(JazorRazorVueManifestPath)' == ''">$(_JazorEmitOutDir)\jazor-manifest-razorvue.json</JazorRazorVueManifestPath>
+      <JazorRazorVueHostRequirementsModulePath Condition="'$(JazorRazorVueHostRequirementsModulePath)' == '' and '$(JazorRazorJoltRequirementsModulePath)' != ''">$(JazorRazorJoltRequirementsModulePath)</JazorRazorVueHostRequirementsModulePath>
       <JazorRazorVueHostRequirementsModulePath Condition="'$(JazorRazorVueHostRequirementsModulePath)' == ''">$(_JazorEmitOutDir)\__jazor\razorvue-host.mjs</JazorRazorVueHostRequirementsModulePath>
       <JazorPreviousRazorVueManifestSnapshotPath Condition="'$(JazorPreviousRazorVueManifestSnapshotPath)' == ''">$([System.IO.Path]::Combine('$(IntermediateOutputPath)', 'jazor', 'previous-jazor-manifest-razorvue.json'))</JazorPreviousRazorVueManifestSnapshotPath>
       <_JazorEmitManifestPath>$([System.IO.Path]::GetFullPath('$(JazorManifestPath)'))</_JazorEmitManifestPath>
@@ -39,6 +40,7 @@
       <JazorManifestPath Condition="'$(JazorManifestPath)' == ''">$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorOutDir)')), '[\\/]+$', ''))\jazor-manifest.json</JazorManifestPath>
       <_JazorBundleOut>$([System.IO.Path]::GetFullPath('$(JazorBundleOut)'))</_JazorBundleOut>
       <JazorBundleRazorVueCssPath Condition="'$(JazorBundleRazorVueCssPath)' == ''">$([System.IO.Path]::Combine($([System.IO.Path]::GetDirectoryName('$(_JazorBundleOut)')), $([System.String]::Concat($([System.IO.Path]::GetFileNameWithoutExtension('$(_JazorBundleOut)')), '.razorvue.css'))))</JazorBundleRazorVueCssPath>
+      <JazorBundleRazorVueHostContractPath Condition="'$(JazorBundleRazorVueHostContractPath)' == '' and '$(JazorBundleRazorJoltContractPath)' != ''">$(JazorBundleRazorJoltContractPath)</JazorBundleRazorVueHostContractPath>
       <JazorBundleRazorVueHostContractPath Condition="'$(JazorBundleRazorVueHostContractPath)' == ''">$([System.IO.Path]::Combine($([System.IO.Path]::GetDirectoryName('$(_JazorBundleOut)')), $([System.String]::Concat($([System.IO.Path]::GetFileNameWithoutExtension('$(_JazorBundleOut)')), '.razorvue.host.json'))))</JazorBundleRazorVueHostContractPath>
       <JazorBundleRazorVueUpdatePlanPath Condition="'$(JazorBundleRazorVueUpdatePlanPath)' == ''">$([System.IO.Path]::Combine($([System.IO.Path]::GetDirectoryName('$(_JazorBundleOut)')), $([System.String]::Concat($([System.IO.Path]::GetFileNameWithoutExtension('$(_JazorBundleOut)')), '.razorvue.update-plan.json'))))</JazorBundleRazorVueUpdatePlanPath>
       <JazorPreviousRazorVueManifestSnapshotPath Condition="'$(JazorPreviousRazorVueManifestSnapshotPath)' == ''">$([System.IO.Path]::Combine('$(IntermediateOutputPath)', 'jazor', 'previous-jazor-manifest-razorvue.json'))</JazorPreviousRazorVueManifestSnapshotPath>

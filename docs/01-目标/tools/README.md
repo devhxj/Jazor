@@ -18,9 +18,9 @@
 
 ### Jazor.VSCodeExtension（VS Code 扩展）
 
-VueHost 的 VS Code Language Client 集成：
+Jolt 的 VS Code Language Client 集成：
 
-- 启动 `Jazor.VueHost --language-server` 作为 LSP 后端
+- 启动 `Jolt --language-server` 作为 LSP 后端
 - 提供语法高亮、智能补全、错误诊断、Go to Definition 等 IDE 功能
 - 支持 `.jazor` 文件类型关联
 
@@ -34,13 +34,13 @@ VueHost 的 VS Code Language Client 集成：
 
 ## 已废弃的项目
 
-以下项目为空壳目录（源码已移除），功能已被 Jazor.VueHost 吸收：
+以下项目为空壳目录（源码已移除），功能已被 Jolt 吸收：
 
 | 项目 | 原定用途 |
 |------|---------|
-| `Jazor.Vite` | Vite 前端集成（已由 VueHost 内置 Deno 管线替代） |
-| `Jazor.Vue` | Vue 核心抽象（已合并到 RazorVue/VueHost） |
+| `Jazor.Vite` | Vite 前端集成（已由 Jolt 内置 Deno 管线替代） |
+| `Jazor.Vue` | Vue 核心抽象（已合并到 RazorVue/Jolt） |
 | `Jazor.Vue.Analysis` | Vue 模板分析（已合并到 RazorVue.Analysis） |
-| `Jazor.Vue.Analysis.Host` | 分析驱动进程（已合并到 VueHost） |
-| `Jazor.Vue.Analysis.Runtime` | 分析运行时（已合并到 VueHost） |
-| `Jazor.VueContracts` | 通信契约（已合并到 VueHost RPC 层） |
+| `Jazor.Vue.Analysis.Host` | 分析驱动进程（已合并到 Jolt） |
+| `Jazor.Vue.Analysis.Runtime` | 分析运行时（已合并到 Jolt） |
+| `Jazor.VueContracts` | 通信契约（已合并到 Jolt RPC 层） |

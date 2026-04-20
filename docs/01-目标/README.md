@@ -7,7 +7,7 @@
 | 线路 | 模式 | 文档目录 | 对应源码 |
 |------|------|---------|---------|
 | **RazorVue** | 库模式（Source Generator，不使用 .vue SFC） | `razorvue/` | `src/Jazor.RazorVue/` |
-| **VueHost** | 全功能模式（类似 Vite，支持 .jazor + .vue SFC） | `vuehost/` | `src/Jazor.VueHost/` |
+| **Jolt** | 全功能模式（类似 Vite，支持 .jazor + .vue SFC） | `jolt/` | `src/Jolt/` |
 
 ## 按项目结构索引
 
@@ -24,7 +24,7 @@
 | `razor/` | `src/Jazor.Razor/` + `src/Jazor.Compiler.Razor/` | Razor 语法到 Jazor 编译管线的桥接层 |
 | `razorvue/` | `src/Jazor.RazorVue/` + Analysis + Vuetify | **库模式**：Source Generator、Vuetify 组件库 |
 | `razorvue/design/` | `src/Jazor.RazorVue/` | RazorVue 设计决策与约束（11 个文件） |
-| `vuehost/` | `src/Jazor.VueHost/` | **全功能模式**：LSP + DevServer + HMR + Debug + Build |
+| `jolt/` | `src/Jolt/` | **全功能模式**：LSP + DevServer + HMR + Debug + Build |
 | `common/` | `src/Jazor.Common/` + `src/Jazor.Name/` | 跨项目共享契约与命名工具 |
 | `tools/` | `src/Jazor/` + VSCode + Test | NuGet 打包、VS Code 扩展、集成测试 |
 
