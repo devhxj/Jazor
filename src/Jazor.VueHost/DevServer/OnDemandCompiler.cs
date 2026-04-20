@@ -19,6 +19,15 @@ internal sealed class OnDemandCompiler
     private static readonly Regex StaticCssImportPattern = new(
         @"^[ \t]*import\s*(?<quote>[""'])(?<specifier>[^""']+)\k<quote>\s*;?[ \t\r]*$",
         RegexOptions.Compiled | RegexOptions.Multiline);
+    private static readonly Regex StaticCssModuleDefaultImportPattern = new(
+        @"^[ \t]*import\s+(?<binding>[$_\p{L}][$_\p{L}\p{Nd}]*)\s+from\s*(?<quote>[""'])(?<specifier>[^""']+)\k<quote>\s*;?[ \t\r]*$",
+        RegexOptions.Compiled | RegexOptions.Multiline | RegexOptions.CultureInvariant);
+    private static readonly Regex StaticCssModuleNamespaceImportPattern = new(
+        @"^[ \t]*import\s+\*\s+as\s+(?<binding>[$_\p{L}][$_\p{L}\p{Nd}]*)\s+from\s*(?<quote>[""'])(?<specifier>[^""']+)\k<quote>\s*;?[ \t\r]*$",
+        RegexOptions.Compiled | RegexOptions.Multiline | RegexOptions.CultureInvariant);
+    private static readonly Regex StaticCssModuleNamedDefaultImportPattern = new(
+        @"^[ \t]*import\s*\{\s*default\s+as\s+(?<binding>[$_\p{L}][$_\p{L}\p{Nd}]*)\s*\}\s+from\s*(?<quote>[""'])(?<specifier>[^""']+)\k<quote>\s*;?[ \t\r]*$",
+        RegexOptions.Compiled | RegexOptions.Multiline | RegexOptions.CultureInvariant);
 
     private readonly JazorVueParser _parser;
     private readonly JazorVueCompiler _compiler;
@@ -186,8 +195,8 @@ internal sealed class OnDemandCompiler
             ".jazor" => await CompileJazorAsync(absolutePath, text, companionDocuments, cancellationToken),
             ".vue" => await CompileVueAsync(absolutePath, text, cancellationToken),
             ".ts" => await CompileTypeScriptAsync(absolutePath, text, cancellationToken),
-            ".js" => CreateJavaScriptPassThrough(text),
-            ".css" => CreateStylePassThrough(text),
+            ".js" => await CompileJavaScriptAsync(absolutePath, text, cancellationToken),
+            ".css" => await CompileStyleAsync(absolutePath, text, cancellationToken),
             ".html" => CreatePassThrough("text/html", text),
             _ => new CompilationResult
             {
@@ -268,13 +277,13 @@ internal sealed class OnDemandCompiler
         var hotReloadManifestEntry = CreateJazorHotReloadManifestEntry(absolutePath, document, compilation: sfc, module, companionDocuments);
         var moduleSignature = ComputeJazorModuleSignature(module.JavaScript, hotReloadManifestEntry);
         var chainedSourceMap = ChainJazorSourceMap(module.SourceMap, sfc);
-        var javaScript = PrepareJavaScriptForCurrentMode(absolutePath, module.JavaScript, module.StyleContent, out var generatedLineOffset);
-        var servedSourceMap = OffsetSourceMapGeneratedLines(chainedSourceMap, generatedLineOffset);
+        var preparedJavaScript = await PrepareJavaScriptForCurrentModeAsync(absolutePath, module.JavaScript, module.StyleContent, cancellationToken);
+        var servedSourceMap = OffsetSourceMapGeneratedLines(chainedSourceMap, preparedJavaScript.GeneratedLineOffset);
 
         return new CompilationResult
         {
             ContentType = "text/javascript",
-            Content = AttachInlineSourceMap(javaScript, servedSourceMap),
+            Content = AttachInlineSourceMap(preparedJavaScript.Content, servedSourceMap),
             ModuleSignature = moduleSignature,
             HotReloadManifestEntry = hotReloadManifestEntry,
             SourceMap = servedSourceMap,
@@ -299,12 +308,12 @@ internal sealed class OnDemandCompiler
             return CreateFrontendUnavailableResult("Vue SFC compilation is not available because the frontend compiler is unavailable.");
         }
 
-        var javaScript = PrepareJavaScriptForCurrentMode(absolutePath, module.JavaScript, module.StyleContent, out var generatedLineOffset);
-        var servedSourceMap = OffsetSourceMapGeneratedLines(module.SourceMap, generatedLineOffset);
+        var preparedJavaScript = await PrepareJavaScriptForCurrentModeAsync(absolutePath, module.JavaScript, module.StyleContent, cancellationToken);
+        var servedSourceMap = OffsetSourceMapGeneratedLines(module.SourceMap, preparedJavaScript.GeneratedLineOffset);
         return new CompilationResult
         {
             ContentType = "text/javascript",
-            Content = AttachInlineSourceMap(javaScript, servedSourceMap),
+            Content = AttachInlineSourceMap(preparedJavaScript.Content, servedSourceMap),
             ModuleSignature = ComputeContentHash(module.JavaScript),
             SourceMap = servedSourceMap,
             StyleContent = module.StyleContent,
@@ -321,28 +330,31 @@ internal sealed class OnDemandCompiler
         CancellationToken cancellationToken)
     {
         var module = await _frontendCompiler.CompileTypeScriptAsync(absolutePath, text, cancellationToken);
-        var javaScript = module is null
-            ? null
-            : PrepareJavaScriptForCurrentMode(absolutePath, module.JavaScript, styleContent: null, out _);
+        var preparedJavaScript = module is null
+            ? default
+            : await PrepareJavaScriptForCurrentModeAsync(absolutePath, module.JavaScript, styleContent: null, cancellationToken);
         return module is null
             ? CreateFrontendUnavailableResult("TypeScript transpilation is not available because the frontend compiler is unavailable.")
             : new CompilationResult
             {
                 ContentType = "text/javascript",
-                Content = AttachInlineSourceMap(javaScript!, module.SourceMap),
+                Content = AttachInlineSourceMap(preparedJavaScript.Content, module.SourceMap),
                 ModuleSignature = ComputeContentHash(module.JavaScript),
                 SourceMap = module.SourceMap,
                 Dependencies = module.Dependencies
             };
     }
 
-    private CompilationResult CreateJavaScriptPassThrough(string content)
+    private async ValueTask<CompilationResult> CompileJavaScriptAsync(
+        string absolutePath,
+        string content,
+        CancellationToken cancellationToken)
         => !_buildMode
             ? CreatePassThrough("text/javascript", content)
             : new CompilationResult
             {
                 ContentType = "text/javascript",
-                Content = StripBuildCssImports(content),
+                Content = await TransformBuildJavaScriptAsync(absolutePath, content, cancellationToken),
                 Dependencies = DenoFrontendModuleCompiler.ExtractJavaScriptDependencies(content)
             };
 
@@ -360,6 +372,48 @@ internal sealed class OnDemandCompiler
             Content = content,
             StyleContent = content
         };
+
+    private async ValueTask<CompilationResult> CompileStyleAsync(
+        string absolutePath,
+        string content,
+        CancellationToken cancellationToken)
+    {
+        if (!LooksLikeCssModulePath(absolutePath))
+        {
+            return CreateStylePassThrough(content);
+        }
+
+        var module = await _frontendCompiler.CompileCssModuleAsync(absolutePath, content, cancellationToken);
+        if (module is null)
+        {
+            return CreateFrontendUnavailableResult("CSS Modules compilation is not available because the frontend compiler is unavailable.");
+        }
+
+        if (_buildMode)
+        {
+            return new CompilationResult
+            {
+                ContentType = "text/css",
+                Content = module.CssContent,
+                StyleContent = module.CssContent,
+                CssModuleMappings = module.Mappings,
+                Diagnostics = module.Diagnostics
+            };
+        }
+
+        var cssModuleJavaScript = CreateCssModuleJavaScript(module.Mappings);
+        var servedModule = CreateServedModule(absolutePath, cssModuleJavaScript, module.CssContent);
+        return new CompilationResult
+        {
+            ContentType = "text/javascript",
+            Content = servedModule.Content,
+            ModuleSignature = ComputeContentHash(servedModule.Content),
+            StyleContent = module.CssContent,
+            CssModuleMappings = module.Mappings,
+            Diagnostics = module.Diagnostics,
+            SupportsHmr = true
+        };
+    }
 
     private static CompilationResult CreateFrontendUnavailableResult(
         string message,
@@ -405,21 +459,21 @@ internal sealed class OnDemandCompiler
             CountLines(prefix));
     }
 
-    private string PrepareJavaScriptForCurrentMode(
+    private async ValueTask<PreparedJavaScriptContent> PrepareJavaScriptForCurrentModeAsync(
         string documentPath,
         string javaScript,
         string? styleContent,
-        out int generatedLineOffset)
+        CancellationToken cancellationToken)
     {
         if (_buildMode)
         {
-            generatedLineOffset = 0;
-            return StripBuildCssImports(javaScript);
+            return new PreparedJavaScriptContent(
+                await TransformBuildJavaScriptAsync(documentPath, javaScript, cancellationToken),
+                GeneratedLineOffset: 0);
         }
 
         var servedModule = CreateServedModule(documentPath, javaScript, styleContent);
-        generatedLineOffset = servedModule.JavaScriptLineOffset;
-        return servedModule.Content;
+        return new PreparedJavaScriptContent(servedModule.Content, servedModule.JavaScriptLineOffset);
     }
 
     private string GetStyleTargetId(string documentPath)
@@ -462,6 +516,15 @@ internal sealed class OnDemandCompiler
         return normalized.EndsWith(".css", StringComparison.OrdinalIgnoreCase);
     }
 
+    private static bool LooksLikeCssModuleSpecifier(string specifier)
+    {
+        var normalized = StripQueryAndHash(specifier).Trim();
+        return normalized.EndsWith(".module.css", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool LooksLikeCssModulePath(string path)
+        => path.EndsWith(".module.css", StringComparison.OrdinalIgnoreCase);
+
     private static string StripQueryAndHash(string value)
     {
         var index = value.IndexOfAny(['?', '#']);
@@ -482,6 +545,176 @@ internal sealed class OnDemandCompiler
         }
 
         return new string(buffer);
+    }
+
+    private async ValueTask<string> TransformBuildJavaScriptAsync(
+        string documentPath,
+        string javaScript,
+        CancellationToken cancellationToken)
+    {
+        var strippedJavaScript = StripBuildCssImports(javaScript);
+        var withDefaultCssModules = await RewriteBuildCssModuleImportsAsync(
+            documentPath,
+            strippedJavaScript,
+            StaticCssModuleDefaultImportPattern,
+            cancellationToken);
+        var withNamespaceCssModules = await RewriteBuildCssModuleImportsAsync(
+            documentPath,
+            withDefaultCssModules,
+            StaticCssModuleNamespaceImportPattern,
+            cancellationToken);
+        return await RewriteBuildCssModuleImportsAsync(
+            documentPath,
+            withNamespaceCssModules,
+            StaticCssModuleNamedDefaultImportPattern,
+            cancellationToken);
+    }
+
+    private async ValueTask<string> RewriteBuildCssModuleImportsAsync(
+        string documentPath,
+        string javaScript,
+        Regex importPattern,
+        CancellationToken cancellationToken)
+    {
+        return await ReplaceMatchesAsync(
+            importPattern,
+            javaScript,
+            async match =>
+            {
+                var specifier = match.Groups["specifier"].Value;
+                if (!LooksLikeCssModuleSpecifier(specifier))
+                {
+                    return match.Value;
+                }
+
+                var mappings = await ResolveCssModuleMappingsAsync(documentPath, specifier, cancellationToken);
+                var binding = match.Groups["binding"].Value;
+                return CreateCssModuleImportReplacement(match.Value, binding, mappings);
+            });
+    }
+
+    private async ValueTask<IReadOnlyDictionary<string, string>> ResolveCssModuleMappingsAsync(
+        string importerPath,
+        string specifier,
+        CancellationToken cancellationToken)
+    {
+        if (_moduleResolver is null)
+        {
+            throw new InvalidOperationException("CSS Modules resolution requires a module resolver in build mode.");
+        }
+
+        var resolved = _moduleResolver.Resolve(specifier, importerPath);
+        if (!resolved.Found || resolved.IsVirtual)
+        {
+            throw new InvalidOperationException(
+                string.IsNullOrWhiteSpace(resolved.Error)
+                    ? $"Unable to resolve CSS module '{specifier}' from '{importerPath}'."
+                    : resolved.Error);
+        }
+
+        if (!LooksLikeCssModulePath(resolved.AbsolutePath))
+        {
+            throw new InvalidOperationException(
+                $"Resolved CSS module '{specifier}' from '{importerPath}' to unsupported path '{resolved.AbsolutePath}'.");
+        }
+
+        var cssModuleResult = await CompileAsync(resolved.AbsolutePath, cancellationToken);
+        if (cssModuleResult.IsError)
+        {
+            throw new InvalidOperationException(
+                string.IsNullOrWhiteSpace(cssModuleResult.ErrorMessage)
+                    ? $"Failed to compile CSS module '{specifier}'."
+                    : cssModuleResult.ErrorMessage);
+        }
+
+        return cssModuleResult.CssModuleMappings;
+    }
+
+    private static string CreateCssModuleImportReplacement(
+        string originalImport,
+        string binding,
+        IReadOnlyDictionary<string, string> mappings)
+    {
+        var serializedMappings = System.Text.Json.JsonSerializer.Serialize(
+            mappings
+                .OrderBy(static entry => entry.Key, StringComparer.Ordinal)
+                .ToDictionary(static entry => entry.Key, static entry => entry.Value, StringComparer.Ordinal));
+        var indentation = GetLeadingIndentation(originalImport);
+        return $"{indentation}const {binding} = {serializedMappings};";
+    }
+
+    private static string CreateCssModuleJavaScript(IReadOnlyDictionary<string, string> mappings)
+    {
+        var serializedMappings = System.Text.Json.JsonSerializer.Serialize(
+            mappings
+                .OrderBy(static entry => entry.Key, StringComparer.Ordinal)
+                .ToDictionary(static entry => entry.Key, static entry => entry.Value, StringComparer.Ordinal));
+        return $$"""
+            const __jazorHotContext = import.meta.hot ?? globalThis.__JAZOR_HMR__?.createHotContext(import.meta.url);
+            if (__jazorHotContext) {
+              import.meta.hot = __jazorHotContext;
+            }
+
+            const __jazorCssModules = {{serializedMappings}};
+            function __jazorSyncCssModules(target, source) {
+              for (const key of Object.keys(target)) {
+                if (!(key in source)) {
+                  delete target[key];
+                }
+              }
+
+              Object.assign(target, source);
+            }
+
+            export default __jazorCssModules;
+
+            if (import.meta.hot) {
+              import.meta.hot.accept((updatedModule) => {
+                const updatedMappings = updatedModule?.default;
+                if (!updatedMappings || typeof updatedMappings !== "object") {
+                  import.meta.hot.invalidate?.("CSS modules update payload was unavailable.");
+                  return;
+                }
+
+                __jazorSyncCssModules(__jazorCssModules, updatedMappings);
+              });
+            }
+            """;
+    }
+
+    private static string GetLeadingIndentation(string value)
+    {
+        var length = 0;
+        while (length < value.Length && (value[length] == ' ' || value[length] == '\t'))
+        {
+            length++;
+        }
+
+        return value[..length];
+    }
+
+    private static async ValueTask<string> ReplaceMatchesAsync(
+        Regex pattern,
+        string input,
+        Func<Match, ValueTask<string>> replacementFactory)
+    {
+        var matches = pattern.Matches(input);
+        if (matches.Count == 0)
+        {
+            return input;
+        }
+
+        var builder = new StringBuilder(input.Length);
+        var currentIndex = 0;
+        foreach (Match match in matches)
+        {
+            builder.Append(input, currentIndex, match.Index - currentIndex);
+            builder.Append(await replacementFactory(match));
+            currentIndex = match.Index + match.Length;
+        }
+
+        builder.Append(input, currentIndex, input.Length - currentIndex);
+        return builder.ToString();
     }
 
     private static string? OffsetSourceMapGeneratedLines(string? sourceMap, int generatedLineOffset)
@@ -705,4 +938,8 @@ internal sealed class OnDemandCompiler
     private readonly record struct ServedModuleContent(
         string Content,
         int JavaScriptLineOffset);
+
+    private readonly record struct PreparedJavaScriptContent(
+        string Content,
+        int GeneratedLineOffset);
 }

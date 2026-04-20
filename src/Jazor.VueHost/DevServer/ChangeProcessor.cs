@@ -168,6 +168,12 @@ internal sealed class ChangeProcessor
             return scriptHotUpdate;
         }
 
+        var cssModuleHotUpdate = await TryCreateCssModuleHotUpdateAsync(normalizedChangedPaths, documentOverrides, cancellationToken);
+        if (cssModuleHotUpdate is not null)
+        {
+            return cssModuleHotUpdate;
+        }
+
         var styleUpdate = await TryCreateStyleUpdateAsync(normalizedChangedPaths, documentOverrides, cancellationToken);
         if (styleUpdate is not null)
         {
@@ -262,7 +268,9 @@ internal sealed class ChangeProcessor
             return null;
         }
 
-        if (changedPaths.All(static path => path.EndsWith(".css", StringComparison.OrdinalIgnoreCase)))
+        if (changedPaths.All(static path =>
+                path.EndsWith(".css", StringComparison.OrdinalIgnoreCase)
+                && !path.EndsWith(".module.css", StringComparison.OrdinalIgnoreCase)))
         {
             var cssAffectedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var changedPath in changedPaths)
@@ -522,6 +530,88 @@ internal sealed class ChangeProcessor
             AffectedPaths = affectedPaths.Order(StringComparer.OrdinalIgnoreCase).ToArray(),
             JavaScriptUpdates = jsUpdates
         };
+    }
+
+    private async ValueTask<ChangeProcessingResult?> TryCreateCssModuleHotUpdateAsync(
+        IReadOnlyList<string> changedPaths,
+        IReadOnlyDictionary<string, DocumentSnapshot>? documentOverrides,
+        CancellationToken cancellationToken)
+    {
+        if (changedPaths.Count == 0
+            || changedPaths.Any(static path => !path.EndsWith(".module.css", StringComparison.OrdinalIgnoreCase)))
+        {
+            return null;
+        }
+
+        var affectedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var jsUpdates = new List<JavaScriptHotUpdate>(changedPaths.Count);
+
+        foreach (var changedPath in changedPaths.Order(StringComparer.OrdinalIgnoreCase))
+        {
+            if (!_compiler.TryGetCachedResult(changedPath, out var previousResult) || previousResult is null)
+            {
+                return null;
+            }
+
+            affectedPaths.Add(changedPath);
+            foreach (var dependent in _dependencyGraph.GetAllAffectedModules(changedPath))
+            {
+                affectedPaths.Add(dependent);
+            }
+
+            var nextResult = await RecompileAsync(changedPath, documentOverrides, cancellationToken);
+            if (nextResult.IsError)
+            {
+                return CreateErrorResult(
+                    changedPaths,
+                    affectedPaths.Order(StringComparer.OrdinalIgnoreCase).ToArray(),
+                    nextResult.ErrorMessage);
+            }
+
+            if (previousResult.IsError
+                || !nextResult.SupportsHmr
+                || !AreCssModuleMappingsEqual(previousResult.CssModuleMappings, nextResult.CssModuleMappings))
+            {
+                return null;
+            }
+
+            var resolvedUrl = _moduleResolver.GetResolvedUrlForAbsolutePath(changedPath);
+            jsUpdates.Add(
+                new JavaScriptHotUpdate
+                {
+                    Path = resolvedUrl,
+                    AcceptedPath = resolvedUrl
+                });
+        }
+
+        return new ChangeProcessingResult
+        {
+            UpdateKind = ChangeUpdateKind.JavaScriptUpdate,
+            ChangedPaths = changedPaths,
+            AffectedPaths = affectedPaths.Order(StringComparer.OrdinalIgnoreCase).ToArray(),
+            JavaScriptUpdates = jsUpdates
+        };
+    }
+
+    private static bool AreCssModuleMappingsEqual(
+        IReadOnlyDictionary<string, string> previousMappings,
+        IReadOnlyDictionary<string, string> nextMappings)
+    {
+        if (previousMappings.Count != nextMappings.Count)
+        {
+            return false;
+        }
+
+        foreach (var entry in previousMappings)
+        {
+            if (!nextMappings.TryGetValue(entry.Key, out var nextValue)
+                || !string.Equals(entry.Value, nextValue, StringComparison.Ordinal))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private async ValueTask<CompilationResult> RecompileAsync(

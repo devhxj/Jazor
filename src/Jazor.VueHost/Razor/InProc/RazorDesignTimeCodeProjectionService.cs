@@ -87,7 +87,12 @@ internal sealed class RazorDesignTimeCodeProjectionService
                 projectionMap);
             return true;
         }
-        catch (Exception) {
+        catch (TargetInvocationException)
+        {
+            return TryCreateFallbackProjection(document, out projection);
+        }
+        catch (SystemException)
+        {
             return TryCreateFallbackProjection(document, out projection);
         }
     }
@@ -286,14 +291,28 @@ internal sealed class RazorDesignTimeCodeProjectionService
             sourceMappings = GetSourceMappings(csharpDocument);
             return true;
         }
-        catch (Exception) when (TryGetGeneratedCodeDocumentByUnsafeFallback(
+        catch (TargetInvocationException) when (TryGetGeneratedCodeDocumentByUnsafeFallback(
                      codeDocument,
                      out generatedCode,
                      out sourceMappings))
         {
             return true;
         }
-        catch (Exception) {
+        catch (SystemException) when (TryGetGeneratedCodeDocumentByUnsafeFallback(
+                     codeDocument,
+                     out generatedCode,
+                     out sourceMappings))
+        {
+            return true;
+        }
+        catch (TargetInvocationException)
+        {
+            generatedCode = string.Empty;
+            sourceMappings = [];
+            return false;
+        }
+        catch (SystemException)
+        {
             generatedCode = string.Empty;
             sourceMappings = [];
             return false;
@@ -319,7 +338,14 @@ internal sealed class RazorDesignTimeCodeProjectionService
             sourceMappings = GetSourceMappings(csharpDocument);
             return !string.IsNullOrWhiteSpace(generatedCode);
         }
-        catch (Exception) {
+        catch (TargetInvocationException)
+        {
+            generatedCode = string.Empty;
+            sourceMappings = [];
+            return false;
+        }
+        catch (SystemException)
+        {
             generatedCode = string.Empty;
             sourceMappings = [];
             return false;

@@ -11,6 +11,12 @@ internal interface IFrontendModuleCompiler
         string documentPath,
         string text,
         CancellationToken cancellationToken);
+
+    ValueTask<CssModuleCompilation?> CompileCssModuleAsync(
+        string documentPath,
+        string text,
+        CancellationToken cancellationToken)
+        => ValueTask.FromResult<CssModuleCompilation?>(null);
 }
 
 internal sealed class FrontendModuleCompilation
@@ -39,6 +45,15 @@ internal sealed class CompiledStyleFragment
     public int? SourceLineStart { get; init; }
 
     public int? SourceLineCount { get; init; }
+}
+
+internal sealed class CssModuleCompilation
+{
+    public required string CssContent { get; init; }
+
+    public IReadOnlyDictionary<string, string> Mappings { get; init; } = new Dictionary<string, string>(StringComparer.Ordinal);
+
+    public IReadOnlyList<string> Diagnostics { get; init; } = [];
 }
 
 internal sealed class NullFrontendModuleCompiler : IFrontendModuleCompiler

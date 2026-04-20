@@ -446,14 +446,16 @@ internal sealed partial class BuildOrchestrator
 
         foreach (var (cssPath, ownerChunkPaths) in cssOwnerChunkPathsByPath.OrderBy(static entry => entry.Key, FilePathComparer))
         {
-            var cssText = await File.ReadAllTextAsync(cssPath, cancellationToken);
-            cssFragments.Add(new CssFragment(
-                cssText,
-                moduleResolver.GetResolvedUrlForAbsolutePath(cssPath).TrimStart('/'),
+            var cssFragment = await CreateCssDependencyFragmentAsync(
                 cssPath,
-                1,
-                CountSourceMapLines(cssText),
-                NormalizeOwnerChunkFilePaths(ownerChunkPaths, entryChunkFilePath: null)));
+                ownerChunkPaths,
+                cachedResults,
+                moduleResolver,
+                cancellationToken);
+            if (cssFragment is not null)
+            {
+                cssFragments.Add(cssFragment.Value);
+            }
         }
 
         return cssFragments;
@@ -490,14 +492,16 @@ internal sealed partial class BuildOrchestrator
 
         foreach (var (cssPath, ownerChunkPaths) in cssOwnerChunkPathsByPath.OrderBy(static entry => entry.Key, FilePathComparer))
         {
-            var cssText = await File.ReadAllTextAsync(cssPath, cancellationToken);
-            cssFragments.Add(new CssFragment(
-                cssText,
-                moduleResolver.GetResolvedUrlForAbsolutePath(cssPath).TrimStart('/'),
+            var cssFragment = await CreateCssDependencyFragmentAsync(
                 cssPath,
-                1,
-                CountSourceMapLines(cssText),
-                NormalizeOwnerChunkFilePaths(ownerChunkPaths, entryChunkFilePath: null)));
+                ownerChunkPaths,
+                cachedResults,
+                moduleResolver,
+                cancellationToken);
+            if (cssFragment is not null)
+            {
+                cssFragments.Add(cssFragment.Value);
+            }
         }
 
         return cssFragments;
@@ -1372,6 +1376,37 @@ internal sealed partial class BuildOrchestrator
         => string.IsNullOrWhiteSpace(styleFragment.SourcePath)
             ? modulePath
             : styleFragment.SourcePath!;
+
+    private static async ValueTask<CssFragment?> CreateCssDependencyFragmentAsync(
+        string cssPath,
+        IEnumerable<string> ownerChunkPaths,
+        IReadOnlyDictionary<string, CompilationResult> cachedResults,
+        ModuleResolver moduleResolver,
+        CancellationToken cancellationToken)
+    {
+        string? sourceText = null;
+        if (File.Exists(cssPath))
+        {
+            sourceText = await File.ReadAllTextAsync(cssPath, cancellationToken);
+        }
+
+        var emittedCss = cachedResults.TryGetValue(cssPath, out var cachedResult)
+            && !string.IsNullOrWhiteSpace(cachedResult.StyleContent)
+            ? cachedResult.StyleContent
+            : sourceText;
+        if (string.IsNullOrWhiteSpace(emittedCss))
+        {
+            return null;
+        }
+
+        return new CssFragment(
+            emittedCss!,
+            moduleResolver.GetResolvedUrlForAbsolutePath(cssPath).TrimStart('/'),
+            cssPath,
+            sourceText is null ? null : 1,
+            sourceText is null ? null : CountSourceMapLines(sourceText),
+            NormalizeOwnerChunkFilePaths(ownerChunkPaths, entryChunkFilePath: null));
+    }
 
 
 }

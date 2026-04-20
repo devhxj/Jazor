@@ -412,7 +412,16 @@ internal sealed class OutOfProcessExtensionProxy :
         {
             await workerClient.DisposeAsync();
         }
-        catch (Exception) {
+        catch (ObjectDisposedException)
+        {
+            // Ignore disposal failures while recovering from worker crashes.
+        }
+        catch (IOException)
+        {
+            // Ignore disposal failures while recovering from worker crashes.
+        }
+        catch (InvalidOperationException)
+        {
             // Ignore disposal failures while recovering from worker crashes.
         }
     }

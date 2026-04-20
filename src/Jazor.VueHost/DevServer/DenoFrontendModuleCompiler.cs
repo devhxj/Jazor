@@ -14,10 +14,12 @@ internal sealed class DenoFrontendModuleCompiler : IFrontendModuleCompiler
         RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
     private readonly IDenoVolarHost _host;
+    private readonly bool _isProduction;
 
-    public DenoFrontendModuleCompiler(IDenoVolarHost host)
+    public DenoFrontendModuleCompiler(IDenoVolarHost host, bool isProduction = false)
     {
         _host = host ?? throw new ArgumentNullException(nameof(host));
+        _isProduction = isProduction;
     }
 
     public async ValueTask<FrontendModuleCompilation?> CompileSfcAsync(
@@ -29,6 +31,7 @@ internal sealed class DenoFrontendModuleCompiler : IFrontendModuleCompiler
             documentPath,
             text,
             Path.GetFileName(documentPath),
+            _isProduction,
             cancellationToken);
         if (result is null)
         {
@@ -54,6 +57,30 @@ internal sealed class DenoFrontendModuleCompiler : IFrontendModuleCompiler
         string text,
         CancellationToken cancellationToken)
         => CompileTypeScriptCoreAsync(documentPath, text, cancellationToken);
+
+    public async ValueTask<CssModuleCompilation?> CompileCssModuleAsync(
+        string documentPath,
+        string text,
+        CancellationToken cancellationToken)
+    {
+        var result = await _host.CompileCssModuleAsync(
+            documentPath,
+            text,
+            documentPath,
+            _isProduction,
+            cancellationToken);
+        if (result is null)
+        {
+            return null;
+        }
+
+        return new CssModuleCompilation
+        {
+            CssContent = result.CssContent,
+            Mappings = result.Modules,
+            Diagnostics = result.Diagnostics
+        };
+    }
 
     private async ValueTask<FrontendModuleCompilation?> CompileTypeScriptCoreAsync(
         string documentPath,

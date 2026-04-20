@@ -21,6 +21,10 @@ namespace Jazor.CompilerTest;
 [TestClass]
 public sealed class JazorVueHostDevServerTests
 {
+    private static readonly TimeSpan TestFileChangeDebounceInterval = TimeSpan.FromMilliseconds(25);
+    private static readonly TimeSpan TestFileChangePollingInterval = TimeSpan.FromMilliseconds(100);
+    private static readonly TimeSpan NoDuplicateHmrMessageTimeout = TimeSpan.FromMilliseconds(500);
+
     [TestMethod]
     public void ModuleResolver_Resolve_RootPath_ReturnsIndexHtml()
     {
@@ -1515,13 +1519,7 @@ public sealed class JazorVueHostDevServerTests
             var stylePath = Path.Combine(rootDirectory, "site.css");
             await File.WriteAllTextAsync(stylePath, "body { color: red; }");
 
-            var options = new DevServerOptions
-            {
-                RootDirectory = rootDirectory,
-                Host = "127.0.0.1",
-                Port = 0,
-                HmrEnabled = true
-            };
+            var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
                 new Jazor.Vue.JazorVueParser(),
@@ -1553,7 +1551,7 @@ public sealed class JazorVueHostDevServerTests
                 new[] { "/site.css" },
                 updateMessage.GetProperty("paths").EnumerateArray().Select(static item => item.GetString()).ToArray());
 
-            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+            await AssertNoWebSocketJsonAsync(socket, NoDuplicateHmrMessageTimeout);
         }
         finally
         {
@@ -1573,13 +1571,7 @@ public sealed class JazorVueHostDevServerTests
             const string updatedText = "body { color: blue; }";
             await File.WriteAllTextAsync(stylePath, initialText);
 
-            var options = new DevServerOptions
-            {
-                RootDirectory = rootDirectory,
-                Host = "127.0.0.1",
-                Port = 0,
-                HmrEnabled = true
-            };
+            var options = CreateHmrTestOptions(rootDirectory);
             var workspaceStore = new InMemoryWorkspaceStore();
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
@@ -1622,7 +1614,425 @@ public sealed class JazorVueHostDevServerTests
                 await httpClient.GetStringAsync($"/site.css?t={DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}"));
 
             await File.WriteAllTextAsync(stylePath, updatedText);
-            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+            await AssertNoWebSocketJsonAsync(socket, NoDuplicateHmrMessageTimeout);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_HmrWebSocket_WhenUnsavedCssModuleChangeKeepsMappingsStable_BroadcastsJavaScriptUpdate()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body></body></html>");
+            var mainPath = Path.Combine(rootDirectory, "main.ts");
+            var stylePath = Path.Combine(rootDirectory, "app.module.css");
+            const string initialStyleText =
+                """
+                .hero {
+                  color: red;
+                }
+                """;
+            const string updatedStyleText =
+                """
+                .hero {
+                  color: blue;
+                }
+                """;
+            await File.WriteAllTextAsync(
+                mainPath,
+                """
+                import styles from "./app.module.css";
+                console.log(styles.hero);
+                """);
+            await File.WriteAllTextAsync(stylePath, initialStyleText);
+
+            var frontendCompiler = new FakeFrontendModuleCompiler
+            {
+                TypeScriptResult = new FrontendModuleCompilation
+                {
+                    JavaScript = """
+                        import styles from "./app.module.css";
+                        console.log(styles.hero);
+                        """,
+                    Dependencies = ["./app.module.css"]
+                },
+                CssModuleResult = new CssModuleCompilation
+                {
+                    CssContent = ".jz_app_module_hero_stable123 { color: red; }",
+                    Mappings = new Dictionary<string, string>(StringComparer.Ordinal)
+                    {
+                        ["hero"] = "jz_app_module_hero_stable123"
+                    }
+                }
+            };
+
+            var options = CreateHmrTestOptions(rootDirectory);
+            var workspaceStore = new InMemoryWorkspaceStore();
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                new DependencyGraph(moduleResolver),
+                moduleResolver);
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                moduleResolver,
+                new HtmlTransformer(options),
+                workspaceStore);
+
+            await server.StartAsync(CancellationToken.None);
+            Assert.IsNotNull(server.ListeningUri);
+
+            using var httpClient = new HttpClient { BaseAddress = server.ListeningUri };
+            _ = await httpClient.GetStringAsync("/main.ts");
+            var initialCssModule = await httpClient.GetStringAsync("/app.module.css");
+            StringAssert.Contains(initialCssModule, "jz_app_module_hero_stable123");
+            StringAssert.Contains(initialCssModule, "color: red");
+
+            using var socket = new ClientWebSocket();
+            await socket.ConnectAsync(ToWebSocketUri(server.ListeningUri!, "/@jazor/hmr"), CancellationToken.None);
+
+            var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
+
+            frontendCompiler.CssModuleResult = new CssModuleCompilation
+            {
+                CssContent = ".jz_app_module_hero_stable123 { color: blue; }",
+                Mappings = new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["hero"] = "jz_app_module_hero_stable123"
+                }
+            };
+            var workspaceDocument = new DocumentSnapshot(stylePath, DocumentKind.Css, updatedStyleText, version: "2");
+            await workspaceStore.UpsertDocumentAsync(workspaceDocument, CancellationToken.None);
+            await server.OnWorkspaceDocumentChangedAsync(workspaceDocument, CancellationToken.None);
+
+            var updateMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("update", updateMessage.GetProperty("type").GetString());
+            var updates = updateMessage.GetProperty("updates").EnumerateArray().ToArray();
+            Assert.AreEqual(1, updates.Length);
+            Assert.AreEqual("js-update", updates[0].GetProperty("type").GetString());
+            Assert.AreEqual("/app.module.css", updates[0].GetProperty("path").GetString());
+            Assert.AreEqual("/app.module.css", updates[0].GetProperty("acceptedPath").GetString());
+
+            var updatedCssModule = await httpClient.GetStringAsync("/app.module.css?t=2");
+            StringAssert.Contains(updatedCssModule, "jz_app_module_hero_stable123");
+            StringAssert.Contains(updatedCssModule, "color: blue");
+            await AssertNoWebSocketJsonAsync(socket, NoDuplicateHmrMessageTimeout);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_HmrWebSocket_WhenUnsavedCssModuleChangeChangesMappings_BroadcastsFullReload()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body></body></html>");
+            var mainPath = Path.Combine(rootDirectory, "main.ts");
+            var stylePath = Path.Combine(rootDirectory, "app.module.css");
+            const string initialStyleText =
+                """
+                .hero {
+                  color: red;
+                }
+                """;
+            const string updatedStyleText =
+                """
+                .hero {
+                  color: blue;
+                }
+                """;
+            await File.WriteAllTextAsync(
+                mainPath,
+                """
+                import styles from "./app.module.css";
+                console.log(styles.hero);
+                """);
+            await File.WriteAllTextAsync(stylePath, initialStyleText);
+
+            var frontendCompiler = new FakeFrontendModuleCompiler
+            {
+                TypeScriptResult = new FrontendModuleCompilation
+                {
+                    JavaScript = """
+                        import styles from "./app.module.css";
+                        console.log(styles.hero);
+                        """,
+                    Dependencies = ["./app.module.css"]
+                },
+                CssModuleResult = new CssModuleCompilation
+                {
+                    CssContent = ".jz_app_module_hero_oldhash01 { color: red; }",
+                    Mappings = new Dictionary<string, string>(StringComparer.Ordinal)
+                    {
+                        ["hero"] = "jz_app_module_hero_oldhash01"
+                    }
+                }
+            };
+
+            var options = CreateHmrTestOptions(rootDirectory);
+            var workspaceStore = new InMemoryWorkspaceStore();
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                new DependencyGraph(moduleResolver),
+                moduleResolver);
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                moduleResolver,
+                new HtmlTransformer(options),
+                workspaceStore);
+
+            await server.StartAsync(CancellationToken.None);
+            Assert.IsNotNull(server.ListeningUri);
+
+            using var httpClient = new HttpClient { BaseAddress = server.ListeningUri };
+            _ = await httpClient.GetStringAsync("/main.ts");
+            _ = await httpClient.GetStringAsync("/app.module.css");
+
+            using var socket = new ClientWebSocket();
+            await socket.ConnectAsync(ToWebSocketUri(server.ListeningUri!, "/@jazor/hmr"), CancellationToken.None);
+
+            var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
+
+            frontendCompiler.CssModuleResult = new CssModuleCompilation
+            {
+                CssContent = ".jz_app_module_hero_newhash02 { color: blue; }",
+                Mappings = new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["hero"] = "jz_app_module_hero_newhash02"
+                }
+            };
+            var workspaceDocument = new DocumentSnapshot(stylePath, DocumentKind.Css, updatedStyleText, version: "2");
+            await workspaceStore.UpsertDocumentAsync(workspaceDocument, CancellationToken.None);
+            await server.OnWorkspaceDocumentChangedAsync(workspaceDocument, CancellationToken.None);
+
+            var reloadMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("full-reload", reloadMessage.GetProperty("type").GetString());
+            Assert.AreEqual("frontend-change-with-dependents", reloadMessage.GetProperty("reason").GetString());
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_HmrWebSocket_WhenCssModuleFileChangesAndMappingsStayStable_BroadcastsJavaScriptUpdate()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body></body></html>");
+            var mainPath = Path.Combine(rootDirectory, "main.ts");
+            var stylePath = Path.Combine(rootDirectory, "app.module.css");
+            const string initialStyleText =
+                """
+                .hero {
+                  color: red;
+                }
+                """;
+            const string updatedStyleText =
+                """
+                .hero {
+                  color: blue;
+                }
+                """;
+            await File.WriteAllTextAsync(
+                mainPath,
+                """
+                import styles from "./app.module.css";
+                console.log(styles.hero);
+                """);
+            await File.WriteAllTextAsync(stylePath, initialStyleText);
+
+            var frontendCompiler = new FakeFrontendModuleCompiler
+            {
+                TypeScriptResult = new FrontendModuleCompilation
+                {
+                    JavaScript = """
+                        import styles from "./app.module.css";
+                        console.log(styles.hero);
+                        """,
+                    Dependencies = ["./app.module.css"]
+                },
+                CssModuleResult = new CssModuleCompilation
+                {
+                    CssContent = ".jz_app_module_hero_stable123 { color: red; }",
+                    Mappings = new Dictionary<string, string>(StringComparer.Ordinal)
+                    {
+                        ["hero"] = "jz_app_module_hero_stable123"
+                    }
+                }
+            };
+
+            var options = CreateHmrTestOptions(rootDirectory);
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                new DependencyGraph(moduleResolver),
+                moduleResolver);
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                moduleResolver,
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+            Assert.IsNotNull(server.ListeningUri);
+
+            using var httpClient = new HttpClient { BaseAddress = server.ListeningUri };
+            _ = await httpClient.GetStringAsync("/main.ts");
+            var initialCssModule = await httpClient.GetStringAsync("/app.module.css");
+            StringAssert.Contains(initialCssModule, "jz_app_module_hero_stable123");
+            StringAssert.Contains(initialCssModule, "color: red");
+
+            using var socket = new ClientWebSocket();
+            await socket.ConnectAsync(ToWebSocketUri(server.ListeningUri!, "/@jazor/hmr"), CancellationToken.None);
+
+            var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
+
+            frontendCompiler.CssModuleResult = new CssModuleCompilation
+            {
+                CssContent = ".jz_app_module_hero_stable123 { color: blue; }",
+                Mappings = new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["hero"] = "jz_app_module_hero_stable123"
+                }
+            };
+            await File.WriteAllTextAsync(stylePath, updatedStyleText);
+
+            var updateMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("update", updateMessage.GetProperty("type").GetString());
+            var updates = updateMessage.GetProperty("updates").EnumerateArray().ToArray();
+            Assert.AreEqual(1, updates.Length);
+            Assert.AreEqual("js-update", updates[0].GetProperty("type").GetString());
+            Assert.AreEqual("/app.module.css", updates[0].GetProperty("path").GetString());
+            Assert.AreEqual("/app.module.css", updates[0].GetProperty("acceptedPath").GetString());
+
+            var updatedCssModule = await httpClient.GetStringAsync($"/app.module.css?t={DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}");
+            StringAssert.Contains(updatedCssModule, "jz_app_module_hero_stable123");
+            StringAssert.Contains(updatedCssModule, "color: blue");
+            await AssertNoWebSocketJsonAsync(socket, NoDuplicateHmrMessageTimeout);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_HmrWebSocket_WhenCssModuleFileChangesAndMappingsChange_BroadcastsFullReload()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body></body></html>");
+            var mainPath = Path.Combine(rootDirectory, "main.ts");
+            var stylePath = Path.Combine(rootDirectory, "app.module.css");
+            const string initialStyleText =
+                """
+                .hero {
+                  color: red;
+                }
+                """;
+            const string updatedStyleText =
+                """
+                .hero {
+                  color: blue;
+                }
+                """;
+            await File.WriteAllTextAsync(
+                mainPath,
+                """
+                import styles from "./app.module.css";
+                console.log(styles.hero);
+                """);
+            await File.WriteAllTextAsync(stylePath, initialStyleText);
+
+            var frontendCompiler = new FakeFrontendModuleCompiler
+            {
+                TypeScriptResult = new FrontendModuleCompilation
+                {
+                    JavaScript = """
+                        import styles from "./app.module.css";
+                        console.log(styles.hero);
+                        """,
+                    Dependencies = ["./app.module.css"]
+                },
+                CssModuleResult = new CssModuleCompilation
+                {
+                    CssContent = ".jz_app_module_hero_oldhash01 { color: red; }",
+                    Mappings = new Dictionary<string, string>(StringComparer.Ordinal)
+                    {
+                        ["hero"] = "jz_app_module_hero_oldhash01"
+                    }
+                }
+            };
+
+            var options = CreateHmrTestOptions(rootDirectory);
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                new DependencyGraph(moduleResolver),
+                moduleResolver);
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                moduleResolver,
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+            Assert.IsNotNull(server.ListeningUri);
+
+            using var httpClient = new HttpClient { BaseAddress = server.ListeningUri };
+            _ = await httpClient.GetStringAsync("/main.ts");
+            _ = await httpClient.GetStringAsync("/app.module.css");
+
+            using var socket = new ClientWebSocket();
+            await socket.ConnectAsync(ToWebSocketUri(server.ListeningUri!, "/@jazor/hmr"), CancellationToken.None);
+
+            var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
+
+            frontendCompiler.CssModuleResult = new CssModuleCompilation
+            {
+                CssContent = ".jz_app_module_hero_newhash02 { color: blue; }",
+                Mappings = new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["hero"] = "jz_app_module_hero_newhash02"
+                }
+            };
+            await File.WriteAllTextAsync(stylePath, updatedStyleText);
+
+            var reloadMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+            Assert.AreEqual("full-reload", reloadMessage.GetProperty("type").GetString());
+            Assert.AreEqual("frontend-change-with-dependents", reloadMessage.GetProperty("reason").GetString());
         }
         finally
         {
@@ -1706,13 +2116,7 @@ public sealed class JazorVueHostDevServerTests
                     SupportsHmr = true
                 });
 
-            var options = new DevServerOptions
-            {
-                RootDirectory = rootDirectory,
-                Host = "127.0.0.1",
-                Port = 0,
-                HmrEnabled = true
-            };
+            var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
                 new Jazor.Vue.JazorVueParser(),
@@ -1762,7 +2166,7 @@ public sealed class JazorVueHostDevServerTests
             Assert.AreEqual("js-update", updates[0].GetProperty("type").GetString());
             Assert.AreEqual("/Counter.vue", updates[0].GetProperty("path").GetString());
 
-            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+            await AssertNoWebSocketJsonAsync(socket, NoDuplicateHmrMessageTimeout);
         }
         finally
         {
@@ -1789,13 +2193,7 @@ public sealed class JazorVueHostDevServerTests
                     SupportsHmr = true
                 });
 
-            var options = new DevServerOptions
-            {
-                RootDirectory = rootDirectory,
-                Host = "127.0.0.1",
-                Port = 0,
-                HmrEnabled = true
-            };
+            var options = CreateHmrTestOptions(rootDirectory);
             var workspaceStore = new InMemoryWorkspaceStore();
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
@@ -1849,7 +2247,7 @@ public sealed class JazorVueHostDevServerTests
             Assert.AreEqual(unsavedText, frontendCompiler.LastSfcText);
 
             await File.WriteAllTextAsync(documentPath, unsavedText);
-            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+            await AssertNoWebSocketJsonAsync(socket, NoDuplicateHmrMessageTimeout);
         }
         finally
         {
@@ -1884,13 +2282,7 @@ public sealed class JazorVueHostDevServerTests
                     SupportsHmr = true
                 });
 
-            var options = new DevServerOptions
-            {
-                RootDirectory = rootDirectory,
-                Host = "127.0.0.1",
-                Port = 0,
-                HmrEnabled = true
-            };
+            var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
                 new Jazor.Vue.JazorVueParser(),
@@ -1943,7 +2335,7 @@ public sealed class JazorVueHostDevServerTests
             Assert.AreEqual(1, inlineStyles.Length);
             Assert.AreEqual("/Counter.vue", inlineStyles[0].GetProperty("path").GetString());
             Assert.AreEqual(".counter { color: blue; }", inlineStyles[0].GetProperty("content").GetString());
-            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+            await AssertNoWebSocketJsonAsync(socket, NoDuplicateHmrMessageTimeout);
         }
         finally
         {
@@ -1978,13 +2370,7 @@ public sealed class JazorVueHostDevServerTests
                     SupportsHmr = true
                 });
 
-            var options = new DevServerOptions
-            {
-                RootDirectory = rootDirectory,
-                Host = "127.0.0.1",
-                Port = 0,
-                HmrEnabled = true
-            };
+            var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
                 new Jazor.Vue.JazorVueParser(),
@@ -2035,7 +2421,7 @@ public sealed class JazorVueHostDevServerTests
             Assert.AreEqual("style-update", updateMessage.GetProperty("type").GetString());
 
             await File.WriteAllTextAsync(documentPath, updatedText);
-            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+            await AssertNoWebSocketJsonAsync(socket, NoDuplicateHmrMessageTimeout);
         }
         finally
         {
@@ -2062,13 +2448,7 @@ public sealed class JazorVueHostDevServerTests
                     Dependencies = []
                 });
 
-            var options = new DevServerOptions
-            {
-                RootDirectory = rootDirectory,
-                Host = "127.0.0.1",
-                Port = 0,
-                HmrEnabled = true
-            };
+            var options = CreateHmrTestOptions(rootDirectory);
             var workspaceStore = new InMemoryWorkspaceStore();
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
@@ -2119,7 +2499,7 @@ public sealed class JazorVueHostDevServerTests
             Assert.AreEqual("/main.ts", updates[0].GetProperty("acceptedPath").GetString());
             Assert.AreEqual("export const count = 2;", await httpClient.GetStringAsync("/main.ts?t=2"));
             Assert.AreEqual(updatedSource, frontendCompiler.LastTypeScriptText);
-            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+            await AssertNoWebSocketJsonAsync(socket, NoDuplicateHmrMessageTimeout);
         }
         finally
         {
@@ -2215,13 +2595,7 @@ public sealed class JazorVueHostDevServerTests
                     Dependencies = []
                 });
 
-            var options = new DevServerOptions
-            {
-                RootDirectory = rootDirectory,
-                Host = "127.0.0.1",
-                Port = 0,
-                HmrEnabled = true
-            };
+            var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
                 new Jazor.Vue.JazorVueParser(),
@@ -2265,7 +2639,7 @@ public sealed class JazorVueHostDevServerTests
             Assert.AreEqual("update", updateMessage.GetProperty("type").GetString());
 
             await File.WriteAllTextAsync(documentPath, updatedSource);
-            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+            await AssertNoWebSocketJsonAsync(socket, NoDuplicateHmrMessageTimeout);
         }
         finally
         {
@@ -2307,13 +2681,7 @@ public sealed class JazorVueHostDevServerTests
                 }
             };
 
-            var options = new DevServerOptions
-            {
-                RootDirectory = rootDirectory,
-                Host = "127.0.0.1",
-                Port = 0,
-                HmrEnabled = true
-            };
+            var options = CreateHmrTestOptions(rootDirectory);
             var workspaceStore = new InMemoryWorkspaceStore();
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
@@ -2378,7 +2746,7 @@ public sealed class JazorVueHostDevServerTests
                 "export default { name: 'Counter', methods: { increment() { return 2; } } };",
                 await httpClient.GetStringAsync("/Counter.jazor?t=2"));
             StringAssert.Contains(frontendCompiler.LastSfcText!, "return Count + 2;");
-            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+            await AssertNoWebSocketJsonAsync(socket, NoDuplicateHmrMessageTimeout);
         }
         finally
         {
@@ -2415,13 +2783,7 @@ public sealed class JazorVueHostDevServerTests
                 }
             };
 
-            var options = new DevServerOptions
-            {
-                RootDirectory = rootDirectory,
-                Host = "127.0.0.1",
-                Port = 0,
-                HmrEnabled = true
-            };
+            var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
                 new Jazor.Vue.JazorVueParser(),
@@ -2472,7 +2834,7 @@ public sealed class JazorVueHostDevServerTests
             var reloadMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
             Assert.AreEqual("full-reload", reloadMessage.GetProperty("type").GetString());
             Assert.AreEqual("Public component descriptor changed.", reloadMessage.GetProperty("reason").GetString());
-            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+            await AssertNoWebSocketJsonAsync(socket, NoDuplicateHmrMessageTimeout);
         }
         finally
         {
@@ -2514,13 +2876,7 @@ public sealed class JazorVueHostDevServerTests
                 }
             };
 
-            var options = new DevServerOptions
-            {
-                RootDirectory = rootDirectory,
-                Host = "127.0.0.1",
-                Port = 0,
-                HmrEnabled = true
-            };
+            var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
                 new Jazor.Vue.JazorVueParser(),
@@ -2576,7 +2932,7 @@ public sealed class JazorVueHostDevServerTests
             Assert.AreEqual("update", updateMessage.GetProperty("type").GetString());
 
             await File.WriteAllTextAsync(documentPath, updatedText);
-            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+            await AssertNoWebSocketJsonAsync(socket, NoDuplicateHmrMessageTimeout);
         }
         finally
         {
@@ -2618,13 +2974,7 @@ public sealed class JazorVueHostDevServerTests
                     SupportsHmr = true
                 });
 
-            var options = new DevServerOptions
-            {
-                RootDirectory = rootDirectory,
-                Host = "127.0.0.1",
-                Port = 0,
-                HmrEnabled = true
-            };
+            var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
                 new Jazor.Vue.JazorVueParser(),
@@ -2680,7 +3030,7 @@ public sealed class JazorVueHostDevServerTests
             Assert.AreEqual("js-update", updates[0].GetProperty("type").GetString());
             Assert.AreEqual("/Counter.jazor", updates[0].GetProperty("path").GetString());
 
-            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+            await AssertNoWebSocketJsonAsync(socket, NoDuplicateHmrMessageTimeout);
         }
         finally
         {
@@ -2722,13 +3072,7 @@ public sealed class JazorVueHostDevServerTests
                     SupportsHmr = true
                 });
 
-            var options = new DevServerOptions
-            {
-                RootDirectory = rootDirectory,
-                Host = "127.0.0.1",
-                Port = 0,
-                HmrEnabled = true
-            };
+            var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
                 new Jazor.Vue.JazorVueParser(),
@@ -2781,7 +3125,7 @@ public sealed class JazorVueHostDevServerTests
             Assert.AreEqual("js-update", updates[0].GetProperty("type").GetString());
             Assert.AreEqual("/Counter.jazor", updates[0].GetProperty("path").GetString());
             Assert.AreEqual("/Counter.jazor", updates[0].GetProperty("acceptedPath").GetString());
-            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+            await AssertNoWebSocketJsonAsync(socket, NoDuplicateHmrMessageTimeout);
         }
         finally
         {
@@ -2826,13 +3170,7 @@ public sealed class JazorVueHostDevServerTests
                     SupportsHmr = true
                 });
 
-            var options = new DevServerOptions
-            {
-                RootDirectory = rootDirectory,
-                Host = "127.0.0.1",
-                Port = 0,
-                HmrEnabled = true
-            };
+            var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
                 new Jazor.Vue.JazorVueParser(),
@@ -2884,7 +3222,7 @@ public sealed class JazorVueHostDevServerTests
             var reloadMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
             Assert.AreEqual("full-reload", reloadMessage.GetProperty("type").GetString());
             Assert.AreEqual("Public component descriptor changed.", reloadMessage.GetProperty("reason").GetString());
-            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+            await AssertNoWebSocketJsonAsync(socket, NoDuplicateHmrMessageTimeout);
         }
         finally
         {
@@ -2926,13 +3264,7 @@ public sealed class JazorVueHostDevServerTests
                     SupportsHmr = true
                 });
 
-            var options = new DevServerOptions
-            {
-                RootDirectory = rootDirectory,
-                Host = "127.0.0.1",
-                Port = 0,
-                HmrEnabled = true
-            };
+            var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
                 new Jazor.Vue.JazorVueParser(),
@@ -2982,7 +3314,7 @@ public sealed class JazorVueHostDevServerTests
             Assert.AreEqual("update", updateMessage.GetProperty("type").GetString());
 
             await File.WriteAllTextAsync(codeBehindPath, updatedCodeBehindText);
-            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+            await AssertNoWebSocketJsonAsync(socket, NoDuplicateHmrMessageTimeout);
         }
         finally
         {
@@ -7061,6 +7393,299 @@ public sealed class JazorVueHostDevServerTests
     }
 
     [TestMethod]
+    public async Task OnDemandCompiler_CompileAsync_CssModuleFile_UsesFrontendCssModuleCompilerAndServesJavaScriptModule()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(rootDirectory, "app.module.css");
+            var source = """
+                .hero {
+                  color: red;
+                }
+                """;
+            await File.WriteAllTextAsync(documentPath, source);
+
+            var frontendCompiler = new FakeFrontendModuleCompiler
+            {
+                CssModuleResult = new CssModuleCompilation
+                {
+                    CssContent = ".jz_app_module_hero_abc12345 { color: red; }",
+                    Mappings = new Dictionary<string, string>(StringComparer.Ordinal)
+                    {
+                        ["hero"] = "jz_app_module_hero_abc12345"
+                    }
+                }
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                moduleResolver: new ModuleResolver(rootDirectory));
+
+            var result = await compiler.CompileAsync(documentPath, CancellationToken.None);
+
+            Assert.IsFalse(result.IsError);
+            Assert.AreEqual("text/javascript", result.ContentType);
+            Assert.AreEqual(1, frontendCompiler.CssModuleCompileCount);
+            Assert.AreEqual(documentPath, frontendCompiler.LastCssModulePath);
+            Assert.AreEqual(source, frontendCompiler.LastCssModuleText);
+            Assert.IsTrue(result.SupportsHmr);
+            StringAssert.Contains(result.Content, "const __jazorCssModules =");
+            StringAssert.Contains(result.Content, "export default __jazorCssModules;");
+            StringAssert.Contains(result.Content, "globalThis.__JAZOR_HMR__?.createHotContext(import.meta.url)");
+            StringAssert.Contains(result.Content, "import.meta.hot.accept((updatedModule) => {");
+            StringAssert.Contains(result.Content, "jz_app_module_hero_abc12345");
+            StringAssert.Contains(result.Content, "const __jazorStyleId = \"/app.module.css\";");
+            Assert.AreEqual(".jz_app_module_hero_abc12345 { color: red; }", result.StyleContent);
+            Assert.AreEqual("jz_app_module_hero_abc12345", result.CssModuleMappings["hero"]);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task DevHttpServer_ServesCssModuleAsJavaScriptModule()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(rootDirectory, "index.html"),
+                """
+                <html>
+                <body><script type="module" src="/main.js"></script></body>
+                </html>
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(rootDirectory, "main.js"),
+                """
+                import styles from "./app.module.css";
+                console.log(styles.hero);
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(rootDirectory, "app.module.css"),
+                """
+                .hero {
+                  color: red;
+                }
+                """);
+
+            var frontendCompiler = new FakeFrontendModuleCompiler
+            {
+                CssModuleResult = new CssModuleCompilation
+                {
+                    CssContent = ".jz_app_module_hero_abc12345 { color: red; }",
+                    Mappings = new Dictionary<string, string>(StringComparer.Ordinal)
+                    {
+                        ["hero"] = "jz_app_module_hero_abc12345"
+                    }
+                }
+            };
+            var options = new DevServerOptions
+            {
+                RootDirectory = rootDirectory,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = false
+            };
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                new DependencyGraph(moduleResolver),
+                moduleResolver);
+            await using var server = new DevHttpServer(
+                options,
+                compiler,
+                moduleResolver,
+                new HtmlTransformer(options));
+
+            await server.StartAsync(CancellationToken.None);
+
+            using var client = new HttpClient { BaseAddress = server.ListeningUri };
+            using var response = await client.GetAsync("/app.module.css");
+            var moduleContent = await response.Content.ReadAsStringAsync();
+
+            Assert.AreEqual("text/javascript", response.Content.Headers.ContentType?.MediaType);
+            StringAssert.Contains(moduleContent, "export default __jazorCssModules;");
+            StringAssert.Contains(moduleContent, "jz_app_module_hero_abc12345");
+            StringAssert.Contains(moduleContent, "const __jazorStyleId = \"/app.module.css\";");
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task ChangeProcessor_ProcessChanges_WhenCssModuleChangesAndMappingsStayStable_ReturnsJavaScriptUpdate()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var mainPath = Path.Combine(rootDirectory, "main.ts");
+            var stylePath = Path.Combine(rootDirectory, "app.module.css");
+            await File.WriteAllTextAsync(
+                mainPath,
+                """
+                import styles from "./app.module.css";
+                console.log(styles.hero);
+                """);
+            await File.WriteAllTextAsync(
+                stylePath,
+                """
+                .hero {
+                  color: red;
+                }
+                """);
+
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var graph = new DependencyGraph(moduleResolver);
+            var frontendCompiler = new FakeFrontendModuleCompiler
+            {
+                TypeScriptResult = new FrontendModuleCompilation
+                {
+                    JavaScript = """
+                        import styles from "./app.module.css";
+                        console.log(styles.hero);
+                        """,
+                    Dependencies = ["./app.module.css"]
+                },
+                CssModuleResult = new CssModuleCompilation
+                {
+                    CssContent = ".jz_app_module_hero_stable123 { color: red; }",
+                    Mappings = new Dictionary<string, string>(StringComparer.Ordinal)
+                    {
+                        ["hero"] = "jz_app_module_hero_stable123"
+                    }
+                }
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                graph,
+                moduleResolver: moduleResolver);
+            _ = await compiler.CompileAsync(mainPath, CancellationToken.None);
+            _ = await compiler.CompileAsync(stylePath, CancellationToken.None);
+
+            frontendCompiler.CssModuleResult = new CssModuleCompilation
+            {
+                CssContent = ".jz_app_module_hero_stable123 { color: blue; }",
+                Mappings = new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["hero"] = "jz_app_module_hero_stable123"
+                }
+            };
+
+            var processor = new ChangeProcessor(compiler, moduleResolver, graph);
+            var result = await processor.ProcessChangesAsync([stylePath], CancellationToken.None);
+
+            Assert.AreEqual(ChangeUpdateKind.JavaScriptUpdate, result.UpdateKind);
+            Assert.IsNull(result.FullReloadReason);
+            CollectionAssert.AreEquivalent(
+                new[] { stylePath, mainPath },
+                result.AffectedPaths.ToArray());
+            Assert.AreEqual(0, result.ChangedCssUrls.Count);
+            Assert.AreEqual(0, result.InlineStyleUpdates.Count);
+            Assert.AreEqual(1, result.JavaScriptUpdates.Count);
+            Assert.AreEqual("/app.module.css", result.JavaScriptUpdates[0].Path);
+            Assert.AreEqual("/app.module.css", result.JavaScriptUpdates[0].AcceptedPath);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task ChangeProcessor_ProcessChanges_WhenCssModuleMappingsChange_ReturnsFullReload()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var mainPath = Path.Combine(rootDirectory, "main.ts");
+            var stylePath = Path.Combine(rootDirectory, "app.module.css");
+            await File.WriteAllTextAsync(
+                mainPath,
+                """
+                import styles from "./app.module.css";
+                console.log(styles.hero);
+                """);
+            await File.WriteAllTextAsync(
+                stylePath,
+                """
+                .hero {
+                  color: red;
+                }
+                """);
+
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var graph = new DependencyGraph(moduleResolver);
+            var frontendCompiler = new FakeFrontendModuleCompiler
+            {
+                TypeScriptResult = new FrontendModuleCompilation
+                {
+                    JavaScript = """
+                        import styles from "./app.module.css";
+                        console.log(styles.hero);
+                        """,
+                    Dependencies = ["./app.module.css"]
+                },
+                CssModuleResult = new CssModuleCompilation
+                {
+                    CssContent = ".jz_app_module_hero_oldhash01 { color: red; }",
+                    Mappings = new Dictionary<string, string>(StringComparer.Ordinal)
+                    {
+                        ["hero"] = "jz_app_module_hero_oldhash01"
+                    }
+                }
+            };
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                graph,
+                moduleResolver: moduleResolver);
+            _ = await compiler.CompileAsync(mainPath, CancellationToken.None);
+            _ = await compiler.CompileAsync(stylePath, CancellationToken.None);
+
+            frontendCompiler.CssModuleResult = new CssModuleCompilation
+            {
+                CssContent = ".jz_app_module_hero_newhash02 { color: blue; }",
+                Mappings = new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["hero"] = "jz_app_module_hero_newhash02"
+                }
+            };
+
+            var processor = new ChangeProcessor(compiler, moduleResolver, graph);
+            var result = await processor.ProcessChangesAsync([stylePath], CancellationToken.None);
+
+            Assert.AreEqual(ChangeUpdateKind.FullReload, result.UpdateKind);
+            Assert.AreEqual("frontend-change-with-dependents", result.FullReloadReason);
+            CollectionAssert.AreEquivalent(
+                new[] { stylePath, mainPath },
+                result.AffectedPaths.ToArray());
+            Assert.AreEqual(0, result.ChangedCssUrls.Count);
+            Assert.AreEqual(0, result.InlineStyleUpdates.Count);
+            Assert.AreEqual(0, result.JavaScriptUpdates.Count);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public async Task OnDemandCompiler_CompileAsync_RecompilesWhenContentChanges()
     {
         var rootDirectory = CreateTemporaryDirectory();
@@ -7882,14 +8507,19 @@ public sealed class JazorVueHostDevServerTests
     {
         private readonly Dictionary<string, FrontendModuleCompilation> _sfcResultsByPath = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, FrontendModuleCompilation> _typeScriptResultsByPath = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, CssModuleCompilation> _cssModuleResultsByPath = new(StringComparer.OrdinalIgnoreCase);
 
         public FrontendModuleCompilation? SfcResult { get; set; }
 
         public FrontendModuleCompilation? TypeScriptResult { get; set; }
 
+        public CssModuleCompilation? CssModuleResult { get; set; }
+
         public int SfcCompileCount { get; private set; }
 
         public int TypeScriptCompileCount { get; private set; }
+
+        public int CssModuleCompileCount { get; private set; }
 
         public string? LastDocumentPath { get; private set; }
 
@@ -7899,11 +8529,18 @@ public sealed class JazorVueHostDevServerTests
 
         public string? LastTypeScriptText { get; private set; }
 
+        public string? LastCssModulePath { get; private set; }
+
+        public string? LastCssModuleText { get; private set; }
+
         public void SetSfcResult(string documentPath, FrontendModuleCompilation result)
             => _sfcResultsByPath[documentPath] = result;
 
         public void SetTypeScriptResult(string documentPath, FrontendModuleCompilation result)
             => _typeScriptResultsByPath[documentPath] = result;
+
+        public void SetCssModuleResult(string documentPath, CssModuleCompilation result)
+            => _cssModuleResultsByPath[documentPath] = result;
 
         public ValueTask<FrontendModuleCompilation?> CompileSfcAsync(
             string documentPath,
@@ -7931,6 +8568,20 @@ public sealed class JazorVueHostDevServerTests
                 _typeScriptResultsByPath.TryGetValue(documentPath, out var result)
                     ? result
                     : TypeScriptResult);
+        }
+
+        public ValueTask<CssModuleCompilation?> CompileCssModuleAsync(
+            string documentPath,
+            string text,
+            CancellationToken cancellationToken)
+        {
+            CssModuleCompileCount++;
+            LastCssModulePath = documentPath;
+            LastCssModuleText = text;
+            return ValueTask.FromResult(
+                _cssModuleResultsByPath.TryGetValue(documentPath, out var result)
+                    ? result
+                    : CssModuleResult);
         }
     }
 
@@ -8331,4 +8982,15 @@ public sealed class JazorVueHostDevServerTests
         listener.Start();
         return ((IPEndPoint)listener.LocalEndpoint).Port;
     }
+
+    private static DevServerOptions CreateHmrTestOptions(string rootDirectory)
+        => new()
+        {
+            RootDirectory = rootDirectory,
+            Host = "127.0.0.1",
+            Port = 0,
+            HmrEnabled = true,
+            FileChangeDebounceInterval = TestFileChangeDebounceInterval,
+            FileChangePollingInterval = TestFileChangePollingInterval
+        };
 }

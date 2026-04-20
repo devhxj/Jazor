@@ -7,10 +7,10 @@ using System.Xml.Linq;
 namespace Jazor.EmitTest;
 
 [TestClass]
-[DoNotParallelize]
 public sealed class SdkIntegrationTests
 {
     private static readonly Lazy<Task<LocalPackageFixture>> LocalPackage = new(CreateLocalPackageAsync);
+    private static readonly SemaphoreSlim SourceReferencedRazorVueBuildGate = new(1, 1);
 
     [TestMethod]
     public async Task CreateLocalPackage_IncludesRazorVueAuthoringAssets()
@@ -96,7 +96,6 @@ public sealed class SdkIntegrationTests
                 $"-p:RestoreSources={package.PackageOutputDirectory}",
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
                 $"-p:RestorePackagesPath={restorePackagesPath}",
-                "-p:RestoreNoCache=true",
                 $"-p:JazorPackageVersion={package.PackageVersion}",
                 "-p:JazorBundle=true"
             ]);
@@ -222,7 +221,6 @@ public sealed class SdkIntegrationTests
                 $"-p:RestoreSources={package.PackageOutputDirectory}",
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
                 $"-p:RestorePackagesPath={restorePackagesPath}",
-                "-p:RestoreNoCache=true",
                 $"-p:JazorPackageVersion={package.PackageVersion}"
             ]);
 
@@ -293,7 +291,7 @@ public sealed class SdkIntegrationTests
         var hostRoot = Path.Combine(workspace.RootPath, "RazorVueSample.Host");
         var projectPath = CreateRazorVueSampleProject(hostRoot, package);
 
-        var build = await RunDotNetAsync(
+        var build = await RunSourceReferencedRazorVueBuildAsync(
             package.RepoRoot,
             [
                 "build",
@@ -304,7 +302,6 @@ public sealed class SdkIntegrationTests
                 $"-p:RestoreSources={package.PackageOutputDirectory}",
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
                 $"-p:RestorePackagesPath={restorePackagesPath}",
-                "-p:RestoreNoCache=true",
                 $"-p:JazorPackageVersion={package.PackageVersion}",
                 "-p:JazorBundle=true"
             ]);
@@ -418,7 +415,7 @@ public sealed class SdkIntegrationTests
         var profileFormPath = Path.Combine(hostRoot, "ProfileForm.cs");
         var updatePlanPath = Path.Combine(hostRoot, "wwwroot", "app.bundle.razorvue.update-plan.json");
 
-        var firstBuild = await RunDotNetAsync(
+        var firstBuild = await RunSourceReferencedRazorVueBuildAsync(
             package.RepoRoot,
             [
                 "build",
@@ -429,7 +426,6 @@ public sealed class SdkIntegrationTests
                 $"-p:RestoreSources={package.PackageOutputDirectory}",
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
                 $"-p:RestorePackagesPath={restorePackagesPath}",
-                "-p:RestoreNoCache=true",
                 $"-p:JazorPackageVersion={package.PackageVersion}",
                 "-p:JazorBundle=true"
             ]);
@@ -468,7 +464,7 @@ public sealed class SdkIntegrationTests
             }
             """);
 
-        var secondBuild = await RunDotNetAsync(
+        var secondBuild = await RunSourceReferencedRazorVueBuildAsync(
             package.RepoRoot,
             [
                 "build",
@@ -478,7 +474,6 @@ public sealed class SdkIntegrationTests
                 $"-p:RestoreSources={package.PackageOutputDirectory}",
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
                 $"-p:RestorePackagesPath={restorePackagesPath}",
-                "-p:RestoreNoCache=true",
                 $"-p:JazorPackageVersion={package.PackageVersion}",
                 "-p:JazorBundle=true"
             ]);
@@ -591,7 +586,6 @@ public sealed class SdkIntegrationTests
                 $"-p:RestoreSources={package.PackageOutputDirectory}",
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
                 $"-p:RestorePackagesPath={restorePackagesPath}",
-                "-p:RestoreNoCache=true",
                 $"-p:JazorPackageVersion={package.PackageVersion}"
             ]);
 
@@ -654,7 +648,6 @@ public sealed class SdkIntegrationTests
                 "Debug",
                 "/m:1",
                 "/p:BuildInParallel=false",
-                "-p:RestoreNoCache=true",
                 $"-p:RestoreSources={package.PackageOutputDirectory}",
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
                 $"-p:RestorePackagesPath={restorePackagesPath}",
@@ -673,7 +666,6 @@ public sealed class SdkIntegrationTests
                 "-t:Rebuild",
                 "/m:1",
                 "/p:BuildInParallel=false",
-                "-p:RestoreNoCache=true",
                 $"-p:RestoreSources={package.PackageOutputDirectory}",
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
                 $"-p:RestorePackagesPath={restorePackagesPath}"
@@ -867,7 +859,6 @@ public sealed class SdkIntegrationTests
                 $"-p:RestoreSources={package.PackageOutputDirectory}",
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
                 $"-p:RestorePackagesPath={restorePackagesPath}",
-                "-p:RestoreNoCache=true",
                 $"-p:JazorPackageVersion={package.PackageVersion}"
             ]);
 
@@ -949,6 +940,10 @@ public sealed class SdkIntegrationTests
         var packageVersion = ReadPackageVersion(Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj"));
         var packageOutputDirectory = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "nupkg", Guid.NewGuid().ToString("N"));
         var ecmascriptOutput = Path.Combine(repoRoot, "src", "ECMAScript", "bin", "Debug", "net10.0", "ECMAScript.dll");
+        var razorVueOutput = Path.Combine(repoRoot, "src", "Jazor.RazorVue", "bin", "Debug", "net10.0", "Jazor.RazorVue.dll");
+        var vuetifyOutput = Path.Combine(repoRoot, "src", "Jazor.RazorVue.Vuetify", "bin", "Debug", "net10.0", "Jazor.RazorVue.Vuetify.dll");
+        var analyzerOutput = Path.Combine(repoRoot, "src", "Jazor.Analyzer", "bin", "Debug", "netstandard2.0", "Jazor.Analyzer.dll");
+        var emitPublishOutput = Path.Combine(repoRoot, "src", "Jazor.Emit", "bin", "Debug", "net10.0", "publish", "Jazor.Emit.dll");
 
         if (Directory.Exists(packageOutputDirectory))
             Directory.Delete(packageOutputDirectory, recursive: true);
@@ -968,48 +963,23 @@ public sealed class SdkIntegrationTests
                     "/p:BuildInParallel=false"
                 ]);
         }
-        await RunDotNetAndAssertAsync(
+        await EnsureProjectBuiltAsync(
             repoRoot,
-            [
-                "build",
-                Path.Combine(repoRoot, "src", "Jazor.RazorVue", "Jazor.RazorVue.csproj"),
-                "-c",
-                "Debug",
-                "/m:1",
-                "/p:BuildInParallel=false"
-            ]);
-        await RunDotNetAndAssertAsync(
+            Path.Combine(repoRoot, "src", "Jazor.RazorVue", "Jazor.RazorVue.csproj"),
+            razorVueOutput);
+        await EnsureProjectBuiltAsync(
             repoRoot,
-            [
-                "build",
-                Path.Combine(repoRoot, "src", "Jazor.RazorVue.Vuetify", "Jazor.RazorVue.Vuetify.csproj"),
-                "-c",
-                "Debug",
-                "/m:1",
-                "/p:BuildInParallel=false"
-            ]);
-        await RunDotNetAndAssertAsync(
+            Path.Combine(repoRoot, "src", "Jazor.RazorVue.Vuetify", "Jazor.RazorVue.Vuetify.csproj"),
+            vuetifyOutput);
+        await EnsureProjectBuiltAsync(
             repoRoot,
-            [
-                "build",
-                Path.Combine(repoRoot, "src", "Jazor.Analyzer", "Jazor.Analyzer.csproj"),
-                "-c",
-                "Debug",
-                "/m:1",
-                "/p:BuildInParallel=false"
-            ]);
-        await RunDotNetAndAssertAsync(
+            Path.Combine(repoRoot, "src", "Jazor.Analyzer", "Jazor.Analyzer.csproj"),
+            analyzerOutput);
+        await EnsureProjectPublishedAsync(
             repoRoot,
-            [
-                "publish",
-                Path.Combine(repoRoot, "src", "Jazor.Emit", "Jazor.Emit.csproj"),
-                "-c",
-                "Debug",
-                "-o",
-                Path.Combine(repoRoot, "src", "Jazor.Emit", "bin", "Debug", "net10.0", "publish"),
-                "/m:1",
-                "/p:BuildInParallel=false"
-            ]);
+            Path.Combine(repoRoot, "src", "Jazor.Emit", "Jazor.Emit.csproj"),
+            emitPublishOutput,
+            Path.Combine(repoRoot, "src", "Jazor.Emit", "bin", "Debug", "net10.0", "publish"));
         var jazorPack = await RunDotNetAsync(
             repoRoot,
             [
@@ -1049,6 +1019,68 @@ public sealed class SdkIntegrationTests
     {
         var result = await RunDotNetAsync(workingDirectory, arguments);
         Assert.AreEqual(0, result.ExitCode, result.ToString());
+    }
+
+    private static async Task EnsureProjectBuiltAsync(
+        string repoRoot,
+        string projectPath,
+        string expectedOutputPath)
+    {
+        if (File.Exists(expectedOutputPath))
+        {
+            return;
+        }
+
+        await RunDotNetAndAssertAsync(
+            repoRoot,
+            [
+                "build",
+                projectPath,
+                "-c",
+                "Debug",
+                "/m:1",
+                "/p:BuildInParallel=false"
+            ]);
+    }
+
+    private static async Task EnsureProjectPublishedAsync(
+        string repoRoot,
+        string projectPath,
+        string expectedOutputPath,
+        string publishDirectory)
+    {
+        if (File.Exists(expectedOutputPath))
+        {
+            return;
+        }
+
+        await RunDotNetAndAssertAsync(
+            repoRoot,
+            [
+                "publish",
+                projectPath,
+                "-c",
+                "Debug",
+                "-o",
+                publishDirectory,
+                "/m:1",
+                "/p:BuildInParallel=false"
+            ]);
+    }
+
+    private static async Task<ProcessResult> RunSourceReferencedRazorVueBuildAsync(
+        string workingDirectory,
+        IReadOnlyList<string> arguments)
+    {
+        await SourceReferencedRazorVueBuildGate.WaitAsync();
+        try
+        {
+            return await RunDotNetAsync(workingDirectory, arguments);
+        }
+        finally
+        {
+            SourceReferencedRazorVueBuildGate.Release();
+        }
     }
 
     private static async Task<ProcessResult> RunDotNetAsync(string workingDirectory, IReadOnlyList<string> arguments)

@@ -304,6 +304,63 @@ public sealed class JazorVueHostFrontendLaneTests
     }
 
     [TestMethod]
+    public async Task JazorVueHost_DenoFrontendHost_CompileCssModuleAsync_PreservesScopedClassHashAcrossDeclarationOnlyChanges()
+    {
+        var tempDirectory = CreateTemporaryDirectory();
+
+        try
+        {
+            var documentPath = Path.Combine(tempDirectory, "app.module.css");
+            const string initialCss = """
+                .hero {
+                  color: red;
+                }
+                """;
+            const string updatedCss = """
+                .hero {
+                  color: blue;
+                  background: white;
+                }
+                """;
+            await File.WriteAllTextAsync(documentPath, initialCss);
+
+            await using var host = CreateBundledDenoFrontendHost();
+
+            var initialResult = await host.CompileCssModuleAsync(
+                documentPath,
+                initialCss,
+                Path.GetFileName(documentPath),
+                isProduction: false,
+                CancellationToken.None);
+            Assert.IsNotNull(initialResult);
+            Assert.AreEqual(0, initialResult.Diagnostics.Count);
+            Assert.IsTrue(initialResult.Modules.TryGetValue("hero", out var initialClassName));
+            StringAssert.Contains(initialResult.CssContent, "." + initialClassName);
+
+            var updatedResult = await host.CompileCssModuleAsync(
+                documentPath,
+                updatedCss,
+                Path.GetFileName(documentPath),
+                isProduction: false,
+                CancellationToken.None);
+            Assert.IsNotNull(updatedResult);
+            Assert.AreEqual(0, updatedResult.Diagnostics.Count);
+            Assert.IsTrue(updatedResult.Modules.TryGetValue("hero", out var updatedClassName));
+            StringAssert.Contains(updatedResult.CssContent, "." + updatedClassName);
+
+            Assert.AreEqual(initialClassName, updatedClassName);
+            Assert.AreNotEqual(initialResult.CssContent, updatedResult.CssContent);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                DeleteDirectoryWithRetry(tempDirectory);
+            }
+        }
+    }
+
+    [TestMethod]
     public async Task JazorVueHost_DenoFrontendHost_CompileTypeScript_StartsWorkerAndReturnsTypedResult()
     {
         var workerProcess = new FakeDenoWorkerProcess();

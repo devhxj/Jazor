@@ -25,6 +25,7 @@ type RequestEnvelope = {
     text: string;
     sfcText?: string;
     filename?: string;
+    isProduction?: boolean;
     position?: Position;
     range?: Range;
     includeDeclaration?: boolean;
@@ -195,12 +196,27 @@ async function dispatch(method: string, payload: RequestEnvelope["payload"]): Pr
       assertString(method, "documentPath", payload.documentPath);
       assertString(method, "sfcText", payload.sfcText);
       assertString(method, "filename", payload.filename);
-      return compileVueSfc(payload.documentPath, payload.sfcText, payload.filename);
+      return await compileVueSfc(
+        payload.documentPath,
+        payload.sfcText,
+        payload.filename,
+        payload.isProduction === true,
+      );
     case "compile/ts":
       assertString(method, "documentPath", payload.documentPath);
       assertString(method, "text", payload.text);
       assertString(method, "filename", payload.filename);
       return compileTypeScript(payload.documentPath, payload.text, payload.filename);
+    case "compile/css-module":
+      assertString(method, "documentPath", payload.documentPath);
+      assertString(method, "text", payload.text);
+      assertString(method, "filename", payload.filename);
+      return await compileCssModule(
+        payload.documentPath,
+        payload.text,
+        payload.filename,
+        payload.isProduction === true,
+      );
     case "template/diagnostics":
       return await getDiagnostics(
         payload.documentPath,
@@ -712,18 +728,19 @@ async function getFoldingRanges(
   return ranges === volarUnhandled ? [] : ranges;
 }
 
-function compileVueSfc(
+async function compileVueSfc(
   documentPath: string,
   sfcText: string,
   filename: string,
-): {
+  isProduction: boolean,
+): Promise<{
   jsContent: string;
   jsSourceMap: string | null;
   cssContent: string | null;
   styleFragments: CompiledStyleFragment[];
   diagnostics: string[];
   supportsHmr: boolean;
-} {
+}> {
   const diagnostics: string[] = [];
   const { descriptor, errors } = vueCompilerSfc.parse(sfcText, { filename, sourceMap: true });
   for (const error of errors) {
@@ -737,14 +754,19 @@ function compileVueSfc(
   const scopedStyleSourceRange = getCombinedSfcBlockSourceRange(
     ...descriptor.styles.filter((style) => style.scoped),
   );
+  const moduleStyleSourceRange = getCombinedSfcBlockSourceRange(
+    ...descriptor.styles.filter((style) => style.module),
+  );
   const preferredSourceRange = scriptSourceRange ?? templateSourceRange ?? scopedStyleSourceRange;
   const jsParts: SourceMappedPart[] = [];
+  const cssModules = new Map<string, Record<string, string>>();
   let bindingMetadata: ReturnType<typeof vueCompilerSfc.compileScript>["bindings"] | undefined;
 
   if (descriptor.scriptSetup !== null) {
     try {
       const compiledScript = vueCompilerSfc.compileScript(descriptor, {
         id: scopeId,
+        isProd: isProduction,
         genDefaultAs: "_sfc_main",
       });
       bindingMetadata = compiledScript.bindings;
@@ -802,7 +824,7 @@ function compileVueSfc(
         filename,
         id: scopeId,
         scoped: hasScopedStyles,
-        isProd: false,
+        isProd: isProduction,
         sourceMap: true,
         inMap: descriptor.template.map,
         compilerOptions: bindingMetadata === undefined
@@ -847,15 +869,29 @@ function compileVueSfc(
           sourceStartLine: 1,
           sourceLineCount: Math.max(1, normalizeLineEndings(styleSource).split("\n").length),
         };
-      const styleCompiled = vueCompilerSfc.compileStyle({
+      const cssModuleName = resolveCssModuleName(styleBlock);
+      const styleCompiled = await vueCompilerSfc.compileStyleAsync({
         source: styleSource,
         filename: styleSourcePath ?? filename,
         id: `data-v-${scopeId}`,
         scoped: styleBlock.scoped,
-        isProd: false,
+        isProd: isProduction,
+        modules: cssModuleName !== null,
+        modulesOptions: cssModuleName === null
+          ? undefined
+          : {
+            generateScopedName: (name: string, styleFilename: string, css: string) =>
+              createCssModuleScopedName(name, styleFilename, scopeId),
+          },
       });
       for (const error of styleCompiled.errors) {
         diagnostics.push(formatSfcCompilerMessage(error));
+      }
+
+      if (cssModuleName !== null && styleCompiled.modules !== undefined) {
+        const existingModules = cssModules.get(cssModuleName) ?? {};
+        Object.assign(existingModules, styleCompiled.modules);
+        cssModules.set(cssModuleName, existingModules);
       }
 
       if (styleCompiled.code.trim().length > 0) {
@@ -880,6 +916,18 @@ function compileVueSfc(
     });
   }
 
+  if (cssModules.size > 0) {
+    const cssModuleRecord: Record<string, Record<string, string>> = {};
+    for (const [moduleName, moduleMappings] of cssModules) {
+      cssModuleRecord[moduleName] = moduleMappings;
+    }
+
+    jsParts.push({
+      content: `_sfc_main.__cssModules = ${JSON.stringify(cssModuleRecord)};`,
+      sourceRange: moduleStyleSourceRange ?? preferredSourceRange,
+    });
+  }
+
   if (descriptor.template !== null) {
     jsParts.push({
       content: "_sfc_main.render = render;",
@@ -887,27 +935,28 @@ function compileVueSfc(
     });
   }
 
-  const hmrId = `jazor-vue:${normalizePath(documentPath)}`;
-  const templateHash = createStableHash(descriptor.template?.content ?? "");
-  const scriptHash = createStableHash([
-    descriptor.script?.content ?? "",
-    descriptor.scriptSetup?.content ?? "",
-    descriptor.styles.map((style) => `${style.scoped}:${style.lang ?? ""}:${style.module ? "module" : "plain"}:${style.src ?? ""}`).join("|"),
-  ].join("\n"));
-  jsParts.push({ content: `const __jazorHmrId = ${JSON.stringify(hmrId)};` });
-  jsParts.push({ content: `const __jazorHmrTemplateHash = ${JSON.stringify(templateHash)};` });
-  jsParts.push({ content: `const __jazorHmrScriptHash = ${JSON.stringify(scriptHash)};` });
-  jsParts.push({
-    content: "_sfc_main.__hmrId = __jazorHmrId;",
-    sourceRange: preferredSourceRange,
-  });
-  jsParts.push({ content: `
+  if (!isProduction) {
+    const hmrId = `jazor-vue:${normalizePath(documentPath)}`;
+    const templateHash = createStableHash(descriptor.template?.content ?? "");
+    const scriptHash = createStableHash([
+      descriptor.script?.content ?? "",
+      descriptor.scriptSetup?.content ?? "",
+      descriptor.styles.map((style) => `${style.scoped}:${style.lang ?? ""}:${style.module ? "module" : "plain"}:${style.src ?? ""}`).join("|"),
+    ].join("\n"));
+    jsParts.push({ content: `const __jazorHmrId = ${JSON.stringify(hmrId)};` });
+    jsParts.push({ content: `const __jazorHmrTemplateHash = ${JSON.stringify(templateHash)};` });
+    jsParts.push({ content: `const __jazorHmrScriptHash = ${JSON.stringify(scriptHash)};` });
+    jsParts.push({
+      content: "_sfc_main.__hmrId = __jazorHmrId;",
+      sourceRange: preferredSourceRange,
+    });
+    jsParts.push({ content: `
 const __jazorHotContext = import.meta.hot ?? globalThis.__JAZOR_HMR__?.createHotContext(import.meta.url);
 if (__jazorHotContext) {
   import.meta.hot = __jazorHotContext;
 }
 `.trim() });
-  jsParts.push({ content: `
+    jsParts.push({ content: `
 if (import.meta.hot) {
   const __jazorVueHmrRuntime = globalThis.__VUE_HMR_RUNTIME__;
   if (__jazorVueHmrRuntime) {
@@ -930,10 +979,12 @@ if (import.meta.hot) {
   });
 }
 `.trim() });
-  jsParts.push({
-    content: "export { __jazorHmrId, __jazorHmrTemplateHash, __jazorHmrScriptHash };",
-    sourceRange: preferredSourceRange,
-  });
+    jsParts.push({
+      content: "export { __jazorHmrId, __jazorHmrTemplateHash, __jazorHmrScriptHash };",
+      sourceRange: preferredSourceRange,
+    });
+  }
+
   jsParts.push({
     content: "export default _sfc_main;",
     sourceRange: preferredSourceRange,
@@ -947,7 +998,7 @@ if (import.meta.hot) {
     cssContent: cssParts.length === 0 ? null : cssParts.join("\n\n"),
     styleFragments,
     diagnostics,
-    supportsHmr: true,
+    supportsHmr: !isProduction,
   };
 }
 
@@ -958,6 +1009,41 @@ function compileTypeScript(
 ): { jsContent: string; jsSourceMap: string | null; diagnostics: string[] } {
   const sourceFileName = filename.trim().length === 0 ? documentPath : filename;
   return transpileTypeScriptModule(text, sourceFileName, true);
+}
+
+async function compileCssModule(
+  documentPath: string,
+  text: string,
+  filename: string,
+  isProduction: boolean,
+): Promise<{ cssContent: string; modules: Record<string, string>; diagnostics: string[] }> {
+  const sourceFileName = filename.trim().length === 0 ? documentPath : filename;
+  const normalizedText = normalizeLineEndings(text);
+  const scopeId = createVueScopeId(documentPath);
+  const diagnostics: string[] = [];
+
+  const compiled = await vueCompilerSfc.compileStyleAsync({
+    source: normalizedText,
+    filename: sourceFileName,
+    id: `data-v-${scopeId}`,
+    scoped: false,
+    isProd: isProduction,
+    modules: true,
+    modulesOptions: {
+      generateScopedName: (name: string, styleFilename: string, css: string) =>
+        createCssModuleScopedName(name, styleFilename, scopeId),
+    },
+  });
+
+  for (const error of compiled.errors) {
+    diagnostics.push(formatSfcCompilerMessage(error));
+  }
+
+  return {
+    cssContent: compiled.code.trim(),
+    modules: compiled.modules ?? {},
+    diagnostics,
+  };
 }
 
 async function tryGetVueDiagnostics(
@@ -3376,6 +3462,29 @@ function createVueScopeId(documentPath: string): string {
   return createStableHash(normalizePath(documentPath));
 }
 
+function resolveCssModuleName(styleBlock: ReturnType<typeof vueCompilerSfc.parse>["descriptor"]["styles"][number]): string | null {
+  if (!styleBlock.module) {
+    return null;
+  }
+
+  if (typeof styleBlock.module === "string" && styleBlock.module.trim().length > 0) {
+    return styleBlock.module.trim();
+  }
+
+  return "$style";
+}
+
+function createCssModuleScopedName(
+  localName: string,
+  filename: string,
+  scopeId: string,
+): string {
+  const fileStem = sanitizeCssIdentifier(stripFileExtension(getPathBaseName(filename)));
+  const localStem = sanitizeCssIdentifier(localName);
+  const hash = createStableHash(`${normalizePath(filename)}\n${scopeId}\n${localName}`).slice(0, 8);
+  return `jz_${fileStem}_${localStem}_${hash}`;
+}
+
 function createStableHash(value: string): string {
   let hash = 2166136261;
   for (const character of value) {
@@ -3384,6 +3493,28 @@ function createStableHash(value: string): string {
   }
 
   return Math.abs(hash >>> 0).toString(16);
+}
+
+function getPathBaseName(path: string): string {
+  const normalized = normalizePath(path);
+  const separatorIndex = Math.max(normalized.lastIndexOf("/"), normalized.lastIndexOf("\\"));
+  return separatorIndex >= 0 ? normalized.slice(separatorIndex + 1) : normalized;
+}
+
+function stripFileExtension(value: string): string {
+  const extensionIndex = value.lastIndexOf(".");
+  return extensionIndex > 0 ? value.slice(0, extensionIndex) : value;
+}
+
+function sanitizeCssIdentifier(value: string): string {
+  const normalized = value.replace(/[^A-Za-z0-9_-]/g, "_");
+  if (normalized.length === 0) {
+    return "style";
+  }
+
+  return /^[A-Za-z_]/.test(normalized)
+    ? normalized
+    : `_${normalized}`;
 }
 
 function formatSfcCompilerMessage(error: unknown): string {

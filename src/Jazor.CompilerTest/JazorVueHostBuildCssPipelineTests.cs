@@ -7,7 +7,6 @@ using static Jazor.CompilerTest.SourceMapTestHelpers;
 namespace Jazor.CompilerTest;
 
 [TestClass]
-[DoNotParallelize]
 public sealed class JazorVueHostBuildCssPipelineTests
 {
     [TestMethod]
@@ -49,17 +48,25 @@ public sealed class JazorVueHostBuildCssPipelineTests
     }
 
     [TestMethod]
-    public async Task BuildOrchestrator_BuildAsync_ExtractsImportedCssIntoBuildAsset()
+    public async Task BuildOrchestrator_BuildAsync_ExtractsImportedAndPublicCssAndRewritesReferencedAssets()
     {
         var tempDir = CreateTemporaryDirectory();
         try
         {
-            Directory.CreateDirectory(Path.Combine(tempDir, "public"));
+            const string sourceTreeMarker = "app-imported-source-tree-css-marker";
+
+            Directory.CreateDirectory(Path.Combine(tempDir, "styles"));
+            Directory.CreateDirectory(Path.Combine(tempDir, "public", "images"));
+            Directory.CreateDirectory(Path.Combine(tempDir, "public", "styles"));
 
             await File.WriteAllTextAsync(
                 Path.Combine(tempDir, "index.html"),
                 """
                 <html>
+                <head>
+                  <link rel="icon" href="/favicon.svg">
+                  <link rel="stylesheet" href="/styles/site.css">
+                </head>
                 <body>
                   <div id="app"></div>
                   <script type="module" src="/main.js"></script>
@@ -69,19 +76,40 @@ public sealed class JazorVueHostBuildCssPipelineTests
             await File.WriteAllTextAsync(
                 Path.Combine(tempDir, "main.js"),
                 """
-                import "./app.css";
+                import "./styles/app.css";
                 console.log("imported css");
                 """);
             await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "app.css"),
-                """
+                Path.Combine(tempDir, "styles", "app.css"),
+                $$"""
                 .app {
                   background-image: url("/logo.png?v=1");
+                }
+
+                .{{sourceTreeMarker}} {
+                  mask-image: url("./logo.png?v=9");
+                }
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "public", "styles", "site.css"),
+                """
+                body {
+                  background-image: url("../images/logo.png#hero");
+                  mask-image: url("/images/logo.png?v=2");
                 }
                 """);
             await File.WriteAllTextAsync(
                 Path.Combine(tempDir, "public", "logo.png"),
                 "fake-png-data");
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "styles", "logo.png"),
+                "fake-source-tree-png-data");
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "public", "images", "logo.png"),
+                "fake-public-css-png-data");
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "public", "favicon.svg"),
+                "<svg></svg>");
 
             var orchestrator = new BuildOrchestrator();
             var result = await orchestrator.BuildAsync(
@@ -105,28 +133,98 @@ public sealed class JazorVueHostBuildCssPipelineTests
             StringAssert.EndsWith(cssAsset.FileName, ".css");
             Assert.IsNotNull(cssAsset.SourceMapPath);
 
-            var imageAsset = result.StaticAssets.Single(static asset => asset.OriginalPath == "/logo.png");
+            var rootImageAsset = result.StaticAssets.Single(static asset => asset.OriginalPath == "/logo.png");
+            var sourceTreeImageAsset = result.StaticAssets.Single(static asset => asset.OriginalPath == "/styles/logo.png");
+            var publicCssImageAsset = result.StaticAssets.Single(static asset => asset.OriginalPath == "/images/logo.png");
+            var publicCssAsset = result.StaticAssets.Single(static asset => asset.OriginalPath == "/styles/site.css");
             var cssPath = Path.Combine(tempDir, cssAsset.FilePath.Replace('/', Path.DirectorySeparatorChar));
             Assert.IsTrue(File.Exists(cssPath));
             var sourceMapPath = Path.Combine(tempDir, cssAsset.SourceMapPath!.Replace('/', Path.DirectorySeparatorChar));
             Assert.IsTrue(File.Exists(sourceMapPath));
+            Assert.AreNotEqual("logo.png", sourceTreeImageAsset.FileName, "Build output should emit a hashed png asset for source-tree CSS url() references.");
 
             var cssContent = await File.ReadAllTextAsync(cssPath);
-            var expectedImagePath = GetRelativeOutputPath(tempDir, cssAsset.FilePath, imageAsset.FilePath);
-            StringAssert.Contains(cssContent, $"url(\"{expectedImagePath}?v=1\")");
+            var expectedRootImagePath = GetRelativeOutputPath(tempDir, cssAsset.FilePath, rootImageAsset.FilePath);
+            var expectedSourceTreeImagePath = GetRelativeOutputPath(tempDir, cssAsset.FilePath, sourceTreeImageAsset.FilePath);
+            StringAssert.Contains(cssContent, sourceTreeMarker);
+            StringAssert.Contains(cssContent, $"url(\"{expectedRootImagePath}?v=1\")");
+            StringAssert.Contains(cssContent, $"url(\"{expectedSourceTreeImagePath}?v=9\")");
             StringAssert.Contains(cssContent, $"/*# sourceMappingURL={Path.GetFileName(sourceMapPath)} */");
+            Assert.IsFalse(cssContent.Contains("url(\"/logo.png?v=1\")", StringComparison.Ordinal), "Build output should rewrite absolute public asset URLs referenced from imported CSS.");
+            Assert.IsFalse(cssContent.Contains("url(\"./logo.png?v=9\")", StringComparison.Ordinal), "Build output should rewrite source-tree relative asset URLs referenced from imported CSS.");
 
             using (var sourceMap = JsonDocument.Parse(await File.ReadAllTextAsync(sourceMapPath)))
             {
                 Assert.AreEqual(cssAsset.FileName, sourceMap.RootElement.GetProperty("file").GetString());
-                StringAssert.EndsWith(sourceMap.RootElement.GetProperty("sources")[0].GetString(), "app.css");
+                StringAssert.EndsWith(sourceMap.RootElement.GetProperty("sources")[0].GetString(), "styles/app.css");
                 var mappedLines = DecodeGeneratedLineToSourceLine(sourceMap.RootElement);
-                AssertGeneratedLineMapsToSourceLine(cssContent, "background-image:", await File.ReadAllTextAsync(Path.Combine(tempDir, "app.css")), "background-image:", mappedLines);
+                AssertGeneratedLineMapsToSourceLine(cssContent, "background-image:", await File.ReadAllTextAsync(Path.Combine(tempDir, "styles", "app.css")), "background-image:", mappedLines);
             }
+
+            var publicCssPath = Path.Combine(tempDir, publicCssAsset.FilePath.Replace('/', Path.DirectorySeparatorChar));
+            Assert.IsTrue(File.Exists(publicCssPath));
+            var publicCssContent = await File.ReadAllTextAsync(publicCssPath);
+            var expectedPublicCssImagePath = GetRelativeOutputPath(tempDir, publicCssAsset.FilePath, publicCssImageAsset.FilePath);
+            StringAssert.Contains(publicCssContent, $"url(\"{expectedPublicCssImagePath}?v=2\")");
+            StringAssert.Contains(publicCssContent, $"url(\"{expectedPublicCssImagePath}#hero\")");
 
             var distIndexHtmlPath = Path.Combine(tempDir, "dist", "index.html");
             var html = await File.ReadAllTextAsync(distIndexHtmlPath);
             StringAssert.Contains(html, $"href=\"{GetHtmlRelativePath(tempDir, "dist", cssAsset.FilePath)}\"");
+            StringAssert.Contains(html, $"href=\"{GetHtmlRelativePath(tempDir, "dist", publicCssAsset.FilePath)}\"");
+
+            Assert.IsFalse(string.IsNullOrWhiteSpace(result.ManifestPath));
+            Assert.IsTrue(File.Exists(result.ManifestPath!));
+
+            using (var manifestDocument = JsonDocument.Parse(await File.ReadAllTextAsync(result.ManifestPath!)))
+            {
+                var root = manifestDocument.RootElement;
+                var entryChunk = result.Chunks.Single(static chunk => chunk.IsEntry);
+                var entryChunkPath = GetHtmlRelativePath(tempDir, "dist", entryChunk.FilePath);
+                var entryCssPath = GetHtmlRelativePath(tempDir, "dist", cssAsset.FilePath);
+                var faviconAsset = result.StaticAssets.Single(static asset => asset.OriginalPath == "/favicon.svg");
+
+                Assert.AreEqual(entryChunkPath, root.GetProperty("Entry").GetString());
+                Assert.AreEqual(result.TotalSize, root.GetProperty("TotalSize").GetInt64());
+
+                var manifestChunks = root.GetProperty("Chunks");
+                Assert.AreEqual(1, manifestChunks.GetArrayLength());
+                var manifestEntryChunk = manifestChunks[0];
+                Assert.AreEqual(entryChunkPath, manifestEntryChunk.GetProperty("File").GetString());
+                Assert.IsTrue(manifestEntryChunk.GetProperty("IsEntry").GetBoolean());
+                CollectionAssert.Contains(GetManifestStringArray(manifestEntryChunk, "Css"), entryCssPath);
+                CollectionAssert.Contains(GetManifestStringArray(root, "Css"), entryCssPath);
+
+                var manifestLogo = root.GetProperty("StaticAssets").EnumerateArray()
+                    .Single(asset => string.Equals(asset.GetProperty("OriginalPath").GetString(), "/logo.png", StringComparison.Ordinal));
+                Assert.AreEqual(
+                    GetHtmlRelativePath(tempDir, "dist", rootImageAsset.FilePath),
+                    manifestLogo.GetProperty("File").GetString());
+
+                var manifestFavicon = root.GetProperty("StaticAssets").EnumerateArray()
+                    .Single(asset => string.Equals(asset.GetProperty("OriginalPath").GetString(), "/favicon.svg", StringComparison.Ordinal));
+                Assert.AreEqual(
+                    GetHtmlRelativePath(tempDir, "dist", faviconAsset.FilePath),
+                    manifestFavicon.GetProperty("File").GetString());
+
+                var manifestSourceTreeLogo = root.GetProperty("StaticAssets").EnumerateArray()
+                    .Single(asset => string.Equals(asset.GetProperty("OriginalPath").GetString(), "/styles/logo.png", StringComparison.Ordinal));
+                Assert.AreEqual(
+                    GetHtmlRelativePath(tempDir, "dist", sourceTreeImageAsset.FilePath),
+                    manifestSourceTreeLogo.GetProperty("File").GetString());
+
+                var manifestPublicCssImage = root.GetProperty("StaticAssets").EnumerateArray()
+                    .Single(asset => string.Equals(asset.GetProperty("OriginalPath").GetString(), "/images/logo.png", StringComparison.Ordinal));
+                Assert.AreEqual(
+                    GetHtmlRelativePath(tempDir, "dist", publicCssImageAsset.FilePath),
+                    manifestPublicCssImage.GetProperty("File").GetString());
+
+                var manifestPublicCss = root.GetProperty("StaticAssets").EnumerateArray()
+                    .Single(asset => string.Equals(asset.GetProperty("OriginalPath").GetString(), "/styles/site.css", StringComparison.Ordinal));
+                Assert.AreEqual(
+                    GetHtmlRelativePath(tempDir, "dist", publicCssAsset.FilePath),
+                    manifestPublicCss.GetProperty("File").GetString());
+            }
         }
         finally
         {
@@ -193,15 +291,16 @@ public sealed class JazorVueHostBuildCssPipelineTests
     }
 
     [TestMethod]
-    public async Task BuildOrchestrator_BuildAsync_ExtractsVueStyleContentIntoBuildAsset()
+    public async Task BuildOrchestrator_BuildAsync_ExtractsVueInlineAndStyleSrcCssIntoBuildAsset()
     {
         var tempDir = CreateTemporaryDirectory();
         try
         {
-            const string uniqueMarker = "vue-inline-style-sourcemap-marker";
-            const string source = """
+            const string inlineMarker = "vue-inline-style-sourcemap-marker";
+            const string styleSrcMarker = "vue-style-src-cross-dir-marker";
+            const string appSource = """
                 <template>
-                  <div class="app">Hello</div>
+                  <div class="app">Hello combined styles</div>
                 </template>
                 <style>
                 .app {
@@ -212,7 +311,18 @@ public sealed class JazorVueHostBuildCssPipelineTests
                   border-color: blue;
                 }
                 </style>
+                <style src="../styles/app.css"></style>
                 """;
+            const string cssSource = $$"""
+                .{{styleSrcMarker}} {
+                  background-image: url("./logo.png?v=7");
+                }
+                """;
+
+            Directory.CreateDirectory(Path.Combine(tempDir, "components"));
+            Directory.CreateDirectory(Path.Combine(tempDir, "styles"));
+            Directory.CreateDirectory(Path.Combine(tempDir, "public", "styles"));
+
             await File.WriteAllTextAsync(
                 Path.Combine(tempDir, "index.html"),
                 """
@@ -226,12 +336,18 @@ public sealed class JazorVueHostBuildCssPipelineTests
             await File.WriteAllTextAsync(
                 Path.Combine(tempDir, "main.js"),
                 """
-                import App from "./App.vue";
+                import App from "./components/App.vue";
                 console.log(App);
                 """);
             await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "App.vue"),
-                source);
+                Path.Combine(tempDir, "components", "App.vue"),
+                appSource);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "styles", "app.css"),
+                cssSource);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "public", "styles", "logo.png"),
+                "fake-png-data");
 
             var orchestrator = new BuildOrchestrator();
             var result = await orchestrator.BuildAsync(
@@ -258,16 +374,23 @@ public sealed class JazorVueHostBuildCssPipelineTests
             var sourceMapPath = Path.Combine(tempDir, cssAsset.SourceMapPath!.Replace('/', Path.DirectorySeparatorChar));
             Assert.IsTrue(File.Exists(sourceMapPath));
 
+            var imageAsset = result.StaticAssets.Single(static asset => asset.OriginalPath == "/styles/logo.png");
             var cssContent = await File.ReadAllTextAsync(cssPath);
+            var expectedImagePath = GetRelativeOutputPath(tempDir, cssAsset.FilePath, imageAsset.FilePath);
+
             StringAssert.Contains(cssContent, "color: red");
-            StringAssert.Contains(cssContent, uniqueMarker);
+            StringAssert.Contains(cssContent, inlineMarker);
+            StringAssert.Contains(cssContent, styleSrcMarker);
+            StringAssert.Contains(cssContent, $"url(\"{expectedImagePath}?v=7\")");
             StringAssert.Contains(cssContent, $"/*# sourceMappingURL={Path.GetFileName(sourceMapPath)} */");
+            Assert.IsFalse(cssContent.Contains("url(\"./logo.png?v=7\")", StringComparison.Ordinal), "Build output should rewrite the original relative CSS asset URL.");
+            Assert.IsFalse(cssContent.Contains("url(\"../styles/logo.png?v=7\")", StringComparison.Ordinal), "Build output should not resolve CSS URLs relative to the Vue component source path.");
 
             using (var sourceMap = JsonDocument.Parse(await File.ReadAllTextAsync(sourceMapPath)))
             {
                 Assert.AreEqual(cssAsset.FileName, sourceMap.RootElement.GetProperty("file").GetString());
-                StringAssert.EndsWith(sourceMap.RootElement.GetProperty("sources")[0].GetString(), "App.vue");
-                Assert.AreEqual(source, sourceMap.RootElement.GetProperty("sourcesContent")[0].GetString());
+                AssertSourceMapContainsSourceContent(sourceMap.RootElement, "components/App.vue", appSource);
+                AssertSourceMapContainsSourceContent(sourceMap.RootElement, "styles/app.css", cssSource);
             }
 
             var distIndexHtmlPath = Path.Combine(tempDir, "dist", "index.html");
@@ -285,266 +408,6 @@ public sealed class JazorVueHostBuildCssPipelineTests
     }
 
     [TestMethod]
-    public async Task BuildOrchestrator_BuildAsync_ExtractsVueStyleSrcContentIntoBuildAsset()
-    {
-        var tempDir = CreateTemporaryDirectory();
-        try
-        {
-            const string uniqueMarker = "vue-style-src-marker";
-
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "index.html"),
-                """
-                <html>
-                <body>
-                  <div id="app"></div>
-                  <script type="module" src="/main.js"></script>
-                </body>
-                </html>
-                """);
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "main.js"),
-                """
-                import App from "./App.vue";
-                console.log(App);
-                """);
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "App.vue"),
-                """
-                <template>
-                  <div class="app">Hello style src</div>
-                </template>
-                <style src="./app.css"></style>
-                """);
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "app.css"),
-                $$"""
-                .app {
-                  color: green;
-                }
-
-                .{{uniqueMarker}} {
-                  border-color: blue;
-                }
-                """);
-
-            var orchestrator = new BuildOrchestrator();
-            var result = await orchestrator.BuildAsync(
-                new BuildOptions
-                {
-                    RootDirectory = tempDir,
-                    OutDir = "dist",
-                    SourceMap = SourceMapOption.External,
-                    Minify = false,
-                    CodeSplitting = false
-                },
-                CancellationToken.None);
-
-            Assert.IsTrue(result.Success, string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
-            Assert.IsTrue(
-                result.CssAssets.Any(static asset => asset.FileName.StartsWith("styles-", StringComparison.OrdinalIgnoreCase)),
-                "Expected an extracted styles-*.css asset.");
-
-            var cssAsset = result.CssAssets.Single(static asset => asset.FileName.StartsWith("styles-", StringComparison.OrdinalIgnoreCase));
-            var cssPath = Path.Combine(tempDir, cssAsset.FilePath.Replace('/', Path.DirectorySeparatorChar));
-            Assert.IsTrue(File.Exists(cssPath));
-
-            var cssContent = await File.ReadAllTextAsync(cssPath);
-            StringAssert.Contains(cssContent, uniqueMarker);
-
-            var distIndexHtmlPath = Path.Combine(tempDir, "dist", "index.html");
-            var html = await File.ReadAllTextAsync(distIndexHtmlPath);
-            StringAssert.Contains(html, $"href=\"{GetHtmlRelativePath(tempDir, "dist", cssAsset.FilePath)}\"");
-
-            var chunkPath = Path.Combine(tempDir, result.Chunks.Single().FilePath.Replace('/', Path.DirectorySeparatorChar));
-            var chunkContent = await File.ReadAllTextAsync(chunkPath);
-            Assert.IsFalse(chunkContent.Contains("__jazorStyleId", StringComparison.Ordinal), "Build output should not inline dev-style style injection.");
-        }
-        finally
-        {
-            Directory.Delete(tempDir, recursive: true);
-        }
-    }
-
-    [TestMethod]
-    public async Task BuildOrchestrator_BuildAsync_RewritesVueStyleSrcCssUrlsRelativeToExtractedCssAsset()
-    {
-        var tempDir = CreateTemporaryDirectory();
-        try
-        {
-            const string uniqueMarker = "vue-style-src-cross-dir-marker";
-
-            Directory.CreateDirectory(Path.Combine(tempDir, "components"));
-            Directory.CreateDirectory(Path.Combine(tempDir, "styles"));
-            Directory.CreateDirectory(Path.Combine(tempDir, "public", "styles"));
-
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "index.html"),
-                """
-                <html>
-                <body>
-                  <div id="app"></div>
-                  <script type="module" src="/main.js"></script>
-                </body>
-                </html>
-                """);
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "main.js"),
-                """
-                import App from "./components/App.vue";
-                console.log(App);
-                """);
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "components", "App.vue"),
-                """
-                <template>
-                  <div class="app">Hello cross-directory style src</div>
-                </template>
-                <style src="../styles/app.css"></style>
-                """);
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "styles", "app.css"),
-                $$"""
-                .{{uniqueMarker}} {
-                  background-image: url("./logo.png?v=7");
-                }
-                """);
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "public", "styles", "logo.png"),
-                "fake-png-data");
-
-            var orchestrator = new BuildOrchestrator();
-            var result = await orchestrator.BuildAsync(
-                new BuildOptions
-                {
-                    RootDirectory = tempDir,
-                    OutDir = "dist",
-                    SourceMap = SourceMapOption.External,
-                    Minify = false,
-                    CodeSplitting = false
-                },
-                CancellationToken.None);
-
-            Assert.IsTrue(result.Success, string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
-            Assert.IsTrue(
-                result.CssAssets.Any(static asset => asset.FileName.StartsWith("styles-", StringComparison.OrdinalIgnoreCase)),
-                "Expected an extracted styles-*.css asset.");
-
-            var cssAsset = result.CssAssets.Single(static asset => asset.FileName.StartsWith("styles-", StringComparison.OrdinalIgnoreCase));
-            var cssPath = Path.Combine(tempDir, cssAsset.FilePath.Replace('/', Path.DirectorySeparatorChar));
-            Assert.IsTrue(File.Exists(cssPath));
-
-            var cssContent = await File.ReadAllTextAsync(cssPath);
-            var outputImages = Directory.GetFiles(Path.Combine(tempDir, "dist"), "*.png", SearchOption.AllDirectories);
-            Assert.AreEqual(1, outputImages.Length, "Expected the build to emit one copied png asset for the CSS url().");
-
-            var outputImagePath = outputImages[0];
-            var outputImageRootRelativePath = Path.GetRelativePath(tempDir, outputImagePath).Replace('\\', '/');
-            var expectedImagePath = GetRelativeOutputPath(tempDir, cssAsset.FilePath, outputImageRootRelativePath);
-
-            StringAssert.Contains(cssContent, uniqueMarker);
-            StringAssert.Contains(cssContent, $"url(\"{expectedImagePath}?v=7\")");
-            Assert.IsFalse(cssContent.Contains("url(\"./logo.png?v=7\")", StringComparison.Ordinal), "Build output should rewrite the original relative CSS asset URL.");
-            Assert.IsFalse(cssContent.Contains("url(\"../styles/logo.png?v=7\")", StringComparison.Ordinal), "Build output should not resolve CSS URLs relative to the Vue component source path.");
-
-            var distIndexHtmlPath = Path.Combine(tempDir, "dist", "index.html");
-            var html = await File.ReadAllTextAsync(distIndexHtmlPath);
-            StringAssert.Contains(html, $"href=\"{GetHtmlRelativePath(tempDir, "dist", cssAsset.FilePath)}\"");
-
-            var chunkPath = Path.Combine(tempDir, result.Chunks.Single().FilePath.Replace('/', Path.DirectorySeparatorChar));
-            var chunkContent = await File.ReadAllTextAsync(chunkPath);
-            Assert.IsFalse(chunkContent.Contains("__jazorStyleId", StringComparison.Ordinal), "Build output should not inline dev-style style injection.");
-        }
-        finally
-        {
-            Directory.Delete(tempDir, recursive: true);
-        }
-    }
-
-    [TestMethod]
-    public async Task BuildOrchestrator_BuildAsync_RewritesAppImportedSourceTreeCssUrlsToCopiedHashedAssets()
-    {
-        var tempDir = CreateTemporaryDirectory();
-        try
-        {
-            const string uniqueMarker = "app-imported-source-tree-css-marker";
-
-            Directory.CreateDirectory(Path.Combine(tempDir, "styles"));
-
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "index.html"),
-                """
-                <html>
-                <body>
-                  <div id="app"></div>
-                  <script type="module" src="/main.js"></script>
-                </body>
-                </html>
-                """);
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "main.js"),
-                """
-                import "./styles/app.css";
-                console.log("source-tree css asset rewrite");
-                """);
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "styles", "app.css"),
-                $$"""
-                .{{uniqueMarker}} {
-                  background-image: url("./logo.png?v=9");
-                }
-                """);
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "styles", "logo.png"),
-                "fake-png-data");
-
-            var orchestrator = new BuildOrchestrator();
-            var result = await orchestrator.BuildAsync(
-                new BuildOptions
-                {
-                    RootDirectory = tempDir,
-                    OutDir = "dist",
-                    SourceMap = SourceMapOption.External,
-                    Minify = false,
-                    CodeSplitting = false
-                },
-                CancellationToken.None);
-
-            Assert.IsTrue(result.Success, string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
-            Assert.IsTrue(
-                result.CssAssets.Any(static asset => asset.FileName.StartsWith("styles-", StringComparison.OrdinalIgnoreCase)),
-                "Expected an extracted styles-*.css asset.");
-
-            var cssAsset = result.CssAssets.Single(static asset => asset.FileName.StartsWith("styles-", StringComparison.OrdinalIgnoreCase));
-            var cssPath = Path.Combine(tempDir, cssAsset.FilePath.Replace('/', Path.DirectorySeparatorChar));
-            Assert.IsTrue(File.Exists(cssPath));
-
-            var outputImages = Directory.GetFiles(Path.Combine(tempDir, "dist"), "*.png", SearchOption.AllDirectories);
-            Assert.AreEqual(1, outputImages.Length, "Expected the build to emit one copied png asset for the CSS url().");
-
-            var outputImagePath = outputImages[0];
-            Assert.AreNotEqual("logo.png", Path.GetFileName(outputImagePath), "Build output should emit a hashed png asset.");
-
-            var outputImageRootRelativePath = Path.GetRelativePath(tempDir, outputImagePath).Replace('\\', '/');
-            var cssContent = await File.ReadAllTextAsync(cssPath);
-            var expectedImagePath = GetRelativeOutputPath(tempDir, cssAsset.FilePath, outputImageRootRelativePath);
-
-            StringAssert.Contains(cssContent, uniqueMarker);
-            StringAssert.Contains(cssContent, $"url(\"{expectedImagePath}?v=9\")");
-
-            var distIndexHtmlPath = Path.Combine(tempDir, "dist", "index.html");
-            Assert.IsTrue(File.Exists(distIndexHtmlPath));
-            var html = await File.ReadAllTextAsync(distIndexHtmlPath);
-            StringAssert.Contains(html, $"href=\"{GetHtmlRelativePath(tempDir, "dist", cssAsset.FilePath)}\"");
-        }
-        finally
-        {
-            Directory.Delete(tempDir, recursive: true);
-        }
-    }
-
-    [TestMethod]
-    [DoNotParallelize]
     public async Task BuildOrchestrator_BuildAsync_WithCodeSplitting_EmitsChunkOwnedExtractedCssAssets()
     {
         var tempDir = CreateTemporaryDirectory();
@@ -569,6 +432,7 @@ public sealed class JazorVueHostBuildCssPipelineTests
                 """
                 import "./entry.css";
                 console.log("main");
+                await import("./feature.js");
                 await import("./feature.js");
                 """);
             await File.WriteAllTextAsync(
@@ -634,9 +498,19 @@ public sealed class JazorVueHostBuildCssPipelineTests
 
             var entryChunkPath = Path.Combine(tempDir, entryChunk.FilePath.Replace('/', Path.DirectorySeparatorChar));
             var entryChunkContent = await File.ReadAllTextAsync(entryChunkPath);
+            var splitChunkSpecifier = $"./{splitChunk.FileName}";
+            Assert.IsTrue(
+                CountOccurrences(entryChunkContent, splitChunkSpecifier) >= 2,
+                $"Expected repeated dynamic imports to preserve two '{splitChunkSpecifier}' import expressions.");
             StringAssert.Contains(entryChunkContent, $"./{splitChunk.FileName}");
             StringAssert.Contains(entryChunkContent, GetHtmlRelativePath(tempDir, "dist", lazyCss.Asset.FilePath));
+            Assert.IsTrue(
+                CountOccurrences(entryChunkContent, GetHtmlRelativePath(tempDir, "dist", lazyCss.Asset.FilePath)) >= 2,
+                "Expected repeated lazy imports to preserve duplicated CSS hrefs so runtime dedupe can apply.");
             StringAssert.Contains(entryChunkContent, "__jazorImportCss");
+            StringAssert.Contains(entryChunkContent, "__jazorLoadedCss ??= new Set()");
+            StringAssert.Contains(entryChunkContent, "registry.has(href)");
+            StringAssert.Contains(entryChunkContent, "link[rel=\"stylesheet\"][href=\"'+href+'\"]");
         }
         finally
         {
@@ -723,8 +597,6 @@ public sealed class JazorVueHostBuildCssPipelineTests
                 CancellationToken.None);
 
             Assert.IsTrue(result.Success, string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
-            Console.WriteLine("DEBUG DistinctLazyChunks result.Chunks="
-                + string.Join(", ", result.Chunks.Select(static chunk => $"{chunk.FilePath}|entry={chunk.IsEntry}|imports={string.Join(";", chunk.Imports)}")));
             Assert.IsTrue(result.Chunks.Count >= 3, "Expected code splitting to produce an entry chunk and two lazy chunks.");
             Assert.IsTrue(result.CssAssets.Count >= 3, "Expected extracted CSS assets for the entry and both lazy chunks.");
 
@@ -734,9 +606,6 @@ public sealed class JazorVueHostBuildCssPipelineTests
                 Chunk = chunk,
                 Content = await File.ReadAllTextAsync(Path.Combine(tempDir, chunk.FilePath.Replace('/', Path.DirectorySeparatorChar)))
             }));
-            Console.WriteLine("DEBUG DistinctLazyChunks chunkOutputs="
-                + string.Join(", ", chunkOutputs.Select(output =>
-                    $"{output.Chunk.FilePath}|entry={output.Chunk.IsEntry}|lazyA={output.Content.Contains(lazyAChunkMarker, StringComparison.Ordinal)}|lazyB={output.Content.Contains(lazyBChunkMarker, StringComparison.Ordinal)}")));
             var lazyAChunk = chunkOutputs.Single(output => !output.Chunk.IsEntry && output.Content.Contains(lazyAChunkMarker, StringComparison.Ordinal)).Chunk;
             var lazyBChunk = chunkOutputs.Single(output => !output.Chunk.IsEntry && output.Content.Contains(lazyBChunkMarker, StringComparison.Ordinal)).Chunk;
 
@@ -784,6 +653,51 @@ public sealed class JazorVueHostBuildCssPipelineTests
             StringAssert.Contains(entryChunkContent, GetHtmlRelativePath(tempDir, "dist", lazyACss.Asset.FilePath));
             StringAssert.Contains(entryChunkContent, GetHtmlRelativePath(tempDir, "dist", lazyBCss.Asset.FilePath));
             StringAssert.Contains(entryChunkContent, "__jazorImportCss");
+
+            Assert.IsFalse(string.IsNullOrWhiteSpace(result.ManifestPath));
+            Assert.IsTrue(File.Exists(result.ManifestPath!));
+
+            using (var manifestDocument = JsonDocument.Parse(await File.ReadAllTextAsync(result.ManifestPath!)))
+            {
+                var root = manifestDocument.RootElement;
+                var manifestChunks = root.GetProperty("Chunks");
+                var entryChunkPath = GetHtmlRelativePath(tempDir, "dist", entryChunk.FilePath);
+                var lazyAChunkPath = GetHtmlRelativePath(tempDir, "dist", lazyAChunk.FilePath);
+                var lazyBChunkPath = GetHtmlRelativePath(tempDir, "dist", lazyBChunk.FilePath);
+                var entryCssPath = GetHtmlRelativePath(tempDir, "dist", entryCss.Asset.FilePath);
+                var lazyACssPath = GetHtmlRelativePath(tempDir, "dist", lazyACss.Asset.FilePath);
+                var lazyBCssPath = GetHtmlRelativePath(tempDir, "dist", lazyBCss.Asset.FilePath);
+
+                Assert.AreEqual(entryChunkPath, root.GetProperty("Entry").GetString());
+                Assert.AreEqual(result.TotalSize, root.GetProperty("TotalSize").GetInt64());
+
+                var manifestEntryChunk = GetManifestChunk(manifestChunks, entryChunkPath);
+                var manifestEntryImports = GetManifestStringArray(manifestEntryChunk, "Imports");
+                CollectionAssert.Contains(manifestEntryImports, lazyAChunkPath);
+                CollectionAssert.Contains(manifestEntryImports, lazyBChunkPath);
+
+                var manifestEntryCss = GetManifestStringArray(manifestEntryChunk, "Css");
+                CollectionAssert.Contains(manifestEntryCss, entryCssPath);
+                CollectionAssert.DoesNotContain(manifestEntryCss, lazyACssPath);
+                CollectionAssert.DoesNotContain(manifestEntryCss, lazyBCssPath);
+
+                var manifestLazyAChunk = GetManifestChunk(manifestChunks, lazyAChunkPath);
+                var manifestLazyACss = GetManifestStringArray(manifestLazyAChunk, "Css");
+                CollectionAssert.Contains(manifestLazyACss, lazyACssPath);
+                CollectionAssert.DoesNotContain(manifestLazyACss, entryCssPath);
+                CollectionAssert.DoesNotContain(manifestLazyACss, lazyBCssPath);
+
+                var manifestLazyBChunk = GetManifestChunk(manifestChunks, lazyBChunkPath);
+                var manifestLazyBCss = GetManifestStringArray(manifestLazyBChunk, "Css");
+                CollectionAssert.Contains(manifestLazyBCss, lazyBCssPath);
+                CollectionAssert.DoesNotContain(manifestLazyBCss, entryCssPath);
+                CollectionAssert.DoesNotContain(manifestLazyBCss, lazyACssPath);
+
+                var manifestCss = GetManifestStringArray(root, "Css");
+                CollectionAssert.Contains(manifestCss, entryCssPath);
+                CollectionAssert.DoesNotContain(manifestCss, lazyACssPath);
+                CollectionAssert.DoesNotContain(manifestCss, lazyBCssPath);
+            }
         }
         finally
         {
@@ -792,10 +706,14 @@ public sealed class JazorVueHostBuildCssPipelineTests
     }
 
     [TestMethod]
-    public async Task BuildOrchestrator_BuildAsync_WithCodeSplitting_DeduplicatesMultiOwnerSharedCssAcrossTwoLazyChunks()
+    public async Task BuildOrchestrator_BuildAsync_WithCodeSplitting_PreservesDirectSharedAndStaticChunkCssClosuresAcrossTwoLazyChunks()
     {
         const string entryMarker = "entry-style-marker";
-        const string sharedMarker = "shared-style-marker";
+        const string directSharedMarker = "shared-direct-style-marker";
+        const string staticSharedMarker = "shared-static-style-marker";
+        const string sharedChunkMarker = "shared-static-payload";
+        const string lazyAChunkMarker = "lazy-a-closure";
+        const string lazyBChunkMarker = "lazy-b-closure";
 
         var tempDir = CreateTemporaryDirectory();
         try
@@ -837,23 +755,42 @@ public sealed class JazorVueHostBuildCssPipelineTests
                 """);
             await File.WriteAllTextAsync(
                 Path.Combine(tempDir, "feature-a.js"),
-                """
+                $$"""
                 import { helperA } from "./feature-a-helper.js";
-                import "./shared.css";
-                console.log("feature-a-multi-owner", helperA);
+                import "./shared-direct.css";
+                import { sharedA } from "./shared.js";
+                export const featureMessageA = "{{lazyAChunkMarker}}";
+                console.log(featureMessageA, helperA, sharedA);
                 """);
             await File.WriteAllTextAsync(
                 Path.Combine(tempDir, "feature-b.js"),
-                """
+                $$"""
                 import { helperB } from "./feature-b-helper.js";
-                import "./shared.css";
-                console.log("feature-b-multi-owner", helperB);
+                import "./shared-direct.css";
+                import { sharedB } from "./shared.js";
+                export const featureMessageB = "{{lazyBChunkMarker}}";
+                console.log(featureMessageB, helperB, sharedB);
                 """);
             await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "shared.css"),
+                Path.Combine(tempDir, "shared-direct.css"),
                 $$"""
-                .{{sharedMarker}} {
+                .{{directSharedMarker}} {
                   color: blue;
+                }
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "shared.js"),
+                $$"""
+                import "./shared-static.css";
+                export const sharedA = "{{sharedChunkMarker}}";
+                export const sharedB = "{{sharedChunkMarker}}";
+                console.log(sharedA, sharedB);
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "shared-static.css"),
+                $$"""
+                .{{staticSharedMarker}} {
+                  color: purple;
                 }
                 """);
 
@@ -871,7 +808,7 @@ public sealed class JazorVueHostBuildCssPipelineTests
 
             Assert.IsTrue(result.Success, string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
             Assert.IsTrue(result.Chunks.Any(static chunk => !chunk.IsEntry), "Expected at least one lazy chunk.");
-            Assert.AreEqual(2, result.CssAssets.Count, "Expected one entry CSS asset plus one shared multi-owner CSS asset.");
+            Assert.AreEqual(3, result.CssAssets.Count, "Expected entry CSS plus direct-shared and static-shared lazy CSS assets.");
 
             var entryChunk = result.Chunks.Single(static chunk => chunk.IsEntry);
             var chunkOutputs = await Task.WhenAll(result.Chunks.Select(async chunk => new
@@ -879,158 +816,6 @@ public sealed class JazorVueHostBuildCssPipelineTests
                 Chunk = chunk,
                 Content = await File.ReadAllTextAsync(Path.Combine(tempDir, chunk.FilePath.Replace('/', Path.DirectorySeparatorChar)))
             }));
-
-            var cssOutputs = await Task.WhenAll(result.CssAssets.Select(async asset => new
-            {
-                Asset = asset,
-                Content = await File.ReadAllTextAsync(Path.Combine(tempDir, asset.FilePath.Replace('/', Path.DirectorySeparatorChar)))
-            }));
-            var entryCss = cssOutputs.Single(output => output.Content.Contains(entryMarker, StringComparison.Ordinal));
-            var sharedCss = cssOutputs.Single(output => output.Content.Contains(sharedMarker, StringComparison.Ordinal));
-            var sharedOwnerChunkPaths = sharedCss.Asset.OwnerChunkFilePaths.Count > 0
-                ? sharedCss.Asset.OwnerChunkFilePaths
-                : string.IsNullOrWhiteSpace(sharedCss.Asset.OwnerChunkFilePath)
-                    ? []
-                    : [sharedCss.Asset.OwnerChunkFilePath!];
-
-            Assert.AreEqual(entryChunk.FilePath, entryCss.Asset.OwnerChunkFilePath);
-            Assert.IsTrue(sharedOwnerChunkPaths.Count > 0, "Expected shared CSS to keep at least one lazy owner chunk.");
-            Assert.IsFalse(
-                sharedOwnerChunkPaths.Contains(entryChunk.FilePath, StringComparer.Ordinal),
-                "Shared CSS owners should remain lazy and never collapse to the entry chunk.");
-
-            foreach (var ownerChunkFilePath in sharedOwnerChunkPaths)
-            {
-                var ownerChunk = result.Chunks.SingleOrDefault(chunk => string.Equals(chunk.FilePath, ownerChunkFilePath, StringComparison.Ordinal));
-                Assert.IsNotNull(ownerChunk, $"Expected shared CSS owner chunk '{ownerChunkFilePath}' to exist in emitted chunks.");
-                Assert.IsFalse(ownerChunk.IsEntry, "Shared CSS owner chunks must stay lazy.");
-                CollectionAssert.Contains(ownerChunk.Css.ToArray(), sharedCss.Asset.FilePath);
-            }
-
-            if (sharedOwnerChunkPaths.Count == 1)
-            {
-                Assert.AreEqual(
-                    sharedOwnerChunkPaths[0],
-                    sharedCss.Asset.OwnerChunkFilePath,
-                    "When the bundler merges lazy modules, shared CSS should collapse to one lazy owner.");
-            }
-            else
-            {
-                Assert.IsNull(sharedCss.Asset.OwnerChunkFilePath, "Shared CSS should expose multi-owner metadata instead of collapsing to a single owner.");
-            }
-
-            CollectionAssert.Contains(entryChunk.Css.ToArray(), entryCss.Asset.FilePath);
-            CollectionAssert.DoesNotContain(entryChunk.Css.ToArray(), sharedCss.Asset.FilePath);
-
-            var distIndexHtmlPath = Path.Combine(tempDir, "dist", "index.html");
-            var html = await File.ReadAllTextAsync(distIndexHtmlPath);
-            StringAssert.Contains(html, $"href=\"{GetHtmlRelativePath(tempDir, "dist", entryCss.Asset.FilePath)}\"");
-            Assert.IsFalse(
-                html.Contains($"href=\"{GetHtmlRelativePath(tempDir, "dist", sharedCss.Asset.FilePath)}\"", StringComparison.Ordinal),
-                "Production HTML should not eagerly inject shared lazy CSS.");
-
-            var entryChunkContent = chunkOutputs.Single(output => string.Equals(output.Chunk.FilePath, entryChunk.FilePath, StringComparison.Ordinal)).Content;
-            StringAssert.Contains(entryChunkContent, GetHtmlRelativePath(tempDir, "dist", sharedCss.Asset.FilePath));
-            StringAssert.Contains(entryChunkContent, "__jazorImportCss");
-        }
-        finally
-        {
-            Directory.Delete(tempDir, recursive: true);
-        }
-    }
-
-    [TestMethod]
-    public async Task BuildOrchestrator_BuildAsync_WithCodeSplitting_LoadsSharedStaticChunkCssViaLazyChunkClosure()
-    {
-        const string entryMarker = "entry-style-marker";
-        const string sharedMarker = "shared-static-style-marker";
-        const string sharedChunkMarker = "shared-static-payload";
-        const string lazyAChunkMarker = "lazy-a-closure";
-        const string lazyBChunkMarker = "lazy-b-closure";
-
-        var tempDir = CreateTemporaryDirectory();
-        try
-        {
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "index.html"),
-                """
-                <html>
-                <body>
-                  <script type="module" src="/main.js"></script>
-                </body>
-                </html>
-                """);
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "main.js"),
-                """
-                import "./entry.css";
-                await Promise.all([
-                  import("./feature-a.js"),
-                  import("./feature-b.js")
-                ]);
-                """);
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "entry.css"),
-                $$"""
-                .{{entryMarker}} {
-                  color: red;
-                }
-                """);
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "feature-a.js"),
-                $$"""
-                import { sharedA } from "./shared.js";
-                export const featureMessageA = "{{lazyAChunkMarker}}";
-                console.log(featureMessageA, sharedA);
-                """);
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "feature-b.js"),
-                $$"""
-                import { sharedB } from "./shared.js";
-                export const featureMessageB = "{{lazyBChunkMarker}}";
-                console.log(featureMessageB, sharedB);
-                """);
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "shared.js"),
-                $$"""
-                import "./shared.css";
-                export const sharedA = "{{sharedChunkMarker}}";
-                export const sharedB = "{{sharedChunkMarker}}";
-                console.log(sharedA, sharedB);
-                """);
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "shared.css"),
-                $$"""
-                .{{sharedMarker}} {
-                  color: blue;
-                }
-                """);
-
-            var orchestrator = new BuildOrchestrator();
-            var result = await orchestrator.BuildAsync(
-                new BuildOptions
-                {
-                    RootDirectory = tempDir,
-                    OutDir = "dist",
-                    SourceMap = SourceMapOption.External,
-                    Minify = false,
-                    CodeSplitting = true
-                },
-                CancellationToken.None);
-
-            Assert.IsTrue(result.Success, string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
-            Console.WriteLine("DEBUG SharedStaticChunk result.Chunks="
-                + string.Join(", ", result.Chunks.Select(static chunk => $"{chunk.FilePath}|entry={chunk.IsEntry}|imports={string.Join(";", chunk.Imports)}")));
-
-            var entryChunk = result.Chunks.Single(static chunk => chunk.IsEntry);
-            var chunkOutputs = await Task.WhenAll(result.Chunks.Select(async chunk => new
-            {
-                Chunk = chunk,
-                Content = await File.ReadAllTextAsync(Path.Combine(tempDir, chunk.FilePath.Replace('/', Path.DirectorySeparatorChar)))
-            }));
-            Console.WriteLine("DEBUG SharedStaticChunk chunkOutputs="
-                + string.Join(", ", chunkOutputs.Select(output =>
-                    $"{output.Chunk.FilePath}|entry={output.Chunk.IsEntry}|shared={output.Content.Contains(sharedChunkMarker, StringComparison.Ordinal)}|lazyA={output.Content.Contains(lazyAChunkMarker, StringComparison.Ordinal)}|lazyB={output.Content.Contains(lazyBChunkMarker, StringComparison.Ordinal)}")));
             var sharedChunk = chunkOutputs.Single(output => !output.Chunk.IsEntry && output.Content.Contains(sharedChunkMarker, StringComparison.Ordinal)).Chunk;
             var lazyAChunk = chunkOutputs.Single(output => !output.Chunk.IsEntry && output.Content.Contains(lazyAChunkMarker, StringComparison.Ordinal)).Chunk;
             var lazyBChunk = chunkOutputs.Single(output => !output.Chunk.IsEntry && output.Content.Contains(lazyBChunkMarker, StringComparison.Ordinal)).Chunk;
@@ -1041,24 +826,113 @@ public sealed class JazorVueHostBuildCssPipelineTests
                 Content = await File.ReadAllTextAsync(Path.Combine(tempDir, asset.FilePath.Replace('/', Path.DirectorySeparatorChar)))
             }));
             var entryCss = cssOutputs.Single(output => output.Content.Contains(entryMarker, StringComparison.Ordinal));
-            var sharedCss = cssOutputs.Single(output => output.Content.Contains(sharedMarker, StringComparison.Ordinal));
+            var directSharedCss = cssOutputs.Single(output => output.Content.Contains(directSharedMarker, StringComparison.Ordinal));
+            var staticSharedCss = cssOutputs.Single(output => output.Content.Contains(staticSharedMarker, StringComparison.Ordinal));
+            var directSharedOwnerChunkPaths = directSharedCss.Asset.OwnerChunkFilePaths.Count > 0
+                ? directSharedCss.Asset.OwnerChunkFilePaths
+                : string.IsNullOrWhiteSpace(directSharedCss.Asset.OwnerChunkFilePath)
+                    ? []
+                    : [directSharedCss.Asset.OwnerChunkFilePath!];
 
-            Assert.AreEqual(sharedChunk.FilePath, sharedCss.Asset.OwnerChunkFilePath);
-            CollectionAssert.Contains(sharedChunk.Css.ToArray(), sharedCss.Asset.FilePath);
-            CollectionAssert.Contains(lazyAChunk.Css.ToArray(), sharedCss.Asset.FilePath);
-            CollectionAssert.Contains(lazyBChunk.Css.ToArray(), sharedCss.Asset.FilePath);
-            CollectionAssert.DoesNotContain(entryChunk.Css.ToArray(), sharedCss.Asset.FilePath);
+            Assert.AreEqual(entryChunk.FilePath, entryCss.Asset.OwnerChunkFilePath);
+            Assert.AreEqual(sharedChunk.FilePath, staticSharedCss.Asset.OwnerChunkFilePath);
+            Assert.IsTrue(directSharedOwnerChunkPaths.Count > 0, "Expected direct shared CSS to keep at least one lazy owner chunk.");
+            Assert.IsFalse(
+                directSharedOwnerChunkPaths.Contains(entryChunk.FilePath, StringComparer.Ordinal),
+                "Direct shared CSS owners should remain lazy and never collapse to the entry chunk.");
+
+            foreach (var ownerChunkFilePath in directSharedOwnerChunkPaths)
+            {
+                var ownerChunk = result.Chunks.SingleOrDefault(chunk => string.Equals(chunk.FilePath, ownerChunkFilePath, StringComparison.Ordinal));
+                Assert.IsNotNull(ownerChunk, $"Expected direct shared CSS owner chunk '{ownerChunkFilePath}' to exist in emitted chunks.");
+                Assert.IsFalse(ownerChunk.IsEntry, "Direct shared CSS owner chunks must stay lazy.");
+                Assert.AreNotEqual(sharedChunk.FilePath, ownerChunk.FilePath, "Direct shared CSS should stay attached to lazy owners, not the shared static chunk.");
+                CollectionAssert.Contains(ownerChunk.Css.ToArray(), directSharedCss.Asset.FilePath);
+            }
+
+            if (directSharedOwnerChunkPaths.Count == 1)
+            {
+                Assert.AreEqual(
+                    directSharedOwnerChunkPaths[0],
+                    directSharedCss.Asset.OwnerChunkFilePath,
+                    "When the bundler merges lazy modules, direct shared CSS should collapse to one lazy owner.");
+            }
+            else
+            {
+                Assert.IsNull(directSharedCss.Asset.OwnerChunkFilePath, "Direct shared CSS should expose multi-owner metadata instead of collapsing to a single owner.");
+            }
+
             CollectionAssert.Contains(entryChunk.Css.ToArray(), entryCss.Asset.FilePath);
+            CollectionAssert.DoesNotContain(entryChunk.Css.ToArray(), directSharedCss.Asset.FilePath);
+            CollectionAssert.DoesNotContain(entryChunk.Css.ToArray(), staticSharedCss.Asset.FilePath);
+            CollectionAssert.Contains(sharedChunk.Css.ToArray(), staticSharedCss.Asset.FilePath);
+            CollectionAssert.DoesNotContain(sharedChunk.Css.ToArray(), directSharedCss.Asset.FilePath);
+            CollectionAssert.Contains(lazyAChunk.Css.ToArray(), staticSharedCss.Asset.FilePath);
+            CollectionAssert.Contains(lazyBChunk.Css.ToArray(), staticSharedCss.Asset.FilePath);
 
             var distIndexHtmlPath = Path.Combine(tempDir, "dist", "index.html");
             var html = await File.ReadAllTextAsync(distIndexHtmlPath);
+            StringAssert.Contains(html, $"href=\"{GetHtmlRelativePath(tempDir, "dist", entryCss.Asset.FilePath)}\"");
             Assert.IsFalse(
-                html.Contains($"href=\"{GetHtmlRelativePath(tempDir, "dist", sharedCss.Asset.FilePath)}\"", StringComparison.Ordinal),
-                "Shared static-chunk CSS should be lazy, not eagerly injected into HTML.");
+                html.Contains($"href=\"{GetHtmlRelativePath(tempDir, "dist", directSharedCss.Asset.FilePath)}\"", StringComparison.Ordinal),
+                "Production HTML should not eagerly inject direct shared lazy CSS.");
+            Assert.IsFalse(
+                html.Contains($"href=\"{GetHtmlRelativePath(tempDir, "dist", staticSharedCss.Asset.FilePath)}\"", StringComparison.Ordinal),
+                "Production HTML should not eagerly inject static-chunk lazy CSS.");
 
             var entryChunkContent = chunkOutputs.Single(output => string.Equals(output.Chunk.FilePath, entryChunk.FilePath, StringComparison.Ordinal)).Content;
-            StringAssert.Contains(entryChunkContent, GetHtmlRelativePath(tempDir, "dist", sharedCss.Asset.FilePath));
+            StringAssert.Contains(entryChunkContent, GetHtmlRelativePath(tempDir, "dist", directSharedCss.Asset.FilePath));
+            StringAssert.Contains(entryChunkContent, GetHtmlRelativePath(tempDir, "dist", staticSharedCss.Asset.FilePath));
             StringAssert.Contains(entryChunkContent, "__jazorImportCss");
+            Assert.IsFalse(string.IsNullOrWhiteSpace(result.ManifestPath));
+            Assert.IsTrue(File.Exists(result.ManifestPath!));
+
+            using (var manifestDocument = JsonDocument.Parse(await File.ReadAllTextAsync(result.ManifestPath!)))
+            {
+                var root = manifestDocument.RootElement;
+                var manifestChunks = root.GetProperty("Chunks");
+                var entryChunkPath = GetHtmlRelativePath(tempDir, "dist", entryChunk.FilePath);
+                var sharedChunkPath = GetHtmlRelativePath(tempDir, "dist", sharedChunk.FilePath);
+                var lazyAChunkPath = GetHtmlRelativePath(tempDir, "dist", lazyAChunk.FilePath);
+                var lazyBChunkPath = GetHtmlRelativePath(tempDir, "dist", lazyBChunk.FilePath);
+                var entryCssPath = GetHtmlRelativePath(tempDir, "dist", entryCss.Asset.FilePath);
+                var directSharedCssPath = GetHtmlRelativePath(tempDir, "dist", directSharedCss.Asset.FilePath);
+                var staticSharedCssPath = GetHtmlRelativePath(tempDir, "dist", staticSharedCss.Asset.FilePath);
+
+                Assert.AreEqual(entryChunkPath, root.GetProperty("Entry").GetString());
+                Assert.AreEqual(result.TotalSize, root.GetProperty("TotalSize").GetInt64());
+
+                var manifestEntryChunk = GetManifestChunk(manifestChunks, entryChunkPath);
+                var manifestEntryCss = GetManifestStringArray(manifestEntryChunk, "Css");
+                CollectionAssert.Contains(manifestEntryCss, entryCssPath);
+                CollectionAssert.DoesNotContain(manifestEntryCss, directSharedCssPath);
+                CollectionAssert.DoesNotContain(manifestEntryCss, staticSharedCssPath);
+
+                var manifestSharedChunk = GetManifestChunk(manifestChunks, sharedChunkPath);
+                CollectionAssert.Contains(GetManifestStringArray(manifestSharedChunk, "Css"), staticSharedCssPath);
+                CollectionAssert.DoesNotContain(GetManifestStringArray(manifestSharedChunk, "Css"), directSharedCssPath);
+
+                var manifestLazyAChunk = GetManifestChunk(manifestChunks, lazyAChunkPath);
+                CollectionAssert.Contains(GetManifestStringArray(manifestLazyAChunk, "Imports"), sharedChunkPath);
+                CollectionAssert.Contains(GetManifestStringArray(manifestLazyAChunk, "Css"), staticSharedCssPath);
+                if (directSharedOwnerChunkPaths.Contains(lazyAChunk.FilePath, StringComparer.Ordinal))
+                {
+                    CollectionAssert.Contains(GetManifestStringArray(manifestLazyAChunk, "Css"), directSharedCssPath);
+                }
+
+                var manifestLazyBChunk = GetManifestChunk(manifestChunks, lazyBChunkPath);
+                CollectionAssert.Contains(GetManifestStringArray(manifestLazyBChunk, "Imports"), sharedChunkPath);
+                CollectionAssert.Contains(GetManifestStringArray(manifestLazyBChunk, "Css"), staticSharedCssPath);
+                if (directSharedOwnerChunkPaths.Contains(lazyBChunk.FilePath, StringComparer.Ordinal))
+                {
+                    CollectionAssert.Contains(GetManifestStringArray(manifestLazyBChunk, "Css"), directSharedCssPath);
+                }
+
+                var manifestCss = GetManifestStringArray(root, "Css");
+                CollectionAssert.Contains(manifestCss, entryCssPath);
+                CollectionAssert.DoesNotContain(manifestCss, directSharedCssPath);
+                CollectionAssert.DoesNotContain(manifestCss, staticSharedCssPath);
+            }
         }
         finally
         {
@@ -1205,96 +1079,6 @@ public sealed class JazorVueHostBuildCssPipelineTests
     }
 
     [TestMethod]
-    public async Task BuildOrchestrator_BuildAsync_WithCodeSplitting_RepeatedDynamicImports_DedupesCssRuntimeLoadGuards()
-    {
-        const string lazyMarker = "lazy-style-dedupe-marker";
-        const string lazyChunkMarker = "lazy-dedupe-payload";
-
-        var tempDir = CreateTemporaryDirectory();
-        try
-        {
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "index.html"),
-                """
-                <html>
-                <body>
-                  <script type="module" src="/main.js"></script>
-                </body>
-                </html>
-                """);
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "main.js"),
-                """
-                await import("./feature.js");
-                await import("./feature.js");
-                """);
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "feature.js"),
-                $$"""
-                import "./feature.css";
-                export const featureMessage = "{{lazyChunkMarker}}";
-                console.log(featureMessage);
-                """);
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "feature.css"),
-                $$"""
-                .{{lazyMarker}} {
-                  color: blue;
-                }
-                """);
-
-            var orchestrator = new BuildOrchestrator();
-            var result = await orchestrator.BuildAsync(
-                new BuildOptions
-                {
-                    RootDirectory = tempDir,
-                    OutDir = "dist",
-                    SourceMap = SourceMapOption.External,
-                    Minify = false,
-                    CodeSplitting = true
-                },
-                CancellationToken.None);
-
-            Assert.IsTrue(result.Success, string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
-            Assert.IsTrue(result.Chunks.Count >= 2, "Expected code splitting to produce entry and lazy chunks.");
-
-            var entryChunk = result.Chunks.Single(static chunk => chunk.IsEntry);
-            var chunkOutputs = await Task.WhenAll(result.Chunks.Select(async chunk => new
-            {
-                Chunk = chunk,
-                Content = await File.ReadAllTextAsync(Path.Combine(tempDir, chunk.FilePath.Replace('/', Path.DirectorySeparatorChar)))
-            }));
-            var lazyChunk = chunkOutputs.Single(output => !output.Chunk.IsEntry && output.Content.Contains(lazyChunkMarker, StringComparison.Ordinal)).Chunk;
-
-            var cssOutputs = await Task.WhenAll(result.CssAssets.Select(async asset => new
-            {
-                Asset = asset,
-                Content = await File.ReadAllTextAsync(Path.Combine(tempDir, asset.FilePath.Replace('/', Path.DirectorySeparatorChar)))
-            }));
-            var lazyCss = cssOutputs.Single(output => output.Content.Contains(lazyMarker, StringComparison.Ordinal)).Asset;
-
-            var entryChunkContent = chunkOutputs.Single(output => string.Equals(output.Chunk.FilePath, entryChunk.FilePath, StringComparison.Ordinal)).Content;
-            var lazyChunkSpecifier = $"./{lazyChunk.FileName}";
-            Assert.IsTrue(
-                CountOccurrences(entryChunkContent, lazyChunkSpecifier) >= 2,
-                $"Expected repeated dynamic imports to preserve two '{lazyChunkSpecifier}' import expressions.");
-
-            var lazyCssHref = GetHtmlRelativePath(tempDir, "dist", lazyCss.FilePath);
-            Assert.IsTrue(
-                CountOccurrences(entryChunkContent, lazyCssHref) >= 2,
-                $"Expected repeated lazy imports to carry duplicated CSS href '{lazyCssHref}' so runtime dedupe can apply.");
-            StringAssert.Contains(entryChunkContent, "__jazorImportCss");
-            StringAssert.Contains(entryChunkContent, "__jazorLoadedCss ??= new Set()");
-            StringAssert.Contains(entryChunkContent, "registry.has(href)");
-            StringAssert.Contains(entryChunkContent, "link[rel=\"stylesheet\"][href=\"'+href+'\"]");
-        }
-        finally
-        {
-            Directory.Delete(tempDir, recursive: true);
-        }
-    }
-
-    [TestMethod]
     public void BuildOrchestrator_ReadNormalizedSourceMapSources_WithMalformedJson_ReturnsEmpty()
     {
         var tempDir = CreateTemporaryDirectory();
@@ -1320,80 +1104,6 @@ public sealed class JazorVueHostBuildCssPipelineTests
 
             Assert.IsNotNull(resolvedSources);
             Assert.AreEqual(0, resolvedSources.Count);
-        }
-        finally
-        {
-            Directory.Delete(tempDir, recursive: true);
-        }
-    }
-
-    [TestMethod]
-    public async Task BuildOrchestrator_BuildAsync_RewritesCopiedPublicCssUrlsToHashedStaticAssets()
-    {
-        var tempDir = CreateTemporaryDirectory();
-        try
-        {
-            Directory.CreateDirectory(Path.Combine(tempDir, "public", "images"));
-            Directory.CreateDirectory(Path.Combine(tempDir, "public", "styles"));
-
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "index.html"),
-                """
-                <html>
-                <head>
-                  <link rel="stylesheet" href="/styles/site.css">
-                </head>
-                <body>
-                  <div id="app"></div>
-                  <script type="module" src="/main.js"></script>
-                </body>
-                </html>
-                """);
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "main.js"),
-                """console.log("build css rewrite");""");
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "public", "styles", "site.css"),
-                """
-                body {
-                  background-image: url("../images/logo.png#hero");
-                  mask-image: url("/images/logo.png?v=2");
-                }
-                """);
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "public", "images", "logo.png"),
-                "fake-png-data");
-
-            var orchestrator = new BuildOrchestrator();
-            var result = await orchestrator.BuildAsync(
-                new BuildOptions
-                {
-                    RootDirectory = tempDir,
-                    OutDir = "dist",
-                    SourceMap = SourceMapOption.External,
-                    Minify = false,
-                    CodeSplitting = false
-                },
-                CancellationToken.None);
-
-            Assert.IsTrue(result.Success, string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
-
-            var imageAsset = result.StaticAssets.Single(static asset => asset.OriginalPath == "/images/logo.png");
-            var publicCssAsset = result.StaticAssets.Single(static asset => asset.OriginalPath == "/styles/site.css");
-
-            var publicCssPath = Path.Combine(tempDir, publicCssAsset.FilePath.Replace('/', Path.DirectorySeparatorChar));
-            Assert.IsTrue(File.Exists(publicCssPath));
-
-            var publicCssContent = await File.ReadAllTextAsync(publicCssPath);
-
-            var publicExpectedImagePath = GetRelativeOutputPath(tempDir, publicCssAsset.FilePath, imageAsset.FilePath);
-            StringAssert.Contains(publicCssContent, $"url(\"{publicExpectedImagePath}?v=2\")");
-            StringAssert.Contains(publicCssContent, $"url(\"{publicExpectedImagePath}#hero\")");
-
-            var distIndexHtmlPath = Path.Combine(tempDir, "dist", "index.html");
-            Assert.IsTrue(File.Exists(distIndexHtmlPath));
-            var html = await File.ReadAllTextAsync(distIndexHtmlPath);
-            StringAssert.Contains(html, "href=\"styles/site.css\"");
         }
         finally
         {
@@ -1442,6 +1152,32 @@ public sealed class JazorVueHostBuildCssPipelineTests
         var path = Path.Combine(Path.GetTempPath(), "jazor-build-css-test-" + Guid.NewGuid().ToString("N")[..8]);
         Directory.CreateDirectory(path);
         return path;
+    }
+
+    private static void AssertSourceMapContainsSourceContent(
+        JsonElement sourceMap,
+        string expectedSourcePath,
+        string expectedSourceContent)
+    {
+        var sourceIndex = FindSourceIndexContaining(sourceMap, expectedSourcePath);
+        var sourcesContent = sourceMap.GetProperty("sourcesContent");
+        Assert.IsTrue(
+            sourceIndex < sourcesContent.GetArrayLength(),
+            $"Expected a sourcesContent entry for '{expectedSourcePath}'.");
+        Assert.AreEqual(expectedSourceContent, sourcesContent[sourceIndex].GetString());
+    }
+
+    private static JsonElement GetManifestChunk(JsonElement chunks, string chunkPath)
+    {
+        return chunks.EnumerateArray()
+            .Single(chunk => string.Equals(chunk.GetProperty("File").GetString(), chunkPath, StringComparison.Ordinal));
+    }
+
+    private static string[] GetManifestStringArray(JsonElement element, string propertyName)
+    {
+        return element.GetProperty(propertyName).EnumerateArray()
+            .Select(static item => item.GetString() ?? string.Empty)
+            .ToArray();
     }
 
     private static string GetHtmlRelativePath(string rootDirectory, string outDirName, string rootRelativePath)

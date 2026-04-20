@@ -72,6 +72,8 @@ internal sealed class DenoBundleRunner
         startInfo.ArgumentList.Add("browser");
         startInfo.ArgumentList.Add("--format");
         startInfo.ArgumentList.Add("esm");
+        startInfo.ArgumentList.Add("--conditions");
+        startInfo.ArgumentList.Add("production");
         startInfo.ArgumentList.Add("--quiet");
         startInfo.ArgumentList.Add("--no-config");
         startInfo.ArgumentList.Add("--import-map");
@@ -207,7 +209,9 @@ internal sealed class DenoBundleRunner
     {
         const int maxAttempts = 120;
         const int delayMilliseconds = 50;
-        const int quiescenceDurationMilliseconds = 500;
+        // The Deno bundler process has already exited before we poll for files here,
+        // so we only need a short quiet window to avoid catching transient filesystem lag.
+        const int quiescenceDurationMilliseconds = 100;
 
         IReadOnlyList<OutputFileSnapshot> previousSnapshot = [];
         string[] bestPaths = [];

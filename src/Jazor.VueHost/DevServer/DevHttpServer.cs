@@ -11,8 +11,8 @@ namespace Jazor.VueHost.DevServer;
 
 internal sealed class DevHttpServer : IAsyncDisposable, IWorkspaceDocumentChangeSink
 {
-    private static readonly TimeSpan FileChangeDebounceInterval = TimeSpan.FromMilliseconds(100);
-    private static readonly TimeSpan FileChangePollingInterval = TimeSpan.FromSeconds(1);
+    private const string FileChangeDebounceIntervalEnvironmentVariable = "JAZOR_VUEHOST_DEVSERVER_FILE_CHANGE_DEBOUNCE_MS";
+    private const string FileChangePollingIntervalEnvironmentVariable = "JAZOR_VUEHOST_DEVSERVER_FILE_CHANGE_POLLING_MS";
 
     private readonly DevServerOptions _options;
     private readonly OnDemandCompiler _compiler;
@@ -26,6 +26,8 @@ internal sealed class DevHttpServer : IAsyncDisposable, IWorkspaceDocumentChange
     private readonly Dictionary<string, string> _pendingWorkspaceBroadcastHashes = new(StringComparer.OrdinalIgnoreCase);
     private readonly object _lastBroadcastSnapshotsLock = new();
     private readonly ChangeProcessor _changeProcessor;
+    private readonly TimeSpan _fileChangeDebounceInterval;
+    private readonly TimeSpan _fileChangePollingInterval;
     private WebApplication? _application;
     private FileSystemWatcher? _fileWatcher;
     private FileChangeDebouncer? _fileChangeDebouncer;
@@ -48,6 +50,12 @@ internal sealed class DevHttpServer : IAsyncDisposable, IWorkspaceDocumentChange
         _htmlTransformer = htmlTransformer ?? throw new ArgumentNullException(nameof(htmlTransformer));
         _workspaceStore = workspaceStore;
         _proxy = options.ProxyRules.Count == 0 ? null : new DevServerProxy(options.ProxyRules);
+        _fileChangeDebounceInterval = ResolveIntervalOverride(
+            options.FileChangeDebounceInterval,
+            FileChangeDebounceIntervalEnvironmentVariable);
+        _fileChangePollingInterval = ResolveIntervalOverride(
+            options.FileChangePollingInterval,
+            FileChangePollingIntervalEnvironmentVariable);
         _changeProcessor = new ChangeProcessor(
             _compiler,
             _moduleResolver,
@@ -303,7 +311,7 @@ internal sealed class DevHttpServer : IAsyncDisposable, IWorkspaceDocumentChange
 
         _fileChangeCancellationSource = new CancellationTokenSource();
         _fileChangePump = PumpFileChangesAsync(_fileChangeCancellationSource.Token);
-        _fileChangeDebouncer = new FileChangeDebouncer(FileChangeDebounceInterval);
+        _fileChangeDebouncer = new FileChangeDebouncer(_fileChangeDebounceInterval);
         _fileChangeDebouncer.DebouncedChange += OnDebouncedFileChanges;
         _fileWatcher = new FileSystemWatcher(_options.RootDirectory)
         {
@@ -320,9 +328,23 @@ internal sealed class DevHttpServer : IAsyncDisposable, IWorkspaceDocumentChange
         _fileWatcher.EnableRaisingEvents = true;
         _fileSnapshotPoller = new DevServerFileSnapshotPoller(
             _options.RootDirectory,
-            FileChangePollingInterval,
+            _fileChangePollingInterval,
             OnDebouncedFileChanges);
         _fileSnapshotPoller.Start();
+    }
+
+    private static TimeSpan ResolveIntervalOverride(
+        TimeSpan configuredInterval,
+        string environmentVariableName)
+    {
+        if (Environment.GetEnvironmentVariable(environmentVariableName) is { Length: > 0 } rawValue
+            && int.TryParse(rawValue, out var milliseconds)
+            && milliseconds > 0)
+        {
+            return TimeSpan.FromMilliseconds(milliseconds);
+        }
+
+        return configuredInterval;
     }
 
     private void OnFileChanged(object sender, FileSystemEventArgs eventArgs)

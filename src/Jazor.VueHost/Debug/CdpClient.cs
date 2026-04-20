@@ -249,7 +249,35 @@ internal sealed class CdpClient(CdpConnection connection) : ICdpClient
         {
             // Shutdown.
         }
-        catch (Exception exception)
+        catch (System.Net.WebSockets.WebSocketException exception)
+        {
+            foreach (var pending in _pendingById.Values)
+            {
+                pending.TrySetException(exception);
+            }
+        }
+        catch (JsonException exception)
+        {
+            foreach (var pending in _pendingById.Values)
+            {
+                pending.TrySetException(exception);
+            }
+        }
+        catch (IOException exception)
+        {
+            foreach (var pending in _pendingById.Values)
+            {
+                pending.TrySetException(exception);
+            }
+        }
+        catch (ObjectDisposedException exception)
+        {
+            foreach (var pending in _pendingById.Values)
+            {
+                pending.TrySetException(exception);
+            }
+        }
+        catch (InvalidOperationException exception)
         {
             foreach (var pending in _pendingById.Values)
             {

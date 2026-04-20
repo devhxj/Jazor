@@ -16,6 +16,11 @@ namespace Jazor.CompilerTest;
 [TestClass]
 public sealed class JazorVueHostLspTests
 {
+    private const string DevServerFileChangeDebounceIntervalEnvironmentVariable = "JAZOR_VUEHOST_DEVSERVER_FILE_CHANGE_DEBOUNCE_MS";
+    private const string DevServerFileChangePollingIntervalEnvironmentVariable = "JAZOR_VUEHOST_DEVSERVER_FILE_CHANGE_POLLING_MS";
+    private static readonly TimeSpan TestDevServerFileChangeDebounceInterval = TimeSpan.FromMilliseconds(25);
+    private static readonly TimeSpan TestDevServerFileChangePollingInterval = TimeSpan.FromMilliseconds(100);
+    private static readonly TimeSpan NoDuplicateHmrMessageTimeout = TimeSpan.FromMilliseconds(500);
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true
@@ -1159,7 +1164,7 @@ public sealed class JazorVueHostLspTests
             Assert.AreEqual("js-update", updates[0].GetProperty("type").GetString());
             Assert.AreEqual("/Counter.jazor", updates[0].GetProperty("path").GetString());
             Assert.AreEqual("/Counter.jazor", updates[0].GetProperty("acceptedPath").GetString());
-            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+            await AssertNoWebSocketJsonAsync(socket, NoDuplicateHmrMessageTimeout);
         }
         finally
         {
@@ -1239,7 +1244,7 @@ public sealed class JazorVueHostLspTests
             var reloadMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
             Assert.AreEqual("full-reload", reloadMessage.GetProperty("type").GetString());
             Assert.AreEqual("Public component descriptor changed.", reloadMessage.GetProperty("reason").GetString());
-            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+            await AssertNoWebSocketJsonAsync(socket, NoDuplicateHmrMessageTimeout);
         }
         finally
         {
@@ -1325,7 +1330,7 @@ public sealed class JazorVueHostLspTests
             Assert.AreEqual("update", updateMessage.GetProperty("type").GetString());
 
             await File.WriteAllTextAsync(codeBehindPath, updatedCodeBehindText);
-            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+            await AssertNoWebSocketJsonAsync(socket, NoDuplicateHmrMessageTimeout);
         }
         finally
         {
@@ -1383,7 +1388,7 @@ public sealed class JazorVueHostLspTests
             Assert.AreEqual("/Counter.vue", updates[0].GetProperty("acceptedPath").GetString());
             var updatedModule = await httpClient.GetStringAsync("/Counter.vue?t=2");
             Assert.AreNotEqual(initialModule, updatedModule);
-            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+            await AssertNoWebSocketJsonAsync(socket, NoDuplicateHmrMessageTimeout);
         }
         finally
         {
@@ -1437,7 +1442,7 @@ public sealed class JazorVueHostLspTests
             Assert.AreEqual("update", updateMessage.GetProperty("type").GetString());
 
             await File.WriteAllTextAsync(documentPath, updatedText);
-            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+            await AssertNoWebSocketJsonAsync(socket, NoDuplicateHmrMessageTimeout);
         }
         finally
         {
@@ -1504,7 +1509,7 @@ public sealed class JazorVueHostLspTests
             Assert.AreEqual(1, inlineStyles.Length);
             Assert.AreEqual("/Counter.vue", inlineStyles[0].GetProperty("path").GetString());
             Assert.AreEqual(".counter { color: blue; }", inlineStyles[0].GetProperty("content").GetString());
-            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+            await AssertNoWebSocketJsonAsync(socket, NoDuplicateHmrMessageTimeout);
         }
         finally
         {
@@ -1569,7 +1574,7 @@ public sealed class JazorVueHostLspTests
             Assert.AreEqual("style-update", updateMessage.GetProperty("type").GetString());
 
             await File.WriteAllTextAsync(documentPath, updatedText);
-            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+            await AssertNoWebSocketJsonAsync(socket, NoDuplicateHmrMessageTimeout);
         }
         finally
         {
@@ -1625,7 +1630,7 @@ public sealed class JazorVueHostLspTests
             Assert.AreEqual(updatedText, await httpClient.GetStringAsync("/site.css?t=2"));
 
             await File.WriteAllTextAsync(documentPath, updatedText);
-            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+            await AssertNoWebSocketJsonAsync(socket, NoDuplicateHmrMessageTimeout);
         }
         finally
         {
@@ -1682,7 +1687,7 @@ public sealed class JazorVueHostLspTests
             Assert.AreEqual("/main.ts", updates[0].GetProperty("path").GetString());
             Assert.AreEqual("/main.ts", updates[0].GetProperty("acceptedPath").GetString());
             Assert.AreEqual(updatedText, await httpClient.GetStringAsync("/main.ts?t=2"));
-            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+            await AssertNoWebSocketJsonAsync(socket, NoDuplicateHmrMessageTimeout);
         }
         finally
         {
@@ -1736,7 +1741,7 @@ public sealed class JazorVueHostLspTests
             Assert.AreEqual("update", updateMessage.GetProperty("type").GetString());
 
             await File.WriteAllTextAsync(documentPath, updatedText);
-            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+            await AssertNoWebSocketJsonAsync(socket, NoDuplicateHmrMessageTimeout);
         }
         finally
         {
@@ -1822,7 +1827,7 @@ public sealed class JazorVueHostLspTests
             Assert.AreEqual("/Counter.jazor", updates[0].GetProperty("acceptedPath").GetString());
             var updatedModule = await httpClient.GetStringAsync("/Counter.jazor?t=2");
             Assert.AreNotEqual(initialModule, updatedModule);
-            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+            await AssertNoWebSocketJsonAsync(socket, NoDuplicateHmrMessageTimeout);
         }
         finally
         {
@@ -1894,7 +1899,7 @@ public sealed class JazorVueHostLspTests
             var reloadMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
             Assert.AreEqual("full-reload", reloadMessage.GetProperty("type").GetString());
             Assert.AreEqual("Public component descriptor changed.", reloadMessage.GetProperty("reason").GetString());
-            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+            await AssertNoWebSocketJsonAsync(socket, NoDuplicateHmrMessageTimeout);
         }
         finally
         {
@@ -1976,7 +1981,7 @@ public sealed class JazorVueHostLspTests
             Assert.AreEqual("update", updateMessage.GetProperty("type").GetString());
 
             await File.WriteAllTextAsync(documentPath, updatedText);
-            await AssertNoWebSocketJsonAsync(socket, TimeSpan.FromMilliseconds(1600));
+            await AssertNoWebSocketJsonAsync(socket, NoDuplicateHmrMessageTimeout);
         }
         finally
         {
@@ -7584,6 +7589,17 @@ public sealed class JazorVueHostLspTests
                     CreateNoWindow = true
                 }
             };
+
+            if (additionalArguments.Any(static argument =>
+                    string.Equals(argument, "--dev", StringComparison.OrdinalIgnoreCase)
+                    || argument.StartsWith("--dev-", StringComparison.OrdinalIgnoreCase)))
+            {
+                process.StartInfo.Environment[DevServerFileChangeDebounceIntervalEnvironmentVariable]
+                    = ((int)TestDevServerFileChangeDebounceInterval.TotalMilliseconds).ToString();
+                process.StartInfo.Environment[DevServerFileChangePollingIntervalEnvironmentVariable]
+                    = ((int)TestDevServerFileChangePollingInterval.TotalMilliseconds).ToString();
+            }
+
             process.StartInfo.ArgumentList.Add(hostAssemblyPath);
             process.StartInfo.ArgumentList.Add("--lsp");
             foreach (var argument in additionalArguments)

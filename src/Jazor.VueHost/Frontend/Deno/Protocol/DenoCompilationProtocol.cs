@@ -7,6 +7,8 @@ internal sealed class DenoSfcCompileRequest
     public required string SfcText { get; init; }
 
     public required string Filename { get; init; }
+
+    public bool IsProduction { get; init; }
 }
 
 internal sealed class DenoSfcCompileResult
@@ -49,6 +51,26 @@ internal sealed class DenoTypeScriptCompileResult
     public required string JsContent { get; init; }
 
     public string? JsSourceMap { get; init; }
+
+    public IReadOnlyList<string> Diagnostics { get; init; } = [];
+}
+
+internal sealed class DenoCssModuleCompileRequest
+{
+    public required string DocumentPath { get; init; }
+
+    public required string Text { get; init; }
+
+    public required string Filename { get; init; }
+
+    public bool IsProduction { get; init; }
+}
+
+internal sealed class DenoCssModuleCompileResult
+{
+    public required string CssContent { get; init; }
+
+    public IReadOnlyDictionary<string, string> Modules { get; init; } = new Dictionary<string, string>();
 
     public IReadOnlyList<string> Diagnostics { get; init; } = [];
 }

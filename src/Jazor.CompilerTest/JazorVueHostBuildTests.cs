@@ -1,5 +1,3 @@
-using System.Net;
-using System.Net.Sockets;
 using System.Text.Json;
 using Jazor.Vue;
 using Jazor.VueHost.Build;
@@ -8,7 +6,6 @@ using Jazor.VueHost.DevServer;
 namespace Jazor.CompilerTest;
 
 [TestClass]
-[DoNotParallelize]
 public sealed class JazorVueHostBuildTests
 {
     [TestMethod]
@@ -398,12 +395,11 @@ public sealed class JazorVueHostBuildTests
                 Path.Combine(tempDir, "src", "message.js"),
                 """export const message = "hello from deno bundle";""");
 
-            var port = GetAvailablePort();
             var devOptions = new DevServerOptions
             {
                 RootDirectory = tempDir,
                 Host = "127.0.0.1",
-                Port = port,
+                Port = 0,
                 HmrEnabled = false,
                 FrontendCompiler = "stub"
             };
@@ -481,12 +477,11 @@ public sealed class JazorVueHostBuildTests
                 console.log(featureMessage);
                 """);
 
-            var port = GetAvailablePort();
             var devOptions = new DevServerOptions
             {
                 RootDirectory = tempDir,
                 Host = "127.0.0.1",
-                Port = port,
+                Port = 0,
                 HmrEnabled = false,
                 FrontendCompiler = "stub"
             };
@@ -551,22 +546,26 @@ public sealed class JazorVueHostBuildTests
     }
 
     [TestMethod]
-    public async Task BuildOrchestrator_BuildAsync_GeneratesBundleHtmlAndStaticAssets()
+    public async Task BuildOrchestrator_BuildAsync_GeneratesBundleHtmlAndRewritesStaticAssetReferences()
     {
         var tempDir = CreateTemporaryDirectory();
         try
         {
-            Directory.CreateDirectory(Path.Combine(tempDir, "public"));
+            Directory.CreateDirectory(Path.Combine(tempDir, "public", "images"));
+            Directory.CreateDirectory(Path.Combine(tempDir, "public", "social"));
             await File.WriteAllTextAsync(
                 Path.Combine(tempDir, "index.html"),
                 """
                 <html>
                 <head>
-                  <title>VueHost</title>
-                  <link rel="icon" href="/favicon.svg">
+                  <title>VueHost social</title>
+                  <link rel="icon" href="/favicon.svg?v=1">
+                  <meta property="og:image" content="/social/card.png#preview">
+                  <meta name="twitter:image" content="./images/logo.png?v=2">
                 </head>
                 <body>
                   <div id="app"></div>
+                  <img srcset="/images/logo.png 1x, ./images/logo@2x.png?variant=wide 2x">
                   <script type="module" src="/main.js"></script>
                 </body>
                 </html>
@@ -583,6 +582,15 @@ public sealed class JazorVueHostBuildTests
             await File.WriteAllTextAsync(
                 Path.Combine(tempDir, "public", "favicon.svg"),
                 "<svg></svg>");
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "public", "images", "logo.png"),
+                "fake-png-data");
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "public", "images", "logo@2x.png"),
+                "fake-png-data-2x");
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "public", "social", "card.png"),
+                "fake-card-data");
 
             var orchestrator = new BuildOrchestrator();
             var result = await orchestrator.BuildAsync(
@@ -604,13 +612,24 @@ public sealed class JazorVueHostBuildTests
             var distIndexHtmlPath = Path.Combine(tempDir, "dist", "index.html");
             Assert.IsTrue(File.Exists(distIndexHtmlPath));
 
+            var faviconAsset = result.StaticAssets.Single(static asset => asset.OriginalPath == "/favicon.svg");
+            var logoAsset = result.StaticAssets.Single(static asset => asset.OriginalPath == "/images/logo.png");
+            var retinaAsset = result.StaticAssets.Single(static asset => asset.OriginalPath == "/images/logo@2x.png");
+            var cardAsset = result.StaticAssets.Single(static asset => asset.OriginalPath == "/social/card.png");
+
             var html = await File.ReadAllTextAsync(distIndexHtmlPath);
             var entryChunkHtmlPath = GetHtmlRelativePath(tempDir, "dist", result.Chunks[0].FilePath);
-            var faviconHtmlPath = GetHtmlRelativePath(tempDir, "dist", result.StaticAssets[0].FilePath);
+            var faviconHtmlPath = GetHtmlRelativePath(tempDir, "dist", faviconAsset.FilePath);
+            var logoHtmlPath = GetHtmlRelativePath(tempDir, "dist", logoAsset.FilePath);
+            var retinaHtmlPath = GetHtmlRelativePath(tempDir, "dist", retinaAsset.FilePath);
+            var cardHtmlPath = GetHtmlRelativePath(tempDir, "dist", cardAsset.FilePath);
             Assert.IsFalse(html.Contains("src=\"/main.js\""), "Original entry script should be removed from production HTML");
             StringAssert.Contains(html, $"src=\"{entryChunkHtmlPath}\"");
             Assert.IsFalse(html.Contains("href=\"/favicon.svg\"", StringComparison.Ordinal), "Original favicon path should be rewritten");
-            StringAssert.Contains(html, $"href=\"{faviconHtmlPath}\"");
+            StringAssert.Contains(html, $"href=\"{faviconHtmlPath}?v=1\"");
+            StringAssert.Contains(html, $"content=\"{cardHtmlPath}#preview\"");
+            StringAssert.Contains(html, $"content=\"{logoHtmlPath}?v=2\"");
+            StringAssert.Contains(html, $"srcset=\"{logoHtmlPath} 1x, {retinaHtmlPath}?variant=wide 2x\"");
 
             var chunkPath = Path.Combine(tempDir, result.Chunks[0].FilePath.Replace('/', Path.DirectorySeparatorChar));
             Assert.IsTrue(File.Exists(chunkPath));
@@ -621,9 +640,9 @@ public sealed class JazorVueHostBuildTests
             var sourceMapPath = Path.Combine(tempDir, result.Chunks[0].SourceMapPath!.Replace('/', Path.DirectorySeparatorChar));
             Assert.IsTrue(File.Exists(sourceMapPath));
 
-            Assert.AreEqual(1, result.StaticAssets.Count);
-            StringAssert.Contains(result.StaticAssets[0].FileName, "favicon");
-            var faviconPath = Path.Combine(tempDir, result.StaticAssets[0].FilePath.Replace('/', Path.DirectorySeparatorChar));
+            Assert.AreEqual(4, result.StaticAssets.Count);
+            StringAssert.Contains(faviconAsset.FileName, "favicon");
+            var faviconPath = Path.Combine(tempDir, faviconAsset.FilePath.Replace('/', Path.DirectorySeparatorChar));
             Assert.IsTrue(File.Exists(faviconPath));
         }
         finally
@@ -691,86 +710,6 @@ public sealed class JazorVueHostBuildTests
             Assert.IsTrue(legacyDiagnostic.Location.HasValue);
             Assert.AreEqual(1, legacyDiagnostic.Location!.Value.Line);
             Assert.AreEqual(1, legacyDiagnostic.Location!.Value.Column);
-        }
-        finally
-        {
-            Directory.Delete(tempDir, recursive: true);
-        }
-    }
-
-    [TestMethod]
-    public async Task BuildOrchestrator_BuildAsync_RewritesMetaAndSrcSetAssetReferences()
-    {
-        var tempDir = CreateTemporaryDirectory();
-        try
-        {
-            Directory.CreateDirectory(Path.Combine(tempDir, "public", "images"));
-            Directory.CreateDirectory(Path.Combine(tempDir, "public", "social"));
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "index.html"),
-                """
-                <html>
-                <head>
-                  <title>VueHost social</title>
-                  <link rel="icon" href="/favicon.svg?v=1">
-                  <meta property="og:image" content="/social/card.png#preview">
-                  <meta name="twitter:image" content="./images/logo.png?v=2">
-                </head>
-                <body>
-                  <div id="app"></div>
-                  <img srcset="/images/logo.png 1x, ./images/logo@2x.png?variant=wide 2x">
-                  <script type="module" src="/main.js"></script>
-                </body>
-                </html>
-                """);
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "main.js"),
-                """console.log("build html rewrite");""");
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "public", "favicon.svg"),
-                "<svg></svg>");
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "public", "images", "logo.png"),
-                "fake-png-data");
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "public", "images", "logo@2x.png"),
-                "fake-png-data-2x");
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "public", "social", "card.png"),
-                "fake-card-data");
-
-            var orchestrator = new BuildOrchestrator();
-            var result = await orchestrator.BuildAsync(
-                new BuildOptions
-                {
-                    RootDirectory = tempDir,
-                    OutDir = "dist",
-                    SourceMap = SourceMapOption.External,
-                    Minify = false,
-                    CodeSplitting = false
-                },
-                CancellationToken.None);
-
-            Assert.IsTrue(result.Success, string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
-
-            var faviconAsset = result.StaticAssets.Single(static asset => asset.OriginalPath == "/favicon.svg");
-            var logoAsset = result.StaticAssets.Single(static asset => asset.OriginalPath == "/images/logo.png");
-            var retinaAsset = result.StaticAssets.Single(static asset => asset.OriginalPath == "/images/logo@2x.png");
-            var cardAsset = result.StaticAssets.Single(static asset => asset.OriginalPath == "/social/card.png");
-
-            var distIndexHtmlPath = Path.Combine(tempDir, "dist", "index.html");
-            Assert.IsTrue(File.Exists(distIndexHtmlPath));
-
-            var html = await File.ReadAllTextAsync(distIndexHtmlPath);
-            var faviconHtmlPath = GetHtmlRelativePath(tempDir, "dist", faviconAsset.FilePath);
-            var logoHtmlPath = GetHtmlRelativePath(tempDir, "dist", logoAsset.FilePath);
-            var retinaHtmlPath = GetHtmlRelativePath(tempDir, "dist", retinaAsset.FilePath);
-            var cardHtmlPath = GetHtmlRelativePath(tempDir, "dist", cardAsset.FilePath);
-
-            StringAssert.Contains(html, $"href=\"{faviconHtmlPath}?v=1\"");
-            StringAssert.Contains(html, $"content=\"{cardHtmlPath}#preview\"");
-            StringAssert.Contains(html, $"content=\"{logoHtmlPath}?v=2\"");
-            StringAssert.Contains(html, $"srcset=\"{logoHtmlPath} 1x, {retinaHtmlPath}?variant=wide 2x\"");
         }
         finally
         {
@@ -854,73 +793,6 @@ public sealed class JazorVueHostBuildTests
                 result.Diagnostics.Any(static diagnostic =>
                     diagnostic.Message.Contains("must stay inside project root", StringComparison.OrdinalIgnoreCase)),
                 string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
-        }
-        finally
-        {
-            Directory.Delete(tempDir, recursive: true);
-        }
-    }
-
-    [TestMethod]
-    public async Task BuildOrchestrator_BuildAsync_WithCodeSplitting_InjectsEntryChunkIntoHtml()
-    {
-        var tempDir = CreateTemporaryDirectory();
-        try
-        {
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "index.html"),
-                """
-                <html>
-                <head><title>VueHost split</title></head>
-                <body>
-                  <div id="app"></div>
-                  <script type="module" src="/main.js"></script>
-                </body>
-                </html>
-                """);
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "main.js"),
-                """
-                console.log("main");
-                await import("./feature.js");
-                """);
-            await File.WriteAllTextAsync(
-                Path.Combine(tempDir, "feature.js"),
-                """
-                export const message = "hello from build split";
-                console.log(message);
-                """);
-
-            var orchestrator = new BuildOrchestrator();
-            var result = await orchestrator.BuildAsync(
-                new BuildOptions
-                {
-                    RootDirectory = tempDir,
-                    OutDir = "dist",
-                    SourceMap = SourceMapOption.External,
-                    Minify = false,
-                    CodeSplitting = true
-                },
-                CancellationToken.None);
-
-            Assert.IsTrue(result.Success, string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
-            Assert.IsTrue(result.Chunks.Count >= 2, "Expected production build to emit multiple chunks.");
-
-            var entryChunk = result.Chunks.Single(static chunk => chunk.IsEntry);
-            var splitChunk = result.Chunks.Single(static chunk => !chunk.IsEntry);
-
-            var distIndexHtmlPath = Path.Combine(tempDir, "dist", "index.html");
-            Assert.IsTrue(File.Exists(distIndexHtmlPath));
-
-            var html = await File.ReadAllTextAsync(distIndexHtmlPath);
-            var entryChunkHtmlPath = GetHtmlRelativePath(tempDir, "dist", entryChunk.FilePath);
-            Assert.IsFalse(html.Contains("src=\"/main.js\""), "Original entry script should be removed from production HTML");
-            StringAssert.Contains(html, $"src=\"{entryChunkHtmlPath}\"");
-
-            var entryChunkPath = Path.Combine(tempDir, entryChunk.FilePath.Replace('/', Path.DirectorySeparatorChar));
-            Assert.IsTrue(File.Exists(entryChunkPath));
-            var entryChunkContent = await File.ReadAllTextAsync(entryChunkPath);
-            StringAssert.Contains(entryChunkContent, $"./{splitChunk.FileName}");
         }
         finally
         {
@@ -1051,8 +923,17 @@ public sealed class JazorVueHostBuildTests
             CollectionAssert.DoesNotContain(lazyBChunk.Css.ToArray(), entryCss.Asset.FilePath);
             CollectionAssert.DoesNotContain(lazyBChunk.Css.ToArray(), lazyACss.Asset.FilePath);
 
+            var entryChunkPath = Path.Combine(tempDir, entryChunk.FilePath.Replace('/', Path.DirectorySeparatorChar));
+            Assert.IsTrue(File.Exists(entryChunkPath));
+            var entryChunkContent = await File.ReadAllTextAsync(entryChunkPath);
+            StringAssert.Contains(entryChunkContent, $"./{lazyAChunk.FileName}");
+            StringAssert.Contains(entryChunkContent, $"./{lazyBChunk.FileName}");
+
             var distIndexHtmlPath = Path.Combine(tempDir, "dist", "index.html");
             var html = await File.ReadAllTextAsync(distIndexHtmlPath);
+            var entryChunkHtmlPath = GetHtmlRelativePath(tempDir, "dist", entryChunk.FilePath);
+            Assert.IsFalse(html.Contains("src=\"/main.js\""), "Original entry script should be removed from production HTML");
+            StringAssert.Contains(html, $"src=\"{entryChunkHtmlPath}\"");
             StringAssert.Contains(html, $"href=\"{GetHtmlRelativePath(tempDir, "dist", entryCss.Asset.FilePath)}\"");
             Assert.IsFalse(
                 html.Contains($"href=\"{GetHtmlRelativePath(tempDir, "dist", lazyACss.Asset.FilePath)}\"", StringComparison.Ordinal),
@@ -1160,31 +1041,17 @@ public sealed class JazorVueHostBuildTests
                 """console.log("incremental-cache-hit");""");
 
             var orchestrator = new BuildOrchestrator();
-            var options = new BuildOptions
-            {
-                RootDirectory = tempDir,
-                OutDir = "dist",
-                SourceMap = SourceMapOption.External,
-                Minify = false,
-                CodeSplitting = false,
-                Incremental = true
-            };
-
-            var first = await orchestrator.BuildAsync(options, CancellationToken.None);
-            Assert.IsTrue(first.Success, string.Join(Environment.NewLine, first.Diagnostics.Select(static diagnostic => diagnostic.Message)));
-            var entryChunk = first.Chunks.Single(static chunk => chunk.IsEntry);
-            var entryChunkPath = Path.Combine(tempDir, entryChunk.FilePath.Replace('/', Path.DirectorySeparatorChar));
-            var firstChunkWriteTime = File.GetLastWriteTimeUtc(entryChunkPath);
-
-            await Task.Delay(TimeSpan.FromMilliseconds(1200));
+            var options = CreateIncrementalBuildOptions(tempDir);
+            var seededState = await SeedIncrementalBuildStateAsync(options, """console.log("incremental-cache-hit-output");""");
+            var firstChunkWriteTime = SetDistinctLastWriteTimeUtc(seededState.EntryChunkAbsolutePath, TimeSpan.FromMinutes(-5));
 
             var second = await orchestrator.BuildAsync(options, CancellationToken.None);
             Assert.IsTrue(second.Success, string.Join(Environment.NewLine, second.Diagnostics.Select(static diagnostic => diagnostic.Message)));
             CollectionAssert.Contains(
                 second.Diagnostics.Select(static diagnostic => diagnostic.Message).ToArray(),
                 "Incremental build cache hit.");
-            Assert.AreEqual(entryChunk.FilePath, second.Chunks.Single(static chunk => chunk.IsEntry).FilePath);
-            Assert.AreEqual(firstChunkWriteTime, File.GetLastWriteTimeUtc(entryChunkPath));
+            Assert.AreEqual(seededState.EntryChunk.FilePath, second.Chunks.Single(static chunk => chunk.IsEntry).FilePath);
+            Assert.AreEqual(firstChunkWriteTime, File.GetLastWriteTimeUtc(seededState.EntryChunkAbsolutePath));
             Assert.IsTrue(File.Exists(Path.Combine(tempDir, "dist", "jazor-build-state.json")));
         }
         finally
@@ -1213,24 +1080,13 @@ public sealed class JazorVueHostBuildTests
                 """console.log("incremental-before");""");
 
             var orchestrator = new BuildOrchestrator();
-            var options = new BuildOptions
-            {
-                RootDirectory = tempDir,
-                OutDir = "dist",
-                SourceMap = SourceMapOption.External,
-                Minify = false,
-                CodeSplitting = false,
-                Incremental = true
-            };
+            var options = CreateIncrementalBuildOptions(tempDir);
+            var seededState = await SeedIncrementalBuildStateAsync(options, """console.log("incremental-before-output");""");
 
-            var first = await orchestrator.BuildAsync(options, CancellationToken.None);
-            Assert.IsTrue(first.Success, string.Join(Environment.NewLine, first.Diagnostics.Select(static diagnostic => diagnostic.Message)));
-            var firstEntryChunk = first.Chunks.Single(static chunk => chunk.IsEntry);
-
-            await Task.Delay(TimeSpan.FromMilliseconds(1200));
             await File.WriteAllTextAsync(
                 Path.Combine(tempDir, "main.js"),
                 """console.log("incremental-after-change");""");
+            AdvanceLastWriteTimeUtc(Path.Combine(tempDir, "main.js"), TimeSpan.FromSeconds(2));
 
             var second = await orchestrator.BuildAsync(options, CancellationToken.None);
             Assert.IsTrue(second.Success, string.Join(Environment.NewLine, second.Diagnostics.Select(static diagnostic => diagnostic.Message)));
@@ -1239,7 +1095,7 @@ public sealed class JazorVueHostBuildTests
                 "Incremental build cache hit.");
 
             var secondEntryChunk = second.Chunks.Single(static chunk => chunk.IsEntry);
-            Assert.AreNotEqual(firstEntryChunk.FilePath, secondEntryChunk.FilePath);
+            Assert.AreNotEqual(seededState.EntryChunk.FilePath, secondEntryChunk.FilePath);
             var secondChunkPath = Path.Combine(tempDir, secondEntryChunk.FilePath.Replace('/', Path.DirectorySeparatorChar));
             var secondChunkContent = await File.ReadAllTextAsync(secondChunkPath);
             StringAssert.Contains(secondChunkContent, "incremental-after-change");
@@ -1271,23 +1127,9 @@ public sealed class JazorVueHostBuildTests
                 """console.log("incremental-html-refresh");""");
 
             var orchestrator = new BuildOrchestrator();
-            var options = new BuildOptions
-            {
-                RootDirectory = tempDir,
-                OutDir = "dist",
-                SourceMap = SourceMapOption.External,
-                Minify = false,
-                CodeSplitting = false,
-                Incremental = true
-            };
-
-            var first = await orchestrator.BuildAsync(options, CancellationToken.None);
-            Assert.IsTrue(first.Success, string.Join(Environment.NewLine, first.Diagnostics.Select(static diagnostic => diagnostic.Message)));
-            var firstEntryChunk = first.Chunks.Single(static chunk => chunk.IsEntry);
-            var firstEntryChunkPath = Path.Combine(tempDir, firstEntryChunk.FilePath.Replace('/', Path.DirectorySeparatorChar));
-            var firstChunkWriteTime = File.GetLastWriteTimeUtc(firstEntryChunkPath);
-
-            await Task.Delay(TimeSpan.FromMilliseconds(1200));
+            var options = CreateIncrementalBuildOptions(tempDir);
+            var seededState = await SeedIncrementalBuildStateAsync(options, """console.log("incremental-html-refresh-output");""");
+            var firstChunkWriteTime = SetDistinctLastWriteTimeUtc(seededState.EntryChunkAbsolutePath, TimeSpan.FromMinutes(-5));
             await File.WriteAllTextAsync(
                 Path.Combine(tempDir, "index.html"),
                 """
@@ -1298,6 +1140,7 @@ public sealed class JazorVueHostBuildTests
                 </body>
                 </html>
                 """);
+            AdvanceLastWriteTimeUtc(Path.Combine(tempDir, "index.html"), TimeSpan.FromSeconds(2));
 
             var second = await orchestrator.BuildAsync(options, CancellationToken.None);
             Assert.IsTrue(second.Success, string.Join(Environment.NewLine, second.Diagnostics.Select(static diagnostic => diagnostic.Message)));
@@ -1309,8 +1152,8 @@ public sealed class JazorVueHostBuildTests
                 "Incremental build cache hit.");
 
             var secondEntryChunk = second.Chunks.Single(static chunk => chunk.IsEntry);
-            Assert.AreEqual(firstEntryChunk.FilePath, secondEntryChunk.FilePath);
-            Assert.AreEqual(firstChunkWriteTime, File.GetLastWriteTimeUtc(firstEntryChunkPath));
+            Assert.AreEqual(seededState.EntryChunk.FilePath, secondEntryChunk.FilePath);
+            Assert.AreEqual(firstChunkWriteTime, File.GetLastWriteTimeUtc(seededState.EntryChunkAbsolutePath));
 
             var distIndexHtmlPath = Path.Combine(tempDir, "dist", "index.html");
             var refreshedHtml = await File.ReadAllTextAsync(distIndexHtmlPath);
@@ -1598,19 +1441,78 @@ public sealed class JazorVueHostBuildTests
         return path;
     }
 
-    private static int GetAvailablePort()
-    {
-        using var listener = new TcpListener(IPAddress.Loopback, 0);
-        listener.Start();
-        var port = ((IPEndPoint)listener.LocalEndpoint).Port;
-        listener.Stop();
-        return port;
-    }
-
     private static string GetHtmlRelativePath(string rootDirectory, string outDirName, string rootRelativePath)
     {
         var outDirectory = Path.Combine(rootDirectory, outDirName);
         var absolutePath = Path.Combine(rootDirectory, rootRelativePath.Replace('/', Path.DirectorySeparatorChar));
         return Path.GetRelativePath(outDirectory, absolutePath).Replace('\\', '/');
     }
+
+    private static DateTime SetDistinctLastWriteTimeUtc(string path, TimeSpan offset)
+    {
+        var distinctTime = File.GetLastWriteTimeUtc(path).Add(offset);
+        File.SetLastWriteTimeUtc(path, distinctTime);
+        return File.GetLastWriteTimeUtc(path);
+    }
+
+    private static void AdvanceLastWriteTimeUtc(string path, TimeSpan delta)
+        => File.SetLastWriteTimeUtc(path, File.GetLastWriteTimeUtc(path).Add(delta));
+
+    private static BuildOptions CreateIncrementalBuildOptions(string rootDirectory)
+        => new()
+        {
+            RootDirectory = rootDirectory,
+            OutDir = "dist",
+            SourceMap = SourceMapOption.External,
+            Minify = false,
+            CodeSplitting = false,
+            Incremental = true
+        };
+
+    private static async Task<SeededIncrementalBuildState> SeedIncrementalBuildStateAsync(
+        BuildOptions options,
+        string chunkContent)
+    {
+        using var context = new BuildContext(options);
+        Directory.CreateDirectory(context.OutDirectory);
+
+        var manifestPath = Path.Combine(context.OutDirectory, "jazor-build-manifest.json");
+        await File.WriteAllTextAsync(manifestPath, """{"entry":"/main.js"}""");
+
+        var entryChunkPath = Path.Combine(context.OutDirectory, "main-seeded.js");
+        await File.WriteAllTextAsync(entryChunkPath, chunkContent);
+
+        var entryChunk = new ChunkInfo
+        {
+            FileName = Path.GetFileName(entryChunkPath),
+            FilePath = Path.GetRelativePath(options.RootDirectory, entryChunkPath).Replace('\\', '/'),
+            Size = new FileInfo(entryChunkPath).Length,
+            IsEntry = true
+        };
+
+        var inputs = BuildOrchestrator.CollectIncrementalInputSignatures(context);
+        var fingerprint = BuildOrchestrator.ComputeIncrementalFingerprint(options, inputs);
+        var buildResult = new BuildResult
+        {
+            Success = true,
+            OutDirectory = context.OutDirectory,
+            ManifestPath = manifestPath,
+            Chunks = [entryChunk],
+            TotalSize = entryChunk.Size
+        };
+
+        await BuildOrchestrator.PersistIncrementalStateAsync(
+            context,
+            buildResult,
+            fingerprint,
+            inputs,
+            entryRequestPath: "/main.js",
+            CancellationToken.None);
+
+        return new SeededIncrementalBuildState(entryChunk, entryChunkPath);
+    }
+
+    private sealed record SeededIncrementalBuildState(
+        ChunkInfo EntryChunk,
+        string EntryChunkAbsolutePath);
 }

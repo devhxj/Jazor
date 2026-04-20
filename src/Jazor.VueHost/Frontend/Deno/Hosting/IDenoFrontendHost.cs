@@ -24,12 +24,28 @@ internal interface IDenoVolarHost : IAsyncDisposable
         string filename,
         CancellationToken cancellationToken);
 
+    ValueTask<DenoSfcCompileResult?> CompileSfcAsync(
+        string documentPath,
+        string sfcText,
+        string filename,
+        bool isProduction,
+        CancellationToken cancellationToken)
+        => CompileSfcAsync(documentPath, sfcText, filename, cancellationToken);
+
     ValueTask<DenoTypeScriptCompileResult?> CompileTypeScriptAsync(
         string documentPath,
         string text,
         string filename,
         CancellationToken cancellationToken)
         => ValueTask.FromResult<DenoTypeScriptCompileResult?>(default);
+
+    ValueTask<DenoCssModuleCompileResult?> CompileCssModuleAsync(
+        string documentPath,
+        string text,
+        string filename,
+        bool isProduction,
+        CancellationToken cancellationToken)
+        => ValueTask.FromResult<DenoCssModuleCompileResult?>(default);
 
     ValueTask<IReadOnlyList<LspDiagnostic>> GetTemplateDiagnosticsAsync(
         DocumentSnapshot document,

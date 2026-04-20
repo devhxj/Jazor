@@ -35,7 +35,27 @@ internal sealed class DenoVolarHost : IDenoVolarHost
         {
             await _workerProcess.StartAsync(cancellationToken);
         }
-        catch (Exception) when (_options.IgnoreStartupFailure)
+        catch (System.ComponentModel.Win32Exception) when (_options.IgnoreStartupFailure)
+        {
+            await TryResetWorkerStateAsync();
+        }
+        catch (UnauthorizedAccessException) when (_options.IgnoreStartupFailure)
+        {
+            await TryResetWorkerStateAsync();
+        }
+        catch (IOException) when (_options.IgnoreStartupFailure)
+        {
+            await TryResetWorkerStateAsync();
+        }
+        catch (InvalidOperationException) when (_options.IgnoreStartupFailure)
+        {
+            await TryResetWorkerStateAsync();
+        }
+        catch (ArgumentException) when (_options.IgnoreStartupFailure)
+        {
+            await TryResetWorkerStateAsync();
+        }
+        catch (NotSupportedException) when (_options.IgnoreStartupFailure)
         {
             await TryResetWorkerStateAsync();
         }
@@ -61,6 +81,19 @@ internal sealed class DenoVolarHost : IDenoVolarHost
         string sfcText,
         string filename,
         CancellationToken cancellationToken)
+        => await CompileSfcAsync(
+            documentPath,
+            sfcText,
+            filename,
+            isProduction: false,
+            cancellationToken);
+
+    public async ValueTask<DenoSfcCompileResult?> CompileSfcAsync(
+        string documentPath,
+        string sfcText,
+        string filename,
+        bool isProduction,
+        CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(documentPath);
         ArgumentNullException.ThrowIfNull(sfcText);
@@ -70,7 +103,8 @@ internal sealed class DenoVolarHost : IDenoVolarHost
         {
             DocumentPath = documentPath,
             SfcText = sfcText,
-            Filename = filename
+            Filename = filename,
+            IsProduction = isProduction
         };
 
         return await SendAsync<DenoSfcCompileResult>("compile/sfc", request, cancellationToken);
@@ -94,6 +128,28 @@ internal sealed class DenoVolarHost : IDenoVolarHost
         };
 
         return await SendAsync<DenoTypeScriptCompileResult>("compile/ts", request, cancellationToken);
+    }
+
+    public async ValueTask<DenoCssModuleCompileResult?> CompileCssModuleAsync(
+        string documentPath,
+        string text,
+        string filename,
+        bool isProduction,
+        CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(documentPath);
+        ArgumentNullException.ThrowIfNull(text);
+        ArgumentException.ThrowIfNullOrWhiteSpace(filename);
+
+        var request = new DenoCssModuleCompileRequest
+        {
+            DocumentPath = documentPath,
+            Text = text,
+            Filename = filename,
+            IsProduction = isProduction
+        };
+
+        return await SendAsync<DenoCssModuleCompileResult>("compile/css-module", request, cancellationToken);
     }
 
     public async ValueTask<IReadOnlyList<LspDiagnostic>> GetTemplateDiagnosticsAsync(
@@ -295,7 +351,24 @@ internal sealed class DenoVolarHost : IDenoVolarHost
         {
             throw;
         }
-        catch (Exception) {
+        catch (ObjectDisposedException)
+        {
+            await TryResetWorkerStateAsync();
+        }
+        catch (IOException)
+        {
+            await TryResetWorkerStateAsync();
+        }
+        catch (InvalidOperationException)
+        {
+            await TryResetWorkerStateAsync();
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            await TryResetWorkerStateAsync();
+        }
+        catch (NotSupportedException)
+        {
             await TryResetWorkerStateAsync();
         }
 
@@ -313,7 +386,28 @@ internal sealed class DenoVolarHost : IDenoVolarHost
         {
             throw;
         }
-        catch (Exception) {
+        catch (ObjectDisposedException)
+        {
+            await TryResetWorkerStateAsync();
+            throw;
+        }
+        catch (IOException)
+        {
+            await TryResetWorkerStateAsync();
+            throw;
+        }
+        catch (InvalidOperationException)
+        {
+            await TryResetWorkerStateAsync();
+            throw;
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            await TryResetWorkerStateAsync();
+            throw;
+        }
+        catch (NotSupportedException)
+        {
             await TryResetWorkerStateAsync();
             throw;
         }
@@ -325,7 +419,28 @@ internal sealed class DenoVolarHost : IDenoVolarHost
         {
             await _workerProcess.StopAsync(CancellationToken.None);
         }
-        catch (Exception) {
+        catch (ObjectDisposedException)
+        {
+            // Ignore worker teardown failures so the next request can retry startup.
+        }
+        catch (IOException)
+        {
+            // Ignore worker teardown failures so the next request can retry startup.
+        }
+        catch (System.ComponentModel.Win32Exception)
+        {
+            // Ignore worker teardown failures so the next request can retry startup.
+        }
+        catch (InvalidOperationException)
+        {
+            // Ignore worker teardown failures so the next request can retry startup.
+        }
+        catch (PlatformNotSupportedException)
+        {
+            // Ignore worker teardown failures so the next request can retry startup.
+        }
+        catch (NotSupportedException)
+        {
             // Ignore worker teardown failures so the next request can retry startup.
         }
     }

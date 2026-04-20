@@ -391,7 +391,7 @@ internal sealed partial class BuildOrchestrator
         return (line, column);
     }
 
-    private static IReadOnlyDictionary<string, string> CollectIncrementalInputSignatures(BuildContext context)
+    internal static IReadOnlyDictionary<string, string> CollectIncrementalInputSignatures(BuildContext context)
     {
         var inputs = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (var filePath in EnumerateIncrementalInputFiles(context))
@@ -418,7 +418,7 @@ internal sealed partial class BuildOrchestrator
         return inputs;
     }
 
-    private static string ComputeIncrementalFingerprint(
+    internal static string ComputeIncrementalFingerprint(
         BuildOptions options,
         IReadOnlyDictionary<string, string> incrementalInputs)
     {
@@ -781,7 +781,7 @@ internal sealed partial class BuildOrchestrator
         return result;
     }
 
-    private static async Task PersistIncrementalStateAsync(
+    internal static async Task PersistIncrementalStateAsync(
         BuildContext context,
         BuildResult buildResult,
         string fingerprint,

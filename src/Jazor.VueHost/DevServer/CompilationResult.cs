@@ -22,6 +22,8 @@ internal sealed class CompilationResult
 
     public IReadOnlyList<string> EmbeddedStyleDependencies { get; init; } = [];
 
+    public IReadOnlyDictionary<string, string> CssModuleMappings { get; init; } = new Dictionary<string, string>(StringComparer.Ordinal);
+
     public IReadOnlyList<string> Diagnostics { get; init; } = [];
 
     public bool IsError { get; init; }

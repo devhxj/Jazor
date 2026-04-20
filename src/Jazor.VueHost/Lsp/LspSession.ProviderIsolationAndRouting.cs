@@ -181,15 +181,18 @@ internal sealed partial class LspSession
     private static string CreateProviderIsolationKey(string capability, string providerName)
         => capability.Trim() + "|" + providerName.Trim();
 
-    private static async Task ObserveProviderCompletionAsync<TResult>(Task<TResult> task)
+    private static Task ObserveProviderCompletionAsync<TResult>(Task<TResult> task)
     {
-        try
-        {
-            await task;
-        }
-        catch (Exception) {
-            // Swallow fault/cancel from timed-out provider calls to avoid unobserved exceptions.
-        }
+        // Timed-out provider work may still fault later; observe faulted completion to avoid
+        // unobserved task exception escalation without rethrowing into the server pipeline.
+        return task.ContinueWith(
+            static completedTask =>
+            {
+                _ = completedTask.Exception;
+            },
+            CancellationToken.None,
+            TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnFaulted,
+            TaskScheduler.Default);
     }
 
     private ExtensionObservabilityDashboard CreateObservabilityDashboard()

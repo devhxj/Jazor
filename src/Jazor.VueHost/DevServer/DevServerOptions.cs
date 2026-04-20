@@ -14,6 +14,10 @@ internal sealed record DevServerOptions
 
     public string FrontendCompiler { get; init; } = "deno";
 
+    public TimeSpan FileChangeDebounceInterval { get; init; } = TimeSpan.FromMilliseconds(100);
+
+    public TimeSpan FileChangePollingInterval { get; init; } = TimeSpan.FromSeconds(1);
+
     public IReadOnlyDictionary<string, ProxyTarget> ProxyRules { get; init; }
         = new Dictionary<string, ProxyTarget>(StringComparer.OrdinalIgnoreCase);
 

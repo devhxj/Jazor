@@ -180,7 +180,7 @@ internal sealed partial class BuildOrchestrator
             await denoHost.StartAsync(cancellationToken);
 
             var moduleResolver = new ModuleResolver(options.RootDirectory, options.ResolveAliases);
-            var frontendCompiler = new DenoFrontendModuleCompiler(denoHost);
+            var frontendCompiler = new DenoFrontendModuleCompiler(denoHost, isProduction: true);
             var compiler = new OnDemandCompiler(
                 new JazorVueParser(),
                 new JazorVueCompiler(),
