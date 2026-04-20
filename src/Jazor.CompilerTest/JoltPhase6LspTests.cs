@@ -177,6 +177,155 @@ public sealed class JoltPhase6LspTests
     }
 
     [TestMethod]
+    public async Task DocumentProjectionResolver_ResolveAsync_RoutesFunctionsBlockToRoslyn()
+    {
+        var sourcePath = Path.Combine(Path.GetTempPath(), $"projection-{Guid.NewGuid():N}.jazor");
+        var sourceText =
+            """
+            @functions {
+                private string Title => "Hello";
+            }
+
+            <template>
+              <div>@Title</div>
+            </template>
+            """;
+
+        var resolver = new DocumentProjectionResolver(
+            new DocumentRegionClassifier(),
+            new InMemoryVirtualDocumentRegistry());
+        var target = await resolver.ResolveAsync(
+            new DocumentSnapshot(sourcePath, DocumentKind.Jazor, sourceText, "1"),
+            new LspPosition { Line = 1, Character = 12 },
+            CancellationToken.None);
+
+        Assert.AreEqual(LaneKind.Roslyn, target.LaneKind);
+        Assert.AreEqual(DocumentRegionKind.Code, target.RegionKind);
+        Assert.IsFalse(target.IsProjected);
+    }
+
+    [TestMethod]
+    public async Task DocumentProjectionResolver_ResolveAsync_RoutesStandardRazorDirectiveToRoslynWhenProjectionMaps()
+    {
+        var document = new DocumentSnapshot(
+            Path.Combine(Path.GetTempPath(), $"projection-{Guid.NewGuid():N}.jazor"),
+            DocumentKind.Jazor,
+            """
+            @using Demo
+
+            <template>
+              <div>Hello</div>
+            </template>
+            """,
+            "1");
+        var registry = new InMemoryVirtualDocumentRegistry();
+        var projectionService = new JazorProjectionService();
+        await registry.UpsertAsync(
+            await projectionService.ProjectAsync(document, CancellationToken.None),
+            CancellationToken.None);
+
+        var resolver = new DocumentProjectionResolver(new DocumentRegionClassifier(), registry);
+        var target = await resolver.ResolveAsync(
+            document,
+            ToPosition(document.Text, "Demo", advance: 1),
+            CancellationToken.None);
+
+        Assert.AreEqual(LaneKind.Roslyn, target.LaneKind);
+        Assert.AreEqual(DocumentRegionKind.Directive, target.RegionKind);
+        Assert.IsTrue(target.IsProjected);
+        Assert.IsNotNull(target.ProjectedPosition);
+        Assert.IsTrue(
+            target.ProjectedDocumentPath.EndsWith(".g.cs", StringComparison.OrdinalIgnoreCase),
+            $"Expected a projected C# document path, got '{target.ProjectedDocumentPath}'.");
+    }
+
+    [TestMethod]
+    public async Task DocumentProjectionResolver_ResolveAsync_LeavesModuleDirectiveOnJazorLane()
+    {
+        var document = new DocumentSnapshot(
+            Path.Combine(Path.GetTempPath(), $"projection-{Guid.NewGuid():N}.jazor"),
+            DocumentKind.Jazor,
+            """
+            @module CounterState from "./counter-state.ts"
+
+            <template>
+              <div>Hello</div>
+            </template>
+            """,
+            "1");
+        var registry = new InMemoryVirtualDocumentRegistry();
+        var projectionService = new JazorProjectionService();
+        await registry.UpsertAsync(
+            await projectionService.ProjectAsync(document, CancellationToken.None),
+            CancellationToken.None);
+
+        var resolver = new DocumentProjectionResolver(new DocumentRegionClassifier(), registry);
+        var target = await resolver.ResolveAsync(
+            document,
+            ToPosition(document.Text, "CounterState", advance: 1),
+            CancellationToken.None);
+
+        Assert.AreEqual(LaneKind.Jazor, target.LaneKind);
+        Assert.AreEqual(DocumentRegionKind.Directive, target.RegionKind);
+        Assert.IsFalse(target.IsProjected);
+        Assert.AreEqual(document.DocumentPath, target.ProjectedDocumentPath);
+        Assert.AreEqual(document.DocumentPath, target.MappingId);
+    }
+
+    [TestMethod]
+    public void DocumentRegionClassifier_Classify_CrLfBlankLineAfterDirective_RemainsDirective()
+    {
+        const string sourceText = "@page \"/\"\r\n\r\n<div>Hello</div>";
+        var classifier = new DocumentRegionClassifier();
+
+        var directiveGapOffset = LspProtocolHelpers.GetOffset(
+            sourceText,
+            new LspPosition { Line = 1, Character = 0 });
+        var templateOffset = LspProtocolHelpers.GetOffset(
+            sourceText,
+            new LspPosition { Line = 2, Character = 1 });
+
+        Assert.AreEqual(DocumentRegionKind.Directive, classifier.Classify(sourceText, directiveGapOffset));
+        Assert.AreEqual(DocumentRegionKind.Template, classifier.Classify(sourceText, templateOffset));
+    }
+
+    [TestMethod]
+    public void DocumentRegionClassifier_Classify_FunctionsBlock_IgnoresBracesInsideStringsAndComments()
+    {
+        const string sourceText =
+            """
+            @functions {
+                private string Json => "}";
+                /* } */
+                private int Count => 1;
+            }
+
+            <template>
+              <div>@Count</div>
+            </template>
+            """;
+        var classifier = new DocumentRegionClassifier();
+
+        var stringLineOffset = LspProtocolHelpers.GetOffset(
+            sourceText,
+            new LspPosition { Line = 1, Character = 24 });
+        var commentLineOffset = LspProtocolHelpers.GetOffset(
+            sourceText,
+            new LspPosition { Line = 2, Character = 7 });
+        var laterCodeLineOffset = LspProtocolHelpers.GetOffset(
+            sourceText,
+            new LspPosition { Line = 3, Character = 18 });
+        var templateOffset = LspProtocolHelpers.GetOffset(
+            sourceText,
+            new LspPosition { Line = 7, Character = 3 });
+
+        Assert.AreEqual(DocumentRegionKind.Code, classifier.Classify(sourceText, stringLineOffset));
+        Assert.AreEqual(DocumentRegionKind.Code, classifier.Classify(sourceText, commentLineOffset));
+        Assert.AreEqual(DocumentRegionKind.Code, classifier.Classify(sourceText, laterCodeLineOffset));
+        Assert.AreEqual(DocumentRegionKind.Template, classifier.Classify(sourceText, templateOffset));
+    }
+
+    [TestMethod]
     public async Task LspSession_HandleRequestAsync_TemplateCompletion_ForColdDiskBackedJazor_UsesPrimaryProjectedVuePath()
     {
         var tempDirectory = CreateTemporaryDirectory();

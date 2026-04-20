@@ -204,17 +204,6 @@ internal sealed class JazorLspDocumentService
         var prefix = document.Text[..Math.Min(offset, document.Text.Length)];
         var items = new List<LspCompletionItem>();
 
-        if (EndsWithDirectivePrefix(prefix))
-        {
-            items.Add(new LspCompletionItem
-            {
-                Label = "@code",
-                Kind = 14,
-                Detail = "Razor code block",
-                Documentation = "Start the C# code block for the current .jazor component."
-            });
-        }
-
         if (TryGetTagCompletionPrefix(prefix, out var tagPrefix))
         {
             var seenLabels = new HashSet<string>(items.Select(static item => item.Label), StringComparer.Ordinal);
@@ -649,12 +638,6 @@ internal sealed class JazorLspDocumentService
             _fallbackAnalysisService,
             request,
             cancellationToken);
-    }
-
-    private static bool EndsWithDirectivePrefix(string prefix)
-    {
-        return prefix.EndsWith("@", StringComparison.Ordinal)
-            || prefix.EndsWith("@c", StringComparison.Ordinal);
     }
 
     private static string NormalizeDocumentPath(string documentPath)

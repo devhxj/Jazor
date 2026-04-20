@@ -1994,7 +1994,7 @@ public sealed class JoltPhase7ExtensionSecurityAndBuiltinTests
 
         var documentPath = Path.Combine(Path.GetTempPath(), $"phase7-completion-{Guid.NewGuid():N}.jazor");
         await workspaceStore.UpsertDocumentAsync(
-            new DocumentSnapshot(documentPath, DocumentKind.Jazor, "@c", version: "1"),
+            new DocumentSnapshot(documentPath, DocumentKind.Jazor, "@m", version: "1"),
             CancellationToken.None);
 
         using var outputStream = new MemoryStream();
@@ -2025,7 +2025,56 @@ public sealed class JoltPhase7ExtensionSecurityAndBuiltinTests
         Assert.IsNull(response!.Error);
         var items = response.Result as IReadOnlyList<LspCompletionItem>;
         Assert.IsNotNull(items);
-        Assert.IsTrue(items.Any(static item => string.Equals(item.Label, "@code", StringComparison.Ordinal)));
+        Assert.IsTrue(items.Any(static item => string.Equals(item.Label, "@module", StringComparison.Ordinal)));
+        Assert.IsFalse(items.Any(static item => string.Equals(item.Label, "@code", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    public async Task BuiltinDirectiveCompletionProvider_DoesNotServeStandardRazorDirectivesThroughLspSession()
+    {
+        var workspaceStore = new InMemoryWorkspaceStore();
+        var virtualDocumentRegistry = new InMemoryVirtualDocumentRegistry();
+        var registry = new ExtensionRegistry();
+        var loader = new ExtensionLoader(registry);
+        await loader.LoadBuiltinExtensionsAsync(
+            BuiltinExtensionCatalog.Create(),
+            rootDirectory: Path.GetFullPath(Path.GetTempPath()),
+            cancellationToken: CancellationToken.None);
+
+        var documentPath = Path.Combine(Path.GetTempPath(), $"phase7-completion-{Guid.NewGuid():N}.jazor");
+        await workspaceStore.UpsertDocumentAsync(
+            new DocumentSnapshot(documentPath, DocumentKind.Jazor, "@c", version: "1"),
+            CancellationToken.None);
+
+        using var outputStream = new MemoryStream();
+        var session = CreateSession(
+            workspaceStore,
+            virtualDocumentRegistry,
+            [new EmptyJazorLane()],
+            outputStream,
+            registry);
+
+        var response = await session.HandleRequestAsync(
+            new LspRequestMessage
+            {
+                Id = 3102,
+                Method = "textDocument/completion",
+                Params = new LspCompletionParams
+                {
+                    TextDocument = new LspTextDocumentIdentifier
+                    {
+                        Uri = LspProtocolHelpers.ToDocumentUri(documentPath)
+                    },
+                    Position = new LspPosition { Line = 0, Character = 2 }
+                }
+            },
+            CancellationToken.None);
+
+        Assert.IsNotNull(response);
+        Assert.IsNull(response!.Error);
+        var items = response.Result as IReadOnlyList<LspCompletionItem>;
+        Assert.IsNotNull(items);
+        Assert.AreEqual(0, items.Count);
     }
 
     [TestMethod]

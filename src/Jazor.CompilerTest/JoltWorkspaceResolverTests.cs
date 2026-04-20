@@ -314,6 +314,81 @@ public sealed class JoltWorkspaceResolverTests
     }
 
     [TestMethod]
+    public void Jolt_WorkspaceResolver_ResolveWorkspaceVueComponent_ReachesProjectRootForDeepDocumentTrees()
+    {
+        var baseDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var projectRoot = Path.Combine(baseDirectory, "workspace");
+            var deepDocumentDirectory = Path.Combine(projectRoot, "src", "features", "alpha", "beta", "gamma", "pages");
+            var sharedComponentDirectory = Path.Combine(projectRoot, "src", "components");
+            Directory.CreateDirectory(deepDocumentDirectory);
+            Directory.CreateDirectory(sharedComponentDirectory);
+            File.WriteAllText(Path.Combine(projectRoot, "package.json"), """{ "name": "workspace-root" }""");
+
+            var documentPath = Path.Combine(deepDocumentDirectory, "Home.jazor");
+            File.WriteAllText(documentPath, "<FancyButton />");
+            var componentPath = Path.Combine(sharedComponentDirectory, "FancyButton.vue");
+            File.WriteAllText(componentPath, "<template><button /></template>");
+
+            var openDocuments = new[]
+            {
+                new DocumentSnapshot(documentPath, DocumentKind.Jazor, "<FancyButton />", "1")
+            };
+
+            var resolved = JoltWorkspaceResolver.ResolveWorkspaceVueComponent(
+                documentPath,
+                "FancyButton",
+                openDocuments,
+                CancellationToken.None);
+
+            Assert.IsNotNull(resolved, "Expected workspace resolution to reach the project root for deep document paths.");
+            Assert.AreEqual(
+                JoltWorkspaceResolver.NormalizePath(componentPath),
+                resolved.Value.AbsolutePath);
+            Assert.AreEqual(
+                JoltWorkspaceResolver.ToImportPath(deepDocumentDirectory, componentPath),
+                resolved.Value.ImportPath);
+        }
+        finally
+        {
+            DeleteDirectory(baseDirectory);
+        }
+    }
+
+    [TestMethod]
+    public void Jolt_WorkspaceResolver_GetWorkspaceSearchRoots_PreservesImmediateTempWorkspaceDirectory()
+    {
+        var workspaceRoot = Path.Combine(Path.GetTempPath(), "jolt-temp-workspace-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            Directory.CreateDirectory(workspaceRoot);
+            var documentPath = Path.Combine(workspaceRoot, "Counter.jazor");
+            File.WriteAllText(documentPath, "<Counter />");
+
+            var roots = JoltWorkspaceResolver
+                .GetWorkspaceSearchRoots(
+                    documentPath,
+                    secondaryDocumentPath: null,
+                    [new DocumentSnapshot(documentPath, DocumentKind.Jazor, "<Counter />", "1")])
+                .Select(Path.GetFullPath)
+                .ToArray();
+
+            CollectionAssert.Contains(roots, Path.GetFullPath(workspaceRoot));
+            Assert.IsFalse(
+                roots.Any(root => string.Equals(
+                    root.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
+                    Path.GetTempPath().TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
+                    StringComparison.OrdinalIgnoreCase)),
+                "Expected immediate temp workspace discovery to stop before the shared system temp root.");
+        }
+        finally
+        {
+            DeleteDirectory(workspaceRoot);
+        }
+    }
+
+    [TestMethod]
     public void Jolt_WorkspaceResolver_PushWorkspaceFolderRoots_NestedScopesRestorePreviousState()
     {
         var baseDirectory = CreateTemporaryDirectory();

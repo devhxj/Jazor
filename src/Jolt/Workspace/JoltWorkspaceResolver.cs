@@ -8,6 +8,28 @@ internal static class JoltWorkspaceResolver
 {
     private static readonly ConcurrentDictionary<string, string[]> WorkspaceFileCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly AsyncLocal<string[]?> WorkspaceFolderRoots = new();
+    private static readonly string[] WorkspaceBoundaryDirectories =
+    [
+        ".git",
+        ".hg",
+        ".svn"
+    ];
+    private static readonly string[] WorkspaceBoundaryFiles =
+    [
+        "jazor.config.json",
+        "package.json",
+        "global.json",
+        "Directory.Build.props",
+        "Directory.Build.targets"
+    ];
+    private static readonly string[] WorkspaceBoundaryProjectPatterns =
+    [
+        "*.sln",
+        "*.slnx",
+        "*.csproj",
+        "*.fsproj",
+        "*.vbproj"
+    ];
 
     public static IDisposable PushWorkspaceFolderRoots(IEnumerable<string> workspaceFolderRoots)
     {
@@ -934,9 +956,8 @@ internal static class JoltWorkspaceResolver
         var normalizedStopAt = string.IsNullOrWhiteSpace(stopAtDirectory)
             ? null
             : NormalizeComparablePath(Path.GetFullPath(stopAtDirectory));
-        var depth = 0;
         var emittedStopDirectory = false;
-        while (!string.IsNullOrWhiteSpace(current) && depth < 3)
+        while (!string.IsNullOrWhiteSpace(current))
         {
             var normalizedCurrent = NormalizeComparablePath(current);
             if (normalizedStopAt is not null
@@ -950,11 +971,6 @@ internal static class JoltWorkspaceResolver
                 yield break;
             }
 
-            if (normalizedStopAt is null && depth > 0 && IsTooBroadTempAncestor(current))
-            {
-                yield break;
-            }
-
             yield return current;
             if (normalizedStopAt is not null
                 && string.Equals(normalizedCurrent, normalizedStopAt, StringComparison.OrdinalIgnoreCase))
@@ -963,7 +979,15 @@ internal static class JoltWorkspaceResolver
                 yield break;
             }
 
-            depth++;
+            if (normalizedStopAt is null && ContainsWorkspaceBoundaryMarker(current))
+            {
+                yield break;
+            }
+
+            if (normalizedStopAt is null && IsTooBroadTempAncestor(current))
+            {
+                yield break;
+            }
 
             var parent = Directory.GetParent(current)?.FullName;
             if (string.IsNullOrWhiteSpace(parent)
@@ -1073,6 +1097,46 @@ internal static class JoltWorkspaceResolver
         return PathMatchesOrContains(
             NormalizeComparablePath(path),
             NormalizeComparablePath(workspaceRoot));
+    }
+
+    private static bool ContainsWorkspaceBoundaryMarker(string directoryPath)
+    {
+        try
+        {
+            foreach (var markerDirectory in WorkspaceBoundaryDirectories)
+            {
+                if (Directory.Exists(Path.Combine(directoryPath, markerDirectory)))
+                {
+                    return true;
+                }
+            }
+
+            foreach (var markerFile in WorkspaceBoundaryFiles)
+            {
+                if (File.Exists(Path.Combine(directoryPath, markerFile)))
+                {
+                    return true;
+                }
+            }
+
+            foreach (var searchPattern in WorkspaceBoundaryProjectPatterns)
+            {
+                if (Directory.EnumerateFiles(directoryPath, searchPattern, SearchOption.TopDirectoryOnly).Any())
+                {
+                    return true;
+                }
+            }
+        }
+        catch (IOException)
+        {
+            return false;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return false;
+        }
+
+        return false;
     }
 
     private static bool ShouldSkipWorkspaceDirectory(string directoryPath)

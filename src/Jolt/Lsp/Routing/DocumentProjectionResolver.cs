@@ -1,7 +1,6 @@
 using Jazor.VueContracts.Protocol;
 using Jolt.VirtualDocuments.Models;
 using Jolt.VirtualDocuments.Registry;
-using Jolt.VirtualDocuments.Mapping;
 
 namespace Jolt.Lsp.Routing;
 
@@ -63,24 +62,48 @@ internal sealed class DocumentProjectionResolver
 
         var offset = LspProtocolHelpers.GetOffset(document.Text, position);
         var regionKind = _classifier.Classify(document.Text, offset);
+        var virtualDocuments = await _virtualDocumentRegistry.GetBySourceDocumentAsync(
+            document.DocumentPath,
+            cancellationToken);
+
+        if (regionKind == DocumentRegionKind.Directive
+            && IsModuleDirectivePosition(document.Text, offset))
+        {
+            return new ProjectionTarget(
+                LaneKind.Jazor,
+                regionKind,
+                document.DocumentPath,
+                document.DocumentPath,
+                position,
+                IsProjected: false);
+        }
+
+        if (regionKind != DocumentRegionKind.Template
+            && TryResolveProjectedTarget(
+                document.Text,
+                position,
+                regionKind,
+                LaneKind.Roslyn,
+                FindCSharpProjection(virtualDocuments),
+                out var projectedCodeTarget))
+        {
+            return projectedCodeTarget;
+        }
+
         if (regionKind == DocumentRegionKind.Template)
         {
-            var virtualDocuments = await _virtualDocumentRegistry.GetBySourceDocumentAsync(document.DocumentPath, cancellationToken);
             var projectedDocument = FindPrimaryVueProjection(
                 document.DocumentPath,
                 virtualDocuments);
-
-            if (projectedDocument is not null)
-            {
-                var projectedPosition = TryMapPosition(projectedDocument.ProjectionMap, document.Text, position, projectedDocument.Text);
-                return new ProjectionTarget(
-                    LaneKind.Volar,
+            if (TryResolveProjectedTarget(
+                    document.Text,
+                    position,
                     regionKind,
-                    projectedDocument.Identity.ProjectedDocumentPath,
-                    projectedDocument.Identity.SourceDocumentPath,
-                    projectedPosition ?? position,
-                    null,
-                    IsProjected: projectedPosition is not null);
+                    LaneKind.Volar,
+                    projectedDocument,
+                    out var projectedTemplateTarget))
+            {
+                return projectedTemplateTarget;
             }
 
             return new ProjectionTarget(
@@ -95,23 +118,6 @@ internal sealed class DocumentProjectionResolver
 
         if (regionKind == DocumentRegionKind.Code)
         {
-            var virtualDocuments = await _virtualDocumentRegistry.GetBySourceDocumentAsync(document.DocumentPath, cancellationToken);
-            var projectedDocument = virtualDocuments.FirstOrDefault(candidate =>
-                candidate.Identity.DocumentKind == VirtualDocumentKind.CSharp);
-
-            if (projectedDocument is not null)
-            {
-                var projectedPosition = TryMapPosition(projectedDocument.ProjectionMap, document.Text, position, projectedDocument.Text);
-                return new ProjectionTarget(
-                    LaneKind.Roslyn,
-                    regionKind,
-                    projectedDocument.Identity.ProjectedDocumentPath,
-                    projectedDocument.Identity.SourceDocumentPath,
-                    projectedPosition ?? position,
-                    null,
-                    IsProjected: projectedPosition is not null);
-            }
-
             // Code-lane requests already execute against the source snapshot. Keep routing
             // them into Roslyn even if the virtual C# document has not been materialized yet.
             return new ProjectionTarget(
@@ -133,20 +139,40 @@ internal sealed class DocumentProjectionResolver
             IsProjected: false);
     }
 
-    private static LspPosition? TryMapPosition(
-        ProjectionMap projectionMap,
+    private static bool TryResolveProjectedTarget(
         string sourceText,
         LspPosition sourcePosition,
-        string projectedText)
+        DocumentRegionKind regionKind,
+        LaneKind laneKind,
+        VirtualDocument? projectedDocument,
+        out ProjectionTarget projectionTarget)
     {
-        var sourceOffset = LspProtocolHelpers.GetOffset(sourceText, sourcePosition);
-        if (!projectionMap.TryMapToProjectedOffset(sourceOffset, out var projectedOffset))
+        if (projectedDocument is null
+            || !projectedDocument.ProjectionMap.TryMapToProjectedPosition(
+                sourceText,
+                sourcePosition,
+                projectedDocument.Text,
+                out var projectedPosition))
         {
-            return null;
+            projectionTarget = default!;
+            return false;
         }
 
-        return LspProtocolHelpers.GetPosition(projectedText, projectedOffset);
+        projectionTarget = new ProjectionTarget(
+            laneKind,
+            regionKind,
+            projectedDocument.Identity.ProjectedDocumentPath,
+            projectedDocument.Identity.SourceDocumentPath,
+            projectedPosition,
+            null,
+            IsProjected: true);
+        return true;
     }
+
+    private static VirtualDocument? FindCSharpProjection(
+        IReadOnlyList<VirtualDocument> virtualDocuments)
+        => virtualDocuments.FirstOrDefault(candidate =>
+            candidate.Identity.DocumentKind == VirtualDocumentKind.CSharp);
 
     private static VirtualDocument? FindPrimaryVueProjection(
         string sourceDocumentPath,
@@ -159,6 +185,54 @@ internal sealed class DocumentProjectionResolver
                 NormalizePath(candidate.Identity.ProjectedDocumentPath),
                 expectedProjectedPath,
                 StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool IsModuleDirectivePosition(string text, int offset)
+    {
+        if (text.Length == 0)
+        {
+            return false;
+        }
+
+        var clampedOffset = Math.Max(0, Math.Min(offset, text.Length - 1));
+        var lineStart = clampedOffset;
+        while (lineStart > 0
+               && text[lineStart - 1] != '\r'
+               && text[lineStart - 1] != '\n')
+        {
+            lineStart--;
+        }
+
+        var lineEnd = clampedOffset;
+        while (lineEnd < text.Length
+               && text[lineEnd] != '\r'
+               && text[lineEnd] != '\n')
+        {
+            lineEnd++;
+        }
+
+        var line = text.AsSpan(lineStart, lineEnd - lineStart).TrimStart();
+        if (line.IsEmpty || line[0] != '@')
+        {
+            return false;
+        }
+
+        var directiveLength = 0;
+        while (directiveLength < line.Length
+               && !char.IsWhiteSpace(line[directiveLength]))
+        {
+            directiveLength++;
+        }
+
+        if (directiveLength == 0)
+        {
+            return false;
+        }
+
+        var directive = line[..directiveLength];
+        var moduleDirective = "@module".AsSpan();
+        return directive.Equals(moduleDirective, StringComparison.OrdinalIgnoreCase)
+            || moduleDirective.StartsWith(directive, StringComparison.OrdinalIgnoreCase);
     }
 
     private static string NormalizePath(string documentPath)

@@ -1,6 +1,6 @@
 # Jolt 深度完成度分析报告
 
-> 分析日期：2026-04-20（第三轮复评 + 迁移收尾复核）
+> 分析日期：2026-04-20（第四轮复评 + 稳态修复 + LSP 复用收口）
 > 分析范围：`src/Jolt/` 全部源码及测试
 > 上次评审：2026-04-19（第二轮）
 
@@ -22,7 +22,16 @@
 
 3. **全量回归结论已更新为本地 full pass**
    - `JoltFrontendLaneTests` + `JoltLspTests` 默认并行回归：**127/127 通过**
-   - `pwsh ./scripts/test-dotnet.ps1 -Project compiler`：**2350/2350 通过**
+   - `pwsh ./scripts/test-dotnet.ps1 -Project compiler`：**2359/2359 通过**
+
+4. **工作区 / LSP 路由 / 取消清理边界已补强**
+   - `JoltWorkspaceResolver` 默认搜索根不再被固定 3 级祖先截断，深层目录下的共享组件解析已恢复。
+   - `DocumentRegionClassifier` 已同时识别 `@code` / `@functions`，修正 CRLF 指令区与模板区边界计算，并避免代码块内字符串/注释中的 `}` 提前截断 Roslyn 路由。
+   - 需要明确区分 **compile** 与 **LSP/intellisense** 两个阶段：编译阶段仍由 `Jolt/Jazor` 自身管线负责；智能感知阶段的 `.jazor` LSP 路由已明确收敛为“**标准 Razor 指令直接复用 Razor/C# projection，只有 `@module` 保持在 Jolt host lane**”。标准 Razor 指令补全不再由 Jolt 内置扩展重复提供，`@module` 也不再被误分到模板/前端 lane。
+   - `ProcessAnalysisRpcTransport` 与 `DenoBundleRunner` 在取消请求时会主动终止子进程，避免遗留后台进程。
+   - 以上修复已通过 2026-04-20 的 Jolt 聚焦回归验证：**89/89 通过**。
+   - 在此基础上又补充了一轮 LSP 路由集成回归：**124/124 通过**。
+   - 收口内置指令补全面后，再补了一轮 LSP + builtin 扩展联合回归：**175/175 通过**。
 
 ---
 
@@ -30,12 +39,12 @@
 
 ### 1.1 与上次评审对比
 
-| 维度 | 第二轮 | 第三轮复评 | 变化 |
+| 维度 | 第二轮 | 第四轮复评 | 变化 |
 |------|--------|-----------|------|
-| 源文件 | 183 个 .cs | **198** 个 .cs | +15 |
-| 总代码行 | ~33,208 行 | **~37,551 行** | +4,343 (+13%) |
-| Jolt 测试方法 | 561 | **578** | +17 |
-| 全部测试方法 | — | **2,350** | — |
+| 源文件 | 183 个 .cs | **199** 个 .cs | +16 |
+| 总代码行 | ~33,208 行 | **~37,996 行** | +4,788 (+14%) |
+| Jolt 测试方法 | 561 | **587** | +26 |
+| 全部测试方法 | — | **2,359** | — |
 | 接口定义 | 34 | **33** | -1（合并/清理） |
 | 运行模式 | 9 种 | 9 种 | 不变 |
 | LSP Lane | 3 条 | 3 条 | 不变 |
@@ -117,13 +126,25 @@ CLI (Program.cs)
 
 ### 3.1 测试执行结果
 
-| 指标 | 第二轮 | 第三轮复评 |
+| 指标 | 第二轮 | 第四轮复评 |
 |------|--------|-----------|
-| Jolt 测试方法数 | 561 | **578** |
+| Jolt 测试方法数 | 561 | **587** |
 | 测试运行结果 | 全部通过 | **Jolt 核心并发回归 + compiler 全量回归全部通过** |
-| 全部测试方法数 | — | **2,350** |
+| 全部测试方法数 | — | **2,359** |
 
-> **更新**：早期 full run 中暴露过 `JoltLspTests` / Deno worker 并发不稳定问题。本轮已通过运行时隔离修复而非测试串行化修复该问题，并在本地完成 `compiler` 全量回归（**2350/2350**）。
+> **更新**：早期 full run 中暴露过 `JoltLspTests` / Deno worker 并发不稳定问题。本轮已通过运行时隔离修复而非测试串行化修复该问题，并在本地完成 `compiler` 全量回归（**2359/2359**）。
+>
+> **补充（2026-04-20 稳态修复验证）**：
+> `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --no-restore --filter 'FullyQualifiedName~JoltWorkspaceResolverTests|FullyQualifiedName~JoltPhase6LspTests|FullyQualifiedName~JoltBuildTests|FullyQualifiedName~JazorVueAnalysisRuntimeTests|FullyQualifiedName~JoltProcessCleanupTests' -- --report-trx --results-directory .test-results`
+> ：**89/89 通过**。
+>
+> **补充（2026-04-20 LSP 路由回归）**：
+> `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --no-restore --filter 'FullyQualifiedName~JoltPhase6LspTests|FullyQualifiedName~JoltStdioLspServerTests|FullyQualifiedName~JoltLspTests|FullyQualifiedName~JoltLaneRoutingTests' -- --report-trx --results-directory .test-results`
+> ：**124/124 通过**。
+>
+> **补充（2026-04-20 LSP + builtin 扩展联合回归）**：
+> `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --no-restore --filter 'FullyQualifiedName~JoltPhase6LspTests|FullyQualifiedName~JoltStdioLspServerTests|FullyQualifiedName~JoltLspTests|FullyQualifiedName~JoltLaneRoutingTests|FullyQualifiedName~JoltPhase7ExtensionSecurityAndBuiltinTests' -- --report-trx --results-directory .test-results`
+> ：**175/175 通过**。
 
 ### 3.2 测试分布
 
@@ -145,7 +166,7 @@ CLI (Program.cs)
 
 ### 4.1 质量强项
 
-| 指标 | 第一轮 | 第三轮复评 | 趋势 | 评价 |
+| 指标 | 第一轮 | 第四轮复评 | 趋势 | 评价 |
 |------|--------|-----------|------|------|
 | `async void` | 0 | **0** | → | 优秀 — 无异步反模式 |
 | `.Wait()` / `GetAwaiter().GetResult()` | 0 | **0** | → | 优秀 — 无 sync-over-async |
@@ -285,7 +306,7 @@ CLI (Program.cs)
 | 扩展 | 功能 |
 |------|------|
 | StructureDiagnosticExtension | 基于 regex 的模板/代码结构诊断 |
-| DirectiveCompletionExtension | `@` 指令补全（`@code`、`@using` 等） |
+| DirectiveCompletionExtension | 仅补 Jolt 自定义 `@module`；标准 Razor 指令补全复用 Razor/C# lane |
 | ComponentCodeActionExtension | 未解析组件的 `@module` 快速修复 |
 | WorkspaceSymbolExtension | 索引开放文档的工作区符号搜索 |
 
@@ -358,9 +379,9 @@ CLI (Program.cs)
 
 ## 十一、综合评分
 
-| 维度 | 第一轮 | 第三轮复评 | 变化说明 |
+| 维度 | 第一轮 | 第四轮复评 | 变化说明 |
 |------|--------|-----------|---------|
-| **测试覆盖** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | 578 测试，覆盖所有核心模块 |
+| **测试覆盖** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | 587 个 Jolt 测试 / 2359 个 compiler 回归全部通过 |
 | **代码质量** | ⭐⭐⭐⭐☆ | ⭐⭐⭐⭐⭐ | 裸 catch 归零、null! 清零、catch(Exception) 73→18、超大文件拆分完成 |
 | **LSP 功能** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | 24 种 LSP 方法，Call/Type Hierarchy 3 Lane 全覆盖 |
 | **构建管线** | ⭐⭐⭐☆ | ⭐⭐⭐☆ | BuildOrchestrator 拆分完成，新增旧指令诊断；缺 minification/tree-shaking/SSR |

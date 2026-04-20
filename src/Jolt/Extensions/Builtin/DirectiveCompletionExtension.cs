@@ -7,27 +7,14 @@ internal sealed class DirectiveCompletionExtension : IExtension, ILspCompletionP
 {
     private static readonly DirectiveDescriptor[] Directives =
     [
-        new("@attribute", "Razor directive", "Apply attributes to the generated component class."),
-        new("@functions", "Razor directive", "Define legacy C# members on the component."),
-        new("@implements", "Razor directive", "Declare implemented interfaces for the component."),
-        new("@inherits", "Razor directive", "Declare the component base type."),
-        new("@inject", "Razor directive", "Inject a service into the component."),
-        new("@layout", "Razor directive", "Set the layout component."),
-        new("@model", "Razor directive", "Declare a model type for compatibility scenarios."),
-        new("@namespace", "Razor directive", "Override generated namespace."),
-        new("@page", "Razor directive", "Declare component route."),
-        new("@preservewhitespace", "Razor directive", "Keep template whitespace."),
-        new("@rendermode", "Razor directive", "Select render mode."),
-        new("@typeparam", "Razor directive", "Declare generic type parameters."),
-        new("@using", "Razor directive", "Import namespaces into generated code."),
-        new("@code", "Razor directive", "Open the primary C# code block.")
+        new("@module", "Jolt directive", "Import a Vue, TS, or JS module into the `.jazor` document.")
     ];
 
     public ExtensionMetadata Metadata { get; } = new(
         Id: "builtin.directive-completion",
         Name: "Builtin Directive Completion",
         Version: "1.0.0",
-        Description: "Provides directive completions for .jazor documents.");
+        Description: "Provides Jolt-specific directive completions for .jazor documents.");
 
     public string Name => "BuiltinDirectiveCompletionProvider";
 

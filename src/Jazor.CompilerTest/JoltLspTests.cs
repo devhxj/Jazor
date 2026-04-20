@@ -4811,7 +4811,8 @@ public sealed class JoltLspTests
                 .EnumerateArray()
                 .Select(static item => item.GetProperty("label").GetString() ?? string.Empty)
                 .ToArray();
-            CollectionAssert.Contains(directiveLabels, "@code");
+            CollectionAssert.Contains(directiveLabels, "@module");
+            CollectionAssert.DoesNotContain(directiveLabels, "@code");
             CollectionAssert.DoesNotContain(directiveLabels, "@vueimport");
             CollectionAssert.DoesNotContain(directiveLabels, "@jsimport");
 
@@ -5849,7 +5850,8 @@ public sealed class JoltLspTests
                 documentUri,
                 line: 0,
                 character: 1);
-            CollectionAssert.Contains(directiveLabels, "@code");
+            CollectionAssert.Contains(directiveLabels, "@module");
+            CollectionAssert.DoesNotContain(directiveLabels, "@code");
             CollectionAssert.DoesNotContain(directiveLabels, "UserCard");
 
             var templateLabels = await client.RequestCompletionLabelsAsync(

@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Jolt.Frontend.Deno.Hosting;
+using Jolt.Hosting;
 
 namespace Jolt.Build;
 
@@ -114,11 +115,21 @@ internal sealed class DenoBundleRunner
             return Failure("Failed to start the bundled Deno bundler process.");
         }
 
-        var stdoutTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
-        var stderrTask = process.StandardError.ReadToEndAsync(cancellationToken);
-        await process.WaitForExitAsync(cancellationToken);
-        var stdout = await stdoutTask;
-        var stderr = await stderrTask;
+        string stdout;
+        string stderr;
+        try
+        {
+            var stdoutTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
+            var stderrTask = process.StandardError.ReadToEndAsync(cancellationToken);
+            await ChildProcessUtilities.WaitForExitOrTerminateOnCancellationAsync(process, cancellationToken);
+            stdout = await stdoutTask;
+            stderr = await stderrTask;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            await ChildProcessUtilities.TerminateProcessAsync(process);
+            throw;
+        }
 
         if (process.ExitCode != 0)
         {

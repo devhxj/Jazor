@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Jazor.VueContracts.Protocol;
+using Jolt.Hosting;
 using Jolt.Rpc;
 
 namespace Jolt.Analysis;
@@ -41,13 +42,22 @@ public sealed class ProcessAnalysisRpcTransport : IAnalysisRpcTransport
         if (!process.Start())
             throw new InvalidOperationException($"Failed to start analysis process '{_command}'.");
 
-        var requestJson = JoltRpcSerializer.Serialize(request);
-        await process.StandardInput.WriteLineAsync(requestJson.AsMemory(), cancellationToken);
-        await process.StandardInput.FlushAsync();
-        process.StandardInput.Close();
+        string? responseJson;
+        try
+        {
+            var requestJson = JoltRpcSerializer.Serialize(request);
+            await process.StandardInput.WriteLineAsync(requestJson.AsMemory(), cancellationToken);
+            await process.StandardInput.FlushAsync();
+            process.StandardInput.Close();
 
-        var responseJson = await ReadResponseJsonAsync(process, cancellationToken);
-        await process.WaitForExitAsync(cancellationToken);
+            responseJson = await ReadResponseJsonAsync(process, cancellationToken);
+            await ChildProcessUtilities.WaitForExitOrTerminateOnCancellationAsync(process, cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            await ChildProcessUtilities.TerminateProcessAsync(process);
+            throw;
+        }
 
         if (string.IsNullOrWhiteSpace(responseJson))
         {

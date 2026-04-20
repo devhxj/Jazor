@@ -16,6 +16,7 @@
 - Phase 6：高级 LSP 核心目标达成（P2 + 关键 P3 稳定可用）
 - Phase 7：扩展系统核心目标达成并继续硬化（provider 扩展面 + 超时隔离 + 健康查询 + 目录边界约束 + 权限/哈希校验 + builtin 生产 provider + VS Code 最小集成）
 - 基础设施迁移：`Jazor.VueHost -> Jolt` 重命名完成，共享 RazorVue manifest/SourceMap 基元已上提到 `Jazor.Common`，`Jolt` 与 `Jazor.Emit` 解耦完成
+- 稳态补强：深目录 workspace 组件解析、`@functions` / CRLF 文档区域分类、代码块内字符串/注释括号误判、标准 Razor 指令的 Razor projection 复用、`@module` lane 收口、builtin 指令补全收窄到 `@module`、取消构建/分析时的子进程清理已修复并补回归
 
 ## 当前状态判断
 
@@ -24,6 +25,7 @@
 - `Jolt` 作为唯一 active host 边界已经成型
 - In-proc Razor/Roslyn + Deno frontend worker 的组合已进入主干
 - LSP 路由、桥接聚合和 workspace resolver 形成了稳定主线
+- 必须区分 compile 与 LSP 两阶段：compile 仍由 `Jolt/Jazor` 编译管线负责；智能感知阶段的 `.jazor` 已明确为“标准 Razor 指令默认走 Razor/Roslyn，host 只保留 `@module` 这一个自定义指令入口”，builtin 指令补全也只保留 `@module`
 - `Jazor.Vue` 与 `Jazor.SourceMaps` 这类中性共享定义已落在 `Jazor.Common`，`Jolt` 不再依赖 `Jazor.Emit`
 
 ### 2. Dev Server / HMR / SourceMap 已形成闭环主路径
@@ -41,9 +43,9 @@
 
 ### 4. 测试覆盖规模已具备"回归网"属性
 
-- `src/Jazor.CompilerTest` 中 `Jolt*Tests` 文件当前为 **32** 个，`[TestMethod]` 为 **578** 个，覆盖 DevServer/LSP/Build/Debug/SourceMap 等主域
+- `src/Jazor.CompilerTest` 中 `Jolt*Tests` 文件当前为 **33** 个，`[TestMethod]` 为 **587** 个，覆盖 DevServer/LSP/Build/Debug/SourceMap 等主域
 - `JoltFrontendLaneTests` / `JoltLspTests` 的并发稳定性问题已通过运行时隔离修复，不再依赖类级串行化回避
-- 当前本地工作区若有长时间运行的 `Jolt --lsp` 或测试宿主进程，构建阶段仍可能出现短暂文件占用重试，但本轮 full compiler 回归已验证可稳定通过
+- 当前本地工作区若有长时间运行的 `Jolt --lsp` 或测试宿主进程，构建阶段仍可能出现短暂文件占用重试，但本轮 full compiler 回归已验证 **2359/2359** 可稳定通过
 
 ## 阶段进展矩阵
 
@@ -55,13 +57,16 @@
 | Phase 4 Debug (DAP + CDP) | 100% | 里程碑验收完成 | stackTrace/scopes/variables/evaluate/continue 闭环稳定；并发断点与异常栈映射回归通过 |
 | Phase 5 Production Build | 100% | 里程碑验收完成 | build lane 串台问题前置修复（端口竞态 + bundler 前缀/路径归一化），失败路径/边界回归通过 |
 | Phase 6 Advanced LSP | 100% | 里程碑验收完成 | references/rename/codeAction/documentSymbol/semantic tokens 主能力稳定，跨 lane 补桥接用例回归通过 |
-| Phase 7 Extension System | 100% | 里程碑验收完成 | 扩展 provider 聚合 + 超时隔离 + 健康查询 + signature/inlay/workspace/folding + 目录越界防护 + trusted/hash/provider-permission 前置拦截 + builtin 结构诊断/指令补全/组件 codeAction/workspace-symbol + VS Code 最小扩展骨架 |
+| Phase 7 Extension System | 100% | 里程碑验收完成 | 扩展 provider 聚合 + 超时隔离 + 健康查询 + signature/inlay/workspace/folding + 目录越界防护 + trusted/hash/provider-permission 前置拦截 + builtin 结构诊断/仅 `@module` 指令补全/组件 codeAction/workspace-symbol + VS Code 最小扩展骨架 |
 
 ## 本轮验证（2026-04-20）
 
 - `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter 'FullyQualifiedName~JoltFrontendLaneTests|FullyQualifiedName~JoltLspTests' -v minimal`：**127/127 通过**
 - `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter 'FullyQualifiedName~Jolt_StdioLspServer_CancelRequest_CancelsQueuedRequestBeforeExecution|FullyQualifiedName~Jolt_DenoFrontendHost_CompileSfcAsync_WithBundledWorker_ReturnsCompiledVueModuleAndColumnAwareSourceMap|FullyQualifiedName~Jolt_Lsp_TypeScriptDocument_ReturnsFrontendScriptCompletionHoverAndDefinition' -v minimal`：**3/3 通过**
-- `pwsh ./scripts/test-dotnet.ps1 -Project compiler`：**2350/2350 通过**
+- `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --no-restore --filter 'FullyQualifiedName~JoltWorkspaceResolverTests|FullyQualifiedName~JoltPhase6LspTests|FullyQualifiedName~JoltBuildTests|FullyQualifiedName~JazorVueAnalysisRuntimeTests|FullyQualifiedName~JoltProcessCleanupTests' -- --report-trx --results-directory .test-results`：**89/89 通过**
+- `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --no-restore --filter 'FullyQualifiedName~JoltPhase6LspTests|FullyQualifiedName~JoltStdioLspServerTests|FullyQualifiedName~JoltLspTests|FullyQualifiedName~JoltLaneRoutingTests' -- --report-trx --results-directory .test-results`：**124/124 通过**
+- `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --no-restore --filter 'FullyQualifiedName~JoltPhase6LspTests|FullyQualifiedName~JoltStdioLspServerTests|FullyQualifiedName~JoltLspTests|FullyQualifiedName~JoltLaneRoutingTests|FullyQualifiedName~JoltPhase7ExtensionSecurityAndBuiltinTests' -- --report-trx --results-directory .test-results`：**175/175 通过**
+- `pwsh ./scripts/test-dotnet.ps1 -Project compiler`：**2359/2359 通过**
 
 ## 近期推进信号（截至 2026-04-20）
 
@@ -70,6 +75,7 @@
   - `Jazor.VueHost -> Jolt` 的命名收口与文档同步
   - RazorVue manifest / SourceMap 共享基元上提到 `Jazor.Common`
   - Deno worker 并发隔离、`stderr` 可观测性与 LSP queued cancel 语义修复
+  - `.jazor` 智能感知阶段对标准 Razor 的直接复用，以及 builtin 指令补全面收窄到 `@module`
 
 ## 下一步行动
 
@@ -85,6 +91,7 @@
 3. **LSP 收敛与扩展（持续项）**
    - 继续修正跨 lane supplement 的一致性和保守边界
    - 明确哪些能力是"native first"，哪些由 host 负责补桥接
+   - 持续避免在 LSP 阶段重复实现 Razor 已提供的标准语义与指令补全
 
 4. **生态拓展（后续项）**
    - 在最小 VS Code 集成骨架基础上补 LanguageClient 传输层与发布链路
@@ -95,3 +102,4 @@
 - 文档与实现迭代速度不一致时，最容易造成阶段误读；应优先维护 repo-level 状态页
 - 需持续防止"临时 fallback 重新进入主路径"，保持前置硬化优先
 - 构建与 LSP 并行演进时，需持续防止"测试路径与真实路径分叉"
+- 需持续区分 compile 与 LSP 的职责边界，避免把编译期定制错误地下沉到智能感知阶段
