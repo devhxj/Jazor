@@ -1,40 +1,54 @@
 # Jazor 文档中心
 
-## 恢复工作的唯一路径
+## 两条技术线路
 
-**从这里开始** → [工作流总览](./workstream-dashboard.md)
+| 线路 | 模式 | 说明 |
+|------|------|------|
+| **RazorVue** | 库模式 | Source Generator 驱动，不使用 .vue SFC，编译时转换 |
+| **VueHost** | 全功能模式 | 类似 Vite，支持 .jazor + .vue SFC，LSP + HMR + Debug + Build |
 
-工作流总览会告诉你：
-- 每个工作流现在在哪个阶段
-- 下一步该做什么
-- 哪些工作流可以并行，哪些有依赖关系
+## 导航
 
----
+| 分类 | 说明 | 入口 |
+|------|------|------|
+| **目标** | 为什么做、解决什么问题、大致思路 | [01-目标/](./01-目标/README.md) |
+| **计划** | WBS、里程碑、阶段拆分 | [02-计划/](./02-计划/README.md) |
+| **完成** | 评审结果、状态快照 | [03-完成/](./03-完成/README.md) |
+| **补充** | 继往开来、治理规则 | [04-补充/](./04-补充/README.md) |
+| **遗弃** | 已废弃的历史材料 | [05-遗弃/](./05-遗弃/README.md) |
 
-## 文档分层
+## 按项目结构对照
 
-| 目录 | 作用 | 什么时候看 |
-|------|------|-----------|
-| `workstream-dashboard.md` | 唯一的状态总览 | **每次恢复工作时先看这个** |
-| `status/` | 每个工作流的详细状态快照 | 需要深入了解某个工作流时 |
-| `architecture/` | 长期有效的架构和规范参考 | 需要查阅稳定参考时 |
-| `archive/` | 历史材料和归档文档 | 查老账时 |
-| `superpowers/plans/` | 执行级的详细计划文档 | 准备开始实施时 |
-| `guides/` | 文档治理规则 | 维护文档时 |
+| 文档目录 | 对应源码 |
+|---------|---------|
+| **01-目标** | |
+| `01-目标/ecmascript/` | `src/ECMAScript/` |
+| `01-目标/compiler/` | `src/Jazor.Compiler/` 架构与规范 |
+| `01-目标/compiler/semantic-walker/` | `src/Jazor.Compiler/` SemanticWalker |
+| `01-目标/compiler/sourcemap/` | 跨模块 SourceMap |
+| `01-目标/compiler/emit/` | `src/Jazor.Emit/` |
+| `01-目标/clr/` | `src/Jazor.CLR/` + Generator |
+| `01-目标/analyzer/` | `src/Jazor.Analyzer/` |
+| `01-目标/webidl/` | `src/ECMAScript.WebIDL.Generator/` |
+| `01-目标/razor/` | `src/Jazor.Razor/` |
+| `01-目标/razorvue/` | `src/Jazor.RazorVue/`（库模式 + Vuetify） |
+| `01-目标/vuehost/` | `src/Jazor.VueHost/`（全功能模式） |
+| `01-目标/common/` | `src/Jazor.Common/` + `src/Jazor.Name/` |
+| `01-目标/tools/` | `src/Jazor/` + VSCode + Test |
+| **02-计划** | |
+| `02-计划/vuehost/` | `src/Jazor.VueHost/`（Phase 1–7） |
+| `02-计划/compiler/` | `src/Jazor.Compiler/` 实施清单 |
+| **03-完成** | |
+| `03-完成/vuehost/` | `src/Jazor.VueHost/` |
+| `03-完成/razorvue/` | `src/Jazor.RazorVue/` |
+| `03-完成/compiler/` | `src/Jazor.Compiler/` |
+| `03-完成/emit/` | `src/Jazor.Emit/` |
 
----
+## 快速入口
 
-## 文档治理规则
-
-详见 [documentation-governance.md](./guides/documentation-governance.md)
-
----
-
-## 子系统深度文档
-
-有些子系统的文档直接放在源码旁边，不在 `docs/` 重复：
-
-- [Jazor.Compiler 文档索引](../src/Jazor.Compiler/doc/README.md)
-- [Jazor.Emit 文档索引](../src/Jazor.Emit/doc/README.md)
-
-原则：repo-level 文档负责桥接和收口，子系统局部文档负责深度内容，已经成熟的局部文档集，不在顶层重复抄正文。
+- 恢复工作 → [02-计划/workstream-dashboard.md](./02-计划/workstream-dashboard.md)
+- VueHost 进度 → [03-完成/vuehost/completion-analysis.md](./03-完成/vuehost/completion-analysis.md)
+- 编译器架构 → [01-目标/compiler/ArchitectureOverview.Simplified.md](./01-目标/compiler/ArchitectureOverview.Simplified.md)
+- 白名单机制 → [01-目标/clr/](./01-目标/clr/README.md)
+- RazorVue 库模式 → [01-目标/razorvue/](./01-目标/razorvue/README.md)
+- VueHost 全功能模式 → [01-目标/vuehost/](./01-目标/vuehost/README.md)
