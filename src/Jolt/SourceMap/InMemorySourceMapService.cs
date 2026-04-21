@@ -77,6 +77,7 @@ internal sealed class InMemorySourceMapService : ISourceMapService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(sourcePath);
 
+        var normalizedSourcePath = NormalizePath(sourcePath);
         RegisteredSourceMap[] sourceMaps;
         lock (_gate)
         {
@@ -86,25 +87,15 @@ internal sealed class InMemorySourceMapService : ISourceMapService
         Candidate? bestCandidate = null;
         foreach (var sourceMap in sourceMaps)
         {
-            foreach (var segment in sourceMap.Segments)
+            foreach (var (matchedSourcePath, segment) in sourceMap.GetSegmentsForSourcePath(normalizedSourcePath))
             {
-                if (segment.SourceIndex < 0 || segment.SourceIndex >= sourceMap.Sources.Count)
-                {
-                    continue;
-                }
-
-                var source = sourceMap.Sources[segment.SourceIndex];
-                if (!PathMatches(source.Path, sourcePath))
-                {
-                    continue;
-                }
-
                 var candidate = new Candidate(
                     sourceMap.GeneratedPath,
                     segment.GeneratedLine,
                     segment.GeneratedColumn,
                     segment.SourceLine - line,
-                    segment.SourceColumn - column);
+                    segment.SourceColumn - column,
+                    Math.Abs(matchedSourcePath.Length - normalizedSourcePath.Length));
                 if (bestCandidate is null || candidate.CompareTo(bestCandidate.Value) < 0)
                 {
                     bestCandidate = candidate;
@@ -178,11 +169,41 @@ internal sealed class InMemorySourceMapService : ISourceMapService
         var mappings = root.TryGetProperty("mappings", out var mappingsElement)
             ? mappingsElement.GetString() ?? string.Empty
             : string.Empty;
+        var segments = DecodeMappings(mappings);
         return new RegisteredSourceMap(
             NormalizePath(generatedPath),
             sourceMapJson,
             sources.ToArray(),
-            DecodeMappings(mappings));
+            segments,
+            CreateSegmentsBySourcePath(sources, segments));
+    }
+
+    private static IReadOnlyDictionary<string, IReadOnlyList<RegisteredSegment>> CreateSegmentsBySourcePath(
+        IReadOnlyList<RegisteredSource> sources,
+        IReadOnlyList<RegisteredSegment> segments)
+    {
+        var segmentsBySourcePath = new Dictionary<string, List<RegisteredSegment>>(StringComparer.OrdinalIgnoreCase);
+        foreach (var segment in segments)
+        {
+            if (segment.SourceIndex < 0 || segment.SourceIndex >= sources.Count)
+            {
+                continue;
+            }
+
+            var normalizedSourcePath = NormalizePath(sources[segment.SourceIndex].Path);
+            if (!segmentsBySourcePath.TryGetValue(normalizedSourcePath, out var sourceSegments))
+            {
+                sourceSegments = new List<RegisteredSegment>();
+                segmentsBySourcePath[normalizedSourcePath] = sourceSegments;
+            }
+
+            sourceSegments.Add(segment);
+        }
+
+        return segmentsBySourcePath.ToDictionary(
+            static entry => entry.Key,
+            static entry => (IReadOnlyList<RegisteredSegment>)entry.Value,
+            StringComparer.OrdinalIgnoreCase);
     }
 
     private static IReadOnlyList<RegisteredSegment> DecodeMappings(string mappings)
@@ -366,14 +387,43 @@ internal sealed class InMemorySourceMapService : ISourceMapService
         string GeneratedPath,
         string RawJson,
         IReadOnlyList<RegisteredSource> Sources,
-        IReadOnlyList<RegisteredSegment> Segments);
+        IReadOnlyList<RegisteredSegment> Segments,
+        IReadOnlyDictionary<string, IReadOnlyList<RegisteredSegment>> SegmentsBySourcePath)
+    {
+        public IEnumerable<(string SourcePath, RegisteredSegment Segment)> GetSegmentsForSourcePath(string sourcePath)
+        {
+            if (SegmentsBySourcePath.TryGetValue(sourcePath, out var directSegments))
+            {
+                foreach (var directSegment in directSegments)
+                {
+                    yield return (sourcePath, directSegment);
+                }
+
+                yield break;
+            }
+
+            foreach (var entry in SegmentsBySourcePath)
+            {
+                if (!PathMatches(entry.Key, sourcePath))
+                {
+                    continue;
+                }
+
+                foreach (var segment in entry.Value)
+                {
+                    yield return (entry.Key, segment);
+                }
+            }
+        }
+    }
 
     private readonly record struct Candidate(
         string GeneratedPath,
         int GeneratedLine,
         int GeneratedColumn,
         int LineDelta,
-        int ColumnDelta) : IComparable<Candidate>
+        int ColumnDelta,
+        int PathSpecificityDelta) : IComparable<Candidate>
     {
         public int CompareTo(Candidate other)
         {
@@ -396,6 +446,12 @@ internal sealed class InMemorySourceMapService : ISourceMapService
             var forwardColumnPenalty = ColumnDelta >= 0 ? ColumnDelta : int.MaxValue / 2 + Math.Abs(ColumnDelta);
             var otherForwardColumnPenalty = other.ColumnDelta >= 0 ? other.ColumnDelta : int.MaxValue / 2 + Math.Abs(other.ColumnDelta);
             comparison = forwardColumnPenalty.CompareTo(otherForwardColumnPenalty);
+            if (comparison != 0)
+            {
+                return comparison;
+            }
+
+            comparison = PathSpecificityDelta.CompareTo(other.PathSpecificityDelta);
             if (comparison != 0)
             {
                 return comparison;

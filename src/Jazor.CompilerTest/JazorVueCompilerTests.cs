@@ -626,6 +626,83 @@ public sealed class JazorVueCompilerTests
     }
 
     [TestMethod]
+    public void JazorVue_Compiler_ExtractsMethodBodiesWithoutTruncatingOnBracesInsideStringsAndComments()
+    {
+        var source = """
+            <template>
+              <div>{{ count }}</div>
+            </template>
+
+            @code {
+                [State] private int count = 0;
+
+                public void Refresh()
+                {
+                    var json = "{";
+                    // }
+                    /* { } */
+                    if (count == 0)
+                    {
+                        count++;
+                    }
+
+                    count++;
+                }
+
+                public void Reset()
+                {
+                    count = 0;
+                }
+            }
+            """;
+
+        var parser = new JazorVueParser();
+        var compiler = new JazorVueCompiler();
+        var document = parser.Parse("Counter.jazor", source);
+        var result = compiler.Compile(document);
+
+        StringAssert.Contains(result.GeneratedVueText, "function refresh()");
+        StringAssert.Contains(result.GeneratedVueText, "let json = \"{\";");
+        StringAssert.Contains(result.GeneratedVueText, "if (count.value == 0)");
+        Assert.AreEqual(2, CountOccurrences(result.GeneratedVueText, "count.value++;"));
+        StringAssert.Contains(result.GeneratedVueText, "function reset()");
+        StringAssert.Contains(result.GeneratedVueText, "count.value = 0;");
+    }
+
+    [TestMethod]
+    public void JazorVue_Compiler_DoesNotRewriteSpecialTokensInsideStringLiterals()
+    {
+        var source = """
+            <template>
+              <button @click="refreshAsync()">{{ title }}</button>
+            </template>
+
+            @code {
+                [Prop] public string? Title { get; set; }
+
+                public async Task RefreshAsync()
+                {
+                    var literal = "this.Title|string.Empty|Task.CompletedTask|new InvalidOperationException(";
+                    var actual = this.Title ?? string.Empty;
+                    await Task.CompletedTask;
+                    throw new InvalidOperationException("boom");
+                }
+            }
+            """;
+
+        var parser = new JazorVueParser();
+        var compiler = new JazorVueCompiler();
+        var document = parser.Parse("Counter.jazor", source);
+        var result = compiler.Compile(document);
+
+        StringAssert.Contains(result.GeneratedVueText, "let literal = \"this.Title|string.Empty|Task.CompletedTask|new InvalidOperationException(\";");
+        StringAssert.Contains(result.GeneratedVueText, "let actual = title.value ?? \"\";");
+        StringAssert.Contains(result.GeneratedVueText, "await Promise.resolve();");
+        StringAssert.Contains(result.GeneratedVueText, "throw new Error(\"boom\");");
+        Assert.IsFalse(result.GeneratedVueText.Contains("\"title.value|\"\"|Promise.resolve()|new Error(\"", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
     public void JazorVue_Parser_ParsesDefaultNamespaceAndNamedAliasBindings()
     {
         var source = """
@@ -858,6 +935,19 @@ public sealed class JazorVueCompilerTests
         var path = Path.Combine(Path.GetTempPath(), "JazorVueCompilerTests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(path);
         return path;
+    }
+
+    private static int CountOccurrences(string text, string value)
+    {
+        var count = 0;
+        var searchIndex = 0;
+        while ((searchIndex = text.IndexOf(value, searchIndex, StringComparison.Ordinal)) >= 0)
+        {
+            count++;
+            searchIndex += value.Length;
+        }
+
+        return count;
     }
 
     private static void AssertGeneratedLineHasStableColumnZeroAnchor(

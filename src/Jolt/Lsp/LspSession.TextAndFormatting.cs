@@ -98,16 +98,14 @@ internal sealed partial class LspSession
         }
 
         var ranges = new List<LspRange>();
-        foreach (Match match in TagNamePattern.Matches(text))
+        foreach (var tag in EnumerateTagNameSpans(text))
         {
-            var nameGroup = match.Groups["name"];
-            if (!nameGroup.Success
-                || !string.Equals(nameGroup.Value, tagName, StringComparison.Ordinal))
+            if (!string.Equals(tag.Name, tagName, StringComparison.Ordinal))
             {
                 continue;
             }
 
-            ranges.Add(LspProtocolHelpers.ToRange(text, nameGroup.Index, nameGroup.Length));
+            ranges.Add(LspProtocolHelpers.ToRange(text, tag.Index, tag.Length));
         }
 
         return ranges
@@ -124,26 +122,54 @@ internal sealed partial class LspSession
         out string tagName)
     {
         var offset = LspProtocolHelpers.GetOffset(text, position);
-        foreach (Match match in TagNamePattern.Matches(text))
+        foreach (var tag in EnumerateTagNameSpans(text))
         {
-            var nameGroup = match.Groups["name"];
-            if (!nameGroup.Success)
+            if (offset < tag.Index || offset > tag.Index + tag.Length)
             {
                 continue;
             }
 
-            if (offset < nameGroup.Index || offset > nameGroup.Index + nameGroup.Length)
-            {
-                continue;
-            }
-
-            tagName = nameGroup.Value;
+            tagName = tag.Name;
             return true;
         }
 
         tagName = string.Empty;
         return false;
     }
+
+    private static IEnumerable<(int Index, int Length, string Name)> EnumerateTagNameSpans(string text)
+    {
+        for (var index = 0; index < text.Length; index++)
+        {
+            if (text[index] != '<')
+            {
+                continue;
+            }
+
+            var nameStart = index + 1;
+            if (nameStart < text.Length && text[nameStart] == '/')
+            {
+                nameStart++;
+            }
+
+            if (nameStart >= text.Length || !char.IsLetter(text[nameStart]))
+            {
+                continue;
+            }
+
+            var nameEnd = nameStart + 1;
+            while (nameEnd < text.Length && IsTagNameCharacter(text[nameEnd]))
+            {
+                nameEnd++;
+            }
+
+            yield return (nameStart, nameEnd - nameStart, text[nameStart..nameEnd]);
+            index = nameEnd - 1;
+        }
+    }
+
+    private static bool IsTagNameCharacter(char character)
+        => char.IsLetterOrDigit(character) || character is '_' or '-' or ':';
 
     private static string FormatText(
         string text,

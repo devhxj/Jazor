@@ -364,7 +364,17 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
                 }
             }
 
-            builder.Append(string.Join(Environment.NewLine, _standardErrorLines));
+            var isFirstLine = true;
+            foreach (var standardErrorLine in _standardErrorLines)
+            {
+                if (!isFirstLine)
+                {
+                    builder.AppendLine();
+                }
+
+                builder.Append(standardErrorLine);
+                isFirstLine = false;
+            }
             return builder.ToString();
         }
     }

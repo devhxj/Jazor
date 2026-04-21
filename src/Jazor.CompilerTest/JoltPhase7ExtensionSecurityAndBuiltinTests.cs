@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -1314,6 +1315,100 @@ public sealed class JoltPhase7ExtensionSecurityAndBuiltinTests
     }
 
     [TestMethod]
+    [DoNotParallelize]
+    public async Task ExtensionLoader_LoadUserExtensionsAsync_WithProcessIsolatedWorkerRepeatedExit_TripsRestartCircuit()
+    {
+        var sandbox = CreateExtensionSandbox();
+        using var maxRestartsScope = new EnvironmentVariableScope("JOLT_EXTENSION_WORKER_MAX_RESTARTS", "1");
+        using var restartWindowScope = new EnvironmentVariableScope("JOLT_EXTENSION_WORKER_RESTART_WINDOW_MS", "1000");
+        using var restartDelayScope = new EnvironmentVariableScope("JOLT_EXTENSION_WORKER_RESTART_BASE_DELAY_MS", "1");
+        try
+        {
+            using var signer = new ManifestSigner("phase7-process-worker-circuit-key");
+            WriteManifest(
+                sandbox.ExtensionDirectory,
+                id: ManifestLoadableTestExtension.ExtensionId,
+                assembly: sandbox.AssemblyFileName,
+                type: typeof(ManifestLoadableTestExtension).FullName!,
+                assemblySha256: sandbox.AssemblySha256,
+                providers: ["hover", "completion"],
+                ioPermission: new ExtensionIoPermissionManifest
+                {
+                    Level = ExtensionHostOptions.IoCapabilityRead
+                },
+                processIsolation: true,
+                signer: signer,
+                settings: new Dictionary<string, string>
+                {
+                    ["completionExitMode"] = "always"
+                });
+
+            var registry = new ExtensionRegistry();
+            await using var loader = new ExtensionLoader(registry);
+            await loader.LoadUserExtensionsAsync(
+                CreateHostOptions(
+                    sandbox.RootDirectory,
+                    sandbox.ExtensionsDirectory,
+                    trustedPublicKeys: signer.TrustedPublicKeys,
+                    enforceProviderPermissions: true),
+                CancellationToken.None);
+
+            Assert.AreEqual(1, registry.GetExtensions().Count);
+
+            var workspaceStore = new InMemoryWorkspaceStore();
+            var virtualDocumentRegistry = new InMemoryVirtualDocumentRegistry();
+            var documentPath = Path.Combine(sandbox.RootDirectory, "ProcessIsolatedRestartCircuit.jazor");
+            await workspaceStore.UpsertDocumentAsync(
+                new DocumentSnapshot(documentPath, DocumentKind.Jazor, "@", version: "1"),
+                CancellationToken.None);
+
+            using var outputStream = new MemoryStream();
+            var session = CreateSession(
+                workspaceStore,
+                virtualDocumentRegistry,
+                [new EmptyJazorLane()],
+                outputStream,
+                registry);
+
+            var completionResponse = await session.HandleRequestAsync(
+                new LspRequestMessage
+                {
+                    Id = 3117,
+                    Method = "textDocument/completion",
+                    Params = new LspCompletionParams
+                    {
+                        TextDocument = new LspTextDocumentIdentifier
+                        {
+                            Uri = LspProtocolHelpers.ToDocumentUri(documentPath)
+                        },
+                        Position = new LspPosition { Line = 0, Character = 1 }
+                    }
+                },
+                CancellationToken.None);
+
+            Assert.IsNotNull(completionResponse);
+            Assert.IsNull(completionResponse!.Error);
+            var completionItems = completionResponse.Result as IReadOnlyList<LspCompletionItem>;
+            Assert.IsNotNull(completionItems);
+            Assert.IsFalse(completionItems.Any(static item => string.Equals(item.Label, "manifest-loadable-item", StringComparison.Ordinal)));
+
+            var providerHealth = registry.GetProviderHealth()
+                .Single(static item =>
+                    string.Equals(item.ProviderName, "ManifestLoadableCompletionProvider", StringComparison.Ordinal)
+                    && string.Equals(item.Capability, "completion", StringComparison.Ordinal));
+            Assert.IsTrue(providerHealth.FailureCount >= 1);
+            StringAssert.Contains(
+                providerHealth.LastErrorMessage ?? string.Empty,
+                "restart circuit",
+                StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            sandbox.Dispose();
+        }
+    }
+
+    [TestMethod]
     public async Task ExtensionLoader_LoadUserExtensionsAsync_WithProcessIsolatedIoNone_DeniesProviderInvocationAtRuntime()
     {
         var sandbox = CreateExtensionSandbox();
@@ -1752,6 +1847,7 @@ public sealed class JoltPhase7ExtensionSecurityAndBuiltinTests
     }
 
     [TestMethod]
+    [DoNotParallelize]
     public async Task ExtensionLoader_LoadUserExtensionsAsync_WithProcessIsolatedWorkerBootstrapTimeout_RejectsExtension()
     {
         var sandbox = CreateExtensionSandbox();
@@ -1802,6 +1898,7 @@ public sealed class JoltPhase7ExtensionSecurityAndBuiltinTests
     }
 
     [TestMethod]
+    [DoNotParallelize]
     public async Task ExtensionWorkerServer_Invoke_WithSlowProvider_ReturnsTimeoutError()
     {
         var sandbox = CreateExtensionSandbox();
@@ -3452,6 +3549,7 @@ public sealed class ManifestLoadableTestExtension : IExtension, ILspHoverProvide
         Id: ExtensionId,
         Name: "Manifest Loadable Test Extension",
         Version: "1.0.0");
+    private bool _exitOnCompletion;
 
     ExtensionMetadata IExtension.Metadata => MetadataValue;
 
@@ -3464,7 +3562,11 @@ public sealed class ManifestLoadableTestExtension : IExtension, ILspHoverProvide
     int ILspCompletionProvider.Priority => 10;
 
     ValueTask IExtension.InitializeAsync(ExtensionContext context, CancellationToken cancellationToken)
-        => ValueTask.CompletedTask;
+    {
+        _exitOnCompletion = context.Settings.TryGetValue("completionExitMode", out var exitMode)
+            && string.Equals(exitMode, "always", StringComparison.OrdinalIgnoreCase);
+        return ValueTask.CompletedTask;
+    }
 
     ValueTask IExtension.ActivateAsync(CancellationToken cancellationToken)
         => ValueTask.CompletedTask;
@@ -3491,6 +3593,12 @@ public sealed class ManifestLoadableTestExtension : IExtension, ILspHoverProvide
         LspCompletionProviderContext context,
         CancellationToken cancellationToken)
     {
+        if (_exitOnCompletion)
+        {
+            Process.GetCurrentProcess().Kill();
+            return ValueTask.FromResult<IReadOnlyList<LspCompletionItem>>(Array.Empty<LspCompletionItem>());
+        }
+
         return ValueTask.FromResult<IReadOnlyList<LspCompletionItem>>(
         [
             new LspCompletionItem

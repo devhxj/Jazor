@@ -147,16 +147,46 @@ internal sealed class ExtensionLoader : IAsyncDisposable
             return;
         }
 
+        var unloadTrackers = collectibleContexts
+            .Select(static context => new WeakReference(context, trackResurrection: false))
+            .ToArray();
+
         foreach (var collectibleContext in collectibleContexts)
         {
             collectibleContext.Unload();
         }
 
         // Force finalization cycle so collectible contexts can fully unload and release file handles.
-        for (var cycle = 0; cycle < 3; cycle++)
+        for (var cycle = 0; cycle < 5; cycle++)
         {
-            GC.Collect();
+            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
             GC.WaitForPendingFinalizers();
+            if (unloadTrackers.All(static tracker => !tracker.IsAlive))
+            {
+                return;
+            }
+        }
+
+        for (var index = 0; index < unloadTrackers.Length; index++)
+        {
+            if (!unloadTrackers[index].IsAlive)
+            {
+                continue;
+            }
+
+            WriteUnloadWarning(collectibleContexts[index].Name ?? "<unnamed>");
+        }
+    }
+
+    private static void WriteUnloadWarning(string contextName)
+    {
+        try
+        {
+            Console.Error.WriteLine(
+                $"[jolt][extensions][warning] Collectible extension load context '{contextName}' did not unload after forced GC cycles.");
+        }
+        catch
+        {
         }
     }
 

@@ -294,15 +294,13 @@ public sealed class JoltService : IJoltService, IJoltRpcService, IFrontendContex
 
         foreach (var document in openDocuments.Where(static document => document.DocumentKind == DocumentKind.Jazor))
         {
-            var relatedDocuments = await ResolveRelatedDocumentsAsync(
+            var referencesChangedPath = await _relatedDocumentResolver.ReferencesPathAsync(
                 document,
+                normalizedChangedPath,
                 Array.Empty<string>(),
+                openDocuments,
                 cancellationToken);
-            if (relatedDocuments.Any(candidate =>
-                string.Equals(
-                    NormalizeComparablePath(candidate.DocumentPath),
-                    normalizedChangedPath,
-                    StringComparison.OrdinalIgnoreCase)))
+            if (referencesChangedPath)
             {
                 affectedJazorDocuments.Add(NormalizeComparablePath(document.DocumentPath));
             }

@@ -697,6 +697,11 @@ public sealed partial class JazorVueCompiler
         var depth = 1;
         for (var index = bodyStart; index < code.Length; index++)
         {
+            if (TrySkipCodeLiteralOrComment(code, ref index))
+            {
+                continue;
+            }
+
             switch (code[index])
             {
                 case '{':
@@ -975,18 +980,23 @@ public sealed partial class JazorVueCompiler
         LoweringContext loweringContext,
         ISet<string> shadowedNames)
     {
-        var rewritten = expression.Replace("this.", string.Empty, StringComparison.Ordinal)
-            .Replace("string.Empty", "\"\"", StringComparison.Ordinal)
-            .Replace("Task.CompletedTask", "Promise.resolve()", StringComparison.Ordinal);
-        rewritten = ExceptionConstructorPattern.Replace(
-            rewritten,
-            static match =>
+        var rewritten = RewriteCodeSegments(
+            expression,
+            static segment =>
             {
-                var typeName = match.Groups["type"].Value;
-                var simpleTypeName = typeName[(typeName.LastIndexOf('.') + 1)..];
-                return simpleTypeName.EndsWith("Exception", StringComparison.Ordinal)
-                    ? "new Error("
-                    : match.Value;
+                var updatedSegment = segment.Replace("this.", string.Empty, StringComparison.Ordinal)
+                    .Replace("string.Empty", "\"\"", StringComparison.Ordinal)
+                    .Replace("Task.CompletedTask", "Promise.resolve()", StringComparison.Ordinal);
+                return ExceptionConstructorPattern.Replace(
+                    updatedSegment,
+                    static match =>
+                    {
+                        var typeName = match.Groups["type"].Value;
+                        var simpleTypeName = typeName[(typeName.LastIndexOf('.') + 1)..];
+                        return simpleTypeName.EndsWith("Exception", StringComparison.Ordinal)
+                            ? "new Error("
+                            : match.Value;
+                    });
             });
         rewritten = RewriteInterpolatedStrings(rewritten, loweringContext, shadowedNames);
         return RewriteIdentifiers(rewritten, loweringContext, shadowedNames);
@@ -1105,13 +1115,12 @@ public sealed partial class JazorVueCompiler
         var builder = new StringBuilder(value.Length);
         for (var index = 0; index < value.Length;)
         {
-            var character = value[index];
-            if (character is '"' or '\'' or '`')
+            if (TryAppendSkippedCodeLiteralOrComment(builder, value, ref index))
             {
-                AppendStringLiteral(builder, value, ref index, character);
                 continue;
             }
 
+            var character = value[index];
             if (IsIdentifierStart(character))
             {
                 var start = index;
@@ -1143,6 +1152,36 @@ public sealed partial class JazorVueCompiler
         return builder.ToString();
     }
 
+    private static string RewriteCodeSegments(string value, Func<string, string> rewriteSegment)
+    {
+        var builder = new StringBuilder(value.Length);
+        var segmentStart = 0;
+        for (var index = 0; index < value.Length; index++)
+        {
+            var skippedEnd = index;
+            if (!TrySkipCodeLiteralOrComment(value, ref skippedEnd))
+            {
+                continue;
+            }
+
+            if (index > segmentStart)
+            {
+                builder.Append(rewriteSegment(value[segmentStart..index]));
+            }
+
+            builder.Append(value, index, skippedEnd - index + 1);
+            index = skippedEnd;
+            segmentStart = index + 1;
+        }
+
+        if (segmentStart < value.Length)
+        {
+            builder.Append(rewriteSegment(value[segmentStart..]));
+        }
+
+        return builder.ToString();
+    }
+
     private static bool IsMemberAccessIdentifier(string value, int startIndex)
     {
         for (var index = startIndex - 1; index >= 0; index--)
@@ -1158,21 +1197,17 @@ public sealed partial class JazorVueCompiler
         return false;
     }
 
-    private static void AppendStringLiteral(StringBuilder builder, string value, ref int index, char delimiter)
+    private static bool TryAppendSkippedCodeLiteralOrComment(StringBuilder builder, string value, ref int index)
     {
-        builder.Append(delimiter);
-        index++;
-        while (index < value.Length)
+        var skippedEnd = index;
+        if (!TrySkipCodeLiteralOrComment(value, ref skippedEnd))
         {
-            builder.Append(value[index]);
-            if (value[index] == delimiter && value[index - 1] != '\\')
-            {
-                index++;
-                return;
-            }
-
-            index++;
+            return false;
         }
+
+        builder.Append(value, index, skippedEnd - index + 1);
+        index = skippedEnd + 1;
+        return true;
     }
 
     private static bool IsIdentifierStart(char character)
@@ -1225,9 +1260,14 @@ public sealed partial class JazorVueCompiler
     private static int CountCharacters(string value, char character)
     {
         var count = 0;
-        foreach (var currentCharacter in value)
+        for (var index = 0; index < value.Length; index++)
         {
-            if (currentCharacter == character)
+            if (TrySkipCodeLiteralOrComment(value, ref index))
+            {
+                continue;
+            }
+
+            if (value[index] == character)
             {
                 count++;
             }
@@ -1235,6 +1275,9 @@ public sealed partial class JazorVueCompiler
 
         return count;
     }
+
+    private static bool TrySkipCodeLiteralOrComment(string text, ref int index)
+        => RazorBlockDirectiveLocator.TrySkipCodeLiteralOrComment(text, ref index);
 
     private static string NormalizeWhitespace(string value)
         => string.Join(" ", value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));

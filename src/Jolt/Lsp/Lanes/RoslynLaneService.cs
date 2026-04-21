@@ -32,24 +32,12 @@ internal sealed class RoslynLaneService : ILspLane
         ProjectionTarget projectionTarget,
         CancellationToken cancellationToken)
     {
-        if (!IsCodeTarget(projectionTarget))
-        {
-            return null;
-        }
-
-        var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
-        var inProcResult = await _inProcCodeService.GetHoverAsync(document, position, openDocuments, cancellationToken);
-        if (inProcResult is null)
-        {
-            inProcResult = await _inProcCodeService.GetHoverAsync(document, position, cancellationToken);
-        }
-
-        if (inProcResult is not null)
-        {
-            return inProcResult;
-        }
-
-        return null;
+        return await ExecuteCodeNullableRequestAsync(
+            document,
+            projectionTarget,
+            cancellationToken,
+            (currentDocument, openDocuments, ct) => _inProcCodeService.GetHoverAsync(currentDocument, position, openDocuments, ct),
+            (currentDocument, ct) => _inProcCodeService.GetHoverAsync(currentDocument, position, ct));
     }
 
     public async ValueTask<IReadOnlyList<LspDocumentHighlight>> GetDocumentHighlightsAsync(
@@ -58,31 +46,19 @@ internal sealed class RoslynLaneService : ILspLane
         ProjectionTarget projectionTarget,
         CancellationToken cancellationToken)
     {
-        if (!IsCodeTarget(projectionTarget))
-        {
-            return Array.Empty<LspDocumentHighlight>();
-        }
-
-        var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
-        var inProcResult = await _inProcCodeService.GetDocumentHighlightsAsync(
+        return await ExecuteCodeListRequestAsync(
             document,
-            position,
-            openDocuments,
-            cancellationToken);
-        if (inProcResult.Count == 0)
-        {
-            inProcResult = await _inProcCodeService.GetDocumentHighlightsAsync(
-                document,
+            projectionTarget,
+            cancellationToken,
+            (currentDocument, openDocuments, ct) => _inProcCodeService.GetDocumentHighlightsAsync(
+                currentDocument,
                 position,
-                cancellationToken);
-        }
-
-        if (inProcResult.Count > 0)
-        {
-            return inProcResult;
-        }
-
-        return Array.Empty<LspDocumentHighlight>();
+                openDocuments,
+                ct),
+            (currentDocument, ct) => _inProcCodeService.GetDocumentHighlightsAsync(
+                currentDocument,
+                position,
+                ct));
     }
 
     public async ValueTask<IReadOnlyList<LspCompletionItem>> GetCompletionItemsAsync(
@@ -91,24 +67,19 @@ internal sealed class RoslynLaneService : ILspLane
         ProjectionTarget projectionTarget,
         CancellationToken cancellationToken)
     {
-        if (!IsCodeTarget(projectionTarget))
-        {
-            return Array.Empty<LspCompletionItem>();
-        }
-
-        var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
-        var inProcResult = await _inProcCodeService.GetCompletionItemsAsync(document, position, openDocuments, cancellationToken);
-        if (inProcResult.Count == 0)
-        {
-            inProcResult = await _inProcCodeService.GetCompletionItemsAsync(document, position, cancellationToken);
-        }
-
-        if (inProcResult.Count > 0)
-        {
-            return inProcResult;
-        }
-
-        return Array.Empty<LspCompletionItem>();
+        return await ExecuteCodeListRequestAsync(
+            document,
+            projectionTarget,
+            cancellationToken,
+            (currentDocument, openDocuments, ct) => _inProcCodeService.GetCompletionItemsAsync(
+                currentDocument,
+                position,
+                openDocuments,
+                ct),
+            (currentDocument, ct) => _inProcCodeService.GetCompletionItemsAsync(
+                currentDocument,
+                position,
+                ct));
     }
 
     public ValueTask<IReadOnlyList<LspDocumentSymbol>> GetDocumentSymbolsAsync(
@@ -145,24 +116,19 @@ internal sealed class RoslynLaneService : ILspLane
         ProjectionTarget projectionTarget,
         CancellationToken cancellationToken)
     {
-        if (!IsCodeTarget(projectionTarget))
-        {
-            return Array.Empty<LspLocation>();
-        }
-
-        var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
-        var inProcResult = await _inProcCodeService.GetDefinitionAsync(document, position, openDocuments, cancellationToken);
-        if (inProcResult.Count == 0)
-        {
-            inProcResult = await _inProcCodeService.GetDefinitionAsync(document, position, cancellationToken);
-        }
-
-        if (inProcResult.Count > 0)
-        {
-            return inProcResult;
-        }
-
-        return Array.Empty<LspLocation>();
+        return await ExecuteCodeListRequestAsync(
+            document,
+            projectionTarget,
+            cancellationToken,
+            (currentDocument, openDocuments, ct) => _inProcCodeService.GetDefinitionAsync(
+                currentDocument,
+                position,
+                openDocuments,
+                ct),
+            (currentDocument, ct) => _inProcCodeService.GetDefinitionAsync(
+                currentDocument,
+                position,
+                ct));
     }
 
     internal async ValueTask<IReadOnlyList<LspLocation>> GetTypeDefinitionAsync(
@@ -175,16 +141,18 @@ internal sealed class RoslynLaneService : ILspLane
             return Array.Empty<LspLocation>();
         }
 
-        var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
-        var inProcResult = await _inProcCodeService.GetTypeDefinitionAsync(document, position, openDocuments, cancellationToken);
-        if (inProcResult.Count == 0)
-        {
-            inProcResult = await _inProcCodeService.GetTypeDefinitionAsync(document, position, cancellationToken);
-        }
-
-        return inProcResult.Count > 0
-            ? inProcResult
-            : Array.Empty<LspLocation>();
+        return await ExecuteListRequestWithFallbackAsync(
+            document,
+            cancellationToken,
+            (currentDocument, openDocuments, ct) => _inProcCodeService.GetTypeDefinitionAsync(
+                currentDocument,
+                position,
+                openDocuments,
+                ct),
+            (currentDocument, ct) => _inProcCodeService.GetTypeDefinitionAsync(
+                currentDocument,
+                position,
+                ct));
     }
 
     internal async ValueTask<IReadOnlyList<LspCallHierarchyItem>> PrepareCallHierarchyAsync(
@@ -199,11 +167,6 @@ internal sealed class RoslynLaneService : ILspLane
 
         var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
         var inProcResult = await _inProcCodeService.PrepareCallHierarchyAsync(document, position, openDocuments, cancellationToken);
-        if (inProcResult.Count == 0)
-        {
-            inProcResult = await _inProcCodeService.PrepareCallHierarchyAsync(document, position, cancellationToken);
-        }
-
         return inProcResult.Count > 0
             ? inProcResult
             : Array.Empty<LspCallHierarchyItem>();
@@ -219,16 +182,18 @@ internal sealed class RoslynLaneService : ILspLane
             return Array.Empty<LspCallHierarchyIncomingCall>();
         }
 
-        var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
-        var inProcResult = await _inProcCodeService.GetIncomingCallsAsync(document, position, openDocuments, cancellationToken);
-        if (inProcResult.Count == 0)
-        {
-            inProcResult = await _inProcCodeService.GetIncomingCallsAsync(document, position, cancellationToken);
-        }
-
-        return inProcResult.Count > 0
-            ? inProcResult
-            : Array.Empty<LspCallHierarchyIncomingCall>();
+        return await ExecuteListRequestWithFallbackAsync(
+            document,
+            cancellationToken,
+            (currentDocument, openDocuments, ct) => _inProcCodeService.GetIncomingCallsAsync(
+                currentDocument,
+                position,
+                openDocuments,
+                ct),
+            (currentDocument, ct) => _inProcCodeService.GetIncomingCallsAsync(
+                currentDocument,
+                position,
+                ct));
     }
 
     internal async ValueTask<IReadOnlyList<LspCallHierarchyOutgoingCall>> GetOutgoingCallsAsync(
@@ -241,16 +206,18 @@ internal sealed class RoslynLaneService : ILspLane
             return Array.Empty<LspCallHierarchyOutgoingCall>();
         }
 
-        var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
-        var inProcResult = await _inProcCodeService.GetOutgoingCallsAsync(document, position, openDocuments, cancellationToken);
-        if (inProcResult.Count == 0)
-        {
-            inProcResult = await _inProcCodeService.GetOutgoingCallsAsync(document, position, cancellationToken);
-        }
-
-        return inProcResult.Count > 0
-            ? inProcResult
-            : Array.Empty<LspCallHierarchyOutgoingCall>();
+        return await ExecuteListRequestWithFallbackAsync(
+            document,
+            cancellationToken,
+            (currentDocument, openDocuments, ct) => _inProcCodeService.GetOutgoingCallsAsync(
+                currentDocument,
+                position,
+                openDocuments,
+                ct),
+            (currentDocument, ct) => _inProcCodeService.GetOutgoingCallsAsync(
+                currentDocument,
+                position,
+                ct));
     }
 
     internal async ValueTask<IReadOnlyList<LspTypeHierarchyItem>> PrepareTypeHierarchyAsync(
@@ -263,16 +230,18 @@ internal sealed class RoslynLaneService : ILspLane
             return Array.Empty<LspTypeHierarchyItem>();
         }
 
-        var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
-        var inProcResult = await _inProcCodeService.PrepareTypeHierarchyAsync(document, position, openDocuments, cancellationToken);
-        if (inProcResult.Count == 0)
-        {
-            inProcResult = await _inProcCodeService.PrepareTypeHierarchyAsync(document, position, cancellationToken);
-        }
-
-        return inProcResult.Count > 0
-            ? inProcResult
-            : Array.Empty<LspTypeHierarchyItem>();
+        return await ExecuteListRequestWithFallbackAsync(
+            document,
+            cancellationToken,
+            (currentDocument, openDocuments, ct) => _inProcCodeService.PrepareTypeHierarchyAsync(
+                currentDocument,
+                position,
+                openDocuments,
+                ct),
+            (currentDocument, ct) => _inProcCodeService.PrepareTypeHierarchyAsync(
+                currentDocument,
+                position,
+                ct));
     }
 
     internal async ValueTask<IReadOnlyList<LspTypeHierarchyItem>> GetTypeHierarchySuperTypesAsync(
@@ -285,16 +254,18 @@ internal sealed class RoslynLaneService : ILspLane
             return Array.Empty<LspTypeHierarchyItem>();
         }
 
-        var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
-        var inProcResult = await _inProcCodeService.GetTypeHierarchySuperTypesAsync(document, position, openDocuments, cancellationToken);
-        if (inProcResult.Count == 0)
-        {
-            inProcResult = await _inProcCodeService.GetTypeHierarchySuperTypesAsync(document, position, cancellationToken);
-        }
-
-        return inProcResult.Count > 0
-            ? inProcResult
-            : Array.Empty<LspTypeHierarchyItem>();
+        return await ExecuteListRequestWithFallbackAsync(
+            document,
+            cancellationToken,
+            (currentDocument, openDocuments, ct) => _inProcCodeService.GetTypeHierarchySuperTypesAsync(
+                currentDocument,
+                position,
+                openDocuments,
+                ct),
+            (currentDocument, ct) => _inProcCodeService.GetTypeHierarchySuperTypesAsync(
+                currentDocument,
+                position,
+                ct));
     }
 
     internal async ValueTask<IReadOnlyList<LspTypeHierarchyItem>> GetTypeHierarchySubTypesAsync(
@@ -307,16 +278,18 @@ internal sealed class RoslynLaneService : ILspLane
             return Array.Empty<LspTypeHierarchyItem>();
         }
 
-        var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
-        var inProcResult = await _inProcCodeService.GetTypeHierarchySubTypesAsync(document, position, openDocuments, cancellationToken);
-        if (inProcResult.Count == 0)
-        {
-            inProcResult = await _inProcCodeService.GetTypeHierarchySubTypesAsync(document, position, cancellationToken);
-        }
-
-        return inProcResult.Count > 0
-            ? inProcResult
-            : Array.Empty<LspTypeHierarchyItem>();
+        return await ExecuteListRequestWithFallbackAsync(
+            document,
+            cancellationToken,
+            (currentDocument, openDocuments, ct) => _inProcCodeService.GetTypeHierarchySubTypesAsync(
+                currentDocument,
+                position,
+                openDocuments,
+                ct),
+            (currentDocument, ct) => _inProcCodeService.GetTypeHierarchySubTypesAsync(
+                currentDocument,
+                position,
+                ct));
     }
 
     public async ValueTask<IReadOnlyList<LspLocation>> GetImplementationAsync(
@@ -325,24 +298,19 @@ internal sealed class RoslynLaneService : ILspLane
         ProjectionTarget projectionTarget,
         CancellationToken cancellationToken)
     {
-        if (!IsCodeTarget(projectionTarget))
-        {
-            return Array.Empty<LspLocation>();
-        }
-
-        var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
-        var inProcResult = await _inProcCodeService.GetImplementationAsync(document, position, openDocuments, cancellationToken);
-        if (inProcResult.Count == 0)
-        {
-            inProcResult = await _inProcCodeService.GetImplementationAsync(document, position, cancellationToken);
-        }
-
-        if (inProcResult.Count > 0)
-        {
-            return inProcResult;
-        }
-
-        return Array.Empty<LspLocation>();
+        return await ExecuteCodeListRequestAsync(
+            document,
+            projectionTarget,
+            cancellationToken,
+            (currentDocument, openDocuments, ct) => _inProcCodeService.GetImplementationAsync(
+                currentDocument,
+                position,
+                openDocuments,
+                ct),
+            (currentDocument, ct) => _inProcCodeService.GetImplementationAsync(
+                currentDocument,
+                position,
+                ct));
     }
 
     public async ValueTask<IReadOnlyList<LspLocation>> GetReferencesAsync(
@@ -352,33 +320,21 @@ internal sealed class RoslynLaneService : ILspLane
         ProjectionTarget projectionTarget,
         CancellationToken cancellationToken)
     {
-        if (!IsCodeTarget(projectionTarget))
-        {
-            return Array.Empty<LspLocation>();
-        }
-
-        var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
-        var inProcResult = await _inProcCodeService.GetReferencesAsync(
+        return await ExecuteCodeListRequestAsync(
             document,
-            position,
-            includeDeclaration,
-            openDocuments,
-            cancellationToken);
-        if (inProcResult.Count == 0)
-        {
-            inProcResult = await _inProcCodeService.GetReferencesAsync(
-                document,
+            projectionTarget,
+            cancellationToken,
+            (currentDocument, openDocuments, ct) => _inProcCodeService.GetReferencesAsync(
+                currentDocument,
                 position,
                 includeDeclaration,
-                cancellationToken);
-        }
-
-        if (inProcResult.Count > 0)
-        {
-            return inProcResult;
-        }
-
-        return Array.Empty<LspLocation>();
+                openDocuments,
+                ct),
+            (currentDocument, ct) => _inProcCodeService.GetReferencesAsync(
+                currentDocument,
+                position,
+                includeDeclaration,
+                ct));
     }
 
     public async ValueTask<LspWorkspaceEdit?> GetRenameAsync(
@@ -388,33 +344,21 @@ internal sealed class RoslynLaneService : ILspLane
         ProjectionTarget projectionTarget,
         CancellationToken cancellationToken)
     {
-        if (!IsCodeTarget(projectionTarget))
-        {
-            return null;
-        }
-
-        var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
-        var inProcResult = await _inProcCodeService.GetRenameAsync(
+        return await ExecuteCodeNullableRequestAsync(
             document,
-            position,
-            newName,
-            openDocuments,
-            cancellationToken);
-        if (inProcResult is null)
-        {
-            inProcResult = await _inProcCodeService.GetRenameAsync(
-                document,
+            projectionTarget,
+            cancellationToken,
+            (currentDocument, openDocuments, ct) => _inProcCodeService.GetRenameAsync(
+                currentDocument,
                 position,
                 newName,
-                cancellationToken);
-        }
-
-        if (inProcResult is not null)
-        {
-            return inProcResult;
-        }
-
-        return null;
+                openDocuments,
+                ct),
+            (currentDocument, ct) => _inProcCodeService.GetRenameAsync(
+                currentDocument,
+                position,
+                newName,
+                ct));
     }
 
     public async ValueTask<IReadOnlyList<LspCodeAction>> GetCodeActionsAsync(
@@ -435,4 +379,56 @@ internal sealed class RoslynLaneService : ILspLane
     private static bool IsCodeTarget(ProjectionTarget projectionTarget)
         => projectionTarget.LaneKind == LaneKind.Roslyn
             || projectionTarget.RegionKind == DocumentRegionKind.Code;
+
+    private async ValueTask<IReadOnlyList<T>> ExecuteCodeListRequestAsync<T>(
+        DocumentSnapshot document,
+        ProjectionTarget projectionTarget,
+        CancellationToken cancellationToken,
+        Func<DocumentSnapshot, IReadOnlyList<DocumentSnapshot>, CancellationToken, ValueTask<IReadOnlyList<T>>> withOpenDocuments,
+        Func<DocumentSnapshot, CancellationToken, ValueTask<IReadOnlyList<T>>> fallback)
+    {
+        if (!IsCodeTarget(projectionTarget))
+        {
+            return Array.Empty<T>();
+        }
+
+        return await ExecuteListRequestWithFallbackAsync(document, cancellationToken, withOpenDocuments, fallback);
+    }
+
+    private async ValueTask<IReadOnlyList<T>> ExecuteListRequestWithFallbackAsync<T>(
+        DocumentSnapshot document,
+        CancellationToken cancellationToken,
+        Func<DocumentSnapshot, IReadOnlyList<DocumentSnapshot>, CancellationToken, ValueTask<IReadOnlyList<T>>> withOpenDocuments,
+        Func<DocumentSnapshot, CancellationToken, ValueTask<IReadOnlyList<T>>> fallback)
+    {
+        var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
+        var inProcResult = await withOpenDocuments(document, openDocuments, cancellationToken);
+        if (inProcResult.Count > 0)
+        {
+            return inProcResult;
+        }
+
+        inProcResult = await fallback(document, cancellationToken);
+        return inProcResult.Count > 0
+            ? inProcResult
+            : Array.Empty<T>();
+    }
+
+    private async ValueTask<TResult?> ExecuteCodeNullableRequestAsync<TResult>(
+        DocumentSnapshot document,
+        ProjectionTarget projectionTarget,
+        CancellationToken cancellationToken,
+        Func<DocumentSnapshot, IReadOnlyList<DocumentSnapshot>, CancellationToken, ValueTask<TResult?>> withOpenDocuments,
+        Func<DocumentSnapshot, CancellationToken, ValueTask<TResult?>> fallback)
+        where TResult : class
+    {
+        if (!IsCodeTarget(projectionTarget))
+        {
+            return null;
+        }
+
+        var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
+        var inProcResult = await withOpenDocuments(document, openDocuments, cancellationToken);
+        return inProcResult ?? await fallback(document, cancellationToken);
+    }
 }

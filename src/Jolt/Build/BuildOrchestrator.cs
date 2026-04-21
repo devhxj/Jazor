@@ -25,12 +25,6 @@ internal sealed partial class BuildOrchestrator
     private static readonly Regex CssSourceMapCommentPattern = new(
         @"/\*#\s*sourceMappingURL=(?<value>[^*]+?)\s*\*/\s*$",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
-    private static readonly Regex DynamicImportPattern = new(
-        @"\bimport\s*\(\s*[""'](?<specifier>[^""']+)[""']\s*\)",
-        RegexOptions.Compiled | RegexOptions.Singleline);
-    private static readonly Regex BuiltChunkDynamicImportPattern = new(
-        @"\bimport\s*\(\s*(?<quote>[""'])(?<specifier>\.{1,2}/[^""']+?\.js)(?<query>\?[^""']*)?\k<quote>\s*\)",
-        RegexOptions.Compiled | RegexOptions.CultureInvariant);
     private static readonly StringComparer FilePathComparer = OperatingSystem.IsWindows()
         ? StringComparer.OrdinalIgnoreCase
         : StringComparer.Ordinal;
@@ -667,21 +661,26 @@ internal sealed partial class BuildOrchestrator
 
             var originalContent = await File.ReadAllTextAsync(chunkAbsolutePath, cancellationToken);
             var currentChunkDirectory = GetContainingDirectoryPath(chunkAbsolutePath);
-            var rewrittenContent = BuiltChunkDynamicImportPattern.Replace(
+            var rewrittenContent = JavaScriptModuleSpecifierScanner.RewriteDynamicImportExpressions(
                 originalContent,
-                match =>
+                specifier =>
                 {
-                    var specifier = match.Groups["specifier"].Value;
+                    if (!TryGetBuiltChunkDynamicImportPath(specifier.Value, out var specifierPath))
+                    {
+                        return null;
+                    }
+
                     var targetAbsolutePath = Path.GetFullPath(Path.Combine(
                         currentChunkDirectory,
-                        specifier.Replace('/', Path.DirectorySeparatorChar)));
+                        specifierPath.Replace('/', Path.DirectorySeparatorChar)));
                     var targetChunkFilePath = Path.GetRelativePath(context.RootDirectory, targetAbsolutePath).Replace('\\', '/');
                     if (!chunkCssByFilePath.TryGetValue(targetChunkFilePath, out var targetCssPaths) || targetCssPaths.Length == 0)
                     {
-                        return match.Value;
+                        return null;
                     }
 
-                    return CreateDynamicChunkCssImportExpression(match.Value, targetCssPaths);
+                    var originalImportExpression = originalContent.Substring(specifier.ExpressionStart, specifier.ExpressionLength);
+                    return CreateDynamicChunkCssImportExpression(originalImportExpression, targetCssPaths);
                 });
 
             if (string.Equals(originalContent, rewrittenContent, StringComparison.Ordinal))
@@ -719,17 +718,17 @@ internal sealed partial class BuildOrchestrator
             var currentChunkDirectory = GetContainingDirectoryPath(chunkAbsolutePath);
             var dynamicImports = new HashSet<string>(FilePathComparer);
 
-            foreach (Match match in BuiltChunkDynamicImportPattern.Matches(chunkContent))
+            foreach (var specifier in JavaScriptModuleSpecifierScanner.EnumerateSpecifiers(chunkContent)
+                         .Where(static specifier => specifier.Kind == JavaScriptModuleSpecifierKind.DynamicImport))
             {
-                var specifier = match.Groups["specifier"].Value;
-                if (string.IsNullOrWhiteSpace(specifier))
+                if (!TryGetBuiltChunkDynamicImportPath(specifier.Value, out var specifierPath))
                 {
                     continue;
                 }
 
                 var targetAbsolutePath = Path.GetFullPath(Path.Combine(
                     currentChunkDirectory,
-                    specifier.Replace('/', Path.DirectorySeparatorChar)));
+                    specifierPath.Replace('/', Path.DirectorySeparatorChar)));
                 dynamicImports.Add(Path.GetRelativePath(context.RootDirectory, targetAbsolutePath).Replace('\\', '/'));
             }
 
@@ -797,6 +796,14 @@ internal sealed partial class BuildOrchestrator
         }
 
         return cssClosureByChunk;
+    }
+
+    private static bool TryGetBuiltChunkDynamicImportPath(string specifier, out string path)
+    {
+        (path, _) = JavaScriptModuleSpecifierScanner.SplitPathAndSuffix(specifier);
+        return (path.StartsWith("./", StringComparison.Ordinal)
+                || path.StartsWith("../", StringComparison.Ordinal))
+            && path.EndsWith(".js", StringComparison.OrdinalIgnoreCase);
     }
 
     private static string CreateDynamicChunkCssImportExpression(

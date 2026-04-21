@@ -272,6 +272,7 @@ internal sealed class ChangeProcessor
                 && !path.EndsWith(".module.css", StringComparison.OrdinalIgnoreCase)))
         {
             var cssAffectedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var changedCssPaths = new HashSet<string>(changedPaths, StringComparer.OrdinalIgnoreCase);
             foreach (var changedPath in changedPaths)
             {
                 cssAffectedPaths.Add(changedPath);
@@ -281,9 +282,51 @@ internal sealed class ChangeProcessor
                 }
             }
 
+            var embeddedInlineStyleUpdates = new List<InlineStyleUpdate>();
+            var recompiledInlineStylePaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var affectedPath in cssAffectedPaths.Order(StringComparer.OrdinalIgnoreCase))
+            {
+                if (!IsInlineStyleModule(affectedPath)
+                    || !_compiler.TryGetCachedResult(affectedPath, out var previousResult)
+                    || previousResult is null
+                    || previousResult.IsError
+                    || !HasChangedEmbeddedStyleDependency(affectedPath, previousResult, changedCssPaths))
+                {
+                    continue;
+                }
+
+                var nextResult = await RecompileAsync(affectedPath, documentOverrides, cancellationToken);
+                if (nextResult.IsError)
+                {
+                    return CreateErrorResult(
+                        changedPaths,
+                        cssAffectedPaths.Order(StringComparer.OrdinalIgnoreCase).ToArray(),
+                        nextResult.ErrorMessage);
+                }
+
+                if (!string.Equals(previousResult.ModuleSignature, nextResult.ModuleSignature, StringComparison.Ordinal))
+                {
+                    return null;
+                }
+
+                recompiledInlineStylePaths.Add(affectedPath);
+                if (!string.Equals(previousResult.StyleContent, nextResult.StyleContent, StringComparison.Ordinal))
+                {
+                    embeddedInlineStyleUpdates.Add(
+                        new InlineStyleUpdate
+                        {
+                            TargetId = _moduleResolver.GetStyleTargetIdForAbsolutePath(affectedPath),
+                            Content = nextResult.StyleContent ?? string.Empty
+                        });
+                }
+            }
+
             foreach (var affectedPath in cssAffectedPaths)
             {
-                _compiler.Invalidate(affectedPath);
+                if (!recompiledInlineStylePaths.Contains(affectedPath))
+                {
+                    _compiler.Invalidate(affectedPath);
+                }
             }
 
             return new ChangeProcessingResult
@@ -294,7 +337,8 @@ internal sealed class ChangeProcessor
                 ChangedCssUrls = changedPaths
                     .Select(_moduleResolver.GetResolvedUrlForAbsolutePath)
                     .Order(StringComparer.OrdinalIgnoreCase)
-                    .ToArray()
+                    .ToArray(),
+                InlineStyleUpdates = embeddedInlineStyleUpdates
             };
         }
 
@@ -603,6 +647,33 @@ internal sealed class ChangeProcessor
 
         return true;
     }
+
+    private bool HasChangedEmbeddedStyleDependency(
+        string modulePath,
+        CompilationResult result,
+        IReadOnlySet<string> changedCssPaths)
+    {
+        foreach (var embeddedStyleDependency in result.EmbeddedStyleDependencies)
+        {
+            if (string.IsNullOrWhiteSpace(embeddedStyleDependency))
+            {
+                continue;
+            }
+
+            var resolved = _moduleResolver.Resolve(embeddedStyleDependency, modulePath);
+            if (resolved.Found
+                && changedCssPaths.Contains(Path.GetFullPath(resolved.AbsolutePath)))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool IsInlineStyleModule(string path)
+        => path.EndsWith(".vue", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith(".jazor", StringComparison.OrdinalIgnoreCase);
 
     private async ValueTask<CompilationResult> RecompileAsync(
         string changedPath,

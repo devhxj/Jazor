@@ -736,6 +736,7 @@ internal sealed class DevHttpServer : IAsyncDisposable, IWorkspaceDocumentChange
         response.Headers.CacheControl = "no-store";
         response.Headers.Pragma = "no-cache";
         response.Headers.Expires = "0";
+        response.Headers["X-Content-Type-Options"] = "nosniff";
     }
 }
 

@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Sockets;
 using System.Text;
-using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -13,9 +12,6 @@ internal sealed class BundlerModuleProxyServer : IAsyncDisposable
 {
     private static readonly TimeSpan DefaultProxyTimeout = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan DefaultPooledConnectionLifetime = TimeSpan.FromMinutes(2);
-    private static readonly Regex JavaScriptImportSpecifierPattern = new(
-        @"\bimport\s+(?:[^'"";]*?\s+from\s*)?[""'](?<specifier>[^""']+)[""']|\bexport\s+[^'"";]*?\s+from\s*[""'](?<specifier>[^""']+)[""']|\bimport\s*\(\s*[""'](?<specifier>[^""']+)[""']\s*\)",
-        RegexOptions.Compiled | RegexOptions.Singleline);
     private static readonly string[] AuthoredModuleExtensions =
     [
         ".jazor",
@@ -170,27 +166,14 @@ internal sealed class BundlerModuleProxyServer : IAsyncDisposable
             || string.Equals(mediaType, "application/javascript", StringComparison.OrdinalIgnoreCase);
 
     private string RewriteJavaScriptSpecifiers(string content)
-        => JavaScriptImportSpecifierPattern.Replace(
+        => JavaScriptModuleSpecifierScanner.RewriteSpecifiers(
             content,
-            match =>
+            specifier =>
             {
-                var specifierGroup = match.Groups["specifier"];
-                if (!specifierGroup.Success)
-                {
-                    return match.Value;
-                }
-
-                var rewrittenSpecifier = RewriteSpecifierForBundler(specifierGroup.Value, _requestPrefix);
-                if (string.Equals(rewrittenSpecifier, specifierGroup.Value, StringComparison.Ordinal))
-                {
-                    return match.Value;
-                }
-
-                var relativeStart = specifierGroup.Index - match.Index;
-                return string.Concat(
-                    match.Value.AsSpan(0, relativeStart),
-                    rewrittenSpecifier,
-                    match.Value.AsSpan(relativeStart + specifierGroup.Length));
+                var rewrittenSpecifier = RewriteSpecifierForBundler(specifier.Value, _requestPrefix);
+                return string.Equals(rewrittenSpecifier, specifier.Value, StringComparison.Ordinal)
+                    ? null
+                    : rewrittenSpecifier;
             });
 
     private static string RewriteSpecifierForBundler(string specifier, string requestPrefix)

@@ -122,6 +122,56 @@ public sealed class JoltBuildSliceFixTests
         Assert.IsFalse(body.Contains("stack trace: upstream exploded", StringComparison.Ordinal));
     }
 
+    [TestMethod]
+    public void JavaScriptModuleSpecifierScanner_RewriteSpecifiers_IgnoresStringsCommentsAndTemplateLiterals()
+    {
+        var source = """
+            const fakeString = "import('./Fake.jazor')";
+            // export { Fake } from "./Commented.vue";
+            /* import SideEffect from "./Block.jazor"; */
+            const template = `import("./Template.vue")`;
+            import Counter from "./Counter.jazor";
+            export { helper } from "./helper.vue";
+            const Lazy = () => import("./Lazy.vue?raw");
+            """;
+
+        var rewritten = JavaScriptModuleSpecifierScanner.RewriteSpecifiers(
+            source,
+            specifier => specifier.Value.EndsWith(".jazor", StringComparison.OrdinalIgnoreCase)
+                || specifier.Value.EndsWith(".vue", StringComparison.OrdinalIgnoreCase)
+                || specifier.Value.Contains(".vue?", StringComparison.OrdinalIgnoreCase)
+                    ? specifier.Value + ".js"
+                    : null);
+
+        StringAssert.Contains(rewritten, """const fakeString = "import('./Fake.jazor')";""");
+        StringAssert.Contains(rewritten, """// export { Fake } from "./Commented.vue";""");
+        StringAssert.Contains(rewritten, """/* import SideEffect from "./Block.jazor"; */""");
+        StringAssert.Contains(rewritten, """const template = `import("./Template.vue")`;""");
+        StringAssert.Contains(rewritten, """import Counter from "./Counter.jazor.js";""");
+        StringAssert.Contains(rewritten, """export { helper } from "./helper.vue.js";""");
+        StringAssert.Contains(rewritten, """import("./Lazy.vue?raw.js")""");
+    }
+
+    [TestMethod]
+    public void JavaScriptModuleSpecifierScanner_RewriteDynamicImportExpressions_RewritesOnlyRealDynamicImports()
+    {
+        var source = """
+            const fakeString = "import('./lazy-a.js')";
+            // import("./lazy-b.js")
+            const lazy = () => import("./lazy-c.js");
+            """;
+
+        var rewritten = JavaScriptModuleSpecifierScanner.RewriteDynamicImportExpressions(
+            source,
+            specifier => string.Equals(specifier.Value, "./lazy-c.js", StringComparison.Ordinal)
+                ? "__loadCss().then(() => " + source.Substring(specifier.ExpressionStart, specifier.ExpressionLength) + ")"
+                : null);
+
+        StringAssert.Contains(rewritten, """const fakeString = "import('./lazy-a.js')";""");
+        StringAssert.Contains(rewritten, """// import("./lazy-b.js")""");
+        StringAssert.Contains(rewritten, """const lazy = () => __loadCss().then(() => import("./lazy-c.js"));""");
+    }
+
     private static string CreateTemporaryDirectory()
     {
         var path = Path.Combine(Path.GetTempPath(), "jazor-build-slice-test-" + Guid.NewGuid().ToString("N")[..8]);

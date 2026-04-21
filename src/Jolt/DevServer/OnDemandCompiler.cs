@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -542,7 +543,10 @@ internal sealed class OnDemandCompiler
         return ComputeContentHash(builder.ToString());
     }
 
-    private bool TryGetCachedResultCore(string absolutePath, string contentHash, out CompilationResult? result)
+    private bool TryGetCachedResultCore(
+        string absolutePath,
+        string contentHash,
+        [NotNullWhen(true)] out CompilationResult? result)
     {
         lock (_stateGate)
         {

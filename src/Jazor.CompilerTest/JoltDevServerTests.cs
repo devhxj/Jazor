@@ -7419,6 +7419,72 @@ public sealed class JoltDevServerTests
     }
 
     [TestMethod]
+    public async Task ChangeProcessor_ProcessChanges_WhenCssFeedsEmbeddedSfcStyle_ReturnsInlineStyleUpdate()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var componentPath = Path.Combine(rootDirectory, "Counter.vue");
+            var stylePath = Path.Combine(rootDirectory, "site.css");
+            await File.WriteAllTextAsync(
+                componentPath,
+                """
+                <template><div>Counter</div></template>
+                <style src="./site.css"></style>
+                """);
+            await File.WriteAllTextAsync(stylePath, ".counter { color: red; }");
+
+            var moduleResolver = new ModuleResolver(rootDirectory);
+            var graph = new DependencyGraph(moduleResolver);
+            var frontendCompiler = new FakeFrontendModuleCompiler();
+            frontendCompiler.SetSfcResult(
+                componentPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter' };",
+                    StyleContent = ".counter { color: red; }",
+                    Dependencies = ["./site.css"],
+                    EmbeddedStyleDependencies = ["./site.css"]
+                });
+            var compiler = new OnDemandCompiler(
+                new Jazor.Vue.JazorVueParser(),
+                new Jazor.Vue.JazorVueCompiler(),
+                frontendCompiler,
+                new CompilationCache(),
+                graph,
+                moduleResolver);
+            _ = await compiler.CompileAsync(componentPath, CancellationToken.None);
+
+            frontendCompiler.SetSfcResult(
+                componentPath,
+                new FrontendModuleCompilation
+                {
+                    JavaScript = "export default { name: 'Counter' };",
+                    StyleContent = ".counter { color: blue; }",
+                    Dependencies = ["./site.css"],
+                    EmbeddedStyleDependencies = ["./site.css"]
+                });
+            await File.WriteAllTextAsync(stylePath, ".counter { color: blue; }");
+
+            var processor = new ChangeProcessor(compiler, moduleResolver, graph);
+            var result = await processor.ProcessChangesAsync([stylePath], CancellationToken.None);
+
+            Assert.AreEqual(ChangeUpdateKind.StyleUpdate, result.UpdateKind);
+            CollectionAssert.AreEquivalent(
+                new[] { stylePath, componentPath },
+                result.AffectedPaths.ToArray());
+            CollectionAssert.AreEqual(new[] { "/site.css" }, result.ChangedCssUrls.ToArray());
+            Assert.AreEqual(1, result.InlineStyleUpdates.Count);
+            Assert.AreEqual("/Counter.vue", result.InlineStyleUpdates[0].TargetId);
+            Assert.AreEqual(".counter { color: blue; }", result.InlineStyleUpdates[0].Content);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public async Task ChangeProcessor_ProcessChanges_WhenSfcStyleOnly_ReturnsInlineStyleUpdate()
     {
         var rootDirectory = CreateTemporaryDirectory();

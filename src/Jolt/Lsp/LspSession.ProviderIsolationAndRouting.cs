@@ -343,16 +343,11 @@ internal sealed partial class LspSession
             throw CreateInvalidParamsException("textDocument.uri is required.");
         }
 
-        var documentPath = LspProtocolHelpers.ToDocumentPath(documentUri);
+        var documentPath = GetWorkspaceScopedDocumentPath(documentUri);
         var document = await _workspaceStore.GetDocumentAsync(documentPath, cancellationToken);
         if (document is not null)
         {
             return document;
-        }
-
-        if (!IsInsideWorkspaceRoots(documentPath))
-        {
-            throw new InvalidOperationException($"Document '{documentPath}' is outside the configured workspace folders.");
         }
 
         if (!File.Exists(documentPath))

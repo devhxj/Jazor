@@ -1428,17 +1428,32 @@ internal sealed partial class InProcRoslynCodeService
             reference = MetadataReference.CreateFromFile(path);
             return true;
         }
-        catch (ArgumentException)
+        catch (ArgumentException ex)
         {
+            WriteMetadataReferenceWarning(path, ex);
             return false;
         }
-        catch (IOException)
+        catch (IOException ex)
         {
+            WriteMetadataReferenceWarning(path, ex);
             return false;
         }
-        catch (UnauthorizedAccessException)
+        catch (UnauthorizedAccessException ex)
         {
+            WriteMetadataReferenceWarning(path, ex);
             return false;
+        }
+    }
+
+    private static void WriteMetadataReferenceWarning(string path, Exception exception)
+    {
+        try
+        {
+            Console.Error.WriteLine(
+                $"[jolt][roslyn][warning] Skipped metadata reference '{path}': {exception.GetType().Name}: {exception.Message}");
+        }
+        catch
+        {
         }
     }
 }

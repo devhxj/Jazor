@@ -1,6 +1,7 @@
 using Jazor.VueContracts.Protocol;
 using Jolt.Frontend.Deno.Protocol;
 using Jolt.Lsp;
+using System.Text.Json;
 
 namespace Jolt.Frontend.Deno.Hosting;
 
@@ -9,7 +10,8 @@ internal sealed class DenoVolarHost : IDenoVolarHost
     private readonly DenoVolarHostOptions _options;
     private readonly IDenoWorkerProcess _workerProcess;
     private readonly SemaphoreSlim _lifecycleGate = new(1, 1);
-    private static readonly TimeSpan RetryBackoff = TimeSpan.FromMilliseconds(100);
+    private const int MaxSendAttempts = 3;
+    private static readonly TimeSpan RetryBackoffBase = TimeSpan.FromMilliseconds(100);
 
     public DenoVolarHost(DenoVolarHostOptions options)
         : this(options, workerProcess: null)
@@ -367,80 +369,62 @@ internal sealed class DenoVolarHost : IDenoVolarHost
         object payload,
         CancellationToken cancellationToken)
     {
-        await EnsureStartedAsync(cancellationToken);
-        if (!IsRunning)
+        for (var attempt = 1; attempt <= MaxSendAttempts; attempt++)
         {
-            return default;
+            await EnsureStartedAsync(cancellationToken);
+            if (!IsRunning)
+            {
+                return default;
+            }
+
+            try
+            {
+                return await _workerProcess.SendRequestAsync<TResult>(method, payload, cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex) when (IsRecoverableWorkerFailure(ex))
+            {
+                await TryResetWorkerStateAsync();
+                WriteSendRetryWarning(method, attempt, ex);
+                if (attempt == MaxSendAttempts)
+                {
+                    throw;
+                }
+
+                var delay = TimeSpan.FromMilliseconds(RetryBackoffBase.TotalMilliseconds * Math.Pow(2, attempt - 1));
+                await Task.Delay(delay, cancellationToken);
+            }
         }
 
+        return default;
+    }
+
+    private static bool IsRecoverableWorkerFailure(Exception exception)
+        => exception is ObjectDisposedException
+            or IOException
+            or InvalidOperationException
+            or JsonException
+            or NotSupportedException;
+
+    private static void WriteSendRetryWarning(string method, int attempt, Exception exception)
+    {
         try
         {
-            return await _workerProcess.SendRequestAsync<TResult>(method, payload, cancellationToken);
+            Console.Error.WriteLine(JsonSerializer.Serialize(new
+            {
+                eventType = "denoVolarWorkerRetry",
+                method,
+                attempt,
+                errorType = exception.GetType().FullName ?? exception.GetType().Name,
+                message = exception.Message,
+                timestamp = DateTimeOffset.UtcNow
+            }));
         }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        catch
         {
-            throw;
-        }
-        catch (ObjectDisposedException)
-        {
-            await TryResetWorkerStateAsync();
-        }
-        catch (IOException)
-        {
-            await TryResetWorkerStateAsync();
-        }
-        catch (InvalidOperationException)
-        {
-            await TryResetWorkerStateAsync();
-        }
-        catch (System.Text.Json.JsonException)
-        {
-            await TryResetWorkerStateAsync();
-        }
-        catch (NotSupportedException)
-        {
-            await TryResetWorkerStateAsync();
-        }
-
-        await Task.Delay(RetryBackoff, cancellationToken);
-        await EnsureStartedAsync(cancellationToken);
-        if (!IsRunning)
-        {
-            return default;
-        }
-
-        try
-        {
-            return await _workerProcess.SendRequestAsync<TResult>(method, payload, cancellationToken);
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch (ObjectDisposedException)
-        {
-            await TryResetWorkerStateAsync();
-            throw;
-        }
-        catch (IOException)
-        {
-            await TryResetWorkerStateAsync();
-            throw;
-        }
-        catch (InvalidOperationException)
-        {
-            await TryResetWorkerStateAsync();
-            throw;
-        }
-        catch (System.Text.Json.JsonException)
-        {
-            await TryResetWorkerStateAsync();
-            throw;
-        }
-        catch (NotSupportedException)
-        {
-            await TryResetWorkerStateAsync();
-            throw;
         }
     }
 

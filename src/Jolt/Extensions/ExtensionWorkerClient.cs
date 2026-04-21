@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
+using Jolt.Hosting;
 using Jolt.Lsp;
 
 namespace Jolt.Extensions;
@@ -346,11 +347,21 @@ internal sealed class ExtensionWorkerClient : IAsyncDisposable
 
                 lock (_stderrBuffer)
                 {
-                    _stderrBuffer.AppendLine(line);
-                    if (_stderrBuffer.Length > MaxCapturedStandardErrorCharacters)
+                    var capturedLine = line + Environment.NewLine;
+                    if (capturedLine.Length >= MaxCapturedStandardErrorCharacters)
                     {
-                        _stderrBuffer.Remove(0, _stderrBuffer.Length - MaxCapturedStandardErrorCharacters);
+                        _stderrBuffer.Clear();
+                        _stderrBuffer.Append(capturedLine[^MaxCapturedStandardErrorCharacters..]);
+                        continue;
                     }
+
+                    var overflow = _stderrBuffer.Length + capturedLine.Length - MaxCapturedStandardErrorCharacters;
+                    if (overflow > 0)
+                    {
+                        _stderrBuffer.Remove(0, Math.Min(overflow, _stderrBuffer.Length));
+                    }
+
+                    _stderrBuffer.Append(capturedLine);
                 }
             }
         }
@@ -374,33 +385,7 @@ internal sealed class ExtensionWorkerClient : IAsyncDisposable
 
     private async ValueTask TerminateWorkerAsync()
     {
-        try
-        {
-            if (!_process.HasExited)
-            {
-                _process.Kill(entireProcessTree: true);
-            }
-        }
-        catch (ObjectDisposedException)
-        {
-            // Ignore kill failures if the process already exited.
-        }
-        catch (InvalidOperationException)
-        {
-            // Ignore kill failures if the process already exited.
-        }
-        catch (PlatformNotSupportedException)
-        {
-            // Ignore kill failures if the process already exited.
-        }
-        catch (NotSupportedException)
-        {
-            // Ignore kill failures if the process already exited.
-        }
-        catch (System.ComponentModel.Win32Exception)
-        {
-            // Ignore kill failures if the process already exited.
-        }
+        await ChildProcessUtilities.TerminateProcessAsync(_process);
 
         try
         {
@@ -488,6 +473,7 @@ internal sealed class ExtensionWorkerClient : IAsyncDisposable
     private static void ApplyHardenedWorkerEnvironment(
         IDictionary<string, string?> environment)
     {
+        // These switches reduce diagnostics exposure for the helper process; they do not provide OS sandboxing.
         environment["JAZOR_EXTENSION_WORKER"] = "1";
         environment["DOTNET_EnableDiagnostics"] = "0";
         environment["COMPlus_EnableDiagnostics"] = "0";

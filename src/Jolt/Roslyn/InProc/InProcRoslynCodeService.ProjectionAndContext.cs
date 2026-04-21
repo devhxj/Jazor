@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Text;
@@ -19,6 +20,11 @@ namespace Jolt.Roslyn.InProc;
 
 internal sealed partial class InProcRoslynCodeService
 {
+    private static readonly ConcurrentDictionary<string, string> ContainerNamesByPath = new(
+        OperatingSystem.IsWindows()
+            ? StringComparer.OrdinalIgnoreCase
+            : StringComparer.Ordinal);
+
     private static bool TryMapToProjectedPositionWithBoundaryFallback(
         ProjectionMap projectionMap,
         string sourceText,
@@ -283,26 +289,102 @@ internal sealed partial class InProcRoslynCodeService
         return true;
     }
 
-    private static SemanticModel CreatePlaceholderSemanticModel(SyntaxTree syntaxTree)
+    private SemanticModel CreatePlaceholderSemanticModel(SyntaxTree syntaxTree)
     {
         var compilation = CSharpCompilation.Create(
             assemblyName: "__JoltRoslynPlaceholder",
             syntaxTrees: [syntaxTree],
-            references: MetadataReferences,
+            references: _metadataReferences,
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         return compilation.GetSemanticModel(syntaxTree, ignoreAccessibility: true);
     }
 
-    private static string CreateContainerName(string documentPath)
+    private CachedCompilationContext GetOrCreateCompilationContext(
+        IReadOnlyList<ProjectedDocumentContext> projectedDocuments)
     {
-        var fileName = Path.GetFileNameWithoutExtension(documentPath);
+        var cacheKey = CreateCompilationCacheKey(projectedDocuments);
+        lock (_compilationCacheGate)
+        {
+            if (_compilationCache.TryGetValue(cacheKey, out var cachedContext))
+            {
+                cachedContext.LastUsedTick = ++_compilationCacheClock;
+                return cachedContext;
+            }
+
+            var compilation = CSharpCompilation.Create(
+                assemblyName: "__JoltRoslyn",
+                syntaxTrees: projectedDocuments.Select(static projectedDocument => projectedDocument.SyntaxTree),
+                references: _metadataReferences,
+                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+            var projectedContexts = projectedDocuments
+                .Select(projectedDocument => projectedDocument with
+                {
+                    SemanticModel = compilation.GetSemanticModel(projectedDocument.SyntaxTree, ignoreAccessibility: true)
+                })
+                .ToArray();
+            var contextsByTree = projectedContexts.ToDictionary(
+                static projectedDocument => projectedDocument.SyntaxTree,
+                static projectedDocument => projectedDocument);
+            var context = new CachedCompilationContext(
+                compilation,
+                projectedContexts,
+                contextsByTree,
+                ++_compilationCacheClock);
+            _compilationCache[cacheKey] = context;
+            TrimCompilationCache();
+            return context;
+        }
+    }
+
+    private void TrimCompilationCache()
+    {
+        while (_compilationCache.Count > MaxCompilationCacheEntries)
+        {
+            var oldestKey = _compilationCache
+                .OrderBy(static entry => entry.Value.LastUsedTick)
+                .Select(static entry => entry.Key)
+                .FirstOrDefault();
+            if (oldestKey is null)
+            {
+                return;
+            }
+
+            _compilationCache.Remove(oldestKey);
+        }
+    }
+
+    private static string CreateCompilationCacheKey(
+        IEnumerable<ProjectedDocumentContext> projectedDocuments)
+    {
+        var builder = new StringBuilder();
+        foreach (var projectedDocument in projectedDocuments
+                     .OrderBy(static projectedDocument => projectedDocument.SyntaxTree.FilePath, PathComparer))
+        {
+            builder.Append(projectedDocument.SyntaxTree.FilePath)
+                .Append('\u001f')
+                .Append(projectedDocument.ProjectedText.Length)
+                .Append('\u001f')
+                .Append(ComputeSha256(projectedDocument.ProjectedText))
+                .Append('\u001e');
+        }
+
+        return builder.ToString();
+    }
+
+    private static string CreateContainerName(string documentPath)
+        => ContainerNamesByPath.GetOrAdd(documentPath, static path =>
+        {
+        var fileName = Path.GetFileNameWithoutExtension(path);
         var sanitized = string.Concat((fileName ?? "Document").Select(character =>
             char.IsLetterOrDigit(character) || character == '_' ? character : '_'));
         if (string.IsNullOrWhiteSpace(sanitized) || !char.IsLetter(sanitized[0]) && sanitized[0] != '_')
             sanitized = "_" + sanitized;
 
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(documentPath));
-        var hash = Convert.ToHexString(bytes.AsSpan(0, 4));
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(path));
+        var hash = Convert.ToHexString(bytes.AsSpan(0, 8));
         return "__JazorDocument_" + sanitized + "_" + hash;
-    }
+        });
+
+    private static string ComputeSha256(string text)
+        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text)));
 }

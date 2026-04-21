@@ -130,10 +130,7 @@ internal sealed class RazorDesignTimeCodeProjectionService
             .Where(static segment => segment is not null)
             .Select(static segment => segment!)
             .Where(segment => segment.OriginalLength > 0 && segment.ProjectedLength > 0)
-            .Where(segment => string.IsNullOrWhiteSpace(segment.FilePath)
-                || PathComparer.Equals(
-                    NormalizeComparablePath(segment.FilePath),
-                    normalizedSourceDocumentPath))
+            .Where(segment => IsRelevantMappingSegment(segment, normalizedSourceDocumentPath))
             .Select(static segment => new ProjectionSegment(
                 segment.OriginalStart,
                 segment.OriginalLength,
@@ -145,6 +142,14 @@ internal sealed class RazorDesignTimeCodeProjectionService
 
         return new ProjectionMap(sourceDocumentPath, projectedDocumentPath, segments);
     }
+
+    private static bool IsRelevantMappingSegment(
+        SourceMappingSegment segment,
+        string normalizedSourceDocumentPath)
+        => string.IsNullOrWhiteSpace(segment.FilePath)
+            || PathComparer.Equals(
+                NormalizeComparablePath(segment.FilePath),
+                normalizedSourceDocumentPath);
 
     private static string NormalizeComparablePath(string path)
     {
@@ -374,26 +379,44 @@ internal sealed class RazorDesignTimeCodeProjectionService
                 return sourceMappings.ToArray();
             }
         }
-        catch (ArgumentException)
+        catch (ArgumentException ex)
         {
+            WriteSourceMappingFallbackWarning(ex);
         }
-        catch (TargetException)
+        catch (TargetException ex)
         {
+            WriteSourceMappingFallbackWarning(ex);
         }
-        catch (TargetInvocationException)
+        catch (TargetInvocationException ex)
         {
+            WriteSourceMappingFallbackWarning(ex);
         }
-        catch (MemberAccessException)
+        catch (MemberAccessException ex)
         {
+            WriteSourceMappingFallbackWarning(ex);
         }
-        catch (NotSupportedException)
+        catch (NotSupportedException ex)
         {
+            WriteSourceMappingFallbackWarning(ex);
         }
-        catch (SystemException)
+        catch (SystemException ex)
         {
+            WriteSourceMappingFallbackWarning(ex);
         }
 
         return [];
+    }
+
+    private static void WriteSourceMappingFallbackWarning(Exception exception)
+    {
+        try
+        {
+            Console.Error.WriteLine(
+                $"[jolt][razor][warning] Falling back without Razor SourceMappings after {exception.GetType().Name}: {exception.Message}");
+        }
+        catch
+        {
+        }
     }
 
     private static StringComparer PathComparer

@@ -17,13 +17,93 @@ internal sealed class JazorRelatedDocumentResolver
         DocumentSnapshot jazorDocument,
         IReadOnlyList<string> explicitPaths,
         CancellationToken cancellationToken)
+        => await ResolveAsync(jazorDocument, explicitPaths, openDocuments: null, cancellationToken);
+
+    internal async Task<IReadOnlyList<DocumentSnapshot>> ResolveAsync(
+        DocumentSnapshot jazorDocument,
+        IReadOnlyList<string> explicitPaths,
+        IReadOnlyList<DocumentSnapshot>? openDocuments,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(jazorDocument);
         ArgumentNullException.ThrowIfNull(explicitPaths);
         cancellationToken.ThrowIfCancellationRequested();
 
+        openDocuments ??= await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
+        var candidatePaths = await CollectCandidatePathsAsync(
+            jazorDocument,
+            explicitPaths,
+            openDocuments,
+            cancellationToken);
+
+        var documents = new List<DocumentSnapshot>();
+        var seenPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var candidatePath in candidatePaths)
+        {
+            var document = await JoltWorkspaceResolver.ResolveDocumentAsync(candidatePath, openDocuments, cancellationToken);
+            if (document is null || !IsSupportedFrontendDocument(document))
+            {
+                continue;
+            }
+
+            if (!seenPaths.Add(JoltWorkspaceResolver.NormalizePath(document.DocumentPath)))
+            {
+                continue;
+            }
+
+            documents.Add(document);
+        }
+
+        return documents;
+    }
+
+    internal async ValueTask<bool> ReferencesPathAsync(
+        DocumentSnapshot jazorDocument,
+        string candidatePath,
+        IReadOnlyList<string> explicitPaths,
+        IReadOnlyList<DocumentSnapshot>? openDocuments,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(jazorDocument);
+        ArgumentException.ThrowIfNullOrWhiteSpace(candidatePath);
+        ArgumentNullException.ThrowIfNull(explicitPaths);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var normalizedCandidatePath = JoltWorkspaceResolver.NormalizePath(candidatePath);
+        var candidatePaths = await CollectCandidatePathsAsync(
+            jazorDocument,
+            explicitPaths,
+            openDocuments,
+            cancellationToken);
+        foreach (var relatedPath in candidatePaths)
+        {
+            if (string.Equals(
+                    JoltWorkspaceResolver.NormalizePath(relatedPath),
+                    normalizedCandidatePath,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool IsSupportedFrontendDocument(DocumentSnapshot document)
+        => document.DocumentKind is DocumentKind.Vue
+            or DocumentKind.JavaScript
+            or DocumentKind.TypeScript
+            or DocumentKind.Css;
+
+    private async Task<LinkedHashSet<string>> CollectCandidatePathsAsync(
+        DocumentSnapshot jazorDocument,
+        IReadOnlyList<string> explicitPaths,
+        IReadOnlyList<DocumentSnapshot>? openDocuments,
+        CancellationToken cancellationToken)
+    {
         var parsed = _parser.Parse(jazorDocument.DocumentPath, jazorDocument.Text);
-        var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
+        openDocuments ??= await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
         var candidatePaths = new LinkedHashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var explicitPath in explicitPaths)
@@ -91,33 +171,8 @@ internal sealed class JazorRelatedDocumentResolver
             candidatePaths.Add(candidatePath);
         }
 
-        var documents = new List<DocumentSnapshot>();
-        var seenPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var candidatePath in candidatePaths)
-        {
-            var document = await JoltWorkspaceResolver.ResolveDocumentAsync(candidatePath, openDocuments, cancellationToken);
-            if (document is null || !IsSupportedFrontendDocument(document))
-            {
-                continue;
-            }
-
-            if (!seenPaths.Add(JoltWorkspaceResolver.NormalizePath(document.DocumentPath)))
-            {
-                continue;
-            }
-
-            documents.Add(document);
-        }
-
-        return documents;
+        return candidatePaths;
     }
-
-    private static bool IsSupportedFrontendDocument(DocumentSnapshot document)
-        => document.DocumentKind is DocumentKind.Vue
-            or DocumentKind.JavaScript
-            or DocumentKind.TypeScript
-            or DocumentKind.Css;
 
     private static string[] GetReferencedVueComponents(string text)
         => JazorMarkupPatterns.ComponentTagPattern.Matches(text)

@@ -17,9 +17,8 @@ namespace Jolt.Lsp.Lanes;
 internal sealed class VolarLaneService : ILspLane
 {
     private const string MissingTemplateImportDiagnosticCode = "JAZORVUEFRONTEND001";
-    private static readonly Regex TagCompletionPrefixPattern = new(
-        @"</?(?<name>[A-Za-z0-9_]*)$",
-        RegexOptions.Compiled);
+    private const int DiagnosticSeverityWarning = 2;
+    private const int MaxDenoFailureSnapshots = 64;
     private static readonly ConcurrentDictionary<string, DenoFailureSnapshot> DenoFailureSnapshots = new(StringComparer.OrdinalIgnoreCase);
     private readonly IFrontendContextProvider? _frontendContextProvider;
     private readonly IVirtualDocumentRegistry? _virtualDocumentRegistry;
@@ -561,17 +560,31 @@ internal sealed class VolarLaneService : ILspLane
     private static bool TryGetTagCompletionPrefix(string text, LspPosition position, out string tagPrefix)
     {
         var offset = LspProtocolHelpers.GetOffset(text, position);
-        var prefix = text[..Math.Min(offset, text.Length)];
-        var match = TagCompletionPrefixPattern.Match(prefix);
-        if (!match.Success)
+        var cursor = Math.Min(offset, text.Length);
+        var nameStart = cursor;
+        while (nameStart > 0 && IsTagNameCharacter(text[nameStart - 1]))
+        {
+            nameStart--;
+        }
+
+        var tagStart = nameStart;
+        if (tagStart > 0 && text[tagStart - 1] == '/')
+        {
+            tagStart--;
+        }
+
+        if (tagStart <= 0 || text[tagStart - 1] != '<')
         {
             tagPrefix = string.Empty;
             return false;
         }
 
-        tagPrefix = match.Groups["name"].Value;
+        tagPrefix = text[nameStart..cursor];
         return true;
     }
+
+    private static bool IsTagNameCharacter(char character)
+        => char.IsLetterOrDigit(character) || character == '_';
 
     private static bool TryGetComponentTagNameAtPosition(string text, LspPosition position, out string componentName)
     {
@@ -1336,7 +1349,7 @@ internal sealed class VolarLaneService : ILspLane
                     Start = LspProtocolHelpers.GetPosition(document.Text, group.Index),
                     End = LspProtocolHelpers.GetPosition(document.Text, group.Index + group.Length)
                 },
-                Severity = 2,
+                Severity = DiagnosticSeverityWarning,
                 Code = MissingTemplateImportDiagnosticCode,
                 Source = "Jolt.Frontend",
                 Message = $"Razor component '{group.Value}' could not be resolved to a nearby Vue file."
@@ -1399,6 +1412,7 @@ internal sealed class VolarLaneService : ILspLane
                 LastErrorMessage = state.Exception.Message
             },
             (Timestamp: timestamp, Exception: exception));
+        TrimDenoFailureSnapshots();
 
         var payload = new
         {
@@ -1411,6 +1425,21 @@ internal sealed class VolarLaneService : ILspLane
             timestamp = snapshot.LastFailureAt
         };
         Console.Error.WriteLine(JsonSerializer.Serialize(payload));
+    }
+
+    private static void TrimDenoFailureSnapshots()
+    {
+        while (DenoFailureSnapshots.Count > MaxDenoFailureSnapshots)
+        {
+            var oldest = DenoFailureSnapshots
+                .OrderBy(static entry => entry.Value.LastFailureAt)
+                .Select(static entry => entry.Key)
+                .FirstOrDefault();
+            if (oldest is null || !DenoFailureSnapshots.TryRemove(oldest, out _))
+            {
+                return;
+            }
+        }
     }
 
     private static string? TryGetComponentName(string text, LspRange range)

@@ -219,6 +219,77 @@ public sealed class JoltLspTests
     }
 
     [TestMethod]
+    public async Task Jolt_Lsp_DefinitionRequest_RejectsDocumentOutsideWorkspaceFolders()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        var workspaceRoot = CreateTemporaryDirectory();
+        var outsideRoot = CreateTemporaryDirectory();
+        try
+        {
+            var outsideDocumentPath = Path.Combine(outsideRoot, "outside.ts");
+            await File.WriteAllTextAsync(outsideDocumentPath, "const outside = 1;");
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 14,
+                method = "initialize",
+                @params = new
+                {
+                    workspaceFolders = new[]
+                    {
+                        new
+                        {
+                            uri = new Uri(workspaceRoot).AbsoluteUri,
+                            name = "workspace-root"
+                        }
+                    }
+                }
+            });
+            using var _ = await client.ReadResponseAsync(expectedId: 14);
+
+            await client.SendAsync(new
+            {
+                jsonrpc = "2.0",
+                id = 15,
+                method = "textDocument/definition",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = new Uri(outsideDocumentPath).AbsoluteUri
+                    },
+                    position = new
+                    {
+                        line = 0,
+                        character = 0
+                    }
+                }
+            });
+            using var response = await client.ReadResponseAsync(expectedId: 15);
+            var error = response.RootElement.GetProperty("error");
+            Assert.AreEqual(-32603, error.GetProperty("code").GetInt32());
+            StringAssert.Contains(
+                error.GetProperty("message").GetString() ?? string.Empty,
+                "outside the configured workspace folders");
+        }
+        finally
+        {
+            if (Directory.Exists(workspaceRoot))
+            {
+                Directory.Delete(workspaceRoot, recursive: true);
+            }
+
+            if (Directory.Exists(outsideRoot))
+            {
+                Directory.Delete(outsideRoot, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
     public async Task Jolt_Lsp_CancelRequest_WithUnknownId_DoesNotBreakSubsequentRequests()
     {
         await using var client = await LspTestClient.StartAsync();
@@ -247,6 +318,40 @@ public sealed class JoltLspTests
         using var response = await client.ReadResponseAsync(expectedId: 14);
         Assert.IsTrue(response.RootElement.TryGetProperty("result", out var result));
         Assert.AreEqual(JsonValueKind.Array, result.ValueKind);
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task Jolt_Lsp_CancelRequest_ImmediatelyAfterRequest_ReturnsCancelledResponse()
+    {
+        await using var client = await LspTestClient.StartAsync();
+        await client.InitializeAsync();
+
+        await client.SendAsync(new
+        {
+            jsonrpc = "2.0",
+            id = 16,
+            method = "workspace/symbol",
+            @params = new
+            {
+                query = "any"
+            }
+        });
+        await client.SendAsync(new
+        {
+            jsonrpc = "2.0",
+            method = "$/cancelRequest",
+            @params = new
+            {
+                id = 16
+            }
+        });
+
+        using var response = await client.ReadResponseAsync(expectedId: 16);
+        var error = response.RootElement.GetProperty("error");
+        Assert.AreEqual(-32800, error.GetProperty("code").GetInt32());
+        Assert.AreEqual("Request cancelled.", error.GetProperty("message").GetString());
 
         await client.ShutdownAsync();
     }
@@ -7487,16 +7592,29 @@ public sealed class JoltLspTests
 
     private static string GetBuiltAssemblyPath(string projectDirectoryName, string assemblyFileName)
     {
-        var assemblyPath = Path.Combine(
-            GetRepositoryRoot(),
-            "src",
-            projectDirectoryName,
-            "bin",
-            "Debug",
-            "net10.0",
-            assemblyFileName);
-        Assert.IsTrue(File.Exists(assemblyPath), $"Expected built assembly '{assemblyPath}' to exist.");
-        return assemblyPath;
+        var candidatePaths = new[]
+        {
+            Path.Combine(
+                GetRepositoryRoot(),
+                "src",
+                projectDirectoryName,
+                "bin",
+                "Debug",
+                "net10.0",
+                assemblyFileName),
+            Path.Combine(AppContext.BaseDirectory, assemblyFileName)
+        };
+
+        foreach (var candidatePath in candidatePaths)
+        {
+            if (File.Exists(candidatePath))
+            {
+                return candidatePath;
+            }
+        }
+
+        Assert.Fail("Expected built assembly to exist. Probed: " + string.Join(", ", candidatePaths));
+        return candidatePaths[0];
     }
 
     private static string GetRepositoryRoot()

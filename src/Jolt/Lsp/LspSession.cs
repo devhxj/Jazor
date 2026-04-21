@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Text.RegularExpressions;
 using System.Text.Json;
 using Jolt.Extensions;
 using Jazor.VueContracts.Protocol;
@@ -16,10 +15,6 @@ namespace Jolt.Lsp;
 internal sealed partial class LspSession
 {
     private const int InvalidParamsErrorCode = -32602;
-    private static readonly Regex TagNamePattern = new(
-        @"</?(?<name>[A-Za-z][A-Za-z0-9_\-:]*)\b",
-        RegexOptions.Compiled);
-
     private readonly IJoltWorkspaceStore _workspaceStore;
     private readonly IReadOnlyDictionary<LaneKind, ILspLane> _lanes;
     private readonly ILspLaneRouter _laneRouter;
@@ -636,7 +631,7 @@ internal sealed partial class LspSession
         var parameters = DeserializeParams<LspDidOpenTextDocumentParams>(notification.Params);
         var textDocument = parameters.TextDocument
             ?? throw CreateInvalidParamsException("textDocument/didOpen textDocument is required.");
-        var documentPath = LspProtocolHelpers.ToDocumentPath(GetRequiredTextDocumentUri(textDocument));
+        var documentPath = GetWorkspaceScopedDocumentPath(GetRequiredTextDocumentUri(textDocument));
         var document = new DocumentSnapshot(
             documentPath,
             MapDocumentKind(textDocument.LanguageId, documentPath),
@@ -661,7 +656,7 @@ internal sealed partial class LspSession
             throw CreateInvalidParamsException("textDocument/didChange contentChanges is required.");
         }
 
-        var documentPath = LspProtocolHelpers.ToDocumentPath(GetRequiredTextDocumentUri(textDocument));
+        var documentPath = GetWorkspaceScopedDocumentPath(GetRequiredTextDocumentUri(textDocument));
         var existing = await _workspaceStore.GetDocumentAsync(documentPath, cancellationToken);
         var document = new DocumentSnapshot(
             documentPath,
@@ -684,7 +679,7 @@ internal sealed partial class LspSession
         var parameters = DeserializeParams<LspDidCloseTextDocumentParams>(notification.Params);
         var textDocument = parameters.TextDocument
             ?? throw CreateInvalidParamsException("textDocument/didClose textDocument is required.");
-        var documentPath = LspProtocolHelpers.ToDocumentPath(GetRequiredTextDocumentUri(textDocument));
+        var documentPath = GetWorkspaceScopedDocumentPath(GetRequiredTextDocumentUri(textDocument));
         await _workspaceStore.RemoveDocumentAsync(documentPath, cancellationToken);
         JoltWorkspaceResolver.InvalidatePath(documentPath);
         await _virtualDocumentRegistry.RemoveBySourceDocumentAsync(documentPath, cancellationToken);
@@ -702,7 +697,7 @@ internal sealed partial class LspSession
         CancellationToken cancellationToken)
     {
         var parameters = DeserializeParams<LspDidSaveTextDocumentParams>(notification.Params);
-        var documentPath = LspProtocolHelpers.ToDocumentPath(GetRequiredTextDocumentUri(parameters.TextDocument));
+        var documentPath = GetWorkspaceScopedDocumentPath(GetRequiredTextDocumentUri(parameters.TextDocument));
         var document = await _workspaceStore.GetDocumentAsync(documentPath, cancellationToken);
         if (document is null)
         {
@@ -732,7 +727,7 @@ internal sealed partial class LspSession
             return;
         }
 
-        var documentPath = LspProtocolHelpers.ToDocumentPath(GetRequiredTextDocumentUri(parameters.TextDocument));
+        var documentPath = GetWorkspaceScopedDocumentPath(GetRequiredTextDocumentUri(parameters.TextDocument));
         JoltWorkspaceResolver.InvalidatePath(documentPath);
     }
 
@@ -758,8 +753,9 @@ internal sealed partial class LspSession
 
         var affectedPaths = parameters.Changes
             .Select(static change => change.Uri)
-            .Where(static uri => !string.IsNullOrWhiteSpace(uri))
-            .Select(LspProtocolHelpers.ToDocumentPath)
+            .Select(uri => TryNormalizeWorkspaceDocumentPath(uri, out var path) ? path : null)
+            .Where(static path => !string.IsNullOrWhiteSpace(path))
+            .Select(static path => path!)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
         foreach (var path in affectedPaths)
@@ -838,6 +834,78 @@ internal sealed partial class LspSession
             WriteWorkspaceSinkWarning(document.DocumentPath, exception);
             // LSP diagnostics/projection updates must keep working even if dev-server HMR coordination fails.
         }
+    }
+
+    private string GetWorkspaceScopedDocumentPath(string documentUri)
+    {
+        string documentPath;
+        try
+        {
+            documentPath = LspProtocolHelpers.ToDocumentPath(documentUri);
+        }
+        catch (UriFormatException)
+        {
+            throw CreateInvalidParamsException("textDocument.uri must be a valid file URI or path.");
+        }
+        catch (ArgumentException)
+        {
+            throw CreateInvalidParamsException("textDocument.uri must be a valid file URI or path.");
+        }
+        catch (InvalidOperationException)
+        {
+            throw CreateInvalidParamsException("textDocument.uri must be a valid file URI or path.");
+        }
+        catch (NotSupportedException)
+        {
+            throw CreateInvalidParamsException("textDocument.uri must be a valid file URI or path.");
+        }
+        catch (PathTooLongException)
+        {
+            throw CreateInvalidParamsException("textDocument.uri must be a valid file URI or path.");
+        }
+
+        if (!IsInsideWorkspaceRoots(documentPath))
+        {
+            throw new InvalidOperationException($"Document '{documentPath}' is outside the configured workspace folders.");
+        }
+
+        return documentPath;
+    }
+
+    private bool TryNormalizeWorkspaceDocumentPath(string? documentUri, out string? documentPath)
+    {
+        documentPath = null;
+        if (string.IsNullOrWhiteSpace(documentUri))
+        {
+            return false;
+        }
+
+        try
+        {
+            documentPath = LspProtocolHelpers.ToDocumentPath(documentUri);
+        }
+        catch (UriFormatException)
+        {
+            return false;
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
+        catch (InvalidOperationException)
+        {
+            return false;
+        }
+        catch (NotSupportedException)
+        {
+            return false;
+        }
+        catch (PathTooLongException)
+        {
+            return false;
+        }
+
+        return IsInsideWorkspaceRoots(documentPath);
     }
 
     private static void WriteWorkspaceSinkWarning(string documentPath, Exception exception)

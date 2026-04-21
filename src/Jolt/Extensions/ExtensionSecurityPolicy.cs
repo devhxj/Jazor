@@ -4,6 +4,10 @@ using System.Text.Json;
 
 namespace Jolt.Extensions;
 
+/// <summary>
+/// Validates manifest-declared extension capabilities and builds the Jolt-enforced runtime policy.
+/// Process isolation here means a separate worker process plus request-surface checks, not an OS sandbox.
+/// </summary>
 internal static class ExtensionSecurityPolicy
 {
     private const int IoRankNone = 0;
@@ -233,6 +237,8 @@ internal static class ExtensionSecurityPolicy
             ];
         }
 
+        // This profile constrains document/edit/network data that flows through Jolt request handlers.
+        // It does not revoke the worker process's ambient OS access outside those mediated surfaces.
         return new ExtensionSandboxProfile
         {
             IoCapability = ioCapability,
@@ -498,14 +504,14 @@ internal static class ExtensionSecurityPolicy
         if (RequiresCapabilityBoundSandbox(manifest)
             && manifest.Permissions?.ProcessIsolation != true)
         {
-            reason = "process-level isolation is required when io/network capabilities are declared";
+            reason = "a separate worker process is required when io/network capabilities are declared";
             return false;
         }
 
         if (options.RequireProcessIsolation
             && manifest.Permissions?.ProcessIsolation != true)
         {
-            reason = "process-level isolation is required by host policy";
+            reason = "a separate worker process is required by host policy";
             return false;
         }
 

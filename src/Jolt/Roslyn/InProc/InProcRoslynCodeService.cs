@@ -14,11 +14,11 @@ namespace Jolt.Roslyn.InProc;
 
 internal sealed partial class InProcRoslynCodeService
 {
-    private static readonly CSharpParseOptions ParseOptions = new(languageVersion: LanguageVersion.Preview);
-    private static readonly ImmutableArray<MetadataReference> MetadataReferences = CreateMetadataReferences();
+    private const int MaxCompilationCacheEntries = 16;
+    private static readonly CSharpParseOptions ParseOptions = new(languageVersion: LanguageVersion.CSharp14);
     private static readonly Regex UsingDirectivePattern = new(
         @"^\s*@using\s+(?<ns>[^\r\n]+)\s*$",
-        RegexOptions.Multiline | RegexOptions.Compiled);
+        RegexOptions.Multiline);
     private static readonly SymbolDisplayFormat SymbolDisplayFormat = new(
         genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters,
         memberOptions: SymbolDisplayMemberOptions.IncludeContainingType | SymbolDisplayMemberOptions.IncludeParameters | SymbolDisplayMemberOptions.IncludeType,
@@ -30,10 +30,15 @@ internal sealed partial class InProcRoslynCodeService
 
     private readonly JazorVueParser _parser = new();
     private readonly RazorDesignTimeCodeProjectionService _razorProjectionService;
+    private readonly ImmutableArray<MetadataReference> _metadataReferences;
+    private readonly Lock _compilationCacheGate = new();
+    private readonly Dictionary<string, CachedCompilationContext> _compilationCache = new(StringComparer.Ordinal);
+    private long _compilationCacheClock;
 
     public InProcRoslynCodeService(RazorDesignTimeCodeProjectionService? razorProjectionService = null)
     {
         _razorProjectionService = razorProjectionService ?? new RazorDesignTimeCodeProjectionService();
+        _metadataReferences = CreateMetadataReferences();
     }
 
     public ValueTask<LspHoverResult?> GetHoverAsync(
@@ -911,21 +916,8 @@ internal sealed partial class InProcRoslynCodeService
         }
 
     createCompilation:
-        var compilation = CSharpCompilation.Create(
-            assemblyName: "__JoltRoslyn",
-            syntaxTrees: projectedDocuments.Select(static projectedDocument => projectedDocument.SyntaxTree),
-            references: MetadataReferences,
-            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-        var projectedContexts = projectedDocuments
-            .Select(projectedDocument => projectedDocument with
-            {
-                SemanticModel = compilation.GetSemanticModel(projectedDocument.SyntaxTree, ignoreAccessibility: true)
-            })
-            .ToArray();
-        var contextsByTree = projectedContexts.ToDictionary(
-            static projectedDocument => projectedDocument.SyntaxTree,
-            static projectedDocument => projectedDocument);
-        var primaryContext = projectedContexts.First(projectedDocument =>
+        var compilationContext = GetOrCreateCompilationContext(projectedDocuments);
+        var primaryContext = compilationContext.ProjectedDocuments.First(projectedDocument =>
             PathsEqual(projectedDocument.Document.DocumentPath, document.DocumentPath));
 
         context = new RoslynCodeContext(
@@ -933,9 +925,9 @@ internal sealed partial class InProcRoslynCodeService
             primaryContext.ProjectedText,
             primaryContext.ProjectionMap,
             primaryContext.SyntaxTree,
-            compilation,
+            compilationContext.Compilation,
             primaryContext.SemanticModel,
-            contextsByTree,
+            compilationContext.ContextsByTree,
             originalPosition is null
                 ? 0
                 : LspProtocolHelpers.GetOffset(primaryContext.ProjectedText, projectedPosition),
@@ -953,6 +945,29 @@ internal sealed partial class InProcRoslynCodeService
         IReadOnlyDictionary<SyntaxTree, ProjectedDocumentContext> ProjectedDocuments,
         int ProjectedOffset,
         LspPosition ProjectedPosition);
+
+    private sealed class CachedCompilationContext
+    {
+        public CachedCompilationContext(
+            CSharpCompilation compilation,
+            IReadOnlyList<ProjectedDocumentContext> projectedDocuments,
+            IReadOnlyDictionary<SyntaxTree, ProjectedDocumentContext> contextsByTree,
+            long lastUsedTick)
+        {
+            Compilation = compilation;
+            ProjectedDocuments = projectedDocuments;
+            ContextsByTree = contextsByTree;
+            LastUsedTick = lastUsedTick;
+        }
+
+        public CSharpCompilation Compilation { get; }
+
+        public IReadOnlyList<ProjectedDocumentContext> ProjectedDocuments { get; }
+
+        public IReadOnlyDictionary<SyntaxTree, ProjectedDocumentContext> ContextsByTree { get; }
+
+        public long LastUsedTick { get; set; }
+    }
 
     private sealed record ProjectedDocumentContext(
         DocumentSnapshot Document,

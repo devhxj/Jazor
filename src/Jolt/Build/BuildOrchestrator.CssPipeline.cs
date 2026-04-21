@@ -10,6 +10,11 @@ namespace Jolt.Build;
 
 internal sealed partial class BuildOrchestrator
 {
+    private const string CssTrailingSemicolonBeforeBlockEnd = ";}";
+    private const string CssBlockEnd = "}";
+    private static readonly Regex CssWhitespacePattern = new(@"\s+", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex CssStructuralWhitespacePattern = new(@"\s*([{}:;,>~])\s*", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
     private static async Task<IReadOnlyList<AssetInfo>> EmitExtractedCssAssetsAsync(
         BuildContext context,
         IReadOnlyList<CssFragment> cssFragments,
@@ -298,9 +303,9 @@ internal sealed partial class BuildOrchestrator
                 continue;
             }
 
-            line = Regex.Replace(line, @"\s+", " ");
-            line = Regex.Replace(line, @"\s*([{}:;,>~])\s*", "$1");
-            line = line.Replace(";}", "}", StringComparison.Ordinal);
+            line = CssWhitespacePattern.Replace(line, " ");
+            line = CssStructuralWhitespacePattern.Replace(line, "$1");
+            line = line.Replace(CssTrailingSemicolonBeforeBlockEnd, CssBlockEnd, StringComparison.Ordinal);
             lines[index] = line;
         }
 
@@ -315,9 +320,9 @@ internal sealed partial class BuildOrchestrator
         }
 
         var linePreserved = MinifyCssPreservingLines(css);
-        var compact = Regex.Replace(linePreserved, @"\s+", " ");
-        compact = Regex.Replace(compact, @"\s*([{}:;,>~])\s*", "$1");
-        compact = compact.Replace(";}", "}", StringComparison.Ordinal);
+        var compact = CssWhitespacePattern.Replace(linePreserved, " ");
+        compact = CssStructuralWhitespacePattern.Replace(compact, "$1");
+        compact = compact.Replace(CssTrailingSemicolonBeforeBlockEnd, CssBlockEnd, StringComparison.Ordinal);
         return compact.Trim();
     }
 
@@ -1177,15 +1182,16 @@ internal sealed partial class BuildOrchestrator
 
         foreach (var (modulePath, result) in cachedResults)
         {
-            foreach (Match match in DynamicImportPattern.Matches(result.Content))
+            foreach (var specifier in JavaScriptModuleSpecifierScanner.EnumerateSpecifiers(result.Content)
+                         .Where(static specifier => specifier.Kind == JavaScriptModuleSpecifierKind.DynamicImport))
             {
-                var specifier = match.Groups["specifier"].Value;
-                if (string.IsNullOrWhiteSpace(specifier))
+                var (specifierPath, _) = JavaScriptModuleSpecifierScanner.SplitPathAndSuffix(specifier.Value);
+                if (string.IsNullOrWhiteSpace(specifierPath))
                 {
                     continue;
                 }
 
-                var resolved = moduleResolver.Resolve(specifier, modulePath);
+                var resolved = moduleResolver.Resolve(specifierPath, modulePath);
                 if (!resolved.Found || resolved.IsVirtual || !cachedResults.ContainsKey(resolved.AbsolutePath))
                 {
                     continue;

@@ -10,9 +10,6 @@ namespace Jolt.Build;
 
 internal sealed class DenoBundleRunner
 {
-    private static readonly Regex RelativeJavaScriptSpecifierPattern = new(
-        "(?<quote>[\"'])(?<specifier>\\.{1,2}/[^\"']+?\\.js)(?<query>\\?[^\"']*)?\\k<quote>",
-        RegexOptions.Compiled | RegexOptions.CultureInvariant);
     private static readonly Regex CssSourceMapCommentPattern = new(
         @"/\*#\s*sourceMappingURL=(?<value>[^*]+?)\s*\*/",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
@@ -444,17 +441,22 @@ internal sealed class DenoBundleRunner
         var importedChunks = new HashSet<string>(StringComparer.Ordinal);
         var currentDirectory = GetContainingDirectoryPath(bundleFile.OriginalPath);
 
-        var rewrittenContent = RelativeJavaScriptSpecifierPattern.Replace(
+        var rewrittenContent = JavaScriptModuleSpecifierScanner.RewriteSpecifiers(
             bundleFile.OriginalContent,
-            match =>
+            specifier =>
             {
-                var originalSpecifier = match.Groups["specifier"].Value;
+                var (originalSpecifier, suffix) = JavaScriptModuleSpecifierScanner.SplitPathAndSuffix(specifier.Value);
+                if (!IsRelativeJavaScriptSpecifier(originalSpecifier))
+                {
+                    return null;
+                }
+
                 var resolvedImportPath = Path.GetFullPath(Path.Combine(
                     currentDirectory,
                     originalSpecifier.Replace('/', Path.DirectorySeparatorChar)));
                 if (!pathMap.TryGetValue(resolvedImportPath, out var rewrittenImportPath))
                 {
-                    return match.Value;
+                    return null;
                 }
 
                 var rewrittenSpecifier = Path.GetRelativePath(currentDirectory, rewrittenImportPath).Replace('\\', '/');
@@ -465,7 +467,7 @@ internal sealed class DenoBundleRunner
                 }
 
                 importedChunks.Add(Path.GetRelativePath(_context.RootDirectory, rewrittenImportPath).Replace('\\', '/'));
-                return $"{match.Groups["quote"].Value}{rewrittenSpecifier}{match.Groups["query"].Value}{match.Groups["quote"].Value}";
+                return rewrittenSpecifier + suffix;
             });
 
         if (bundleFile.OriginalSourceMapPath is not null && bundleFile.HashedSourceMapPath is not null)
@@ -479,6 +481,11 @@ internal sealed class DenoBundleRunner
         imports = importedChunks.OrderBy(static path => path, StringComparer.Ordinal).ToArray();
         return rewrittenContent;
     }
+
+    private static bool IsRelativeJavaScriptSpecifier(string specifier)
+        => (specifier.StartsWith("./", StringComparison.Ordinal)
+                || specifier.StartsWith("../", StringComparison.Ordinal))
+            && specifier.EndsWith(".js", StringComparison.OrdinalIgnoreCase);
 
     private static async Task WriteFinalChunkAsync(
         ProvisionalBundleFile bundleFile,

@@ -6,6 +6,10 @@ using Jolt.Lsp;
 
 namespace Jolt.Extensions;
 
+/// <summary>
+/// Hosts process-isolated extensions and applies Jolt-mediated IO/network policy to provider requests.
+/// These checks do not sandbox arbitrary extension code outside the request/response surfaces Jolt validates.
+/// </summary>
 internal sealed class ExtensionWorkerServer
 {
     private const string InvokeTimeoutEnvironmentVariable = "JOLT_EXTENSION_INVOKE_TIMEOUT_MS";

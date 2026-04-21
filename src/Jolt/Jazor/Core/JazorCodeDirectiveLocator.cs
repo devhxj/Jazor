@@ -48,6 +48,11 @@ internal static class JazorCodeDirectiveLocator
 
 internal static class RazorBlockDirectiveLocator
 {
+    internal static bool TrySkipCodeLiteralOrComment(string text, ref int index)
+        => TrySkipQuotedLiteral(text, ref index)
+            || TrySkipComment(text, ref index)
+            || TrySkipRazorComment(text, ref index);
+
     public static IEnumerable<RazorBlockDirectiveMatch> EnumerateDirectiveBlocks(
         string text,
         IReadOnlyList<string> directives)
@@ -62,9 +67,7 @@ internal static class RazorBlockDirectiveLocator
 
         for (var index = 0; index < text.Length; index++)
         {
-            if (TrySkipQuotedLiteral(text, ref index)
-                || TrySkipComment(text, ref index)
-                || TrySkipRazorComment(text, ref index))
+            if (TrySkipCodeLiteralOrComment(text, ref index))
             {
                 continue;
             }
@@ -109,9 +112,7 @@ internal static class RazorBlockDirectiveLocator
         var depth = 1;
         for (var index = openingBraceIndex + 1; index < text.Length; index++)
         {
-            if (TrySkipQuotedLiteral(text, ref index)
-                || TrySkipComment(text, ref index)
-                || TrySkipRazorComment(text, ref index))
+            if (TrySkipCodeLiteralOrComment(text, ref index))
             {
                 continue;
             }

@@ -18,12 +18,22 @@ internal sealed class OutOfProcessExtensionProxy :
     ILspRenameProvider
 {
     private const string BootstrapTimeoutEnvironmentVariable = "JOLT_EXTENSION_BOOTSTRAP_TIMEOUT_MS";
+    private const string WorkerRestartWindowEnvironmentVariable = "JOLT_EXTENSION_WORKER_RESTART_WINDOW_MS";
+    private const string WorkerMaxRestartsEnvironmentVariable = "JOLT_EXTENSION_WORKER_MAX_RESTARTS";
+    private const string WorkerRestartBaseDelayEnvironmentVariable = "JOLT_EXTENSION_WORKER_RESTART_BASE_DELAY_MS";
     private static readonly TimeSpan DefaultBootstrapTimeout = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan DefaultWorkerRestartWindow = TimeSpan.FromMinutes(1);
+    private static readonly TimeSpan DefaultWorkerRestartBaseDelay = TimeSpan.FromMilliseconds(250);
+    private static readonly TimeSpan MaxWorkerRestartBackoff = TimeSpan.FromSeconds(5);
+    private const int DefaultWorkerMaxRestarts = 3;
     private readonly ExtensionWorkerBootstrapRequest _bootstrapRequest;
     private readonly IReadOnlyDictionary<string, ExtensionWorkerProviderDescriptor> _providerByCapability;
     private readonly IReadOnlySet<string> _providedCapabilities;
     private readonly SemaphoreSlim _workerRestartGate = new(1, 1);
     private readonly Lock _workerGate = new();
+    private readonly Lock _workerRestartHistoryGate = new();
+    private readonly Queue<DateTimeOffset> _workerRestartFailures = new();
+    private readonly WorkerRestartPolicy _workerRestartPolicy;
 
     private ExtensionWorkerClient? _workerClient;
     private int _deactivateInvoked;
@@ -37,6 +47,7 @@ internal sealed class OutOfProcessExtensionProxy :
         _workerClient = workerClient ?? throw new ArgumentNullException(nameof(workerClient));
         Metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
         _bootstrapRequest = bootstrapRequest ?? throw new ArgumentNullException(nameof(bootstrapRequest));
+        _workerRestartPolicy = ResolveWorkerRestartPolicy();
 
         var providerByCapability = new Dictionary<string, ExtensionWorkerProviderDescriptor>(StringComparer.OrdinalIgnoreCase);
         foreach (var provider in providers)
@@ -311,22 +322,23 @@ internal sealed class OutOfProcessExtensionProxy :
         object context,
         CancellationToken cancellationToken)
     {
-        var workerClient = GetWorkerClient();
-        try
+        while (true)
         {
-            return await workerClient.InvokeAsync<TResult>(
-                capability,
-                context,
-                cancellationToken);
-        }
-        catch (ExtensionWorkerConnectionException)
-            when (Volatile.Read(ref _deactivateInvoked) == 0)
-        {
-            var replacement = await RestartWorkerAsync(workerClient, cancellationToken);
-            return await replacement.InvokeAsync<TResult>(
-                capability,
-                context,
-                cancellationToken);
+            var workerClient = GetWorkerClient();
+            try
+            {
+                var result = await workerClient.InvokeAsync<TResult>(
+                    capability,
+                    context,
+                    cancellationToken);
+                ResetWorkerRestartFailures();
+                return result;
+            }
+            catch (ExtensionWorkerConnectionException)
+                when (Volatile.Read(ref _deactivateInvoked) == 0)
+            {
+                await RestartWorkerAsync(workerClient, cancellationToken);
+            }
         }
     }
 
@@ -346,6 +358,18 @@ internal sealed class OutOfProcessExtensionProxy :
             if (!ReferenceEquals(currentWorker, failedWorker))
             {
                 return currentWorker;
+            }
+
+            var restartDecision = RegisterWorkerRestartFailure();
+            if (!restartDecision.AllowRestart)
+            {
+                throw new ExtensionWorkerConnectionException(
+                    $"extension worker restart circuit opened after {restartDecision.FailureCount} failures within {_workerRestartPolicy.Window.TotalSeconds:0.###} seconds.");
+            }
+
+            if (restartDecision.Delay > TimeSpan.Zero)
+            {
+                await Task.Delay(restartDecision.Delay, cancellationToken);
             }
 
             var (replacementWorker, _) = await CreateBootstrappedWorkerAsync(
@@ -463,6 +487,84 @@ internal sealed class OutOfProcessExtensionProxy :
             : defaultTimeout;
     }
 
+    private WorkerRestartDecision RegisterWorkerRestartFailure()
+    {
+        var now = DateTimeOffset.UtcNow;
+        lock (_workerRestartHistoryGate)
+        {
+            while (_workerRestartFailures.Count > 0
+                && now - _workerRestartFailures.Peek() > _workerRestartPolicy.Window)
+            {
+                _workerRestartFailures.Dequeue();
+            }
+
+            _workerRestartFailures.Enqueue(now);
+            var failureCount = _workerRestartFailures.Count;
+            if (failureCount > _workerRestartPolicy.MaxRestarts)
+            {
+                return new WorkerRestartDecision(
+                    AllowRestart: false,
+                    Delay: TimeSpan.Zero,
+                    FailureCount: failureCount);
+            }
+
+            if (failureCount <= 1 || _workerRestartPolicy.BaseDelay <= TimeSpan.Zero)
+            {
+                return new WorkerRestartDecision(
+                    AllowRestart: true,
+                    Delay: TimeSpan.Zero,
+                    FailureCount: failureCount);
+            }
+
+            var exponent = Math.Min(failureCount - 2, 8);
+            var delayMilliseconds = _workerRestartPolicy.BaseDelay.TotalMilliseconds * Math.Pow(2, exponent);
+            return new WorkerRestartDecision(
+                AllowRestart: true,
+                Delay: TimeSpan.FromMilliseconds(Math.Min(delayMilliseconds, MaxWorkerRestartBackoff.TotalMilliseconds)),
+                FailureCount: failureCount);
+        }
+    }
+
+    private void ResetWorkerRestartFailures()
+    {
+        lock (_workerRestartHistoryGate)
+        {
+            _workerRestartFailures.Clear();
+        }
+    }
+
+    private static WorkerRestartPolicy ResolveWorkerRestartPolicy()
+    {
+        var window = ResolvePositiveDurationFromMilliseconds(
+            WorkerRestartWindowEnvironmentVariable,
+            DefaultWorkerRestartWindow);
+        var baseDelay = ResolvePositiveDurationFromMilliseconds(
+            WorkerRestartBaseDelayEnvironmentVariable,
+            DefaultWorkerRestartBaseDelay);
+        var maxRestarts = ResolvePositiveInt32(
+            WorkerMaxRestartsEnvironmentVariable,
+            DefaultWorkerMaxRestarts);
+        return new WorkerRestartPolicy(window, maxRestarts, baseDelay);
+    }
+
+    private static TimeSpan ResolvePositiveDurationFromMilliseconds(
+        string environmentVariableName,
+        TimeSpan defaultValue)
+    {
+        var configuredValue = Environment.GetEnvironmentVariable(environmentVariableName);
+        return int.TryParse(configuredValue, out var milliseconds) && milliseconds > 0
+            ? TimeSpan.FromMilliseconds(milliseconds)
+            : defaultValue;
+    }
+
+    private static int ResolvePositiveInt32(string environmentVariableName, int defaultValue)
+    {
+        var configuredValue = Environment.GetEnvironmentVariable(environmentVariableName);
+        return int.TryParse(configuredValue, out var parsed) && parsed > 0
+            ? parsed
+            : defaultValue;
+    }
+
     private string GetProviderName(string capability, string fallback)
     {
         return _providerByCapability.TryGetValue(capability, out var descriptor)
@@ -476,4 +578,14 @@ internal sealed class OutOfProcessExtensionProxy :
             ? descriptor.Priority
             : 0;
     }
+
+    private readonly record struct WorkerRestartPolicy(
+        TimeSpan Window,
+        int MaxRestarts,
+        TimeSpan BaseDelay);
+
+    private readonly record struct WorkerRestartDecision(
+        bool AllowRestart,
+        TimeSpan Delay,
+        int FailureCount);
 }
