@@ -9,7 +9,7 @@ namespace ECMAScript.UI.Vue.Vuetify;
 [VueLibraryComponent("vuetify/components", "VCard")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VCard : VueLibraryComponent
+public sealed class VCard : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public bool Disabled { get; set; }

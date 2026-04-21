@@ -6,7 +6,7 @@ namespace ECMAScript.UI.Vue.Vuetify;
 [VueLibraryComponent("vuetify/components", "VSelect")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VSelect : VueLibraryComponent
+public sealed class VSelect : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public string? Label { get; set; }

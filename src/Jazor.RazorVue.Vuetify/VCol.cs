@@ -6,7 +6,7 @@ namespace ECMAScript.UI.Vue.Vuetify;
 [VueLibraryComponent("vuetify/components", "VCol")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VCol : VueLibraryComponent
+public sealed class VCol : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public int? Cols { get; set; }

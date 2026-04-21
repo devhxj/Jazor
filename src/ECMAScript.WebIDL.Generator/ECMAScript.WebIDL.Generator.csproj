@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DenoHost.Core" Version="2.7.12" />
-    <PackageReference Include="DenoHost.Runtime.win-x64" Version="2.7.12" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+    <PackageReference Include="DenoHost.Core" Version="$(DenoHostVersion)" />
+    <PackageReference Include="DenoHost.Runtime.win-x64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
   </ItemGroup>
 
 </Project>

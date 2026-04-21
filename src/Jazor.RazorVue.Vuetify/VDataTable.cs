@@ -9,7 +9,7 @@ namespace ECMAScript.UI.Vue.Vuetify;
 [VueLibraryComponent("vuetify/components", "VDataTable")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VDataTable : VueLibraryComponent
+public sealed class VDataTable : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public IEnumerable<object>? Headers { get; set; }

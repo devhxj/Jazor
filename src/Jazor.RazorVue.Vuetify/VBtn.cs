@@ -9,7 +9,7 @@ namespace ECMAScript.UI.Vue.Vuetify;
 [VueLibraryComponent("vuetify/components", "VBtn")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VBtn : VueLibraryComponent
+public sealed class VBtn : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public string? Text { get; set; }

@@ -727,10 +727,10 @@ public sealed class RazorVueDescriptorExtractionTests
         var references = Net100.References.All
             .Cast<MetadataReference>()
             .ToList();
-        references.Add(MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location));
-        references.Add(MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location));
+        references.Add(MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location));
+        references.Add(MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location));
         references.Add(MetadataReference.CreateFromFile(typeof(VBtn).Assembly.Location));
-        references.Add(MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+        references.Add(MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         return CSharpCompilation.Create(
             assemblyName: "RazorVue.Descriptor.Tests",

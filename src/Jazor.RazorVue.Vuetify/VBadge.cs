@@ -6,7 +6,7 @@ namespace ECMAScript.UI.Vue.Vuetify;
 [VueLibraryComponent("vuetify/components", "VBadge")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VBadge : VueLibraryComponent
+public sealed class VBadge : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public string? Color { get; set; }

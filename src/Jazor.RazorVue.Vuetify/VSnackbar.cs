@@ -6,7 +6,7 @@ namespace ECMAScript.UI.Vue.Vuetify;
 [VueLibraryComponent("vuetify/components", "VSnackbar")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VSnackbar : VueLibraryComponent
+public sealed class VSnackbar : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public bool ModelValue { get; set; }

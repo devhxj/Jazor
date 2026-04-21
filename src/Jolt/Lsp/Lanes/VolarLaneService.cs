@@ -304,25 +304,31 @@ internal sealed class VolarLaneService : ILspLane
             locations.AddRange(MapLocations(document, frontendDocument, denoResult));
         }
 
-        if (locations.Count == 0 && CanUseWorkspaceGraph())
+        if (CanUseWorkspaceGraph()
+            && document.DocumentKind == DocumentKind.Jazor
+            && !ContainsLocationOutsideDocument(locations, document.DocumentPath))
         {
             var bridgeSymbol = await _markupComponentBridge.ResolveBridgeSymbolAsync(
                 document,
                 position,
                 locations,
-                allowWorkspaceScan: document.DocumentKind == DocumentKind.Jazor,
+                allowWorkspaceScan: true,
                 cancellationToken);
             if (bridgeSymbol is { } resolved)
             {
-                locations.Add(new LspLocation
+                if (LocationsOnlyTargetDocument(locations, document.DocumentPath))
                 {
-                    Uri = NormalizeFileUri(LspProtocolHelpers.ToDocumentUri(resolved.AbsolutePath)),
-                    Range = new LspRange
-                    {
-                        Start = new LspPosition { Line = 0, Character = 0 },
-                        End = new LspPosition { Line = 0, Character = 0 }
-                    }
-                });
+                    // Projected `.g.vue` definitions can legitimately map back onto the original
+                    // `.jazor` tag usage. That round-trip is accurate but not useful to users, so
+                    // prefer the resolved Vue declaration whenever the native result only echoes the
+                    // current source document.
+                    locations.Clear();
+                }
+
+                if (!ContainsLocationForDocument(locations, resolved.AbsolutePath))
+                {
+                    locations.Add(CreateDocumentStartLocation(resolved.AbsolutePath));
+                }
             }
         }
 
@@ -361,9 +367,73 @@ internal sealed class VolarLaneService : ILspLane
             frontendDocument,
             denoLocations);
         return locations
-            .GroupBy(static location => $"{location.Uri}:{location.Range.Start.Line}:{location.Range.Start.Character}:{location.Range.End.Line}:{location.Range.End.Character}", StringComparer.Ordinal)
+            .GroupBy(static location =>
+                $"{location.Uri}:{location.Range.Start.Line}:{location.Range.Start.Character}:{location.Range.End.Line}:{location.Range.End.Character}",
+                StringComparer.Ordinal)
             .Select(static group => group.First())
             .ToArray();
+    }
+
+    private static LspLocation CreateDocumentStartLocation(string documentPath)
+        => new()
+        {
+            Uri = NormalizeFileUri(LspProtocolHelpers.ToDocumentUri(documentPath)),
+            Range = new LspRange
+            {
+                Start = new LspPosition { Line = 0, Character = 0 },
+                End = new LspPosition { Line = 0, Character = 0 }
+            }
+        };
+
+    private static bool ContainsLocationForDocument(
+        IReadOnlyList<LspLocation> locations,
+        string documentPath)
+    {
+        if (locations.Count == 0)
+        {
+            return false;
+        }
+
+        var normalizedDocumentUri = NormalizeFileUri(LspProtocolHelpers.ToDocumentUri(documentPath));
+        return locations.Any(location =>
+            string.Equals(
+                NormalizeFileUri(location.Uri),
+                normalizedDocumentUri,
+                StringComparison.Ordinal));
+    }
+
+    private static bool ContainsLocationOutsideDocument(
+        IReadOnlyList<LspLocation> locations,
+        string documentPath)
+    {
+        if (locations.Count == 0)
+        {
+            return false;
+        }
+
+        var normalizedDocumentUri = NormalizeFileUri(LspProtocolHelpers.ToDocumentUri(documentPath));
+        return locations.Any(location =>
+            !string.Equals(
+                NormalizeFileUri(location.Uri),
+                normalizedDocumentUri,
+                StringComparison.Ordinal));
+    }
+
+    private static bool LocationsOnlyTargetDocument(
+        IReadOnlyList<LspLocation> locations,
+        string documentPath)
+    {
+        if (locations.Count == 0)
+        {
+            return false;
+        }
+
+        var normalizedDocumentUri = NormalizeFileUri(LspProtocolHelpers.ToDocumentUri(documentPath));
+        return locations.All(location =>
+            string.Equals(
+                NormalizeFileUri(location.Uri),
+                normalizedDocumentUri,
+                StringComparison.Ordinal));
     }
 
     public async ValueTask<IReadOnlyList<LspLocation>> GetReferencesAsync(

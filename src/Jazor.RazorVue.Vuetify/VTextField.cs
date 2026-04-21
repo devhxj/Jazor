@@ -9,7 +9,7 @@ namespace ECMAScript.UI.Vue.Vuetify;
 [VueLibraryComponent("vuetify/components", "VTextField")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VTextField : VueLibraryComponent
+public sealed class VTextField : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public string? Label { get; set; }

@@ -9,7 +9,7 @@ namespace ECMAScript.UI.Vue.Vuetify;
 [VueLibraryComponent("vuetify/components", "VImg")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VImg : VueLibraryComponent
+public sealed class VImg : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public string? Src { get; set; }

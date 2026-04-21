@@ -5,6 +5,6 @@ namespace Jazor.RazorVue;
 /// descriptor/registry pipeline without becoming normal compiled RazorVue
 /// component entries.
 /// </summary>
-public abstract class VueLibraryComponent : VueComponent
+public interface IVueLibraryComponent : IVueComponent
 {
 }

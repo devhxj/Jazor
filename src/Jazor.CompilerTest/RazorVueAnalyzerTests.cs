@@ -929,10 +929,10 @@ public sealed class RazorVueAnalyzerTests
         // Roslyn test compilations need both the Razor substrate assembly and the
         // Vue-facing assembly because metadata references do not bring transitive
         // project references along automatically.
-        references.Add(MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location));
-        references.Add(MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location));
+        references.Add(MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location));
+        references.Add(MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location));
         references.Add(MetadataReference.CreateFromFile(typeof(VBtn).Assembly.Location));
-        references.Add(MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+        references.Add(MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         return CSharpCompilation.Create(
             assemblyName: "RazorVue.Analyzer.Tests",

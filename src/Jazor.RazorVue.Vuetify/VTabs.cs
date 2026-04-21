@@ -6,7 +6,7 @@ namespace ECMAScript.UI.Vue.Vuetify;
 [VueLibraryComponent("vuetify/components", "VTabs")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VTabs : VueLibraryComponent
+public sealed class VTabs : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public string? Color { get; set; }

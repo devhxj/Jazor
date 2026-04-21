@@ -6,7 +6,7 @@ namespace ECMAScript.UI.Vue.Vuetify;
 [VueLibraryComponent("vuetify/components", "VContainer")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VContainer : VueLibraryComponent
+public sealed class VContainer : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public bool Fluid { get; set; }

@@ -6,7 +6,7 @@ namespace ECMAScript.UI.Vue.Vuetify;
 [VueLibraryComponent("vuetify/components", "VChip")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VChip : VueLibraryComponent
+public sealed class VChip : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public string? Text { get; set; }

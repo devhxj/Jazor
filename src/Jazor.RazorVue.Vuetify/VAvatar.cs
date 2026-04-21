@@ -6,7 +6,7 @@ namespace ECMAScript.UI.Vue.Vuetify;
 [VueLibraryComponent("vuetify/components", "VAvatar")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VAvatar : VueLibraryComponent
+public sealed class VAvatar : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public string? Color { get; set; }

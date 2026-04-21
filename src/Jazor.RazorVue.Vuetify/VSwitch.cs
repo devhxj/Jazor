@@ -6,7 +6,7 @@ namespace ECMAScript.UI.Vue.Vuetify;
 [VueLibraryComponent("vuetify/components", "VSwitch")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VSwitch : VueLibraryComponent
+public sealed class VSwitch : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public string? Label { get; set; }

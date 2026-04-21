@@ -6,7 +6,7 @@ namespace ECMAScript.UI.Vue.Vuetify;
 [VueLibraryComponent("vuetify/components", "VDivider")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VDivider : VueLibraryComponent
+public sealed class VDivider : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public bool Inset { get; set; }

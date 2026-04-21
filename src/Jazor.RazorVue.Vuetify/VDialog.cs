@@ -9,7 +9,7 @@ namespace ECMAScript.UI.Vue.Vuetify;
 [VueLibraryComponent("vuetify/components", "VDialog")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VDialog : VueLibraryComponent
+public sealed class VDialog : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public bool ModelValue { get; set; }

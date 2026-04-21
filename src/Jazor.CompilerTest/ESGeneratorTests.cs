@@ -656,9 +656,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var hints = runResult.Results.SelectMany(static result => result.GeneratedSources).Select(static source => source.HintName).ToArray();
@@ -712,9 +712,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -777,9 +777,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -830,8 +830,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -911,9 +911,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -978,9 +978,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -1069,8 +1069,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -1144,8 +1144,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -1215,8 +1215,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -1289,8 +1289,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -1364,8 +1364,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -1441,8 +1441,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -1513,8 +1513,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -1588,8 +1588,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -1670,8 +1670,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -1731,8 +1731,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -1806,8 +1806,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -1888,8 +1888,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -1951,8 +1951,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -2011,8 +2011,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -2071,8 +2071,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -2140,8 +2140,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -2209,8 +2209,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -2273,8 +2273,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -2357,8 +2357,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -2441,8 +2441,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -2525,8 +2525,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -2599,8 +2599,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -2661,8 +2661,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -2733,8 +2733,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -2802,8 +2802,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -2862,8 +2862,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -2921,8 +2921,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -2980,8 +2980,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -3038,8 +3038,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -3098,8 +3098,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -3162,8 +3162,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -3235,8 +3235,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -3309,8 +3309,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -3370,8 +3370,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -3433,8 +3433,8 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -3492,9 +3492,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -3558,9 +3558,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -3626,9 +3626,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -3695,9 +3695,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -3771,9 +3771,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -3848,9 +3848,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -3913,9 +3913,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -3978,9 +3978,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -4043,9 +4043,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -4108,9 +4108,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -4174,9 +4174,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -4247,9 +4247,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -4320,9 +4320,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -4393,9 +4393,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -4467,9 +4467,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -4539,9 +4539,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var fallbackDiagnostics = runResult.Results
@@ -4625,9 +4625,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var fallbackDiagnostics = runResult.Results
@@ -4698,9 +4698,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -4770,9 +4770,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -4843,9 +4843,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -4916,9 +4916,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -4988,9 +4988,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -5062,9 +5062,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -5136,9 +5136,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -5208,9 +5208,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -5300,9 +5300,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -5372,9 +5372,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -5445,9 +5445,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -5542,9 +5542,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -5634,9 +5634,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -5721,9 +5721,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -5813,9 +5813,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -5889,9 +5889,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -5962,9 +5962,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -6059,9 +6059,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -6146,9 +6146,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -6228,9 +6228,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -6300,9 +6300,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -6372,9 +6372,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -6444,9 +6444,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -6516,9 +6516,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -6588,9 +6588,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -6660,9 +6660,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -6732,9 +6732,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -6804,9 +6804,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -6877,9 +6877,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -6964,9 +6964,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -7048,9 +7048,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -7120,9 +7120,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -7194,9 +7194,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -7276,9 +7276,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -7350,9 +7350,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -7424,9 +7424,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -7497,9 +7497,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -7595,9 +7595,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -7669,9 +7669,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -7732,9 +7732,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -7797,9 +7797,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -7870,9 +7870,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -7941,9 +7941,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -8012,9 +8012,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -8085,9 +8085,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -8149,9 +8149,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -8214,9 +8214,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -8286,9 +8286,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -8359,9 +8359,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -8430,9 +8430,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -8503,9 +8503,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -8575,9 +8575,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -8648,9 +8648,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -8721,9 +8721,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -8794,9 +8794,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -8868,9 +8868,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -8941,9 +8941,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9012,9 +9012,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9085,9 +9085,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9153,9 +9153,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9224,9 +9224,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9287,9 +9287,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9337,10 +9337,10 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(VBtn).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9397,10 +9397,10 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(VBtn).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9453,10 +9453,10 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(VBtn).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9505,10 +9505,10 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(VIcon).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9567,9 +9567,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9618,10 +9618,10 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(VBtn).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9675,10 +9675,10 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(VDialog).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9732,10 +9732,10 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(VDialog).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9787,10 +9787,10 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueLibraryComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueLibraryComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9849,10 +9849,10 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueLibraryComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueLibraryComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9906,10 +9906,10 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueLibraryComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueLibraryComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9953,9 +9953,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -10018,9 +10018,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JazorComponent).BaseType!.Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IJazorComponent).BaseType!.Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results

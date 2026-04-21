@@ -9,7 +9,7 @@ namespace ECMAScript.UI.Vue.Vuetify;
 [VueLibraryComponent("vuetify/components", "VIcon")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VIcon : VueLibraryComponent
+public sealed class VIcon : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public string? Icon { get; set; }

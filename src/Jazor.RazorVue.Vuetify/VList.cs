@@ -6,7 +6,7 @@ namespace ECMAScript.UI.Vue.Vuetify;
 [VueLibraryComponent("vuetify/components", "VList")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VList : VueLibraryComponent
+public sealed class VList : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public string? Density { get; set; }

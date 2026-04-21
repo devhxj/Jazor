@@ -6,7 +6,7 @@ namespace ECMAScript.UI.Vue.Vuetify;
 [VueLibraryComponent("vuetify/components", "VForm")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VForm : VueLibraryComponent
+public sealed class VForm : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public bool Disabled { get; set; }

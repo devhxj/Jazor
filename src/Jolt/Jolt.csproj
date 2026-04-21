@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿ <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
@@ -7,21 +7,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <NoWarn>$(NoWarn);RS1035</NoWarn>
-    <DenoHostVersion>2.7.12</DenoHostVersion>
-    <DenoHostRuntimePackageId Condition="'$(NETCoreSdkPortableRuntimeIdentifier)' != ''">DenoHost.Runtime.$(NETCoreSdkPortableRuntimeIdentifier)</DenoHostRuntimePackageId>
-    <DenoExecutableName Condition="$([MSBuild]::IsOsPlatform('Windows'))">deno.exe</DenoExecutableName>
-    <DenoExecutableName Condition="'$(DenoExecutableName)' == ''">deno</DenoExecutableName>
-    <JoltBundledDenoPath>$(TargetDir)runtimes\$(NETCoreSdkPortableRuntimeIdentifier)\native\$(DenoExecutableName)</JoltBundledDenoPath>
     <JoltWorkerOutputPath>$(TargetDir)Frontend\Deno\Worker\frontend-worker.ts</JoltWorkerOutputPath>
-    <JoltDenoCacheDir>$(TargetDir)Frontend\Deno\Cache</JoltDenoCacheDir>
     <JoltRoslynBinariesPath Condition="$([System.IO.Directory]::Exists('$([System.IO.Path]::GetFullPath('$(MSBuildSDKsPath)\..\Roslyn\bincore'))'))">$([System.IO.Path]::GetFullPath('$(MSBuildSDKsPath)\..\Roslyn\bincore'))</JoltRoslynBinariesPath>
     <JoltRoslynBinariesPath Condition="'$(JoltRoslynBinariesPath)' == '' And '$(NETCoreSdkVersion)' != ''">$([System.IO.Path]::GetFullPath('$(ProgramFiles)\dotnet\sdk\$(NETCoreSdkVersion)\Roslyn\bincore'))</JoltRoslynBinariesPath>
     <JoltRazorSdkPath Condition="$([System.IO.Directory]::Exists('$(MSBuildSDKsPath)\Microsoft.NET.Sdk.Razor'))">$(MSBuildSDKsPath)</JoltRazorSdkPath>
     <JoltRazorSdkPath Condition="'$(JoltRazorSdkPath)' == '' And '$(NETCoreSdkVersion)' != ''">$([System.IO.Path]::GetFullPath('$(ProgramFiles)\dotnet\sdk\$(NETCoreSdkVersion)\Sdks'))</JoltRazorSdkPath>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Remove="bin\**\*.cs;obj\**\*.cs" />
-  </ItemGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
@@ -30,7 +21,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="DenoHost.Core" Version="$(DenoHostVersion)" />
-    <PackageReference Include="$(DenoHostRuntimePackageId)" Version="$(DenoHostVersion)" Condition="'$(DenoHostRuntimePackageId)' != ''" />
+    <PackageReference Include="DenoHost.Runtime.win-x64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
     <Reference Include="Microsoft.CodeAnalysis">
       <HintPath>$(JoltRoslynBinariesPath)\Microsoft.CodeAnalysis.dll</HintPath>
       <Private>true</Private>
@@ -52,12 +43,4 @@
       <TargetPath>Frontend\Deno\Worker\deno.json</TargetPath>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Update="DenoHost.Runtime.win-x64" Version="$(DenoHostVersion)" />
-  </ItemGroup>
-
-  <Target Name="CacheJoltFrontendWorkerDependencies" AfterTargets="Build" Condition="'$(DesignTimeBuild)' != 'true' and Exists('$(JoltBundledDenoPath)') and Exists('$(JoltWorkerOutputPath)')">
-    <MakeDir Directories="$(JoltDenoCacheDir)" />
-    <Exec Command="&quot;$(JoltBundledDenoPath)&quot; cache --quiet &quot;$(JoltWorkerOutputPath)&quot;" WorkingDirectory="$(TargetDir)Frontend\Deno\Worker" EnvironmentVariables="DENO_DIR=$(JoltDenoCacheDir)" />
-  </Target>
 </Project>

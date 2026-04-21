@@ -6,7 +6,7 @@ namespace ECMAScript.UI.Vue.Vuetify;
 [VueLibraryComponent("vuetify/components", "VRow")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VRow : VueLibraryComponent
+public sealed class VRow : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public string? Align { get; set; }

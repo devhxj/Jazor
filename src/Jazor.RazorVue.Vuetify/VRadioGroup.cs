@@ -6,7 +6,7 @@ namespace ECMAScript.UI.Vue.Vuetify;
 [VueLibraryComponent("vuetify/components", "VRadioGroup")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VRadioGroup : VueLibraryComponent
+public sealed class VRadioGroup : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public string? Label { get; set; }

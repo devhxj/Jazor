@@ -9,7 +9,7 @@ namespace ECMAScript.UI.Vue.Vuetify;
 [VueLibraryComponent("vuetify/components", "VTooltip")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VTooltip : VueLibraryComponent
+public sealed class VTooltip : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public string? Text { get; set; }

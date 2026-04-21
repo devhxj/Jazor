@@ -1513,6 +1513,92 @@ public sealed class JoltFrontendLaneTests
     }
 
     [TestMethod]
+    public async Task Jolt_FrontendLaneService_GetDefinition_PrefersTrackedVueDeclaration_WhenProjectedDefinitionMapsBackToSource()
+    {
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var sharedDirectory = Path.Combine(tempDirectory, "Shared");
+            var pagesDirectory = Path.Combine(tempDirectory, "Pages");
+            Directory.CreateDirectory(sharedDirectory);
+            Directory.CreateDirectory(pagesDirectory);
+
+            var documentPath = Path.Combine(pagesDirectory, "Counter.jazor");
+            var document = new DocumentSnapshot(
+                documentPath,
+                DocumentKind.Jazor,
+                "<UserBadge />",
+                "1");
+
+            var projectedPath = "virtual:" + document.DocumentPath + ".g.vue";
+            var registry = new InMemoryVirtualDocumentRegistry();
+            await registry.UpsertAsync(
+            [
+                new VirtualDocument(
+                    new VirtualDocumentIdentity(
+                        document.DocumentPath,
+                        projectedPath,
+                        VirtualDocumentKind.Vue),
+                    document.Text,
+                    ProjectionMap.CreateWholeDocument(
+                        document.DocumentPath,
+                        projectedPath,
+                        document.Text.Length,
+                        document.Text.Length),
+                    "1")
+            ],
+                CancellationToken.None);
+
+            var vuePath = Path.Combine(sharedDirectory, "UserBadge.vue");
+            var workspaceStore = new InMemoryWorkspaceStore();
+            await workspaceStore.UpsertDocumentAsync(
+                new DocumentSnapshot(
+                    vuePath,
+                    DocumentKind.Vue,
+                    "<template><div>UserBadge</div></template>",
+                    "1"),
+                CancellationToken.None);
+
+            var denoHost = new FakeDenoFrontendHost
+            {
+                Definitions =
+                [
+                    new LspLocation
+                    {
+                        Uri = LspProtocolHelpers.ToDocumentUri(projectedPath),
+                        Range = new LspRange
+                        {
+                            Start = new LspPosition { Line = 0, Character = 0 },
+                            End = new LspPosition { Line = 0, Character = "UserBadge".Length }
+                        }
+                    }
+                ]
+            };
+
+            var lane = new VolarLaneService(
+                workspaceStore,
+                frontendContextProvider: null,
+                virtualDocumentRegistry: registry,
+                denoVolarHost: denoHost);
+
+            var locations = await lane.GetDefinitionAsync(
+                document,
+                new LspPosition { Line = 0, Character = 2 },
+                CreateTemplateTarget(document),
+                CancellationToken.None);
+
+            Assert.AreEqual(1, locations.Count);
+            Assert.AreEqual(new Uri(vuePath).AbsoluteUri, locations[0].Uri);
+            Assert.AreEqual(0, locations[0].Range.Start.Line);
+            Assert.AreEqual(0, locations[0].Range.Start.Character);
+        }
+        finally
+        {
+            DeleteDirectoryWithRetry(tempDirectory);
+        }
+    }
+
+    [TestMethod]
     public async Task Jolt_FrontendLaneService_GetReferences_ReturnsEmptyWhenDenoReturnsEmpty()
     {
         var lane = CreateLane(new FakeDenoFrontendHost());

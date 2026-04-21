@@ -6,7 +6,7 @@ namespace ECMAScript.UI.Vue.Vuetify;
 [VueLibraryComponent("vuetify/components", "VToolbar")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VToolbar : VueLibraryComponent
+public sealed class VToolbar : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public string? Color { get; set; }

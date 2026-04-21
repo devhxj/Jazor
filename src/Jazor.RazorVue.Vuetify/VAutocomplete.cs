@@ -6,7 +6,7 @@ namespace ECMAScript.UI.Vue.Vuetify;
 [VueLibraryComponent("vuetify/components", "VAutocomplete")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VAutocomplete : VueLibraryComponent
+public sealed class VAutocomplete : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public string? Label { get; set; }

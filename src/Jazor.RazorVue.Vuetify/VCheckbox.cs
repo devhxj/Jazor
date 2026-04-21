@@ -9,7 +9,7 @@ namespace ECMAScript.UI.Vue.Vuetify;
 [VueLibraryComponent("vuetify/components", "VCheckbox")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VCheckbox : VueLibraryComponent
+public sealed class VCheckbox : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public string? Label { get; set; }

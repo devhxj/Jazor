@@ -1,6 +1,3 @@
-using System.IO;
-using System.Linq;
-using System.Reflection;
 using Basic.Reference.Assemblies;
 using Jazor.Emit;
 using Jazor.Razor;
@@ -10,6 +7,7 @@ using Jazor.RazorVue.Artifacts;
 using Microsoft.AspNetCore.Components;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using System.Reflection;
 
 namespace Jazor.EmitTest
 {
@@ -590,8 +588,8 @@ namespace Jazor.EmitTest
 
         private static IEnumerable<MetadataReference> CreateRazorVueReferences()
             => CreateBaseReferences().Concat([
-                MetadataReference.CreateFromFile(typeof(JazorComponent).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(VueComponent).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location)
             ]);
     }

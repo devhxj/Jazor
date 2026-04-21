@@ -8,21 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Generate.tt" />
-    <None Remove="Program - 复制.txt" />
-    <None Remove="Program20250728.txt" />
-    <None Remove="Program20250729.txt" />
-    <None Remove="Program20250820.txt" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="5.3.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="5.3.0">
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(CodeAnalysisVersion)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="$(CodeAnalysisVersion)">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.3.0" />
-    <PackageReference Include="Basic.Reference.Assemblies.Net100" Version="1.8.5" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(CodeAnalysisVersion)" />
+    <PackageReference Include="Basic.Reference.Assemblies.Net100" Version="$(Net100AssembliesVersion)" />
   </ItemGroup>
 
   <ItemGroup>

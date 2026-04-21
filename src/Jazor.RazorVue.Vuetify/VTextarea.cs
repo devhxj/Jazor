@@ -6,7 +6,7 @@ namespace ECMAScript.UI.Vue.Vuetify;
 [VueLibraryComponent("vuetify/components", "VTextarea")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VTextarea : VueLibraryComponent
+public sealed class VTextarea : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public string? Label { get; set; }

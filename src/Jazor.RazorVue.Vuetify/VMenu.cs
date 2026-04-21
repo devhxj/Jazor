@@ -6,7 +6,7 @@ namespace ECMAScript.UI.Vue.Vuetify;
 [VueLibraryComponent("vuetify/components", "VMenu")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VMenu : VueLibraryComponent
+public sealed class VMenu : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public bool ModelValue { get; set; }

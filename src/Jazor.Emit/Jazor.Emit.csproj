@@ -6,8 +6,6 @@
     <Nullable>enable</Nullable>
     <PublishSingleFile>false</PublishSingleFile>
     <SelfContained>false</SelfContained>
-    <DenoHostVersion>2.7.5</DenoHostVersion>
-    <DenoHostRuntimePackageId Condition="'$(NETCoreSdkPortableRuntimeIdentifier)' != ''">DenoHost.Runtime.$(NETCoreSdkPortableRuntimeIdentifier)</DenoHostRuntimePackageId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,11 +17,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DenoHost.Core" Version="2.7.12" />
-    <PackageReference Include="$(DenoHostRuntimePackageId)" Version="$(DenoHostVersion)" Condition="'$(DenoHostRuntimePackageId)' != ''" />
+    <PackageReference Include="DenoHost.Core" Version="$(DenoHostVersion)" />
+    <PackageReference Include="DenoHost.Runtime.win-x64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="DenoHost.Runtime.win-x64" Version="2.7.12" />
+    <PackageReference Update="DenoHost.Runtime.win-x64" Version="$(DenoHostVersion)" />
   </ItemGroup>
 </Project>

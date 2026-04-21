@@ -6,7 +6,7 @@ namespace ECMAScript.UI.Vue.Vuetify;
 [VueLibraryComponent("vuetify/components", "VAlert")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VAlert : VueLibraryComponent
+public sealed class VAlert : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public string? Type { get; set; }

@@ -9,7 +9,7 @@ namespace ECMAScript.UI.Vue.Vuetify;
 [VueLibraryComponent("vuetify/components", "VPagination")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VPagination : VueLibraryComponent
+public sealed class VPagination : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public int ModelValue { get; set; }

@@ -9,7 +9,7 @@ namespace ECMAScript.UI.Vue.Vuetify;
 [VueLibraryComponent("vuetify/components", "VBreadcrumbs")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VBreadcrumbs : VueLibraryComponent
+public sealed class VBreadcrumbs : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public IEnumerable<object>? Items { get; set; }

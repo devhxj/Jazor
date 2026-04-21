@@ -118,10 +118,10 @@ public sealed class JoltProjectionMapTests
         var mapped = map.TryMapToProjectedRange(sourceText, sourceRange, projectedText, out var projectedRange);
 
         Assert.IsTrue(mapped);
-        Assert.AreEqual(0, projectedRange.Start.Line);
-        Assert.AreEqual(4, projectedRange.Start.Character);
-        Assert.AreEqual(1, projectedRange.End.Line);
-        Assert.AreEqual(2, projectedRange.End.Character);
+        Assert.AreEqual(0, projectedRange?.Start.Line);
+        Assert.AreEqual(4, projectedRange?.Start.Character);
+        Assert.AreEqual(1, projectedRange?.End.Line);
+        Assert.AreEqual(2, projectedRange?.End.Character);
     }
 
     [TestMethod]

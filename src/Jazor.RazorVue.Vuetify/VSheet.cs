@@ -6,7 +6,7 @@ namespace ECMAScript.UI.Vue.Vuetify;
 [VueLibraryComponent("vuetify/components", "VSheet")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VSheet : VueLibraryComponent
+public sealed class VSheet : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public string? Color { get; set; }
