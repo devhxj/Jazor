@@ -420,3 +420,5 @@ CLAUDE.md
 .vs/
 .tmp-webidl-out/
 .test-results/
+.verify/
+.verify*/
