@@ -1115,7 +1115,7 @@ public sealed partial class JazorVueCompiler
         var builder = new StringBuilder(value.Length);
         for (var index = 0; index < value.Length;)
         {
-            if (TryAppendSkippedCodeLiteralOrComment(builder, value, ref index))
+            if (TryAppendSkippedLoweredLiteralOrComment(builder, value, ref index))
             {
                 continue;
             }
@@ -1210,6 +1210,19 @@ public sealed partial class JazorVueCompiler
         return true;
     }
 
+    private static bool TryAppendSkippedLoweredLiteralOrComment(StringBuilder builder, string value, ref int index)
+    {
+        var skippedEnd = index;
+        if (!TrySkipLoweredLiteralOrComment(value, ref skippedEnd))
+        {
+            return false;
+        }
+
+        builder.Append(value, index, skippedEnd - index + 1);
+        index = skippedEnd + 1;
+        return true;
+    }
+
     private static bool IsIdentifierStart(char character)
         => char.IsLetter(character) || character == '_';
 
@@ -1262,7 +1275,7 @@ public sealed partial class JazorVueCompiler
         var count = 0;
         for (var index = 0; index < value.Length; index++)
         {
-            if (TrySkipCodeLiteralOrComment(value, ref index))
+            if (TrySkipLoweredLiteralOrComment(value, ref index))
             {
                 continue;
             }
@@ -1278,6 +1291,38 @@ public sealed partial class JazorVueCompiler
 
     private static bool TrySkipCodeLiteralOrComment(string text, ref int index)
         => RazorBlockDirectiveLocator.TrySkipCodeLiteralOrComment(text, ref index);
+
+    private static bool TrySkipLoweredLiteralOrComment(string text, ref int index)
+        => TrySkipJavaScriptTemplateLiteral(text, ref index)
+            || TrySkipCodeLiteralOrComment(text, ref index);
+
+    private static bool TrySkipJavaScriptTemplateLiteral(string text, ref int index)
+    {
+        if (index < 0
+            || index >= text.Length
+            || text[index] != '`')
+        {
+            return false;
+        }
+
+        for (var current = index + 1; current < text.Length; current++)
+        {
+            if (text[current] == '\\')
+            {
+                current++;
+                continue;
+            }
+
+            if (text[current] == '`')
+            {
+                index = current;
+                return true;
+            }
+        }
+
+        index = text.Length - 1;
+        return true;
+    }
 
     private static string NormalizeWhitespace(string value)
         => string.Join(" ", value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));

@@ -1418,29 +1418,79 @@ internal sealed partial class InProcRoslynCodeService
         [NotNullWhen(true)] out MetadataReference? reference)
     {
         reference = null;
-        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+        if (!TryNormalizeMetadataReferencePath(path, out var normalizedPath))
+        {
+            return false;
+        }
+
+        lock (MetadataReferenceCacheGate)
+        {
+            if (MetadataReferenceCache.TryGetValue(normalizedPath, out var cachedReference)
+                && cachedReference.TryGetTarget(out var cachedTarget))
+            {
+                reference = cachedTarget;
+                return true;
+            }
+
+            try
+            {
+                var createdReference = MetadataReference.CreateFromFile(normalizedPath);
+                MetadataReferenceCache[normalizedPath] = new WeakReference<PortableExecutableReference>(createdReference);
+                reference = createdReference;
+                return true;
+            }
+            catch (ArgumentException ex)
+            {
+                WriteMetadataReferenceWarning(normalizedPath, ex);
+                MetadataReferenceCache.Remove(normalizedPath);
+                return false;
+            }
+            catch (IOException ex)
+            {
+                WriteMetadataReferenceWarning(normalizedPath, ex);
+                MetadataReferenceCache.Remove(normalizedPath);
+                return false;
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                WriteMetadataReferenceWarning(normalizedPath, ex);
+                MetadataReferenceCache.Remove(normalizedPath);
+                return false;
+            }
+        }
+    }
+
+    private static bool TryNormalizeMetadataReferencePath(
+        string? path,
+        [NotNullWhen(true)] out string? normalizedPath)
+    {
+        normalizedPath = null;
+        if (string.IsNullOrWhiteSpace(path))
         {
             return false;
         }
 
         try
         {
-            reference = MetadataReference.CreateFromFile(path);
+            var candidatePath = Path.GetFullPath(path);
+            if (!File.Exists(candidatePath))
+            {
+                return false;
+            }
+
+            normalizedPath = candidatePath;
             return true;
         }
-        catch (ArgumentException ex)
+        catch (ArgumentException)
         {
-            WriteMetadataReferenceWarning(path, ex);
             return false;
         }
-        catch (IOException ex)
+        catch (IOException)
         {
-            WriteMetadataReferenceWarning(path, ex);
             return false;
         }
-        catch (UnauthorizedAccessException ex)
+        catch (UnauthorizedAccessException)
         {
-            WriteMetadataReferenceWarning(path, ex);
             return false;
         }
     }

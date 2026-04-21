@@ -27,6 +27,9 @@ internal sealed partial class InProcRoslynCodeService
     private static readonly SymbolDisplayFormat SignatureParameterDisplayFormat = new(
         parameterOptions: SymbolDisplayParameterOptions.IncludeType | SymbolDisplayParameterOptions.IncludeName | SymbolDisplayParameterOptions.IncludeDefaultValue,
         miscellaneousOptions: SymbolDisplayMiscellaneousOptions.UseSpecialTypes | SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers);
+    private static readonly Lock MetadataReferenceCacheGate = new();
+    private static readonly Dictionary<string, WeakReference<PortableExecutableReference>> MetadataReferenceCache =
+        new(StringComparer.OrdinalIgnoreCase);
 
     private readonly JazorVueParser _parser = new();
     private readonly RazorDesignTimeCodeProjectionService _razorProjectionService;

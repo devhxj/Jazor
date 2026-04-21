@@ -445,6 +445,40 @@ public sealed class JazorVueCompilerTests
     }
 
     [TestMethod]
+    public void JazorVue_Compiler_DoesNotDoubleRewriteLoweredTemplateLiteralInterpolations()
+    {
+        var source = """
+            <template>
+              <div>{{ normalizedLabel }}</div>
+            </template>
+
+            @code {
+                [Prop] public string? Title { get; set; }
+                [Prop] public int Step { get; set; } = 2;
+                [State] private int count = 1;
+                [Computed] public string Summary => $"Count: {count + Step}";
+                [Computed] public string NormalizedLabel => Title ?? $"Count: {count}";
+
+                public string GetSummary()
+                {
+                    return $"Count: {count + Step}";
+                }
+            }
+            """;
+
+        var parser = new JazorVueParser();
+        var compiler = new JazorVueCompiler();
+        var document = parser.Parse("Counter.jazor", source);
+        var result = compiler.Compile(document);
+
+        StringAssert.Contains(result.GeneratedVueText, "const summary = computed(() => `Count: ${count.value + step.value}`);");
+        StringAssert.Contains(result.GeneratedVueText, "const normalizedLabel = computed(() => title.value ?? `Count: ${count.value}`);");
+        StringAssert.Contains(result.GeneratedVueText, "return `Count: ${count.value + step.value}`;");
+        Assert.IsFalse(result.GeneratedVueText.Contains("count.value.value", StringComparison.Ordinal));
+        Assert.IsFalse(result.GeneratedVueText.Contains("step.value.value", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
     public void JazorVue_Compiler_LowersForWhileAwaitAndStableMemberAccess()
     {
         var source = """

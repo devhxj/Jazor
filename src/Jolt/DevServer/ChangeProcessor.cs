@@ -749,17 +749,18 @@ internal sealed class ChangeProcessor
     private IReadOnlyList<JavaScriptHotUpdate> CreateJavaScriptHotUpdates(string changedPath, bool supportsSelfAccept)
     {
         var resolvedChangedPath = _moduleResolver.GetResolvedUrlForAbsolutePath(changedPath);
-        var updates = new List<JavaScriptHotUpdate>();
         var acceptedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         if (supportsSelfAccept)
         {
             acceptedPaths.Add(resolvedChangedPath);
         }
-
-        foreach (var dependentPath in _dependencyGraph.GetDependents(changedPath))
+        else
         {
-            acceptedPaths.Add(_moduleResolver.GetResolvedUrlForAbsolutePath(dependentPath));
+            foreach (var dependentPath in _dependencyGraph.GetDependents(changedPath))
+            {
+                acceptedPaths.Add(_moduleResolver.GetResolvedUrlForAbsolutePath(dependentPath));
+            }
         }
 
         if (acceptedPaths.Count == 0)
@@ -767,17 +768,15 @@ internal sealed class ChangeProcessor
             acceptedPaths.Add(resolvedChangedPath);
         }
 
-        foreach (var acceptedPath in acceptedPaths.Order(StringComparer.OrdinalIgnoreCase))
-        {
-            updates.Add(
+        return acceptedPaths
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .Select(acceptedPath =>
                 new JavaScriptHotUpdate
                 {
                     Path = resolvedChangedPath,
                     AcceptedPath = acceptedPath
-                });
-        }
-
-        return updates;
+                })
+            .ToArray();
     }
 
     private static RazorVueManifestDiffResult? TryDiffJazorHotReload(

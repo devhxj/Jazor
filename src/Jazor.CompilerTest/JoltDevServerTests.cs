@@ -5884,7 +5884,7 @@ public sealed class JoltDevServerTests
                 result.AffectedPaths.ToArray());
             Assert.AreEqual(1, result.JavaScriptUpdates.Count);
             Assert.AreEqual("/util.ts", result.JavaScriptUpdates[0].Path);
-            Assert.AreEqual("/util.ts", result.JavaScriptUpdates[0].AcceptedPath);
+            Assert.AreEqual("/main.ts", result.JavaScriptUpdates[0].AcceptedPath);
 
             _ = await compiler.CompileAsync(mainPath, CancellationToken.None);
             _ = await compiler.CompileAsync(utilPath, CancellationToken.None);

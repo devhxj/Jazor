@@ -1,8 +1,11 @@
+using System.Collections.Immutable;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Jazor.VueContracts.Protocol;
 using Jolt.Lsp;
 using Jolt.Razor.InProc;
 using Jolt.Roslyn.InProc;
+using Microsoft.CodeAnalysis;
 
 namespace Jazor.CompilerTest;
 
@@ -34,6 +37,37 @@ public sealed class JoltInProcRoslynTests
         Assert.IsNotNull(hover);
         StringAssert.Contains(hover.Contents.Value, "count");
         StringAssert.Contains(hover.Contents.Value, "Field");
+    }
+
+    [TestMethod]
+    public void InProcRoslynCodeService_InstancesReuseMetadataReferences()
+    {
+        var metadataReferencesField = typeof(InProcRoslynCodeService).GetField(
+            "_metadataReferences",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+
+        Assert.IsNotNull(metadataReferencesField);
+
+        var firstService = new InProcRoslynCodeService();
+        var secondService = new InProcRoslynCodeService();
+
+        var firstReferences = (ImmutableArray<MetadataReference>)metadataReferencesField.GetValue(firstService)!;
+        var secondReferences = (ImmutableArray<MetadataReference>)metadataReferencesField.GetValue(secondService)!;
+
+        Assert.IsTrue(firstReferences.Length > 0);
+        Assert.AreEqual(firstReferences.Length, secondReferences.Length);
+
+        var firstReferencesByPath = firstReferences
+            .OfType<PortableExecutableReference>()
+            .Where(static reference => !string.IsNullOrWhiteSpace(reference.FilePath))
+            .ToDictionary(reference => reference.FilePath!, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var secondReference in secondReferences.OfType<PortableExecutableReference>())
+        {
+            Assert.IsFalse(string.IsNullOrWhiteSpace(secondReference.FilePath));
+            Assert.IsTrue(firstReferencesByPath.TryGetValue(secondReference.FilePath!, out var firstReference));
+            Assert.AreSame(firstReference, secondReference);
+        }
     }
 
     [TestMethod]
