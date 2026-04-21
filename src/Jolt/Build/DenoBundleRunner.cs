@@ -321,7 +321,8 @@ internal sealed class DenoBundleRunner
             var leftSnapshot = left[index];
             var rightSnapshot = right[index];
             if (!string.Equals(leftSnapshot.FilePath, rightSnapshot.FilePath, PathComparison)
-                || leftSnapshot.Length != rightSnapshot.Length)
+                || leftSnapshot.Length != rightSnapshot.Length
+                || leftSnapshot.LastWriteTimeUtcTicks != rightSnapshot.LastWriteTimeUtcTicks)
             {
                 return false;
             }

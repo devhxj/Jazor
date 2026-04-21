@@ -103,7 +103,12 @@ internal sealed class StdioLspServer
                     {
                         throw;
                     }
-                    catch (Exception) {
+                    catch (Exception exception)
+                    {
+                        WriteServerWarning(
+                            "lspNotificationFailed",
+                            message.Method,
+                            exception);
                         // Ignore malformed notification payloads to keep the server loop alive.
                         continue;
                     }
@@ -371,5 +376,27 @@ internal sealed class StdioLspServer
         }
 
         return "o:" + id.ToString();
+    }
+
+    private static void WriteServerWarning(
+        string eventType,
+        string method,
+        Exception exception)
+    {
+        try
+        {
+            Console.Error.WriteLine(JsonSerializer.Serialize(new
+            {
+                eventType,
+                method,
+                errorType = exception.GetType().FullName ?? exception.GetType().Name,
+                message = exception.Message,
+                timestamp = DateTimeOffset.UtcNow
+            }));
+        }
+        catch (Exception)
+        {
+            // Do not let observability failures destabilize the LSP server loop.
+        }
     }
 }

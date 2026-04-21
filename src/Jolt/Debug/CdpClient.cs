@@ -32,12 +32,15 @@ internal interface ICdpClient : IAsyncDisposable
 
 internal sealed class CdpClient(ICdpConnection connection) : ICdpClient
 {
+    private const int MaxTrackedScriptUrls = 2048;
+
     private readonly ICdpConnection _connection = connection ?? throw new ArgumentNullException(nameof(connection));
-    private readonly ConcurrentDictionary<int, TaskCompletionSource<JsonElement>> _pendingById = [];
+    private readonly ConcurrentDictionary<long, TaskCompletionSource<JsonElement>> _pendingById = [];
     private readonly ConcurrentDictionary<string, string> _scriptUrlById = new(StringComparer.Ordinal);
+    private readonly ConcurrentQueue<string> _scriptUrlInsertionOrder = new();
     private readonly CancellationTokenSource _readLoopCancellation = new();
     private Task? _readLoopTask;
-    private int _nextRequestId = 1;
+    private long _nextRequestId;
     private int _disposing;
     private IReadOnlyList<CdpCallFrame> _latestCallFrames = [];
 
@@ -231,7 +234,7 @@ internal sealed class CdpClient(ICdpConnection connection) : ICdpClient
                 using var payload = JsonDocument.Parse(payloadJson);
                 var message = payload.RootElement.Clone();
                 if (TryGetProperty(message, "id", out var idElement)
-                    && idElement.TryGetInt32(out var responseId)
+                    && idElement.TryGetInt64(out var responseId)
                     && _pendingById.TryGetValue(responseId, out var completion))
                 {
                     completion.TrySetResult(message);
@@ -327,6 +330,17 @@ internal sealed class CdpClient(ICdpConnection connection) : ICdpClient
         }
 
         _scriptUrlById[scriptId] = scriptUrl;
+        _scriptUrlInsertionOrder.Enqueue(scriptId);
+        TrimTrackedScriptUrls();
+    }
+
+    private void TrimTrackedScriptUrls()
+    {
+        while (_scriptUrlById.Count > MaxTrackedScriptUrls
+            && _scriptUrlInsertionOrder.TryDequeue(out var scriptId))
+        {
+            _scriptUrlById.TryRemove(scriptId, out _);
+        }
     }
 
     private IReadOnlyList<CdpCallFrame> ResolveScriptUrls(IReadOnlyList<CdpCallFrame> callFrames)

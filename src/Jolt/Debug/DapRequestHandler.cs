@@ -12,6 +12,7 @@ internal sealed class DapRequestHandler(
     private readonly DapSession _session = session ?? throw new ArgumentNullException(nameof(session));
     private readonly BreakpointManager _breakpointManager = breakpointManager ?? throw new ArgumentNullException(nameof(breakpointManager));
     private readonly CallStackMapper _callStackMapper = callStackMapper ?? throw new ArgumentNullException(nameof(callStackMapper));
+    private readonly SemaphoreSlim _evaluateGate = new(1, 1);
     private int _nextProtocolSeq;
     private int _nextBreakpointId;
 
@@ -262,7 +263,16 @@ internal sealed class DapRequestHandler(
         var expression = TryGetString(request.Arguments, "expression");
         var frameId = TryGetInt32(request.Arguments, "frameId");
         var context = TryGetString(request.Arguments, "context");
-        var evaluation = await _session.EvaluateAsync(expression, frameId, context, cancellationToken);
+        await _evaluateGate.WaitAsync(cancellationToken);
+        DapEvaluationResult evaluation;
+        try
+        {
+            evaluation = await _session.EvaluateAsync(expression, frameId, context, cancellationToken);
+        }
+        finally
+        {
+            _evaluateGate.Release();
+        }
 
         return new DapDispatchResult
         {
@@ -344,7 +354,14 @@ internal sealed class DapRequestHandler(
             return null;
         }
 
-        return nestedElement.GetString();
+        return nestedElement.ValueKind switch
+        {
+            JsonValueKind.String => nestedElement.GetString(),
+            JsonValueKind.Number => nestedElement.GetRawText(),
+            JsonValueKind.True => bool.TrueString.ToLowerInvariant(),
+            JsonValueKind.False => bool.FalseString.ToLowerInvariant(),
+            _ => null
+        };
     }
 
     private static string? TryGetString(JsonElement? element, string propertyName)

@@ -287,17 +287,17 @@ try
 
         DevServerRuntime? devRuntime = null;
         DevHttpServer? devServer = null;
-        if (useDev)
-        {
-            var devOptions = DevServerOptionsParser.Parse(args);
-            devRuntime = CreateDevServerRuntime(devOptions, denoVolarHost, workspaceStore);
-            devServer = devRuntime.Server;
-            await devServer.StartAsync(cancellationToken);
-            Console.Error.WriteLine($"Jolt dev server listening on {devServer.ListeningUri ?? new Uri($"http://{devOptions.Host}:{devOptions.Port}")}");
-        }
-
         try
         {
+            if (useDev)
+            {
+                var devOptions = DevServerOptionsParser.Parse(args);
+                devRuntime = CreateWorkspaceDevServerRuntime(devOptions, denoVolarHost, workspaceStore);
+                devServer = devRuntime.Server;
+                await devServer.StartAsync(cancellationToken);
+                Console.Error.WriteLine($"Jolt dev server listening on {devServer.ListeningUri ?? new Uri($"http://{devOptions.Host}:{devOptions.Port}")}");
+            }
+
             var jazorDocumentService = new JazorLspDocumentService(workspaceStore, analysisClient, markupComponentBridge);
             ILspLane[] lanes =
             [
@@ -484,9 +484,27 @@ static void WriteExtensionProviderLog(ExtensionProviderInvocation invocation)
 
 static DevServerRuntime CreateDevServerRuntime(
     DevServerOptions devOptions,
-    IDenoVolarHost denoFrontendHost,
-    IJoltWorkspaceStore? workspaceStore = null)
+    IDenoVolarHost denoFrontendHost)
 {
+    return CreateDevServerRuntimeCore(devOptions, denoFrontendHost, workspaceStore: null);
+}
+
+static DevServerRuntime CreateWorkspaceDevServerRuntime(
+    DevServerOptions devOptions,
+    IDenoVolarHost denoFrontendHost,
+    IJoltWorkspaceStore workspaceStore)
+{
+    ArgumentNullException.ThrowIfNull(workspaceStore);
+    return CreateDevServerRuntimeCore(devOptions, denoFrontendHost, workspaceStore);
+}
+
+static DevServerRuntime CreateDevServerRuntimeCore(
+    DevServerOptions devOptions,
+    IDenoVolarHost denoFrontendHost,
+    IJoltWorkspaceStore? workspaceStore)
+{
+    // Null is intentional for standalone dev/DAP modes where no LSP workspace exists.
+    // LSP+dev callers must use the non-null overload above so workspace-backed HMR is wired.
     var moduleResolver = new ModuleResolver(devOptions.RootDirectory, devOptions.ResolveAliases);
     var sourceMapService = new InMemorySourceMapService();
     IFrontendModuleCompiler frontendCompiler = string.Equals(

@@ -23,10 +23,11 @@ internal sealed class CallStackMapper(ISourceMapService sourceMapService)
             {
                 sourceName = sourcePath;
             }
+            var functionName = frame.FunctionName?.Trim('\0', ' ', '\t', '\r', '\n');
 
             mappedFrames.Add(new DapStackFrame(
                 Id: index + 1,
-                Name: string.IsNullOrWhiteSpace(frame.FunctionName) ? "(anonymous)" : frame.FunctionName,
+                Name: string.IsNullOrWhiteSpace(functionName) ? "(anonymous)" : functionName,
                 Source: new DapSource(sourceName, sourcePath),
                 Line: (original?.Line ?? frame.Location.LineNumber) + 1,
                 Column: (original?.Column ?? frame.Location.ColumnNumber) + 1));

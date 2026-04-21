@@ -274,15 +274,26 @@ internal sealed partial class BuildOrchestrator
             }
 
             CompilationResult result;
-            if (string.Equals(Path.GetExtension(modulePath), ".jazor", StringComparison.OrdinalIgnoreCase))
+            try
             {
-                var sourceText = await File.ReadAllTextAsync(modulePath, cancellationToken);
-                result = await compiler.CompileAsync(modulePath, sourceText, cancellationToken);
-                AppendLegacyImportDiagnostics(context, modulePath, sourceText);
+                if (string.Equals(Path.GetExtension(modulePath), ".jazor", StringComparison.OrdinalIgnoreCase))
+                {
+                    var sourceText = await File.ReadAllTextAsync(modulePath, cancellationToken);
+                    result = await compiler.CompileAsync(modulePath, sourceText, cancellationToken);
+                    AppendLegacyImportDiagnostics(context, modulePath, sourceText);
+                }
+                else
+                {
+                    result = await compiler.CompileAsync(modulePath, cancellationToken);
+                }
             }
-            else
+            catch (IOException)
             {
-                result = await compiler.CompileAsync(modulePath, cancellationToken);
+                continue;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                continue;
             }
 
             foreach (var dependency in result.Dependencies)
@@ -518,10 +529,10 @@ internal sealed partial class BuildOrchestrator
                 continue;
             }
 
-            IEnumerable<string> childDirectories;
+            string[] childDirectories;
             try
             {
-                childDirectories = Directory.EnumerateDirectories(directory);
+                childDirectories = Directory.EnumerateDirectories(directory).ToArray();
             }
             catch (IOException)
             {
@@ -537,10 +548,10 @@ internal sealed partial class BuildOrchestrator
                 pendingDirectories.Push(Path.GetFullPath(childDirectory));
             }
 
-            IEnumerable<string> files;
+            string[] files;
             try
             {
-                files = Directory.EnumerateFiles(directory);
+                files = Directory.EnumerateFiles(directory).ToArray();
             }
             catch (IOException)
             {
@@ -650,7 +661,7 @@ internal sealed partial class BuildOrchestrator
         BuildContext context,
         BuildIncrementalState state)
     {
-        if (!File.Exists(ResolveAbsolutePath(context.RootDirectory, state.ManifestPath)))
+        if (!IsReadableFilePresent(ResolveAbsolutePath(context.RootDirectory, state.ManifestPath)))
         {
             return false;
         }
@@ -658,13 +669,13 @@ internal sealed partial class BuildOrchestrator
         foreach (var chunk in state.Chunks)
         {
             if (string.IsNullOrWhiteSpace(chunk.FilePath)
-                || !File.Exists(ResolveAbsolutePath(context.RootDirectory, chunk.FilePath)))
+                || !IsReadableFilePresent(ResolveAbsolutePath(context.RootDirectory, chunk.FilePath)))
             {
                 return false;
             }
 
             if (!string.IsNullOrWhiteSpace(chunk.SourceMapPath)
-                && !File.Exists(ResolveAbsolutePath(context.RootDirectory, chunk.SourceMapPath!)))
+                && !IsReadableFilePresent(ResolveAbsolutePath(context.RootDirectory, chunk.SourceMapPath!)))
             {
                 return false;
             }
@@ -673,13 +684,13 @@ internal sealed partial class BuildOrchestrator
         foreach (var asset in state.CssAssets.Concat(state.StaticAssets))
         {
             if (string.IsNullOrWhiteSpace(asset.FilePath)
-                || !File.Exists(ResolveAbsolutePath(context.RootDirectory, asset.FilePath)))
+                || !IsReadableFilePresent(ResolveAbsolutePath(context.RootDirectory, asset.FilePath)))
             {
                 return false;
             }
 
             if (!string.IsNullOrWhiteSpace(asset.SourceMapPath)
-                && !File.Exists(ResolveAbsolutePath(context.RootDirectory, asset.SourceMapPath!)))
+                && !IsReadableFilePresent(ResolveAbsolutePath(context.RootDirectory, asset.SourceMapPath!)))
             {
                 return false;
             }
@@ -898,15 +909,42 @@ internal sealed partial class BuildOrchestrator
         var absolutePath = Path.Combine(
             context.RootDirectory,
             rootRelativePath.Replace('/', Path.DirectorySeparatorChar));
-        return File.Exists(absolutePath)
-            ? new FileInfo(absolutePath).Length
-            : 0;
+        try
+        {
+            return File.Exists(absolutePath)
+                ? new FileInfo(absolutePath).Length
+                : 0;
+        }
+        catch (IOException)
+        {
+            return 0;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return 0;
+        }
     }
 
     private static long GetOptionalFileSize(BuildContext context, string? rootRelativePath)
         => string.IsNullOrWhiteSpace(rootRelativePath)
             ? 0
             : GetAssetSize(context, rootRelativePath);
+
+    private static bool IsReadableFilePresent(string path)
+    {
+        try
+        {
+            return File.Exists(path);
+        }
+        catch (IOException)
+        {
+            return false;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return false;
+        }
+    }
 
 }
 

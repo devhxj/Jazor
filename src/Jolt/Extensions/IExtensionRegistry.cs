@@ -58,7 +58,7 @@ internal interface IExtensionRegistry
 
     IReadOnlyList<ExtensionLoadInvocation> GetRecentExtensionLoadInvocations(int maxCount = 100);
 
-    void ReportProviderInvocation(ExtensionProviderInvocation invocation);
+    void ReportProviderInvocation(ExtensionProviderInvocation invocation, bool isReplay = false);
 
     IReadOnlyList<ExtensionProviderHealth> GetProviderHealth();
 

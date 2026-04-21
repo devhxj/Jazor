@@ -3,16 +3,18 @@ namespace Jazor.VueContracts.Protocol;
 public sealed class RpcRequestEnvelope
 {
     public RpcRequestEnvelope(
-        string? id,
+        string id,
         string method,
         string? payloadJson)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(id);
+        ArgumentException.ThrowIfNullOrWhiteSpace(method);
         Id = id;
-        Method = method ?? throw new ArgumentNullException(nameof(method));
+        Method = method;
         PayloadJson = payloadJson;
     }
 
-    public string? Id { get; }
+    public string Id { get; }
 
     public string Method { get; }
 
@@ -49,8 +51,10 @@ public sealed class RpcErrorRecord
         string message,
         string? details)
     {
-        Code = code ?? throw new ArgumentNullException(nameof(code));
-        Message = message ?? throw new ArgumentNullException(nameof(message));
+        ArgumentException.ThrowIfNullOrWhiteSpace(code);
+        ArgumentException.ThrowIfNullOrWhiteSpace(message);
+        Code = code;
+        Message = message;
         Details = details;
     }
 

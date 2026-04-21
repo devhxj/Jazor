@@ -1003,13 +1003,13 @@ internal sealed class VolarLaneService : ILspLane
             return workspaceEdit;
         }
 
-        var projectedUri = LspProtocolHelpers.ToDocumentUri(requestDocument.RequestDocument.DocumentPath);
-        var sourceUri = LspProtocolHelpers.ToDocumentUri(sourceDocument.DocumentPath);
+        var projectedUri = NormalizeFileUri(LspProtocolHelpers.ToDocumentUri(requestDocument.RequestDocument.DocumentPath));
+        var sourceUri = NormalizeFileUri(LspProtocolHelpers.ToDocumentUri(sourceDocument.DocumentPath));
         var mappedChanges = new Dictionary<string, LspTextEdit[]>(StringComparer.Ordinal);
         foreach (var change in workspaceEdit.Changes)
         {
             var normalizedKey = NormalizeFileUri(change.Key);
-            if (!string.Equals(change.Key, projectedUri, StringComparison.Ordinal))
+            if (!string.Equals(normalizedKey, projectedUri, StringComparison.Ordinal))
             {
                 mappedChanges[normalizedKey] = change.Value;
                 continue;
@@ -1039,7 +1039,7 @@ internal sealed class VolarLaneService : ILspLane
 
             if (edits.Length > 0)
             {
-                mappedChanges[NormalizeFileUri(sourceUri)] = edits;
+                mappedChanges[sourceUri] = edits;
             }
         }
 

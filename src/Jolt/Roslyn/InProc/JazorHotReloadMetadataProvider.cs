@@ -149,11 +149,12 @@ internal sealed class JazorHotReloadMetadataProvider
         string jazorDocumentPath,
         IReadOnlyList<DocumentSnapshot>? companionDocuments)
     {
+        var pathComparer = GetPathComparer();
         var documents = new List<DocumentSnapshot>();
-        var seenPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var seenPaths = new HashSet<string>(pathComparer);
         var candidatePaths = JoltWorkspaceResolver.GetCoLocatedCodeBehindPaths(jazorDocumentPath)
             .Select(JoltWorkspaceResolver.NormalizePath)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            .ToHashSet(pathComparer);
 
         if (companionDocuments is not null)
         {
@@ -694,6 +695,11 @@ internal sealed class JazorHotReloadMetadataProvider
             return false;
         }
     }
+
+    private static StringComparer GetPathComparer()
+        => OperatingSystem.IsWindows()
+            ? StringComparer.OrdinalIgnoreCase
+            : StringComparer.Ordinal;
 
     private static bool TryCreateMetadataReference(
         string? assemblyPath,

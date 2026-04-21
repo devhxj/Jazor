@@ -98,10 +98,15 @@ internal sealed class WorkspaceSymbolIndex
 
     private static string CreateFingerprint(DocumentSnapshot document)
     {
-        var version = document.Version ?? string.Empty;
+        var version = document.Version?.Trim();
+        if (!string.IsNullOrWhiteSpace(version))
+        {
+            return "version:" + version;
+        }
+
         var textBytes = Encoding.UTF8.GetBytes(document.Text);
         var textHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(textBytes));
-        return $"{version}:{textHash}";
+        return "text:" + textHash;
     }
 
     private static IReadOnlyList<LspWorkspaceSymbol> ExtractSymbols(DocumentSnapshot document)

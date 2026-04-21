@@ -148,7 +148,16 @@ internal sealed class InMemorySourceMapService : ISourceMapService
         var sourcesContentArray = root.TryGetProperty("sourcesContent", out var contentElement) && contentElement.ValueKind == JsonValueKind.Array
             ? contentElement
             : default;
-        var sources = new List<RegisteredSource>(sourcesArray.ValueKind == JsonValueKind.Array ? sourcesArray.GetArrayLength() : 0);
+        var sourceCount = sourcesArray.ValueKind == JsonValueKind.Array
+            ? sourcesArray.GetArrayLength()
+            : 0;
+        if (sourcesContentArray.ValueKind == JsonValueKind.Array
+            && sourcesContentArray.GetArrayLength() != sourceCount)
+        {
+            throw new InvalidOperationException("Source map sourcesContent length must match sources length.");
+        }
+
+        var sources = new List<RegisteredSource>(sourceCount);
         if (sourcesArray.ValueKind == JsonValueKind.Array)
         {
             for (var index = 0; index < sourcesArray.GetArrayLength(); index++)

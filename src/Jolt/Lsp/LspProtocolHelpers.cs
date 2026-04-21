@@ -25,6 +25,13 @@ internal static class LspProtocolHelpers
 
     public static int GetOffset(string text, LspPosition position)
     {
+        ArgumentNullException.ThrowIfNull(text);
+        ArgumentNullException.ThrowIfNull(position);
+        if (position.Line < 0 || position.Character < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(position), "LSP position line and character must be non-negative.");
+        }
+
         var line = 0;
         var column = 0;
         for (var index = 0; index < text.Length; index++)
@@ -45,7 +52,12 @@ internal static class LspProtocolHelpers
             }
         }
 
-        return text.Length;
+        if (line == position.Line && column == position.Character)
+        {
+            return text.Length;
+        }
+
+        throw new ArgumentOutOfRangeException(nameof(position), "LSP position is outside the document text.");
     }
 
     public static LspPosition GetPosition(string text, int offset)

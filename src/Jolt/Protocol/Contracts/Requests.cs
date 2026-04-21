@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Jazor.VueContracts.Protocol;
 
 public sealed class AnalyzeJazorRequest
@@ -12,10 +14,13 @@ public sealed class AnalyzeJazorRequest
         FrontendContext = frontendContext;
     }
 
+    [JsonPropertyName("jazorDocument")]
     public DocumentSnapshot JazorDocument { get; }
 
+    [JsonPropertyName("relatedDocuments")]
     public IReadOnlyList<DocumentSnapshot> RelatedDocuments { get; }
 
+    [JsonPropertyName("frontendContext")]
     public SemanticContext? FrontendContext { get; }
 }
 
@@ -33,12 +38,16 @@ public sealed class AnalyzeJazorResponse
         SourceMaps = sourceMaps ?? throw new ArgumentNullException(nameof(sourceMaps));
     }
 
+    [JsonPropertyName("diagnostics")]
     public IReadOnlyList<DiagnosticRecord> Diagnostics { get; }
 
+    [JsonPropertyName("imports")]
     public IReadOnlyList<ImportDescriptor> Imports { get; }
 
+    [JsonPropertyName("artifacts")]
     public IReadOnlyList<ArtifactRecord> Artifacts { get; }
 
+    [JsonPropertyName("sourceMaps")]
     public IReadOnlyList<SourceMapDescriptor> SourceMaps { get; }
 }
 
@@ -52,8 +61,10 @@ public sealed class GetFrontendContextRequest
         RelatedDocumentPaths = relatedDocumentPaths ?? throw new ArgumentNullException(nameof(relatedDocumentPaths));
     }
 
+    [JsonPropertyName("documentPath")]
     public string DocumentPath { get; }
 
+    [JsonPropertyName("relatedDocumentPaths")]
     public IReadOnlyList<string> RelatedDocumentPaths { get; }
 }
 
@@ -67,8 +78,10 @@ public sealed class GetFrontendContextResponse
         Artifacts = artifacts ?? throw new ArgumentNullException(nameof(artifacts));
     }
 
+    [JsonPropertyName("semanticContext")]
     public SemanticContext SemanticContext { get; }
 
+    [JsonPropertyName("artifacts")]
     public IReadOnlyList<ArtifactRecord> Artifacts { get; }
 }
 
@@ -86,12 +99,16 @@ public sealed class GetVirtualArtifactRequest
         Version = version;
     }
 
+    [JsonPropertyName("documentPath")]
     public string DocumentPath { get; }
 
+    [JsonPropertyName("artifactKind")]
     public string ArtifactKind { get; }
 
+    [JsonPropertyName("text")]
     public string? Text { get; }
 
+    [JsonPropertyName("version")]
     public string? Version { get; }
 }
 
@@ -107,10 +124,13 @@ public sealed class GetVirtualArtifactResponse
         SourceMaps = sourceMaps ?? throw new ArgumentNullException(nameof(sourceMaps));
     }
 
+    [JsonPropertyName("artifact")]
     public ArtifactRecord Artifact { get; }
 
+    [JsonPropertyName("diagnostics")]
     public IReadOnlyList<DiagnosticRecord> Diagnostics { get; }
 
+    [JsonPropertyName("sourceMaps")]
     public IReadOnlyList<SourceMapDescriptor> SourceMaps { get; }
 }
 
@@ -126,10 +146,13 @@ public sealed class GetHotUpdatePlanRequest
         Version = version;
     }
 
+    [JsonPropertyName("documentPath")]
     public string DocumentPath { get; }
 
+    [JsonPropertyName("documentKind")]
     public DocumentKind DocumentKind { get; }
 
+    [JsonPropertyName("version")]
     public string? Version { get; }
 }
 
@@ -145,9 +168,12 @@ public sealed class GetHotUpdatePlanResponse
         Reason = reason ?? throw new ArgumentNullException(nameof(reason));
     }
 
+    [JsonPropertyName("requiresFullReload")]
     public bool RequiresFullReload { get; }
 
+    [JsonPropertyName("affectedDocumentPaths")]
     public IReadOnlyList<string> AffectedDocumentPaths { get; }
 
+    [JsonPropertyName("reason")]
     public string Reason { get; }
 }

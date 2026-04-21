@@ -16,6 +16,193 @@ namespace Jazor.CompilerTest;
 public sealed class JoltLspSessionSliceTests
 {
     [TestMethod]
+    public void LspProtocolHelpers_GetOffset_RejectsOutOfRangePositions()
+    {
+        const string text = "first\nsecond";
+
+        Assert.AreEqual(text.Length, LspProtocolHelpers.GetOffset(
+            text,
+            new LspPosition { Line = 1, Character = 6 }));
+        Assert.Throws<ArgumentOutOfRangeException>(() => LspProtocolHelpers.GetOffset(
+            text,
+            new LspPosition { Line = 2, Character = 0 }));
+        Assert.Throws<ArgumentOutOfRangeException>(() => LspProtocolHelpers.GetOffset(
+            text,
+            new LspPosition { Line = 0, Character = 99 }));
+        Assert.Throws<ArgumentOutOfRangeException>(() => LspProtocolHelpers.GetOffset(
+            text,
+            new LspPosition { Line = -1, Character = 0 }));
+    }
+
+    [TestMethod]
+    public async Task LspSession_Rename_RejectsInvalidNewNameBeforeLaneInvocation()
+    {
+        var documentPath = Path.Combine(Path.GetTempPath(), $"rename-invalid-{Guid.NewGuid():N}.jazor");
+        var documentUri = LspProtocolHelpers.ToDocumentUri(documentPath);
+        var workspaceStore = new InMemoryWorkspaceStore();
+        await workspaceStore.UpsertDocumentAsync(
+            new DocumentSnapshot(documentPath, DocumentKind.Jazor, "<UserCard />", "1"),
+            CancellationToken.None);
+
+        var lane = new PrepareRenameLane(LaneKind.Jazor, "UserCard");
+        var session = CreateSession(workspaceStore, lane);
+        var invalidNames = new[] { "", "   ", "1UserCard", "User-Card", "User Card" };
+
+        foreach (var invalidName in invalidNames)
+        {
+            await Assert.ThrowsAsync<LspRequestException>(async () =>
+            {
+                await session.HandleRequestAsync(
+                    new LspRequestMessage
+                    {
+                        Id = 10,
+                        Method = "textDocument/rename",
+                        Params = new LspRenameParams
+                        {
+                            TextDocument = new LspTextDocumentIdentifier
+                            {
+                                Uri = documentUri
+                            },
+                            Position = new LspPosition
+                            {
+                                Line = 0,
+                                Character = 2
+                            },
+                            NewName = invalidName
+                        }
+                    },
+                    CancellationToken.None);
+            });
+        }
+
+        Assert.IsNull(lane.LastRenamePosition);
+    }
+
+    [TestMethod]
+    public async Task LspSession_WorkspaceFoldersSnapshot_ReturnsReadOnlyCollection()
+    {
+        var rootDirectory = Path.Combine(Path.GetTempPath(), $"workspace-folder-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(rootDirectory);
+        try
+        {
+            var session = CreateSession(new InMemoryWorkspaceStore());
+            var response = await session.HandleRequestAsync(
+                new LspRequestMessage
+                {
+                    Id = 11,
+                    Method = "initialize",
+                    Params = new LspInitializeParams
+                    {
+                        WorkspaceFolders =
+                        [
+                            new LspWorkspaceFolder
+                            {
+                                Uri = new Uri(rootDirectory).AbsoluteUri,
+                                Name = "workspace"
+                            }
+                        ]
+                    }
+                },
+                CancellationToken.None);
+
+            Assert.IsNotNull(response);
+            Assert.IsNull(response!.Error);
+
+            var method = typeof(LspSession).GetMethod(
+                "GetWorkspaceFoldersSnapshot",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            Assert.IsNotNull(method);
+
+            var snapshot = (IReadOnlyList<LspWorkspaceFolder>)method!.Invoke(session, null)!;
+            Assert.AreEqual(1, snapshot.Count);
+            Assert.IsFalse(snapshot is LspWorkspaceFolder[]);
+            var mutableListView = (IList<LspWorkspaceFolder>)snapshot;
+            Assert.Throws<NotSupportedException>(() =>
+            {
+                mutableListView[0] = new LspWorkspaceFolder { Uri = "file:///changed", Name = "changed" };
+            });
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task LspSession_DocumentFormatting_RespectsTrimTrailingWhitespaceOption()
+    {
+        const string text = "<div>  \n  value\t";
+        var documentPath = Path.Combine(Path.GetTempPath(), $"formatting-trim-{Guid.NewGuid():N}.jazor");
+        var documentUri = LspProtocolHelpers.ToDocumentUri(documentPath);
+        var workspaceStore = new InMemoryWorkspaceStore();
+        await workspaceStore.UpsertDocumentAsync(
+            new DocumentSnapshot(documentPath, DocumentKind.Jazor, text, "1"),
+            CancellationToken.None);
+
+        var session = CreateSession(workspaceStore);
+        var response = await session.HandleRequestAsync(
+            new LspRequestMessage
+            {
+                Id = 12,
+                Method = "textDocument/formatting",
+                Params = new LspDocumentFormattingParams
+                {
+                    TextDocument = new LspTextDocumentIdentifier
+                    {
+                        Uri = documentUri
+                    },
+                    Options = new LspFormattingOptions
+                    {
+                        TrimTrailingWhitespace = false
+                    }
+                }
+            },
+            CancellationToken.None);
+
+        Assert.IsNotNull(response);
+        Assert.IsNull(response!.Error);
+        var edits = response.Result as IReadOnlyList<LspTextEdit>;
+        Assert.IsNotNull(edits);
+        Assert.AreEqual(0, edits.Count);
+    }
+
+    [TestMethod]
+    public async Task LspSession_DocumentFormatting_PreservesMixedNewlineStyle()
+    {
+        const string text = "<div>  \r\n<span>\t\n<em>  ";
+        var documentPath = Path.Combine(Path.GetTempPath(), $"formatting-newlines-{Guid.NewGuid():N}.jazor");
+        var documentUri = LspProtocolHelpers.ToDocumentUri(documentPath);
+        var workspaceStore = new InMemoryWorkspaceStore();
+        await workspaceStore.UpsertDocumentAsync(
+            new DocumentSnapshot(documentPath, DocumentKind.Jazor, text, "1"),
+            CancellationToken.None);
+
+        var session = CreateSession(workspaceStore);
+        var response = await session.HandleRequestAsync(
+            new LspRequestMessage
+            {
+                Id = 13,
+                Method = "textDocument/formatting",
+                Params = new LspDocumentFormattingParams
+                {
+                    TextDocument = new LspTextDocumentIdentifier
+                    {
+                        Uri = documentUri
+                    },
+                    Options = new LspFormattingOptions()
+                }
+            },
+            CancellationToken.None);
+
+        Assert.IsNotNull(response);
+        Assert.IsNull(response!.Error);
+        var edits = response.Result as IReadOnlyList<LspTextEdit>;
+        Assert.IsNotNull(edits);
+        Assert.AreEqual(1, edits.Count);
+        Assert.AreEqual("<div>\r\n<span>\n<em>", edits[0].NewText);
+    }
+
+    [TestMethod]
     public async Task LspSession_PrepareRename_ExpandsKebabCaseTagAtWordEnd()
     {
         const string text = "<my-tag />";
@@ -146,6 +333,55 @@ public sealed class JoltLspSessionSliceTests
                 Directory.Delete(tempDirectory, recursive: true);
             }
         }
+    }
+
+    [TestMethod]
+    public async Task JazorLspDocumentService_GetCodeActions_TargetsPrivateMethodNearDiagnostic()
+    {
+        const string text =
+            """
+            <template>
+              <div />
+            </template>
+
+            @code {
+                private void First()
+                {
+                }
+
+                private void Target()
+                {
+                }
+            }
+            """;
+        var document = new DocumentSnapshot(
+            Path.Combine(Path.GetTempPath(), $"quick-fix-target-{Guid.NewGuid():N}.jazor"),
+            DocumentKind.Jazor,
+            text,
+            "1");
+        var service = new JazorLspDocumentService(
+            new InMemoryWorkspaceStore(),
+            new StubVueAnalysisClient());
+        var targetOffset = text.IndexOf("Target", StringComparison.Ordinal);
+        var diagnostic = new LspDiagnostic
+        {
+            Code = "JAZORVUE001",
+            Source = "Jolt",
+            Message = "private method is not bridge-visible",
+            Range = LspProtocolHelpers.ToRange(text, targetOffset, "Target".Length)
+        };
+
+        var actions = await service.GetCodeActionsAsync(
+            document,
+            [diagnostic],
+            CancellationToken.None);
+
+        Assert.AreEqual(1, actions.Count);
+        var edit = actions[0].Edit!.Changes[LspProtocolHelpers.ToDocumentUri(document.DocumentPath)].Single();
+        var editOffset = LspProtocolHelpers.GetOffset(text, edit.Range.Start);
+        var expectedPrivateOffset = text.LastIndexOf("private", targetOffset, StringComparison.Ordinal);
+        Assert.AreEqual(expectedPrivateOffset, editOffset);
+        Assert.AreEqual("public", edit.NewText);
     }
 
     private static LspSession CreateSession(

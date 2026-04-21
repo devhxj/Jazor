@@ -64,7 +64,12 @@ internal sealed class OnDemandCompiler
     }
 
     public IReadOnlyList<KeyValuePair<string, CompilationResult>> GetCachedResults()
-        => _cache.GetEntries();
+    {
+        lock (_stateGate)
+        {
+            return _cache.GetEntries();
+        }
+    }
 
     public async ValueTask<CompilationResult> CompileAsync(
         string absolutePath,

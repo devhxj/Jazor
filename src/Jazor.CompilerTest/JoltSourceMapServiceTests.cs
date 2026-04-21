@@ -140,6 +140,19 @@ public sealed class JoltSourceMapServiceTests
             () => service.Register("/Counter.jazor", sourceMapJson));
     }
 
+    [TestMethod]
+    public void SourceMapService_Register_RejectsMismatchedSourcesContentLength()
+    {
+        var service = new InMemorySourceMapService();
+        const string sourceMapJson = """
+            {"version":3,"sources":["Counter.jazor","Other.jazor"],"sourcesContent":["line0"],"names":[],"mappings":"AAAA","file":"Counter.js"}
+            """;
+
+        var exception = AssertThrows<InvalidOperationException>(
+            () => service.Register("/Counter.jazor", sourceMapJson));
+        StringAssert.Contains(exception.Message, "sourcesContent length");
+    }
+
     private static TException AssertThrows<TException>(Action action)
         where TException : Exception
     {

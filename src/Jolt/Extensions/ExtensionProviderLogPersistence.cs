@@ -39,7 +39,7 @@ internal static class ExtensionProviderLogPersistence
                     continue;
                 }
 
-                registry.ReportProviderInvocation(invocation);
+                registry.ReportProviderInvocation(invocation, isReplay: true);
             }
         }
         catch (IOException exception)

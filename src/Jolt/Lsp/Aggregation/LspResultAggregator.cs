@@ -2,24 +2,24 @@ namespace Jolt.Lsp.Aggregation;
 
 internal sealed class LspResultAggregator
 {
+    private static readonly IEqualityComparer<LspDiagnostic> DiagnosticComparer = new LspDiagnosticComparer();
+
     public IReadOnlyList<LspDiagnostic> AggregateDiagnostics(
         IReadOnlyList<LspDiagnostic> diagnostics)
     {
         ArgumentNullException.ThrowIfNull(diagnostics);
 
-        return diagnostics
-            .GroupBy(static diagnostic => string.Join(
-                '|',
-                diagnostic.Range.Start.Line,
-                diagnostic.Range.Start.Character,
-                diagnostic.Range.End.Line,
-                diagnostic.Range.End.Character,
-                diagnostic.Code,
-                diagnostic.Message,
-                diagnostic.Source),
-                StringComparer.Ordinal)
-            .Select(static group => group.First())
-            .ToArray();
+        var seen = new HashSet<LspDiagnostic>(DiagnosticComparer);
+        var aggregated = new List<LspDiagnostic>(diagnostics.Count);
+        foreach (var diagnostic in diagnostics)
+        {
+            if (seen.Add(diagnostic))
+            {
+                aggregated.Add(diagnostic);
+            }
+        }
+
+        return aggregated.ToArray();
     }
 
     public IReadOnlyList<LspCompletionItem> AggregateCompletionItems(
@@ -98,7 +98,13 @@ internal sealed class LspResultAggregator
         ArgumentNullException.ThrowIfNull(actions);
 
         return actions
-            .GroupBy(static action => string.Join('|', action.Title, action.Kind), StringComparer.Ordinal)
+            .GroupBy(
+                static action => string.Join(
+                    '|',
+                    action.Title,
+                    action.Kind,
+                    GetWorkspaceEditSignature(action.Edit)),
+                StringComparer.Ordinal)
             .Select(static group => group.First())
             .ToArray();
     }
@@ -193,5 +199,57 @@ internal sealed class LspResultAggregator
                     .ToArray(),
                 StringComparer.Ordinal)
         };
+    }
+
+    private static string GetWorkspaceEditSignature(LspWorkspaceEdit? edit)
+    {
+        if (edit is null || edit.Changes.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        return string.Join(
+            ';',
+            edit.Changes
+                .OrderBy(static entry => entry.Key, StringComparer.Ordinal)
+                .Select(static entry => string.Join(
+                    ':',
+                    entry.Key,
+                    string.Join(
+                        ',',
+                        entry.Value
+                            .Select(static textEdit => string.Join(
+                                '|',
+                                textEdit.Range.Start.Line,
+                                textEdit.Range.Start.Character,
+                                textEdit.Range.End.Line,
+                                textEdit.Range.End.Character,
+                                textEdit.NewText))
+                            .OrderBy(static signature => signature, StringComparer.Ordinal)))));
+    }
+
+    private sealed class LspDiagnosticComparer : IEqualityComparer<LspDiagnostic>
+    {
+        public bool Equals(LspDiagnostic? x, LspDiagnostic? y)
+            => ReferenceEquals(x, y)
+                || (x is not null
+                    && y is not null
+                    && x.Range.Start.Line == y.Range.Start.Line
+                    && x.Range.Start.Character == y.Range.Start.Character
+                    && x.Range.End.Line == y.Range.End.Line
+                    && x.Range.End.Character == y.Range.End.Character
+                    && string.Equals(x.Code, y.Code, StringComparison.Ordinal)
+                    && string.Equals(x.Message, y.Message, StringComparison.Ordinal)
+                    && string.Equals(x.Source, y.Source, StringComparison.Ordinal));
+
+        public int GetHashCode(LspDiagnostic obj)
+            => HashCode.Combine(
+                obj.Range.Start.Line,
+                obj.Range.Start.Character,
+                obj.Range.End.Line,
+                obj.Range.End.Character,
+                obj.Code,
+                obj.Message,
+                obj.Source);
     }
 }

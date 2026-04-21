@@ -9,14 +9,29 @@ namespace Jolt.DevServer;
 internal sealed class DevServerReloadHub : IAsyncDisposable
 {
     private static readonly TimeSpan DefaultSendTimeout = TimeSpan.FromSeconds(2);
+    private static readonly TimeSpan DefaultHeartbeatTimeout = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan DefaultHeartbeatSweepInterval = TimeSpan.FromSeconds(10);
     private readonly ConcurrentDictionary<WebSocket, HmrClientState> _sockets = new();
     private readonly TimeSpan _sendTimeout;
+    private readonly TimeSpan _heartbeatTimeout;
+    private readonly CancellationTokenSource _heartbeatSweepCancellationSource = new();
+    private readonly Task _heartbeatSweepTask;
 
-    public DevServerReloadHub(TimeSpan? sendTimeout = null)
+    public DevServerReloadHub(
+        TimeSpan? sendTimeout = null,
+        TimeSpan? heartbeatTimeout = null,
+        TimeSpan? heartbeatSweepInterval = null)
     {
         _sendTimeout = sendTimeout is { } timeout && timeout > TimeSpan.Zero
             ? timeout
             : DefaultSendTimeout;
+        _heartbeatTimeout = heartbeatTimeout is { } heartbeat && heartbeat > TimeSpan.Zero
+            ? heartbeat
+            : DefaultHeartbeatTimeout;
+        var sweepInterval = heartbeatSweepInterval is { } interval && interval > TimeSpan.Zero
+            ? interval
+            : DefaultHeartbeatSweepInterval;
+        _heartbeatSweepTask = RunHeartbeatSweepAsync(sweepInterval, _heartbeatSweepCancellationSource.Token);
     }
 
     public int ConnectedClientCount => _sockets.Count;
@@ -116,6 +131,7 @@ internal sealed class DevServerReloadHub : IAsyncDisposable
 
     private async Task BroadcastAsync(object payload, CancellationToken cancellationToken)
     {
+        await PruneExpiredClientsAsync(DateTimeOffset.UtcNow);
         var broadcastTasks = new List<Task>(_sockets.Count);
         foreach (var entry in _sockets.ToArray())
         {
@@ -278,6 +294,19 @@ internal sealed class DevServerReloadHub : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        _heartbeatSweepCancellationSource.Cancel();
+        try
+        {
+            await _heartbeatSweepTask;
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        finally
+        {
+            _heartbeatSweepCancellationSource.Dispose();
+        }
+
         foreach (var entry in _sockets.ToArray())
         {
             RemoveSocket(entry.Key);
@@ -285,12 +314,48 @@ internal sealed class DevServerReloadHub : IAsyncDisposable
         }
     }
 
-    private void RemoveSocket(WebSocket socket)
+    private async Task RunHeartbeatSweepAsync(
+        TimeSpan sweepInterval,
+        CancellationToken cancellationToken)
+    {
+        using var timer = new PeriodicTimer(sweepInterval);
+        try
+        {
+            while (await timer.WaitForNextTickAsync(cancellationToken))
+            {
+                await PruneExpiredClientsAsync(DateTimeOffset.UtcNow);
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+        }
+    }
+
+    private async Task PruneExpiredClientsAsync(DateTimeOffset now)
+    {
+        foreach (var entry in _sockets.ToArray())
+        {
+            if (now - entry.Value.LastSeenUtc <= _heartbeatTimeout)
+            {
+                continue;
+            }
+
+            if (RemoveSocket(entry.Key))
+            {
+                await CloseAndDisposeAsync(entry.Key, CancellationToken.None);
+            }
+        }
+    }
+
+    private bool RemoveSocket(WebSocket socket)
     {
         if (_sockets.TryRemove(socket, out var state))
         {
             state.Dispose();
+            return true;
         }
+
+        return false;
     }
 
     private static async Task CloseAndDisposeAsync(WebSocket socket, CancellationToken cancellationToken)

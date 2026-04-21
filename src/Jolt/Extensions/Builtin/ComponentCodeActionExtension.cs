@@ -128,13 +128,6 @@ internal sealed class ComponentCodeActionExtension : IExtension, ILspCodeActionP
             return true;
         }
 
-        var fallbackComponentMatch = JazorMarkupPatterns.ComponentTagPattern.Match(text);
-        if (fallbackComponentMatch.Success)
-        {
-            componentName = fallbackComponentMatch.Groups["name"].Value;
-            return true;
-        }
-
         componentName = string.Empty;
         return false;
     }

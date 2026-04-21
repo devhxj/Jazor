@@ -110,10 +110,20 @@ internal sealed class HtmlTransformer
         function getHotRecord(ownerPath) {
           let record = hotModules.get(ownerPath);
           if (!record) {
-            record = { data: {}, acceptCallbacks: [], disposeCallbacks: [] };
+            record = { data: {}, acceptCallbacks: [], dependencyAcceptCallbacks: new Map(), disposeCallbacks: [] };
             hotModules.set(ownerPath, record);
           }
           return record;
+        }
+        function resolveDependencyPath(ownerUrl, dependency) {
+          if (typeof dependency !== "string" || dependency.length === 0) {
+            return "";
+          }
+          try {
+            return normalizeModulePath(new URL(dependency, ownerUrl).href);
+          } catch {
+            return normalizeModulePath(dependency);
+          }
         }
         function appendTimestamp(path, timestamp) {
           const url = new URL(path, location.href);
@@ -125,6 +135,7 @@ internal sealed class HtmlTransformer
             const ownerPath = normalizeModulePath(ownerUrl);
             const record = getHotRecord(ownerPath);
             record.acceptCallbacks = [];
+            record.dependencyAcceptCallbacks = new Map();
             record.disposeCallbacks = [];
             return {
               get data() {
@@ -133,7 +144,26 @@ internal sealed class HtmlTransformer
               accept(depsOrCallback, callback) {
                 if (Array.isArray(depsOrCallback)) {
                   const dependencyCallback = typeof callback === "function" ? callback : () => {};
-                  record.acceptCallbacks.push((module) => dependencyCallback([module]));
+                  for (const dependency of depsOrCallback) {
+                    const dependencyPath = resolveDependencyPath(ownerUrl, dependency);
+                    if (!dependencyPath) {
+                      continue;
+                    }
+                    const callbacks = record.dependencyAcceptCallbacks.get(dependencyPath) ?? [];
+                    callbacks.push((module) => dependencyCallback([module]));
+                    record.dependencyAcceptCallbacks.set(dependencyPath, callbacks);
+                  }
+                  return;
+                }
+                if (typeof depsOrCallback === "string") {
+                  const dependencyPath = resolveDependencyPath(ownerUrl, depsOrCallback);
+                  if (!dependencyPath) {
+                    return;
+                  }
+                  const dependencyCallback = typeof callback === "function" ? callback : () => {};
+                  const callbacks = record.dependencyAcceptCallbacks.get(dependencyPath) ?? [];
+                  callbacks.push((module) => dependencyCallback(module));
+                  record.dependencyAcceptCallbacks.set(dependencyPath, callbacks);
                   return;
                 }
                 record.acceptCallbacks.push(typeof depsOrCallback === "function" ? depsOrCallback : () => {});
@@ -162,13 +192,19 @@ internal sealed class HtmlTransformer
         };
         async function applyJavaScriptUpdate(update, timestamp) {
           const acceptedPath = normalizeModulePath(update?.acceptedPath ?? update?.path);
-          const updatePath = update?.path ?? acceptedPath;
+          const updatePath = normalizeModulePath(update?.path ?? acceptedPath);
           const record = hotModules.get(acceptedPath);
-          if (!acceptedPath || !updatePath || !record || record.acceptCallbacks.length === 0) {
+          if (!acceptedPath || !updatePath || !record) {
             location.reload();
             return;
           }
-          const acceptCallbacks = [...record.acceptCallbacks];
+          const acceptCallbacks = acceptedPath === updatePath
+            ? [...record.acceptCallbacks]
+            : [...(record.dependencyAcceptCallbacks.get(updatePath) ?? [])];
+          if (acceptCallbacks.length === 0) {
+            location.reload();
+            return;
+          }
           const disposeCallbacks = [...record.disposeCallbacks];
           for (const dispose of disposeCallbacks) {
             await dispose(record.data);

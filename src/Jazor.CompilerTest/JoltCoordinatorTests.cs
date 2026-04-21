@@ -12,6 +12,107 @@ namespace Jazor.CompilerTest;
 public sealed class JoltCoordinatorTests
 {
     [TestMethod]
+    public void LspResultAggregator_AggregateCodeActions_PreservesDistinctEditsWithSameTitleAndKind()
+    {
+        var aggregator = new LspResultAggregator();
+        var first = new LspCodeAction
+        {
+            Title = "Import component",
+            Kind = "quickfix",
+            Edit = new LspWorkspaceEdit
+            {
+                Changes = new Dictionary<string, LspTextEdit[]>
+                {
+                    ["file:///component-a.jazor"] =
+                    [
+                        new LspTextEdit
+                        {
+                            Range = new LspRange
+                            {
+                                Start = new LspPosition { Line = 0, Character = 0 },
+                                End = new LspPosition { Line = 0, Character = 0 }
+                            },
+                            NewText = "import A from './A.vue';\n"
+                        }
+                    ]
+                }
+            }
+        };
+        var second = new LspCodeAction
+        {
+            Title = "Import component",
+            Kind = "quickfix",
+            Edit = new LspWorkspaceEdit
+            {
+                Changes = new Dictionary<string, LspTextEdit[]>
+                {
+                    ["file:///component-b.jazor"] =
+                    [
+                        new LspTextEdit
+                        {
+                            Range = new LspRange
+                            {
+                                Start = new LspPosition { Line = 0, Character = 0 },
+                                End = new LspPosition { Line = 0, Character = 0 }
+                            },
+                            NewText = "import B from './B.vue';\n"
+                        }
+                    ]
+                }
+            }
+        };
+
+        var aggregated = aggregator.AggregateCodeActions([first, second]);
+
+        Assert.AreEqual(2, aggregated.Count);
+    }
+
+    [TestMethod]
+    public void LspResultAggregator_AggregateDiagnostics_DeduplicatesByRangeAndMessage()
+    {
+        var aggregator = new LspResultAggregator();
+        var first = new LspDiagnostic
+        {
+            Range = new LspRange
+            {
+                Start = new LspPosition { Line = 1, Character = 2 },
+                End = new LspPosition { Line = 1, Character = 6 }
+            },
+            Code = "JAZOR001",
+            Source = "jolt",
+            Message = "duplicate"
+        };
+        var duplicate = new LspDiagnostic
+        {
+            Range = new LspRange
+            {
+                Start = new LspPosition { Line = 1, Character = 2 },
+                End = new LspPosition { Line = 1, Character = 6 }
+            },
+            Code = "JAZOR001",
+            Source = "jolt",
+            Message = "duplicate"
+        };
+        var distinct = new LspDiagnostic
+        {
+            Range = new LspRange
+            {
+                Start = new LspPosition { Line = 1, Character = 2 },
+                End = new LspPosition { Line = 1, Character = 7 }
+            },
+            Code = "JAZOR001",
+            Source = "jolt",
+            Message = "duplicate"
+        };
+
+        var aggregated = aggregator.AggregateDiagnostics([first, duplicate, distinct]);
+
+        Assert.AreEqual(2, aggregated.Count);
+        Assert.AreSame(first, aggregated[0]);
+        Assert.AreSame(distinct, aggregated[1]);
+    }
+
+    [TestMethod]
     public async Task Jolt_MarkupBridgeFanoutCoordinator_Definition_FallsBackToVueFileWhenNativeDefinitionIsEmpty()
     {
         var tempDirectory = CreateTemporaryDirectory();

@@ -743,15 +743,20 @@ internal sealed class MarkupComponentBridgeService
             return;
         }
 
+        var openDocumentsByPath = openDocuments
+            .GroupBy(
+                static document => JoltWorkspaceResolver.NormalizePath(document.DocumentPath),
+                StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                static group => group.Key,
+                static group => group.First(),
+                StringComparer.OrdinalIgnoreCase);
+
         foreach (var filePath in JoltWorkspaceResolver.EnumerateWorkspaceFiles(new[] { directory }, searchPattern, cancellationToken))
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var normalizedPath = JoltWorkspaceResolver.NormalizePath(filePath);
-            var openDocument = openDocuments.FirstOrDefault(candidate =>
-                string.Equals(
-                    JoltWorkspaceResolver.NormalizePath(candidate.DocumentPath),
-                    normalizedPath,
-                    StringComparison.OrdinalIgnoreCase));
-            if (openDocument is not null)
+            if (openDocumentsByPath.TryGetValue(normalizedPath, out var openDocument))
             {
                 AddDocumentCandidate(openDocument, documents, seen);
                 continue;

@@ -16,6 +16,7 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
     private static bool _launchWorkspaceCleanupHookRegistered;
 
     private readonly DenoVolarHostOptions _options;
+    private readonly SemaphoreSlim _lifecycleGate = new(1, 1);
     private readonly SemaphoreSlim _requestGate = new(1, 1);
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
@@ -39,94 +40,101 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
 
     public bool IsRunning => _process is { HasExited: false };
 
-    public ValueTask StartAsync(CancellationToken cancellationToken)
+    public async ValueTask StartAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (IsRunning)
-        {
-            return ValueTask.CompletedTask;
-        }
-
-        if (string.IsNullOrWhiteSpace(_options.ExecutablePath))
-        {
-            throw new InvalidOperationException("No Deno runtime path was configured for the Jolt Volar worker.");
-        }
-
-        if (!_options.HasExplicitExecutableOverride &&
-            Path.IsPathRooted(_options.ExecutablePath) &&
-            !File.Exists(_options.ExecutablePath))
-        {
-            throw new InvalidOperationException(
-                DenoRuntimeAssetResolver.CreateMissingRuntimeMessage(_options.ExecutablePath));
-        }
-
-        var startInfo = new ProcessStartInfo
-        {
-            FileName = _options.ExecutablePath,
-            UseShellExecute = false,
-            RedirectStandardInput = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            CreateNoWindow = true,
-            StandardErrorEncoding = Encoding.UTF8,
-            StandardOutputEncoding = Encoding.UTF8
-        };
-
-        foreach (var argument in _options.Arguments)
-        {
-            startInfo.ArgumentList.Add(argument);
-        }
-
-        var workingDirectory = ResolveLaunchWorkingDirectory();
-        if (!string.IsNullOrWhiteSpace(workingDirectory))
-        {
-            Directory.CreateDirectory(workingDirectory);
-            startInfo.WorkingDirectory = workingDirectory;
-        }
-
-        if (!string.IsNullOrWhiteSpace(_options.CacheDirectory))
-        {
-            Directory.CreateDirectory(_options.CacheDirectory);
-            startInfo.Environment["DENO_DIR"] = _options.CacheDirectory;
-        }
-
-        _process = new Process
-        {
-            StartInfo = startInfo
-        };
-        ResetStandardErrorBuffer();
-
+        await _lifecycleGate.WaitAsync(cancellationToken);
         try
         {
-            if (!_process.Start())
+            if (IsRunning)
             {
-                throw new InvalidOperationException($"Failed to start Deno Volar worker '{_options.ExecutablePath}'.");
+                return;
             }
-        }
-        catch (Win32Exception ex) when (!_options.HasExplicitExecutableOverride)
-        {
-            CleanupLaunchWorkingDirectory();
-            throw new InvalidOperationException(
-                DenoRuntimeAssetResolver.CreateMissingRuntimeMessage(_options.ExecutablePath),
-                ex);
-        }
-        catch
-        {
-            CleanupLaunchWorkingDirectory();
-            throw;
-        }
 
-        _writer = new StreamWriter(_process.StandardInput.BaseStream, new UTF8Encoding(false))
+            if (string.IsNullOrWhiteSpace(_options.ExecutablePath))
+            {
+                throw new InvalidOperationException("No Deno runtime path was configured for the Jolt Volar worker.");
+            }
+
+            if (!_options.HasExplicitExecutableOverride &&
+                Path.IsPathRooted(_options.ExecutablePath) &&
+                !File.Exists(_options.ExecutablePath))
+            {
+                throw new InvalidOperationException(
+                    DenoRuntimeAssetResolver.CreateMissingRuntimeMessage(_options.ExecutablePath));
+            }
+
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = _options.ExecutablePath,
+                UseShellExecute = false,
+                RedirectStandardInput = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true,
+                StandardErrorEncoding = Encoding.UTF8,
+                StandardOutputEncoding = Encoding.UTF8
+            };
+
+            foreach (var argument in _options.Arguments)
+            {
+                startInfo.ArgumentList.Add(argument);
+            }
+
+            var workingDirectory = ResolveLaunchWorkingDirectory();
+            if (!string.IsNullOrWhiteSpace(workingDirectory))
+            {
+                Directory.CreateDirectory(workingDirectory);
+                startInfo.WorkingDirectory = workingDirectory;
+            }
+
+            if (!string.IsNullOrWhiteSpace(_options.CacheDirectory))
+            {
+                Directory.CreateDirectory(_options.CacheDirectory);
+                startInfo.Environment["DENO_DIR"] = _options.CacheDirectory;
+            }
+
+            _process = new Process
+            {
+                StartInfo = startInfo
+            };
+            ResetStandardErrorBuffer();
+
+            try
+            {
+                if (!_process.Start())
+                {
+                    throw new InvalidOperationException($"Failed to start Deno Volar worker '{_options.ExecutablePath}'.");
+                }
+            }
+            catch (Win32Exception ex) when (!_options.HasExplicitExecutableOverride)
+            {
+                CleanupLaunchWorkingDirectory();
+                throw new InvalidOperationException(
+                    DenoRuntimeAssetResolver.CreateMissingRuntimeMessage(_options.ExecutablePath),
+                    ex);
+            }
+            catch
+            {
+                CleanupLaunchWorkingDirectory();
+                throw;
+            }
+
+            _writer = new StreamWriter(_process.StandardInput.BaseStream, new UTF8Encoding(false))
+            {
+                AutoFlush = true,
+                NewLine = "\n"
+            };
+            _reader = new StreamReader(_process.StandardOutput.BaseStream, Encoding.UTF8);
+            _standardErrorPumpCancellationSource = new CancellationTokenSource();
+            _standardErrorPumpTask = PumpStandardErrorAsync(
+                _process.StandardError,
+                _standardErrorPumpCancellationSource.Token);
+        }
+        finally
         {
-            AutoFlush = true,
-            NewLine = "\n"
-        };
-        _reader = new StreamReader(_process.StandardOutput.BaseStream, Encoding.UTF8);
-        _standardErrorPumpCancellationSource = new CancellationTokenSource();
-        _standardErrorPumpTask = PumpStandardErrorAsync(
-            _process.StandardError,
-            _standardErrorPumpCancellationSource.Token);
-        return ValueTask.CompletedTask;
+            _lifecycleGate.Release();
+        }
     }
 
     public async ValueTask<TResult?> SendRequestAsync<TResult>(
@@ -212,29 +220,37 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
     public async ValueTask StopAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (_process is null)
-        {
-            return;
-        }
-
+        await _lifecycleGate.WaitAsync(cancellationToken);
         try
         {
-            if (!_process.HasExited)
+            if (_process is null)
             {
-                _process.Kill(entireProcessTree: true);
-                await _process.WaitForExitAsync(cancellationToken);
+                return;
+            }
+
+            try
+            {
+                if (!_process.HasExited)
+                {
+                    _process.Kill(entireProcessTree: true);
+                    await _process.WaitForExitAsync(cancellationToken);
+                }
+            }
+            finally
+            {
+                await StopStandardErrorPumpAsync();
+                _writer?.Dispose();
+                _writer = null;
+                _reader?.Dispose();
+                _reader = null;
+                _process.Dispose();
+                _process = null;
+                CleanupLaunchWorkingDirectory();
             }
         }
         finally
         {
-            await StopStandardErrorPumpAsync();
-            _writer?.Dispose();
-            _writer = null;
-            _reader?.Dispose();
-            _reader = null;
-            _process.Dispose();
-            _process = null;
-            CleanupLaunchWorkingDirectory();
+            _lifecycleGate.Release();
         }
     }
 

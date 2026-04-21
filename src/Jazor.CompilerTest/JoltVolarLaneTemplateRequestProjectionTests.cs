@@ -20,6 +20,7 @@ public sealed class JoltVolarLaneTemplateRequestProjectionTests
         var document = CreateJazorDocument("<UserCard />");
         var projectedPath = "virtual:" + document.DocumentPath + ".g.vue";
         var projectedUri = LspProtocolHelpers.ToDocumentUri(projectedPath);
+        var denoProjectedUri = LowercaseWindowsDriveUri(projectedUri);
         var sourceUri = LspProtocolHelpers.ToDocumentUri(document.DocumentPath);
         var registry = await CreateRegistryWithPrimaryProjectionAsync(document, projectedPath);
         var denoHost = new FakeDenoFrontendHost
@@ -36,7 +37,7 @@ public sealed class JoltVolarLaneTemplateRequestProjectionTests
             {
                 Changes = new Dictionary<string, LspTextEdit[]>(StringComparer.Ordinal)
                 {
-                    [projectedUri] =
+                    [denoProjectedUri] =
                     [
                         new LspTextEdit
                         {
@@ -79,7 +80,7 @@ public sealed class JoltVolarLaneTemplateRequestProjectionTests
 
         Assert.IsNotNull(rename);
         Assert.IsTrue(rename.Changes.ContainsKey(sourceUri));
-        Assert.IsFalse(rename.Changes.ContainsKey(projectedUri));
+        Assert.IsFalse(rename.Changes.ContainsKey(denoProjectedUri));
         Assert.AreEqual(1, rename.Changes[sourceUri].Length);
         Assert.AreEqual("AccountCard", rename.Changes[sourceUri][0].NewText);
 
@@ -182,6 +183,16 @@ public sealed class JoltVolarLaneTemplateRequestProjectionTests
             Start = new LspPosition { Line = startLine, Character = startCharacter },
             End = new LspPosition { Line = endLine, Character = endCharacter }
         };
+
+    private static string LowercaseWindowsDriveUri(string uri)
+    {
+        const string prefix = "file:///";
+        return uri.Length > prefix.Length + 1
+            && uri.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+            && uri[prefix.Length + 1] == ':'
+            ? prefix + char.ToLowerInvariant(uri[prefix.Length]) + uri[(prefix.Length + 1)..]
+            : uri;
+    }
 
     private static async Task<InMemoryVirtualDocumentRegistry> CreateRegistryWithPrimaryProjectionAsync(
         DocumentSnapshot sourceDocument,

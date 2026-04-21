@@ -112,7 +112,7 @@ internal sealed class NullExtensionRegistry : IExtensionRegistry
     public IReadOnlyList<ExtensionLoadInvocation> GetRecentExtensionLoadInvocations(int maxCount = 100)
         => Array.Empty<ExtensionLoadInvocation>();
 
-    public void ReportProviderInvocation(ExtensionProviderInvocation invocation)
+    public void ReportProviderInvocation(ExtensionProviderInvocation invocation, bool isReplay = false)
     {
     }
 

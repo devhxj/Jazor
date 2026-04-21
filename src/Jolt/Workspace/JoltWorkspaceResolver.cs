@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Text.Json;
 using System.Threading;
 using Jazor.VueContracts.Protocol;
 
@@ -51,11 +52,10 @@ internal static class JoltWorkspaceResolver
         return new WorkspaceFolderRootScope(previous);
     }
 
-    public static void InvalidatePath(string documentPath)
+    public static void InvalidatePath(string? documentPath)
     {
         if (string.IsNullOrWhiteSpace(documentPath))
         {
-            ClearWorkspaceCache();
             return;
         }
 
@@ -858,6 +858,21 @@ internal static class JoltWorkspaceResolver
             {
                 continue;
             }
+            catch (IOException exception)
+            {
+                WriteDocumentResolutionWarning(probePath, exception);
+                continue;
+            }
+            catch (UnauthorizedAccessException exception)
+            {
+                WriteDocumentResolutionWarning(probePath, exception);
+                continue;
+            }
+            catch (NotSupportedException exception)
+            {
+                WriteDocumentResolutionWarning(probePath, exception);
+                continue;
+            }
         }
 
         return null;
@@ -1354,6 +1369,25 @@ internal static class JoltWorkspaceResolver
 
                 yield return current;
             }
+        }
+    }
+
+    private static void WriteDocumentResolutionWarning(string documentPath, Exception exception)
+    {
+        try
+        {
+            Console.Error.WriteLine(JsonSerializer.Serialize(new
+            {
+                eventType = "workspaceDocumentResolveFailed",
+                documentPath,
+                errorType = exception.GetType().FullName ?? exception.GetType().Name,
+                message = exception.Message,
+                timestamp = DateTimeOffset.UtcNow
+            }));
+        }
+        catch (Exception)
+        {
+            // Resolution failure reporting must not change workspace lookup behavior.
         }
     }
 

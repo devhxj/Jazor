@@ -2,6 +2,8 @@ namespace Jolt.Debug;
 
 internal sealed class VariableMapper
 {
+    private const int MaxDisplayValueLength = 4096;
+
     public DapEvaluationResult ToEvaluationResult(
         CdpRemoteObject? remoteObject,
         int variablesReference = 0)
@@ -40,10 +42,10 @@ internal sealed class VariableMapper
 
         if (!string.IsNullOrWhiteSpace(remoteObject.UnserializableValue))
         {
-            return remoteObject.UnserializableValue!;
+            return TruncateDisplayValue(remoteObject.UnserializableValue!);
         }
 
-        return remoteObject.Type switch
+        var value = remoteObject.Type switch
         {
             "string" => remoteObject.Value ?? remoteObject.Description ?? string.Empty,
             "number" or "bigint" or "boolean" => remoteObject.Value ?? remoteObject.Description ?? "0",
@@ -54,5 +56,11 @@ internal sealed class VariableMapper
             "object" => remoteObject.Description ?? "Object",
             _ => remoteObject.Value ?? remoteObject.Description ?? "undefined"
         };
+        return TruncateDisplayValue(value);
     }
+
+    private static string TruncateDisplayValue(string value)
+        => value.Length <= MaxDisplayValueLength
+            ? value
+            : value[..MaxDisplayValueLength] + "...";
 }

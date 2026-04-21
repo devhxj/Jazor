@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Jazor.Vue;
 using Jazor.VueContracts.Protocol;
 using Jolt.Analysis;
@@ -7,6 +8,21 @@ namespace Jazor.CompilerTest;
 [TestClass]
 public sealed class JazorVueAnalysisRuntimeTests
 {
+    [TestMethod]
+    public void ProtocolJsonSerializer_SerializeHotUpdateRequest_UsesStableJsonPropertyNames()
+    {
+        var json = ProtocolJsonSerializer.Serialize(new GetHotUpdatePlanRequest(
+            "Counter.vue",
+            DocumentKind.Vue,
+            "42"));
+
+        using var document = JsonDocument.Parse(json);
+        var root = document.RootElement;
+        Assert.AreEqual("Counter.vue", root.GetProperty("documentPath").GetString());
+        Assert.AreEqual("Vue", root.GetProperty("documentKind").GetString());
+        Assert.AreEqual("42", root.GetProperty("version").GetString());
+    }
+
     [TestMethod]
     public async Task JazorVueAnalysisService_AnalyzeJazor_ReturnsImportsAndArtifacts()
     {

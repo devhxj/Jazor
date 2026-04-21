@@ -1816,6 +1816,10 @@ public sealed class JoltPhase7ExtensionSecurityAndBuiltinTests
                 type: typeof(SlowProcessIsolatedHoverTestExtension).FullName!,
                 assemblySha256: sandbox.AssemblySha256,
                 providers: ["hover"],
+                ioPermission: new ExtensionIoPermissionManifest
+                {
+                    Level = ExtensionHostOptions.IoCapabilityRead
+                },
                 processIsolation: true,
                 signer: signer,
                 settings: new Dictionary<string, string>
@@ -1951,6 +1955,23 @@ public sealed class JoltPhase7ExtensionSecurityAndBuiltinTests
         {
             sandbox.Dispose();
         }
+    }
+
+    [TestMethod]
+    public void ExtensionSandboxProfile_IsNetworkHostAllowed_WithLoopbackWildcard_ReturnsFalse()
+    {
+        var profile = new ExtensionSandboxProfile
+        {
+            IoCapability = ExtensionHostOptions.IoCapabilityNone,
+            NetworkCapability = ExtensionHostOptions.NetworkCapabilityLoopback,
+            ReadRoots = [],
+            WriteRoots = [],
+            AllowedHosts = ["*"]
+        };
+
+        Assert.IsFalse(profile.IsNetworkHostAllowed("127.0.0.1"));
+        Assert.IsFalse(profile.IsNetworkHostAllowed("localhost"));
+        Assert.IsFalse(profile.IsNetworkHostAllowed("::1"));
     }
 
     [TestMethod]
@@ -2723,6 +2744,60 @@ public sealed class JoltPhase7ExtensionSecurityAndBuiltinTests
     }
 
     [TestMethod]
+    public async Task BuiltinComponentCodeActionProvider_DoesNotFallbackToFirstTagForUnresolvedDiagnostic()
+    {
+        var rootDirectory = Path.Combine(Path.GetTempPath(), $"phase7-code-action-no-fallback-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(rootDirectory);
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(rootDirectory, "FirstWidget.vue"),
+                "<template><div /></template>");
+            const string text =
+                """
+                <template>
+                  <FirstWidget />
+                </template>
+                """;
+            var documentPath = Path.Combine(rootDirectory, "Counter.jazor");
+            var document = new DocumentSnapshot(documentPath, DocumentKind.Jazor, text, version: "1");
+            var provider = new ComponentCodeActionExtension();
+
+            var actions = await provider.ProvideCodeActionsAsync(
+                new LspCodeActionProviderContext(
+                    document,
+                    LspProtocolHelpers.ToRange(text, 0, 0),
+                    [
+                        new LspDiagnostic
+                        {
+                            Range = LspProtocolHelpers.ToRange(text, 0, 0),
+                            Severity = 1,
+                            Code = "JAZORVUEFRONTEND001",
+                            Source = "Jolt.Frontend",
+                            Message = "Unable to resolve component MissingWidget."
+                        }
+                    ],
+                    new ProjectionTarget(
+                        LaneKind.Jazor,
+                        DocumentRegionKind.Template,
+                        documentPath,
+                        documentPath,
+                        IsProjected: false),
+                    Array.Empty<LspCodeAction>()),
+                CancellationToken.None);
+
+            Assert.AreEqual(0, actions.Count);
+        }
+        finally
+        {
+            if (Directory.Exists(rootDirectory))
+            {
+                Directory.Delete(rootDirectory, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
     public async Task BuiltinWorkspaceSymbolProvider_IndexesOpenDocumentsWithStableOrdering()
     {
         var workspaceStore = new InMemoryWorkspaceStore();
@@ -2822,7 +2897,7 @@ public sealed class JoltPhase7ExtensionSecurityAndBuiltinTests
     }
 
     [TestMethod]
-    public void ExtensionProviderLogPersistence_AppendAndReplay_RehydratesProviderHealthAndRecentEvents()
+    public void ExtensionProviderLogPersistence_AppendAndReplay_RehydratesRecentEventsWithoutProviderHealth()
     {
         var rootDirectory = Path.Combine(Path.GetTempPath(), $"phase7-provider-log-{Guid.NewGuid():N}");
         var logFilePath = Path.Combine(rootDirectory, "logs", "provider-events.jsonl");
@@ -2855,12 +2930,7 @@ public sealed class JoltPhase7ExtensionSecurityAndBuiltinTests
                 providerEventRetention: 10);
             ExtensionProviderLogPersistence.Replay(registry, logFilePath);
 
-            var health = registry.GetProviderHealth().Single(static item =>
-                string.Equals(item.ProviderName, "ReplayHoverProvider", StringComparison.Ordinal)
-                && string.Equals(item.Capability, "hover", StringComparison.Ordinal));
-            Assert.AreEqual(1, health.SuccessCount);
-            Assert.AreEqual(1, health.FailureCount);
-            Assert.AreEqual("sandbox_violation", health.LastErrorMessage);
+            Assert.AreEqual(0, registry.GetProviderHealth().Count);
 
             var recent = registry.GetRecentProviderInvocations(maxCount: 10);
             Assert.AreEqual(2, recent.Count);

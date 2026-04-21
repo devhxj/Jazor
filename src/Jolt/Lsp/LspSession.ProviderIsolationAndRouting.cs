@@ -350,6 +350,11 @@ internal sealed partial class LspSession
             return document;
         }
 
+        if (!IsInsideWorkspaceRoots(documentPath))
+        {
+            throw new InvalidOperationException($"Document '{documentPath}' is outside the configured workspace folders.");
+        }
+
         if (!File.Exists(documentPath))
         {
             throw new InvalidOperationException($"Document '{documentPath}' is not tracked and does not exist on disk.");
@@ -363,6 +368,32 @@ internal sealed partial class LspSession
         await _workspaceStore.UpsertDocumentAsync(document, cancellationToken);
         await UpdateProjectionStateAsync(document, cancellationToken);
         return document;
+    }
+
+    private bool IsInsideWorkspaceRoots(string documentPath)
+    {
+        var workspaceRoots = GetWorkspaceFolderRootPaths();
+        if (workspaceRoots.Count == 0)
+        {
+            return true;
+        }
+
+        var fullDocumentPath = Path.GetFullPath(documentPath);
+        foreach (var rootPath in workspaceRoots)
+        {
+            var fullRootPath = Path.GetFullPath(rootPath);
+            var relativePath = Path.GetRelativePath(fullRootPath, fullDocumentPath);
+            if (string.Equals(relativePath, ".", StringComparison.Ordinal)
+                || (!string.Equals(relativePath, "..", StringComparison.Ordinal)
+                    && !relativePath.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+                    && !relativePath.StartsWith(".." + Path.AltDirectorySeparatorChar, StringComparison.Ordinal)
+                    && !Path.IsPathRooted(relativePath)))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static TParams DeserializeParams<TParams>(object? payload)

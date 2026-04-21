@@ -9,6 +9,7 @@ internal sealed class DenoVolarHost : IDenoVolarHost
     private readonly DenoVolarHostOptions _options;
     private readonly IDenoWorkerProcess _workerProcess;
     private readonly SemaphoreSlim _lifecycleGate = new(1, 1);
+    private static readonly TimeSpan RetryBackoff = TimeSpan.FromMilliseconds(100);
 
     public DenoVolarHost(DenoVolarHostOptions options)
         : this(options, workerProcess: null)
@@ -401,6 +402,7 @@ internal sealed class DenoVolarHost : IDenoVolarHost
             await TryResetWorkerStateAsync();
         }
 
+        await Task.Delay(RetryBackoff, cancellationToken);
         await EnsureStartedAsync(cancellationToken);
         if (!IsRunning)
         {

@@ -84,11 +84,12 @@ internal sealed partial class LspSession
     {
         lock (_workspaceFoldersGate)
         {
-            return _workspaceFoldersByUri.Values
+            var snapshot = _workspaceFoldersByUri.Values
                 .OrderBy(static folder => folder.Name, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(static folder => folder.Uri, StringComparer.OrdinalIgnoreCase)
                 .Select(CloneWorkspaceFolder)
                 .ToArray();
+            return Array.AsReadOnly(snapshot);
         }
     }
 
@@ -96,12 +97,13 @@ internal sealed partial class LspSession
     {
         lock (_workspaceFoldersGate)
         {
-            return _workspaceFoldersByUri.Values
+            var snapshot = _workspaceFoldersByUri.Values
                 .Select(static folder => TryResolveWorkspaceFolderRootPath(folder.Uri))
                 .Where(static path => !string.IsNullOrWhiteSpace(path))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Select(static path => path!)
                 .ToArray();
+            return Array.AsReadOnly(snapshot);
         }
     }
 

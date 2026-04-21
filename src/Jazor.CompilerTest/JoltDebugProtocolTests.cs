@@ -301,6 +301,40 @@ public sealed class JoltDebugProtocolTests
     }
 
     [TestMethod]
+    public async Task DapRequestHandler_HandleAsync_SetBreakpoints_WithNonScalarSourcePath_ReturnsEmptyBreakpoints()
+    {
+        var handler = CreateHandler(new InMemorySourceMapService(), out _);
+
+        var result = await handler.HandleAsync(
+            new DapRequest
+            {
+                Seq = 102,
+                Command = "setBreakpoints",
+                Arguments = JsonSerializer.SerializeToElement(new
+                {
+                    source = new
+                    {
+                        path = new
+                        {
+                            unexpected = true
+                        }
+                    },
+                    breakpoints = new[]
+                    {
+                        new { line = 1 }
+                    }
+                })
+            },
+            CancellationToken.None);
+
+        Assert.IsTrue(result.Response.Success);
+        using var body = GetResponseBody(result.Response);
+        var breakpoints = body.RootElement.GetProperty("breakpoints");
+        Assert.AreEqual(JsonValueKind.Array, breakpoints.ValueKind);
+        Assert.AreEqual(0, breakpoints.GetArrayLength());
+    }
+
+    [TestMethod]
     public async Task DapRequestHandler_HandleAsync_SetBreakpoints_ConcurrentRequests_ProduceUniqueBreakpointIds()
     {
         var sourceMapService = new InMemorySourceMapService();

@@ -842,7 +842,9 @@ internal static class ExtensionSecurityPolicy
     {
         var relativePath = Path.GetRelativePath(directoryPath, candidatePath);
         return !string.IsNullOrWhiteSpace(relativePath)
-            && !relativePath.StartsWith("..", StringComparison.Ordinal)
+            && !string.Equals(relativePath, "..", StringComparison.Ordinal)
+            && !relativePath.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+            && !relativePath.StartsWith(".." + Path.AltDirectorySeparatorChar, StringComparison.Ordinal)
             && !Path.IsPathRooted(relativePath);
     }
 }

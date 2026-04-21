@@ -55,4 +55,22 @@ public sealed class JoltDebugVariableMapperTests
         Assert.AreEqual("number", variable.Type);
         Assert.AreEqual(0, variable.VariablesReference);
     }
+
+    [TestMethod]
+    public void VariableMapper_ToVariable_TruncatesOversizedValues()
+    {
+        var mapper = new VariableMapper();
+        var variable = mapper.ToVariable(
+            "secretLikePayload",
+            new CdpRemoteObject(
+                Type: "string",
+                SubType: null,
+                Description: null,
+                Value: new string('x', 5000),
+                UnserializableValue: null,
+                ObjectId: null));
+
+        Assert.IsTrue(variable.Value.Length < 5000);
+        StringAssert.EndsWith(variable.Value, "...");
+    }
 }

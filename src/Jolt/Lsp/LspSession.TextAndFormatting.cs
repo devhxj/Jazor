@@ -150,23 +150,82 @@ internal sealed partial class LspSession
         LspFormattingOptions? options,
         bool ensureFinalNewline)
     {
-        var newline = text.Contains("\r\n", StringComparison.Ordinal)
-            ? "\r\n"
-            : "\n";
-        var lines = text
-            .Replace("\r\n", "\n", StringComparison.Ordinal)
-            .Split('\n')
-            .Select(static line => line.TrimEnd(' ', '\t'))
-            .ToArray();
-        var formatted = string.Join(newline, lines);
+        var trimTrailingWhitespace = options?.TrimTrailingWhitespace ?? true;
+        var fallbackNewline = GetDominantNewline(text);
+        var formatted = string.Concat(EnumerateLineParts(text)
+            .Select(part => (trimTrailingWhitespace ? part.Text.TrimEnd(' ', '\t') : part.Text) + part.Newline));
         var shouldInsertFinalNewline = options?.InsertFinalNewline ?? ensureFinalNewline;
         if (shouldInsertFinalNewline
-            && !formatted.EndsWith(newline, StringComparison.Ordinal))
+            && !EndsWithNewline(formatted))
         {
-            formatted += newline;
+            formatted += fallbackNewline;
         }
 
         return formatted;
+    }
+
+    private static IEnumerable<(string Text, string Newline)> EnumerateLineParts(string text)
+    {
+        var start = 0;
+        for (var index = 0; index < text.Length; index++)
+        {
+            var character = text[index];
+            if (character != '\r' && character != '\n')
+            {
+                continue;
+            }
+
+            var newlineLength = character == '\r'
+                && index + 1 < text.Length
+                && text[index + 1] == '\n'
+                    ? 2
+                    : 1;
+            yield return (
+                text[start..index],
+                text.Substring(index, newlineLength));
+            index += newlineLength - 1;
+            start = index + 1;
+        }
+
+        if (start <= text.Length)
+        {
+            yield return (text[start..], string.Empty);
+        }
+    }
+
+    private static bool EndsWithNewline(string text)
+        => text.EndsWith("\n", StringComparison.Ordinal)
+            || text.EndsWith("\r", StringComparison.Ordinal);
+
+    private static string GetDominantNewline(string text)
+    {
+        var crlfCount = 0;
+        var lfCount = 0;
+        var crCount = 0;
+        foreach (var part in EnumerateLineParts(text))
+        {
+            if (part.Newline == "\r\n")
+            {
+                crlfCount++;
+            }
+            else if (part.Newline == "\n")
+            {
+                lfCount++;
+            }
+            else if (part.Newline == "\r")
+            {
+                crCount++;
+            }
+        }
+
+        if (crlfCount >= lfCount && crlfCount >= crCount && crlfCount > 0)
+        {
+            return "\r\n";
+        }
+
+        return crCount > lfCount
+            ? "\r"
+            : "\n";
     }
 
     private static bool IsWordCharacter(char c)

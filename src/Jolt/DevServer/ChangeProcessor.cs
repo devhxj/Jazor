@@ -439,13 +439,10 @@ internal sealed class ChangeProcessor
                 }
             }
 
-            var resolvedUrl = _moduleResolver.GetResolvedUrlForAbsolutePath(changedPath);
-            jsUpdates.Add(
-                new JavaScriptHotUpdate
-                {
-                    Path = resolvedUrl,
-                    AcceptedPath = resolvedUrl
-                });
+            foreach (var update in CreateJavaScriptHotUpdates(changedPath, nextResult.SupportsHmr))
+            {
+                jsUpdates.Add(update);
+            }
         }
 
         if (jsUpdates.Count == 0)
@@ -513,13 +510,10 @@ internal sealed class ChangeProcessor
                 return null;
             }
 
-            var resolvedUrl = _moduleResolver.GetResolvedUrlForAbsolutePath(changedPath);
-            jsUpdates.Add(
-                new JavaScriptHotUpdate
-                {
-                    Path = resolvedUrl,
-                    AcceptedPath = resolvedUrl
-                });
+            foreach (var update in CreateJavaScriptHotUpdates(changedPath, previousResult.SupportsHmr || nextResult.SupportsHmr))
+            {
+                jsUpdates.Add(update);
+            }
         }
 
         return new ChangeProcessingResult
@@ -574,13 +568,10 @@ internal sealed class ChangeProcessor
                 return null;
             }
 
-            var resolvedUrl = _moduleResolver.GetResolvedUrlForAbsolutePath(changedPath);
-            jsUpdates.Add(
-                new JavaScriptHotUpdate
-                {
-                    Path = resolvedUrl,
-                    AcceptedPath = resolvedUrl
-                });
+            foreach (var update in CreateJavaScriptHotUpdates(changedPath, nextResult.SupportsHmr))
+            {
+                jsUpdates.Add(update);
+            }
         }
 
         return new ChangeProcessingResult
@@ -682,6 +673,40 @@ internal sealed class ChangeProcessor
         }
 
         return companionDocuments;
+    }
+
+    private IReadOnlyList<JavaScriptHotUpdate> CreateJavaScriptHotUpdates(string changedPath, bool supportsSelfAccept)
+    {
+        var resolvedChangedPath = _moduleResolver.GetResolvedUrlForAbsolutePath(changedPath);
+        var updates = new List<JavaScriptHotUpdate>();
+        var acceptedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        if (supportsSelfAccept)
+        {
+            acceptedPaths.Add(resolvedChangedPath);
+        }
+
+        foreach (var dependentPath in _dependencyGraph.GetDependents(changedPath))
+        {
+            acceptedPaths.Add(_moduleResolver.GetResolvedUrlForAbsolutePath(dependentPath));
+        }
+
+        if (acceptedPaths.Count == 0)
+        {
+            acceptedPaths.Add(resolvedChangedPath);
+        }
+
+        foreach (var acceptedPath in acceptedPaths.Order(StringComparer.OrdinalIgnoreCase))
+        {
+            updates.Add(
+                new JavaScriptHotUpdate
+                {
+                    Path = resolvedChangedPath,
+                    AcceptedPath = acceptedPath
+                });
+        }
+
+        return updates;
     }
 
     private static RazorVueManifestDiffResult? TryDiffJazorHotReload(

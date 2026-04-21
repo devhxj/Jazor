@@ -11,11 +11,13 @@ internal sealed class DapSession
 
     private readonly ICdpClient? _cdpClient;
     private readonly VariableMapper _variableMapper;
+    private readonly Lock _stateGate = new();
     private readonly Lock _breakpointGate = new();
     private readonly Dictionary<string, IReadOnlyList<DapBreakpointBinding>> _breakpointsBySourcePath = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<int, VariablesReferenceEntry> _variablesByReference = [];
     private IReadOnlyList<CdpCallFrame> _currentCallFrames = [];
     private int _nextVariablesReference = 1;
+    private bool _isPaused;
 
     public DapSession(ICdpClient? cdpClient = null)
     {
@@ -36,18 +38,34 @@ internal sealed class DapSession
 
     public bool HasCdpBackend => _cdpClient is not null;
 
-    public bool IsPaused { get; private set; }
+    public bool IsPaused
+    {
+        get
+        {
+            lock (_stateGate)
+            {
+                return _isPaused;
+            }
+        }
+    }
 
     public IReadOnlyList<CdpCallFrame> CurrentCallFrames
     {
-        get => _currentCallFrames;
+        get
+        {
+            lock (_stateGate)
+            {
+                return _currentCallFrames;
+            }
+        }
         set
         {
             ArgumentNullException.ThrowIfNull(value);
 
-            _currentCallFrames = value;
-            IsPaused = value.Count > 0;
-            ResetVariableReferences();
+            lock (_stateGate)
+            {
+                SetCurrentCallFramesCore(value);
+            }
         }
     }
 
@@ -180,15 +198,19 @@ internal sealed class DapSession
         int variablesReference,
         CancellationToken cancellationToken = default)
     {
-        if (variablesReference <= 0
-            || !_variablesByReference.TryGetValue(variablesReference, out var entry))
+        VariablesReferenceEntry entry;
+        lock (_stateGate)
         {
-            return [];
-        }
+            if (variablesReference <= 0
+                || !_variablesByReference.TryGetValue(variablesReference, out entry!))
+            {
+                return [];
+            }
 
-        if (entry.Variables is not null)
-        {
-            return entry.Variables;
+            if (entry.Variables is not null)
+            {
+                return entry.Variables;
+            }
         }
 
         if (_cdpClient is null || entry.RemoteObject is null)
@@ -197,8 +219,17 @@ internal sealed class DapSession
         }
 
         var variables = await ExpandRemoteObjectAsync(entry.RemoteObject, cancellationToken);
-        entry.Variables = variables;
-        return variables;
+        lock (_stateGate)
+        {
+            if (_variablesByReference.TryGetValue(variablesReference, out var currentEntry)
+                && ReferenceEquals(currentEntry, entry))
+            {
+                currentEntry.Variables = variables;
+                return variables;
+            }
+        }
+
+        return [];
     }
 
     public async ValueTask<DapEvaluationResult> EvaluateAsync(
@@ -242,7 +273,6 @@ internal sealed class DapSession
             await _cdpClient.ContinueAsync(cancellationToken);
         }
 
-        IsPaused = false;
         CurrentCallFrames = [];
     }
 
@@ -250,9 +280,10 @@ internal sealed class DapSession
     {
         IsInitialized = false;
         IsStarted = false;
-        IsPaused = false;
-        CurrentCallFrames = [];
-        ResetVariableReferences();
+        lock (_stateGate)
+        {
+            SetCurrentCallFramesCore([]);
+        }
         lock (_breakpointGate)
         {
             _breakpointsBySourcePath.Clear();
@@ -266,7 +297,10 @@ internal sealed class DapSession
             return frame.CallFrameId;
         }
 
-        return CurrentCallFrames.FirstOrDefault()?.CallFrameId;
+        lock (_stateGate)
+        {
+            return _currentCallFrames.FirstOrDefault()?.CallFrameId;
+        }
     }
 
     private void OnCdpPaused(IReadOnlyList<CdpCallFrame> callFrames)
@@ -324,9 +358,14 @@ internal sealed class DapSession
 
         for (var index = 1; index < segments.Count; index++)
         {
+            VariablesReferenceEntry? childrenEntry;
+            lock (_stateGate)
+            {
+                _variablesByReference.TryGetValue(current.VariablesReference, out childrenEntry);
+            }
+
             if (current.VariablesReference <= 0
-                || !_variablesByReference.TryGetValue(current.VariablesReference, out var childrenEntry)
-                || childrenEntry.Variables is null
+                || childrenEntry?.Variables is null
                 || !TryResolveVariable(childrenEntry.Variables, segments[index], out current))
             {
                 variable = null;
@@ -341,14 +380,17 @@ internal sealed class DapSession
     private bool TryGetCallFrame(int frameId, [NotNullWhen(true)] out CdpCallFrame? frame)
     {
         var frameIndex = frameId - 1;
-        if (frameIndex < 0 || frameIndex >= CurrentCallFrames.Count)
+        lock (_stateGate)
         {
-            frame = null;
-            return false;
-        }
+            if (frameIndex < 0 || frameIndex >= _currentCallFrames.Count)
+            {
+                frame = null;
+                return false;
+            }
 
-        frame = CurrentCallFrames[frameIndex];
-        return true;
+            frame = _currentCallFrames[frameIndex];
+            return true;
+        }
     }
 
     private IReadOnlyList<DapVariable> CreateFrameVariablesForLookup(int frameId)
@@ -370,18 +412,28 @@ internal sealed class DapSession
         ];
 
     private IReadOnlyList<DapVariable> CreateSessionVariables(int? frameId)
-        =>
+    {
+        bool isPaused;
+        int callFrameCount;
+        lock (_stateGate)
+        {
+            isPaused = _isPaused;
+            callFrameCount = _currentCallFrames.Count;
+        }
+
+        return
         [
             CreateLeafVariable("initialized", ToBooleanLiteral(IsInitialized), "boolean"),
             CreateLeafVariable("started", ToBooleanLiteral(IsStarted), "boolean"),
-            CreateLeafVariable("paused", ToBooleanLiteral(IsPaused), "boolean"),
-            CreateLeafVariable("callFrameCount", CurrentCallFrames.Count.ToString(CultureInfo.InvariantCulture), "number"),
+            CreateLeafVariable("paused", ToBooleanLiteral(isPaused), "boolean"),
+            CreateLeafVariable("callFrameCount", callFrameCount.ToString(CultureInfo.InvariantCulture), "number"),
             CreateLeafVariable("breakpointCount", GetBreakpointCount().ToString(CultureInfo.InvariantCulture), "number"),
             CreateLeafVariable(
                 "selectedFrameId",
                 (frameId ?? 0).ToString(CultureInfo.InvariantCulture),
                 "number")
         ];
+    }
 
     private static string ToBooleanLiteral(bool value)
         => value ? "true" : "false";
@@ -445,9 +497,12 @@ internal sealed class DapSession
 
     private int RegisterVariables(IReadOnlyList<DapVariable> variables)
     {
-        var variablesReference = _nextVariablesReference++;
-        _variablesByReference[variablesReference] = VariablesReferenceEntry.FromVariables(variables);
-        return variablesReference;
+        lock (_stateGate)
+        {
+            var variablesReference = _nextVariablesReference++;
+            _variablesByReference[variablesReference] = VariablesReferenceEntry.FromVariables(variables);
+            return variablesReference;
+        }
     }
 
     private int RegisterRemoteObject(CdpRemoteObject? remoteObject)
@@ -457,9 +512,12 @@ internal sealed class DapSession
             return 0;
         }
 
-        var variablesReference = _nextVariablesReference++;
-        _variablesByReference[variablesReference] = VariablesReferenceEntry.FromRemoteObject(remoteObject!);
-        return variablesReference;
+        lock (_stateGate)
+        {
+            var variablesReference = _nextVariablesReference++;
+            _variablesByReference[variablesReference] = VariablesReferenceEntry.FromRemoteObject(remoteObject!);
+            return variablesReference;
+        }
     }
 
     private async ValueTask<IReadOnlyList<DapVariable>> ExpandRemoteObjectAsync(
@@ -583,7 +641,14 @@ internal sealed class DapSession
             _ => null
         };
 
-    private void ResetVariableReferences()
+    private void SetCurrentCallFramesCore(IReadOnlyList<CdpCallFrame> callFrames)
+    {
+        _currentCallFrames = callFrames.ToArray();
+        _isPaused = _currentCallFrames.Count > 0;
+        ResetVariableReferencesCore();
+    }
+
+    private void ResetVariableReferencesCore()
     {
         _variablesByReference.Clear();
         _nextVariablesReference = 1;

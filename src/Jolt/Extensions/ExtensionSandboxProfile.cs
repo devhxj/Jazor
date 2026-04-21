@@ -71,9 +71,12 @@ internal sealed class ExtensionSandboxProfile
             var effectiveHosts = AllowedHosts.Length == 0
                 ? DefaultLoopbackHosts
                 : AllowedHosts;
+
+            // Loopback-only mode intentionally forbids wildcard hosts so a manifest
+            // cannot claim "loopback" while effectively bypassing host allow-listing.
             if (effectiveHosts.Contains("*", StringComparer.Ordinal))
             {
-                return true;
+                return false;
             }
 
             return effectiveHosts.Contains(normalizedHost, StringComparer.OrdinalIgnoreCase);
@@ -127,7 +130,9 @@ internal sealed class ExtensionSandboxProfile
     {
         var relativePath = Path.GetRelativePath(directoryPath, candidatePath);
         return !string.IsNullOrWhiteSpace(relativePath)
-            && !relativePath.StartsWith("..", StringComparison.Ordinal)
+            && !string.Equals(relativePath, "..", StringComparison.Ordinal)
+            && !relativePath.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+            && !relativePath.StartsWith(".." + Path.AltDirectorySeparatorChar, StringComparison.Ordinal)
             && !Path.IsPathRooted(relativePath);
     }
 

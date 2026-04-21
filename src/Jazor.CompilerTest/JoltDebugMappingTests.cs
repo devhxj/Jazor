@@ -108,4 +108,20 @@ public sealed class JoltDebugMappingTests
         Assert.AreEqual(6, frames[0].Line);
         Assert.AreEqual(3, frames[0].Column);
     }
+
+    [TestMethod]
+    public void CallStackMapper_MapCallStack_TrimsNullPaddedAnonymousFunctionNames()
+    {
+        var mapper = new CallStackMapper(new InMemorySourceMapService());
+
+        var frames = mapper.MapCallStack(
+        [
+            new CdpCallFrame(
+                "frame-1",
+                "\0 \t\r\n",
+                new CdpLocation("/generated/chunk.js", 5, 2))
+        ]);
+
+        Assert.AreEqual("(anonymous)", frames[0].Name);
+    }
 }

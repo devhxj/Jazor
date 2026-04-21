@@ -522,9 +522,10 @@ internal sealed partial class LspSession
         CancellationToken cancellationToken)
     {
         var parameters = DeserializeParams<LspRenameParams>(request.Params);
-        if (string.IsNullOrWhiteSpace(parameters.NewName))
+        if (!IsValidRenameIdentifier(parameters.NewName))
         {
-            throw CreateInvalidParamsException("textDocument/rename newName is required.");
+            throw CreateInvalidParamsException(
+                "textDocument/rename newName must be a valid identifier containing only letters, digits, and underscores, and must start with a letter or underscore.");
         }
 
         var document = await GetRequiredDocumentAsync(
@@ -540,6 +541,30 @@ internal sealed partial class LspSession
                 parameters.NewName,
                 projectionTarget,
                 cancellationToken));
+    }
+
+    private static bool IsValidRenameIdentifier(string? newName)
+    {
+        if (string.IsNullOrWhiteSpace(newName))
+        {
+            return false;
+        }
+
+        if (!(char.IsLetter(newName[0]) || newName[0] == '_'))
+        {
+            return false;
+        }
+
+        for (var index = 1; index < newName.Length; index++)
+        {
+            var character = newName[index];
+            if (!(char.IsLetterOrDigit(character) || character == '_'))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private async ValueTask<LspResponseMessage> HandlePrepareRenameAsync(
@@ -808,8 +833,29 @@ internal sealed partial class LspSession
         {
             throw;
         }
-        catch (Exception) {
+        catch (Exception exception)
+        {
+            WriteWorkspaceSinkWarning(document.DocumentPath, exception);
             // LSP diagnostics/projection updates must keep working even if dev-server HMR coordination fails.
+        }
+    }
+
+    private static void WriteWorkspaceSinkWarning(string documentPath, Exception exception)
+    {
+        try
+        {
+            Console.Error.WriteLine(JsonSerializer.Serialize(new
+            {
+                eventType = "lspWorkspaceDocumentChangeSinkFailed",
+                documentPath,
+                errorType = exception.GetType().FullName ?? exception.GetType().Name,
+                message = exception.Message,
+                timestamp = DateTimeOffset.UtcNow
+            }));
+        }
+        catch (Exception)
+        {
+            // Keep diagnostics/projection work isolated from observability failures.
         }
     }
 

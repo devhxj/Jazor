@@ -519,31 +519,27 @@ internal sealed class JazorLspDocumentService
 
         var actions = new List<LspCodeAction>();
 
-        if (diagnostics.Any(static diagnostic => string.Equals(diagnostic.Code, "JAZORVUE001", StringComparison.Ordinal)))
+        if (TryFindPrivateMethodModifierForDiagnostic(document, diagnostics, out var privateMethodModifier))
         {
-            var privateMethodMatch = PrivateMethodPattern.Match(document.Text);
-            if (privateMethodMatch.Success)
+            actions.Add(new LspCodeAction
             {
-                actions.Add(new LspCodeAction
+                Title = "Make method public for bridge lowering",
+                Kind = "quickfix",
+                Edit = new LspWorkspaceEdit
                 {
-                    Title = "Make method public for bridge lowering",
-                    Kind = "quickfix",
-                    Edit = new LspWorkspaceEdit
+                    Changes = new Dictionary<string, LspTextEdit[]>
                     {
-                        Changes = new Dictionary<string, LspTextEdit[]>
-                        {
-                            [LspProtocolHelpers.ToDocumentUri(document.DocumentPath)] =
-                            [
-                                new LspTextEdit
-                                {
-                                    Range = LspProtocolHelpers.ToRange(document.Text, privateMethodMatch.Groups["modifier"].Index, privateMethodMatch.Groups["modifier"].Length),
-                                    NewText = "public"
-                                }
-                            ]
-                        }
+                        [LspProtocolHelpers.ToDocumentUri(document.DocumentPath)] =
+                        [
+                            new LspTextEdit
+                            {
+                                Range = LspProtocolHelpers.ToRange(document.Text, privateMethodModifier.Index, privateMethodModifier.Length),
+                                NewText = "public"
+                            }
+                        ]
                     }
-                });
-            }
+                }
+            });
         }
 
         var legacyDirectiveDiagnostics = diagnostics
@@ -611,6 +607,97 @@ internal sealed class JazorLspDocumentService
 
     private static string GetRangeKey(LspRange range)
         => $"{range.Start.Line}:{range.Start.Character}:{range.End.Line}:{range.End.Character}";
+
+    private static bool TryFindPrivateMethodModifierForDiagnostic(
+        DocumentSnapshot document,
+        IReadOnlyList<LspDiagnostic> diagnostics,
+        out Group privateMethodModifier)
+    {
+        privateMethodModifier = default!;
+        var privateMethodMatches = PrivateMethodPattern
+            .Matches(document.Text)
+            .Where(static match => match.Success && match.Groups["modifier"].Success)
+            .ToArray();
+        if (privateMethodMatches.Length == 0)
+        {
+            return false;
+        }
+
+        foreach (var diagnostic in diagnostics.Where(static diagnostic =>
+                     string.Equals(diagnostic.Code, "JAZORVUE001", StringComparison.Ordinal)))
+        {
+            if (!TryGetRangeOffsets(document.Text, diagnostic.Range, out var diagnosticStart, out var diagnosticEnd))
+            {
+                continue;
+            }
+
+            foreach (var match in privateMethodMatches)
+            {
+                var candidateStart = match.Groups["modifier"].Index;
+                var candidateEnd = FindMethodDeclarationEnd(document.Text, match);
+                if (RangesOverlapOrTouch(diagnosticStart, diagnosticEnd, candidateStart, candidateEnd))
+                {
+                    privateMethodModifier = match.Groups["modifier"];
+                    return true;
+                }
+            }
+        }
+
+        if (privateMethodMatches.Length == 1)
+        {
+            privateMethodModifier = privateMethodMatches[0].Groups["modifier"];
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryGetRangeOffsets(
+        string text,
+        LspRange range,
+        out int startOffset,
+        out int endOffset)
+    {
+        startOffset = default;
+        endOffset = default;
+        try
+        {
+            startOffset = LspProtocolHelpers.GetOffset(text, range.Start);
+            endOffset = LspProtocolHelpers.GetOffset(text, range.End);
+            if (endOffset < startOffset)
+            {
+                endOffset = startOffset;
+            }
+
+            return true;
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return false;
+        }
+    }
+
+    private static int FindMethodDeclarationEnd(string text, Match privateMethodMatch)
+    {
+        var braceIndex = text.IndexOf('{', privateMethodMatch.Index + privateMethodMatch.Length);
+        return braceIndex >= 0
+            ? braceIndex
+            : privateMethodMatch.Index + privateMethodMatch.Length;
+    }
+
+    private static bool RangesOverlapOrTouch(
+        int leftStart,
+        int leftEnd,
+        int rightStart,
+        int rightEnd)
+    {
+        if (leftStart == leftEnd)
+        {
+            return leftStart >= rightStart && leftStart <= rightEnd;
+        }
+
+        return leftStart <= rightEnd && rightStart <= leftEnd;
+    }
 
     private async ValueTask<AnalyzeJazorResponse> AnalyzeAsync(
         DocumentSnapshot document,

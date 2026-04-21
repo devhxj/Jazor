@@ -61,15 +61,31 @@ internal sealed class CdpConnection : ICdpConnection
 
         var buffer = new byte[16 * 1024];
         var text = new StringBuilder();
+        var decoder = Encoding.UTF8.GetDecoder();
+        var chars = new char[Encoding.UTF8.GetMaxCharCount(buffer.Length)];
+        var receivedPartialMessage = false;
         while (true)
         {
             var result = await _webSocket.ReceiveAsync(buffer.AsMemory(), cancellationToken);
             if (result.MessageType == WebSocketMessageType.Close)
             {
+                if (receivedPartialMessage)
+                {
+                    throw new IOException("CDP WebSocket closed before completing the current message.");
+                }
+
                 return null;
             }
 
-            text.Append(Encoding.UTF8.GetString(buffer, 0, result.Count));
+            receivedPartialMessage = true;
+            var completedChars = decoder.GetChars(
+                buffer,
+                0,
+                result.Count,
+                chars,
+                0,
+                flush: result.EndOfMessage);
+            text.Append(chars, 0, completedChars);
             if (result.EndOfMessage)
             {
                 break;

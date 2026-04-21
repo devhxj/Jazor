@@ -77,6 +77,29 @@ public sealed class JoltDevServerReloadHubTests
         await IgnoreCancellationAsync(receiveLoop);
     }
 
+    [TestMethod]
+    public async Task DevServerReloadHub_HeartbeatSweep_RemovesExpiredClients()
+    {
+        await using var hub = new DevServerReloadHub(
+            sendTimeout: TimeSpan.FromMilliseconds(300),
+            heartbeatTimeout: TimeSpan.FromMilliseconds(40),
+            heartbeatSweepInterval: TimeSpan.FromMilliseconds(10));
+        var client = new ControlledWebSocket();
+        using var cancellationSource = new CancellationTokenSource();
+
+        var receiveLoop = hub.AcceptAsync(client, cancellationSource.Token);
+        await WaitUntilAsync(
+            () => hub.ConnectedClientCount == 1 && client.SentMessages.Count >= 1,
+            TimeSpan.FromSeconds(2));
+
+        await WaitUntilAsync(
+            () => hub.ConnectedClientCount == 0 && client.State == WebSocketState.Closed,
+            TimeSpan.FromSeconds(2));
+
+        cancellationSource.Cancel();
+        await IgnoreCancellationAsync(receiveLoop);
+    }
+
     private static async Task IgnoreCancellationAsync(Task task)
     {
         try

@@ -40,6 +40,19 @@ public sealed class JoltPhase7ExtensionTests
     }
 
     [TestMethod]
+    public void ExtensionRegistry_RegisterExtension_RollsBackPartialProviderRegistrationOnFailure()
+    {
+        var registry = new ExtensionRegistry();
+        var extension = new BrokenProviderExtension();
+
+        Assert.ThrowsExactly<InvalidOperationException>(() => registry.RegisterExtension(extension));
+
+        Assert.AreEqual(0, registry.GetExtensions().Count);
+        Assert.AreEqual(0, registry.GetLspDiagnosticProviders().Count);
+        Assert.AreEqual(0, registry.GetLspCodeActionProviders().Count);
+    }
+
+    [TestMethod]
     public async Task ExtensionLoader_LoadBuiltinExtensionsAsync_InitializesAndActivatesExtension()
     {
         var registry = new ExtensionRegistry();
@@ -1351,6 +1364,41 @@ public sealed class JoltPhase7ExtensionTests
 
             return ValueTask.FromResult(diagnostics);
         }
+    }
+
+    private sealed class BrokenProviderExtension : IExtension, ILspDiagnosticProvider, ILspCodeActionProvider
+    {
+        public ExtensionMetadata Metadata { get; } = new(
+            Id: "phase7.broken",
+            Name: "Broken Provider",
+            Version: "1.0.0");
+
+        string ILspDiagnosticProvider.Name => "BrokenDiagnosticProvider";
+
+        int ILspDiagnosticProvider.Priority => 0;
+
+        string ILspCodeActionProvider.Name => string.Empty;
+
+        int ILspCodeActionProvider.Priority => 0;
+
+        public ValueTask InitializeAsync(ExtensionContext context, CancellationToken cancellationToken)
+            => ValueTask.CompletedTask;
+
+        public ValueTask ActivateAsync(CancellationToken cancellationToken)
+            => ValueTask.CompletedTask;
+
+        public ValueTask DeactivateAsync(CancellationToken cancellationToken)
+            => ValueTask.CompletedTask;
+
+        public ValueTask<IReadOnlyList<LspDiagnostic>> ProvideDiagnosticsAsync(
+            LspDiagnosticProviderContext context,
+            CancellationToken cancellationToken)
+            => ValueTask.FromResult<IReadOnlyList<LspDiagnostic>>(Array.Empty<LspDiagnostic>());
+
+        public ValueTask<IReadOnlyList<LspCodeAction>> ProvideCodeActionsAsync(
+            LspCodeActionProviderContext context,
+            CancellationToken cancellationToken)
+            => ValueTask.FromResult<IReadOnlyList<LspCodeAction>>(Array.Empty<LspCodeAction>());
     }
 
     private sealed class TestExtension(string id) : IExtension, ILspDiagnosticProvider, ILspCodeActionProvider, ILspHoverProvider, ILspCompletionProvider, ILspDocumentSymbolProvider, ILspSignatureHelpProvider, ILspInlayHintProvider, ILspWorkspaceSymbolProvider, ILspFoldingRangeProvider, ILspReferenceProvider, ILspRenameProvider
