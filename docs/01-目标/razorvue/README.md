@@ -70,6 +70,71 @@ public partial class VBtn : VuetifyComponentBase
 | LSP 智能提示 | 无（仅 Roslyn 分析） | 3-Lane 全语义（Jazor + Roslyn + Volar） |
 | 适用场景 | 库开发、CI 构建 | 应用开发、实时预览 |
 
+## 功能设计文档索引
+
+以下是从代码实现反推编写的细粒度设计文档，覆盖 RazorVue 全部子系统：
+
+### 整体架构
+| 文档 | 覆盖范围 |
+|------|---------|
+| [architecture.md](architecture.md) | 整体架构：3 个项目、依赖图、Source Generator 管线、与 Jolt 对比 |
+
+### 核心类型 (`core/`)
+| 文档 | 覆盖范围 |
+|------|---------|
+| [AttributesAndInterfaces.md](core/AttributesAndInterfaces.md) | 6 个 VueLibrary 属性 + IVueComponent/IVueLibraryComponent + 扩展性接口 |
+| [Enums.md](core/Enums.md) | 所有枚举：14 种类型（EntryKind, PropKind, EmitKind, Flags, HmrBoundary 等） |
+
+### 描述符系统 (`descriptor/`)
+| 文档 | 覆盖范围 |
+|------|---------|
+| [ComponentDescriptor.md](descriptor/ComponentDescriptor.md) | VueComponentDescriptor + Prop/Emit/Slot/Lifecycle/Logic 子描述符 |
+| [DescriptorFactory.md](descriptor/DescriptorFactory.md) | VueComponentDescriptorFactory：Roslyn 符号 -> 描述符，绑定推断，库组件元数据 |
+| [ComponentRegistry.md](descriptor/ComponentRegistry.md) | VueComponentRegistry：三级索引，命名空间可见性，解析优先级 |
+| [IntrinsicComponents.md](descriptor/IntrinsicComponents.md) | 4 个内置 Vue 组件：Teleport, Transition, KeepAlive, Suspense |
+| [CompilationIssues.md](descriptor/CompilationIssues.md) | 14 个诊断代码，IssueException，ResolutionIssueFactory |
+
+### 发现与分类 (`discovery/`)
+| 文档 | 覆盖范围 |
+|------|---------|
+| [EntryClassifier.md](discovery/EntryClassifier.md) | RazorVueEntryClassifier：ECMAScriptModule 检测，入口分类，生命周期/逻辑发现 |
+| [CompilationSymbols.md](discovery/CompilationSymbols.md) | RazorVueCompilationSymbols：必须/可选符号，回退元数据名解析 |
+| [CompilationContext.md](discovery/CompilationContext.md) | RazorVueCompilationContext：组件发现，快照创建，注册表构建 |
+
+### 制品系统 (`artifacts/`)
+| 文档 | 覆盖范围 |
+|------|---------|
+| [CompiledArtifact.md](artifacts/CompiledArtifact.md) | VueCompiledArtifact + ArtifactIdentity + RuntimeHints + HmrBoundaryKind |
+| [SemanticSnapshot.md](artifacts/SemanticSnapshot.md) | RazorVueSemanticSnapshot：组件语义模型（17 个字段） |
+| [Catalog.md](artifacts/Catalog.md) | RazorVueCatalog + CatalogBuilder：路径规范化，排序 |
+| [SourceOrigin.md](artifacts/SourceOrigin.md) | RazorVueSourceOrigin：源码映射，OriginKind，MappingQuality |
+
+### 渲染树 (`render-tree/`)
+| 文档 | 覆盖范围 |
+|------|---------|
+| [RenderTree.md](render-tree/RenderTree.md) | 框架无关渲染树模型：9 种节点类型（Element, Component, Text, Expression, Slot, Conditional, ForEach, Attribute） |
+| [RenderTreeExtractor.md](render-tree/RenderTreeExtractor.md) | BuildRenderTree 解析：RenderTreeBuilder 调用识别，栈式树构建 |
+
+### 降级系统 (`lowering/`)
+| 文档 | 覆盖范围 |
+|------|---------|
+| [ArtifactFactory.md](lowering/ArtifactFactory.md) | RazorVueArtifactFactory：组件解析，SHA256 哈希，import/style 构建 |
+| [ModuleBuilder.md](lowering/ModuleBuilder.md) | defineComponent 代码生成（~1100行）：setup + render 函数 |
+| [ExpressionEmitter.md](lowering/ExpressionEmitter.md) | IOperation -> JS 表达式翻译：渲染/setup 双模式，运算符映射 |
+| [ComponentAuthoring.md](lowering/ComponentAuthoring.md) | h() 调用生成：元素/组件/槽/循环，库组件编译时验证 |
+| [LifecycleLowering.md](lowering/LifecycleLowering.md) | Blazor -> Vue hooks 映射：6 种生命周期，深度分析方法体 |
+
+### 管线 (`pipeline/`)
+| 文档 | 覆盖范围 |
+|------|---------|
+| [Pipeline.md](pipeline/Pipeline.md) | RazorVuePipeline：3 个 Execute 重载，完整管线编排 |
+| [Generator.md](pipeline/Generator.md) | RazorVueGenerator：IIncrementalGenerator，14 个诊断，生成代码结构 |
+
+### Vuetify (`vuetify/`)
+| 文档 | 覆盖范围 |
+|------|---------|
+| [ComponentStubs.md](vuetify/ComponentStubs.md) | 38 个 Vuetify 组件桩：结构模式，属性/事件/槽分类，model binding |
+
 ## 设计文档
 
-`design/` 目录下包含 RazorVue 的设计决策、约束和实现规范。
+`design/` 目录下包含 RazorVue 的预实现设计决策、约束和实现规范（与上述实现文档互补）。
